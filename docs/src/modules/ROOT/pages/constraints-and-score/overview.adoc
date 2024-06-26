@@ -275,7 +275,7 @@ This leads to __score corruption__.
 
 Decimal numbers (``BigDecimal``) have none of these problems,
 but their arithmetic operations are slower than with `int` or `long`.
-In some cases, it can be worthwhile to multiply _all_ constraint weights by the same power of ten,
+In some cases, it can be worthwhile multiplying _all_ constraint weights by the same power of ten,
 so the score fits in a scaled `int` or `long`.
 For example, if we multiply all weights by `1000`,
 `fuelCost` of `0.07` becomes `fuelCostMillis` of `70` and no longer uses a decimal score weight.
