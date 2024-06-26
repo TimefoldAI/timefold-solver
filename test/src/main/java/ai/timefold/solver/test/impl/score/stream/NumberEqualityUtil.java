@@ -1,6 +1,7 @@
 package ai.timefold.solver.test.impl.score.stream;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.function.BiPredicate;
 
 import ai.timefold.solver.core.api.score.Score;
@@ -80,6 +81,29 @@ final class NumberEqualityUtil {
         } else {
             throw new IllegalStateException("Impossible state: unknown numeric type (" + actualImpactType
                     + ") for score definition (" + scoreDefinition.getClass() + ").");
+        }
+    }
+
+    /**
+     * Return the correct predicate to compare two unknown subtypes of {@link Number}.
+     * Supports {@link Integer}, {@link Long} and {@link BigDecimal}.
+     * If two numbers are not equal but still represent the same point on the number line
+     * (such as int 1, long 1 and {@link BigDecimal#ONE}
+     * the predicate will accept.
+     *
+     * @param expectedImpact never null; user-provided type to check that number against
+     * @return never null
+     */
+    public static Comparator<Number> getComparison(Number expectedImpact) {
+        if (expectedImpact instanceof Integer) {
+            return Comparator.comparing(a -> a instanceof BigDecimal ? (BigDecimal) a : BigDecimal.valueOf(a.intValue()));
+        } else if (expectedImpact instanceof Long) {
+            return Comparator.comparing(a -> a instanceof BigDecimal ? (BigDecimal) a : BigDecimal.valueOf(a.longValue()));
+        } else if (expectedImpact instanceof BigDecimal) {
+            return Comparator.comparing(a -> a instanceof BigDecimal ? (BigDecimal) a : BigDecimal.valueOf(a.doubleValue()));
+        } else {
+            throw new IllegalStateException("Impossible state: unknown impact type class (" + expectedImpact.getClass()
+                    + ") for impact (" + expectedImpact + ").");
         }
     }
 
