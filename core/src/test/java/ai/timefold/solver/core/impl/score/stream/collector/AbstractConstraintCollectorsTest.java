@@ -111,9 +111,7 @@ public abstract class AbstractConstraintCollectorsTest {
     public abstract void consecutiveUsage();
 
     @Test
-    public void loadBalance() {
-
-    }
+    public abstract void loadBalance();
 
     @Test
     public abstract void collectAndThen();
