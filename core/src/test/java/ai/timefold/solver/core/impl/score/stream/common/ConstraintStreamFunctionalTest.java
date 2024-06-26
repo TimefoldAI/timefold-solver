@@ -10,10 +10,6 @@ public interface ConstraintStreamFunctionalTest {
 
     void filter_consecutive();
 
-    // ************************************************************************
-    // Join
-    // ************************************************************************
-
     default void join_0() {
         // Quads don't have joins, so don't force it.
     }
@@ -29,10 +25,6 @@ public interface ConstraintStreamFunctionalTest {
     default void joinAfterGroupBy() {
         // Quads don't have joins, so don't force it.
     }
-
-    // ************************************************************************
-    // If (not) exists
-    // ************************************************************************
 
     void ifExists_unknownClass();
 
@@ -66,10 +58,6 @@ public interface ConstraintStreamFunctionalTest {
 
     void ifExistsAfterGroupBy();
 
-    // ************************************************************************
-    // Group by
-    // ************************************************************************
-
     void groupBy_0Mapping1Collector();
 
     void groupBy_0Mapping2Collector();
@@ -97,10 +85,6 @@ public interface ConstraintStreamFunctionalTest {
     void groupBy_3Mapping1Collector();
 
     void groupBy_4Mapping0Collector();
-
-    // ************************************************************************
-    // Map/expand/flatten/distinct/concat
-    // ************************************************************************
 
     void distinct();
 
@@ -188,9 +172,7 @@ public interface ConstraintStreamFunctionalTest {
 
     void flattenLastAndDistinctWithoutDuplicates();
 
-    // ************************************************************************
-    // Penalize/reward
-    // ************************************************************************
+    void complement();
 
     void penalizeUnweighted();
 
