@@ -270,7 +270,7 @@ Before in `*ConstraintProviderTest.java`:
 ----
 Job job = new Job("job1", ...);
 
-constraintVerifier.verifyThat(FoodPackagingConstraintProvider::dueDateTime)
+constraintVerifier.verifyThat(FoodPackagingConstraintProvider::maxEndDateTime)
     .given(job)
     .penalizesBy(...);
 ----
@@ -283,7 +283,7 @@ Job job = new Job("job1",  ...);
 Line line = new Line("line1", ...);
 job.setLine(line);
 
-constraintVerifier.verifyThat(FoodPackagingConstraintProvider::dueDateTime)
+constraintVerifier.verifyThat(FoodPackagingConstraintProvider::maxEndDateTime)
     .given(job)
     .penalizesBy(...);
 ----
