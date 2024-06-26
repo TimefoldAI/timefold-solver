@@ -121,10 +121,111 @@ class SingleConstraintAssertionTest {
     }
 
     @Test
+    void impactsMoreThan() {
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given()
+                .penalizesMoreThan("There should be penalties", 0))
+                .hasMessageContaining("There should be penalties")
+                .hasMessageContaining("Expected penalty more than");
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
+                .penalizesMoreThan("There should be no penalties", 0))
+                .doesNotThrowAnyException();
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
+                .penalizesMoreThan("There should be penalties", 1))
+                .hasMessageContaining("There should be penalties")
+                .hasMessageContaining("Expected penalty more than");
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
+                .penalizesMoreThan("There should only be one penalty", 2))
+                .hasMessageContaining("There should only be one penalty")
+                .hasMessageContaining("Expected penalty");
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
+                .rewardsMoreThan("There should not be rewards", 1))
+                .hasMessageContaining("There should not be rewards")
+                .hasMessageContaining("Expected reward");
+
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given()
+                .rewardsMoreThan("There should be no rewards", 0))
+                .hasMessageContaining("There should be no rewards")
+                .hasMessageContaining("Expected reward more than");
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
+                .rewardsMoreThan("There should be no rewards", 0))
+                .doesNotThrowAnyException();
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
+                .rewardsMoreThan("There should be rewards", 1))
+                .hasMessageContaining("There should be rewards")
+                .hasMessageContaining("Expected reward more than");
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
+                .rewardsMoreThan("There should only be one reward", 2))
+                .hasMessageContaining("There should only be one reward")
+                .hasMessageContaining("Expected reward");
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
+                .penalizesMoreThan("There should not be penalties", 1))
+                .hasMessageContaining("There should not be penalties")
+                .hasMessageContaining("Expected penalty");
+    }
+
+    @Test
+    void impactsLessThan() {
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given()
+                .penalizesLessThan("There should be penalties", 1))
+                .doesNotThrowAnyException();
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
+                .penalizesLessThan("There should be no penalties", 1))
+                .hasMessageContaining("There should be no penalties")
+                .hasMessageContaining("Expected penalty less than");
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
+                .penalizesLessThan("There should be less than 2 rewards", 2))
+                .doesNotThrowAnyException();
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
+                .penalizesLessThan("There be less than 3 rewards", 3))
+                .doesNotThrowAnyException();
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
+                .rewardsLessThan("There should be 1 reward", 2))
+                .doesNotThrowAnyException();
+
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given()
+                .rewardsLessThan("There should be no rewards", 1))
+                .doesNotThrowAnyException();
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
+                .rewardsLessThan("There should be no rewards", 1))
+                .hasMessageContaining("There should be no rewards")
+                .hasMessageContaining("Expected reward less than");
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
+                .rewardsLessThan("There should be less than 2 rewards", 2))
+                .doesNotThrowAnyException();
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
+                .rewardsLessThan("There should be less than 2 rewards", 3))
+                .doesNotThrowAnyException();
+        ;
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
+                .penalizesLessThan("There should not be penalties", 2))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
     void impactsBy() {
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given()
-                .penalizesBy("There should no penalties", 0))
+                .penalizesBy("There should be no penalties", 0))
                 .doesNotThrowAnyException();
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
@@ -148,7 +249,7 @@ class SingleConstraintAssertionTest {
 
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given()
-                .rewardsWith("There should no rewards", 0))
+                .rewardsWith("There should be no rewards", 0))
                 .doesNotThrowAnyException();
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
@@ -169,6 +270,106 @@ class SingleConstraintAssertionTest {
                 .penalizesBy("There should not be penalties", 1))
                 .hasMessageContaining("There should not be penalties")
                 .hasMessageContaining("Expected penalty");
+    }
+
+    @Test
+    void impactsByMoreThan() {
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given()
+                .penalizesByMoreThan("There should be no penalties", 0))
+                .hasMessageContaining("There should be no penalties")
+                .hasMessageContaining("Expected penalty more than");
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
+                .penalizesByMoreThan("There should be no penalties", 0))
+                .doesNotThrowAnyException();
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
+                .penalizesByMoreThan("There should be penalties", 1))
+                .hasMessageContaining("There should be penalties")
+                .hasMessageContaining("Expected penalty more than");
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
+                .penalizesByMoreThan("There should only be one penalty", 2))
+                .hasMessageContaining("There should only be one penalty")
+                .hasMessageContaining("Expected penalty more than");
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
+                .rewardsWithMoreThan("There should not be rewards", 1))
+                .hasMessageContaining("There should not be rewards")
+                .hasMessageContaining("Expected reward");
+
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given()
+                .rewardsWithMoreThan("There should be no rewards", 0))
+                .hasMessageContaining("There should be no rewards")
+                .hasMessageContaining("Expected reward more than");
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
+                .rewardsWithMoreThan("There should be no rewards", 0))
+                .doesNotThrowAnyException();
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
+                .rewardsWithMoreThan("There should be rewards", 1))
+                .hasMessageContaining("There should be rewards")
+                .hasMessageContaining("Expected reward more than");
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
+                .rewardsWithMoreThan("There should only be one reward", 2))
+                .hasMessageContaining("There should only be one reward")
+                .hasMessageContaining("Expected reward");
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
+                .penalizesByMoreThan("There should not be penalties", 1))
+                .hasMessageContaining("There should not be penalties")
+                .hasMessageContaining("Expected penalty");
+    }
+
+    @Test
+    void impactsByLessThan() {
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given()
+                .penalizesByLessThan("There should be no penalties", 1))
+                .doesNotThrowAnyException();
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
+                .penalizesByLessThan("There should be penalties", 1))
+                .hasMessageContaining("There should be penalties")
+                .hasMessageContaining("Expected penalty less than");
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
+                .penalizesByLessThan("There should be penalties", 2))
+                .doesNotThrowAnyException();
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
+                .penalizesByLessThan("There should only be one penalty", 3))
+                .doesNotThrowAnyException();
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
+                .rewardsWithLessThan("There should not be rewards", 2))
+                .doesNotThrowAnyException();
+
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given()
+                .rewardsWithLessThan("There should be no rewards", 1))
+                .doesNotThrowAnyException();
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
+                .rewardsWithLessThan("There should be no rewards", 1))
+                .hasMessageContaining("There should be no rewards")
+                .hasMessageContaining("Expected reward less than");
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
+                .rewardsWithLessThan("There should be rewards", 2))
+                .doesNotThrowAnyException();
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
+                .rewardsWithLessThan("There should only be one reward", 3))
+                .doesNotThrowAnyException();
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
+                .penalizesByLessThan("There should not be penalties", 2))
+                .doesNotThrowAnyException();
     }
 
     @Test
