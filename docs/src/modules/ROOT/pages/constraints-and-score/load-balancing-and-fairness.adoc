@@ -13,7 +13,7 @@ there may even be legal requirements to that effect.
 
 Fairness is a complex concept, and it is not always clear what is fair.
 For example, let’s assign 15 undesirable tasks to five employees.
-Each task takes a day, but they have different skill requirements.
+Each task takes a day, but the tasks have different skill requirements.
 In a perfectly fair schedule, each employee will get three tasks,
 because the average is `15 / 5 = 3`.
 
@@ -34,7 +34,7 @@ We can define fairness in two opposing ways:
 
 Since we want to treat all employees equally, the second definition is correct.
 Besides, if we make almost everyone happy by letting one employee do all the work,
-that employee would probably quit on us and that doesn't help.
+that employee would probably quit and that doesn't help.
 
 Let’s look at a few different solutions of the same dataset, sorted from most to least fair.
 Each one has 15 tasks:
@@ -126,9 +126,9 @@ How do we compare schedules in which Ann has the same number of tasks?
 
 We take a look at the second most loaded employee, Beth.
 In schedule D, she has five tasks, while in schedule C, she has less.
-This makes schedule C fairer.
+This makes schedule C fairer overall.
 
-This is the definition of fairness that we will use in the remainder of this section.
+This is the definition of fairness we use in the remainder of this section.
 
 [#fairnessConstraints]
 == Fairness constraints
@@ -159,8 +159,8 @@ See below for a <<fairnessWhyBigDecimal,detailed rationale>>.
 This constraint will penalize the solution based on its unfairness,
 defined in this case by how many `ShiftAssignment` are allocated to any particular `Employee`.
 
-Unfairness is a dimensionless number, measuring how fair the solution is,
-with a lower value indicating a fairer solution.
+Unfairness is a dimensionless number that measures how fair the solution is.
+A lower value indicates a fairer solution.
 The smallest possible value is 1, indicating that the solution is perfectly fair.
 There is no upper limit to the value,
 and it is expected to scale linearly with the size of your dataset.
@@ -183,17 +183,17 @@ causing a xref:constraints-and-score/performance.adoc#scoreTrap[score trap].
 Even a small difference in unfairness (such as between `1.000001` and `1.000002`)
 gives the solver crucial information to distinguish different solutions from each other.
 
-If the somewhat worsened performance of `BigDecimal`-based score calculation is a concern,
-you may decide instead to multiply the unfairness value by some power of ten to preserve precision,
-and only then rounding it to the nearest integer.
-This in turn allows you to use the simple integer-based score types.
+If the somewhat worsened performance of a `BigDecimal`-based score calculation is a concern,
+instead, you may decide to multiply the unfairness value by some power of ten to preserve precision,
+and only then round it to the nearest integer.
+This allows you to use the simple integer-based score types.
 
 Unfortunately, this also requires you to re-balance your constraint weights,
 multiplying them by the same power of ten as used for unfairness.
-Otherwise, the unfairness constraint would dominate the score,
+Otherwise, the unfairness constraint will dominate the score,
 effectively becoming the most important constraint.
 
-If you decide to go down this route,
+If you take this approach,
 we recommend that you preserve at least six decimal places of the unfairness value
 to avoid the most severe score traps.
 This will leave considerably less space in the selected data type for actual values,
