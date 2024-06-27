@@ -3,7 +3,6 @@ package ai.timefold.solver.core.api.score.analysis;
 import static ai.timefold.solver.core.api.score.analysis.ScoreAnalysis.DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT;
 import static java.util.Comparator.comparing;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -59,6 +58,16 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef con
                             ConstraintMatchAwareIncrementalScoreCalculator.class.getSimpleName()));
         }
         Objects.requireNonNull(score);
+    }
+
+    public int matchCount() {
+        if (matches == null) {
+            throw new IllegalArgumentException("""
+                    The constraint matches must be non-null.
+                    Maybe use ScoreAnalysisFetchPolicy.FETCH_ALL to request the score analysis
+                    """);
+        }
+        return matches.size();
     }
 
     ConstraintAnalysis<Score_> negate() {
@@ -176,7 +185,10 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef con
 
         var constraintMatches = matches();
         if (constraintMatches == null) {
-            constraintMatches = Collections.emptyList();
+            throw new IllegalArgumentException("""
+                    The constraint matches must be non-null.
+                    Maybe use ScoreAnalysisFetchPolicy.FETCH_ALL to request the score analysis
+                    """);
         }
         summary.append("""
                         %s: constraint (%s) has %s matches:

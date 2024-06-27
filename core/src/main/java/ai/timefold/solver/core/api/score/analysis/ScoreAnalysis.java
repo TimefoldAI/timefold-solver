@@ -173,7 +173,10 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(Score_ score,
                 .forEach(constraint -> {
                     var matches = constraint.matches();
                     if (matches == null) {
-                        matches = Collections.emptyList();
+                        throw new IllegalArgumentException("""
+                                The constraint matches must be non-null.
+                                Maybe use ScoreAnalysisFetchPolicy.FETCH_ALL to request the score analysis
+                                """);
                     }
                     summary.append("""
                                     %s: constraint (%s) has %s matches:

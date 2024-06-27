@@ -2,6 +2,7 @@ package ai.timefold.solver.core.api.score.analysis;
 
 import static ai.timefold.solver.core.impl.score.director.InnerScoreDirector.getConstraintAnalysis;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.util.Arrays;
@@ -31,9 +32,9 @@ class ScoreAnalysisTest {
         var summary = scoreAnalysis.summarize();
         assertThat(summary)
                 .isEqualTo("""
-                            Explanation of score (0):
-                                Constraint matches:
-                            """);
+                        Explanation of score (0):
+                            Constraint matches:
+                        """);
     }
 
     @Test
@@ -62,7 +63,7 @@ class ScoreAnalysisTest {
         var constraintAnalysisMap = Map.of(
                 constraintMatchTotal.getConstraintRef(), getConstraintAnalysis(constraintMatchTotal, true),
                 constraintMatchTotal2.getConstraintRef(), getConstraintAnalysis(constraintMatchTotal2, true),
-                emptyConstraintMatchTotal1.getConstraintRef(), getConstraintAnalysis(emptyConstraintMatchTotal1, false));
+                emptyConstraintMatchTotal1.getConstraintRef(), getConstraintAnalysis(emptyConstraintMatchTotal1, true));
         var scoreAnalysis = new ScoreAnalysis<>(SimpleScore.of(67), constraintAnalysisMap);
 
         // Single constraint analysis
@@ -80,6 +81,7 @@ class ScoreAnalysisTest {
 
         // Complete score analysis
         var summary = scoreAnalysis.summarize();
+        assertThat(scoreAnalysis.getConstraintAnalysis(constraintPackage, constraintName1).matchCount()).isEqualTo(5);
         assertThat(summary)
                 .isEqualTo("""
                         Explanation of score (67):
@@ -96,6 +98,25 @@ class ScoreAnalysisTest {
                                     9: justified with ([C, D])
                                     ...
                         """);
+    }
+
+    @Test
+    void failFastSummarize() {
+        var constraintPackage = "constraintPackage";
+        var constraintName1 = "constraint1";
+        var constraintId1 = ConstraintRef.of(constraintPackage, constraintName1);
+
+        var constraintMatchTotal = new DefaultConstraintMatchTotal<>(constraintId1, SimpleScore.of(1));
+        addConstraintMatch(constraintMatchTotal, SimpleScore.of(2), "A", "B", "C");
+        var constraintAnalysisMap = Map.of(
+                constraintMatchTotal.getConstraintRef(), getConstraintAnalysis(constraintMatchTotal, false));
+        var scoreAnalysis = new ScoreAnalysis<>(SimpleScore.of(3), constraintAnalysisMap);
+
+        assertThatThrownBy(scoreAnalysis::summarize)
+                .hasMessageContaining("The constraint matches must be non-null");
+
+        assertThatThrownBy(() -> constraintAnalysisMap.values().stream().findFirst().get().matchCount())
+                .hasMessageContaining("The constraint matches must be non-null");
     }
 
     @Test
