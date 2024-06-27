@@ -2232,7 +2232,7 @@ public final class ConstraintCollectors {
     // ************************************************************************
 
     /**
-     * As defined by #loadBalance(Function, ToLongFunction, ToLongFunction),
+     * As defined by {@link #loadBalance(Function, ToLongFunction, ToLongFunction)},
      * where the current load for each balanced item is set to one
      * and the starting load for each balanced item is set to zero.
      */
@@ -2242,7 +2242,7 @@ public final class ConstraintCollectors {
     }
 
     /**
-     * As defined by #loadBalance(Function, ToLongFunction, ToLongFunction),
+     * As defined by {@link #loadBalance(Function, ToLongFunction, ToLongFunction)},
      * where the starting load for each balanced item is set to zero.
      */
     public static <A, Balanced_> UniConstraintCollector<A, ?, LoadBalance<Balanced_>> loadBalance(
@@ -2253,8 +2253,8 @@ public final class ConstraintCollectors {
     /**
      * Returns a collector that takes a stream of items and calculates the unfairness measure from them
      * (see {@link LoadBalance#unfairness()}).
-     * The load for every item is provided by the metricValueFunction,
-     * with the starting load provided by the initialMetricValueFunction.
+     * The load for every item is provided by the loadFunction,
+     * with the starting load provided by the initialLoadFunction.
      * <p>
      * When this collector is used in a constraint stream,
      * it is recommended that the score type be one of those based on {@link BigDecimal},
@@ -2279,7 +2279,7 @@ public final class ConstraintCollectors {
     }
 
     /**
-     * As defined by #loadBalance(BiFunction, ToLongBiFunction, ToLongBiFunction),
+     * As defined by {@link #loadBalance(BiFunction, ToLongBiFunction, ToLongBiFunction)},
      * where the current load for each balanced item is set to one
      * and the starting load for each balanced item is set to zero.
      */
@@ -2289,7 +2289,7 @@ public final class ConstraintCollectors {
     }
 
     /**
-     * As defined by #loadBalance(BiFunction, ToLongBiFunction, ToLongBiFunction),
+     * As defined by {@link #loadBalance(BiFunction, ToLongBiFunction, ToLongBiFunction)},
      * where the starting load for each balanced item is set to zero.
      */
     public static <A, B, Balanced_> BiConstraintCollector<A, B, ?, LoadBalance<Balanced_>> loadBalance(
@@ -2307,7 +2307,7 @@ public final class ConstraintCollectors {
     }
 
     /**
-     * As defined by #loadBalance(TriFunction, ToLongTriFunction, ToLongTriFunction),
+     * As defined by {@link #loadBalance(TriFunction, ToLongTriFunction, ToLongTriFunction)},
      * where the current load for each balanced item is set to one
      * and the starting load for each balanced item is set to zero.
      */
@@ -2317,7 +2317,7 @@ public final class ConstraintCollectors {
     }
 
     /**
-     * As defined by #loadBalance(TriFunction, ToLongTriFunction, ToLongTriFunction),
+     * As defined by {@link #loadBalance(TriFunction, ToLongTriFunction, ToLongTriFunction)},
      * where the starting load for each balanced item is set to zero.
      */
     public static <A, B, C, Balanced_> TriConstraintCollector<A, B, C, ?, LoadBalance<Balanced_>> loadBalance(
@@ -2335,7 +2335,7 @@ public final class ConstraintCollectors {
     }
 
     /**
-     * As defined by #loadBalance(QuadFunction, ToLongQuadFunction, ToLongQuadFunction),
+     * As defined by {@link #loadBalance(QuadFunction, ToLongQuadFunction, ToLongQuadFunction)},
      * where the current load for each balanced item is set to one
      * and the starting load for each balanced item is set to zero.
      */
@@ -2345,7 +2345,7 @@ public final class ConstraintCollectors {
     }
 
     /**
-     * As defined by #loadBalance(QuadFunction, ToLongQuadFunction, ToLongQuadFunction),
+     * As defined by {@link #loadBalance(QuadFunction, ToLongQuadFunction, ToLongQuadFunction)},
      * where the starting load for each balanced item is set to zero.
      */
     public static <A, B, C, D, Balanced_> QuadConstraintCollector<A, B, C, D, ?, LoadBalance<Balanced_>> loadBalance(
