@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
@@ -11,7 +12,7 @@ import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 public final class LoadBalanceImpl<Balanced_> implements LoadBalance<Balanced_> {
 
     private final Map<Balanced_, Integer> balancedItemCountMap = new HashMap<>();
-    private final Map<Balanced_, Long> balancedItemToMetricValueMap = new HashMap<>();
+    private final Map<Balanced_, Long> balancedItemToMetricValueMap = new LinkedHashMap<>();
 
     private long sum = 0;
     private long squaredDeviationIntegralPart = 0;
