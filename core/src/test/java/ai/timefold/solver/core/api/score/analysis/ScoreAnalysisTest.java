@@ -30,9 +30,10 @@ class ScoreAnalysisTest {
 
         var summary = scoreAnalysis.summarize();
         assertThat(summary)
-                .contains("Explanation of score (0)")
-                .contains("Constraint matches:")
-                .doesNotContain("0: constraint");
+                .isEqualTo("""
+                            Explanation of score (0):
+                                Constraint matches:
+                            """);
     }
 
     @Test
@@ -67,31 +68,34 @@ class ScoreAnalysisTest {
         // Single constraint analysis
         var constraintSummary = constraintAnalysisMap.get(constraintMatchTotal.getConstraintRef()).summarize();
         assertThat(constraintSummary)
-                .contains("Explanation of score (27):")
-                .contains("Constraint matches:")
-                .contains("27: constraint (constraint1) has 5 matches:")
-                .contains("2: justified with ([A, B, C])")
-                .contains("4: justified with ([A, B])")
-                .contains("6: justified with ([B, C])")
-                .doesNotContain("7: justified with ([C])")
-                .doesNotContain("40: constraint (constraint2) has 5 matches:");
+                .isEqualTo("""
+                        Explanation of score (27):
+                            Constraint matches:
+                                27: constraint (constraint1) has 5 matches:
+                                    2: justified with ([A, B, C])
+                                    4: justified with ([A, B])
+                                    6: justified with ([B, C])
+                                    ...
+                        """);
 
         // Complete score analysis
         var summary = scoreAnalysis.summarize();
         assertThat(summary)
-                .contains("Explanation of score (67)")
-                .contains("Constraint matches:")
-                .contains("0: constraint (constraint3) has 0 matches:")
-                .contains("27: constraint (constraint1) has 5 matches:")
-                .contains("2: justified with ([A, B, C])")
-                .contains("4: justified with ([A, B])")
-                .contains("6: justified with ([B, C])")
-                .doesNotContain("7: justified with ([C])")
-                .contains("40: constraint (constraint2) has 5 matches:")
-                .contains("3: justified with ([B, C, D])")
-                .contains("6: justified with ([B, C])")
-                .contains("9: justified with ([C, D])")
-                .doesNotContain("10: justified with ([D])");
+                .isEqualTo("""
+                        Explanation of score (67):
+                            Constraint matches:
+                                0: constraint (constraint3) has 0 matches:
+                                27: constraint (constraint1) has 5 matches:
+                                    2: justified with ([A, B, C])
+                                    4: justified with ([A, B])
+                                    6: justified with ([B, C])
+                                    ...
+                                40: constraint (constraint2) has 5 matches:
+                                    3: justified with ([B, C, D])
+                                    6: justified with ([B, C])
+                                    9: justified with ([C, D])
+                                    ...
+                        """);
     }
 
     @Test
