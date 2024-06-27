@@ -12,8 +12,9 @@ public class NoChangePhaseFactory<Solution_> extends AbstractPhaseFactory<Soluti
     }
 
     @Override
-    public NoChangePhase<Solution_> buildPhase(int phaseIndex, HeuristicConfigPolicy<Solution_> solverConfigPolicy,
-            BestSolutionRecaller<Solution_> bestSolutionRecaller, Termination<Solution_> solverTermination) {
+    public NoChangePhase<Solution_> buildPhase(int phaseIndex, boolean triggerFirstInitializedSolutionEvent,
+            HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
+            Termination<Solution_> solverTermination) {
         HeuristicConfigPolicy<Solution_> phaseConfigPolicy = solverConfigPolicy.createPhaseConfigPolicy();
         return new NoChangePhase.Builder<>(phaseIndex, solverConfigPolicy.getLogIndentation(),
                 buildPhaseTermination(phaseConfigPolicy, solverTermination)).build();

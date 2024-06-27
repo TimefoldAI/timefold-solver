@@ -22,7 +22,9 @@ import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
+import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
@@ -43,6 +45,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     private final Function<? super ProblemId_, ? extends Solution_> problemFinder;
     private final Consumer<? super Solution_> bestSolutionConsumer;
     private final Consumer<? super Solution_> finalBestSolutionConsumer;
+    private final Consumer<? super Solution_> firstInitializedSolutionConsumer;
     private final BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler;
 
     private volatile SolverStatus solverStatus;
@@ -59,17 +62,19 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> bestSolutionConsumer,
             Consumer<? super Solution_> finalBestSolutionConsumer,
+            Consumer<? super Solution_> firstInitializedSolutionConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
         this.solverManager = solverManager;
         this.problemId = problemId;
         if (!(solver instanceof DefaultSolver)) {
-            throw new IllegalStateException("Impossible state: solver is not instance of " +
-                    DefaultSolver.class.getSimpleName() + ".");
+            throw new IllegalStateException(
+                    "Impossible state: solver is not instance of %s.".formatted(DefaultSolver.class.getSimpleName()));
         }
         this.solver = (DefaultSolver<Solution_>) solver;
         this.problemFinder = problemFinder;
         this.bestSolutionConsumer = bestSolutionConsumer;
         this.finalBestSolutionConsumer = finalBestSolutionConsumer;
+        this.firstInitializedSolutionConsumer = firstInitializedSolutionConsumer;
         this.exceptionHandler = exceptionHandler;
         solverStatus = SolverStatus.SOLVING_SCHEDULED;
         terminatedLatch = new CountDownLatch(1);
@@ -103,11 +108,13 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
             solverStatus = SolverStatus.SOLVING_ACTIVE;
             // Create the consumer thread pool only when this solver job is active.
             consumerSupport = new ConsumerSupport<>(getProblemId(), bestSolutionConsumer, finalBestSolutionConsumer,
-                    exceptionHandler, bestSolutionHolder);
+                    firstInitializedSolutionConsumer, exceptionHandler, bestSolutionHolder);
 
             Solution_ problem = problemFinder.apply(problemId);
             // add a phase lifecycle listener that unlock the solver status lock when solving started
             solver.addPhaseLifecycleListener(new UnlockLockPhaseLifecycleListener());
+            // add a phase lifecycle listener that consumes the first initialized solution
+            solver.addPhaseLifecycleListener(new FirstInitializedSolutionPhaseLifecycleListener(consumerSupport));
             solver.addEventListener(this::onBestSolutionChangedEvent);
             final Solution_ finalBestSolution = solver.solve(problem);
             consumerSupport.consumeFinalBestSolution(finalBestSolution);
@@ -115,7 +122,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
         } catch (Throwable e) {
             exceptionHandler.accept(problemId, e);
             bestSolutionHolder.cancelPendingChanges();
-            throw new IllegalStateException("Solving failed for problemId (" + problemId + ").", e);
+            throw new IllegalStateException("Solving failed for problemId (%s).".formatted(problemId), e);
         } finally {
             if (solverStatusModifyingLock.isHeldByCurrentThread()) {
                 // release the lock if we have it (due to solver raising an exception before solving starts);
@@ -149,10 +156,10 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
 
     @Override
     public CompletableFuture<Void> addProblemChange(ProblemChange<Solution_> problemChange) {
-        Objects.requireNonNull(problemChange, () -> "A problem change (" + problemChange + ") must not be null.");
+        Objects.requireNonNull(problemChange, () -> "A problem change (%s) must not be null.".formatted(problemId));
         if (solverStatus == SolverStatus.NOT_SOLVING) {
-            throw new IllegalStateException("Cannot add the problem change (" + problemChange
-                    + ") because the solver job (" + solverStatus + ") is not solving.");
+            throw new IllegalStateException("Cannot add the problem change (%s) because the solver job (%s) is not solving."
+                    .formatted(problemChange, solverStatus));
         }
 
         return bestSolutionHolder.addProblemChange(solver, problemChange);
@@ -177,7 +184,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
                     // Do nothing, solvingTerminated() already called
                     break;
                 default:
-                    throw new IllegalStateException("Unsupported solverStatus (" + solverStatus + ").");
+                    throw new IllegalStateException("Unsupported solverStatus (%s).".formatted(solverStatus));
             }
             try {
                 // Don't return until bestSolutionConsumer won't be called anymore
@@ -272,6 +279,32 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
             // The solvingStarted event can be emitted as a result of addProblemChange().
             if (solverStatusModifyingLock.isLocked()) {
                 solverStatusModifyingLock.unlock();
+            }
+        }
+    }
+
+    /**
+     * A listener that consumes the solution from a phase only if the phase first initializes the solution.
+     */
+    private final class FirstInitializedSolutionPhaseLifecycleListener extends PhaseLifecycleListenerAdapter<Solution_> {
+
+        private final ConsumerSupport<Solution_, ProblemId_> consumerSupport;
+
+        public FirstInitializedSolutionPhaseLifecycleListener(ConsumerSupport<Solution_, ProblemId_> consumerSupport) {
+            this.consumerSupport = consumerSupport;
+        }
+
+        @Override
+        public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
+            var eventPhase = solver.getPhaseList().stream()
+                    .filter(phase -> ((AbstractPhase<Solution_>) phase).getPhaseIndex() == phaseScope.getPhaseIndex())
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException(
+                            "Solving failed for problemId (%s) because the phase id %d was not found.".formatted(problemId,
+                                    phaseScope.getPhaseIndex())));
+            if (eventPhase.triggersFirstInitializedSolutionEvent()) {
+                // The Solver thread calls the method, but the consumption is done asynchronously by the Consumer thread
+                consumerSupport.consumeFirstInitializedSolution(phaseScope.getWorkingSolution());
             }
         }
     }

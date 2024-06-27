@@ -34,6 +34,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: './timefold-solver'
+          ref: ${{ github.event.pull_request.head.sha }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
 
       # Need to check for stale repo, since Github is not aware of the build chain and therefore doesn't automate it.
       - name: Checkout timefold-solver-python (PR) # Checkout the PR branch first, if it exists

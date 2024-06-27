@@ -19,8 +19,9 @@ public class DefaultCustomPhaseFactory<Solution_> extends AbstractPhaseFactory<S
     }
 
     @Override
-    public CustomPhase<Solution_> buildPhase(int phaseIndex, HeuristicConfigPolicy<Solution_> solverConfigPolicy,
-            BestSolutionRecaller<Solution_> bestSolutionRecaller, Termination<Solution_> solverTermination) {
+    public CustomPhase<Solution_> buildPhase(int phaseIndex, boolean triggerFirstInitializedSolutionEvent,
+            HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
+            Termination<Solution_> solverTermination) {
         HeuristicConfigPolicy<Solution_> phaseConfigPolicy = solverConfigPolicy.createPhaseConfigPolicy();
         if (ConfigUtils.isEmptyCollection(phaseConfig.getCustomPhaseCommandClassList())
                 && ConfigUtils.isEmptyCollection(phaseConfig.getCustomPhaseCommandList())) {
@@ -43,7 +44,8 @@ public class DefaultCustomPhaseFactory<Solution_> extends AbstractPhaseFactory<S
             customPhaseCommandList_.addAll((Collection) phaseConfig.getCustomPhaseCommandList());
         }
         DefaultCustomPhase.Builder<Solution_> builder =
-                new DefaultCustomPhase.Builder<>(phaseIndex, solverConfigPolicy.getLogIndentation(),
+                new DefaultCustomPhase.Builder<>(phaseIndex, triggerFirstInitializedSolutionEvent,
+                        solverConfigPolicy.getLogIndentation(),
                         buildPhaseTermination(phaseConfigPolicy, solverTermination), customPhaseCommandList_);
         EnvironmentMode environmentMode = phaseConfigPolicy.getEnvironmentMode();
         if (environmentMode.isNonIntrusiveFullAsserted()) {

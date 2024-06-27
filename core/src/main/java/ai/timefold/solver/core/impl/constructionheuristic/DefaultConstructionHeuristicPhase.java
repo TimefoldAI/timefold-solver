@@ -170,9 +170,10 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
         private final EntityPlacer<Solution_> entityPlacer;
         private final ConstructionHeuristicDecider<Solution_> decider;
 
-        public Builder(int phaseIndex, String logIndentation, Termination<Solution_> phaseTermination,
+        public Builder(int phaseIndex, boolean triggerFirstInitializedSolutionEvent, String logIndentation,
+                Termination<Solution_> phaseTermination,
                 EntityPlacer<Solution_> entityPlacer, ConstructionHeuristicDecider<Solution_> decider) {
-            super(phaseIndex, logIndentation, phaseTermination);
+            super(phaseIndex, triggerFirstInitializedSolutionEvent, logIndentation, phaseTermination);
             this.entityPlacer = entityPlacer;
             this.decider = decider;
         }

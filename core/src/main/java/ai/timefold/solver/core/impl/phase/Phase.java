@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.phase;
 
+import java.util.function.Consumer;
+
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
@@ -36,4 +38,13 @@ public interface Phase<Solution_> extends PhaseLifecycleListener<Solution_> {
 
     void solve(SolverScope<Solution_> solverScope);
 
+    /**
+     * Check if a phase triggers the first initialized solution event. The first initialized solution immediately precedes
+     * the first {@link ai.timefold.solver.core.impl.localsearch.LocalSearchPhase}.
+     *
+     * @see ai.timefold.solver.core.api.solver.SolverJobBuilder#withFirstInitializedSolutionConsumer(Consumer)
+     *
+     * @return true if the phase returns the first initialized solution.
+     */
+    boolean triggersFirstInitializedSolutionEvent();
 }

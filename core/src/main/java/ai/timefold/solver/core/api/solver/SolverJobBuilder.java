@@ -71,6 +71,17 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
             withFinalBestSolutionConsumer(Consumer<? super Solution_> finalBestSolutionConsumer);
 
     /**
+     * Sets the consumer of the first initialized solution. First initialized solution is the solution at the end of
+     * the last phase that immediately precedes the first local search phase. This solution marks the beginning of actual
+     * optimization process.
+     *
+     * @param firstInitializedSolutionConsumer never null, called only once before starting the first Local Search phase
+     * @return this, never null
+     */
+    SolverJobBuilder<Solution_, ProblemId_>
+            withFirstInitializedSolutionConsumer(Consumer<? super Solution_> firstInitializedSolutionConsumer);
+
+    /**
      * Sets the custom exception handler.
      *
      * @param exceptionHandler never null, called if an exception or error occurs. If null it defaults to logging the

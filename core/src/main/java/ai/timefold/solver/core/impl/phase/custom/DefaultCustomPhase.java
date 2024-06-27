@@ -89,9 +89,10 @@ final class DefaultCustomPhase<Solution_> extends AbstractPhase<Solution_> imple
 
         private final List<CustomPhaseCommand<Solution_>> customPhaseCommandList;
 
-        public Builder(int phaseIndex, String logIndentation, Termination<Solution_> phaseTermination,
+        public Builder(int phaseIndex, boolean triggerFirstInitializedSolutionEvent, String logIndentation,
+                Termination<Solution_> phaseTermination,
                 List<CustomPhaseCommand<Solution_>> customPhaseCommandList) {
-            super(phaseIndex, logIndentation, phaseTermination);
+            super(phaseIndex, triggerFirstInitializedSolutionEvent, logIndentation, phaseTermination);
             this.customPhaseCommandList = List.copyOf(customPhaseCommandList);
         }
 

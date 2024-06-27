@@ -52,7 +52,7 @@ class ConsumerSupportTest {
             } catch (InterruptedException e) {
                 error.set(new IllegalStateException("Interrupted waiting.", e));
             }
-        }, null, null, bestSolutionHolder);
+        }, null, null, null, bestSolutionHolder);
 
         consumeIntermediateBestSolution(TestdataSolution.generateSolution(1, 1));
         consumptionStarted.await();
@@ -78,7 +78,7 @@ class ConsumerSupportTest {
         BestSolutionHolder<TestdataSolution> bestSolutionHolder = new BestSolutionHolder<>();
         AtomicReference<TestdataSolution> finalBestSolutionRef = new AtomicReference<>();
         consumerSupport = new ConsumerSupport<>(1L, null,
-                finalBestSolution -> finalBestSolutionRef.set(finalBestSolution), null, bestSolutionHolder);
+                finalBestSolution -> finalBestSolutionRef.set(finalBestSolution), null, null, bestSolutionHolder);
 
         CompletableFuture<Void> futureProblemChange = addProblemChange(bestSolutionHolder);
 
@@ -99,7 +99,7 @@ class ConsumerSupportTest {
         Consumer<TestdataSolution> errorneousConsumer = bestSolution -> {
             throw new RuntimeException(errorMessage);
         };
-        consumerSupport = new ConsumerSupport<>(1L, errorneousConsumer, null, null, bestSolutionHolder);
+        consumerSupport = new ConsumerSupport<>(1L, errorneousConsumer, null, null, null, bestSolutionHolder);
 
         CompletableFuture<Void> futureProblemChange = addProblemChange(bestSolutionHolder);
         consumeIntermediateBestSolution(TestdataSolution.generateSolution());
@@ -116,7 +116,7 @@ class ConsumerSupportTest {
     void pendingProblemChangesAreCanceled_afterFinalBestSolutionIsConsumed() throws ExecutionException, InterruptedException {
         BestSolutionHolder<TestdataSolution> bestSolutionHolder = new BestSolutionHolder<>();
         consumerSupport = new ConsumerSupport<>(1L, null, null,
-                null, bestSolutionHolder);
+                null, null, bestSolutionHolder);
 
         CompletableFuture<Void> futureProblemChange = addProblemChange(bestSolutionHolder);
 

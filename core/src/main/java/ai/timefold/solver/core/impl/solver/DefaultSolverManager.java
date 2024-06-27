@@ -82,19 +82,21 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> bestSolutionConsumer,
             Consumer<? super Solution_> finalBestSolutionConsumer,
+            Consumer<? super Solution_> initializedSolutionConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
             SolverConfigOverride<Solution_> solverConfigOverride) {
         if (bestSolutionConsumer == null) {
             throw new IllegalStateException("The consumer bestSolutionConsumer is required.");
         }
         return solve(getProblemIdOrThrow(problemId), problemFinder, bestSolutionConsumer, finalBestSolutionConsumer,
-                exceptionHandler, solverConfigOverride);
+                initializedSolutionConsumer, exceptionHandler, solverConfigOverride);
     }
 
     protected SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> bestSolutionConsumer,
             Consumer<? super Solution_> finalBestSolutionConsumer,
+            Consumer<? super Solution_> initializedSolutionConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
             SolverConfigOverride<Solution_> configOverride) {
         Solver<Solution_> solver = solverFactory.buildSolver(configOverride);
@@ -108,8 +110,8 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
                         // TODO Future features: automatically restart solving by calling reloadProblem()
                         throw new IllegalStateException("The problemId (" + problemId + ") is already solving.");
                     } else {
-                        return new DefaultSolverJob<>(this, solver, problemId, problemFinder,
-                                bestSolutionConsumer, finalBestSolutionConsumer, finalExceptionHandler);
+                        return new DefaultSolverJob<>(this, solver, problemId, problemFinder, bestSolutionConsumer,
+                                finalBestSolutionConsumer, initializedSolutionConsumer, finalExceptionHandler);
                     }
                 });
         Future<Solution_> future = solverThreadPool.submit(solverJob);

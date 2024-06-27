@@ -22,6 +22,7 @@ public final class DefaultSolverJobBuilder<Solution_, ProblemId_> implements Sol
     private Function<? super ProblemId_, ? extends Solution_> problemFinder;
     private Consumer<? super Solution_> bestSolutionConsumer;
     private Consumer<? super Solution_> finalBestSolutionConsumer;
+    private Consumer<? super Solution_> initializedSolutionConsumer;
     private BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler;
     private SolverConfigOverride<Solution_> solverConfigOverride;
 
@@ -59,6 +60,14 @@ public final class DefaultSolverJobBuilder<Solution_, ProblemId_> implements Sol
 
     @Override
     public SolverJobBuilder<Solution_, ProblemId_>
+            withFirstInitializedSolutionConsumer(Consumer<? super Solution_> firstInitializedSolutionConsumer) {
+        this.initializedSolutionConsumer = Objects.requireNonNull(firstInitializedSolutionConsumer,
+                "Invalid initializedSolutionConsumer (null) given to SolverJobBuilder.");
+        return this;
+    }
+
+    @Override
+    public SolverJobBuilder<Solution_, ProblemId_>
             withExceptionHandler(BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
         this.exceptionHandler =
                 Objects.requireNonNull(exceptionHandler, "Invalid exceptionHandler (null) given to SolverJobBuilder.");
@@ -81,10 +90,10 @@ public final class DefaultSolverJobBuilder<Solution_, ProblemId_> implements Sol
 
         if (this.bestSolutionConsumer == null) {
             return solverManager.solve(problemId, problemFinder, null, finalBestSolutionConsumer,
-                    exceptionHandler, solverConfigOverride);
+                    initializedSolutionConsumer, exceptionHandler, solverConfigOverride);
         } else {
             return solverManager.solveAndListen(problemId, problemFinder, bestSolutionConsumer, finalBestSolutionConsumer,
-                    exceptionHandler, solverConfigOverride);
+                    initializedSolutionConsumer, exceptionHandler, solverConfigOverride);
         }
     }
 }

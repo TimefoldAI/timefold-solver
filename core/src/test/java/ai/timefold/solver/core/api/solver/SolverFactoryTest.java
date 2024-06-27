@@ -14,15 +14,18 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
+import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
+import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
@@ -188,6 +191,87 @@ class SolverFactoryTest {
                 (DefaultSolverFactory<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig);
         Assertions.assertThatThrownBy(() -> solverFactory.buildSolver())
                 .hasMessageContaining("unreachable phase");
+    }
+
+    @Test
+    void validateInitializationPhases() {
+        // Default configuration
+        SolverConfig solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
+        DefaultSolver<TestdataSolution> solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
+        assertThat(solver.getPhaseList().get(0).triggersFirstInitializedSolutionEvent()).isTrue();
+        assertThat(solver.getPhaseList().get(1).triggersFirstInitializedSolutionEvent()).isFalse();
+
+        // Only CH
+        solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig());
+        solverFactory = SolverFactory.create(solverConfig);
+        solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
+        assertThat(solver.getPhaseList().get(0).triggersFirstInitializedSolutionEvent()).isFalse();
+
+        // Only CH
+        solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new LocalSearchPhaseConfig());
+        solverFactory = SolverFactory.create(solverConfig);
+        solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
+        assertThat(solver.getPhaseList().get(0).triggersFirstInitializedSolutionEvent()).isFalse();
+
+        // CH - CH - LS
+        solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig());
+        solverFactory = SolverFactory.create(solverConfig);
+        solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
+        assertThat(solver.getPhaseList().get(0).triggersFirstInitializedSolutionEvent()).isFalse();
+        assertThat(solver.getPhaseList().get(1).triggersFirstInitializedSolutionEvent()).isTrue();
+        assertThat(solver.getPhaseList().get(2).triggersFirstInitializedSolutionEvent()).isFalse();
+
+        // CS - CH - LS
+        solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new CustomPhaseConfig()
+                        .withCustomPhaseCommandList(List.of(scoreDirector -> {
+                        })),
+                        new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig());
+        solverFactory = SolverFactory.create(solverConfig);
+        solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
+        assertThat(solver.getPhaseList().get(0).triggersFirstInitializedSolutionEvent()).isFalse();
+        assertThat(solver.getPhaseList().get(1).triggersFirstInitializedSolutionEvent()).isTrue();
+        assertThat(solver.getPhaseList().get(2).triggersFirstInitializedSolutionEvent()).isFalse();
+
+        // CH - CS - LS
+        solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(),
+                        new CustomPhaseConfig()
+                                .withCustomPhaseCommandList(List.of(scoreDirector -> {
+                                })),
+                        new LocalSearchPhaseConfig());
+        solverFactory = SolverFactory.create(solverConfig);
+        solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
+        assertThat(solver.getPhaseList().get(0).triggersFirstInitializedSolutionEvent()).isFalse();
+        assertThat(solver.getPhaseList().get(1).triggersFirstInitializedSolutionEvent()).isTrue();
+        assertThat(solver.getPhaseList().get(2).triggersFirstInitializedSolutionEvent()).isFalse();
+
+        // CS (CH) - CS (LS)
+        solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(
+                        new CustomPhaseConfig()
+                                .withCustomPhaseCommandList(List.of(scoreDirector -> {
+                                })),
+                        new CustomPhaseConfig()
+                                .withCustomPhaseCommandList(List.of(scoreDirector -> {
+                                })));
+        solverFactory = SolverFactory.create(solverConfig);
+        solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
+        assertThat(solver.getPhaseList().get(0).triggersFirstInitializedSolutionEvent()).isFalse();
+        assertThat(solver.getPhaseList().get(1).triggersFirstInitializedSolutionEvent()).isFalse();
     }
 
 }

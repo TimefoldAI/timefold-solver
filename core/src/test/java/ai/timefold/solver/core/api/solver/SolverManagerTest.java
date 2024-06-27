@@ -52,6 +52,7 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedSolution;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
@@ -261,6 +262,203 @@ class SolverManagerTest {
                 .withExceptionHandler(exceptionHandler)
                 .run();
         solverJob.getFinalBestSolution();
+    }
+
+    @Test
+    @Timeout(60)
+    void firstInitializedSolutionConsumerWithDefaultPhases() throws ExecutionException, InterruptedException {
+        MutableBoolean hasInitializedSolution = new MutableBoolean();
+        Consumer<Object> initializedSolutionConsumer = ignore -> hasInitializedSolution.setTrue();
+
+        // Default configuration
+        SolverConfig solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withTerminationConfig(new TerminationConfig()
+                        .withUnimprovedMillisecondsSpentLimit(1L));
+        solverManager = SolverManager
+                .create(solverConfig, new SolverManagerConfig());
+        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
+                PlannerTestUtils.generateTestdataSolution("s1"));
+
+        SolverJob<TestdataSolution, Long> solverJob = solverManager.solveBuilder()
+                .withProblemId(1L)
+                .withProblemFinder(problemFinder)
+                .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                .run();
+        solverJob.getFinalBestSolution();
+        assertThat(hasInitializedSolution.booleanValue()).isTrue();
+    }
+
+    @Test
+    @Timeout(60)
+    void firstInitializedSolutionConsumerWithSinglePhase() throws ExecutionException, InterruptedException {
+        MutableBoolean hasInitializedSolution = new MutableBoolean();
+        Consumer<Object> initializedSolutionConsumer = ignore -> hasInitializedSolution.setTrue();
+
+        // Only CH
+        SolverConfig solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig());
+        solverManager = SolverManager
+                .create(solverConfig, new SolverManagerConfig());
+        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
+                PlannerTestUtils.generateTestdataSolution("s1"));
+
+        SolverJob<TestdataSolution, Long> solverJob = solverManager.solveBuilder()
+                .withProblemId(1L)
+                .withProblemFinder(problemFinder)
+                .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                .run();
+        solverJob.getFinalBestSolution();
+        assertThat(hasInitializedSolution.booleanValue()).isFalse();
+        hasInitializedSolution.setFalse();
+
+        // Only LS
+        solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new LocalSearchPhaseConfig())
+                .withTerminationConfig(new TerminationConfig()
+                        .withBestScoreLimit("0"));
+        solverManager = SolverManager
+                .create(solverConfig, new SolverManagerConfig());
+        TestdataUnannotatedExtendedSolution initializedSolution =
+                new TestdataUnannotatedExtendedSolution(PlannerTestUtils.generateTestdataSolution("s1"));
+        initializedSolution.getEntityList().forEach(e -> e.setValue(initializedSolution.getValueList().get(0)));
+
+        solverJob = solverManager.solveBuilder()
+                .withProblemId(1L)
+                .withProblemFinder(o -> initializedSolution)
+                .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                .withFinalBestSolutionConsumer(ignore -> {
+                })
+                .run();
+        solverJob.getFinalBestSolution();
+        assertThat(hasInitializedSolution.booleanValue()).isFalse();
+    }
+
+    @Test
+    @Timeout(60)
+    void firstInitializedSolutionConsumerWith2CHAndLS() throws ExecutionException, InterruptedException {
+        MutableBoolean hasInitializedSolution = new MutableBoolean();
+        Consumer<Object> initializedSolutionConsumer = ignore -> hasInitializedSolution.setTrue();
+
+        // CH - CH - LS
+        SolverConfig solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig())
+                .withTerminationConfig(new TerminationConfig()
+                        .withUnimprovedMillisecondsSpentLimit(1L));
+        hasInitializedSolution.setFalse();
+        solverManager = SolverManager
+                .create(solverConfig, new SolverManagerConfig());
+        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
+                PlannerTestUtils.generateTestdataSolution("s1"));
+
+        SolverJob<TestdataSolution, Long> solverJob = solverManager.solveBuilder()
+                .withProblemId(1L)
+                .withProblemFinder(problemFinder)
+                .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                .run();
+        solverJob.getFinalBestSolution();
+        assertThat(hasInitializedSolution.booleanValue()).isTrue();
+    }
+
+    @Test
+    @Timeout(60)
+    void firstInitializedSolutionConsumerWithCustomAndCHAndLS() throws ExecutionException, InterruptedException {
+        MutableBoolean hasInitializedSolution = new MutableBoolean();
+        Consumer<Object> initializedSolutionConsumer = ignore -> hasInitializedSolution.setTrue();
+
+        // CS - CH - LS
+        SolverConfig solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new CustomPhaseConfig()
+                        .withCustomPhaseCommandList(List.of(scoreDirector -> {
+                            assertThat(hasInitializedSolution.booleanValue()).isFalse();
+                        })),
+                        new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig())
+                .withTerminationConfig(new TerminationConfig()
+                        .withUnimprovedMillisecondsSpentLimit(1L));
+        solverManager = SolverManager
+                .create(solverConfig, new SolverManagerConfig());
+        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
+                PlannerTestUtils.generateTestdataSolution("s1"));
+
+        SolverJob<TestdataSolution, Long> solverJob = solverManager.solveBuilder()
+                .withProblemId(1L)
+                .withProblemFinder(problemFinder)
+                .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                .run();
+        solverJob.getFinalBestSolution();
+        assertThat(hasInitializedSolution.booleanValue()).isTrue();
+    }
+
+    @Test
+    @Timeout(60)
+    void firstInitializedSolutionConsumerWithCHAndCustomAndLS() throws ExecutionException, InterruptedException {
+        MutableBoolean hasInitializedSolution = new MutableBoolean();
+        Consumer<Object> initializedSolutionConsumer = ignore -> hasInitializedSolution.setTrue();
+
+        // CH - CS - LS
+        SolverConfig solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(
+                        new ConstructionHeuristicPhaseConfig(),
+                        new CustomPhaseConfig()
+                                .withCustomPhaseCommandList(List.of(scoreDirector -> {
+                                    assertThat(hasInitializedSolution.booleanValue()).isFalse();
+                                })),
+                        new LocalSearchPhaseConfig())
+                .withTerminationConfig(new TerminationConfig()
+                        .withUnimprovedMillisecondsSpentLimit(1L));
+        solverManager = SolverManager
+                .create(solverConfig, new SolverManagerConfig());
+        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
+                PlannerTestUtils.generateTestdataSolution("s1"));
+
+        SolverJob<TestdataSolution, Long> solverJob = solverManager.solveBuilder()
+                .withProblemId(1L)
+                .withProblemFinder(problemFinder)
+                .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                .run();
+        solverJob.getFinalBestSolution();
+        assertThat(hasInitializedSolution.booleanValue()).isTrue();
+    }
+
+    @Test
+    @Timeout(60)
+    void firstInitializedSolutionConsumerWith2Custom() throws ExecutionException, InterruptedException {
+        MutableBoolean hasInitializedSolution = new MutableBoolean();
+        Consumer<Object> initializedSolutionConsumer = ignore -> hasInitializedSolution.setTrue();
+
+        // CS (CH) - CS (LS)
+        SolverConfig solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(
+                        new CustomPhaseConfig()
+                                .withCustomPhaseCommandList(List.of(scoreDirector -> {
+                                    assertThat(hasInitializedSolution.booleanValue()).isFalse();
+                                })),
+                        new CustomPhaseConfig()
+                                .withCustomPhaseCommandList(List.of(scoreDirector -> {
+                                    assertThat(hasInitializedSolution.booleanValue()).isFalse();
+                                })))
+                .withTerminationConfig(new TerminationConfig()
+                        .withUnimprovedMillisecondsSpentLimit(1L));
+        solverManager = SolverManager
+                .create(solverConfig, new SolverManagerConfig());
+        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
+                PlannerTestUtils.generateTestdataSolution("s1"));
+
+        SolverJob<TestdataSolution, Long> solverJob = solverManager.solveBuilder()
+                .withProblemId(1L)
+                .withProblemFinder(problemFinder)
+                .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                .run();
+        solverJob.getFinalBestSolution();
+        assertThat(hasInitializedSolution.booleanValue()).isFalse();
     }
 
     @Test
