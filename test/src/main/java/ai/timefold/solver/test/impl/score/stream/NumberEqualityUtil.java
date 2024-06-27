@@ -95,16 +95,13 @@ final class NumberEqualityUtil {
      * @return never null
      */
     public static Comparator<Number> getComparison(Number expectedImpact) {
-        if (expectedImpact instanceof Integer) {
-            return Comparator.comparing(a -> a instanceof BigDecimal ? (BigDecimal) a : BigDecimal.valueOf(a.intValue()));
-        } else if (expectedImpact instanceof Long) {
-            return Comparator.comparing(a -> a instanceof BigDecimal ? (BigDecimal) a : BigDecimal.valueOf(a.longValue()));
-        } else if (expectedImpact instanceof BigDecimal) {
-            return Comparator.comparing(a -> a instanceof BigDecimal ? (BigDecimal) a : BigDecimal.valueOf(a.doubleValue()));
-        } else {
-            throw new IllegalStateException("Impossible state: unknown impact type class (" + expectedImpact.getClass()
-                    + ") for impact (" + expectedImpact + ").");
-        }
+        return Comparator.comparing(a -> {
+            if (a instanceof BigDecimal bigDecimal) {
+                return bigDecimal;
+            } else {
+                return BigDecimal.valueOf(a.longValue());
+            }
+        });
     }
 
     private NumberEqualityUtil() {
