@@ -101,6 +101,42 @@ class ScoreAnalysisTest {
     }
 
     @Test
+    void summarizeUninitializedSolution() {
+        var constraintPackage = "constraintPackage";
+        var constraintName1 = "constraint1";
+        var constraintName2 = "constraint2";
+        var constraintId1 = ConstraintRef.of(constraintPackage, constraintName1);
+        var constraintId2 = ConstraintRef.of(constraintPackage, constraintName2);
+
+        var constraintMatchTotal = new DefaultConstraintMatchTotal<>(constraintId1, SimpleScore.of(0));
+        var constraintMatchTotal2 = new DefaultConstraintMatchTotal<>(constraintId2, SimpleScore.of(0));
+        var constraintAnalysisMap = Map.of(
+                constraintMatchTotal.getConstraintRef(), getConstraintAnalysis(constraintMatchTotal, true),
+                constraintMatchTotal2.getConstraintRef(), getConstraintAnalysis(constraintMatchTotal2, true));
+        var scoreAnalysis = new ScoreAnalysis<>(SimpleScore.ofUninitialized(3, 0), constraintAnalysisMap);
+
+        // Single constraint analysis
+        var constraintSummary = constraintAnalysisMap.get(constraintMatchTotal.getConstraintRef()).summarize();
+        assertThat(constraintSummary)
+                .isEqualTo("""
+                        Explanation of score (0):
+                            Constraint matches:
+                                0: constraint (constraint1) has 0 matches:
+                        """);
+
+        // Complete score analysis
+        var summary = scoreAnalysis.summarize();
+        assertThat(scoreAnalysis.getConstraintAnalysis(constraintPackage, constraintName1).matchCount()).isEqualTo(0);
+        assertThat(summary)
+                .isEqualTo("""
+                        Explanation of score (3init/0):
+                            Constraint matches:
+                                0: constraint (constraint1) has 0 matches:
+                                0: constraint (constraint2) has 0 matches:
+                        """);
+    }
+
+    @Test
     void failFastSummarize() {
         var constraintPackage = "constraintPackage";
         var constraintName1 = "constraint1";
