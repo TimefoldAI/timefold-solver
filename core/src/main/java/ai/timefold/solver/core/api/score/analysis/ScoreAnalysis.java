@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.api.score.analysis;
 
+import static java.util.Comparator.comparing;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -52,6 +54,8 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
  */
 public record ScoreAnalysis<Score_ extends Score<Score_>>(Score_ score,
         Map<ConstraintRef, ConstraintAnalysis<Score_>> constraintMap) {
+
+    static final int DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT = 3;
 
     public ScoreAnalysis {
         Objects.requireNonNull(score, "score");
@@ -141,4 +145,54 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(Score_ score,
         return constraintMap.values();
     }
 
+    /**
+     * Returns a diagnostic text that explains the solution through the {@link ConstraintAnalysis} API to identify which
+     * constraints cause that score quality.
+     * <p>
+     * In case of an {@link Score#isFeasible() infeasible} solution, this can help diagnose the cause of that.
+     *
+     * <p>
+     * Do not parse the return value, its format may change without warning.
+     * Instead, provide this information in a UI or a service,
+     * use {@link ScoreAnalysis#constraintAnalyses()}
+     * and convert those into a domain-specific API.
+     *
+     * @return never null
+     */
+    public String summarize() {
+        StringBuilder summary = new StringBuilder();
+        summary.append("""
+                Explanation of score (%s):
+                    Constraint matches:
+                """.formatted(score));
+        Comparator<ConstraintAnalysis<Score_>> constraintsScoreComparator = comparing(ConstraintAnalysis::score);
+        Comparator<MatchAnalysis<Score_>> matchScoreComparator = comparing(MatchAnalysis::score);
+
+        constraintAnalyses().stream()
+                .sorted(constraintsScoreComparator)
+                .forEach(constraint -> {
+                    var matches = constraint.matches();
+                    if (matches == null) {
+                        matches = Collections.emptyList();
+                    }
+                    summary.append("""
+                                    %s: constraint (%s) has %s matches:
+                            """.formatted(constraint.score().toShortString(),
+                            constraint.constraintRef().constraintName(), matches.size()));
+                    matches.stream()
+                            .sorted(matchScoreComparator)
+                            .limit(DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT)
+                            .forEach(match -> summary.append("""
+                                                %s: justified with (%s)
+                                    """.formatted(match.score().toShortString(),
+                                    match.justification())));
+                    if (matches.size() > DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT) {
+                        summary.append("""
+                                            ...
+                                """);
+                    }
+                });
+
+        return summary.toString();
+    }
 }

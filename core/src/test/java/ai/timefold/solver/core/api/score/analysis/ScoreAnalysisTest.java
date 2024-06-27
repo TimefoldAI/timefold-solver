@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.api.score.analysis;
 
 import static ai.timefold.solver.core.impl.score.director.InnerScoreDirector.getConstraintAnalysis;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.util.Arrays;
@@ -26,6 +27,71 @@ class ScoreAnalysisTest {
             softly.assertThat(diff.score()).isEqualTo(SimpleScore.of(0));
             softly.assertThat(diff.constraintMap()).isEmpty();
         });
+
+        var summary = scoreAnalysis.summarize();
+        assertThat(summary)
+                .contains("Explanation of score (0)")
+                .contains("Constraint matches:")
+                .doesNotContain("0: constraint");
+    }
+
+    @Test
+    void summarize() {
+        var constraintPackage = "constraintPackage";
+        var constraintName1 = "constraint1";
+        var constraintName2 = "constraint2";
+        var constraintName3 = "constraint3";
+        var constraintId1 = ConstraintRef.of(constraintPackage, constraintName1);
+        var constraintId2 = ConstraintRef.of(constraintPackage, constraintName2);
+        var constraintId3 = ConstraintRef.of(constraintPackage, constraintName3);
+
+        var constraintMatchTotal = new DefaultConstraintMatchTotal<>(constraintId1, SimpleScore.of(1));
+        addConstraintMatch(constraintMatchTotal, SimpleScore.of(2), "A", "B", "C");
+        addConstraintMatch(constraintMatchTotal, SimpleScore.of(4), "A", "B");
+        addConstraintMatch(constraintMatchTotal, SimpleScore.of(6), "B", "C");
+        addConstraintMatch(constraintMatchTotal, SimpleScore.of(7), "C");
+        addConstraintMatch(constraintMatchTotal, SimpleScore.of(8));
+        var constraintMatchTotal2 = new DefaultConstraintMatchTotal<>(constraintId2, SimpleScore.of(3));
+        addConstraintMatch(constraintMatchTotal2, SimpleScore.of(3), "B", "C", "D");
+        addConstraintMatch(constraintMatchTotal2, SimpleScore.of(6), "B", "C");
+        addConstraintMatch(constraintMatchTotal2, SimpleScore.of(9), "C", "D");
+        addConstraintMatch(constraintMatchTotal2, SimpleScore.of(10), "D");
+        addConstraintMatch(constraintMatchTotal2, SimpleScore.of(12));
+        var emptyConstraintMatchTotal1 = new DefaultConstraintMatchTotal<>(constraintId3, SimpleScore.of(0));
+        var constraintAnalysisMap = Map.of(
+                constraintMatchTotal.getConstraintRef(), getConstraintAnalysis(constraintMatchTotal, true),
+                constraintMatchTotal2.getConstraintRef(), getConstraintAnalysis(constraintMatchTotal2, true),
+                emptyConstraintMatchTotal1.getConstraintRef(), getConstraintAnalysis(emptyConstraintMatchTotal1, false));
+        var scoreAnalysis = new ScoreAnalysis<>(SimpleScore.of(67), constraintAnalysisMap);
+
+        // Single constraint analysis
+        var constraintSummary = constraintAnalysisMap.get(constraintMatchTotal.getConstraintRef()).summarize();
+        assertThat(constraintSummary)
+                .contains("Explanation of score (27):")
+                .contains("Constraint matches:")
+                .contains("27: constraint (constraint1) has 5 matches:")
+                .contains("2: justified with ([A, B, C])")
+                .contains("4: justified with ([A, B])")
+                .contains("6: justified with ([B, C])")
+                .doesNotContain("7: justified with ([C])")
+                .doesNotContain("40: constraint (constraint2) has 5 matches:");
+
+        // Complete score analysis
+        var summary = scoreAnalysis.summarize();
+        assertThat(summary)
+                .contains("Explanation of score (67)")
+                .contains("Constraint matches:")
+                .contains("0: constraint (constraint3) has 0 matches:")
+                .contains("27: constraint (constraint1) has 5 matches:")
+                .contains("2: justified with ([A, B, C])")
+                .contains("4: justified with ([A, B])")
+                .contains("6: justified with ([B, C])")
+                .doesNotContain("7: justified with ([C])")
+                .contains("40: constraint (constraint2) has 5 matches:")
+                .contains("3: justified with ([B, C, D])")
+                .contains("6: justified with ([B, C])")
+                .contains("9: justified with ([C, D])")
+                .doesNotContain("10: justified with ([D])");
     }
 
     @Test

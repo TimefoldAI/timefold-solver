@@ -1,5 +1,10 @@
 package ai.timefold.solver.core.api.score.analysis;
 
+import static ai.timefold.solver.core.api.score.analysis.ScoreAnalysis.DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT;
+import static java.util.Comparator.comparing;
+
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -154,6 +159,43 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef con
      */
     public String constraintName() {
         return constraintRef.constraintName();
+    }
+
+    /**
+     * Returns a diagnostic text that explains part of the score quality through the {@link ConstraintAnalysis} API.
+     *
+     * @return never null
+     */
+    public String summarize() {
+        StringBuilder summary = new StringBuilder();
+        summary.append("""
+                Explanation of score (%s):
+                    Constraint matches:
+                """.formatted(score));
+        Comparator<MatchAnalysis<Score_>> matchScoreComparator = comparing(MatchAnalysis::score);
+
+        var constraintMatches = matches();
+        if (constraintMatches == null) {
+            constraintMatches = Collections.emptyList();
+        }
+        summary.append("""
+                        %s: constraint (%s) has %s matches:
+                """.formatted(score().toShortString(),
+                constraintRef().constraintName(), constraintMatches.size()));
+        constraintMatches.stream()
+                .sorted(matchScoreComparator)
+                .limit(DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT)
+                .forEach(match -> summary.append("""
+                                    %s: justified with (%s)
+                        """.formatted(match.score().toShortString(),
+                        match.justification())));
+        if (constraintMatches.size() > DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT) {
+            summary.append("""
+                                ...
+                    """);
+        }
+
+        return summary.toString();
     }
 
     @Override
