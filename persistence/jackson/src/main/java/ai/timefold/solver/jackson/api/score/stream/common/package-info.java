@@ -1,8 +1,9 @@
 /**
  * Includes support for deserialization of constraint collector models,
  * specifically {@link ai.timefold.solver.core.api.score.stream.common.SequenceChain},
- * {@link ai.timefold.solver.core.api.score.stream.common.Sequence}
- * and {@link ai.timefold.solver.core.api.score.stream.common.Break}.
+ * {@link ai.timefold.solver.core.api.score.stream.common.Sequence},
+ * {@link ai.timefold.solver.core.api.score.stream.common.Break}
+ * and {@link ai.timefold.solver.core.api.score.stream.common.LoadBalance}.
  * These can be exposed in {@link ai.timefold.solver.core.api.score.analysis.ScoreAnalysis}
  * through user-specified {@link ai.timefold.solver.core.api.score.stream.ConstraintJustification}.
  * The serialization and deserialization of these types happens automatically,
