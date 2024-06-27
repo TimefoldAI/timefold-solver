@@ -294,7 +294,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
                     }
                     break;
             }
-        } else if (actualScoreImpactType == scoreImpactType && comparator.compare(matchWeightTotal, impact) > 0) {
+        } else if (actualScoreImpactType == scoreImpactType && comparator.compare(matchWeightTotal, impact) < 0) {
             // Reward and positive or penalty and negative means all is OK.
             return;
         }
@@ -324,7 +324,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
                     }
                     break;
             }
-        } else if (actualScoreImpactType == scoreImpactType && comparator.compare(matchWeightTotal, impact) < 0) {
+        } else if (actualScoreImpactType == scoreImpactType && comparator.compare(matchWeightTotal, impact) > 0) {
             // Reward and positive or penalty and negative means all is OK.
             return;
         }
