@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.collector;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.math.MathContext;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -11,6 +11,9 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 
 public final class LoadBalanceImpl<Balanced_> implements LoadBalance<Balanced_> {
+
+    private static final MathContext DEFAULT_MATH_CONTEXT =
+            MathContext.DECIMAL64;
 
     private final Map<Balanced_, Integer> balancedItemCountMap = new HashMap<>();
     private final Map<Balanced_, Long> balancedItemToMetricValueMap = new LinkedHashMap<>();
@@ -95,10 +98,10 @@ public final class LoadBalanceImpl<Balanced_> implements LoadBalance<Balanced_> 
         if (totalToBalanceCount == 0) {
             return BigDecimal.ZERO;
         }
-        // 12 digits is twice the recommended minimum amount of 6.
         return BigDecimal.valueOf(squaredDeviationFractionNumerator)
-                .divide(BigDecimal.valueOf(totalToBalanceCount), 12, RoundingMode.HALF_UP)
+                .divide(BigDecimal.valueOf(totalToBalanceCount), DEFAULT_MATH_CONTEXT)
                 .add(BigDecimal.valueOf(squaredDeviationIntegralPart))
+                .sqrt(DEFAULT_MATH_CONTEXT)
                 .stripTrailingZeros();
     }
 
