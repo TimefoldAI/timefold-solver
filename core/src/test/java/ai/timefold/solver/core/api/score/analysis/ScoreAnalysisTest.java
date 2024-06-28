@@ -86,7 +86,7 @@ class ScoreAnalysisTest {
                 .isEqualTo("""
                         Explanation of score (67):
                             Constraint matches:
-                                0: constraint (constraint3) has 0 matches:
+                                0: constraint (constraint3) has no matches.
                                 27: constraint (constraint1) has 5 matches:
                                     2: justified with ([A, B, C])
                                     4: justified with ([A, B])
@@ -121,7 +121,7 @@ class ScoreAnalysisTest {
                 .isEqualTo("""
                         Explanation of score (0):
                             Constraint matches:
-                                0: constraint (constraint1) has 0 matches:
+                                0: constraint (constraint1) has no matches.
                         """);
 
         // Complete score analysis
@@ -131,8 +131,8 @@ class ScoreAnalysisTest {
                 .isEqualTo("""
                         Explanation of score (3init/0):
                             Constraint matches:
-                                0: constraint (constraint1) has 0 matches:
-                                0: constraint (constraint2) has 0 matches:
+                                0: constraint (constraint1) has no matches.
+                                0: constraint (constraint2) has no matches.
                         """);
     }
 

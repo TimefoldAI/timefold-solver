@@ -178,10 +178,16 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(Score_ score,
                                 Maybe use ScoreAnalysisFetchPolicy.FETCH_ALL to request the score analysis
                                 """);
                     }
-                    summary.append("""
-                                    %s: constraint (%s) has %s matches:
-                            """.formatted(constraint.score().toShortString(),
-                            constraint.constraintRef().constraintName(), matches.size()));
+                    if (matches.isEmpty()) {
+                        summary.append("""
+                                        %s: constraint (%s) has no matches.
+                                """.formatted(constraint.score().toShortString(), constraint.constraintRef().constraintName()));
+                    } else {
+                        summary.append("""
+                                        %s: constraint (%s) has %s matches:
+                                """.formatted(constraint.score().toShortString(), constraint.constraintRef().constraintName(),
+                                matches.size()));
+                    }
                     matches.stream()
                             .sorted(matchScoreComparator)
                             .limit(DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT)

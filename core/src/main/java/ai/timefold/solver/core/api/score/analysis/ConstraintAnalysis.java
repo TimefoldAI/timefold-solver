@@ -190,10 +190,15 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef con
                     Maybe use ScoreAnalysisFetchPolicy.FETCH_ALL to request the score analysis
                     """);
         }
-        summary.append("""
-                        %s: constraint (%s) has %s matches:
-                """.formatted(score().toShortString(),
-                constraintRef().constraintName(), constraintMatches.size()));
+        if (constraintMatches.isEmpty()) {
+            summary.append("""
+                            %s: constraint (%s) has no matches.
+                    """.formatted(score().toShortString(), constraintRef().constraintName()));
+        } else {
+            summary.append("""
+                            %s: constraint (%s) has %s matches:
+                    """.formatted(score().toShortString(), constraintRef().constraintName(), constraintMatches.size()));
+        }
         constraintMatches.stream()
                 .sorted(matchScoreComparator)
                 .limit(DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT)
