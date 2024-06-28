@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 
@@ -38,21 +39,21 @@ public final class LoadBalanceImpl<Balanced_> implements LoadBalance<Balanced_> 
     }
 
     private void addToMetric(Balanced_ balanced, long diff) {
-        var oldValue = balancedItemToMetricValueMap.getOrDefault(balanced, 0L);
+        long oldValue = balancedItemToMetricValueMap.getOrDefault(balanced, 0L);
         var newValue = oldValue + diff;
-        if (newValue == 0) {
-            balancedItemToMetricValueMap.remove(balanced);
-        } else {
-            balancedItemToMetricValueMap.put(balanced, newValue);
+        balancedItemToMetricValueMap.put(balanced, newValue);
+        if (oldValue != newValue) {
+            updateSquaredDeviation(oldValue, newValue);
+            sum += diff;
         }
-        updateSquaredDeviation(oldValue, newValue);
-        sum += diff;
     }
 
     private void resetMetric(Balanced_ balanced) {
-        var oldValue = balancedItemToMetricValueMap.remove(balanced);
-        updateSquaredDeviation(oldValue, 0);
-        sum -= oldValue;
+        long oldValue = Objects.requireNonNullElse(balancedItemToMetricValueMap.remove(balanced), 0L);
+        if (oldValue != 0) {
+            updateSquaredDeviation(oldValue, 0);
+            sum -= oldValue;
+        }
     }
 
     private void updateSquaredDeviation(long oldValue, long newValue) {
