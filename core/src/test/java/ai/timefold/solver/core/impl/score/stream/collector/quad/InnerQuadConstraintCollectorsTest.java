@@ -1162,13 +1162,13 @@ final class InnerQuadConstraintCollectorsTest extends AbstractConstraintCollecto
         assertUnfairness(collector, container, BigDecimal.ZERO);
         // Add second value, we have two now.
         var secondRetractor = accumulate(collector, container, "B", 1, 0, 0);
-        assertUnfairness(collector, container, BigDecimal.valueOf(0.5));
+        assertUnfairness(collector, container, BigDecimal.valueOf(0.7071067811865475));
         // Add third value, same as the second. We now have three values, two of which are the same.
         var thirdRetractor = accumulate(collector, container, "B", 1, 0, 0);
         assertUnfairness(collector, container, BigDecimal.ZERO); // Perfectly fair again.
         // Retract one instance of the second value; we only have two values now.
         secondRetractor.run();
-        assertUnfairness(collector, container, BigDecimal.valueOf(0.5));
+        assertUnfairness(collector, container, BigDecimal.valueOf(0.7071067811865475));
         // Retract final instance of the second value; we only have one value now.
         thirdRetractor.run();
         assertUnfairness(collector, container, BigDecimal.ZERO);
