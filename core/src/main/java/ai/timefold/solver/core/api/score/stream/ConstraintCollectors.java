@@ -36,8 +36,10 @@ import ai.timefold.solver.core.api.function.ToLongQuadFunction;
 import ai.timefold.solver.core.api.function.ToLongTriFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.function.TriPredicate;
+import ai.timefold.solver.core.api.score.buildin.hardsoftbigdecimal.HardSoftBigDecimalScore;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
+import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
@@ -2223,6 +2225,141 @@ public final class ConstraintCollectors {
                     ToLongFunction<IntervalType_> startInclusiveMap,
                     ToLongFunction<IntervalType_> endExclusiveMap) {
         return toConnectedRanges(intervalMap, startInclusiveMap::applyAsLong, endExclusiveMap::applyAsLong, (a, b) -> b - a);
+    }
+
+    // ************************************************************************
+    // load balancing
+    // ************************************************************************
+
+    /**
+     * As defined by {@link #loadBalance(Function, ToLongFunction, ToLongFunction)},
+     * where the current load for each balanced item is set to one
+     * and the starting load for each balanced item is set to zero.
+     */
+    public static <A, Balanced_> UniConstraintCollector<A, ?, LoadBalance<Balanced_>> loadBalance(
+            Function<A, Balanced_> balancedItemFunction) {
+        return loadBalance(balancedItemFunction, ConstantLambdaUtils.uniConstantOneLong());
+    }
+
+    /**
+     * As defined by {@link #loadBalance(Function, ToLongFunction, ToLongFunction)},
+     * where the starting load for each balanced item is set to zero.
+     */
+    public static <A, Balanced_> UniConstraintCollector<A, ?, LoadBalance<Balanced_>> loadBalance(
+            Function<A, Balanced_> balancedItemFunction, ToLongFunction<A> loadFunction) {
+        return loadBalance(balancedItemFunction, loadFunction, ConstantLambdaUtils.uniConstantZeroLong());
+    }
+
+    /**
+     * Returns a collector that takes a stream of items and calculates the unfairness measure from them
+     * (see {@link LoadBalance#unfairness()}).
+     * The load for every item is provided by the loadFunction,
+     * with the starting load provided by the initialLoadFunction.
+     * <p>
+     * When this collector is used in a constraint stream,
+     * it is recommended that the score type be one of those based on {@link BigDecimal},
+     * such as {@link HardSoftBigDecimalScore}.
+     * This is so that the unfairness measure keeps its precision
+     * without forcing the other constraints to be multiplied by a large constant,
+     * which would otherwise be required to implement fixed-point arithmetic.
+     *
+     * @param balancedItemFunction The function that returns the item which should be load-balanced.
+     * @param loadFunction How much the item should count for in the formula.
+     * @param initialLoadFunction The initial value of the metric,
+     *        allowing to provide initial state
+     *        without requiring the entire previous planning windows in the working memory.
+     * @param <A> type of the matched fact
+     * @param <Balanced_> type of the item being balanced
+     * @return never null
+     */
+    public static <A, Balanced_> UniConstraintCollector<A, ?, LoadBalance<Balanced_>> loadBalance(
+            Function<A, Balanced_> balancedItemFunction, ToLongFunction<A> loadFunction,
+            ToLongFunction<A> initialLoadFunction) {
+        return InnerUniConstraintCollectors.loadBalance(balancedItemFunction, loadFunction, initialLoadFunction);
+    }
+
+    /**
+     * As defined by {@link #loadBalance(BiFunction, ToLongBiFunction, ToLongBiFunction)},
+     * where the current load for each balanced item is set to one
+     * and the starting load for each balanced item is set to zero.
+     */
+    public static <A, B, Balanced_> BiConstraintCollector<A, B, ?, LoadBalance<Balanced_>> loadBalance(
+            BiFunction<A, B, Balanced_> balancedItemFunction) {
+        return loadBalance(balancedItemFunction, ConstantLambdaUtils.biConstantOneLong());
+    }
+
+    /**
+     * As defined by {@link #loadBalance(BiFunction, ToLongBiFunction, ToLongBiFunction)},
+     * where the starting load for each balanced item is set to zero.
+     */
+    public static <A, B, Balanced_> BiConstraintCollector<A, B, ?, LoadBalance<Balanced_>> loadBalance(
+            BiFunction<A, B, Balanced_> balancedItemFunction, ToLongBiFunction<A, B> loadFunction) {
+        return loadBalance(balancedItemFunction, loadFunction, ConstantLambdaUtils.biConstantZeroLong());
+    }
+
+    /**
+     * As defined by {@link #loadBalance(Function, ToLongFunction, ToLongFunction)}.
+     */
+    public static <A, B, Balanced_> BiConstraintCollector<A, B, ?, LoadBalance<Balanced_>> loadBalance(
+            BiFunction<A, B, Balanced_> balancedItemFunction, ToLongBiFunction<A, B> loadFunction,
+            ToLongBiFunction<A, B> initialLoadFunction) {
+        return InnerBiConstraintCollectors.loadBalance(balancedItemFunction, loadFunction, initialLoadFunction);
+    }
+
+    /**
+     * As defined by {@link #loadBalance(TriFunction, ToLongTriFunction, ToLongTriFunction)},
+     * where the current load for each balanced item is set to one
+     * and the starting load for each balanced item is set to zero.
+     */
+    public static <A, B, C, Balanced_> TriConstraintCollector<A, B, C, ?, LoadBalance<Balanced_>> loadBalance(
+            TriFunction<A, B, C, Balanced_> balancedItemFunction) {
+        return loadBalance(balancedItemFunction, ConstantLambdaUtils.triConstantOneLong());
+    }
+
+    /**
+     * As defined by {@link #loadBalance(TriFunction, ToLongTriFunction, ToLongTriFunction)},
+     * where the starting load for each balanced item is set to zero.
+     */
+    public static <A, B, C, Balanced_> TriConstraintCollector<A, B, C, ?, LoadBalance<Balanced_>> loadBalance(
+            TriFunction<A, B, C, Balanced_> balancedItemFunction, ToLongTriFunction<A, B, C> loadFunction) {
+        return loadBalance(balancedItemFunction, loadFunction, ConstantLambdaUtils.triConstantZeroLong());
+    }
+
+    /**
+     * As defined by {@link #loadBalance(Function, ToLongFunction, ToLongFunction)}.
+     */
+    public static <A, B, C, Balanced_> TriConstraintCollector<A, B, C, ?, LoadBalance<Balanced_>> loadBalance(
+            TriFunction<A, B, C, Balanced_> balancedItemFunction, ToLongTriFunction<A, B, C> loadFunction,
+            ToLongTriFunction<A, B, C> initialLoadFunction) {
+        return InnerTriConstraintCollectors.loadBalance(balancedItemFunction, loadFunction, initialLoadFunction);
+    }
+
+    /**
+     * As defined by {@link #loadBalance(QuadFunction, ToLongQuadFunction, ToLongQuadFunction)},
+     * where the current load for each balanced item is set to one
+     * and the starting load for each balanced item is set to zero.
+     */
+    public static <A, B, C, D, Balanced_> QuadConstraintCollector<A, B, C, D, ?, LoadBalance<Balanced_>> loadBalance(
+            QuadFunction<A, B, C, D, Balanced_> balancedItemFunction) {
+        return loadBalance(balancedItemFunction, ConstantLambdaUtils.quadConstantOneLong());
+    }
+
+    /**
+     * As defined by {@link #loadBalance(QuadFunction, ToLongQuadFunction, ToLongQuadFunction)},
+     * where the starting load for each balanced item is set to zero.
+     */
+    public static <A, B, C, D, Balanced_> QuadConstraintCollector<A, B, C, D, ?, LoadBalance<Balanced_>> loadBalance(
+            QuadFunction<A, B, C, D, Balanced_> balancedItemFunction, ToLongQuadFunction<A, B, C, D> loadFunction) {
+        return loadBalance(balancedItemFunction, loadFunction, ConstantLambdaUtils.quadConstantZeroLong());
+    }
+
+    /**
+     * As defined by {@link #loadBalance(Function, ToLongFunction, ToLongFunction)}.
+     */
+    public static <A, B, C, D, Balanced_> QuadConstraintCollector<A, B, C, D, ?, LoadBalance<Balanced_>> loadBalance(
+            QuadFunction<A, B, C, D, Balanced_> balancedItemFunction, ToLongQuadFunction<A, B, C, D> loadFunction,
+            ToLongQuadFunction<A, B, C, D> initialLoadFunction) {
+        return InnerQuadConstraintCollectors.loadBalance(balancedItemFunction, loadFunction, initialLoadFunction);
     }
 
     private ConstraintCollectors() {

@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -120,6 +121,12 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         assertImpact(ScoreImpactType.REWARD, matchWeightTotal, message);
     }
 
+    private void validateMatchWeighTotal(Number matchWeightTotal) {
+        if (matchWeightTotal.doubleValue() < 0) {
+            throw new IllegalArgumentException("The matchWeightTotal (" + matchWeightTotal + ") must be positive.");
+        }
+    }
+
     @Override
     public void rewards(String message, long times) {
         assertMatchCount(ScoreImpactType.REWARD, times, message);
@@ -130,9 +137,109 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         assertMatch(ScoreImpactType.REWARD, message);
     }
 
-    private void validateMatchWeighTotal(Number matchWeightTotal) {
-        if (matchWeightTotal.doubleValue() < 0) {
-            throw new IllegalArgumentException("The matchWeightTotal (" + matchWeightTotal + ") must be positive.");
+    @Override
+    public void penalizesByMoreThan(String message, int matchWeightTotal) {
+        validateMatchWeighTotal(matchWeightTotal);
+        assertMoreThanImpact(ScoreImpactType.PENALTY, matchWeightTotal, message);
+    }
+
+    @Override
+    public void penalizesByMoreThan(String message, long matchWeightTotal) {
+        validateMatchWeighTotal(matchWeightTotal);
+        assertMoreThanImpact(ScoreImpactType.PENALTY, matchWeightTotal, message);
+    }
+
+    @Override
+    public void penalizesByMoreThan(String message, BigDecimal matchWeightTotal) {
+        validateMatchWeighTotal(matchWeightTotal);
+        assertMoreThanImpact(ScoreImpactType.PENALTY, matchWeightTotal, message);
+    }
+
+    @Override
+    public void penalizesMoreThan(String message, long times) {
+        assertMoreThanMatchCount(ScoreImpactType.PENALTY, times, message);
+    }
+
+    @Override
+    public void rewardsWithMoreThan(String message, int matchWeightTotal) {
+        validateMatchWeighTotal(matchWeightTotal);
+        assertMoreThanImpact(ScoreImpactType.REWARD, matchWeightTotal, message);
+    }
+
+    @Override
+    public void rewardsWithMoreThan(String message, long matchWeightTotal) {
+        validateMatchWeighTotal(matchWeightTotal);
+        assertMoreThanImpact(ScoreImpactType.REWARD, matchWeightTotal, message);
+    }
+
+    @Override
+    public void rewardsWithMoreThan(String message, BigDecimal matchWeightTotal) {
+        validateMatchWeighTotal(matchWeightTotal);
+        assertMoreThanImpact(ScoreImpactType.REWARD, matchWeightTotal, message);
+    }
+
+    @Override
+    public void rewardsMoreThan(String message, long times) {
+        assertMoreThanMatchCount(ScoreImpactType.REWARD, times, message);
+    }
+
+    @Override
+    public void penalizesByLessThan(String message, int matchWeightTotal) {
+        validateLessThanMatchWeighTotal(matchWeightTotal);
+        assertLessThanImpact(ScoreImpactType.PENALTY, matchWeightTotal, message);
+    }
+
+    @Override
+    public void penalizesByLessThan(String message, long matchWeightTotal) {
+        validateLessThanMatchWeighTotal(matchWeightTotal);
+        assertLessThanImpact(ScoreImpactType.PENALTY, matchWeightTotal, message);
+    }
+
+    @Override
+    public void penalizesByLessThan(String message, BigDecimal matchWeightTotal) {
+        validateLessThanMatchWeighTotal(matchWeightTotal);
+        assertLessThanImpact(ScoreImpactType.PENALTY, matchWeightTotal, message);
+    }
+
+    @Override
+    public void penalizesLessThan(String message, long times) {
+        validateLessThanMatchCount(times);
+        assertLessThanMatchCount(ScoreImpactType.PENALTY, times, message);
+    }
+
+    @Override
+    public void rewardsWithLessThan(String message, int matchWeightTotal) {
+        validateLessThanMatchWeighTotal(matchWeightTotal);
+        assertLessThanImpact(ScoreImpactType.REWARD, matchWeightTotal, message);
+    }
+
+    @Override
+    public void rewardsWithLessThan(String message, long matchWeightTotal) {
+        validateLessThanMatchWeighTotal(matchWeightTotal);
+        assertLessThanImpact(ScoreImpactType.REWARD, matchWeightTotal, message);
+    }
+
+    @Override
+    public void rewardsWithLessThan(String message, BigDecimal matchWeightTotal) {
+        validateLessThanMatchWeighTotal(matchWeightTotal);
+        assertLessThanImpact(ScoreImpactType.REWARD, matchWeightTotal, message);
+    }
+
+    private void validateLessThanMatchWeighTotal(Number matchWeightTotal) {
+        if (matchWeightTotal.doubleValue() < 1) {
+            throw new IllegalArgumentException("The matchWeightTotal (" + matchWeightTotal + ") must be greater than 0.");
+        }
+    }
+
+    @Override
+    public void rewardsLessThan(String message, long times) {
+        validateLessThanMatchCount(times);
+        assertLessThanMatchCount(ScoreImpactType.REWARD, times, message);
+    }
+
+    private void validateLessThanMatchCount(Number matchCount) {
+        if (matchCount.doubleValue() < 1) {
+            throw new IllegalArgumentException("The match count (" + matchCount + ") must be greater than 0.");
         }
     }
 
@@ -163,6 +270,66 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         }
         String constraintId = constraint.getConstraintRef().constraintId();
         String assertionMessage = buildAssertionErrorMessage(scoreImpactType, matchWeightTotal, actualScoreImpactType,
+                impact, constraintId, message);
+        throw new AssertionError(assertionMessage);
+    }
+
+    private void assertMoreThanImpact(ScoreImpactType scoreImpactType, Number matchWeightTotal, String message) {
+        Comparator<Number> comparator = NumberEqualityUtil.getComparison(matchWeightTotal);
+        Pair<Number, Number> deducedImpacts = deduceImpact();
+        Number impact = deducedImpacts.key();
+        ScoreImpactType actualScoreImpactType = constraint.getScoreImpactType();
+        if (actualScoreImpactType == ScoreImpactType.MIXED) {
+            // Impact means we need to check for expected impact type and actual impact match.
+            switch (scoreImpactType) {
+                case REWARD:
+                    Number negatedImpact = deducedImpacts.value();
+                    if (comparator.compare(matchWeightTotal, negatedImpact) < 0) {
+                        return;
+                    }
+                    break;
+                case PENALTY:
+                    if (comparator.compare(matchWeightTotal, impact) < 0) {
+                        return;
+                    }
+                    break;
+            }
+        } else if (actualScoreImpactType == scoreImpactType && comparator.compare(matchWeightTotal, impact) < 0) {
+            // Reward and positive or penalty and negative means all is OK.
+            return;
+        }
+        String constraintId = constraint.getConstraintRef().constraintId();
+        String assertionMessage = buildMoreThanAssertionErrorMessage(scoreImpactType, matchWeightTotal, actualScoreImpactType,
+                impact, constraintId, message);
+        throw new AssertionError(assertionMessage);
+    }
+
+    private void assertLessThanImpact(ScoreImpactType scoreImpactType, Number matchWeightTotal, String message) {
+        Comparator<Number> comparator = NumberEqualityUtil.getComparison(matchWeightTotal);
+        Pair<Number, Number> deducedImpacts = deduceImpact();
+        Number impact = deducedImpacts.key();
+        ScoreImpactType actualScoreImpactType = constraint.getScoreImpactType();
+        if (actualScoreImpactType == ScoreImpactType.MIXED) {
+            // Impact means we need to check for expected impact type and actual impact match.
+            switch (scoreImpactType) {
+                case REWARD:
+                    Number negatedImpact = deducedImpacts.value();
+                    if (comparator.compare(matchWeightTotal, negatedImpact) > 0) {
+                        return;
+                    }
+                    break;
+                case PENALTY:
+                    if (comparator.compare(matchWeightTotal, impact) > 0) {
+                        return;
+                    }
+                    break;
+            }
+        } else if (actualScoreImpactType == scoreImpactType && comparator.compare(matchWeightTotal, impact) > 0) {
+            // Reward and positive or penalty and negative means all is OK.
+            return;
+        }
+        String constraintId = constraint.getConstraintRef().constraintId();
+        String assertionMessage = buildLessThanAssertionErrorMessage(scoreImpactType, matchWeightTotal, actualScoreImpactType,
                 impact, constraintId, message);
         throw new AssertionError(assertionMessage);
     }
@@ -309,6 +476,28 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         throw new AssertionError(assertionMessage);
     }
 
+    private void assertMoreThanMatchCount(ScoreImpactType scoreImpactType, long expectedMatchCount, String message) {
+        long actualMatchCount = determineMatchCount(scoreImpactType);
+        if (actualMatchCount > expectedMatchCount) {
+            return;
+        }
+        String constraintId = constraint.getConstraintRef().constraintId();
+        String assertionMessage = buildMoreThanAssertionErrorMessage(scoreImpactType, expectedMatchCount, actualMatchCount,
+                constraintId, message);
+        throw new AssertionError(assertionMessage);
+    }
+
+    private void assertLessThanMatchCount(ScoreImpactType scoreImpactType, long expectedMatchCount, String message) {
+        long actualMatchCount = determineMatchCount(scoreImpactType);
+        if (actualMatchCount < expectedMatchCount) {
+            return;
+        }
+        String constraintId = constraint.getConstraintRef().constraintId();
+        String assertionMessage = buildLessThanAssertionErrorMessage(scoreImpactType, expectedMatchCount, actualMatchCount,
+                constraintId, message);
+        throw new AssertionError(assertionMessage);
+    }
+
     private void assertMatch(ScoreImpactType scoreImpactType, String message) {
         if (determineMatchCount(scoreImpactType) > 0) {
             return;
@@ -365,6 +554,36 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
                 DefaultScoreExplanation.explainScore(score, constraintMatchTotalCollection, indictmentCollection));
     }
 
+    private String buildMoreThanAssertionErrorMessage(ScoreImpactType expectedImpactType, Number expectedImpact,
+            ScoreImpactType actualImpactType, Number actualImpact, String constraintId, String message) {
+        return buildMoreOrLessThanAssertionErrorMessage(expectedImpactType, "more than", expectedImpact, actualImpactType,
+                actualImpact, constraintId, message);
+    }
+
+    private String buildLessThanAssertionErrorMessage(ScoreImpactType expectedImpactType, Number expectedImpact,
+            ScoreImpactType actualImpactType, Number actualImpact, String constraintId, String message) {
+        return buildMoreOrLessThanAssertionErrorMessage(expectedImpactType, "less than", expectedImpact, actualImpactType,
+                actualImpact, constraintId, message);
+    }
+
+    private String buildMoreOrLessThanAssertionErrorMessage(ScoreImpactType expectedImpactType, String moreOrLessThan,
+            Number expectedImpact, ScoreImpactType actualImpactType, Number actualImpact, String constraintId, String message) {
+        String expectation = message != null ? message : "Broken expectation.";
+        String preformattedMessage = "%s%n" +
+                "%28s: %s%n" +
+                "%28s: %s (%s)%n" +
+                "%28s: %s (%s)%n%n" +
+                "  %s";
+        String expectedImpactLabel = "Expected " + getImpactTypeLabel(expectedImpactType) + " " + moreOrLessThan;
+        String actualImpactLabel = "Actual " + getImpactTypeLabel(actualImpactType);
+        return String.format(preformattedMessage,
+                expectation,
+                "Constraint", constraintId,
+                expectedImpactLabel, expectedImpact, expectedImpact.getClass(),
+                actualImpactLabel, actualImpact, actualImpact.getClass(),
+                DefaultScoreExplanation.explainScore(score, constraintMatchTotalCollection, indictmentCollection));
+    }
+
     private String buildAssertionErrorMessage(ScoreImpactType impactType, long expectedTimes, long actualTimes,
             String constraintId, String message) {
         String expectation = message != null ? message : "Broken expectation.";
@@ -374,6 +593,37 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
                 "%18s: %s time(s)%n%n" +
                 "  %s";
         String expectedImpactLabel = "Expected " + getImpactTypeLabel(impactType);
+        String actualImpactLabel = "Actual " + getImpactTypeLabel(impactType);
+        return String.format(preformattedMessage,
+                expectation,
+                "Constraint", constraintId,
+                expectedImpactLabel, expectedTimes,
+                actualImpactLabel, actualTimes,
+                DefaultScoreExplanation.explainScore(score, constraintMatchTotalCollection, indictmentCollection));
+    }
+
+    private String buildMoreThanAssertionErrorMessage(ScoreImpactType impactType, long expectedTimes, long actualTimes,
+            String constraintId, String message) {
+        return buildMoreOrLessThanAssertionErrorMessage(impactType, "more than", expectedTimes, actualTimes, constraintId,
+                message);
+    }
+
+    private String buildLessThanAssertionErrorMessage(ScoreImpactType impactType, long expectedTimes, long actualTimes,
+            String constraintId, String message) {
+        return buildMoreOrLessThanAssertionErrorMessage(impactType, "less than", expectedTimes, actualTimes, constraintId,
+                message);
+    }
+
+    private String buildMoreOrLessThanAssertionErrorMessage(ScoreImpactType impactType, String moreOrLessThan,
+            long expectedTimes, long actualTimes,
+            String constraintId, String message) {
+        String expectation = message != null ? message : "Broken expectation.";
+        String preformattedMessage = "%s%n" +
+                "%28s: %s%n" +
+                "%28s: %s time(s)%n" +
+                "%28s: %s time(s)%n%n" +
+                "  %s";
+        String expectedImpactLabel = "Expected " + getImpactTypeLabel(impactType) + " " + moreOrLessThan;
         String actualImpactLabel = "Actual " + getImpactTypeLabel(impactType);
         return String.format(preformattedMessage,
                 expectation,

@@ -62,10 +62,6 @@ public abstract class AbstractTriConstraintStreamTest
         super(implSupport);
     }
 
-    // ************************************************************************
-    // Filter
-    // ************************************************************************
-
     @Override
     @TestTemplate
     public void filter_entity() {
@@ -148,10 +144,6 @@ public abstract class AbstractTriConstraintStreamTest
         scoreDirector.afterEntityRemoved(entity4);
         assertScore(scoreDirector);
     }
-
-    // ************************************************************************
-    // Join
-    // ************************************************************************
 
     @Override
     @TestTemplate
@@ -362,10 +354,6 @@ public abstract class AbstractTriConstraintStreamTest
                 assertMatch(1, 1, 1, extra1),
                 assertMatch(1, 1, 1, extra2));
     }
-
-    // ************************************************************************
-    // If (not) exists
-    // ************************************************************************
 
     @Override
     @TestTemplate
@@ -869,10 +857,6 @@ public abstract class AbstractTriConstraintStreamTest
                 assertMatch(1, 1, 1));
     }
 
-    // ************************************************************************
-    // Group by
-    // ************************************************************************
-
     @Override
     @TestTemplate
     public void groupBy_0Mapping1Collector() {
@@ -1320,10 +1304,6 @@ public abstract class AbstractTriConstraintStreamTest
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector);
     }
-
-    // ************************************************************************
-    // Map/flatten/distinct
-    // ************************************************************************
 
     @Override
     @TestTemplate
@@ -2302,9 +2282,49 @@ public abstract class AbstractTriConstraintStreamTest
                 assertMatchWithScore(-1, value3, value2, value1, 1));
     }
 
-    // ************************************************************************
-    // Penalize/reward
-    // ************************************************************************
+    @Override
+    @TestTemplate
+    public void complement() {
+        var solution = TestdataLavishSolution.generateSolution(2, 5, 1, 1);
+        var value1 = solution.getFirstValue();
+        var value2 = new TestdataLavishValue("MyValue 2", solution.getFirstValueGroup());
+        var entity1 = solution.getFirstEntity();
+        var entity2 = new TestdataLavishEntity("MyEntity 2", solution.getFirstEntityGroup(),
+                value2);
+        solution.getEntityList().add(entity2);
+        var entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+                value2);
+        solution.getEntityList().add(entity3);
+
+        var scoreDirector =
+                buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
+                        .expand(a -> {
+                            var code = a.getValue().getCode();
+                            var indexString = code.substring(code.length() - 1);
+                            return Integer.parseInt(indexString);
+                        })
+                        .expand((a, b) -> b + 1)
+                        .filter((entity, index, index2) -> index == 0)
+                        .complement(TestdataLavishEntity.class, e -> Integer.MAX_VALUE, e -> -1)
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_NAME));
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(entity1, 0, 1),
+                assertMatch(entity2, Integer.MAX_VALUE, -1),
+                assertMatch(entity3, Integer.MAX_VALUE, -1));
+
+        // Incremental; all entities are still present, but the indexes are different.
+        scoreDirector.beforeVariableChanged(entity2, "value");
+        entity2.setValue(value1);
+        scoreDirector.afterVariableChanged(entity2, "value");
+        assertScore(scoreDirector,
+                assertMatch(entity1, 0, 1),
+                assertMatch(entity2, 0, 1),
+                assertMatch(entity3, Integer.MAX_VALUE, -1));
+    }
 
     @Override
     @TestTemplate

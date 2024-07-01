@@ -11,9 +11,12 @@ import ai.timefold.solver.core.api.function.ToLongQuadFunction;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
+import ai.timefold.solver.core.api.score.stream.penta.PentaJoiner;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintBuilder;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
+import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 public interface InnerQuadConstraintStream<A, B, C, D> extends QuadConstraintStream<A, B, C, D> {
 
@@ -24,6 +27,68 @@ public interface InnerQuadConstraintStream<A, B, C, D> extends QuadConstraintStr
 
     static <A, B, C, D> QuadFunction<A, B, C, D, Collection<?>> createDefaultIndictedObjectsMapping() {
         return Arrays::asList;
+    }
+
+    RetrievalSemantics getRetrievalSemantics();
+
+    /**
+     * This method will return true if the constraint stream is guaranteed to only produce distinct tuples.
+     * See {@link #distinct()} for details.
+     *
+     * @return true if the guarantee of distinct tuples is provided
+     */
+    boolean guaranteesDistinct();
+
+    @Override
+    default <E> QuadConstraintStream<A, B, C, D> ifExists(Class<E> otherClass, PentaJoiner<A, B, C, D, E>... joiners) {
+        if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
+            return ifExists(getConstraintFactory().forEach(otherClass), joiners);
+        } else {
+            // Calls fromUnfiltered() for backward compatibility only
+            return ifExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
+        }
+    }
+
+    @Override
+    default <E> QuadConstraintStream<A, B, C, D> ifExistsIncludingUnassigned(Class<E> otherClass,
+            PentaJoiner<A, B, C, D, E>... joiners) {
+        if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
+            return ifExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
+        } else {
+            return ifExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
+        }
+    }
+
+    @Override
+    default <E> QuadConstraintStream<A, B, C, D> ifNotExists(Class<E> otherClass, PentaJoiner<A, B, C, D, E>... joiners) {
+        if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
+            return ifNotExists(getConstraintFactory().forEach(otherClass), joiners);
+        } else {
+            // Calls fromUnfiltered() for backward compatibility only
+            return ifNotExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
+        }
+    }
+
+    @Override
+    default <E> QuadConstraintStream<A, B, C, D> ifNotExistsIncludingUnassigned(Class<E> otherClass,
+            PentaJoiner<A, B, C, D, E>... joiners) {
+        if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
+            return ifNotExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
+        } else {
+            return ifNotExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
+        }
+    }
+
+    @Override
+    default QuadConstraintStream<A, B, C, D> distinct() {
+        if (guaranteesDistinct()) {
+            return this;
+        } else {
+            return groupBy(ConstantLambdaUtils.quadPickFirst(),
+                    ConstantLambdaUtils.quadPickSecond(),
+                    ConstantLambdaUtils.quadPickThird(),
+                    ConstantLambdaUtils.quadPickFourth());
+        }
     }
 
     @Override

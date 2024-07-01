@@ -1,7 +1,11 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.quad;
 
+import static ai.timefold.solver.core.impl.score.stream.common.quad.InnerQuadConstraintStream.createDefaultIndictedObjectsMapping;
+import static ai.timefold.solver.core.impl.score.stream.common.quad.InnerQuadConstraintStream.createDefaultJustificationMapping;
+
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.PentaFunction;
@@ -9,6 +13,7 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.api.function.ToIntQuadFunction;
 import ai.timefold.solver.core.api.function.ToLongQuadFunction;
+import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
@@ -42,7 +47,6 @@ import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
 import ai.timefold.solver.core.impl.score.stream.common.penta.PentaJoinerComber;
 import ai.timefold.solver.core.impl.score.stream.common.quad.InnerQuadConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.quad.QuadConstraintBuilderImpl;
-import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
         extends BavetAbstractConstraintStream<Solution_>
@@ -73,27 +77,6 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
 
     @SafeVarargs
     @Override
-    public final <E> QuadConstraintStream<A, B, C, D> ifExists(Class<E> otherClass, PentaJoiner<A, B, C, D, E>... joiners) {
-        if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
-            return ifExists(constraintFactory.forEach(otherClass), joiners);
-        } else {
-            // Calls fromUnfiltered() for backward compatibility only
-            return ifExists(constraintFactory.fromUnfiltered(otherClass), joiners);
-        }
-    }
-
-    @SafeVarargs
-    @Override
-    public final <E> QuadConstraintStream<A, B, C, D> ifExistsIncludingUnassigned(Class<E> otherClass,
-            PentaJoiner<A, B, C, D, E>... joiners) {
-        if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
-            return ifExists(constraintFactory.forEachIncludingUnassigned(otherClass), joiners);
-        } else {
-            return ifExists(constraintFactory.fromUnfiltered(otherClass), joiners);
-        }
-    }
-
-    @SafeVarargs
     public final <E> QuadConstraintStream<A, B, C, D> ifExists(UniConstraintStream<E> otherStream,
             PentaJoiner<A, B, C, D, E>... joiners) {
         return ifExistsOrNot(true, otherStream, joiners);
@@ -101,27 +84,6 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
 
     @SafeVarargs
     @Override
-    public final <E> QuadConstraintStream<A, B, C, D> ifNotExists(Class<E> otherClass, PentaJoiner<A, B, C, D, E>... joiners) {
-        if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
-            return ifNotExists(constraintFactory.forEach(otherClass), joiners);
-        } else {
-            // Calls fromUnfiltered() for backward compatibility only
-            return ifNotExists(constraintFactory.fromUnfiltered(otherClass), joiners);
-        }
-    }
-
-    @SafeVarargs
-    @Override
-    public final <E> QuadConstraintStream<A, B, C, D> ifNotExistsIncludingUnassigned(Class<E> otherClass,
-            PentaJoiner<A, B, C, D, E>... joiners) {
-        if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
-            return ifNotExists(constraintFactory.forEachIncludingUnassigned(otherClass), joiners);
-        } else {
-            return ifNotExists(constraintFactory.fromUnfiltered(otherClass), joiners);
-        }
-    }
-
-    @SafeVarargs
     public final <E> QuadConstraintStream<A, B, C, D> ifNotExists(UniConstraintStream<E> otherStream,
             PentaJoiner<A, B, C, D, E>... joiners) {
         return ifExistsOrNot(false, otherStream, joiners);
@@ -322,23 +284,14 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     // ************************************************************************
 
     @Override
-    public QuadConstraintStream<A, B, C, D> distinct() {
-        if (guaranteesDistinct()) {
-            return this;
-        } else {
-            return groupBy(ConstantLambdaUtils.quadPickFirst(),
-                    ConstantLambdaUtils.quadPickSecond(),
-                    ConstantLambdaUtils.quadPickThird(),
-                    ConstantLambdaUtils.quadPickFourth());
-        }
-    }
-
-    @Override
-    public QuadConstraintStream<A, B, C, D> concat(UniConstraintStream<A> otherStream) {
+    public QuadConstraintStream<A, B, C, D> concat(UniConstraintStream<A> otherStream, Function<A, B> paddingFunctionB,
+            Function<A, C> paddingFunctionC, Function<A, D> paddingFunctionD) {
         var other = (BavetAbstractUniConstraintStream<Solution_, A>) otherStream;
         var leftBridge = new BavetForeBridgeQuadConstraintStream<>(constraintFactory, this);
         var rightBridge = new BavetForeBridgeUniConstraintStream<>(constraintFactory, other);
-        var concatStream = new BavetConcatQuadConstraintStream<>(constraintFactory, leftBridge, rightBridge);
+        var concatStream =
+                new BavetUniConcatQuadConstraintStream<>(constraintFactory, leftBridge, rightBridge, paddingFunctionB,
+                        paddingFunctionC, paddingFunctionD);
         return constraintFactory.share(concatStream, concatStream_ -> {
             // Connect the bridges upstream
             getChildStreamList().add(leftBridge);
@@ -347,11 +300,13 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     }
 
     @Override
-    public QuadConstraintStream<A, B, C, D> concat(BiConstraintStream<A, B> otherStream) {
+    public QuadConstraintStream<A, B, C, D> concat(BiConstraintStream<A, B> otherStream, BiFunction<A, B, C> paddingFunctionC,
+            BiFunction<A, B, D> paddingFunctionD) {
         var other = (BavetAbstractBiConstraintStream<Solution_, A, B>) otherStream;
         var leftBridge = new BavetForeBridgeQuadConstraintStream<>(constraintFactory, this);
         var rightBridge = new BavetForeBridgeBiConstraintStream<>(constraintFactory, other);
-        var concatStream = new BavetConcatQuadConstraintStream<>(constraintFactory, leftBridge, rightBridge);
+        var concatStream = new BavetBiConcatQuadConstraintStream<>(constraintFactory, leftBridge, rightBridge, paddingFunctionC,
+                paddingFunctionD);
         return constraintFactory.share(concatStream, concatStream_ -> {
             // Connect the bridges upstream
             getChildStreamList().add(leftBridge);
@@ -360,11 +315,13 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     }
 
     @Override
-    public QuadConstraintStream<A, B, C, D> concat(TriConstraintStream<A, B, C> otherStream) {
+    public QuadConstraintStream<A, B, C, D> concat(TriConstraintStream<A, B, C> otherStream,
+            TriFunction<A, B, C, D> paddingFunction) {
         var other = (BavetAbstractTriConstraintStream<Solution_, A, B, C>) otherStream;
         var leftBridge = new BavetForeBridgeQuadConstraintStream<>(constraintFactory, this);
         var rightBridge = new BavetForeBridgeTriConstraintStream<>(constraintFactory, other);
-        var concatStream = new BavetConcatQuadConstraintStream<>(constraintFactory, leftBridge, rightBridge);
+        var concatStream =
+                new BavetTriConcatQuadConstraintStream<>(constraintFactory, leftBridge, rightBridge, paddingFunction);
         return constraintFactory.share(concatStream, concatStream_ -> {
             // Connect the bridges upstream
             getChildStreamList().add(leftBridge);
@@ -377,7 +334,7 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
         var other = (BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>) otherStream;
         var leftBridge = new BavetForeBridgeQuadConstraintStream<>(constraintFactory, this);
         var rightBridge = new BavetForeBridgeQuadConstraintStream<>(constraintFactory, other);
-        var concatStream = new BavetConcatQuadConstraintStream<>(constraintFactory, leftBridge, rightBridge);
+        var concatStream = new BavetQuadConcatQuadConstraintStream<>(constraintFactory, leftBridge, rightBridge);
         return constraintFactory.share(concatStream, concatStream_ -> {
             // Connect the bridges upstream
             getChildStreamList().add(leftBridge);
@@ -462,12 +419,12 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
 
     @Override
     protected final PentaFunction<A, B, C, D, Score<?>, DefaultConstraintJustification> getDefaultJustificationMapping() {
-        return InnerQuadConstraintStream.createDefaultJustificationMapping();
+        return createDefaultJustificationMapping();
     }
 
     @Override
     protected final QuadFunction<A, B, C, D, Collection<?>> getDefaultIndictedObjectsMapping() {
-        return InnerQuadConstraintStream.createDefaultIndictedObjectsMapping();
+        return createDefaultIndictedObjectsMapping();
     }
 
 }
