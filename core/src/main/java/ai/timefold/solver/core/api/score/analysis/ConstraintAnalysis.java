@@ -180,6 +180,7 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef con
      *
      * @return never null
      */
+    @SuppressWarnings("java:S3457")
     public String summarize() {
         var summary = new StringBuilder();
         summary.append("""
@@ -197,19 +198,19 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef con
         }
         if (constraintMatches.isEmpty()) {
             summary.append(
-                    "%8s%s: constraint (%s) has no matches.%n".formatted(" ", score().toShortString(),
+                    "%8s%s: constraint (%s) has no matches.\n".formatted(" ", score().toShortString(),
                             constraintRef().constraintName()));
         } else {
-            summary.append("%8s%s: constraint (%s) has %s matches:%n".formatted(" ", score().toShortString(),
+            summary.append("%8s%s: constraint (%s) has %s matches:\n".formatted(" ", score().toShortString(),
                     constraintRef().constraintName(), constraintMatches.size()));
         }
         constraintMatches.stream()
                 .sorted(matchScoreComparator)
                 .limit(DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT)
-                .forEach(match -> summary.append("%12S%s: justified with (%s)%n".formatted(" ", match.score().toShortString(),
+                .forEach(match -> summary.append("%12S%s: justified with (%s)\n".formatted(" ", match.score().toShortString(),
                         match.justification())));
         if (constraintMatches.size() > DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT) {
-            summary.append("%12s%s%n".formatted(" ", "..."));
+            summary.append("%12s%s\n".formatted(" ", "..."));
         }
 
         return summary.toString();
