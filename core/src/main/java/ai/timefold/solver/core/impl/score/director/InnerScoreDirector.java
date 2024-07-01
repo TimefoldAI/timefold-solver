@@ -342,16 +342,8 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      */
     default ScoreAnalysis<Score_> buildScoreAnalysis(boolean analyzeConstraintMatches, ScoreAnalysisMode mode) {
         var score = calculateScore();
-        switch (Objects.requireNonNull(mode)) {
-            case RECOMMENDATION_API -> score = score.withInitScore(0);
-            case DEFAULT -> {
-                if (!score.isSolutionInitialized()) {
-                    throw new IllegalArgumentException("""
-                            Cannot analyze solution (%s) as it is not initialized (%s).
-                            Maybe run the solver first?"""
-                            .formatted(getWorkingSolution(), score));
-                }
-            }
+        if (Objects.requireNonNull(mode) == ScoreAnalysisMode.RECOMMENDATION_API) {
+            score = score.withInitScore(0);
         }
         var constraintAnalysisMap = new TreeMap<ConstraintRef, ConstraintAnalysis<Score_>>();
         for (var constraintMatchTotal : getConstraintMatchTotalMap().values()) {
