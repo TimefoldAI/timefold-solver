@@ -36,7 +36,7 @@ public interface LoadBalance<Balanced_> {
      * Comparing unfairness between solutions of different input problems is not helpful.
      * Only compare unfairness measures of solutions which have the same set of balanced items as input.
      *
-     * @return never null, never negative
+     * @return never null, never negative, six decimal places
      */
     BigDecimal unfairness();
 

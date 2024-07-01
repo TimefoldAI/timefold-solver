@@ -161,9 +161,10 @@ defined in this case by how many `ShiftAssignment` are allocated to any particul
 
 Unfairness is a dimensionless number that measures how fair the solution is.
 A lower value indicates a fairer solution.
-The smallest possible value is 1, indicating that the solution is perfectly fair.
+The smallest possible value is 0, indicating that the solution is perfectly fair.
 There is no upper limit to the value,
 and it is expected to scale linearly with the size of your dataset.
+The value is rounded to six decimal places.
 
 Different unfairness values may only be compared for solutions coming from the same dataset.
 Unfairness values computed from different datasets are incomparable.
@@ -194,7 +195,7 @@ Otherwise, the unfairness constraint will dominate the score,
 effectively becoming the most important constraint.
 
 If you take this approach,
-we recommend that you preserve at least six decimal places of the unfairness value
+we recommend that you preserve all six decimal places of the unfairness value
 to avoid the most severe score traps.
 This will leave considerably less space in the selected data type for actual values,
 which go from `x` to `x × 1_000_000`.

@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.score.stream.collector;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -12,8 +13,8 @@ import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 
 public final class LoadBalanceImpl<Balanced_> implements LoadBalance<Balanced_> {
 
-    private static final MathContext DEFAULT_MATH_CONTEXT =
-            MathContext.DECIMAL64;
+    // If need be, precision can be made configurable on the constraint collector level.
+    private static final MathContext RESULT_MATH_CONTEXT = new MathContext(6, RoundingMode.HALF_EVEN);
 
     private final Map<Balanced_, Integer> balancedItemCountMap = new HashMap<>();
     private final Map<Balanced_, Long> balancedItemToMetricValueMap = new LinkedHashMap<>();
@@ -99,10 +100,9 @@ public final class LoadBalanceImpl<Balanced_> implements LoadBalance<Balanced_> 
             return BigDecimal.ZERO;
         }
         return BigDecimal.valueOf(squaredDeviationFractionNumerator)
-                .divide(BigDecimal.valueOf(totalToBalanceCount), DEFAULT_MATH_CONTEXT)
+                .divide(BigDecimal.valueOf(totalToBalanceCount), MathContext.DECIMAL32) // Compute w/ greater precision.
                 .add(BigDecimal.valueOf(squaredDeviationIntegralPart))
-                .sqrt(DEFAULT_MATH_CONTEXT)
-                .stripTrailingZeros();
+                .sqrt(RESULT_MATH_CONTEXT);
     }
 
 }
