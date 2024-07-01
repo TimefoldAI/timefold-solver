@@ -181,21 +181,21 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(Score_ score,
                     }
                     if (matches.isEmpty()) {
                         summary.append(
-                                "%8s%s: constraint (%s) has no matches.\n".formatted(" ", constraint.score().toShortString(),
+                                "%8s%s: constraint (%s) has no matches.%n".formatted(" ", constraint.score().toShortString(),
                                         constraint.constraintRef().constraintName()));
                     } else {
                         summary.append(
-                                "%8s%s: constraint (%s) has %s matches:\n".formatted(" ", constraint.score().toShortString(),
+                                "%8s%s: constraint (%s) has %s matches:%n".formatted(" ", constraint.score().toShortString(),
                                         constraint.constraintRef().constraintName(), matches.size()));
                     }
                     matches.stream()
                             .sorted(matchScoreComparator)
                             .limit(DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT)
                             .forEach(match -> summary
-                                    .append("%12s%s: justified with (%s)\n".formatted(" ", match.score().toShortString(),
+                                    .append("%12s%s: justified with (%s)%n".formatted(" ", match.score().toShortString(),
                                             match.justification())));
                     if (matches.size() > DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT) {
-                        summary.append("%12s%s\n".formatted(" ", "..."));
+                        summary.append("%12s%s%n".formatted(" ", "..."));
                     }
                 });
 
