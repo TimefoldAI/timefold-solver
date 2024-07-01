@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.Score;
@@ -60,6 +59,11 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef con
         Objects.requireNonNull(score);
     }
 
+    /**
+     * Return the match count of the constraint.
+     *
+     * @throws IllegalStateException if the {@link ConstraintAnalysis#matches()} is null
+     */
     public int matchCount() {
         if (matches == null) {
             throw new IllegalArgumentException("""
@@ -86,9 +90,9 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef con
             ConstraintAnalysis<Score_> otherConstraintAnalysis) {
         if (constraintAnalysis == null) {
             if (otherConstraintAnalysis == null) {
-                throw new IllegalStateException("""
-                        Impossible state: none of the score explanations provided constraint matches for a constraint (%s).
-                        """.formatted(constraintRef));
+                throw new IllegalStateException(
+                        "Impossible state: none of the score explanations provided constraint matches for a constraint (%s)."
+                                .formatted(constraintRef));
             }
             // No need to compute diff; this constraint is not present in this score explanation.
             return otherConstraintAnalysis.negate();
@@ -99,9 +103,9 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef con
         var matchAnalyses = constraintAnalysis.matches();
         var otherMatchAnalyses = otherConstraintAnalysis.matches();
         if ((matchAnalyses == null && otherMatchAnalyses != null) || (matchAnalyses != null && otherMatchAnalyses == null)) {
-            throw new IllegalStateException("""
-                    Impossible state: Only one of the score analyses (%s, %s) provided match analyses for a constraint (%s)."""
-                    .formatted(constraintAnalysis, otherConstraintAnalysis, constraintRef));
+            throw new IllegalStateException(
+                    "Impossible state: Only one of the score analyses (%s, %s) provided match analyses for a constraint (%s)."
+                            .formatted(constraintAnalysis, otherConstraintAnalysis, constraintRef));
         }
         // Compute the diff.
         var constraintWeightDifference = constraintAnalysis.weight().subtract(otherConstraintAnalysis.weight());
@@ -118,9 +122,9 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef con
                     var otherMatchAnalysis = otherMatchAnalysisMap.get(justification);
                     if (matchAnalysis == null) {
                         if (otherMatchAnalysis == null) {
-                            throw new IllegalStateException("""
-                                    Impossible state: none of the match analyses provided for a constraint (%s).
-                                    """.formatted(constraintRef));
+                            throw new IllegalStateException(
+                                    "Impossible state: none of the match analyses provided for a constraint (%s)."
+                                            .formatted(constraintRef));
                         }
                         // No need to compute diff; this match is not present in this score explanation.
                         return otherMatchAnalysis.negate();
@@ -132,7 +136,7 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef con
                                 justification);
                     }
                 })
-                .collect(Collectors.toList());
+                .toList();
         return new ConstraintAnalysis<>(constraintRef, constraintWeightDifference, scoreDifference, result);
     }
 
@@ -172,11 +176,12 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef con
 
     /**
      * Returns a diagnostic text that explains part of the score quality through the {@link ConstraintAnalysis} API.
+     * The string is built fresh every time the method is called.
      *
      * @return never null
      */
     public String summarize() {
-        StringBuilder summary = new StringBuilder();
+        var summary = new StringBuilder();
         summary.append("""
                 Explanation of score (%s):
                     Constraint matches:
@@ -191,25 +196,20 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef con
                     """);
         }
         if (constraintMatches.isEmpty()) {
-            summary.append("""
-                            %s: constraint (%s) has no matches.
-                    """.formatted(score().toShortString(), constraintRef().constraintName()));
+            summary.append(
+                    "%8s%s: constraint (%s) has no matches.\n".formatted(" ", score().toShortString(),
+                            constraintRef().constraintName()));
         } else {
-            summary.append("""
-                            %s: constraint (%s) has %s matches:
-                    """.formatted(score().toShortString(), constraintRef().constraintName(), constraintMatches.size()));
+            summary.append("%8s%s: constraint (%s) has %s matches:\n".formatted(" ", score().toShortString(),
+                    constraintRef().constraintName(), constraintMatches.size()));
         }
         constraintMatches.stream()
                 .sorted(matchScoreComparator)
                 .limit(DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT)
-                .forEach(match -> summary.append("""
-                                    %s: justified with (%s)
-                        """.formatted(match.score().toShortString(),
+                .forEach(match -> summary.append("%12S%s: justified with (%s)\n".formatted(" ", match.score().toShortString(),
                         match.justification())));
         if (constraintMatches.size() > DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT) {
-            summary.append("""
-                                ...
-                    """);
+            summary.append("%12s%s\n".formatted(" ", "..."));
         }
 
         return summary.toString();

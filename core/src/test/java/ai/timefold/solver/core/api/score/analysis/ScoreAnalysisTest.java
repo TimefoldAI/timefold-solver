@@ -126,7 +126,7 @@ class ScoreAnalysisTest {
 
         // Complete score analysis
         var summary = scoreAnalysis.summarize();
-        assertThat(scoreAnalysis.getConstraintAnalysis(constraintPackage, constraintName1).matchCount()).isEqualTo(0);
+        assertThat(scoreAnalysis.getConstraintAnalysis(constraintPackage, constraintName1).matchCount()).isZero();
         assertThat(summary)
                 .isEqualTo("""
                         Explanation of score (3init/0):

@@ -148,6 +148,7 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(Score_ score,
     /**
      * Returns a diagnostic text that explains the solution through the {@link ConstraintAnalysis} API to identify which
      * constraints cause that score quality.
+     * The string is built fresh every time the method is called.
      * <p>
      * In case of an {@link Score#isFeasible() infeasible} solution, this can help diagnose the cause of that.
      *
@@ -179,29 +180,34 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(Score_ score,
                                 """);
                     }
                     if (matches.isEmpty()) {
-                        summary.append("""
-                                        %s: constraint (%s) has no matches.
-                                """.formatted(constraint.score().toShortString(), constraint.constraintRef().constraintName()));
+                        summary.append(
+                                "%8s%s: constraint (%s) has no matches.\n".formatted(" ", constraint.score().toShortString(),
+                                        constraint.constraintRef().constraintName()));
                     } else {
-                        summary.append("""
-                                        %s: constraint (%s) has %s matches:
-                                """.formatted(constraint.score().toShortString(), constraint.constraintRef().constraintName(),
-                                matches.size()));
+                        summary.append(
+                                "%8s%s: constraint (%s) has %s matches:\n".formatted(" ", constraint.score().toShortString(),
+                                        constraint.constraintRef().constraintName(), matches.size()));
                     }
                     matches.stream()
                             .sorted(matchScoreComparator)
                             .limit(DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT)
-                            .forEach(match -> summary.append("""
-                                                %s: justified with (%s)
-                                    """.formatted(match.score().toShortString(),
-                                    match.justification())));
+                            .forEach(match -> summary
+                                    .append("%12s%s: justified with (%s)\n".formatted(" ", match.score().toShortString(),
+                                            match.justification())));
                     if (matches.size() > DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT) {
-                        summary.append("""
-                                            ...
-                                """);
+                        summary.append("%12s%s\n".formatted(" ", "..."));
                     }
                 });
 
         return summary.toString();
+    }
+
+    public boolean isSolutionInitialized() {
+        return score().isSolutionInitialized();
+    }
+
+    @Override
+    public String toString() {
+        return "Score analysis of score %s with %d constraints.".formatted(score, constraintMap.size());
     }
 }
