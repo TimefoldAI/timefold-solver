@@ -52,7 +52,7 @@ class LoadBalanceRoundTripTest {
 
         assertRoundTrip(objectMapper, loadBalance, """
                 {
-                    "unfairness":2.160246899469288
+                    "unfairness":2.16025
                 }""");
     }
 
