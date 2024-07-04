@@ -48,6 +48,9 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataAnnotatedExtendedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataAnnotatedExtendedSolution;
+import ai.timefold.solver.core.impl.testdata.domain.interface_domain.TestdataInterfaceConstraintProvider;
+import ai.timefold.solver.core.impl.testdata.domain.interface_domain.TestdataInterfaceEntity;
+import ai.timefold.solver.core.impl.testdata.domain.interface_domain.TestdataInterfaceSolution;
 import ai.timefold.solver.core.impl.testdata.domain.record.TestdataRecordEntity;
 import ai.timefold.solver.core.impl.testdata.domain.record.TestdataRecordSolution;
 
@@ -223,6 +226,20 @@ class SolverConfigTest {
                 .buildSolver();
 
         var solution = TestdataRecordSolution.generateSolution();
+        Assertions.assertThatNoException().isThrownBy(() -> solver.solve(solution));
+    }
+
+    @Test
+    void domainClassesAreInterfaces() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataInterfaceSolution.class)
+                .withEntityClasses(TestdataInterfaceEntity.class)
+                .withConstraintProviderClass(TestdataInterfaceConstraintProvider.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()); // Run CH and finish.
+        var solver = SolverFactory.create(solverConfig)
+                .buildSolver();
+
+        var solution = TestdataInterfaceSolution.generateSolution();
         Assertions.assertThatNoException().isThrownBy(() -> solver.solve(solution));
     }
 
