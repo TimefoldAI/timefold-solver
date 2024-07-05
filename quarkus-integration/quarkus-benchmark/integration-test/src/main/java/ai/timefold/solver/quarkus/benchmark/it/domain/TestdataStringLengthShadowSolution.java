@@ -5,14 +5,18 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 
 @PlanningSolution
 public class TestdataStringLengthShadowSolution {
 
-    @ValueRangeProvider(id = "valueRange")
-    private List<String> valueList;
+
+    @ProblemFactCollectionProperty
+    @ValueRangeProvider
+    private List<TestdataListValueShadowEntity> valueList;
+
     @PlanningEntityCollectionProperty
     private List<TestdataStringLengthShadowEntity> entityList;
 
@@ -23,11 +27,11 @@ public class TestdataStringLengthShadowSolution {
     // Getters/setters
     // ************************************************************************
 
-    public List<String> getValueList() {
+    public List<TestdataListValueShadowEntity> getValueList() {
         return valueList;
     }
 
-    public void setValueList(List<String> valueList) {
+    public void setValueList(List<TestdataListValueShadowEntity> valueList) {
         this.valueList = valueList;
     }
 

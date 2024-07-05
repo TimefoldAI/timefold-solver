@@ -225,7 +225,7 @@ public class DefaultPlannerBenchmark implements PlannerBenchmark {
                 if (firstFailureSubSingleBenchmarkRunner == null) {
                     firstFailureSubSingleBenchmarkRunner = subSingleBenchmarkRunner;
                 }
-                break; // Exit the warm-up loop in case of a failure.
+                continue; // continue to the next task
             }
 
             SolverBenchmarkResult solverBenchmarkResult = subSingleBenchmarkRunner.getSubSingleBenchmarkResult()

@@ -4,47 +4,51 @@ import ai.timefold.solver.core.api.domain.variable.VariableListener;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 
 public class StringLengthVariableListener
-        implements VariableListener<TestdataStringLengthShadowSolution, TestdataStringLengthShadowEntity> {
+        implements VariableListener<TestdataStringLengthShadowSolution, TestdataListValueShadowEntity> {
 
     @Override
     public void beforeEntityAdded(ScoreDirector<TestdataStringLengthShadowSolution> scoreDirector,
-            TestdataStringLengthShadowEntity entity) {
+            TestdataListValueShadowEntity entity) {
         /* Nothing to do */
     }
 
     @Override
     public void afterEntityAdded(ScoreDirector<TestdataStringLengthShadowSolution> scoreDirector,
-            TestdataStringLengthShadowEntity entity) {
+            TestdataListValueShadowEntity entity) {
         /* Nothing to do */
     }
 
     @Override
     public void beforeVariableChanged(ScoreDirector<TestdataStringLengthShadowSolution> scoreDirector,
-            TestdataStringLengthShadowEntity entity) {
+            TestdataListValueShadowEntity entity) {
         /* Nothing to do */
     }
 
     @Override
     public void afterVariableChanged(ScoreDirector<TestdataStringLengthShadowSolution> scoreDirector,
-            TestdataStringLengthShadowEntity entity) {
+            TestdataListValueShadowEntity entity) {
         int oldLength = (entity.getLength() != null) ? entity.getLength() : 0;
-        int newLength = getLength(entity.getValue());
+        int newLength =
+                entity.getEntity() != null
+                        ? entity.getEntity().getValues().stream().map(TestdataListValueShadowEntity::getValue)
+                                .mapToInt(StringLengthVariableListener::getLength).sum()
+                        : 0;
         if (oldLength != newLength) {
             scoreDirector.beforeVariableChanged(entity, "length");
-            entity.setLength(getLength(entity.getValue()));
+            entity.setLength(newLength);
             scoreDirector.afterVariableChanged(entity, "length");
         }
     }
 
     @Override
     public void beforeEntityRemoved(ScoreDirector<TestdataStringLengthShadowSolution> scoreDirector,
-            TestdataStringLengthShadowEntity entity) {
+            TestdataListValueShadowEntity entity) {
         /* Nothing to do */
     }
 
     @Override
     public void afterEntityRemoved(ScoreDirector<TestdataStringLengthShadowSolution> scoreDirector,
-            TestdataStringLengthShadowEntity entity) {
+            TestdataListValueShadowEntity entity) {
         /* Nothing to do */
     }
 
