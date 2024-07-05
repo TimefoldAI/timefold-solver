@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.api.score.analysis;
 
+import static java.util.Comparator.comparing;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -52,6 +54,8 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
  */
 public record ScoreAnalysis<Score_ extends Score<Score_>>(Score_ score,
         Map<ConstraintRef, ConstraintAnalysis<Score_>> constraintMap) {
+
+    static final int DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT = 3;
 
     public ScoreAnalysis {
         Objects.requireNonNull(score, "score");
@@ -141,4 +145,70 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(Score_ score,
         return constraintMap.values();
     }
 
+    /**
+     * Returns a diagnostic text that explains the solution through the {@link ConstraintAnalysis} API to identify which
+     * constraints cause that score quality.
+     * The string is built fresh every time the method is called.
+     * <p>
+     * In case of an {@link Score#isFeasible() infeasible} solution, this can help diagnose the cause of that.
+     *
+     * <p>
+     * Do not parse the return value, its format may change without warning.
+     * Instead, provide this information in a UI or a service,
+     * use {@link ScoreAnalysis#constraintAnalyses()}
+     * and convert those into a domain-specific API.
+     *
+     * @return never null
+     */
+    @SuppressWarnings("java:S3457")
+    public String summarize() {
+        StringBuilder summary = new StringBuilder();
+        summary.append("""
+                Explanation of score (%s):
+                    Constraint matches:
+                """.formatted(score));
+        Comparator<ConstraintAnalysis<Score_>> constraintsScoreComparator = comparing(ConstraintAnalysis::score);
+        Comparator<MatchAnalysis<Score_>> matchScoreComparator = comparing(MatchAnalysis::score);
+
+        constraintAnalyses().stream()
+                .sorted(constraintsScoreComparator)
+                .forEach(constraint -> {
+                    var matches = constraint.matches();
+                    if (matches == null) {
+                        throw new IllegalArgumentException("""
+                                The constraint matches must be non-null.
+                                Maybe use ScoreAnalysisFetchPolicy.FETCH_ALL to request the score analysis
+                                """);
+                    }
+                    if (matches.isEmpty()) {
+                        summary.append(
+                                "%8s%s: constraint (%s) has no matches.\n".formatted(" ", constraint.score().toShortString(),
+                                        constraint.constraintRef().constraintName()));
+                    } else {
+                        summary.append(
+                                "%8s%s: constraint (%s) has %s matches:\n".formatted(" ", constraint.score().toShortString(),
+                                        constraint.constraintRef().constraintName(), matches.size()));
+                    }
+                    matches.stream()
+                            .sorted(matchScoreComparator)
+                            .limit(DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT)
+                            .forEach(match -> summary
+                                    .append("%12s%s: justified with (%s)\n".formatted(" ", match.score().toShortString(),
+                                            match.justification())));
+                    if (matches.size() > DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT) {
+                        summary.append("%12s%s\n".formatted(" ", "..."));
+                    }
+                });
+
+        return summary.toString();
+    }
+
+    public boolean isSolutionInitialized() {
+        return score().isSolutionInitialized();
+    }
+
+    @Override
+    public String toString() {
+        return "Score analysis of score %s with %d constraints.".formatted(score, constraintMap.size());
+    }
 }
