@@ -12,7 +12,6 @@ import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 @PlanningSolution
 public class TestdataStringLengthShadowSolution {
 
-
     @ProblemFactCollectionProperty
     @ValueRangeProvider
     private List<TestdataListValueShadowEntity> valueList;
