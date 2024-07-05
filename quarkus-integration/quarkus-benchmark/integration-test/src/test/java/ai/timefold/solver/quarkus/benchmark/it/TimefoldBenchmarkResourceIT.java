@@ -9,6 +9,6 @@ import io.quarkus.test.junit.QuarkusIntegrationTest;
  */
 @QuarkusIntegrationTest
 @Disabled("timefold-solver-quarkus-benchmark cannot compile to native")
-public class TimefoldBenchmarkTestResourceIT extends TimefoldBenchmarkTestResourceTest {
+public class TimefoldBenchmarkResourceIT extends TimefoldBenchmarkResourceTest {
 
 }

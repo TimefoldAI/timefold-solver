@@ -17,7 +17,7 @@ import io.restassured.path.xml.XmlPath;
  */
 
 @QuarkusTest
-class TimefoldBenchmarkTestResourceTest {
+class TimefoldBenchmarkResourceTest {
 
     @Test
     @Timeout(600)

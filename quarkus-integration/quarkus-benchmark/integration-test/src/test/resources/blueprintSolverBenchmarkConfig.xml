@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plannerBenchmark xmlns="https://timefold.ai/xsd/benchmark"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="https://timefold.ai/xsd/benchmark https://timefold.ai/xsd/benchmark/benchmark.xsd">
+    <parallelBenchmarkCount>AUTO</parallelBenchmarkCount>
+
+    <inheritedSolverBenchmark>
+        <solver>
+            <solutionClass>ai.timefold.solver.quarkus.benchmark.it.domain.TestdataStringLengthShadowSolution</solutionClass>
+            <entityClass>ai.timefold.solver.quarkus.benchmark.it.domain.TestdataStringLengthShadowEntity</entityClass>
+            <entityClass>ai.timefold.solver.quarkus.benchmark.it.domain.TestdataListValueShadowEntity</entityClass>
+            <scoreDirectorFactory>
+                <constraintProviderClass>ai.timefold.solver.quarkus.benchmark.it.solver.TestdataStringLengthConstraintProvider</constraintProviderClass>
+            </scoreDirectorFactory>
+            <termination>
+                <secondsSpentLimit>5</secondsSpentLimit>
+            </termination>
+        </solver>
+    </inheritedSolverBenchmark>
+
+    <solverBenchmarkBluePrint>
+        <solverBenchmarkBluePrintType>EVERY_CONSTRUCTION_HEURISTIC_TYPE_WITH_EVERY_LOCAL_SEARCH_TYPE</solverBenchmarkBluePrintType>
+    </solverBenchmarkBluePrint>
+</plannerBenchmark>

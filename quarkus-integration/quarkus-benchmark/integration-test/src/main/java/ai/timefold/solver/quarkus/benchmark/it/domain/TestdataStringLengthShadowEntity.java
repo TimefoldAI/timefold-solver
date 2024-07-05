@@ -1,37 +1,43 @@
 package ai.timefold.solver.quarkus.benchmark.it.domain;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
+import ai.timefold.solver.core.api.domain.lookup.PlanningId;
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 
 @PlanningEntity
 public class TestdataStringLengthShadowEntity {
 
-    @PlanningVariable(valueRangeProviderRefs = "valueRange")
-    private String value;
+    @PlanningId
+    private Long id;
 
-    @ShadowVariable(variableListenerClass = StringLengthVariableListener.class,
-            sourceEntityClass = TestdataStringLengthShadowEntity.class, sourceVariableName = "value")
-    private Integer length;
+    @PlanningListVariable
+    private List<TestdataListValueShadowEntity> values;
+
+    public TestdataStringLengthShadowEntity() {
+    }
+
+    public TestdataStringLengthShadowEntity(Long id) {
+        this.id = id;
+        this.values = new ArrayList<>();
+    }
 
     // ************************************************************************
     // Getters/setters
     // ************************************************************************
 
-    public String getValue() {
-        return value;
+    public Long getId() {
+        return id;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public List<TestdataListValueShadowEntity> getValues() {
+        return values;
     }
 
-    public Integer getLength() {
-        return length;
-    }
-
-    public void setLength(Integer length) {
-        this.length = length;
+    public void setValues(List<TestdataListValueShadowEntity> values) {
+        this.values = values;
     }
 
 }
