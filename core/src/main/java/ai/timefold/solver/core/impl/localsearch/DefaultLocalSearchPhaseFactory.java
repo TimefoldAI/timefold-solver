@@ -219,7 +219,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                     .withMoveSelectors(new ListChangeMoveSelectorConfig(), new ListSwapMoveSelectorConfig(),
                             new KOptListMoveSelectorConfig());
         } else if (listVariableDescriptor == null) { // We only have basic variables.
-            if (hasChainedVariable) {
+            if (hasChainedVariable && basicVariableDescriptorList.size() == 1) {
                 return new UnionMoveSelectorConfig()
                         .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig(),
                                 new TailChainSwapMoveSelectorConfig());

@@ -14,6 +14,8 @@ import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
+import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity;
+import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
@@ -239,6 +241,16 @@ class DefaultLocalSearchPhaseTest {
                 TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class);
 
         var solution = TestdataListSolution.generateUninitializedSolution(6, 2);
+
+        solution = PlannerTestUtils.solve(solverConfig, solution);
+        assertThat(solution).isNotNull();
+    }
+
+    @Test
+    void solveMultiVarChainedVariable() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataChainedSolution.class, TestdataChainedEntity.class);
+
+        var solution = TestdataChainedSolution.generateUninitializedSolution(6, 2);
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
