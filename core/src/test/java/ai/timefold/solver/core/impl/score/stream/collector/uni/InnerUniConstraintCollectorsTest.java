@@ -1031,6 +1031,7 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         // Add second value, we have two now.
         var secondValue = new LoadBalanced("B", 1);
         var secondRetractor = accumulate(collector, container, secondValue);
+        // sqrt((3-2.5)^2 + (2 - 2.5)^2) = sqrt(0.5^2 + 0.5^2) = sqrt(0.25 + 0.25) = sqrt(0.5)
         assertUnfairness(collector, container, BigDecimal.valueOf(0.707107));
         // Add third value, same as the second. We now have three values, two of which are the same.
         var thirdRetractor = accumulate(collector, container, secondValue);

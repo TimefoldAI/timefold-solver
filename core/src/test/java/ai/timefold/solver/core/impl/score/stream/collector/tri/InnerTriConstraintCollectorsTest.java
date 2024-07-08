@@ -1114,6 +1114,7 @@ final class InnerTriConstraintCollectorsTest extends AbstractConstraintCollector
         assertUnfairness(collector, container, BigDecimal.ZERO);
         // Add second value, we have two now.
         var secondRetractor = accumulate(collector, container, "B", 1, 0);
+        // sqrt((3-2.5)^2 + (2 - 2.5)^2) = sqrt(0.5^2 + 0.5^2) = sqrt(0.25 + 0.25) = sqrt(0.5)
         assertUnfairness(collector, container, BigDecimal.valueOf(0.707107));
         // Add third value, same as the second. We now have three values, two of which are the same.
         var thirdRetractor = accumulate(collector, container, "B", 1, 0);

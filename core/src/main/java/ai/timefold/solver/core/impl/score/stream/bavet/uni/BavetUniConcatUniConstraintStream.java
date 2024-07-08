@@ -12,13 +12,14 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetForeBr
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.UniTuple;
 
-public final class BavetConcatUniConstraintStream<Solution_, A> extends BavetAbstractUniConstraintStream<Solution_, A>
+public final class BavetUniConcatUniConstraintStream<Solution_, A>
+        extends BavetAbstractUniConstraintStream<Solution_, A>
         implements BavetConcatConstraintStream<Solution_> {
 
     private final BavetForeBridgeUniConstraintStream<Solution_, A> leftParent;
     private final BavetForeBridgeUniConstraintStream<Solution_, A> rightParent;
 
-    public BavetConcatUniConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
+    public BavetUniConcatUniConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
             BavetForeBridgeUniConstraintStream<Solution_, A> leftParent,
             BavetForeBridgeUniConstraintStream<Solution_, A> rightParent) {
         super(constraintFactory, leftParent.getRetrievalSemantics());
@@ -67,7 +68,7 @@ public final class BavetConcatUniConstraintStream<Solution_, A> extends BavetAbs
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        BavetConcatUniConstraintStream<?, ?> other = (BavetConcatUniConstraintStream<?, ?>) o;
+        BavetUniConcatUniConstraintStream<?, ?> other = (BavetUniConcatUniConstraintStream<?, ?>) o;
         /*
          * Bridge streams do not implement equality because their equals() would have to point back to this stream,
          * resulting in StackOverflowError.
@@ -84,7 +85,7 @@ public final class BavetConcatUniConstraintStream<Solution_, A> extends BavetAbs
 
     @Override
     public String toString() {
-        return "Concat() with " + childStreamList.size() + " children";
+        return "UniConcat() with " + childStreamList.size() + " children";
     }
 
     // ************************************************************************

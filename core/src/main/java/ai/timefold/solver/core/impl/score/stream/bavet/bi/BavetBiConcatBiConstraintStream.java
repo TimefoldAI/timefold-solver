@@ -84,7 +84,7 @@ public final class BavetBiConcatBiConstraintStream<Solution_, A, B> extends Bave
 
     @Override
     public String toString() {
-        return "Concat() with " + childStreamList.size() + " children";
+        return "BiConcat() with " + childStreamList.size() + " children";
     }
 
     // ************************************************************************

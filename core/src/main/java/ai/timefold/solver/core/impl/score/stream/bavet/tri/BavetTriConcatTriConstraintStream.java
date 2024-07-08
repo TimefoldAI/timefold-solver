@@ -85,7 +85,7 @@ public final class BavetTriConcatTriConstraintStream<Solution_, A, B, C>
 
     @Override
     public String toString() {
-        return "Concat() with " + childStreamList.size() + " children";
+        return "TriConcat() with " + childStreamList.size() + " children";
     }
 
     // ************************************************************************

@@ -315,7 +315,7 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
         var other = (BavetAbstractUniConstraintStream<Solution_, A>) otherStream;
         var leftBridge = new BavetForeBridgeUniConstraintStream<>(constraintFactory, this);
         var rightBridge = new BavetForeBridgeUniConstraintStream<>(constraintFactory, other);
-        var concatStream = new BavetConcatUniConstraintStream<>(constraintFactory, leftBridge, rightBridge);
+        var concatStream = new BavetUniConcatUniConstraintStream<>(constraintFactory, leftBridge, rightBridge);
         return constraintFactory.share(concatStream, concatStream_ -> {
             // Connect the bridges upstream
             getChildStreamList().add(leftBridge);
