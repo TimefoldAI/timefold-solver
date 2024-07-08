@@ -24,6 +24,7 @@ import ai.timefold.solver.core.impl.score.stream.common.quad.DefaultQuadJoiner;
 import ai.timefold.solver.core.impl.score.stream.common.quad.FilteringQuadJoiner;
 import ai.timefold.solver.core.impl.score.stream.common.tri.DefaultTriJoiner;
 import ai.timefold.solver.core.impl.score.stream.common.tri.FilteringTriJoiner;
+import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 /**
  * Creates an {@link BiJoiner}, {@link TriJoiner}, ... instance
@@ -45,7 +46,7 @@ public final class Joiners {
      * @return never null
      */
     public static <A> BiJoiner<A, A> equal() {
-        return equal(Function.identity());
+        return equal(ConstantLambdaUtils.identity());
     }
 
     /**

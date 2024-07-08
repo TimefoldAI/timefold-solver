@@ -1,5 +1,8 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.bi;
 
+import static ai.timefold.solver.core.impl.score.stream.common.bi.InnerBiConstraintStream.createDefaultIndictedObjectsMapping;
+import static ai.timefold.solver.core.impl.score.stream.common.bi.InnerBiConstraintStream.createDefaultJustificationMapping;
+
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.function.BiFunction;
@@ -35,9 +38,9 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.quad.BavetAbstractQuadConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.quad.BavetConcatQuadConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.bavet.quad.BavetBiConcatQuadConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.tri.BavetAbstractTriConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.tri.BavetConcatTriConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.bavet.tri.BavetBiConcatTriConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.tri.BavetJoinTriConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.BavetAbstractUniConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
@@ -96,53 +99,12 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
 
     @SafeVarargs
     @Override
-    public final <C> BiConstraintStream<A, B> ifExists(Class<C> otherClass, TriJoiner<A, B, C>... joiners) {
-        if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
-            return ifExists(constraintFactory.forEach(otherClass), joiners);
-        } else {
-            // Calls fromUnfiltered() for backward compatibility only
-            return ifExists(constraintFactory.fromUnfiltered(otherClass), joiners);
-        }
-    }
-
-    @SafeVarargs
-    @Override
-    public final <C> BiConstraintStream<A, B> ifExistsIncludingUnassigned(Class<C> otherClass, TriJoiner<A, B, C>... joiners) {
-        if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
-            return ifExists(constraintFactory.forEachIncludingUnassigned(otherClass), joiners);
-        } else {
-            return ifExists(constraintFactory.fromUnfiltered(otherClass), joiners);
-        }
-    }
-
-    @SafeVarargs
     public final <C> BiConstraintStream<A, B> ifExists(UniConstraintStream<C> otherStream, TriJoiner<A, B, C>... joiners) {
         return ifExistsOrNot(true, otherStream, joiners);
     }
 
     @SafeVarargs
     @Override
-    public final <C> BiConstraintStream<A, B> ifNotExists(Class<C> otherClass, TriJoiner<A, B, C>... joiners) {
-        if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
-            return ifNotExists(constraintFactory.forEach(otherClass), joiners);
-        } else {
-            // Calls fromUnfiltered() for backward compatibility only
-            return ifNotExists(constraintFactory.fromUnfiltered(otherClass), joiners);
-        }
-    }
-
-    @SafeVarargs
-    @Override
-    public final <C> BiConstraintStream<A, B> ifNotExistsIncludingUnassigned(Class<C> otherClass,
-            TriJoiner<A, B, C>... joiners) {
-        if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
-            return ifNotExists(constraintFactory.forEachIncludingUnassigned(otherClass), joiners);
-        } else {
-            return ifNotExists(constraintFactory.fromUnfiltered(otherClass), joiners);
-        }
-    }
-
-    @SafeVarargs
     public final <C> BiConstraintStream<A, B> ifNotExists(UniConstraintStream<C> otherStream, TriJoiner<A, B, C>... joiners) {
         return ifExistsOrNot(false, otherStream, joiners);
     }
@@ -346,11 +308,11 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
     }
 
     @Override
-    public BiConstraintStream<A, B> concat(UniConstraintStream<A> otherStream) {
+    public BiConstraintStream<A, B> concat(UniConstraintStream<A> otherStream, Function<A, B> paddingFunction) {
         var other = (BavetAbstractUniConstraintStream<Solution_, A>) otherStream;
         var leftBridge = new BavetForeBridgeBiConstraintStream<>(constraintFactory, this);
         var rightBridge = new BavetForeBridgeUniConstraintStream<>(constraintFactory, other);
-        var concatStream = new BavetConcatBiConstraintStream<>(constraintFactory, leftBridge, rightBridge);
+        var concatStream = new BavetUniConcatBiConstraintStream<>(constraintFactory, leftBridge, rightBridge, paddingFunction);
         return constraintFactory.share(concatStream, concatStream_ -> {
             // Connect the bridges upstream
             getChildStreamList().add(leftBridge);
@@ -363,7 +325,7 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
         var other = (BavetAbstractBiConstraintStream<Solution_, A, B>) otherStream;
         var leftBridge = new BavetForeBridgeBiConstraintStream<>(constraintFactory, this);
         var rightBridge = new BavetForeBridgeBiConstraintStream<>(constraintFactory, other);
-        var concatStream = new BavetConcatBiConstraintStream<>(constraintFactory, leftBridge, rightBridge);
+        var concatStream = new BavetBiConcatBiConstraintStream<>(constraintFactory, leftBridge, rightBridge);
         return constraintFactory.share(concatStream, concatStream_ -> {
             // Connect the bridges upstream
             getChildStreamList().add(leftBridge);
@@ -372,11 +334,12 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
     }
 
     @Override
-    public <C> TriConstraintStream<A, B, C> concat(TriConstraintStream<A, B, C> otherStream) {
+    public <C> TriConstraintStream<A, B, C> concat(TriConstraintStream<A, B, C> otherStream,
+            BiFunction<A, B, C> paddingFunction) {
         var other = (BavetAbstractTriConstraintStream<Solution_, A, B, C>) otherStream;
         var leftBridge = new BavetForeBridgeBiConstraintStream<>(constraintFactory, this);
         var rightBridge = new BavetForeBridgeTriConstraintStream<>(constraintFactory, other);
-        var concatStream = new BavetConcatTriConstraintStream<>(constraintFactory, leftBridge, rightBridge);
+        var concatStream = new BavetBiConcatTriConstraintStream<>(constraintFactory, leftBridge, rightBridge, paddingFunction);
         return constraintFactory.share(concatStream, concatStream_ -> {
             // Connect the bridges upstream
             getChildStreamList().add(leftBridge);
@@ -385,11 +348,13 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
     }
 
     @Override
-    public <C, D> QuadConstraintStream<A, B, C, D> concat(QuadConstraintStream<A, B, C, D> otherStream) {
+    public <C, D> QuadConstraintStream<A, B, C, D> concat(QuadConstraintStream<A, B, C, D> otherStream,
+            BiFunction<A, B, C> paddingFunctionC, BiFunction<A, B, D> paddingFunctionD) {
         var other = (BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>) otherStream;
         var leftBridge = new BavetForeBridgeBiConstraintStream<>(constraintFactory, this);
         var rightBridge = new BavetForeBridgeQuadConstraintStream<>(constraintFactory, other);
-        var concatStream = new BavetConcatQuadConstraintStream<>(constraintFactory, leftBridge, rightBridge);
+        var concatStream = new BavetBiConcatQuadConstraintStream<>(constraintFactory, leftBridge, rightBridge, paddingFunctionC,
+                paddingFunctionD);
         return constraintFactory.share(concatStream, concatStream_ -> {
             // Connect the bridges upstream
             getChildStreamList().add(leftBridge);
@@ -495,12 +460,12 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
 
     @Override
     protected final TriFunction<A, B, Score<?>, DefaultConstraintJustification> getDefaultJustificationMapping() {
-        return InnerBiConstraintStream.createDefaultJustificationMapping();
+        return createDefaultJustificationMapping();
     }
 
     @Override
     protected final BiFunction<A, B, Collection<?>> getDefaultIndictedObjectsMapping() {
-        return InnerBiConstraintStream.createDefaultIndictedObjectsMapping();
+        return createDefaultIndictedObjectsMapping();
     }
 
 }

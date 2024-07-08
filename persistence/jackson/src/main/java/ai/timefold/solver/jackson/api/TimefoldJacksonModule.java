@@ -16,6 +16,7 @@ import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecim
 import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.common.Break;
+import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.common.Sequence;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.solver.RecommendedFit;
@@ -51,6 +52,8 @@ import ai.timefold.solver.jackson.api.score.constraint.ConstraintRefJacksonDeser
 import ai.timefold.solver.jackson.api.score.constraint.ConstraintRefJacksonSerializer;
 import ai.timefold.solver.jackson.api.score.stream.common.BreakJacksonDeserializer;
 import ai.timefold.solver.jackson.api.score.stream.common.BreakJacksonSerializer;
+import ai.timefold.solver.jackson.api.score.stream.common.LoadBalanceJacksonDeserializer;
+import ai.timefold.solver.jackson.api.score.stream.common.LoadBalanceJacksonSerializer;
 import ai.timefold.solver.jackson.api.score.stream.common.SequenceChainJacksonDeserializer;
 import ai.timefold.solver.jackson.api.score.stream.common.SequenceChainJacksonSerializer;
 import ai.timefold.solver.jackson.api.score.stream.common.SequenceJacksonDeserializer;
@@ -130,6 +133,8 @@ public class TimefoldJacksonModule extends SimpleModule {
         addDeserializer(Sequence.class, new SequenceJacksonDeserializer());
         addSerializer(SequenceChain.class, new SequenceChainJacksonSerializer());
         addDeserializer(SequenceChain.class, new SequenceChainJacksonDeserializer());
+        addSerializer(LoadBalance.class, new LoadBalanceJacksonSerializer());
+        addDeserializer(LoadBalance.class, new LoadBalanceJacksonDeserializer());
     }
 
 }

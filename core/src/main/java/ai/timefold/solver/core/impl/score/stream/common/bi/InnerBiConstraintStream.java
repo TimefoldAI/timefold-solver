@@ -19,6 +19,7 @@ import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
 import ai.timefold.solver.core.api.score.stream.tri.TriJoiner;
 import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
+import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> {
 
@@ -50,11 +51,50 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
     }
 
     @Override
+    default <C> BiConstraintStream<A, B> ifExists(Class<C> otherClass, TriJoiner<A, B, C>... joiners) {
+        if (getRetrievalSemantics() == STANDARD) {
+            return ifExists(getConstraintFactory().forEach(otherClass), joiners);
+        } else {
+            // Calls fromUnfiltered() for backward compatibility only
+            return ifExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
+        }
+    }
+
+    @Override
+    default <C> BiConstraintStream<A, B> ifExistsIncludingUnassigned(Class<C> otherClass, TriJoiner<A, B, C>... joiners) {
+        if (getRetrievalSemantics() == STANDARD) {
+            return ifExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
+        } else {
+            return ifExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
+        }
+    }
+
+    @Override
+    default <C> BiConstraintStream<A, B> ifNotExists(Class<C> otherClass, TriJoiner<A, B, C>... joiners) {
+        if (getRetrievalSemantics() == STANDARD) {
+            return ifNotExists(getConstraintFactory().forEach(otherClass), joiners);
+        } else {
+            // Calls fromUnfiltered() for backward compatibility only
+            return ifNotExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
+        }
+    }
+
+    @Override
+    default <C> BiConstraintStream<A, B> ifNotExistsIncludingUnassigned(Class<C> otherClass, TriJoiner<A, B, C>... joiners) {
+        if (getRetrievalSemantics() == STANDARD) {
+            return ifNotExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
+        } else {
+            return ifNotExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
+        }
+    }
+
+    @Override
     default BiConstraintStream<A, B> distinct() {
         if (guaranteesDistinct()) {
             return this;
         } else {
-            return groupBy((a, b) -> a, (a, b) -> b);
+            return groupBy(ConstantLambdaUtils.biPickFirst(),
+                    ConstantLambdaUtils.biPickSecond());
         }
     }
 

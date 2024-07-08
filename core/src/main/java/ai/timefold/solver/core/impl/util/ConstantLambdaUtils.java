@@ -64,6 +64,12 @@ public final class ConstantLambdaUtils {
     private static final QuadFunction QUAD_PICK_FOURTH = (a, b, c, d) -> d;
 
     @SuppressWarnings("rawtypes")
+    private static final Function UNI_CONSTANT_NULL = a -> null;
+
+    @SuppressWarnings("rawtypes")
+    private static final ToLongFunction UNI_CONSTANT_ZERO_LONG = a -> 0L;
+
+    @SuppressWarnings("rawtypes")
     private static final ToIntFunction UNI_CONSTANT_ONE = a -> 1;
 
     @SuppressWarnings("rawtypes")
@@ -71,6 +77,12 @@ public final class ConstantLambdaUtils {
 
     @SuppressWarnings("rawtypes")
     private static final Function UNI_CONSTANT_ONE_BIG_DECIMAL = a -> BigDecimal.ONE;
+
+    @SuppressWarnings("rawtypes")
+    private static final BiFunction BI_CONSTANT_NULL = (a, b) -> null;
+
+    @SuppressWarnings("rawtypes")
+    private static final ToLongBiFunction BI_CONSTANT_ZERO_LONG = (a, b) -> 0L;
 
     @SuppressWarnings("rawtypes")
     private static final ToIntBiFunction BI_CONSTANT_ONE = (a, b) -> 1;
@@ -82,6 +94,12 @@ public final class ConstantLambdaUtils {
     private static final BiFunction BI_CONSTANT_ONE_BIG_DECIMAL = (a, b) -> BigDecimal.ONE;
 
     @SuppressWarnings("rawtypes")
+    private static final TriFunction TRI_CONSTANT_NULL = (a, b, c) -> null;
+
+    @SuppressWarnings("rawtypes")
+    private static final ToLongTriFunction TRI_CONSTANT_ZERO_LONG = (a, b, c) -> 0L;
+
+    @SuppressWarnings("rawtypes")
     private static final ToIntTriFunction TRI_CONSTANT_ONE = (a, b, c) -> 1;
 
     @SuppressWarnings("rawtypes")
@@ -89,6 +107,9 @@ public final class ConstantLambdaUtils {
 
     @SuppressWarnings("rawtypes")
     private static final TriFunction TRI_CONSTANT_ONE_BIG_DECIMAL = (a, b, c) -> BigDecimal.ONE;
+
+    @SuppressWarnings("rawtypes")
+    private static final ToLongQuadFunction QUAD_CONSTANT_ZERO_LONG = (a, b, c, d) -> 0L;
 
     @SuppressWarnings("rawtypes")
     private static final ToIntQuadFunction QUAD_CONSTANT_ONE = (a, b, c, d) -> 1;
@@ -220,6 +241,16 @@ public final class ConstantLambdaUtils {
     }
 
     /**
+     * Returns a {@link Function} that returns null.
+     *
+     * @return never null
+     */
+    @SuppressWarnings("unchecked")
+    public static <A, B> Function<A, B> uniConstantNull() {
+        return UNI_CONSTANT_NULL;
+    }
+
+    /**
      * Returns a {@link ToIntFunction} that returns the constant 1.
      *
      * @return never null
@@ -227,6 +258,16 @@ public final class ConstantLambdaUtils {
     @SuppressWarnings("unchecked")
     public static <A> ToIntFunction<A> uniConstantOne() {
         return UNI_CONSTANT_ONE;
+    }
+
+    /**
+     * Returns a {@link ToLongFunction} that returns the constant 0.
+     *
+     * @return never null
+     */
+    @SuppressWarnings("unchecked")
+    public static <A> ToLongFunction<A> uniConstantZeroLong() {
+        return UNI_CONSTANT_ZERO_LONG;
     }
 
     /**
@@ -247,6 +288,26 @@ public final class ConstantLambdaUtils {
     @SuppressWarnings("unchecked")
     public static <A> Function<A, BigDecimal> uniConstantOneBigDecimal() {
         return UNI_CONSTANT_ONE_BIG_DECIMAL;
+    }
+
+    /**
+     * Returns a {@link BiFunction} that returns null.
+     *
+     * @return never null
+     */
+    @SuppressWarnings("unchecked")
+    public static <A, B, C> BiFunction<A, B, C> biConstantNull() {
+        return BI_CONSTANT_NULL;
+    }
+
+    /**
+     * Returns a {@link ToLongBiFunction} that returns the constant 0.
+     *
+     * @return never null
+     */
+    @SuppressWarnings("unchecked")
+    public static <A, B> ToLongBiFunction<A, B> biConstantZeroLong() {
+        return BI_CONSTANT_ZERO_LONG;
     }
 
     /**
@@ -280,6 +341,26 @@ public final class ConstantLambdaUtils {
     }
 
     /**
+     * Returns a {@link TriFunction} that returns null.
+     *
+     * @return never null
+     */
+    @SuppressWarnings("unchecked")
+    public static <A, B, C, D> TriFunction<A, B, C, D> triConstantNull() {
+        return TRI_CONSTANT_NULL;
+    }
+
+    /**
+     * Returns a {@link ToLongTriFunction} that returns the constant 0.
+     *
+     * @return never null
+     */
+    @SuppressWarnings("unchecked")
+    public static <A, B, C> ToLongTriFunction<A, B, C> triConstantZeroLong() {
+        return TRI_CONSTANT_ZERO_LONG;
+    }
+
+    /**
      * Returns a {@link ToIntTriFunction} that returns the constant 1.
      *
      * @return never null
@@ -307,6 +388,16 @@ public final class ConstantLambdaUtils {
     @SuppressWarnings("unchecked")
     public static <A, B, C> TriFunction<A, B, C, BigDecimal> triConstantOneBigDecimal() {
         return TRI_CONSTANT_ONE_BIG_DECIMAL;
+    }
+
+    /**
+     * Returns a {@link ToLongQuadFunction} that returns the constant 0.
+     *
+     * @return never null
+     */
+    @SuppressWarnings("unchecked")
+    public static <A, B, C, D> ToLongQuadFunction<A, B, C, D> quadConstantZeroLong() {
+        return QUAD_CONSTANT_ZERO_LONG;
     }
 
     /**

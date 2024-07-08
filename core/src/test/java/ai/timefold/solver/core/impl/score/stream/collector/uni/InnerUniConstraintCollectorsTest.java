@@ -33,6 +33,7 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
+import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractConstraintCollectorsTest;
 import ai.timefold.solver.core.impl.util.Pair;
@@ -1017,6 +1018,41 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
 
     @Override
     @Test
+    public void loadBalance() {
+        var collector = ConstraintCollectors.<LoadBalanced, String> loadBalance(a -> a.value, a -> a.metric);
+        var container = collector.supplier().get();
+
+        // Default state.
+        assertUnfairness(collector, container, BigDecimal.ZERO);
+        // Add first value, we have one now.
+        var firstValue = new LoadBalanced("A", 2);
+        var firstRetractor = accumulate(collector, container, firstValue);
+        assertUnfairness(collector, container, BigDecimal.ZERO);
+        // Add second value, we have two now.
+        var secondValue = new LoadBalanced("B", 1);
+        var secondRetractor = accumulate(collector, container, secondValue);
+        // sqrt((3-2.5)^2 + (2 - 2.5)^2) = sqrt(0.5^2 + 0.5^2) = sqrt(0.25 + 0.25) = sqrt(0.5)
+        assertUnfairness(collector, container, BigDecimal.valueOf(0.707107));
+        // Add third value, same as the second. We now have three values, two of which are the same.
+        var thirdRetractor = accumulate(collector, container, secondValue);
+        assertUnfairness(collector, container, BigDecimal.ZERO); // Perfectly fair again.
+        // Retract one instance of the second value; we only have two values now.
+        secondRetractor.run();
+        assertUnfairness(collector, container, BigDecimal.valueOf(0.707107));
+        // Retract final instance of the second value; we only have one value now.
+        thirdRetractor.run();
+        assertUnfairness(collector, container, BigDecimal.ZERO);
+        // Retract last value; there are no values now.
+        firstRetractor.run();
+        assertUnfairness(collector, container, BigDecimal.ZERO);
+    }
+
+    private record LoadBalanced(String value, int metric) {
+
+    }
+
+    @Override
+    @Test
     public void collectAndThen() {
         var collector = ConstraintCollectors.collectAndThen(ConstraintCollectors.count(), i -> i * 10);
         var container = collector.supplier().get();
@@ -1066,6 +1102,15 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
                 .usingRecursiveComparison()
                 .ignoringFields("sourceTree", "indexFunction", "sequenceList", "startItemToSequence")
                 .isEqualTo(expectedResult);
+    }
+
+    private static <Container_> void assertUnfairness(
+            UniConstraintCollector<LoadBalanced, Container_, LoadBalance<String>> collector, Object container,
+            BigDecimal expectedValue) {
+        LoadBalance<String> actualResult = collector.finisher().apply((Container_) container);
+        assertThat(actualResult.unfairness())
+                .as("Collector (" + collector + ") did not produce expected result.")
+                .isEqualTo(expectedValue);
     }
 
 }

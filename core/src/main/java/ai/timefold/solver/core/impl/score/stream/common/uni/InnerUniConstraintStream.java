@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.common.uni;
 
+import static ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics.STANDARD;
+
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
@@ -19,6 +21,7 @@ import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
 import ai.timefold.solver.core.impl.score.stream.common.bi.BiJoinerComber;
+import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 public interface InnerUniConstraintStream<A> extends UniConstraintStream<A> {
 
@@ -42,7 +45,7 @@ public interface InnerUniConstraintStream<A> extends UniConstraintStream<A> {
 
     @Override
     default <B> BiConstraintStream<A, B> join(Class<B> otherClass, BiJoiner<A, B>... joiners) {
-        if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
+        if (getRetrievalSemantics() == STANDARD) {
             return join(getConstraintFactory().forEach(otherClass), joiners);
         } else {
             return join(getConstraintFactory().from(otherClass), joiners);
@@ -60,11 +63,49 @@ public interface InnerUniConstraintStream<A> extends UniConstraintStream<A> {
     <B> BiConstraintStream<A, B> join(UniConstraintStream<B> otherStream, BiJoinerComber<A, B> joinerComber);
 
     @Override
+    default <B> UniConstraintStream<A> ifExists(Class<B> otherClass, BiJoiner<A, B>... joiners) {
+        if (getRetrievalSemantics() == STANDARD) {
+            return ifExists(getConstraintFactory().forEach(otherClass), joiners);
+        } else {
+            // Calls fromUnfiltered() for backward compatibility only
+            return ifExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
+        }
+    }
+
+    @Override
+    default <B> UniConstraintStream<A> ifExistsIncludingUnassigned(Class<B> otherClass, BiJoiner<A, B>... joiners) {
+        if (getRetrievalSemantics() == STANDARD) {
+            return ifExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
+        } else {
+            return ifExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
+        }
+    }
+
+    @Override
+    default <B> UniConstraintStream<A> ifNotExists(Class<B> otherClass, BiJoiner<A, B>... joiners) {
+        if (getRetrievalSemantics() == STANDARD) {
+            return ifNotExists(getConstraintFactory().forEach(otherClass), joiners);
+        } else {
+            // Calls fromUnfiltered() for backward compatibility only
+            return ifNotExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
+        }
+    }
+
+    @Override
+    default <B> UniConstraintStream<A> ifNotExistsIncludingUnassigned(Class<B> otherClass, BiJoiner<A, B>... joiners) {
+        if (getRetrievalSemantics() == STANDARD) {
+            return ifNotExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
+        } else {
+            return ifNotExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
+        }
+    }
+
+    @Override
     default UniConstraintStream<A> distinct() {
         if (guaranteesDistinct()) {
             return this;
         } else {
-            return groupBy(Function.identity());
+            return groupBy(ConstantLambdaUtils.identity());
         }
     }
 

@@ -1,0 +1,206 @@
+[#loadBalancingAndFairness]
+= Load balancing and fairness
+:doctype: book
+:sectnums:
+:icons: font
+
+Load balancing is a common constraint for many Timefold Solver use cases.
+Especially when scheduling employees, the workload needs to be spread out fairly;
+there may even be legal requirements to that effect.
+
+[#fairnessWhatIsFair]
+== What is fair?
+
+Fairness is a complex concept, and it is not always clear what is fair.
+For example, let’s assign 15 undesirable tasks to five employees.
+Each task takes a day, but the tasks have different skill requirements.
+In a perfectly fair schedule, each employee will get three tasks,
+because the average is `15 / 5 = 3`.
+
+Unfortunately, this doesn't solve the entire problem, because there are other constraints.
+For example, there are seven tasks that require a skill which only two of the employees possess.
+One of them will have to do at least four tasks.
+
+From the above, we can see that our schedule cannot be perfectly fair,
+but we can make it as fair as possible.
+
+[#fairnessWhichIsFairer]
+=== Which is fairer?
+
+We can define fairness in two opposing ways:
+
+- A schedule is fair if most users think it is fair to them.
+- A schedule is fair if the employee with most tasks has as few tasks as possible.
+
+Since we want to treat all employees equally, the second definition is correct.
+Besides, if we make almost everyone happy by letting one employee do all the work,
+that employee would probably quit and that doesn't help.
+
+Let’s look at a few different solutions of the same dataset, sorted from most to least fair.
+Each one has 15 tasks:
+
+[%header,cols="7"]
+|===
+| |Ann |Beth |Carl |Dan |Ed |Solution Quality
+
+|Schedule A
+|3
+|3
+|3
+|3
+|3
+|Most fair
+
+|Schedule B
+|4
+|4
+|3
+|2
+|2
+|
+
+|Schedule C
+|5
+|3
+|3
+|2
+|2
+|
+
+|Schedule D
+|5
+|5
+|2
+|2
+|1
+|
+
+|Schedule E
+|6
+|3
+|3
+|2
+|1
+|
+
+|Schedule F
+|5
+|6
+|2
+|1
+|1
+|
+
+|Schedule G
+|11
+|1
+|1
+|1
+|1
+|Most unfair
+|===
+
+Ann has the most tasks each time.
+How do we compare schedules in which Ann has the same number of tasks?
+
+[%header,cols="7"]
+|===
+| |Ann |Beth |Carl |Dan |Ed |Solution Quality
+
+|Schedule C
+|5
+|3
+|3
+|2
+|2
+|More fair
+
+|Schedule D
+|5
+|5
+|2
+|2
+|1
+|Less fair
+|===
+
+We take a look at the second most loaded employee, Beth.
+In schedule D, she has five tasks, while in schedule C, she has less.
+This makes schedule C fairer overall.
+
+This is the definition of fairness we use in the remainder of this section.
+
+[#fairnessConstraints]
+== Fairness constraints
+
+Timefold Solver supports fairness constraints out of the box
+through the use of xref:constraints-and-score/score-calculation.adoc#constraintStreamsGroupingAndCollectors[grouping]
+and the xref:constraints-and-score/score-calculation.adoc#collectorsLoadBalance[load balancing constraint collector].
+In your `ConstraintProvider` implementation, a load-balancing constraint may look like this:
+
+[source,java]
+----
+Constraint fairAssignments(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEach(ShiftAssignment.class)
+            .groupBy(ConstraintCollectors.loadBalance(ShiftAssignment::getEmployee))
+            .penalizeBigDecimal(HardSoftBigDecimalScore.ONE_SOFT, LoadBalance::unfairness)
+            .asConstraint("fairAssignments");
+}
+----
+
+[IMPORTANT]
+====
+When using fairness constraints,
+we recommend that you use one of the xref:constraints-and-score/overview.adoc#scoreType[score types] based on `BigDecimal`,
+such as `HardSoftBigDecimalScore`.
+See below for a <<fairnessWhyBigDecimal,detailed rationale>>.
+====
+
+This constraint will penalize the solution based on its unfairness,
+defined in this case by how many `ShiftAssignment` are allocated to any particular `Employee`.
+
+Unfairness is a dimensionless number that measures how fair the solution is.
+A lower value indicates a fairer solution.
+The smallest possible value is 0, indicating that the solution is perfectly fair.
+There is no upper limit to the value,
+and it is expected to scale linearly with the size of your dataset.
+The value is rounded to six decimal places.
+
+Different unfairness values may only be compared for solutions coming from the same dataset.
+Unfairness values computed from different datasets are incomparable.
+
+[#fairnessWhyBigDecimal]
+=== Why `BigDecimal`?
+
+When using fairness constraints,
+we recommend that you use one of the xref:constraints-and-score/overview.adoc#scoreType[score types] based on `BigDecimal`.
+We base our recommendation on the following reasons:
+
+- The unfairness value is a rational number.
+The corresponding floating-point type (`double`)
+is xref:constraints-and-score/overview.adoc#avoidFloatingPointNumbersInScoreCalculation[not suitable for score calculations].
+- Rounding the unfairness value to the nearest integer would lose precision,
+causing a xref:constraints-and-score/performance.adoc#scoreTrap[score trap].
+Even a small difference in unfairness (such as between `1.000001` and `1.000002`)
+gives the solver crucial information to distinguish different solutions from each other.
+
+If the somewhat worsened performance of a `BigDecimal`-based score calculation is a concern,
+instead, you may decide to multiply the unfairness value by some power of ten to preserve precision,
+and only then round it to the nearest integer.
+This allows you to use the simple integer-based score types.
+
+Unfortunately, this also requires you to re-balance your constraint weights,
+multiplying them by the same power of ten as used for unfairness.
+Otherwise, the unfairness constraint will dominate the score,
+effectively becoming the most important constraint.
+
+If you take this approach,
+we recommend that you preserve all six decimal places of the unfairness value
+to avoid the most severe score traps.
+This will leave considerably less space in the selected data type for actual values,
+which go from `x` to `x × 1_000_000`.
+This may entirely preclude you from using the 32-bit `int`,
+and reduce the usefulness of the 64-bit `long`.
+
+We default to `BigDecimal` to help users avoid the pitfalls described above,
+while still allowing advanced users to choose other score types once they understand the risks.

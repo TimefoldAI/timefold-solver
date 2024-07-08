@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.tri;
 
+import java.util.function.Function;
+
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
@@ -8,10 +10,16 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.UniTuple;
 final class ConcatTriUniNode<A, B, C>
         extends AbstractConcatNode<TriTuple<A, B, C>, UniTuple<A>, TriTuple<A, B, C>> {
 
-    ConcatTriUniNode(TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle,
+    private final Function<A, B> paddingFunctionB;
+    private final Function<A, C> paddingFunctionC;
+
+    ConcatTriUniNode(Function<A, B> paddingFunctionB, Function<A, C> paddingFunctionC,
+            TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle,
             int inputStoreIndexLeftOutTupleList, int inputStoreIndexRightOutTupleList,
             int outputStoreSize) {
         super(nextNodesTupleLifecycle, inputStoreIndexLeftOutTupleList, inputStoreIndexRightOutTupleList, outputStoreSize);
+        this.paddingFunctionB = paddingFunctionB;
+        this.paddingFunctionC = paddingFunctionC;
     }
 
     @Override
@@ -21,7 +29,10 @@ final class ConcatTriUniNode<A, B, C>
 
     @Override
     protected TriTuple<A, B, C> getOutTupleFromRight(UniTuple<A> rightTuple) {
-        return new TriTuple<>(rightTuple.factA, null, null, outputStoreSize);
+        var factA = rightTuple.factA;
+        return new TriTuple<>(factA,
+                paddingFunctionB.apply(factA), paddingFunctionC.apply(factA),
+                outputStoreSize);
     }
 
     @Override

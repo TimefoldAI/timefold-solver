@@ -33,6 +33,7 @@ import java.util.function.BiFunction;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
+import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractConstraintCollectorsTest;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.impl.util.Quadruple;
@@ -1097,6 +1098,35 @@ final class InnerBiConstraintCollectorsTest extends AbstractConstraintCollectors
 
     @Override
     @Test
+    public void loadBalance() {
+        var collector = ConstraintCollectors.<String, Integer, String> loadBalance((a, b) -> a, (a, b) -> b);
+        var container = collector.supplier().get();
+
+        // Default state.
+        assertUnfairness(collector, container, BigDecimal.ZERO);
+        // Add first value, we have one now.
+        var firstRetractor = accumulate(collector, container, "A", 2);
+        assertUnfairness(collector, container, BigDecimal.ZERO);
+        // Add second value, we have two now.
+        var secondRetractor = accumulate(collector, container, "B", 1);
+        // sqrt((3-2.5)^2 + (2 - 2.5)^2) = sqrt(0.5^2 + 0.5^2) = sqrt(0.25 + 0.25) = sqrt(0.5)
+        assertUnfairness(collector, container, BigDecimal.valueOf(0.707107));
+        // Add third value, same as the second. We now have three values, two of which are the same.
+        var thirdRetractor = accumulate(collector, container, "B", 1);
+        assertUnfairness(collector, container, BigDecimal.ZERO); // Perfectly fair again.
+        // Retract one instance of the second value; we only have two values now.
+        secondRetractor.run();
+        assertUnfairness(collector, container, BigDecimal.valueOf(0.707107));
+        // Retract final instance of the second value; we only have one value now.
+        thirdRetractor.run();
+        assertUnfairness(collector, container, BigDecimal.ZERO);
+        // Retract last value; there are no values now.
+        firstRetractor.run();
+        assertUnfairness(collector, container, BigDecimal.ZERO);
+    }
+
+    @Override
+    @Test
     public void collectAndThen() {
         var collector = ConstraintCollectors.collectAndThen(ConstraintCollectors.countBi(), i -> i * 10);
         var container = collector.supplier().get();
@@ -1147,6 +1177,15 @@ final class InnerBiConstraintCollectorsTest extends AbstractConstraintCollectors
                 .usingRecursiveComparison()
                 .ignoringFields("sourceTree", "indexFunction", "sequenceList", "startItemToSequence")
                 .isEqualTo(expectedResult);
+    }
+
+    private static <Container_> void assertUnfairness(
+            BiConstraintCollector<String, Integer, Container_, LoadBalance<String>> collector, Object container,
+            BigDecimal expectedValue) {
+        LoadBalance<String> actualResult = collector.finisher().apply((Container_) container);
+        assertThat(actualResult.unfairness())
+                .as("Collector (" + collector + ") did not produce expected result.")
+                .isEqualTo(expectedValue);
     }
 
 }

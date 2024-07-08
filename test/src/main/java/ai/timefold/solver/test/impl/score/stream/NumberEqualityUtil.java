@@ -1,6 +1,7 @@
 package ai.timefold.solver.test.impl.score.stream;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.function.BiPredicate;
 
 import ai.timefold.solver.core.api.score.Score;
@@ -81,6 +82,26 @@ final class NumberEqualityUtil {
             throw new IllegalStateException("Impossible state: unknown numeric type (" + actualImpactType
                     + ") for score definition (" + scoreDefinition.getClass() + ").");
         }
+    }
+
+    /**
+     * Return the correct predicate to compare two unknown subtypes of {@link Number}.
+     * Supports {@link Integer}, {@link Long} and {@link BigDecimal}.
+     * If two numbers are not equal but still represent the same point on the number line
+     * (such as int 1, long 1 and {@link BigDecimal#ONE}
+     * the predicate will accept.
+     *
+     * @param expectedImpact never null; user-provided type to check that number against
+     * @return never null
+     */
+    public static Comparator<Number> getComparison(Number expectedImpact) {
+        return Comparator.comparing(a -> {
+            if (a instanceof BigDecimal bigDecimal) {
+                return bigDecimal;
+            } else {
+                return BigDecimal.valueOf(a.longValue());
+            }
+        });
     }
 
     private NumberEqualityUtil() {

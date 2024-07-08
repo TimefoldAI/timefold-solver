@@ -1,5 +1,12 @@
 package ai.timefold.solver.core.api.score.stream.tri;
 
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantNull;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantNull;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantOne;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantOneBigDecimal;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantOneLong;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
+
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.function.BiFunction;
@@ -374,6 +381,89 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
     /**
      * Create a new {@link BiConstraintStream} for every tuple of A, B and C where D exists for which the
      * {@link QuadJoiner} is true (for the properties it extracts from the facts).
+     * <p>
+     * This method has overloaded methods with multiple {@link QuadJoiner} parameters.
+     *
+     * @param otherStream never null
+     * @param joiner never null
+     * @param <D> the type of the fourth matched fact
+     * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
+     *         {@link QuadJoiner} is true
+     */
+    default <D> TriConstraintStream<A, B, C> ifExists(UniConstraintStream<D> otherStream, QuadJoiner<A, B, C, D> joiner) {
+        return ifExists(otherStream, new QuadJoiner[] { joiner });
+    }
+
+    /**
+     * As defined by {@link #ifExists(UniConstraintStream, QuadJoiner)}.
+     * For performance reasons, indexing joiners must be placed before filtering joiners.
+     *
+     * @param otherStream never null
+     * @param joiner1 never null
+     * @param joiner2 never null
+     * @param <D> the type of the fourth matched fact
+     * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
+     *         {@link QuadJoiner}s are true
+     */
+    default <D> TriConstraintStream<A, B, C> ifExists(UniConstraintStream<D> otherStream, QuadJoiner<A, B, C, D> joiner1,
+            QuadJoiner<A, B, C, D> joiner2) {
+        return ifExists(otherStream, new QuadJoiner[] { joiner1, joiner2 });
+    }
+
+    /**
+     * As defined by {@link #ifExists(UniConstraintStream, QuadJoiner)}.
+     * For performance reasons, indexing joiners must be placed before filtering joiners.
+     *
+     * @param otherStream never null
+     * @param joiner1 never null
+     * @param joiner2 never null
+     * @param joiner3 never null
+     * @param <D> the type of the fourth matched fact
+     * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
+     *         {@link QuadJoiner}s are true
+     */
+    default <D> TriConstraintStream<A, B, C> ifExists(UniConstraintStream<D> otherStream, QuadJoiner<A, B, C, D> joiner1,
+            QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3) {
+        return ifExists(otherStream, new QuadJoiner[] { joiner1, joiner2, joiner3 });
+    }
+
+    /**
+     * As defined by {@link #ifExists(UniConstraintStream, QuadJoiner)}.
+     * For performance reasons, indexing joiners must be placed before filtering joiners.
+     *
+     * @param otherStream never null
+     * @param joiner1 never null
+     * @param joiner2 never null
+     * @param joiner3 never null
+     * @param joiner4 never null
+     * @param <D> the type of the fourth matched fact
+     * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
+     *         {@link QuadJoiner}s are true
+     */
+    default <D> TriConstraintStream<A, B, C> ifExists(UniConstraintStream<D> otherStream, QuadJoiner<A, B, C, D> joiner1,
+            QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3, QuadJoiner<A, B, C, D> joiner4) {
+        return ifExists(otherStream, new QuadJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+    }
+
+    /**
+     * As defined by {@link #ifExists(UniConstraintStream, QuadJoiner)}.
+     * For performance reasons, indexing joiners must be placed before filtering joiners.
+     * <p>
+     * This method causes <i>Unchecked generics array creation for varargs parameter</i> warnings,
+     * but we can't fix it with a {@link SafeVarargs} annotation because it's an interface method.
+     * Therefore, there are overloaded methods with up to 4 {@link QuadJoiner} parameters.
+     *
+     * @param otherStream never null
+     * @param joiners never null
+     * @param <D> the type of the fourth matched fact
+     * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
+     *         {@link QuadJoiner}s are true
+     */
+    <D> TriConstraintStream<A, B, C> ifExists(UniConstraintStream<D> otherStream, QuadJoiner<A, B, C, D>... joiners);
+
+    /**
+     * Create a new {@link BiConstraintStream} for every tuple of A, B and C where D exists for which the
+     * {@link QuadJoiner} is true (for the properties it extracts from the facts).
      * For classes annotated with {@link PlanningEntity},
      * this method also includes entities with null variables,
      * or entities that are not assigned to any list variable.
@@ -546,6 +636,89 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      *         {@link QuadJoiner}s are true
      */
     <D> TriConstraintStream<A, B, C> ifNotExists(Class<D> otherClass, QuadJoiner<A, B, C, D>... joiners);
+
+    /**
+     * Create a new {@link BiConstraintStream} for every tuple of A, B and C where D does not exist for which the
+     * {@link QuadJoiner} is true (for the properties it extracts from the facts).
+     * <p>
+     * This method has overloaded methods with multiple {@link QuadJoiner} parameters.
+     *
+     * @param otherStream never null
+     * @param joiner never null
+     * @param <D> the type of the fourth matched fact
+     * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
+     *         {@link QuadJoiner} is true
+     */
+    default <D> TriConstraintStream<A, B, C> ifNotExists(UniConstraintStream<D> otherStream, QuadJoiner<A, B, C, D> joiner) {
+        return ifNotExists(otherStream, new QuadJoiner[] { joiner });
+    }
+
+    /**
+     * As defined by {@link #ifNotExists(UniConstraintStream, QuadJoiner)}.
+     * For performance reasons, indexing joiners must be placed before filtering joiners.
+     *
+     * @param otherStream never null
+     * @param joiner1 never null
+     * @param joiner2 never null
+     * @param <D> the type of the fourth matched fact
+     * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
+     *         {@link QuadJoiner}s are true
+     */
+    default <D> TriConstraintStream<A, B, C> ifNotExists(UniConstraintStream<D> otherStream, QuadJoiner<A, B, C, D> joiner1,
+            QuadJoiner<A, B, C, D> joiner2) {
+        return ifNotExists(otherStream, new QuadJoiner[] { joiner1, joiner2 });
+    }
+
+    /**
+     * As defined by {@link #ifNotExists(UniConstraintStream, QuadJoiner)}.
+     * For performance reasons, indexing joiners must be placed before filtering joiners.
+     *
+     * @param otherStream never null
+     * @param joiner1 never null
+     * @param joiner2 never null
+     * @param joiner3 never null
+     * @param <D> the type of the fourth matched fact
+     * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
+     *         {@link QuadJoiner}s are true
+     */
+    default <D> TriConstraintStream<A, B, C> ifNotExists(UniConstraintStream<D> otherStream, QuadJoiner<A, B, C, D> joiner1,
+            QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3) {
+        return ifNotExists(otherStream, new QuadJoiner[] { joiner1, joiner2, joiner3 });
+    }
+
+    /**
+     * As defined by {@link #ifNotExists(UniConstraintStream, QuadJoiner)}.
+     * For performance reasons, indexing joiners must be placed before filtering joiners.
+     *
+     * @param otherStream never null
+     * @param joiner1 never null
+     * @param joiner2 never null
+     * @param joiner3 never null
+     * @param joiner4 never null
+     * @param <D> the type of the fourth matched fact
+     * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
+     *         {@link QuadJoiner}s are true
+     */
+    default <D> TriConstraintStream<A, B, C> ifNotExists(UniConstraintStream<D> otherStream, QuadJoiner<A, B, C, D> joiner1,
+            QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3, QuadJoiner<A, B, C, D> joiner4) {
+        return ifNotExists(otherStream, new QuadJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+    }
+
+    /**
+     * As defined by {@link #ifNotExists(UniConstraintStream, QuadJoiner)}.
+     * For performance reasons, indexing joiners must be placed before filtering joiners.
+     * <p>
+     * This method causes <i>Unchecked generics array creation for varargs parameter</i> warnings,
+     * but we can't fix it with a {@link SafeVarargs} annotation because it's an interface method.
+     * Therefore, there are overloaded methods with up to 4 {@link QuadJoiner} parameters.
+     *
+     * @param <D> the type of the fourth matched fact
+     * @param otherStream never null
+     * @param joiners never null
+     * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
+     *         {@link QuadJoiner}s are true
+     */
+    <D> TriConstraintStream<A, B, C> ifNotExists(UniConstraintStream<D> otherStream, QuadJoiner<A, B, C, D>... joiners);
 
     /**
      * Create a new {@link BiConstraintStream} for every tuple of A, B and C where D does not exist for which the
@@ -1064,12 +1237,36 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * and the other stream consists of {@code [C, D, E]},
      * {@code this.concat(other)} will consist of
      * {@code [(A1, A2, A3), (B1, B2, B3), (C1, C2, C3), (C, null), (D, null), (E, null)]}.
+     * <p>
      * This operation can be thought of as an or between streams.
      *
      * @param otherStream never null
      * @return never null
      */
-    TriConstraintStream<A, B, C> concat(UniConstraintStream<A> otherStream);
+    default TriConstraintStream<A, B, C> concat(UniConstraintStream<A> otherStream) {
+        return concat(otherStream, uniConstantNull(), uniConstantNull());
+    }
+
+    /**
+     * Returns a new {@link TriConstraintStream} containing all the tuples of both this {@link TriConstraintStream}
+     * and the provided {@link UniConstraintStream}.
+     * The {@link UniConstraintStream} tuples will be padded from the right by the results of the padding functions.
+     *
+     * <p>
+     * For instance, if this stream consists of {@code [(A1, A2, A3), (B1, B2, B3), (C1, C2, C3)]}
+     * and the other stream consists of {@code [C, D, E]},
+     * {@code this.concat(other, a -> null, a -> null)} will consist of
+     * {@code [(A1, A2, A3), (B1, B2, B3), (C1, C2, C3), (C, null), (D, null), (E, null)]}.
+     * <p>
+     * This operation can be thought of as an or between streams.
+     *
+     * @param otherStream never null
+     * @param paddingFunctionB never null, function to find the padding for the second fact
+     * @param paddingFunctionC never null, function to find the padding for the third fact
+     * @return never null
+     */
+    TriConstraintStream<A, B, C> concat(UniConstraintStream<A> otherStream, Function<A, B> paddingFunctionB,
+            Function<A, C> paddingFunctionC);
 
     /**
      * Returns a new {@link TriConstraintStream} containing all the tuples of both this {@link TriConstraintStream}
@@ -1081,24 +1278,47 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * and the other stream consists of {@code [(C1, C2), (D1, D2), (E1, E2)]},
      * {@code this.concat(other)} will consist of
      * {@code [(A1, A2, A3), (B1, B2, B3), (C1, C2, C3), (C1, C2, null), (D1, D2, null), (E1, E2, null)]}.
+     * <p>
      * This operation can be thought of as an or between streams.
      *
      * @param otherStream never null
      * @return never null
      */
-    TriConstraintStream<A, B, C> concat(BiConstraintStream<A, B> otherStream);
+    default TriConstraintStream<A, B, C> concat(BiConstraintStream<A, B> otherStream) {
+        return concat(otherStream, biConstantNull());
+    }
+
+    /**
+     * Returns a new {@link TriConstraintStream} containing all the tuples of both this {@link TriConstraintStream}
+     * and the provided {@link BiConstraintStream}.
+     * The {@link BiConstraintStream} tuples will be padded from the right by the result of the padding function.
+     *
+     * <p>
+     * For instance, if this stream consists of {@code [(A1, A2, A3), (B1, B2, B3), (C1, C2, C3)]}
+     * and the other stream consists of {@code [(C1, C2), (D1, D2), (E1, E2)]},
+     * {@code this.concat(other, (a, b) -> null)} will consist of
+     * {@code [(A1, A2, A3), (B1, B2, B3), (C1, C2, C3), (C1, C2, null), (D1, D2, null), (E1, E2, null)]}.
+     * <p>
+     * This operation can be thought of as an or between streams.
+     *
+     * @param otherStream never null
+     * @param paddingFunctionC never null, function to find the padding for the third fact
+     * @return never null
+     */
+    TriConstraintStream<A, B, C> concat(BiConstraintStream<A, B> otherStream, BiFunction<A, B, C> paddingFunctionC);
 
     /**
      * Returns a new {@link TriConstraintStream} containing all the tuples of both this {@link TriConstraintStream} and the
      * provided {@link TriConstraintStream}.
-     * Tuples in both this {@link TriConstraintStream} and the provided
-     * {@link TriConstraintStream} will appear at least twice.
+     * Tuples in both this {@link TriConstraintStream} and the provided {@link TriConstraintStream} will appear at least twice.
      *
      * <p>
      * For instance, if this stream consists of {@code [(A, 1, -1), (B, 2, -2), (C, 3, -3)]} and the other stream consists of
-     * {@code [(C, 3, -3), (D, 4, -4), (E, 5, -5)]}, {@code this.concat(other)} will consist of
-     * {@code [(A, 1, -1), (B, 2, -2), (C, 3, -3), (C, 3, -3), (D, 4, -4), (E, 5, -5)]}. This operation can be thought of as an
-     * or between streams.
+     * {@code [(C, 3, -3), (D, 4, -4), (E, 5, -5)]},
+     * {@code this.concat(other)} will consist of
+     * {@code [(A, 1, -1), (B, 2, -2), (C, 3, -3), (C, 3, -3), (D, 4, -4), (E, 5, -5)]}.
+     * <p>
+     * This operation can be thought of as an or between streams.
      *
      * @param otherStream never null
      * @return never null
@@ -1115,15 +1335,39 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * and the other stream consists of {@code [(C1, C2, C3, C4), (D1, D2, D3, D4), (E1, E2, E3, E4)]},
      * {@code this.concat(other)} will consist of
      * {@code [(A1, A2, A3, null), (B1, B2, B3, null), (C1, C2, C3, null), (C1, C2, C3, C4), (D1, D2, D3, D4), (E1, E2, E3, E4)]}.
+     * <p>
      * This operation can be thought of as an or between streams.
      *
      * @param otherStream never null
      * @return never null
      */
-    <D> QuadConstraintStream<A, B, C, D> concat(QuadConstraintStream<A, B, C, D> otherStream);
+    default <D> QuadConstraintStream<A, B, C, D> concat(QuadConstraintStream<A, B, C, D> otherStream) {
+        return concat(otherStream, triConstantNull());
+    }
+
+    /**
+     * Returns a new {@link QuadConstraintStream} containing all the tuples of both this {@link TriConstraintStream}
+     * and the provided {@link QuadConstraintStream}.
+     * The {@link TriConstraintStream} tuples will be padded from the right by the result of the padding function.
+     *
+     * <p>
+     * For instance, if this stream consists of {@code [(A1, A2, A3), (B1, B2, B3), (C1, C2, C3)]}
+     * and the other stream consists of {@code [(C1, C2, C3, C4), (D1, D2, D3, D4), (E1, E2, E3, E4)]},
+     * {@code this.concat(other, (a, b, c) -> null)} will consist of
+     * {@code [(A1, A2, A3, null), (B1, B2, B3, null), (C1, C2, C3, null), (C1, C2, C3, C4), (D1, D2, D3, D4), (E1, E2, E3, E4)]}.
+     * (Assuming that the padding function returns null for the given inputs.)
+     * <p>
+     * This operation can be thought of as an or between streams.
+     *
+     * @param otherStream never null
+     * @param paddingFunction never null, function to find the padding for the fourth fact
+     * @return never null
+     */
+    <D> QuadConstraintStream<A, B, C, D> concat(QuadConstraintStream<A, B, C, D> otherStream,
+            TriFunction<A, B, C, D> paddingFunction);
 
     // ************************************************************************
-    // Other operations
+    // expand
     // ************************************************************************
 
     /**
@@ -1142,6 +1386,43 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
     <ResultD_> QuadConstraintStream<A, B, C, ResultD_> expand(TriFunction<A, B, C, ResultD_> mapping);
 
     // ************************************************************************
+    // complement
+    // ************************************************************************
+
+    /**
+     * As defined by {@link #complement(Class, Function, Function)},
+     * where the padding function pads with null.
+     */
+    default TriConstraintStream<A, B, C> complement(Class<A> otherClass) {
+        return complement(otherClass, uniConstantNull(), uniConstantNull());
+    }
+
+    /**
+     * Adds to the stream all instances of a given class which are not yet present in it.
+     * These instances must be present in the solution,
+     * which means the class needs to be either a planning entity or a problem fact.
+     * <p>
+     * The instances will be read from the first element of the input tuple.
+     * When an output tuple needs to be created for the newly inserted instances,
+     * the first element will be the new instance.
+     * The rest of the tuple will be padded with the results of the padding functions,
+     * applied on the new instance.
+     *
+     * @param otherClass never null
+     * @param paddingFunctionB never null, function to find the padding for the second fact
+     * @param paddingFunctionC never null, function to find the padding for the third fact
+     * @return never null
+     */
+    default TriConstraintStream<A, B, C> complement(Class<A> otherClass, Function<A, B> paddingFunctionB,
+            Function<A, C> paddingFunctionC) {
+        var firstStream = this;
+        var remapped = firstStream.map(ConstantLambdaUtils.triPickFirst());
+        var secondStream = getConstraintFactory().forEach(otherClass)
+                .ifNotExists(remapped, Joiners.equal());
+        return firstStream.concat(secondStream, paddingFunctionB, paddingFunctionC);
+    }
+
+    // ************************************************************************
     // Penalize/reward
     // ************************************************************************
 
@@ -1151,7 +1432,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> penalize(Score_ constraintWeight) {
-        return penalize(constraintWeight, ConstantLambdaUtils.triConstantOne());
+        return penalize(constraintWeight, triConstantOne());
     }
 
     /**
@@ -1160,7 +1441,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> penalizeLong(Score_ constraintWeight) {
-        return penalizeLong(constraintWeight, ConstantLambdaUtils.triConstantOneLong());
+        return penalizeLong(constraintWeight, triConstantOneLong());
     }
 
     /**
@@ -1169,7 +1450,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> penalizeBigDecimal(Score_ constraintWeight) {
-        return penalizeBigDecimal(constraintWeight, ConstantLambdaUtils.triConstantOneBigDecimal());
+        return penalizeBigDecimal(constraintWeight, triConstantOneBigDecimal());
     }
 
     /**
@@ -1212,7 +1493,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @return never null
      */
     default TriConstraintBuilder<A, B, C, ?> penalizeConfigurable() {
-        return penalizeConfigurable(ConstantLambdaUtils.triConstantOne());
+        return penalizeConfigurable(triConstantOne());
     }
 
     /**
@@ -1250,7 +1531,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> reward(Score_ constraintWeight) {
-        return reward(constraintWeight, ConstantLambdaUtils.triConstantOne());
+        return reward(constraintWeight, triConstantOne());
     }
 
     /**
@@ -1293,7 +1574,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @return never null
      */
     default TriConstraintBuilder<A, B, C, ?> rewardConfigurable() {
-        return rewardConfigurable(ConstantLambdaUtils.triConstantOne());
+        return rewardConfigurable(triConstantOne());
     }
 
     /**
@@ -1336,7 +1617,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @return never null
      */
     default <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> impact(Score_ constraintWeight) {
-        return impact(constraintWeight, ConstantLambdaUtils.triConstantOne());
+        return impact(constraintWeight, triConstantOne());
     }
 
     /**
@@ -1377,7 +1658,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @return never null
      */
     default TriConstraintBuilder<A, B, C, ?> impactConfigurable() {
-        return impactConfigurable(ConstantLambdaUtils.triConstantOne());
+        return impactConfigurable(triConstantOne());
     }
 
     /**

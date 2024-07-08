@@ -85,8 +85,7 @@ image::constraints-and-score/overview/scoreWeighting.png[align="center"]
 
 Score weighting is easy in use cases where you can __put a price tag on everything__.
 In that case, the positive constraints maximize revenue and the negative constraints minimize expenses, so together they maximize profit.
-Alternatively, score weighting is also often used to create social xref:constraints-and-score/performance.adoc#fairnessScoreConstraints[fairness].
-For example, an employee, who requests a free day, pays a higher weight on New Years eve than on a normal day.
+Alternatively, score weighting is also often used to create social xref:constraints-and-score/load-balancing-and-fairness.adoc#loadBalancingAndFairness[fairness].
 
 The weight of a constraint match can depend on the planning entities involved.
 For example, in vehicle routing,
@@ -160,7 +159,7 @@ while both are outranked by the constraints of physical reality.
 
 [NOTE]
 ====
-To model xref:constraints-and-score/performance.adoc#fairnessScoreConstraints[fairness or load balancing],
+To model xref:constraints-and-score/load-balancing-and-fairness.adoc#loadBalancingAndFairness[fairness or load balancing],
 there is no need to use lots of score levels,
 even though Timefold Solver can handle many score levels.
 ====
@@ -273,16 +272,12 @@ System.out.println( ((0.01 + 0.02) + 0.03) == (0.01 + (0.02 + 0.03)) ); // retur
 
 This leads to __score corruption__.
 
-Decimal numbers (``BigDecimal``) have none of these problems.
-
-[NOTE]
-====
-BigDecimal arithmetic is considerably slower than ``int``, `long` or `double` arithmetic.
-In experiments we have seen the score calculation take five times longer.
-
-Therefore, in many cases, it can be worthwhile to multiply _all_ numbers for a single score weight by a plural of ten, so the score weight fits in a scaled `int` or ``long``.
-For example, if we multiply all weights by ``1000``, a fuelCost of `0.07` becomes a fuelCostMillis of `70` and no longer uses a decimal score weight.
-====
+Decimal numbers (``BigDecimal``) have none of these problems,
+but their arithmetic operations are slower than with `int` or `long`.
+In some cases, it can be worthwhile multiplying _all_ constraint weights by the same power of ten,
+so the score fits in a scaled `int` or `long`.
+For example, if we multiply all weights by `1000`,
+`fuelCost` of `0.07` becomes `fuelCostMillis` of `70` and no longer uses a decimal score weight.
 
 
 [#scoreType]

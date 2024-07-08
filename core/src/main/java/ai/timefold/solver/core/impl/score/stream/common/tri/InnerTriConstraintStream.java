@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.common.tri;
 
+import static ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics.STANDARD;
+
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
@@ -17,6 +19,7 @@ import ai.timefold.solver.core.api.score.stream.tri.TriConstraintBuilder;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
+import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 public interface InnerTriConstraintStream<A, B, C> extends TriConstraintStream<A, B, C> {
 
@@ -40,10 +43,50 @@ public interface InnerTriConstraintStream<A, B, C> extends TriConstraintStream<A
 
     @Override
     default <D> QuadConstraintStream<A, B, C, D> join(Class<D> otherClass, QuadJoiner<A, B, C, D>... joiners) {
-        if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
+        if (getRetrievalSemantics() == STANDARD) {
             return join(getConstraintFactory().forEach(otherClass), joiners);
         } else {
             return join(getConstraintFactory().from(otherClass), joiners);
+        }
+    }
+
+    @Override
+    default <D> TriConstraintStream<A, B, C> ifExists(Class<D> otherClass, QuadJoiner<A, B, C, D>... joiners) {
+        if (getRetrievalSemantics() == STANDARD) {
+            return ifExists(getConstraintFactory().forEach(otherClass), joiners);
+        } else {
+            // Calls fromUnfiltered() for backward compatibility only
+            return ifExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
+        }
+    }
+
+    @Override
+    default <D> TriConstraintStream<A, B, C> ifExistsIncludingUnassigned(Class<D> otherClass,
+            QuadJoiner<A, B, C, D>... joiners) {
+        if (getRetrievalSemantics() == STANDARD) {
+            return ifExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
+        } else {
+            return ifExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
+        }
+    }
+
+    @Override
+    default <D> TriConstraintStream<A, B, C> ifNotExists(Class<D> otherClass, QuadJoiner<A, B, C, D>... joiners) {
+        if (getRetrievalSemantics() == STANDARD) {
+            return ifNotExists(getConstraintFactory().forEach(otherClass), joiners);
+        } else {
+            // Calls fromUnfiltered() for backward compatibility only
+            return ifNotExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
+        }
+    }
+
+    @Override
+    default <D> TriConstraintStream<A, B, C> ifNotExistsIncludingUnassigned(Class<D> otherClass,
+            QuadJoiner<A, B, C, D>... joiners) {
+        if (getRetrievalSemantics() == STANDARD) {
+            return ifNotExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
+        } else {
+            return ifNotExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
         }
     }
 
@@ -52,7 +95,9 @@ public interface InnerTriConstraintStream<A, B, C> extends TriConstraintStream<A
         if (guaranteesDistinct()) {
             return this;
         } else {
-            return groupBy((a, b, c) -> a, (a, b, c) -> b, (a, b, c) -> c);
+            return groupBy(ConstantLambdaUtils.triPickFirst(),
+                    ConstantLambdaUtils.triPickSecond(),
+                    ConstantLambdaUtils.triPickThird());
         }
     }
 

@@ -111,6 +111,9 @@ public abstract class AbstractConstraintCollectorsTest {
     public abstract void consecutiveUsage();
 
     @Test
+    public abstract void loadBalance();
+
+    @Test
     public abstract void collectAndThen();
 
     protected static SequenceChain<Integer, Integer> buildSequenceChain(Integer... data) {
