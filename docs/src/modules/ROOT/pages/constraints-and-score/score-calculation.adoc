@@ -855,7 +855,7 @@ Certain constraints require resource usage to be balanced across the solution.
 For example, employees should have a similar number of shifts.
 This can be achieved using the `ConstraintCollectors.loadBalance(...)` collector.
 
-For more, see xref:constraints-and-score/load-balancing-and-fairness.adoc[Load balancing and fairness].
+For more, see xref:constraints-and-score/load-balancing-and-fairness.adoc#loadBalancingAndFairness[Load balancing and fairness].
 
 [#collectorsConditional]
 ==== Conditional collectors
