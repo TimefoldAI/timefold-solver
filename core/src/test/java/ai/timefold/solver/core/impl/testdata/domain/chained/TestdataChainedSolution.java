@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.testdata.domain.chained;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
@@ -73,5 +74,26 @@ public class TestdataChainedSolution extends TestdataObject {
     // ************************************************************************
     // Complex methods
     // ************************************************************************
+
+    public static TestdataChainedSolution generateUninitializedSolution(int valueCount, int entityCount) {
+        return generateSolution(valueCount, entityCount);
+    }
+
+    private static TestdataChainedSolution generateSolution(int valueCount, int entityCount) {
+        List<TestdataChainedEntity> entityList = IntStream.range(0, entityCount)
+                .mapToObj(i -> new TestdataChainedEntity("Generated Entity " + i))
+                .toList();
+        List<TestdataChainedAnchor> anchorList = IntStream.range(0, entityCount)
+                .mapToObj(i -> new TestdataChainedAnchor("Generated Anchor " + i))
+                .toList();
+        List<TestdataValue> valueList = IntStream.range(0, valueCount)
+                .mapToObj(i -> new TestdataValue("Generated Value " + i))
+                .toList();
+        TestdataChainedSolution solution = new TestdataChainedSolution();
+        solution.setChainedEntityList(entityList);
+        solution.setChainedAnchorList(anchorList);
+        solution.setUnchainedValueList(valueList);
+        return solution;
+    }
 
 }
