@@ -310,7 +310,7 @@ public class ConfigUtils {
 
     public static List<Class<?>> getAllAnnotatedLineageClasses(Class<?> bottomClass,
             Class<? extends Annotation> annotation) {
-        if (!bottomClass.isAnnotationPresent(annotation)) {
+        if (bottomClass == null || !bottomClass.isAnnotationPresent(annotation)) {
             return Collections.emptyList();
         }
         List<Class<?>> lineageClassList = new ArrayList<>();
