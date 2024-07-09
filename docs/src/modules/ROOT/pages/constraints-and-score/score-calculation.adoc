@@ -1266,7 +1266,7 @@ For example, if you have a stream of `Employee` instances and a stream of `Shift
 joining `Shift` instances with `Employee` instances will only return shifts that are assigned to an employee.
 Employees without shifts will not be considered.
 
-In cases such as xref:constraints-and-score/load-bancing-and-fairness.adoc#loadBalancingAndFairness[load balancing],
+In cases such as xref:constraints-and-score/load-balancing-and-fairness.adoc#loadBalancingAndFairness[load balancing],
 a similar situation happens where the `Shift` instances only refence the `Employee` instances assigned to them.
 For a properly balanced solution, you also need to include `Employee` instances that are not assigned to any shifts.
 
