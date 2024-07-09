@@ -28,7 +28,9 @@ public @interface ConstraintWeight {
      * concatenated with "/" and {@link #value() the constraint name}.
      *
      * @return defaults to {@link ConstraintConfiguration#constraintPackage()}
+     * @deprecated Leave empty and let the solver provide the default. Do not rely on constraint package in user code.
      */
+    @Deprecated(forRemoval = true, since = "1.13.0")
     String constraintPackage() default "";
 
     /**

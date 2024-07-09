@@ -21,7 +21,9 @@ public interface ConstraintBuilder {
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
      * @param constraintPackage never null
      * @return never null
+     * @deprecated Constraint package should no longer be used, use {@link #asConstraint(String)} instead.
      */
+    @Deprecated(forRemoval = true, since = "1.13.0")
     Constraint asConstraint(String constraintPackage, String constraintName);
 
 }

@@ -259,13 +259,11 @@ To do this, every constraint stream must contain a call to either a `penalize()`
 building block.
 The `penalize()` building block makes the score worse and the `reward()` building block improves the score.
 
-Each constraint stream is then terminated by calling `asConstraint()` method, which finally builds the constraint. Constraints have several components:
+Each constraint stream is then terminated by calling `asConstraint()` method, which finally builds the constraint.
+Constraints have several components:
 
-- Constraint package is the Java package that contains the constraint.
-The default value is the package that contains the `ConstraintProvider` implementation or the value from
-xref:constraints-and-score/constraint-configuration.adoc#constraintConfiguration[constraint configuration], if implemented.
-- Constraint name is the human-readable descriptive name for the constraint, which
-(together with the constraint package) must be unique within the entire `ConstraintProvider` implementation.
+- Constraint name is the human-readable descriptive name for the constraint,
+which must be unique within the entire `ConstraintProvider` implementation.
 - Constraint weight is a constant score value indicating how much every breach of the constraint affects the score.
 Valid examples include `SimpleScore.ONE`, `HardSoftScore.ONE_HARD` and `HardMediumSoftScore.of(1, 2, 3)`.
 - Constraint match weigher is an optional function indicating how many times the constraint weight should be applied in
@@ -276,6 +274,13 @@ The default value is `1`.
 [NOTE]
 ====
 Constraints with zero constraint weight are automatically disabled and do not impose any performance penalty.
+====
+
+[NOTE]
+====
+The constraint has another component: a constraint package.
+It has no practical impact on the solver and it has been deprecated.
+We recommend you don't use constraint packages; the solver will choose a suitable default value.
 ====
 
 The Constraint Streams API supports many different types of penalties.

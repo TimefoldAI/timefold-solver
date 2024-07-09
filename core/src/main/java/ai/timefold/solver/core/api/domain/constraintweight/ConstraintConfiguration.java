@@ -26,7 +26,9 @@ public @interface ConstraintConfiguration {
      * This is the default for every {@link ConstraintWeight#constraintPackage()} in the annotated class.
      *
      * @return defaults to the annotated class's package.
+     * @deprecated Leave empty and let the solver provide the default. Do not rely on constraint package in user code.
      */
+    @Deprecated(forRemoval = true, since = "1.13.0")
     String constraintPackage() default "";
 
 }

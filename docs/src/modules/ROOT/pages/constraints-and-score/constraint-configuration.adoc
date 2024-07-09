@@ -69,7 +69,7 @@ In the constraint configuration class, add a `@ConstraintWeight` field or proper
 
 [source,java,options="nowrap"]
 ----
-@ConstraintConfiguration(constraintPackage = "...conferencescheduling.score")
+@ConstraintConfiguration
 public class ConferenceConstraintConfiguration {
 
     @ConstraintWeight("Speaker conflict")
@@ -95,9 +95,16 @@ Notice how it defaults the _"Content conflict"_ constraint as ten times more imp
 Normally, a constraint weight only uses one score level,
 but it's possible to use multiple score levels (at a small performance cost).
 
-Each constraint has a constraint package and a constraint name, together they form the constraint id.
+Each constraint has a constraint name, and optionally a constraint package; together they form the constraint id.
 These connect the constraint weight with the constraint implementation.
-*For each constraint weight, there must be a constraint implementation with the same package and the same name.*
+*For each constraint weight, there must be a constraint implementation with the same constraint id.*
+
+[NOTE]
+====
+Constraint packages are optional and have been deprecated.
+We recommend that you don't use them, and instead keep constraint names unique.
+If constraint package is not provided, the solver will transparently provide a default value.
+====
 
 * The `@ConstraintConfiguration` annotation has a `constraintPackage` property that defaults to the package of the constraint configuration class.
 Cases with xref:constraints-and-score/score-calculation.adoc[Constraint Streams API] normally don't need to specify it.

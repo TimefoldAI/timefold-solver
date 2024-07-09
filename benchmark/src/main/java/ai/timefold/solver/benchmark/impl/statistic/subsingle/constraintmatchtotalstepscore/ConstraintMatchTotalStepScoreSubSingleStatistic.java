@@ -62,7 +62,7 @@ public class ConstraintMatchTotalStepScoreSubSingleStatistic<Solution_>
                     builderList.add(new LineChart.Builder<>());
                 }
                 LineChart.Builder<Long, Double> builder = builderList.get(i);
-                String seriesLabel = point.getConstraintName() + " weight";
+                String seriesLabel = point.getConstraintRef().constraintName() + " weight";
                 // Only add changes
                 double lastValue = (builder.count(seriesLabel) == 0) ? 0.0 : builder.getLastValue(seriesLabel);
                 if (levelValues[i] != lastValue) {

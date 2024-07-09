@@ -57,6 +57,38 @@ Every upgrade note indicates how likely your code will be affected by that chang
 The upgrade recipe often lists the changes as they apply to Java code.
 We kindly ask Kotlin and Python users to translate the changes accordingly.
 
+=== Upgrade from 1.12.0 to 1.13.0 (Work in progress)
+
+.icon:info-circle[role=yellow] Constraint packages have been deprecated
+[%collapsible%open]
+====
+In the solver, constraints are uniquely identified by their package and name.
+We have now deprecated the package name and we recommend to keep constraint names unique instead.
+
+Before in `*ConstraintProvider.java`:
+
+[source,java]
+----
+...
+    .penalize(ONE_SOFT)
+    .asConstraint("employees.paris", "maxHoursWorked");
+...
+----
+
+After in `*ConstraintProvider.java`:
+
+[source,java]
+----
+...
+    .penalize(ONE_SOFT)
+    .asConstraint("employees.paris.maxHoursWorked");
+...
+----
+
+While constraint packages are still supported, they will be removed in a future major version.
+====
+
+
 === Upgrade from 1.9.0 to 1.10.0
 
 .icon:info-circle[role=yellow] Pinning unassigned entities now fails fast, unless allowed

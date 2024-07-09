@@ -261,8 +261,9 @@ public final class AsConstraintRecipe extends Recipe {
                         if (!matcherMeta.constraintPackageIncluded) {
                             templateCode += ".asConstraint(#{any(String)})";
                         } else {
-                            templateCode += ".asConstraint(#{any(String)}, #{any(String)})";
+                            templateCode += ".asConstraint(\"#{}\")";
                         }
+                        System.out.println(templateCode);
                         JavaTemplate template = JavaTemplate.builder(templateCode)
                                 .javaParser(buildJavaParser())
                                 .build();
@@ -293,26 +294,31 @@ public final class AsConstraintRecipe extends Recipe {
                                 if (!matcherMeta.matchWeigherIncluded) {
                                     return template.apply(getCursor(),
                                             e.getCoordinates().replace(), select,
-                                            arguments.get(2), arguments.get(0), arguments.get(1));
+                                            arguments.get(2), mergeExpressions(arguments.get(0), arguments.get(1)));
                                 } else {
                                     return template.apply(getCursor(),
                                             e.getCoordinates().replace(), select,
-                                            arguments.get(2), arguments.get(3), arguments.get(0), arguments.get(1));
+                                            arguments.get(2), arguments.get(3),
+                                            mergeExpressions(arguments.get(0), arguments.get(1)));
                                 }
                             } else {
                                 if (!matcherMeta.matchWeigherIncluded) {
                                     return template.apply(getCursor(),
                                             e.getCoordinates().replace(), select,
-                                            arguments.get(0), arguments.get(1));
+                                            mergeExpressions(arguments.get(0), arguments.get(1)));
                                 } else {
                                     return template.apply(getCursor(),
                                             e.getCoordinates().replace(), select,
-                                            arguments.get(2), arguments.get(0), arguments.get(1));
+                                            arguments.get(2), mergeExpressions(arguments.get(0), arguments.get(1)));
                                 }
                             }
                         }
                     }
                 });
+    }
+
+    private String mergeExpressions(Expression constraintPackage, Expression constraintName) {
+        return constraintPackage.toString() + "." + constraintName.toString();
     }
 
     public static JavaParser.Builder buildJavaParser() {

@@ -23,12 +23,8 @@ public class ConstraintMatchTotalBestScoreStatisticPoint extends StatisticPoint 
         return timeMillisSpent;
     }
 
-    public String getConstraintPackage() {
-        return constraintRef.packageName();
-    }
-
-    public String getConstraintName() {
-        return constraintRef.constraintName();
+    public ConstraintRef getConstraintRef() {
+        return constraintRef;
     }
 
     public int getConstraintMatchCount() {
@@ -39,13 +35,9 @@ public class ConstraintMatchTotalBestScoreStatisticPoint extends StatisticPoint 
         return scoreTotal;
     }
 
-    public String getConstraintId() {
-        return constraintRef.constraintId();
-    }
-
     @Override
     public String toCsvLine() {
-        return buildCsvLineWithStrings(timeMillisSpent, getConstraintPackage(), getConstraintName(),
+        return buildCsvLineWithStrings(timeMillisSpent, constraintRef.packageName(), constraintRef.constraintName(),
                 Integer.toString(constraintMatchCount), scoreTotal.toString());
     }
 

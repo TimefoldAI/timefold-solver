@@ -27,7 +27,9 @@ public interface ConstraintFactory {
      * otherwise the package of the {@link PlanningSolution} class.
      *
      * @return never null
+     * @deprecated Do not rely on any constraint package in user code.
      */
+    @Deprecated(forRemoval = true, since = "1.13.0")
     String getDefaultConstraintPackage();
 
     // ************************************************************************

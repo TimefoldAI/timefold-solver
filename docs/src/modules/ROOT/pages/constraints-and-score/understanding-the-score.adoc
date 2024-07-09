@@ -45,7 +45,7 @@ In the string above, there are some previously unexplained concepts.
 * A _Constraint match_ is created every time a constraint causes a change to the score.
 * _Justifications_ are user-defined objects that implement the `ai.timefold.solver.core.api.score.stream.ConstraintJustification` interface,
 which carry meaningful information about a constraint match,
-such as its package, name and any metadata that the user chooses to expose.
+such as its name and any metadata that the user chooses to expose.
 Justifications are most easily available via <<scoreAnalysis,score analysis>>.
 * _Indicted objects_ are objects which were directly involved in causing a constraint to match.
 For example, if your constraints penalize each vehicle,
