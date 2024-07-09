@@ -105,7 +105,7 @@ public class ConstructionHeuristicDecider<Solution_> {
             ConstructionHeuristicMoveScope<Solution_> moveScope = new ConstructionHeuristicMoveScope<>(stepScope, moveIndex,
                     move);
             moveIndex++;
-            doMove(moveScope);
+            doMove(moveScope, isRuin);
             if (forager.isQuitEarly()) {
                 break;
             }
@@ -129,13 +129,14 @@ public class ConstructionHeuristicDecider<Solution_> {
         }
     }
 
-    protected <Score_ extends Score<Score_>> void doMove(ConstructionHeuristicMoveScope<Solution_> moveScope) {
+    protected <Score_ extends Score<Score_>> void doMove(ConstructionHeuristicMoveScope<Solution_> moveScope,
+            boolean isRuin) {
         InnerScoreDirector<Solution_, Score_> scoreDirector = moveScope.getScoreDirector();
         scoreDirector.doAndProcessMove(moveScope.getMove(), assertMoveScoreFromScratch, score -> {
             moveScope.setScore(score);
             forager.addMove(moveScope);
         });
-        if (assertExpectedUndoMoveScore) {
+        if (!isRuin && assertExpectedUndoMoveScore) {
             scoreDirector.assertExpectedUndoMoveScore(moveScope.getMove(),
                     (Score_) moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore(),
                     SolverLifecyclePoint.of(moveScope));
