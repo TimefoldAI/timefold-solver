@@ -19,6 +19,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.solver.AbstractSolver;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
@@ -42,6 +43,7 @@ public class SolverScope<Solution_> {
     private int startingSolverCount;
     private Random workingRandom;
     private InnerScoreDirector<Solution_, ?> scoreDirector;
+    private AbstractSolver<Solution_> solver;
     private DefaultProblemChangeDirector<Solution_> problemChangeDirector;
     /**
      * Used for capping CPU power usage in multithreaded scenarios.
@@ -72,6 +74,13 @@ public class SolverScope<Solution_> {
     // ************************************************************************
     // Constructors and simple getters/setters
     // ************************************************************************
+    public AbstractSolver<Solution_> getSolver() {
+        return solver;
+    }
+
+    public void setSolver(AbstractSolver<Solution_> solver) {
+        this.solver = solver;
+    }
 
     public DefaultProblemChangeDirector<Solution_> getProblemChangeDirector() {
         return problemChangeDirector;

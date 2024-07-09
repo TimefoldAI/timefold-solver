@@ -10,6 +10,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveListFa
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.RuinMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.KOptMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorConfig;
@@ -28,6 +29,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveListFact
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.PillarChangeMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.PillarSwapMoveSelectorFactory;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SwapMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.chained.KOptMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorFactory;
@@ -58,6 +60,8 @@ public interface MoveSelectorFactory<Solution_> {
             return new UnionMoveSelectorFactory<>((UnionMoveSelectorConfig) moveSelectorConfig);
         } else if (CartesianProductMoveSelectorConfig.class.isAssignableFrom(moveSelectorConfig.getClass())) {
             return new CartesianProductMoveSelectorFactory<>((CartesianProductMoveSelectorConfig) moveSelectorConfig);
+        } else if (RuinMoveSelectorConfig.class.isAssignableFrom(moveSelectorConfig.getClass())) {
+            return new RuinMoveSelectorFactory((RuinMoveSelectorConfig) moveSelectorConfig);
         } else if (SubListChangeMoveSelectorConfig.class.isAssignableFrom(moveSelectorConfig.getClass())) {
             return new SubListChangeMoveSelectorFactory<>((SubListChangeMoveSelectorConfig) moveSelectorConfig);
         } else if (SubListSwapMoveSelectorConfig.class.isAssignableFrom(moveSelectorConfig.getClass())) {

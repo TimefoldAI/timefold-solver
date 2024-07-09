@@ -188,6 +188,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         Counter errorCounter = Metrics.counter(SolverMetric.ERROR_COUNT.getMeterId());
 
         solverScope.setBestSolution(problem);
+        solverScope.setSolver(this);
         outerSolvingStarted(solverScope);
         boolean restartSolver = true;
         while (restartSolver) {

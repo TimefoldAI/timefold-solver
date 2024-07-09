@@ -14,6 +14,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveListFa
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.RuinMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainSwapMoveSelectorConfig;
@@ -53,6 +54,8 @@ public class LocalSearchPhaseConfig extends PhaseConfig<LocalSearchPhaseConfig> 
             @XmlElement(name = PillarChangeMoveSelectorConfig.XML_ELEMENT_NAME,
                     type = PillarChangeMoveSelectorConfig.class),
             @XmlElement(name = PillarSwapMoveSelectorConfig.XML_ELEMENT_NAME, type = PillarSwapMoveSelectorConfig.class),
+            @XmlElement(name = RuinMoveSelectorConfig.XML_ELEMENT_NAME,
+                    type = RuinMoveSelectorConfig.class),
             @XmlElement(name = SubChainChangeMoveSelectorConfig.XML_ELEMENT_NAME,
                     type = SubChainChangeMoveSelectorConfig.class),
             @XmlElement(name = SubChainSwapMoveSelectorConfig.XML_ELEMENT_NAME,
