@@ -543,6 +543,8 @@
                         
             <xs:element name="pillarSwapMoveSelector" type="tns:pillarSwapMoveSelectorConfig"/>
                         
+            <xs:element name="ruinMoveSelector" type="tns:ruinMoveSelectorConfig"/>
+                        
             <xs:element name="subChainChangeMoveSelector" type="tns:subChainChangeMoveSelectorConfig"/>
                         
             <xs:element name="subChainSwapMoveSelector" type="tns:subChainSwapMoveSelectorConfig"/>
@@ -845,6 +847,34 @@
       
   </xs:complexType>
     
+  <xs:complexType name="ruinMoveSelectorConfig">
+        
+    <xs:complexContent>
+            
+      <xs:extension base="tns:moveSelectorConfig">
+                
+        <xs:sequence>
+                    
+          <xs:element minOccurs="0" name="minimumRuinedCount" type="xs:long"/>
+                    
+          <xs:element minOccurs="0" name="maximumRuinedCount" type="xs:long"/>
+                    
+          <xs:element minOccurs="0" name="minimumRuinedPercentage" type="xs:double"/>
+                    
+          <xs:element minOccurs="0" name="maximumRuinedPercentage" type="xs:double"/>
+                    
+          <xs:element minOccurs="0" name="entitySelector" type="tns:entitySelectorConfig"/>
+                    
+          <xs:element minOccurs="0" name="constructionHeuristic" type="tns:constructionHeuristicPhaseConfig"/>
+                  
+        </xs:sequence>
+              
+      </xs:extension>
+          
+    </xs:complexContent>
+      
+  </xs:complexType>
+    
   <xs:complexType name="subChainChangeMoveSelectorConfig">
         
     <xs:complexContent>
@@ -1048,6 +1078,8 @@
             <xs:element name="pillarChangeMoveSelector" type="tns:pillarChangeMoveSelectorConfig"/>
                         
             <xs:element name="pillarSwapMoveSelector" type="tns:pillarSwapMoveSelectorConfig"/>
+                        
+            <xs:element name="ruinMoveSelector" type="tns:ruinMoveSelectorConfig"/>
                         
             <xs:element name="subChainChangeMoveSelector" type="tns:subChainChangeMoveSelectorConfig"/>
                         
@@ -1280,6 +1312,8 @@
             <xs:element name="pillarChangeMoveSelector" type="tns:pillarChangeMoveSelectorConfig"/>
                         
             <xs:element name="pillarSwapMoveSelector" type="tns:pillarSwapMoveSelectorConfig"/>
+                        
+            <xs:element name="ruinMoveSelector" type="tns:ruinMoveSelectorConfig"/>
                         
             <xs:element name="subChainChangeMoveSelector" type="tns:subChainChangeMoveSelectorConfig"/>
                         

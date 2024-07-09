@@ -20,6 +20,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListC
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHeuristicDecider;
@@ -36,6 +37,7 @@ import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
+import ai.timefold.solver.core.impl.solver.termination.TerminationFactory;
 
 public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         extends AbstractPhaseFactory<Solution_, ConstructionHeuristicPhaseConfig> {
@@ -44,8 +46,8 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         super(phaseConfig);
     }
 
-    @Override
-    public ConstructionHeuristicPhase<Solution_> buildPhase(int phaseIndex, boolean triggerFirstInitializedSolutionEvent,
+    public DefaultConstructionHeuristicPhase.Builder<Solution_> getBaseBuilder(int phaseIndex,
+            boolean triggerFirstInitializedSolutionEvent,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             Termination<Solution_> solverTermination) {
         ConstructionHeuristicType constructionHeuristicType_ = Objects.requireNonNullElse(
@@ -86,7 +88,23 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
             builder.setAssertExpectedStepScore(true);
             builder.setAssertShadowVariablesAreNotStaleAfterStep(true);
         }
-        return builder.build();
+        return builder;
+    }
+
+    @Override
+    public ConstructionHeuristicPhase<Solution_> buildPhase(int phaseIndex, boolean triggerFirstInitializedSolutionEvent,
+            HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
+            Termination<Solution_> solverTermination) {
+        return getBaseBuilder(phaseIndex, triggerFirstInitializedSolutionEvent, solverConfigPolicy, bestSolutionRecaller,
+                solverTermination)
+                .build();
+    }
+
+    public DefaultConstructionHeuristicPhase<Solution_> buildRuinPhase(HeuristicConfigPolicy<Solution_> solverConfigPolicy) {
+        var phaseBuilder = getBaseBuilder(0, false, solverConfigPolicy, new BestSolutionRecaller<>(),
+                TerminationFactory.<Solution_> create(new TerminationConfig()).buildTermination(solverConfigPolicy));
+        phaseBuilder.setIsRuinPhase(true);
+        return phaseBuilder.build();
     }
 
     private Optional<EntityPlacerConfig> getValidEntityPlacerConfig() {

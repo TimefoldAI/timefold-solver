@@ -83,7 +83,8 @@ public class ConstructionHeuristicDecider<Solution_> {
         // Overridable by a subclass.
     }
 
-    public void decideNextStep(ConstructionHeuristicStepScope<Solution_> stepScope, Placement<Solution_> placement) {
+    public void decideNextStep(ConstructionHeuristicStepScope<Solution_> stepScope, Placement<Solution_> placement,
+            boolean isRuin) {
         int moveIndex = 0;
         for (Move<Solution_> move : placement) {
             boolean allowedNonDoableMove = move instanceof NoChangeMove<Solution_> || move instanceof ChangeMove<Solution_>;
@@ -109,7 +110,7 @@ public class ConstructionHeuristicDecider<Solution_> {
                 break;
             }
             stepScope.getPhaseScope().getSolverScope().checkYielding();
-            if (termination.isPhaseTerminated(stepScope.getPhaseScope())) {
+            if (!isRuin && termination.isPhaseTerminated(stepScope.getPhaseScope())) {
                 break;
             }
         }
