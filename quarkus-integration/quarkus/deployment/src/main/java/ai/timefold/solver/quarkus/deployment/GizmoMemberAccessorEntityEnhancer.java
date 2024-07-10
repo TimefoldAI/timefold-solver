@@ -104,7 +104,7 @@ final class GizmoMemberAccessorEntityEnhancer {
                 Thread.currentThread().getContextClassLoader());
         Field fieldMember = declaringClass.getDeclaredField(fieldInfo.name());
         GizmoMemberDescriptor member = createMemberDescriptorForField(fieldMember, transformers);
-        GizmoMemberInfo memberInfo = new GizmoMemberInfo(member,
+        GizmoMemberInfo memberInfo = new GizmoMemberInfo(member, true,
                 (Class<? extends Annotation>) Class.forName(annotationInstance.name().toString(), false,
                         Thread.currentThread().getContextClassLoader()));
         String generatedClassName = GizmoMemberAccessorFactory.getGeneratedClassName(fieldMember);
@@ -185,7 +185,7 @@ final class GizmoMemberAccessorEntityEnhancer {
             member = new GizmoMemberDescriptor(name, newMethodDescriptor, memberDescriptor, declaringClass,
                     setterDescriptor.orElse(null));
         }
-        GizmoMemberInfo memberInfo = new GizmoMemberInfo(member,
+        GizmoMemberInfo memberInfo = new GizmoMemberInfo(member, true,
                 (Class<? extends Annotation>) Class.forName(annotationInstance.name().toString(), false,
                         Thread.currentThread().getContextClassLoader()));
         GizmoMemberAccessorImplementor.defineAccessorFor(generatedClassName, classOutput, memberInfo);
