@@ -10,6 +10,7 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.score.descriptor.ScoreDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 public final class DefaultConstraintWeightSupplier<Score_ extends Score<Score_>, Solution_>
         implements ConstraintWeightSupplier<Solution_, Score_> {
@@ -21,8 +22,13 @@ public final class DefaultConstraintWeightSupplier<Score_ extends Score<Score_>,
                 Objects.requireNonNull(constraintWeightsClass));
     }
 
+    private final SolutionDescriptor<Solution_> solutionDescriptor;
+    private final Class<? extends ConstraintWeights<Score_>> constraintWeightsClass;
+
     private DefaultConstraintWeightSupplier(SolutionDescriptor<Solution_> solutionDescriptor,
             Class<? extends ConstraintWeights<Score_>> constraintWeightsClass) {
+        this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
+        this.constraintWeightsClass = Objects.requireNonNull(constraintWeightsClass);
     }
 
     @Override
@@ -33,7 +39,12 @@ public final class DefaultConstraintWeightSupplier<Score_ extends Score<Score_>,
 
     @Override
     public Class<?> getProblemFactClass() {
-        return null;
+        return constraintWeightsClass;
+    }
+
+    @Override
+    public String getDefaultConstraintPackage() {
+        return solutionDescriptor.getSolutionClass().getPackageName();
     }
 
     @Override
@@ -48,7 +59,7 @@ public final class DefaultConstraintWeightSupplier<Score_ extends Score<Score_>,
 
     @Override
     public void validateConstraintWeight(ConstraintRef constraintRef, Score_ constraintWeight) {
-        throw new UnsupportedOperationException();
+        AbstractConstraint.validateWeight(solutionDescriptor, constraintRef, constraintWeight);
     }
 
 }

@@ -52,6 +52,11 @@ public final class LegacyConstraintWeightSupplier<Score_ extends Score<Score_>, 
     }
 
     @Override
+    public String getDefaultConstraintPackage() {
+        return constraintConfigurationDescriptor.getConstraintPackage();
+    }
+
+    @Override
     public Set<ConstraintRef> getSupportedConstraints() {
         return Collections.unmodifiableSet(constraintWeightExtractorMap.keySet());
     }

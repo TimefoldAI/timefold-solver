@@ -30,7 +30,7 @@ public abstract class AbstractConstraintStream<Solution_> implements ConstraintS
     protected <Score_ extends Score<Score_>> Function<Solution_, Score_>
             buildConstraintWeightExtractor(ConstraintRef constraintRef) {
         var solutionDescriptor = getConstraintFactory().getSolutionDescriptor();
-        var weightSupplier = solutionDescriptor.getConstraintWeightSupplier();
+        var weightSupplier = solutionDescriptor.<Score_> getConstraintWeightSupplier();
         if (weightSupplier == null) {
             throw new IllegalStateException("The constraint (" + constraintRef + ") does not hard-code a constraint weight"
                     + " and there is no @" + ConstraintConfigurationProvider.class.getSimpleName()
@@ -48,13 +48,16 @@ public abstract class AbstractConstraintStream<Solution_> implements ConstraintS
                     + ConstraintWeight.class.getSimpleName() + " members.\n"
                     + "Maybe add a @" + ConstraintWeight.class.getSimpleName() + " member for it.");
         }
-        return solution -> (Score_) weightSupplier.getConstraintWeight(constraintRef, solution);
+        return solution -> {
+            var weight = (Score_) weightSupplier.getConstraintWeight(constraintRef, solution);
+            weightSupplier.validateConstraintWeight(constraintRef, weight);
+            return weight;
+        };
     }
 
     protected <Score_ extends Score<Score_>> Function<Solution_, Score_>
             buildConstraintWeightExtractor(ConstraintRef constraintRef, Score_ constraintWeight) {
-        // Duplicates validation when the session is built, but this fails fast when weights are hard coded
-        AbstractConstraint.validateConstraintWeight(getConstraintFactory(), constraintRef, constraintWeight);
+        AbstractConstraint.validateWeight(getConstraintFactory().getSolutionDescriptor(), constraintRef, constraintWeight);
         return solution -> constraintWeight;
     }
 

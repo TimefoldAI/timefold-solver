@@ -7,6 +7,7 @@ import ai.timefold.solver.core.api.score.IBendableScore;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.definition.AbstractBendableScoreDefinition;
 
 public abstract class AbstractConstraint<Solution_, Constraint_ extends AbstractConstraint<Solution_, Constraint_, ConstraintFactory_>, ConstraintFactory_ extends InnerConstraintFactory<Solution_, Constraint_>>
@@ -35,6 +36,7 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
 
     @SuppressWarnings("unchecked")
     public final <Score_ extends Score<Score_>> Score_ extractConstraintWeight(Solution_ workingSolution) {
+        var solutionDescriptor = constraintFactory.getSolutionDescriptor();
         if (isConstraintWeightConfigurable && workingSolution == null) {
             /*
              * In constraint verifier API, we allow for testing constraint providers without having a planning solution.
@@ -44,10 +46,9 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
              * constraint is not ignored.
              * The actual value is not used in any way.
              */
-            return (Score_) constraintFactory.getSolutionDescriptor().getScoreDefinition().getOneSoftestScore();
+            return (Score_) solutionDescriptor.getScoreDefinition().getOneSoftestScore();
         }
         Score_ constraintWeight = (Score_) constraintWeightExtractor.apply(workingSolution);
-        validateConstraintWeight(constraintFactory, constraintRef, constraintWeight);
         return switch (scoreImpactType) {
             case PENALTY -> constraintWeight.negate();
             case REWARD, MIXED -> constraintWeight;
@@ -111,15 +112,15 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
         return (IndictedObjectsMapping_) indictedObjectsMapping;
     }
 
-    public static <Score_ extends Score<Score_>> void validateConstraintWeight(InnerConstraintFactory<?, ?> constraintFactory,
-            ConstraintRef constraintRef, Score_ constraintWeight) {
+    public static <Solution_, Score_ extends Score<Score_>> void validateWeight(
+            SolutionDescriptor<Solution_> solutionDescriptor, ConstraintRef constraintRef, Score_ constraintWeight) {
         if (constraintWeight == null) {
             throw new IllegalArgumentException("""
                     The constraintWeight (null) for constraint (%s) must not be null.
                     Maybe check your constraint implementation."""
                     .formatted(constraintRef));
         }
-        var scoreDescriptor = constraintFactory.getSolutionDescriptor().<Score_> getScoreDescriptor();
+        var scoreDescriptor = solutionDescriptor.<Score_> getScoreDescriptor();
         if (!constraintWeight.getClass().isAssignableFrom(constraintWeight.getClass())) {
             throw new IllegalArgumentException("""
                     The constraintWeight (%s) of class (%s) for constraint (%s) must be of the scoreClass (%s).

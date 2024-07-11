@@ -45,7 +45,7 @@ public final class BavetConstraintFactory<Solution_>
         if (weightSupplier == null) {
             defaultConstraintPackage = determineDefaultConstraintPackage(solutionDescriptor.getSolutionClass().getPackage());
         } else {
-            defaultConstraintPackage = determineDefaultConstraintPackage(weightSupplier.getProblemFactClass().getPackage());
+            defaultConstraintPackage = determineDefaultConstraintPackage(weightSupplier.getDefaultConstraintPackage());
         }
     }
 

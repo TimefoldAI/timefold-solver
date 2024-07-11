@@ -16,6 +16,8 @@ public sealed interface ConstraintWeightSupplier<Solution_, Score_ extends Score
 
     Class<?> getProblemFactClass();
 
+    String getDefaultConstraintPackage();
+
     Set<ConstraintRef> getSupportedConstraints();
 
     Score_ getConstraintWeight(ConstraintRef constraintRef, Solution_ workingSolution);
