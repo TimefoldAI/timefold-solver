@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.domain.score.descriptor;
 import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER;
 
 import java.lang.reflect.Member;
+import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.score.IBendableScore;
@@ -36,7 +37,7 @@ import ai.timefold.solver.core.impl.score.buildin.SimpleLongScoreDefinition;
 import ai.timefold.solver.core.impl.score.buildin.SimpleScoreDefinition;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 
-public class ScoreDescriptor {
+public class ScoreDescriptor<Score_ extends Score<Score_>> {
 
     // Used to obtain default @PlanningScore attribute values from a score member that was auto-discovered,
     // as if it had an empty @PlanningScore annotation on it.
@@ -44,22 +45,21 @@ public class ScoreDescriptor {
     private static final Object PLANNING_SCORE = new Object();
 
     private final MemberAccessor scoreMemberAccessor;
-    private final ScoreDefinition<?> scoreDefinition;
+    private final ScoreDefinition<Score_> scoreDefinition;
 
-    private ScoreDescriptor(MemberAccessor scoreMemberAccessor, ScoreDefinition<?> scoreDefinition) {
+    private ScoreDescriptor(MemberAccessor scoreMemberAccessor, ScoreDefinition<Score_> scoreDefinition) {
         this.scoreMemberAccessor = scoreMemberAccessor;
         this.scoreDefinition = scoreDefinition;
     }
 
-    public static ScoreDescriptor buildScoreDescriptor(
-            DescriptorPolicy descriptorPolicy,
-            Member member,
-            Class<?> solutionClass) {
+    public static <Score_ extends Score<Score_>> ScoreDescriptor<Score_> buildScoreDescriptor(DescriptorPolicy descriptorPolicy,
+            Member member, Class<?> solutionClass) {
         MemberAccessor scoreMemberAccessor = buildScoreMemberAccessor(descriptorPolicy, member);
-        Class<? extends Score<?>> scoreType = extractScoreType(scoreMemberAccessor, solutionClass);
+        Class<Score_> scoreType = extractScoreType(scoreMemberAccessor, solutionClass);
         PlanningScore annotation = extractPlanningScoreAnnotation(scoreMemberAccessor);
-        ScoreDefinition<?> scoreDefinition = buildScoreDefinition(solutionClass, scoreMemberAccessor, scoreType, annotation);
-        return new ScoreDescriptor(scoreMemberAccessor, scoreDefinition);
+        ScoreDefinition<Score_> scoreDefinition =
+                buildScoreDefinition(solutionClass, scoreMemberAccessor, scoreType, annotation);
+        return new ScoreDescriptor<>(scoreMemberAccessor, scoreDefinition);
     }
 
     private static MemberAccessor buildScoreMemberAccessor(DescriptorPolicy descriptorPolicy, Member member) {
@@ -70,7 +70,9 @@ public class ScoreDescriptor {
                 descriptorPolicy.getDomainAccessType());
     }
 
-    private static Class<? extends Score<?>> extractScoreType(MemberAccessor scoreMemberAccessor, Class<?> solutionClass) {
+    @SuppressWarnings("unchecked")
+    private static <Score_ extends Score<Score_>> Class<Score_> extractScoreType(MemberAccessor scoreMemberAccessor,
+            Class<?> solutionClass) {
         Class<?> memberType = scoreMemberAccessor.getType();
         if (!Score.class.isAssignableFrom(memberType)) {
             throw new IllegalStateException("The solutionClass (" + solutionClass
@@ -85,7 +87,7 @@ public class ScoreDescriptor {
                     + "Maybe make it return " + HardSoftScore.class.getSimpleName()
                     + " or another specific " + Score.class.getSimpleName() + " implementation.");
         }
-        return (Class<? extends Score<?>>) memberType;
+        return (Class<Score_>) memberType;
     }
 
     private static PlanningScore extractPlanningScoreAnnotation(MemberAccessor scoreMemberAccessor) {
@@ -101,15 +103,14 @@ public class ScoreDescriptor {
         }
     }
 
-    private static ScoreDefinition<?> buildScoreDefinition(
-            Class<?> solutionClass,
-            MemberAccessor scoreMemberAccessor,
-            Class<? extends Score<?>> scoreType,
-            PlanningScore annotation) {
-        Class<? extends ScoreDefinition> scoreDefinitionClass = annotation.scoreDefinitionClass();
+    @SuppressWarnings("unchecked")
+    private static <Score_ extends Score<Score_>, ScoreDefinition_ extends ScoreDefinition<Score_>> ScoreDefinition_
+            buildScoreDefinition(Class<?> solutionClass,
+                    MemberAccessor scoreMemberAccessor, Class<Score_> scoreType, PlanningScore annotation) {
+        Class<ScoreDefinition_> scoreDefinitionClass = (Class<ScoreDefinition_>) annotation.scoreDefinitionClass();
         int bendableHardLevelsSize = annotation.bendableHardLevelsSize();
         int bendableSoftLevelsSize = annotation.bendableSoftLevelsSize();
-        if (scoreDefinitionClass != PlanningScore.NullScoreDefinition.class) {
+        if (!Objects.equals(scoreDefinitionClass, PlanningScore.NullScoreDefinition.class)) {
             if (bendableHardLevelsSize != PlanningScore.NO_LEVEL_SIZE
                     || bendableSoftLevelsSize != PlanningScore.NO_LEVEL_SIZE) {
                 throw new IllegalArgumentException("The solutionClass (" + solutionClass
@@ -133,23 +134,23 @@ public class ScoreDescriptor {
                         + ") or a bendableSoftLevelsSize (" + bendableSoftLevelsSize + ").");
             }
             if (scoreType.equals(SimpleScore.class)) {
-                return new SimpleScoreDefinition();
+                return (ScoreDefinition_) new SimpleScoreDefinition();
             } else if (scoreType.equals(SimpleLongScore.class)) {
-                return new SimpleLongScoreDefinition();
+                return (ScoreDefinition_) new SimpleLongScoreDefinition();
             } else if (scoreType.equals(SimpleBigDecimalScore.class)) {
-                return new SimpleBigDecimalScoreDefinition();
+                return (ScoreDefinition_) new SimpleBigDecimalScoreDefinition();
             } else if (scoreType.equals(HardSoftScore.class)) {
-                return new HardSoftScoreDefinition();
+                return (ScoreDefinition_) new HardSoftScoreDefinition();
             } else if (scoreType.equals(HardSoftLongScore.class)) {
-                return new HardSoftLongScoreDefinition();
+                return (ScoreDefinition_) new HardSoftLongScoreDefinition();
             } else if (scoreType.equals(HardSoftBigDecimalScore.class)) {
-                return new HardSoftBigDecimalScoreDefinition();
+                return (ScoreDefinition_) new HardSoftBigDecimalScoreDefinition();
             } else if (scoreType.equals(HardMediumSoftScore.class)) {
-                return new HardMediumSoftScoreDefinition();
+                return (ScoreDefinition_) new HardMediumSoftScoreDefinition();
             } else if (scoreType.equals(HardMediumSoftLongScore.class)) {
-                return new HardMediumSoftLongScoreDefinition();
+                return (ScoreDefinition_) new HardMediumSoftLongScoreDefinition();
             } else if (scoreType.equals(HardMediumSoftBigDecimalScore.class)) {
-                return new HardMediumSoftBigDecimalScoreDefinition();
+                return (ScoreDefinition_) new HardMediumSoftBigDecimalScoreDefinition();
             } else {
                 throw new IllegalArgumentException("The solutionClass (" + solutionClass
                         + ") has a @" + PlanningScore.class.getSimpleName()
@@ -171,11 +172,13 @@ public class ScoreDescriptor {
                         + ") and a bendableSoftLevelsSize (" + bendableSoftLevelsSize + ").");
             }
             if (scoreType.equals(BendableScore.class)) {
-                return new BendableScoreDefinition(bendableHardLevelsSize, bendableSoftLevelsSize);
+                return (ScoreDefinition_) new BendableScoreDefinition(bendableHardLevelsSize, bendableSoftLevelsSize);
             } else if (scoreType.equals(BendableLongScore.class)) {
-                return new BendableLongScoreDefinition(bendableHardLevelsSize, bendableSoftLevelsSize);
+                return (ScoreDefinition_) new BendableLongScoreDefinition(bendableHardLevelsSize,
+                        bendableSoftLevelsSize);
             } else if (scoreType.equals(BendableBigDecimalScore.class)) {
-                return new BendableBigDecimalScoreDefinition(bendableHardLevelsSize, bendableSoftLevelsSize);
+                return (ScoreDefinition_) new BendableBigDecimalScoreDefinition(bendableHardLevelsSize,
+                        bendableSoftLevelsSize);
             } else {
                 throw new IllegalArgumentException("The solutionClass (" + solutionClass
                         + ") has a @" + PlanningScore.class.getSimpleName()
@@ -188,19 +191,20 @@ public class ScoreDescriptor {
         }
     }
 
-    public ScoreDefinition<?> getScoreDefinition() {
+    public ScoreDefinition<Score_> getScoreDefinition() {
         return scoreDefinition;
     }
 
-    public Class<? extends Score<?>> getScoreClass() {
+    public Class<Score_> getScoreClass() {
         return scoreDefinition.getScoreClass();
     }
 
-    public Score<?> getScore(Object solution) {
-        return (Score<?>) scoreMemberAccessor.executeGetter(solution);
+    @SuppressWarnings("unchecked")
+    public Score_ getScore(Object solution) {
+        return (Score_) scoreMemberAccessor.executeGetter(solution);
     }
 
-    public void setScore(Object solution, Score<?> score) {
+    public void setScore(Object solution, Score_ score) {
         scoreMemberAccessor.executeSetter(solution, score);
     }
 

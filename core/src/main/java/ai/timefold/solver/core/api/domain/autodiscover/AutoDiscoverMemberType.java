@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.api.domain.autodiscover;
 
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfigurationProvider;
+import ai.timefold.solver.core.api.domain.solution.ConstraintWeights;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
@@ -9,10 +10,10 @@ import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty
 import ai.timefold.solver.core.api.domain.solution.ProblemFactProperty;
 
 /**
- * Determines if and how to automatically presume
- * {@link ConstraintConfigurationProvider}, {@link ProblemFactCollectionProperty}, {@link ProblemFactProperty},
- * {@link PlanningEntityCollectionProperty}, {@link PlanningEntityProperty} and {@link PlanningScore} annotations
- * on {@link PlanningSolution} members based from the member type.
+ * Determines if and how to automatically presume {@link ConstraintWeights}, {@link ConstraintConfigurationProvider},
+ * {@link ProblemFactCollectionProperty}, {@link ProblemFactProperty}, {@link PlanningEntityCollectionProperty},
+ * {@link PlanningEntityProperty} and {@link PlanningScore} annotations on {@link PlanningSolution} members
+ * based on the member type.
  */
 public enum AutoDiscoverMemberType {
     /**

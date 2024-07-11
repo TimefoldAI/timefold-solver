@@ -44,9 +44,7 @@ import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty
 import ai.timefold.solver.core.api.domain.solution.ProblemFactProperty;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
-import ai.timefold.solver.core.api.score.IBendableScore;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.config.util.ConfigUtils;
@@ -54,7 +52,8 @@ import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.common.accessor.ReflectionFieldMemberAccessor;
-import ai.timefold.solver.core.impl.domain.constraintweight.descriptor.ConstraintConfigurationDescriptor;
+import ai.timefold.solver.core.impl.domain.constraintweight.ConstraintWeightSupplier;
+import ai.timefold.solver.core.impl.domain.constraintweight.LegacyConstraintWeightSupplier;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.lookup.LookUpStrategyResolver;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
@@ -67,7 +66,6 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.score.definition.AbstractBendableScoreDefinition;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
@@ -168,9 +166,9 @@ public class SolutionDescriptor<Solution_> {
     private final Map<String, MemberAccessor> entityCollectionMemberAccessorMap = new LinkedHashMap<>();
     private Set<Class<?>> problemFactOrEntityClassSet;
     private List<ListVariableDescriptor<Solution_>> listVariableDescriptorList;
-    private ScoreDescriptor scoreDescriptor;
+    private ScoreDescriptor<?> scoreDescriptor;
 
-    private ConstraintConfigurationDescriptor<Solution_> constraintConfigurationDescriptor;
+    private ConstraintWeightSupplier<Solution_, ?> constraintWeightSupplier;
     private final Map<Class<?>, EntityDescriptor<Solution_>> entityDescriptorMap = new LinkedHashMap<>();
     private final List<Class<?>> reversedEntityClassList = new ArrayList<>();
     private final ConcurrentMap<Class<?>, EntityDescriptor<Solution_>> lowestEntityDescriptorMap = new ConcurrentHashMap<>();
@@ -205,6 +203,7 @@ public class SolutionDescriptor<Solution_> {
         lowestEntityDescriptorMap.put(entityClass, entityDescriptor);
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void processAnnotations(DescriptorPolicy descriptorPolicy, List<Class<?>> entityClassList) {
         domainAccessType = descriptorPolicy.getDomainAccessType();
         processSolutionAnnotations(descriptorPolicy);
@@ -242,7 +241,8 @@ public class SolutionDescriptor<Solution_> {
         }
         if (constraintConfigurationMemberAccessor != null) {
             // The scoreDescriptor is definitely initialized at this point.
-            constraintConfigurationDescriptor.processAnnotations(descriptorPolicy, scoreDescriptor.getScoreDefinition());
+            constraintWeightSupplier.initialize(descriptorPolicy.getMemberAccessorFactory(),
+                    descriptorPolicy.getDomainAccessType(), (ScoreDescriptor) scoreDescriptor);
         }
     }
 
@@ -277,7 +277,8 @@ public class SolutionDescriptor<Solution_> {
                 member, entityClassList);
         if (annotationClass == null) {
             return;
-        } else if (annotationClass.equals(ConstraintConfigurationProvider.class)) {
+        }
+        if (annotationClass.equals(ConstraintConfigurationProvider.class)) {
             processConstraintConfigurationProviderAnnotation(descriptorPolicy, member, annotationClass);
         } else if (annotationClass.equals(ProblemFactProperty.class)
                 || annotationClass.equals(ProblemFactCollectionProperty.class)) {
@@ -396,7 +397,7 @@ public class SolutionDescriptor<Solution_> {
                     + constraintConfigurationClass + ") that has a "
                     + ConstraintConfiguration.class.getSimpleName() + " annotation.");
         }
-        constraintConfigurationDescriptor = new ConstraintConfigurationDescriptor<>(this, constraintConfigurationClass);
+        constraintWeightSupplier = LegacyConstraintWeightSupplier.create(this, constraintConfigurationClass);
     }
 
     private void processProblemFactPropertyAnnotation(DescriptorPolicy descriptorPolicy,
@@ -592,9 +593,9 @@ public class SolutionDescriptor<Solution_> {
                         .orElse(Object.class));
         problemFactOrEntityClassStream = concat(problemFactOrEntityClassStream, factCollectionClassStream);
         // Add constraint configuration, if configured.
-        if (constraintConfigurationDescriptor != null) {
+        if (constraintWeightSupplier != null) {
             problemFactOrEntityClassStream = concat(problemFactOrEntityClassStream,
-                    Stream.of(constraintConfigurationDescriptor.getConstraintConfigurationClass()));
+                    Stream.of(constraintWeightSupplier.getProblemFactClass()));
         }
         return problemFactOrEntityClassStream.collect(Collectors.toSet());
     }
@@ -646,8 +647,12 @@ public class SolutionDescriptor<Solution_> {
         return domainAccessType;
     }
 
-    public ScoreDefinition getScoreDefinition() {
-        return scoreDescriptor.getScoreDefinition();
+    public <Score_ extends Score<Score_>> ScoreDefinition<Score_> getScoreDefinition() {
+        return ((ScoreDescriptor<Score_>) scoreDescriptor).getScoreDefinition();
+    }
+
+    public <Score_ extends Score<Score_>> ScoreDescriptor<Score_> getScoreDescriptor() {
+        return (ScoreDescriptor<Score_>) scoreDescriptor;
     }
 
     public Map<String, MemberAccessor> getProblemFactMemberAccessorMap() {
@@ -690,11 +695,8 @@ public class SolutionDescriptor<Solution_> {
         return constraintConfigurationMemberAccessor;
     }
 
-    /**
-     * @return sometimes null
-     */
-    public ConstraintConfigurationDescriptor<Solution_> getConstraintConfigurationDescriptor() {
-        return constraintConfigurationDescriptor;
+    public <Score_ extends Score<Score_>> ConstraintWeightSupplier<Solution_, Score_> getConstraintWeightSupplier() {
+        return (ConstraintWeightSupplier<Solution_, Score_>) constraintWeightSupplier;
     }
 
     public Set<Class<?>> getEntityClassSet() {
@@ -791,60 +793,6 @@ public class SolutionDescriptor<Solution_> {
 
     public LookUpStrategyResolver getLookUpStrategyResolver() {
         return lookUpStrategyResolver;
-    }
-
-    public void validateConstraintWeight(ConstraintRef constraintRef, Score<?> constraintWeight) {
-        if (constraintWeight == null) {
-            throw new IllegalArgumentException("The constraintWeight (" + constraintWeight
-                    + ") for constraint (" + constraintRef + ") must not be null.\n"
-                    + (constraintConfigurationDescriptor == null ? "Maybe check your constraint implementation."
-                            : "Maybe validate the data input of your constraintConfigurationClass ("
-                                    + constraintConfigurationDescriptor.getConstraintConfigurationClass()
-                                    + ") for that constraint."));
-        }
-        if (!scoreDescriptor.getScoreClass().isAssignableFrom(constraintWeight.getClass())) {
-            throw new IllegalArgumentException("The constraintWeight (" + constraintWeight
-                    + ") of class (" + constraintWeight.getClass() + ") for constraint (" + constraintRef
-                    + ") must be of the scoreClass (" + scoreDescriptor.getScoreClass() + ").\n"
-                    + (constraintConfigurationDescriptor == null ? "Maybe check your constraint implementation."
-                            : "Maybe validate the data input of your constraintConfigurationClass ("
-                                    + constraintConfigurationDescriptor.getConstraintConfigurationClass()
-                                    + ") for that constraint."));
-        }
-        if (constraintWeight.initScore() != 0) {
-            throw new IllegalArgumentException("The constraintWeight (" + constraintWeight + ") for constraint ("
-                    + constraintRef + ") must have an initScore (" + constraintWeight.initScore() + ") equal to 0.\n"
-                    + (constraintConfigurationDescriptor == null ? "Maybe check your constraint implementation."
-                            : "Maybe validate the data input of your constraintConfigurationClass ("
-                                    + constraintConfigurationDescriptor.getConstraintConfigurationClass()
-                                    + ") for that constraint."));
-        }
-        if (!((ScoreDefinition) scoreDescriptor.getScoreDefinition()).isPositiveOrZero(constraintWeight)) {
-            throw new IllegalArgumentException("The constraintWeight (" + constraintWeight + ") for constraint ("
-                    + constraintRef + ") must have a positive or zero constraintWeight (" + constraintWeight + ").\n"
-                    + (constraintConfigurationDescriptor == null ? "Maybe check your constraint implementation."
-                            : "Maybe validate the data input of your constraintConfigurationClass ("
-                                    + constraintConfigurationDescriptor.getConstraintConfigurationClass()
-                                    + ")."));
-        }
-        if (constraintWeight instanceof IBendableScore bendableConstraintWeight) {
-            AbstractBendableScoreDefinition bendableScoreDefinition =
-                    (AbstractBendableScoreDefinition) scoreDescriptor.getScoreDefinition();
-            if (bendableConstraintWeight.hardLevelsSize() != bendableScoreDefinition.getHardLevelsSize()
-                    || bendableConstraintWeight.softLevelsSize() != bendableScoreDefinition.getSoftLevelsSize()) {
-                throw new IllegalArgumentException("The bendable constraintWeight (" + constraintWeight
-                        + ") for constraint (" + constraintRef + ") has a hardLevelsSize ("
-                        + bendableConstraintWeight.hardLevelsSize() + ") or a softLevelsSize ("
-                        + bendableConstraintWeight.softLevelsSize()
-                        + ") that doesn't match the score definition's hardLevelsSize ("
-                        + bendableScoreDefinition.getHardLevelsSize()
-                        + ") or softLevelsSize (" + bendableScoreDefinition.getSoftLevelsSize() + ").\n"
-                        + (constraintConfigurationDescriptor == null ? "Maybe check your constraint implementation."
-                                : "Maybe validate the data input of your constraintConfigurationClass ("
-                                        + constraintConfigurationDescriptor.getConstraintConfigurationClass()
-                                        + ")."));
-            }
-        }
     }
 
     // ************************************************************************
@@ -1207,8 +1155,8 @@ public class SolutionDescriptor<Solution_> {
      * @param solution never null
      * @return sometimes null, if the {@link Score} hasn't been calculated yet
      */
-    public Score getScore(Solution_ solution) {
-        return scoreDescriptor.getScore(solution);
+    public <Score_ extends Score<Score_>> Score_ getScore(Solution_ solution) {
+        return (Score_) scoreDescriptor.getScore(solution);
     }
 
     /**
@@ -1218,8 +1166,8 @@ public class SolutionDescriptor<Solution_> {
      * @param score sometimes null, in rare occasions to indicate that the old {@link Score} is stale,
      *        but no new ones has been calculated
      */
-    public void setScore(Solution_ solution, Score score) {
-        scoreDescriptor.setScore(solution, score);
+    public <Score_ extends Score<Score_>> void setScore(Solution_ solution, Score_ score) {
+        ((ScoreDescriptor) scoreDescriptor).setScore(solution, score);
     }
 
     @Override

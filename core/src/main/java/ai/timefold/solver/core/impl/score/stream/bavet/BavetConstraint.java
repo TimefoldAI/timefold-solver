@@ -10,8 +10,8 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetScoringConstr
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
 
-public final class BavetConstraint<Solution_>
-        extends AbstractConstraint<Solution_, BavetConstraint<Solution_>, BavetConstraintFactory<Solution_>> {
+public final class BavetConstraint<Solution_> extends
+        AbstractConstraint<Solution_, BavetConstraint<Solution_>, BavetConstraintFactory<Solution_>> {
 
     private final BavetScoringConstraintStream<Solution_> scoringConstraintStream;
 

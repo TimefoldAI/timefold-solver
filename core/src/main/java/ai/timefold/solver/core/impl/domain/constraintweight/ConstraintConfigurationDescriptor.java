@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.domain.constraintweight.descriptor;
+package ai.timefold.solver.core.impl.domain.constraintweight;
 
 import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD;
 
@@ -7,9 +7,11 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfigurationProvider;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
@@ -17,15 +19,14 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
-import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
-import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
+import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public class ConstraintConfigurationDescriptor<Solution_> {
+class ConstraintConfigurationDescriptor<Solution_> {
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
 
@@ -57,23 +58,23 @@ public class ConstraintConfigurationDescriptor<Solution_> {
     // Lifecycle methods
     // ************************************************************************
 
-    public void processAnnotations(DescriptorPolicy descriptorPolicy,
-            ScoreDefinition scoreDefinition) {
-        processPackAnnotation(descriptorPolicy);
-        ArrayList<Method> potentiallyOverwritingMethodList = new ArrayList<>();
+    public void processAnnotations(MemberAccessorFactory memberAccessorFactory, DomainAccessType domainAccessType,
+            ScoreDefinition<?> scoreDefinition) {
+        processPackAnnotation();
+        var potentiallyOverwritingMethodList = new ArrayList<Method>();
         // Iterate inherited members too (unlike for EntityDescriptor where each one is declared)
         // to make sure each one is registered
-        for (Class<?> lineageClass : ConfigUtils.getAllAnnotatedLineageClasses(constraintConfigurationClass,
+        for (var lineageClass : ConfigUtils.getAllAnnotatedLineageClasses(constraintConfigurationClass,
                 ConstraintConfiguration.class)) {
-            List<Member> memberList = ConfigUtils.getDeclaredMembers(lineageClass);
-            for (Member member : memberList) {
+            var memberList = ConfigUtils.getDeclaredMembers(lineageClass);
+            for (var member : memberList) {
                 if (member instanceof Method method && potentiallyOverwritingMethodList.stream().anyMatch(
                         m -> member.getName().equals(m.getName()) // Shortcut to discard negatives faster
                                 && ReflectionHelper.isMethodOverwritten(method, m.getDeclaringClass()))) {
                     // Ignore member because it is an overwritten method
                     continue;
                 }
-                processParameterAnnotation(descriptorPolicy, member, scoreDefinition);
+                processParameterAnnotation(memberAccessorFactory, domainAccessType, member, scoreDefinition);
             }
             potentiallyOverwritingMethodList.ensureCapacity(potentiallyOverwritingMethodList.size() + memberList.size());
             memberList.stream().filter(member -> member instanceof Method)
@@ -86,8 +87,8 @@ public class ConstraintConfigurationDescriptor<Solution_> {
         }
     }
 
-    private void processPackAnnotation(DescriptorPolicy descriptorPolicy) {
-        ConstraintConfiguration packAnnotation = constraintConfigurationClass.getAnnotation(ConstraintConfiguration.class);
+    private void processPackAnnotation() {
+        var packAnnotation = constraintConfigurationClass.getAnnotation(ConstraintConfiguration.class);
         if (packAnnotation == null) {
             throw new IllegalStateException("The constraintConfigurationClass (" + constraintConfigurationClass
                     + ") has been specified as a @" + ConstraintConfigurationProvider.class.getSimpleName()
@@ -98,18 +99,18 @@ public class ConstraintConfigurationDescriptor<Solution_> {
         // So the ConstraintWeightDescriptors parse packAnnotation.constraintPackage() themselves.
         constraintPackage = packAnnotation.constraintPackage();
         if (constraintPackage.isEmpty()) {
-            Package pack = constraintConfigurationClass.getPackage();
+            var pack = constraintConfigurationClass.getPackage();
             constraintPackage = (pack == null) ? "" : pack.getName();
         }
     }
 
-    private void processParameterAnnotation(DescriptorPolicy descriptorPolicy, Member member,
-            ScoreDefinition scoreDefinition) {
+    private void processParameterAnnotation(MemberAccessorFactory memberAccessorFactory, DomainAccessType domainAccessType,
+            Member member, ScoreDefinition<?> scoreDefinition) {
         if (((AnnotatedElement) member).isAnnotationPresent(ConstraintWeight.class)) {
-            MemberAccessor memberAccessor = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
-                    FIELD_OR_READ_METHOD, ConstraintWeight.class, descriptorPolicy.getDomainAccessType());
+            var memberAccessor = memberAccessorFactory.buildAndCacheMemberAccessor(member, FIELD_OR_READ_METHOD,
+                    ConstraintWeight.class, domainAccessType);
             if (constraintWeightDescriptorMap.containsKey(memberAccessor.getName())) {
-                MemberAccessor duplicate = constraintWeightDescriptorMap.get(memberAccessor.getName()).getMemberAccessor();
+                var duplicate = constraintWeightDescriptorMap.get(memberAccessor.getName()).getMemberAccessor();
                 throw new IllegalStateException("The constraintConfigurationClass (" + constraintConfigurationClass
                         + ") has a @" + ConstraintWeight.class.getSimpleName()
                         + " annotated member (" + memberAccessor
@@ -125,8 +126,7 @@ public class ConstraintConfigurationDescriptor<Solution_> {
                         + "Maybe make that member (" + memberAccessor.getName() + ") return the score class ("
                         + scoreDefinition.getScoreClass().getSimpleName() + ") instead.");
             }
-            ConstraintWeightDescriptor<Solution_> constraintWeightDescriptor = new ConstraintWeightDescriptor<>(this,
-                    memberAccessor);
+            var constraintWeightDescriptor = new ConstraintWeightDescriptor<>(this, memberAccessor);
             constraintWeightDescriptorMap.put(memberAccessor.getName(), constraintWeightDescriptor);
         }
     }
@@ -141,6 +141,13 @@ public class ConstraintConfigurationDescriptor<Solution_> {
 
     public Class<?> getConstraintConfigurationClass() {
         return constraintConfigurationClass;
+    }
+
+    public Set<ConstraintRef> getSupportedConstraints() {
+        return constraintWeightDescriptorMap.values()
+                .stream()
+                .map(ConstraintWeightDescriptor::getConstraintRef)
+                .collect(Collectors.toSet());
     }
 
     public ConstraintWeightDescriptor<Solution_> findConstraintWeightDescriptor(ConstraintRef constraintRef) {

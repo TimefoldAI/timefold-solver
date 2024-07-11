@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.domain.constraintweight.descriptor;
+package ai.timefold.solver.core.impl.domain.constraintweight;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,7 +16,10 @@ class ConstraintWeightDescriptorTest {
     @Test
     void extractionFunction() {
         var solutionDescriptor = TestdataConstraintConfigurationSolution.buildSolutionDescriptor();
-        var constraintConfigurationDescriptor = solutionDescriptor.getConstraintConfigurationDescriptor();
+        var constraintConfigurationDescriptor =
+                ((LegacyConstraintWeightSupplier<SimpleScore, TestdataConstraintConfigurationSolution>) solutionDescriptor
+                        .getConstraintWeightSupplier())
+                        .getConstraintConfigurationDescriptor();
 
         var firstWeightDescriptor = constraintConfigurationDescriptor.getConstraintWeightDescriptor("firstWeight");
         assertThat(firstWeightDescriptor.getConstraintRef())
@@ -42,7 +45,10 @@ class ConstraintWeightDescriptorTest {
     @Test
     void extractionFunctionExtended() {
         var solutionDescriptor = TestdataExtendedConstraintConfigurationSolution.buildExtendedSolutionDescriptor();
-        var constraintConfigurationDescriptor = solutionDescriptor.getConstraintConfigurationDescriptor();
+        var constraintConfigurationDescriptor =
+                ((LegacyConstraintWeightSupplier<SimpleScore, TestdataExtendedConstraintConfigurationSolution>) solutionDescriptor
+                        .getConstraintWeightSupplier())
+                        .getConstraintConfigurationDescriptor();
 
         var firstWeightDescriptor = constraintConfigurationDescriptor.getConstraintWeightDescriptor("firstWeight");
         assertThat(firstWeightDescriptor.getConstraintRef())

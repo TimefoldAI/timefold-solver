@@ -3,9 +3,11 @@ package ai.timefold.solver.core.impl.score.stream.common;
 import java.math.BigDecimal;
 import java.util.function.Function;
 
+import ai.timefold.solver.core.api.score.IBendableScore;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.impl.score.definition.AbstractBendableScoreDefinition;
 
 public abstract class AbstractConstraint<Solution_, Constraint_ extends AbstractConstraint<Solution_, Constraint_, ConstraintFactory_>, ConstraintFactory_ extends InnerConstraintFactory<Solution_, Constraint_>>
         implements Constraint {
@@ -31,6 +33,7 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
         this.indictedObjectsMapping = indictedObjectsMapping;
     }
 
+    @SuppressWarnings("unchecked")
     public final <Score_ extends Score<Score_>> Score_ extractConstraintWeight(Solution_ workingSolution) {
         if (isConstraintWeightConfigurable && workingSolution == null) {
             /*
@@ -43,8 +46,8 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
              */
             return (Score_) constraintFactory.getSolutionDescriptor().getScoreDefinition().getOneSoftestScore();
         }
-        var constraintWeight = (Score_) constraintWeightExtractor.apply(workingSolution);
-        constraintFactory.getSolutionDescriptor().validateConstraintWeight(constraintRef, constraintWeight);
+        Score_ constraintWeight = (Score_) constraintWeightExtractor.apply(workingSolution);
+        validateConstraintWeight(constraintFactory, constraintRef, constraintWeight);
         return switch (scoreImpactType) {
             case PENALTY -> constraintWeight.negate();
             case REWARD, MIXED -> constraintWeight;
@@ -106,6 +109,51 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
     public <IndictedObjectsMapping_> IndictedObjectsMapping_ getIndictedObjectsMapping() {
         // It is the job of the code constructing the constraint to ensure that this cast is correct.
         return (IndictedObjectsMapping_) indictedObjectsMapping;
+    }
+
+    public static <Score_ extends Score<Score_>> void validateConstraintWeight(InnerConstraintFactory<?, ?> constraintFactory,
+            ConstraintRef constraintRef, Score_ constraintWeight) {
+        if (constraintWeight == null) {
+            throw new IllegalArgumentException("""
+                    The constraintWeight (null) for constraint (%s) must not be null.
+                    Maybe check your constraint implementation."""
+                    .formatted(constraintRef));
+        }
+        var scoreDescriptor = constraintFactory.getSolutionDescriptor().<Score_> getScoreDescriptor();
+        if (!constraintWeight.getClass().isAssignableFrom(constraintWeight.getClass())) {
+            throw new IllegalArgumentException("""
+                    The constraintWeight (%s) of class (%s) for constraint (%s) must be of the scoreClass (%s).
+                    Maybe check your constraint implementation."""
+                    .formatted(constraintWeight, constraintWeight.getClass(), constraintRef,
+                            scoreDescriptor.getScoreDefinition().getScoreClass()));
+        }
+        if (constraintWeight.initScore() != 0) {
+            throw new IllegalArgumentException("""
+                    The constraintWeight (%s) for constraint (%s) must have an initScore (%d) equal to 0.
+                    Maybe check your constraint implementation."""
+                    .formatted(constraintWeight, constraintRef, constraintWeight.initScore()));
+        }
+        if (!scoreDescriptor.getScoreDefinition().isPositiveOrZero(constraintWeight)) {
+            throw new IllegalArgumentException("""
+                    The constraintWeight (%s) for constraint (%s) must be positive or zero.
+                    Maybe check your constraint implementation."""
+                    .formatted(constraintWeight, constraintRef));
+        }
+        if (constraintWeight instanceof IBendableScore<?> bendableConstraintWeight) {
+            var bendableScoreDefinition = (AbstractBendableScoreDefinition<?>) scoreDescriptor.getScoreDefinition();
+            if (bendableConstraintWeight.hardLevelsSize() != bendableScoreDefinition.getHardLevelsSize()
+                    || bendableConstraintWeight.softLevelsSize() != bendableScoreDefinition.getSoftLevelsSize()) {
+                throw new IllegalArgumentException(
+                        """
+                                The bendable constraintWeight (%s) for constraint (%s) has a hardLevelsSize (%d) or a softLevelsSize (%d) \
+                                that doesn't match the score definition's hardLevelsSize (%d) or softLevelsSize (%d).
+                                Maybe check your constraint implementation."""
+                                .formatted(constraintWeight, constraintRef, bendableConstraintWeight.hardLevelsSize(),
+                                        bendableConstraintWeight.softLevelsSize(), bendableScoreDefinition.getHardLevelsSize(),
+                                        bendableScoreDefinition.getSoftLevelsSize()));
+            }
+        }
+
     }
 
 }

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.domain.constraintweight.descriptor;
+package ai.timefold.solver.core.impl.domain.constraintweight;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -14,7 +14,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public class ConstraintWeightDescriptor<Solution_> {
+class ConstraintWeightDescriptor<Solution_> {
 
     private final ConstraintConfigurationDescriptor<Solution_> constraintConfigurationDescriptor;
 

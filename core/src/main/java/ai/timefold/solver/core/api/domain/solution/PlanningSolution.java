@@ -7,7 +7,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 import ai.timefold.solver.core.api.domain.autodiscover.AutoDiscoverMemberType;
-import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfigurationProvider;
 import ai.timefold.solver.core.api.domain.lookup.LookUpStrategyType;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
@@ -28,7 +27,7 @@ import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
  * Each planning solution must have at least 1 {@link PlanningEntityCollectionProperty}
  * or {@link PlanningEntityProperty} property.
  * <p>
- * Each planning solution is recommended to have 1 {@link ConstraintConfigurationProvider} property too.
+ * Each planning solution is recommended to have 1 {@link ConstraintWeights} property too.
  * <p>
  * Each planning solution used with ConstraintStream score calculation must have at least 1
  * {@link ProblemFactCollectionProperty}
@@ -45,7 +44,7 @@ public @interface PlanningSolution {
      * Enable reflection through the members of the class
      * to automatically assume {@link PlanningScore}, {@link PlanningEntityCollectionProperty},
      * {@link PlanningEntityProperty}, {@link ProblemFactCollectionProperty}, {@link ProblemFactProperty}
-     * and {@link ConstraintConfigurationProvider} annotations based on the member type.
+     * and {@link ConstraintWeights} annotations based on the member type.
      *
      * <p>
      * This feature is not supported under Quarkus.
