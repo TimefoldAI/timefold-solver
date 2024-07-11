@@ -3,13 +3,15 @@ package ai.timefold.solver.migration.fork;
 import java.util.ArrayList;
 import java.util.List;
 
+import ai.timefold.solver.migration.AbstractRecipe;
+
 import org.openrewrite.Recipe;
 import org.openrewrite.gradle.ChangeDependencyArtifactId;
 import org.openrewrite.gradle.ChangeDependencyGroupId;
 import org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId;
 import org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId;
 
-public final class TimefoldChangeDependencies extends Recipe {
+public final class TimefoldChangeDependencies extends AbstractRecipe {
 
     private static final String[] ARTIFACT_SUFFIXES = new String[] {
             "parent",

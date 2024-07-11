@@ -3,19 +3,19 @@ package ai.timefold.solver.migration.v8;
 import java.util.Arrays;
 import java.util.List;
 
+import ai.timefold.solver.migration.AbstractRecipe;
+
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
-public final class ScoreGettersRecipe extends Recipe {
+public final class ScoreGettersRecipe extends AbstractRecipe {
 
     private static final MatcherMeta[] MATCHER_METAS = {
             new MatcherMeta("IBendableScore", "getHardLevelsSize()"),
@@ -106,22 +106,17 @@ public final class ScoreGettersRecipe extends Recipe {
                         if (getterWithoutGet.contains("(int)")) {
                             pattern = pattern.replace("(int)", "(#{any(int)})");
                             return JavaTemplate.builder(pattern)
-                                    .javaParser(buildJavaParser())
+                                    .javaParser(JAVA_PARSER)
                                     .build()
                                     .apply(getCursor(), e.getCoordinates().replace(), select, arguments.get(0));
                         } else {
                             return JavaTemplate.builder(pattern)
-                                    .javaParser(buildJavaParser())
+                                    .javaParser(JAVA_PARSER)
                                     .build()
                                     .apply(getCursor(), e.getCoordinates().replace(), select);
                         }
                     }
                 });
-    }
-
-    public static JavaParser.Builder buildJavaParser() {
-        return JavaParser.fromJavaVersion()
-                .classpath(JavaParser.runtimeClasspath());
     }
 
     private static final class MatcherMeta {

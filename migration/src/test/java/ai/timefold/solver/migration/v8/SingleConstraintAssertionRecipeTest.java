@@ -2,6 +2,8 @@ package ai.timefold.solver.migration.v8;
 
 import static org.openrewrite.java.Assertions.java;
 
+import ai.timefold.solver.migration.AbstractRecipe;
+
 import org.junit.jupiter.api.Test;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
@@ -11,7 +13,7 @@ class SingleConstraintAssertionRecipeTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new SingleConstraintAssertionMethodsRecipe())
-                .parser(SolverManagerBuilderRecipe.buildJavaParser());
+                .parser(AbstractRecipe.JAVA_PARSER);
     }
 
     @Test

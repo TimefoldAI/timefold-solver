@@ -1,15 +1,14 @@
 package ai.timefold.solver.migration.v8;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.regex.Pattern;
+
+import ai.timefold.solver.migration.AbstractRecipe;
 
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
@@ -18,7 +17,7 @@ import org.openrewrite.java.tree.J;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class AsConstraintRecipe extends Recipe {
+public final class AsConstraintRecipe extends AbstractRecipe {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AsConstraintRecipe.class);
 
@@ -215,17 +214,19 @@ public final class AsConstraintRecipe extends Recipe {
                             "ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream");
 
                     @Override
-                    public Expression visitExpression(Expression expression, ExecutionContext executionContext) {
-                        final Expression e = super.visitExpression(expression, executionContext);
+                    public J.MethodInvocation visitMethodInvocation(J.MethodInvocation originalMethod,
+                            ExecutionContext executionContext) {
+                        var method = super.visitMethodInvocation(originalMethod, executionContext);
 
-                        MatcherMeta matcherMeta = Arrays.stream(MATCHER_METAS).filter(m -> m.methodMatcher.matches(e))
-                                .findFirst().orElse(null);
+                        var matcherMeta = Arrays.stream(MATCHER_METAS)
+                                .filter(m -> m.methodMatcher.matches(method))
+                                .findFirst()
+                                .orElse(null);
                         if (matcherMeta == null) {
-                            return e;
+                            return method;
                         }
-                        J.MethodInvocation mi = (J.MethodInvocation) e;
-                        Expression select = mi.getSelect();
-                        List<Expression> arguments = mi.getArguments();
+                        var select = method.getSelect();
+                        var arguments = method.getArguments();
 
                         String templateCode;
                         if (select.getType().isAssignableFrom(uniConstraintStreamPattern)) {
@@ -237,9 +238,8 @@ public final class AsConstraintRecipe extends Recipe {
                         } else if (select.getType().isAssignableFrom(quadConstraintStreamPattern)) {
                             templateCode = "#{any(ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream)}\n";
                         } else {
-                            LOGGER.warn("Cannot refactor to asConstraint() method" +
-                                    " for deprecated method called in expression (" + e + ").");
-                            return e;
+                            LOGGER.warn("Cannot refactor to asConstraint() method for deprecated method (" + method + ").");
+                            return method;
                         }
                         if (!matcherMeta.configurable) {
                             if (!matcherMeta.matchWeigherIncluded) {
@@ -263,29 +263,28 @@ public final class AsConstraintRecipe extends Recipe {
                         } else {
                             templateCode += ".asConstraint(\"#{}\")";
                         }
-                        System.out.println(templateCode);
-                        JavaTemplate template = JavaTemplate.builder(templateCode)
-                                .javaParser(buildJavaParser())
+                        var template = JavaTemplate.builder(templateCode)
+                                .javaParser(JAVA_PARSER)
                                 .build();
                         if (!matcherMeta.constraintPackageIncluded) {
                             if (!matcherMeta.configurable) {
                                 if (!matcherMeta.matchWeigherIncluded) {
                                     return template.apply(getCursor(),
-                                            e.getCoordinates().replace(), select,
+                                            method.getCoordinates().replace(), select,
                                             arguments.get(1), arguments.get(0));
                                 } else {
                                     return template.apply(getCursor(),
-                                            e.getCoordinates().replace(), select,
+                                            method.getCoordinates().replace(), select,
                                             arguments.get(1), arguments.get(2), arguments.get(0));
                                 }
                             } else {
                                 if (!matcherMeta.matchWeigherIncluded) {
                                     return template.apply(getCursor(),
-                                            e.getCoordinates().replace(), select,
+                                            method.getCoordinates().replace(), select,
                                             arguments.get(0));
                                 } else {
                                     return template.apply(getCursor(),
-                                            e.getCoordinates().replace(), select,
+                                            method.getCoordinates().replace(), select,
                                             arguments.get(1), arguments.get(0));
                                 }
                             }
@@ -293,22 +292,22 @@ public final class AsConstraintRecipe extends Recipe {
                             if (!matcherMeta.configurable) {
                                 if (!matcherMeta.matchWeigherIncluded) {
                                     return template.apply(getCursor(),
-                                            e.getCoordinates().replace(), select,
+                                            method.getCoordinates().replace(), select,
                                             arguments.get(2), mergeExpressions(arguments.get(0), arguments.get(1)));
                                 } else {
                                     return template.apply(getCursor(),
-                                            e.getCoordinates().replace(), select,
+                                            method.getCoordinates().replace(), select,
                                             arguments.get(2), arguments.get(3),
                                             mergeExpressions(arguments.get(0), arguments.get(1)));
                                 }
                             } else {
                                 if (!matcherMeta.matchWeigherIncluded) {
                                     return template.apply(getCursor(),
-                                            e.getCoordinates().replace(), select,
+                                            method.getCoordinates().replace(), select,
                                             mergeExpressions(arguments.get(0), arguments.get(1)));
                                 } else {
                                     return template.apply(getCursor(),
-                                            e.getCoordinates().replace(), select,
+                                            method.getCoordinates().replace(), select,
                                             arguments.get(2), mergeExpressions(arguments.get(0), arguments.get(1)));
                                 }
                             }
@@ -321,18 +320,14 @@ public final class AsConstraintRecipe extends Recipe {
         return constraintPackage.toString() + "." + constraintName.toString();
     }
 
-    public static JavaParser.Builder buildJavaParser() {
-        return JavaParser.fromJavaVersion()
-                .classpath(JavaParser.runtimeClasspath());
-    }
-
     private static class MatcherMeta {
-        public MethodMatcher methodMatcher;
-        public boolean constraintPackageIncluded;
-        public boolean configurable;
-        public boolean matchWeigherIncluded;
-        public String methodName; // penalize, reward or impact
-        public String functionType;
+
+        public final MethodMatcher methodMatcher;
+        public final boolean constraintPackageIncluded;
+        public final boolean configurable;
+        public final boolean matchWeigherIncluded;
+        public final String methodName; // penalize, reward or impact
+        public final String functionType;
 
         public MatcherMeta(String select, String method) {
             String signature;
@@ -368,6 +363,8 @@ public final class AsConstraintRecipe extends Recipe {
             matchWeigherIncluded = method.contains("Function");
             if (matchWeigherIncluded) {
                 this.functionType = signature.replaceFirst("^.* ([\\w\\.]+Function)\\)$", "$1");
+            } else {
+                this.functionType = null;
             }
             this.methodName = method.replaceFirst("\\(.*$", "");
         }

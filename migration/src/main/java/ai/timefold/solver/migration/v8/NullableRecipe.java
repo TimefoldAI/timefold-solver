@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import ai.timefold.solver.migration.AbstractRecipe;
+
 import org.openrewrite.Recipe;
 import org.openrewrite.java.ChangeAnnotationAttributeName;
 import org.openrewrite.java.ChangeMethodName;
 
-public final class NullableRecipe extends Recipe {
+public final class NullableRecipe extends AbstractRecipe {
 
     @Override
     public String getDisplayName() {
