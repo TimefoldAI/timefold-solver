@@ -35,7 +35,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .penalize(\"My package\", \"My constraint\", HardSoftScore.ONE_HARD);"),
                 wrap("        return f.forEach(String.class)\n" +
                         "                .penalize(HardSoftScore.ONE_HARD)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -55,7 +55,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .penalizeConfigurable(\"My package\", \"My constraint\");"),
                 wrap("        return f.forEach(String.class)\n" +
                         "                .penalizeConfigurable()\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -75,7 +75,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .penalize(\"My package\", \"My constraint\", HardSoftScore.ONE_HARD, (a) -> 7);"),
                 wrap("        return f.forEach(String.class)\n" +
                         "                .penalize(HardSoftScore.ONE_HARD, (a) -> 7)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -95,7 +95,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .penalizeConfigurable(\"My package\", \"My constraint\", (a) -> 7);"),
                 wrap("        return f.forEach(String.class)\n" +
                         "                .penalizeConfigurable((a) -> 7)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -115,7 +115,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .penalizeLong(\"My package\", \"My constraint\", HardSoftLongScore.ONE_HARD, (a) -> 7L);"),
                 wrap("        return f.forEach(String.class)\n" +
                         "                .penalizeLong(HardSoftLongScore.ONE_HARD, (a) -> 7L)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -135,7 +135,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .penalizeConfigurableLong(\"My package\", \"My constraint\", (a) -> 7L);"),
                 wrap("        return f.forEach(String.class)\n" +
                         "                .penalizeConfigurableLong((a) -> 7L)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -155,7 +155,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .penalizeBigDecimal(\"My package\", \"My constraint\", HardSoftBigDecimalScore.ONE_HARD, (a) -> BigDecimal.TEN);"),
                 wrap("        return f.forEach(String.class)\n" +
                         "                .penalizeBigDecimal(HardSoftBigDecimalScore.ONE_HARD, (a) -> BigDecimal.TEN)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -175,7 +175,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .penalizeConfigurableBigDecimal(\"My package\", \"My constraint\", (a) -> BigDecimal.TEN);"),
                 wrap("        return f.forEach(String.class)\n" +
                         "                .penalizeConfigurableBigDecimal((a) -> BigDecimal.TEN)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -195,7 +195,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .reward(\"My package\", \"My constraint\", HardSoftScore.ONE_HARD);"),
                 wrap("        return f.forEach(String.class)\n" +
                         "                .reward(HardSoftScore.ONE_HARD)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -215,7 +215,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .rewardConfigurable(\"My package\", \"My constraint\");"),
                 wrap("        return f.forEach(String.class)\n" +
                         "                .rewardConfigurable()\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -235,7 +235,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .reward(\"My package\", \"My constraint\", HardSoftScore.ONE_HARD, (a) -> 7);"),
                 wrap("        return f.forEach(String.class)\n" +
                         "                .reward(HardSoftScore.ONE_HARD, (a) -> 7)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -255,7 +255,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .rewardConfigurable(\"My package\", \"My constraint\", (a) -> 7);"),
                 wrap("        return f.forEach(String.class)\n" +
                         "                .rewardConfigurable((a) -> 7)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -275,7 +275,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .rewardLong(\"My package\", \"My constraint\", HardSoftLongScore.ONE_HARD, (a) -> 7L);"),
                 wrap("        return f.forEach(String.class)\n" +
                         "                .rewardLong(HardSoftLongScore.ONE_HARD, (a) -> 7L)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -295,7 +295,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .rewardConfigurableLong(\"My package\", \"My constraint\", (a) -> 7L);"),
                 wrap("        return f.forEach(String.class)\n" +
                         "                .rewardConfigurableLong((a) -> 7L)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -315,7 +315,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .rewardBigDecimal(\"My package\", \"My constraint\", HardSoftBigDecimalScore.ONE_HARD, (a) -> BigDecimal.TEN);"),
                 wrap("        return f.forEach(String.class)\n" +
                         "                .rewardBigDecimal(HardSoftBigDecimalScore.ONE_HARD, (a) -> BigDecimal.TEN)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -335,7 +335,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .rewardConfigurableBigDecimal(\"My package\", \"My constraint\", (a) -> BigDecimal.TEN);"),
                 wrap("        return f.forEach(String.class)\n" +
                         "                .rewardConfigurableBigDecimal((a) -> BigDecimal.TEN)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -355,7 +355,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .impact(\"My package\", \"My constraint\", HardSoftScore.ONE_HARD);"),
                 wrap("        return f.forEach(String.class)\n" +
                         "                .impact(HardSoftScore.ONE_HARD)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -375,7 +375,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .impact(\"My package\", \"My constraint\", HardSoftScore.ONE_HARD, (a) -> 7);"),
                 wrap("        return f.forEach(String.class)\n" +
                         "                .impact(HardSoftScore.ONE_HARD, (a) -> 7)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -395,7 +395,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .impactLong(\"My package\", \"My constraint\", HardSoftLongScore.ONE_HARD, (a) -> 7L);"),
                 wrap("        return f.forEach(String.class)\n" +
                         "                .impactLong(HardSoftLongScore.ONE_HARD, (a) -> 7L)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -415,7 +415,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .impactBigDecimal(\"My package\", \"My constraint\", HardSoftBigDecimalScore.ONE_HARD, (a) -> BigDecimal.TEN);"),
                 wrap("        return f.forEach(String.class)\n" +
                         "                .impactBigDecimal(HardSoftBigDecimalScore.ONE_HARD, (a) -> BigDecimal.TEN)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     // ************************************************************************
@@ -443,7 +443,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                 wrap("        return f.forEach(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .penalize(HardSoftScore.ONE_HARD)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -467,7 +467,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                 wrap("        return f.forEach(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .penalizeConfigurable()\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -491,7 +491,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                 wrap("        return f.forEach(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .penalize(HardSoftScore.ONE_HARD, (a, b) -> 7)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -515,7 +515,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                 wrap("        return f.forEach(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .penalizeConfigurable((a, b) -> 7)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -539,7 +539,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                 wrap("        return f.forEach(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .penalizeLong(HardSoftLongScore.ONE_HARD, (a, b) -> 7L)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -563,7 +563,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                 wrap("        return f.forEach(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .penalizeConfigurableLong((a, b) -> 7L)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -587,7 +587,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                 wrap("        return f.forEach(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .penalizeBigDecimal(HardSoftBigDecimalScore.ONE_HARD, (a, b) -> BigDecimal.TEN)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -611,7 +611,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                 wrap("        return f.forEach(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .penalizeConfigurableBigDecimal((a, b) -> BigDecimal.TEN)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -635,7 +635,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                 wrap("        return f.forEach(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .reward(HardSoftScore.ONE_HARD)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -659,7 +659,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                 wrap("        return f.forEach(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .rewardConfigurable()\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -683,7 +683,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                 wrap("        return f.forEach(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .reward(HardSoftScore.ONE_HARD, (a, b) -> 7)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -707,7 +707,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                 wrap("        return f.forEach(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .rewardConfigurable((a, b) -> 7)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -731,7 +731,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                 wrap("        return f.forEach(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .rewardLong(HardSoftLongScore.ONE_HARD, (a, b) -> 7L)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -755,7 +755,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                 wrap("        return f.forEach(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .rewardConfigurableLong((a, b) -> 7L)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -779,7 +779,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                 wrap("        return f.forEach(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .rewardBigDecimal(HardSoftBigDecimalScore.ONE_HARD, (a, b) -> BigDecimal.TEN)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -803,7 +803,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                 wrap("        return f.forEach(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .rewardConfigurableBigDecimal((a, b) -> BigDecimal.TEN)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -827,7 +827,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                 wrap("        return f.forEach(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .impact(HardSoftScore.ONE_HARD)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -851,7 +851,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                 wrap("        return f.forEach(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .impact(HardSoftScore.ONE_HARD, (a, b) -> 7)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -875,7 +875,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                 wrap("        return f.forEach(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .impactLong(HardSoftLongScore.ONE_HARD, (a, b) -> 7L)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -899,7 +899,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                 wrap("        return f.forEach(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .impactBigDecimal(HardSoftBigDecimalScore.ONE_HARD, (a, b) -> BigDecimal.TEN)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     // ************************************************************************
@@ -931,7 +931,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .penalize(HardSoftScore.ONE_HARD)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -959,7 +959,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .penalizeConfigurable()\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -987,7 +987,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .penalize(HardSoftScore.ONE_HARD, (a, b, c) -> 7)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1015,7 +1015,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .penalizeConfigurable((a, b, c) -> 7)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1043,7 +1043,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .penalizeLong(HardSoftLongScore.ONE_HARD, (a, b, c) -> 7L)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1071,7 +1071,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .penalizeConfigurableLong((a, b, c) -> 7L)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1099,7 +1099,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .penalizeBigDecimal(HardSoftBigDecimalScore.ONE_HARD, (a, b, c) -> BigDecimal.TEN)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1127,7 +1127,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .penalizeConfigurableBigDecimal((a, b, c) -> BigDecimal.TEN)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1155,7 +1155,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .reward(HardSoftScore.ONE_HARD)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1183,7 +1183,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .rewardConfigurable()\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1211,7 +1211,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .reward(HardSoftScore.ONE_HARD, (a, b, c) -> 7)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1239,7 +1239,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .rewardConfigurable((a, b, c) -> 7)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1267,7 +1267,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .rewardLong(HardSoftLongScore.ONE_HARD, (a, b, c) -> 7L)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1295,7 +1295,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .rewardConfigurableLong((a, b, c) -> 7L)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1323,7 +1323,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .rewardBigDecimal(HardSoftBigDecimalScore.ONE_HARD, (a, b, c) -> BigDecimal.TEN)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1351,7 +1351,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .rewardConfigurableBigDecimal((a, b, c) -> BigDecimal.TEN)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1379,7 +1379,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .impact(HardSoftScore.ONE_HARD)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1407,7 +1407,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .impact(HardSoftScore.ONE_HARD, (a, b, c) -> 7)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1435,7 +1435,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .impactLong(HardSoftLongScore.ONE_HARD, (a, b, c) -> 7L)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1463,7 +1463,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .impactBigDecimal(HardSoftBigDecimalScore.ONE_HARD, (a, b, c) -> BigDecimal.TEN)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     // ************************************************************************
@@ -1499,7 +1499,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .penalize(HardSoftScore.ONE_HARD)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1531,7 +1531,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .penalizeConfigurable()\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1563,7 +1563,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .penalize(HardSoftScore.ONE_HARD, (a, b, c, d) -> 7)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1595,7 +1595,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .penalizeConfigurable((a, b, c, d) -> 7)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1627,7 +1627,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .penalizeLong(HardSoftLongScore.ONE_HARD, (a, b, c, d) -> 7L)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1659,7 +1659,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .penalizeConfigurableLong((a, b, c, d) -> 7L)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1693,7 +1693,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .penalizeBigDecimal(HardSoftBigDecimalScore.ONE_HARD, (a, b, c, d) -> BigDecimal.TEN)\n"
                         +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1725,7 +1725,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .penalizeConfigurableBigDecimal((a, b, c, d) -> BigDecimal.TEN)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1757,7 +1757,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .reward(HardSoftScore.ONE_HARD)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1789,7 +1789,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .rewardConfigurable()\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1821,7 +1821,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .reward(HardSoftScore.ONE_HARD, (a, b, c, d) -> 7)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1853,7 +1853,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .rewardConfigurable((a, b, c, d) -> 7)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1885,7 +1885,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .rewardLong(HardSoftLongScore.ONE_HARD, (a, b, c, d) -> 7L)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1917,7 +1917,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .rewardConfigurableLong((a, b, c, d) -> 7L)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1951,7 +1951,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .rewardBigDecimal(HardSoftBigDecimalScore.ONE_HARD, (a, b, c, d) -> BigDecimal.TEN)\n"
                         +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -1983,7 +1983,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .rewardConfigurableBigDecimal((a, b, c, d) -> BigDecimal.TEN)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -2015,7 +2015,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .impact(HardSoftScore.ONE_HARD)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -2047,7 +2047,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .impact(HardSoftScore.ONE_HARD, (a, b, c, d) -> 7)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -2079,7 +2079,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .join(String.class)\n" +
                         "                .impactLong(HardSoftLongScore.ONE_HARD, (a, b, c, d) -> 7L)\n" +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     @Test
@@ -2113,7 +2113,7 @@ class AsConstraintRecipeTest implements RewriteTest {
                         "                .join(String.class)\n" +
                         "                .impactBigDecimal(HardSoftBigDecimalScore.ONE_HARD, (a, b, c, d) -> BigDecimal.TEN)\n"
                         +
-                        "                .asConstraint(\"My package\", \"My constraint\");")));
+                        "                .asConstraint(\"My package.My constraint\");")));
     }
 
     // ************************************************************************

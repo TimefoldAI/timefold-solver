@@ -13,6 +13,7 @@ import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,10 +35,12 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamTest;
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamFunctionalTest;
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamImplSupport;
+import ai.timefold.solver.core.impl.testdata.domain.TestdataConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
@@ -3670,10 +3673,6 @@ public abstract class AbstractUniConstraintStreamTest
         assertThat(oneWeightMonitorCount.get()).isEqualTo(1);
     }
 
-    // ************************************************************************
-    // from() (deprecated)
-    // ************************************************************************
-
     @TestTemplate
     @Deprecated(forRemoval = true)
     public void fromIncludesNullWhenAllowsUnassigned() {
@@ -3694,4 +3693,22 @@ public abstract class AbstractUniConstraintStreamTest
                 assertMatch(entityWithNull),
                 assertMatch(entityWithValue));
     }
+
+    @TestTemplate
+    public void constraintProvidedFromUnknownPackage() throws ClassNotFoundException, NoSuchMethodException,
+            InvocationTargetException, IllegalAccessException {
+        var clz = Class.forName("TestdataInUnnamedPackageSolution");
+        var solution = clz.getMethod("generateSolution").invoke(null);
+        var solutionDescriptor = (SolutionDescriptor) clz.getMethod("buildSolutionDescriptor").invoke(null);
+        var entityList = (List<TestdataEntity>) clz.getMethod("getEntityList")
+                .invoke(solution);
+        entityList.removeIf(entity -> !Objects.equals(entity.getCode(), "Generated Entity 0"));
+
+        InnerScoreDirector scoreDirector = buildScoreDirector(solutionDescriptor, new TestdataConstraintProvider());
+
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch("unnamed.package", "Always penalize", entityList.get(0)));
+    }
+
 }

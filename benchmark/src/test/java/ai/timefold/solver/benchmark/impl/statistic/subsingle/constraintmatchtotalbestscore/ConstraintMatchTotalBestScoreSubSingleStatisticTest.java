@@ -36,7 +36,7 @@ public final class ConstraintMatchTotalBestScoreSubSingleStatisticTest
         assertions.assertThat(outputPoints)
                 .hasSize(1)
                 .first()
-                .matches(s -> Objects.equals(s.getConstraintId(), "CN/CP"), "Constraint IDs do not match.")
+                .matches(s -> Objects.equals(s.getConstraintRef().constraintId(), "CN/CP"), "Constraint IDs do not match.")
                 .matches(s -> s.getConstraintMatchCount() == Integer.MAX_VALUE, "Constraint match counts do not match.")
                 .matches(s -> s.getScoreTotal().equals(SimpleScore.of(Integer.MAX_VALUE)), "Scores do not match.")
                 .matches(s -> s.getTimeMillisSpent() == Long.MAX_VALUE, "Millis do not match.");

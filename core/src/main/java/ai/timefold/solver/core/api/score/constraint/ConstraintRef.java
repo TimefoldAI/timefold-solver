@@ -14,6 +14,9 @@ import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
  * @param packageName The constraint package is the namespace of the constraint.
  *        When using a {@link ConstraintConfiguration},
  *        it is equal to the {@link ConstraintWeight#constraintPackage()}.
+ *        It is not recommended for the user to set this, or to read its value;
+ *        instead, the user should use whatever the solver provided as default and not rely on this information at all.
+ *        The entire concept of constraint package is likely to be removed in a future version of the solver.
  * @param constraintName The constraint name.
  *        It might not be unique, but {@link #constraintId()} is unique.
  *        When using a {@link ConstraintConfiguration},

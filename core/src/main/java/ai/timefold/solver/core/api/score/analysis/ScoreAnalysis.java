@@ -92,9 +92,39 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(Score_ score,
      * @param constraintPackage never null
      * @param constraintName never null
      * @return null if no constraint matches of such constraint are present
+     * @deprecated Use {@link #getConstraintAnalysis(String)} instead.
      */
+    @Deprecated(forRemoval = true, since = "1.13.0")
     public ConstraintAnalysis<Score_> getConstraintAnalysis(String constraintPackage, String constraintName) {
         return getConstraintAnalysis(ConstraintRef.of(constraintPackage, constraintName));
+    }
+
+    /**
+     * As defined by {@link #getConstraintAnalysis(ConstraintRef)}.
+     *
+     * @param constraintName never null
+     * @return null if no constraint matches of such constraint are present
+     * @throws IllegalStateException if multiple constraints with the same name are present,
+     *         which is possible if they are in different constraint packages.
+     *         Constraint packages are deprecated, we recommend avoiding them and instead naming constraints uniquely.
+     *         If you must use constraint packages, see {@link #getConstraintAnalysis(String, String)}
+     *         (also deprecated) and reach out to us to discuss your use case.
+     */
+    public ConstraintAnalysis<Score_> getConstraintAnalysis(String constraintName) {
+        var constraintAnalysisList = constraintMap.entrySet()
+                .stream()
+                .filter(entry -> entry.getKey().constraintName().equals(constraintName))
+                .map(Map.Entry::getValue)
+                .toList();
+        return switch (constraintAnalysisList.size()) {
+            case 0 -> null;
+            case 1 -> constraintAnalysisList.get(0);
+            default -> throw new IllegalStateException("""
+                    Multiple constraints with the same name (%s) are present in the score analysis.
+                    This may be caused by the use of multiple constraint packages, a deprecated feature.
+                    Please avoid using constraint packages and keep constraint names unique."""
+                    .formatted(constraintName));
+        };
     }
 
     /**

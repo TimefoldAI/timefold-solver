@@ -69,8 +69,10 @@ public abstract class AbstractConstraintStreamTest {
                 .mapToInt(assertableMatch -> assertableMatch.score)
                 .sum();
         if (implSupport.isConstreamMatchEnabled()) {
-            String constraintPackage = scoreDirector.getSolutionDescriptor().getSolutionClass().getPackage().getName();
             for (AssertableMatch assertableMatch : assertableMatches) {
+                String constraintPackage = assertableMatch.constraintPackage == null
+                        ? scoreDirector.getSolutionDescriptor().getSolutionClass().getPackage().getName()
+                        : assertableMatch.constraintPackage;
                 Map<String, ConstraintMatchTotal<SimpleScore>> constraintMatchTotals =
                         scoreDirector.getConstraintMatchTotalMap();
                 String constraintId = ConstraintRef.composeConstraintId(constraintPackage, assertableMatch.constraintName);
@@ -106,6 +108,10 @@ public abstract class AbstractConstraintStreamTest {
         return assertMatchWithScore(-1, justifications);
     }
 
+    protected static AssertableMatch assertMatch(String constraintPackage, String constraintName, Object... justifications) {
+        return assertMatchWithScore(-1, constraintPackage, constraintName, justifications);
+    }
+
     protected static AssertableMatch assertMatch(String constraintName, Object... justifications) {
         return assertMatchWithScore(-1, constraintName, justifications);
     }
@@ -118,20 +124,34 @@ public abstract class AbstractConstraintStreamTest {
         return new AssertableMatch(score, constraintName, justifications);
     }
 
+    protected static AssertableMatch assertMatchWithScore(int score, String constraintPackage, String constraintName,
+            Object... justifications) {
+        return new AssertableMatch(score, constraintPackage, constraintName, justifications);
+    }
+
     protected static class AssertableMatch {
 
         private final int score;
+        private final String constraintPackage;
         private final String constraintName;
         private final List<Object> justificationList;
 
         public AssertableMatch(int score, String constraintName, Object... justifications) {
+            this(score, null, constraintName, justifications);
+        }
+
+        public AssertableMatch(int score, String constraintPackage, String constraintName, Object... justifications) {
             this.justificationList = Arrays.asList(justifications);
+            this.constraintPackage = constraintPackage;
             this.constraintName = constraintName;
             this.score = score;
         }
 
         public boolean isEqualTo(ConstraintMatch<?> constraintMatch) {
             if (score != ((SimpleScore) constraintMatch.getScore()).score()) {
+                return false;
+            }
+            if (constraintPackage != null && !constraintPackage.equals(constraintMatch.getConstraintRef().packageName())) {
                 return false;
             }
             if (!constraintName.equals(constraintMatch.getConstraintRef().constraintName())) {
@@ -156,7 +176,11 @@ public abstract class AbstractConstraintStreamTest {
 
         @Override
         public String toString() {
-            return constraintName + " " + justificationList + "=" + score;
+            if (constraintPackage == null) {
+                return constraintName + " " + justificationList + "=" + score;
+            } else {
+                return constraintPackage + "/" + constraintName + " " + justificationList + "=" + score;
+            }
         }
 
     }

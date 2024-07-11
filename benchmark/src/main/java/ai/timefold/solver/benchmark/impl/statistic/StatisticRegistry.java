@@ -3,7 +3,6 @@ package ai.timefold.solver.benchmark.impl.statistic;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -20,7 +19,6 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.util.Pair;
 
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Meter;
@@ -30,6 +28,9 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
         implements PhaseLifecycleListener<Solution_> {
+
+    private static final String CONSTRAINT_PACKAGE_TAG = "constraint.package";
+    private static final String CONSTRAINT_NAME_TAG = "constraint.name";
 
     List<BiConsumer<Long, AbstractStepScope<Solution_>>> stepMeterListenerList = new ArrayList<>();
     List<BiConsumer<Long, AbstractStepScope<Solution_>>> bestSolutionMeterListenerList = new ArrayList<>();
@@ -102,25 +103,21 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void extractConstraintSummariesFromMeters(SolverMetric metric, Tags runId,
             Consumer<ConstraintSummary<?>> constraintMatchTotalConsumer) {
-        Set<Meter.Id> meterIds = getMeterIds(metric, runId);
-        Set<Pair<String, String>> constraintPackageNamePairs = new HashSet<>();
         // Add the constraint ids from the meter ids
-        meterIds.forEach(meterId -> constraintPackageNamePairs
-                .add(new Pair<>(meterId.getTag("constraint.package"), meterId.getTag("constraint.name"))));
-        constraintPackageNamePairs.forEach(constraintPackageNamePair -> {
-            String constraintPackage = constraintPackageNamePair.key();
-            String constraintName = constraintPackageNamePair.value();
-            Tags constraintMatchTotalRunId = runId.and("constraint.package", constraintPackage)
-                    .and("constraint.name", constraintName);
-            // Get the score from the corresponding constraint package and constraint name meters
-            extractScoreFromMeters(metric, constraintMatchTotalRunId,
-                    // Get the count gauge (add constraint package and constraint name to the run tags)
-                    score -> getGaugeValue(metric.getMeterId() + ".count",
-                            constraintMatchTotalRunId,
-                            count -> constraintMatchTotalConsumer.accept(
-                                    new ConstraintSummary(ConstraintRef.of(constraintPackage, constraintName), score,
-                                            count.intValue()))));
-        });
+        getMeterIds(metric, runId)
+                .stream()
+                .map(meterId -> ConstraintRef.of(meterId.getTag(CONSTRAINT_PACKAGE_TAG), meterId.getTag(CONSTRAINT_NAME_TAG)))
+                .distinct()
+                .forEach(constraintRef -> {
+                    var constraintMatchTotalRunId = runId.and(CONSTRAINT_PACKAGE_TAG, constraintRef.packageName())
+                            .and(CONSTRAINT_NAME_TAG, constraintRef.constraintName());
+                    // Get the score from the corresponding constraint package and constraint name meters
+                    extractScoreFromMeters(metric, constraintMatchTotalRunId,
+                            // Get the count gauge (add constraint package and constraint name to the run tags)
+                            score -> getGaugeValue(metric.getMeterId() + ".count", constraintMatchTotalRunId,
+                                    count -> constraintMatchTotalConsumer
+                                            .accept(new ConstraintSummary(constraintRef, score, count.intValue()))));
+                });
     }
 
     public void getGaugeValue(SolverMetric metric, Tags runId, Consumer<Number> gaugeConsumer) {
