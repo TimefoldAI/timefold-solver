@@ -2,11 +2,13 @@ package ai.timefold.solver.core.impl.domain.constraintweight;
 
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeights;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
+import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.score.descriptor.ScoreDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -38,6 +40,27 @@ public final class DefaultConstraintWeightSupplier<Score_ extends Score<Score_>,
     }
 
     @Override
+    public void validate(Solution_ workingSolution, Set<ConstraintRef> userDefinedConstraints) {
+        var supportedConstraints = getConstraintWeights(workingSolution).getKnownConstraints();
+        var excessiveConstraints = supportedConstraints.stream()
+                .filter(constraintRef -> !userDefinedConstraints.contains(constraintRef))
+                .collect(Collectors.toSet());
+        if (!excessiveConstraints.isEmpty()) {
+            throw new IllegalStateException("""
+                    The constraintWeightsClass (%s) knows the following constraints (%s) \
+                    that are not in the user-defined constraints (%s).
+                    Maybe check your %s for missing constraints."""
+                    .formatted(constraintWeightsClass, excessiveConstraints, userDefinedConstraints,
+                            ConstraintProvider.class.getSimpleName()));
+        }
+        // Constraints are allowed to be missing; the default value provided by the ConstraintProvider will be used.
+    }
+
+    private ConstraintWeights<Score_> getConstraintWeights(Solution_ workingSolution) {
+        return null;
+    }
+
+    @Override
     public Class<?> getProblemFactClass() {
         return constraintWeightsClass;
     }
@@ -47,19 +70,15 @@ public final class DefaultConstraintWeightSupplier<Score_ extends Score<Score_>,
         return solutionDescriptor.getSolutionClass().getPackageName();
     }
 
-    @Override
-    public Set<ConstraintRef> getSupportedConstraints() {
-        throw new UnsupportedOperationException();
-    }
-
+    @SuppressWarnings("unchecked")
     @Override
     public Score_ getConstraintWeight(ConstraintRef constraintRef, Solution_ workingSolution) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void validateConstraintWeight(ConstraintRef constraintRef, Score_ constraintWeight) {
-        AbstractConstraint.validateWeight(solutionDescriptor, constraintRef, constraintWeight);
+        var weight = (Score_) getConstraintWeights(workingSolution).getConstraintWeight(constraintRef);
+        if (weight == null) { // This is fine; use default value from ConstraintProvider.
+            return null;
+        }
+        AbstractConstraint.validateWeight(solutionDescriptor, constraintRef, weight);
+        return weight;
     }
 
 }

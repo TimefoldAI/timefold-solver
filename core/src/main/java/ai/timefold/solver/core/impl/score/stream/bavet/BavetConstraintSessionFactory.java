@@ -7,14 +7,13 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractIfExistsNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractJoinNode;
@@ -45,13 +44,21 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
     // Node creation
     // ************************************************************************
 
+    @SuppressWarnings("unchecked")
     public BavetConstraintSession<Score_> buildSession(Solution_ workingSolution, boolean constraintMatchEnabled) {
-        ScoreDefinition<Score_> scoreDefinition = solutionDescriptor.getScoreDefinition();
-        Score_ zeroScore = scoreDefinition.getZeroScore();
-        Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet = new LinkedHashSet<>();
-        Map<Constraint, Score_> constraintWeightMap = new HashMap<>(constraintList.size());
-        for (BavetConstraint<Solution_> constraint : constraintList) {
-            Score_ constraintWeight = constraint.extractConstraintWeight(workingSolution);
+        var constraintWeightSupplier = solutionDescriptor.getConstraintWeightSupplier();
+        if (constraintWeightSupplier != null) { // Fail fast on unknown constraints.
+            var knownConstraints = constraintList.stream()
+                    .map(Constraint::getConstraintRef)
+                    .collect(Collectors.toSet());
+            constraintWeightSupplier.validate(workingSolution, knownConstraints);
+        }
+        var scoreDefinition = solutionDescriptor.<Score_> getScoreDefinition();
+        var zeroScore = scoreDefinition.getZeroScore();
+        var constraintStreamSet = new LinkedHashSet<BavetAbstractConstraintStream<Solution_>>();
+        var constraintWeightMap = new HashMap<Constraint, Score_>(constraintList.size());
+        for (var constraint : constraintList) {
+            var constraintWeight = (Score_) constraint.extractConstraintWeight(workingSolution);
             /*
              * Filter out nodes that only lead to constraints with zero weight.
              * Note: Node sharing happens earlier, in BavetConstraintFactory#share(Stream_).
@@ -65,7 +72,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
                 constraintWeightMap.put(constraint, constraintWeight);
             }
         }
-        AbstractScoreInliner<Score_> scoreInliner =
+        var scoreInliner =
                 AbstractScoreInliner.buildScoreInliner(scoreDefinition, constraintWeightMap, constraintMatchEnabled);
         if (constraintStreamSet.isEmpty()) { // All constraints were disabled.
             return new BavetConstraintSession<>(scoreInliner);
@@ -74,16 +81,16 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
          * Build constraintStreamSet in reverse order to create downstream nodes first
          * so every node only has final variables (some of which have downstream node method references).
          */
-        NodeBuildHelper<Score_> buildHelper = new NodeBuildHelper<>(constraintStreamSet, scoreInliner);
+        var buildHelper = new NodeBuildHelper<Score_>(constraintStreamSet, scoreInliner);
         List<BavetAbstractConstraintStream<Solution_>> reversedConstraintStreamList = new ArrayList<>(constraintStreamSet);
         Collections.reverse(reversedConstraintStreamList);
-        for (BavetAbstractConstraintStream<Solution_> constraintStream : reversedConstraintStreamList) {
+        for (var constraintStream : reversedConstraintStreamList) {
             constraintStream.buildNode(buildHelper);
         }
-        List<AbstractNode> nodeList = buildHelper.destroyAndGetNodeList();
+        var nodeList = buildHelper.destroyAndGetNodeList();
         Map<Class<?>, List<AbstractForEachUniNode<Object>>> declaredClassToNodeMap = new LinkedHashMap<>();
         long nextNodeId = 0;
-        for (AbstractNode node : nodeList) {
+        for (var node : nodeList) {
             /*
              * Nodes are iterated first to last, starting with forEach(), the ultimate parent.
              * Parents are guaranteed to come before children.
@@ -91,8 +98,8 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
             node.setId(nextNodeId++);
             node.setLayerIndex(determineLayerIndex(node, buildHelper));
             if (node instanceof AbstractForEachUniNode<?> forEachUniNode) {
-                Class<?> forEachClass = forEachUniNode.getForEachClass();
-                List<AbstractForEachUniNode<Object>> forEachUniNodeList =
+                var forEachClass = forEachUniNode.getForEachClass();
+                var forEachUniNodeList =
                         declaredClassToNodeMap.computeIfAbsent(forEachClass, k -> new ArrayList<>());
                 if (forEachUniNodeList.size() == 2) {
                     // Each class can have at most two forEach nodes: one including null vars, the other excluding them.
@@ -104,14 +111,14 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
             }
         }
         SortedMap<Long, List<Propagator>> layerMap = new TreeMap<>();
-        for (AbstractNode node : nodeList) {
+        for (var node : nodeList) {
             layerMap.computeIfAbsent(node.getLayerIndex(), k -> new ArrayList<>())
                     .add(node.getPropagator());
         }
-        int layerCount = layerMap.size();
-        Propagator[][] layeredNodes = new Propagator[layerCount][];
-        for (int i = 0; i < layerCount; i++) {
-            List<Propagator> layer = layerMap.get((long) i);
+        var layerCount = layerMap.size();
+        var layeredNodes = new Propagator[layerCount][];
+        for (var i = 0; i < layerCount; i++) {
+            var layer = layerMap.get((long) i);
             layeredNodes[i] = layer.toArray(new Propagator[0]);
         }
         return new BavetConstraintSession<>(scoreInliner, declaredClassToNodeMap, layeredNodes);

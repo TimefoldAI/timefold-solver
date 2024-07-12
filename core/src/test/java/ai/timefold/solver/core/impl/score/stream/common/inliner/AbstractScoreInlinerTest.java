@@ -81,7 +81,7 @@ public abstract class AbstractScoreInlinerTest<Solution_, Score_ extends Score<S
         protected TestConstraint(TestConstraintFactory<Solution_, Score_> constraintFactory, String constraintName,
                 Score_ constraintWeight) {
             super(constraintFactory, ConstraintRef.of(constraintFactory.getDefaultConstraintPackage(), constraintName),
-                    solution -> constraintWeight, ScoreImpactType.REWARD, false, null, null);
+                    constraintWeight, ScoreImpactType.REWARD, null, null);
         }
     }
 

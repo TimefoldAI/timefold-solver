@@ -1,8 +1,9 @@
 package ai.timefold.solver.core.impl.score.stream.common;
 
 import java.math.BigDecimal;
-import java.util.function.Function;
+import java.util.Objects;
 
+import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
 import ai.timefold.solver.core.api.score.IBendableScore;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
@@ -15,44 +16,70 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
 
     private final ConstraintFactory_ constraintFactory;
     private final ConstraintRef constraintRef;
-    private final Function<Solution_, Score<?>> constraintWeightExtractor;
+    private final Score<?> constraintWeight;
     private final ScoreImpactType scoreImpactType;
-    private final boolean isConstraintWeightConfigurable;
     // Constraint is not generic in uni/bi/..., therefore these can not be typed.
     private final Object justificationMapping;
     private final Object indictedObjectsMapping;
 
-    protected AbstractConstraint(ConstraintFactory_ constraintFactory, ConstraintRef constraintRef,
-            Function<Solution_, Score<?>> constraintWeightExtractor, ScoreImpactType scoreImpactType,
-            boolean isConstraintWeightConfigurable, Object justificationMapping, Object indictedObjectsMapping) {
-        this.constraintFactory = constraintFactory;
-        this.constraintRef = constraintRef;
-        this.constraintWeightExtractor = constraintWeightExtractor;
-        this.scoreImpactType = scoreImpactType;
-        this.isConstraintWeightConfigurable = isConstraintWeightConfigurable;
-        this.justificationMapping = justificationMapping;
-        this.indictedObjectsMapping = indictedObjectsMapping;
+    /**
+     *
+     * @param constraintFactory never null
+     * @param constraintRef never null
+     * @param constraintWeight if null, it means legacy constraint configuration code;
+     *        will require {@link ConstraintConfiguration} to be present.
+     * @param scoreImpactType never null
+     * @param justificationMapping never null
+     * @param indictedObjectsMapping never null
+     */
+    protected AbstractConstraint(ConstraintFactory_ constraintFactory, ConstraintRef constraintRef, Score<?> constraintWeight,
+            ScoreImpactType scoreImpactType, Object justificationMapping, Object indictedObjectsMapping) {
+        this.constraintFactory = Objects.requireNonNull(constraintFactory);
+        this.constraintRef = Objects.requireNonNull(constraintRef);
+        this.constraintWeight = constraintWeight;
+        this.scoreImpactType = Objects.requireNonNull(scoreImpactType);
+        this.justificationMapping = justificationMapping; // May be omitted in test code.
+        this.indictedObjectsMapping = indictedObjectsMapping; // May be omitted in test code.
     }
 
-    @SuppressWarnings("unchecked")
-    public final <Score_ extends Score<Score_>> Score_ extractConstraintWeight(Solution_ workingSolution) {
-        var solutionDescriptor = constraintFactory.getSolutionDescriptor();
-        if (isConstraintWeightConfigurable && workingSolution == null) {
-            /*
-             * In constraint verifier API, we allow for testing constraint providers without having a planning solution.
-             * However, constraint weights may be configurable and in that case the solution is required to read the
-             * weights from.
-             * For these cases, we set the constraint weight to the softest possible value, just to make sure that the
-             * constraint is not ignored.
-             * The actual value is not used in any way.
-             */
-            return (Score_) solutionDescriptor.getScoreDefinition().getOneSoftestScore();
-        }
-        Score_ constraintWeight = (Score_) constraintWeightExtractor.apply(workingSolution);
+    public final <Score_ extends Score<Score_>> Score_ extractConstraintWeight(Solution_ solution) {
+        Score_ constraintWeight = determineConstraintWeight(solution);
         return switch (scoreImpactType) {
             case PENALTY -> constraintWeight.negate();
             case REWARD, MIXED -> constraintWeight;
         };
+    }
+
+    @SuppressWarnings("unchecked")
+    private <Score_ extends Score<Score_>> Score_ determineConstraintWeight(Solution_ solution) {
+        var solutionDescriptor = constraintFactory.getSolutionDescriptor();
+        var hasConstraintWeight = constraintWeight != null;
+        var constraintWeightSupplier = solutionDescriptor.<Score_> getConstraintWeightSupplier();
+        var hasConstraintWeightSupplier = constraintWeightSupplier != null;
+        if (!hasConstraintWeight) {
+            if (hasConstraintWeightSupplier) { // Legacy constraint configuration.
+                return constraintWeightSupplier.getConstraintWeight(constraintRef, solution);
+            } else {
+                /*
+                 * In constraint verifier API, we allow for testing constraint providers without having a planning solution.
+                 * However, constraint weights may be configurable and in that case the solution is required to read the
+                 * weights from.
+                 * For these cases, we set the constraint weight to the softest possible value, just to make sure that the
+                 * constraint is not ignored.
+                 * The actual value is not used in any way.
+                 */
+                return (Score_) solutionDescriptor.getScoreDefinition().getOneSoftestScore();
+            }
+        } else {
+            if (hasConstraintWeightSupplier) { // Overridable constraint weight.
+                var weight = constraintWeightSupplier.getConstraintWeight(constraintRef, solution);
+                if (weight != null) {
+                    return weight;
+                }
+            }
+            AbstractConstraint.validateWeight(solutionDescriptor, constraintRef, (Score_) constraintWeight);
+            return (Score_) constraintWeight;
+        }
     }
 
     public final void assertCorrectImpact(int impact) {

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
@@ -66,11 +65,9 @@ public abstract class BavetAbstractConstraintStream<Solution_> extends AbstractC
                 Objects.requireNonNullElseGet(indictedObjectsMapping, this::getDefaultIndictedObjectsMapping);
         var isConstraintWeightConfigurable = constraintWeight == null;
         var constraintRef = ConstraintRef.of(resolvedConstraintPackage, constraintName);
-        var constraintWeightExtractor = (Function<Solution_, Score<?>>) (isConstraintWeightConfigurable
-                ? buildConstraintWeightExtractor(constraintRef)
-                : buildConstraintWeightExtractor(constraintRef, constraintWeight));
-        var constraint = new BavetConstraint<>(constraintFactory, constraintRef, constraintWeightExtractor, impactType,
-                resolvedJustificationMapping, resolvedIndictedObjectsMapping, isConstraintWeightConfigurable, stream);
+        var constraint = new BavetConstraint<>(constraintFactory, constraintRef,
+                isConstraintWeightConfigurable ? null : constraintWeight, impactType, resolvedJustificationMapping,
+                resolvedIndictedObjectsMapping, stream);
         stream.setConstraint(constraint);
         return constraint;
     }

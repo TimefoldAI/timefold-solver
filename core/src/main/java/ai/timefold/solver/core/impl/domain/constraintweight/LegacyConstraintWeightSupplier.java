@@ -1,16 +1,17 @@
 package ai.timefold.solver.core.impl.domain.constraintweight;
 
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.IBendableScore;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
+import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.score.descriptor.ScoreDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -47,6 +48,21 @@ public final class LegacyConstraintWeightSupplier<Score_ extends Score<Score_>, 
     }
 
     @Override
+    public void validate(Solution_ workingSolution, Set<ConstraintRef> userDefinedConstraints) {
+        var missingConstraints = userDefinedConstraints.stream()
+                .filter(constraintRef -> !constraintWeightExtractorMap.containsKey(constraintRef))
+                .collect(Collectors.toSet());
+        if (!missingConstraints.isEmpty()) {
+            throw new IllegalStateException("""
+                    The constraintConfigurationClass (%s) does not support the following constraints (%s).
+                    Maybe ensure your constraint configuration contains all constraints defined in your %s."""
+                    .formatted(constraintConfigurationDescriptor.getConstraintConfigurationClass(), missingConstraints,
+                            ConstraintProvider.class.getSimpleName()));
+        }
+        // For backward compatibility reasons, we do not check for excess constraints.
+    }
+
+    @Override
     public Class<?> getProblemFactClass() {
         return constraintConfigurationDescriptor.getConstraintConfigurationClass();
     }
@@ -57,22 +73,19 @@ public final class LegacyConstraintWeightSupplier<Score_ extends Score<Score_>, 
     }
 
     @Override
-    public Set<ConstraintRef> getSupportedConstraints() {
-        return Collections.unmodifiableSet(constraintWeightExtractorMap.keySet());
-    }
-
-    @Override
     public Score_ getConstraintWeight(ConstraintRef constraintRef, Solution_ workingSolution) {
         var weightExtractor = constraintWeightExtractorMap.get(constraintRef);
-        if (weightExtractor == null) {
-            throw new IllegalStateException("The constraint (%s) is not supported by constraint configuration class (%s)."
-                    .formatted(constraintRef, constraintConfigurationDescriptor.getConstraintConfigurationClass()));
+        if (weightExtractor == null) { // Should have been caught by validate(...).
+            throw new IllegalStateException(
+                    "Impossible state: Constraint (%s) not supported by constraint configuration class (%s)."
+                            .formatted(constraintRef, constraintConfigurationDescriptor.getConstraintConfigurationClass()));
         }
-        return weightExtractor.apply(workingSolution);
+        var weight = weightExtractor.apply(workingSolution);
+        validateConstraintWeight(constraintRef, weight);
+        return weight;
     }
 
-    @Override
-    public void validateConstraintWeight(ConstraintRef constraintRef, Score_ constraintWeight) {
+    private void validateConstraintWeight(ConstraintRef constraintRef, Score_ constraintWeight) {
         if (constraintWeight == null) {
             throw new IllegalArgumentException("""
                     The constraintWeight for constraint (%s) must not be null.
