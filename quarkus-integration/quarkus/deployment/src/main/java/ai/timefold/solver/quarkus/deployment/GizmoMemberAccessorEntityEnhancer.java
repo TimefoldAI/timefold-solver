@@ -163,7 +163,8 @@ final class GizmoMemberAccessorEntityEnhancer {
      * @param transformers BuildProducer of BytecodeTransformers
      */
     public String generateMethodAccessor(AnnotationInstance annotationInstance, ClassOutput classOutput,
-            ClassInfo classInfo, MethodInfo methodInfo, BuildProducer<BytecodeTransformerBuildItem> transformers)
+            ClassInfo classInfo, MethodInfo methodInfo, boolean requiredReturnType,
+            BuildProducer<BytecodeTransformerBuildItem> transformers)
             throws ClassNotFoundException, NoSuchMethodException {
         Class<?> declaringClass = Class.forName(methodInfo.declaringClass().name().toString(), false,
                 Thread.currentThread().getContextClassLoader());
@@ -185,9 +186,12 @@ final class GizmoMemberAccessorEntityEnhancer {
             member = new GizmoMemberDescriptor(name, newMethodDescriptor, memberDescriptor, declaringClass,
                     setterDescriptor.orElse(null));
         }
-        GizmoMemberInfo memberInfo = new GizmoMemberInfo(member, true,
-                (Class<? extends Annotation>) Class.forName(annotationInstance.name().toString(), false,
-                        Thread.currentThread().getContextClassLoader()));
+        Class<? extends Annotation> annotationClass = null;
+        if (requiredReturnType || annotationInstance != null) {
+            annotationClass = (Class<? extends Annotation>) Class.forName(annotationInstance.name().toString(), false,
+                    Thread.currentThread().getContextClassLoader());
+        }
+        GizmoMemberInfo memberInfo = new GizmoMemberInfo(member, requiredReturnType, annotationClass);
         GizmoMemberAccessorImplementor.defineAccessorFor(generatedClassName, classOutput, memberInfo);
         return generatedClassName;
     }

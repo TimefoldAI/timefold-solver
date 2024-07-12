@@ -890,6 +890,30 @@ class TimefoldProcessor {
                     case FIELD: {
                         FieldInfo fieldInfo = annotatedMember.target().asField();
                         ClassInfo classInfo = fieldInfo.declaringClass();
+
+                        try {
+                            generatedMemberAccessorsClassNameSet.add(
+                                    entityEnhancer.generateFieldAccessor(annotatedMember, classOutput, fieldInfo,
+                                            transformers));
+                            if (annotatedMember.name().equals(DotNames.CASCADE_UPDATE_ELEMENT_SHADOW_VARIABLE)) {
+                                // The source method name also must be included
+                                var sourceMethodName = annotatedMember.values().stream()
+                                        .filter(v -> v.name().equals("sourceMethodName"))
+                                        .findFirst()
+                                        .map(AnnotationValue::asString)
+                                        .orElseThrow(() -> new IllegalStateException(
+                                                "Fail to generate member accessor of the source method listener (%s) of the class(%s)."
+                                                        .formatted(DotNames.CASCADE_UPDATE_ELEMENT_SHADOW_VARIABLE.local(),
+                                                                classInfo.name().toString())));
+                                var methodInfo = classInfo.method(sourceMethodName);
+                                generatedMemberAccessorsClassNameSet.add(entityEnhancer.generateMethodAccessor(null,
+                                        classOutput, classInfo, methodInfo, false, transformers));
+
+                            }
+                        } catch (ClassNotFoundException | NoSuchFieldException | NoSuchMethodException e) {
+                            throw new IllegalStateException("Fail to generate member accessor for field (%s) of the class(%s)."
+                                    .formatted(fieldInfo.name(), classInfo.name().toString()), e);
+                        }
                         buildFieldAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
                                 classInfo, fieldInfo, transformers);
                         break;
@@ -964,7 +988,7 @@ class TimefoldProcessor {
             MethodInfo methodInfo, BuildProducer<BytecodeTransformerBuildItem> transformers) {
         try {
             generatedMemberAccessorsClassNameSet.add(entityEnhancer.generateMethodAccessor(annotatedMember,
-                    classOutput, classInfo, methodInfo, transformers));
+                    classOutput, classInfo, methodInfo, true, transformers));
         } catch (ClassNotFoundException | NoSuchMethodException e) {
             throw new IllegalStateException(
                     "Failed to generate member accessor for the method (%s) of the class (%s)."

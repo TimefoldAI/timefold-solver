@@ -26,6 +26,7 @@ import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.AnchorShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.CascadeUpdateElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.CustomShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
@@ -45,6 +46,7 @@ import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.ProblemScaleTracker;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.anchor.AnchorShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.cascade.CascadeUpdateElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.custom.CustomShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.custom.LegacyCustomShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.custom.PiggybackShadowVariableDescriptor;
@@ -85,7 +87,8 @@ public class EntityDescriptor<Solution_> {
             ShadowVariable.class,
             ShadowVariable.List.class,
             PiggybackShadowVariable.class,
-            CustomShadowVariable.class };
+            CustomShadowVariable.class,
+            CascadeUpdateElementShadowVariable.class };
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityDescriptor.class);
 
@@ -283,7 +286,8 @@ public class EntityDescriptor<Solution_> {
             if (variableAnnotationClass.equals(CustomShadowVariable.class)
                     || variableAnnotationClass.equals(ShadowVariable.class)
                     || variableAnnotationClass.equals(ShadowVariable.List.class)
-                    || variableAnnotationClass.equals(PiggybackShadowVariable.class)) {
+                    || variableAnnotationClass.equals(PiggybackShadowVariable.class)
+                    || variableAnnotationClass.equals(CascadeUpdateElementShadowVariable.class)) {
                 memberAccessorType = FIELD_OR_GETTER_METHOD;
             } else {
                 memberAccessorType = FIELD_OR_GETTER_METHOD_WITH_SETTER;
@@ -349,6 +353,10 @@ public class EntityDescriptor<Solution_> {
         } else if (variableAnnotationClass.equals(ShadowVariable.class)
                 || variableAnnotationClass.equals(ShadowVariable.List.class)) {
             var variableDescriptor = new CustomShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
+            declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
+        } else if (variableAnnotationClass.equals(CascadeUpdateElementShadowVariable.class)) {
+            var variableDescriptor =
+                    new CascadeUpdateElementShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(PiggybackShadowVariable.class)) {
             var variableDescriptor =
