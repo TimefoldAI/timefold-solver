@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.domain.constraintweight;
+package ai.timefold.solver.core.impl.domain.solution;
 
 import java.util.Set;
 

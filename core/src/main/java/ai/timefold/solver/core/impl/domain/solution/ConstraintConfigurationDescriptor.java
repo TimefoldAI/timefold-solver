@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.domain.constraintweight;
+package ai.timefold.solver.core.impl.domain.solution;
 
 import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD;
 
