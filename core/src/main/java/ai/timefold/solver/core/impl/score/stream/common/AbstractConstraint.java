@@ -56,22 +56,27 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
         var hasConstraintWeight = constraintWeight != null;
         var constraintWeightSupplier = solutionDescriptor.<Score_> getConstraintWeightSupplier();
         var hasConstraintWeightSupplier = constraintWeightSupplier != null;
+
         if (!hasConstraintWeight) {
-            if (hasConstraintWeightSupplier) { // Legacy constraint configuration.
-                return constraintWeightSupplier.getConstraintWeight(constraintRef, solution);
-            } else {
+            // Branch only possible using the deprecated ConstraintConfiguration and penalizeConfigurable(...).
+            if (solution == null) {
                 /*
                  * In constraint verifier API, we allow for testing constraint providers without having a planning solution.
-                 * However, constraint weights may be configurable and in that case the solution is required to read the
-                 * weights from.
+                 * However, constraint weights may be using ConstraintConfiguration
+                 * and in that case the solution is required to read the weights from.
                  * For these cases, we set the constraint weight to the softest possible value, just to make sure that the
                  * constraint is not ignored.
                  * The actual value is not used in any way.
                  */
                 return (Score_) solutionDescriptor.getScoreDefinition().getOneSoftestScore();
+            } else if (hasConstraintWeightSupplier) { // Legacy constraint configuration.
+                return constraintWeightSupplier.getConstraintWeight(constraintRef, solution);
+            } else {
+                throw new UnsupportedOperationException("Impossible state: no %s for constraint (%s)."
+                        .formatted(ConstraintConfiguration.class.getSimpleName(), constraintRef));
             }
-        } else {
-            if (hasConstraintWeightSupplier) { // Overridable constraint weight.
+        } else { // Overridable constraint weight using ConstraintWeights.
+            if (hasConstraintWeightSupplier) {
                 var weight = constraintWeightSupplier.getConstraintWeight(constraintRef, solution);
                 if (weight != null) {
                     return weight;
