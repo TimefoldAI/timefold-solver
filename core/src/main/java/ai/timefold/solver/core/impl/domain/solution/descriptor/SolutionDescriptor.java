@@ -35,7 +35,9 @@ import ai.timefold.solver.core.api.domain.autodiscover.AutoDiscoverMemberType;
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfigurationProvider;
+import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.solution.ConstraintWeights;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
@@ -56,8 +58,9 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.lookup.LookUpStrategyResolver;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.score.descriptor.ScoreDescriptor;
+import ai.timefold.solver.core.impl.domain.solution.ConstraintConfigurationBasedConstraintWeightSupplier;
 import ai.timefold.solver.core.impl.domain.solution.ConstraintWeightSupplier;
-import ai.timefold.solver.core.impl.domain.solution.LegacyConstraintWeightSupplier;
+import ai.timefold.solver.core.impl.domain.solution.ConstraintWeightsBasedConstraintWeightSupplier;
 import ai.timefold.solver.core.impl.domain.solution.cloner.FieldAccessingSolutionCloner;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionCloner;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionClonerFactory;
@@ -76,7 +79,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
+ * @param <Solution_> the solution type, the class with the {@link ai.timefold.solver.core.api.domain.solution.PlanningSolution}
+ *        annotation
  */
 public class SolutionDescriptor<Solution_> {
 
@@ -104,6 +108,7 @@ public class SolutionDescriptor<Solution_> {
         descriptorPolicy.setGeneratedSolutionClonerMap(solutionClonerMap);
         descriptorPolicy.setMemberAccessorFactory(solutionDescriptor.getMemberAccessorFactory());
 
+        solutionDescriptor.processUnannotatedFieldsAndMethods(descriptorPolicy);
         solutionDescriptor.processAnnotations(descriptorPolicy, entityClassList);
         int ordinal = 0;
         for (var entityClass : sortEntityClassList(entityClassList)) {
@@ -112,6 +117,11 @@ public class SolutionDescriptor<Solution_> {
             entityDescriptor.processAnnotations(descriptorPolicy);
         }
         solutionDescriptor.afterAnnotationsProcessed(descriptorPolicy);
+        if (solutionDescriptor.constraintWeightSupplier != null) {
+            // The scoreDescriptor is definitely initialized at this point.
+            solutionDescriptor.constraintWeightSupplier.initialize(solutionDescriptor,
+                    descriptorPolicy.getMemberAccessorFactory(), descriptorPolicy.getDomainAccessType());
+        }
         return solutionDescriptor;
     }
 
@@ -203,6 +213,38 @@ public class SolutionDescriptor<Solution_> {
         lowestEntityDescriptorMap.put(entityClass, entityDescriptor);
     }
 
+    public void processUnannotatedFieldsAndMethods(DescriptorPolicy descriptorPolicy) {
+        processConstraintWeights(descriptorPolicy);
+    }
+
+    private void processConstraintWeights(DescriptorPolicy descriptorPolicy) {
+        for (var lineageClass : ConfigUtils.getAllLineageClasses(solutionClass)) {
+            var memberList = ConfigUtils.getDeclaredMembers(lineageClass);
+            var constraintWeightFieldList = memberList.stream()
+                    .filter(member -> member instanceof Field field
+                            && field.getType().isAssignableFrom(ConstraintWeight.class))
+                    .map(f -> ((Field) f))
+                    .toList();
+            switch (constraintWeightFieldList.size()) {
+                case 0:
+                    break;
+                case 1:
+                    if (constraintWeightSupplier != null) {
+                        // The bottom-most class wins, they are parsed first due to ConfigUtil.getAllLineageClasses().
+                        throw new IllegalStateException(
+                                "The solutionClass (%s) has a field of type (%s) which was already found on another solution class."
+                                        .formatted(lineageClass, ConstraintWeights.class));
+                    }
+                    constraintWeightSupplier = ConstraintWeightsBasedConstraintWeightSupplier.create(this, descriptorPolicy,
+                            constraintWeightFieldList.get(0));
+                    break;
+                default:
+                    throw new IllegalStateException("The solutionClass (%s) has more than one field (%s) of type %s."
+                            .formatted(solutionClass, constraintWeightFieldList, ConstraintWeights.class));
+            }
+        }
+    }
+
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void processAnnotations(DescriptorPolicy descriptorPolicy, List<Class<?>> entityClassList) {
         domainAccessType = descriptorPolicy.getDomainAccessType();
@@ -239,11 +281,6 @@ public class SolutionDescriptor<Solution_> {
                     + ") must have 1 member with a @" + PlanningScore.class.getSimpleName() + " annotation.\n"
                     + "Maybe add a getScore() method with a @" + PlanningScore.class.getSimpleName() + " annotation.");
         }
-        if (constraintConfigurationMemberAccessor != null) {
-            // The scoreDescriptor is definitely initialized at this point.
-            constraintWeightSupplier.initialize(descriptorPolicy.getMemberAccessorFactory(),
-                    descriptorPolicy.getDomainAccessType(), (ScoreDescriptor) scoreDescriptor);
-        }
     }
 
     private void processSolutionAnnotations(DescriptorPolicy descriptorPolicy) {
@@ -271,8 +308,7 @@ public class SolutionDescriptor<Solution_> {
     }
 
     private void processFactEntityOrScoreAnnotation(DescriptorPolicy descriptorPolicy,
-            Member member,
-            List<Class<?>> entityClassList) {
+            Member member, List<Class<?>> entityClassList) {
         Class<? extends Annotation> annotationClass = extractFactEntityOrScoreAnnotationClassOrAutoDiscover(
                 member, entityClassList);
         if (annotationClass == null) {
@@ -367,9 +403,16 @@ public class SolutionDescriptor<Solution_> {
         return annotationClass;
     }
 
-    private void processConstraintConfigurationProviderAnnotation(
-            DescriptorPolicy descriptorPolicy, Member member,
+    private void processConstraintConfigurationProviderAnnotation(DescriptorPolicy descriptorPolicy, Member member,
             Class<? extends Annotation> annotationClass) {
+        if (constraintWeightSupplier != null) {
+            throw new IllegalStateException("""
+                    The solution class (%s) has both a %s member and a %s-annotated member.
+                    %s is deprecated, please remove it from your codebase and keep %s only."""
+                    .formatted(solutionClass, ConstraintWeights.class.getSimpleName(),
+                            ConstraintConfigurationProvider.class.getSimpleName(),
+                            ConstraintConfigurationProvider.class.getSimpleName(), ConstraintWeights.class.getSimpleName()));
+        }
         MemberAccessor memberAccessor = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
                 FIELD_OR_READ_METHOD, annotationClass, descriptorPolicy.getDomainAccessType());
         if (constraintConfigurationMemberAccessor != null) {
@@ -397,7 +440,8 @@ public class SolutionDescriptor<Solution_> {
                     + constraintConfigurationClass + ") that has a "
                     + ConstraintConfiguration.class.getSimpleName() + " annotation.");
         }
-        constraintWeightSupplier = LegacyConstraintWeightSupplier.create(this, constraintConfigurationClass);
+        constraintWeightSupplier =
+                ConstraintConfigurationBasedConstraintWeightSupplier.create(this, constraintConfigurationClass);
     }
 
     private void processProblemFactPropertyAnnotation(DescriptorPolicy descriptorPolicy,

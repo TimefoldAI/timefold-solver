@@ -13,36 +13,38 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
-import ai.timefold.solver.core.impl.domain.score.descriptor.ScoreDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.definition.AbstractBendableScoreDefinition;
 
-public final class LegacyConstraintWeightSupplier<Score_ extends Score<Score_>, Solution_>
+public final class ConstraintConfigurationBasedConstraintWeightSupplier<Score_ extends Score<Score_>, Solution_>
         implements ConstraintWeightSupplier<Solution_, Score_> {
 
     public static <Solution_, Score_ extends Score<Score_>> ConstraintWeightSupplier<Solution_, Score_> create(
             SolutionDescriptor<Solution_> solutionDescriptor, Class<?> constraintConfigurationClass) {
         var configDescriptor = new ConstraintConfigurationDescriptor<>(Objects.requireNonNull(solutionDescriptor),
                 Objects.requireNonNull(constraintConfigurationClass));
-        return new LegacyConstraintWeightSupplier<>(configDescriptor);
+        return new ConstraintConfigurationBasedConstraintWeightSupplier<>(configDescriptor);
     }
 
     private final ConstraintConfigurationDescriptor<Solution_> constraintConfigurationDescriptor;
     private final Map<ConstraintRef, Function<Solution_, Score_>> constraintWeightExtractorMap = new LinkedHashMap<>();
 
-    private LegacyConstraintWeightSupplier(ConstraintConfigurationDescriptor<Solution_> constraintConfigurationDescriptor) {
+    private ConstraintConfigurationBasedConstraintWeightSupplier(
+            ConstraintConfigurationDescriptor<Solution_> constraintConfigurationDescriptor) {
         this.constraintConfigurationDescriptor = Objects.requireNonNull(constraintConfigurationDescriptor);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public void initialize(MemberAccessorFactory memberAccessorFactory, DomainAccessType domainAccessType,
-            ScoreDescriptor<Score_> scoreDescriptor) {
+    public void initialize(SolutionDescriptor<Solution_> solutionDescriptor, MemberAccessorFactory memberAccessorFactory,
+            DomainAccessType domainAccessType) {
+        var scoreDescriptor = solutionDescriptor.<Score_> getScoreDescriptor();
         constraintConfigurationDescriptor.processAnnotations(memberAccessorFactory, domainAccessType,
                 scoreDescriptor.getScoreDefinition());
         constraintConfigurationDescriptor.getSupportedConstraints().forEach(constraintRef -> {
             var descriptor = constraintConfigurationDescriptor.findConstraintWeightDescriptor(constraintRef);
-            var weightExtractor = (Function<Solution_, Score_>) descriptor.createExtractor();
+            var weightExtractor = (Function<Solution_, Score_>) descriptor
+                    .createExtractor(solutionDescriptor.getConstraintConfigurationMemberAccessor());
             constraintWeightExtractorMap.put(constraintRef, weightExtractor);
         });
     }
@@ -134,4 +136,10 @@ public final class LegacyConstraintWeightSupplier<Score_ extends Score<Score_>, 
     ConstraintConfigurationDescriptor<Solution_> getConstraintConfigurationDescriptor() {
         return constraintConfigurationDescriptor;
     }
+
+    @Override
+    public String toString() {
+        return "Constraint weights based on " + constraintConfigurationDescriptor.getConstraintConfigurationClass() + ".";
+    }
+
 }

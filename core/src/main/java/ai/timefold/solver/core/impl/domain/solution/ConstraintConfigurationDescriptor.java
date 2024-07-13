@@ -126,7 +126,7 @@ class ConstraintConfigurationDescriptor<Solution_> {
                         + "Maybe make that member (" + memberAccessor.getName() + ") return the score class ("
                         + scoreDefinition.getScoreClass().getSimpleName() + ") instead.");
             }
-            var constraintWeightDescriptor = new ConstraintWeightDescriptor<>(this, memberAccessor);
+            var constraintWeightDescriptor = new ConstraintWeightDescriptor<Solution_>(memberAccessor);
             constraintWeightDescriptorMap.put(memberAccessor.getName(), constraintWeightDescriptor);
         }
     }

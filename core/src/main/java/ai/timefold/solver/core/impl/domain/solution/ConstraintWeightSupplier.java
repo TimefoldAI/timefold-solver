@@ -7,16 +7,16 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
-import ai.timefold.solver.core.impl.domain.score.descriptor.ScoreDescriptor;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
 public sealed interface ConstraintWeightSupplier<Solution_, Score_ extends Score<Score_>>
-        permits DefaultConstraintWeightSupplier, LegacyConstraintWeightSupplier {
+        permits ConstraintWeightsBasedConstraintWeightSupplier, ConstraintConfigurationBasedConstraintWeightSupplier {
 
-    void initialize(MemberAccessorFactory memberAccessorFactory, DomainAccessType domainAccessType,
-            ScoreDescriptor<Score_> scoreDescriptor);
+    void initialize(SolutionDescriptor<Solution_> solutionDescriptor, MemberAccessorFactory memberAccessorFactory,
+            DomainAccessType domainAccessType);
 
     /**
-     * Will be called after {@link #initialize(MemberAccessorFactory, DomainAccessType, ScoreDescriptor)}.
+     * Will be called after {@link #initialize(SolutionDescriptor, MemberAccessorFactory, DomainAccessType)}.
      * Has the option of failing fast in case of discrepancies
      * between the constraints defined in {@link ConstraintProvider}
      * and the constraints defined in the configuration.

@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.domain.solution;
 
+import java.lang.reflect.Field;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -9,34 +10,40 @@ import ai.timefold.solver.core.api.domain.solution.ConstraintWeights;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
-import ai.timefold.solver.core.impl.domain.score.descriptor.ScoreDescriptor;
+import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
-public final class DefaultConstraintWeightSupplier<Score_ extends Score<Score_>, Solution_>
+public final class ConstraintWeightsBasedConstraintWeightSupplier<Score_ extends Score<Score_>, Solution_>
         implements ConstraintWeightSupplier<Solution_, Score_> {
 
     public static <Solution_, Score_ extends Score<Score_>> ConstraintWeightSupplier<Solution_, Score_> create(
-            SolutionDescriptor<Solution_> solutionDescriptor,
-            Class<? extends ConstraintWeights<Score_>> constraintWeightsClass) {
-        return new DefaultConstraintWeightSupplier<>(Objects.requireNonNull(solutionDescriptor),
-                Objects.requireNonNull(constraintWeightsClass));
+            SolutionDescriptor<Solution_> solutionDescriptor, DescriptorPolicy descriptorPolicy,
+            Field member) {
+        var constraintWeightsClass = (Class<? extends ConstraintWeights<Score_>>) member.getType();
+        var memberAccessor = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
+                MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER,
+                descriptorPolicy.getDomainAccessType());
+        return new ConstraintWeightsBasedConstraintWeightSupplier<>(solutionDescriptor, memberAccessor, constraintWeightsClass);
     }
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
+    private final MemberAccessor constraintsWeightsAccessor;
     private final Class<? extends ConstraintWeights<Score_>> constraintWeightsClass;
 
-    private DefaultConstraintWeightSupplier(SolutionDescriptor<Solution_> solutionDescriptor,
-            Class<? extends ConstraintWeights<Score_>> constraintWeightsClass) {
+    private ConstraintWeightsBasedConstraintWeightSupplier(SolutionDescriptor<Solution_> solutionDescriptor,
+            MemberAccessor constraintsWeightsAccessor, Class<? extends ConstraintWeights<Score_>> constraintWeightsClass) {
         this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
+        this.constraintsWeightsAccessor = Objects.requireNonNull(constraintsWeightsAccessor);
         this.constraintWeightsClass = Objects.requireNonNull(constraintWeightsClass);
     }
 
     @Override
-    public void initialize(MemberAccessorFactory memberAccessorFactory, DomainAccessType domainAccessType,
-            ScoreDescriptor<Score_> scoreDescriptor) {
-
+    public void initialize(SolutionDescriptor<Solution_> solutionDescriptor, MemberAccessorFactory memberAccessorFactory,
+            DomainAccessType domainAccessType) {
+        // No need to do anything.
     }
 
     @Override
@@ -57,7 +64,7 @@ public final class DefaultConstraintWeightSupplier<Score_ extends Score<Score_>,
     }
 
     private ConstraintWeights<Score_> getConstraintWeights(Solution_ workingSolution) {
-        return null;
+        return (ConstraintWeights<Score_>) constraintsWeightsAccessor.executeGetter(workingSolution);
     }
 
     @Override
@@ -81,4 +88,8 @@ public final class DefaultConstraintWeightSupplier<Score_ extends Score<Score_>,
         return weight;
     }
 
+    @Override
+    public String toString() {
+        return "Constraint weights based on " + constraintsWeightsAccessor + ".";
+    }
 }
