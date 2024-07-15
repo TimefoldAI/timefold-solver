@@ -50,45 +50,8 @@ public final class MemberAccessorFactory {
         return switch (domainAccessType) {
             case GIZMO -> GizmoMemberAccessorFactory.buildGizmoMemberAccessor(member, annotationClass,
                     (GizmoClassLoader) Objects.requireNonNull(classLoader));
-            case REFLECTION -> annotationClass == null ? buildReflectiveMemberAccessor(member, memberAccessorType)
-                    : buildReflectiveMemberAccessor(member, memberAccessorType, annotationClass);
+            case REFLECTION -> buildReflectiveMemberAccessor(member, memberAccessorType, annotationClass);
         };
-    }
-
-    private static MemberAccessor buildReflectiveMemberAccessor(Member member, MemberAccessorType memberAccessorType) {
-        if (member instanceof Field field) {
-            return new ReflectionFieldMemberAccessor(field);
-        } else if (member instanceof Method method) {
-            MemberAccessor memberAccessor;
-            switch (memberAccessorType) {
-                case FIELD_OR_READ_METHOD:
-                    if (!ReflectionHelper.isGetterMethod(method)) {
-                        ReflectionHelper.assertReadMethod(method);
-                        memberAccessor = new ReflectionMethodMemberAccessor(method);
-                        break;
-                    }
-                    // Intentionally fall through (no break)
-                case FIELD_OR_GETTER_METHOD:
-                case FIELD_OR_GETTER_METHOD_WITH_SETTER:
-                    boolean getterOnly = memberAccessorType != MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER;
-                    ReflectionHelper.assertGetterMethod(method);
-                    memberAccessor = new ReflectionBeanPropertyMemberAccessor(method, getterOnly);
-                    break;
-                default:
-                    throw new IllegalStateException("The memberAccessorType (%s) is not implemented."
-                            .formatted(memberAccessorType));
-            }
-            if (memberAccessorType == MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER
-                    && !memberAccessor.supportSetter()) {
-                throw new IllegalStateException(
-                        "The class (%s) has a getter method (%s), but lacks a setter for that property (%s)."
-                                .formatted(method.getDeclaringClass(), method, memberAccessor.getName()));
-            }
-            return memberAccessor;
-        } else {
-            throw new IllegalStateException("Impossible state: the member (%S)'s type is not a %S or a %s."
-                    .formatted(member, Field.class.getSimpleName(), Method.class.getSimpleName()));
-        }
     }
 
     private static MemberAccessor buildReflectiveMemberAccessor(Member member, MemberAccessorType memberAccessorType,
@@ -100,7 +63,11 @@ public final class MemberAccessorFactory {
             switch (memberAccessorType) {
                 case FIELD_OR_READ_METHOD:
                     if (!ReflectionHelper.isGetterMethod(method)) {
-                        ReflectionHelper.assertReadMethod(method, annotationClass);
+                        if (annotationClass == null) {
+                            ReflectionHelper.assertReadMethod(method);
+                        } else {
+                            ReflectionHelper.assertReadMethod(method, annotationClass);
+                        }
                         memberAccessor = new ReflectionMethodMemberAccessor(method);
                         break;
                     }
@@ -108,24 +75,34 @@ public final class MemberAccessorFactory {
                 case FIELD_OR_GETTER_METHOD:
                 case FIELD_OR_GETTER_METHOD_WITH_SETTER:
                     boolean getterOnly = memberAccessorType != MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER;
-                    ReflectionHelper.assertGetterMethod(method, annotationClass);
+                    if (annotationClass == null) {
+                        ReflectionHelper.assertGetterMethod(method);
+                    } else {
+                        ReflectionHelper.assertGetterMethod(method, annotationClass);
+                    }
                     memberAccessor = new ReflectionBeanPropertyMemberAccessor(method, getterOnly);
                     break;
                 default:
-                    throw new IllegalStateException("The memberAccessorType (" + memberAccessorType
-                            + ") is not implemented.");
+                    throw new IllegalStateException("The memberAccessorType (%s) is not implemented."
+                            .formatted(memberAccessorType));
             }
             if (memberAccessorType == MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER
                     && !memberAccessor.supportSetter()) {
-                throw new IllegalStateException("The class (" + method.getDeclaringClass()
-                        + ") has a @" + annotationClass.getSimpleName()
-                        + " annotated getter method (" + method
-                        + "), but lacks a setter for that property (" + memberAccessor.getName() + ").");
+                if (annotationClass == null) {
+                    throw new IllegalStateException(
+                            "The class (%s) has a getter method (%s), but lacks a setter for that property (%s)."
+                                    .formatted(method.getDeclaringClass(), method, memberAccessor.getName()));
+                } else {
+                    throw new IllegalStateException(
+                            "The class (%s) has a @%s-annotated getter method (%s), but lacks a setter for that property (%s)."
+                                    .formatted(method.getDeclaringClass(), annotationClass.getSimpleName(), method,
+                                            memberAccessor.getName()));
+                }
             }
             return memberAccessor;
         } else {
-            throw new IllegalStateException("Impossible state: the member (" + member + ")'s type is not a "
-                    + Field.class.getSimpleName() + " or a " + Method.class.getSimpleName() + ".");
+            throw new IllegalStateException("Impossible state: the member (%s)'s type is not a %s or a %s."
+                    .formatted(member, Field.class.getSimpleName(), Method.class.getSimpleName()));
         }
     }
 
