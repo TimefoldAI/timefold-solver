@@ -1,5 +1,5 @@
 [#constraintConfiguration]
-= Constraint configuration: adjust constraint weights dynamically
+= Adjusting constraint weights at runtime
 :doctype: book
 :sectnums:
 :icons: font
@@ -7,15 +7,133 @@
 Deciding the correct xref:constraints-and-score/overview.adoc#scoreConstraintWeight[weight] and
 xref:constraints-and-score/overview.adoc#scoreLevel[level] for each constraint is not easy.
 It often involves negotiating with different stakeholders and their priorities.
-Furthermore, quantifying the impact of soft constraints is often a new experience for business managers, so they'll need a number of iterations to get it right.
+Furthermore, quantifying the impact of soft constraints is often a new experience for business managers,
+so they'll need a number of iterations to get it right.
 
 Don't get stuck between a rock and a hard place.
-Provide a UI to adjust the constraint weights and visualize the resulting solution, so the business managers can tweak the constraint weights themselves:
+Provide a UI to adjust the constraint weights and visualize the resulting solution,
+so the business managers can tweak the constraint weights themselves:
 
 image::constraints-and-score/constraint-configuration/parameterizeTheScoreWeights.png[align="center"]
 
 [#createAConstraintConfiguration]
-== Create a constraint configuration
+[#definingAndOverridingConstraintWeights]
+== Defining and overriding constraint weights
+
+Let's define three constraints:
+
+- Constraint with a name of `Vehicle capacity` and a weight of `1hard'.
+- Constraint with a name of `Service finished after max end time`, also with a weight of `1hard`.
+- Constraint with a name of `Minimize travel time` and a weight of `1soft`.
+
+Using xref:constraints-and-score/score-calculation.adoc#constraintStreams[the Constraint Streams API],
+this is done as follows:
+
+[source,java,options="nowrap"]
+----
+public class VehicleRoutingConstraintProvider implements ConstraintProvider {
+
+    ...
+
+    @Override
+    public Constraint[] defineConstraints(ConstraintFactory factory) {
+        return new Constraint[] {
+                vehicleCapacity(factory),
+                serviceFinishedAfterMaxEndTime(factory),
+                minimizeTravelTime(factory)
+        };
+    }
+
+    Constraint vehicleCapacity(ConstraintFactory factory) {
+        return factory.forEach(Vehicle.class)
+                ...
+                .penalize(HardSoftScore.ONE_HARD, ...)
+                .asConstraint("Vehicle capacity");
+    }
+
+    Constraint serviceFinishedAfterMaxEndTime(ConstraintFactory factory) {
+        return factory.forEach(Visit.class)
+                ...
+                .penalize(HardSoftScore.ONE_HARD, ...)
+                .asConstraint("Service finished after max end time");
+    }
+
+    Constraint minimizeTravelTime(ConstraintFactory factory) {
+        return factory.forEach(Vehicle.class)
+                ...
+                .penalize(HardSoftScore.ONE_SOFT, ...)
+                .asConstraint("Minimize travel time");
+    }
+}
+----
+
+Without anything else, the constraint weights are fixed to the values we've given them in our `ConstraintProvider`.
+To be able to override these weights at runtime, we need to introduce the `ConstraintWeightOverrides` class
+to our planning solution class:
+
+[source,java,options="nowrap"]
+----
+@PlanningSolution
+public class VehicleRoutePlan {
+
+    ...
+
+    ConstraintWeightOverrides<HardSoftScore> constraintWeightOverrides;
+
+    void setConstraintWeightOverrides(ConstraintWeightOverrides<HardSoftScore> constraintWeightOverrides) {
+        this.constraintWeightOverrides = constraintWeightOverrides;
+    }
+
+    ConstraintWeightOverrides<HardSoftScore> getConstraintWeightOverrides() {
+        return constraintWeightOverrides;
+    }
+
+    ...
+}
+----
+
+We've just introduced a new field of type `ConstraintWeightOverrides`,
+and we provided a getter and a setter for it.
+The field will be automatically exposed as a xref:using-timefold-solver/modeling-planning-problems.adoc#problemFacts[problem fact],
+there is no need to add a `@ProblemFactProperty` annotation.
+But we need to fill it with the desired constraint weights:
+
+[source,java,options="nowrap"]
+----
+...
+
+var constraintWeightOverrides = ConstraintWeightOverrides.of(
+    Map.of(
+        "Vehicle capacity", HardSoftScore.ofHard(2),
+        "Service finished after max end time", HardSoftScore.ZERO
+    )
+);
+
+var solution = new VehicleRoutePlan();
+solution.setConstraintWeightOverrides(constraintWeightOverrides);
+
+...
+----
+
+The `Vehicle capacity` constraint in this planning solution will get a weight of `2hard`,
+as opposed to its original `1hard`.
+The `Service finished after max end time` constraint will have a weight of `0hard`,
+and therefore will be disabled entirely.
+
+This way, you can solve the same problem
+while applying different constraint weights to each instance.
+Once solved, you can compare the results
+and decide which set of weights is the most suitable for your use case.
+
+
+[#legacyConstraintConfiguration]
+== Legacy constraint configuration using `@ConstraintConfiguration`
+
+[NOTE]
+====
+This feature is deprecated and will be removed in a future release of Timefold Solver.
+Please use <<definingAndOverridingConstraintWeights,constraint weight overrides>> instead.
+====
 
 First, create a new class to hold the constraint weights and other constraint parameters.
 Annotate it with `@ConstraintConfiguration`:
@@ -62,8 +180,8 @@ in some big conferences 20 minutes isn't enough to go from one room to the other
 That pause length is a field in the constraint configuration without a `@ConstraintWeight` annotation.
 
 
-[#constraintWeight]
-== Add a constraint weight for each constraint
+[#legacyConstraintWeight]
+=== Add a constraint weight for each constraint
 
 In the constraint configuration class, add a `@ConstraintWeight` field or property for each constraint:
 
@@ -88,7 +206,7 @@ The type of the constraint weights must be the same score class as xref:using-ti
 For example, in conference scheduling, `ConferenceSchedule.getScore()` and `ConferenceConstraintConfiguration.getSpeakerConflict()`
 both return a `HardMediumSoftScore`.
 
-A constraint weight cannot be null.
+A constraint weight can’t be null.
 Give each constraint weight a default value, but expose them in a UI so the business users can tweak them.
 The example above uses the `ofHard()`, `ofMedium()` and `ofSoft()` methods to do that.
 Notice how it defaults the _"Content conflict"_ constraint as ten times more important than the _"Theme track conflict"_ constraint.
