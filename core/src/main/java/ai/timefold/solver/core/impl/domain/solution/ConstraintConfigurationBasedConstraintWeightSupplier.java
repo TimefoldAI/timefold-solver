@@ -8,6 +8,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
+import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.score.IBendableScore;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
@@ -16,6 +17,10 @@ import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.definition.AbstractBendableScoreDefinition;
 
+/**
+ * @deprecated Use {@link ConstraintWeightOverrides} instead.
+ */
+@Deprecated(forRemoval = true, since = "1.13.0")
 public final class ConstraintConfigurationBasedConstraintWeightSupplier<Score_ extends Score<Score_>, Solution_>
         implements ConstraintWeightSupplier<Solution_, Score_> {
 

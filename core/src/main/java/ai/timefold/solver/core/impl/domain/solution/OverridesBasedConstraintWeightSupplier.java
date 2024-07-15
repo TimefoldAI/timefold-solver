@@ -6,7 +6,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
-import ai.timefold.solver.core.api.domain.solution.ConstraintWeights;
+import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
@@ -16,28 +16,28 @@ import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
-public final class ConstraintWeightsBasedConstraintWeightSupplier<Score_ extends Score<Score_>, Solution_>
+public final class OverridesBasedConstraintWeightSupplier<Score_ extends Score<Score_>, Solution_>
         implements ConstraintWeightSupplier<Solution_, Score_> {
 
     public static <Solution_, Score_ extends Score<Score_>> ConstraintWeightSupplier<Solution_, Score_> create(
             SolutionDescriptor<Solution_> solutionDescriptor, DescriptorPolicy descriptorPolicy,
             Field member) {
-        var constraintWeightsClass = (Class<? extends ConstraintWeights<Score_>>) member.getType();
+        var overridesClass = (Class<? extends ConstraintWeightOverrides<Score_>>) member.getType();
         var memberAccessor = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
                 MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER,
                 descriptorPolicy.getDomainAccessType());
-        return new ConstraintWeightsBasedConstraintWeightSupplier<>(solutionDescriptor, memberAccessor, constraintWeightsClass);
+        return new OverridesBasedConstraintWeightSupplier<>(solutionDescriptor, memberAccessor, overridesClass);
     }
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
-    private final MemberAccessor constraintsWeightsAccessor;
-    private final Class<? extends ConstraintWeights<Score_>> constraintWeightsClass;
+    private final MemberAccessor overridesAccessor;
+    private final Class<? extends ConstraintWeightOverrides<Score_>> overridesClass;
 
-    private ConstraintWeightsBasedConstraintWeightSupplier(SolutionDescriptor<Solution_> solutionDescriptor,
-            MemberAccessor constraintsWeightsAccessor, Class<? extends ConstraintWeights<Score_>> constraintWeightsClass) {
+    private OverridesBasedConstraintWeightSupplier(SolutionDescriptor<Solution_> solutionDescriptor,
+            MemberAccessor overridesAccessor, Class<? extends ConstraintWeightOverrides<Score_>> overridesClass) {
         this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
-        this.constraintsWeightsAccessor = Objects.requireNonNull(constraintsWeightsAccessor);
-        this.constraintWeightsClass = Objects.requireNonNull(constraintWeightsClass);
+        this.overridesAccessor = Objects.requireNonNull(overridesAccessor);
+        this.overridesClass = Objects.requireNonNull(overridesClass);
     }
 
     @Override
@@ -48,28 +48,31 @@ public final class ConstraintWeightsBasedConstraintWeightSupplier<Score_ extends
 
     @Override
     public void validate(Solution_ workingSolution, Set<ConstraintRef> userDefinedConstraints) {
-        var supportedConstraints = getConstraintWeights(workingSolution).getKnownConstraints();
+        var userDefinedConstraintNames = userDefinedConstraints.stream()
+                .map(ConstraintRef::constraintName)
+                .collect(Collectors.toSet());
+        var supportedConstraints = getConstraintWeights(workingSolution).getKnownConstraintNames();
         var excessiveConstraints = supportedConstraints.stream()
-                .filter(constraintRef -> !userDefinedConstraints.contains(constraintRef))
+                .filter(constraintName -> !userDefinedConstraintNames.contains(constraintName))
                 .collect(Collectors.toSet());
         if (!excessiveConstraints.isEmpty()) {
             throw new IllegalStateException("""
-                    The constraintWeightsClass (%s) knows the following constraints (%s) \
+                    The constraint weight overrides contain the following constraints (%s) \
                     that are not in the user-defined constraints (%s).
                     Maybe check your %s for missing constraints."""
-                    .formatted(constraintWeightsClass, excessiveConstraints, userDefinedConstraints,
+                    .formatted(overridesClass, excessiveConstraints, userDefinedConstraintNames,
                             ConstraintProvider.class.getSimpleName()));
         }
         // Constraints are allowed to be missing; the default value provided by the ConstraintProvider will be used.
     }
 
-    private ConstraintWeights<Score_> getConstraintWeights(Solution_ workingSolution) {
-        return (ConstraintWeights<Score_>) constraintsWeightsAccessor.executeGetter(workingSolution);
+    private ConstraintWeightOverrides<Score_> getConstraintWeights(Solution_ workingSolution) {
+        return (ConstraintWeightOverrides<Score_>) overridesAccessor.executeGetter(workingSolution);
     }
 
     @Override
     public Class<?> getProblemFactClass() {
-        return constraintWeightsClass;
+        return overridesClass;
     }
 
     @Override
@@ -77,10 +80,15 @@ public final class ConstraintWeightsBasedConstraintWeightSupplier<Score_ extends
         return solutionDescriptor.getSolutionClass().getPackageName();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Score_ getConstraintWeight(ConstraintRef constraintRef, Solution_ workingSolution) {
-        var weight = (Score_) getConstraintWeights(workingSolution).getConstraintWeight(constraintRef);
+        if (!constraintRef.packageName().equals(getDefaultConstraintPackage())) {
+            throw new IllegalStateException("""
+                    The constraint (%s) is not in the default package (%s).
+                    Constraint packages are deprecated, check your constraint implementation."""
+                    .formatted(constraintRef, getDefaultConstraintPackage()));
+        }
+        var weight = (Score_) getConstraintWeights(workingSolution).getConstraintWeight(constraintRef.constraintName());
         if (weight == null) { // This is fine; use default value from ConstraintProvider.
             return null;
         }
@@ -90,6 +98,6 @@ public final class ConstraintWeightsBasedConstraintWeightSupplier<Score_ extends
 
     @Override
     public String toString() {
-        return "Constraint weights based on " + constraintsWeightsAccessor + ".";
+        return "Constraint weights based on " + overridesAccessor + ".";
     }
 }

@@ -10,6 +10,7 @@ import ai.timefold.solver.core.api.domain.autodiscover.AutoDiscoverMemberType;
 import ai.timefold.solver.core.api.domain.lookup.LookUpStrategyType;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
+import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 
 /**
  * Specifies that the class is a planning solution.
@@ -27,7 +28,9 @@ import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
  * Each planning solution must have at least 1 {@link PlanningEntityCollectionProperty}
  * or {@link PlanningEntityProperty} property.
  * <p>
- * Each planning solution is recommended to have 1 {@link ConstraintWeights} property too.
+ * Each planning solution is recommended to have 1 {@link ConstraintWeightOverrides} property too.
+ * This will make it easy for a solution to override constraint weights provided in {@link ConstraintProvider},
+ * in turn making it possible to run different solutions with a different balance of constraint weights.
  * <p>
  * Each planning solution used with ConstraintStream score calculation must have at least 1
  * {@link ProblemFactCollectionProperty}
@@ -44,7 +47,7 @@ public @interface PlanningSolution {
      * Enable reflection through the members of the class
      * to automatically assume {@link PlanningScore}, {@link PlanningEntityCollectionProperty},
      * {@link PlanningEntityProperty}, {@link ProblemFactCollectionProperty}, {@link ProblemFactProperty}
-     * and {@link ConstraintWeights} annotations based on the member type.
+     * and {@link ConstraintWeightOverrides} annotations based on the member type.
      *
      * <p>
      * This feature is not supported under Quarkus.

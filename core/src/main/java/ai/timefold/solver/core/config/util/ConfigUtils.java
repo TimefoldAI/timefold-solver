@@ -308,17 +308,16 @@ public class ConfigUtils {
     // Member and annotation methods
     // ************************************************************************
 
-    public static List<Class<?>> getAllLineageClasses(Class<?> bottomClass) {
-        if (bottomClass == null) {
+    public static List<Class<?>> getAllParents(Class<?> bottomClass) {
+        if (bottomClass == null || bottomClass == Object.class) {
             return Collections.emptyList();
         }
-        List<Class<?>> lineageClassList = new ArrayList<>();
-        lineageClassList.add(bottomClass);
         var superclass = bottomClass.getSuperclass();
-        lineageClassList.addAll(getAllLineageClasses(superclass));
+        var lineageClassList = new ArrayList<>(getAllParents(superclass));
         for (var superInterface : bottomClass.getInterfaces()) {
-            lineageClassList.addAll(getAllLineageClasses(superInterface));
+            lineageClassList.addAll(getAllParents(superInterface));
         }
+        lineageClassList.add(bottomClass);
         return lineageClassList;
     }
 

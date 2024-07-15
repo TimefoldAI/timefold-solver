@@ -35,9 +35,8 @@ import ai.timefold.solver.core.api.domain.autodiscover.AutoDiscoverMemberType;
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfigurationProvider;
-import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.solution.ConstraintWeights;
+import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
@@ -60,7 +59,7 @@ import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.score.descriptor.ScoreDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.ConstraintConfigurationBasedConstraintWeightSupplier;
 import ai.timefold.solver.core.impl.domain.solution.ConstraintWeightSupplier;
-import ai.timefold.solver.core.impl.domain.solution.ConstraintWeightsBasedConstraintWeightSupplier;
+import ai.timefold.solver.core.impl.domain.solution.OverridesBasedConstraintWeightSupplier;
 import ai.timefold.solver.core.impl.domain.solution.cloner.FieldAccessingSolutionCloner;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionCloner;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionClonerFactory;
@@ -169,6 +168,7 @@ public class SolutionDescriptor<Solution_> {
     private AutoDiscoverMemberType autoDiscoverMemberType;
     private LookUpStrategyResolver lookUpStrategyResolver;
 
+    @Deprecated(forRemoval = true, since = "1.13.0")
     private MemberAccessor constraintConfigurationMemberAccessor;
     private final Map<String, MemberAccessor> problemFactMemberAccessorMap = new LinkedHashMap<>();
     private final Map<String, MemberAccessor> problemFactCollectionMemberAccessorMap = new LinkedHashMap<>();
@@ -218,11 +218,11 @@ public class SolutionDescriptor<Solution_> {
     }
 
     private void processConstraintWeights(DescriptorPolicy descriptorPolicy) {
-        for (var lineageClass : ConfigUtils.getAllLineageClasses(solutionClass)) {
+        for (var lineageClass : ConfigUtils.getAllParents(solutionClass)) {
             var memberList = ConfigUtils.getDeclaredMembers(lineageClass);
             var constraintWeightFieldList = memberList.stream()
                     .filter(member -> member instanceof Field field
-                            && field.getType().isAssignableFrom(ConstraintWeight.class))
+                            && field.getType().isAssignableFrom(ConstraintWeightOverrides.class))
                     .map(f -> ((Field) f))
                     .toList();
             switch (constraintWeightFieldList.size()) {
@@ -230,17 +230,17 @@ public class SolutionDescriptor<Solution_> {
                     break;
                 case 1:
                     if (constraintWeightSupplier != null) {
-                        // The bottom-most class wins, they are parsed first due to ConfigUtil.getAllLineageClasses().
+                        // The bottom-most class wins, they are parsed first due to ConfigUtil.getAllParents().
                         throw new IllegalStateException(
-                                "The solutionClass (%s) has a field of type (%s) which was already found on another solution class."
-                                        .formatted(lineageClass, ConstraintWeights.class));
+                                "The solutionClass (%s) has a field of type (%s) which was already found on its parent class."
+                                        .formatted(lineageClass, ConstraintWeightOverrides.class));
                     }
-                    constraintWeightSupplier = ConstraintWeightsBasedConstraintWeightSupplier.create(this, descriptorPolicy,
+                    constraintWeightSupplier = OverridesBasedConstraintWeightSupplier.create(this, descriptorPolicy,
                             constraintWeightFieldList.get(0));
                     break;
                 default:
                     throw new IllegalStateException("The solutionClass (%s) has more than one field (%s) of type %s."
-                            .formatted(solutionClass, constraintWeightFieldList, ConstraintWeights.class));
+                            .formatted(solutionClass, constraintWeightFieldList, ConstraintWeightOverrides.class));
             }
         }
     }
@@ -403,15 +403,17 @@ public class SolutionDescriptor<Solution_> {
         return annotationClass;
     }
 
+    @Deprecated(forRemoval = true, since = "1.13.0")
     private void processConstraintConfigurationProviderAnnotation(DescriptorPolicy descriptorPolicy, Member member,
             Class<? extends Annotation> annotationClass) {
         if (constraintWeightSupplier != null) {
             throw new IllegalStateException("""
                     The solution class (%s) has both a %s member and a %s-annotated member.
                     %s is deprecated, please remove it from your codebase and keep %s only."""
-                    .formatted(solutionClass, ConstraintWeights.class.getSimpleName(),
+                    .formatted(solutionClass, ConstraintWeightOverrides.class.getSimpleName(),
                             ConstraintConfigurationProvider.class.getSimpleName(),
-                            ConstraintConfigurationProvider.class.getSimpleName(), ConstraintWeights.class.getSimpleName()));
+                            ConstraintConfigurationProvider.class.getSimpleName(),
+                            ConstraintWeightOverrides.class.getSimpleName()));
         }
         MemberAccessor memberAccessor = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
                 FIELD_OR_READ_METHOD, annotationClass, descriptorPolicy.getDomainAccessType());
@@ -735,10 +737,12 @@ public class SolutionDescriptor<Solution_> {
     // Model methods
     // ************************************************************************
 
+    @Deprecated(forRemoval = true, since = "1.13.0")
     public MemberAccessor getConstraintConfigurationMemberAccessor() {
         return constraintConfigurationMemberAccessor;
     }
 
+    @SuppressWarnings("unchecked")
     public <Score_ extends Score<Score_>> ConstraintWeightSupplier<Solution_, Score_> getConstraintWeightSupplier() {
         return (ConstraintWeightSupplier<Solution_, Score_>) constraintWeightSupplier;
     }

@@ -15,6 +15,7 @@ import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfigurationProvider;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
+import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.config.util.ConfigUtils;
@@ -25,8 +26,10 @@ import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
+ * @deprecated Use {@link ConstraintWeightOverrides} instead.
  */
-class ConstraintConfigurationDescriptor<Solution_> {
+@Deprecated(forRemoval = true, since = "1.13.0")
+final class ConstraintConfigurationDescriptor<Solution_> {
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
 

@@ -6,6 +6,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 
 /**
@@ -15,7 +16,10 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
  * <p>
  * A {@link PlanningSolution} has at most one field or property annotated with {@link ConstraintConfigurationProvider}
  * with returns a type of the {@link ConstraintConfiguration} annotated class.
+ *
+ * @deprecated Use {@link ConstraintWeightOverrides} instead.
  */
+@Deprecated(forRemoval = true, since = "1.13.0")
 @Target({ TYPE })
 @Retention(RUNTIME)
 public @interface ConstraintConfiguration {
@@ -26,9 +30,7 @@ public @interface ConstraintConfiguration {
      * This is the default for every {@link ConstraintWeight#constraintPackage()} in the annotated class.
      *
      * @return defaults to the annotated class's package.
-     * @deprecated Leave empty and let the solver provide the default. Do not rely on constraint package in user code.
      */
-    @Deprecated(forRemoval = true, since = "1.13.0")
     String constraintPackage() default "";
 
 }

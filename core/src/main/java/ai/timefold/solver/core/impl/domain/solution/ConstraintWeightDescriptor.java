@@ -5,6 +5,7 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
+import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
@@ -12,8 +13,10 @@ import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
+ * @deprecated Use {@link ConstraintWeightOverrides} instead.
  */
-class ConstraintWeightDescriptor<Solution_> {
+@Deprecated(forRemoval = true, since = "1.13.0")
+final class ConstraintWeightDescriptor<Solution_> {
 
     private final ConstraintRef constraintRef;
     private final MemberAccessor memberAccessor;
