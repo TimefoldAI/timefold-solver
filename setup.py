@@ -39,7 +39,7 @@ class FetchDependencies(build_py):
                         '-Dpython', '-Dexec.skip'],
                        cwd=working_directory, check=True)
         subprocess.run([str((project_root / command).absolute()), 'dependency:copy-dependencies',
-                        '-Dclassifier=javadoc', '-Dpython'], cwd=working_directory, check=True)
+                        '-Dclassifier=javadoc', '-Dpython', '-Dexec.skip'], cwd=working_directory, check=True)
         subprocess.run([sys.executable, str((project_root / 'create-stubs.py').absolute())],
                        cwd=working_directory, check=True)
         target_dir = self.build_lib
@@ -65,7 +65,8 @@ class FetchDependencies(build_py):
             if platform.system() == 'Windows':
                 command = 'mvnw.cmd'
 
-            subprocess.run([str((project_root / command).absolute()), 'clean', 'install', '-Dpython', '-Dquickly'],
+            subprocess.run([str((project_root / command).absolute()), 'clean', 'install', '-Dpython', '-Dquickly',
+                            '-Dexec.skip'],
                            cwd=project_root, check=True)
 
             if include_java_stubs:
