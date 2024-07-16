@@ -54,8 +54,8 @@ public class PythonWrapperGenerator {
     /**
      * Creates a class that looks like this:
      *
-     * class JavaWrapper implements NaryFunction<A0,A1,A2,...,AN> {
-     * public static NaryFunction<A0,A1,A2,...,AN> delegate;
+     * class JavaWrapper implements NaryFunction&lt;A0,A1,A2,...,AN&gt; {
+     * public static NaryFunction&lt;A0,A1,A2,...,AN&gt; delegate;
      *
      * #64;Override
      * public AN apply(A0 arg0, A1 arg1, ..., A(N-1) finalArg) {
@@ -221,7 +221,7 @@ public class PythonWrapperGenerator {
      * Creates a class that looks like this:
      *
      * class PythonConstraintProvider implements ConstraintProvider {
-     * public static Function<ConstraintFactory, Constraint[]> defineConstraintsImpl;
+     * public static Function&lt;ConstraintFactory, Constraint[]&gt; defineConstraintsImpl;
      *
      * &#64;Override
      * public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
