@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -27,6 +25,7 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.PropagationQueue;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.AbstractForEachUniNode;
+import ai.timefold.solver.core.impl.score.stream.common.ConstraintLibrary;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 
 public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score<Score_>> {
@@ -34,10 +33,13 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final List<BavetConstraint<Solution_>> constraintList;
 
+    @SuppressWarnings("unchecked")
     public BavetConstraintSessionFactory(SolutionDescriptor<Solution_> solutionDescriptor,
-            List<BavetConstraint<Solution_>> constraintList) {
+            ConstraintLibrary<Score_> constraintLibrary) {
         this.solutionDescriptor = solutionDescriptor;
-        this.constraintList = constraintList;
+        this.constraintList = constraintLibrary.getConstraints().stream()
+                .map(constraint -> (BavetConstraint<Solution_>) constraint)
+                .collect(Collectors.toList());
     }
 
     // ************************************************************************
@@ -72,8 +74,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
                 constraintWeightMap.put(constraint, constraintWeight);
             }
         }
-        var scoreInliner =
-                AbstractScoreInliner.buildScoreInliner(scoreDefinition, constraintWeightMap, constraintMatchEnabled);
+        var scoreInliner = AbstractScoreInliner.buildScoreInliner(scoreDefinition, constraintWeightMap, constraintMatchEnabled);
         if (constraintStreamSet.isEmpty()) { // All constraints were disabled.
             return new BavetConstraintSession<>(scoreInliner);
         }
@@ -81,15 +82,15 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
          * Build constraintStreamSet in reverse order to create downstream nodes first
          * so every node only has final variables (some of which have downstream node method references).
          */
-        var buildHelper = new NodeBuildHelper<Score_>(constraintStreamSet, scoreInliner);
-        List<BavetAbstractConstraintStream<Solution_>> reversedConstraintStreamList = new ArrayList<>(constraintStreamSet);
+        var buildHelper = new NodeBuildHelper<>(constraintStreamSet, scoreInliner);
+        var reversedConstraintStreamList = new ArrayList<>(constraintStreamSet);
         Collections.reverse(reversedConstraintStreamList);
         for (var constraintStream : reversedConstraintStreamList) {
             constraintStream.buildNode(buildHelper);
         }
         var nodeList = buildHelper.destroyAndGetNodeList();
-        Map<Class<?>, List<AbstractForEachUniNode<Object>>> declaredClassToNodeMap = new LinkedHashMap<>();
-        long nextNodeId = 0;
+        var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<AbstractForEachUniNode<Object>>>();
+        var nextNodeId = 0L;
         for (var node : nodeList) {
             /*
              * Nodes are iterated first to last, starting with forEach(), the ultimate parent.
@@ -110,7 +111,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
                 forEachUniNodeList.add((AbstractForEachUniNode<Object>) forEachUniNode);
             }
         }
-        SortedMap<Long, List<Propagator>> layerMap = new TreeMap<>();
+        var layerMap = new TreeMap<Long, List<Propagator>>();
         for (var node : nodeList) {
             layerMap.computeIfAbsent(node.getLayerIndex(), k -> new ArrayList<>())
                     .add(node.getPropagator());

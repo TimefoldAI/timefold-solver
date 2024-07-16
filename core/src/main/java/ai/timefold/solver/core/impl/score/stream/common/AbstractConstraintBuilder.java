@@ -6,6 +6,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintBuilder;
 
+@SuppressWarnings("rawtypes")
 public abstract class AbstractConstraintBuilder<Score_ extends Score<Score_>> implements ConstraintBuilder {
     private final ConstraintConstructor constraintConstructor;
     private final ScoreImpactType impactType;
@@ -22,16 +23,18 @@ public abstract class AbstractConstraintBuilder<Score_ extends Score<Score_>> im
 
     protected abstract <IndictedObjectsMapping_> IndictedObjectsMapping_ getIndictedObjectsMapping();
 
+    @SuppressWarnings("unchecked")
     @Override
-    public final Constraint asConstraint(String constraintName) {
-        return constraintConstructor.apply(null, constraintName, constraintWeight, impactType,
+    public final Constraint asConstraintDescribed(String constraintName, String constraintDescription) {
+        return constraintConstructor.apply(null, constraintName, constraintDescription, constraintWeight, impactType,
                 getJustificationMapping(), getIndictedObjectsMapping());
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public final Constraint asConstraint(String constraintPackage, String constraintName) {
-        return constraintConstructor.apply(constraintPackage, constraintName, constraintWeight, impactType,
-                getJustificationMapping(), getIndictedObjectsMapping());
+        return constraintConstructor.apply(constraintPackage, constraintName, "", constraintWeight,
+                impactType, getJustificationMapping(), getIndictedObjectsMapping());
     }
 
 }

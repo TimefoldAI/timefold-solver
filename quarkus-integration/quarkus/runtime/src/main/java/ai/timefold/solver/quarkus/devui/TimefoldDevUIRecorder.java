@@ -21,7 +21,7 @@ import io.quarkus.runtime.annotations.Recorder;
 public class TimefoldDevUIRecorder {
 
     public Supplier<DevUISolverConfig> solverConfigSupplier(Map<String, SolverConfig> allSolverConfig,
-            final TimefoldRuntimeConfig timefoldRuntimeConfig,
+            TimefoldRuntimeConfig timefoldRuntimeConfig,
             Map<String, RuntimeValue<MemberAccessor>> generatedGizmoMemberAccessorMap,
             Map<String, RuntimeValue<SolutionCloner>> generatedGizmoSolutionClonerMap) {
         return () -> {

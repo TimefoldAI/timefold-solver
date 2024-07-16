@@ -36,10 +36,14 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
     private final Collection<ConstraintJustification> justificationCollection;
     private final Collection<Indictment<Score_>> indictmentCollection;
 
+    @SuppressWarnings("unchecked")
     DefaultSingleConstraintAssertion(AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
             Score_ score, Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
             Map<Object, Indictment<Score_>> indictmentMap) {
-        this.constraint = (AbstractConstraint<Solution_, ?, ?>) scoreDirectorFactory.getConstraints()[0];
+        this.constraint = scoreDirectorFactory.getConstraintLibrary().getConstraints().stream()
+                .findFirst()
+                .map(constraint -> (AbstractConstraint<Solution_, ?, ?>) constraint)
+                .orElseThrow(() -> new IllegalArgumentException("Impossible state: no constraint found."));
         this.scoreDefinition = scoreDirectorFactory.getScoreDefinition();
         this.score = requireNonNull(score);
         this.constraintMatchTotalCollection = new ArrayList<>(requireNonNull(constraintMatchTotalMap).values());

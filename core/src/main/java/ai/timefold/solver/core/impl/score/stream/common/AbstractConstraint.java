@@ -16,7 +16,8 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
 
     private final ConstraintFactory_ constraintFactory;
     private final ConstraintRef constraintRef;
-    private final Score<?> constraintWeight;
+    private final String description;
+    private final Score<?> defaultConstraintWeight;
     private final ScoreImpactType scoreImpactType;
     // Constraint is not generic in uni/bi/..., therefore these can not be typed.
     private final Object justificationMapping;
@@ -26,17 +27,19 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
      *
      * @param constraintFactory never null
      * @param constraintRef never null
-     * @param constraintWeight if null, it means legacy constraint configuration code;
+     * @param defaultConstraintWeight if null, it means legacy constraint configuration code;
      *        will require {@link ConstraintConfiguration} to be present.
      * @param scoreImpactType never null
      * @param justificationMapping never null
      * @param indictedObjectsMapping never null
      */
-    protected AbstractConstraint(ConstraintFactory_ constraintFactory, ConstraintRef constraintRef, Score<?> constraintWeight,
-            ScoreImpactType scoreImpactType, Object justificationMapping, Object indictedObjectsMapping) {
+    protected AbstractConstraint(ConstraintFactory_ constraintFactory, ConstraintRef constraintRef, String description,
+            Score<?> defaultConstraintWeight, ScoreImpactType scoreImpactType, Object justificationMapping,
+            Object indictedObjectsMapping) {
         this.constraintFactory = Objects.requireNonNull(constraintFactory);
         this.constraintRef = Objects.requireNonNull(constraintRef);
-        this.constraintWeight = constraintWeight;
+        this.description = Objects.requireNonNull(description);
+        this.defaultConstraintWeight = defaultConstraintWeight;
         this.scoreImpactType = Objects.requireNonNull(scoreImpactType);
         this.justificationMapping = justificationMapping; // May be omitted in test code.
         this.indictedObjectsMapping = indictedObjectsMapping; // May be omitted in test code.
@@ -53,7 +56,7 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
     @SuppressWarnings("unchecked")
     private <Score_ extends Score<Score_>> Score_ determineConstraintWeight(Solution_ solution) {
         var solutionDescriptor = constraintFactory.getSolutionDescriptor();
-        var hasConstraintWeight = constraintWeight != null;
+        var hasConstraintWeight = defaultConstraintWeight != null;
         var constraintWeightSupplier = solutionDescriptor.<Score_> getConstraintWeightSupplier();
         var hasConstraintWeightSupplier = constraintWeightSupplier != null;
 
@@ -82,8 +85,8 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
                     return weight;
                 }
             }
-            AbstractConstraint.validateWeight(solutionDescriptor, constraintRef, (Score_) constraintWeight);
-            return (Score_) constraintWeight;
+            AbstractConstraint.validateWeight(solutionDescriptor, constraintRef, (Score_) defaultConstraintWeight);
+            return (Score_) defaultConstraintWeight;
         }
     }
 
@@ -128,6 +131,15 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
     @Override
     public ConstraintRef getConstraintRef() {
         return constraintRef;
+    }
+
+    @Override
+    public String getDescription() {
+        return description;
+    }
+
+    public Score<?> getDefaultConstraintWeight() {
+        return defaultConstraintWeight;
     }
 
     public final ScoreImpactType getScoreImpactType() {

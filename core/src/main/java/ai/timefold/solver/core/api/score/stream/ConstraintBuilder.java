@@ -13,7 +13,19 @@ public interface ConstraintBuilder {
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
      * @return never null
      */
-    Constraint asConstraint(String constraintName);
+    default Constraint asConstraint(String constraintName) {
+        return asConstraintDescribed(constraintName, "");
+    }
+
+    /**
+     * Builds a {@link Constraint} from the constraint stream.
+     * The {@link ConstraintRef#packageName() constraint package} defaults to the package of the {@link PlanningSolution} class.
+     *
+     * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
+     * @param constraintDescription never null
+     * @return never null
+     */
+    Constraint asConstraintDescribed(String constraintName, String constraintDescription);
 
     /**
      * Builds a {@link Constraint} from the constraint stream.
