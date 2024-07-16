@@ -1,0 +1,8 @@
+[build-system]
+requires = [
+    "setuptools>=69.1.1",
+    "stubgenj>=0.2.5",
+    "JPype1>=1.5.0",
+    "wheel"
+]
+build-backend = "setuptools.build_meta"

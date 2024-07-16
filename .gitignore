@@ -1,5 +1,11 @@
 target
 local
+__pycache__
+/*.egg-info
+/dist
+/python/**/dist
+/python/**/*.egg-info
+/python/**/*-stubs
 
 # Eclipse, Netbeans and IntelliJ files
 /.*

@@ -16,6 +16,10 @@ on:
       version:
         description: 'Release version (e.g. 1.0.0)'
         required: true
+      pythonVersionSuffix:
+        description: 'What suffix to append to the Python version (ex: b0 for beta release)'
+        required: true
+        default: b0
       sourceBranch:
         description: 'Branch to cut the release from'
         default: main
@@ -33,6 +37,13 @@ jobs:
     env:
       MAVEN_ARGS: "--no-transfer-progress --batch-mode"
     runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/timefold
+    permissions:
+      contents: write  # IMPORTANT: required for action to create release branch
+      pull-requests: write # IMPORTANT: so release PR can be created
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
     steps:
       - name: Checkout timefold-solver
         uses: actions/checkout@v4
@@ -58,13 +69,25 @@ jobs:
         with:
           maven-version: 3.9.3
 
+      - name: Python 3.12 Setup
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: Install Pip and build
+        run:
+          python -m pip install --upgrade pip
+          pip install build
+
       # We skip tests in dry run, to make the process faster.
       # Technically, this goes against the main reason for doing a dry run; to eliminate potential problems.
       # But unless something catastrophic happened, PR checks on source branch already ensured that all tests pass.
       - name: Set release version and build release
         run: |
           mvn -Dfull versions:set -DnewVersion=${{ github.event.inputs.version }}
+          sed -i "s/^timefold_solver_python_version.*=.*/timefold_solver_python_version = '$NEW_VERSION_PYTHON'/" setup.py
           mvn -Dfull deploy -DskipTests=${{ github.event.inputs.dryRun }} -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
+          python -m build
           cp docs/target/antora-template.yml docs/src/antora.yml
           git add docs/src/antora.yml
           find . -name 'pom.xml' | xargs git add
@@ -92,11 +115,16 @@ jobs:
             out/jreleaser/trace.log
             out/jreleaser/output.properties
 
+      - name: Publish distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        if: ${{ github.event.inputs.dryRun == 'false' }}
+
       # Pull Request will be created with the changes and a summary of next steps.
       - name: Put back the 999-SNAPSHOT version on the release branch
         run: |
           git checkout -B ${{ github.event.inputs.releaseBranch }}-put-back-999-snapshot
           mvn -Dfull versions:set -DnewVersion=999-SNAPSHOT
+          sed -i "s/^timefold_solver_python_version.*=.*/timefold_solver_python_version = '999-dev0'/" setup.py
           git commit -am "build: move back to 999-SNAPSHOT"
           git push origin ${{ github.event.inputs.releaseBranch }}-put-back-999-snapshot
           gh pr create --reviewer triceo --base ${{ github.event.inputs.releaseBranch }} --head ${{ github.event.inputs.releaseBranch }}-put-back-999-snapshot --title "build: move back to 999-SNAPSHOT" --body-file .github/workflows/release-pr-body.md

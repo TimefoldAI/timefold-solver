@@ -1,0 +1,66 @@
+= Python to Java Translator
+
+This module contains the code needed to translate Python's
+bytecode into equivalent Java bytecode. This allows Java
+functions to use Python functions without incurring a large
+overhead cost on each function call for changing context from
+Java to Python (and then Python to Java). This is mostly relevant
+for small functions, such as those that simply return an attribute
+or perform a small calculation. For small functions, the
+performance increase is around 600%. As functions get larger,
+the overhead cost matters less, causing CPython to outperform
+the Java version.
+
+== Building
+
+Install the python build module, then run the following command:
+
+```bash
+python -m build
+```
+
+== Running
+
+. Install the built `javapython` package into a virtual
+environment:
++
+```bash
+python -m venv venv
+. venv/bin/activate
+pip install dist/jpyinterpreter-*-py3-none-any.whl
+```
+
+. Initialize the translator:
++
+```python
+import jpype.imports
+import jpyinterpreter
+
+jpyinterpreter.init(path=['my-java-jar.jar'])
+```
++
+This will start the JVM used by the Java translator and load jars
+specified by the `path` parameter.
+
+. Translate a Python function to Java:
++
+```python
+from java.util.function import Function
+
+def my_function(arg):
+    return arg + 1
+
+translated_function = javapython.translate_python_bytecode_to_java_bytecode(my_function, Function)
+```
++
+The first parameter is the Python function you want to translate,
+the second parameter is the Java class the function implements.
++
+. Use the translated function like a normal Python function:
++
+```python
+from org.acme import MyClass # A class defined in a Java jar
+
+translated_function(10) # 11
+MyClass.performALongOperation(translated_function)
+```

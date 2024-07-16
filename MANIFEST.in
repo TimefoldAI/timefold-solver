@@ -1,0 +1,24 @@
+graft .mvn
+include mvnw mvnw.cmd pom.xml create-stubs.py
+global-exclude *.pyc
+
+graft build
+
+include core/pom.xml
+graft core/src
+
+include test/pom.xml
+graft test/src
+
+include python/pom.xml
+include python/README.md
+
+include python/python-core/pom.xml
+graft python/python-core/src/main/java
+graft python/python-core/src/main/resources
+graft python/python-core/src/test/java
+
+include python/jpyinterpreter/pom.xml
+graft python/jpyinterpreter/src/main/java
+graft python/jpyinterpreter/src/main/resources
+graft python/jpyinterpreter/src/test/java

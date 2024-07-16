@@ -23,6 +23,20 @@ jobs:
           java-version: 17
           distribution: 'temurin'
           cache: 'maven'
+      - name: Python 3.10, Python 3.11, Python 3.12 Setup
+        uses: actions/setup-python@v5
+        with:
+          python-version: |
+            3.10
+            3.11
+            3.12
+          cache: 'pip'
+          cache-dependency-path: |
+            **/setup.py
+      - name: Install tox
+        run:
+          python -m pip install --upgrade pip
+          pip install tox coverage pytest pytest-cov
       - name: Cache SonarCloud packages
         uses: actions/cache@v4
         with:
@@ -31,6 +45,17 @@ jobs:
           restore-keys: ${{ runner.os }}-sonar
       - name: Build with Maven to measure code coverage # The ENV variables are limited to the scope of the current step. Avoid adding sensitive ENV variables here as the tests could leak them.
         run: mvn -B clean install -Prun-code-coverage
+
+      - name: Get JaCoCo Agent
+        run: mvn org.apache.maven.plugins:maven-dependency-plugin:2.8:get -Dartifact=org.jacoco:org.jacoco.agent:0.8.11:jar:runtime -Ddest=target/jacocoagent.jar
+
+      - name: Run tox to measure timefold solver python code coverage from Python tests
+        run: python -m tox -- --cov=timefold --cov-report=xml:target/coverage.xml --cov-config=tox.ini --cov-branch --cov-append --jacoco-agent=./target/jacocoagent.jar
+
+      - name: Run tox to measure jpyinterpreter code coverage from Python tests
+        working-directory: ./python/jpyinterpreter
+        run: python -m tox -- --cov=jpyinterpreter --cov-report=xml:target/coverage.xml --cov-config=tox.ini --cov-branch --cov-append --jacoco-agent=../../target/jacocoagent.jar --jacoco-output=../../target/jacoco.exec
+
       - name: Run analysis
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any

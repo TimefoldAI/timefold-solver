@@ -14,3 +14,13 @@ updates:
     schedule:
       interval: weekly
       time: '05:00' # Otherwise it picks a random time.
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+      time: '05:00'
+    open-pull-requests-limit: 10
+    target-branch: "main"
+    commit-message:
+      prefix: "deps: "
+
