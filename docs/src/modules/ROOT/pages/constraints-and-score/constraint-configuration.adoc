@@ -1,5 +1,5 @@
 [#constraintConfiguration]
-= Adjusting constraint weights at runtime
+= Adjusting constraints at runtime
 :doctype: book
 :sectnums:
 :icons: font
@@ -126,7 +126,7 @@ Once solved, you can compare the results
 and decide which set of weights is the most suitable for your use case.
 
 [#constraintWeightOverridesSerialization]
-== Sending overrides over the wire
+=== Sending overrides over the wire
 
 Overrides are part of the planning solution,
 and as such they are automatically serialized into JSON using Jackson,
@@ -140,6 +140,76 @@ Overrides doesn't natively deserialize from JSON back to Java objects.
 This is because we have no way of knowing which `Score` implementation you may be using.
 However, deserialization is easy to implement yourself by extending `AbstractConstraintWeightOverridesDeserializer`
 and registering it with Jackson's `ObjectMapper`.
+
+
+[#passingParametersToConstraints]
+== Passing parameters to constraints
+
+In some cases, constraints need to be parameterized
+as different data sets may have different requirements for the same constraint.
+For example, a constraint may have to switch the minimum required pause length between two shifts,
+based on the laws of the country that the data set is dealing with.
+
+To achieve this, you could have many variants of the same constraint in `ConstraintProvider`
+and disable some of them using <<definingAndOverridingConstraintWeights,overrides>>.
+To avoid the code duplication that this would have caused,
+it is arguably better to have a single constraint that can be parameterized.
+This section shows how to achieve this
+using the xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint Streams API].
+
+First, create a new class to hold the parameters for the constraint.
+For this document, we call it `ConstraintParameters`,
+but you're free to choose any name you like:
+
+[source,java,options="nowrap"]
+----
+public record ConstraintParameters(int minimumPauseInMinutes) {
+}
+----
+
+Then, add a field of type `ConstraintParameters` to your planning solution
+and annotate it with `@PlanningFactProperty`:
+
+[source,java,options="nowrap"]
+----
+@PlanningSolution
+public record MyPlanningSolution {
+
+    ...
+
+    @PlanningFactProperty
+    ConstraintParameters constraintParameters;
+
+    ...
+
+}
+----
+
+This will expose the `ConstraintParameters` as a xref:using-timefold-solver/modeling-planning-problems.adoc#problemFacts[problem fact],
+making it available to the constraints.
+Finally, use the xref:constraints-and-score/score-calculation.adoc#constraintStreamsJoin[join building block]
+to adjust the constraint implementation to use the parameters:
+
+[source,java,options="nowrap"]
+----
+public class MyConstraintProvider implements ConstraintProvider {
+
+    ...
+
+    Constraint minimumPauseBetweenShifts(ConstraintFactory factory) {
+        return factory.forEach(Shift.class)
+                .join(ConstraintParameters.class)
+                .penalize(HardSoftScore.ONE_HARD, (shift, parameters) -> {
+                    var pauseInMinutes = shift.getPauseInMinutes();
+                    return Math.max(0, pauseInMinutes - constraintParameters.minimumPauseInMinutes());
+                })
+                .asConstraint("Minimum pause between shifts");
+    }
+
+    ...
+
+}
+----
 
 
 [#legacyConstraintConfiguration]
@@ -187,8 +257,7 @@ The `@ConstraintConfigurationProvider` annotation automatically exposes the cons
 as a xref:using-timefold-solver/modeling-planning-problems.adoc#problemFacts[problem fact],
 there is no need to add a `@ProblemFactProperty` annotation.
 
-The constraint configuration class holds the <<constraintWeight,constraint weights>>,
-but it can also hold constraint parameters.
+The constraint configuration class holds the constraint weights, but it can also hold constraint parameters.
 For example, in conference scheduling, the minimum pause constraint has a constraint weight (like any other constraint),
 but it also has a constraint parameter that defines the length of the minimum pause between two talks of the same speaker.
 That pause length depends on the conference (= the planning problem):
