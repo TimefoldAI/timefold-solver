@@ -14,8 +14,8 @@ class FetchDependencies(build_py):
     add them as files within a python package
     """
     def create_stubs(self, project_root, command):
-        subprocess.run([str((project_root / command).absolute()), 'dependency:copy-dependencies'],
-                       '-Dpython', '-Dquickly', '-Dexec.skip', cwd=project_root, check=True)
+        subprocess.run([str((project_root / command).absolute()), 'dependency:copy-dependencies',
+                        '-Dpython', '-Dquickly', '-Dexec.skip'], cwd=project_root, check=True)
         subprocess.run([str((project_root / command).absolute()), 'dependency:copy-dependencies',
                         '-Dclassifier=javadoc', '-Dpython', '-Dquickly', '-Dexec.skip'], cwd=project_root, check=True)
 
