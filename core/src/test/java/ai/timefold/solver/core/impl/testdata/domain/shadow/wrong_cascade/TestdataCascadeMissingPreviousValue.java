@@ -6,21 +6,21 @@ import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.TestdataCascadeEntity;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.TestdataCascadeSolution;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadeEntity;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadeSolution;
 
 @PlanningEntity
 public class TestdataCascadeMissingPreviousValue {
 
-    public static EntityDescriptor<TestdataCascadeSolution> buildEntityDescriptor() {
+    public static EntityDescriptor<TestdataSingleCascadeSolution> buildEntityDescriptor() {
         return SolutionDescriptor
-                .buildSolutionDescriptor(TestdataCascadeSolution.class, TestdataCascadeEntity.class,
+                .buildSolutionDescriptor(TestdataSingleCascadeSolution.class, TestdataSingleCascadeEntity.class,
                         TestdataCascadeMissingPreviousValue.class)
                 .findEntityDescriptorOrFail(TestdataCascadeMissingPreviousValue.class);
     }
 
     @InverseRelationShadowVariable(sourceVariableName = "valueList")
-    private TestdataCascadeEntity entity;
+    private TestdataSingleCascadeEntity entity;
     @NextElementShadowVariable(sourceVariableName = "valueList")
     private TestdataCascadeMissingPreviousValue next;
     @CascadeUpdateElementShadowVariable(sourceMethodName = "updateCascadeValue")
@@ -33,11 +33,11 @@ public class TestdataCascadeMissingPreviousValue {
         this.value = value;
     }
 
-    public TestdataCascadeEntity getEntity() {
+    public TestdataSingleCascadeEntity getEntity() {
         return entity;
     }
 
-    public void setEntity(TestdataCascadeEntity entity) {
+    public void setEntity(TestdataSingleCascadeEntity entity) {
         this.entity = entity;
     }
 

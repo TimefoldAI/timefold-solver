@@ -6,24 +6,24 @@ import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.TestdataCascadeEntity;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.TestdataCascadeSolution;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.TestdataCascadeValue;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadeEntity;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadeSolution;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadeValue;
 
 @PlanningEntity
 public class TestdataCascadeMissingNextValue {
 
-    public static EntityDescriptor<TestdataCascadeSolution> buildEntityDescriptor() {
+    public static EntityDescriptor<TestdataSingleCascadeSolution> buildEntityDescriptor() {
         return SolutionDescriptor
-                .buildSolutionDescriptor(TestdataCascadeSolution.class, TestdataCascadeEntity.class,
+                .buildSolutionDescriptor(TestdataSingleCascadeSolution.class, TestdataSingleCascadeEntity.class,
                         TestdataCascadeMissingNextValue.class)
                 .findEntityDescriptorOrFail(TestdataCascadeMissingNextValue.class);
     }
 
     @InverseRelationShadowVariable(sourceVariableName = "valueList")
-    private TestdataCascadeEntity entity;
+    private TestdataSingleCascadeEntity entity;
     @PreviousElementShadowVariable(sourceVariableName = "valueList")
-    private TestdataCascadeValue previous;
+    private TestdataSingleCascadeValue previous;
     @CascadeUpdateElementShadowVariable(sourceMethodName = "updateCascadeValue")
     private Integer cascadeValue;
     @CascadeUpdateElementShadowVariable(sourceMethodName = "updateCascadeValueWithReturnType")
@@ -34,19 +34,19 @@ public class TestdataCascadeMissingNextValue {
         this.value = value;
     }
 
-    public TestdataCascadeEntity getEntity() {
+    public TestdataSingleCascadeEntity getEntity() {
         return entity;
     }
 
-    public void setEntity(TestdataCascadeEntity entity) {
+    public void setEntity(TestdataSingleCascadeEntity entity) {
         this.entity = entity;
     }
 
-    public TestdataCascadeValue getPrevious() {
+    public TestdataSingleCascadeValue getPrevious() {
         return previous;
     }
 
-    public void setPrevious(TestdataCascadeValue previous) {
+    public void setPrevious(TestdataSingleCascadeValue previous) {
         this.previous = previous;
     }
 

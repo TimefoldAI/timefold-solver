@@ -6,15 +6,15 @@ import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.TestdataCascadeEntity;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.TestdataCascadeSolution;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadeEntity;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadeSolution;
 
 @PlanningEntity
 public class TestdataCascadeMissingInverseValue {
 
-    public static EntityDescriptor<TestdataCascadeSolution> buildEntityDescriptor() {
+    public static EntityDescriptor<TestdataSingleCascadeSolution> buildEntityDescriptor() {
         return SolutionDescriptor
-                .buildSolutionDescriptor(TestdataCascadeSolution.class, TestdataCascadeEntity.class,
+                .buildSolutionDescriptor(TestdataSingleCascadeSolution.class, TestdataSingleCascadeEntity.class,
                         TestdataCascadeMissingInverseValue.class)
                 .findEntityDescriptorOrFail(TestdataCascadeMissingInverseValue.class);
     }

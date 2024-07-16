@@ -23,14 +23,38 @@ import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
 public final class CascadeUpdateElementShadowVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
 
+    private final List<SourceVariable<Solution_>> sourceVariables;
     private final List<VariableDescriptor<Solution_>> sourceVariableDescriptorList = new ArrayList<>();
-    private ShadowVariableDescriptor<Solution_> sourceShadowVariableDescriptor;
+    private List<ShadowVariableDescriptor<Solution_>> sourceShadowVariableDescriptorList;
     private ShadowVariableDescriptor<Solution_> nextElementShadowVariableDescriptor;
     private MemberAccessor listenerUpdateMethod;
+    // This flag defines if the shadow variable will generate a listener, which will be notified later by the event system
+    private boolean notifiable = true;
 
     public CascadeUpdateElementShadowVariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
         super(ordinal, entityDescriptor, variableMemberAccessor);
+        sourceVariables = new ArrayList<>();
+        addSourceVariable(entityDescriptor, variableMemberAccessor);
+    }
+
+    public void addSourceVariable(EntityDescriptor<Solution_> entityDescriptor,
+            MemberAccessor variableMemberAccessor) {
+        sourceVariables.add(new SourceVariable<>(entityDescriptor, variableMemberAccessor));
+    }
+
+    public boolean isNotifiable() {
+        return notifiable;
+    }
+
+    public void setNotifiable(boolean notifiable) {
+        this.notifiable = notifiable;
+    }
+
+    public String getSourceMethodName() {
+        CascadeUpdateElementShadowVariable shadowVariableAnnotation =
+                variableMemberAccessor.getAnnotation(CascadeUpdateElementShadowVariable.class);
+        return shadowVariableAnnotation.sourceMethodName();
     }
 
     @Override
@@ -40,8 +64,11 @@ public final class CascadeUpdateElementShadowVariableDescriptor<Solution_> exten
 
     @Override
     public void linkVariableDescriptors(DescriptorPolicy descriptorPolicy) {
-        this.sourceShadowVariableDescriptor = entityDescriptor.getShadowVariableDescriptor(variableMemberAccessor.getName());
-
+        sourceShadowVariableDescriptorList = new ArrayList<>();
+        for (SourceVariable<Solution_> sourceVariable : sourceVariables) {
+            sourceShadowVariableDescriptorList.add(sourceVariable.entityDescriptor()
+                    .getShadowVariableDescriptor(sourceVariable.variableMemberAccessor().getName()));
+        }
         var inverseRelationShadowDescriptor = entityDescriptor.getShadowVariableDescriptors().stream()
                 .filter(variableDescriptor -> InverseRelationShadowVariableDescriptor.class
                         .isAssignableFrom(variableDescriptor.getClass()))
@@ -89,9 +116,7 @@ public final class CascadeUpdateElementShadowVariableDescriptor<Solution_> exten
                                     entityDescriptor.getEntityClass()));
         }
 
-        CascadeUpdateElementShadowVariable shadowVariableAnnotation =
-                variableMemberAccessor.getAnnotation(CascadeUpdateElementShadowVariable.class);
-        var sourceMethodName = shadowVariableAnnotation.sourceMethodName();
+        var sourceMethodName = getSourceMethodName();
         var sourceMethodMember = ConfigUtils.getDeclaredMembers(entityDescriptor.getEntityClass())
                 .stream()
                 .filter(member -> member.getName().equals(sourceMethodName))
@@ -127,9 +152,21 @@ public final class CascadeUpdateElementShadowVariableDescriptor<Solution_> exten
 
     @Override
     public Iterable<VariableListenerWithSources<Solution_>> buildVariableListeners(SupplyManager supplyManager) {
-        return List.of(new VariableListenerWithSources<>(
-                new CascadeUpdateVariableListener<>(sourceShadowVariableDescriptor, nextElementShadowVariableDescriptor,
-                        listenerUpdateMethod),
-                sourceVariableDescriptorList));
+        // There are use cases where the shadow variable is applied to different fields and relies on the same method
+        // to update their values. Therefore, only one listener will be generated when multiple descriptors use the same
+        // method, and the notifiable flag won't be enabled in such cases.
+        if (isNotifiable()) {
+            return List.of(new VariableListenerWithSources<>(
+                    new CascadeUpdateVariableListener<>(sourceShadowVariableDescriptorList, nextElementShadowVariableDescriptor,
+                            listenerUpdateMethod),
+                    sourceVariableDescriptorList));
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+    private record SourceVariable<Solution_>(EntityDescriptor<Solution_> entityDescriptor,
+            MemberAccessor variableMemberAccessor) {
+
     }
 }

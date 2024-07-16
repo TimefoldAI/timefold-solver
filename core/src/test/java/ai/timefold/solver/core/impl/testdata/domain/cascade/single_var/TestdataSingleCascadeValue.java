@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade;
+package ai.timefold.solver.core.impl.testdata.domain.cascade.single_var;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.CascadeUpdateElementShadowVariable;
@@ -6,33 +6,30 @@ import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadeEntity;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadeSolution;
 
 @PlanningEntity
-public class TestdataCascadeWrongMethod {
+public class TestdataSingleCascadeValue {
 
     public static EntityDescriptor<TestdataSingleCascadeSolution> buildEntityDescriptor() {
-        return SolutionDescriptor
-                .buildSolutionDescriptor(TestdataSingleCascadeSolution.class, TestdataSingleCascadeEntity.class,
-                        TestdataCascadeWrongMethod.class)
-                .findEntityDescriptorOrFail(TestdataCascadeWrongMethod.class);
+        return TestdataSingleCascadeSolution.buildSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataSingleCascadeValue.class);
     }
 
     @InverseRelationShadowVariable(sourceVariableName = "valueList")
     private TestdataSingleCascadeEntity entity;
     @PreviousElementShadowVariable(sourceVariableName = "valueList")
-    private TestdataCascadeWrongMethod previous;
+    private TestdataSingleCascadeValue previous;
     @NextElementShadowVariable(sourceVariableName = "valueList")
-    private TestdataCascadeWrongMethod next;
+    private TestdataSingleCascadeValue next;
     @CascadeUpdateElementShadowVariable(sourceMethodName = "updateCascadeValue")
     private Integer cascadeValue;
-    @CascadeUpdateElementShadowVariable(sourceMethodName = "badUpdateCascadeValueWithReturnType")
+    @CascadeUpdateElementShadowVariable(sourceMethodName = "updateCascadeValueWithReturnType")
     private Integer cascadeValueReturnType;
     private Integer value;
+    private int firstNumberOfCalls = 0;
+    private int secondNumberOfCalls = 0;
 
-    public TestdataCascadeWrongMethod(Integer value) {
+    public TestdataSingleCascadeValue(Integer value) {
         this.value = value;
     }
 
@@ -44,19 +41,19 @@ public class TestdataCascadeWrongMethod {
         this.entity = entity;
     }
 
-    public TestdataCascadeWrongMethod getPrevious() {
+    public TestdataSingleCascadeValue getPrevious() {
         return previous;
     }
 
-    public void setPrevious(TestdataCascadeWrongMethod previous) {
+    public void setPrevious(TestdataSingleCascadeValue previous) {
         this.previous = previous;
     }
 
-    public TestdataCascadeWrongMethod getNext() {
+    public TestdataSingleCascadeValue getNext() {
         return next;
     }
 
-    public void setNext(TestdataCascadeWrongMethod next) {
+    public void setNext(TestdataSingleCascadeValue next) {
         this.next = next;
     }
 
@@ -68,6 +65,10 @@ public class TestdataCascadeWrongMethod {
         this.value = value;
     }
 
+    public void setCascadeValue(Integer cascadeValue) {
+        this.cascadeValue = cascadeValue;
+    }
+
     public Integer getCascadeValue() {
         return cascadeValue;
     }
@@ -76,16 +77,34 @@ public class TestdataCascadeWrongMethod {
         return cascadeValueReturnType;
     }
 
+    public int getFirstNumberOfCalls() {
+        return firstNumberOfCalls;
+    }
+
+    public int getSecondNumberOfCalls() {
+        return secondNumberOfCalls;
+    }
+
     //---Complex methods---//
     public void updateCascadeValue() {
-        if (value != null) {
-            value = value + 1;
+        firstNumberOfCalls++;
+        if (cascadeValue == null || cascadeValue != value + 1) {
+            cascadeValue = value + 1;
         }
     }
 
     public Integer updateCascadeValueWithReturnType() {
-        updateCascadeValue();
-        cascadeValueReturnType = cascadeValue;
+        secondNumberOfCalls++;
+        if (cascadeValueReturnType == null || cascadeValueReturnType != value + 2) {
+            cascadeValueReturnType = value + 2;
+        }
         return cascadeValueReturnType;
+    }
+
+    @Override
+    public String toString() {
+        return "TestdataCascadeValue{" +
+                "value=" + value +
+                '}';
     }
 }

@@ -10,6 +10,7 @@ import java.lang.reflect.Member;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -107,6 +108,7 @@ public class EntityDescriptor<Solution_> {
     // Only declared variable descriptors, excludes inherited variable descriptors
     private Map<String, GenuineVariableDescriptor<Solution_>> declaredGenuineVariableDescriptorMap;
     private Map<String, ShadowVariableDescriptor<Solution_>> declaredShadowVariableDescriptorMap;
+    private Map<String, CascadeUpdateElementShadowVariableDescriptor<Solution_>> declaredCascadeUpdateShadowVariableDecriptorMap;
 
     private List<SelectionFilter<Solution_, Object>> declaredPinEntityFilterList;
     private List<EntityDescriptor<Solution_>> inheritedEntityDescriptorList;
@@ -199,6 +201,7 @@ public class EntityDescriptor<Solution_> {
         processEntityAnnotations(descriptorPolicy);
         declaredGenuineVariableDescriptorMap = new LinkedHashMap<>();
         declaredShadowVariableDescriptorMap = new LinkedHashMap<>();
+        declaredCascadeUpdateShadowVariableDecriptorMap = new HashMap<>();
         declaredPinEntityFilterList = new ArrayList<>(2);
         // Only iterate declared fields and methods, not inherited members, to avoid registering the same one twice
         var memberList = ConfigUtils.getDeclaredMembers(entityClass);
@@ -358,6 +361,15 @@ public class EntityDescriptor<Solution_> {
             var variableDescriptor =
                     new CascadeUpdateElementShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
+            if (declaredCascadeUpdateShadowVariableDecriptorMap.containsKey(variableDescriptor.getSourceMethodName())) {
+                // This shadow variable won't be notifiable and won't generate any listener in CascadeUpdateElementShadowVariableDescriptor#buildVariableListeners
+                variableDescriptor.setNotifiable(false);
+                declaredCascadeUpdateShadowVariableDecriptorMap.get(variableDescriptor.getSourceMethodName())
+                        .addSourceVariable(this, memberAccessor);
+            } else {
+                declaredCascadeUpdateShadowVariableDecriptorMap.put(variableDescriptor.getSourceMethodName(),
+                        variableDescriptor);
+            }
         } else if (variableAnnotationClass.equals(PiggybackShadowVariable.class)) {
             var variableDescriptor =
                     new PiggybackShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
