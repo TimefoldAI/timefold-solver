@@ -36,7 +36,7 @@ class FetchDependencies(build_py):
     def create_stubs(self, project_root, command):
         working_directory = project_root / 'python' / 'python-core'
         subprocess.run([str((project_root / command).absolute()), 'dependency:copy-dependencies',
-                        '-Dpython'],
+                        '-Dpython', '-Dexec.skip'],
                        cwd=working_directory, check=True)
         subprocess.run([str((project_root / command).absolute()), 'dependency:copy-dependencies',
                         '-Dclassifier=javadoc', '-Dpython'], cwd=working_directory, check=True)

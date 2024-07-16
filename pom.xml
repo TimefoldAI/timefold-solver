@@ -92,7 +92,7 @@
 
   <profiles>
     <profile>
-      <id>non-essential</id>
+      <id>java-tools-and-integrations</id>
       <activation>
         <property>
           <name>!python</name>
