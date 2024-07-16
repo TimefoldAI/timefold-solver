@@ -33,15 +33,12 @@ public class CascadeUpdateVariableListener<Solution_> implements VariableListene
     public void afterVariableChanged(ScoreDirector<Solution_> scoreDirector, Object entity) {
         var currentEntity = entity;
         while (currentEntity != null) {
+            scoreDirector.beforeVariableChanged(currentEntity, sourceShadowVariableDescriptor.getVariableName());
             Object oldValue = sourceShadowVariableDescriptor.getValue(currentEntity);
             listenerUpdateMethod.executeGetter(currentEntity);
             Object newValue = sourceShadowVariableDescriptor.getValue(currentEntity);
-            if (!Objects.equals(oldValue, newValue)) {
-                sourceShadowVariableDescriptor.setValue(currentEntity, oldValue);
-                scoreDirector.beforeVariableChanged(currentEntity, sourceShadowVariableDescriptor.getVariableName());
-                sourceShadowVariableDescriptor.setValue(currentEntity, newValue);
-                scoreDirector.afterVariableChanged(currentEntity, sourceShadowVariableDescriptor.getVariableName());
-            } else {
+            scoreDirector.afterVariableChanged(currentEntity, sourceShadowVariableDescriptor.getVariableName());
+            if (Objects.equals(oldValue, newValue)) {
                 break;
             }
             currentEntity = nextElementShadowVariableDescriptor.getValue(currentEntity);

@@ -56,6 +56,7 @@ public class TestdataCascadeValue {
     @CascadeUpdateElementShadowVariable(sourceMethodName = "updateCascadeValueWithReturnType")
     private Integer cascadeValueReturnType;
     private Integer value;
+    private int numberOfCalls = 0;
 
     public TestdataCascadeValue(Integer value) {
         this.value = value;
@@ -93,6 +94,10 @@ public class TestdataCascadeValue {
         this.value = value;
     }
 
+    public void setCascadeValue(Integer cascadeValue) {
+        this.cascadeValue = cascadeValue;
+    }
+
     public Integer getCascadeValue() {
         return cascadeValue;
     }
@@ -101,16 +106,35 @@ public class TestdataCascadeValue {
         return cascadeValueReturnType;
     }
 
+    public int getNumberOfCalls() {
+        return numberOfCalls;
+    }
+
     //---Complex methods---//
     public void updateCascadeValue() {
-        if (value != null) {
-            value = value + 1;
+        numberOfCalls++;
+        if (cascadeValue == null || cascadeValue != value + 1) {
+            cascadeValue = value + 1;
         }
     }
 
     public Integer updateCascadeValueWithReturnType() {
-        updateCascadeValue();
-        cascadeValueReturnType = cascadeValue;
+        if (cascadeValueReturnType == null || cascadeValueReturnType != value + 1) {
+            cascadeValueReturnType = value + 1;
+        }
         return cascadeValueReturnType;
+    }
+
+    public void reset() {
+        numberOfCalls = 0;
+        cascadeValue = null;
+        cascadeValueReturnType = null;
+    }
+
+    @Override
+    public String toString() {
+        return "TestdataCascadeValue{" +
+                "value=" + value +
+                '}';
     }
 }

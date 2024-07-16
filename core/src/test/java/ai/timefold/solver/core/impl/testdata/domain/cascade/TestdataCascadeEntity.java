@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.testdata.domain.cascade;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -57,7 +58,7 @@ public class TestdataCascadeEntity extends TestdataObject {
 
     public TestdataCascadeEntity(String code) {
         super(code);
-        this.valueList = valueList;
+        this.valueList = new LinkedList<>();
     }
 
     public TestdataCascadeEntity(String code, List<TestdataCascadeValue> valueList) {
@@ -71,5 +72,12 @@ public class TestdataCascadeEntity extends TestdataObject {
 
     public List<TestdataCascadeValue> getValueList() {
         return valueList;
+    }
+
+    @Override
+    public String toString() {
+        return "TestdataCascadeEntity{" +
+                "code='" + code + '\'' +
+                '}';
     }
 }
