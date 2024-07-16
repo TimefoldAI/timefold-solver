@@ -438,9 +438,9 @@ def test_strftime():
     #                 expected_result='February')
     verifier.verify(datetime(1, 2, 3, 4, 5, 6, 7), '%m',
                     expected_result='02')
-    verifier.verify(datetime(1, 2, 3, 4, 5, 6, 7), '%y',
+    verifier.verify(datetime(1901, 2, 3, 4, 5, 6, 7), '%y',
                     expected_result='01')
-    verifier.verify(datetime(1001, 2, 3, 4, 5, 6, 7), '%y',
+    verifier.verify(datetime(2001, 2, 3, 4, 5, 6, 7), '%y',
                     expected_result='01')
     # %Y have different results depending on the platform;
     # Windows 0-pad it, Linux does not.
