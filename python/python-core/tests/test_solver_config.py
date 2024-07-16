@@ -7,6 +7,7 @@ from timefold.solver.domain import *
 from timefold.solver.score import *
 from typing import Annotated, List
 
+test_directory = pathlib.Path(__file__).resolve().parent
 
 class Value:
     def __init__(self, code):
@@ -46,7 +47,7 @@ def get_java_solver_config(path: pathlib.Path):
 
 def test_load_from_solver_config_file():
     from _jpyinterpreter import get_java_type_for_python_type
-    solver_config = get_java_solver_config(pathlib.Path('python', 'tests', 'solverConfig-simple.xml'))
+    solver_config = get_java_solver_config(test_directory / 'solverConfig-simple.xml')
     assert solver_config.getSolutionClass() == get_java_type_for_python_type(Solution).getJavaClass()
     entity_class_list = solver_config.getEntityClassList()
     assert entity_class_list.size() == 1
@@ -64,14 +65,14 @@ def test_reload_from_solver_config_file():
         ...
 
     RedefinedSolution1 = RedefinedSolution
-    solver_config_1 = get_java_solver_config(pathlib.Path('python', 'tests', 'solverConfig-redefined.xml'))
+    solver_config_1 = get_java_solver_config(test_directory / 'solverConfig-redefined.xml')
 
     @planning_solution
     class RedefinedSolution:
         ...
 
     RedefinedSolution2 = RedefinedSolution
-    solver_config_2 = get_java_solver_config(pathlib.Path('python', 'tests', 'solverConfig-redefined.xml'))
+    solver_config_2 = get_java_solver_config(test_directory / 'solverConfig-redefined.xml')
 
     assert solver_config_1.getSolutionClass() == get_java_type_for_python_type(RedefinedSolution1).getJavaClass()
     assert solver_config_2.getSolutionClass() == get_java_type_for_python_type(RedefinedSolution2).getJavaClass()

@@ -12,23 +12,9 @@
 
   <properties>
     <java.module.name>ai.timefold.jpyinterpreter</java.module.name>
-    <version.ow2.asm>9.7</version.ow2.asm>
+    <sonar.inclusions>src/main/**</sonar.inclusions>
+    <sonar.test.inclusions>**/test*/**</sonar.test.inclusions>
   </properties>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm-util</artifactId>
-        <version>${version.ow2.asm}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm-tree</artifactId>
-        <version>${version.ow2.asm}</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
 
   <dependencies>
     <dependency>
