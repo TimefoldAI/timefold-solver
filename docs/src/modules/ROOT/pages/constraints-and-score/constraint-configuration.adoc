@@ -115,13 +115,13 @@ solution.setConstraintWeightOverrides(constraintWeightOverrides);
 ...
 ----
 
-The `Vehicle capacity` constraint in this planning solution will get a weight of `2hard`,
+The `Vehicle capacity` constraint in this planning solution has a weight of `2hard`,
 as opposed to its original `1hard`.
-The `Service finished after max end time` constraint will have a weight of `0hard`,
+The `Service finished after max end time` constraint has a weight of `0hard`,
 and therefore will be disabled entirely.
 
-This way, you can solve the same problem
-while applying different constraint weights to each instance.
+In this way, you can solve the same problem
+by applying different constraint weights to each instance.
 Once solved, you can compare the results
 and decide which set of weights is the most suitable for your use case.
 
