@@ -18,8 +18,8 @@ import ai.timefold.solver.core.api.solver.change.ProblemChange;
  * <p>
  * The constraints in a {@link ConstraintProvider} rely on problem facts for {@link ConstraintFactory#forEach(Class)}.
  * <p>
- * Do not annotate a {@link PlanningEntity} {@link ConstraintWeightOverrides}
- * as a problem fact: they are automatically available as facts for {@link ConstraintFactory#forEach(Class)}.
+ * Do not annotate {@link PlanningEntity} or {@link ConstraintWeightOverrides} fields as a problem fact:
+ * they are automatically available as facts for {@link ConstraintFactory#forEach(Class)}.
  *
  * @see ProblemFactCollectionProperty
  */
