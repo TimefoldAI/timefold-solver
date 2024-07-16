@@ -238,7 +238,7 @@ public final class AsConstraintRecipe extends AbstractRecipe {
                         } else if (select.getType().isAssignableFrom(quadConstraintStreamPattern)) {
                             templateCode = "#{any(ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream)}\n";
                         } else {
-                            LOGGER.warn("Cannot refactor to asConstraint() method for deprecated method (" + method + ").");
+                            LOGGER.warn("Cannot refactor to asConstraint() method for deprecated method ({}).", method);
                             return method;
                         }
                         if (!matcherMeta.configurable) {
