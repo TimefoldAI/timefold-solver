@@ -12,6 +12,11 @@
 
   <properties>
     <java.module.name>ai.timefold.solver.python</java.module.name>
+    <sonar.sources>src/main/java,src/main/python</sonar.sources>
+    <sonar.tests>src/test/java,tests</sonar.tests>
+    <sonar.python.version>3.10,3.11,3.12</sonar.python.version>
+    <sonar.python.coverage.reportPaths>target/coverage.xml,python/jpyinterpreter/target/coverage.xml
+    </sonar.python.coverage.reportPaths>
   </properties>
 
   <dependencies>

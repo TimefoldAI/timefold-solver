@@ -44,6 +44,10 @@ jobs:
           cache-dependency-path: |
             **/setup.py
 
+      - name: Install tox
+        run:
+          pip install tox build
+
       - name: Build and test timefold-solver
         run: mvn -B -Dfull verify
 
