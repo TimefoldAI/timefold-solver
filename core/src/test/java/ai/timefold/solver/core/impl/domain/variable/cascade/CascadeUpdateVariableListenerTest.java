@@ -46,7 +46,7 @@ class CascadeUpdateVariableListenerTest {
                 .withMessageContaining(
                         "has an @CascadeUpdateElementShadowVariable annotated property (badUpdateCascadeValueWithReturnType)")
                 .withMessageContaining(
-                        "with sourceMethodName (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadeWrongMethod), ")
+                        "with targetMethodName (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadeWrongMethod), ")
                 .withMessageContaining("but the method has not been found in the entityClass");
     }
 

@@ -21,9 +21,9 @@ public class TestdataSingleCascadeValue {
     private TestdataSingleCascadeValue previous;
     @NextElementShadowVariable(sourceVariableName = "valueList")
     private TestdataSingleCascadeValue next;
-    @CascadeUpdateElementShadowVariable(sourceMethodName = "updateCascadeValue")
+    @CascadeUpdateElementShadowVariable(targetMethodName = "updateCascadeValue")
     private Integer cascadeValue;
-    @CascadeUpdateElementShadowVariable(sourceMethodName = "updateCascadeValueWithReturnType")
+    @CascadeUpdateElementShadowVariable(targetMethodName = "updateCascadeValueWithReturnType")
     private Integer cascadeValueReturnType;
     private Integer value;
     private int firstNumberOfCalls = 0;

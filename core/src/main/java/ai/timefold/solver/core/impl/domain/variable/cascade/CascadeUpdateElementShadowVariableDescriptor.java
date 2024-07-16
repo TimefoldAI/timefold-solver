@@ -51,10 +51,10 @@ public final class CascadeUpdateElementShadowVariableDescriptor<Solution_> exten
         this.notifiable = notifiable;
     }
 
-    public String getSourceMethodName() {
+    public String getTargetMethodName() {
         CascadeUpdateElementShadowVariable shadowVariableAnnotation =
                 variableMemberAccessor.getAnnotation(CascadeUpdateElementShadowVariable.class);
-        return shadowVariableAnnotation.sourceMethodName();
+        return shadowVariableAnnotation.targetMethodName();
     }
 
     @Override
@@ -116,17 +116,17 @@ public final class CascadeUpdateElementShadowVariableDescriptor<Solution_> exten
                                     entityDescriptor.getEntityClass()));
         }
 
-        var sourceMethodName = getSourceMethodName();
+        var targetMethodName = getTargetMethodName();
         var sourceMethodMember = ConfigUtils.getDeclaredMembers(entityDescriptor.getEntityClass())
                 .stream()
-                .filter(member -> member.getName().equals(sourceMethodName))
+                .filter(member -> member.getName().equals(targetMethodName))
                 .findFirst()
                 .orElse(null);
         if (sourceMethodMember == null) {
             throw new IllegalArgumentException(
-                    "The entityClass (%s) has an @%s annotated property (%s) with sourceMethodName (%s), but the method has not been found in the entityClass."
+                    "The entityClass (%s) has an @%s annotated property (%s) with targetMethodName (%s), but the method has not been found in the entityClass."
                             .formatted(entityDescriptor.getEntityClass(),
-                                    CascadeUpdateElementShadowVariable.class.getSimpleName(), sourceMethodName,
+                                    CascadeUpdateElementShadowVariable.class.getSimpleName(), targetMethodName,
                                     entityDescriptor.getEntityClass()));
         }
         listenerUpdateMethod = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(sourceMethodMember,

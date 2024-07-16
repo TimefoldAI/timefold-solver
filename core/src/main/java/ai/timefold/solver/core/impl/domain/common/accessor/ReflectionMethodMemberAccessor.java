@@ -22,7 +22,7 @@ public final class ReflectionMethodMemberAccessor extends AbstractMemberAccessor
         this(readMethod, true);
     }
 
-    public ReflectionMethodMemberAccessor(Method readMethod, boolean requiredReturnType) {
+    public ReflectionMethodMemberAccessor(Method readMethod, boolean returnTypeRequired) {
         this.readMethod = readMethod;
         this.returnType = readMethod.getReturnType();
         this.methodName = readMethod.getName();
@@ -41,7 +41,7 @@ public final class ReflectionMethodMemberAccessor extends AbstractMemberAccessor
             throw new IllegalArgumentException("The readMethod (" + readMethod + ") must not have any parameters ("
                     + Arrays.toString(readMethod.getParameterTypes()) + ").");
         }
-        if (requiredReturnType && readMethod.getReturnType() == void.class) {
+        if (returnTypeRequired && readMethod.getReturnType() == void.class) {
             throw new IllegalArgumentException("The readMethod (" + readMethod + ") must have a return type ("
                     + readMethod.getReturnType() + ").");
         }

@@ -897,15 +897,15 @@ class TimefoldProcessor {
                                             transformers));
                             if (annotatedMember.name().equals(DotNames.CASCADE_UPDATE_ELEMENT_SHADOW_VARIABLE)) {
                                 // The source method name also must be included
-                                var sourceMethodName = annotatedMember.values().stream()
-                                        .filter(v -> v.name().equals("sourceMethodName"))
+                                var targetMethodName = annotatedMember.values().stream()
+                                        .filter(v -> v.name().equals("targetMethodName"))
                                         .findFirst()
                                         .map(AnnotationValue::asString)
                                         .orElseThrow(() -> new IllegalStateException(
                                                 "Fail to generate member accessor of the source method listener (%s) of the class(%s)."
                                                         .formatted(DotNames.CASCADE_UPDATE_ELEMENT_SHADOW_VARIABLE.local(),
                                                                 classInfo.name().toString())));
-                                var methodInfo = classInfo.method(sourceMethodName);
+                                var methodInfo = classInfo.method(targetMethodName);
                                 generatedMemberAccessorsClassNameSet.add(entityEnhancer.generateMethodAccessor(null,
                                         classOutput, classInfo, methodInfo, false, transformers));
 

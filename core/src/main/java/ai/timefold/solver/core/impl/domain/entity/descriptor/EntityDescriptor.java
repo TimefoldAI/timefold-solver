@@ -361,13 +361,13 @@ public class EntityDescriptor<Solution_> {
             var variableDescriptor =
                     new CascadeUpdateElementShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
-            if (declaredCascadeUpdateShadowVariableDecriptorMap.containsKey(variableDescriptor.getSourceMethodName())) {
+            if (declaredCascadeUpdateShadowVariableDecriptorMap.containsKey(variableDescriptor.getTargetMethodName())) {
                 // This shadow variable won't be notifiable and won't generate any listener in CascadeUpdateElementShadowVariableDescriptor#buildVariableListeners
                 variableDescriptor.setNotifiable(false);
-                declaredCascadeUpdateShadowVariableDecriptorMap.get(variableDescriptor.getSourceMethodName())
+                declaredCascadeUpdateShadowVariableDecriptorMap.get(variableDescriptor.getTargetMethodName())
                         .addSourceVariable(this, memberAccessor);
             } else {
-                declaredCascadeUpdateShadowVariableDecriptorMap.put(variableDescriptor.getSourceMethodName(),
+                declaredCascadeUpdateShadowVariableDecriptorMap.put(variableDescriptor.getTargetMethodName(),
                         variableDescriptor);
             }
         } else if (variableAnnotationClass.equals(PiggybackShadowVariable.class)) {

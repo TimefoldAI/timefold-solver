@@ -23,9 +23,9 @@ public class TestdataCascadeMissingInverseValue {
     private TestdataCascadeMissingInverseValue previous;
     @NextElementShadowVariable(sourceVariableName = "valueList")
     private TestdataCascadeMissingInverseValue next;
-    @CascadeUpdateElementShadowVariable(sourceMethodName = "updateCascadeValue")
+    @CascadeUpdateElementShadowVariable(targetMethodName = "updateCascadeValue")
     private Integer cascadeValue;
-    @CascadeUpdateElementShadowVariable(sourceMethodName = "updateCascadeValueWithReturnType")
+    @CascadeUpdateElementShadowVariable(targetMethodName = "updateCascadeValueWithReturnType")
     private Integer cascadeValueReturnType;
     private Integer value;
 

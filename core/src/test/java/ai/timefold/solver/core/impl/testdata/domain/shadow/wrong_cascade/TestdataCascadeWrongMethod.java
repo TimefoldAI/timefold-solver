@@ -26,9 +26,9 @@ public class TestdataCascadeWrongMethod {
     private TestdataCascadeWrongMethod previous;
     @NextElementShadowVariable(sourceVariableName = "valueList")
     private TestdataCascadeWrongMethod next;
-    @CascadeUpdateElementShadowVariable(sourceMethodName = "updateCascadeValue")
+    @CascadeUpdateElementShadowVariable(targetMethodName = "updateCascadeValue")
     private Integer cascadeValue;
-    @CascadeUpdateElementShadowVariable(sourceMethodName = "badUpdateCascadeValueWithReturnType")
+    @CascadeUpdateElementShadowVariable(targetMethodName = "badUpdateCascadeValueWithReturnType")
     private Integer cascadeValueReturnType;
     private Integer value;
 

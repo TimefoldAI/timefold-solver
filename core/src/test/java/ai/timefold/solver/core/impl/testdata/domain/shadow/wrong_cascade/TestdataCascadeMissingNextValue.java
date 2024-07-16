@@ -24,9 +24,9 @@ public class TestdataCascadeMissingNextValue {
     private TestdataSingleCascadeEntity entity;
     @PreviousElementShadowVariable(sourceVariableName = "valueList")
     private TestdataSingleCascadeValue previous;
-    @CascadeUpdateElementShadowVariable(sourceMethodName = "updateCascadeValue")
+    @CascadeUpdateElementShadowVariable(targetMethodName = "updateCascadeValue")
     private Integer cascadeValue;
-    @CascadeUpdateElementShadowVariable(sourceMethodName = "updateCascadeValueWithReturnType")
+    @CascadeUpdateElementShadowVariable(targetMethodName = "updateCascadeValueWithReturnType")
     private Integer cascadeValueReturnType;
     private Integer value;
 

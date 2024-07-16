@@ -21,9 +21,9 @@ public class TestdataMultipleCascadeValue {
     private TestdataMultipleCascadeValue previous;
     @NextElementShadowVariable(sourceVariableName = "valueList")
     private TestdataMultipleCascadeValue next;
-    @CascadeUpdateElementShadowVariable(sourceMethodName = "updateCascadeValue")
+    @CascadeUpdateElementShadowVariable(targetMethodName = "updateCascadeValue")
     private Integer cascadeValue;
-    @CascadeUpdateElementShadowVariable(sourceMethodName = "updateCascadeValue")
+    @CascadeUpdateElementShadowVariable(targetMethodName = "updateCascadeValue")
     private Integer secondCascadeValue;
     private Integer value;
     private int numberOfCalls = 0;

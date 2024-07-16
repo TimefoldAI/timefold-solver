@@ -1403,7 +1403,7 @@ public class Customer {
     private Customer previousCustomer;
     @NextElementShadowVariable(sourceVariableName = "customers")
     private Customer nextCustomer;
-    @CascadeUpdateElementShadowVariable(sourceMethodName = "updateArrivalTime")
+    @CascadeUpdateElementShadowVariable(targetMethodName = "updateArrivalTime")
     private LocalDateTime arrivalTime;
 
     ...
@@ -1411,7 +1411,7 @@ public class Customer {
     public void updateArrivalTime() {...}
 ----
 
-The `sourceMethodName` refers to the user-defined logic that updates the annotated shadow variable.
+The `targetMethodName` refers to the user-defined logic that updates the annotated shadow variable.
 The method must be implemented in the defining entity class and should not include any parameters.
 Also, the planning entity must add `InverseRelationShadowVariable`, `PreviousElementShadowVariable`,
 and `NextElementShadowVariable` elements in order to use the cascade element shadow variable.
@@ -1444,9 +1444,9 @@ public class Customer {
     private Customer previousCustomer;
     @NextElementShadowVariable(sourceVariableName = "customers")
     private Customer nextCustomer;
-    @CascadeUpdateElementShadowVariable(sourceMethodName = "updateWeightAndArrivalTime")
+    @CascadeUpdateElementShadowVariable(targetMethodName = "updateWeightAndArrivalTime")
     private LocalDateTime arrivalTime;
-    @CascadeUpdateElementShadowVariable(sourceMethodName = "updateWeightAndArrivalTime")
+    @CascadeUpdateElementShadowVariable(targetMethodName = "updateWeightAndArrivalTime")
     private Integer weightAtVisit;
     ...
 
