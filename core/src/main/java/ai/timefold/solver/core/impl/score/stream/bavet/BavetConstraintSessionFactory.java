@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -28,18 +29,20 @@ import ai.timefold.solver.core.impl.score.stream.bavet.uni.AbstractForEachUniNod
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintLibrary;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score<Score_>> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(BavetConstraintSessionFactory.class);
     private final SolutionDescriptor<Solution_> solutionDescriptor;
-    private final List<BavetConstraint<Solution_>> constraintList;
+    private final ConstraintLibrary<Score_> constraintLibrary;
 
     @SuppressWarnings("unchecked")
     public BavetConstraintSessionFactory(SolutionDescriptor<Solution_> solutionDescriptor,
             ConstraintLibrary<Score_> constraintLibrary) {
-        this.solutionDescriptor = solutionDescriptor;
-        this.constraintList = constraintLibrary.getConstraints().stream()
-                .map(constraint -> (BavetConstraint<Solution_>) constraint)
-                .collect(Collectors.toList());
+        this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
+        this.constraintLibrary = Objects.requireNonNull(constraintLibrary);
     }
 
     // ************************************************************************
@@ -50,7 +53,8 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
     public BavetConstraintSession<Score_> buildSession(Solution_ workingSolution, boolean constraintMatchEnabled) {
         var constraintWeightSupplier = solutionDescriptor.getConstraintWeightSupplier();
         if (constraintWeightSupplier != null) { // Fail fast on unknown constraints.
-            var knownConstraints = constraintList.stream()
+            var knownConstraints = constraintLibrary.getConstraints()
+                    .stream()
                     .map(Constraint::getConstraintRef)
                     .collect(Collectors.toSet());
             constraintWeightSupplier.validate(workingSolution, knownConstraints);
@@ -58,22 +62,35 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
         var scoreDefinition = solutionDescriptor.<Score_> getScoreDefinition();
         var zeroScore = scoreDefinition.getZeroScore();
         var constraintStreamSet = new LinkedHashSet<BavetAbstractConstraintStream<Solution_>>();
-        var constraintWeightMap = new HashMap<Constraint, Score_>(constraintList.size());
-        for (var constraint : constraintList) {
-            var constraintWeight = (Score_) constraint.extractConstraintWeight(workingSolution);
+        var constraintWeightMap = new HashMap<Constraint, Score_>(constraintLibrary.getConstraints().size());
+        LOGGER.debug("Constraint weights for solution ({}):", workingSolution);
+        for (var constraint : constraintLibrary.getConstraints()) {
+            var constraintRef = constraint.getConstraintRef();
+            var castConstraint = (BavetConstraint<Solution_>) constraint;
+            var defaultConstraintWeight = castConstraint.getDefaultConstraintWeight();
+            var constraintWeight = (Score_) castConstraint.extractConstraintWeight(workingSolution);
             /*
              * Filter out nodes that only lead to constraints with zero weight.
              * Note: Node sharing happens earlier, in BavetConstraintFactory#share(Stream_).
              */
             if (!constraintWeight.equals(zeroScore)) {
+                if (defaultConstraintWeight != null && !defaultConstraintWeight.equals(constraintWeight)) {
+                    LOGGER.debug("  Constraint ({}) weight overridden to ({}) from ({}).", constraintRef, constraintWeight,
+                            defaultConstraintWeight);
+                } else {
+                    LOGGER.debug("  Constraint ({}) weight set to ({}).", constraintRef, constraintWeight);
+                }
                 /*
                  * Relies on BavetConstraintFactory#share(Stream_) occurring for all constraint stream instances
                  * to ensure there are no 2 equal ConstraintStream instances (with different child stream lists).
                  */
-                constraint.collectActiveConstraintStreams(constraintStreamSet);
+                castConstraint.collectActiveConstraintStreams(constraintStreamSet);
                 constraintWeightMap.put(constraint, constraintWeight);
+            } else {
+                LOGGER.debug("  Constraint ({}) disabled.", constraintRef);
             }
         }
+
         var scoreInliner = AbstractScoreInliner.buildScoreInliner(scoreDefinition, constraintWeightMap, constraintMatchEnabled);
         if (constraintStreamSet.isEmpty()) { // All constraints were disabled.
             return new BavetConstraintSession<>(scoreInliner);
