@@ -29,6 +29,18 @@ class ConstraintWeightOverridesTest {
             ConstraintRef.of(TestdataConstraintWeightOverridesSolution.class.getPackageName(), SECOND_WEIGHT);
 
     @Test
+    void consistentOrderOfConstraints() {
+        var firstAndSecond = ConstraintWeightOverrides.of(Map.of(
+                FIRST_WEIGHT, SimpleScore.ZERO,
+                SECOND_WEIGHT, SimpleScore.ONE));
+        var secondAndFirst = ConstraintWeightOverrides.of(Map.of(
+                SECOND_WEIGHT, SimpleScore.ONE,
+                FIRST_WEIGHT, SimpleScore.ZERO));
+        assertThat(firstAndSecond.getKnownConstraintNames())
+                .containsExactly(secondAndFirst.getKnownConstraintNames().toArray(new String[0]));
+    }
+
+    @Test
     void readsOverridesFromSolution() {
         var solutionDescriptor = TestdataConstraintWeightOverridesSolution.buildSolutionDescriptor();
         var constraintWeightSupplier = solutionDescriptor.getConstraintWeightSupplier();

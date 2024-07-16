@@ -1,5 +1,6 @@
 package ai.timefold.solver.jackson.api;
 
+import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
@@ -20,7 +21,9 @@ import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.common.Sequence;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.solver.RecommendedFit;
+import ai.timefold.solver.core.impl.domain.solution.DefaultConstraintWeightOverrides;
 import ai.timefold.solver.core.impl.solver.DefaultRecommendedFit;
+import ai.timefold.solver.jackson.api.domain.solution.ConstraintWeightOverridesSerializer;
 import ai.timefold.solver.jackson.api.score.PolymorphicScoreJacksonDeserializer;
 import ai.timefold.solver.jackson.api.score.PolymorphicScoreJacksonSerializer;
 import ai.timefold.solver.jackson.api.score.analysis.ScoreAnalysisJacksonSerializer;
@@ -125,6 +128,10 @@ public class TimefoldJacksonModule extends SimpleModule {
         var serializer = new RecommendedFitJacksonSerializer();
         addSerializer(RecommendedFit.class, serializer);
         addSerializer(DefaultRecommendedFit.class, serializer);
+
+        // Constraint weights
+        addSerializer(ConstraintWeightOverrides.class, new ConstraintWeightOverridesSerializer());
+        addSerializer(DefaultConstraintWeightOverrides.class, new ConstraintWeightOverridesSerializer());
 
         // Constraint collectors
         addSerializer(Break.class, new BreakJacksonSerializer());
