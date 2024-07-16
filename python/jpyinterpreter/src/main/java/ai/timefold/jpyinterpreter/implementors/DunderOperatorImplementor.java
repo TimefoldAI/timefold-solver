@@ -61,7 +61,6 @@ public class DunderOperatorImplementor {
     /**
      * Performs a unary dunder operation on TOS. Generate codes that look like this:
      *
-     * <code>
      * <pre>
      *    BiFunction[List, Map, Result] operand_method = TOS.$getType().$getAttributeOrError(operator.getDunderMethod());
      *    List args = new ArrayList(1);
@@ -69,7 +68,6 @@ public class DunderOperatorImplementor {
      *    pop TOS
      *    TOS' = operand_method.apply(args, null)
      * </pre>
-     * </code>
      *
      */
     public static void unaryOperator(MethodVisitor methodVisitor, PythonUnaryOperator operator) {
@@ -319,7 +317,6 @@ public class DunderOperatorImplementor {
     /**
      * Performs a binary dunder operation on TOS and TOS1. Generate codes that look like this:
      *
-     * <code>
      * <pre>
      *    BiFunction[List, Map, Result] operand_method = TOS1.$getType().$getAttributeOrError(operator.getDunderMethod());
      *    List args = new ArrayList(2);
@@ -328,7 +325,6 @@ public class DunderOperatorImplementor {
      *    pop TOS, TOS1
      *    TOS' = operand_method.apply(args, null)
      * </pre>
-     * </code>
      *
      */
     public static void binaryOperator(MethodVisitor methodVisitor, LocalVariableHelper localVariableHelper,
@@ -547,7 +543,6 @@ public class DunderOperatorImplementor {
     /**
      * Performs a ternary dunder operation on TOS, TOS1 and TOS2. Generate codes that look like this:
      *
-     * <code>
      * <pre>
      *    BiFunction[List, Map, Result] operand_method = TOS2.$getType().$getAttributeOrError(operator.getDunderMethod());
      *    List args = new ArrayList(2);
@@ -557,7 +552,6 @@ public class DunderOperatorImplementor {
      *    pop TOS, TOS1, TOS2
      *    TOS' = operand_method.apply(args, null)
      * </pre>
-     * </code>
      *
      */
     public static void ternaryOperator(FunctionMetadata functionMetadata, StackMetadata stackMetadata,

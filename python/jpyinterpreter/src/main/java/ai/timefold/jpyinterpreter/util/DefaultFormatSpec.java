@@ -291,7 +291,7 @@ public class DefaultFormatSpec {
          * The precise rules are as follows:
          * suppose that the result formatted with presentation type {@link #LOWERCASE_SCIENTIFIC_NOTATION}
          * and precision p-1 would have exponent exp.
-         * Then, if m <= exp < p, where m is -4 for floats and -6 for Decimals,
+         * Then, if m &le; exp &lt; p, where m is -4 for floats and -6 for Decimals,
          * the number is formatted with presentation type 'f'and precision p-1-exp.
          * Otherwise, the number is formatted with presentation type 'e' and precision p-1.
          * In both cases insignificant trailing zeros are removed from the significand,

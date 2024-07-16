@@ -26,7 +26,6 @@ public class StringImplementor {
      * Constructs a string from the top {@code itemCount} on the stack.
      * Basically generate the following code:
      *
-     * <code>
      * <pre>
      *     StringBuilder builder = new StringBuilder();
      *     builder.insert(0, TOS);
@@ -35,7 +34,6 @@ public class StringImplementor {
      *     builder.insert(0, TOS(itemCount - 1));
      *     TOS' = PythonString.valueOf(builder.toString())
      * </pre>
-     * </code>
      *
      * @param itemCount The number of items to put into collection from the stack
      */
@@ -74,13 +72,13 @@ public class StringImplementor {
      * Depending on {@code instruction.arg}, does one of several things to TOS1 before formatting it
      * (as specified by {@link StringOpDescriptor#FORMAT_VALUE}:
      *
-     * arg & 3 == 0: Do nothing
-     * arg & 3 == 1: Call str() on value before formatting it
-     * arg & 3 == 2: Call repr() on value before formatting it
-     * arg & 3 == 3: Call ascii() on value before formatting it
+     * arg &amp; 3 == 0: Do nothing
+     * arg &amp; 3 == 1: Call str() on value before formatting it
+     * arg &amp; 3 == 2: Call repr() on value before formatting it
+     * arg &amp; 3 == 3: Call ascii() on value before formatting it
      *
-     * if arg & 4 == 0, TOS is the value to format, so push PythonNone before calling format
-     * if arg & 4 == 4, TOS is a format string, use it in the call
+     * if arg &amp; 4 == 0, TOS is the value to format, so push PythonNone before calling format
+     * if arg &amp; 4 == 4, TOS is a format string, use it in the call
      */
     public static void formatValue(MethodVisitor methodVisitor, PythonBytecodeInstruction instruction) {
         if ((instruction.arg() & 4) == 0) {

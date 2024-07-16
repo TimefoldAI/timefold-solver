@@ -90,7 +90,7 @@ public class PythonSlice extends AbstractPythonLikeObject {
      *
      * @param index The given index
      * @param length The length
-     * @return index, if index in [0, length -1]; length - index, if index < 0.
+     * @return index, if index in [0, length -1]; length - index, if index &lt; 0.
      */
     public static int asIntIndexForLength(PythonInteger index, int length) {
         int indexAsInt = index.value.intValueExact();
@@ -108,7 +108,7 @@ public class PythonSlice extends AbstractPythonLikeObject {
      *
      * @param index The given index
      * @param length The length
-     * @return index, if index in [0, length -1]; length - index, if index < 0 and -index <= length;
+     * @return index, if index in [0, length -1]; length - index, if index &lt; 0 and -index &le; length;
      *         otherwise 0 (if the index represent a position before 0) or length - 1 (if the index represent a
      *         position after the sequence).
      */
@@ -128,7 +128,7 @@ public class PythonSlice extends AbstractPythonLikeObject {
      *
      * @param index The given index
      * @param length The length
-     * @return index, if index in [0, length]; length - index, if index < 0 and -index <= length + 1;
+     * @return index, if index in [0, length]; length - index, if index &lt; 0 and -index &le; length + 1;
      *         otherwise 0 (if the index represent a position before 0) or length (if the index represent a
      *         position after the sequence).
      */

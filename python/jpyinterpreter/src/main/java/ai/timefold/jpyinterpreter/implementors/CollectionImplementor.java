@@ -328,7 +328,6 @@ public class CollectionImplementor {
      * {@code collectionType} MUST implement PythonLikeObject and define
      * a reverseAdd(PythonLikeObject) method. Basically generate the following code:
      *
-     * <code>
      * <pre>
      *     CollectionType collection = new CollectionType(itemCount);
      *     collection.reverseAdd(TOS);
@@ -336,7 +335,6 @@ public class CollectionImplementor {
      *     ...
      *     collection.reverseAdd(TOS(itemCount - 1));
      * </pre>
-     * </code>
      *
      * @param collectionType The type of collection to create
      * @param itemCount The number of items to put into collection from the stack
@@ -363,11 +361,9 @@ public class CollectionImplementor {
     /**
      * Convert TOS from a List to a tuple. Basically generates this code
      *
-     * <code>
      * <pre>
      *     TOS' = PythonLikeTuple.fromList(TOS);
      * </pre>
-     * </code>
      */
     public static void convertListToTuple(MethodVisitor methodVisitor) {
         methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(PythonLikeTuple.class),
@@ -380,7 +376,6 @@ public class CollectionImplementor {
      * Constructs a map from the top {@code 2 * itemCount} on the stack.
      * {@code mapType} MUST implement PythonLikeObject. Basically generate the following code:
      *
-     * <code>
      * <pre>
      *     MapType collection = new MapType(itemCount);
      *     collection.put(TOS1, TOS);
@@ -388,7 +383,6 @@ public class CollectionImplementor {
      *     ...
      *     collection.put(TTOS(2*itemCount - 1), TOS(2*itemCount - 2));
      * </pre>
-     * </code>
      *
      * @param mapType The type of map to create
      * @param itemCount The number of key value pairs to put into map from the stack
@@ -417,7 +411,6 @@ public class CollectionImplementor {
      * TOS is a tuple containing keys; TOS1-TOS(itemCount) are the values
      * {@code mapType} MUST implement PythonLikeObject. Basically generate the following code:
      *
-     * <code>
      * <pre>
      *     MapType collection = new MapType();
      *     collection.put(TOS[0], TOS1);
@@ -425,7 +418,6 @@ public class CollectionImplementor {
      *     ...
      *     collection.put(TOS[itemCount-1], TOS(itemCount));
      * </pre>
-     * </code>
      *
      * @param mapType The type of map to create
      * @param itemCount The number of key value pairs to put into map from the stack

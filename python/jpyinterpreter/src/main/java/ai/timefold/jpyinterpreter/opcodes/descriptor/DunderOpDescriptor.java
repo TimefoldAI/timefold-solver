@@ -97,17 +97,17 @@ public enum DunderOpDescriptor implements OpcodeDescriptor {
     STORE_SLICE(StoreSliceOpcode::new),
 
     /**
-     * Implements TOS = TOS1 << TOS.
+     * Implements TOS = TOS1 &lt;&lt; TOS.
      */
     BINARY_LSHIFT(PythonBinaryOperator.LSHIFT),
 
     /**
-     * Implements TOS = TOS1 >> TOS.
+     * Implements TOS = TOS1 &gt;&gt; TOS.
      */
     BINARY_RSHIFT(PythonBinaryOperator.RSHIFT),
 
     /**
-     * Implements TOS = TOS1 & TOS.
+     * Implements TOS = TOS1 &amp; TOS.
      */
     BINARY_AND(PythonBinaryOperator.AND),
 
@@ -166,17 +166,17 @@ public enum DunderOpDescriptor implements OpcodeDescriptor {
     INPLACE_SUBTRACT(PythonBinaryOperator.INPLACE_SUBTRACT),
 
     /**
-     * Implements in-place TOS = TOS1 << TOS.
+     * Implements in-place TOS = TOS1 &lt;&lt; TOS.
      */
     INPLACE_LSHIFT(PythonBinaryOperator.INPLACE_LSHIFT),
 
     /**
-     * Implements in-place TOS = TOS1 >> TOS.
+     * Implements in-place TOS = TOS1 &gt;&gt; TOS.
      */
     INPLACE_RSHIFT(PythonBinaryOperator.INPLACE_RSHIFT),
 
     /**
-     * Implements in-place TOS = TOS1 & TOS.
+     * Implements in-place TOS = TOS1 &amp; TOS.
      */
     INPLACE_AND(PythonBinaryOperator.INPLACE_AND),
 

@@ -670,11 +670,11 @@ public class FunctionImplementor {
     /**
      * Creates a function. The stack depends on {@code instruction.arg}:
      *
-     * - If (arg & 1) == 1, a tuple of default values for positional-only and positional-or-keyword parameters in positional
+     * - If (arg &amp; 1) == 1, a tuple of default values for positional-only and positional-or-keyword parameters in positional
      * order
-     * - If (arg & 2) == 2, a dictionary of keyword-only parameters’ default values
-     * - If (arg & 4) == 4, an annotation dictionary
-     * - If (arg & 8) == 8, a tuple containing cells for free variables
+     * - If (arg &amp; 2) == 2, a dictionary of keyword-only parameters’ default values
+     * - If (arg &amp; 4) == 4, an annotation dictionary
+     * - If (arg &amp; 8) == 8, a tuple containing cells for free variables
      *
      * The stack will contain the following items, in the given order:
      *
