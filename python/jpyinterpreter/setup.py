@@ -15,9 +15,9 @@ class FetchDependencies(build_py):
     """
     def create_stubs(self, project_root, command):
         subprocess.run([str((project_root / command).absolute()), 'dependency:copy-dependencies'],
-                       cwd=project_root, check=True)
+                       '-Dpython', '-Dquickly', '-Dexec.skip', cwd=project_root, check=True)
         subprocess.run([str((project_root / command).absolute()), 'dependency:copy-dependencies',
-                        '-Dclassifier=javadoc'], cwd=project_root, check=True)
+                        '-Dclassifier=javadoc', '-Dpython', '-Dquickly', '-Dexec.skip'], cwd=project_root, check=True)
 
 
     def run(self):
@@ -29,7 +29,8 @@ class FetchDependencies(build_py):
             if platform.system() == 'Windows':
                 command = 'mvnw.cmd'
             self.create_stubs(project_root, command)
-            subprocess.run([str((project_root / command).absolute()), 'clean', 'install'], cwd=project_root, check=True)
+            subprocess.run([str((project_root / command).absolute()), 'clean', 'install',
+                            '-Dpython', '-Dquickly', '-Dexec.skip'], cwd=project_root, check=True)
             classpath_jars = []
             # Add the main artifact
             classpath_jars.extend(glob.glob(os.path.join(project_root, 'target', '*.jar')))
