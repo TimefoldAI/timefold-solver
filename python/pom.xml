@@ -16,11 +16,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <version.apache.collections4>4.4</version.apache.collections4>
     <maven.compiler.release>17</maven.compiler.release>
-    <sonar.moduleKey>${project.groupId}:${project.artifactId}</sonar.moduleKey>
-    <sonar.sources>src/main/java,src/main/python</sonar.sources>
-    <sonar.tests>src/test/java,tests</sonar.tests>
-    <sonar.python.version>3.10,3.11,3.12</sonar.python.version>
-    <sonar.python.coverage.reportPaths>target/coverage.xml,jpyinterpreter/target/coverage.xml</sonar.python.coverage.reportPaths>
+    <sonar.inclusions>src/main/**</sonar.inclusions>
+    <sonar.test.inclusions>**/test*/**</sonar.test.inclusions>
   </properties>
 
   <dependencyManagement>
