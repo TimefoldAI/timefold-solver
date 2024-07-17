@@ -32,7 +32,7 @@ def my_constraints(constraint_factory: ConstraintFactory):
     return [
         constraint_factory.for_each(Entity)
         .reward(SimpleScore.ONE, lambda entity: entity.value)
-        .as_constraint('package', 'Maximize Value'),
+        .as_constraint('Maximize Value'),
     ]
 
 
@@ -58,7 +58,8 @@ def assert_score_explanation(problem: Solution,
     assert score_explanation.solution is problem
     assert score_explanation.score.score == 3
 
-    constraint_ref = ConstraintRef(package_name='package', constraint_name='Maximize Value')
+    constraint_ref = ConstraintRef(package_name='org.jpyinterpreter.user.tests.test_solution_manager',
+                                   constraint_name='Maximize Value')
     constraint_match_total_map = score_explanation.constraint_match_total_map
     assert constraint_match_total_map == {
         constraint_ref.constraint_id: ConstraintMatchTotal(
@@ -103,7 +104,8 @@ def assert_score_explanation(problem: Solution,
 
 
 def assert_constraint_analysis(problem: Solution, constraint_analysis: ConstraintAnalysis):
-    constraint_ref = ConstraintRef(package_name='package', constraint_name='Maximize Value')
+    constraint_ref = ConstraintRef(package_name='org.jpyinterpreter.user.tests.test_solution_manager',
+                                   constraint_name='Maximize Value')
     assert constraint_analysis.score.score == 3
     assert constraint_analysis.weight.score == 1
     assert constraint_analysis.constraint_name == constraint_ref.constraint_name
@@ -125,7 +127,8 @@ def assert_constraint_analysis(problem: Solution, constraint_analysis: Constrain
 
 
 def assert_score_analysis(problem: Solution, score_analysis: ScoreAnalysis):
-    constraint_ref = ConstraintRef(package_name='package', constraint_name='Maximize Value')
+    constraint_ref = ConstraintRef(package_name='org.jpyinterpreter.user.tests.test_solution_manager',
+                                   constraint_name='Maximize Value')
     assert score_analysis.score.score == 3
 
     constraint_map = score_analysis.constraint_map
@@ -221,18 +224,20 @@ def test_score_manager_constraint_analysis_map():
     constraints = score_analysis.constraint_analyses
     assert len(constraints) == 1
 
-    constraint_analysis = score_analysis.constraint_analysis('package', 'Maximize Value')
+    constraint_analysis = (
+        score_analysis.constraint_analysis('org.jpyinterpreter.user.tests.test_solution_manager', 'Maximize Value'))
     assert constraint_analysis.constraint_name == 'Maximize Value'
 
-    constraint_analysis = score_analysis.constraint_analysis(ConstraintRef('package', 'Maximize Value'))
+    constraint_ref = ConstraintRef('org.jpyinterpreter.user.tests.test_solution_manager', 'Maximize Value')
+    constraint_analysis = score_analysis.constraint_analysis(constraint_ref)
     assert constraint_analysis.constraint_name == 'Maximize Value'
     assert constraint_analysis.match_count == 3
 
 
 def test_score_manager_constraint_ref():
-    constraint_ref = ConstraintRef.parse_id('package/Maximize Value')
+    constraint_ref = ConstraintRef.parse_id('org.jpyinterpreter.user.tests.test_solution_manager/Maximize Value')
 
-    assert constraint_ref.package_name == 'package'
+    assert constraint_ref.package_name == 'org.jpyinterpreter.user.tests.test_solution_manager'
     assert constraint_ref.constraint_name == 'Maximize Value'
 
 
