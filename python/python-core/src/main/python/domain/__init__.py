@@ -26,6 +26,7 @@ Examples
 ...     timeslot: Annotated[Timeslot, PlanningVariable]
 """
 from ._annotations import *
+from ._types import *
 from ._value_range import *
 from ._variable_listener import *
 from typing import TYPE_CHECKING as _TYPE_CHECKING

@@ -1,6 +1,5 @@
 from .._timefold_java_interop import get_class
 from .._jpype_type_conversions import to_python_score
-from .._timefold_java_interop import _java_score_mapping_dict
 from _jpyinterpreter import unwrap_python_like_object, add_java_interface
 from dataclasses import dataclass
 
@@ -15,9 +14,7 @@ if TYPE_CHECKING:
         MatchAnalysis as _JavaMatchAnalysis,
         ScoreAnalysis as _JavaScoreAnalysis)
     from ai.timefold.solver.core.api.score.constraint import Indictment as _JavaIndictment
-    from ai.timefold.solver.core.api.score.constraint import (ConstraintRef as _JavaConstraintRef,
-                                                              ConstraintMatch as _JavaConstraintMatch,
-                                                              ConstraintMatchTotal as _JavaConstraintMatchTotal)
+    from ai.timefold.solver.core.api.score.constraint import ConstraintMatch as _JavaConstraintMatch
 
 Solution_ = TypeVar('Solution_')
 ProblemId_ = TypeVar('ProblemId_')
