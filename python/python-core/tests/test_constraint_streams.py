@@ -1,23 +1,22 @@
-from timefold.solver import *
-from timefold.solver.domain import *
-from timefold.solver.score import *
-from timefold.solver.config import *
-
 import inspect
 import re
-from dataclasses import dataclass, field
-from decimal import Decimal
-from typing import Annotated, List
 from ai.timefold.solver.core.api.score.stream import Joiners as JavaJoiners, \
     ConstraintCollectors as JavaConstraintCollectors, ConstraintFactory as JavaConstraintFactory
-from ai.timefold.solver.core.api.score.stream.uni import (UniConstraintStream as JavaUniConstraintStream,
-                                                          UniConstraintBuilder as JavaUniConstraintBuilder)
 from ai.timefold.solver.core.api.score.stream.bi import (BiConstraintStream as JavaBiConstraintStream,
                                                          BiConstraintBuilder as JavaBiConstraintBuilder)
-from ai.timefold.solver.core.api.score.stream.tri import (TriConstraintStream as JavaTriConstraintStream,
-                                                          TriConstraintBuilder as JavaTriConstraintBuilder)
 from ai.timefold.solver.core.api.score.stream.quad import (QuadConstraintStream as JavaQuadConstraintStream,
                                                            QuadConstraintBuilder as JavaQuadConstraintBuilder)
+from ai.timefold.solver.core.api.score.stream.tri import (TriConstraintStream as JavaTriConstraintStream,
+                                                          TriConstraintBuilder as JavaTriConstraintBuilder)
+from ai.timefold.solver.core.api.score.stream.uni import (UniConstraintStream as JavaUniConstraintStream,
+                                                          UniConstraintBuilder as JavaUniConstraintBuilder)
+from dataclasses import dataclass, field
+from decimal import Decimal
+from timefold.solver import *
+from timefold.solver.config import *
+from timefold.solver.domain import *
+from timefold.solver.score import *
+from typing import Annotated, List
 
 
 @dataclass
@@ -622,7 +621,7 @@ def test_custom_indictments():
     assert a_indictment.constraint_match_count == 1
     assert a_indictment.constraint_match_set == {
         ConstraintMatch(constraint_ref=ConstraintRef(
-            package_name='org.jpyinterpreter.user.tests.test_constraint_streams',
+            package_name='tests.test_constraint_streams',
             constraint_name='Maximize value'),
                         justification=DefaultConstraintJustification(
                             facts=(entity_a,),
@@ -637,7 +636,7 @@ def test_custom_indictments():
     assert b_indictment.constraint_match_count == 1
     assert b_indictment.constraint_match_set == {
         ConstraintMatch(constraint_ref=ConstraintRef(
-            package_name='org.jpyinterpreter.user.tests.test_constraint_streams',
+            package_name='tests.test_constraint_streams',
             constraint_name='Maximize value'),
                         justification=DefaultConstraintJustification(
                             facts=(entity_b,),
@@ -652,7 +651,7 @@ def test_custom_indictments():
     assert value_indictment.constraint_match_count == 2
     assert value_indictment.constraint_match_set == {
         ConstraintMatch(constraint_ref=ConstraintRef(
-            package_name='org.jpyinterpreter.user.tests.test_constraint_streams',
+            package_name='tests.test_constraint_streams',
             constraint_name='Maximize value'),
                         justification=DefaultConstraintJustification(
                             facts=(entity_a,),
@@ -661,7 +660,7 @@ def test_custom_indictments():
                         indicted_objects=(MyIndictment('A'), 1),
                         score=a_indictment.score),
         ConstraintMatch(constraint_ref=ConstraintRef(
-            package_name='org.jpyinterpreter.user.tests.test_constraint_streams',
+            package_name='tests.test_constraint_streams',
             constraint_name='Maximize value'),
                         justification=DefaultConstraintJustification(
                             facts=(entity_b,),

@@ -1,11 +1,12 @@
-import logging
-import pathlib
+import importlib.resources
 import jpype
 import jpype.imports
-from jpype.types import *
-import importlib.resources
-from typing import cast, TypeVar, Callable, Union, TYPE_CHECKING, Any
+import logging
+import pathlib
 from _jpyinterpreter import get_path
+from jpype.types import *
+from typing import cast, TypeVar, Callable, Union, TYPE_CHECKING, Any
+
 from ._jpype_type_conversions import PythonSupplier, ConstraintProviderFunction, PythonConsumer
 
 if TYPE_CHECKING:
@@ -26,7 +27,7 @@ _enterprise_installed: bool = False
 _scores_registered: bool = False
 _python_score_mapping_dict: dict[str, object] = {}
 _java_score_mapping_dict: dict[str, object] = {}
-
+_user_package_prefix = 'org.jpyinterpreter.user.'
 
 def is_enterprise_installed() -> bool:
     global _enterprise_installed
@@ -88,7 +89,7 @@ def init(*args, path: list[str] = None, include_timefold_jars: bool = True) -> N
         args = [jpype.getDefaultJVMPath()]
     init(*args, path=path, include_translator_jars=False)
 
-    from ai.timefold.solver.python.logging import PythonLoggingToLogbackAdapter, PythonDelegateAppender
+    from ai.timefold.solver.python.logging import PythonDelegateAppender
     PythonDelegateAppender.setLogEventConsumer(PythonConsumer(forward_logging_events))
     update_log_level()
 
@@ -105,7 +106,6 @@ def register_score_python_java_type_mappings():
 
     _scores_registered = True
 
-    from decimal import Decimal
     from .score._score import (SimpleScore, HardSoftScore, HardMediumSoftScore, BendableScore,
                                SimpleDecimalScore, HardSoftDecimalScore, HardMediumSoftDecimalScore,
                                BendableDecimalScore)

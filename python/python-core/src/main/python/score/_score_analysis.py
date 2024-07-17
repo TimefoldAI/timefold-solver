@@ -1,9 +1,9 @@
-from .._timefold_java_interop import get_class
-from .._jpype_type_conversions import to_python_score
 from _jpyinterpreter import unwrap_python_like_object, add_java_interface
 from dataclasses import dataclass
-
 from typing import overload, TypeVar, Generic, Union, TYPE_CHECKING, Any, cast, Optional, Type
+
+from .._jpype_type_conversions import to_python_score
+from .._timefold_java_interop import get_class, _user_package_prefix
 
 if TYPE_CHECKING:
     # These imports require a JVM to be running, so only import if type checking
@@ -81,13 +81,13 @@ class ConstraintRef:
         """
         package = solution_type_or_package
         if not isinstance(solution_type_or_package, str):
-            package = get_class(solution_type_or_package).getPackage().getName()
+            package = get_class(solution_type_or_package).getPackage().getName()[len(_user_package_prefix):]
         return ConstraintRef(package_name=package,
                              constraint_name=constraint_name).constraint_id
 
     def _to_java(self):
         from ai.timefold.solver.core.api.score.constraint import ConstraintRef as JavaConstraintRef
-        return JavaConstraintRef.of(self.package_name, self.constraint_name)
+        return JavaConstraintRef.of(f'{_user_package_prefix}{self.package_name}', self.constraint_name)
 
 
 def _safe_hash(obj: Any) -> int:
@@ -207,7 +207,7 @@ class DefaultConstraintJustification(ConstraintJustification):
 def _map_constraint_match_set(constraint_match_set: set['_JavaConstraintMatch']) -> set[ConstraintMatch]:
     return {
         ConstraintMatch(constraint_ref=ConstraintRef(package_name=constraint_match
-                                                     .getConstraintRef().packageName(),
+                                                     .getConstraintRef().packageName()[len(_user_package_prefix):],
                                                      constraint_name=constraint_match
                                                      .getConstraintRef().constraintName()),
                         justification=_unwrap_justification(constraint_match.getJustification()),
@@ -349,8 +349,9 @@ class ScoreExplanation(Generic[Solution_]):
     @property
     def constraint_match_total_map(self) -> dict[str, ConstraintMatchTotal]:
         return {
-            e.getKey(): ConstraintMatchTotal(
-                constraint_ref=ConstraintRef(package_name=e.getValue().getConstraintRef().packageName(),
+            e.getKey()[len(_user_package_prefix):]: ConstraintMatchTotal(
+                constraint_ref=ConstraintRef(
+                    package_name=e.getValue().getConstraintRef().packageName()[len(_user_package_prefix):],
                                              constraint_name=e.getValue().getConstraintRef().constraintName()),
                 constraint_match_count=e.getValue().getConstraintMatchCount(),
                 constraint_match_set=_map_constraint_match_set(e.getValue().getConstraintMatchSet()),
@@ -431,7 +432,7 @@ class MatchAnalysis(Generic[Score_]):
 
     @property
     def constraint_ref(self) -> ConstraintRef:
-        return ConstraintRef(package_name=self._delegate.constraintRef().packageName(),
+        return ConstraintRef(package_name=self._delegate.constraintRef().packageName()[len(_user_package_prefix):],
                              constraint_name=self._delegate.constraintRef().constraintName())
 
     @property
@@ -476,12 +477,12 @@ class ConstraintAnalysis(Generic[Score_]):
 
     @property
     def constraint_ref(self) -> ConstraintRef:
-        return ConstraintRef(package_name=self._delegate.constraintRef().packageName(),
+        return ConstraintRef(package_name=self._delegate.constraintRef().packageName()[len(_user_package_prefix):],
                              constraint_name=self._delegate.constraintRef().constraintName())
 
     @property
     def constraint_package(self) -> str:
-        return self._delegate.constraintPackage()
+        return self._delegate.constraintPackage()[len(_user_package_prefix):]
 
     @property
     def constraint_name(self) -> str:
@@ -576,7 +577,7 @@ class ScoreAnalysis:
     @property
     def constraint_map(self) -> dict[ConstraintRef, ConstraintAnalysis]:
         return {
-            ConstraintRef(package_name=e.getKey().packageName(),
+            ConstraintRef(package_name=e.getKey().packageName()[len(_user_package_prefix):],
                           constraint_name=e.getKey().constraintName())
             : ConstraintAnalysis(e.getValue())
             for e in cast(set['_JavaMap.Entry[_JavaConstraintRef, _JavaConstraintAnalysis]'],
@@ -617,7 +618,7 @@ class ScoreAnalysis:
         if len(args) == 1:
             return ConstraintAnalysis(self._delegate.getConstraintAnalysis(args[0]._to_java()))
         else:
-            return ConstraintAnalysis(self._delegate.getConstraintAnalysis(args[0], args[1]))
+            return ConstraintAnalysis(self._delegate.getConstraintAnalysis(f'{_user_package_prefix}{args[0]}', args[1]))
 
     @property
     def summary(self) -> str:

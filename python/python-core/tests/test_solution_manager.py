@@ -1,22 +1,18 @@
-from timefold.solver import *
-from timefold.solver.domain import *
-from timefold.solver.config import *
-from timefold.solver.score import *
-
 import inspect
 import re
-
 from ai.timefold.solver.core.api.score import ScoreExplanation as JavaScoreExplanation
 from ai.timefold.solver.core.api.score.analysis import (
     ConstraintAnalysis as JavaConstraintAnalysis,
-    MatchAnalysis as JavaMatchAnalysis,
     ScoreAnalysis as JavaScoreAnalysis)
-from ai.timefold.solver.core.api.score.constraint import Indictment as JavaIndictment
 from ai.timefold.solver.core.api.score.constraint import (ConstraintRef as JavaConstraintRef,
                                                           ConstraintMatch as JavaConstraintMatch,
                                                           ConstraintMatchTotal as JavaConstraintMatchTotal)
-
+from ai.timefold.solver.core.api.score.constraint import Indictment as JavaIndictment
 from dataclasses import dataclass, field
+from timefold.solver import *
+from timefold.solver.config import *
+from timefold.solver.domain import *
+from timefold.solver.score import *
 from typing import Annotated, List
 
 
@@ -58,7 +54,7 @@ def assert_score_explanation(problem: Solution,
     assert score_explanation.solution is problem
     assert score_explanation.score.score == 3
 
-    constraint_ref = ConstraintRef(package_name='org.jpyinterpreter.user.tests.test_solution_manager',
+    constraint_ref = ConstraintRef(package_name='tests.test_solution_manager',
                                    constraint_name='Maximize Value')
     constraint_match_total_map = score_explanation.constraint_match_total_map
     assert constraint_match_total_map == {
@@ -104,7 +100,7 @@ def assert_score_explanation(problem: Solution,
 
 
 def assert_constraint_analysis(problem: Solution, constraint_analysis: ConstraintAnalysis):
-    constraint_ref = ConstraintRef(package_name='org.jpyinterpreter.user.tests.test_solution_manager',
+    constraint_ref = ConstraintRef(package_name='tests.test_solution_manager',
                                    constraint_name='Maximize Value')
     assert constraint_analysis.score.score == 3
     assert constraint_analysis.weight.score == 1
@@ -127,7 +123,7 @@ def assert_constraint_analysis(problem: Solution, constraint_analysis: Constrain
 
 
 def assert_score_analysis(problem: Solution, score_analysis: ScoreAnalysis):
-    constraint_ref = ConstraintRef(package_name='org.jpyinterpreter.user.tests.test_solution_manager',
+    constraint_ref = ConstraintRef(package_name='tests.test_solution_manager',
                                    constraint_name='Maximize Value')
     assert score_analysis.score.score == 3
 
@@ -225,19 +221,19 @@ def test_score_manager_constraint_analysis_map():
     assert len(constraints) == 1
 
     constraint_analysis = (
-        score_analysis.constraint_analysis('org.jpyinterpreter.user.tests.test_solution_manager', 'Maximize Value'))
+        score_analysis.constraint_analysis('tests.test_solution_manager', 'Maximize Value'))
     assert constraint_analysis.constraint_name == 'Maximize Value'
 
-    constraint_ref = ConstraintRef('org.jpyinterpreter.user.tests.test_solution_manager', 'Maximize Value')
+    constraint_ref = ConstraintRef('tests.test_solution_manager', 'Maximize Value')
     constraint_analysis = score_analysis.constraint_analysis(constraint_ref)
     assert constraint_analysis.constraint_name == 'Maximize Value'
     assert constraint_analysis.match_count == 3
 
 
 def test_score_manager_constraint_ref():
-    constraint_ref = ConstraintRef.parse_id('org.jpyinterpreter.user.tests.test_solution_manager/Maximize Value')
+    constraint_ref = ConstraintRef.parse_id('tests.test_solution_manager/Maximize Value')
 
-    assert constraint_ref.package_name == 'org.jpyinterpreter.user.tests.test_solution_manager'
+    assert constraint_ref.package_name == 'tests.test_solution_manager'
     assert constraint_ref.constraint_name == 'Maximize Value'
 
 
