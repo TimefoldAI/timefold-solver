@@ -1,11 +1,11 @@
-from timefold.solver import *
-from timefold.solver.domain import *
-from timefold.solver.config import *
-from timefold.solver.score import *
-
 from dataclasses import dataclass, field
+from timefold.solver import *
+from timefold.solver.config import *
+from timefold.solver.domain import *
+from timefold.solver.score import *
 from typing import Annotated, List
-"""
+
+
 def test_solver_configuration():
     @planning_entity
     @dataclass
@@ -18,7 +18,7 @@ def test_solver_configuration():
         return [
             constraint_factory.for_each(Entity)
                               .reward(SimpleScore.ONE, lambda entity: entity.value)
-                              .as_constraint('Maximize value'),
+            .as_constraint('maximize_value'),
         ]
 
     @planning_solution
@@ -36,7 +36,8 @@ def test_solver_configuration():
             constraint_provider_function=my_constraints,
         ),
         termination_config=TerminationConfig(
-            best_score_limit='6'
+            best_score_limit='6',
+            spent_limit=Duration(seconds=1)
         )
     )
 
@@ -50,4 +51,3 @@ def test_solver_configuration():
 
     assert solution.score.score == 6
     assert solution.entities[0].value == 3
-"""

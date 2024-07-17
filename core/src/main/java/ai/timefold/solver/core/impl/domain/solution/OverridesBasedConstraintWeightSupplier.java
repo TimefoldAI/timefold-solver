@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.domain.solution;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -10,6 +11,7 @@ import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
@@ -21,8 +23,20 @@ public final class OverridesBasedConstraintWeightSupplier<Score_ extends Score<S
 
     public static <Solution_, Score_ extends Score<Score_>> ConstraintWeightSupplier<Solution_, Score_> create(
             SolutionDescriptor<Solution_> solutionDescriptor, DescriptorPolicy descriptorPolicy,
-            Field member) {
-        var overridesClass = (Class<? extends ConstraintWeightOverrides<Score_>>) member.getType();
+            Field field) {
+        var method = ReflectionHelper.getGetterMethod(field.getDeclaringClass(), field.getName());
+        Class<? extends ConstraintWeightOverrides<Score_>> overridesClass;
+        Member member;
+
+        // Prefer method to field
+        // (In Python, the field doesn't implement the interface).
+        if (method == null) {
+            member = field;
+            overridesClass = (Class<? extends ConstraintWeightOverrides<Score_>>) field.getType();
+        } else {
+            member = method;
+            overridesClass = (Class<? extends ConstraintWeightOverrides<Score_>>) method.getReturnType();
+        }
         var memberAccessor = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
                 MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER,
                 descriptorPolicy.getDomainAccessType());

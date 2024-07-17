@@ -222,7 +222,7 @@ public class SolutionDescriptor<Solution_> {
             var memberList = ConfigUtils.getDeclaredMembers(lineageClass);
             var constraintWeightFieldList = memberList.stream()
                     .filter(member -> member instanceof Field field
-                            && field.getType().isAssignableFrom(ConstraintWeightOverrides.class))
+                            && ConstraintWeightOverrides.class.isAssignableFrom(field.getType()))
                     .map(f -> ((Field) f))
                     .toList();
             switch (constraintWeightFieldList.size()) {

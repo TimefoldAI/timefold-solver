@@ -24,7 +24,7 @@ Score_ = TypeVar('Score_')
 
 _compilation_queue: list[type] = []
 _enterprise_installed: bool = False
-_scores_registered: bool = False
+_mappings_registered: bool = False
 _python_score_mapping_dict: dict[str, object] = {}
 _java_score_mapping_dict: dict[str, object] = {}
 _user_package_prefix = 'org.jpyinterpreter.user.'
@@ -99,16 +99,17 @@ def update_log_level() -> None:
     PythonLoggingToLogbackAdapter.setLevel(logger.getEffectiveLevel())
 
 
-def register_score_python_java_type_mappings():
-    global _scores_registered, _java_score_mapping_dict, _python_score_mapping_dict
-    if _scores_registered:
+def register_python_java_type_mappings():
+    global _mappings_registered, _java_score_mapping_dict, _python_score_mapping_dict
+    if _mappings_registered:
         return
 
-    _scores_registered = True
+    _mappings_registered = True
 
     from .score._score import (SimpleScore, HardSoftScore, HardMediumSoftScore, BendableScore,
                                SimpleDecimalScore, HardSoftDecimalScore, HardMediumSoftDecimalScore,
                                BendableDecimalScore)
+    from .domain._types import ConstraintWeightOverrides
     from ai.timefold.solver.core.api.score.buildin.simplelong import SimpleLongScore as _SimpleScore
     from ai.timefold.solver.core.api.score.buildin.hardsoftlong import HardSoftLongScore as _HardSoftScore
     from ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong import HardMediumSoftLongScore as _HardMediumSoftScore
@@ -128,6 +129,7 @@ def register_score_python_java_type_mappings():
                                                  HardMediumSoftDecimalScorePythonJavaTypeMapping,
                                                  BendableDecimalScorePythonJavaTypeMapping,
                                                  )
+    from ai.timefold.solver.python.domain import ConstraintWeightOverridesTypeMapping
     from _jpyinterpreter import translate_python_class_to_java_class, add_python_java_type_mapping
 
     _python_score_mapping_dict['SimpleScore'] = SimpleScore
@@ -158,6 +160,8 @@ def register_score_python_java_type_mappings():
     HardMediumSoftDecimalScoreType = translate_python_class_to_java_class(HardMediumSoftDecimalScore)
     BendableDecimalScoreType = translate_python_class_to_java_class(BendableDecimalScore)
 
+    ConstraintWeightOverridesType = translate_python_class_to_java_class(ConstraintWeightOverrides)
+
     add_python_java_type_mapping(SimpleScorePythonJavaTypeMapping(SimpleScoreType))
     add_python_java_type_mapping(HardSoftScorePythonJavaTypeMapping(HardSoftScoreType))
     add_python_java_type_mapping(HardMediumSoftScorePythonJavaTypeMapping(HardMediumSoftScoreType))
@@ -167,6 +171,8 @@ def register_score_python_java_type_mappings():
     add_python_java_type_mapping(HardSoftDecimalScorePythonJavaTypeMapping(HardSoftDecimalScoreType))
     add_python_java_type_mapping(HardMediumSoftDecimalScorePythonJavaTypeMapping(HardMediumSoftDecimalScoreType))
     add_python_java_type_mapping(BendableDecimalScorePythonJavaTypeMapping(BendableDecimalScoreType))
+
+    add_python_java_type_mapping(ConstraintWeightOverridesTypeMapping(ConstraintWeightOverridesType))
 
 
 def forward_logging_events(event: 'PythonLoggingEvent') -> None:
@@ -332,7 +338,7 @@ def _add_to_compilation_queue(python_class: type | PythonSupplier) -> None:
 def _process_compilation_queue() -> None:
     global _compilation_queue
 
-    register_score_python_java_type_mappings()
+    register_python_java_type_mappings()
     while len(_compilation_queue) > 0:
         python_class = _compilation_queue.pop(0)
 
@@ -355,7 +361,7 @@ def _generate_constraint_provider_class(original_function: Callable[['_Constrain
                                         wrapped_constraint_provider: Callable[['_ConstraintFactory'],
                                                                               list['_Constraint']]) -> JClass:
     ensure_init()
-    register_score_python_java_type_mappings()
+    register_python_java_type_mappings()
     from ai.timefold.solver.python import PythonWrapperGenerator  # noqa
     from ai.timefold.solver.core.api.score.stream import ConstraintProvider
     class_identifier = _get_class_identifier_for_object(original_function)
