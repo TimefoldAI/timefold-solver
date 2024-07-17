@@ -1,0 +1,685 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   sodipodi:docname="jpyinterpreter-architecture.svg"
+   inkscape:export-filename="jpyinterpreter-architecture.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="true"
+     inkscape:zoom="0.89085297"
+     inkscape:cx="130.77354"
+     inkscape:cy="290.7326"
+     inkscape:window-width="1920"
+     inkscape:window-height="1011"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g766-5"
+     showguides="true">
+    <inkscape:grid
+       type="xygrid"
+       id="grid111" />
+  </sodipodi:namedview>
+  <defs
+     id="defs2">
+    <rect
+       x="50"
+       y="420"
+       width="130"
+       height="30"
+       id="rect8329" />
+    <rect
+       x="650"
+       y="980"
+       width="130"
+       height="90.918502"
+       id="rect7884" />
+    <rect
+       x="50"
+       y="700"
+       width="120"
+       height="60"
+       id="rect3744" />
+    <rect
+       x="50"
+       y="560"
+       width="210"
+       height="60"
+       id="rect3708" />
+    <rect
+       x="540"
+       y="470"
+       width="230"
+       height="50"
+       id="rect3690" />
+    <rect
+       x="400"
+       y="380"
+       width="230"
+       height="50"
+       id="rect3568" />
+    <marker
+       style="overflow:visible"
+       id="Diamond"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="Diamond"
+       markerWidth="7.2124891"
+       markerHeight="7.2124891"
+       viewBox="0 0 7.2124892 7.2124892"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.45)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 0,-7.0710768 -7.0710894,0 0,7.0710589 7.0710462,0 Z"
+         id="Diamond1" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="RoundedArrow"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="RoundedArrow"
+       markerWidth="6.1347518"
+       markerHeight="5.9304948"
+       viewBox="0 0 6.1347524 5.9304951"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path1367" />
+    </marker>
+    <rect
+       x="440"
+       y="280"
+       width="130"
+       height="20"
+       id="rect1033" />
+    <rect
+       x="70"
+       y="280"
+       width="100"
+       height="20"
+       id="rect1027" />
+    <rect
+       x="50"
+       y="210"
+       width="170"
+       height="30"
+       id="rect772" />
+    <rect
+       x="330"
+       y="220"
+       width="130"
+       height="70"
+       id="rect505" />
+    <rect
+       x="330"
+       y="220"
+       width="234.35995"
+       height="33.973277"
+       id="rect505-3" />
+    <rect
+       x="330"
+       y="220"
+       width="240"
+       height="30.918503"
+       id="rect505-3-3" />
+    <rect
+       x="330"
+       y="220"
+       width="158.74398"
+       height="21.185039"
+       id="rect505-3-3-9" />
+    <rect
+       x="330"
+       y="220"
+       width="71.177957"
+       height="21.927761"
+       id="rect505-3-3-9-7" />
+    <rect
+       x="330"
+       y="220"
+       width="240"
+       height="30.918503"
+       id="rect505-3-3-3" />
+    <rect
+       x="330"
+       y="220"
+       width="70.283974"
+       height="21.298504"
+       id="rect505-3-3-9-7-6" />
+    <rect
+       x="330"
+       y="220"
+       width="240"
+       height="30.918503"
+       id="rect505-3-3-1" />
+    <rect
+       x="330"
+       y="220"
+       width="70.283974"
+       height="21.298504"
+       id="rect505-3-3-9-7-6-9" />
+    <rect
+       x="330"
+       y="220"
+       width="158.74397"
+       height="21.18504"
+       id="rect505-3-3-9-2" />
+    <rect
+       x="540"
+       y="470"
+       width="129.68"
+       height="61.238503"
+       id="rect3690-5" />
+    <rect
+       x="540"
+       y="470"
+       width="129.67999"
+       height="61.238503"
+       id="rect3690-5-2" />
+    <rect
+       x="540"
+       y="470"
+       width="129.67999"
+       height="61.238503"
+       id="rect3690-5-8" />
+    <rect
+       x="540"
+       y="470"
+       width="129.67999"
+       height="61.238503"
+       id="rect3690-5-8-7" />
+    <rect
+       x="540"
+       y="470"
+       width="150.112"
+       height="56.586501"
+       id="rect3690-5-8-7-6" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g654"
+       transform="translate(-71.437496,-26.27298)">
+      <rect
+         style="fill:#ffffff;stroke:#000000;stroke-width:0.172099"
+         id="rect271"
+         width="26.286236"
+         height="13.057069"
+         x="90.04438"
+         y="60.940216" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,6.7839287,6.8001887)"
+         id="text503"
+         style="white-space:pre;shape-inside:url(#rect505);display:inline;fill:#000000;stroke:#000000"><tspan
+           x="330"
+           y="230.9185"
+           id="tspan9407">jvm_setup.py
+</tspan></text>
+    </g>
+    <g
+       id="g766"
+       transform="translate(-35.718758,-71.38784)">
+      <rect
+         style="fill:#ffffff;stroke:#000000;stroke-width:0.271403"
+         id="rect271-7"
+         width="65.874428"
+         height="12.957765"
+         x="105.96904"
+         y="106.05508" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,23.812501,52.673647)"
+         id="text503-5"
+         style="white-space:pre;shape-inside:url(#rect505-3);display:inline;fill:#000000;stroke:#000000"><tspan
+           x="330"
+           y="230.9185"
+           id="tspan9409">python_to_java_bytecode_translator.py</tspan></text>
+    </g>
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.264583"
+       id="rect768"
+       width="174.625"
+       height="52.916664"
+       x="13.229166"
+       y="16.146402" />
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,0.17674422,-43.199242)"
+       id="text770"
+       style="white-space:pre;shape-inside:url(#rect772);display:inline;fill:#000000;stroke:#000000"><tspan
+         x="50"
+         y="220.9185"
+         id="tspan9411">Python</tspan></text>
+    <g
+       id="g766-5"
+       transform="translate(10.583333,31.75)">
+      <rect
+         style="fill:#ffffff;stroke:#000000;stroke-width:0.276732"
+         id="rect271-7-6"
+         width="68.514931"
+         height="12.952435"
+         x="58.346699"
+         y="100.547" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,-25.793684,47.062358)"
+         id="text503-5-2"
+         style="white-space:pre;shape-inside:url(#rect505-3-3);display:inline;fill:#000000;stroke:#000000"><tspan
+           x="330"
+           y="230.9185"
+           id="tspan9413">PythonBytecodeToJavaBytecodeTranslator</tspan></text>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,-10.583333,-79.103597)"
+         id="text1025"
+         style="white-space:pre;shape-inside:url(#rect1027);display:inline;fill:#ffffff;stroke:#000000"><tspan
+           x="70"
+           y="290.9185"
+           id="tspan9415">On Startup</tspan></text>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,-55.5625,-79.375)"
+         id="text1031"
+         style="white-space:pre;shape-inside:url(#rect1033);display:inline;fill:#ffffff;stroke:#000000"><tspan
+           x="440"
+           y="290.9185"
+           id="tspan9417">To compile function</tspan></text>
+      <rect
+         style="fill:#ffffff;stroke:#000000;stroke-width:0.232163"
+         id="rect271-7-6-1"
+         width="48.057487"
+         height="12.997004"
+         x="28.887924"
+         y="137.58333" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,-55.230176,84.120969)"
+         id="text503-5-2-2"
+         style="white-space:pre;shape-inside:url(#rect505-3-3-9);display:inline;fill:#000000;stroke:#000000"><tspan
+           x="330"
+           y="230.9185"
+           id="tspan9419">PythonGeneratorTranslator</tspan></text>
+      <rect
+         style="fill:#ffffff;stroke:#000000;stroke-width:0.160905"
+         id="rect271-7-6-1-0"
+         width="22.958401"
+         height="13.068261"
+         x="131.3958"
+         y="129.64583" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,47.313334,76.219114)"
+         id="text503-5-2-2-9"
+         style="white-space:pre;shape-inside:url(#rect505-3-3-9-7);display:inline;fill:#000000;stroke:#000000"><tspan
+           x="330"
+           y="230.9185"
+           id="tspan9421">FlowGraph</tspan></text>
+      <rect
+         style="fill:#ffffff;stroke:#000000;stroke-width:0.276732"
+         id="rect271-7-6-6"
+         width="68.514931"
+         height="12.952435"
+         x="18.659201"
+         y="177.49524" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,-65.481183,124.01061)"
+         id="text503-5-2-0"
+         style="white-space:pre;shape-inside:url(#rect505-3-3-3);display:inline;fill:#000000;stroke:#000000"><tspan
+           x="330"
+           y="230.9185"
+           id="tspan9423">PythonBytecodeToJavaBytecodeTranslator</tspan></text>
+      <rect
+         style="fill:#ffffff;stroke:#000000;stroke-width:0.14707"
+         id="rect271-7-6-1-0-2"
+         width="19.180174"
+         height="13.068261"
+         x="171.31982"
+         y="129.81232" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,87.237367,76.385605)"
+         id="text503-5-2-2-9-6"
+         style="white-space:pre;shape-inside:url(#rect505-3-3-9-7-6);display:inline;fill:#000000;stroke:#000000"><tspan
+           x="330"
+           y="230.9185"
+           id="tspan9425">Opcode</tspan></text>
+      <rect
+         style="fill:#ffffff;stroke:#000000;stroke-width:0.276732"
+         id="rect271-7-6-8"
+         width="68.514931"
+         height="12.952435"
+         x="108.61753"
+         y="161.39583" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,24.477149,107.91119)"
+         id="text503-5-2-7"
+         style="white-space:pre;shape-inside:url(#rect505-3-3-1);display:inline;fill:#000000;stroke:#000000"><tspan
+           x="330"
+           y="230.9185"
+           id="tspan9427">PythonBytecodeToJavaBytecodeTranslator</tspan></text>
+      <rect
+         style="fill:#ffffff;stroke:#000000;stroke-width:0.14707"
+         id="rect271-7-6-1-0-2-2"
+         width="19.180174"
+         height="13.068261"
+         x="133.34576"
+         y="193.31233" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,49.263306,139.88561)"
+         id="text503-5-2-2-9-6-0"
+         style="white-space:pre;shape-inside:url(#rect505-3-3-9-7-6-9);display:inline;fill:#000000;stroke:#000000"><tspan
+           x="330"
+           y="230.9185"
+           id="tspan9429">Opcode</tspan></text>
+      <rect
+         style="fill:#ffffff;stroke:#000000;stroke-width:0.169609"
+         id="rect271-7-6-1-3"
+         width="25.649057"
+         height="12.997004"
+         x="130.05048"
+         y="222.25" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,45.932366,168.78765)"
+         id="text503-5-2-2-7"
+         style="white-space:pre;shape-inside:url(#rect505-3-3-9-2);display:inline;fill:#000000;stroke:#000000"><tspan
+           x="330"
+           y="230.9185"
+           id="tspan9431">Implementor</tspan></text>
+      <path
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#RoundedArrow)"
+         d="m 85.668534,113.49943 -25.792371,24.0839"
+         id="path3186"
+         inkscape:connector-type="polyline"
+         inkscape:connector-curvature="0"
+         inkscape:connection-start="#rect271-7-6"
+         inkscape:connection-end="#rect271-7-6-1" />
+      <path
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 92.604166,100.54167 0,0.005"
+         id="path3212"
+         inkscape:connector-type="polyline"
+         inkscape:connector-curvature="0"
+         inkscape:connection-end="#rect271-7-6" />
+      <path
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#RoundedArrow)"
+         d="m 92.604163,15.875001 10e-7,84.671999"
+         id="path3218"
+         inkscape:connector-type="polyline"
+         inkscape:connector-curvature="0"
+         inkscape:connection-start="#g766"
+         inkscape:connection-end="#rect271-7-6" />
+      <path
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#RoundedArrow)"
+         d="m 52.916668,150.58033 -2e-6,26.91491"
+         id="path3238"
+         inkscape:connector-type="polyline"
+         inkscape:connector-curvature="0"
+         inkscape:connection-start="#rect271-7-6-1"
+         inkscape:connection-end="#rect271-7-6-6" />
+      <path
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#RoundedArrow)"
+         d="M 65.106903,177.49524 131.3958,142.27843"
+         id="path3258"
+         inkscape:connector-type="polyline"
+         inkscape:connector-curvature="0"
+         inkscape:connection-start="#rect271-7-6-6"
+         inkscape:connection-end="#rect271-7-6-1-0" />
+      <path
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Diamond)"
+         d="m 171.31982,136.30447 -16.96562,-0.0743"
+         id="path3278"
+         inkscape:connector-type="polyline"
+         inkscape:connector-curvature="0"
+         inkscape:connection-start="#rect271-7-6-1-0-2"
+         inkscape:connection-end="#rect271-7-6-1-0" />
+      <path
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#RoundedArrow)"
+         d="m 142.875,142.71409 0,18.68174"
+         id="path3394"
+         inkscape:connector-type="polyline"
+         inkscape:connector-curvature="0"
+         inkscape:connection-start="#rect271-7-6-1-0"
+         inkscape:connection-end="#rect271-7-6-8" />
+      <path
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#RoundedArrow)"
+         d="m 142.88732,174.34826 0.0361,18.96407"
+         id="path3428"
+         inkscape:connector-type="polyline"
+         inkscape:connector-curvature="0"
+         inkscape:connection-start="#rect271-7-6-8"
+         inkscape:connection-end="#rect271-7-6-1-0-2-2" />
+      <path
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#RoundedArrow)"
+         d="M 142.9221,206.38059 142.88869,222.25"
+         id="path3460"
+         inkscape:connector-type="polyline"
+         inkscape:connector-curvature="0"
+         inkscape:connection-start="#rect271-7-6-1-0-2-2"
+         inkscape:connection-end="#rect271-7-6-1-3" />
+      <path
+         style="display:inline;fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="M 155.69953,228.7485 H 190.5 v -59.41517"
+         id="path3532"
+         inkscape:connector-type="orthogonal"
+         inkscape:connector-curvature="0"
+         inkscape:connection-start="#rect271-7-6-1-3" />
+      <path
+         style="display:inline;fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#RoundedArrow)"
+         d="m 190.5,171.97917 v -4.10712 h -13.36754"
+         id="path3534"
+         inkscape:connector-type="orthogonal"
+         inkscape:connector-curvature="0"
+         inkscape:connection-end="#rect271-7-6-8" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,-10.583333,-79.103597)"
+         id="text3566"
+         style="white-space:pre;shape-inside:url(#rect3568);display:inline;fill:#ffffff;stroke:#000000"><tspan
+           x="400"
+           y="390.9185"
+           id="tspan9433">Converts the Python function into a </tspan><tspan
+           x="400"
+           y="405.9185"
+           id="tspan9435">PythonCompiledFunction and pass it </tspan><tspan
+           x="400"
+           y="420.9185"
+           id="tspan9437">to...</tspan></text>
+      <path
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#RoundedArrow)"
+         d="M 126.86163,107.02321 H 142.875 v 22.62262"
+         id="path3642"
+         inkscape:connector-type="orthogonal"
+         inkscape:connector-curvature="0"
+         inkscape:connection-start="#rect271-7-6"
+         inkscape:connection-end="#rect271-7-6-1-0" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,-10.583333,-31.75)"
+         id="text3688"
+         style="white-space:pre;shape-inside:url(#rect3690);display:inline;fill:#ffffff;stroke:#000000"><tspan
+           x="540"
+           y="480.9185"
+           id="tspan9439">Calculates Initial StackMetadata of </tspan><tspan
+           x="540"
+           y="495.9185"
+           id="tspan9441">function and send it to...</tspan></text>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,7.9375005,-24.055518)"
+         id="text3706"
+         style="white-space:pre;shape-inside:url(#rect3708);display:inline;fill:#ffffff;stroke:#000000"><tspan
+           x="50"
+           y="570.9185"
+           id="tspan9443">Sends generator functions to...</tspan></text>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,5.2916672,-29.347185)"
+         id="text3742"
+         style="white-space:pre;shape-inside:url(#rect3744);display:inline;fill:#ffffff;stroke:#000000"><tspan
+           x="50"
+           y="710.9185"
+           id="tspan9445">Break generator </tspan><tspan
+           x="50"
+           y="725.9185"
+           id="tspan9447">functions into parts </tspan><tspan
+           x="50"
+           y="740.9185"
+           id="tspan9449">and send each part </tspan><tspan
+           x="50"
+           y="755.9185"
+           id="tspan9451">to...</tspan></text>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,-58.989376,12.885606)"
+         id="text3688-9"
+         style="white-space:pre;shape-inside:url(#rect3690-5);display:inline;fill:#ffffff;stroke:#000000"><tspan
+           x="540"
+           y="480.9185"
+           id="tspan9453">Calculates Initial </tspan><tspan
+           x="540"
+           y="495.9185"
+           id="tspan9455">StackMetadata of </tspan><tspan
+           x="540"
+           y="510.9185"
+           id="tspan9457">function and send it </tspan><tspan
+           x="540"
+           y="525.9185"
+           id="tspan9459">to...</tspan></text>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,8.0221688,-10.926894)"
+         id="text3688-9-2"
+         style="white-space:pre;shape-inside:url(#rect3690-5-2);display:inline;fill:#ffffff;stroke:#000000"><tspan
+           x="540"
+           y="480.9185"
+           id="tspan9461">Computes the next </tspan><tspan
+           x="540"
+           y="495.9185"
+           id="tspan9463">StackMetadata for the </tspan><tspan
+           x="540"
+           y="510.9185"
+           id="tspan9465">prior StackMetadata </tspan><tspan
+           x="540"
+           y="525.9185"
+           id="tspan9467">using...</tspan></text>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,2.7305021,20.823106)"
+         id="text3688-9-9"
+         style="white-space:pre;shape-inside:url(#rect3690-5-8);display:inline;fill:#ffffff;stroke:#000000"><tspan
+           x="540"
+           y="480.9185"
+           id="tspan9469">Returns the </tspan><tspan
+           x="540"
+           y="495.9185"
+           id="tspan9471">StackMetadata of each </tspan><tspan
+           x="540"
+           y="510.9185"
+           id="tspan9473">Opcode to...</tspan></text>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,-34.395831,50.027815)"
+         id="text3688-9-9-3"
+         style="white-space:pre;shape-inside:url(#rect3690-5-8-7);display:inline;fill:#ffffff;stroke:#000000"><tspan
+           x="540"
+           y="480.9185"
+           id="tspan9475">Provides </tspan><tspan
+           x="540"
+           y="495.9185"
+           id="tspan9477">StackMetadata and </tspan><tspan
+           x="540"
+           y="510.9185"
+           id="tspan9479">FunctionMetadata to </tspan><tspan
+           x="540"
+           y="525.9185"
+           id="tspan9481">each instance...</tspan></text>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,-41.297222,84.323106)"
+         id="text3688-9-9-3-1"
+         style="white-space:pre;shape-inside:url(#rect3690-5-8-7-6);display:inline;fill:#ffffff;stroke:#000000"><tspan
+           x="540"
+           y="480.9185"
+           id="tspan9483">Sends the StackMetadata, </tspan><tspan
+           x="540"
+           y="495.9185"
+           id="tspan9485">FunctionMetadata, and </tspan><tspan
+           x="540"
+           y="510.9185"
+           id="tspan9487">other arguments to a...</tspan></text>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,-12.920125,-50.614392)"
+         id="text7882"
+         style="white-space:pre;shape-inside:url(#rect7884);display:inline;fill:#ffffff;stroke:#000000"><tspan
+           x="650"
+           y="990.9185"
+           id="tspan9489">Generate the Java </tspan><tspan
+           x="650"
+           y="1005.9185"
+           id="tspan9491">bytecode to </tspan><tspan
+           x="650"
+           y="1020.9185"
+           id="tspan9493">implement the </tspan><tspan
+           x="650"
+           y="1035.9185"
+           id="tspan9495">operation and return </tspan><tspan
+           x="650"
+           y="1050.9185"
+           id="tspan9497">to...</tspan></text>
+      <rect
+         style="fill:none;stroke:#000000;stroke-width:0.264583"
+         id="rect8325"
+         width="193.14583"
+         height="153.45833"
+         x="2.6458335"
+         y="87.3125" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,-8.5629775,-27.436894)"
+         id="text8327"
+         style="white-space:pre;shape-inside:url(#rect8329);display:inline;fill:none;stroke:#000000"><tspan
+           x="50"
+           y="430.9185"
+           id="tspan9499">Java</tspan></text>
+    </g>
+  </g>
+</svg>

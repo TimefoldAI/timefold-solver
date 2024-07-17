@@ -32,6 +32,13 @@
     <version.source.plugin>3.3.1</version.source.plugin>
     <version.resources.plugin>3.3.1</version.resources.plugin>
     <sonar.moduleKey>${project.groupId}:${project.artifactId}</sonar.moduleKey>
+    <sonar.python.version>3.10,3.11,3.12</sonar.python.version>
+    <sonar.sources>.</sonar.sources>
+    <sonar.tests>.</sonar.tests>
+    <sonar.inclusions>src/main/**</sonar.inclusions>
+    <sonar.test.inclusions>src/test/**</sonar.test.inclusions>
+    <sonar.python.coverage.reportPaths>target/coverage.xml,python/jpyinterpreter/target/coverage.xml
+    </sonar.python.coverage.reportPaths>
   </properties>
 
   <scm>
@@ -56,13 +63,8 @@
     <module>build/ide-config</module>
     <module>build/build-parent</module>
     <module>core</module>
-    <module>persistence</module>
-    <module>benchmark</module><!-- TODO move to tools/benchmark -->
     <module>test</module><!-- TODO move to core/test -->
-    <module>spring-integration</module>
-    <module>quarkus-integration</module>
-    <module>tools</module>
-    <module>migration</module><!-- TODO move to tools/migration -->
+    <module>python</module>
   </modules>
 
   <build>
@@ -96,6 +98,22 @@
   </build>
 
   <profiles>
+    <profile>
+      <id>java-tools-and-integrations</id>
+      <activation>
+        <property>
+          <name>!python</name>
+        </property>
+      </activation>
+      <modules>
+        <module>persistence</module>
+        <module>benchmark</module><!-- TODO move to tools/benchmark -->
+        <module>spring-integration</module>
+        <module>quarkus-integration</module>
+        <module>tools</module>
+        <module>migration</module><!-- TODO move to tools/migration -->
+      </modules>
+    </profile>
     <profile>
       <id>fullProfile</id>
       <activation>

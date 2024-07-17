@@ -28,6 +28,14 @@ Use one of the following ways to build this project:
 
 * :mechanical_arm: *build-all*: `mvn clean install -Dfull` runs all checks and creates documentation and distribution files (~20 min)
 
+=== Build the Timefold Solver Python package
+
+* :hammer: *build-fast*: `python -m build` skips any checks and code analysis (~1 min)
+
+* :mechanical_arm: *build-test*: `tox -e pyVERSION` (for example, `tox -e py310`) runs tests against a given Python versions (~3 min)
+
+* :mechanical_arm: *build-all*: `tox` runs tests against all supported Python versions (~10 min)
+
 
 === Set up your development environment
 
