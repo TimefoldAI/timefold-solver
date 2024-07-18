@@ -1426,6 +1426,26 @@ It then automatically calls `updateArrivalTime` for the subsequent `nextCustomer
 and stops when the `arrivalTime` value does not change after running the user-defined custom logic
 or when it reaches the end.
 
+The shadow variable `nextCustomer` is not required, but defining it in the model is recommended:
+
+[source,java]
+----
+@PlanningEntity
+public class Customer {
+
+    @InverseRelationShadowVariable(sourceVariableName = "customers")
+    private Vehicle vehicle;
+    @PreviousElementShadowVariable(sourceVariableName = "customers")
+    private Customer previousCustomer;
+    @CascadingUpdateListener(targetMethodName = "updateArrivalTime", sourceVariableName = "vehicle")
+    @CascadingUpdateListener(targetMethodName = "updateArrivalTime", sourceVariableName = "previousCustomer")
+    private LocalDateTime arrivalTime;
+
+    ...
+
+    public void updateArrivalTime() {...}
+----
+
 [WARNING]
 ====
 A user-defined logic can only change shadow variables.
