@@ -13,7 +13,7 @@ on:
 jobs:
   native:
     concurrency:
-      group: pull_request_native-${{ github.event_name }}-${{ github.head_ref }}-${{ matrix.module }}-${{ matrix.java-version }}
+      group: pull_request_native-${{ github.event_name }}-${{ github.head_ref }}-${{matrix.os}}-${{ matrix.module }}-${{ matrix.java-version }}
       cancel-in-progress: true
     runs-on: ${{matrix.os}}
     strategy:
