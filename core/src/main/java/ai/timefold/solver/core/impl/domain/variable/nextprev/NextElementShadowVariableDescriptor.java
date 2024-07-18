@@ -8,6 +8,7 @@ import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWithSources;
+import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
 public final class NextElementShadowVariableDescriptor<Solution_>
@@ -37,5 +38,10 @@ public final class NextElementShadowVariableDescriptor<Solution_>
     public Iterable<VariableListenerWithSources<Solution_>> buildVariableListeners(SupplyManager supplyManager) {
         return new VariableListenerWithSources<>(new NextElementVariableListener<>(this, sourceVariableDescriptor),
                 sourceVariableDescriptor).toCollection();
+    }
+
+    @Override
+    public Demand<?> getProvidedDemand() {
+        return new NextElementVariableDemand<>(sourceVariableDescriptor);
     }
 }

@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.testdata.domain.list;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
@@ -51,5 +52,17 @@ public class TestdataListEntity extends TestdataObject {
 
     public List<TestdataListValue> getValueList() {
         return valueList;
+    }
+
+    public void addValue(TestdataListValue value) {
+        List<TestdataListValue> newValueList = new ArrayList<>(valueList);
+        newValueList.add(value);
+        this.valueList = newValueList;
+    }
+
+    public void removeValue(TestdataListValue value) {
+        this.valueList = valueList.stream()
+                .filter(v -> !Objects.equals(v, value))
+                .toList();
     }
 }

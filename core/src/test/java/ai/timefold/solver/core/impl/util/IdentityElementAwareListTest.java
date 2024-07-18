@@ -9,41 +9,43 @@ import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 
-class ElementAwareListTest {
+class IdentityElementAwareListTest {
 
     @Test
     void addRemove() {
-        ElementAwareList<String> tupleList = new ElementAwareList<>();
+        IdentityElementAwareList<String> tupleList = new IdentityElementAwareList<>();
         assertThat(tupleList.size()).isZero();
         assertThat(tupleList.first()).isNull();
         assertThat(tupleList.last()).isNull();
 
-        ElementAwareListEntry<String> entryA = tupleList.add("A");
-        Assertions.assertThat(entryA.getElement()).isEqualTo("A");
+        String valueA = "A";
+        tupleList.add(valueA);
+        Assertions.assertThat(tupleList.contains(valueA)).isTrue();
         assertThat(tupleList.size()).isEqualTo(1);
-        assertThat(tupleList.first()).isEqualTo(entryA);
-        assertThat(entryA.previous).isNull();
-        assertThat(entryA.next).isNull();
-        assertThat(tupleList.last()).isEqualTo(entryA);
+        assertThat(tupleList.first()).isEqualTo(valueA);
+        assertThat(tupleList.previous(valueA)).isNull();
+        assertThat(tupleList.next(valueA)).isNull();
+        assertThat(tupleList.last()).isEqualTo(valueA);
 
-        ElementAwareListEntry<String> entryB = tupleList.add("B");
-        Assertions.assertThat(entryB.getElement()).isEqualTo("B");
+        String valueB = "B";
+        tupleList.add(valueB);
+        Assertions.assertThat(tupleList.contains(valueB)).isTrue();
         assertThat(tupleList.size()).isEqualTo(2);
-        assertThat(tupleList.first()).isEqualTo(entryA);
-        assertThat(entryA.previous).isNull();
-        assertThat(entryA.next).isEqualTo(entryB);
-        assertThat(entryB.previous).isEqualTo(entryA);
-        assertThat(entryB.next).isNull();
-        assertThat(tupleList.last()).isEqualTo(entryB);
+        assertThat(tupleList.first()).isEqualTo(valueA);
+        assertThat(tupleList.previous(valueA)).isNull();
+        assertThat(tupleList.next(valueA)).isEqualTo(valueB);
+        assertThat(tupleList.previous(valueB)).isEqualTo(valueA);
+        assertThat(tupleList.next(valueB)).isNull();
+        assertThat(tupleList.last()).isEqualTo(valueB);
 
-        entryA.remove();
+        tupleList.remove(valueA);
         assertThat(tupleList.size()).isEqualTo(1);
-        assertThat(tupleList.first()).isEqualTo(entryB);
-        assertThat(entryB.previous).isNull();
-        assertThat(entryB.next).isNull();
-        assertThat(tupleList.last()).isEqualTo(entryB);
+        assertThat(tupleList.first()).isEqualTo(valueB);
+        assertThat(tupleList.previous(valueB)).isNull();
+        assertThat(tupleList.next(valueB)).isNull();
+        assertThat(tupleList.last()).isEqualTo(valueB);
 
-        entryB.remove();
+        tupleList.remove(valueB);
         assertThat(tupleList.size()).isZero();
         assertThat(tupleList.first()).isNull();
         assertThat(tupleList.last()).isNull();
@@ -52,7 +54,7 @@ class ElementAwareListTest {
     @Test
     void iterator() {
         // create a list and add some elements
-        ElementAwareList<String> list = new ElementAwareList<>();
+        IdentityElementAwareList<String> list = new IdentityElementAwareList<>();
         SoftAssertions.assertSoftly(softly -> {
             softly.assertThat(list).isEmpty();
             Iterator<String> iter = list.iterator();

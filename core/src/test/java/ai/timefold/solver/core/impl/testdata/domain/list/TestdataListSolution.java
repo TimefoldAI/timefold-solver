@@ -32,10 +32,10 @@ public class TestdataListSolution {
     private static TestdataListSolution generateSolution(int valueCount, int entityCount) {
         List<TestdataListEntity> entityList = IntStream.range(0, entityCount)
                 .mapToObj(i -> new TestdataListEntity("Generated Entity " + i))
-                .collect(Collectors.toList());
+                .toList();
         List<TestdataListValue> valueList = IntStream.range(0, valueCount)
                 .mapToObj(i -> new TestdataListValue("Generated Value " + i))
-                .collect(Collectors.toList());
+                .toList();
         TestdataListSolution solution = new TestdataListSolution();
         solution.setValueList(valueList);
         solution.setEntityList(entityList);

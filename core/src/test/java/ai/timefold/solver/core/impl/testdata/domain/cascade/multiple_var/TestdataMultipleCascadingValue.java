@@ -1,58 +1,60 @@
 package ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.variable.CascadeUpdateElementShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.CascadingUpdateListener;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 
 @PlanningEntity
-public class TestdataMultipleCascadeValue {
+public class TestdataMultipleCascadingValue {
 
-    public static EntityDescriptor<TestdataMultipleCascadeSolution> buildEntityDescriptor() {
-        return TestdataMultipleCascadeSolution.buildSolutionDescriptor()
-                .findEntityDescriptorOrFail(TestdataMultipleCascadeValue.class);
+    public static EntityDescriptor<TestdataMultipleCascadingSolution> buildEntityDescriptor() {
+        return TestdataMultipleCascadingSolution.buildSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataMultipleCascadingValue.class);
     }
 
     @InverseRelationShadowVariable(sourceVariableName = "valueList")
-    private TestdataMultipleCascadeEntity entity;
+    private TestdataMultipleCascadingEntity entity;
     @PreviousElementShadowVariable(sourceVariableName = "valueList")
-    private TestdataMultipleCascadeValue previous;
+    private TestdataMultipleCascadingValue previous;
     @NextElementShadowVariable(sourceVariableName = "valueList")
-    private TestdataMultipleCascadeValue next;
-    @CascadeUpdateElementShadowVariable(targetMethodName = "updateCascadeValue")
+    private TestdataMultipleCascadingValue next;
+    @CascadingUpdateListener(targetMethodName = "updateCascadeValue", sourceVariableName = "entity")
+    @CascadingUpdateListener(targetMethodName = "updateCascadeValue", sourceVariableName = "previous")
     private Integer cascadeValue;
-    @CascadeUpdateElementShadowVariable(targetMethodName = "updateCascadeValue")
+    @CascadingUpdateListener(targetMethodName = "updateCascadeValue", sourceVariableName = "entity")
+    @CascadingUpdateListener(targetMethodName = "updateCascadeValue", sourceVariableName = "previous")
     private Integer secondCascadeValue;
     private Integer value;
     private int numberOfCalls = 0;
 
-    public TestdataMultipleCascadeValue(Integer value) {
+    public TestdataMultipleCascadingValue(Integer value) {
         this.value = value;
     }
 
-    public TestdataMultipleCascadeEntity getEntity() {
+    public TestdataMultipleCascadingEntity getEntity() {
         return entity;
     }
 
-    public void setEntity(TestdataMultipleCascadeEntity entity) {
+    public void setEntity(TestdataMultipleCascadingEntity entity) {
         this.entity = entity;
     }
 
-    public TestdataMultipleCascadeValue getPrevious() {
+    public TestdataMultipleCascadingValue getPrevious() {
         return previous;
     }
 
-    public void setPrevious(TestdataMultipleCascadeValue previous) {
+    public void setPrevious(TestdataMultipleCascadingValue previous) {
         this.previous = previous;
     }
 
-    public TestdataMultipleCascadeValue getNext() {
+    public TestdataMultipleCascadingValue getNext() {
         return next;
     }
 
-    public void setNext(TestdataMultipleCascadeValue next) {
+    public void setNext(TestdataMultipleCascadingValue next) {
         this.next = next;
     }
 

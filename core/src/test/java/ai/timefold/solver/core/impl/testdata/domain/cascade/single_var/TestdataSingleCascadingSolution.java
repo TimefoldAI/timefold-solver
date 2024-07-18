@@ -11,52 +11,52 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
 @PlanningSolution
-public class TestdataSingleCascadeSolution {
+public class TestdataSingleCascadingSolution {
 
-    public static SolutionDescriptor<TestdataSingleCascadeSolution> buildSolutionDescriptor() {
+    public static SolutionDescriptor<TestdataSingleCascadingSolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(
-                TestdataSingleCascadeSolution.class,
-                TestdataSingleCascadeEntity.class,
-                TestdataSingleCascadeValue.class);
+                TestdataSingleCascadingSolution.class,
+                TestdataSingleCascadingEntity.class,
+                TestdataSingleCascadingValue.class);
     }
 
-    public static TestdataSingleCascadeSolution generateUninitializedSolution(int valueCount, int entityCount) {
+    public static TestdataSingleCascadingSolution generateUninitializedSolution(int valueCount, int entityCount) {
         return generateSolution(valueCount, entityCount);
     }
 
-    private static TestdataSingleCascadeSolution generateSolution(int valueCount, int entityCount) {
-        List<TestdataSingleCascadeEntity> entityList = IntStream.range(1, entityCount + 1)
-                .mapToObj(i -> new TestdataSingleCascadeEntity("Generated Entity " + i))
+    private static TestdataSingleCascadingSolution generateSolution(int valueCount, int entityCount) {
+        List<TestdataSingleCascadingEntity> entityList = IntStream.range(1, entityCount + 1)
+                .mapToObj(i -> new TestdataSingleCascadingEntity("Generated Entity " + i))
                 .toList();
-        List<TestdataSingleCascadeValue> valueList = IntStream.range(1, valueCount + 1)
-                .mapToObj(TestdataSingleCascadeValue::new)
+        List<TestdataSingleCascadingValue> valueList = IntStream.range(1, valueCount + 1)
+                .mapToObj(TestdataSingleCascadingValue::new)
                 .toList();
-        TestdataSingleCascadeSolution solution = new TestdataSingleCascadeSolution();
+        TestdataSingleCascadingSolution solution = new TestdataSingleCascadingSolution();
         solution.setValueList(valueList);
         solution.setEntityList(entityList);
         return solution;
     }
 
-    private List<TestdataSingleCascadeValue> valueList;
-    private List<TestdataSingleCascadeEntity> entityList;
+    private List<TestdataSingleCascadingValue> valueList;
+    private List<TestdataSingleCascadingEntity> entityList;
     private SimpleScore score;
 
     @ValueRangeProvider(id = "valueRange")
     @PlanningEntityCollectionProperty
-    public List<TestdataSingleCascadeValue> getValueList() {
+    public List<TestdataSingleCascadingValue> getValueList() {
         return valueList;
     }
 
-    public void setValueList(List<TestdataSingleCascadeValue> valueList) {
+    public void setValueList(List<TestdataSingleCascadingValue> valueList) {
         this.valueList = valueList;
     }
 
     @PlanningEntityCollectionProperty
-    public List<TestdataSingleCascadeEntity> getEntityList() {
+    public List<TestdataSingleCascadingEntity> getEntityList() {
         return entityList;
     }
 
-    public void setEntityList(List<TestdataSingleCascadeEntity> entityList) {
+    public void setEntityList(List<TestdataSingleCascadingEntity> entityList) {
         this.entityList = entityList;
     }
 

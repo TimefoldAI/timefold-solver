@@ -27,7 +27,7 @@ import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.AnchorShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.CascadeUpdateElementShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.CascadingUpdateListener;
 import ai.timefold.solver.core.api.domain.variable.CustomShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
@@ -47,7 +47,7 @@ import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.ProblemScaleTracker;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.anchor.AnchorShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.cascade.CascadeUpdateElementShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateVariableListenerDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.custom.CustomShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.custom.LegacyCustomShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.custom.PiggybackShadowVariableDescriptor;
@@ -89,7 +89,8 @@ public class EntityDescriptor<Solution_> {
             ShadowVariable.List.class,
             PiggybackShadowVariable.class,
             CustomShadowVariable.class,
-            CascadeUpdateElementShadowVariable.class };
+            CascadingUpdateListener.class,
+            CascadingUpdateListener.List.class };
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityDescriptor.class);
 
@@ -108,7 +109,7 @@ public class EntityDescriptor<Solution_> {
     // Only declared variable descriptors, excludes inherited variable descriptors
     private Map<String, GenuineVariableDescriptor<Solution_>> declaredGenuineVariableDescriptorMap;
     private Map<String, ShadowVariableDescriptor<Solution_>> declaredShadowVariableDescriptorMap;
-    private Map<String, CascadeUpdateElementShadowVariableDescriptor<Solution_>> declaredCascadeUpdateShadowVariableDecriptorMap;
+    private Map<String, CascadingUpdateVariableListenerDescriptor<Solution_>> declaredCascadingUpdateVariableListenerDecriptorMap;
 
     private List<SelectionFilter<Solution_, Object>> declaredPinEntityFilterList;
     private List<EntityDescriptor<Solution_>> inheritedEntityDescriptorList;
@@ -201,7 +202,7 @@ public class EntityDescriptor<Solution_> {
         processEntityAnnotations(descriptorPolicy);
         declaredGenuineVariableDescriptorMap = new LinkedHashMap<>();
         declaredShadowVariableDescriptorMap = new LinkedHashMap<>();
-        declaredCascadeUpdateShadowVariableDecriptorMap = new HashMap<>();
+        declaredCascadingUpdateVariableListenerDecriptorMap = new HashMap<>();
         declaredPinEntityFilterList = new ArrayList<>(2);
         // Only iterate declared fields and methods, not inherited members, to avoid registering the same one twice
         var memberList = ConfigUtils.getDeclaredMembers(entityClass);
@@ -290,7 +291,8 @@ public class EntityDescriptor<Solution_> {
                     || variableAnnotationClass.equals(ShadowVariable.class)
                     || variableAnnotationClass.equals(ShadowVariable.List.class)
                     || variableAnnotationClass.equals(PiggybackShadowVariable.class)
-                    || variableAnnotationClass.equals(CascadeUpdateElementShadowVariable.class)) {
+                    || variableAnnotationClass.equals(CascadingUpdateListener.class)
+                    || variableAnnotationClass.equals(CascadingUpdateListener.List.class)) {
                 memberAccessorType = FIELD_OR_GETTER_METHOD;
             } else {
                 memberAccessorType = FIELD_OR_GETTER_METHOD_WITH_SETTER;
@@ -357,17 +359,19 @@ public class EntityDescriptor<Solution_> {
                 || variableAnnotationClass.equals(ShadowVariable.List.class)) {
             var variableDescriptor = new CustomShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
-        } else if (variableAnnotationClass.equals(CascadeUpdateElementShadowVariable.class)) {
+        } else if (variableAnnotationClass.equals(CascadingUpdateListener.class)
+                || variableAnnotationClass.equals(CascadingUpdateListener.List.class)) {
             var variableDescriptor =
-                    new CascadeUpdateElementShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
+                    new CascadingUpdateVariableListenerDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
-            if (declaredCascadeUpdateShadowVariableDecriptorMap.containsKey(variableDescriptor.getTargetMethodName())) {
-                // This shadow variable won't be notifiable and won't generate any listener in CascadeUpdateElementShadowVariableDescriptor#buildVariableListeners
+            if (declaredCascadingUpdateVariableListenerDecriptorMap.containsKey(variableDescriptor.getTargetMethodName())) {
+                // This shadow variable won't be notifiable
+                // and won't generate any listener in CascadingUpdateVariableListenerDescriptor#buildVariableListeners
                 variableDescriptor.setNotifiable(false);
-                declaredCascadeUpdateShadowVariableDecriptorMap.get(variableDescriptor.getTargetMethodName())
-                        .addSourceVariable(this, memberAccessor);
+                declaredCascadingUpdateVariableListenerDecriptorMap.get(variableDescriptor.getTargetMethodName())
+                        .addTargetVariable(this, memberAccessor);
             } else {
-                declaredCascadeUpdateShadowVariableDecriptorMap.put(variableDescriptor.getTargetMethodName(),
+                declaredCascadingUpdateVariableListenerDecriptorMap.put(variableDescriptor.getTargetMethodName(),
                         variableDescriptor);
             }
         } else if (variableAnnotationClass.equals(PiggybackShadowVariable.class)) {

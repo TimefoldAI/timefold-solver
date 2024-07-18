@@ -1,62 +1,63 @@
 package ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.variable.CascadeUpdateElementShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.CascadingUpdateListener;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadeEntity;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadeSolution;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadingEntity;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadingSolution;
 
 @PlanningEntity
-public class TestdataCascadeWrongMethod {
+public class TestdataCascadingWrongMethod {
 
-    public static EntityDescriptor<TestdataSingleCascadeSolution> buildEntityDescriptor() {
+    public static EntityDescriptor<TestdataSingleCascadingSolution> buildEntityDescriptor() {
         return SolutionDescriptor
-                .buildSolutionDescriptor(TestdataSingleCascadeSolution.class, TestdataSingleCascadeEntity.class,
-                        TestdataCascadeWrongMethod.class)
-                .findEntityDescriptorOrFail(TestdataCascadeWrongMethod.class);
+                .buildSolutionDescriptor(TestdataSingleCascadingSolution.class, TestdataSingleCascadingEntity.class,
+                        TestdataCascadingWrongMethod.class)
+                .findEntityDescriptorOrFail(TestdataCascadingWrongMethod.class);
     }
 
     @InverseRelationShadowVariable(sourceVariableName = "valueList")
-    private TestdataSingleCascadeEntity entity;
+    private TestdataSingleCascadingEntity entity;
     @PreviousElementShadowVariable(sourceVariableName = "valueList")
-    private TestdataCascadeWrongMethod previous;
+    private TestdataCascadingWrongMethod previous;
     @NextElementShadowVariable(sourceVariableName = "valueList")
-    private TestdataCascadeWrongMethod next;
-    @CascadeUpdateElementShadowVariable(targetMethodName = "updateCascadeValue")
+    private TestdataCascadingWrongMethod next;
+    @CascadingUpdateListener(targetMethodName = "updateCascadeValue", sourceVariableName = "entity")
+    @CascadingUpdateListener(targetMethodName = "updateCascadeValue", sourceVariableName = "previous")
     private Integer cascadeValue;
-    @CascadeUpdateElementShadowVariable(targetMethodName = "badUpdateCascadeValueWithReturnType")
+    @CascadingUpdateListener(targetMethodName = "badUpdateCascadeValueWithReturnType", sourceVariableName = "entity")
     private Integer cascadeValueReturnType;
     private Integer value;
 
-    public TestdataCascadeWrongMethod(Integer value) {
+    public TestdataCascadingWrongMethod(Integer value) {
         this.value = value;
     }
 
-    public TestdataSingleCascadeEntity getEntity() {
+    public TestdataSingleCascadingEntity getEntity() {
         return entity;
     }
 
-    public void setEntity(TestdataSingleCascadeEntity entity) {
+    public void setEntity(TestdataSingleCascadingEntity entity) {
         this.entity = entity;
     }
 
-    public TestdataCascadeWrongMethod getPrevious() {
+    public TestdataCascadingWrongMethod getPrevious() {
         return previous;
     }
 
-    public void setPrevious(TestdataCascadeWrongMethod previous) {
+    public void setPrevious(TestdataCascadingWrongMethod previous) {
         this.previous = previous;
     }
 
-    public TestdataCascadeWrongMethod getNext() {
+    public TestdataCascadingWrongMethod getNext() {
         return next;
     }
 
-    public void setNext(TestdataCascadeWrongMethod next) {
+    public void setNext(TestdataCascadingWrongMethod next) {
         this.next = next;
     }
 

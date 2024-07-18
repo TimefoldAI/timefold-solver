@@ -19,6 +19,10 @@ public final class ElementAwareListEntry<T> {
         this.next = null;
     }
 
+    public ElementAwareListEntry<T> previous() {
+        return previous;
+    }
+
     public ElementAwareListEntry<T> next() {
         return next;
     }
