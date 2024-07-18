@@ -1,4 +1,4 @@
-name: JVM and OS matrix
+name: Python JVM and OS matrix
 
 on:
   push:
@@ -15,7 +15,7 @@ on:
 jobs:
   build:
     concurrency:
-      group: pull_request-${{ github.event_name }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.java-version }}
+      group: pull_request-python-${{ github.event_name }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.java-version }}
       cancel-in-progress: true
     runs-on: ${{matrix.os}}
     strategy:
