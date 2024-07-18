@@ -89,6 +89,7 @@ public class TimefoldJacksonModule extends SimpleModule {
      * @deprecated Have the module loaded automatically via {@link JacksonSolutionFileIO} or use {@link #createModule()}.
      *             This constructor will be hidden in a future major version of Timefold.
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Deprecated(forRemoval = true)
     public TimefoldJacksonModule() {
         super("Timefold");
@@ -135,13 +136,13 @@ public class TimefoldJacksonModule extends SimpleModule {
 
         // Constraint collectors
         addSerializer(Break.class, new BreakJacksonSerializer());
-        addDeserializer(Break.class, new BreakJacksonDeserializer());
+        addDeserializer(Break.class, new BreakJacksonDeserializer<>());
         addSerializer(Sequence.class, new SequenceJacksonSerializer());
-        addDeserializer(Sequence.class, new SequenceJacksonDeserializer());
+        addDeserializer(Sequence.class, new SequenceJacksonDeserializer<>());
         addSerializer(SequenceChain.class, new SequenceChainJacksonSerializer());
-        addDeserializer(SequenceChain.class, new SequenceChainJacksonDeserializer());
+        addDeserializer(SequenceChain.class, new SequenceChainJacksonDeserializer<>());
         addSerializer(LoadBalance.class, new LoadBalanceJacksonSerializer());
-        addDeserializer(LoadBalance.class, new LoadBalanceJacksonDeserializer());
+        addDeserializer(LoadBalance.class, new LoadBalanceJacksonDeserializer<>());
     }
 
 }

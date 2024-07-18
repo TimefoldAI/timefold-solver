@@ -2,6 +2,7 @@ package ai.timefold.solver.migration.fork;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import ai.timefold.solver.migration.AbstractRecipe;
 
@@ -108,5 +109,15 @@ public final class TimefoldChangeDependencies extends AbstractRecipe {
     @Override
     public List<Recipe> getRecipeList() {
         return recipeList;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof TimefoldChangeDependencies other && recipeList.equals(other.recipeList);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), recipeList);
     }
 }

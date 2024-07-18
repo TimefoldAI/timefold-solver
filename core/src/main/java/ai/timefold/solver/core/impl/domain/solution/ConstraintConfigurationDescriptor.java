@@ -80,7 +80,8 @@ final class ConstraintConfigurationDescriptor<Solution_> {
                 processParameterAnnotation(memberAccessorFactory, domainAccessType, member, scoreDefinition);
             }
             potentiallyOverwritingMethodList.ensureCapacity(potentiallyOverwritingMethodList.size() + memberList.size());
-            memberList.stream().filter(member -> member instanceof Method)
+            memberList.stream()
+                    .filter(Method.class::isInstance)
                     .forEach(member -> potentiallyOverwritingMethodList.add((Method) member));
         }
         if (constraintWeightDescriptorMap.isEmpty()) {

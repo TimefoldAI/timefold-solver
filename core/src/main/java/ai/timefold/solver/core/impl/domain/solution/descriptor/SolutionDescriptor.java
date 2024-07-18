@@ -168,6 +168,9 @@ public class SolutionDescriptor<Solution_> {
     private AutoDiscoverMemberType autoDiscoverMemberType;
     private LookUpStrategyResolver lookUpStrategyResolver;
 
+    /**
+     * @deprecated {@link ConstraintConfiguration} was replaced by {@link ConstraintWeightOverrides}.
+     */
     @Deprecated(forRemoval = true, since = "1.13.0")
     private MemberAccessor constraintConfigurationMemberAccessor;
     private final Map<String, MemberAccessor> problemFactMemberAccessorMap = new LinkedHashMap<>();
@@ -403,6 +406,9 @@ public class SolutionDescriptor<Solution_> {
         return annotationClass;
     }
 
+    /**
+     * @deprecated {@link ConstraintConfiguration} was replaced by {@link ConstraintWeightOverrides}.
+     */
     @Deprecated(forRemoval = true, since = "1.13.0")
     private void processConstraintConfigurationProviderAnnotation(DescriptorPolicy descriptorPolicy, Member member,
             Class<? extends Annotation> annotationClass) {
@@ -737,6 +743,9 @@ public class SolutionDescriptor<Solution_> {
     // Model methods
     // ************************************************************************
 
+    /**
+     * @deprecated {@link ConstraintConfiguration} was replaced by {@link ConstraintWeightOverrides}.
+     */
     @Deprecated(forRemoval = true, since = "1.13.0")
     public MemberAccessor getConstraintConfigurationMemberAccessor() {
         return constraintConfigurationMemberAccessor;
