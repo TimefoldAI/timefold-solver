@@ -102,10 +102,10 @@ def extract_collector(collector_info, *type_arguments):
         balanced_item_function = function_cast(collector_info.balanced_item_function,  *type_arguments)
         if collector_info.load_function is None:
             return collector_info.collector_creator(balanced_item_function)
-        load_function = function_cast(collector_info.load_function,  *type_arguments)
+        load_function = to_long_function_cast(collector_info.load_function,  *type_arguments)
         if collector_info.initial_load_function is None:
             return collector_info.collector_creator(balanced_item_function, load_function)
-        initial_load_function = function_cast(collector_info.initial_load_function,  *type_arguments)
+        initial_load_function = to_long_function_cast(collector_info.initial_load_function,  *type_arguments)
         return collector_info.collector_creator(balanced_item_function, load_function, initial_load_function)
     else:
         raise ValueError(f'Invalid Collector: {collector_info}. '
@@ -1141,6 +1141,7 @@ __all__ = [
     'ComposeConstraintCollector',
     'ConditionalConstraintCollector',
     'CollectAndThenCollector',
+    'LoadBalanceCollector',
     'ConstraintCollectors',
     'perform_group_by'
 ]
