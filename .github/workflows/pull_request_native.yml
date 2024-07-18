@@ -15,9 +15,10 @@ jobs:
     concurrency:
       group: pull_request_native-${{ github.event_name }}-${{ github.head_ref }}-${{ matrix.module }}-${{ matrix.java-version }}
       cancel-in-progress: true
-    runs-on: ubuntu-latest
+    runs-on: ${{matrix.os}}
     strategy:
       matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
         module: ["spring-integration", "quarkus-integration"]
         java-version: [ 21 ] # Latest LTS
     timeout-minutes: 120

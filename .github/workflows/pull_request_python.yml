@@ -53,7 +53,7 @@ jobs:
         run:
           pip install tox build
 
-      - name: Run tox on timefold solver python test suite
+      - name: Run tox on Timefold Solver for Python test suite
         run: python -m tox
 
       - name: Run tox on jpyinterpreter test suite

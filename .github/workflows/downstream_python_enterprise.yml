@@ -91,11 +91,11 @@ jobs:
         run:
           pip install tox build
 
-      - name: Build timefold solver python
+      - name: Build Timefold Solver for Python
         working-directory: ./timefold-solver
         run: python -m build
 
-      - name: Run tox on timefold solver enterprise python test suite
+      - name: Run tox on Timefold Solver Enterprise for Python test suite
         working-directory: ./timefold-solver-enterprise
         env:
           PIP_FIND_LINKS: ${{ github.workspace }}/timefold-solver/dist
