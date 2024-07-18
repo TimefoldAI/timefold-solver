@@ -3,10 +3,12 @@ package ai.timefold.solver.migration.v8;
 import java.util.ArrayList;
 import java.util.List;
 
+import ai.timefold.solver.migration.AbstractRecipe;
+
 import org.openrewrite.Recipe;
 import org.openrewrite.java.ReorderMethodArguments;
 
-public final class SingleConstraintAssertionMethodsRecipe extends Recipe {
+public final class SingleConstraintAssertionMethodsRecipe extends AbstractRecipe {
     @Override
     public String getDisplayName() {
         return "Use non-deprecated SingleConstraintAssertion methods";

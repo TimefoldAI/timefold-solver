@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.domain.constraintweight.descriptor;
+package ai.timefold.solver.core.impl.domain.solution;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,7 +16,10 @@ class ConstraintWeightDescriptorTest {
     @Test
     void extractionFunction() {
         var solutionDescriptor = TestdataConstraintConfigurationSolution.buildSolutionDescriptor();
-        var constraintConfigurationDescriptor = solutionDescriptor.getConstraintConfigurationDescriptor();
+        var constraintConfigurationDescriptor =
+                ((ConstraintConfigurationBasedConstraintWeightSupplier<SimpleScore, TestdataConstraintConfigurationSolution>) solutionDescriptor
+                        .getConstraintWeightSupplier())
+                        .getConstraintConfigurationDescriptor();
 
         var firstWeightDescriptor = constraintConfigurationDescriptor.getConstraintWeightDescriptor("firstWeight");
         assertThat(firstWeightDescriptor.getConstraintRef())
@@ -33,16 +36,19 @@ class ConstraintWeightDescriptorTest {
         constraintConfiguration.setSecondWeight(SimpleScore.of(7));
         solution.setConstraintConfiguration(constraintConfiguration);
 
-        assertThat(solutionDescriptor.getConstraintConfigurationMemberAccessor().executeGetter(solution))
-                .isSameAs(constraintConfiguration);
-        assertThat(firstWeightDescriptor.createExtractor().apply(solution)).isEqualTo(SimpleScore.ZERO);
-        assertThat(secondWeightDescriptor.createExtractor().apply(solution)).isEqualTo(SimpleScore.of(7));
+        var accessor = solutionDescriptor.getConstraintConfigurationMemberAccessor();
+        assertThat(accessor.executeGetter(solution)).isSameAs(constraintConfiguration);
+        assertThat(firstWeightDescriptor.createExtractor(accessor).apply(solution)).isEqualTo(SimpleScore.ZERO);
+        assertThat(secondWeightDescriptor.createExtractor(accessor).apply(solution)).isEqualTo(SimpleScore.of(7));
     }
 
     @Test
     void extractionFunctionExtended() {
         var solutionDescriptor = TestdataExtendedConstraintConfigurationSolution.buildExtendedSolutionDescriptor();
-        var constraintConfigurationDescriptor = solutionDescriptor.getConstraintConfigurationDescriptor();
+        var constraintConfigurationDescriptor =
+                ((ConstraintConfigurationBasedConstraintWeightSupplier<SimpleScore, TestdataExtendedConstraintConfigurationSolution>) solutionDescriptor
+                        .getConstraintWeightSupplier())
+                        .getConstraintConfigurationDescriptor();
 
         var firstWeightDescriptor = constraintConfigurationDescriptor.getConstraintWeightDescriptor("firstWeight");
         assertThat(firstWeightDescriptor.getConstraintRef())
@@ -65,11 +71,11 @@ class ConstraintWeightDescriptorTest {
         constraintConfiguration.setThirdWeight(SimpleScore.of(9));
         solution.setConstraintConfiguration(constraintConfiguration);
 
-        assertThat(solutionDescriptor.getConstraintConfigurationMemberAccessor().executeGetter(solution))
-                .isSameAs(constraintConfiguration);
-        assertThat(firstWeightDescriptor.createExtractor().apply(solution)).isEqualTo(SimpleScore.ZERO);
-        assertThat(secondWeightDescriptor.createExtractor().apply(solution)).isEqualTo(SimpleScore.of(7));
-        assertThat(thirdWeightDescriptor.createExtractor().apply(solution)).isEqualTo(SimpleScore.of(9));
+        var accessor = solutionDescriptor.getConstraintConfigurationMemberAccessor();
+        assertThat(accessor.executeGetter(solution)).isSameAs(constraintConfiguration);
+        assertThat(firstWeightDescriptor.createExtractor(accessor).apply(solution)).isEqualTo(SimpleScore.ZERO);
+        assertThat(secondWeightDescriptor.createExtractor(accessor).apply(solution)).isEqualTo(SimpleScore.of(7));
+        assertThat(thirdWeightDescriptor.createExtractor(accessor).apply(solution)).isEqualTo(SimpleScore.of(9));
     }
 
 }

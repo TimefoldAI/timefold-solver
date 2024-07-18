@@ -154,11 +154,12 @@ class GizmoMemberAccessorImplementorTest {
     @Test
     void testThrowsWhenGetBooleanReturnsNonBoolean() throws NoSuchMethodException {
         Member member = GizmoTestdataEntity.class.getMethod("isAMethodThatHasABadName");
-        assertThatCode(() -> {
-            GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningVariable.class, new GizmoClassLoader());
-        }).hasMessage("The getterMethod (isAMethodThatHasABadName) with a PlanningVariable annotation must have a " +
-                "primitive boolean return type but returns (L" +
-                String.class.getName().replace('.', '/') + ";). Maybe rename the method (" +
-                "getAMethodThatHasABadName)?");
+        assertThatCode(
+                () -> GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningVariable.class, new GizmoClassLoader()))
+                .hasMessage("""
+                        The getterMethod (isAMethodThatHasABadName) with a PlanningVariable annotation \
+                        must have a primitive boolean return type but returns (L%s;).
+                        Maybe rename the method (getAMethodThatHasABadName)?"""
+                        .formatted(String.class.getName().replace('.', '/')));
     }
 }

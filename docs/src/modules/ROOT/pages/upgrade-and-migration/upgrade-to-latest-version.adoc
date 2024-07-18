@@ -59,6 +59,61 @@ We kindly ask Kotlin and Python users to translate the changes accordingly.
 
 === Upgrade from 1.12.0 to 1.13.0 (Work in progress)
 
+icon:exclamation-triangle[role=red] `@ConstraintConfiguration` deprecated
+[%collapsible%open]
+====
+`@ConstraintConfiguration` has been deprecated and will be removed in a future major version.
+Please use xref:constraints-and-score/constraint-configuration.adoc#definingAndOverridingConstraintWeights[constraint weight overrides] instead.
+
+Before in `*ConstraintProvider.java`:
+
+[source,java]
+----
+...
+    .penalizeConfigurable()
+    .asConstraint("maxHoursWorked");
+...
+----
+
+After in `*ConstraintProvider.java`:
+
+[source,java]
+----
+...
+    .penalize(ONE_SOFT)
+    .asConstraint("maxHoursWorked");
+...
+----
+
+Before in `*Solution.java`:
+
+[source,java]
+----
+...
+    @ConstraintConfiguration
+    private MyConstraintConfiguration myConstraintConfiguration;
+...
+----
+
+After in `*Solution.java`:
+
+[source,java]
+----
+...
+    ConstraintWeightOverrides<HardSoftScore> constraintWeightOverrides;
+...
+    constraintWeightOverrides = ConstraintWeightOverrides.of(
+        Map.of(
+            "maxHoursWorked", HardSoftScore.ofSoft(10)
+        )
+    );
+...
+----
+
+====
+
+'''
+
 .icon:info-circle[role=yellow] Constraint packages have been deprecated
 [%collapsible%open]
 ====

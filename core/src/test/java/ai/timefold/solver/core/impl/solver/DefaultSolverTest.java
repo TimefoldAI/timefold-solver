@@ -529,7 +529,6 @@ class DefaultSolverTest {
 
         solver.addEventListener(event -> {
             meterRegistry.publish(solver);
-            System.out.println(event.getNewBestScore());
 
             // This event listener is added before the best score event listener
             // so it is one step behind

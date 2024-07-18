@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactProperty;
@@ -114,14 +115,13 @@ public interface ConstraintStream {
      * The constraintWeight comes from an {@link ConstraintWeight} annotated member on the {@link ConstraintConfiguration},
      * so end users can change the constraint weights dynamically.
      * This constraint may be deactivated if the {@link ConstraintWeight} is zero.
-     * If there is no {@link ConstraintConfiguration}, use {@link #penalize(String, Score)} instead.
      * <p>
      * The {@link ConstraintRef#packageName() constraint package} defaults to
      * {@link ConstraintConfiguration#constraintPackage()}.
      *
-     * @deprecated Prefer {@link UniConstraintStream#penalizeConfigurable()} and equivalent bi/tri/... overloads.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
      * @return never null
+     * @deprecated Prefer {@code penalize()} and {@link ConstraintWeightOverrides}.
      */
     @Deprecated(forRemoval = true)
     Constraint penalizeConfigurable(String constraintName);
@@ -129,10 +129,10 @@ public interface ConstraintStream {
     /**
      * As defined by {@link #penalizeConfigurable(String)}.
      *
-     * @deprecated Prefer {@link UniConstraintStream#penalizeConfigurable()} and equivalent bi/tri/... overloads.
      * @param constraintPackage never null
      * @param constraintName never null
      * @return never null
+     * @deprecated Prefer {@code penalize()} and {@link ConstraintWeightOverrides}.
      */
     @Deprecated(forRemoval = true)
     Constraint penalizeConfigurable(String constraintPackage, String constraintName);
@@ -171,14 +171,13 @@ public interface ConstraintStream {
      * The constraintWeight comes from an {@link ConstraintWeight} annotated member on the {@link ConstraintConfiguration},
      * so end users can change the constraint weights dynamically.
      * This constraint may be deactivated if the {@link ConstraintWeight} is zero.
-     * If there is no {@link ConstraintConfiguration}, use {@link #reward(String, Score)} instead.
      * <p>
      * The {@link ConstraintRef#packageName() constraint package} defaults to
      * {@link ConstraintConfiguration#constraintPackage()}.
      *
-     * @deprecated Prefer {@link UniConstraintStream#rewardConfigurable()} and equivalent bi/tri/... overloads.
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
      * @return never null
+     * @deprecated Prefer {@code reward()} and {@link ConstraintWeightOverrides}.
      */
     @Deprecated(forRemoval = true)
     Constraint rewardConfigurable(String constraintName);
@@ -186,10 +185,10 @@ public interface ConstraintStream {
     /**
      * As defined by {@link #rewardConfigurable(String)}.
      *
-     * @deprecated Prefer {@link UniConstraintStream#rewardConfigurable()} and equivalent bi/tri/... overloads.
      * @param constraintPackage never null
      * @param constraintName never null
      * @return never null
+     * @deprecated Prefer {@code reward()} and {@link ConstraintWeightOverrides}.
      */
     @Deprecated(forRemoval = true)
     Constraint rewardConfigurable(String constraintPackage, String constraintName);

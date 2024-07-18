@@ -15,6 +15,7 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 
+@Deprecated(forRemoval = true, since = "1.13.0")
 @PlanningSolution
 public class TestdataConstraintConfigurationSolution extends TestdataObject {
 

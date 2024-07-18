@@ -89,7 +89,6 @@ def test_bendable_decimal_score():
     score = BendableDecimalScore.of((Decimal('1.1'), Decimal('-2.2'), Decimal('3.3')),
                                     (Decimal('-30.3'), Decimal('40.4')))
 
-    print(str(uninit_score))
     assert str(uninit_score) == '-500init/[1.1/-2.2/3.3]hard/[-30.3/40.4]soft'
     assert str(score) == '[1.1/-2.2/3.3]hard/[-30.3/40.4]soft'
 

@@ -91,30 +91,30 @@ class UniConstraintBuilder(Generic[A, ScoreType]):
         return UniConstraintBuilder(self.delegate.justifyWith(
             function_cast(wrapped, self.a_type, Score)), self.a_type)
 
-    def as_constraint(self, constraint_package_or_name: str, constraint_name: str = None) -> Constraint:
+    def as_constraint(self, constraint_name: str, constraint_description: str = None) \
+            -> Constraint:
         """
         Builds a Constraint from the constraint stream.
 
         Parameters
         ----------
-        constraint_package_or_name : str
-            If `constraint_name` is also provided, this is the constraint package name.
-            Otherwise, this is the constraint name.
+        constraint_name : str
+            This is the constraint name.
             The constraint package defaults to the module of the `planning_solution` class.
 
-        constraint_name : str, optional
-            The constraint name.
-            If present, `constraint_package_or_name` is treated as the constraint package name.
+        constraint_description : str, optional
+            The constraint description.
+            Empty string if not present.
 
         Returns
         -------
         Constraint
             A `Constraint`.
         """
-        if constraint_name is None:
-            return self.delegate.asConstraint(constraint_package_or_name)
+        if constraint_description is None:
+            return self.delegate.asConstraint(constraint_name)
         else:
-            return self.delegate.asConstraint(constraint_package_or_name, constraint_name)
+            return self.delegate.asConstraintDescribed(constraint_name, constraint_description)
 
 
 class BiConstraintBuilder(Generic[A, B, ScoreType]):
@@ -184,30 +184,30 @@ class BiConstraintBuilder(Generic[A, B, ScoreType]):
         return BiConstraintBuilder(self.delegate.justifyWith(
             function_cast(wrapped, self.a_type, self.b_type, Score)), self.a_type, self.b_type)
 
-    def as_constraint(self, constraint_package_or_name: str, constraint_name: str = None) -> Constraint:
+    def as_constraint(self, constraint_name: str, constraint_description: str = None) \
+            -> Constraint:
         """
         Builds a Constraint from the constraint stream.
 
         Parameters
         ----------
-        constraint_package_or_name : str
-            If `constraint_name` is also provided, this is the constraint package name.
-            Otherwise, this is the constraint name.
+        constraint_name : str
+            This is the constraint name.
             The constraint package defaults to the module of the `planning_solution` class.
 
-        constraint_name : str, optional
-            The constraint name.
-            If present, `constraint_package_or_name` is treated as the constraint package name.
+        constraint_description : str, optional
+            The constraint description.
+            Empty string if not present.
 
         Returns
         -------
         Constraint
             A `Constraint`.
         """
-        if constraint_name is None:
-            return self.delegate.asConstraint(constraint_package_or_name)
+        if constraint_description is None:
+            return self.delegate.asConstraint(constraint_name)
         else:
-            return self.delegate.asConstraint(constraint_package_or_name, constraint_name)
+            return self.delegate.asConstraintDescribed(constraint_name, constraint_description)
 
 
 class TriConstraintBuilder(Generic[A, B, C, ScoreType]):
@@ -282,30 +282,30 @@ class TriConstraintBuilder(Generic[A, B, C, ScoreType]):
             function_cast(wrapped, self.a_type, self.b_type, self.c_type, Score)),
             self.a_type, self.b_type, self.c_type)
 
-    def as_constraint(self, constraint_package_or_name: str, constraint_name: str = None) -> Constraint:
+    def as_constraint(self, constraint_name: str, constraint_description: str = None) \
+            -> Constraint:
         """
         Builds a Constraint from the constraint stream.
 
         Parameters
         ----------
-        constraint_package_or_name : str
-            If `constraint_name` is also provided, this is the constraint package name.
-            Otherwise, this is the constraint name.
+        constraint_name : str
+            This is the constraint name.
             The constraint package defaults to the module of the `planning_solution` class.
 
-        constraint_name : str, optional
-            The constraint name.
-            If present, `constraint_package_or_name` is treated as the constraint package name.
+        constraint_description : str, optional
+            The constraint description.
+            Empty string if not present.
 
         Returns
         -------
         Constraint
             A `Constraint`.
         """
-        if constraint_name is None:
-            return self.delegate.asConstraint(constraint_package_or_name)
+        if constraint_description is None:
+            return self.delegate.asConstraint(constraint_name)
         else:
-            return self.delegate.asConstraint(constraint_package_or_name, constraint_name)
+            return self.delegate.asConstraintDescribed(constraint_name, constraint_description)
 
 
 class QuadConstraintBuilder(Generic[A, B, C, D, ScoreType]):
@@ -382,30 +382,30 @@ class QuadConstraintBuilder(Generic[A, B, C, D, ScoreType]):
             function_cast(wrapped, self.a_type, self.b_type, self.c_type, self.d_type, Score)),
             self.a_type, self.b_type, self.c_type, self.d_type)
 
-    def as_constraint(self, constraint_package_or_name: str, constraint_name: str = None) -> Constraint:
+    def as_constraint(self, constraint_name: str, constraint_description: str = None) \
+            -> Constraint:
         """
         Builds a Constraint from the constraint stream.
 
         Parameters
         ----------
-        constraint_package_or_name : str
-            If `constraint_name` is also provided, this is the constraint package name.
-            Otherwise, this is the constraint name.
+        constraint_name : str
+            This is the constraint name.
             The constraint package defaults to the module of the `planning_solution` class.
 
-        constraint_name : str, optional
-            The constraint name.
-            If present, `constraint_package_or_name` is treated as the constraint package name.
+        constraint_description : str, optional
+            The constraint description.
+            Empty string if not present.
 
         Returns
         -------
         Constraint
             A `Constraint`.
         """
-        if constraint_name is None:
-            return self.delegate.asConstraint(constraint_package_or_name)
+        if constraint_description is None:
+            return self.delegate.asConstraint(constraint_name)
         else:
-            return self.delegate.asConstraint(constraint_package_or_name, constraint_name)
+            return self.delegate.asConstraintDescribed(constraint_name, constraint_description)
 
 
 __all__ = ['Constraint',

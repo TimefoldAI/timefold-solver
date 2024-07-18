@@ -3,19 +3,19 @@ package ai.timefold.solver.migration.v8;
 import java.util.Arrays;
 import java.util.List;
 
+import ai.timefold.solver.migration.AbstractRecipe;
+
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
-public class ScoreManagerMethodsRecipe extends Recipe {
+public class ScoreManagerMethodsRecipe extends AbstractRecipe {
 
     private static final MatcherMeta[] MATCHER_METAS = {
             new MatcherMeta("getSummary(..)"),
@@ -63,17 +63,12 @@ public class ScoreManagerMethodsRecipe extends Recipe {
                                                 .replace("Score(", "("));
                         maybeAddImport("ai.timefold.solver.core.api.solver.SolutionUpdatePolicy");
                         return JavaTemplate.builder(pattern)
-                                .javaParser(buildJavaParser())
+                                .javaParser(JAVA_PARSER)
                                 .imports("ai.timefold.solver.core.api.solver.SolutionUpdatePolicy")
                                 .build()
                                 .apply(getCursor(), e.getCoordinates().replace(), select, arguments.get(0));
                     }
                 });
-    }
-
-    public static JavaParser.Builder buildJavaParser() {
-        return JavaParser.fromJavaVersion()
-                .classpath(JavaParser.runtimeClasspath());
     }
 
     private static final class MatcherMeta {

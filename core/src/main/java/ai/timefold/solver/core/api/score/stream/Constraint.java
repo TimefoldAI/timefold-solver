@@ -23,6 +23,16 @@ public interface Constraint {
     ConstraintRef getConstraintRef();
 
     /**
+     * Returns a human-friendly description of the constraint.
+     * The format of the description is left unspecified and will not be parsed in any way.
+     *
+     * @return never null, may be left empty
+     */
+    default String getDescription() {
+        return "";
+    }
+
+    /**
      * @deprecated Prefer {@link #getConstraintRef()}.
      * @return never null
      */

@@ -4,10 +4,8 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
-import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
@@ -23,9 +21,6 @@ import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 public interface ConstraintFactory {
 
     /**
-     * This is {@link ConstraintConfiguration#constraintPackage()} if available,
-     * otherwise the package of the {@link PlanningSolution} class.
-     *
      * @return never null
      * @deprecated Do not rely on any constraint package in user code.
      */

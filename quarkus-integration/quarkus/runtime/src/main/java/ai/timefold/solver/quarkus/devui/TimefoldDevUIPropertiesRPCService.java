@@ -1,7 +1,6 @@
 package ai.timefold.solver.quarkus.devui;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -17,10 +16,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 import ai.timefold.solver.quarkus.config.TimefoldRuntimeConfig;
@@ -63,15 +59,15 @@ public class TimefoldDevUIPropertiesRPCService {
     }
 
     public JsonObject getConfig() {
-        JsonObject out = new JsonObject();
-        JsonObject config = new JsonObject();
+        var out = new JsonObject();
+        var config = new JsonObject();
         out.put("config", config);
         devUIProperties.forEach((key, value) -> config.put(key, value.getEffectiveSolverConfig()));
         return out;
     }
 
     public JsonObject getConstraints() {
-        JsonObject out = new JsonObject();
+        var out = new JsonObject();
         devUIProperties.forEach((key, value) -> out.put(key, JsonArray.of(value.getConstraintList()
                 .stream()
                 .map(ConstraintRef::constraintId)
@@ -101,18 +97,18 @@ public class TimefoldDevUIPropertiesRPCService {
 
     private TimefoldModelProperties buildModelInfo(SolverFactory<?> solverFactory) {
         if (solverFactory != null) {
-            SolutionDescriptor<?> solutionDescriptor =
+            var solutionDescriptor =
                     ((DefaultSolverFactory<?>) solverFactory).getScoreDirectorFactory().getSolutionDescriptor();
-            TimefoldModelProperties out = new TimefoldModelProperties();
+            var out = new TimefoldModelProperties();
             out.setSolutionClass(solutionDescriptor.getSolutionClass().getName());
-            List<String> entityClassList = new ArrayList<>();
-            Map<String, List<String>> entityClassToGenuineVariableListMap = new HashMap<>();
-            Map<String, List<String>> entityClassToShadowVariableListMap = new HashMap<>();
-            for (EntityDescriptor<?> entityDescriptor : solutionDescriptor.getEntityDescriptors()) {
+            var entityClassList = new ArrayList<String>();
+            var entityClassToGenuineVariableListMap = new HashMap<String, List<String>>();
+            var entityClassToShadowVariableListMap = new HashMap<String, List<String>>();
+            for (var entityDescriptor : solutionDescriptor.getEntityDescriptors()) {
                 entityClassList.add(entityDescriptor.getEntityClass().getName());
-                List<String> entityClassToGenuineVariableList = new ArrayList<>();
-                List<String> entityClassToShadowVariableList = new ArrayList<>();
-                for (VariableDescriptor<?> variableDescriptor : entityDescriptor.getDeclaredVariableDescriptors()) {
+                var entityClassToGenuineVariableList = new ArrayList<String>();
+                var entityClassToShadowVariableList = new ArrayList<String>();
+                for (var variableDescriptor : entityDescriptor.getDeclaredVariableDescriptors()) {
                     if (variableDescriptor instanceof GenuineVariableDescriptor) {
                         entityClassToGenuineVariableList.add(variableDescriptor.getVariableName());
                     } else {
@@ -134,22 +130,20 @@ public class TimefoldDevUIPropertiesRPCService {
     }
 
     private List<ConstraintRef> buildConstraintList(SolverFactory<?> solverFactory) {
-        if (solverFactory != null
-                && (((DefaultSolverFactory<?>) solverFactory)
-                        .getScoreDirectorFactory() instanceof AbstractConstraintStreamScoreDirectorFactory)) {
-            AbstractConstraintStreamScoreDirectorFactory<?, ?> scoreDirectorFactory =
-                    (AbstractConstraintStreamScoreDirectorFactory<?, ?>) ((DefaultSolverFactory<?>) solverFactory)
-                            .getScoreDirectorFactory();
-            return Arrays.stream(scoreDirectorFactory.getConstraints())
-                    .map(Constraint::getConstraintRef)
-                    .toList();
-
+        if (solverFactory != null) {
+            var scoreDirectorFactory = ((DefaultSolverFactory<?>) solverFactory).getScoreDirectorFactory();
+            if (scoreDirectorFactory instanceof AbstractConstraintStreamScoreDirectorFactory<?, ?> castScoreDirectorFactory) {
+                return castScoreDirectorFactory.getConstraintLibrary().getConstraints()
+                        .stream()
+                        .map(Constraint::getConstraintRef)
+                        .toList();
+            }
         }
         return Collections.emptyList();
     }
 
     private String buildXmlContentWithComment(String effectiveSolverConfigXml, String comment) {
-        int indexOfPreambleEnd = effectiveSolverConfigXml.indexOf("?>");
+        var indexOfPreambleEnd = effectiveSolverConfigXml.indexOf("?>");
         if (indexOfPreambleEnd != -1) {
             return effectiveSolverConfigXml.substring(0, indexOfPreambleEnd + 2) +
                     "\n<!--" + comment + "-->\n"

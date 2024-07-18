@@ -2,19 +2,19 @@ package ai.timefold.solver.migration.v8;
 
 import java.util.List;
 
+import ai.timefold.solver.migration.AbstractRecipe;
+
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
-public final class RemoveConstraintPackageRecipe extends Recipe {
+public final class RemoveConstraintPackageRecipe extends AbstractRecipe {
 
     @Override
     public String getDisplayName() {
@@ -41,7 +41,7 @@ public final class RemoveConstraintPackageRecipe extends Recipe {
                         String templateCode = "#{any(ai.timefold.solver.core.api.score.stream.ConstraintBuilder)}\n" +
                                 ".asConstraint(\"#{}\")";
                         JavaTemplate template = JavaTemplate.builder(templateCode)
-                                .javaParser(buildJavaParser())
+                                .javaParser(JAVA_PARSER)
                                 .build();
                         return template.apply(getCursor(),
                                 method.getCoordinates().replace(), select,
@@ -52,11 +52,6 @@ public final class RemoveConstraintPackageRecipe extends Recipe {
 
     private String mergeExpressions(Expression constraintPackage, Expression constraintName) {
         return constraintPackage.toString() + "." + constraintName.toString();
-    }
-
-    public static JavaParser.Builder buildJavaParser() {
-        return JavaParser.fromJavaVersion()
-                .classpath(JavaParser.runtimeClasspath());
     }
 
 }

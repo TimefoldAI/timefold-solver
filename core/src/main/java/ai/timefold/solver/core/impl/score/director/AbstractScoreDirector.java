@@ -19,9 +19,9 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.change.ProblemChangeDirector;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
-import ai.timefold.solver.core.impl.domain.constraintweight.descriptor.ConstraintConfigurationDescriptor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.lookup.LookUpManager;
+import ai.timefold.solver.core.impl.domain.solution.ConstraintWeightSupplier;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -825,12 +825,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     protected boolean isConstraintConfiguration(Object problemFactOrEntity) {
         SolutionDescriptor<Solution_> solutionDescriptor = scoreDirectorFactory.getSolutionDescriptor();
-        ConstraintConfigurationDescriptor<Solution_> constraintConfigurationDescriptor =
-                solutionDescriptor.getConstraintConfigurationDescriptor();
-        if (constraintConfigurationDescriptor == null) {
+        ConstraintWeightSupplier<Solution_, Score_> constraintWeightSupplier = solutionDescriptor.getConstraintWeightSupplier();
+        if (constraintWeightSupplier == null) {
             return false;
         }
-        return constraintConfigurationDescriptor.getConstraintConfigurationClass()
+        return constraintWeightSupplier.getProblemFactClass()
                 .isInstance(problemFactOrEntity);
     }
 

@@ -25,23 +25,33 @@ public final class MemberAccessorFactory {
      * Creates a new member accessor based on the given parameters.
      *
      * @param member never null, method or field to access
-     * @param memberAccessorType
+     * @param memberAccessorType never null
+     * @param domainAccessType never null
+     * @param classLoader null or {@link GizmoClassLoader} if domainAccessType is {@link DomainAccessType#GIZMO}.
+     * @return never null, new instance of the member accessor
+     */
+    public static MemberAccessor buildMemberAccessor(Member member, MemberAccessorType memberAccessorType,
+            DomainAccessType domainAccessType, ClassLoader classLoader) {
+        return buildMemberAccessor(member, memberAccessorType, null, domainAccessType, classLoader);
+    }
+
+    /**
+     * Creates a new member accessor based on the given parameters.
+     *
+     * @param member never null, method or field to access
+     * @param memberAccessorType never null
      * @param annotationClass the annotation the member was annotated with (used for error reporting)
-     * @param domainAccessType
+     * @param domainAccessType never null
      * @param classLoader null or {@link GizmoClassLoader} if domainAccessType is {@link DomainAccessType#GIZMO}.
      * @return never null, new instance of the member accessor
      */
     public static MemberAccessor buildMemberAccessor(Member member, MemberAccessorType memberAccessorType,
             Class<? extends Annotation> annotationClass, DomainAccessType domainAccessType, ClassLoader classLoader) {
-        switch (domainAccessType) {
-            case GIZMO:
-                return GizmoMemberAccessorFactory.buildGizmoMemberAccessor(member, annotationClass,
-                        (GizmoClassLoader) Objects.requireNonNull(classLoader));
-            case REFLECTION:
-                return buildReflectiveMemberAccessor(member, memberAccessorType, annotationClass);
-            default:
-                throw new IllegalStateException("The domainAccessType (" + domainAccessType + ") is not implemented.");
-        }
+        return switch (domainAccessType) {
+            case GIZMO -> GizmoMemberAccessorFactory.buildGizmoMemberAccessor(member, annotationClass,
+                    (GizmoClassLoader) Objects.requireNonNull(classLoader));
+            case REFLECTION -> buildReflectiveMemberAccessor(member, memberAccessorType, annotationClass);
+        };
     }
 
     private static MemberAccessor buildReflectiveMemberAccessor(Member member, MemberAccessorType memberAccessorType,
@@ -53,7 +63,11 @@ public final class MemberAccessorFactory {
             switch (memberAccessorType) {
                 case FIELD_OR_READ_METHOD:
                     if (!ReflectionHelper.isGetterMethod(method)) {
-                        ReflectionHelper.assertReadMethod(method, annotationClass);
+                        if (annotationClass == null) {
+                            ReflectionHelper.assertReadMethod(method);
+                        } else {
+                            ReflectionHelper.assertReadMethod(method, annotationClass);
+                        }
                         memberAccessor = new ReflectionMethodMemberAccessor(method);
                         break;
                     }
@@ -61,24 +75,34 @@ public final class MemberAccessorFactory {
                 case FIELD_OR_GETTER_METHOD:
                 case FIELD_OR_GETTER_METHOD_WITH_SETTER:
                     boolean getterOnly = memberAccessorType != MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER;
-                    ReflectionHelper.assertGetterMethod(method, annotationClass);
+                    if (annotationClass == null) {
+                        ReflectionHelper.assertGetterMethod(method);
+                    } else {
+                        ReflectionHelper.assertGetterMethod(method, annotationClass);
+                    }
                     memberAccessor = new ReflectionBeanPropertyMemberAccessor(method, getterOnly);
                     break;
                 default:
-                    throw new IllegalStateException("The memberAccessorType (" + memberAccessorType
-                            + ") is not implemented.");
+                    throw new IllegalStateException("The memberAccessorType (%s) is not implemented."
+                            .formatted(memberAccessorType));
             }
             if (memberAccessorType == MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER
                     && !memberAccessor.supportSetter()) {
-                throw new IllegalStateException("The class (" + method.getDeclaringClass()
-                        + ") has a @" + annotationClass.getSimpleName()
-                        + " annotated getter method (" + method
-                        + "), but lacks a setter for that property (" + memberAccessor.getName() + ").");
+                if (annotationClass == null) {
+                    throw new IllegalStateException(
+                            "The class (%s) has a getter method (%s), but lacks a setter for that property (%s)."
+                                    .formatted(method.getDeclaringClass(), method, memberAccessor.getName()));
+                } else {
+                    throw new IllegalStateException(
+                            "The class (%s) has a @%s-annotated getter method (%s), but lacks a setter for that property (%s)."
+                                    .formatted(method.getDeclaringClass(), annotationClass.getSimpleName(), method,
+                                            memberAccessor.getName()));
+                }
             }
             return memberAccessor;
         } else {
-            throw new IllegalStateException("Impossible state: the member (" + member + ")'s type is not a "
-                    + Field.class.getSimpleName() + " or a " + Method.class.getSimpleName() + ".");
+            throw new IllegalStateException("Impossible state: the member (%s)'s type is not a %s or a %s."
+                    .formatted(member, Field.class.getSimpleName(), Method.class.getSimpleName()));
         }
     }
 
@@ -104,9 +128,9 @@ public final class MemberAccessorFactory {
      * Creates a new member accessor based on the given parameters. Caches the result.
      *
      * @param member never null, method or field to access
-     * @param memberAccessorType
+     * @param memberAccessorType never null
      * @param annotationClass the annotation the member was annotated with (used for error reporting)
-     * @param domainAccessType
+     * @param domainAccessType never null
      * @return never null, new {@link MemberAccessor} instance unless already found in memberAccessorMap
      */
     public MemberAccessor buildAndCacheMemberAccessor(Member member, MemberAccessorType memberAccessorType,
@@ -115,6 +139,21 @@ public final class MemberAccessorFactory {
         return memberAccessorCache.computeIfAbsent(generatedClassName,
                 k -> MemberAccessorFactory.buildMemberAccessor(member, memberAccessorType, annotationClass, domainAccessType,
                         gizmoClassLoader));
+    }
+
+    /**
+     * Creates a new member accessor based on the given parameters. Caches the result.
+     *
+     * @param member never null, method or field to access
+     * @param memberAccessorType never null
+     * @param domainAccessType never null
+     * @return never null, new {@link MemberAccessor} instance unless already found in memberAccessorMap
+     */
+    public MemberAccessor buildAndCacheMemberAccessor(Member member, MemberAccessorType memberAccessorType,
+            DomainAccessType domainAccessType) {
+        String generatedClassName = GizmoMemberAccessorFactory.getGeneratedClassName(member);
+        return memberAccessorCache.computeIfAbsent(generatedClassName,
+                k -> MemberAccessorFactory.buildMemberAccessor(member, memberAccessorType, domainAccessType, gizmoClassLoader));
     }
 
     public GizmoClassLoader getGizmoClassLoader() {

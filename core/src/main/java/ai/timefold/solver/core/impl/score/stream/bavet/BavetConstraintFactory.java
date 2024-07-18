@@ -9,7 +9,6 @@ import java.util.function.Predicate;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
-import ai.timefold.solver.core.impl.domain.constraintweight.descriptor.ConstraintConfigurationDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.BavetAbstractUniConstraintStream;
@@ -42,12 +41,11 @@ public final class BavetConstraintFactory<Solution_>
     public BavetConstraintFactory(SolutionDescriptor<Solution_> solutionDescriptor, EnvironmentMode environmentMode) {
         this.solutionDescriptor = solutionDescriptor;
         this.environmentMode = Objects.requireNonNull(environmentMode);
-        ConstraintConfigurationDescriptor<Solution_> configurationDescriptor = solutionDescriptor
-                .getConstraintConfigurationDescriptor();
-        if (configurationDescriptor == null) {
+        var weightSupplier = solutionDescriptor.getConstraintWeightSupplier();
+        if (weightSupplier == null) {
             defaultConstraintPackage = determineDefaultConstraintPackage(solutionDescriptor.getSolutionClass().getPackage());
         } else {
-            defaultConstraintPackage = determineDefaultConstraintPackage(configurationDescriptor.getConstraintPackage());
+            defaultConstraintPackage = determineDefaultConstraintPackage(weightSupplier.getDefaultConstraintPackage());
         }
     }
 

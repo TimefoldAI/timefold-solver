@@ -136,11 +136,12 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         }
     }
 
+    @SuppressWarnings("unchecked")
     protected <Score_ extends Score<Score_>> void predictWorkingStepScore(AbstractStepScope<Solution_> stepScope,
             Object completedAction) {
         AbstractPhaseScope<Solution_> phaseScope = stepScope.getPhaseScope();
         // There is no need to recalculate the score, but we still need to set it
-        phaseScope.getSolutionDescriptor().setScore(phaseScope.getWorkingSolution(), stepScope.getScore());
+        phaseScope.getSolutionDescriptor().setScore(phaseScope.getWorkingSolution(), (Score_) stepScope.getScore());
         if (assertStepScoreFromScratch) {
             phaseScope.assertPredictedScoreFromScratch((Score_) stepScope.getScore(), completedAction);
         }

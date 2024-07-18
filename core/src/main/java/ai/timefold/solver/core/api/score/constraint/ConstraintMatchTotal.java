@@ -2,8 +2,6 @@ package ai.timefold.solver.core.api.score.constraint;
 
 import java.util.Set;
 
-import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
-import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.score.Score;
@@ -56,11 +54,11 @@ public interface ConstraintMatchTotal<Score_ extends Score<Score_>> {
     }
 
     /**
-     * The value of the {@link ConstraintWeight} annotated member of the {@link ConstraintConfiguration}.
-     * It's independent to the state of the {@link PlanningVariable planning variables}.
+     * The effective value of constraint weight after applying optional overrides.
+     * It is independent to the state of the {@link PlanningVariable planning variables}.
      * Do not confuse with {@link #getScore()}.
      *
-     * @return null if {@link ConstraintWeight} isn't used for this constraint
+     * @return never null
      */
     Score_ getConstraintWeight();
 

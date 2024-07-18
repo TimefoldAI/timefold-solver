@@ -7,6 +7,7 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 
+@Deprecated(forRemoval = true, since = "1.13.0")
 public final class TestdataConstraintWeighIncrementalScoreCalculator
         implements IncrementalScoreCalculator<TestdataConstraintConfigurationSolution, SimpleScore> {
 

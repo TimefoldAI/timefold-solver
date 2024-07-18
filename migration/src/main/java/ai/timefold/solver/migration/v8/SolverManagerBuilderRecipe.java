@@ -4,19 +4,19 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
+import ai.timefold.solver.migration.AbstractRecipe;
+
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Preconditions;
-import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.search.UsesMethod;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 
-public final class SolverManagerBuilderRecipe extends Recipe {
+public final class SolverManagerBuilderRecipe extends AbstractRecipe {
 
     private static final MatcherMeta[] MATCHER_METAS = {
             new MatcherMeta(
@@ -71,17 +71,12 @@ public final class SolverManagerBuilderRecipe extends Recipe {
                         String pattern = "#{any(" + matcherMeta.classFqn + ")}" + matcherMeta.pattern;
 
                         return JavaTemplate.builder(pattern)
-                                .javaParser(buildJavaParser())
+                                .javaParser(JAVA_PARSER)
                                 .build()
                                 .apply(getCursor(), e.getCoordinates().replace(),
                                         Stream.concat(Stream.of(select), arguments.stream()).toArray());
                     }
                 });
-    }
-
-    public static JavaParser.Builder buildJavaParser() {
-        return JavaParser.fromJavaVersion()
-                .classpath(JavaParser.runtimeClasspath());
     }
 
     private static final class MatcherMeta {

@@ -1,22 +1,22 @@
-package ai.timefold.solver.core.impl.domain.constraintweight.descriptor;
+package ai.timefold.solver.core.impl.domain.solution;
 
 import java.util.Objects;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
+import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
+ * @deprecated Use {@link ConstraintWeightOverrides} instead.
  */
-public class ConstraintWeightDescriptor<Solution_> {
-
-    private final ConstraintConfigurationDescriptor<Solution_> constraintConfigurationDescriptor;
+@Deprecated(forRemoval = true, since = "1.13.0")
+final class ConstraintWeightDescriptor<Solution_> {
 
     private final ConstraintRef constraintRef;
     private final MemberAccessor memberAccessor;
@@ -25,9 +25,7 @@ public class ConstraintWeightDescriptor<Solution_> {
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public ConstraintWeightDescriptor(ConstraintConfigurationDescriptor<Solution_> constraintConfigurationDescriptor,
-            MemberAccessor memberAccessor) {
-        this.constraintConfigurationDescriptor = constraintConfigurationDescriptor;
+    public ConstraintWeightDescriptor(MemberAccessor memberAccessor) {
         ConstraintWeight constraintWeightAnnotation = memberAccessor.getAnnotation(ConstraintWeight.class);
         String constraintPackage = constraintWeightAnnotation.constraintPackage();
         if (constraintPackage.isEmpty()) {
@@ -57,9 +55,7 @@ public class ConstraintWeightDescriptor<Solution_> {
         return memberAccessor;
     }
 
-    public Function<Solution_, Score<?>> createExtractor() {
-        SolutionDescriptor<Solution_> solutionDescriptor = constraintConfigurationDescriptor.getSolutionDescriptor();
-        MemberAccessor constraintConfigurationMemberAccessor = solutionDescriptor.getConstraintConfigurationMemberAccessor();
+    public Function<Solution_, Score<?>> createExtractor(MemberAccessor constraintConfigurationMemberAccessor) {
         return (Solution_ solution) -> {
             Object constraintConfiguration = Objects.requireNonNull(
                     constraintConfigurationMemberAccessor.executeGetter(solution),

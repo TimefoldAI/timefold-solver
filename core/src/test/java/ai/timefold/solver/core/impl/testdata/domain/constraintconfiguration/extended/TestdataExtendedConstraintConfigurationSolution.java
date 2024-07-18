@@ -6,6 +6,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
+@Deprecated(forRemoval = true, since = "1.13.0")
 @PlanningSolution
 public class TestdataExtendedConstraintConfigurationSolution extends TestdataSolution {
 

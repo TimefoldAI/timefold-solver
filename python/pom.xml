@@ -12,6 +12,16 @@
   <artifactId>timefold-solver-python-parent</artifactId>
   <packaging>pom</packaging>
 
+  <name>Timefold Solver for Python</name>
+  <description>
+    Timefold solves planning problems.
+    This lightweight, embeddable planning engine implements powerful and scalable algorithms
+    to optimize business resource scheduling and planning.
+
+    This module contains the Python implementation of the solver.
+  </description>
+  <url>https://timefold.ai</url>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <version.apache.collections4>4.4</version.apache.collections4>

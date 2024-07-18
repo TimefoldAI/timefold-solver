@@ -199,45 +199,83 @@ public final class ReflectionHelper {
         return !leafMethod.getDeclaringClass().equals(parentMethod.getClass());
     }
 
-    public static void assertGetterMethod(Method getterMethod, Class<? extends Annotation> annotationClass) {
+    public static void assertGetterMethod(Method getterMethod) {
         if (getterMethod.getParameterTypes().length != 0) {
-            throw new IllegalStateException("The getterMethod (" + getterMethod + ") with a "
-                    + annotationClass.getSimpleName() + " annotation must not have any parameters ("
-                    + Arrays.toString(getterMethod.getParameterTypes()) + ").");
+            throw new IllegalStateException("The getterMethod (%s) must not have any parameters (%s)."
+                    .formatted(getterMethod, Arrays.toString(getterMethod.getParameterTypes())));
         }
-        String methodName = getterMethod.getName();
+        var methodName = getterMethod.getName();
         if (methodName.startsWith(PROPERTY_ACCESSOR_PREFIX_GET)) {
             if (getterMethod.getReturnType() == void.class) {
-                throw new IllegalStateException("The getterMethod (" + getterMethod + ") with a "
-                        + annotationClass.getSimpleName() + " annotation must have a non-void return type ("
-                        + getterMethod.getReturnType() + ").");
+                throw new IllegalStateException(
+                        "The getterMethod (%s) must have a non-void return type (%s)."
+                                .formatted(getterMethod, getterMethod.getReturnType()));
             }
         } else if (methodName.startsWith(PROPERTY_ACCESSOR_PREFIX_IS)) {
             if (getterMethod.getReturnType() != boolean.class) {
-                throw new IllegalStateException("The getterMethod (" + getterMethod + ") with a "
-                        + annotationClass.getSimpleName() + " annotation must have a primitive boolean return type ("
-                        + getterMethod.getReturnType() + ") or use another prefix in its methodName ("
-                        + methodName + ").\n"
-                        + "Maybe use '" + PROPERTY_ACCESSOR_PREFIX_GET + "' instead of '" + PROPERTY_ACCESSOR_PREFIX_IS + "'?");
+                throw new IllegalStateException("""
+                        The getterMethod (%s) must have a primitive boolean return type (%s) \
+                        or use another prefix in its methodName (%s).
+                        Maybe use '%s' instead of '%s'?"""
+                        .formatted(getterMethod, getterMethod.getReturnType(), methodName, PROPERTY_ACCESSOR_PREFIX_GET,
+                                PROPERTY_ACCESSOR_PREFIX_IS));
             }
         } else {
-            throw new IllegalStateException("The getterMethod (" + getterMethod + ") with a "
-                    + annotationClass.getSimpleName() + " annotation has a methodName ("
-                    + methodName + ") that does not start with a valid prefix ("
-                    + Arrays.toString(PROPERTY_ACCESSOR_PREFIXES) + ").");
+            throw new IllegalStateException(
+                    "The getterMethod (%s) has a methodName (%s) that does not start with a valid prefix (%s)."
+                            .formatted(getterMethod, methodName, Arrays.toString(PROPERTY_ACCESSOR_PREFIXES)));
+        }
+    }
+
+    public static void assertGetterMethod(Method getterMethod, Class<? extends Annotation> annotationClass) {
+        if (getterMethod.getParameterTypes().length != 0) {
+            throw new IllegalStateException("The getterMethod (%s) with a %s annotation must not have any parameters (%s)."
+                    .formatted(getterMethod, annotationClass.getSimpleName(),
+                            Arrays.toString(getterMethod.getParameterTypes())));
+        }
+        var methodName = getterMethod.getName();
+        if (methodName.startsWith(PROPERTY_ACCESSOR_PREFIX_GET)) {
+            if (getterMethod.getReturnType() == void.class) {
+                throw new IllegalStateException(
+                        "The getterMethod (%s) with a %s annotation must have a non-void return type (%s)."
+                                .formatted(getterMethod, annotationClass.getSimpleName(), getterMethod.getReturnType()));
+            }
+        } else if (methodName.startsWith(PROPERTY_ACCESSOR_PREFIX_IS)) {
+            if (getterMethod.getReturnType() != boolean.class) {
+                throw new IllegalStateException("""
+                        The getterMethod (%s) with a %s annotation must have a primitive boolean return type (%s) \
+                        or use another prefix in its methodName (%s).
+                        Maybe use '%s' instead of '%s'?"""
+                        .formatted(getterMethod, annotationClass.getSimpleName(), getterMethod.getReturnType(), methodName,
+                                PROPERTY_ACCESSOR_PREFIX_GET, PROPERTY_ACCESSOR_PREFIX_IS));
+            }
+        } else {
+            throw new IllegalStateException(
+                    "The getterMethod (%s) with a %s annotation has a methodName (%s) that does not start with a valid prefix (%s)."
+                            .formatted(getterMethod, annotationClass.getSimpleName(), methodName,
+                                    Arrays.toString(PROPERTY_ACCESSOR_PREFIXES)));
+        }
+    }
+
+    public static void assertReadMethod(Method readMethod) {
+        if (readMethod.getParameterTypes().length != 0) {
+            throw new IllegalStateException("The readMethod (%s) must not have any parameters (%s)."
+                    .formatted(readMethod, Arrays.toString(readMethod.getParameterTypes())));
+        }
+        if (readMethod.getReturnType() == void.class) {
+            throw new IllegalStateException("The readMethod (%s) must have a non-void return type (%s)."
+                    .formatted(readMethod, readMethod.getReturnType()));
         }
     }
 
     public static void assertReadMethod(Method readMethod, Class<? extends Annotation> annotationClass) {
         if (readMethod.getParameterTypes().length != 0) {
-            throw new IllegalStateException("The readMethod (" + readMethod + ") with a "
-                    + annotationClass.getSimpleName() + " annotation must not have any parameters ("
-                    + Arrays.toString(readMethod.getParameterTypes()) + ").");
+            throw new IllegalStateException("The readMethod (%s) with a %s annotation must not have any parameters (%s)."
+                    .formatted(readMethod, annotationClass.getSimpleName(), Arrays.toString(readMethod.getParameterTypes())));
         }
         if (readMethod.getReturnType() == void.class) {
-            throw new IllegalStateException("The readMethod (" + readMethod + ") with a "
-                    + annotationClass.getSimpleName() + " annotation must have a non-void return type ("
-                    + readMethod.getReturnType() + ").");
+            throw new IllegalStateException("The readMethod (%s) with a %s annotation must have a non-void return type (%s)."
+                    .formatted(readMethod, annotationClass.getSimpleName(), readMethod.getReturnType()));
         }
     }
 

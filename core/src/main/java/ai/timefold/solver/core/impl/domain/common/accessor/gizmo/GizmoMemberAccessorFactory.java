@@ -25,6 +25,13 @@ public class GizmoMemberAccessorFactory {
         return member.getDeclaringClass().getName() + "$Timefold$MemberAccessor$" + memberType + "$" + memberName;
     }
 
+    /**
+     *
+     * @param member never null
+     * @param annotationClass may be null if the member is not annotated
+     * @param gizmoClassLoader never null
+     * @return never null
+     */
     public static MemberAccessor buildGizmoMemberAccessor(Member member, Class<? extends Annotation> annotationClass,
             GizmoClassLoader gizmoClassLoader) {
         try {

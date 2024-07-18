@@ -82,7 +82,7 @@ There is no need to dynamically change your score calculation based on the datas
 ====
 
 In xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint Streams],
-if you set xref:constraints-and-score/constraint-configuration.adoc#constraintWeight[constraint weight] to zero,
+if you set the xref:constraints-and-score/constraint-configuration.adoc#definingAndOverridingConstraintWeights[constraint weight] to zero,
 the constraint will be disabled and have no performance impact at all.
 
 

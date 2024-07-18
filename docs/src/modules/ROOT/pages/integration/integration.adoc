@@ -1014,8 +1014,9 @@ Many human planners fail to accept this, often because they feel threatened by a
 
 But despite that, both can benefit if the human planner becomes the supervisor of Timefold Solver:
 
-* *The human planner defines, validates and tweaks the score function.*
-** The human planner tweaks the constraint weights of the xref:constraints-and-score/constraint-configuration.adoc[constraint configuration] in a UI, as the business priorities change over time.
+* *The human planner defines, validates, and tweaks the score function.*
+** The human planner tweaks the constraint weights of the xref:constraints-and-score/constraint-configuration.adoc[constraint configuration] in a UI,
+as the business priorities change over time.
 ** When the business changes, the score function often needs to change too.
 The human planner can notify the developers to add, change or remove score constraints.
 * *The human planner is always in control of Timefold Solver.*

@@ -11,7 +11,7 @@
 
   <artifactId>timefold-solver-spring-boot-autoconfigure</artifactId>
 
-  <name>Timefold Solver Spring Boot autoconfigure</name>
+  <name>Timefold Solver Spring Boot - Autoconfigure</name>
   <description>
     Timefold solves planning problems.
     This lightweight, embeddable planning engine implements powerful and scalable algorithms

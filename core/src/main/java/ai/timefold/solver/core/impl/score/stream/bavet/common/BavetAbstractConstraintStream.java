@@ -53,8 +53,10 @@ public abstract class BavetAbstractConstraintStream<Solution_> extends AbstractC
     // Penalize/reward
     // ************************************************************************
 
-    protected Constraint buildConstraint(String constraintPackage, String constraintName, Score<?> constraintWeight,
-            ScoreImpactType impactType, Object justificationFunction, Object indictedObjectsMapping,
+    @SuppressWarnings("unchecked")
+    protected <Score_ extends Score<Score_>> Constraint buildConstraint(String constraintPackage, String constraintName,
+            String description, Score_ constraintWeight, ScoreImpactType impactType, Object justificationFunction,
+            Object indictedObjectsMapping,
             BavetScoringConstraintStream<Solution_> stream) {
         var resolvedConstraintPackage =
                 Objects.requireNonNullElseGet(constraintPackage, this.constraintFactory::getDefaultConstraintPackage);
@@ -64,12 +66,9 @@ public abstract class BavetAbstractConstraintStream<Solution_> extends AbstractC
                 Objects.requireNonNullElseGet(indictedObjectsMapping, this::getDefaultIndictedObjectsMapping);
         var isConstraintWeightConfigurable = constraintWeight == null;
         var constraintRef = ConstraintRef.of(resolvedConstraintPackage, constraintName);
-        var constraintWeightExtractor = isConstraintWeightConfigurable
-                ? buildConstraintWeightExtractor(constraintRef)
-                : buildConstraintWeightExtractor(constraintRef, constraintWeight);
-        var constraint =
-                new BavetConstraint<>(constraintFactory, constraintRef, constraintWeightExtractor, impactType,
-                        resolvedJustificationMapping, resolvedIndictedObjectsMapping, isConstraintWeightConfigurable, stream);
+        var constraint = new BavetConstraint<>(constraintFactory, constraintRef, description,
+                isConstraintWeightConfigurable ? null : constraintWeight, impactType, resolvedJustificationMapping,
+                resolvedIndictedObjectsMapping, stream);
         stream.setConstraint(constraint);
         return constraint;
     }

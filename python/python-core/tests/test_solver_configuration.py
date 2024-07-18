@@ -1,9 +1,8 @@
-from timefold.solver import *
-from timefold.solver.domain import *
-from timefold.solver.config import *
-from timefold.solver.score import *
-
 from dataclasses import dataclass, field
+from timefold.solver import *
+from timefold.solver.config import *
+from timefold.solver.domain import *
+from timefold.solver.score import *
 from typing import Annotated, List
 
 
@@ -18,14 +17,9 @@ def test_solver_configuration():
     def my_constraints(constraint_factory: ConstraintFactory):
         return [
             constraint_factory.for_each(Entity)
-                              .reward_configurable(lambda entity: entity.value)
-                              .as_constraint('Maximize value'),
+                              .reward(SimpleScore.ONE, lambda entity: entity.value)
+            .as_constraint('maximize_value'),
         ]
-
-    @constraint_configuration
-    @dataclass
-    class ConstraintConfiguration:
-        maximize_value: Annotated[SimpleScore, ConstraintWeight('Maximize value')] = field(default=SimpleScore.ONE)
 
     @planning_solution
     @dataclass
@@ -33,8 +27,7 @@ def test_solver_configuration():
         entities: Annotated[List[Entity], PlanningEntityCollectionProperty]
         value_range: Annotated[List[int], ValueRangeProvider]
         score: Annotated[SimpleScore, PlanningScore] = field(default=None)
-        configuration: Annotated[ConstraintConfiguration, ConstraintConfigurationProvider] = (
-            field(default_factory=ConstraintConfiguration))
+        weight_overrides: ConstraintWeightOverrides = field(default=None)
 
     solver_config = SolverConfig(
         solution_class=Solution,
@@ -43,12 +36,15 @@ def test_solver_configuration():
             constraint_provider_function=my_constraints,
         ),
         termination_config=TerminationConfig(
-            best_score_limit='6'
+            best_score_limit='6',
+            spent_limit=Duration(seconds=1)
         )
     )
 
-    problem: Solution = Solution([Entity('A')], [1, 2, 3],
-                                 configuration=ConstraintConfiguration(maximize_value=SimpleScore.of(2)))
+    overrides = ConstraintWeightOverrides({
+        "maximize_value": SimpleScore.of(2)
+    })
+    problem: Solution = Solution([Entity('A')], [1, 2, 3], weight_overrides=overrides)
 
     solver = SolverFactory.create(solver_config).build_solver()
     solution = solver.solve(problem)

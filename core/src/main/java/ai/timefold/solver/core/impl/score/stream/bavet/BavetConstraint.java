@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.bavet;
 
 import java.util.Set;
-import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
@@ -10,17 +9,16 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetScoringConstr
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
 
-public final class BavetConstraint<Solution_>
-        extends AbstractConstraint<Solution_, BavetConstraint<Solution_>, BavetConstraintFactory<Solution_>> {
+public final class BavetConstraint<Solution_> extends
+        AbstractConstraint<Solution_, BavetConstraint<Solution_>, BavetConstraintFactory<Solution_>> {
 
     private final BavetScoringConstraintStream<Solution_> scoringConstraintStream;
 
     public BavetConstraint(BavetConstraintFactory<Solution_> constraintFactory, ConstraintRef constraintRef,
-            Function<Solution_, Score<?>> constraintWeightExtractor, ScoreImpactType scoreImpactType,
-            Object justificationMapping, Object indictedObjectsMapping, boolean isConstraintWeightConfigurable,
-            BavetScoringConstraintStream<Solution_> scoringConstraintStream) {
-        super(constraintFactory, constraintRef, constraintWeightExtractor, scoreImpactType, isConstraintWeightConfigurable,
-                justificationMapping, indictedObjectsMapping);
+            String description, Score<?> constraintWeight, ScoreImpactType scoreImpactType, Object justificationMapping,
+            Object indictedObjectsMapping, BavetScoringConstraintStream<Solution_> scoringConstraintStream) {
+        super(constraintFactory, constraintRef, description, constraintWeight, scoreImpactType, justificationMapping,
+                indictedObjectsMapping);
         this.scoringConstraintStream = scoringConstraintStream;
     }
 
