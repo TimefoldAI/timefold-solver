@@ -10,8 +10,18 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>timefold-solver-python-core</artifactId>
 
+  <name>Timefold Solver for Python - Core</name>
+  <description>
+    Timefold solves planning problems.
+    This lightweight, embeddable planning engine implements powerful and scalable algorithms
+    to optimize business resource scheduling and planning.
+
+    This module contains the core implementation of the Python solver.
+  </description>
+  <url>https://timefold.ai</url>
+
   <properties>
-    <java.module.name>ai.timefold.solver.python</java.module.name>
+    <java.module.name>ai.timefold.solver.python.core</java.module.name>
     <sonar.test.inclusions>**/test*/**</sonar.test.inclusions>
   </properties>
 

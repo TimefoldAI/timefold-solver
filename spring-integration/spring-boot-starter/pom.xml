@@ -11,7 +11,7 @@
 
   <artifactId>timefold-solver-spring-boot-starter</artifactId>
 
-  <name>Timefold Solver Spring Boot starter</name>
+  <name>Timefold Solver Spring Boot - Starter</name>
   <description>
     Timefold solves planning problems.
     This lightweight, embeddable planning engine implements powerful and scalable algorithms
