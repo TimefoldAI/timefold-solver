@@ -91,15 +91,6 @@ jobs:
         run:
           pip install tox build
 
-      - name: Quickly build timefold-solver
-        working-directory: ./timefold-solver
-        run: mvn -B -Dquickly clean install
-
-      - name: Quickly Build timefold-solver-enterprise
-        working-directory: ./timefold-solver-enterprise
-        shell: bash
-        run: mvn -B -Dquickly clean install
-
       - name: Build timefold solver python
         working-directory: ./timefold-solver
         run: python -m build
