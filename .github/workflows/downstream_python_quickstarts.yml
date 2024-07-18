@@ -81,7 +81,7 @@ jobs:
       - name: Install build
         run:
           pip install build
-      - name: Build timefold-solver
+      - name: Build Timefold Solver for Python
         working-directory: ./timefold-solver
         run: python -m build
       - name: Build and test timefold-quickstarts

@@ -13,13 +13,14 @@ on:
 jobs:
   native:
     concurrency:
-      group: pull_request_native-${{ github.event_name }}-${{ github.head_ref }}-${{ matrix.module }}-${{ matrix.java-version }}
+      group: pull_request_native-${{ github.event_name }}-${{ github.head_ref }}-${{matrix.os}}-${{ matrix.module }}-${{ matrix.java-version }}
       cancel-in-progress: true
-    runs-on: ubuntu-latest
+    runs-on: ${{matrix.os}}
     strategy:
       matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
         module: ["spring-integration", "quarkus-integration"]
-        java-version: [ 17, 21, 22 ] #Latest two LTS + latest non-LTS.
+        java-version: [ 21 ] # Latest LTS
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
