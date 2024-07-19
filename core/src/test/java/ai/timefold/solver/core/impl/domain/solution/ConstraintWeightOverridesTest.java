@@ -84,15 +84,15 @@ class ConstraintWeightOverridesTest {
             // Default weights
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.triggerVariableListeners();
-            assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(15));
+            assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(5));
 
             // Only second constraint is active
             solution.setConstraintWeightOverrides(ConstraintWeightOverrides.of(Map.of(
                     FIRST_WEIGHT, SimpleScore.ZERO,
-                    SECOND_WEIGHT, SimpleScore.ONE)));
+                    SECOND_WEIGHT, SimpleScore.of(2))));
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.triggerVariableListeners();
-            assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(5));
+            assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(10));
 
             // Unknown constraint is present
             solution.setConstraintWeightOverrides(ConstraintWeightOverrides.of(Map.of(
