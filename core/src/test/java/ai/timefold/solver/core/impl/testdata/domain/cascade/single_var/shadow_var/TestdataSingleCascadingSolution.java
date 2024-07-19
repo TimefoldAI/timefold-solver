@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.cascade.single_var;
+package ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.shadow_var;
 
 import java.util.List;
 import java.util.stream.IntStream;

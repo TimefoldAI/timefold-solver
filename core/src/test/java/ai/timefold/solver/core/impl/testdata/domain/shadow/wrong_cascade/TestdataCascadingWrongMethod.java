@@ -1,14 +1,14 @@
 package ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.variable.CascadingUpdateListener;
+import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadingEntity;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadingSolution;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.shadow_var.TestdataSingleCascadingEntity;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.shadow_var.TestdataSingleCascadingSolution;
 
 @PlanningEntity
 public class TestdataCascadingWrongMethod {
@@ -26,10 +26,10 @@ public class TestdataCascadingWrongMethod {
     private TestdataCascadingWrongMethod previous;
     @NextElementShadowVariable(sourceVariableName = "valueList")
     private TestdataCascadingWrongMethod next;
-    @CascadingUpdateListener(targetMethodName = "updateCascadeValue", sourceVariableName = "entity")
-    @CascadingUpdateListener(targetMethodName = "updateCascadeValue", sourceVariableName = "previous")
+    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue", sourceVariableName = "entity")
+    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue", sourceVariableName = "previous")
     private Integer cascadeValue;
-    @CascadingUpdateListener(targetMethodName = "badUpdateCascadeValueWithReturnType", sourceVariableName = "entity")
+    @CascadingUpdateShadowVariable(targetMethodName = "badUpdateCascadeValueWithReturnType", sourceVariableName = "entity")
     private Integer cascadeValueReturnType;
     private Integer value;
 

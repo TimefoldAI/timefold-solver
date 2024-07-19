@@ -355,11 +355,20 @@ public final class GizmoMemberAccessorImplementor {
      * }
      * </pre>
      *
-     * For a method
+     * For a method with returning type
      *
      * <pre>
      * Object executeGetter(Object bean) {
      *     return ((DeclaringClass) bean).method();
+     * }
+     * </pre>
+     *
+     * For a method without returning type
+     *
+     * <pre>
+     * Object executeGetter(Object bean) {
+     *     ((DeclaringClass) bean).method();
+     *     return null;
      * }
      * </pre>
      *

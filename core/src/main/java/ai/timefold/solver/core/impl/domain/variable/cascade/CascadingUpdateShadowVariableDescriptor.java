@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.variable.AbstractVariableListener;
-import ai.timefold.solver.core.api.domain.variable.CascadingUpdateListener;
+import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
@@ -26,7 +26,7 @@ import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementVariable
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
-public final class CascadingUpdateVariableListenerDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
+public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
 
     private final List<TargetVariable<Solution_>> targetVariables;
     private ListVariableDescriptor<Solution_> sourceListVariable;
@@ -37,7 +37,7 @@ public final class CascadingUpdateVariableListenerDescriptor<Solution_> extends 
     // This flag defines if the planning variable generates a listener, which will be notified later by the event system
     private boolean notifiable = true;
 
-    public CascadingUpdateVariableListenerDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
+    public CascadingUpdateShadowVariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
         super(ordinal, entityDescriptor, variableMemberAccessor);
         targetVariables = new ArrayList<>();
@@ -53,11 +53,11 @@ public final class CascadingUpdateVariableListenerDescriptor<Solution_> extends 
         this.notifiable = notifiable;
     }
 
-    private List<CascadingUpdateListener> getDeclaredListeners(MemberAccessor variableMemberAccessor) {
-        List<CascadingUpdateListener> declaredListenerList = Arrays.asList(variableMemberAccessor
-                .getDeclaredAnnotationsByType(CascadingUpdateListener.class));
+    private List<CascadingUpdateShadowVariable> getDeclaredListeners(MemberAccessor variableMemberAccessor) {
+        var declaredListenerList = Arrays.asList(variableMemberAccessor
+                .getDeclaredAnnotationsByType(CascadingUpdateShadowVariable.class));
         var targetMethodList = declaredListenerList.stream()
-                .map(CascadingUpdateListener::targetMethodName)
+                .map(CascadingUpdateShadowVariable::targetMethodName)
                 .distinct()
                 .toList();
         if (targetMethodList.size() > 1) {
@@ -66,7 +66,7 @@ public final class CascadingUpdateVariableListenerDescriptor<Solution_> extends 
                             The entityClass (%s) has multiple @%s in the annotated property (%s), and there are distinct targetMethodName values [%s].
                             Maybe update targetMethodName to use same method in the field %s."""
                             .formatted(entityDescriptor.getEntityClass(),
-                                    CascadingUpdateListener.class.getSimpleName(),
+                                    CascadingUpdateShadowVariable.class.getSimpleName(),
                                     variableMemberAccessor.getName(),
                                     String.join(", ", targetMethodList),
                                     variableMemberAccessor.getName()));
@@ -86,9 +86,9 @@ public final class CascadingUpdateVariableListenerDescriptor<Solution_> extends 
     @Override
     public void linkVariableDescriptors(DescriptorPolicy descriptorPolicy) {
         for (TargetVariable<Solution_> targetVariable : targetVariables) {
-            List<CascadingUpdateListener> declaredListenerList =
+            var declaredListenerList =
                     getDeclaredListeners(targetVariable.variableMemberAccessor());
-            for (CascadingUpdateListener listener : declaredListenerList) {
+            for (var listener : declaredListenerList) {
                 linkVariableDescriptorToSource(listener);
             }
             targetVariableDescriptorList.add(targetVariable.entityDescriptor()
@@ -104,7 +104,7 @@ public final class CascadingUpdateVariableListenerDescriptor<Solution_> extends 
         if (listVariableDescriptorList.size() > 1) {
             throw new IllegalArgumentException(
                     "The listener @%s does not support models with multiple planning list variables [%s].".formatted(
-                            CascadingUpdateListener.class.getSimpleName(),
+                            CascadingUpdateShadowVariable.class.getSimpleName(),
                             listVariableDescriptorList.stream().map(
                                     v -> v.getEntityDescriptor().getEntityClass().getSimpleName() + "::" + v.getVariableName())
                                     .collect(joining(", "))));
@@ -127,7 +127,7 @@ public final class CascadingUpdateVariableListenerDescriptor<Solution_> extends 
             throw new IllegalArgumentException(
                     "The entityClass (%s) has an @%s annotated property (%s), but the method \"%s\" is not found."
                             .formatted(entityDescriptor.getEntityClass(),
-                                    CascadingUpdateListener.class.getSimpleName(),
+                                    CascadingUpdateShadowVariable.class.getSimpleName(),
                                     variableMemberAccessor.getName(),
                                     targetMethodName));
         }
@@ -135,7 +135,7 @@ public final class CascadingUpdateVariableListenerDescriptor<Solution_> extends 
                 MemberAccessorFactory.MemberAccessorType.REGULAR_METHOD, null, descriptorPolicy.getDomainAccessType());
     }
 
-    public void linkVariableDescriptorToSource(CascadingUpdateListener listener) {
+    public void linkVariableDescriptorToSource(CascadingUpdateShadowVariable listener) {
         var sourceDescriptor = entityDescriptor.getShadowVariableDescriptor(listener.sourceVariableName());
         if (sourceDescriptor == null) {
             throw new IllegalArgumentException(
@@ -143,7 +143,7 @@ public final class CascadingUpdateVariableListenerDescriptor<Solution_> extends 
                             The entityClass (%s) has an @%s annotated property (%s), but the shadow variable "%s" is not found.
                             Maybe update sourceVariableName to an existing shadow variable in the entity %s."""
                             .formatted(entityDescriptor.getEntityClass(),
-                                    CascadingUpdateListener.class.getSimpleName(),
+                                    CascadingUpdateShadowVariable.class.getSimpleName(),
                                     variableMemberAccessor.getName(),
                                     listener.sourceVariableName(),
                                     entityDescriptor.getEntityClass()));
@@ -160,7 +160,7 @@ public final class CascadingUpdateVariableListenerDescriptor<Solution_> extends 
 
     @Override
     public Collection<Class<? extends AbstractVariableListener>> getVariableListenerClasses() {
-        return Collections.singleton(CascadingUpdateVariableListener.class);
+        return Collections.singleton(CollectionCascadingUpdateShadowVariableListener.class);
     }
 
     @Override
@@ -175,13 +175,25 @@ public final class CascadingUpdateVariableListenerDescriptor<Solution_> extends 
         // Therefore, only one listener will be generated when multiple descriptors use the same method,
         //and the notifiable flag won't be enabled in such cases.
         if (notifiable) {
-            return List
-                    .of(new VariableListenerWithSources<>(
-                            new CascadingUpdateVariableListener<>(targetVariableDescriptorList,
-                                    nextElementShadowVariableDescriptor,
-                                    supplyManager.demand(new NextElementVariableDemand<>(sourceListVariable)),
-                                    targetMethod),
-                            getSourceVariableDescriptorList()));
+            AbstractCascadingUpdateShadowVariableListener<Solution_> listener;
+            if (nextElementShadowVariableDescriptor != null) {
+                if (targetVariableDescriptorList.size() == 1) {
+                    listener = new SingleCascadingUpdateShadowVariableListener<>(targetVariableDescriptorList,
+                            nextElementShadowVariableDescriptor, targetMethod);
+                } else {
+                    listener = new CollectionCascadingUpdateShadowVariableListener<>(targetVariableDescriptorList,
+                            nextElementShadowVariableDescriptor, targetMethod);
+                }
+            } else {
+                if (targetVariableDescriptorList.size() == 1) {
+                    listener = new SingleCascadingUpdateShadowVariableWithSupplyListener<>(targetVariableDescriptorList,
+                            supplyManager.demand(new NextElementVariableDemand<>(sourceListVariable)), targetMethod);
+                } else {
+                    listener = new CollectionCascadingUpdateShadowVariableWithSupplyListener<>(targetVariableDescriptorList,
+                            supplyManager.demand(new NextElementVariableDemand<>(sourceListVariable)), targetMethod);
+                }
+            }
+            return Collections.singleton(new VariableListenerWithSources<>(listener, getSourceVariableDescriptorList()));
         } else {
             return Collections.emptyList();
         }

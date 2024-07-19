@@ -1,61 +1,50 @@
-package ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var;
+package ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.supply;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.variable.CascadingUpdateListener;
+import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 
 @PlanningEntity
-public class TestdataMultipleCascadingValue {
+public class TestdataMultipleCascadingWithSupplyValue {
 
-    public static EntityDescriptor<TestdataMultipleCascadingSolution> buildEntityDescriptor() {
-        return TestdataMultipleCascadingSolution.buildSolutionDescriptor()
-                .findEntityDescriptorOrFail(TestdataMultipleCascadingValue.class);
+    public static EntityDescriptor<TestdataMultipleCascadingWithSupplySolution> buildEntityDescriptor() {
+        return TestdataMultipleCascadingWithSupplySolution.buildSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataMultipleCascadingWithSupplyValue.class);
     }
 
     @InverseRelationShadowVariable(sourceVariableName = "valueList")
-    private TestdataMultipleCascadingEntity entity;
+    private TestdataMultipleCascadingWithSupplyEntity entity;
     @PreviousElementShadowVariable(sourceVariableName = "valueList")
-    private TestdataMultipleCascadingValue previous;
-    @NextElementShadowVariable(sourceVariableName = "valueList")
-    private TestdataMultipleCascadingValue next;
-    @CascadingUpdateListener(targetMethodName = "updateCascadeValue", sourceVariableName = "entity")
-    @CascadingUpdateListener(targetMethodName = "updateCascadeValue", sourceVariableName = "previous")
+    private TestdataMultipleCascadingWithSupplyValue previous;
+    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue", sourceVariableName = "entity")
+    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue", sourceVariableName = "previous")
     private Integer cascadeValue;
-    @CascadingUpdateListener(targetMethodName = "updateCascadeValue", sourceVariableName = "entity")
-    @CascadingUpdateListener(targetMethodName = "updateCascadeValue", sourceVariableName = "previous")
+    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue", sourceVariableName = "entity")
+    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue", sourceVariableName = "previous")
     private Integer secondCascadeValue;
     private Integer value;
     private int numberOfCalls = 0;
 
-    public TestdataMultipleCascadingValue(Integer value) {
+    public TestdataMultipleCascadingWithSupplyValue(Integer value) {
         this.value = value;
     }
 
-    public TestdataMultipleCascadingEntity getEntity() {
+    public TestdataMultipleCascadingWithSupplyEntity getEntity() {
         return entity;
     }
 
-    public void setEntity(TestdataMultipleCascadingEntity entity) {
+    public void setEntity(TestdataMultipleCascadingWithSupplyEntity entity) {
         this.entity = entity;
     }
 
-    public TestdataMultipleCascadingValue getPrevious() {
+    public TestdataMultipleCascadingWithSupplyValue getPrevious() {
         return previous;
     }
 
-    public void setPrevious(TestdataMultipleCascadingValue previous) {
+    public void setPrevious(TestdataMultipleCascadingWithSupplyValue previous) {
         this.previous = previous;
-    }
-
-    public TestdataMultipleCascadingValue getNext() {
-        return next;
-    }
-
-    public void setNext(TestdataMultipleCascadingValue next) {
-        this.next = next;
     }
 
     public Integer getValue() {
@@ -95,6 +84,10 @@ public class TestdataMultipleCascadingValue {
         if (secondCascadeValue == null || secondCascadeValue != value + 1) {
             secondCascadeValue = value + 1;
         }
+    }
+
+    public void reset() {
+        numberOfCalls = 0;
     }
 
     @Override

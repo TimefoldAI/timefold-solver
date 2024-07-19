@@ -20,15 +20,8 @@ import java.lang.annotation.Target;
  */
 @Target({ FIELD })
 @Retention(RUNTIME)
-@Repeatable(CascadingUpdateListener.List.class)
-public @interface CascadingUpdateListener {
-
-    /**
-     * The target method element.
-     * 
-     * @return method name of the source host element which will update the shadow variable
-     */
-    String targetMethodName();
+@Repeatable(CascadingUpdateShadowVariable.List.class)
+public @interface CascadingUpdateShadowVariable {
 
     /**
      * The source variable name.
@@ -38,12 +31,24 @@ public @interface CascadingUpdateListener {
     String sourceVariableName();
 
     /**
+     * The target method element.
+     * <p>
+     * Important: the method must be non-static and should not include any parameters.
+     * There are no restrictions regarding the method visibility.
+     * There is no restriction on the method's return type,
+     * but if it returns a value, it will be ignored and will not impact the listener's execution.
+     * 
+     * @return method name of the source host element which will update the shadow variable
+     */
+    String targetMethodName();
+
+    /**
      * Defines several {@link ShadowVariable} annotations on the same element.
      */
     @Target({ FIELD })
     @Retention(RUNTIME)
     @interface List {
 
-        CascadingUpdateListener[] value();
+        CascadingUpdateShadowVariable[] value();
     }
 }

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var;
+package ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.supply;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,24 +12,26 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
 
 @PlanningEntity
-public class TestdataMultipleCascadingEntity extends TestdataObject {
+public class TestdataMultipleCascadingWithSupplyEntity extends TestdataObject {
 
-    public static EntityDescriptor<TestdataMultipleCascadingSolution> buildEntityDescriptor() {
-        return TestdataMultipleCascadingSolution.buildSolutionDescriptor()
-                .findEntityDescriptorOrFail(TestdataMultipleCascadingEntity.class);
+    public static EntityDescriptor<TestdataMultipleCascadingWithSupplySolution> buildEntityDescriptor() {
+        return TestdataMultipleCascadingWithSupplySolution.buildSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataMultipleCascadingWithSupplyEntity.class);
     }
 
-    public static ListVariableDescriptor<TestdataMultipleCascadingSolution> buildVariableDescriptorForValueList() {
-        return (ListVariableDescriptor<TestdataMultipleCascadingSolution>) buildEntityDescriptor()
+    public static ListVariableDescriptor<TestdataMultipleCascadingWithSupplySolution> buildVariableDescriptorForValueList() {
+        return (ListVariableDescriptor<TestdataMultipleCascadingWithSupplySolution>) buildEntityDescriptor()
                 .getGenuineVariableDescriptor("valueList");
     }
 
-    public static TestdataMultipleCascadingEntity createWithValues(String code, TestdataMultipleCascadingValue... values) {
+    public static TestdataMultipleCascadingWithSupplyEntity createWithValues(String code,
+            TestdataMultipleCascadingWithSupplyValue... values) {
         // Set up shadow variables to preserve consistency.
-        return new TestdataMultipleCascadingEntity(code, new ArrayList<>(Arrays.asList(values))).setUpShadowVariables();
+        return new TestdataMultipleCascadingWithSupplyEntity(code, new ArrayList<>(Arrays.asList(values)))
+                .setUpShadowVariables();
     }
 
-    TestdataMultipleCascadingEntity setUpShadowVariables() {
+    TestdataMultipleCascadingWithSupplyEntity setUpShadowVariables() {
         if (valueList != null && !valueList.isEmpty()) {
             int i = 0;
             var previous = valueList.get(i);
@@ -37,9 +39,6 @@ public class TestdataMultipleCascadingEntity extends TestdataObject {
             while (current != null) {
                 current.setEntity(this);
                 current.setPrevious(previous);
-                if (previous != null) {
-                    previous.setNext(current);
-                }
                 previous = current;
                 current = ++i < valueList.size() ? valueList.get(i) : null;
             }
@@ -51,26 +50,26 @@ public class TestdataMultipleCascadingEntity extends TestdataObject {
     }
 
     @PlanningListVariable(valueRangeProviderRefs = "valueRange")
-    private List<TestdataMultipleCascadingValue> valueList;
+    private List<TestdataMultipleCascadingWithSupplyValue> valueList;
 
-    public TestdataMultipleCascadingEntity() {
+    public TestdataMultipleCascadingWithSupplyEntity() {
     }
 
-    public TestdataMultipleCascadingEntity(String code) {
+    public TestdataMultipleCascadingWithSupplyEntity(String code) {
         super(code);
         this.valueList = new LinkedList<>();
     }
 
-    public TestdataMultipleCascadingEntity(String code, List<TestdataMultipleCascadingValue> valueList) {
+    public TestdataMultipleCascadingWithSupplyEntity(String code, List<TestdataMultipleCascadingWithSupplyValue> valueList) {
         super(code);
         this.valueList = valueList;
     }
 
-    public void setValueList(List<TestdataMultipleCascadingValue> valueList) {
+    public void setValueList(List<TestdataMultipleCascadingWithSupplyValue> valueList) {
         this.valueList = valueList;
     }
 
-    public List<TestdataMultipleCascadingValue> getValueList() {
+    public List<TestdataMultipleCascadingWithSupplyValue> getValueList() {
         return valueList;
     }
 
