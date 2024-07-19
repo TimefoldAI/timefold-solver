@@ -1,6 +1,7 @@
 ![Timefold Logo](https://raw.githubusercontent.com/TimefoldAI/timefold-solver/main/docs/src/modules/ROOT/images/shared/timefold-logo.png)
 
-# Timefold Solver for Python
+_Planning optimization made easy._  
+[timefold.ai](https://timefold.ai)
 
 [![PyPI](https://img.shields.io/pypi/v/timefold?style=for-the-badge& "PyPI")](https://pypi.org/project/timefold/)
 [![License](https://img.shields.io/github/license/TimefoldAI/timefold-solver?style=for-the-badge&logo=apache)](https://www.apache.org/licenses/LICENSE-2.0)
@@ -17,11 +18,12 @@
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=ai.timefold:timefold-solver&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=ai.timefold:timefold-solver)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=ai.timefold:timefold-solver&metric=coverage)](https://sonarcloud.io/summary/new_code?id=ai.timefold:timefold-solver)
 
-Timefold Solver is *an AI constraint solver for Python* to optimize
+Timefold Solver for Python is an AI constraint solver to optimize
 the Vehicle Routing Problem, Employee Rostering, Maintenance Scheduling, Task Assignment, School Timetabling,
-Cloud Optimization, Conference Scheduling, Job Shop Scheduling, Bin Packing and many more planning problems.
+Cloud Optimization, Conference Scheduling, Job Shop Scheduling and many more planning problems.
 
-Using Timefold Solver in Python is significantly slower than using Timefold Solver in [Java](https://github.com/TimefoldAI/timefold-solver) or Kotlin.
+Using Timefold Solver for Python is significantly slower 
+than using [Timefold Solver for Java](https://github.com/TimefoldAI/timefold-solver) or Kotlin.
 
 ## Get started with Timefold Solver for Python
 
@@ -181,6 +183,19 @@ solution = solver.solve(generate_problem())
 `solution` will be a `TimeTable` instance with planning
 variables set to the final best solution found.
 
-## More information
-
 For a full API spec, visit [the Timefold Documentation](https://timefold.ai/docs/timefold-solver/latest).
+
+## Licensing and usage
+
+Unlike the ASL-licensed Community Edition in this repo,
+the Enterprise Edition is not open source.
+If you wish to use the Enterprise Edition in a production environment,
+please [contact Timefold](https://timefold.ai/company/contact/) to obtain the appropriate license.
+
+## Legal notice
+
+Timefold Solver for Python is a derivative work of OptaPy,
+which includes copyrights of the original creator, Red Hat Inc., affiliates, and contributors,
+that were all entirely licensed under the Apache-2.0 license.
+Every source file has been modified.
+

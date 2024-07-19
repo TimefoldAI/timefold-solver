@@ -26,8 +26,8 @@ image:https://img.shields.io/github/issues/TimefoldAI/timefold-solver?style=for-
 Timefold Solver is an optimization engine evolved from OptaPlanner.
 Developed by the original OptaPlanner team, our aim is to free the world of wasteful planning.
 
-This repository contains Timefold Solver for Java.
-We also have a version of https://github.com/TimefoldAI/timefold-solver-python[Timefold Solver for Python].
+This README deals with Timefold Solver for Java.
+We also have a version of https://github.com/TimefoldAI/timefold-solver/tree/main/python#readme[Timefold Solver for Python].
 
 == Get started with Timefold Solver
 
@@ -88,6 +88,6 @@ Timefold Solver was https://timefold.ai/blog/2023/optaplanner-fork/[forked] on 2
 which was entirely Apache-2.0 licensed (a permissive license).
 
 Timefold Solver is a derivative work of OptaPlanner,
-which includes copyrights of the original creator, Red Hat Inc., affiliates and contributors,
+which includes copyrights of the original creator, Red Hat Inc., affiliates, and contributors,
 that were all entirely licensed under the Apache-2.0 license.
 Every source file has been modified.
