@@ -185,13 +185,6 @@ variables set to the final best solution found.
 
 For a full API spec, visit [the Timefold Documentation](https://timefold.ai/docs/timefold-solver/latest).
 
-## Licensing and usage
-
-Unlike the ASL-licensed Community Edition in this repo,
-the Enterprise Edition is not open source.
-If you wish to use the Enterprise Edition in a production environment,
-please [contact Timefold](https://timefold.ai/company/contact/) to obtain the appropriate license.
-
 ## Legal notice
 
 Timefold Solver for Python is a derivative work of OptaPy,
