@@ -69,16 +69,10 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
             var castConstraint = (BavetConstraint<Solution_>) constraint;
             var defaultConstraintWeight = castConstraint.getDefaultConstraintWeight();
             var constraintWeight = (Score_) castConstraint.extractConstraintWeight(workingSolution);
-            /*
-             * Filter out nodes that only lead to constraints with zero weight.
-             * Note: Node sharing happens earlier, in BavetConstraintFactory#share(Stream_).
-             */
             if (!constraintWeight.equals(zeroScore)) {
                 if (defaultConstraintWeight != null && !defaultConstraintWeight.equals(constraintWeight)) {
                     LOGGER.debug("  Constraint ({}) weight overridden to ({}) from ({}).", constraintRef, constraintWeight,
                             defaultConstraintWeight);
-                } else {
-                    LOGGER.debug("  Constraint ({}) weight set to ({}).", constraintRef, constraintWeight);
                 }
                 /*
                  * Relies on BavetConstraintFactory#share(Stream_) occurring for all constraint stream instances
@@ -87,6 +81,10 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
                 castConstraint.collectActiveConstraintStreams(constraintStreamSet);
                 constraintWeightMap.put(constraint, constraintWeight);
             } else {
+                /*
+                 * Filter out nodes that only lead to constraints with zero weight.
+                 * Note: Node sharing happens earlier, in BavetConstraintFactory#share(Stream_).
+                 */
                 LOGGER.debug("  Constraint ({}) disabled.", constraintRef);
             }
         }

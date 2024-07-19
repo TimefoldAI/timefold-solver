@@ -65,7 +65,10 @@ public final class OverridesBasedConstraintWeightSupplier<Score_ extends Score<S
         var userDefinedConstraintNames = userDefinedConstraints.stream()
                 .map(ConstraintRef::constraintName)
                 .collect(Collectors.toSet());
-        var supportedConstraints = getConstraintWeights(workingSolution).getKnownConstraintNames();
+        // Constraint verifier is known to cause null here.
+        var overrides = workingSolution == null ? ConstraintWeightOverrides.none()
+                : Objects.requireNonNull(getConstraintWeights(workingSolution));
+        var supportedConstraints = overrides.getKnownConstraintNames();
         var excessiveConstraints = supportedConstraints.stream()
                 .filter(constraintName -> !userDefinedConstraintNames.contains(constraintName))
                 .collect(Collectors.toSet());
@@ -74,12 +77,13 @@ public final class OverridesBasedConstraintWeightSupplier<Score_ extends Score<S
                     The constraint weight overrides contain the following constraints (%s) \
                     that are not in the user-defined constraints (%s).
                     Maybe check your %s for missing constraints."""
-                    .formatted(overridesClass, excessiveConstraints, userDefinedConstraintNames,
+                    .formatted(excessiveConstraints, userDefinedConstraintNames,
                             ConstraintProvider.class.getSimpleName()));
         }
         // Constraints are allowed to be missing; the default value provided by the ConstraintProvider will be used.
     }
 
+    @SuppressWarnings("unchecked")
     private ConstraintWeightOverrides<Score_> getConstraintWeights(Solution_ workingSolution) {
         return (ConstraintWeightOverrides<Score_>) overridesAccessor.executeGetter(workingSolution);
     }
@@ -101,6 +105,9 @@ public final class OverridesBasedConstraintWeightSupplier<Score_ extends Score<S
                     The constraint (%s) is not in the default package (%s).
                     Constraint packages are deprecated, check your constraint implementation."""
                     .formatted(constraintRef, getDefaultConstraintPackage()));
+        }
+        if (workingSolution == null) { // ConstraintVerifier is known to cause null here.
+            return null;
         }
         var weight = (Score_) getConstraintWeights(workingSolution).getConstraintWeight(constraintRef.constraintName());
         if (weight == null) { // This is fine; use default value from ConstraintProvider.

@@ -45,8 +45,12 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
         this.indictedObjectsMapping = indictedObjectsMapping; // May be omitted in test code.
     }
 
+    @SuppressWarnings("unchecked")
     public final <Score_ extends Score<Score_>> Score_ extractConstraintWeight(Solution_ solution) {
-        Score_ constraintWeight = determineConstraintWeight(solution);
+        return adjustConstraintWeight((Score_) determineConstraintWeight(solution));
+    }
+
+    private <Score_ extends Score<Score_>> Score_ adjustConstraintWeight(Score_ constraintWeight) {
         return switch (scoreImpactType) {
             case PENALTY -> constraintWeight.negate();
             case REWARD, MIXED -> constraintWeight;
@@ -138,8 +142,12 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
         return description;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public Score<?> getDefaultConstraintWeight() {
-        return defaultConstraintWeight;
+        if (defaultConstraintWeight == null) { // Configurable weights (deprecated) have no default.
+            return null;
+        }
+        return adjustConstraintWeight((Score) defaultConstraintWeight);
     }
 
     public final ScoreImpactType getScoreImpactType() {
