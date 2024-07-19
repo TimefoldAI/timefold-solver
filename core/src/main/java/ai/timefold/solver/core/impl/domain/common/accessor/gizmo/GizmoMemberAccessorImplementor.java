@@ -163,7 +163,7 @@ public final class GizmoMemberAccessorImplementor {
                     Method.class, String.class, Class[].class),
                     declaringClass, name,
                     methodCreator.newArray(Class.class, 0));
-            if (memberInfo.requiredReturnType()) {
+            if (memberInfo.returnTypeRequired()) {
                 // We create a field to store the result, only if the called method has a return type.
                 // Otherwise, we will only execute it
                 ResultHandle type =
@@ -202,9 +202,9 @@ public final class GizmoMemberAccessorImplementor {
      * Asserts method is a getter or read method
      *
      * @param method Method to assert is getter or read
-     * @param requiredReturnType Flag used to check method return type
+     * @param returnTypeRequired Flag used to check method return type
      */
-    private static void assertIsGoodMethod(MethodDescriptor method, boolean requiredReturnType) {
+    private static void assertIsGoodMethod(MethodDescriptor method, boolean returnTypeRequired) {
         // V = void return type
         // Z = primitive boolean return type
         String methodName = method.getName();
@@ -227,7 +227,7 @@ public final class GizmoMemberAccessorImplementor {
             }
         } else {
             // must be a read method
-            if (requiredReturnType && method.getReturnType().equals("V")) {
+            if (returnTypeRequired && method.getReturnType().equals("V")) {
                 throw new IllegalStateException("The readMethod (%s) must have a non-void return type."
                         .formatted(methodName));
             }
@@ -295,9 +295,9 @@ public final class GizmoMemberAccessorImplementor {
         memberInfo.descriptor().whenIsMethod(method -> {
             var annotationClass = memberInfo.annotationClass();
             if (annotationClass == null) {
-                assertIsGoodMethod(method, memberInfo.requiredReturnType());
+                assertIsGoodMethod(method, memberInfo.returnTypeRequired());
             } else {
-                assertIsGoodMethod(method, memberInfo.requiredReturnType(), annotationClass);
+                assertIsGoodMethod(method, memberInfo.returnTypeRequired(), annotationClass);
             }
         });
 
@@ -381,7 +381,7 @@ public final class GizmoMemberAccessorImplementor {
         MethodCreator methodCreator = getMethodCreator(classCreator, Object.class, "executeGetter", Object.class);
         ResultHandle bean = methodCreator.getMethodParam(0);
         methodCreator.returnValue(memberInfo.descriptor().readMemberValue(methodCreator, bean));
-        if (memberInfo.requiredReturnType()) {
+        if (memberInfo.returnTypeRequired()) {
             methodCreator.returnValue(memberInfo.descriptor().readMemberValue(methodCreator, bean));
         } else {
             memberInfo.descriptor().readMemberValue(methodCreator, bean);
