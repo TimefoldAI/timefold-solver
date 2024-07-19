@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.util;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -26,6 +27,38 @@ public final class ElementAwareList<T> implements Iterable<T> {
         last = entry;
         size++;
         return entry;
+    }
+
+    public ElementAwareListEntry<T> addFirst(T tuple) {
+        if (first != null) {
+            ElementAwareListEntry<T> entry = new ElementAwareListEntry<>(this, tuple, null);
+            first.previous = entry;
+            entry.next = first;
+            first = entry;
+            size++;
+            return entry;
+        } else {
+            return add(tuple);
+        }
+    }
+
+    public ElementAwareListEntry<T> addAfter(T tuple, ElementAwareListEntry<T> previous) {
+        Objects.requireNonNull(previous);
+        if (first == null || previous == last) {
+            return add(tuple);
+        } else {
+            ElementAwareListEntry<T> entry = new ElementAwareListEntry<>(this, tuple, previous);
+            ElementAwareListEntry<T> currentNext = previous.next;
+            if (currentNext != null) {
+                currentNext.previous = entry;
+            } else {
+                last = entry;
+            }
+            previous.next = entry;
+            entry.next = currentNext;
+            size++;
+            return entry;
+        }
     }
 
     public void remove(ElementAwareListEntry<T> entry) {

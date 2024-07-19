@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.testdata.domain.list;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
@@ -80,5 +79,11 @@ public class TestdataListSolution {
 
     public void setScore(SimpleScore score) {
         this.score = score;
+    }
+
+    public void removeEntity(TestdataListEntity entity) {
+        this.entityList = entityList.stream()
+                .filter(e -> e != entity)
+                .toList();
     }
 }

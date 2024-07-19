@@ -37,7 +37,7 @@ class ExternalizedNextElementVariableSupplyTest {
         v1.setEntity(e1);
         v2.setEntity(e1);
         v3.setEntity(e1);
-        TestdataListEntity e2 = new TestdataListEntity("e1", List.of(v4, v5));
+        TestdataListEntity e2 = new TestdataListEntity("e2", List.of(v4, v5));
         v4.setEntity(e2);
         v5.setEntity(e2);
 
@@ -57,23 +57,27 @@ class ExternalizedNextElementVariableSupplyTest {
         assertThat(supply.getNext(v6)).isNull();
 
         // Updating entity
-        supply.beforeVariableChanged(scoreDirector, v5);
+        supply.beforeListVariableChanged(scoreDirector, e1, 3, 3);
+        supply.beforeListVariableChanged(scoreDirector, e2, 1, 2);
         v5.setEntity(e1);
         e1.addValue(v5);
         e2.removeValue(v5);
-        supply.afterVariableChanged(scoreDirector, v5);
+        supply.afterListVariableChanged(scoreDirector, e1, 3, 4);
+        supply.afterListVariableChanged(scoreDirector, e2, 1, 1);
 
         assertThat(supply.getNext(v3)).isSameAs(v5);
         assertThat(supply.getNext(v4)).isNull();
         assertThat(supply.getNext(v5)).isNull();
 
         // Removing entity
-        supply.beforeEntityRemoved(scoreDirector, v2);
-        e1.removeValue(v2);
-        supply.afterEntityRemoved(scoreDirector, v2);
+        supply.beforeEntityRemoved(scoreDirector, e1);
+        solution.removeEntity(e1);
+        supply.afterEntityRemoved(scoreDirector, e1);
 
-        assertThat(supply.getNext(v1)).isSameAs(v3);
-        assertThat(supply.getNext(v3)).isSameAs(v5);
+        assertThat(supply.getNext(v1)).isNull();
+        assertThat(supply.getNext(v2)).isNull();
+        assertThat(supply.getNext(v3)).isNull();
+        assertThat(supply.getNext(v5)).isNull();
 
         supply.close();
     }
