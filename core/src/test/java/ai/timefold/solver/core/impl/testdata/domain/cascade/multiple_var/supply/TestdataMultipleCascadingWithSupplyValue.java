@@ -5,9 +5,11 @@ import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.TestdataMultipleCascadingBaseValue;
 
 @PlanningEntity
-public class TestdataMultipleCascadingWithSupplyValue {
+public class TestdataMultipleCascadingWithSupplyValue
+        implements TestdataMultipleCascadingBaseValue<TestdataMultipleCascadingWithSupplyEntity> {
 
     public static EntityDescriptor<TestdataMultipleCascadingWithSupplySolution> buildEntityDescriptor() {
         return TestdataMultipleCascadingWithSupplySolution.buildSolutionDescriptor()
@@ -35,6 +37,7 @@ public class TestdataMultipleCascadingWithSupplyValue {
         return entity;
     }
 
+    @Override
     public void setEntity(TestdataMultipleCascadingWithSupplyEntity entity) {
         this.entity = entity;
     }
@@ -47,6 +50,7 @@ public class TestdataMultipleCascadingWithSupplyValue {
         this.previous = previous;
     }
 
+    @Override
     public Integer getValue() {
         return value;
     }
@@ -55,22 +59,27 @@ public class TestdataMultipleCascadingWithSupplyValue {
         this.value = value;
     }
 
+    @Override
     public void setCascadeValue(Integer cascadeValue) {
         this.cascadeValue = cascadeValue;
     }
 
+    @Override
     public Integer getCascadeValue() {
         return cascadeValue;
     }
 
+    @Override
     public Integer getSecondCascadeValue() {
         return secondCascadeValue;
     }
 
+    @Override
     public void setSecondCascadeValue(Integer secondCascadeValue) {
         this.secondCascadeValue = secondCascadeValue;
     }
 
+    @Override
     public int getNumberOfCalls() {
         return numberOfCalls;
     }
@@ -86,6 +95,7 @@ public class TestdataMultipleCascadingWithSupplyValue {
         }
     }
 
+    @Override
     public void reset() {
         numberOfCalls = 0;
     }

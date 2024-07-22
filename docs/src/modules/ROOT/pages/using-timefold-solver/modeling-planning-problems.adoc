@@ -1461,9 +1461,9 @@ public class Customer {
 ----
 
 The listener behaves as described previously.
-It is called `updateArrivalTime` whenever a `previousCustomer` or `vehicle` changes.
+It calls `updateArrivalTime` whenever a `previousCustomer` or `vehicle` changes.
 It then propagates the changes to the subsequent elements,
-stopping when no change is identified, or it reaches the tail.
+stopping when the method results in no change to the variable, or when it reaches the tail.
 
 [WARNING]
 ====

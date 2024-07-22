@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
@@ -178,7 +179,8 @@ class GizmoMemberAccessorImplementorTest {
     void testThrowsWhenGetBooleanReturnsNonBoolean() throws NoSuchMethodException {
         Member member = GizmoTestdataEntity.class.getMethod("isAMethodThatHasABadName");
         assertThatCode(
-                () -> GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningVariable.class, true, new GizmoClassLoader()))
+                () -> GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningVariable.class, true,
+                        new GizmoClassLoader()))
                 .hasMessage("""
                         The getterMethod (isAMethodThatHasABadName) with a PlanningVariable annotation \
                         must have a primitive boolean return type but returns (L%s;).

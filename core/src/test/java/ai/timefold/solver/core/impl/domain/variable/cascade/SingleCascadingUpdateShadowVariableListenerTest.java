@@ -22,7 +22,7 @@ class SingleCascadingUpdateShadowVariableListenerTest {
                 .withMessageContaining(
                         "The entityClass (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingWrongSource)")
                 .withMessageContaining("has an @CascadingUpdateShadowVariable annotated property (cascadeValue)")
-                .withMessageContaining("but the shadow variable \"bad\" is not found")
+                .withMessageContaining("but the shadow variable \"bad\" cannot be found")
                 .withMessageContaining(
                         "Maybe update sourceVariableName to an existing shadow variable in the entity class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingWrongSource");
 
@@ -30,7 +30,7 @@ class SingleCascadingUpdateShadowVariableListenerTest {
                 .withMessageContaining(
                         "The entityClass (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingWrongMethod)")
                 .withMessageContaining("has an @CascadingUpdateShadowVariable annotated property (cascadeValueReturnType)")
-                .withMessageContaining("but the method \"badUpdateCascadeValueWithReturnType\" is not found");
+                .withMessageContaining("but the method \"badUpdateCascadeValueWithReturnType\" cannot be found");
     }
 
     @Test

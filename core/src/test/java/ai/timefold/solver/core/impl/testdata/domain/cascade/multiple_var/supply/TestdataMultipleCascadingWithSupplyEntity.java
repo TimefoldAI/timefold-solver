@@ -10,9 +10,11 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.TestdataCascadingBaseEntity;
 
 @PlanningEntity
-public class TestdataMultipleCascadingWithSupplyEntity extends TestdataObject {
+public class TestdataMultipleCascadingWithSupplyEntity extends TestdataObject
+        implements TestdataCascadingBaseEntity<TestdataMultipleCascadingWithSupplyValue> {
 
     public static EntityDescriptor<TestdataMultipleCascadingWithSupplySolution> buildEntityDescriptor() {
         return TestdataMultipleCascadingWithSupplySolution.buildSolutionDescriptor()
@@ -65,10 +67,13 @@ public class TestdataMultipleCascadingWithSupplyEntity extends TestdataObject {
         this.valueList = valueList;
     }
 
-    public void setValueList(List<TestdataMultipleCascadingWithSupplyValue> valueList) {
+    @Override
+    @SuppressWarnings("rawtypes")
+    public void setValueList(List valueList) {
         this.valueList = valueList;
     }
 
+    @Override
     public List<TestdataMultipleCascadingWithSupplyValue> getValueList() {
         return valueList;
     }

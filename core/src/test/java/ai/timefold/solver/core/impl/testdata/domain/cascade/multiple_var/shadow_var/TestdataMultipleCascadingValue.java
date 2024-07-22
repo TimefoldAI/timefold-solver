@@ -6,9 +6,10 @@ import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.TestdataMultipleCascadingBaseValue;
 
 @PlanningEntity
-public class TestdataMultipleCascadingValue {
+public class TestdataMultipleCascadingValue implements TestdataMultipleCascadingBaseValue<TestdataMultipleCascadingEntity> {
 
     public static EntityDescriptor<TestdataMultipleCascadingSolution> buildEntityDescriptor() {
         return TestdataMultipleCascadingSolution.buildSolutionDescriptor()
@@ -38,6 +39,7 @@ public class TestdataMultipleCascadingValue {
         return entity;
     }
 
+    @Override
     public void setEntity(TestdataMultipleCascadingEntity entity) {
         this.entity = entity;
     }
@@ -58,6 +60,7 @@ public class TestdataMultipleCascadingValue {
         this.next = next;
     }
 
+    @Override
     public Integer getValue() {
         return value;
     }
@@ -66,22 +69,27 @@ public class TestdataMultipleCascadingValue {
         this.value = value;
     }
 
+    @Override
     public void setCascadeValue(Integer cascadeValue) {
         this.cascadeValue = cascadeValue;
     }
 
+    @Override
     public Integer getCascadeValue() {
         return cascadeValue;
     }
 
+    @Override
     public Integer getSecondCascadeValue() {
         return secondCascadeValue;
     }
 
+    @Override
     public void setSecondCascadeValue(Integer secondCascadeValue) {
         this.secondCascadeValue = secondCascadeValue;
     }
 
+    @Override
     public int getNumberOfCalls() {
         return numberOfCalls;
     }
@@ -95,6 +103,11 @@ public class TestdataMultipleCascadingValue {
         if (secondCascadeValue == null || secondCascadeValue != value + 1) {
             secondCascadeValue = value + 1;
         }
+    }
+
+    @Override
+    public void reset() {
+        numberOfCalls = 0;
     }
 
     @Override

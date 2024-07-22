@@ -7,28 +7,49 @@ import java.util.List;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.TestdataCascadingBaseEntity;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.TestdataCascadingBaseSolution;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.TestdataMultipleCascadingBaseValue;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.shadow_var.TestdataMultipleCascadingEntity;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.shadow_var.TestdataMultipleCascadingSolution;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.supply.TestdataMultipleCascadingWithSupplyEntity;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.supply.TestdataMultipleCascadingWithSupplySolution;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.supply.TestdataMultipleCascadingWithSupplyValue;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 class CollectionCascadingUpdateShadowVariableListenerTest {
 
-    @Test
-    void updateAllNextValues() {
-        GenuineVariableDescriptor<TestdataMultipleCascadingWithSupplySolution> variableDescriptor =
-                TestdataMultipleCascadingWithSupplyEntity.buildVariableDescriptorForValueList();
+    private GenuineVariableDescriptor<?> generateDescriptor(Type type) {
+        if (type == Type.WITH_SUPPLY) {
+            return TestdataMultipleCascadingWithSupplyEntity.buildVariableDescriptorForValueList();
+        } else {
+            return TestdataMultipleCascadingEntity.buildVariableDescriptorForValueList();
+        }
+    }
 
-        InnerScoreDirector<TestdataMultipleCascadingWithSupplySolution, SimpleScore> scoreDirector =
-                PlannerTestUtils.mockScoreDirector(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
+    private TestdataCascadingBaseSolution<? extends TestdataCascadingBaseEntity<? extends TestdataMultipleCascadingBaseValue>, ? extends TestdataMultipleCascadingBaseValue>
+            generateSolution(Type type, int valueCount, int entityCount) {
+        if (type == Type.WITH_SUPPLY) {
+            return TestdataMultipleCascadingWithSupplySolution.generateUninitializedSolution(valueCount, entityCount);
+        } else {
+            return TestdataMultipleCascadingSolution.generateUninitializedSolution(valueCount, entityCount);
+        }
+    }
 
-        TestdataMultipleCascadingWithSupplySolution solution =
-                TestdataMultipleCascadingWithSupplySolution.generateUninitializedSolution(3, 2);
+    @ParameterizedTest
+    @EnumSource
+    void updateAllNextValues(Type type) {
+        var variableDescriptor = generateDescriptor(type);
+
+        var scoreDirector = (InnerScoreDirector<TestdataCascadingBaseSolution<?, ?>, SimpleScore>) PlannerTestUtils
+                .mockScoreDirector(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
+
+        var solution = generateSolution(type, 3, 2);
         scoreDirector.setWorkingSolution(solution);
 
-        TestdataMultipleCascadingWithSupplyEntity entity = solution.getEntityList().get(0);
+        var entity = solution.getEntityList().get(0);
         scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
         entity.setValueList(solution.getValueList());
         scoreDirector.afterListVariableChanged(entity, "valueList", 0, 3);
@@ -49,27 +70,26 @@ class CollectionCascadingUpdateShadowVariableListenerTest {
         assertThat(entity.getValueList().get(2).getNumberOfCalls()).isEqualTo(3);
     }
 
-    @Test
-    void updateOnlyMiddleValue() {
-        GenuineVariableDescriptor<TestdataMultipleCascadingWithSupplySolution> variableDescriptor =
-                TestdataMultipleCascadingWithSupplyEntity.buildVariableDescriptorForValueList();
+    @ParameterizedTest
+    @EnumSource
+    void updateOnlyMiddleValue(Type type) {
+        var variableDescriptor = generateDescriptor(type);
 
-        InnerScoreDirector<TestdataMultipleCascadingWithSupplySolution, SimpleScore> scoreDirector =
-                PlannerTestUtils.mockScoreDirector(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
+        var scoreDirector = (InnerScoreDirector<TestdataCascadingBaseSolution<?, ?>, SimpleScore>) PlannerTestUtils
+                .mockScoreDirector(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
 
         { // Changing the first shadow var
-            TestdataMultipleCascadingWithSupplySolution solution =
-                    TestdataMultipleCascadingWithSupplySolution.generateUninitializedSolution(3, 2);
+            var solution = generateSolution(type, 3, 2);
             solution.getValueList().get(2).setSecondCascadeValue(4);
             scoreDirector.setWorkingSolution(solution);
 
-            TestdataMultipleCascadingWithSupplyEntity entity = solution.getEntityList().get(0);
+            var entity = solution.getEntityList().get(0);
             scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
             solution.getValueList().subList(0, 2).forEach(v -> v.setEntity(entity));
             entity.setValueList(solution.getValueList().subList(0, 2));
             scoreDirector.afterListVariableChanged(entity, "valueList", 0, 2);
             scoreDirector.triggerVariableListeners();
-            solution.getValueList().forEach(TestdataMultipleCascadingWithSupplyValue::reset);
+            solution.getValueList().forEach(TestdataMultipleCascadingBaseValue::reset);
 
             scoreDirector.beforeListVariableChanged(entity, "valueList", 1, 1);
             entity.setValueList(
@@ -91,18 +111,17 @@ class CollectionCascadingUpdateShadowVariableListenerTest {
         }
 
         { // Changing the second shadow var
-            TestdataMultipleCascadingWithSupplySolution solution =
-                    TestdataMultipleCascadingWithSupplySolution.generateUninitializedSolution(3, 2);
+            var solution = generateSolution(type, 3, 2);
             solution.getValueList().get(2).setCascadeValue(3);
             scoreDirector.setWorkingSolution(solution);
 
-            TestdataMultipleCascadingWithSupplyEntity entity = solution.getEntityList().get(0);
+            var entity = solution.getEntityList().get(0);
             scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
             solution.getValueList().subList(0, 2).forEach(v -> v.setEntity(entity));
             entity.setValueList(solution.getValueList().subList(0, 2));
             scoreDirector.afterListVariableChanged(entity, "valueList", 0, 2);
             scoreDirector.triggerVariableListeners();
-            solution.getValueList().forEach(TestdataMultipleCascadingWithSupplyValue::reset);
+            solution.getValueList().forEach(TestdataMultipleCascadingBaseValue::reset);
 
             scoreDirector.beforeListVariableChanged(entity, "valueList", 1, 1);
             entity.setValueList(
@@ -124,25 +143,24 @@ class CollectionCascadingUpdateShadowVariableListenerTest {
         }
     }
 
-    @Test
-    void stopUpdateNextValues() {
-        GenuineVariableDescriptor<TestdataMultipleCascadingWithSupplySolution> variableDescriptor =
-                TestdataMultipleCascadingWithSupplyEntity.buildVariableDescriptorForValueList();
+    @ParameterizedTest
+    @EnumSource
+    void stopUpdateNextValues(Type type) {
+        var variableDescriptor = generateDescriptor(type);
 
-        InnerScoreDirector<TestdataMultipleCascadingWithSupplySolution, SimpleScore> scoreDirector =
-                PlannerTestUtils.mockScoreDirector(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
+        var scoreDirector = (InnerScoreDirector<TestdataCascadingBaseSolution<?, ?>, SimpleScore>) PlannerTestUtils
+                .mockScoreDirector(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
 
-        TestdataMultipleCascadingWithSupplySolution solution =
-                TestdataMultipleCascadingWithSupplySolution.generateUninitializedSolution(3, 2);
+        var solution = generateSolution(type, 3, 2);
         scoreDirector.setWorkingSolution(solution);
 
-        TestdataMultipleCascadingWithSupplyEntity entity = solution.getEntityList().get(0);
+        var entity = solution.getEntityList().get(0);
         scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
         solution.getValueList().subList(0, 2).forEach(v -> v.setEntity(entity));
         entity.setValueList(solution.getValueList().subList(0, 2));
         scoreDirector.afterListVariableChanged(entity, "valueList", 0, 2);
         scoreDirector.triggerVariableListeners();
-        solution.getValueList().forEach(TestdataMultipleCascadingWithSupplyValue::reset);
+        solution.getValueList().forEach(TestdataMultipleCascadingBaseValue::reset);
 
         scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
         entity.setValueList(
@@ -167,5 +185,10 @@ class CollectionCascadingUpdateShadowVariableListenerTest {
         assertThat(entity.getValueList().get(2).getSecondCascadeValue()).isEqualTo(3);
         // Stop on value2
         assertThat(entity.getValueList().get(2).getNumberOfCalls()).isZero();
+    }
+
+    enum Type {
+        WITHOUT_SUPPLY,
+        WITH_SUPPLY
     }
 }

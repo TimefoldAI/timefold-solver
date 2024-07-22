@@ -125,7 +125,7 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
                 .orElse(null);
         if (sourceMethodMember == null) {
             throw new IllegalArgumentException(
-                    "The entityClass (%s) has an @%s annotated property (%s), but the method \"%s\" is not found."
+                    "The entityClass (%s) has an @%s annotated property (%s), but the method \"%s\" cannot be found."
                             .formatted(entityDescriptor.getEntityClass(),
                                     CascadingUpdateShadowVariable.class.getSimpleName(),
                                     variableMemberAccessor.getName(),
@@ -140,7 +140,7 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
         if (sourceDescriptor == null) {
             throw new IllegalArgumentException(
                     """
-                            The entityClass (%s) has an @%s annotated property (%s), but the shadow variable "%s" is not found.
+                            The entityClass (%s) has an @%s annotated property (%s), but the shadow variable "%s" cannot be found.
                             Maybe update sourceVariableName to an existing shadow variable in the entity %s."""
                             .formatted(entityDescriptor.getEntityClass(),
                                     CascadingUpdateShadowVariable.class.getSimpleName(),
