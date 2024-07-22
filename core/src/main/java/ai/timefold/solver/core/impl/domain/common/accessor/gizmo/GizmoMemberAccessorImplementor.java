@@ -380,7 +380,6 @@ public final class GizmoMemberAccessorImplementor {
     private static void createExecuteGetter(ClassCreator classCreator, GizmoMemberInfo memberInfo) {
         MethodCreator methodCreator = getMethodCreator(classCreator, Object.class, "executeGetter", Object.class);
         ResultHandle bean = methodCreator.getMethodParam(0);
-        methodCreator.returnValue(memberInfo.descriptor().readMemberValue(methodCreator, bean));
         if (memberInfo.returnTypeRequired()) {
             methodCreator.returnValue(memberInfo.descriptor().readMemberValue(methodCreator, bean));
         } else {
