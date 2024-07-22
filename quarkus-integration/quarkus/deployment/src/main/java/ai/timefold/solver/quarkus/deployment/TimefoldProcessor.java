@@ -916,7 +916,6 @@ class TimefoldProcessor {
                     .orElse(null);
             if (constraintFieldInfo != null) {
                 // Prefer method to field
-                // (In Python, the field doesn't implement the interface).
                 Class<?> solutionClass = convertClassInfoToClass(solutionClassInfo);
                 Method constraintMethod =
                         ReflectionHelper.getGetterMethod(solutionClass, constraintFieldInfo.name());
@@ -946,7 +945,7 @@ class TimefoldProcessor {
         return new GeneratedGizmoClasses(generatedMemberAccessorsClassNameSet, gizmoSolutionClonerClassNameSet);
     }
 
-    private void buildFieldAccessor(AnnotationInstance annotatedMember, Set<String> generatedMemberAccessorsClassNameSet,
+    private static void buildFieldAccessor(AnnotationInstance annotatedMember, Set<String> generatedMemberAccessorsClassNameSet,
             GizmoMemberAccessorEntityEnhancer entityEnhancer, ClassOutput classOutput, ClassInfo classInfo, FieldInfo fieldInfo,
             BuildProducer<BytecodeTransformerBuildItem> transformers) {
         try {
@@ -959,7 +958,7 @@ class TimefoldProcessor {
         }
     }
 
-    private void buildMethodAccessor(AnnotationInstance annotatedMember, Set<String> generatedMemberAccessorsClassNameSet,
+    private static void buildMethodAccessor(AnnotationInstance annotatedMember, Set<String> generatedMemberAccessorsClassNameSet,
             GizmoMemberAccessorEntityEnhancer entityEnhancer, ClassOutput classOutput, ClassInfo classInfo,
             MethodInfo methodInfo, BuildProducer<BytecodeTransformerBuildItem> transformers) {
         try {
