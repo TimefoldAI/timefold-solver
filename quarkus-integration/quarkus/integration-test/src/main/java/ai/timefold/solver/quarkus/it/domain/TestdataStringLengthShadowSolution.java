@@ -1,7 +1,9 @@
 package ai.timefold.solver.quarkus.it.domain;
 
 import java.util.List;
+import java.util.Map;
 
+import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -15,6 +17,9 @@ public class TestdataStringLengthShadowSolution {
     private List<String> valueList;
     @PlanningEntityCollectionProperty
     private List<TestdataStringLengthShadowEntity> entityList;
+
+    ConstraintWeightOverrides<HardSoftScore> constraintWeightOverrides = ConstraintWeightOverrides.of(
+            Map.of("Don't assign 2 entities the same value.", HardSoftScore.ofHard(1)));
 
     @PlanningScore
     private HardSoftScore score;
@@ -37,6 +42,14 @@ public class TestdataStringLengthShadowSolution {
 
     public void setEntityList(List<TestdataStringLengthShadowEntity> entityList) {
         this.entityList = entityList;
+    }
+
+    public ConstraintWeightOverrides<HardSoftScore> getConstraintWeightOverrides() {
+        return constraintWeightOverrides;
+    }
+
+    public void setConstraintWeightOverrides(ConstraintWeightOverrides<HardSoftScore> constraintWeightOverrides) {
+        this.constraintWeightOverrides = constraintWeightOverrides;
     }
 
     public HardSoftScore getScore() {

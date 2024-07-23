@@ -4,6 +4,7 @@ import static io.quarkus.deployment.annotations.ExecutionTime.RUNTIME_INIT;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,6 +35,7 @@ import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
+import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 import ai.timefold.solver.quarkus.TimefoldRecorder;
@@ -888,36 +890,46 @@ class TimefoldProcessor {
                     case FIELD: {
                         FieldInfo fieldInfo = annotatedMember.target().asField();
                         ClassInfo classInfo = fieldInfo.declaringClass();
-
-                        try {
-                            generatedMemberAccessorsClassNameSet.add(
-                                    entityEnhancer.generateFieldAccessor(annotatedMember, classOutput, fieldInfo,
-                                            transformers));
-                        } catch (ClassNotFoundException | NoSuchFieldException e) {
-                            throw new IllegalStateException("Fail to generate member accessor for field (%s) of the class(%s)."
-                                    .formatted(fieldInfo.name(), classInfo.name().toString()), e);
-                        }
+                        buildFieldAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
+                                classInfo, fieldInfo, transformers);
                         break;
                     }
                     case METHOD: {
                         MethodInfo methodInfo = annotatedMember.target().asMethod();
                         ClassInfo classInfo = methodInfo.declaringClass();
-
-                        try {
-                            generatedMemberAccessorsClassNameSet.add(entityEnhancer.generateMethodAccessor(annotatedMember,
-                                    classOutput, classInfo, methodInfo, transformers));
-                        } catch (ClassNotFoundException | NoSuchMethodException e) {
-                            throw new IllegalStateException(
-                                    "Failed to generate member accessor for the method (%s) of the class (%s)."
-                                            .formatted(methodInfo.name(), classInfo.name()),
-                                    e);
-                        }
+                        buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
+                                classInfo, methodInfo, transformers);
                         break;
                     }
                     default: {
                         throw new IllegalStateException(
                                 "The member (%s) is not on a field or method.".formatted(annotatedMember));
                     }
+                }
+            }
+            // The ConstraintWeightOverrides field is not annotated, but it needs a member accessor
+            AnnotationInstance solutionClassInstance = planningSolutionAnnotationInstanceCollection.iterator().next();
+            ClassInfo solutionClassInfo = solutionClassInstance.target().asClass();
+            FieldInfo constraintFieldInfo = solutionClassInfo.fields().stream()
+                    .filter(f -> f.type().name().equals(DotNames.CONSTRAINT_WEIGHT_OVERRIDES))
+                    .findFirst()
+                    .orElse(null);
+            if (constraintFieldInfo != null) {
+                // Prefer method to field
+                Class<?> solutionClass = convertClassInfoToClass(solutionClassInfo);
+                Method constraintMethod =
+                        ReflectionHelper.getGetterMethod(solutionClass, constraintFieldInfo.name());
+                MethodInfo constraintMethodInfo = solutionClassInfo.methods().stream()
+                        .filter(m -> constraintMethod != null && m.name().equals(constraintMethod.getName())
+                                && m.parametersCount() == 0)
+                        .findFirst()
+                        .orElse(null);
+                if (constraintMethodInfo != null) {
+                    buildMethodAccessor(solutionClassInstance, generatedMemberAccessorsClassNameSet, entityEnhancer,
+                            classOutput, solutionClassInfo, constraintMethodInfo, transformers);
+                } else {
+                    buildFieldAccessor(solutionClassInstance, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
+                            solutionClassInfo, constraintFieldInfo, transformers);
                 }
             }
             // Using REFLECTION domain access type so Timefold doesn't try to generate GIZMO code
@@ -931,6 +943,34 @@ class TimefoldProcessor {
 
         entityEnhancer.generateGizmoBeanFactory(beanClassOutput, reflectiveClassSet, transformers);
         return new GeneratedGizmoClasses(generatedMemberAccessorsClassNameSet, gizmoSolutionClonerClassNameSet);
+    }
+
+    private static void buildFieldAccessor(AnnotationInstance annotatedMember, Set<String> generatedMemberAccessorsClassNameSet,
+            GizmoMemberAccessorEntityEnhancer entityEnhancer, ClassOutput classOutput, ClassInfo classInfo, FieldInfo fieldInfo,
+            BuildProducer<BytecodeTransformerBuildItem> transformers) {
+        try {
+            generatedMemberAccessorsClassNameSet.add(
+                    entityEnhancer.generateFieldAccessor(annotatedMember, classOutput, fieldInfo,
+                            transformers));
+        } catch (ClassNotFoundException | NoSuchFieldException e) {
+            throw new IllegalStateException("Fail to generate member accessor for field (%s) of the class(%s)."
+                    .formatted(fieldInfo.name(), classInfo.name().toString()), e);
+        }
+    }
+
+    private static void buildMethodAccessor(AnnotationInstance annotatedMember,
+            Set<String> generatedMemberAccessorsClassNameSet,
+            GizmoMemberAccessorEntityEnhancer entityEnhancer, ClassOutput classOutput, ClassInfo classInfo,
+            MethodInfo methodInfo, BuildProducer<BytecodeTransformerBuildItem> transformers) {
+        try {
+            generatedMemberAccessorsClassNameSet.add(entityEnhancer.generateMethodAccessor(annotatedMember,
+                    classOutput, classInfo, methodInfo, transformers));
+        } catch (ClassNotFoundException | NoSuchMethodException e) {
+            throw new IllegalStateException(
+                    "Failed to generate member accessor for the method (%s) of the class (%s)."
+                            .formatted(methodInfo.name(), classInfo.name()),
+                    e);
+        }
     }
 
     private void assertSolverDomainAccessType(Map<String, SolverConfig> solverConfigMap) {
