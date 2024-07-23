@@ -958,7 +958,8 @@ class TimefoldProcessor {
         }
     }
 
-    private static void buildMethodAccessor(AnnotationInstance annotatedMember, Set<String> generatedMemberAccessorsClassNameSet,
+    private static void buildMethodAccessor(AnnotationInstance annotatedMember,
+            Set<String> generatedMemberAccessorsClassNameSet,
             GizmoMemberAccessorEntityEnhancer entityEnhancer, ClassOutput classOutput, ClassInfo classInfo,
             MethodInfo methodInfo, BuildProducer<BytecodeTransformerBuildItem> transformers) {
         try {
