@@ -119,16 +119,20 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
                 .orElse(null);
 
         var targetMethodName = getTargetMethodName();
-        var sourceMethodMembers = ConfigUtils.getDeclaredMembers(entityDescriptor.getEntityClass())
+        var allSourceMethodMembers = ConfigUtils.getDeclaredMembers(entityDescriptor.getEntityClass())
                 .stream()
                 .filter(member -> member.getName().equals(targetMethodName))
                 .toList();
-        if (sourceMethodMembers.size() > 1) {
+        if (allSourceMethodMembers.size() > 1) {
             throw new IllegalArgumentException("""
                     The entity class (%s) has multiple members named as "%s".
                     Maybe rename the method "%s" with a unique name.""".formatted(entityDescriptor.getEntityClass(),
                     targetMethodName, targetMethodName));
-        } else if (sourceMethodMembers.stream().noneMatch(m -> Method.class.isAssignableFrom(m.getClass()))) {
+        }
+        var validSourceMethodMembers = allSourceMethodMembers.stream()
+                .filter(member -> member instanceof Method method && method.getParameterCount() == 0)
+                .toList();
+        if (validSourceMethodMembers.isEmpty()) {
             throw new IllegalArgumentException(
                     "The entity class (%s) has an @%s annotated property (%s), but the method \"%s\" cannot be found."
                             .formatted(entityDescriptor.getEntityClass(),
@@ -136,7 +140,7 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
                                     variableMemberAccessor.getName(),
                                     targetMethodName));
         }
-        targetMethod = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(sourceMethodMembers.get(0),
+        targetMethod = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(allSourceMethodMembers.get(0),
                 MemberAccessorFactory.MemberAccessorType.REGULAR_METHOD, null, descriptorPolicy.getDomainAccessType());
     }
 
