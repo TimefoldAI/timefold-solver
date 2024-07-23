@@ -1,12 +1,10 @@
-from datetime import datetime, timedelta
-
-from timefold.solver import *
-from timefold.solver.domain import *
-from timefold.solver.config import *
-from timefold.solver.score import *
-
-from typing import Annotated, List, Optional
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from timefold.solver import *
+from timefold.solver.config import *
+from timefold.solver.domain import *
+from timefold.solver.score import *
+from typing import Annotated, Optional
 
 
 @dataclass
@@ -17,34 +15,6 @@ class Location:
 
     def driving_time_to(self, other: 'Location') -> int:
         return self.driving_time_seconds[id(other)]
-
-
-class ArrivalTimeUpdatingVariableListener(VariableListener):
-    def after_variable_changed(self, score_director: ScoreDirector, visit: 'Visit') -> None:
-        if visit.vehicle is None:
-            if visit.arrival_time is not None:
-                score_director.before_variable_changed(visit, 'arrival_time')
-                visit.arrival_time = None
-                score_director.after_variable_changed(visit, 'arrival_time')
-            return
-        previous_visit = visit.previous_visit
-        departure_time = visit.vehicle.departure_time if previous_visit is None else previous_visit.departure_time()
-        next_visit = visit
-        arrival_time = ArrivalTimeUpdatingVariableListener.calculate_arrival_time(next_visit, departure_time)
-        while next_visit is not None and next_visit.arrival_time != arrival_time:
-            score_director.before_variable_changed(next_visit, 'arrival_time')
-            next_visit.arrival_time = arrival_time
-            score_director.after_variable_changed(next_visit, 'arrival_time')
-            departure_time = next_visit.departure_time()
-            next_visit = next_visit.next_visit
-            arrival_time = ArrivalTimeUpdatingVariableListener.calculate_arrival_time(next_visit, departure_time)
-
-    @staticmethod
-    def calculate_arrival_time(visit: Optional['Visit'], previous_departure_time: Optional[datetime]) \
-            -> datetime | None:
-        if visit is None or previous_departure_time is None:
-            return None
-        return previous_departure_time + timedelta(seconds=visit.driving_time_seconds_from_previous_standstill())
 
 
 @planning_entity
@@ -63,11 +33,22 @@ class Visit:
         field(default=None))
     next_visit: Annotated[Optional['Visit'],
                           NextElementShadowVariable(source_variable_name='visits')] = field(default=None)
-    arrival_time: Annotated[Optional[datetime],
-                            ShadowVariable(variable_listener_class=ArrivalTimeUpdatingVariableListener,
-                                           source_variable_name='vehicle'),
-                            ShadowVariable(variable_listener_class=ArrivalTimeUpdatingVariableListener,
-                                           source_variable_name='previous_visit')] = field(default=None)
+    arrival_time: Annotated[
+        Optional[datetime],
+        CascadingUpdateShadowVariable(source_variable_name='previous_visit',
+                                      target_method_name='update_arrival_time'),
+        CascadingUpdateShadowVariable(source_variable_name='vehicle',
+                                      target_method_name='update_arrival_time')] = field(default=None)
+
+    def update_arrival_time(self):
+        if self.vehicle is None or (self.previous_visit is not None and self.previous_visit.arrival_time is None):
+            self.arrival_time = None
+        elif self.previous_visit is None:
+            self.arrival_time = (self.vehicle.departure_time +
+                                 timedelta(seconds=self.vehicle.home_location.driving_time_to(self.location)))
+        else:
+            self.arrival_time = (self.previous_visit.departure_time() +
+                                 timedelta(seconds=self.previous_visit.location.driving_time_to(self.location)))
 
     def departure_time(self) -> Optional[datetime]:
         if self.arrival_time is None:
@@ -203,7 +184,7 @@ def test_vrp():
             constraint_provider_function=vehicle_routing_constraints
         ),
         termination_config=TerminationConfig(
-            best_score_limit='0hard/-300soft'
+            best_score_limit='0hard/-300soft',
         )
     )
 
@@ -300,6 +281,13 @@ def test_vrp():
         ]
     )
     solution = solver.solve(problem)
-
+    assert [visit.arrival_time for visit in solution.visits] == [
+        # Visit 1: 1-minute travel time from Vehicle A start
+        datetime(2020, 1, 1, hour=0, minute=1),
+        # Visit 2: 1-minute travel time from visit 1 + 1-hour service
+        datetime(2020, 1, 1, hour=1, minute=2),
+        # Visit 3: 1-minute travel time from Vehicle B start
+        datetime(2020, 1, 1, hour=0, minute=1)
+    ]
     assert [visit.id for visit in solution.vehicles[0].visits] == ['1', '2']
     assert [visit.id for visit in solution.vehicles[1].visits] == ['3']

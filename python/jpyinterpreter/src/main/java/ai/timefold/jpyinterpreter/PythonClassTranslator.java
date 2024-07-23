@@ -67,6 +67,7 @@ public class PythonClassTranslator {
     public static final String TYPE_FIELD_NAME = "$TYPE";
     public static final String CPYTHON_TYPE_FIELD_NAME = "$CPYTHON_TYPE";
     public static final String JAVA_METHOD_PREFIX = "$method$";
+    public static final String JAVA_METHOD_HOLDER_PREFIX = "$methodholder$";
     public static final String PYTHON_JAVA_TYPE_MAPPING_PREFIX = "$pythonJavaTypeMapping";
 
     public record PreparedClassInfo(PythonLikeType type, String className, String classInternalName) {
@@ -484,6 +485,10 @@ public class PythonClassTranslator {
         return JAVA_METHOD_PREFIX + pythonMethodName;
     }
 
+    public static String getJavaMethodHolderName(String pythonMethodName) {
+        return JAVA_METHOD_HOLDER_PREFIX + pythonMethodName;
+    }
+
     public static String getPythonMethodName(String javaMethodName) {
         return javaMethodName.substring(JAVA_METHOD_PREFIX.length());
     }
@@ -566,7 +571,7 @@ public class PythonClassTranslator {
                     throw new IllegalStateException("Unhandled case: " + pythonMethodKind);
             }
 
-            generatedClass.getField(getJavaMethodName(methodEntry.getKey()))
+            generatedClass.getField(getJavaMethodHolderName(methodEntry.getKey()))
                     .set(null, functionInstance);
             pythonLikeType.$setAttribute(methodEntry.getKey(), translatedPythonMethodWrapper);
             return functionClass;
@@ -797,7 +802,7 @@ public class PythonClassTranslator {
             Class<? extends PythonLikeFunction> generatedClass =
                     (Class<? extends PythonLikeFunction>) BuiltinTypes.asmClassLoader.loadClass(constructorClassName);
             if (initFunction != null) {
-                Object method = typeGeneratedClass.getField(getJavaMethodName("__init__")).get(null);
+                Object method = typeGeneratedClass.getField(getJavaMethodHolderName("__init__")).get(null);
                 ArgumentSpec spec =
                         (ArgumentSpec) method.getClass().getField(ARGUMENT_SPEC_INSTANCE_FIELD_NAME).get(method);
                 generatedClass.getField(ARGUMENT_SPEC_INSTANCE_FIELD_NAME).set(null, spec);
@@ -957,7 +962,7 @@ public class PythonClassTranslator {
         String interfaceDescriptor = interfaceDeclaration.descriptor();
         String javaMethodName = getJavaMethodName(methodName);
 
-        classWriter.visitField(Modifier.PUBLIC | Modifier.STATIC, javaMethodName, interfaceDescriptor,
+        classWriter.visitField(Modifier.PUBLIC | Modifier.STATIC, getJavaMethodHolderName(methodName), interfaceDescriptor,
                 null, null);
         instanceMethodNameToMethodDescriptor.put(methodName, interfaceDeclaration);
         Type returnType = getVirtualFunctionReturnType(function);
@@ -973,7 +978,7 @@ public class PythonClassTranslator {
         MethodVisitor methodVisitor =
                 classWriter.visitMethod(Modifier.PUBLIC, javaMethodName, javaMethodDescriptor, signature, null);
 
-        createInstanceOrStaticMethodBody(internalClassName, javaMethodName, javaParameterTypes,
+        createInstanceOrStaticMethodBody(internalClassName, methodName, javaParameterTypes,
                 interfaceDeclaration.methodDescriptor, function,
                 interfaceDeclaration.interfaceName, interfaceDescriptor, methodVisitor);
 
@@ -993,7 +998,7 @@ public class PythonClassTranslator {
         String javaMethodName = getJavaMethodName(methodName);
         String signature = getFunctionSignature(function, function.getAsmMethodDescriptorString());
 
-        classWriter.visitField(Modifier.PUBLIC | Modifier.STATIC, javaMethodName, interfaceDescriptor,
+        classWriter.visitField(Modifier.PUBLIC | Modifier.STATIC, getJavaMethodHolderName(methodName), interfaceDescriptor,
                 null, null);
         MethodVisitor methodVisitor = classWriter.visitMethod(Modifier.PUBLIC | Modifier.STATIC, javaMethodName,
                 function.getAsmMethodDescriptorString(), signature, null);
@@ -1005,7 +1010,7 @@ public class PythonClassTranslator {
             javaParameterTypes[i] = Type.getType('L' + parameterPythonTypeList.get(i).getJavaTypeInternalName() + ';');
         }
 
-        createInstanceOrStaticMethodBody(internalClassName, javaMethodName, javaParameterTypes,
+        createInstanceOrStaticMethodBody(internalClassName, methodName, javaParameterTypes,
                 interfaceDeclaration.methodDescriptor, function,
                 interfaceDeclaration.interfaceName, interfaceDescriptor, methodVisitor);
 
@@ -1022,7 +1027,7 @@ public class PythonClassTranslator {
         String interfaceDescriptor = 'L' + interfaceDeclaration.interfaceName + ';';
         String javaMethodName = getJavaMethodName(methodName);
 
-        classWriter.visitField(Modifier.PUBLIC | Modifier.STATIC, javaMethodName, interfaceDescriptor,
+        classWriter.visitField(Modifier.PUBLIC | Modifier.STATIC, getJavaMethodHolderName(methodName), interfaceDescriptor,
                 null, null);
 
         String javaMethodDescriptor = interfaceDeclaration.methodDescriptor;
@@ -1042,7 +1047,8 @@ public class PythonClassTranslator {
         methodVisitor.visitLabel(start);
         methodVisitor.visitLineNumber(function.getFirstLine(), start);
 
-        methodVisitor.visitFieldInsn(Opcodes.GETSTATIC, internalClassName, javaMethodName, interfaceDescriptor);
+        methodVisitor.visitFieldInsn(Opcodes.GETSTATIC, internalClassName, getJavaMethodHolderName(methodName),
+                interfaceDescriptor);
 
         for (int i = 0; i < function.totalArgCount(); i++) {
             methodVisitor.visitVarInsn(Opcodes.ALOAD, i);
@@ -1067,7 +1073,7 @@ public class PythonClassTranslator {
                         parameterTypes));
     }
 
-    private static void createInstanceOrStaticMethodBody(String internalClassName, String javaMethodName,
+    private static void createInstanceOrStaticMethodBody(String internalClassName, String methodName,
             Type[] javaParameterTypes,
             String methodDescriptorString,
             PythonCompiledFunction function, String interfaceInternalName, String interfaceDescriptor,
@@ -1082,7 +1088,8 @@ public class PythonClassTranslator {
         methodVisitor.visitLabel(start);
         methodVisitor.visitLineNumber(function.getFirstLine(), start);
 
-        methodVisitor.visitFieldInsn(Opcodes.GETSTATIC, internalClassName, javaMethodName, interfaceDescriptor);
+        methodVisitor.visitFieldInsn(Opcodes.GETSTATIC, internalClassName, getJavaMethodHolderName(methodName),
+                interfaceDescriptor);
         for (int i = 0; i < function.totalArgCount(); i++) {
             methodVisitor.visitVarInsn(Opcodes.ALOAD, i);
         }
