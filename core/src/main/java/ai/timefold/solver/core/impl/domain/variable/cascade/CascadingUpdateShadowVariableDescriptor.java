@@ -118,20 +118,24 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
                 .orElse(null);
 
         var targetMethodName = getTargetMethodName();
-        var sourceMethodMember = ConfigUtils.getDeclaredMembers(entityDescriptor.getEntityClass())
+        var sourceMethodMembers = ConfigUtils.getDeclaredMembers(entityDescriptor.getEntityClass())
                 .stream()
                 .filter(member -> member.getName().equals(targetMethodName))
-                .findFirst()
-                .orElse(null);
-        if (sourceMethodMember == null) {
+                .toList();
+        if (sourceMethodMembers.isEmpty()) {
             throw new IllegalArgumentException(
                     "The entityClass (%s) has an @%s annotated property (%s), but the method \"%s\" cannot be found."
                             .formatted(entityDescriptor.getEntityClass(),
                                     CascadingUpdateShadowVariable.class.getSimpleName(),
                                     variableMemberAccessor.getName(),
                                     targetMethodName));
+        } else if (sourceMethodMembers.size() > 1) {
+            throw new IllegalArgumentException("""
+                    The entityClass (%s) has multiple members named as "%s".
+                    Maybe rename the method "%s" with a unique name.""".formatted(entityDescriptor.getEntityClass(),
+                    targetMethodName, targetMethodName));
         }
-        targetMethod = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(sourceMethodMember,
+        targetMethod = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(sourceMethodMembers.get(0),
                 MemberAccessorFactory.MemberAccessorType.REGULAR_METHOD, null, descriptorPolicy.getDomainAccessType());
     }
 
