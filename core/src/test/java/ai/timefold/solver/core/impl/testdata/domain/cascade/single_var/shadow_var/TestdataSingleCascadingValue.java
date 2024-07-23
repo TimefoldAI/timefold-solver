@@ -24,6 +24,10 @@ public class TestdataSingleCascadingValue {
     @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue", sourceVariableName = "entity")
     @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue", sourceVariableName = "previous")
     private Integer cascadeValue;
+    // Having a field with the same name as the targetMethodName should not cause any failure
+    // when parsing @CascadingUpdateShadowVariable
+    @SuppressWarnings("unused")
+    private Integer updateCascadeValue;
     @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValueWithReturnType", sourceVariableName = "entity")
     @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValueWithReturnType", sourceVariableName = "previous")
     private Integer cascadeValueReturnType;
@@ -93,6 +97,10 @@ public class TestdataSingleCascadingValue {
         if (cascadeValue == null || cascadeValue != value + 1) {
             cascadeValue = value + 1;
         }
+    }
+
+    public void updateCascadeValue(@SuppressWarnings("unused") int i) {
+        // Overloaded methods should not cause any failures when parsing @CascadingUpdateShadowVariable
     }
 
     public Integer updateCascadeValueWithReturnType() {

@@ -121,18 +121,11 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
         var targetMethodName = getTargetMethodName();
         var allSourceMethodMembers = ConfigUtils.getDeclaredMembers(entityDescriptor.getEntityClass())
                 .stream()
-                .filter(member -> member.getName().equals(targetMethodName))
+                .filter(member -> member.getName().equals(targetMethodName)
+                        && member instanceof Method method
+                        && method.getParameterCount() == 0)
                 .toList();
-        if (allSourceMethodMembers.size() > 1) {
-            throw new IllegalArgumentException("""
-                    The entity class (%s) has multiple members named as "%s".
-                    Maybe rename the method "%s" with a unique name.""".formatted(entityDescriptor.getEntityClass(),
-                    targetMethodName, targetMethodName));
-        }
-        var validSourceMethodMembers = allSourceMethodMembers.stream()
-                .filter(member -> member instanceof Method method && method.getParameterCount() == 0)
-                .toList();
-        if (validSourceMethodMembers.isEmpty()) {
+        if (allSourceMethodMembers.isEmpty()) {
             throw new IllegalArgumentException(
                     "The entity class (%s) has an @%s annotated property (%s), but the method \"%s\" cannot be found."
                             .formatted(entityDescriptor.getEntityClass(),

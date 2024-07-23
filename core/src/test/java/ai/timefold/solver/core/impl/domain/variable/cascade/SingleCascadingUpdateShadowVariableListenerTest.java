@@ -8,7 +8,6 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.shadow_var.TestdataSingleCascadingEntity;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.shadow_var.TestdataSingleCascadingSolution;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingDuplicatedMethodAndField;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingInvalidField;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingWrongMethod;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingWrongSource;
@@ -39,11 +38,6 @@ class SingleCascadingUpdateShadowVariableListenerTest {
                         "The entity class (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingInvalidField)")
                 .withMessageContaining("has an @CascadingUpdateShadowVariable annotated property (cascadeValue)")
                 .withMessageContaining("but the method \"value\" cannot be found");
-
-        assertThatIllegalArgumentException().isThrownBy(TestdataCascadingDuplicatedMethodAndField::buildEntityDescriptor)
-                .withMessageContaining(
-                        "The entity class (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingDuplicatedMethodAndField) has multiple members named as \"wrongField\"")
-                .withMessageContaining("Maybe rename the method \"wrongField\" with a unique name");
     }
 
     @Test
