@@ -130,7 +130,8 @@ public class ExternalizedNextElementVariableSupply<Solution_> implements
             next.setPrevious(newElement);
         } else if (previous != null) {
             previous.setNext(newElement);
-        } else if (next != null) {
+        }
+        if (next != null) {
             next.setPrevious(newElement);
         }
         nextElementListMap.put(value, newElement);
