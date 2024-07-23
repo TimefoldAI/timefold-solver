@@ -45,14 +45,6 @@ jobs:
           ref: development
           path: ./timefold-quickstarts
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
-      - name: Prevent stale fork of quickstarts
-        if: ${{ steps.checkout-quickstarts-pr.outcome == 'success' }}
-        env:
-          BLESSED_REPO: "timefold-quickstarts"
-          BLESSED_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'development' }}
-        shell: bash
-        working-directory: ./timefold-quickstarts
-        run: ../timefold-solver/.github/scripts/prevent_stale_fork.sh
 
       # Build and test
       - name: Setup Temurin 17 and Maven
