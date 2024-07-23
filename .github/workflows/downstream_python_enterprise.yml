@@ -59,14 +59,6 @@ jobs:
           path: ./timefold-solver-enterprise
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
 
-      - name: Prevent stale fork of timefold-solver-enterprise
-        env:
-          BLESSED_REPO: "timefold-solver-enterprise"
-          BLESSED_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'main' }}
-        shell: bash
-        working-directory: ./timefold-solver-enterprise
-        run: ../timefold-solver/.github/scripts/prevent_stale_fork.sh
-
       # Build and test
       - name: Set up JDK 17
         uses: actions/setup-java@v4

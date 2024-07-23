@@ -89,14 +89,6 @@ jobs:
           ref: main
           path: ./timefold-solver-benchmarks
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
-      - name: Prevent stale fork of timefold-solver-benchmarks
-        if: ${{ steps.checkout-solver-benchmarks-pr.outcome == 'success' }}
-        env:
-          BLESSED_REPO: "timefold-solver-benchmarks"
-          BLESSED_BRANCH: ${{ endsWith(github.head_ref, '.x') && github.head_ref || 'main' }}
-        shell: bash
-        working-directory: ./timefold-solver-benchmarks
-        run: ../timefold-solver/.github/scripts/prevent_stale_fork.sh
 
       - name: Build and test timefold-solver-benchmarks
         working-directory: ./timefold-solver-benchmarks
