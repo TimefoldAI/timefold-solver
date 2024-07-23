@@ -1367,6 +1367,135 @@ public class Customer {
     public void setNextCustomer(Customer nextCustomer) {...}
 ----
 
+[#tailChainVariable]
+=== Updating tail chains
+
+The annotation `@CascadingUpdateShadowVariable` provides a built-in listener that updates a set of connected elements.
+Timefold Solver triggers a user-defined logic whenever the a defined source variable changes.
+Moreover, it automatically propagates changes to the next elements when the value of the related shadow variable changes.
+
+The planning entity side has a genuine list variable:
+
+[source,java]
+----
+@PlanningEntity
+public class Vehicle {
+
+    @PlanningListVariable
+    public List<Customer> getCustomers() {
+        return customers;
+    }
+
+    public void setCustomers(List<Customer> customers) {...}
+}
+----
+
+On the element side:
+
+[source,java]
+----
+@PlanningEntity
+public class Customer {
+
+    @PreviousElementShadowVariable(sourceVariableName = "customers")
+    private Customer previousCustomer;
+    @NextElementShadowVariable(sourceVariableName = "customers")
+    private Customer nextCustomer;
+    @CascadingUpdateShadowVariable(targetMethodName = "updateArrivalTime", sourceVariableName = "previousCustomer")
+    private LocalDateTime arrivalTime;
+
+    ...
+
+    public void updateArrivalTime() {...}
+----
+
+The `targetMethodName` refers to the user-defined logic that updates the annotated shadow variable.
+The method must be implemented in the defining entity class, be non-static, and not include any parameters.
+
+The `sourceVariableName` property is the planning variable's name on the getter's return type,
+which will trigger the cascade update listener in case of changes.
+
+In the previous example,
+the cascade update listener calls `updateArrivalTime` whenever `previousCustomer` changes.
+It then automatically calls `updateArrivalTime` for the subsequent `nextCustomer` elements
+and stops when the `arrivalTime` value does not change after running target method
+or when it reaches the end.
+
+The shadow variable `nextCustomer` is not required, but defining it in the model is recommended:
+
+[source,java]
+----
+@PlanningEntity
+public class Customer {
+
+    @PreviousElementShadowVariable(sourceVariableName = "customers")
+    private Customer previousCustomer;
+    @CascadingUpdateShadowVariable(targetMethodName = "updateArrivalTime", sourceVariableName = "previousCustomer")
+    private LocalDateTime arrivalTime;
+
+    ...
+
+    public void updateArrivalTime() {...}
+----
+
+It is also possible to define multiple sources per variable:
+
+[source,java]
+----
+@PlanningEntity
+public class Customer {
+
+    @InverseRelationShadowVariable(sourceVariableName = "customers")
+    private Vehicle vehicle;
+    @PreviousElementShadowVariable(sourceVariableName = "customers")
+    private Customer previousCustomer;
+    @NextElementShadowVariable(sourceVariableName = "customers")
+    private Customer nextCustomer;
+    @CascadingUpdateShadowVariable(targetMethodName = "updateArrivalTime", sourceVariableName = "vehicle")
+    @CascadingUpdateShadowVariable(targetMethodName = "updateArrivalTime", sourceVariableName = "previousCustomer")
+    private LocalDateTime arrivalTime;
+
+    ...
+
+    public void updateArrivalTime() {...}
+----
+
+The listener behaves as described previously.
+It calls `updateArrivalTime` whenever a `previousCustomer` or `vehicle` changes.
+It then propagates the changes to the subsequent elements,
+stopping when the method results in no change to the variable, or when it reaches the tail.
+
+[WARNING]
+====
+A user-defined logic can only change shadow variables.
+It must never change a genuine planning variable or a problem fact.
+====
+
+==== Multiple source variables
+
+If the user-defined logic requires updating multiple shadow variables,
+decorate each shadow variable with a separate `@CascadingUpdateShadowVariable` annotation.
+
+[source,java]
+----
+@PlanningEntity
+public class Customer {
+
+    @PreviousElementShadowVariable(sourceVariableName = "customers")
+    private Customer previousCustomer;
+    @NextElementShadowVariable(sourceVariableName = "customers")
+    private Customer nextCustomer;
+    @CascadingUpdateShadowVariable(targetMethodName = "updateWeightAndArrivalTime", sourceVariableName = "previousCustomer")
+    private LocalDateTime arrivalTime;
+    @CascadingUpdateShadowVariable(targetMethodName = "updateWeightAndArrivalTime", sourceVariableName = "previousCustomer")
+    private Integer weightAtVisit;
+    ...
+
+    public void updateWeightAndArrivalTime() {...}
+----
+
+Timefold Solver triggers a single listener to run the user-defined logic whenever `previousCustomer` changes.
+It stops when both `arrivalTime` and `weightAtVisit` values do not change or when it reaches the end.
 
 [#chainedPlanningVariable]
 == Chained planning variable (TSP, VRP, ...)

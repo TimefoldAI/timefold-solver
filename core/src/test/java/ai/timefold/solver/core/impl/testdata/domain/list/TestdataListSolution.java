@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.testdata.domain.list;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
@@ -32,10 +31,10 @@ public class TestdataListSolution {
     private static TestdataListSolution generateSolution(int valueCount, int entityCount) {
         List<TestdataListEntity> entityList = IntStream.range(0, entityCount)
                 .mapToObj(i -> new TestdataListEntity("Generated Entity " + i))
-                .collect(Collectors.toList());
+                .toList();
         List<TestdataListValue> valueList = IntStream.range(0, valueCount)
                 .mapToObj(i -> new TestdataListValue("Generated Value " + i))
-                .collect(Collectors.toList());
+                .toList();
         TestdataListSolution solution = new TestdataListSolution();
         solution.setValueList(valueList);
         solution.setEntityList(entityList);
@@ -80,5 +79,11 @@ public class TestdataListSolution {
 
     public void setScore(SimpleScore score) {
         this.score = score;
+    }
+
+    public void removeEntity(TestdataListEntity entity) {
+        this.entityList = entityList.stream()
+                .filter(e -> e != entity)
+                .toList();
     }
 }

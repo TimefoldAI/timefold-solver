@@ -10,6 +10,7 @@ import java.lang.reflect.Member;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,6 +27,7 @@ import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.AnchorShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.CustomShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
@@ -45,6 +47,7 @@ import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.ProblemScaleTracker;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.anchor.AnchorShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.custom.CustomShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.custom.LegacyCustomShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.custom.PiggybackShadowVariableDescriptor;
@@ -85,7 +88,9 @@ public class EntityDescriptor<Solution_> {
             ShadowVariable.class,
             ShadowVariable.List.class,
             PiggybackShadowVariable.class,
-            CustomShadowVariable.class };
+            CustomShadowVariable.class,
+            CascadingUpdateShadowVariable.class,
+            CascadingUpdateShadowVariable.List.class };
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityDescriptor.class);
 
@@ -104,6 +109,7 @@ public class EntityDescriptor<Solution_> {
     // Only declared variable descriptors, excludes inherited variable descriptors
     private Map<String, GenuineVariableDescriptor<Solution_>> declaredGenuineVariableDescriptorMap;
     private Map<String, ShadowVariableDescriptor<Solution_>> declaredShadowVariableDescriptorMap;
+    private Map<String, CascadingUpdateShadowVariableDescriptor<Solution_>> declaredCascadingUpdateShadowVariableDecriptorMap;
 
     private List<SelectionFilter<Solution_, Object>> declaredPinEntityFilterList;
     private List<EntityDescriptor<Solution_>> inheritedEntityDescriptorList;
@@ -196,6 +202,7 @@ public class EntityDescriptor<Solution_> {
         processEntityAnnotations(descriptorPolicy);
         declaredGenuineVariableDescriptorMap = new LinkedHashMap<>();
         declaredShadowVariableDescriptorMap = new LinkedHashMap<>();
+        declaredCascadingUpdateShadowVariableDecriptorMap = new HashMap<>();
         declaredPinEntityFilterList = new ArrayList<>(2);
         // Only iterate declared fields and methods, not inherited members, to avoid registering the same one twice
         var memberList = ConfigUtils.getDeclaredMembers(entityClass);
@@ -283,7 +290,9 @@ public class EntityDescriptor<Solution_> {
             if (variableAnnotationClass.equals(CustomShadowVariable.class)
                     || variableAnnotationClass.equals(ShadowVariable.class)
                     || variableAnnotationClass.equals(ShadowVariable.List.class)
-                    || variableAnnotationClass.equals(PiggybackShadowVariable.class)) {
+                    || variableAnnotationClass.equals(PiggybackShadowVariable.class)
+                    || variableAnnotationClass.equals(CascadingUpdateShadowVariable.class)
+                    || variableAnnotationClass.equals(CascadingUpdateShadowVariable.List.class)) {
                 memberAccessorType = FIELD_OR_GETTER_METHOD;
             } else {
                 memberAccessorType = FIELD_OR_GETTER_METHOD_WITH_SETTER;
@@ -350,6 +359,27 @@ public class EntityDescriptor<Solution_> {
                 || variableAnnotationClass.equals(ShadowVariable.List.class)) {
             var variableDescriptor = new CustomShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
+        } else if (variableAnnotationClass.equals(CascadingUpdateShadowVariable.class)
+                || variableAnnotationClass.equals(CascadingUpdateShadowVariable.List.class)) {
+            var variableDescriptor =
+                    new CascadingUpdateShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
+            declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
+            if (declaredCascadingUpdateShadowVariableDecriptorMap.containsKey(variableDescriptor.getTargetMethodName())) {
+                // If the target method is already set,
+                // it means that multiple fields define the cascading shadow variable
+                // and point to the same target method.
+                // As a result, only one listener will be created for the related target method,
+                // which will include all sources from all fields.
+                // This specific shadow variable will not be notifiable,
+                // and no listener will be created from CascadingUpdateVariableListenerDescriptor#buildVariableListeners.
+                variableDescriptor.setNotifiable(false);
+                declaredCascadingUpdateShadowVariableDecriptorMap.get(variableDescriptor.getTargetMethodName())
+                        .addTargetVariable(this, memberAccessor);
+            } else {
+                // The first shadow variable read is notifiable and will generate a listener.
+                declaredCascadingUpdateShadowVariableDecriptorMap.put(variableDescriptor.getTargetMethodName(),
+                        variableDescriptor);
+            }
         } else if (variableAnnotationClass.equals(PiggybackShadowVariable.class)) {
             var variableDescriptor =
                     new PiggybackShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);

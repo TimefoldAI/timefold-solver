@@ -12,6 +12,7 @@ import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactProperty;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoMemberAccessorFactory;
+import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.reflect.accessmodifier.TestdataVisibilityModifierSolution;
 import ai.timefold.solver.core.impl.testdata.domain.reflect.field.TestdataFieldAnnotatedEntity;
@@ -94,6 +95,24 @@ class MemberAccessorFactoryTest {
         assertThat(memberAccessor.executeGetter(s1)).isEqualTo("firstValue");
         memberAccessor.executeSetter(s1, "secondValue");
         assertThat(memberAccessor.executeGetter(s1)).isEqualTo("secondValue");
+    }
+
+    @Test
+    void methodReturnVoid() throws NoSuchMethodException {
+        MemberAccessor memberAccessor = MemberAccessorFactory.buildMemberAccessor(TestdataEntity.class.getMethod("updateValue"),
+                MemberAccessorFactory.MemberAccessorType.REGULAR_METHOD, null, DomainAccessType.REFLECTION, null);
+        assertThat(memberAccessor).isInstanceOf(ReflectionMethodMemberAccessor.class);
+        assertThat(memberAccessor.getName()).isEqualTo("updateValue");
+        assertThat(memberAccessor.getType()).isEqualTo(void.class);
+        assertThat(memberAccessor.getGenericType()).isEqualTo(void.class);
+        assertThat(memberAccessor.getSpeedNote()).isEqualTo("MethodHandle");
+
+        TestdataEntity entity = new TestdataEntity();
+        TestdataValue value = new TestdataValue("A");
+        entity.setValue(value);
+
+        memberAccessor.executeGetter(entity);
+        assertThat(entity.getValue().getCode()).isEqualTo("A/A");
     }
 
     @Test

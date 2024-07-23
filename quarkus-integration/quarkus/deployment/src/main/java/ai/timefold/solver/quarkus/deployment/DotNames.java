@@ -17,6 +17,7 @@ import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty
 import ai.timefold.solver.core.api.domain.solution.ProblemFactProperty;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.AnchorShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.CustomShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
@@ -69,6 +70,8 @@ public final class DotNames {
     static final DotName PIGGYBACK_SHADOW_VARIABLE = DotName.createSimple(PiggybackShadowVariable.class.getName());
     static final DotName PREVIOUS_ELEMENT_SHADOW_VARIABLE = DotName.createSimple(PreviousElementShadowVariable.class.getName());
     static final DotName SHADOW_VARIABLE = DotName.createSimple(ShadowVariable.class.getName());
+    static final DotName CASCADING_UPDATE_SHADOW_VARIABLE =
+            DotName.createSimple(CascadingUpdateShadowVariable.class.getName());
 
     // Need to use String since timefold-solver-test is not on the compile classpath
     static final DotName CONSTRAINT_VERIFIER =
@@ -86,6 +89,7 @@ public final class DotNames {
             PIGGYBACK_SHADOW_VARIABLE,
             PREVIOUS_ELEMENT_SHADOW_VARIABLE,
             SHADOW_VARIABLE,
+            CASCADING_UPDATE_SHADOW_VARIABLE
     };
 
     static final DotName[] GIZMO_MEMBER_ACCESSOR_ANNOTATIONS = {
@@ -110,6 +114,7 @@ public final class DotNames {
             PIGGYBACK_SHADOW_VARIABLE,
             PREVIOUS_ELEMENT_SHADOW_VARIABLE,
             SHADOW_VARIABLE,
+            CASCADING_UPDATE_SHADOW_VARIABLE
     };
 
     public enum BeanDefiningAnnotations {

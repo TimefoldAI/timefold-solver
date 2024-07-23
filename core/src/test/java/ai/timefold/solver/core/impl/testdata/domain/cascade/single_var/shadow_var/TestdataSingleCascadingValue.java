@@ -1,0 +1,112 @@
+package ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.shadow_var;
+
+import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
+import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+
+@PlanningEntity
+public class TestdataSingleCascadingValue {
+
+    public static EntityDescriptor<TestdataSingleCascadingSolution> buildEntityDescriptor() {
+        return TestdataSingleCascadingSolution.buildSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataSingleCascadingValue.class);
+    }
+
+    @InverseRelationShadowVariable(sourceVariableName = "valueList")
+    private TestdataSingleCascadingEntity entity;
+    @PreviousElementShadowVariable(sourceVariableName = "valueList")
+    private TestdataSingleCascadingValue previous;
+    @NextElementShadowVariable(sourceVariableName = "valueList")
+    private TestdataSingleCascadingValue next;
+    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue", sourceVariableName = "entity")
+    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue", sourceVariableName = "previous")
+    private Integer cascadeValue;
+    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValueWithReturnType", sourceVariableName = "entity")
+    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValueWithReturnType", sourceVariableName = "previous")
+    private Integer cascadeValueReturnType;
+    private Integer value;
+    private int firstNumberOfCalls = 0;
+    private int secondNumberOfCalls = 0;
+
+    public TestdataSingleCascadingValue(Integer value) {
+        this.value = value;
+    }
+
+    public TestdataSingleCascadingEntity getEntity() {
+        return entity;
+    }
+
+    public void setEntity(TestdataSingleCascadingEntity entity) {
+        this.entity = entity;
+    }
+
+    public TestdataSingleCascadingValue getPrevious() {
+        return previous;
+    }
+
+    public void setPrevious(TestdataSingleCascadingValue previous) {
+        this.previous = previous;
+    }
+
+    public TestdataSingleCascadingValue getNext() {
+        return next;
+    }
+
+    public void setNext(TestdataSingleCascadingValue next) {
+        this.next = next;
+    }
+
+    public Integer getValue() {
+        return value;
+    }
+
+    public void setValue(Integer value) {
+        this.value = value;
+    }
+
+    public void setCascadeValue(Integer cascadeValue) {
+        this.cascadeValue = cascadeValue;
+    }
+
+    public Integer getCascadeValue() {
+        return cascadeValue;
+    }
+
+    public Integer getCascadeValueReturnType() {
+        return cascadeValueReturnType;
+    }
+
+    public int getFirstNumberOfCalls() {
+        return firstNumberOfCalls;
+    }
+
+    public int getSecondNumberOfCalls() {
+        return secondNumberOfCalls;
+    }
+
+    //---Complex methods---//
+    public void updateCascadeValue() {
+        firstNumberOfCalls++;
+        if (cascadeValue == null || cascadeValue != value + 1) {
+            cascadeValue = value + 1;
+        }
+    }
+
+    public Integer updateCascadeValueWithReturnType() {
+        secondNumberOfCalls++;
+        if (cascadeValueReturnType == null || cascadeValueReturnType != value + 2) {
+            cascadeValueReturnType = value + 2;
+        }
+        return cascadeValueReturnType;
+    }
+
+    @Override
+    public String toString() {
+        return "TestdataCascadeValue{" +
+                "value=" + value +
+                '}';
+    }
+}

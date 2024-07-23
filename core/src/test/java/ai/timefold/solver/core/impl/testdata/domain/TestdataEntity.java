@@ -44,5 +44,7 @@ public class TestdataEntity extends TestdataObject {
     // ************************************************************************
     // Complex methods
     // ************************************************************************
-
+    public void updateValue() {
+        this.value = new TestdataValue(value.code + "/" + value.code);
+    }
 }

@@ -7,7 +7,8 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
-public class NextElementVariableListener<Solution_> implements ListVariableListener<Solution_, Object, Object> {
+public class NextElementVariableListener<Solution_>
+        implements ListVariableListener<Solution_, Object, Object>, NextElementVariableSupply {
 
     protected final NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor;
     protected final ListVariableDescriptor<Solution_> sourceVariableDescriptor;
@@ -83,5 +84,10 @@ public class NextElementVariableListener<Solution_> implements ListVariableListe
             }
             next = element;
         }
+    }
+
+    @Override
+    public Object getNext(Object planningValue) {
+        return shadowVariableDescriptor.getValue(planningValue);
     }
 }
