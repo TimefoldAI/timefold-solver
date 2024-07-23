@@ -1,13 +1,9 @@
 from _jpyinterpreter import JavaAnnotation, AnnotationValueSupplier
 from jpype import JImplements, JOverride
-from typing import Union, List, Callable, Type, TYPE_CHECKING, TypeVar
+from typing import Union, List, Callable, Type, TypeVar
 
 from ._variable_listener import VariableListener
 from .._timefold_java_interop import ensure_init, get_asm_type
-
-if TYPE_CHECKING:
-    pass
-
 
 Solution_ = TypeVar('Solution_')
 
