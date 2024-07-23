@@ -73,6 +73,7 @@ public class TestdataCascadingDuplicatedMethodAndField {
     }
 
     //---Complex methods---//
+    @SuppressWarnings("unused")
     public void wrongField() {
         if (value != null) {
             value = value + 1;
