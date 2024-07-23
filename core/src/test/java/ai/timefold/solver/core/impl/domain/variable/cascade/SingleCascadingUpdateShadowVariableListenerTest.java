@@ -9,6 +9,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.shadow_var.TestdataSingleCascadingEntity;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.shadow_var.TestdataSingleCascadingSolution;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingDuplicatedMethodAndField;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingInvalidField;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingWrongMethod;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingWrongSource;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
@@ -32,6 +33,12 @@ class SingleCascadingUpdateShadowVariableListenerTest {
                         "The entity class (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingWrongMethod)")
                 .withMessageContaining("has an @CascadingUpdateShadowVariable annotated property (cascadeValueReturnType)")
                 .withMessageContaining("but the method \"badUpdateCascadeValueWithReturnType\" cannot be found");
+
+        assertThatIllegalArgumentException().isThrownBy(TestdataCascadingInvalidField::buildEntityDescriptor)
+                .withMessageContaining(
+                        "The entity class (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingInvalidField)")
+                .withMessageContaining("has an @CascadingUpdateShadowVariable annotated property (cascadeValue)")
+                .withMessageContaining("but the method \"value\" cannot be found");
 
         assertThatIllegalArgumentException().isThrownBy(TestdataCascadingDuplicatedMethodAndField::buildEntityDescriptor)
                 .withMessageContaining(

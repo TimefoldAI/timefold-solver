@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.variable.cascade;
 
 import static java.util.stream.Collectors.joining;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -122,18 +123,18 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
                 .stream()
                 .filter(member -> member.getName().equals(targetMethodName))
                 .toList();
-        if (sourceMethodMembers.isEmpty()) {
+        if (sourceMethodMembers.size() > 1) {
+            throw new IllegalArgumentException("""
+                    The entity class (%s) has multiple members named as "%s".
+                    Maybe rename the method "%s" with a unique name.""".formatted(entityDescriptor.getEntityClass(),
+                    targetMethodName, targetMethodName));
+        } else if (sourceMethodMembers.stream().noneMatch(m -> Method.class.isAssignableFrom(m.getClass()))) {
             throw new IllegalArgumentException(
                     "The entity class (%s) has an @%s annotated property (%s), but the method \"%s\" cannot be found."
                             .formatted(entityDescriptor.getEntityClass(),
                                     CascadingUpdateShadowVariable.class.getSimpleName(),
                                     variableMemberAccessor.getName(),
                                     targetMethodName));
-        } else if (sourceMethodMembers.size() > 1) {
-            throw new IllegalArgumentException("""
-                    The entity class (%s) has multiple members named as "%s".
-                    Maybe rename the method "%s" with a unique name.""".formatted(entityDescriptor.getEntityClass(),
-                    targetMethodName, targetMethodName));
         }
         targetMethod = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(sourceMethodMembers.get(0),
                 MemberAccessorFactory.MemberAccessorType.REGULAR_METHOD, null, descriptorPolicy.getDomainAccessType());
