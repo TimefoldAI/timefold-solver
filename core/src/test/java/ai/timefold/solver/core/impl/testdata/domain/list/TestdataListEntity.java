@@ -55,8 +55,12 @@ public class TestdataListEntity extends TestdataObject {
     }
 
     public void addValue(TestdataListValue value) {
+        addValueAt(valueList.size(), value);
+    }
+
+    public void addValueAt(int pos, TestdataListValue value) {
         List<TestdataListValue> newValueList = new ArrayList<>(valueList);
-        newValueList.add(value);
+        newValueList.add(pos, value);
         this.valueList = newValueList;
     }
 

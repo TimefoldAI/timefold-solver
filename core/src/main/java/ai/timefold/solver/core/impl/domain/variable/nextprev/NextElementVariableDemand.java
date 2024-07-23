@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable.nextprev;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonListInverseVariableDemand;
 import ai.timefold.solver.core.impl.domain.variable.supply.AbstractVariableDescriptorBasedDemand;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
@@ -18,7 +17,6 @@ public final class NextElementVariableDemand<Solution_>
 
     @Override
     public ExternalizedNextElementVariableSupply<Solution_> createExternalizedSupply(SupplyManager supplyManager) {
-        return new ExternalizedNextElementVariableSupply<>((ListVariableDescriptor<Solution_>) variableDescriptor, supplyManager
-                .demand(new SingletonListInverseVariableDemand<>((ListVariableDescriptor<Solution_>) variableDescriptor)));
+        return new ExternalizedNextElementVariableSupply<>((ListVariableDescriptor<Solution_>) variableDescriptor);
     }
 }
