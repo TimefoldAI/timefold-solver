@@ -21,7 +21,7 @@ class SingleCascadingUpdateShadowVariableListenerTest {
     void requiredShadowVariableDependencies() {
         assertThatIllegalArgumentException().isThrownBy(TestdataCascadingWrongSource::buildEntityDescriptor)
                 .withMessageContaining(
-                        "The entityClass (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingWrongSource)")
+                        "The entity class (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingWrongSource)")
                 .withMessageContaining("has an @CascadingUpdateShadowVariable annotated property (cascadeValue)")
                 .withMessageContaining("but the shadow variable \"bad\" cannot be found")
                 .withMessageContaining(
@@ -29,12 +29,12 @@ class SingleCascadingUpdateShadowVariableListenerTest {
 
         assertThatIllegalArgumentException().isThrownBy(TestdataCascadingWrongMethod::buildEntityDescriptor)
                 .withMessageContaining(
-                        "The entityClass (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingWrongMethod)")
+                        "The entity class (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingWrongMethod)")
                 .withMessageContaining("has an @CascadingUpdateShadowVariable annotated property (cascadeValueReturnType)")
                 .withMessageContaining("but the method \"badUpdateCascadeValueWithReturnType\" cannot be found");
 
         assertThatIllegalArgumentException().isThrownBy(TestdataCascadingDuplicatedMethodAndField::buildEntityDescriptor)
-                .withMessageContaining("The entityClass (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingDuplicatedMethodAndField) has multiple members named as \"wrongField\"")
+                .withMessageContaining("The entity class (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingDuplicatedMethodAndField) has multiple members named as \"wrongField\"")
             .withMessageContaining("Maybe rename the method \"wrongField\" with a unique name");
     }
 
