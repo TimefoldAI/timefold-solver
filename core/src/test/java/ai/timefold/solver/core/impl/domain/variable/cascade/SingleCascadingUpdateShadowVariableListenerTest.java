@@ -34,8 +34,9 @@ class SingleCascadingUpdateShadowVariableListenerTest {
                 .withMessageContaining("but the method \"badUpdateCascadeValueWithReturnType\" cannot be found");
 
         assertThatIllegalArgumentException().isThrownBy(TestdataCascadingDuplicatedMethodAndField::buildEntityDescriptor)
-                .withMessageContaining("The entity class (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingDuplicatedMethodAndField) has multiple members named as \"wrongField\"")
-            .withMessageContaining("Maybe rename the method \"wrongField\" with a unique name");
+                .withMessageContaining(
+                        "The entity class (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingDuplicatedMethodAndField) has multiple members named as \"wrongField\"")
+                .withMessageContaining("Maybe rename the method \"wrongField\" with a unique name");
     }
 
     @Test
