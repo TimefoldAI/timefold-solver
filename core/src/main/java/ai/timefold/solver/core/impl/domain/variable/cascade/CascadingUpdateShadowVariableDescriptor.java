@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.variable.cascade;
 
 import static java.util.stream.Collectors.joining;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -118,20 +119,21 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
                 .orElse(null);
 
         var targetMethodName = getTargetMethodName();
-        var sourceMethodMember = ConfigUtils.getDeclaredMembers(entityDescriptor.getEntityClass())
+        var allSourceMethodMembers = ConfigUtils.getDeclaredMembers(entityDescriptor.getEntityClass())
                 .stream()
-                .filter(member -> member.getName().equals(targetMethodName))
-                .findFirst()
-                .orElse(null);
-        if (sourceMethodMember == null) {
+                .filter(member -> member.getName().equals(targetMethodName)
+                        && member instanceof Method method
+                        && method.getParameterCount() == 0)
+                .toList();
+        if (allSourceMethodMembers.isEmpty()) {
             throw new IllegalArgumentException(
-                    "The entityClass (%s) has an @%s annotated property (%s), but the method \"%s\" cannot be found."
+                    "The entity class (%s) has an @%s annotated property (%s), but the method \"%s\" cannot be found."
                             .formatted(entityDescriptor.getEntityClass(),
                                     CascadingUpdateShadowVariable.class.getSimpleName(),
                                     variableMemberAccessor.getName(),
                                     targetMethodName));
         }
-        targetMethod = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(sourceMethodMember,
+        targetMethod = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(allSourceMethodMembers.get(0),
                 MemberAccessorFactory.MemberAccessorType.REGULAR_METHOD, null, descriptorPolicy.getDomainAccessType());
     }
 
@@ -140,7 +142,7 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
         if (sourceDescriptor == null) {
             throw new IllegalArgumentException(
                     """
-                            The entityClass (%s) has an @%s annotated property (%s), but the shadow variable "%s" cannot be found.
+                            The entity class (%s) has an @%s annotated property (%s), but the shadow variable "%s" cannot be found.
                             Maybe update sourceVariableName to an existing shadow variable in the entity %s."""
                             .formatted(entityDescriptor.getEntityClass(),
                                     CascadingUpdateShadowVariable.class.getSimpleName(),
