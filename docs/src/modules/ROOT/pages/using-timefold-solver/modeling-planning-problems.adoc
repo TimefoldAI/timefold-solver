@@ -1464,28 +1464,6 @@ It calls `updateArrivalTime` whenever a `previousCustomer` or `vehicle` changes.
 It then propagates the changes to the subsequent elements,
 stopping when the method results in no change to the variable, or when it reaches the tail.
 
-Another valid approach for defining multiple sources per variable is described as follows:
-
-[source,java]
-----
-@PlanningEntity
-public class Customer {
-
-    @InverseRelationShadowVariable(sourceVariableName = "customers")
-    private Vehicle vehicle;
-    @PreviousElementShadowVariable(sourceVariableName = "customers")
-    private Customer previousCustomer;
-    @NextElementShadowVariable(sourceVariableName = "customers")
-    private Customer nextCustomer;
-    @CascadingUpdateShadowVariable(targetMethodName = "updateArrivalTime", sourceVariableName = "vehicle")
-    @CascadingUpdateShadowVariable(targetMethodName = "updateArrivalTime", sourceVariableName = "previousCustomer")
-    private LocalDateTime arrivalTime;
-
-    ...
-
-    public void updateArrivalTime() {...}
-----
-
 [WARNING]
 ====
 A user-defined logic can only change shadow variables.
