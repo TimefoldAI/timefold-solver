@@ -43,9 +43,11 @@ class SingleCascadingUpdateShadowVariableListenerTest {
         assertThatIllegalArgumentException().isThrownBy(TestdataInvalidSourceCascadingValue::buildEntityDescriptor)
                 .withMessageContaining(
                         "The entityClass (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.piggy_back.TestdataInvalidSourceCascadingValue)")
-                .withMessageContaining("has a @PiggybackShadowVariable annotated property (value) with a shadowEntityClass (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.piggy_back.TestdataInvalidSourceCascadingValue2)")
+                .withMessageContaining(
+                        "has a @PiggybackShadowVariable annotated property (value) with a shadowEntityClass (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.piggy_back.TestdataInvalidSourceCascadingValue2)")
                 .withMessageContaining("but it cannot be set when the source shadow variable is @CascadingUpdateShadowVariable")
-                .withMessageContaining("Maybe remove the property shadowEntityClass and ensure the shadow variable cascadeValue is defined on class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.piggy_back.TestdataInvalidSourceCascadingValue");
+                .withMessageContaining(
+                        "Maybe remove the property shadowEntityClass and ensure the shadow variable cascadeValue is defined on class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.piggy_back.TestdataInvalidSourceCascadingValue");
     }
 
     @Test

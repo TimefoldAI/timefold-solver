@@ -27,7 +27,7 @@ public class TestdataPiggybackCascadingEntity extends TestdataObject
     }
 
     public static TestdataPiggybackCascadingEntity createWithValues(String code,
-                                                                    TestdataPiggybackCascadingValue... values) {
+            TestdataPiggybackCascadingValue... values) {
         // Set up shadow variables to preserve consistency.
         return new TestdataPiggybackCascadingEntity(code, new ArrayList<>(Arrays.asList(values))).setUpShadowVariables();
     }

@@ -13,7 +13,8 @@ import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.Testdat
 
 @PlanningSolution
 public class TestdataPiggybackNotifiableCascadingSolution
-        implements TestdataCascadingBaseSolution<TestdataPiggybackNotifiableCascadingEntity, TestdataPiggybackNotifiableCascadingValue> {
+        implements
+        TestdataCascadingBaseSolution<TestdataPiggybackNotifiableCascadingEntity, TestdataPiggybackNotifiableCascadingValue> {
 
     public static SolutionDescriptor<TestdataPiggybackNotifiableCascadingSolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(

@@ -24,7 +24,8 @@ public class TestdataInvalidSourceCascadingEntity extends TestdataObject {
                 .getGenuineVariableDescriptor("valueList");
     }
 
-    public static TestdataInvalidSourceCascadingEntity createWithValues(String code, TestdataInvalidSourceCascadingValue... values) {
+    public static TestdataInvalidSourceCascadingEntity createWithValues(String code,
+            TestdataInvalidSourceCascadingValue... values) {
         // Set up shadow variables to preserve consistency.
         return new TestdataInvalidSourceCascadingEntity(code, new ArrayList<>(Arrays.asList(values))).setUpShadowVariables();
     }

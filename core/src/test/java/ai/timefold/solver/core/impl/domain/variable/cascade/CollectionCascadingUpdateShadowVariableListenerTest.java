@@ -12,10 +12,10 @@ import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.Testdat
 import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.TestdataMultipleCascadingBaseValue;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.multiple_var.TestdataMultipleSourceCascadingEntity;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.multiple_var.TestdataMultipleSourceCascadingSolution;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.piggyback_notifiable.TestdataPiggybackNotifiableCascadingEntity;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.piggyback_notifiable.TestdataPiggybackNotifiableCascadingSolution;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.piggyback.TestdataPiggybackCascadingEntity;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.piggyback.TestdataPiggybackCascadingSolution;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.piggyback_notifiable.TestdataPiggybackNotifiableCascadingEntity;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.piggyback_notifiable.TestdataPiggybackNotifiableCascadingSolution;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.shadow_var.TestdataMultipleCascadingEntity;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.shadow_var.TestdataMultipleCascadingSolution;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.supply.TestdataMultipleCascadingWithSupplyEntity;

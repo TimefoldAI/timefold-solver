@@ -27,9 +27,10 @@ public class TestdataPiggybackNotifiableCascadingEntity extends TestdataObject
     }
 
     public static TestdataPiggybackNotifiableCascadingEntity createWithValues(String code,
-                                                                              TestdataPiggybackNotifiableCascadingValue... values) {
+            TestdataPiggybackNotifiableCascadingValue... values) {
         // Set up shadow variables to preserve consistency.
-        return new TestdataPiggybackNotifiableCascadingEntity(code, new ArrayList<>(Arrays.asList(values))).setUpShadowVariables();
+        return new TestdataPiggybackNotifiableCascadingEntity(code, new ArrayList<>(Arrays.asList(values)))
+                .setUpShadowVariables();
     }
 
     TestdataPiggybackNotifiableCascadingEntity setUpShadowVariables() {

@@ -32,7 +32,8 @@ public class TestdataInvalidSourceCascadingValue {
     @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValueWithReturnType", sourceVariableName = "entity")
     @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValueWithReturnType", sourceVariableName = "previous")
     private Integer cascadeValueReturnType;
-    @PiggybackShadowVariable(shadowVariableName = "cascadeValue", shadowEntityClass = TestdataInvalidSourceCascadingValue2.class)
+    @PiggybackShadowVariable(shadowVariableName = "cascadeValue",
+            shadowEntityClass = TestdataInvalidSourceCascadingValue2.class)
     private Integer value;
     private int firstNumberOfCalls = 0;
     private int secondNumberOfCalls = 0;
