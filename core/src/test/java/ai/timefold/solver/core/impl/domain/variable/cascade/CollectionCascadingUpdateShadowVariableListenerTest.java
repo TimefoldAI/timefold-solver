@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable.cascade;
 
+import static ai.timefold.solver.core.impl.domain.variable.cascade.CollectionCascadingUpdateShadowVariableListenerTest.Type.MULTIPLE_SOURCES_WITHOUT_SUPPLY;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
@@ -10,6 +11,8 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.TestdataCascadingBaseEntity;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.TestdataCascadingBaseSolution;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.TestdataMultipleCascadingBaseValue;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.multiple_shadow_var.TestdataMultipleSourceCascadingEntity;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.multiple_shadow_var.TestdataMultipleSourceCascadingSolution;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.shadow_var.TestdataMultipleCascadingEntity;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.shadow_var.TestdataMultipleCascadingSolution;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.supply.TestdataMultipleCascadingWithSupplyEntity;
@@ -24,6 +27,8 @@ class CollectionCascadingUpdateShadowVariableListenerTest {
     private GenuineVariableDescriptor<?> generateDescriptor(Type type) {
         if (type == Type.WITH_SUPPLY) {
             return TestdataMultipleCascadingWithSupplyEntity.buildVariableDescriptorForValueList();
+        } else if (type == MULTIPLE_SOURCES_WITHOUT_SUPPLY) {
+            return TestdataMultipleSourceCascadingEntity.buildVariableDescriptorForValueList();
         } else {
             return TestdataMultipleCascadingEntity.buildVariableDescriptorForValueList();
         }
@@ -33,6 +38,8 @@ class CollectionCascadingUpdateShadowVariableListenerTest {
             generateSolution(Type type, int valueCount, int entityCount) {
         if (type == Type.WITH_SUPPLY) {
             return TestdataMultipleCascadingWithSupplySolution.generateUninitializedSolution(valueCount, entityCount);
+        } else if (type == MULTIPLE_SOURCES_WITHOUT_SUPPLY) {
+            return TestdataMultipleSourceCascadingSolution.generateUninitializedSolution(valueCount, entityCount);
         } else {
             return TestdataMultipleCascadingSolution.generateUninitializedSolution(valueCount, entityCount);
         }
@@ -189,6 +196,7 @@ class CollectionCascadingUpdateShadowVariableListenerTest {
 
     enum Type {
         WITHOUT_SUPPLY,
+        MULTIPLE_SOURCES_WITHOUT_SUPPLY,
         WITH_SUPPLY
     }
 }

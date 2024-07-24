@@ -13,6 +13,7 @@ import java.lang.annotation.Target;
  * Automatically cascades change events to {@link NextElementShadowVariable} of a {@link PlanningListVariable}.
  * <p>
  * Important: it must only change the shadow variable(s) for which it's configured.
+ * It is only possible to define either {@code sourceVariableName} or {@code sourceVariableNames}.
  * It can be applied to multiple fields to modify different shadow variables.
  * It should never change a genuine variable or a problem fact.
  * It can change its shadow variable(s) on multiple entity instances
@@ -28,7 +29,14 @@ public @interface CascadingUpdateShadowVariable {
      *
      * @return never null, a genuine or shadow variable name
      */
-    String sourceVariableName();
+    String sourceVariableName() default "";
+
+    /**
+     * The source variable name.
+     *
+     * @return never null, a genuine or shadow variable name
+     */
+    String[] sourceVariableNames() default {};
 
     /**
      * The target method element.
