@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.multiple_shadow_var;
+package ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.multiple_var;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -1,61 +1,62 @@
-package ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.multiple_shadow_var;
+package ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.piggyback;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.PiggybackShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.TestdataMultipleCascadingBaseValue;
 
 @PlanningEntity
-public class TestdataMultipleSourceCascadingValue
-        implements TestdataMultipleCascadingBaseValue<TestdataMultipleSourceCascadingEntity> {
+public class TestdataPiggybackCascadingValue
+        implements TestdataMultipleCascadingBaseValue<TestdataPiggybackCascadingEntity> {
 
-    public static EntityDescriptor<TestdataMultipleSourceCascadingSolution> buildEntityDescriptor() {
-        return TestdataMultipleSourceCascadingSolution.buildSolutionDescriptor()
-                .findEntityDescriptorOrFail(TestdataMultipleSourceCascadingValue.class);
+    public static EntityDescriptor<TestdataPiggybackCascadingSolution> buildEntityDescriptor() {
+        return TestdataPiggybackCascadingSolution.buildSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataPiggybackCascadingValue.class);
     }
 
     @InverseRelationShadowVariable(sourceVariableName = "valueList")
-    private TestdataMultipleSourceCascadingEntity entity;
+    private TestdataPiggybackCascadingEntity entity;
     @PreviousElementShadowVariable(sourceVariableName = "valueList")
-    private TestdataMultipleSourceCascadingValue previous;
+    private TestdataPiggybackCascadingValue previous;
     @NextElementShadowVariable(sourceVariableName = "valueList")
-    private TestdataMultipleSourceCascadingValue next;
+    private TestdataPiggybackCascadingValue next;
     @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue", sourceVariableNames = { "entity", "previous" })
     private Integer cascadeValue;
-    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue", sourceVariableNames = { "entity", "previous" })
+    @PiggybackShadowVariable(shadowVariableName = "cascadeValue")
     private Integer secondCascadeValue;
     private Integer value;
     private int numberOfCalls = 0;
 
-    public TestdataMultipleSourceCascadingValue(Integer value) {
+    public TestdataPiggybackCascadingValue(Integer value) {
         this.value = value;
     }
 
-    public TestdataMultipleSourceCascadingEntity getEntity() {
+    public TestdataPiggybackCascadingEntity getEntity() {
         return entity;
     }
 
     @Override
-    public void setEntity(TestdataMultipleSourceCascadingEntity entity) {
+    public void setEntity(TestdataPiggybackCascadingEntity entity) {
         this.entity = entity;
     }
 
-    public TestdataMultipleSourceCascadingValue getPrevious() {
+    public TestdataPiggybackCascadingValue getPrevious() {
         return previous;
     }
 
-    public void setPrevious(TestdataMultipleSourceCascadingValue previous) {
+    public void setPrevious(TestdataPiggybackCascadingValue previous) {
         this.previous = previous;
     }
 
-    public TestdataMultipleSourceCascadingValue getNext() {
+    public TestdataPiggybackCascadingValue getNext() {
         return next;
     }
 
-    public void setNext(TestdataMultipleSourceCascadingValue next) {
+    public void setNext(TestdataPiggybackCascadingValue next) {
         this.next = next;
     }
 
