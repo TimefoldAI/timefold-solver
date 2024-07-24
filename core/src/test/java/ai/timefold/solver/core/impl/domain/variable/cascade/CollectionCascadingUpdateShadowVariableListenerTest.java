@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.domain.variable.cascade;
 
-import static ai.timefold.solver.core.impl.domain.variable.cascade.CollectionCascadingUpdateShadowVariableListenerTest.Type.MULTIPLE_SOURCES_WITHOUT_SUPPLY;
-import static ai.timefold.solver.core.impl.domain.variable.cascade.CollectionCascadingUpdateShadowVariableListenerTest.Type.PIGGYBACK_WITHOUT_SUPPLY;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
@@ -14,6 +12,8 @@ import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.Testdat
 import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.TestdataMultipleCascadingBaseValue;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.multiple_var.TestdataMultipleSourceCascadingEntity;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.multiple_var.TestdataMultipleSourceCascadingSolution;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.piggyback_notifiable.TestdataPiggybackNotifiableCascadingEntity;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.piggyback_notifiable.TestdataPiggybackNotifiableCascadingSolution;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.piggyback.TestdataPiggybackCascadingEntity;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.piggyback.TestdataPiggybackCascadingSolution;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.shadow_var.TestdataMultipleCascadingEntity;
@@ -28,28 +28,29 @@ import org.junit.jupiter.params.provider.EnumSource;
 class CollectionCascadingUpdateShadowVariableListenerTest {
 
     private GenuineVariableDescriptor<?> generateDescriptor(Type type) {
-        if (type == Type.WITH_SUPPLY) {
-            return TestdataMultipleCascadingWithSupplyEntity.buildVariableDescriptorForValueList();
-        } else if (type == MULTIPLE_SOURCES_WITHOUT_SUPPLY) {
-            return TestdataMultipleSourceCascadingEntity.buildVariableDescriptorForValueList();
-        } else if (type == PIGGYBACK_WITHOUT_SUPPLY) {
-            return TestdataPiggybackCascadingEntity.buildVariableDescriptorForValueList();
-        } else {
-            return TestdataMultipleCascadingEntity.buildVariableDescriptorForValueList();
-        }
+        return switch (type) {
+            case WITH_SUPPLY -> TestdataMultipleCascadingWithSupplyEntity.buildVariableDescriptorForValueList();
+            case MULTIPLE_SOURCES_WITHOUT_SUPPLY -> TestdataMultipleSourceCascadingEntity.buildVariableDescriptorForValueList();
+            case PIGGYBACK_WITHOUT_SUPPLY -> TestdataPiggybackCascadingEntity.buildVariableDescriptorForValueList();
+            case NON_NOTIFIABLE_PIGGYBACK_WITHOUT_SUPPLY ->
+                TestdataPiggybackNotifiableCascadingEntity.buildVariableDescriptorForValueList();
+            case WITHOUT_SUPPLY -> TestdataMultipleCascadingEntity.buildVariableDescriptorForValueList();
+        };
     }
 
     private TestdataCascadingBaseSolution<? extends TestdataCascadingBaseEntity<? extends TestdataMultipleCascadingBaseValue>, ? extends TestdataMultipleCascadingBaseValue>
             generateSolution(Type type, int valueCount, int entityCount) {
-        if (type == Type.WITH_SUPPLY) {
-            return TestdataMultipleCascadingWithSupplySolution.generateUninitializedSolution(valueCount, entityCount);
-        } else if (type == MULTIPLE_SOURCES_WITHOUT_SUPPLY) {
-            return TestdataMultipleSourceCascadingSolution.generateUninitializedSolution(valueCount, entityCount);
-        } else if (type == PIGGYBACK_WITHOUT_SUPPLY) {
-            return TestdataPiggybackCascadingSolution.generateUninitializedSolution(valueCount, entityCount);
-        } else {
-            return TestdataMultipleCascadingSolution.generateUninitializedSolution(valueCount, entityCount);
-        }
+        return switch (type) {
+            case WITH_SUPPLY ->
+                TestdataMultipleCascadingWithSupplySolution.generateUninitializedSolution(valueCount, entityCount);
+            case MULTIPLE_SOURCES_WITHOUT_SUPPLY ->
+                TestdataMultipleSourceCascadingSolution.generateUninitializedSolution(valueCount, entityCount);
+            case PIGGYBACK_WITHOUT_SUPPLY ->
+                TestdataPiggybackCascadingSolution.generateUninitializedSolution(valueCount, entityCount);
+            case NON_NOTIFIABLE_PIGGYBACK_WITHOUT_SUPPLY ->
+                TestdataPiggybackNotifiableCascadingSolution.generateUninitializedSolution(valueCount, entityCount);
+            case WITHOUT_SUPPLY -> TestdataMultipleCascadingSolution.generateUninitializedSolution(valueCount, entityCount);
+        };
     }
 
     @ParameterizedTest
@@ -205,6 +206,7 @@ class CollectionCascadingUpdateShadowVariableListenerTest {
         WITHOUT_SUPPLY,
         MULTIPLE_SOURCES_WITHOUT_SUPPLY,
         PIGGYBACK_WITHOUT_SUPPLY,
+        NON_NOTIFIABLE_PIGGYBACK_WITHOUT_SUPPLY,
         WITH_SUPPLY
     }
 }

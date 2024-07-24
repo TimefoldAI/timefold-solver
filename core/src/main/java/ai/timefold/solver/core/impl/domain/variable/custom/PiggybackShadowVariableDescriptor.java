@@ -28,10 +28,10 @@ public final class PiggybackShadowVariableDescriptor<Solution_> extends ShadowVa
     private ShadowVariableDescriptor<Solution_> shadowVariableDescriptor;
 
     public PiggybackShadowVariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
-            MemberAccessor memberAccessor) {
-        super(ordinal, entityDescriptor, memberAccessor);
+            MemberAccessor variableMemberAccessor) {
+        super(ordinal, entityDescriptor, variableMemberAccessor);
         // The member accessor is required for further processing when using CascadingUpdateShadowVariable
-        this.memberAccessor = memberAccessor;
+        this.memberAccessor = variableMemberAccessor;
     }
 
     private boolean isCustomShadowVariable() {
@@ -63,7 +63,6 @@ public final class PiggybackShadowVariableDescriptor<Solution_> extends ShadowVa
     }
 
     private void linkShadowSources(DescriptorPolicy descriptorPolicy) {
-
         var piggybackShadowVariable = memberAccessor.getAnnotation(PiggybackShadowVariable.class);
         EntityDescriptor<Solution_> shadowEntityDescriptor;
         var shadowEntityClass = piggybackShadowVariable.shadowEntityClass();
@@ -83,7 +82,8 @@ public final class PiggybackShadowVariableDescriptor<Solution_> extends ShadowVa
             }
         }
         var shadowVariableName = piggybackShadowVariable.shadowVariableName();
-        var uncastShadowVariableDescriptor = shadowEntityDescriptor.getVariableDescriptor(shadowVariableName);
+        var uncastShadowVariableDescriptor =
+                shadowEntityDescriptor.getVariableDescriptor(shadowVariableName);
         if (uncastShadowVariableDescriptor == null) {
             throw new IllegalArgumentException(
                     """
