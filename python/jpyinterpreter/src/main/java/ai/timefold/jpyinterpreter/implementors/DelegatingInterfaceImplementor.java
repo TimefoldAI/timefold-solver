@@ -81,7 +81,7 @@ public class DelegatingInterfaceImplementor extends JavaInterfaceImplementor {
         var functionInterfaceDeclaration = methodNameToFieldDescriptor.get(interfaceMethod.getName());
         interfaceMethodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
         interfaceMethodVisitor.visitFieldInsn(Opcodes.GETSTATIC, internalClassName,
-                PythonClassTranslator.getJavaMethodName(interfaceMethod.getName()),
+                PythonClassTranslator.getJavaMethodHolderName(interfaceMethod.getName()),
                 functionInterfaceDeclaration.descriptor());
         interfaceMethodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Object.class),
                 "getClass", Type.getMethodDescriptor(Type.getType(Class.class)), false);
@@ -89,7 +89,7 @@ public class DelegatingInterfaceImplementor extends JavaInterfaceImplementor {
         interfaceMethodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Class.class),
                 "getField", Type.getMethodDescriptor(Type.getType(Field.class), Type.getType(String.class)), false);
         interfaceMethodVisitor.visitFieldInsn(Opcodes.GETSTATIC, internalClassName,
-                PythonClassTranslator.getJavaMethodName(interfaceMethod.getName()),
+                PythonClassTranslator.getJavaMethodHolderName(interfaceMethod.getName()),
                 functionInterfaceDeclaration.descriptor());
         interfaceMethodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Field.class),
                 "get", Type.getMethodDescriptor(Type.getType(Object.class), Type.getType(Object.class)), false);

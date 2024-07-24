@@ -1,14 +1,9 @@
-import jpype
+from _jpyinterpreter import JavaAnnotation, AnnotationValueSupplier
+from jpype import JImplements, JOverride
+from typing import Union, List, Callable, Type, TypeVar
 
 from ._variable_listener import VariableListener
 from .._timefold_java_interop import ensure_init, get_asm_type
-from _jpyinterpreter import JavaAnnotation, AnnotationValueSupplier
-from jpype import JImplements, JOverride
-from typing import Union, List, Callable, Type, TYPE_CHECKING, TypeVar
-
-if TYPE_CHECKING:
-    from ai.timefold.solver.core.api.solver.change import ProblemChange as _ProblemChange
-
 
 Solution_ = TypeVar('Solution_')
 
@@ -237,6 +232,56 @@ class PiggybackShadowVariable(JavaAnnotation):
                          {
                              'shadowVariableName': PythonClassTranslator.getJavaFieldName(shadow_variable_name),
                              'shadowEntityClass': shadow_entity_class,
+                         })
+
+
+class CascadingUpdateShadowVariable(JavaAnnotation):
+    """
+    Specifies that field may be updated by the target method when one or more source variables change.
+
+    Automatically cascades change events to `NextElementShadowVariable` of a `PlanningListVariable`.
+
+    Notes
+    -----
+    Important: it must only change the shadow variable(s) for which it's configured.
+    It can be applied to multiple attributes to modify different shadow variables.
+    It should never change a genuine variable or a problem fact.
+    It can change its shadow variable(s) on multiple entity instances
+    (for example: an arrival_time change affects all trailing entities too).
+
+    Examples
+    --------
+    >>> from timefold.solver.domain import CascadingUpdateShadowVariable, PreviousElementShadowVariable, planning_entity
+    >>> from typing import Annotated
+    >>> from domain import ArrivalTimeVariableListener
+    >>> from datetime import datetime, timedelta
+    >>>
+    >>> @planning_entity
+    >>> class Visit:
+    ...     previous: Annotated['Visit', PreviousElementShadowVariable]
+    ...     arrival_time: Annotated[datetime,
+    ...                             CascadingUpdateShadowVariable(
+    ...                                 target_method_name='update_arrival_time',
+    ...                                 source_variable_name='previous'
+    ...                             )
+    ...                            ]
+    ...
+    ...     def update_arrival_time(self):
+    ...         self.arrival_time = previous.arrival_time + timedelta(hours=1)
+    """
+
+    def __init__(self, *,
+                 source_variable_name: str,
+                 target_method_name: str):
+        ensure_init()
+        from ai.timefold.jpyinterpreter import PythonClassTranslator
+        from ai.timefold.solver.core.api.domain.variable import \
+            CascadingUpdateShadowVariable as JavaCascadingUpdateShadowVariable
+
+        super().__init__(JavaCascadingUpdateShadowVariable,
+                         {
+                             'sourceVariableName': PythonClassTranslator.getJavaFieldName(source_variable_name),
+                             'targetMethodName': PythonClassTranslator.getJavaMethodName(target_method_name),
                          })
 
 
@@ -662,8 +707,7 @@ def planning_entity(entity_class: Type = None, /, *, pinning_filter: Callable = 
 
     def planning_entity_wrapper(entity_class_argument):
         from .._timefold_java_interop import _add_to_compilation_queue
-        from ai.timefold.solver.core.api.domain.entity import PinningFilter
-        from _jpyinterpreter import add_class_annotation, translate_python_bytecode_to_java_bytecode
+        from _jpyinterpreter import add_class_annotation
         from typing import get_origin, Annotated
 
         planning_pin_field = None
@@ -773,7 +817,7 @@ def constraint_configuration(constraint_configuration_class: Type[Solution_]) ->
 
 __all__ = ['PlanningId', 'PlanningScore', 'PlanningPin', 'PlanningVariable',
            'PlanningListVariable', 'ShadowVariable',
-           'PiggybackShadowVariable',
+           'PiggybackShadowVariable', 'CascadingUpdateShadowVariable',
            'IndexShadowVariable', 'PreviousElementShadowVariable', 'NextElementShadowVariable',
            'AnchorShadowVariable', 'InverseRelationShadowVariable',
            'ProblemFactProperty', 'ProblemFactCollectionProperty',

@@ -64,7 +64,7 @@ public class PythonClassTranslatorTest {
         Class<?> generatedClass = BuiltinTypes.asmClassLoader.loadClass(
                 classType.getJavaTypeInternalName().replace('/', '.'));
 
-        assertThat(generatedClass).hasPublicFields(PythonClassTranslator.getJavaMethodName("get_age"),
+        assertThat(generatedClass).hasPublicFields(PythonClassTranslator.getJavaMethodHolderName("get_age"),
                 PythonClassTranslator.getJavaFieldName("age"));
         assertThat(generatedClass).hasPublicMethods(
                 PythonClassTranslator.getJavaMethodName("__init__"),

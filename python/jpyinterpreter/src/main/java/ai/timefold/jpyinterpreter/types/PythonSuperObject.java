@@ -50,7 +50,8 @@ public class PythonSuperObject extends AbstractPythonLikeObject {
                 if (typeResult instanceof PythonLikeFunction && !(typeResult instanceof PythonLikeType)) {
                     try {
                         Object methodInstance =
-                                candidate.getJavaClass().getField(PythonClassTranslator.getJavaMethodName(name)).get(null);
+                                candidate.getJavaClass().getField(PythonClassTranslator.getJavaMethodHolderName(name))
+                                        .get(null);
                         typeResult = new GeneratedFunctionMethodReference(methodInstance,
                                 methodInstance.getClass().getDeclaredMethods()[0],
                                 Map.of(),
