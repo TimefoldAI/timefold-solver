@@ -26,7 +26,8 @@ public class TestdataCascadingDuplicatedSources {
     private TestdataCascadingDuplicatedSources previous;
     @NextElementShadowVariable(sourceVariableName = "valueList")
     private TestdataCascadingDuplicatedSources next;
-    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue", sourceVariableName = "entity", sourceVariableNames = {"entity", "previous"})
+    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue", sourceVariableName = "entity",
+            sourceVariableNames = { "entity", "previous" })
     private Integer cascadeValue;
     private Integer value;
 

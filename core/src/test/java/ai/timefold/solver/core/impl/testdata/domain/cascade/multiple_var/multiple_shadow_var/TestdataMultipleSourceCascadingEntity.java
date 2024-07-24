@@ -26,7 +26,8 @@ public class TestdataMultipleSourceCascadingEntity extends TestdataObject
                 .getGenuineVariableDescriptor("valueList");
     }
 
-    public static TestdataMultipleSourceCascadingEntity createWithValues(String code, TestdataMultipleSourceCascadingValue... values) {
+    public static TestdataMultipleSourceCascadingEntity createWithValues(String code,
+            TestdataMultipleSourceCascadingValue... values) {
         // Set up shadow variables to preserve consistency.
         return new TestdataMultipleSourceCascadingEntity(code, new ArrayList<>(Arrays.asList(values))).setUpShadowVariables();
     }
