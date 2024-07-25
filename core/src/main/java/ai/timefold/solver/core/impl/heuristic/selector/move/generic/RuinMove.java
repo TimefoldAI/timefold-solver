@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 
 import java.util.Arrays;
+import java.util.Collection;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhase;
@@ -66,6 +67,11 @@ public class RuinMove<Solution_> extends AbstractMove<Solution_> {
                 recordedNewValues[i] = genuineVariableDescriptor.getValue(ruinedEntities[i]);
             }
         }
+    }
+
+    @Override
+    public Collection<?> getPlanningEntities() {
+        return Arrays.asList(ruinedEntities);
     }
 
     @Override
