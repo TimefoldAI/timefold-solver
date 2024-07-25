@@ -244,14 +244,16 @@ class CascadingUpdateShadowVariable(JavaAnnotation):
     Notes
     -----
     Important: it must only change the shadow variable(s) for which it's configured.
-    It is only possible to define either `sourceVariableName` or `sourceVariableNames`.
+    It is only possible to define either `source_variable_name` or `source_variable_names`.
     It can be applied to multiple attributes to modify different shadow variables.
     It should never change a genuine variable or a problem fact.
     It can change its shadow variable(s) on multiple entity instances
     (for example: an arrival_time change affects all trailing entities too).
 
-    Example - Single source
-    ------------------------
+    Example
+    -------
+
+    Single source
     >>> from timefold.solver.domain import CascadingUpdateShadowVariable, PreviousElementShadowVariable, planning_entity
     >>> from typing import Annotated
     >>> from domain import ArrivalTimeVariableListener
@@ -269,9 +271,7 @@ class CascadingUpdateShadowVariable(JavaAnnotation):
     ...
     ...     def update_arrival_time(self):
     ...         self.arrival_time = previous.arrival_time + timedelta(hours=1)
-
-    Example - Multiple sources
-    ---------------------------
+    Multiple sources
     >>> from timefold.solver.domain import CascadingUpdateShadowVariable, PreviousElementShadowVariable, planning_entity
     >>> from typing import Annotated
     >>> from domain import ArrivalTimeVariableListener

@@ -138,10 +138,10 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
     }
 
     public void linkVariableDescriptorToSource(CascadingUpdateShadowVariable shadowVariable) {
-        var noEmptySources = Arrays.stream(shadowVariable.sourceVariableNames())
+        var nonEmptySources = Arrays.stream(shadowVariable.sourceVariableNames())
                 .filter(s -> !s.isBlank())
                 .toList();
-        if (shadowVariable.sourceVariableName().isBlank() && noEmptySources.isEmpty()) {
+        if (shadowVariable.sourceVariableName().isBlank() && nonEmptySources.isEmpty()) {
             throw new IllegalArgumentException(
                     """
                             The entity class (%s) has an @%s annotated property (%s), but neither the sourceVariableName nor the sourceVariableNames properties are set.
@@ -151,7 +151,7 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
                                     variableMemberAccessor.getName(),
                                     variableMemberAccessor.getName()));
         }
-        if (!shadowVariable.sourceVariableName().isBlank() && !noEmptySources.isEmpty()) {
+        if (!shadowVariable.sourceVariableName().isBlank() && !nonEmptySources.isEmpty()) {
             throw new IllegalArgumentException(
                     """
                             The entity class (%s) has an @%s annotated property (%s), but it is only possible to define either sourceVariableName or sourceVariableNames.
@@ -161,10 +161,10 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
                                     variableMemberAccessor.getName(),
                                     variableMemberAccessor.getName()));
         }
-        if (noEmptySources.isEmpty()) {
+        if (nonEmptySources.isEmpty()) {
             registerSource(shadowVariable.sourceVariableName());
         } else {
-            noEmptySources.forEach(this::registerSource);
+            nonEmptySources.forEach(this::registerSource);
         }
     }
 
