@@ -251,7 +251,7 @@ class CascadingUpdateShadowVariable(JavaAnnotation):
     (for example: an arrival_time change affects all trailing entities too).
 
     Examples
-    -------
+    --------
 
     Single source
     >>> from timefold.solver.domain import CascadingUpdateShadowVariable, PreviousElementShadowVariable, planning_entity
