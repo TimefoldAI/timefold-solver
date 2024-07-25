@@ -1473,7 +1473,11 @@ It must never change a genuine planning variable or a problem fact.
 ==== Multiple source variables
 
 If the user-defined logic requires updating multiple shadow variables,
-decorate each shadow variable with a separate `@CascadingUpdateShadowVariable` annotation.
+apply the `@CascadingUpdateShadowVariable` annotation to only one shadow variable,
+and specify the sources and target method.
+Next,
+use the `@PiggybackShadowVariable` for all other shadow variables
+that will also be updated by the specified target method.
 
 [source,java]
 ----
@@ -1486,7 +1490,7 @@ public class Customer {
     private Customer nextCustomer;
     @CascadingUpdateShadowVariable(targetMethodName = "updateWeightAndArrivalTime", sourceVariableName = "previousCustomer")
     private LocalDateTime arrivalTime;
-    @CascadingUpdateShadowVariable(targetMethodName = "updateWeightAndArrivalTime", sourceVariableName = "previousCustomer")
+    @PiggybackShadowVariable(shadowVariableName = "arrivalTime")
     private Integer weightAtVisit;
     ...
 
@@ -1495,6 +1499,12 @@ public class Customer {
 
 Timefold Solver triggers a single listener to run the user-defined logic whenever `previousCustomer` changes.
 It stops when both `arrivalTime` and `weightAtVisit` values do not change or when it reaches the end.
+
+[WARNING]
+====
+It is not allowed to specify the property `shadowEntityClass` in `@PiggybackShadowVariable`
+when the source shadow variable is `@CascadingUpdateShadowVariable`.
+====
 
 [#chainedPlanningVariable]
 == Chained planning variable (TSP, VRP, ...)

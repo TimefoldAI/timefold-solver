@@ -43,7 +43,7 @@ class SingleCascadingUpdateShadowVariableWithSupplyListenerTest {
                 .withMessageContaining("has an @CascadingUpdateShadowVariable annotated property (cascadeValue)")
                 .withMessageContaining("but neither the sourceVariableName nor the sourceVariableNames properties are set.")
                 .withMessageContaining(
-                        "Maybe update the field \"cascadeValue\" and set one of the properties: sourceVariableName or sourceVariableNames.");
+                        "Maybe update the field \"cascadeValue\" and set one of the properties ([sourceVariableName, sourceVariableNames]).");
 
         assertThatIllegalArgumentException().isThrownBy(TestdataCascadingDuplicatedSources::buildEntityDescriptor)
                 .withMessageContaining(
@@ -51,7 +51,7 @@ class SingleCascadingUpdateShadowVariableWithSupplyListenerTest {
                 .withMessageContaining("has an @CascadingUpdateShadowVariable annotated property (cascadeValue)")
                 .withMessageContaining("but it is only possible to define either sourceVariableName or sourceVariableNames.")
                 .withMessageContaining(
-                        "Maybe update the field \"cascadeValue\" and setting only one of the properties: sourceVariableName or sourceVariableNames.");
+                        "Maybe update the field \"cascadeValue\" to set only one of the properties ([sourceVariableName, sourceVariableNames]).");
     }
 
     @Test

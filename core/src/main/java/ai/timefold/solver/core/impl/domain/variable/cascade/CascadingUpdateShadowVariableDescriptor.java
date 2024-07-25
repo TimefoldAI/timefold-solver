@@ -145,7 +145,7 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
             throw new IllegalArgumentException(
                     """
                             The entity class (%s) has an @%s annotated property (%s), but neither the sourceVariableName nor the sourceVariableNames properties are set.
-                            Maybe update the field "%s" and set one of the properties: sourceVariableName or sourceVariableNames."""
+                            Maybe update the field "%s" and set one of the properties ([sourceVariableName, sourceVariableNames])."""
                             .formatted(entityDescriptor.getEntityClass(),
                                     CascadingUpdateShadowVariable.class.getSimpleName(),
                                     variableMemberAccessor.getName(),
@@ -155,7 +155,7 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
             throw new IllegalArgumentException(
                     """
                             The entity class (%s) has an @%s annotated property (%s), but it is only possible to define either sourceVariableName or sourceVariableNames.
-                            Maybe update the field "%s" and setting only one of the properties: sourceVariableName or sourceVariableNames."""
+                            Maybe update the field "%s" to set only one of the properties ([sourceVariableName, sourceVariableNames])."""
                             .formatted(entityDescriptor.getEntityClass(),
                                     CascadingUpdateShadowVariable.class.getSimpleName(),
                                     variableMemberAccessor.getName(),
