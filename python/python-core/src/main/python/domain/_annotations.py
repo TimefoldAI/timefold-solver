@@ -244,13 +244,14 @@ class CascadingUpdateShadowVariable(JavaAnnotation):
     Notes
     -----
     Important: it must only change the shadow variable(s) for which it's configured.
+    It is only possible to define either `sourceVariableName` or `sourceVariableNames`.
     It can be applied to multiple attributes to modify different shadow variables.
     It should never change a genuine variable or a problem fact.
     It can change its shadow variable(s) on multiple entity instances
     (for example: an arrival_time change affects all trailing entities too).
 
-    Examples
-    --------
+    Example - Single source
+    ------------------------
     >>> from timefold.solver.domain import CascadingUpdateShadowVariable, PreviousElementShadowVariable, planning_entity
     >>> from typing import Annotated
     >>> from domain import ArrivalTimeVariableListener
@@ -268,10 +269,33 @@ class CascadingUpdateShadowVariable(JavaAnnotation):
     ...
     ...     def update_arrival_time(self):
     ...         self.arrival_time = previous.arrival_time + timedelta(hours=1)
+
+    Example - Multiple sources
+    ---------------------------
+    >>> from timefold.solver.domain import CascadingUpdateShadowVariable, PreviousElementShadowVariable, planning_entity
+    >>> from typing import Annotated
+    >>> from domain import ArrivalTimeVariableListener
+    >>> from datetime import datetime, timedelta
+    >>>
+    >>> @planning_entity
+    >>> class Visit:
+    ...     vehicle: Annotated[Optional['Vehicle'],
+    ...                        InverseRelationShadowVariable(source_variable_name='visits')] = (field(default=None))
+    ...     previous: Annotated['Visit', PreviousElementShadowVariable]
+    ...     arrival_time: Annotated[datetime,
+    ...                             CascadingUpdateShadowVariable(
+    ...                                 target_method_name='update_arrival_time',
+    ...                                 source_variable_names=['vehicle', 'previous']
+    ...                             )
+    ...                            ]
+    ...
+    ...     def update_arrival_time(self):
+    ...         self.arrival_time = previous.arrival_time + timedelta(hours=1)
     """
 
     def __init__(self, *,
-                 source_variable_name: str,
+                 source_variable_name: str = None,
+                 source_variable_names: List[str] = None,
                  target_method_name: str):
         ensure_init()
         from ai.timefold.jpyinterpreter import PythonClassTranslator
@@ -281,6 +305,7 @@ class CascadingUpdateShadowVariable(JavaAnnotation):
         super().__init__(JavaCascadingUpdateShadowVariable,
                          {
                              'sourceVariableName': PythonClassTranslator.getJavaFieldName(source_variable_name),
+                             'sourceVariableNames': source_variable_names,
                              'targetMethodName': PythonClassTranslator.getJavaMethodName(target_method_name),
                          })
 
