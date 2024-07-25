@@ -22,6 +22,7 @@
 * xref:responding-to-change/responding-to-change.adoc[leveloffset=+1]
 * xref:integration/integration.adoc[leveloffset=+1]
 * xref:design-patterns/design-patterns.adoc[leveloffset=+1]
+* https://github.com/TimefoldAI/timefold-solver/releases[New and noteworthy][leveloffset=+1]
 * Upgrade and Migration
 ** xref:upgrade-and-migration/overview.adoc[leveloffset=+1]
 ** xref:upgrade-and-migration/upgrade-to-latest-version.adoc[leveloffset=+1]
