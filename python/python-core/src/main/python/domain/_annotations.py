@@ -254,6 +254,7 @@ class CascadingUpdateShadowVariable(JavaAnnotation):
     --------
 
     Single source
+
     >>> from timefold.solver.domain import CascadingUpdateShadowVariable, PreviousElementShadowVariable, planning_entity
     >>> from typing import Annotated
     >>> from domain import ArrivalTimeVariableListener
