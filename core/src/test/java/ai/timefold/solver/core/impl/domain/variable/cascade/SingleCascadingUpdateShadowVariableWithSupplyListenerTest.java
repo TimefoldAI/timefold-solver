@@ -11,6 +11,8 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.suply.TestdataSingleCascadingWithSupplyEntity;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.suply.TestdataSingleCascadingWithSupplySolution;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.suply.TestdataSingleCascadingWithSupplyValue;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingDuplicatedSources;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingNoSources;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingWrongMethod;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingWrongSource;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
@@ -34,6 +36,22 @@ class SingleCascadingUpdateShadowVariableWithSupplyListenerTest {
                         "The entity class (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingWrongMethod)")
                 .withMessageContaining("has an @CascadingUpdateShadowVariable annotated property (cascadeValueReturnType)")
                 .withMessageContaining("but the method \"badUpdateCascadeValueWithReturnType\" cannot be found");
+
+        assertThatIllegalArgumentException().isThrownBy(TestdataCascadingNoSources::buildEntityDescriptor)
+                .withMessageContaining(
+                        "The entity class (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingNoSources)")
+                .withMessageContaining("has an @CascadingUpdateShadowVariable annotated property (cascadeValue)")
+                .withMessageContaining("but neither the sourceVariableName nor the sourceVariableNames properties are set.")
+                .withMessageContaining(
+                        "Maybe update the field \"cascadeValue\" and set one of the properties ([sourceVariableName, sourceVariableNames]).");
+
+        assertThatIllegalArgumentException().isThrownBy(TestdataCascadingDuplicatedSources::buildEntityDescriptor)
+                .withMessageContaining(
+                        "The entity class (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingDuplicatedSources)")
+                .withMessageContaining("has an @CascadingUpdateShadowVariable annotated property (cascadeValue)")
+                .withMessageContaining("but it is only possible to define either sourceVariableName or sourceVariableNames.")
+                .withMessageContaining(
+                        "Maybe update the field \"cascadeValue\" to set only one of the properties ([sourceVariableName, sourceVariableNames]).");
     }
 
     @Test

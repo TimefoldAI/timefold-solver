@@ -11,6 +11,7 @@ import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.shadow_va
 import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingInvalidField;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingWrongMethod;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingWrongSource;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.piggy_back.TestdataInvalidSourceCascadingValue;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
@@ -38,6 +39,15 @@ class SingleCascadingUpdateShadowVariableListenerTest {
                         "The entity class (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingInvalidField)")
                 .withMessageContaining("has an @CascadingUpdateShadowVariable annotated property (cascadeValue)")
                 .withMessageContaining("but the method \"value\" cannot be found");
+
+        assertThatIllegalArgumentException().isThrownBy(TestdataInvalidSourceCascadingValue::buildEntityDescriptor)
+                .withMessageContaining(
+                        "The entityClass (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.piggy_back.TestdataInvalidSourceCascadingValue)")
+                .withMessageContaining(
+                        "has a @PiggybackShadowVariable annotated property (value) with a shadowEntityClass (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.piggy_back.TestdataInvalidSourceCascadingValue2)")
+                .withMessageContaining("but it cannot be set when the source shadow variable is @CascadingUpdateShadowVariable")
+                .withMessageContaining(
+                        "Maybe remove the property shadowEntityClass and ensure the shadow variable cascadeValue is defined on class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.piggy_back.TestdataInvalidSourceCascadingValue");
     }
 
     @Test
