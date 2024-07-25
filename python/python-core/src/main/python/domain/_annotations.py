@@ -272,7 +272,9 @@ class CascadingUpdateShadowVariable(JavaAnnotation):
     ...
     ...     def update_arrival_time(self):
     ...         self.arrival_time = previous.arrival_time + timedelta(hours=1)
+
     Multiple sources
+
     >>> from timefold.solver.domain import CascadingUpdateShadowVariable, PreviousElementShadowVariable, planning_entity
     >>> from typing import Annotated
     >>> from domain import ArrivalTimeVariableListener
