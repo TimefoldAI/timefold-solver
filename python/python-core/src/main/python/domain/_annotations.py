@@ -250,7 +250,7 @@ class CascadingUpdateShadowVariable(JavaAnnotation):
     It can change its shadow variable(s) on multiple entity instances
     (for example: an arrival_time change affects all trailing entities too).
 
-    Example
+    Examples
     -------
 
     Single source
