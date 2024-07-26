@@ -7,6 +7,8 @@ import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+
 /**
  * Specifies that field may be updated by the target method when one or more source variables change.
  * <p>
@@ -39,6 +41,18 @@ public @interface CascadingUpdateShadowVariable {
     String[] sourceVariableNames() default {};
 
     /**
+     * The {@link PlanningEntity} class of the source variable.
+     * <p>
+     * Specified if the source variable is on a different {@link Class} than the class that uses this referencing annotation.
+     *
+     * @return {@link CascadingUpdateShadowVariable.NullEntityClass} when the attribute is omitted
+     *         (workaround for annotation limitation).
+     *         Defaults to the same {@link Class} as the one
+     *         that uses this annotation.
+     */
+    Class<?> sourceEntityClass() default CascadingUpdateShadowVariable.NullEntityClass.class;
+
+    /**
      * The target method element.
      * <p>
      * Important: the method must be non-static and should not include any parameters.
@@ -58,5 +72,9 @@ public @interface CascadingUpdateShadowVariable {
     @interface List {
 
         CascadingUpdateShadowVariable[] value();
+    }
+
+    /** Workaround for annotation limitation in {@link #sourceEntityClass()}. */
+    interface NullEntityClass {
     }
 }
