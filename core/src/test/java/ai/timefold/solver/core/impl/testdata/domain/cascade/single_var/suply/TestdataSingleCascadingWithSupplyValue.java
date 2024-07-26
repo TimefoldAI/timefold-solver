@@ -99,7 +99,7 @@ public class TestdataSingleCascadingWithSupplyValue {
 
     @Override
     public String toString() {
-        return "TestdataCascadeValue{" +
+        return "TestdataSingleCascadingWithSupplyValue{" +
                 "value=" + value +
                 '}';
     }

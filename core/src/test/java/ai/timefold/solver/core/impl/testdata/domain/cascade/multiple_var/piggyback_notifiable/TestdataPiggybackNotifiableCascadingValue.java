@@ -114,7 +114,7 @@ public class TestdataPiggybackNotifiableCascadingValue
 
     @Override
     public String toString() {
-        return "TestdataMultipleCascadeValue{" +
+        return "TestdataPiggybackNotifiableCascadingValue{" +
                 "value=" + value +
                 '}';
     }

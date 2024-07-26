@@ -111,7 +111,7 @@ public class TestdataMultipleSourceCascadingValue
 
     @Override
     public String toString() {
-        return "TestdataMultipleCascadeValue{" +
+        return "TestdataMultipleSourceCascadingValue{" +
                 "value=" + value +
                 '}';
     }

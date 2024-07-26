@@ -74,7 +74,7 @@ public class TestdataSingleCascadingEntity extends TestdataObject {
 
     @Override
     public String toString() {
-        return "TestdataCascadeEntity{" +
+        return "TestdataSingleCascadingEntity{" +
                 "code='" + code + '\'' +
                 '}';
     }

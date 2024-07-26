@@ -112,7 +112,7 @@ public class TestdataMultipleCascadingValue implements TestdataMultipleCascading
 
     @Override
     public String toString() {
-        return "TestdataMultipleCascadeValue{" +
+        return "TestdataMultipleCascadingValue{" +
                 "value=" + value +
                 '}';
     }
