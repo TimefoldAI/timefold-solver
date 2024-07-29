@@ -6,8 +6,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.ListVariableListener;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
-import ai.timefold.solver.core.impl.domain.variable.cascade.command.CascadingUpdateCommand;
-import ai.timefold.solver.core.impl.domain.variable.cascade.command.Pair;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 
@@ -25,8 +24,8 @@ public class SingleCascadingUpdateListVariableListener<Solution_> extends Single
 
     SingleCascadingUpdateListVariableListener(ListVariableDescriptor<Solution_> sourceListVariableDescriptor,
             List<VariableDescriptor<Solution_>> targetVariableDescriptorList, MemberAccessor targetMethod,
-            CascadingUpdateCommand<Pair<Integer, Object>> indexElementCommand) {
-        super(sourceListVariableDescriptor, targetVariableDescriptorList, targetMethod, indexElementCommand);
+            ListVariableStateSupply<Solution_> listVariableStateSupply) {
+        super(sourceListVariableDescriptor, targetVariableDescriptorList, targetMethod, listVariableStateSupply);
     }
 
     @Override
@@ -42,14 +41,14 @@ public class SingleCascadingUpdateListVariableListener<Solution_> extends Single
 
     @Override
     public void afterListVariableChanged(ScoreDirector<Solution_> scoreDirector, Object entity, int fromIndex, int toIndex) {
-        List<Object> values = sourceListVariableDescriptor.getValue(entity);
+        var values = getValues(entity);
         // Update all the elements inside the range
-        for (int i = fromIndex; i < toIndex; i++) {
+        for (var i = fromIndex; i < toIndex; i++) {
             execute(scoreDirector, values.get(i));
         }
         // Double-check if anything beyond the last element in the range needs to be updated
         if (toIndex < values.size()) {
-            for (int i = toIndex; i < values.size(); i++) {
+            for (var i = toIndex; i < values.size(); i++) {
                 if (!execute(scoreDirector, values.get(i))) {
                     break;
                 }

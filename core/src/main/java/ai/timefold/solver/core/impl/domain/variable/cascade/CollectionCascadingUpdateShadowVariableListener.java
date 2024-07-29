@@ -7,8 +7,7 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
-import ai.timefold.solver.core.impl.domain.variable.cascade.command.CascadingUpdateCommand;
-import ai.timefold.solver.core.impl.domain.variable.cascade.command.Pair;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 
@@ -22,27 +21,29 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescripto
 public class CollectionCascadingUpdateShadowVariableListener<Solution_>
         extends AbstractCascadingUpdateShadowVariableListener<Solution_> {
 
+    private final List<VariableDescriptor<Solution_>> targetDescriptorList;
+
     protected CollectionCascadingUpdateShadowVariableListener(ListVariableDescriptor<Solution_> sourceListVariableDescriptor,
             List<VariableDescriptor<Solution_>> targetVariableDescriptorList, MemberAccessor targetMethod,
-            CascadingUpdateCommand<Pair<Integer, Object>> indexElementCommand) {
-        super(sourceListVariableDescriptor, targetVariableDescriptorList, targetMethod, indexElementCommand);
+            ListVariableStateSupply<Solution_> listVariableStateSupply) {
+        super(sourceListVariableDescriptor, targetMethod, listVariableStateSupply);
+        this.targetDescriptorList = targetVariableDescriptorList;
     }
 
     @Override
-    boolean execute(ScoreDirector<Solution_> scoreDirector, Object entity) {
-        var oldValueList = new ArrayList<>(targetVariableDescriptorList.size());
-        for (VariableDescriptor<Solution_> targetVariableDescriptor : targetVariableDescriptorList) {
+    protected boolean execute(ScoreDirector<Solution_> scoreDirector, Object entity) {
+        var oldValueList = new ArrayList<>(targetDescriptorList.size());
+        for (var targetVariableDescriptor : targetDescriptorList) {
             scoreDirector.beforeVariableChanged(entity, targetVariableDescriptor.getVariableName());
             oldValueList.add(targetVariableDescriptor.getValue(entity));
         }
-        targetMethod.executeGetter(entity);
-        var newValueList = new ArrayList<>(targetVariableDescriptorList.size());
+        runTargetMethod(entity);
         var hasChange = false;
-        for (int i = 0; i < targetVariableDescriptorList.size(); i++) {
-            var targetVariableDescriptor = targetVariableDescriptorList.get(i);
-            newValueList.add(targetVariableDescriptor.getValue(entity));
+        for (var i = 0; i < targetDescriptorList.size(); i++) {
+            var targetVariableDescriptor = targetDescriptorList.get(i);
+            var newValue = targetVariableDescriptor.getValue(entity);
             scoreDirector.afterVariableChanged(entity, targetVariableDescriptor.getVariableName());
-            if (!hasChange && !Objects.equals(oldValueList.get(i), newValueList.get(i))) {
+            if (!hasChange && !Objects.equals(oldValueList.get(i), newValue)) {
                 hasChange = true;
             }
         }

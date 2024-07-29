@@ -47,8 +47,7 @@ public @interface CascadingUpdateShadowVariable {
      *
      * @return {@link CascadingUpdateShadowVariable.NullEntityClass} when the attribute is omitted
      *         (workaround for annotation limitation).
-     *         Defaults to the same {@link Class} as the one
-     *         that uses this annotation.
+     *         Defaults to the same {@link Class} as the one that uses this annotation.
      */
     Class<?> sourceEntityClass() default CascadingUpdateShadowVariable.NullEntityClass.class;
 

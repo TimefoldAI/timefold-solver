@@ -19,8 +19,6 @@ import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateDemand;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
-import ai.timefold.solver.core.impl.domain.variable.cascade.command.IndexElementSupplyCommand;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -86,7 +84,7 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
 
     @Override
     public void linkVariableDescriptors(DescriptorPolicy descriptorPolicy) {
-        for (ShadowVariableTarget<Solution_> shadowVariableTarget : shadowVariableTargetList) {
+        for (var shadowVariableTarget : shadowVariableTargetList) {
             var declaredShadowVariableList =
                     getDeclaredShadowVariables(shadowVariableTarget.variableMemberAccessor());
             for (var shadowVariable : declaredShadowVariableList) {
@@ -119,9 +117,8 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
         if (hasShadowVariable() && hasPlanningListVariable()) {
             throw new IllegalArgumentException(
                     """
-                            The entity class (%s) has an @%s annotated properties, but the sources can be either a regular shadow variable or a planning list variable.
-                            Maybe update sourceVariableName or sourceVariableNames and reference either regular shadow variables or a planning list variable.
-                            Maybe configure a distinct targetMethodName for one of the source types, and a separate listener will be created for it."""
+                            The entity class (%s) has @%s-annotated properties configured with targetMethodName (%s) and defines both a shadow variable and a list variable sources, which is not supported.
+                            Maybe configure a different targetMethodName for the list variable source and the shadow variable source(s)."""
                             .formatted(entityDescriptor.getEntityClass(),
                                     CascadingUpdateShadowVariable.class.getSimpleName(),
                                     variableMemberAccessor.getName()));
@@ -270,21 +267,18 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
     @Override
     public Iterable<VariableListenerWithSources<Solution_>> buildVariableListeners(SupplyManager supplyManager) {
         AbstractCascadingUpdateShadowVariableListener<Solution_> listener;
-        ListVariableStateSupply<Solution_> listVariableStateSupply =
-                supplyManager.demand(new ListVariableStateDemand<>(sourceListVariableDescriptor));
-        IndexElementSupplyCommand<Solution_> indexElementSupplyCommand =
-                new IndexElementSupplyCommand<>(listVariableStateSupply);
+        var listVariableStateSupply = supplyManager.demand(new ListVariableStateDemand<>(sourceListVariableDescriptor));
         if (targetVariableDescriptorList.size() == 1) {
             if (hasShadowVariable()) {
                 listener = new SingleCascadingUpdateShadowVariableListener<>(sourceListVariableDescriptor,
-                        targetVariableDescriptorList, targetMethod, indexElementSupplyCommand);
+                        targetVariableDescriptorList, targetMethod, listVariableStateSupply);
             } else {
                 listener = new SingleCascadingUpdateListVariableListener<>(sourceListVariableDescriptor,
-                        targetVariableDescriptorList, targetMethod, indexElementSupplyCommand);
+                        targetVariableDescriptorList, targetMethod, listVariableStateSupply);
             }
         } else {
             listener = new CollectionCascadingUpdateShadowVariableListener<>(sourceListVariableDescriptor,
-                    targetVariableDescriptorList, targetMethod, indexElementSupplyCommand);
+                    targetVariableDescriptorList, targetMethod, listVariableStateSupply);
         }
         return Collections.singleton(new VariableListenerWithSources<>(listener, getSourceVariableDescriptorList()));
     }
