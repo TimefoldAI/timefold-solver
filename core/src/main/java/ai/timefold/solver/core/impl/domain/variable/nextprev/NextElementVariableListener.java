@@ -8,7 +8,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 public class NextElementVariableListener<Solution_>
-        implements ListVariableListener<Solution_, Object, Object>, NextElementVariableSupply {
+        implements ListVariableListener<Solution_, Object, Object> {
 
     protected final NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor;
     protected final ListVariableDescriptor<Solution_> sourceVariableDescriptor;
@@ -84,10 +84,5 @@ public class NextElementVariableListener<Solution_>
             }
             next = element;
         }
-    }
-
-    @Override
-    public Object getNext(Object planningValue) {
-        return shadowVariableDescriptor.getValue(planningValue);
     }
 }
