@@ -60,6 +60,7 @@ public class RuinMove<Solution_> extends AbstractMove<Solution_> {
                 genuineVariableDescriptor.setValue(ruinedEntity, null);
                 innerScoreDirector.afterVariableChanged(genuineVariableDescriptor, ruinedEntity);
             }
+            constructionHeuristicPhase.solvingStarted(solverScope);
             constructionHeuristicPhase.solve(solverScope);
             for (int i = 0; i < ruinedEntities.length; i++) {
                 recordedNewValues[i] = genuineVariableDescriptor.getValue(ruinedEntities[i]);
