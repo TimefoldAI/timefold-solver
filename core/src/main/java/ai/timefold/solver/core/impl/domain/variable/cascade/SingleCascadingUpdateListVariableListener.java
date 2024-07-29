@@ -7,6 +7,7 @@ import ai.timefold.solver.core.api.domain.variable.ListVariableListener;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.variable.cascade.command.CascadingUpdateCommand;
+import ai.timefold.solver.core.impl.domain.variable.cascade.command.Pair;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 
@@ -22,13 +23,10 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescripto
 public class SingleCascadingUpdateListVariableListener<Solution_> extends SingleCascadingUpdateShadowVariableListener<Solution_>
         implements ListVariableListener<Solution_, Object, Object> {
 
-    private final ListVariableDescriptor<Solution_> sourceListVariableDescriptor;
-
     SingleCascadingUpdateListVariableListener(ListVariableDescriptor<Solution_> sourceListVariableDescriptor,
             List<VariableDescriptor<Solution_>> targetVariableDescriptorList, MemberAccessor targetMethod,
-            CascadingUpdateCommand<Object> nextElementCommand) {
-        super(targetVariableDescriptorList, targetMethod, nextElementCommand);
-        this.sourceListVariableDescriptor = sourceListVariableDescriptor;
+            CascadingUpdateCommand<Pair<Integer, Object>> indexElementCommand) {
+        super(sourceListVariableDescriptor, targetVariableDescriptorList, targetMethod, indexElementCommand);
     }
 
     @Override
@@ -49,9 +47,13 @@ public class SingleCascadingUpdateListVariableListener<Solution_> extends Single
         for (int i = fromIndex; i < toIndex; i++) {
             execute(scoreDirector, values.get(i));
         }
-        // Double-check if the last element in the range and anything beyond it need to be updated
+        // Double-check if anything beyond the last element in the range needs to be updated
         if (toIndex < values.size()) {
-            afterVariableChanged(scoreDirector, values.get(toIndex));
+            for (int i = toIndex; i < values.size(); i++) {
+                if (!execute(scoreDirector, values.get(i))) {
+                    break;
+                }
+            }
         }
     }
 }

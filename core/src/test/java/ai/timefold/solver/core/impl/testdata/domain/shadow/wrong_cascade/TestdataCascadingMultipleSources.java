@@ -29,7 +29,8 @@ public class TestdataCascadingMultipleSources {
     @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue", sourceVariableName = "entity")
     @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue", sourceVariableName = "previous")
     private Integer cascadeValue;
-    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue", sourceEntityClass = TestdataSingleCascadingEntity.class, sourceVariableName = "valueList")
+    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue",
+            sourceEntityClass = TestdataSingleCascadingEntity.class, sourceVariableName = "valueList")
     private Integer value;
 
     public TestdataCascadingMultipleSources(Integer value) {

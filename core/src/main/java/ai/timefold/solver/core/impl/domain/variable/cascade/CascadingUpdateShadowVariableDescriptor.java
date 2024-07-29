@@ -18,15 +18,13 @@ import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
-import ai.timefold.solver.core.impl.domain.variable.cascade.command.CascadingUpdateCommand;
-import ai.timefold.solver.core.impl.domain.variable.cascade.command.NextElementSupplyCommand;
-import ai.timefold.solver.core.impl.domain.variable.cascade.command.ShadowVariableDescriptorCommand;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateDemand;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.cascade.command.IndexElementSupplyCommand;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWithSources;
-import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementVariableDemand;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
@@ -36,7 +34,6 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
     private ListVariableDescriptor<Solution_> sourceListVariableDescriptor;
     private final List<VariableDescriptor<Solution_>> targetVariableDescriptorList = new ArrayList<>();
     private final Set<VariableDescriptor<Solution_>> sourceVariableDescriptorSet = new HashSet<>();
-    private ShadowVariableDescriptor<Solution_> nextElementShadowVariableDescriptor;
     private MemberAccessor targetMethod;
     // This flag defines if the planning variable generates a listener, which will be notified later by the event system
     private boolean notifiable = true;
@@ -114,12 +111,6 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
                                     .collect(joining(", "))));
         }
         sourceListVariableDescriptor = (ListVariableDescriptor<Solution_>) listVariableDescriptorList.get(0);
-
-        nextElementShadowVariableDescriptor = entityDescriptor.getShadowVariableDescriptors().stream()
-                .filter(variableDescriptor -> NextElementShadowVariableDescriptor.class
-                        .isAssignableFrom(variableDescriptor.getClass()))
-                .findFirst()
-                .orElse(null);
 
         // Defining the source variable and the source entity class may result in references to different sources,
         // such as regular shadow or planning list variables.
@@ -279,26 +270,21 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
     @Override
     public Iterable<VariableListenerWithSources<Solution_>> buildVariableListeners(SupplyManager supplyManager) {
         AbstractCascadingUpdateShadowVariableListener<Solution_> listener;
-        CascadingUpdateCommand<Object> nextElementCommand;
-        if (nextElementShadowVariableDescriptor != null) {
-            nextElementCommand = new ShadowVariableDescriptorCommand<>(nextElementShadowVariableDescriptor);
-        } else {
-            nextElementCommand =
-                    new NextElementSupplyCommand(
-                            supplyManager.demand(new NextElementVariableDemand<>(sourceListVariableDescriptor)));
-        }
+        ListVariableStateSupply<Solution_> listVariableStateSupply =
+                supplyManager.demand(new ListVariableStateDemand<>(sourceListVariableDescriptor));
+        IndexElementSupplyCommand<Solution_> indexElementSupplyCommand =
+                new IndexElementSupplyCommand<>(listVariableStateSupply);
         if (targetVariableDescriptorList.size() == 1) {
             if (hasShadowVariable()) {
-                listener = new SingleCascadingUpdateShadowVariableListener<>(targetVariableDescriptorList, targetMethod,
-                        nextElementCommand);
+                listener = new SingleCascadingUpdateShadowVariableListener<>(sourceListVariableDescriptor,
+                        targetVariableDescriptorList, targetMethod, indexElementSupplyCommand);
             } else {
                 listener = new SingleCascadingUpdateListVariableListener<>(sourceListVariableDescriptor,
-                        targetVariableDescriptorList, targetMethod,
-                        nextElementCommand);
+                        targetVariableDescriptorList, targetMethod, indexElementSupplyCommand);
             }
         } else {
-            listener = new CollectionCascadingUpdateShadowVariableListener<>(targetVariableDescriptorList, targetMethod,
-                    nextElementCommand);
+            listener = new CollectionCascadingUpdateShadowVariableListener<>(sourceListVariableDescriptor,
+                    targetVariableDescriptorList, targetMethod, indexElementSupplyCommand);
         }
         return Collections.singleton(new VariableListenerWithSources<>(listener, getSourceVariableDescriptorList()));
     }

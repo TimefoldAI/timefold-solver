@@ -7,6 +7,8 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.variable.cascade.command.CascadingUpdateCommand;
+import ai.timefold.solver.core.impl.domain.variable.cascade.command.Pair;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 
 /**
@@ -19,10 +21,10 @@ public class SingleCascadingUpdateShadowVariableListener<Solution_>
 
     private final VariableDescriptor<Solution_> targetVariableDescriptor;
 
-    SingleCascadingUpdateShadowVariableListener(
+    SingleCascadingUpdateShadowVariableListener(ListVariableDescriptor<Solution_> sourceListVariableDescriptor,
             List<VariableDescriptor<Solution_>> targetVariableDescriptorList, MemberAccessor targetMethod,
-            CascadingUpdateCommand<Object> nextElementCommand) {
-        super(targetVariableDescriptorList, targetMethod, nextElementCommand);
+            CascadingUpdateCommand<Pair<Integer, Object>> indexElementCommand) {
+        super(sourceListVariableDescriptor, targetVariableDescriptorList, targetMethod, indexElementCommand);
         this.targetVariableDescriptor = targetVariableDescriptorList.get(0);
     }
 

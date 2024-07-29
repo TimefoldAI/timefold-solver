@@ -8,6 +8,8 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.variable.cascade.command.CascadingUpdateCommand;
+import ai.timefold.solver.core.impl.domain.variable.cascade.command.Pair;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 
 /**
@@ -20,10 +22,10 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescripto
 public class CollectionCascadingUpdateShadowVariableListener<Solution_>
         extends AbstractCascadingUpdateShadowVariableListener<Solution_> {
 
-    protected CollectionCascadingUpdateShadowVariableListener(
+    protected CollectionCascadingUpdateShadowVariableListener(ListVariableDescriptor<Solution_> sourceListVariableDescriptor,
             List<VariableDescriptor<Solution_>> targetVariableDescriptorList, MemberAccessor targetMethod,
-            CascadingUpdateCommand<Object> nextElementCommand) {
-        super(targetVariableDescriptorList, targetMethod, nextElementCommand);
+            CascadingUpdateCommand<Pair<Integer, Object>> indexElementCommand) {
+        super(sourceListVariableDescriptor, targetVariableDescriptorList, targetMethod, indexElementCommand);
     }
 
     @Override
