@@ -19,8 +19,10 @@ class SingleCascadingUpdateShadowSourceVariableListenerTest {
         assertThatIllegalArgumentException().isThrownBy(TestdataCascadingMultipleSources::buildEntityDescriptor)
                 .withMessageContaining(
                         "The entity class (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingMultipleSources) ")
-                .withMessageContaining("has @CascadingUpdateShadowVariable-annotated properties configured with targetMethodName (cascadeValue)")
-                .withMessageContaining(" and defines both a shadow variable and a list variable sources, which is not supported.")
+                .withMessageContaining(
+                        "has @CascadingUpdateShadowVariable-annotated properties configured with targetMethodName (cascadeValue)")
+                .withMessageContaining(
+                        " and defines both a shadow variable and a list variable sources, which is not supported.")
                 .withMessageContaining(
                         "Maybe configure a different targetMethodName for the list variable source and the shadow variable source(s).");
 
