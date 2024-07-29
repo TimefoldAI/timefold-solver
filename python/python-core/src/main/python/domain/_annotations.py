@@ -231,7 +231,7 @@ class PiggybackShadowVariable(JavaAnnotation):
         super().__init__(JavaPiggybackShadowVariable,
                          {
                              'shadowVariableName': PythonClassTranslator.getJavaFieldName(shadow_variable_name),
-                             'shadowEntityClass': shadow_entity_class,
+                             'shadowEntityClass': get_asm_type(shadow_entity_class),
                          })
 
 
@@ -299,6 +299,7 @@ class CascadingUpdateShadowVariable(JavaAnnotation):
     def __init__(self, *,
                  source_variable_name: str = None,
                  source_variable_names: List[str] = None,
+                 source_entity_class: Type = None,
                  target_method_name: str):
         ensure_init()
         from ai.timefold.jpyinterpreter import PythonClassTranslator
@@ -309,6 +310,7 @@ class CascadingUpdateShadowVariable(JavaAnnotation):
                          {
                              'sourceVariableName': PythonClassTranslator.getJavaFieldName(source_variable_name),
                              'sourceVariableNames': source_variable_names,
+                             'sourceEntityClass': get_asm_type(source_entity_class),
                              'targetMethodName': PythonClassTranslator.getJavaMethodName(target_method_name),
                          })
 
