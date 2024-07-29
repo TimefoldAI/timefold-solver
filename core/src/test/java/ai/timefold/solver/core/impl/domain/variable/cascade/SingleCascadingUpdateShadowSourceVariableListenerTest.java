@@ -18,13 +18,11 @@ class SingleCascadingUpdateShadowSourceVariableListenerTest {
     void requiredShadowVariableDependencies() {
         assertThatIllegalArgumentException().isThrownBy(TestdataCascadingMultipleSources::buildEntityDescriptor)
                 .withMessageContaining(
-                        "The entity class (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingMultipleSources)")
-                .withMessageContaining("has an @CascadingUpdateShadowVariable annotated properties")
-                .withMessageContaining("but the sources can be either a regular shadow variable or a planning list variable")
+                        "The entity class (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingMultipleSources) ")
+                .withMessageContaining("has @CascadingUpdateShadowVariable-annotated properties configured with targetMethodName (cascadeValue)")
+                .withMessageContaining(" and defines both a shadow variable and a list variable sources, which is not supported.")
                 .withMessageContaining(
-                        "Maybe update sourceVariableName or sourceVariableNames and reference either regular shadow variables or a planning list variable")
-                .withMessageContaining(
-                        "Maybe configure a distinct targetMethodName for one of the source types, and a separate listener will be created for it");
+                        "Maybe configure a different targetMethodName for the list variable source and the shadow variable source(s).");
 
         assertThatIllegalArgumentException().isThrownBy(TestdataCascadingWrongEntity::buildEntityDescriptor)
                 .withMessageContaining(
