@@ -1,9 +1,9 @@
 from collections import defaultdict
 from dataclasses import dataclass
+from jpype import JClass, JArray
 from types import FunctionType, NoneType, UnionType
 from typing import TypeVar, Any, List, Tuple, Dict, Union, Annotated, Type, Callable, \
     get_origin, get_args, get_type_hints
-from jpype import JClass, JArray
 
 
 class AnnotationValueSupplier:
@@ -229,7 +229,7 @@ def convert_annotation_value(annotation_type: JClass, attribute_type: JClass, at
         if isinstance(attribute_value, JClass('java.lang.Class')):
             return AnnotationMetadata.getValueAsType(attribute_value.getName())
         elif isinstance(attribute_value, type):
-            out = get_java_type_for_python_type(attribute_type)
+            out = get_java_type_for_python_type(attribute_value)
             return AnnotationMetadata.getValueAsType(out.getJavaTypeInternalName())
         elif isinstance(attribute_value, FunctionType):
             method = annotation_type.class_.getDeclaredMethod(attribute_name)
