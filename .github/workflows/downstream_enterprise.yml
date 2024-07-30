@@ -41,7 +41,7 @@ jobs:
       ${{
       github.event_name == 'pull_request_target' &&
       github.event.pull_request.head.repo.full_name != github.repository &&
-      needs.known_user.outputs.is_member_of_org != "true" &&
+      needs.known_user.outputs.is_member_of_org != 'true' &&
       'external' || 'internal'
       }}
     runs-on: ubuntu-latest
