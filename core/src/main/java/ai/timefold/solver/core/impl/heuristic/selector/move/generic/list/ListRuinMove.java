@@ -66,6 +66,7 @@ public class ListRuinMove<Solution_> extends AbstractMove<Solution_> {
 
                 innerScoreDirector.afterListVariableChanged(listVariableDescriptor, oldLocation.entity(),
                         oldLocation.index(), oldLocation.index());
+                scoreDirector.triggerVariableListeners();
             }
 
             for (int i : getInsertionOrder(recordedNewPositions)) {
@@ -81,6 +82,7 @@ public class ListRuinMove<Solution_> extends AbstractMove<Solution_> {
 
                 innerScoreDirector.afterListVariableChanged(listVariableDescriptor, newLocation.entity(),
                         newLocation.index(), newLocation.index() + 1);
+                scoreDirector.triggerVariableListeners();
             }
         } else {
             for (int i = 0; i < ruinedValues.length; i++) {
