@@ -38,6 +38,7 @@
     <version.org.webjars.webjars-locator>0.52</version.org.webjars.webjars-locator>
     <version.org.webjars.bootstrap>5.2.3</version.org.webjars.bootstrap>
     <version.org.webjars.jquery>3.6.4</version.org.webjars.jquery>
+    <version.org.jspecify>1.0.0</version.org.jspecify>
 
     <!-- ************************************************************************ -->
     <!-- Plugins -->
@@ -134,6 +135,11 @@
         <artifactId>jfreechart</artifactId>
         <version>${version.org.jfree.jfreechart}</version>
       </dependency>
+      <dependency>
+        <groupId>org.jspecify</groupId>
+        <artifactId>jspecify</artifactId>
+        <version>${version.org.jspecify}</version>
+      </dependency>
 
       <!-- ASM -->
       <dependency>
@@ -184,6 +190,8 @@
         <version>${version.org.webjars.jquery}</version>
         <scope>runtime</scope>
       </dependency>
+
+
     </dependencies>
   </dependencyManagement>
 
