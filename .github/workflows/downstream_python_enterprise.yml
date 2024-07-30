@@ -35,6 +35,7 @@ jobs:
           org: "TimefoldAI"
           whitelist: "timefold-release,dependabot[bot]" # We trust dependabot to not steal secrets.
           github_token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Release account is a Solver Gatekeeper.
+      - id: validation
         shell: bash
         run: |
           echo "Authorized user: ${{ steps.auth_check.outputs.authorized }}"
