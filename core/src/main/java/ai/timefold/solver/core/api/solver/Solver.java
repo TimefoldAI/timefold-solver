@@ -11,6 +11,8 @@ import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.event.SolverEventListener;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * A Solver solves a planning problem and returns the best solution found.
  * It's recommended to create a new Solver instance for each dataset.
@@ -36,11 +38,12 @@ public interface Solver<Solution_> {
      * depending on the termination configuration.
      * To terminate a {@link Solver} early, call {@link #terminateEarly()}.
      *
-     * @param problem never null, a {@link PlanningSolution}, usually its planning variables are uninitialized
-     * @return never null, but it can return the original, uninitialized {@link PlanningSolution} with a null {@link Score}.
+     * @param problem a {@link PlanningSolution}, usually its planning variables are uninitialized
+     * @return can return the original, uninitialized {@link PlanningSolution} with a null {@link Score}.
      * @see #terminateEarly()
      */
-    Solution_ solve(Solution_ problem);
+    @NonNull
+    Solution_ solve(@NonNull Solution_ problem);
 
     /**
      * Notifies the solver that it should stop at its earliest convenience.
@@ -86,10 +89,9 @@ public interface Solver<Solution_> {
      * <p>
      * To learn more about problem change semantics, please refer to the {@link ProblemChange} Javadoc.
      *
-     * @param problemChange never null
      * @see #addProblemChanges(List)
      */
-    void addProblemChange(ProblemChange<Solution_> problemChange);
+    void addProblemChange(@NonNull ProblemChange<Solution_> problemChange);
 
     /**
      * Schedules multiple {@link ProblemChange}s to be processed.
@@ -103,10 +105,9 @@ public interface Solver<Solution_> {
      * <p>
      * To learn more about problem change semantics, please refer to the {@link ProblemChange} Javadoc.
      *
-     * @param problemChangeList never null
      * @see #addProblemChange(ProblemChange)
      */
-    void addProblemChanges(List<ProblemChange<Solution_>> problemChangeList);
+    void addProblemChanges(@NonNull List<ProblemChange<Solution_>> problemChangeList);
 
     /**
      * Checks if all scheduled {@link ProblemChange}s have been processed.
@@ -129,12 +130,11 @@ public interface Solver<Solution_> {
      * a capacity of {@link Integer#MAX_VALUE}.
      *
      * @deprecated Prefer {@link #addProblemChange(ProblemChange)}.
-     * @param problemFactChange never null
      * @return true (as specified by {@link Collection#add})
      * @see #addProblemFactChanges(List)
      */
     @Deprecated(forRemoval = true)
-    boolean addProblemFactChange(ProblemFactChange<Solution_> problemFactChange);
+    boolean addProblemFactChange(@NonNull ProblemFactChange<Solution_> problemFactChange);
 
     /**
      * This method is deprecated.
@@ -148,12 +148,11 @@ public interface Solver<Solution_> {
      * a capacity of {@link Integer#MAX_VALUE}.
      *
      * @deprecated Prefer {@link #addProblemChanges(List)}.
-     * @param problemFactChangeList never null
      * @return true (as specified by {@link Collection#add})
      * @see #addProblemFactChange(ProblemFactChange)
      */
     @Deprecated(forRemoval = true)
-    boolean addProblemFactChanges(List<ProblemFactChange<Solution_>> problemFactChangeList);
+    boolean addProblemFactChanges(@NonNull List<ProblemFactChange<Solution_>> problemFactChangeList);
 
     /**
      * This method is deprecated.
@@ -167,14 +166,8 @@ public interface Solver<Solution_> {
     @Deprecated(forRemoval = true)
     boolean isEveryProblemFactChangeProcessed();
 
-    /**
-     * @param eventListener never null
-     */
-    void addEventListener(SolverEventListener<Solution_> eventListener);
+    void addEventListener(@NonNull SolverEventListener<Solution_> eventListener);
 
-    /**
-     * @param eventListener never null
-     */
-    void removeEventListener(SolverEventListener<Solution_> eventListener);
+    void removeEventListener(@NonNull SolverEventListener<Solution_> eventListener);
 
 }

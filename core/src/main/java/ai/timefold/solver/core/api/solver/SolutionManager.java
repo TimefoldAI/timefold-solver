@@ -17,6 +17,9 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.impl.solver.DefaultSolutionManager;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * A stateless service to help calculate {@link Score}, {@link ConstraintMatchTotal},
  * {@link Indictment}, etc.
@@ -37,27 +40,23 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
     /**
      * Uses a {@link SolverFactory} to build a {@link SolutionManager}.
      *
-     * @param solverFactory never null
-     * @return never null
      * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
      * @param <Score_> the actual score type
      */
-    static <Solution_, Score_ extends Score<Score_>> SolutionManager<Solution_, Score_> create(
-            SolverFactory<Solution_> solverFactory) {
+    static <Solution_, Score_ extends Score<Score_>> @NonNull SolutionManager<Solution_, Score_> create(
+            @NonNull SolverFactory<Solution_> solverFactory) {
         return new DefaultSolutionManager<>(solverFactory);
     }
 
     /**
      * Uses a {@link SolverManager} to build a {@link SolutionManager}.
      *
-     * @param solverManager never null
-     * @return never null
      * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
      * @param <Score_> the actual score type
      * @param <ProblemId_> the ID type of a submitted problem, such as {@link Long} or {@link UUID}
      */
-    static <Solution_, Score_ extends Score<Score_>, ProblemId_> SolutionManager<Solution_, Score_> create(
-            SolverManager<Solution_, ProblemId_> solverManager) {
+    static <Solution_, Score_ extends Score<Score_>, ProblemId_> @NonNull SolutionManager<Solution_, Score_> create(
+            @NonNull SolverManager<Solution_, ProblemId_> solverManager) {
         return new DefaultSolutionManager<>(solverManager);
     }
 
@@ -70,25 +69,25 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * using {@link SolutionUpdatePolicy#UPDATE_ALL}.
      *
      */
-    default Score_ update(Solution_ solution) {
+    default @Nullable Score_ update(@NonNull Solution_ solution) {
         return update(solution, UPDATE_ALL);
     }
 
     /**
      * Updates the given solution according to the {@link SolutionUpdatePolicy}.
      *
-     * @param solution never null
-     * @param solutionUpdatePolicy never null; if unsure, pick {@link SolutionUpdatePolicy#UPDATE_ALL}
+     * @param solutionUpdatePolicy if unsure, pick {@link SolutionUpdatePolicy#UPDATE_ALL}
      * @return possibly null if already null and {@link SolutionUpdatePolicy} didn't cause its update
      * @see SolutionUpdatePolicy Description of individual policies with respect to performance trade-offs.
      */
-    Score_ update(Solution_ solution, SolutionUpdatePolicy solutionUpdatePolicy);
+    @Nullable
+    Score_ update(@NonNull Solution_ solution, @NonNull SolutionUpdatePolicy solutionUpdatePolicy);
 
     /**
      * As defined by {@link #explain(Object, SolutionUpdatePolicy)},
      * using {@link SolutionUpdatePolicy#UPDATE_ALL}.
      */
-    default ScoreExplanation<Solution_, Score_> explain(Solution_ solution) {
+    default @NonNull ScoreExplanation<Solution_, Score_> explain(@NonNull Solution_ solution) {
         return explain(solution, UPDATE_ALL);
     }
 
@@ -97,20 +96,20 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * quality of a particular solution.
      * For a simplified, faster and JSON-friendly alternative, see {@link #analyze(Object)}}.
      *
-     * @param solution never null
-     * @param solutionUpdatePolicy never null; if unsure, pick {@link SolutionUpdatePolicy#UPDATE_ALL}
-     * @return never null
+     * @param solutionUpdatePolicy if unsure, pick {@link SolutionUpdatePolicy#UPDATE_ALL}
      * @throws IllegalStateException when constraint matching is disabled or not supported by the underlying score
      *         calculator, such as {@link EasyScoreCalculator}.
      * @see SolutionUpdatePolicy Description of individual policies with respect to performance trade-offs.
      */
-    ScoreExplanation<Solution_, Score_> explain(Solution_ solution, SolutionUpdatePolicy solutionUpdatePolicy);
+    @NonNull
+    ScoreExplanation<Solution_, Score_> explain(@NonNull Solution_ solution,
+            @NonNull SolutionUpdatePolicy solutionUpdatePolicy);
 
     /**
      * As defined by {@link #analyze(Object, ScoreAnalysisFetchPolicy, SolutionUpdatePolicy)},
      * using {@link SolutionUpdatePolicy#UPDATE_ALL} and {@link ScoreAnalysisFetchPolicy#FETCH_ALL}.
      */
-    default ScoreAnalysis<Score_> analyze(Solution_ solution) {
+    default @NonNull ScoreAnalysis<Score_> analyze(@NonNull Solution_ solution) {
         return analyze(solution, FETCH_ALL, UPDATE_ALL);
     }
 
@@ -118,7 +117,7 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * As defined by {@link #analyze(Object, ScoreAnalysisFetchPolicy, SolutionUpdatePolicy)},
      * using {@link SolutionUpdatePolicy#UPDATE_ALL}.
      */
-    default ScoreAnalysis<Score_> analyze(Solution_ solution, ScoreAnalysisFetchPolicy fetchPolicy) {
+    default @NonNull ScoreAnalysis<Score_> analyze(@NonNull Solution_ solution, @NonNull ScoreAnalysisFetchPolicy fetchPolicy) {
         return analyze(solution, fetchPolicy, UPDATE_ALL);
     }
 
@@ -126,23 +125,25 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * Calculates and retrieves information about which constraints contributed to the solution's score.
      * This is a faster, JSON-friendly version of {@link #explain(Object)}.
      *
-     * @param solution never null, must be fully initialized otherwise an exception is thrown
-     * @param fetchPolicy never null; if unsure, pick {@link ScoreAnalysisFetchPolicy#FETCH_ALL}
-     * @param solutionUpdatePolicy never null; if unsure, pick {@link SolutionUpdatePolicy#UPDATE_ALL}
-     * @return never null
+     * @param solution must be fully initialized otherwise an exception is thrown
+     * @param fetchPolicy if unsure, pick {@link ScoreAnalysisFetchPolicy#FETCH_ALL}
+     * @param solutionUpdatePolicy if unsure, pick {@link SolutionUpdatePolicy#UPDATE_ALL}
      * @throws IllegalStateException when constraint matching is disabled or not supported by the underlying score
      *         calculator, such as {@link EasyScoreCalculator}.
      * @see SolutionUpdatePolicy Description of individual policies with respect to performance trade-offs.
      */
-    ScoreAnalysis<Score_> analyze(Solution_ solution, ScoreAnalysisFetchPolicy fetchPolicy,
-            SolutionUpdatePolicy solutionUpdatePolicy);
+    @NonNull
+    ScoreAnalysis<Score_> analyze(@NonNull Solution_ solution, @NonNull ScoreAnalysisFetchPolicy fetchPolicy,
+            @NonNull SolutionUpdatePolicy solutionUpdatePolicy);
 
     /**
      * As defined by {@link #recommendFit(Object, Object, Function, ScoreAnalysisFetchPolicy)},
      * with {@link ScoreAnalysisFetchPolicy#FETCH_ALL}.
      */
-    default <EntityOrElement_, Proposition_> List<RecommendedFit<Proposition_, Score_>> recommendFit(Solution_ solution,
-            EntityOrElement_ fittedEntityOrElement, Function<EntityOrElement_, Proposition_> propositionFunction) {
+    default <EntityOrElement_, Proposition_> @NonNull List<RecommendedFit<Proposition_, Score_>> recommendFit(
+            @NonNull Solution_ solution,
+            @NonNull EntityOrElement_ fittedEntityOrElement,
+            @NonNull Function<EntityOrElement_, Proposition_> propositionFunction) {
         return recommendFit(solution, fittedEntityOrElement, propositionFunction, FETCH_ALL);
     }
 
@@ -230,13 +231,12 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * this problem would have been avoided.
      * Alternatively, the proposition function could have returned a defensive copy of the Shift.
      *
-     * @param solution never null; must be fully initialized except for one entity or element
-     * @param fittedEntityOrElement never null; must be part of the solution
-     * @param propositionFunction never null
-     * @param fetchPolicy never null;
+     * @param solution must be fully initialized except for one entity or element
+     * @param fittedEntityOrElement must be part of the solution
+     * @param fetchPolicy
      *        {@link ScoreAnalysisFetchPolicy#FETCH_ALL} will include more data within {@link RecommendedFit},
      *        but will also take more time to gather that data.
-     * @return never null, sorted from best to worst;
+     * @return sorted from best to worst;
      *         designed to be JSON-friendly, see {@link RecommendedFit} Javadoc for more.
      * @param <EntityOrElement_> generic type of the unassigned entity or element
      * @param <Proposition_> generic type of the user-provided proposition;
@@ -244,8 +244,10 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      *        to make a defensive copy inside the proposition function.
      * @see PlanningEntity More information about genuine and shadow planning entities.
      */
-    <EntityOrElement_, Proposition_> List<RecommendedFit<Proposition_, Score_>> recommendFit(Solution_ solution,
-            EntityOrElement_ fittedEntityOrElement, Function<EntityOrElement_, Proposition_> propositionFunction,
-            ScoreAnalysisFetchPolicy fetchPolicy);
+    <EntityOrElement_, Proposition_> @NonNull List<RecommendedFit<Proposition_, Score_>> recommendFit(
+            @NonNull Solution_ solution,
+            @NonNull EntityOrElement_ fittedEntityOrElement,
+            @NonNull Function<EntityOrElement_, Proposition_> propositionFunction,
+            @NonNull ScoreAnalysisFetchPolicy fetchPolicy);
 
 }
