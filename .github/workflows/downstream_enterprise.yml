@@ -28,13 +28,9 @@ jobs:
         with:
           username: ${{ github.actor }}
           org: "TimefoldAI"
-          team: "trusted-committers"
+          team: "developers"
           whitelist: "timefold-release,dependabot[bot]" # We trust dependabot to not steal secrets.
           github_token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Release account is a Solver Gatekeeper.
-      - id: validation
-        shell: bash
-        run: |
-          echo "Authorized user: ${{ steps.auth_check.outputs.authorized }}"
   # If the user is not a member, require a member to approve the PR.
   approval_required:
     needs: known_user
