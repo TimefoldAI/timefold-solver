@@ -3,7 +3,10 @@ name: Downstream - Timefold Solver for Python Quickstarts
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled]
+    types:
+      - opened
+      - reopened
+      - synchronize
     branches:
       - main
     paths-ignore:
@@ -19,7 +22,7 @@ defaults:
     shell: bash
 
 jobs:
-  test-build:
+  build:
     concurrency:
       group: pull_request_python_quickstarts-${{ github.event_name }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.java-version }}-${{ matrix.python-version }}
       cancel-in-progress: true

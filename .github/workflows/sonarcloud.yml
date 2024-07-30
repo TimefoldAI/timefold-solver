@@ -8,8 +8,19 @@ on:
       - opened
       - reopened
       - synchronize
+      - labeled
 jobs:
+  safe_for_ci:
+    name: "Ensure that PR is safe for CI"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if not safe
+        if: ${{ !contains( github.event.pull_request.labels.*.name, 'Safe for CI') }}
+        shell: bash
+        run:
+          exit 1
   build:
+    needs: safe_for_ci
     name: Build and analyze
     runs-on: ubuntu-latest
     steps:

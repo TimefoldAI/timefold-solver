@@ -1,14 +1,15 @@
 name: Downstream - Integration Tests
 
 on:
-  # Enables the workflow to run on PRs from forks;
-  # token sharing is safe here, because enterprise is a private repo and therefore fully under our control.
+  # Enables the workflow to run on PRs from forks.
+  # CI will only run once the PR is labeled as "Safe for CI", in order to prevent stealing of secrets.
   pull_request_target:
     branches: [main] # Benchmarks aren't branched, so they will only ever work against current main.
     types:
       - opened
       - reopened
       - synchronize
+      - labeled
     paths-ignore:
       - 'LICENSE*'
       - '.gitignore'
@@ -17,7 +18,17 @@ on:
       - '*.txt'
 
 jobs:
+  safe_for_ci:
+    name: "Ensure that PR is safe for CI"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if not safe
+        if: ${{ !contains( github.event.pull_request.labels.*.name, 'Safe for CI') }}
+        shell: bash
+        run:
+          exit 1
   build:
+    needs: safe_for_ci
     runs-on: ubuntu-latest
     concurrency:
       group: pr-${{ github.event_name }}-${{ github.head_ref }}
