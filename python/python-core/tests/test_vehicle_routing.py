@@ -1,4 +1,3 @@
-from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from timefold.solver import *
@@ -32,19 +31,15 @@ class Visit:
         field(default=None))
     previous_visit: Annotated[Optional['Visit'], PreviousElementShadowVariable(source_variable_name='visits')] = (
         field(default=None))
-    next_visit: Annotated[Optional['Visit'],
-                          NextElementShadowVariable(source_variable_name='visits')] = field(default=None)
+    next_visit: Annotated[Optional['Visit'], NextElementShadowVariable(source_variable_name='visits')] = field(
+        default=None)
     arrival_time: Annotated[
         Optional[datetime],
         CascadingUpdateShadowVariable(source_variable_names=['vehicle', 'previous_visit'],
                                       target_method_name='update_arrival_time')] = field(default=None)
     piggyback_arrival_time: Annotated[
         Optional[datetime],
-        PiggybackShadowVariable(shadow_variable_name='arrival_time', shadow_entity_class=Visit)] = field(default=None)
-    source_value: Annotated[
-        Optional[str],
-    CascadingUpdateShadowVariable(source_variable_name='visits', source_entity_class=Vehicle,
-                                  target_method_name='update_source_value')] = field(default=None)
+        PiggybackShadowVariable(shadow_variable_name='arrival_time')] = field(default=None)
 
     def update_arrival_time(self):
         if self.vehicle is None or (self.previous_visit is not None and self.previous_visit.arrival_time is None):
@@ -56,9 +51,6 @@ class Visit:
             self.arrival_time = (self.previous_visit.departure_time() +
                                  timedelta(seconds=self.previous_visit.location.driving_time_to(self.location)))
         self.piggyback_arrival_time = self.arrival_time
-
-    def update_source_value(self):
-        self.source_value = 'OK'
 
     def departure_time(self) -> Optional[datetime]:
         if self.arrival_time is None:
@@ -150,6 +142,7 @@ def vehicle_routing_constraints(factory: ConstraintFactory):
         minimize_travel_time(factory)
     ]
 
+
 ##############################################
 # Hard constraints
 ##############################################
@@ -171,6 +164,7 @@ def service_finished_after_max_end_time(factory: ConstraintFactory):
                       lambda visit: visit.service_finished_delay_in_minutes())
             .as_constraint('SERVICE_FINISHED_AFTER_MAX_END_TIME')
             )
+
 
 ##############################################
 # Soft constraints
@@ -307,6 +301,5 @@ def test_vrp():
         # Visit 3: 1-minute travel time from Vehicle B start
         datetime(2020, 1, 1, hour=0, minute=1)
     ]
-    assert [visit.source_value for visit in solution.visits] == ['OK', 'OK', 'OK']
     assert [visit.id for visit in solution.vehicles[0].visits] == ['1', '2']
     assert [visit.id for visit in solution.vehicles[1].visits] == ['3']
