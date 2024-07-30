@@ -2,14 +2,13 @@ name: Downstream - Timefold Solver Enterprise Edition
 
 on:
   # Enables the workflow to run on PRs from forks.
-  # CI will only run once the PR is labeled as "Safe for CI", in order to prevent stealing of secrets.
+  # CI will only run for trusted users, to prevent stealing of secrets.
   pull_request_target:
     branches: [main, '*.x']
     types:
       - opened
       - reopened
       - synchronize
-      - labeled
     paths-ignore:
       - 'LICENSE*'
       - '.gitignore'
@@ -18,17 +17,34 @@ on:
       - '*.txt'
 
 jobs:
-  safe_for_ci:
-    name: "Ensure that PR is safe for CI"
+  # Check if the user is a member of the organization; if so, allow the PR to sail through.
+  known_user:
+    runs-on: ubuntu-latest
+    outputs:
+      is_member_of_org: ${{ steps.auth_check.outputs.authorized }}
+    steps:
+      - id: auth_check
+        uses: morfien101/actions-authorized-user@v3
+        with:
+          username: ${{ github.actor }}
+          org: "TimefoldAI"
+          whitelist: "timefold-release,dependabot[bot]" # We trust dependabot to not steal secrets.
+          github_token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Release account is a Solver Gatekeeper.
+  # If the user is not a member, require a member to approve the PR.
+  approval_required:
+    needs: known_user
+    environment:
+      ${{
+      github.event_name == 'pull_request_target' &&
+      github.event.pull_request.head.repo.full_name != github.repository &&
+      !needs.known_user.outputs.is_member_of_org &&
+      'external' || 'internal'
+      }}
     runs-on: ubuntu-latest
     steps:
-      - name: Fail if not safe
-        if: ${{ !contains( github.event.pull_request.labels.*.name, 'Safe for CI') }}
-        shell: bash
-        run:
-          exit 1
+      - run: true
   build:
-    needs: safe_for_ci
+    needs: approval_required
     runs-on: ubuntu-latest
     concurrency:
       group: downstream-enterprise-${{ github.event_name }}-${{ github.head_ref }}
