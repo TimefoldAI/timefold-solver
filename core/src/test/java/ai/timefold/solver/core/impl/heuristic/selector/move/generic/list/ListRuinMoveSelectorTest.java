@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
 import java.util.List;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
@@ -25,9 +24,6 @@ class ListRuinMoveSelectorTest {
         @Override
         public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
             return new Constraint[] {
-                    constraintFactory.forEach(TestdataListValue.class)
-                            .penalize(SimpleScore.ONE, TestdataListValue::getIndex)
-                            .asConstraint("Minimize index")
             };
         }
     }
