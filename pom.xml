@@ -8,7 +8,7 @@
   <packaging>pom</packaging>
   <version>999-SNAPSHOT</version>
 
-  <name>Timefold Solver multiproject parent</name>
+  <name>Timefold Solver multi-project parent</name>
   <description>
     Timefold solves planning problems.
     This lightweight, embeddable planning engine implements powerful and scalable algorithms
