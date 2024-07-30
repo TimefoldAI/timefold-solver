@@ -35,6 +35,9 @@ jobs:
           org: "TimefoldAI"
           whitelist: "timefold-release,dependabot[bot]" # We trust dependabot to not steal secrets.
           github_token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Release account is a Solver Gatekeeper.
+        shell: bash
+        run: |
+          echo "Authorized user: ${{ steps.auth_check.outputs.authorized }}"
   # If the user is not a member, require a member to approve the PR.
   approval_required:
     needs: known_user
@@ -42,7 +45,7 @@ jobs:
       ${{
       github.event_name == 'pull_request_target' &&
       github.event.pull_request.head.repo.full_name != github.repository &&
-      !needs.known_user.outputs.is_member_of_org &&
+      needs.known_user.outputs.is_member_of_org != "true" &&
       'external' || 'internal'
       }}
     runs-on: ubuntu-latest
