@@ -102,7 +102,7 @@ public class TestdataMultipleCascadingWithSupplyValue
 
     @Override
     public String toString() {
-        return "TestdataMultipleCascadeValue{" +
+        return "TestdataMultipleCascadingWithSupplyValue{" +
                 "value=" + value +
                 '}';
     }

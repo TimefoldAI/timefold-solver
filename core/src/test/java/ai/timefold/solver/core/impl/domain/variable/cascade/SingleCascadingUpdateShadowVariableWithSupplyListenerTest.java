@@ -5,9 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 
 import java.util.List;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.suply.TestdataSingleCascadingWithSupplyEntity;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.suply.TestdataSingleCascadingWithSupplySolution;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.suply.TestdataSingleCascadingWithSupplyValue;
@@ -56,17 +53,15 @@ class SingleCascadingUpdateShadowVariableWithSupplyListenerTest {
 
     @Test
     void updateAllNextValues() {
-        GenuineVariableDescriptor<TestdataSingleCascadingWithSupplySolution> variableDescriptor =
-                TestdataSingleCascadingWithSupplyEntity.buildVariableDescriptorForValueList();
+        var variableDescriptor = TestdataSingleCascadingWithSupplyEntity.buildVariableDescriptorForValueList();
 
-        InnerScoreDirector<TestdataSingleCascadingWithSupplySolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 PlannerTestUtils.mockScoreDirector(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
 
-        TestdataSingleCascadingWithSupplySolution solution =
-                TestdataSingleCascadingWithSupplySolution.generateUninitializedSolution(3, 2);
+        var solution = TestdataSingleCascadingWithSupplySolution.generateUninitializedSolution(3, 2);
         scoreDirector.setWorkingSolution(solution);
 
-        TestdataSingleCascadingWithSupplyEntity entity = solution.getEntityList().get(0);
+        var entity = solution.getEntityList().get(0);
         scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
         entity.setValueList(solution.getValueList());
         scoreDirector.afterListVariableChanged(entity, "valueList", 0, 3);
@@ -97,17 +92,15 @@ class SingleCascadingUpdateShadowVariableWithSupplyListenerTest {
 
     @Test
     void updateOnlyMiddleValue() {
-        GenuineVariableDescriptor<TestdataSingleCascadingWithSupplySolution> variableDescriptor =
-                TestdataSingleCascadingWithSupplyEntity.buildVariableDescriptorForValueList();
+        var variableDescriptor = TestdataSingleCascadingWithSupplyEntity.buildVariableDescriptorForValueList();
 
-        InnerScoreDirector<TestdataSingleCascadingWithSupplySolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 PlannerTestUtils.mockScoreDirector(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
 
-        TestdataSingleCascadingWithSupplySolution solution =
-                TestdataSingleCascadingWithSupplySolution.generateUninitializedSolution(3, 2);
+        var solution = TestdataSingleCascadingWithSupplySolution.generateUninitializedSolution(3, 2);
         scoreDirector.setWorkingSolution(solution);
 
-        TestdataSingleCascadingWithSupplyEntity entity = solution.getEntityList().get(0);
+        var entity = solution.getEntityList().get(0);
         scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
         solution.getValueList().subList(0, 2).forEach(v -> v.setEntity(entity));
         entity.setValueList(solution.getValueList().subList(0, 2));
@@ -134,17 +127,15 @@ class SingleCascadingUpdateShadowVariableWithSupplyListenerTest {
 
     @Test
     void stopUpdateNextValues() {
-        GenuineVariableDescriptor<TestdataSingleCascadingWithSupplySolution> variableDescriptor =
-                TestdataSingleCascadingWithSupplyEntity.buildVariableDescriptorForValueList();
+        var variableDescriptor = TestdataSingleCascadingWithSupplyEntity.buildVariableDescriptorForValueList();
 
-        InnerScoreDirector<TestdataSingleCascadingWithSupplySolution, SimpleScore> scoreDirector =
+        var scoreDirector =
                 PlannerTestUtils.mockScoreDirector(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
 
-        TestdataSingleCascadingWithSupplySolution solution =
-                TestdataSingleCascadingWithSupplySolution.generateUninitializedSolution(3, 2);
+        var solution = TestdataSingleCascadingWithSupplySolution.generateUninitializedSolution(3, 2);
         scoreDirector.setWorkingSolution(solution);
 
-        TestdataSingleCascadingWithSupplyEntity entity = solution.getEntityList().get(0);
+        var entity = solution.getEntityList().get(0);
         scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
         solution.getValueList().subList(0, 2).forEach(v -> v.setEntity(entity));
         entity.setValueList(solution.getValueList().subList(0, 2));

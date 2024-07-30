@@ -82,7 +82,7 @@ public class TestdataMultipleSourceCascadingEntity extends TestdataObject
 
     @Override
     public String toString() {
-        return "TestdataMultipleCascadeEntity{" +
+        return "TestdataMultipleSourceCascadingEntity{" +
                 "code='" + code + '\'' +
                 '}';
     }

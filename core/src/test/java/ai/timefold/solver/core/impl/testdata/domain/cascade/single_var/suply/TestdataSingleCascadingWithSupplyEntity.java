@@ -72,7 +72,7 @@ public class TestdataSingleCascadingWithSupplyEntity extends TestdataObject {
 
     @Override
     public String toString() {
-        return "TestdataCascadeEntity{" +
+        return "TestdataSingleCascadingWithSupplyEntity{" +
                 "code='" + code + '\'' +
                 '}';
     }

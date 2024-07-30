@@ -113,7 +113,7 @@ public class TestdataSingleCascadingValue {
 
     @Override
     public String toString() {
-        return "TestdataCascadeValue{" +
+        return "TestdataSingleCascadingValue{" +
                 "value=" + value +
                 '}';
     }

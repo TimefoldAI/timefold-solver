@@ -1,9 +1,9 @@
-from _jpyinterpreter import JavaAnnotation, AnnotationValueSupplier
+from _jpyinterpreter import JavaAnnotation
 from jpype import JImplements, JOverride
 from typing import Union, List, Callable, Type, TypeVar
 
 from ._variable_listener import VariableListener
-from .._timefold_java_interop import ensure_init, get_asm_type
+from .._timefold_java_interop import ensure_init
 
 Solution_ = TypeVar('Solution_')
 
@@ -186,8 +186,7 @@ class ShadowVariable(JavaAnnotation):
 
         super().__init__(JavaShadowVariable,
                          {
-                             'variableListenerClass': AnnotationValueSupplier(
-                                 lambda: get_asm_type(variable_listener_class)),
+                             'variableListenerClass': variable_listener_class,
                              'sourceVariableName': PythonClassTranslator.getJavaFieldName(source_variable_name),
                              'sourceEntityClass': source_entity_class,
                          })
@@ -299,6 +298,7 @@ class CascadingUpdateShadowVariable(JavaAnnotation):
     def __init__(self, *,
                  source_variable_name: str = None,
                  source_variable_names: List[str] = None,
+                 source_entity_class: Type = None,
                  target_method_name: str):
         ensure_init()
         from ai.timefold.jpyinterpreter import PythonClassTranslator
@@ -309,6 +309,7 @@ class CascadingUpdateShadowVariable(JavaAnnotation):
                          {
                              'sourceVariableName': PythonClassTranslator.getJavaFieldName(source_variable_name),
                              'sourceVariableNames': source_variable_names,
+                             'sourceEntityClass': source_entity_class,
                              'targetMethodName': PythonClassTranslator.getJavaMethodName(target_method_name),
                          })
 

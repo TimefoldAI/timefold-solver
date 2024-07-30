@@ -31,8 +31,8 @@ class Visit:
         field(default=None))
     previous_visit: Annotated[Optional['Visit'], PreviousElementShadowVariable(source_variable_name='visits')] = (
         field(default=None))
-    next_visit: Annotated[Optional['Visit'],
-                          NextElementShadowVariable(source_variable_name='visits')] = field(default=None)
+    next_visit: Annotated[Optional['Visit'], NextElementShadowVariable(source_variable_name='visits')] = field(
+        default=None)
     arrival_time: Annotated[
         Optional[datetime],
         CascadingUpdateShadowVariable(source_variable_names=['vehicle', 'previous_visit'],
@@ -142,6 +142,7 @@ def vehicle_routing_constraints(factory: ConstraintFactory):
         minimize_travel_time(factory)
     ]
 
+
 ##############################################
 # Hard constraints
 ##############################################
@@ -163,6 +164,7 @@ def service_finished_after_max_end_time(factory: ConstraintFactory):
                       lambda visit: visit.service_finished_delay_in_minutes())
             .as_constraint('SERVICE_FINISHED_AFTER_MAX_END_TIME')
             )
+
 
 ##############################################
 # Soft constraints

@@ -1,6 +1,5 @@
-from typing import Type
-
 import pytest
+from typing import Type
 
 from .conftest import verifier_for
 
@@ -914,7 +913,12 @@ def test_class_annotations():
     from typing import Annotated
     from java.lang import Deprecated
     from java.lang.annotation import Target, ElementType
-    from jpyinterpreter import add_class_annotation, JavaAnnotation, translate_python_class_to_java_class
+    from ai.timefold.solver.core.api.domain.variable import PiggybackShadowVariable
+    from jpyinterpreter import (add_class_annotation, JavaAnnotation, translate_python_class_to_java_class,
+                                get_java_type_for_python_type)
+
+    class B:
+        some_field: int
 
     @add_class_annotation(Deprecated,
                           forRemoval=True,
@@ -926,7 +930,12 @@ def test_class_annotations():
         }), 'extra metadata',
         JavaAnnotation(Target, {
             'value': [ElementType.CONSTRUCTOR, ElementType.METHOD]
-        })]
+        }),
+        JavaAnnotation(PiggybackShadowVariable, {
+            'shadowVariableName': 'some_field',
+            'shadowEntityClass': B
+        })
+        ]
 
         def my_method(self) -> Annotated[str, 'extra', JavaAnnotation(Deprecated, {
             'forRemoval': False,
@@ -942,12 +951,15 @@ def test_class_annotations():
     assert annotations[0].since() == '0.0.0'
 
     annotations = translated_class.getMethod('getMy_field').getAnnotations()
-    assert len(annotations) == 2
+    assert len(annotations) == 3
     assert isinstance(annotations[0], Deprecated)
     assert annotations[0].forRemoval()
     assert annotations[0].since() == '1.0.0'
     assert isinstance(annotations[1], Target)
     assert list(annotations[1].value()) == [ElementType.CONSTRUCTOR, ElementType.METHOD]
+    assert isinstance(annotations[2], PiggybackShadowVariable)
+    assert annotations[2].shadowVariableName() == 'some_field'
+    assert annotations[2].shadowEntityClass() == get_java_type_for_python_type(B).getJavaClass()
 
     annotations = translated_class.getMethod('$method$my_method').getAnnotations()
     assert len(annotations) == 1
@@ -1074,7 +1086,6 @@ def test_marker_interface_string():
 def test_functional_interface():
     from java.util.function import ToIntFunction
     from jpyinterpreter import translate_python_class_to_java_class, add_java_interface
-    from ai.timefold.jpyinterpreter.types import PythonNone
 
     @add_java_interface(ToIntFunction)
     class A:

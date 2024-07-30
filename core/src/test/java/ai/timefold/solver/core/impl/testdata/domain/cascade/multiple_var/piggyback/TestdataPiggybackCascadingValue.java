@@ -112,7 +112,7 @@ public class TestdataPiggybackCascadingValue
 
     @Override
     public String toString() {
-        return "TestdataMultipleCascadeValue{" +
+        return "TestdataPiggybackCascadingValue{" +
                 "value=" + value +
                 '}';
     }

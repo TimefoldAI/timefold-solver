@@ -6,25 +6,35 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.VariableListener;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 public abstract class AbstractCascadingUpdateShadowVariableListener<Solution_> implements VariableListener<Solution_, Object> {
 
-    final List<VariableDescriptor<Solution_>> targetVariableDescriptorList;
-    final MemberAccessor targetMethod;
+    private final ListVariableStateSupply<Solution_> listVariableStateSupply;
+    private final ListVariableDescriptor<Solution_> sourceListVariableDescriptor;
+    private final MemberAccessor targetMethod;
 
-    AbstractCascadingUpdateShadowVariableListener(List<VariableDescriptor<Solution_>> targetVariableDescriptorList,
-            MemberAccessor targetMethod) {
-        this.targetVariableDescriptorList = targetVariableDescriptorList;
+    AbstractCascadingUpdateShadowVariableListener(ListVariableDescriptor<Solution_> sourceListVariableDescriptor,
+            MemberAccessor targetMethod, ListVariableStateSupply<Solution_> listVariableStateSupply) {
+        this.sourceListVariableDescriptor = sourceListVariableDescriptor;
         this.targetMethod = targetMethod;
+        this.listVariableStateSupply = listVariableStateSupply;
     }
 
     abstract boolean execute(ScoreDirector<Solution_> scoreDirector, Object entity);
 
-    abstract Object getNextElement(Object entity);
+    void runTargetMethod(Object entity) {
+        targetMethod.executeGetter(entity);
+    }
+
+    protected List<Object> getValues(Object entity) {
+        return sourceListVariableDescriptor.getValue(entity);
+    }
 
     @Override
     public void beforeVariableChanged(ScoreDirector<Solution_> scoreDirector, Object entity) {
@@ -33,12 +43,18 @@ public abstract class AbstractCascadingUpdateShadowVariableListener<Solution_> i
 
     @Override
     public void afterVariableChanged(ScoreDirector<Solution_> scoreDirector, Object entity) {
-        var currentEntity = entity;
-        while (currentEntity != null) {
-            if (!execute(scoreDirector, currentEntity)) {
-                break;
+        var isChanged = execute(scoreDirector, entity);
+        if (isChanged) {
+            var indexElement = listVariableStateSupply.getLocationInList(entity);
+            if (indexElement instanceof LocationInList location) {
+                var fromIndex = location.index();
+                List<Object> values = getValues(location.entity());
+                for (var i = fromIndex + 1; i < values.size(); i++) {
+                    if (!execute(scoreDirector, values.get(i))) {
+                        break;
+                    }
+                }
             }
-            currentEntity = getNextElement(currentEntity);
         }
     }
 

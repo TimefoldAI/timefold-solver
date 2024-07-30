@@ -83,7 +83,7 @@ public class TestdataPiggybackNotifiableCascadingEntity extends TestdataObject
 
     @Override
     public String toString() {
-        return "TestdataMultipleCascadeEntity{" +
+        return "TestdataPiggybackNotifiableCascadingEntity{" +
                 "code='" + code + '\'' +
                 '}';
     }
