@@ -1,0 +1,34 @@
+name: Check if PR safe for CI
+
+on:
+  # Workflow always runs from the blessed repo; cannot be forged.
+  pull_request_target:
+    types: [ opened ]
+
+jobs:
+  add_labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+
+      - id: auth_check
+        uses: morfien101/actions-authorized-user@v3
+        with:
+          username: ${{ github.actor }}
+          org: "TimefoldAI"
+          whitelist: "timefold-release,dependabot[bot]" # We trust dependabot to not steal secrets.
+          github_token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Release account is a Solver Gatekeeper.
+      - name: Add labels
+        uses: actions-ecosystem/action-add-labels@v1
+        if: ${{ steps.auth_check.outputs.authorized }}
+        with:
+          labels: |
+            Safe for CI
+      - name: Add labels
+        uses: actions-ecosystem/action-add-labels@v1
+        if: ${{ !steps.auth_check.outputs.authorized }}
+        with:
+          labels: |
+            External Contribution

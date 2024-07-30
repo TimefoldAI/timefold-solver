@@ -3,6 +3,10 @@ name: Downstream - Timefold Quickstarts
 on:
   pull_request:
     branches: [main, '*.x']
+    types:
+      - opened
+      - reopened
+      - synchronize
     paths-ignore:
       - 'LICENSE*'
       - '.gitignore'
