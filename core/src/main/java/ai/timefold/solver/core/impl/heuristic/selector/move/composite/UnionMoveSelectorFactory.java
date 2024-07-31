@@ -35,10 +35,17 @@ public class UnionMoveSelectorFactory<Solution_>
                                         Remove the Nearby setting from the selector configuration or remove the top-level nearbyDistanceMeterClass."""
                                         .formatted(nearbySelectorConfig, configPolicy.getNearbyDistanceMeterClass()));
                     }
+                    // We delay the autoconfiguration to the deepest UnionMoveSelectorConfig node in the tree
+                    // to avoid duplicating configuration
+                    // when there are nested unionMoveSelector configurations
+                    if (selectorConfig instanceof UnionMoveSelectorConfig) {
+                        continue;
+                    }
                     // Add a new configuration with Nearby Selection enabled
                     moveSelectorConfigList
                             .add(nearbySelectorConfig.enableNearbySelection(configPolicy.getNearbyDistanceMeterClass(),
                                     configPolicy.getRandom()));
+
                 }
             }
         }
