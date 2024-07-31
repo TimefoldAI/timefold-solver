@@ -12,21 +12,18 @@ import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityP
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
-import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.CartesianProductMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
-import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHeuristicDecider;
+import ai.timefold.solver.core.impl.constructionheuristic.decider.RuinRecreateConstructionHeuristicDecider;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForager;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForagerFactory;
-import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacerFactory;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.PooledEntityPlacerFactory;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.QueuedEntityPlacerFactory;
@@ -36,6 +33,8 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
+import ai.timefold.solver.core.impl.solver.termination.BasicPlumbingTermination;
+import ai.timefold.solver.core.impl.solver.termination.PhaseToSolverTerminationBridge;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 import ai.timefold.solver.core.impl.solver.termination.TerminationFactory;
 
@@ -46,41 +45,37 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         super(phaseConfig);
     }
 
-    public DefaultConstructionHeuristicPhase.Builder<Solution_> getBaseBuilder(int phaseIndex,
-            boolean triggerFirstInitializedSolutionEvent,
-            HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
-            Termination<Solution_> solverTermination) {
-        ConstructionHeuristicType constructionHeuristicType_ = Objects.requireNonNullElse(
-                phaseConfig.getConstructionHeuristicType(),
+    private DefaultConstructionHeuristicPhase.Builder<Solution_> getBaseBuilder(int phaseIndex,
+            boolean triggerFirstInitializedSolutionEvent, HeuristicConfigPolicy<Solution_> solverConfigPolicy,
+            Termination<Solution_> solverTermination, boolean isRuinPhase) {
+        var constructionHeuristicType_ = Objects.requireNonNullElse(phaseConfig.getConstructionHeuristicType(),
                 ConstructionHeuristicType.ALLOCATE_ENTITY_FROM_QUEUE);
-        EntitySorterManner entitySorterManner = Objects.requireNonNullElse(
-                phaseConfig.getEntitySorterManner(),
+        var entitySorterManner = Objects.requireNonNullElse(phaseConfig.getEntitySorterManner(),
                 constructionHeuristicType_.getDefaultEntitySorterManner());
-        ValueSorterManner valueSorterManner = Objects.requireNonNullElse(
-                phaseConfig.getValueSorterManner(),
+        var valueSorterManner = Objects.requireNonNullElse(phaseConfig.getValueSorterManner(),
                 constructionHeuristicType_.getDefaultValueSorterManner());
-        HeuristicConfigPolicy<Solution_> phaseConfigPolicy = solverConfigPolicy.cloneBuilder()
+        var phaseConfigPolicy = solverConfigPolicy.cloneBuilder()
                 .withReinitializeVariableFilterEnabled(true)
                 .withInitializedChainedValueFilterEnabled(true)
                 .withUnassignedValuesAllowed(true)
                 .withEntitySorterManner(entitySorterManner)
                 .withValueSorterManner(valueSorterManner)
                 .build();
-        Termination<Solution_> phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
-        EntityPlacerConfig entityPlacerConfig_ = getValidEntityPlacerConfig()
+        var entityPlacerConfig_ = getValidEntityPlacerConfig()
                 .orElseGet(() -> buildDefaultEntityPlacerConfig(phaseConfigPolicy, constructionHeuristicType_));
-        EntityPlacer<Solution_> entityPlacer = EntityPlacerFactory.<Solution_> create(entityPlacerConfig_)
+        var entityPlacer = EntityPlacerFactory.<Solution_> create(entityPlacerConfig_)
                 .buildEntityPlacer(phaseConfigPolicy);
 
-        DefaultConstructionHeuristicPhase.Builder<Solution_> builder = new DefaultConstructionHeuristicPhase.Builder<>(
-                phaseIndex,
-                triggerFirstInitializedSolutionEvent,
-                solverConfigPolicy.getLogIndentation(),
-                phaseTermination,
-                entityPlacer,
+        if (isRuinPhase) { // The ruin phase ignores terminations and always finishes, as it is nested in a move.
+            var phaseTermination = new PhaseToSolverTerminationBridge<>(new BasicPlumbingTermination<Solution_>(false));
+            return new RuinRecreateConstructionHeuristicPhase.RuinRecreateBuilder<>(phaseTermination, entityPlacer,
+                    buildRuinRecreateDecider(phaseConfigPolicy, phaseTermination));
+        }
+        var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
+        var builder = new DefaultConstructionHeuristicPhase.Builder<>(phaseIndex, triggerFirstInitializedSolutionEvent,
+                solverConfigPolicy.getLogIndentation(), phaseTermination, entityPlacer,
                 buildDecider(phaseConfigPolicy, phaseTermination));
-
-        EnvironmentMode environmentMode = phaseConfigPolicy.getEnvironmentMode();
+        var environmentMode = phaseConfigPolicy.getEnvironmentMode();
         if (environmentMode.isNonIntrusiveFullAsserted()) {
             builder.setAssertStepScoreFromScratch(true);
         }
@@ -95,16 +90,15 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
     public ConstructionHeuristicPhase<Solution_> buildPhase(int phaseIndex, boolean triggerFirstInitializedSolutionEvent,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             Termination<Solution_> solverTermination) {
-        return getBaseBuilder(phaseIndex, triggerFirstInitializedSolutionEvent, solverConfigPolicy, bestSolutionRecaller,
-                solverTermination)
+        return getBaseBuilder(phaseIndex, triggerFirstInitializedSolutionEvent, solverConfigPolicy, solverTermination, false)
                 .build();
     }
 
     public DefaultConstructionHeuristicPhase<Solution_> buildRuinPhase(HeuristicConfigPolicy<Solution_> solverConfigPolicy) {
-        var phaseBuilder = getBaseBuilder(0, false, solverConfigPolicy, new BestSolutionRecaller<>(),
-                TerminationFactory.<Solution_> create(new TerminationConfig()).buildTermination(solverConfigPolicy));
-        phaseBuilder.setIsRuinPhase(true);
-        return phaseBuilder.build();
+        var solverTermination =
+                TerminationFactory.<Solution_> create(new TerminationConfig()).buildTermination(solverConfigPolicy);
+        return getBaseBuilder(0, false, solverConfigPolicy, solverTermination, true)
+                .build();
     }
 
     private Optional<EntityPlacerConfig> getValidEntityPlacerConfig() {
@@ -182,26 +176,25 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
 
     private ConstructionHeuristicDecider<Solution_> buildDecider(HeuristicConfigPolicy<Solution_> configPolicy,
             Termination<Solution_> termination) {
-        ConstructionHeuristicForagerConfig foragerConfig_ =
-                Objects.requireNonNullElseGet(phaseConfig.getForagerConfig(), ConstructionHeuristicForagerConfig::new);
-        ConstructionHeuristicForager<Solution_> forager =
-                ConstructionHeuristicForagerFactory.<Solution_> create(foragerConfig_).buildForager(configPolicy);
-        EnvironmentMode environmentMode = configPolicy.getEnvironmentMode();
-        ConstructionHeuristicDecider<Solution_> decider;
-        Integer moveThreadCount = configPolicy.getMoveThreadCount();
-        if (moveThreadCount == null) {
-            decider = new ConstructionHeuristicDecider<>(configPolicy.getLogIndentation(), termination, forager);
-        } else {
-            decider = TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTITHREADED_SOLVING)
-                    .buildConstructionHeuristic(moveThreadCount, termination, forager, environmentMode, configPolicy);
-        }
-        if (environmentMode.isNonIntrusiveFullAsserted()) {
-            decider.setAssertMoveScoreFromScratch(true);
-        }
-        if (environmentMode.isIntrusiveFastAsserted()) {
-            decider.setAssertExpectedUndoMoveScore(true);
-        }
+        var forager = buildForager(configPolicy);
+        var moveThreadCount = configPolicy.getMoveThreadCount();
+        var decider = (moveThreadCount == null)
+                ? new ConstructionHeuristicDecider<>(configPolicy.getLogIndentation(), termination, forager)
+                : TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTITHREADED_SOLVING)
+                        .buildConstructionHeuristic(termination, forager, configPolicy);
+        decider.enableAssertions(configPolicy.getEnvironmentMode());
         return decider;
+    }
+
+    private ConstructionHeuristicForager<Solution_> buildForager(HeuristicConfigPolicy<Solution_> configPolicy) {
+        var foragerConfig_ =
+                Objects.requireNonNullElseGet(phaseConfig.getForagerConfig(), ConstructionHeuristicForagerConfig::new);
+        return ConstructionHeuristicForagerFactory.<Solution_> create(foragerConfig_).buildForager(configPolicy);
+    }
+
+    private ConstructionHeuristicDecider<Solution_> buildRuinRecreateDecider(HeuristicConfigPolicy<Solution_> configPolicy,
+            Termination<Solution_> termination) {
+        return new RuinRecreateConstructionHeuristicDecider<>(termination, buildForager(configPolicy));
     }
 
     private EntityPlacerConfig buildUnfoldedEntityPlacerConfig(HeuristicConfigPolicy<Solution_> phaseConfigPolicy,

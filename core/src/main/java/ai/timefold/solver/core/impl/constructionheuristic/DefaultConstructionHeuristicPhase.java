@@ -19,13 +19,15 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
 
     protected final EntityPlacer<Solution_> entityPlacer;
     protected final ConstructionHeuristicDecider<Solution_> decider;
-    protected final boolean isRuinPhase;
 
-    private DefaultConstructionHeuristicPhase(Builder<Solution_> builder) {
+    protected DefaultConstructionHeuristicPhase(Builder<Solution_> builder) {
         super(builder);
         entityPlacer = builder.entityPlacer;
         decider = builder.decider;
-        isRuinPhase = builder.isRuinPhase;
+    }
+
+    protected boolean isNested() {
+        return false;
     }
 
     public EntityPlacer<Solution_> getEntityPlacer() {
@@ -61,14 +63,18 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
         for (var placement : entityPlacer) {
             var stepScope = new ConstructionHeuristicStepScope<>(phaseScope);
             stepStarted(stepScope);
-            decider.decideNextStep(stepScope, placement, isRuinPhase);
+            decider.decideNextStep(stepScope, placement);
             if (stepScope.getStep() == null) {
-                if (phaseTermination.isPhaseTerminated(phaseScope) && !isRuinPhase) {
+                if (phaseTermination.isPhaseTerminated(phaseScope)
+                        && decider.isLoggingEnabled()
+                        && logger.isTraceEnabled()) {
                     logger.trace("{}    Step index ({}), time spent ({}) terminated without picking a nextStep.",
                             logIndentation,
                             stepScope.getStepIndex(),
                             stepScope.getPhaseScope().calculateSolverTimeMillisSpentUpToNow());
-                } else if (stepScope.getSelectedMoveCount() == 0L && !isRuinPhase) {
+                } else if (stepScope.getSelectedMoveCount() == 0L
+                        && decider.isLoggingEnabled()
+                        && logger.isWarnEnabled()) {
                     logger.warn("{}    No doable selected move at step index ({}), time spent ({})."
                             + " Terminating phase early.",
                             logIndentation,
@@ -85,7 +91,7 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
             doStep(stepScope);
             stepEnded(stepScope);
             phaseScope.setLastCompletedStepScope(stepScope);
-            if (!isRuinPhase && phaseTermination.isPhaseTerminated(phaseScope)
+            if (phaseTermination.isPhaseTerminated(phaseScope)
                     || (hasListVariable && stepScope.getStepIndex() >= maxStepCount)) {
                 break;
             }
@@ -97,7 +103,7 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
         var step = stepScope.getStep();
         step.doMoveOnly(stepScope.getScoreDirector());
         predictWorkingStepScore(stepScope, step);
-        if (!isRuinPhase) {
+        if (!isNested()) {
             solver.getBestSolutionRecaller().processWorkingSolutionDuringConstructionHeuristicsStep(stepScope);
         }
     }
@@ -125,10 +131,9 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
         super.stepEnded(stepScope);
         entityPlacer.stepEnded(stepScope);
         decider.stepEnded(stepScope);
-        if (logger.isDebugEnabled() && !isRuinPhase) {
+        if (decider.isLoggingEnabled() && logger.isDebugEnabled()) {
             var timeMillisSpent = stepScope.getPhaseScope().calculateSolverTimeMillisSpentUpToNow();
-            logger.debug("{}    CH step ({}), time spent ({}), score ({}), selected move count ({}),"
-                    + " picked move ({}).",
+            logger.debug("{}    CH step ({}), time spent ({}), score ({}), selected move count ({}), picked move ({}).",
                     logIndentation,
                     stepScope.getStepIndex(), timeMillisSpent,
                     stepScope.getScore(),
@@ -140,15 +145,15 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
     public void phaseEnded(ConstructionHeuristicPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
         // Only update the best solution if it is not a ruin+recreate CH and the CH made any change.
-        if (!isRuinPhase && !phaseScope.getStartingScore().equals(phaseScope.getBestScore())) {
+        if (!isNested() && !phaseScope.getStartingScore().equals(phaseScope.getBestScore())) {
             solver.getBestSolutionRecaller().updateBestSolutionAndFire(phaseScope.getSolverScope());
         }
         entityPlacer.phaseEnded(phaseScope);
         decider.phaseEnded(phaseScope);
         phaseScope.endingNow();
-        if (!isRuinPhase) {
-            logger.info("{}Construction Heuristic phase ({}) ended: time spent ({}), best score ({}),"
-                    + " score calculation speed ({}/sec), step total ({}).",
+        if (decider.isLoggingEnabled() && logger.isInfoEnabled()) {
+            logger.info(
+                    "{}Construction Heuristic phase ({}) ended: time spent ({}), best score ({}), score calculation speed ({}/sec), step total ({}).",
                     logIndentation,
                     phaseIndex,
                     phaseScope.calculateSolverTimeMillisSpentUpToNow(),
@@ -175,18 +180,13 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
 
         private final EntityPlacer<Solution_> entityPlacer;
         private final ConstructionHeuristicDecider<Solution_> decider;
-        private boolean isRuinPhase = false;
 
         public Builder(int phaseIndex, boolean triggerFirstInitializedSolutionEvent, String logIndentation,
-                Termination<Solution_> phaseTermination,
-                EntityPlacer<Solution_> entityPlacer, ConstructionHeuristicDecider<Solution_> decider) {
+                Termination<Solution_> phaseTermination, EntityPlacer<Solution_> entityPlacer,
+                ConstructionHeuristicDecider<Solution_> decider) {
             super(phaseIndex, triggerFirstInitializedSolutionEvent, logIndentation, phaseTermination);
             this.entityPlacer = entityPlacer;
             this.decider = decider;
-        }
-
-        public void setIsRuinPhase(boolean isRuinPhase) {
-            this.isRuinPhase = isRuinPhase;
         }
 
         @Override
