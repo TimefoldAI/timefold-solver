@@ -51,6 +51,7 @@ public class SolverScope<Solution_> {
     private Semaphore runnableThreadSemaphore = null;
 
     private long childThreadsScoreCalculationCount = 0;
+    private long moveEvaluationCount = 0;
 
     private Score<?> startingInitializedScore;
 
@@ -186,6 +187,20 @@ public class SolverScope<Solution_> {
         return scoreDirector.getCalculationCount() + childThreadsScoreCalculationCount;
     }
 
+    public void addMoveEvaluationCount(long addition) {
+        moveEvaluationCount += addition;
+    }
+
+    public long getMoveEvaluationCount() {
+        return moveEvaluationCount;
+    }
+
+    public long getMoveEvaluationSpeed() {
+        long timeMillisSpent = getTimeMillisSpent();
+        return getSpeed(getMoveEvaluationCount(), timeMillisSpent);
+    }
+
+
     public Solution_ getBestSolution() {
         return bestSolution.get();
     }
@@ -242,12 +257,20 @@ public class SolverScope<Solution_> {
     }
 
     public long calculateTimeMillisSpentUpToNow() {
-        long now = System.currentTimeMillis();
+        var now = System.currentTimeMillis();
         return now - getStartingSystemTimeMillis();
     }
 
     public long getTimeMillisSpent() {
-        return getEndingSystemTimeMillis() - getStartingSystemTimeMillis();
+        var startingSystemTimeMillis = getStartingSystemTimeMillis();
+        if (startingSystemTimeMillis == null) { // The solver hasn't started yet.
+            return 0L;
+        }
+        var endingSystemTimeMillis = getEndingSystemTimeMillis();
+        if (endingSystemTimeMillis == null) { // The solver hasn't ended yet.
+            endingSystemTimeMillis = System.currentTimeMillis();
+        }
+        return endingSystemTimeMillis - startingSystemTimeMillis;
     }
 
     public ProblemSizeStatistics getProblemSizeStatistics() {
@@ -263,10 +286,10 @@ public class SolverScope<Solution_> {
      */
     public long getScoreCalculationSpeed() {
         long timeMillisSpent = getTimeMillisSpent();
-        return getScoreCalculationSpeed(getScoreCalculationCount(), timeMillisSpent);
+        return getSpeed(getScoreCalculationCount(), timeMillisSpent);
     }
 
-    public static long getScoreCalculationSpeed(long scoreCalculationCount, long timeMillisSpent) {
+    public static long getSpeed(long scoreCalculationCount, long timeMillisSpent) {
         // Avoid divide by zero exception on a fast CPU
         return scoreCalculationCount * 1000L / (timeMillisSpent == 0L ? 1L : timeMillisSpent);
     }
