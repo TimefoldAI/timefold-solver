@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
-import java.util.function.ToLongFunction;
-
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinMoveSelectorConfig;
@@ -11,6 +9,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelector
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
+
+import java.util.function.ToLongFunction;
 
 public class ListRuinMoveSelectorFactory<Solution_> extends AbstractMoveSelectorFactory<Solution_, ListRuinMoveSelectorConfig> {
     protected final ListRuinMoveSelectorConfig ruinMoveSelectorConfig;
@@ -35,7 +35,7 @@ public class ListRuinMoveSelectorFactory<Solution_> extends AbstractMoveSelector
         var valueSelector =
                 (EntityIndependentValueSelector<Solution_>) ValueSelectorFactory.<Solution_> create(valueSelectorConfig)
                         .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, SelectionOrder.RANDOM,
-                                true, ValueSelectorFactory.ListValueFilteringType.ACCEPT_UNASSIGNED);
+                                false, ValueSelectorFactory.ListValueFilteringType.ACCEPT_ASSIGNED);
         var entityPlacerConfig =
                 DefaultConstructionHeuristicPhaseFactory.buildListVariableQueuedValuePlacerConfig(configPolicy,
                         listVariableDescriptor);
