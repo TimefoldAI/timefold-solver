@@ -89,8 +89,7 @@ public class EntityDescriptor<Solution_> {
             ShadowVariable.List.class,
             PiggybackShadowVariable.class,
             CustomShadowVariable.class,
-            CascadingUpdateShadowVariable.class,
-            CascadingUpdateShadowVariable.List.class };
+            CascadingUpdateShadowVariable.class };
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityDescriptor.class);
 
@@ -217,7 +216,6 @@ public class EntityDescriptor<Solution_> {
                     + ") should have at least 1 getter method or 1 field with a "
                     + PlanningVariable.class.getSimpleName() + " annotation or a shadow variable annotation.");
         }
-        processPiggyBackForCascadingUpdateShadowVariables();
         processVariableAnnotations(descriptorPolicy);
     }
 
@@ -292,8 +290,7 @@ public class EntityDescriptor<Solution_> {
                     || variableAnnotationClass.equals(ShadowVariable.class)
                     || variableAnnotationClass.equals(ShadowVariable.List.class)
                     || variableAnnotationClass.equals(PiggybackShadowVariable.class)
-                    || variableAnnotationClass.equals(CascadingUpdateShadowVariable.class)
-                    || variableAnnotationClass.equals(CascadingUpdateShadowVariable.List.class)) {
+                    || variableAnnotationClass.equals(CascadingUpdateShadowVariable.class)) {
                 memberAccessorType = FIELD_OR_GETTER_METHOD;
             } else {
                 memberAccessorType = FIELD_OR_GETTER_METHOD_WITH_SETTER;
@@ -303,38 +300,6 @@ public class EntityDescriptor<Solution_> {
             registerVariableAccessor(variableDescriptorCounter.intValue(), variableAnnotationClass, memberAccessor);
             variableDescriptorCounter.increment();
         }
-    }
-
-    private void processPiggyBackForCascadingUpdateShadowVariables() {
-        if (!declaredCascadingUpdateShadowVariableDecriptorMap.isEmpty()) {
-            var piggybackShadowVariableDescriptorList = declaredShadowVariableDescriptorMap
-                    .values()
-                    .stream()
-                    .filter(v -> PiggybackShadowVariableDescriptor.class.isAssignableFrom(v.getClass()))
-                    .map(v -> (PiggybackShadowVariableDescriptor<Solution_>) v)
-                    .toList();
-            for (var descriptor : piggybackShadowVariableDescriptorList) {
-                var cascadingUpdateShadowVariableDescriptor =
-                        findNotifiableCascadingUpdateDescriptor(descriptor.getShadowVariableName());
-                if (cascadingUpdateShadowVariableDescriptor != null) {
-                    cascadingUpdateShadowVariableDescriptor.addTargetVariable(descriptor.getEntityDescriptor(),
-                            descriptor.getMemberAccessor());
-                }
-            }
-        }
-    }
-
-    private CascadingUpdateShadowVariableDescriptor<Solution_>
-            findNotifiableCascadingUpdateDescriptor(String variableName) {
-        var descriptor = declaredShadowVariableDescriptorMap.get(variableName);
-        var isCascadingUpdateDescriptor =
-                descriptor != null && CascadingUpdateShadowVariableDescriptor.class.isAssignableFrom(descriptor.getClass());
-        if (isCascadingUpdateDescriptor && !descriptor.hasVariableListener()) {
-            descriptor =
-                    declaredCascadingUpdateShadowVariableDecriptorMap
-                            .get(((CascadingUpdateShadowVariableDescriptor<Solution_>) descriptor).getTargetMethodName());
-        }
-        return isCascadingUpdateDescriptor ? (CascadingUpdateShadowVariableDescriptor<Solution_>) descriptor : null;
     }
 
     private void registerVariableAccessor(int nextVariableDescriptorOrdinal,
@@ -392,8 +357,7 @@ public class EntityDescriptor<Solution_> {
                 || variableAnnotationClass.equals(ShadowVariable.List.class)) {
             var variableDescriptor = new CustomShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
-        } else if (variableAnnotationClass.equals(CascadingUpdateShadowVariable.class)
-                || variableAnnotationClass.equals(CascadingUpdateShadowVariable.List.class)) {
+        } else if (variableAnnotationClass.equals(CascadingUpdateShadowVariable.class)) {
             var variableDescriptor =
                     new CascadingUpdateShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
@@ -401,15 +365,9 @@ public class EntityDescriptor<Solution_> {
                 // If the target method is already set,
                 // it means that multiple fields define the cascading shadow variable
                 // and point to the same target method.
-                // As a result, only one listener will be created for the related target method,
-                // which will include all sources from all fields.
-                // This specific shadow variable will not be notifiable,
-                // and no listener will be created from CascadingUpdateVariableListenerDescriptor#buildVariableListeners.
-                variableDescriptor.setNotifiable(false);
                 declaredCascadingUpdateShadowVariableDecriptorMap.get(variableDescriptor.getTargetMethodName())
                         .addTargetVariable(this, memberAccessor);
             } else {
-                // The first shadow variable read is notifiable and will generate a listener.
                 declaredCascadingUpdateShadowVariableDecriptorMap.put(variableDescriptor.getTargetMethodName(),
                         variableDescriptor);
             }
@@ -608,6 +566,10 @@ public class EntityDescriptor<Solution_> {
         return effectiveMovableEntitySelectionFilter != null;
     }
 
+    public boolean hasCascadingShadowVariables() {
+        return !declaredShadowVariableDescriptorMap.isEmpty();
+    }
+
     public boolean supportsPinning() {
         return hasEffectiveMovableEntitySelectionFilter() || effectivePlanningPinToIndexReader != null;
     }
@@ -689,6 +651,11 @@ public class EntityDescriptor<Solution_> {
 
     public Collection<ShadowVariableDescriptor<Solution_>> getDeclaredShadowVariableDescriptors() {
         return declaredShadowVariableDescriptorMap.values();
+    }
+
+    public Collection<CascadingUpdateShadowVariableDescriptor<Solution_>>
+            getDeclaredCascadingUpdateShadowVariableDescriptors() {
+        return declaredCascadingUpdateShadowVariableDecriptorMap.values();
     }
 
     public Collection<VariableDescriptor<Solution_>> getDeclaredVariableDescriptors() {

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.shadow_var;
+package ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -9,11 +9,9 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.TestdataCascadingBaseSolution;
 
 @PlanningSolution
-public class TestdataMultipleCascadingSolution
-        implements TestdataCascadingBaseSolution<TestdataMultipleCascadingEntity, TestdataMultipleCascadingValue> {
+public class TestdataMultipleCascadingSolution {
 
     public static SolutionDescriptor<TestdataMultipleCascadingSolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(
@@ -45,7 +43,6 @@ public class TestdataMultipleCascadingSolution
 
     @ValueRangeProvider(id = "valueRange")
     @PlanningEntityCollectionProperty
-    @Override
     public List<TestdataMultipleCascadingValue> getValueList() {
         return valueList;
     }
@@ -55,7 +52,6 @@ public class TestdataMultipleCascadingSolution
     }
 
     @PlanningEntityCollectionProperty
-    @Override
     public List<TestdataMultipleCascadingEntity> getEntityList() {
         return entityList;
     }

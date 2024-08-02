@@ -7,8 +7,8 @@ import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.shadow_var.TestdataSingleCascadingEntity;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.shadow_var.TestdataSingleCascadingSolution;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadingEntity;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadingSolution;
 
 @PlanningEntity
 public class TestdataCascadingWrongMethod {
@@ -26,10 +26,9 @@ public class TestdataCascadingWrongMethod {
     private TestdataCascadingWrongMethod previous;
     @NextElementShadowVariable(sourceVariableName = "valueList")
     private TestdataCascadingWrongMethod next;
-    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue", sourceVariableName = "entity")
-    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue", sourceVariableName = "previous")
+    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue")
     private Integer cascadeValue;
-    @CascadingUpdateShadowVariable(targetMethodName = "badUpdateCascadeValueWithReturnType", sourceVariableName = "entity")
+    @CascadingUpdateShadowVariable(targetMethodName = "badUpdateCascadeValueWithReturnType")
     private Integer cascadeValueReturnType;
     private Integer value;
 
