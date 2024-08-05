@@ -25,7 +25,6 @@ import ai.timefold.solver.core.impl.domain.lookup.LookUpManager;
 import ai.timefold.solver.core.impl.domain.solution.ConstraintWeightSupplier;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
-import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;
@@ -85,9 +84,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private final boolean trackingWorkingSolution;
     private final SolutionTracker<Solution_> solutionTracker;
 
-    private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final List<ListVariableEvent> listVariableEventList;
-    private final List<CascadingUpdateShadowVariableDescriptor<Solution_>> cascadingUpdateShadowVarDescriptorList;
 
     protected AbstractScoreDirector(Factory_ scoreDirectorFactory, boolean lookUpEnabled,
             boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
@@ -112,15 +109,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             this.trackingWorkingSolution = false;
         }
         this.listVariableEventList = new ArrayList<>();
-        this.cascadingUpdateShadowVarDescriptorList = getSolutionDescriptor().getEntityDescriptors().stream()
-                .flatMap(e -> e.getDeclaredCascadingUpdateShadowVariableDescriptors().stream())
-                .toList();
-        this.listVariableDescriptor = getSolutionDescriptor().getEntityDescriptors().stream()
-                .flatMap(e -> e.getGenuineVariableDescriptorList().stream())
-                .filter(VariableDescriptor::isListVariable)
-                .map(d -> (ListVariableDescriptor<Solution_>) d)
-                .findFirst()
-                .orElse(null);
     }
 
     private static <Solution_> ListVariableStateSupply<Solution_>[][] buildListVariableDataSupplies(
@@ -328,38 +316,13 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void triggerVariableListeners() {
-        variableListenerSupport.triggerVariableListenersInNotificationQueues();
-        if (!listVariableEventList.isEmpty()) {
-            triggerCascadingUpdateShadowVariableUpdate();
-        }
-    }
-
-    private void triggerCascadingUpdateShadowVariableUpdate() {
-        // All entities have been updated, and the cascading shadow variables can now be computed
-        for (var listVariableEvent : listVariableEventList) {
-            var values = listVariableDescriptor.getValue(listVariableEvent.entity());
-            for (var cascadingUpdateShadowVariableDescriptor : cascadingUpdateShadowVarDescriptorList) {
-                // Update all the elements inside the range
-                for (var i = listVariableEvent.fromIndex(); i < listVariableEvent.toIndex(); i++) {
-                    cascadingUpdateShadowVariableDescriptor.testAndUpdate(this, values.get(i));
-                }
-                // Test and update the later elements
-                for (var i = listVariableEvent.toIndex(); i < values.size(); i++) {
-                    if (!cascadingUpdateShadowVariableDescriptor.testAndUpdate(this, values.get(i))) {
-                        break;
-                    }
-                }
-            }
-        }
+        variableListenerSupport.triggerVariableListenersInNotificationQueues(listVariableEventList);
         listVariableEventList.clear();
     }
 
     @Override
     public void forceTriggerVariableListeners() {
         variableListenerSupport.forceTriggerAllVariableListeners(getWorkingSolution());
-        if (!listVariableEventList.isEmpty()) {
-            triggerCascadingUpdateShadowVariableUpdate();
-        }
     }
 
     protected void setCalculatedScore(Score_ score) {
@@ -501,9 +464,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor,
             Object entity, int fromIndex, int toIndex) {
         variableListenerSupport.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
-        if (!cascadingUpdateShadowVarDescriptorList.isEmpty()) {
-            listVariableEventList.add(new ListVariableEvent(entity, fromIndex, toIndex));
-        }
+        listVariableEventList.add(new ListVariableEvent(entity, fromIndex, toIndex));
     }
 
     public void beforeEntityRemoved(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
