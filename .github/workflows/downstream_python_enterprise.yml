@@ -33,7 +33,8 @@ jobs:
           GH_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}  # Release account is a Solver Gatekeeper.
         shell: bash
         run: |
-          ORG_MEMBERSHIP=`curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $GH_TOKEN" "https://api.github.com/orgs/TimefoldAI/memberships/${{ github.actor }}" | jq -r '.state == "active"'`
+          # -g to allow actors such as dependabot[bot]
+          ORG_MEMBERSHIP=`curl -g -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $GH_TOKEN" "https://api.github.com/orgs/TimefoldAI/memberships/${{ github.actor }}" | jq -r '.state == "active"'`
           echo "authorized=$ORG_MEMBERSHIP" >> "$GITHUB_OUTPUT"
       - id: validation
         shell: bash
@@ -46,7 +47,7 @@ jobs:
       ${{
       github.event_name == 'pull_request_target' &&
       github.event.pull_request.head.repo.full_name != github.repository &&
-      needs.known_user.outputs.is_member_of_org != 'true' &&
+      (needs.known_user.outputs.is_member_of_org != 'true' || github.actor == 'dependabot[bot]') &&
       'external' || 'internal'
       }}
     runs-on: ubuntu-latest
