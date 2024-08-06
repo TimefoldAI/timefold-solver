@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.score.director;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -33,7 +32,6 @@ import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
-import ai.timefold.solver.core.impl.solver.event.ListVariableEvent;
 import ai.timefold.solver.core.impl.solver.exception.UndoScoreCorruptionException;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
@@ -84,8 +82,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private final boolean trackingWorkingSolution;
     private final SolutionTracker<Solution_> solutionTracker;
 
-    private final List<ListVariableEvent> listVariableEventList;
-
     protected AbstractScoreDirector(Factory_ scoreDirectorFactory, boolean lookUpEnabled,
             boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
         var solutionDescriptor = scoreDirectorFactory.getSolutionDescriptor();
@@ -108,7 +104,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             this.solutionTracker = null;
             this.trackingWorkingSolution = false;
         }
-        this.listVariableEventList = new ArrayList<>();
     }
 
     private static <Solution_> ListVariableStateSupply<Solution_>[][] buildListVariableDataSupplies(
@@ -316,8 +311,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void triggerVariableListeners() {
-        variableListenerSupport.triggerVariableListenersInNotificationQueues(listVariableEventList);
-        listVariableEventList.clear();
+        // If we change forceUpdate to false, it won't analyze the entire range
+        variableListenerSupport.triggerVariableListenersInNotificationQueues(true);
     }
 
     @Override
@@ -464,7 +459,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor,
             Object entity, int fromIndex, int toIndex) {
         variableListenerSupport.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
-        listVariableEventList.add(new ListVariableEvent(entity, fromIndex, toIndex));
     }
 
     public void beforeEntityRemoved(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
