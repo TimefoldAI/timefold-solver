@@ -71,9 +71,10 @@ public class ListRuinMove<Solution_> extends AbstractMove<Solution_> {
             changedEntities.addAll(entityToOriginalPositionMap.keySet());
             changedEntities.addAll(entityToNewPositionMap.keySet());
 
-            for (var changedEntity : changedEntities) {
-                innerScoreDirector.beforeListVariableChanged(listVariableDescriptor, changedEntity,
-                        0, listVariableDescriptor.getListSize(changedEntity));
+            for (var entity : changedEntities) {
+                innerScoreDirector.beforeListVariableChanged(listVariableDescriptor, entity,
+                        listVariableDescriptor.getFirstUnpinnedIndex(entity),
+                        listVariableDescriptor.getListSize(entity));
             }
 
             for (var entry : entityToOriginalPositionMap.entrySet()) {
@@ -93,9 +94,10 @@ public class ListRuinMove<Solution_> extends AbstractMove<Solution_> {
                 }
             }
 
-            for (var changedEntity : changedEntities) {
-                innerScoreDirector.afterListVariableChanged(listVariableDescriptor, changedEntity,
-                        0, listVariableDescriptor.getListSize(changedEntity));
+            for (var entity : changedEntities) {
+                innerScoreDirector.afterListVariableChanged(listVariableDescriptor, entity,
+                        listVariableDescriptor.getFirstUnpinnedIndex(entity),
+                        listVariableDescriptor.getListSize(entity));
             }
 
             scoreDirector.triggerVariableListeners();
@@ -110,7 +112,8 @@ public class ListRuinMove<Solution_> extends AbstractMove<Solution_> {
                 var entity = entry.getKey();
 
                 innerScoreDirector.beforeListVariableChanged(listVariableDescriptor, entity,
-                        0, listVariableDescriptor.getListSize(entity));
+                        listVariableDescriptor.getFirstUnpinnedIndex(entity),
+                        listVariableDescriptor.getListSize(entity));
                 for (var position : entry.getValue().descendingSet()) {
                     innerScoreDirector.beforeListVariableElementUnassigned(listVariableDescriptor, position.ruinedValue);
                     listVariableDescriptor.removeElement(entity,
@@ -118,7 +121,8 @@ public class ListRuinMove<Solution_> extends AbstractMove<Solution_> {
                     innerScoreDirector.afterListVariableElementUnassigned(listVariableDescriptor, position.ruinedValue);
                 }
                 innerScoreDirector.afterListVariableChanged(listVariableDescriptor, entity,
-                        0, listVariableDescriptor.getListSize(entity));
+                        listVariableDescriptor.getFirstUnpinnedIndex(entity),
+                        listVariableDescriptor.getListSize(entity));
             }
 
             scoreDirector.triggerVariableListeners();
