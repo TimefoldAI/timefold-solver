@@ -1,5 +1,8 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
+import java.util.List;
+import java.util.Objects;
+
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
@@ -14,10 +17,8 @@ import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
-import org.junit.jupiter.api.Test;
 
-import java.util.List;
-import java.util.Objects;
+import org.junit.jupiter.api.Test;
 
 class ListRuinMoveSelectorTest {
     public static class TestdataListConstraintProvider implements ConstraintProvider {
