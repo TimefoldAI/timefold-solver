@@ -1,5 +1,13 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.NavigableSet;
+import java.util.Set;
+import java.util.TreeSet;
+
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhase;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
@@ -9,12 +17,6 @@ import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-
-import java.util.Arrays;
-import java.util.IdentityHashMap;
-import java.util.Map;
-import java.util.NavigableSet;
-import java.util.TreeSet;
 
 public class ListRuinMove<Solution_> extends AbstractMove<Solution_> {
     protected record RuinedLocation(Object ruinedValue, int index) implements Comparable<RuinedLocation> {
@@ -65,37 +67,37 @@ public class ListRuinMove<Solution_> extends AbstractMove<Solution_> {
         VariableDescriptorAwareScoreDirector<Solution_> innerScoreDirector =
                 (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         if (!entityToNewPositionMap.isEmpty()) {
+            Set<Object> changedEntities = Collections.newSetFromMap(new IdentityHashMap<>());
+            changedEntities.addAll(entityToOriginalPositionMap.keySet());
+            changedEntities.addAll(entityToNewPositionMap.keySet());
+
+            for (var changedEntity : changedEntities) {
+                innerScoreDirector.beforeListVariableChanged(listVariableDescriptor, changedEntity,
+                        0, listVariableDescriptor.getListSize(changedEntity));
+            }
+
             for (var entry : entityToOriginalPositionMap.entrySet()) {
                 var entity = entry.getKey();
-                int offset = entry.getValue().size() - 1;
                 for (var position : entry.getValue().descendingSet()) {
-                    innerScoreDirector.beforeListVariableChanged(listVariableDescriptor, entity,
-                            position.index(), position.index() + 1);
-
                     listVariableDescriptor.removeElement(entity,
                             position.index());
-
-                    innerScoreDirector.afterListVariableChanged(listVariableDescriptor, entity,
-                            position.index() - offset, position.index() - offset);
-                    offset--;
                 }
             }
-            scoreDirector.triggerVariableListeners();
 
             for (var entry : entityToNewPositionMap.entrySet()) {
                 var entity = entry.getKey();
                 for (var position : entry.getValue()) {
-                    innerScoreDirector.beforeListVariableChanged(listVariableDescriptor, entity,
-                            position.index(), position.index());
-
                     listVariableDescriptor.addElement(entity,
                             position.index(),
                             position.ruinedValue);
-
-                    innerScoreDirector.afterListVariableChanged(listVariableDescriptor, entity,
-                            position.index(), position.index() + 1);
                 }
             }
+
+            for (var changedEntity : changedEntities) {
+                innerScoreDirector.afterListVariableChanged(listVariableDescriptor, changedEntity,
+                        0, listVariableDescriptor.getListSize(changedEntity));
+            }
+
             scoreDirector.triggerVariableListeners();
         } else {
             for (Object value : ruinedValues) {
