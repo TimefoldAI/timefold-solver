@@ -8,16 +8,14 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.ScoreExplanation;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
-import ai.timefold.solver.core.api.solver.RecommendedFit;
-import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
-import ai.timefold.solver.core.api.solver.SolutionManager;
-import ai.timefold.solver.core.api.solver.SolutionUpdatePolicy;
-import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.core.api.solver.SolverManager;
+import ai.timefold.solver.core.api.solver.*;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.score.DefaultScoreExplanation;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -42,7 +40,7 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
     }
 
     @Override
-    public Score_ update(Solution_ solution, SolutionUpdatePolicy solutionUpdatePolicy) {
+    public @Nullable Score_ update(@NonNull Solution_ solution, @NonNull SolutionUpdatePolicy solutionUpdatePolicy) {
         if (solutionUpdatePolicy == SolutionUpdatePolicy.NO_UPDATE) {
             throw new IllegalArgumentException("Can not call " + this.getClass().getSimpleName()
                     + ".update() with this solutionUpdatePolicy (" + solutionUpdatePolicy + ").");
@@ -76,7 +74,8 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
     }
 
     @Override
-    public ScoreExplanation<Solution_, Score_> explain(Solution_ solution, SolutionUpdatePolicy solutionUpdatePolicy) {
+    public @NonNull ScoreExplanation<Solution_, Score_> explain(@NonNull Solution_ solution,
+            @NonNull SolutionUpdatePolicy solutionUpdatePolicy) {
         var currentScore = (Score_) scoreDirectorFactory.getSolutionDescriptor().getScore(solution);
         var explanation = callScoreDirector(solution, solutionUpdatePolicy, DefaultScoreExplanation::new, true, false);
         assertFreshScore(solution, currentScore, explanation.getScore(), solutionUpdatePolicy);
@@ -102,8 +101,8 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
     }
 
     @Override
-    public ScoreAnalysis<Score_> analyze(Solution_ solution, ScoreAnalysisFetchPolicy fetchPolicy,
-            SolutionUpdatePolicy solutionUpdatePolicy) {
+    public @NonNull ScoreAnalysis<Score_> analyze(@NonNull Solution_ solution, @NonNull ScoreAnalysisFetchPolicy fetchPolicy,
+            @NonNull SolutionUpdatePolicy solutionUpdatePolicy) {
         Objects.requireNonNull(fetchPolicy, "fetchPolicy");
         var currentScore = (Score_) scoreDirectorFactory.getSolutionDescriptor().getScore(solution);
         var analysis = callScoreDirector(solution, solutionUpdatePolicy,
@@ -114,8 +113,9 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
     }
 
     @Override
-    public <In_, Out_> List<RecommendedFit<Out_, Score_>> recommendFit(Solution_ solution, In_ fittedEntityOrElement,
-            Function<In_, Out_> propositionFunction, ScoreAnalysisFetchPolicy fetchPolicy) {
+    public <In_, Out_> @NonNull List<RecommendedFit<Out_, Score_>> recommendFit(
+            @NonNull Solution_ solution, @NonNull In_ fittedEntityOrElement,
+            @NonNull Function<In_, Out_> propositionFunction, @NonNull ScoreAnalysisFetchPolicy fetchPolicy) {
         var fitter = new Fitter<Solution_, In_, Out_, Score_>(solverFactory, solution, fittedEntityOrElement,
                 propositionFunction, fetchPolicy);
         return callScoreDirector(solution, SolutionUpdatePolicy.UPDATE_ALL, fitter, true, true);

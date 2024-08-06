@@ -1,12 +1,7 @@
 package ai.timefold.solver.core.impl.solver;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
@@ -15,6 +10,8 @@ import java.util.function.BooleanSupplier;
 
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
+
+import org.jspecify.annotations.NonNull;
 
 final class BestSolutionHolder<Solution_> {
 
@@ -83,6 +80,7 @@ final class BestSolutionHolder<Solution_> {
      * @return CompletableFuture that will be completed after the best solution containing this change is passed to
      *         a user-defined Consumer.
      */
+    @NonNull
     CompletableFuture<Void> addProblemChange(Solver<Solution_> solver, ProblemChange<Solution_> problemChange) {
         problemChangesLock.lock();
         try {
