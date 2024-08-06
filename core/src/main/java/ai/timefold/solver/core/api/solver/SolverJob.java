@@ -9,6 +9,8 @@ import java.util.function.Consumer;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Represents a {@link PlanningSolution problem} that has been submitted to solve on the {@link SolverManager}.
  *
@@ -18,9 +20,10 @@ import ai.timefold.solver.core.api.solver.change.ProblemChange;
 public interface SolverJob<Solution_, ProblemId_> {
 
     /**
-     * @return never null, a value given to {@link SolverManager#solve(Object, Object, Consumer)}
+     * @return a value given to {@link SolverManager#solve(Object, Object, Consumer)}
      *         or {@link SolverManager#solveAndListen(Object, Object, Consumer)}
      */
+    @NonNull
     ProblemId_ getProblemId();
 
     /**
@@ -28,8 +31,8 @@ public interface SolverJob<Solution_, ProblemId_> {
      * <p>
      * Returns {@link SolverStatus#NOT_SOLVING} if the solver already terminated.
      *
-     * @return never null
      */
+    @NonNull
     SolverStatus getSolverStatus();
 
     // TODO Future features
@@ -40,12 +43,12 @@ public interface SolverJob<Solution_, ProblemId_> {
      * <p>
      * To learn more about problem change semantics, please refer to the {@link ProblemChange} Javadoc.
      *
-     * @param problemChange never null
      * @return completes after the best solution containing this change has been consumed.
      * @throws IllegalStateException if the underlying {@link Solver} is not in the {@link SolverStatus#SOLVING_ACTIVE}
      *         state
      */
-    CompletableFuture<Void> addProblemChange(ProblemChange<Solution_> problemChange);
+    @NonNull
+    CompletableFuture<Void> addProblemChange(@NonNull ProblemChange<Solution_> problemChange);
 
     /**
      * Terminates the solver or cancels the solver job if it hasn't (re)started yet.
@@ -73,6 +76,7 @@ public interface SolverJob<Solution_, ProblemId_> {
      * @throws InterruptedException if the current thread was interrupted while waiting
      * @throws ExecutionException if the computation threw an exception
      */
+    @NonNull
     Solution_ getFinalBestSolution() throws InterruptedException, ExecutionException;
 
     /**
@@ -83,6 +87,7 @@ public interface SolverJob<Solution_, ProblemId_> {
      *
      * @return the {@link Duration} spent solving since the last (re)start, at least 0
      */
+    @NonNull
     Duration getSolvingDuration();
 
     /**
@@ -109,8 +114,8 @@ public interface SolverJob<Solution_, ProblemId_> {
      * Return the {@link ProblemSizeStatistics} for the {@link PlanningSolution problem} submitted to the
      * {@link SolverManager}.
      *
-     * @return never null
      */
+    @NonNull
     ProblemSizeStatistics getProblemSizeStatistics();
 
     /**

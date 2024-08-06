@@ -12,6 +12,8 @@ import ai.timefold.solver.core.impl.domain.solution.mutation.MutationCounter;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
 
+import org.jspecify.annotations.NonNull;
+
 import io.micrometer.core.instrument.Metrics;
 
 public class BestSolutionMutationCountStatistic<Solution_> implements SolverStatistic<Solution_> {
@@ -55,7 +57,7 @@ public class BestSolutionMutationCountStatistic<Solution_> implements SolverStat
         }
 
         @Override
-        public void bestSolutionChanged(BestSolutionChangedEvent<Solution_> event) {
+        public void bestSolutionChanged(@NonNull BestSolutionChangedEvent<Solution_> event) {
             Solution_ newBestSolution = event.getNewBestSolution();
             if (oldBestSolution == null) {
                 mutationCount = 0;

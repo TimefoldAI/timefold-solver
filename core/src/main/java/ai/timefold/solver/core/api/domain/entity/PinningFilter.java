@@ -16,6 +16,7 @@ public interface PinningFilter<Solution_, Entity_> {
      * @param entity never null, a {@link PlanningEntity}
      * @return true if the entity it is pinned, false if the entity is movable.
      */
+    // TODO solution is probably never null?
     boolean accept(Solution_ solution, Entity_ entity);
 
 }

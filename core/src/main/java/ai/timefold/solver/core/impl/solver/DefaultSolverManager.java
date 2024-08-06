@@ -3,28 +3,18 @@ package ai.timefold.solver.core.impl.solver;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.solver.Solver;
-import ai.timefold.solver.core.api.solver.SolverConfigOverride;
-import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.core.api.solver.SolverJob;
-import ai.timefold.solver.core.api.solver.SolverJobBuilder;
-import ai.timefold.solver.core.api.solver.SolverManager;
-import ai.timefold.solver.core.api.solver.SolverStatus;
+import ai.timefold.solver.core.api.solver.*;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +64,7 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
     }
 
     @Override
-    public SolverJobBuilder<Solution_, ProblemId_> solveBuilder() {
+    public @NonNull SolverJobBuilder<Solution_, ProblemId_> solveBuilder() {
         return new DefaultSolverJobBuilder<>(this);
     }
 
@@ -123,7 +113,7 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
     }
 
     @Override
-    public SolverStatus getSolverStatus(ProblemId_ problemId) {
+    public @NonNull SolverStatus getSolverStatus(@NonNull ProblemId_ problemId) {
         DefaultSolverJob<Solution_, ProblemId_> solverJob = getSolverJob(problemId);
         if (solverJob == null) {
             return SolverStatus.NOT_SOLVING;
@@ -144,7 +134,8 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
     //    }
 
     @Override
-    public CompletableFuture<Void> addProblemChange(ProblemId_ problemId, ProblemChange<Solution_> problemChange) {
+    public @NonNull CompletableFuture<Void> addProblemChange(@NonNull ProblemId_ problemId,
+            @NonNull ProblemChange<Solution_> problemChange) {
         DefaultSolverJob<Solution_, ProblemId_> solverJob = getSolverJob(problemId);
         if (solverJob == null) {
             // We cannot distinguish between "already terminated" and "never solved" without causing a memory leak.
@@ -156,7 +147,7 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
     }
 
     @Override
-    public void terminateEarly(ProblemId_ problemId) {
+    public void terminateEarly(@NonNull ProblemId_ problemId) {
         DefaultSolverJob<Solution_, ProblemId_> solverJob = getSolverJob(problemId);
         if (solverJob == null) {
             // We cannot distinguish between "already terminated" and "never solved" without causing a memory leak.
