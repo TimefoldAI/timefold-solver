@@ -334,6 +334,17 @@
     "allDeclaredFields": true
   },
   {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.RuinMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
     "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig",
     "allDeclaredFields": true,
     "queryAllDeclaredMethods": true,
@@ -379,6 +390,17 @@
   },
   {
     "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinMoveSelectorConfig",
     "allDeclaredFields": true,
     "queryAllDeclaredMethods": true,
     "methods": [
