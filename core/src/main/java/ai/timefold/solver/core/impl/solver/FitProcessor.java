@@ -89,7 +89,7 @@ public final class FitProcessor<Solution_, In_, Out_, Score_ extends Score<Score
         }
         var phase = phaseList.get(0);
         if (phase instanceof DefaultConstructionHeuristicPhase<Solution_> constructionHeuristicPhase) {
-            return constructionHeuristicPhase.getEntityPlacer();
+            return constructionHeuristicPhase.getBaseEntityPlacer();
         } else {
             throw new IllegalStateException(
                     "Fit Recommendation API requires the first solver phase (%s) in the solver config to be a construction heuristic."

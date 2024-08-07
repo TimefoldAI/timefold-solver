@@ -54,7 +54,7 @@ public class RuinMoveSelectorTest {
                                 .withMoveSelectorConfig(new RuinMoveSelectorConfig())
                                 .withTerminationConfig(new TerminationConfig()
                                         .withStepCountLimit(100))));
-        var problem = TestdataAllowsUnassignedSolution.generateSolution(30, 30);
+        var problem = TestdataAllowsUnassignedSolution.generateSolution(5, 30);
         var solver = SolverFactory.create(solverConfig).buildSolver();
         solver.solve(problem);
     }

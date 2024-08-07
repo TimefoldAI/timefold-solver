@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
 
-import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhase;
+import ai.timefold.solver.core.impl.constructionheuristic.RuinRecreateConstructionHeuristicPhase;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
@@ -16,7 +16,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 public class RuinMoveIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
     protected final EntitySelector<Solution_> entitySelector;
     protected final GenuineVariableDescriptor<Solution_> variableDescriptor;
-    protected final DefaultConstructionHeuristicPhase<Solution_> constructionHeuristicPhase;
+    protected final RuinRecreateConstructionHeuristicPhase<Solution_> constructionHeuristicPhase;
     protected final SolverScope<Solution_> solverScope;
     protected final long minimumRuinedCount;
     protected final long maximumRuinedCount;
@@ -24,7 +24,7 @@ public class RuinMoveIterator<Solution_> extends UpcomingSelectionIterator<Move<
 
     public RuinMoveIterator(EntitySelector<Solution_> entitySelector,
             GenuineVariableDescriptor<Solution_> variableDescriptor,
-            DefaultConstructionHeuristicPhase<Solution_> constructionHeuristicPhase,
+            RuinRecreateConstructionHeuristicPhase<Solution_> constructionHeuristicPhase,
             SolverScope<Solution_> solverScope,
             long minimumRuinedCount,
             long maximumRuinedCount,
