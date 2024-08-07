@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -741,8 +742,12 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
     @Override
     @Test
     public void toMapMerged() {
-        UniConstraintCollector<Integer, ?, Map<Integer, Integer>> collector = ConstraintCollectors.toMap(Function.identity(),
-                Function.identity(), Integer::sum);
+        var counter = new AtomicInteger(0);
+        var collector = ConstraintCollectors.toMap(Function.identity(), (Integer key) -> {
+            // Test situations where the same key maps to two different values.
+            var value = counter.incrementAndGet();
+            return value % 2 == 1 ? key : key + 1;
+        }, Integer::sum);
         Object container = collector.supplier().get();
 
         // Default state.
@@ -754,10 +759,10 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         // Add second value, we have two now.
         int secondValue = 1;
         Runnable secondRetractor = accumulate(collector, container, secondValue);
-        assertResult(collector, container, asMap(2, 2, 1, 1));
+        assertResult(collector, container, asMap(2, 2, 1, 2));
         // Add third value, same as the second. We now have three values, two of which map to the same key.
         Runnable thirdRetractor = accumulate(collector, container, secondValue);
-        assertResult(collector, container, asMap(2, 2, 1, 2));
+        assertResult(collector, container, asMap(2, 2, 1, 3));
         // Retract one instance of the second value; we only have two values now.
         secondRetractor.run();
         assertResult(collector, container, asMap(2, 2, 1, 1));
@@ -803,8 +808,13 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
     @Override
     @Test
     public void toSortedMapMerged() {
-        UniConstraintCollector<Integer, ?, SortedMap<Integer, Integer>> collector = ConstraintCollectors.toSortedMap(a -> a,
-                Function.identity(), Integer::sum);
+        var counter = new AtomicInteger(0);
+        UniConstraintCollector<Integer, ?, SortedMap<Integer, Integer>> collector =
+                ConstraintCollectors.toSortedMap(Function.identity(), key -> {
+                    // Test situations where the same key maps to two different values.
+                    var value = counter.incrementAndGet();
+                    return value % 2 == 1 ? key : key + 1;
+                }, Integer::sum);
         Object container = collector.supplier().get();
 
         // Default state.
@@ -816,10 +826,10 @@ final class InnerUniConstraintCollectorsTest extends AbstractConstraintCollector
         // Add second value, we have two now.
         int secondValue = 1;
         Runnable secondRetractor = accumulate(collector, container, secondValue);
-        assertResult(collector, container, asSortedMap(2, 2, 1, 1));
+        assertResult(collector, container, asSortedMap(2, 2, 1, 2));
         // Add third value, same as the second. We now have three values, two of which map to the same key.
         Runnable thirdRetractor = accumulate(collector, container, secondValue);
-        assertResult(collector, container, asSortedMap(2, 2, 1, 2));
+        assertResult(collector, container, asSortedMap(2, 2, 1, 3));
         // Retract one instance of the second value; we only have two values now.
         secondRetractor.run();
         assertResult(collector, container, asSortedMap(2, 2, 1, 1));
