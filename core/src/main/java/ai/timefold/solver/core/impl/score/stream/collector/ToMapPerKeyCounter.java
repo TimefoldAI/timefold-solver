@@ -35,7 +35,10 @@ public final class ToMapPerKeyCounter<Value_> {
         // The impact is negligible, assuming there are not too many values for the same key.
         return counts.entrySet()
                 .stream()
-                .flatMap(e -> Stream.generate(e::getKey).limit(e.getValue()))
+                .map(e -> Stream.generate(e::getKey)
+                        .limit(e.getValue())
+                        .reduce(mergeFunction)
+                        .orElseThrow(() -> new IllegalStateException("Impossible state: Should have had at least one value.")))
                 .reduce(mergeFunction)
                 .orElseThrow(() -> new IllegalStateException("Impossible state: Should have had at least one value."));
     }

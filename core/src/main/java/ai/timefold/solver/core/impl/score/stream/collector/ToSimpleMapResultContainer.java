@@ -27,25 +27,19 @@ public final class ToSimpleMapResultContainer<Key_, Value_, Result_ extends Map<
     @Override
     public void add(Key_ key, Value_ value) {
         ToMapPerKeyCounter<Value_> counter = valueCounts.computeIfAbsent(key, k -> new ToMapPerKeyCounter<>());
-        long newCount = counter.add(value);
-        if (newCount == 1L) {
-            result.put(key, value);
-        } else {
-            result.put(key, counter.merge(mergeFunction));
-        }
+        counter.add(value);
+        result.put(key, counter.merge(mergeFunction));
     }
 
     @Override
     public void remove(Key_ key, Value_ value) {
         ToMapPerKeyCounter<Value_> counter = valueCounts.get(key);
-        long newCount = counter.remove(value);
-        if (newCount == 0L) {
+        counter.remove(value);
+        if (counter.isEmpty()) {
             result.remove(key);
+            valueCounts.remove(key);
         } else {
             result.put(key, counter.merge(mergeFunction));
-        }
-        if (counter.isEmpty()) {
-            valueCounts.remove(key);
         }
     }
 

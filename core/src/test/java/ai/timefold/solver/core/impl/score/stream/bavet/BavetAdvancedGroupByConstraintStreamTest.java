@@ -12,12 +12,14 @@ import static ai.timefold.solver.core.api.score.stream.Joiners.filtering;
 import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.asMap;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractAdvancedGroupByConstraintStreamTest;
@@ -152,7 +154,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
                         .forEachUniquePair(TestdataLavishEntity.class, equal(TestdataLavishEntity::getEntityGroup))
                         // Stream of all unique entity bi tuples that share a group
                         .groupBy((a, b) -> a.getEntityGroup(), countBi())
-                        .groupBy(toMap((g, c) -> g, (g, c) -> c, Integer::sum))
+                        .groupBy(ConstraintCollectors.toList((a, b) -> a))
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
@@ -160,7 +162,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
                 assertMatchWithScore(-1,
-                        asMap(solution.getFirstEntityGroup(), 3, solution.getEntityGroupList().get(1), 1)));
+                        Arrays.asList(solution.getFirstEntityGroup(), solution.getEntityGroupList().get(1))));
 
         // Incremental
         TestdataLavishEntity entity = solution.getFirstEntity();
@@ -169,7 +171,7 @@ final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGro
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
                 assertMatchWithScore(-1,
-                        asMap(solution.getFirstEntityGroup(), 1, solution.getEntityGroupList().get(1), 1)));
+                        Arrays.asList(solution.getEntityGroupList().get(1), solution.getFirstEntityGroup())));
     }
 
     @TestTemplate

@@ -867,28 +867,28 @@ final class InnerQuadConstraintCollectorsTest extends AbstractConstraintCollecto
     @Test
     public void toMapMerged() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, Map<Integer, Integer>> collector = ConstraintCollectors
-                .toMap((a, b, c, d) -> a + b + c + d, (a, b, c, d) -> a + b + c + d, Integer::sum);
+                .toMap((a, b, c, d) -> a + b, (a, b, c, d) -> c + d, Integer::sum);
         Object container = collector.supplier().get();
 
         // Default state.
         assertResult(collector, container, emptyMap());
         // Add first value, we have one now.
         int firstValue = 2;
-        Runnable firstRetractor = accumulate(collector, container, firstValue, 0, 0, 0);
-        assertResult(collector, container, asMap(2, 2));
+        Runnable firstRetractor = accumulate(collector, container, firstValue, 1, 3, 2);
+        assertResult(collector, container, asMap(3, 5));
         // Add second value, we have two now.
         int secondValue = 1;
-        Runnable secondRetractor = accumulate(collector, container, secondValue, 0, 0, 0);
-        assertResult(collector, container, asMap(2, 2, 1, 1));
+        Runnable secondRetractor = accumulate(collector, container, secondValue, 3, 3, 2);
+        assertResult(collector, container, asMap(3, 5, 4, 5));
         // Add third value, same as the second. We now have three values, two of which map to the same key.
-        Runnable thirdRetractor = accumulate(collector, container, secondValue, 0, 0, 0);
-        assertResult(collector, container, asMap(2, 2, 1, 2));
+        Runnable thirdRetractor = accumulate(collector, container, secondValue, 3, 3, 1);
+        assertResult(collector, container, asMap(3, 5, 4, 9));
         // Retract one instance of the second value; we only have two values now.
         secondRetractor.run();
-        assertResult(collector, container, asMap(2, 2, 1, 1));
+        assertResult(collector, container, asMap(3, 5, 4, 4));
         // Retract final instance of the second value; we only have one value now.
         thirdRetractor.run();
-        assertResult(collector, container, asMap(2, 2));
+        assertResult(collector, container, asMap(3, 5));
         // Retract last value; there are no values now.
         firstRetractor.run();
         assertResult(collector, container, emptyMap());
@@ -929,28 +929,29 @@ final class InnerQuadConstraintCollectorsTest extends AbstractConstraintCollecto
     @Test
     public void toSortedMapMerged() {
         QuadConstraintCollector<Integer, Integer, Integer, Integer, ?, SortedMap<Integer, Integer>> collector =
-                ConstraintCollectors.toSortedMap((a, b, c, d) -> a + b + c + d, (a, b, c, d) -> a + b + c + d, Integer::sum);
+                ConstraintCollectors
+                        .toSortedMap((a, b, c, d) -> a + b, (a, b, c, d) -> c + d, Integer::sum);
         Object container = collector.supplier().get();
 
         // Default state.
         assertResult(collector, container, emptySortedMap());
         // Add first value, we have one now.
         int firstValue = 2;
-        Runnable firstRetractor = accumulate(collector, container, firstValue, 0, 0, 0);
-        assertResult(collector, container, asSortedMap(2, 2));
+        Runnable firstRetractor = accumulate(collector, container, firstValue, 1, 3, 2);
+        assertResult(collector, container, asSortedMap(3, 5));
         // Add second value, we have two now.
         int secondValue = 1;
-        Runnable secondRetractor = accumulate(collector, container, secondValue, 0, 0, 0);
-        assertResult(collector, container, asSortedMap(2, 2, 1, 1));
+        Runnable secondRetractor = accumulate(collector, container, secondValue, 3, 3, 2);
+        assertResult(collector, container, asSortedMap(3, 5, 4, 5));
         // Add third value, same as the second. We now have three values, two of which map to the same key.
-        Runnable thirdRetractor = accumulate(collector, container, secondValue, 0, 0, 0);
-        assertResult(collector, container, asSortedMap(2, 2, 1, 2));
+        Runnable thirdRetractor = accumulate(collector, container, secondValue, 3, 3, 1);
+        assertResult(collector, container, asSortedMap(3, 5, 4, 9));
         // Retract one instance of the second value; we only have two values now.
         secondRetractor.run();
-        assertResult(collector, container, asSortedMap(2, 2, 1, 1));
+        assertResult(collector, container, asSortedMap(3, 5, 4, 4));
         // Retract final instance of the second value; we only have one value now.
         thirdRetractor.run();
-        assertResult(collector, container, asSortedMap(2, 2));
+        assertResult(collector, container, asSortedMap(3, 5));
         // Retract last value; there are no values now.
         firstRetractor.run();
         assertResult(collector, container, emptySortedMap());
