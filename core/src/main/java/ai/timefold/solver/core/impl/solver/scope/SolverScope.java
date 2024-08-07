@@ -200,7 +200,6 @@ public class SolverScope<Solution_> {
         return getSpeed(getMoveEvaluationCount(), timeMillisSpent);
     }
 
-
     public Solution_ getBestSolution() {
         return bestSolution.get();
     }
