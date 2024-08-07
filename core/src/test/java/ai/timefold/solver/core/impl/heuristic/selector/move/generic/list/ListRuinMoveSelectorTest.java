@@ -2,14 +2,19 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
@@ -17,7 +22,6 @@ import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListValue;
@@ -61,6 +65,27 @@ class ListRuinMoveSelectorTest {
         solver.solve(problem);
     }
 
+    public static class TestdataAllowsUnassignedValuesListMixedConstraintProvider
+            implements ConstraintProvider {
+
+        @Override
+        public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+            return new Constraint[] {
+                    constraintFactory.forEach(TestdataAllowsUnassignedValuesListEntity.class)
+                            .penalize(SimpleScore.ONE, entity -> entity.getValueList().size() * entity.getValueList().size())
+                            .asConstraint("Minimize entity list size"),
+                    constraintFactory.forEachIncludingUnassigned(TestdataAllowsUnassignedValuesListValue.class)
+                            .filter(value -> value.getEntity() == null)
+                            .penalize(SimpleScore.of(5))
+                            .asConstraint("Minimize unassigned values"),
+                    constraintFactory.forEachUniquePair(TestdataAllowsUnassignedValuesListValue.class,
+                            Joiners.equal(TestdataAllowsUnassignedValuesListValue::getIndex))
+                            .penalize(SimpleScore.ONE)
+                            .asConstraint("Maximize different indices")
+            };
+        }
+    }
+
     @Test
     public void testRuiningAllowsUnassignedValues() {
         var solverConfig = new SolverConfig()
@@ -68,23 +93,26 @@ class ListRuinMoveSelectorTest {
                 .withSolutionClass(TestdataAllowsUnassignedValuesListSolution.class)
                 .withEntityClasses(TestdataAllowsUnassignedValuesListEntity.class,
                         TestdataAllowsUnassignedValuesListValue.class)
-                .withConstraintProviderClass(TestdataAllowsUnassignedValuesListConstraintProvider.class)
+                .withConstraintProviderClass(TestdataAllowsUnassignedValuesListMixedConstraintProvider.class)
                 .withPhaseList(List.of(
                         new ConstructionHeuristicPhaseConfig(),
                         new LocalSearchPhaseConfig()
-                                .withMoveSelectorConfig(new ListRuinMoveSelectorConfig())
+                                .withMoveSelectorConfig(new UnionMoveSelectorConfig(List.of(
+                                        new ListChangeMoveSelectorConfig()
+                                                .withFixedProbabilityWeight(0.4),
+                                        new ListSwapMoveSelectorConfig()
+                                                .withFixedProbabilityWeight(0.4),
+                                        new ListRuinMoveSelectorConfig()
+                                                .withFixedProbabilityWeight(0.2))))
                                 .withTerminationConfig(new TerminationConfig()
                                         .withStepCountLimit(100))));
         var problem = new TestdataAllowsUnassignedValuesListSolution();
-        problem.setEntityList(List.of(new TestdataAllowsUnassignedValuesListEntity("A"),
-                new TestdataAllowsUnassignedValuesListEntity("B"),
-                new TestdataAllowsUnassignedValuesListEntity("C")));
-        problem.setValueList(List.of(
-                new TestdataAllowsUnassignedValuesListValue("v1"),
-                new TestdataAllowsUnassignedValuesListValue("v2"),
-                new TestdataAllowsUnassignedValuesListValue("v3"),
-                new TestdataAllowsUnassignedValuesListValue("v4"),
-                new TestdataAllowsUnassignedValuesListValue("v5")));
+        problem.setEntityList(IntStream.range(0, 3)
+                .mapToObj(id -> new TestdataAllowsUnassignedValuesListEntity("e" + id))
+                .toList());
+        problem.setValueList(IntStream.range(0, 10)
+                .mapToObj(id -> new TestdataAllowsUnassignedValuesListValue("v" + id))
+                .toList());
         var solver = SolverFactory.create(solverConfig).buildSolver();
         solver.solve(problem);
     }

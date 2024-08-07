@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhase;
+import ai.timefold.solver.core.impl.constructionheuristic.RuinRecreateConstructionHeuristicPhase;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
@@ -30,21 +30,21 @@ public class ListRuinMove<Solution_> extends AbstractMove<Solution_> {
     protected final Object[] ruinedValues;
     protected final ListVariableDescriptor<Solution_> listVariableDescriptor;
     protected final ListVariableStateSupply<Solution_> listVariableStateSupply;
-    protected final DefaultConstructionHeuristicPhase<Solution_> constructionHeuristicPhase;
+    protected final RuinRecreateConstructionHeuristicPhase<Solution_> constructionHeuristicPhase;
     protected final SolverScope<Solution_> solverScope;
     protected final Map<Object, NavigableSet<RuinedLocation>> entityToOriginalPositionMap;
     protected final Map<Object, NavigableSet<RuinedLocation>> entityToNewPositionMap;
 
     public ListRuinMove(Object[] ruinedValues, ListVariableDescriptor<Solution_> listVariableDescriptor,
             ListVariableStateSupply<Solution_> listVariableStateSupply,
-            DefaultConstructionHeuristicPhase<Solution_> constructionHeuristicPhase, SolverScope<Solution_> solverScope) {
+            RuinRecreateConstructionHeuristicPhase<Solution_> constructionHeuristicPhase, SolverScope<Solution_> solverScope) {
         this(ruinedValues, listVariableDescriptor, listVariableStateSupply, constructionHeuristicPhase, solverScope,
                 new IdentityHashMap<>(), new IdentityHashMap<>());
     }
 
     private ListRuinMove(Object[] ruinedValues, ListVariableDescriptor<Solution_> listVariableDescriptor,
             ListVariableStateSupply<Solution_> listVariableStateSupply,
-            DefaultConstructionHeuristicPhase<Solution_> constructionHeuristicPhase, SolverScope<Solution_> solverScope,
+            RuinRecreateConstructionHeuristicPhase<Solution_> constructionHeuristicPhase, SolverScope<Solution_> solverScope,
             Map<Object, NavigableSet<RuinedLocation>> entityToOriginalPositionMap,
             Map<Object, NavigableSet<RuinedLocation>> entityToNewPositionMap) {
         this.ruinedValues = ruinedValues;
@@ -126,9 +126,7 @@ public class ListRuinMove<Solution_> extends AbstractMove<Solution_> {
             }
 
             scoreDirector.triggerVariableListeners();
-
-            constructionHeuristicPhase.solvingStarted(solverScope);
-            constructionHeuristicPhase.solve(solverScope);
+            constructionHeuristicPhase.recreateValues(solverScope, ruinedValues);
             scoreDirector.triggerVariableListeners();
 
             for (Object ruinedValue : ruinedValues) {

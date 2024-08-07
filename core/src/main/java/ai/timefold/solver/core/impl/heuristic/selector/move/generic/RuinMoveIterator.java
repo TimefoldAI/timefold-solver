@@ -9,6 +9,7 @@ import java.util.Set;
 import ai.timefold.solver.core.impl.constructionheuristic.RuinRecreateConstructionHeuristicPhase;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -39,17 +40,28 @@ public class RuinMoveIterator<Solution_> extends UpcomingSelectionIterator<Move<
     }
 
     @Override
-    protected RuinMove<Solution_> createUpcomingSelection() {
+    protected Move<Solution_> createUpcomingSelection() {
         int ruinedCount = workingRandom.nextInt((int) minimumRuinedCount, (int) maximumRuinedCount + 1);
         Object[] selectedEntities = new Object[ruinedCount];
         Iterator<Object> entitySelectorIterator = entitySelector.iterator();
         Set<Object> selectedEntitiesSet = Collections.newSetFromMap(new IdentityHashMap<>());
         for (int i = 0; i < ruinedCount; i++) {
+            int remainingAttempts = ruinedCount;
             while (true) {
+                if (!entitySelectorIterator.hasNext()) {
+                    // Bail out; cannot select enough unique values
+                    return NoChangeMove.getInstance();
+                }
                 var selectedEntity = entitySelectorIterator.next();
                 if (selectedEntitiesSet.add(selectedEntity)) {
                     selectedEntities[i] = selectedEntity;
                     break;
+                } else {
+                    remainingAttempts--;
+                }
+                if (remainingAttempts == 0) {
+                    // Bail out; cannot select enough unique values
+                    return NoChangeMove.getInstance();
                 }
             }
         }
