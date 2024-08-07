@@ -12,26 +12,51 @@ import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
+import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEasyScoreCalculator;
+import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEntity;
+import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedSolution;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
+@Execution(ExecutionMode.CONCURRENT)
 public class RuinMoveSelectorTest {
+
     @Test
     public void testRuining() {
         var solverConfig = new SolverConfig()
-                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
                 .withConstraintProviderClass(TestdataConstraintProvider.class)
                 .withPhaseList(List.of(
                         new ConstructionHeuristicPhaseConfig(),
                         new LocalSearchPhaseConfig()
-                                .withMoveSelectorConfig(
-                                        new RuinMoveSelectorConfig())
+                                .withMoveSelectorConfig(new RuinMoveSelectorConfig())
                                 .withTerminationConfig(new TerminationConfig()
-                                        .withStepCountLimit(20))));
+                                        .withStepCountLimit(100))));
         var problem = TestdataSolution.generateSolution(30, 30);
         var solver = SolverFactory.create(solverConfig).buildSolver();
         solver.solve(problem);
     }
+
+    @Test
+    public void testRuiningAllowsUnassigned() {
+        var solverConfig = new SolverConfig()
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
+                .withSolutionClass(TestdataAllowsUnassignedSolution.class)
+                .withEntityClasses(TestdataAllowsUnassignedEntity.class)
+                .withEasyScoreCalculatorClass(TestdataAllowsUnassignedEasyScoreCalculator.class)
+                .withPhaseList(List.of(
+                        new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig()
+                                .withMoveSelectorConfig(new RuinMoveSelectorConfig())
+                                .withTerminationConfig(new TerminationConfig()
+                                        .withStepCountLimit(100))));
+        var problem = TestdataAllowsUnassignedSolution.generateSolution(30, 30);
+        var solver = SolverFactory.create(solverConfig).buildSolver();
+        solver.solve(problem);
+    }
+
 }
