@@ -311,8 +311,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void triggerVariableListeners() {
-        // If we change forceUpdate to false, it won't analyze the entire range
-        variableListenerSupport.triggerVariableListenersInNotificationQueues(true);
+        variableListenerSupport.triggerVariableListenersInNotificationQueues();
     }
 
     @Override

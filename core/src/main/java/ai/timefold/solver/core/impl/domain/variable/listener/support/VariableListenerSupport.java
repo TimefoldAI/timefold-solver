@@ -235,11 +235,13 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         });
     }
 
-    public void triggerVariableListenersInNotificationQueues(boolean forceUpdate) {
+    public void triggerVariableListenersInNotificationQueues() {
         for (var notifiable : notifiableRegistry.getAll()) {
             notifiable.triggerAllNotifications();
         }
-        triggerCascadingUpdateShadowVariableUpdate(forceUpdate);
+        if (listVariableDescriptor != null && !cascadingUpdateShadowVarDescriptorList.isEmpty()) {
+            triggerCascadingUpdateShadowVariableUpdate();
+        }
         notificationQueuesAreEmpty = true;
         listVariableEventMap.clear();
     }
@@ -247,7 +249,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     /**
      * Triggers all cascading update shadow variable user-logic.
      */
-    private void triggerCascadingUpdateShadowVariableUpdate(boolean forceUpdate) {
+    private void triggerCascadingUpdateShadowVariableUpdate() {
         if (listVariableEventMap.isEmpty() || cascadingUpdateShadowVarDescriptorList.isEmpty()) {
             return;
         }
@@ -259,7 +261,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                         fromIndex > -1 ? Math.min(listVariableEvent.getValue().nextClearBit(fromIndex), values.size()) : -1;
                 int nextIndex;
                 while (fromIndex > -1 && fromIndex < values.size()) {
-                    nextIndex = evaluateRange(values, fromIndex, toIndex, cascadingUpdateShadowVariableDescriptor, forceUpdate);
+                    nextIndex = evaluateRange(values, fromIndex, toIndex, cascadingUpdateShadowVariableDescriptor);
                     if (nextIndex < values.size()) {
                         fromIndex = listVariableEvent.getValue().nextSetBit(nextIndex);
                         toIndex = fromIndex > -1 ? Math.min(listVariableEvent.getValue().nextClearBit(fromIndex), values.size())
@@ -273,32 +275,33 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     }
 
     private int evaluateRange(List<Object> values, int fromIndex, int toIndex,
-            CascadingUpdateShadowVariableDescriptor<Solution_> cascadingUpdateShadowVariableDescriptor, boolean forceUpdate) {
+            CascadingUpdateShadowVariableDescriptor<Solution_> cascadingUpdateShadowVariableDescriptor) {
         if (values.isEmpty()) {
             return toIndex;
         }
-        int beforeFirstIndex = fromIndex - 1;
-        int lastIndex = toIndex - 1;
-        // If the target method relies on the next element, we need to recompute the first element before fromIndex
-        if (beforeFirstIndex >= 0) {
-            cascadingUpdateShadowVariableDescriptor.testAndUpdate(scoreDirector, values.get(beforeFirstIndex));
+        // The first and last elements of the range must be analyzed
+        // because moves that use the same entity generate a list change
+        // that includes all elements between the original position and the destination position.
+        // For example, swapping two elements in the same entity
+        // or changing an element to another position in the same entity.
+        // Analyze the elements in the range, starting from the first element
+        var lastUpdated = evaluateFromIndex(values, fromIndex, toIndex, cascadingUpdateShadowVariableDescriptor);
+        // Analyze the last element of the range if needed
+        if (lastUpdated < toIndex - 1) {
+            lastUpdated = evaluateFromIndex(values, toIndex - 1, values.size(), cascadingUpdateShadowVariableDescriptor);
         }
-        // Analyze the elements in the range
-        evaluateFromIndex(values, fromIndex, lastIndex, forceUpdate, cascadingUpdateShadowVariableDescriptor);
-        // If the target method relies on the next element, we need to recompute the last element in the range
-        // Update the later elements
-        var lastUpdated = evaluateFromIndex(values, lastIndex, values.size(), false, cascadingUpdateShadowVariableDescriptor);
-        // Analyze the later elements
-        lastUpdated = evaluateFromIndex(values, Math.max(lastUpdated, toIndex), values.size(), false,
-                cascadingUpdateShadowVariableDescriptor);
-        return lastUpdated;
+        // Analyze next elements if needed
+        if (lastUpdated <= toIndex) {
+            lastUpdated = evaluateFromIndex(values, toIndex, values.size(), cascadingUpdateShadowVariableDescriptor);
+        }
+        return Math.max(lastUpdated, toIndex);
     }
 
-    private int evaluateFromIndex(List<Object> values, int fromIndex, int toIndex, boolean forceUpdate,
+    private int evaluateFromIndex(List<Object> values, int fromIndex, int toIndex,
             CascadingUpdateShadowVariableDescriptor<Solution_> cascadingUpdateShadowVariableDescriptor) {
         var lastUpdated = fromIndex;
         while (lastUpdated < toIndex) {
-            if (!cascadingUpdateShadowVariableDescriptor.update(scoreDirector, values.get(lastUpdated)) && !forceUpdate) {
+            if (!cascadingUpdateShadowVariableDescriptor.testAndUpdate(scoreDirector, values.get(lastUpdated))) {
                 break;
             }
             lastUpdated++;
@@ -333,10 +336,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
      */
     public void forceTriggerAllVariableListeners(Solution_ workingSolution) {
         scoreDirector.getSolutionDescriptor().visitAllEntities(workingSolution, this::simulateGenuineVariableChange);
-        if (listVariableDescriptor == null || cascadingUpdateShadowVarDescriptorList.isEmpty()) {
-            return;
-        }
-        triggerVariableListenersInNotificationQueues(true);
+        triggerVariableListenersInNotificationQueues();
     }
 
     private void simulateGenuineVariableChange(Object entity) {
