@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 import java.util.Iterator;
 import java.util.function.ToLongFunction;
 
-import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhase;
+import ai.timefold.solver.core.impl.constructionheuristic.RuinRecreateConstructionHeuristicPhase;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
@@ -17,7 +17,7 @@ import org.apache.commons.math3.util.CombinatoricsUtils;
 public class ListRuinMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
     protected final EntityIndependentValueSelector<Solution_> valueSelector;
     protected final ListVariableDescriptor<Solution_> listVariableDescriptor;
-    protected final DefaultConstructionHeuristicPhase<Solution_> constructionHeuristicPhase;
+    protected final RuinRecreateConstructionHeuristicPhase<Solution_> constructionHeuristicPhase;
 
     protected final ToLongFunction<Long> minimumSelectedCountSupplier;
     protected final ToLongFunction<Long> maximumSelectedCountSupplier;
@@ -27,7 +27,7 @@ public class ListRuinMoveSelector<Solution_> extends GenericMoveSelector<Solutio
 
     public ListRuinMoveSelector(EntityIndependentValueSelector<Solution_> valueSelector,
             ListVariableDescriptor<Solution_> listVariableDescriptor,
-            DefaultConstructionHeuristicPhase<Solution_> constructionHeuristicPhase,
+            RuinRecreateConstructionHeuristicPhase<Solution_> constructionHeuristicPhase,
             ToLongFunction<Long> minimumSelectedCountSupplier,
             ToLongFunction<Long> maximumSelectedCountSupplier) {
         super();
