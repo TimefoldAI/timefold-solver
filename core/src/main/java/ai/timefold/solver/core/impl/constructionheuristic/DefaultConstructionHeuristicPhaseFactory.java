@@ -94,10 +94,12 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
                 .build();
     }
 
-    public DefaultConstructionHeuristicPhase<Solution_> buildRuinPhase(HeuristicConfigPolicy<Solution_> solverConfigPolicy) {
+    public RuinRecreateConstructionHeuristicPhase<Solution_>
+            buildRuinPhase(HeuristicConfigPolicy<Solution_> solverConfigPolicy) {
         var solverTermination =
                 TerminationFactory.<Solution_> create(new TerminationConfig()).buildTermination(solverConfigPolicy);
-        return getBaseBuilder(0, false, solverConfigPolicy, solverTermination, true)
+        return (RuinRecreateConstructionHeuristicPhase<Solution_>) getBaseBuilder(0, false, solverConfigPolicy,
+                solverTermination, true)
                 .build();
     }
 

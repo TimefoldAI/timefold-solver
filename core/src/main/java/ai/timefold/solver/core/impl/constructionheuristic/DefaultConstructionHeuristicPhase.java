@@ -17,12 +17,14 @@ import ai.timefold.solver.core.impl.solver.termination.Termination;
 public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<Solution_>
         implements ConstructionHeuristicPhase<Solution_> {
 
-    protected final EntityPlacer<Solution_> entityPlacer;
+    protected final EntityPlacer<Solution_> baseEntityPlacer;
     protected final ConstructionHeuristicDecider<Solution_> decider;
+    protected EntityPlacer<Solution_> entityPlacer;
 
     protected DefaultConstructionHeuristicPhase(Builder<Solution_> builder) {
         super(builder);
-        entityPlacer = builder.entityPlacer;
+        baseEntityPlacer = builder.entityPlacer;
+        entityPlacer = baseEntityPlacer;
         decider = builder.decider;
     }
 
@@ -30,8 +32,8 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
         return false;
     }
 
-    public EntityPlacer<Solution_> getEntityPlacer() {
-        return entityPlacer;
+    public EntityPlacer<Solution_> getBaseEntityPlacer() {
+        return baseEntityPlacer;
     }
 
     @Override
@@ -42,7 +44,6 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
     // ************************************************************************
     // Worker methods
     // ************************************************************************
-
     @Override
     public void solve(SolverScope<Solution_> solverScope) {
         var phaseScope = new ConstructionHeuristicPhaseScope<>(solverScope, phaseIndex);
