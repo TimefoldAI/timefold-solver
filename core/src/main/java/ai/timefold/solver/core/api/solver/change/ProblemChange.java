@@ -5,6 +5,8 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * A ProblemChange represents a change in one or more {@link PlanningEntity planning entities} or problem facts
  * of a {@link PlanningSolution}.
@@ -69,9 +71,9 @@ public interface ProblemChange<Solution_> {
      * Do the change on the {@link PlanningSolution}. Every modification to the {@link PlanningSolution} must
      * be done via the {@link ProblemChangeDirector}, otherwise the {@link Score} calculation will be corrupted.
      *
-     * @param workingSolution never null; the {@link PlanningSolution working solution} which contains the problem facts
+     * @param workingSolution the {@link PlanningSolution working solution} which contains the problem facts
      *        (and {@link PlanningEntity planning entities}) to change
-     * @param problemChangeDirector never null; {@link ProblemChangeDirector} to perform the change through
+     * @param problemChangeDirector {@link ProblemChangeDirector} to perform the change through
      */
-    void doChange(Solution_ workingSolution, ProblemChangeDirector problemChangeDirector);
+    void doChange(@NonNull Solution_ workingSolution, @NonNull ProblemChangeDirector problemChangeDirector);
 }

@@ -9,6 +9,9 @@ import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.change.ProblemChangeDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 public final class DefaultProblemChangeDirector<Solution_> implements ProblemChangeDirector {
 
     private final InnerScoreDirector<Solution_, ?> scoreDirector;
@@ -18,7 +21,7 @@ public final class DefaultProblemChangeDirector<Solution_> implements ProblemCha
     }
 
     @Override
-    public <Entity> void addEntity(Entity entity, Consumer<Entity> entityConsumer) {
+    public <Entity> void addEntity(@NonNull Entity entity, @NonNull Consumer<Entity> entityConsumer) {
         Objects.requireNonNull(entity, () -> "Entity (" + entity + ") cannot be null.");
         Objects.requireNonNull(entityConsumer, () -> "Entity consumer (" + entityConsumer + ") cannot be null.");
         scoreDirector.beforeEntityAdded(entity);
@@ -27,7 +30,7 @@ public final class DefaultProblemChangeDirector<Solution_> implements ProblemCha
     }
 
     @Override
-    public <Entity> void removeEntity(Entity entity, Consumer<Entity> entityConsumer) {
+    public <Entity> void removeEntity(@NonNull Entity entity, @NonNull Consumer<Entity> entityConsumer) {
         Objects.requireNonNull(entity, () -> "Entity (" + entity + ") cannot be null.");
         Objects.requireNonNull(entityConsumer, () -> "Entity consumer (" + entityConsumer + ") cannot be null.");
         Entity workingEntity = lookUpWorkingObjectOrFail(entity);
@@ -37,7 +40,8 @@ public final class DefaultProblemChangeDirector<Solution_> implements ProblemCha
     }
 
     @Override
-    public <Entity> void changeVariable(Entity entity, String variableName, Consumer<Entity> entityConsumer) {
+    public <Entity> void changeVariable(@NonNull Entity entity, @NonNull String variableName,
+            @NonNull Consumer<Entity> entityConsumer) {
         Objects.requireNonNull(entity, () -> "Entity (" + entity + ") cannot be null.");
         Objects.requireNonNull(variableName, () -> "Planning variable name (" + variableName + ") cannot be null.");
         Objects.requireNonNull(entityConsumer, () -> "Entity consumer (" + entityConsumer + ") cannot be null.");
@@ -48,7 +52,8 @@ public final class DefaultProblemChangeDirector<Solution_> implements ProblemCha
     }
 
     @Override
-    public <ProblemFact> void addProblemFact(ProblemFact problemFact, Consumer<ProblemFact> problemFactConsumer) {
+    public <ProblemFact> void addProblemFact(@NonNull ProblemFact problemFact,
+            @NonNull Consumer<ProblemFact> problemFactConsumer) {
         Objects.requireNonNull(problemFact, () -> "Problem fact (" + problemFact + ") cannot be null.");
         Objects.requireNonNull(problemFactConsumer, () -> "Problem fact consumer (" + problemFactConsumer
                 + ") cannot be null.");
@@ -58,7 +63,8 @@ public final class DefaultProblemChangeDirector<Solution_> implements ProblemCha
     }
 
     @Override
-    public <ProblemFact> void removeProblemFact(ProblemFact problemFact, Consumer<ProblemFact> problemFactConsumer) {
+    public <ProblemFact> void removeProblemFact(@NonNull ProblemFact problemFact,
+            @NonNull Consumer<ProblemFact> problemFactConsumer) {
         Objects.requireNonNull(problemFact, () -> "Problem fact (" + problemFact + ") cannot be null.");
         Objects.requireNonNull(problemFactConsumer, () -> "Problem fact consumer (" + problemFactConsumer
                 + ") cannot be null.");
@@ -69,8 +75,8 @@ public final class DefaultProblemChangeDirector<Solution_> implements ProblemCha
     }
 
     @Override
-    public <EntityOrProblemFact> void changeProblemProperty(EntityOrProblemFact problemFactOrEntity,
-            Consumer<EntityOrProblemFact> problemFactOrEntityConsumer) {
+    public <EntityOrProblemFact> void changeProblemProperty(@NonNull EntityOrProblemFact problemFactOrEntity,
+            @NonNull Consumer<EntityOrProblemFact> problemFactOrEntityConsumer) {
         Objects.requireNonNull(problemFactOrEntity,
                 () -> "Problem fact or entity (" + problemFactOrEntity + ") cannot be null.");
         Objects.requireNonNull(problemFactOrEntityConsumer, () -> "Problem fact or entity consumer ("
@@ -82,7 +88,8 @@ public final class DefaultProblemChangeDirector<Solution_> implements ProblemCha
     }
 
     @Override
-    public <EntityOrProblemFact> EntityOrProblemFact lookUpWorkingObjectOrFail(EntityOrProblemFact externalObject) {
+    public <EntityOrProblemFact> @Nullable EntityOrProblemFact
+            lookUpWorkingObjectOrFail(@Nullable EntityOrProblemFact externalObject) {
         return scoreDirector.lookUpWorkingObject(externalObject);
     }
 

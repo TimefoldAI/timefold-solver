@@ -7,6 +7,9 @@ import ai.timefold.solver.core.api.score.analysis.ConstraintAnalysis;
 import ai.timefold.solver.core.api.score.analysis.MatchAnalysis;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * Represents the result of the Recommended Fit API,
  * see {@link SolutionManager#recommendFit(Object, Object, Function)}.
@@ -31,6 +34,7 @@ public interface RecommendedFit<Proposition_, Score_ extends Score<Score_>> {
      *
      * @return null if proposition function required null
      */
+    @Nullable
     Proposition_ proposition();
 
     /**
@@ -43,9 +47,10 @@ public interface RecommendedFit<Proposition_, Score_ extends Score<Score_>> {
      * inside its {@link ConstraintAnalysis constraint analysis};
      * otherwise it will not.
      *
-     * @return never null; {@code fittedScoreAnalysis - originalScoreAnalysis} as defined by
+     * @return {@code fittedScoreAnalysis - originalScoreAnalysis} as defined by
      *         {@link ScoreAnalysis#diff(ScoreAnalysis)}
      */
+    @NonNull
     ScoreAnalysis<Score_> scoreAnalysisDiff();
 
 }

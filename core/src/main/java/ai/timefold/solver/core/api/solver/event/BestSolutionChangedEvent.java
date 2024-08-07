@@ -7,6 +7,8 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Delivered when the {@link PlanningSolution best solution} changes during solving.
  * Delivered in the solver thread (which is the thread that calls {@link Solver#solve}).
@@ -21,12 +23,10 @@ public class BestSolutionChangedEvent<Solution_> extends EventObject {
     private final Score newBestScore;
 
     /**
-     * @param solver never null
      * @param timeMillisSpent {@code >= 0L}
-     * @param newBestSolution never null
      */
-    public BestSolutionChangedEvent(Solver<Solution_> solver, long timeMillisSpent,
-            Solution_ newBestSolution, Score newBestScore) {
+    public BestSolutionChangedEvent(@NonNull Solver<Solution_> solver, long timeMillisSpent,
+            @NonNull Solution_ newBestSolution, @NonNull Score newBestScore) {
         super(solver);
         this.solver = solver;
         this.timeMillisSpent = timeMillisSpent;
@@ -51,9 +51,8 @@ public class BestSolutionChangedEvent<Solution_> extends EventObject {
      * <li>this {@link PlanningSolution} might be infeasible: check {@link Score#isFeasible()}.</li>
      * </ul>
      *
-     * @return never null
      */
-    public Solution_ getNewBestSolution() {
+    public @NonNull Solution_ getNewBestSolution() {
         return newBestSolution;
     }
 
@@ -62,10 +61,8 @@ public class BestSolutionChangedEvent<Solution_> extends EventObject {
      * <p>
      * This is useful for generic code, which doesn't know the type of the {@link PlanningSolution}
      * to retrieve the {@link Score} from the {@link #getNewBestSolution()} easily.
-     *
-     * @return never null, because at this point it's always already calculated
      */
-    public Score getNewBestScore() {
+    public @NonNull Score getNewBestScore() {
         return newBestScore;
     }
 
