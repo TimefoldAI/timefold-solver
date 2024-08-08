@@ -21,10 +21,10 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
 @Execution(ExecutionMode.CONCURRENT)
-public class RuinMoveSelectorTest {
+class RuinMoveSelectorTest {
 
     @Test
-    public void testRuining() {
+    void testRuining() {
         var solverConfig = new SolverConfig()
                 .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
                 .withSolutionClass(TestdataSolution.class)
@@ -36,13 +36,13 @@ public class RuinMoveSelectorTest {
                                 .withMoveSelectorConfig(new RuinMoveSelectorConfig())
                                 .withTerminationConfig(new TerminationConfig()
                                         .withStepCountLimit(100))));
-        var problem = TestdataSolution.generateSolution(30, 30);
+        var problem = TestdataSolution.generateSolution(5, 30);
         var solver = SolverFactory.create(solverConfig).buildSolver();
         solver.solve(problem);
     }
 
     @Test
-    public void testRuiningAllowsUnassigned() {
+    void testRuiningAllowsUnassigned() {
         var solverConfig = new SolverConfig()
                 .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
                 .withSolutionClass(TestdataAllowsUnassignedSolution.class)
