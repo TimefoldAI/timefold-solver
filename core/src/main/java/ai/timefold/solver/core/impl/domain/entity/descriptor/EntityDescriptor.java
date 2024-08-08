@@ -216,6 +216,7 @@ public class EntityDescriptor<Solution_> {
                     + ") should have at least 1 getter method or 1 field with a "
                     + PlanningVariable.class.getSimpleName() + " annotation or a shadow variable annotation.");
         }
+        processPiggyBackForCascadingUpdateShadowVariables();
         processVariableAnnotations(descriptorPolicy);
     }
 
@@ -300,6 +301,38 @@ public class EntityDescriptor<Solution_> {
             registerVariableAccessor(variableDescriptorCounter.intValue(), variableAnnotationClass, memberAccessor);
             variableDescriptorCounter.increment();
         }
+    }
+
+    private void processPiggyBackForCascadingUpdateShadowVariables() {
+        if (!declaredCascadingUpdateShadowVariableDecriptorMap.isEmpty()) {
+            var piggybackShadowVariableDescriptorList = declaredShadowVariableDescriptorMap
+                    .values()
+                    .stream()
+                    .filter(v -> PiggybackShadowVariableDescriptor.class.isAssignableFrom(v.getClass()))
+                    .map(v -> (PiggybackShadowVariableDescriptor<Solution_>) v)
+                    .toList();
+            for (var descriptor : piggybackShadowVariableDescriptorList) {
+                var cascadingUpdateShadowVariableDescriptor =
+                        findNotifiableCascadingUpdateDescriptor(descriptor.getShadowVariableName());
+                if (cascadingUpdateShadowVariableDescriptor != null) {
+                    cascadingUpdateShadowVariableDescriptor.addTargetVariable(descriptor.getEntityDescriptor(),
+                            descriptor.getMemberAccessor());
+                }
+            }
+        }
+    }
+
+    private CascadingUpdateShadowVariableDescriptor<Solution_>
+            findNotifiableCascadingUpdateDescriptor(String variableName) {
+        var descriptor = declaredShadowVariableDescriptorMap.get(variableName);
+        var isCascadingUpdateDescriptor =
+                descriptor != null && CascadingUpdateShadowVariableDescriptor.class.isAssignableFrom(descriptor.getClass());
+        if (isCascadingUpdateDescriptor && !descriptor.hasVariableListener()) {
+            descriptor =
+                    declaredCascadingUpdateShadowVariableDecriptorMap
+                            .get(((CascadingUpdateShadowVariableDescriptor<Solution_>) descriptor).getTargetMethodName());
+        }
+        return isCascadingUpdateDescriptor ? (CascadingUpdateShadowVariableDescriptor<Solution_>) descriptor : null;
     }
 
     private void registerVariableAccessor(int nextVariableDescriptorOrdinal,
