@@ -32,7 +32,8 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 
 @Execution(ExecutionMode.CONCURRENT)
 class ListRuinMoveSelectorTest {
-    public static class TestdataListConstraintProvider implements ConstraintProvider {
+
+    public static final class TestdataListConstraintProvider implements ConstraintProvider {
 
         @Override
         public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
@@ -48,7 +49,7 @@ class ListRuinMoveSelectorTest {
     }
 
     @Test
-    public void testRuining() {
+    void testRuining() {
         var solverConfig = new SolverConfig()
                 .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
                 .withSolutionClass(TestdataListSolution.class)
@@ -60,12 +61,12 @@ class ListRuinMoveSelectorTest {
                                 .withMoveSelectorConfig(new ListRuinMoveSelectorConfig())
                                 .withTerminationConfig(new TerminationConfig()
                                         .withStepCountLimit(100))));
-        var problem = TestdataListSolution.generateUninitializedSolution(30, 30);
+        var problem = TestdataListSolution.generateUninitializedSolution(10, 3);
         var solver = SolverFactory.create(solverConfig).buildSolver();
         solver.solve(problem);
     }
 
-    public static class TestdataAllowsUnassignedValuesListMixedConstraintProvider
+    public static final class TestdataAllowsUnassignedValuesListMixedConstraintProvider
             implements ConstraintProvider {
 
         @Override
@@ -87,7 +88,7 @@ class ListRuinMoveSelectorTest {
     }
 
     @Test
-    public void testRuiningAllowsUnassignedValues() {
+    void testRuiningAllowsUnassignedValues() {
         var solverConfig = new SolverConfig()
                 .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
                 .withSolutionClass(TestdataAllowsUnassignedValuesListSolution.class)

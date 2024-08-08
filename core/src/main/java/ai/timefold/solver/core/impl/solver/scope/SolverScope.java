@@ -261,15 +261,15 @@ public class SolverScope<Solution_> {
     }
 
     public long getTimeMillisSpent() {
-        var startingSystemTimeMillis = getStartingSystemTimeMillis();
-        if (startingSystemTimeMillis == null) { // The solver hasn't started yet.
+        var startingMillis = getStartingSystemTimeMillis();
+        if (startingMillis == null) { // The solver hasn't started yet.
             return 0L;
         }
-        var endingSystemTimeMillis = getEndingSystemTimeMillis();
-        if (endingSystemTimeMillis == null) { // The solver hasn't ended yet.
-            endingSystemTimeMillis = System.currentTimeMillis();
+        var endingMillis = getEndingSystemTimeMillis();
+        if (endingMillis == null) { // The solver hasn't ended yet.
+            endingMillis = System.currentTimeMillis();
         }
-        return endingSystemTimeMillis - startingSystemTimeMillis;
+        return endingMillis - startingMillis;
     }
 
     public ProblemSizeStatistics getProblemSizeStatistics() {
