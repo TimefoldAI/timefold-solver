@@ -92,7 +92,7 @@ final class ListRuinMoveSelector<Solution_> extends GenericMoveSelector<Solution
     @Override
     public Iterator<Move<Solution_>> iterator() {
         var assignedValueSelector = filterNotAssignedValues(valueSelector, listVariableStateSupply);
-        return new ListRuinMoveIterator<>(assignedValueSelector, listVariableDescriptor, constructionHeuristicPhaseBuilder,
+        return new ListRuinMoveIterator<>(assignedValueSelector, constructionHeuristicPhaseBuilder,
                 solverScope, listVariableStateSupply,
                 minimumSelectedCountSupplier.applyAsLong(assignedValueSelector.getSize()),
                 maximumSelectedCountSupplier.applyAsLong(assignedValueSelector.getSize()),
