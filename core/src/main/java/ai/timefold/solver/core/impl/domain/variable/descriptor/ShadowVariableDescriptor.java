@@ -64,10 +64,6 @@ public abstract class ShadowVariableDescriptor<Solution_> extends VariableDescri
         return true;
     }
 
-    public boolean canBeUsedAsSource() {
-        return true;
-    }
-
     /**
      * @param supplyManager never null
      * @return never null
