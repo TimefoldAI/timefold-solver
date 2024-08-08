@@ -5,6 +5,7 @@ import java.util.function.ToLongFunction;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
+import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.RuinMoveSelectorConfig;
 import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhaseFactory;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -24,11 +25,10 @@ public final class RuinMoveSelectorFactory<Solution_> extends AbstractMoveSelect
     @Override
     protected MoveSelector<Solution_> buildBaseMoveSelector(HeuristicConfigPolicy<Solution_> configPolicy,
             SelectionCacheType minimumCacheType, boolean randomSelection) {
-        var entitySelectorConfig = ruinMoveSelectorConfig.determineEntitySelectorConfig();
         ToLongFunction<Long> minimumSelectedSupplier = ruinMoveSelectorConfig::determineMinimumRuinedCount;
         ToLongFunction<Long> maximumSelectedSupplier = ruinMoveSelectorConfig::determineMaximumRuinedCount;
 
-        var entitySelector = EntitySelectorFactory.<Solution_> create(entitySelectorConfig)
+        var entitySelector = EntitySelectorFactory.<Solution_> create(new EntitySelectorConfig())
                 .buildEntitySelector(configPolicy, minimumCacheType,
                         SelectionOrder.fromRandomSelectionBoolean(true));
         var genuineVariableDescriptorList = entitySelector.getEntityDescriptor().getGenuineVariableDescriptorList();

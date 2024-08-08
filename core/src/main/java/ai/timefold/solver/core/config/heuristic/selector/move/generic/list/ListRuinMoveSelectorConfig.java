@@ -1,21 +1,17 @@
 package ai.timefold.solver.core.config.heuristic.selector.move.generic.list;
 
-import java.util.Objects;
 import java.util.function.Consumer;
 
-import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
 @XmlType(propOrder = {
         "minimumRuinedCount",
         "maximumRuinedCount",
         "minimumRuinedPercentage",
-        "maximumRuinedPercentage",
-        "valueSelectorConfig"
+        "maximumRuinedPercentage"
 })
 public class ListRuinMoveSelectorConfig extends MoveSelectorConfig<ListRuinMoveSelectorConfig> {
     public static final String XML_ELEMENT_NAME = "listRuinMoveSelector";
@@ -25,9 +21,6 @@ public class ListRuinMoveSelectorConfig extends MoveSelectorConfig<ListRuinMoveS
 
     protected Double minimumRuinedPercentage = null;
     protected Double maximumRuinedPercentage = null;
-
-    @XmlElement(name = "valueSelector")
-    protected ValueSelectorConfig valueSelectorConfig = null;
 
     public ListRuinMoveSelectorConfig() {
 
@@ -89,20 +82,6 @@ public class ListRuinMoveSelectorConfig extends MoveSelectorConfig<ListRuinMoveS
         return this;
     }
 
-    public ValueSelectorConfig getValueSelectorConfig() {
-        return valueSelectorConfig;
-    }
-
-    public void setValueSelectorConfig(
-            ValueSelectorConfig valueSelectorConfig) {
-        this.valueSelectorConfig = valueSelectorConfig;
-    }
-
-    public ListRuinMoveSelectorConfig withValueSelectorConfig(ValueSelectorConfig entitySelectorConfig) {
-        this.valueSelectorConfig = entitySelectorConfig;
-        return this;
-    }
-
     // **************************
     // Interface methods
     // **************************
@@ -120,7 +99,6 @@ public class ListRuinMoveSelectorConfig extends MoveSelectorConfig<ListRuinMoveS
     @Override
     public ListRuinMoveSelectorConfig inherit(ListRuinMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
-        valueSelectorConfig = ConfigUtils.inheritConfig(valueSelectorConfig, inheritedConfig.getValueSelectorConfig());
         minimumRuinedCount =
                 ConfigUtils.inheritOverwritableProperty(minimumRuinedCount, inheritedConfig.getMinimumRuinedCount());
         maximumRuinedCount =
@@ -134,16 +112,7 @@ public class ListRuinMoveSelectorConfig extends MoveSelectorConfig<ListRuinMoveS
 
     @Override
     public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
-        if (valueSelectorConfig != null) {
-            valueSelectorConfig.visitReferencedClasses(classVisitor);
-        }
-    }
-
-    // **************************
-    // Complex methods
-    // **************************
-    public ValueSelectorConfig determineValueSelectorConfig() {
-        return Objects.requireNonNullElseGet(valueSelectorConfig, ValueSelectorConfig::new);
+        // No referenced classes.
     }
 
     public long determineMinimumRuinedCount(long entityCount) {

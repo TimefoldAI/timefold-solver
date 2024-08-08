@@ -1581,9 +1581,6 @@
                               
           
           <xs:element minOccurs="0" name="maximumRuinedPercentage" type="xs:double"/>
-                              
-          
-          <xs:element minOccurs="0" name="entitySelector" type="tns:entitySelectorConfig"/>
                             
         
         </xs:sequence>
@@ -1620,9 +1617,6 @@
                               
           
           <xs:element minOccurs="0" name="maximumRuinedPercentage" type="xs:double"/>
-                              
-          
-          <xs:element minOccurs="0" name="valueSelector" type="tns:valueSelectorConfig"/>
                             
         
         </xs:sequence>
