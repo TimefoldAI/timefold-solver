@@ -89,17 +89,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
     // ************************************************************************
 
     public long getTimeMillisSpent() {
-        Long startingSystemTimeMillis = solverScope.getStartingSystemTimeMillis();
-        if (startingSystemTimeMillis == null) {
-            // The solver hasn't started yet
-            return 0L;
-        }
-        Long endingSystemTimeMillis = solverScope.getEndingSystemTimeMillis();
-        if (endingSystemTimeMillis == null) {
-            // The solver hasn't ended yet
-            endingSystemTimeMillis = System.currentTimeMillis();
-        }
-        return endingSystemTimeMillis - startingSystemTimeMillis;
+        return solverScope.getTimeMillisSpent();
     }
 
     public long getScoreCalculationCount() {
@@ -107,7 +97,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
     }
 
     public long getScoreCalculationSpeed() {
-        return SolverScope.getScoreCalculationSpeed(getScoreCalculationCount(), getTimeMillisSpent());
+        return solverScope.getScoreCalculationSpeed();
     }
 
     @Override
@@ -188,6 +178,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         Counter errorCounter = Metrics.counter(SolverMetric.ERROR_COUNT.getMeterId());
 
         solverScope.setBestSolution(problem);
+        solverScope.setSolver(this);
         outerSolvingStarted(solverScope);
         boolean restartSolver = true;
         while (restartSolver) {

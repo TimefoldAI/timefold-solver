@@ -96,9 +96,8 @@ public interface TimefoldSolverEnterpriseService {
     Class<? extends ConstraintProvider>
             buildLambdaSharedConstraintProvider(Class<? extends ConstraintProvider> originalConstraintProvider);
 
-    <Solution_> ConstructionHeuristicDecider<Solution_> buildConstructionHeuristic(int moveThreadCount,
-            Termination<Solution_> termination, ConstructionHeuristicForager<Solution_> forager,
-            EnvironmentMode environmentMode, HeuristicConfigPolicy<Solution_> configPolicy);
+    <Solution_> ConstructionHeuristicDecider<Solution_> buildConstructionHeuristic(Termination<Solution_> termination,
+            ConstructionHeuristicForager<Solution_> forager, HeuristicConfigPolicy<Solution_> configPolicy);
 
     <Solution_> LocalSearchDecider<Solution_> buildLocalSearch(int moveThreadCount, Termination<Solution_> termination,
             MoveSelector<Solution_> moveSelector, Acceptor<Solution_> acceptor, LocalSearchForager<Solution_> forager,
