@@ -1,12 +1,9 @@
 package ai.timefold.solver.core.config.heuristic.selector.move.generic;
 
-import java.util.Objects;
 import java.util.function.Consumer;
 
-import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
-import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
@@ -14,8 +11,7 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
         "minimumRuinedCount",
         "maximumRuinedCount",
         "minimumRuinedPercentage",
-        "maximumRuinedPercentage",
-        "entitySelectorConfig"
+        "maximumRuinedPercentage"
 })
 public class RuinMoveSelectorConfig extends MoveSelectorConfig<RuinMoveSelectorConfig> {
 
@@ -30,9 +26,6 @@ public class RuinMoveSelectorConfig extends MoveSelectorConfig<RuinMoveSelectorC
 
     protected Double minimumRuinedPercentage = null;
     protected Double maximumRuinedPercentage = null;
-
-    @XmlElement(name = "entitySelector")
-    protected EntitySelectorConfig entitySelectorConfig = null;
 
     public RuinMoveSelectorConfig() {
 
@@ -94,20 +87,6 @@ public class RuinMoveSelectorConfig extends MoveSelectorConfig<RuinMoveSelectorC
         return this;
     }
 
-    public EntitySelectorConfig getEntitySelectorConfig() {
-        return entitySelectorConfig;
-    }
-
-    public void setEntitySelectorConfig(
-            EntitySelectorConfig entitySelectorConfig) {
-        this.entitySelectorConfig = entitySelectorConfig;
-    }
-
-    public RuinMoveSelectorConfig withEntitySelectorConfig(EntitySelectorConfig entitySelectorConfig) {
-        this.entitySelectorConfig = entitySelectorConfig;
-        return this;
-    }
-
     // **************************
     // Interface methods
     // **************************
@@ -123,9 +102,13 @@ public class RuinMoveSelectorConfig extends MoveSelectorConfig<RuinMoveSelectorC
     }
 
     @Override
+    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+        // No referenced classes.
+    }
+
+    @Override
     public RuinMoveSelectorConfig inherit(RuinMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
-        entitySelectorConfig = ConfigUtils.inheritConfig(entitySelectorConfig, inheritedConfig.getEntitySelectorConfig());
         minimumRuinedCount =
                 ConfigUtils.inheritOverwritableProperty(minimumRuinedCount, inheritedConfig.getMinimumRuinedCount());
         maximumRuinedCount =
@@ -135,20 +118,6 @@ public class RuinMoveSelectorConfig extends MoveSelectorConfig<RuinMoveSelectorC
         maximumRuinedPercentage =
                 ConfigUtils.inheritOverwritableProperty(maximumRuinedPercentage, inheritedConfig.getMaximumRuinedPercentage());
         return this;
-    }
-
-    @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
-        if (entitySelectorConfig != null) {
-            entitySelectorConfig.visitReferencedClasses(classVisitor);
-        }
-    }
-
-    // **************************
-    // Complex methods
-    // **************************
-    public EntitySelectorConfig determineEntitySelectorConfig() {
-        return Objects.requireNonNullElseGet(entitySelectorConfig, EntitySelectorConfig::new);
     }
 
     public long determineMinimumRuinedCount(long entityCount) {

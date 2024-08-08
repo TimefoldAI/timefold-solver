@@ -6,6 +6,7 @@ import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristi
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhaseFactory;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelectorFactory;
@@ -26,7 +27,6 @@ public final class ListRuinMoveSelectorFactory<Solution_>
     @Override
     protected MoveSelector<Solution_> buildBaseMoveSelector(HeuristicConfigPolicy<Solution_> configPolicy,
             SelectionCacheType minimumCacheType, boolean randomSelection) {
-        var valueSelectorConfig = ruinMoveSelectorConfig.determineValueSelectorConfig();
         ToLongFunction<Long> minimumSelectedSupplier = ruinMoveSelectorConfig::determineMinimumRuinedCount;
         ToLongFunction<Long> maximumSelectedSupplier = ruinMoveSelectorConfig::determineMaximumRuinedCount;
 
@@ -35,7 +35,7 @@ public final class ListRuinMoveSelectorFactory<Solution_>
         var listVariableDescriptor = configPolicy.getSolutionDescriptor().getListVariableDescriptor();
         var entityDescriptor = listVariableDescriptor.getEntityDescriptor();
         var valueSelector =
-                (EntityIndependentValueSelector<Solution_>) ValueSelectorFactory.<Solution_> create(valueSelectorConfig)
+                (EntityIndependentValueSelector<Solution_>) ValueSelectorFactory.<Solution_> create(new ValueSelectorConfig())
                         .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, SelectionOrder.RANDOM,
                                 false, ValueSelectorFactory.ListValueFilteringType.ACCEPT_ASSIGNED);
         var entityPlacerConfig = DefaultConstructionHeuristicPhaseFactory.buildListVariableQueuedValuePlacerConfig(configPolicy,
