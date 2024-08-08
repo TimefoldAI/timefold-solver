@@ -302,10 +302,10 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         }
         for (var variableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
             if (variableDescriptor.isListVariable()) {
-                var listVariableDescriptor = (ListVariableDescriptor<Solution_>) variableDescriptor;
-                int size = listVariableDescriptor.getValue(entity).size();
-                beforeListVariableChanged(listVariableDescriptor, entity, 0, size);
-                afterListVariableChanged(listVariableDescriptor, entity, 0, size);
+                var descriptor = (ListVariableDescriptor<Solution_>) variableDescriptor;
+                int size = descriptor.getValue(entity).size();
+                beforeListVariableChanged(descriptor, entity, 0, size);
+                afterListVariableChanged(descriptor, entity, 0, size);
             } else {
                 // Triggering before...() is enough, as that will add the after...() call to the queue automatically.
                 beforeVariableChanged(variableDescriptor, entity);
