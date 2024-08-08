@@ -49,56 +49,62 @@ public final class CustomShadowVariableDescriptor<Solution_> extends ShadowVaria
 
     private void linkSourceVariableDescriptorToListenerClass(ShadowVariable shadowVariable) {
         EntityDescriptor<Solution_> sourceEntityDescriptor;
-        Class<?> sourceEntityClass = shadowVariable.sourceEntityClass();
+        var sourceEntityClass = shadowVariable.sourceEntityClass();
         if (sourceEntityClass.equals(ShadowVariable.NullEntityClass.class)) {
             sourceEntityDescriptor = entityDescriptor;
         } else {
             sourceEntityDescriptor = entityDescriptor.getSolutionDescriptor().findEntityDescriptor(sourceEntityClass);
             if (sourceEntityDescriptor == null) {
-                throw new IllegalArgumentException("The entityClass (" + entityDescriptor.getEntityClass()
-                        + ") has a @" + ShadowVariable.class.getSimpleName()
-                        + " annotated property (" + variableMemberAccessor.getName()
-                        + ") with a sourceEntityClass (" + sourceEntityClass
-                        + ") which is not a valid planning entity."
-                        + "\nMaybe check the annotations of the class (" + sourceEntityClass + ")."
-                        + "\nMaybe add the class (" + sourceEntityClass
-                        + ") among planning entities in the solver configuration.");
+                throw new IllegalArgumentException(
+                        """
+                                The entityClass (%s) has a @%s annotated property (%s) with a sourceEntityClass (%s) which is not a valid planning entity.
+                                Maybe check the annotations of the class (%s).
+                                Maybe add the class (%s) among planning entities in the solver configuration."""
+                                .formatted(entityDescriptor.getEntityClass(), ShadowVariable.class.getSimpleName(),
+                                        variableMemberAccessor.getName(), sourceEntityClass, sourceEntityClass,
+                                        sourceEntityClass));
             }
         }
-        String sourceVariableName = shadowVariable.sourceVariableName();
-        VariableDescriptor<Solution_> sourceVariableDescriptor =
-                sourceEntityDescriptor.getVariableDescriptor(sourceVariableName);
+        var sourceVariableName = shadowVariable.sourceVariableName();
+        var sourceVariableDescriptor = sourceEntityDescriptor.getVariableDescriptor(sourceVariableName);
         if (sourceVariableDescriptor == null) {
-            throw new IllegalArgumentException("The entityClass (" + entityDescriptor.getEntityClass()
-                    + ") has a @" + ShadowVariable.class.getSimpleName()
-                    + " annotated property (" + variableMemberAccessor.getName()
-                    + ") with sourceVariableName (" + sourceVariableName
-                    + ") which is not a valid planning variable on entityClass ("
-                    + sourceEntityDescriptor.getEntityClass() + ").\n"
-                    + sourceEntityDescriptor.buildInvalidVariableNameExceptionMessage(sourceVariableName));
+            throw new IllegalArgumentException(
+                    """
+                            The entityClass (%s) has a @%s annotated property (%s) with sourceVariableName (%s) which is not a valid planning variable on entityClass (%s).
+                            %s"""
+                            .formatted(entityDescriptor.getEntityClass(), ShadowVariable.class.getSimpleName(),
+                                    variableMemberAccessor.getName(), sourceVariableName,
+                                    sourceEntityDescriptor.getEntityClass(),
+                                    sourceEntityDescriptor.buildInvalidVariableNameExceptionMessage(sourceVariableName)));
         }
-        Class<? extends AbstractVariableListener> variableListenerClass = shadowVariable.variableListenerClass();
+        if (!sourceVariableDescriptor.canBeUsedAsSource()) {
+            throw new IllegalArgumentException(
+                    "The entityClass (%s) has a @%s annotated property (%s) with sourceVariableName (%s) which cannot be used as source."
+                            .formatted(entityDescriptor.getEntityClass(), ShadowVariable.class.getSimpleName(),
+                                    variableMemberAccessor.getName(), sourceVariableName));
+        }
+        var variableListenerClass = shadowVariable.variableListenerClass();
         if (sourceVariableDescriptor.isListVariable()
                 && !ListVariableListener.class.isAssignableFrom(variableListenerClass)) {
-            throw new IllegalArgumentException("The entityClass (" + entityDescriptor.getEntityClass()
-                    + ") has a @" + ShadowVariable.class.getSimpleName()
-                    + " annotated property (" + variableMemberAccessor.getName()
-                    + ") with sourceVariable (" + sourceVariableDescriptor.getSimpleEntityAndVariableName()
-                    + ") which is a list variable but the variableListenerClass (" + variableListenerClass
-                    + ") is not a " + ListVariableListener.class.getSimpleName() + ".\n"
-                    + "Maybe make the variableListenerClass (" + variableListenerClass.getSimpleName()
-                    + ") implement " + ListVariableListener.class.getSimpleName() + ".");
+            throw new IllegalArgumentException(
+                    """
+                            The entityClass (%s) has a @%s annotated property (%s) with a sourceVariable (%s) which is a list variable but the variableListenerClass (%s) is not a %s.
+                            Maybe make the variableListenerClass ("%s) implement %s."""
+                            .formatted(entityDescriptor.getEntityClass(), ShadowVariable.class.getSimpleName(),
+                                    variableMemberAccessor.getName(), sourceVariableDescriptor.getSimpleEntityAndVariableName(),
+                                    variableListenerClass, ListVariableListener.class.getSimpleName(),
+                                    variableListenerClass.getSimpleName(), ListVariableListener.class.getSimpleName()));
         }
         if (!sourceVariableDescriptor.isListVariable()
                 && !VariableListener.class.isAssignableFrom(variableListenerClass)) {
-            throw new IllegalArgumentException("The entityClass (" + entityDescriptor.getEntityClass()
-                    + ") has a @" + ShadowVariable.class.getSimpleName()
-                    + " annotated property (" + variableMemberAccessor.getName()
-                    + ") with sourceVariable (" + sourceVariableDescriptor.getSimpleEntityAndVariableName()
-                    + ") which is a basic variable but the variableListenerClass (" + variableListenerClass
-                    + ") is not a " + VariableListener.class.getSimpleName() + ".\n"
-                    + "Maybe make the variableListenerClass (" + variableListenerClass.getSimpleName()
-                    + ") implement " + VariableListener.class.getSimpleName() + ".");
+            throw new IllegalArgumentException(
+                    """
+                            The entityClass (%s) has a @%s annotated property (%s) with a sourceVariable (%s) which is a basic variable but the variableListenerClass (%s) is not a %s.
+                            Maybe make the variableListenerClass ("%s) implement %s."""
+                            .formatted(entityDescriptor.getEntityClass(), ShadowVariable.class.getSimpleName(),
+                                    variableMemberAccessor.getName(), sourceVariableDescriptor.getSimpleEntityAndVariableName(),
+                                    variableListenerClass, VariableListener.class.getSimpleName(),
+                                    variableListenerClass.getSimpleName(), VariableListener.class.getSimpleName()));
         }
         sourceVariableDescriptor.registerSinkVariableDescriptor(this);
         listenerClassToSourceDescriptorListMap

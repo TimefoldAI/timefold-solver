@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadingEntity;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadingSolution;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingInvalidField;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingInvalidSource;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingWrongMethod;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
@@ -26,6 +27,11 @@ class SingleCascadingUpdateShadowVariableListenerTest {
                         "The entity class (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingInvalidField)")
                 .withMessageContaining("has an @CascadingUpdateShadowVariable annotated property (cascadeValue)")
                 .withMessageContaining("but the method \"value\" cannot be found");
+        assertThatIllegalArgumentException().isThrownBy(TestdataCascadingInvalidSource::buildEntityDescriptor)
+                .withMessageContaining(
+                        "The entityClass (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingInvalidSource)")
+                .withMessageContaining("has a @ShadowVariable annotated property (cascadeValue2)")
+                .withMessageContaining("with sourceVariableName (cascadeValue) which cannot be used as source");
     }
 
     @Test
