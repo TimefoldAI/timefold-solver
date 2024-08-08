@@ -88,49 +88,6 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
         return hasChange;
     }
 
-    public boolean testAndUpdate(ScoreDirector<Solution_> scoreDirector, Object entity) {
-        if (targetVariableDescriptorList.size() == 1) {
-            return testAndUpdateSingle(scoreDirector, entity);
-        } else {
-            return testAndUpdateMultiple(scoreDirector, entity);
-        }
-    }
-
-    private boolean testAndUpdateSingle(ScoreDirector<Solution_> scoreDirector, Object entity) {
-        var oldValue = firstTargetVariableDescriptor.getValue(entity);
-        targetMethod.executeGetter(entity);
-        var newValue = firstTargetVariableDescriptor.getValue(entity);
-        if (!Objects.equals(oldValue, newValue)) {
-            firstTargetVariableDescriptor.setValue(entity, oldValue);
-            scoreDirector.beforeVariableChanged(entity, firstTargetVariableDescriptor.getVariableName());
-            firstTargetVariableDescriptor.setValue(entity, newValue);
-            scoreDirector.afterVariableChanged(entity, firstTargetVariableDescriptor.getVariableName());
-            return true;
-        }
-        return false;
-    }
-
-    private boolean testAndUpdateMultiple(ScoreDirector<Solution_> scoreDirector, Object entity) {
-        var oldValueList = new ArrayList<>(targetVariableDescriptorList.size());
-        for (var targetVariableDescriptor : targetVariableDescriptorList) {
-            oldValueList.add(targetVariableDescriptor.getValue(entity));
-        }
-        targetMethod.executeGetter(entity);
-        var hasChange = false;
-        for (var i = 0; i < targetVariableDescriptorList.size(); i++) {
-            var targetVariableDescriptor = targetVariableDescriptorList.get(i);
-            var newValue = targetVariableDescriptor.getValue(entity);
-            if (!Objects.equals(oldValueList.get(i), newValue)) {
-                targetVariableDescriptor.setValue(entity, oldValueList.get(i));
-                scoreDirector.beforeVariableChanged(entity, targetVariableDescriptor.getVariableName());
-                targetVariableDescriptor.setValue(entity, newValue);
-                scoreDirector.afterVariableChanged(entity, targetVariableDescriptor.getVariableName());
-                hasChange = true;
-            }
-        }
-        return hasChange;
-    }
-
     @Override
     public void processAnnotations(DescriptorPolicy descriptorPolicy) {
         // Do nothing
