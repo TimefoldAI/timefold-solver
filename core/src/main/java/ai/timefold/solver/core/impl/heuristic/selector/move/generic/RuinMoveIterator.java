@@ -4,9 +4,9 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Random;
-import java.util.Set;
+import java.util.function.Function;
 
-import ai.timefold.solver.core.impl.constructionheuristic.RuinRecreateConstructionHeuristicPhase;
+import ai.timefold.solver.core.impl.constructionheuristic.RuinRecreateConstructionHeuristicPhase.RuinRecreateBuilderConstructionHeuristicPhaseBuilder;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
@@ -14,25 +14,26 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingS
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
-public class RuinMoveIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
-    protected final EntitySelector<Solution_> entitySelector;
-    protected final GenuineVariableDescriptor<Solution_> variableDescriptor;
-    protected final RuinRecreateConstructionHeuristicPhase<Solution_> constructionHeuristicPhase;
-    protected final SolverScope<Solution_> solverScope;
-    protected final long minimumRuinedCount;
-    protected final long maximumRuinedCount;
-    protected final Random workingRandom;
+public final class RuinMoveIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
+
+    private final EntitySelector<Solution_> entitySelector;
+    private final GenuineVariableDescriptor<Solution_> variableDescriptor;
+    private final RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder;
+    private final SolverScope<Solution_> solverScope;
+    private final long minimumRuinedCount;
+    private final long maximumRuinedCount;
+    private final Random workingRandom;
 
     public RuinMoveIterator(EntitySelector<Solution_> entitySelector,
             GenuineVariableDescriptor<Solution_> variableDescriptor,
-            RuinRecreateConstructionHeuristicPhase<Solution_> constructionHeuristicPhase,
+            RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
             SolverScope<Solution_> solverScope,
             long minimumRuinedCount,
             long maximumRuinedCount,
             Random workingRandom) {
         this.entitySelector = entitySelector;
         this.variableDescriptor = variableDescriptor;
-        this.constructionHeuristicPhase = constructionHeuristicPhase;
+        this.constructionHeuristicPhaseBuilder = constructionHeuristicPhaseBuilder;
         this.solverScope = solverScope;
         this.minimumRuinedCount = minimumRuinedCount;
         this.maximumRuinedCount = maximumRuinedCount;
@@ -41,30 +42,38 @@ public class RuinMoveIterator<Solution_> extends UpcomingSelectionIterator<Move<
 
     @Override
     protected Move<Solution_> createUpcomingSelection() {
-        int ruinedCount = workingRandom.nextInt((int) minimumRuinedCount, (int) maximumRuinedCount + 1);
-        Object[] selectedEntities = new Object[ruinedCount];
-        Iterator<Object> entitySelectorIterator = entitySelector.iterator();
-        Set<Object> selectedEntitiesSet = Collections.newSetFromMap(new IdentityHashMap<>());
-        for (int i = 0; i < ruinedCount; i++) {
-            int remainingAttempts = ruinedCount;
+        return createUpcomingSelection(workingRandom, (int) minimumRuinedCount, (int) maximumRuinedCount,
+                entitySelector.iterator(),
+                selectedEntities -> new RuinMove<>(selectedEntities, variableDescriptor, constructionHeuristicPhaseBuilder,
+                        solverScope));
+    }
+
+    public static <Solution_> Move<Solution_> createUpcomingSelection(Random workingRandom, int minimumRuinedCount,
+            int maximumRuinedCount, Iterator<Object> elementIterator, Function<Object[], Move<Solution_>> moveConstructor) {
+        var ruinedCount = workingRandom.nextInt(minimumRuinedCount, maximumRuinedCount + 1);
+        var selectedElements = new Object[ruinedCount];
+        var selectedElementSet = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (var i = 0; i < ruinedCount; i++) {
+            var remainingAttempts = ruinedCount;
             while (true) {
-                if (!entitySelectorIterator.hasNext()) {
-                    // Bail out; cannot select enough unique values
+                if (!elementIterator.hasNext()) {
+                    // Bail out; cannot select enough unique elements.
                     return NoChangeMove.getInstance();
                 }
-                var selectedEntity = entitySelectorIterator.next();
-                if (selectedEntitiesSet.add(selectedEntity)) {
-                    selectedEntities[i] = selectedEntity;
+                var selectedElement = elementIterator.next();
+                if (selectedElementSet.add(selectedElement)) {
+                    selectedElements[i] = selectedElement;
                     break;
                 } else {
                     remainingAttempts--;
                 }
                 if (remainingAttempts == 0) {
-                    // Bail out; cannot select enough unique values
+                    // Bail out; cannot select enough unique elements.
                     return NoChangeMove.getInstance();
                 }
             }
         }
-        return new RuinMove<>(selectedEntities, variableDescriptor, constructionHeuristicPhase, solverScope);
+        return moveConstructor.apply(selectedElements);
     }
+
 }

@@ -17,23 +17,21 @@ import ai.timefold.solver.core.impl.solver.termination.Termination;
 public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<Solution_>
         implements ConstructionHeuristicPhase<Solution_> {
 
-    protected final EntityPlacer<Solution_> baseEntityPlacer;
     protected final ConstructionHeuristicDecider<Solution_> decider;
-    protected EntityPlacer<Solution_> entityPlacer;
+    protected final EntityPlacer<Solution_> entityPlacer;
 
-    protected DefaultConstructionHeuristicPhase(Builder<Solution_> builder) {
+    protected DefaultConstructionHeuristicPhase(DefaultConstructionHeuristicPhaseBuilder<Solution_> builder) {
         super(builder);
-        baseEntityPlacer = builder.entityPlacer;
-        entityPlacer = baseEntityPlacer;
         decider = builder.decider;
+        entityPlacer = builder.getEntityPlacer();
     }
 
     protected boolean isNested() {
         return false;
     }
 
-    public EntityPlacer<Solution_> getBaseEntityPlacer() {
-        return baseEntityPlacer;
+    public EntityPlacer<Solution_> getEntityPlacer() {
+        return entityPlacer;
     }
 
     @Override
@@ -177,17 +175,22 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
         decider.solvingError(solverScope, exception);
     }
 
-    public static class Builder<Solution_> extends AbstractPhase.Builder<Solution_> {
+    public static class DefaultConstructionHeuristicPhaseBuilder<Solution_>
+            extends AbstractPhase.Builder<Solution_> {
 
         private final EntityPlacer<Solution_> entityPlacer;
         private final ConstructionHeuristicDecider<Solution_> decider;
 
-        public Builder(int phaseIndex, boolean triggerFirstInitializedSolutionEvent, String logIndentation,
-                Termination<Solution_> phaseTermination, EntityPlacer<Solution_> entityPlacer,
+        public DefaultConstructionHeuristicPhaseBuilder(int phaseIndex, boolean triggerFirstInitializedSolutionEvent,
+                String logIndentation, Termination<Solution_> phaseTermination, EntityPlacer<Solution_> entityPlacer,
                 ConstructionHeuristicDecider<Solution_> decider) {
             super(phaseIndex, triggerFirstInitializedSolutionEvent, logIndentation, phaseTermination);
             this.entityPlacer = entityPlacer;
             this.decider = decider;
+        }
+
+        public EntityPlacer<Solution_> getEntityPlacer() {
+            return entityPlacer;
         }
 
         @Override

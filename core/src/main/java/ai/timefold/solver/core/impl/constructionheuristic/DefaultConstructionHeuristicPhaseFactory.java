@@ -45,7 +45,7 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         super(phaseConfig);
     }
 
-    private DefaultConstructionHeuristicPhase.Builder<Solution_> getBaseBuilder(int phaseIndex,
+    private DefaultConstructionHeuristicPhase.DefaultConstructionHeuristicPhaseBuilder<Solution_> getBaseBuilder(int phaseIndex,
             boolean triggerFirstInitializedSolutionEvent, HeuristicConfigPolicy<Solution_> solverConfigPolicy,
             Termination<Solution_> solverTermination, boolean isRuinPhase) {
         var constructionHeuristicType_ = Objects.requireNonNullElse(phaseConfig.getConstructionHeuristicType(),
@@ -68,11 +68,13 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
 
         if (isRuinPhase) { // The ruin phase ignores terminations and always finishes, as it is nested in a move.
             var phaseTermination = new PhaseToSolverTerminationBridge<>(new BasicPlumbingTermination<Solution_>(false));
-            return new RuinRecreateConstructionHeuristicPhase.RuinRecreateBuilder<>(phaseTermination, entityPlacer,
+            return new RuinRecreateConstructionHeuristicPhase.RuinRecreateBuilderConstructionHeuristicPhaseBuilder<>(
+                    phaseTermination, entityPlacer,
                     buildRuinRecreateDecider(phaseConfigPolicy, phaseTermination));
         }
         var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
-        var builder = new DefaultConstructionHeuristicPhase.Builder<>(phaseIndex, triggerFirstInitializedSolutionEvent,
+        var builder = new DefaultConstructionHeuristicPhase.DefaultConstructionHeuristicPhaseBuilder<>(phaseIndex,
+                triggerFirstInitializedSolutionEvent,
                 solverConfigPolicy.getLogIndentation(), phaseTermination, entityPlacer,
                 buildDecider(phaseConfigPolicy, phaseTermination));
         var environmentMode = phaseConfigPolicy.getEnvironmentMode();
@@ -94,13 +96,13 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
                 .build();
     }
 
-    public RuinRecreateConstructionHeuristicPhase<Solution_>
-            buildRuinPhase(HeuristicConfigPolicy<Solution_> solverConfigPolicy) {
+    public RuinRecreateConstructionHeuristicPhase.RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_>
+            getRuinPhaseBuilder(HeuristicConfigPolicy<Solution_> solverConfigPolicy) {
         var solverTermination =
                 TerminationFactory.<Solution_> create(new TerminationConfig()).buildTermination(solverConfigPolicy);
-        return (RuinRecreateConstructionHeuristicPhase<Solution_>) getBaseBuilder(0, false, solverConfigPolicy,
-                solverTermination, true)
-                .build();
+        return (RuinRecreateConstructionHeuristicPhase.RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_>) getBaseBuilder(
+                0, false,
+                solverConfigPolicy, solverTermination, true);
     }
 
     private Optional<EntityPlacerConfig> getValidEntityPlacerConfig() {

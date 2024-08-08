@@ -1,7 +1,8 @@
-package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
+package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin;
 
 import java.util.function.ToLongFunction;
 
+import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinMoveSelectorConfig;
@@ -12,8 +13,10 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
 
-public class ListRuinMoveSelectorFactory<Solution_> extends AbstractMoveSelectorFactory<Solution_, ListRuinMoveSelectorConfig> {
-    protected final ListRuinMoveSelectorConfig ruinMoveSelectorConfig;
+public final class ListRuinMoveSelectorFactory<Solution_>
+        extends AbstractMoveSelectorFactory<Solution_, ListRuinMoveSelectorConfig> {
+
+    private final ListRuinMoveSelectorConfig ruinMoveSelectorConfig;
 
     public ListRuinMoveSelectorFactory(ListRuinMoveSelectorConfig ruinMoveSelectorConfig) {
         super(ruinMoveSelectorConfig);
@@ -24,7 +27,6 @@ public class ListRuinMoveSelectorFactory<Solution_> extends AbstractMoveSelector
     protected MoveSelector<Solution_> buildBaseMoveSelector(HeuristicConfigPolicy<Solution_> configPolicy,
             SelectionCacheType minimumCacheType, boolean randomSelection) {
         var valueSelectorConfig = ruinMoveSelectorConfig.determineValueSelectorConfig();
-        var constructionHeuristicConfig = ruinMoveSelectorConfig.determineConstructionHeuristicConfig();
         ToLongFunction<Long> minimumSelectedSupplier = ruinMoveSelectorConfig::determineMinimumRuinedCount;
         ToLongFunction<Long> maximumSelectedSupplier = ruinMoveSelectorConfig::determineMaximumRuinedCount;
 
@@ -36,14 +38,15 @@ public class ListRuinMoveSelectorFactory<Solution_> extends AbstractMoveSelector
                 (EntityIndependentValueSelector<Solution_>) ValueSelectorFactory.<Solution_> create(valueSelectorConfig)
                         .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, SelectionOrder.RANDOM,
                                 false, ValueSelectorFactory.ListValueFilteringType.ACCEPT_ASSIGNED);
-        var entityPlacerConfig =
-                DefaultConstructionHeuristicPhaseFactory.buildListVariableQueuedValuePlacerConfig(configPolicy,
-                        listVariableDescriptor);
+        var entityPlacerConfig = DefaultConstructionHeuristicPhaseFactory.buildListVariableQueuedValuePlacerConfig(configPolicy,
+                listVariableDescriptor);
+
+        var constructionHeuristicConfig = new ConstructionHeuristicPhaseConfig();
         constructionHeuristicConfig.setEntityPlacerConfig(entityPlacerConfig);
         var constructionHeuristicPhaseFactory =
                 new DefaultConstructionHeuristicPhaseFactory<Solution_>(constructionHeuristicConfig);
-        var constructionHeuristicPhase = constructionHeuristicPhaseFactory.buildRuinPhase(configPolicy);
-        return new ListRuinMoveSelector<>(valueSelector, listVariableDescriptor, constructionHeuristicPhase,
+        return new ListRuinMoveSelector<>(valueSelector, listVariableDescriptor,
+                constructionHeuristicPhaseFactory.getRuinPhaseBuilder(configPolicy),
                 minimumSelectedSupplier, maximumSelectedSupplier);
     }
 }
