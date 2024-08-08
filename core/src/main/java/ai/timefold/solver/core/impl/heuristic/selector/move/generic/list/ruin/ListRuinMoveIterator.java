@@ -1,20 +1,21 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 
 import ai.timefold.solver.core.impl.constructionheuristic.RuinRecreateConstructionHeuristicPhase.RuinRecreateBuilderConstructionHeuristicPhaseBuilder;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinMoveIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 public final class ListRuinMoveIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
 
     private final EntityIndependentValueSelector<Solution_> valueSelector;
-    private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder;
     private final SolverScope<Solution_> solverScope;
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
@@ -23,13 +24,11 @@ public final class ListRuinMoveIterator<Solution_> extends UpcomingSelectionIter
     private final Random workingRandom;
 
     public ListRuinMoveIterator(EntityIndependentValueSelector<Solution_> valueSelector,
-            ListVariableDescriptor<Solution_> listVariableDescriptor,
             RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
             SolverScope<Solution_> solverScope,
             ListVariableStateSupply<Solution_> listVariableStateSupply, long minimumRuinedCount, long maximumRuinedCount,
             Random workingRandom) {
         this.valueSelector = valueSelector;
-        this.listVariableDescriptor = listVariableDescriptor;
         this.constructionHeuristicPhaseBuilder = constructionHeuristicPhaseBuilder;
         this.solverScope = solverScope;
         this.listVariableStateSupply = listVariableStateSupply;
@@ -40,10 +39,37 @@ public final class ListRuinMoveIterator<Solution_> extends UpcomingSelectionIter
 
     @Override
     protected Move<Solution_> createUpcomingSelection() {
-        return RuinMoveIterator.createUpcomingSelection(workingRandom, (int) minimumRuinedCount, (int) maximumRuinedCount,
-                valueSelector.iterator(),
-                selectedValues -> new ListRuinMove<>(selectedValues, listVariableDescriptor, listVariableStateSupply,
-                        constructionHeuristicPhaseBuilder, solverScope));
+        var valueIterator = valueSelector.iterator();
+        var ruinedCount = workingRandom.nextInt((int) minimumRuinedCount, (int) maximumRuinedCount + 1);
+        var selectedValueList = new ArrayList<>(ruinedCount);
+        var affectedEntitySet = CollectionUtils.newLinkedHashSet(ruinedCount);
+        var selectedValueSet = Collections.newSetFromMap(CollectionUtils.newIdentityHashMap(ruinedCount));
+        for (var i = 0; i < ruinedCount; i++) {
+            var remainingAttempts = ruinedCount;
+            while (true) {
+                if (!valueIterator.hasNext()) {
+                    // Bail out; cannot select enough unique elements.
+                    return NoChangeMove.getInstance();
+                }
+                var selectedValue = valueIterator.next();
+                if (selectedValueSet.add(selectedValue)) {
+                    selectedValueList.add(selectedValue);
+                    var affectedEntity = listVariableStateSupply.getInverseSingleton(selectedValue);
+                    if (affectedEntity != null) {
+                        affectedEntitySet.add(affectedEntity);
+                    }
+                    break;
+                } else {
+                    remainingAttempts--;
+                }
+                if (remainingAttempts == 0) {
+                    // Bail out; cannot select enough unique elements.
+                    return NoChangeMove.getInstance();
+                }
+            }
+        }
+        return new ListRuinMove<>(listVariableStateSupply, constructionHeuristicPhaseBuilder, solverScope, selectedValueList,
+                affectedEntitySet);
     }
 
 }
