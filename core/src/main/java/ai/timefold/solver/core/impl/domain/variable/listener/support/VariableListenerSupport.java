@@ -1,10 +1,9 @@
 package ai.timefold.solver.core.impl.domain.variable.listener.support;
 
-import java.util.BitSet;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +36,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     private final NotifiableRegistry<Solution_> notifiableRegistry;
     private final Map<Demand<?>, SupplyWithDemandCount> supplyMap = new HashMap<>();
 
-    private final Map<Object, BitSet> listVariableEventMap;
+    private final List<ListVariableEvent> listVariableEventList;
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final List<CascadingUpdateShadowVariableDescriptor<Solution_>> cascadingUpdateShadowVarDescriptorList;
 
@@ -56,7 +55,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                 .map(d -> (ListVariableDescriptor<Solution_>) d)
                 .findFirst()
                 .orElse(null);
-        this.listVariableEventMap = new IdentityHashMap<>();
+        this.listVariableEventList = new LinkedList<>();
     }
 
     public void linkVariableListeners() {
@@ -221,18 +220,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
             }
             notificationQueuesAreEmpty = false;
         }
-        listVariableEventMap.compute(entity, (k, v) -> {
-            BitSet indexSet = v;
-            if (v == null) {
-                indexSet = new BitSet(listVariableDescriptor.getListSize(entity));
-            }
-            if (fromIndex == toIndex) {
-                indexSet.set(fromIndex);
-            } else {
-                indexSet.set(fromIndex, toIndex, true);
-            }
-            return indexSet;
-        });
+        listVariableEventList.add(new ListVariableEvent(entity, fromIndex, toIndex));
     }
 
     public void triggerVariableListenersInNotificationQueues() {
@@ -243,70 +231,37 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
             triggerCascadingUpdateShadowVariableUpdate();
         }
         notificationQueuesAreEmpty = true;
-        listVariableEventMap.clear();
+        listVariableEventList.clear();
     }
 
     /**
      * Triggers all cascading update shadow variable user-logic.
      */
     private void triggerCascadingUpdateShadowVariableUpdate() {
-        if (listVariableEventMap.isEmpty() || cascadingUpdateShadowVarDescriptorList.isEmpty()) {
+        if (listVariableEventList.isEmpty() || cascadingUpdateShadowVarDescriptorList.isEmpty()) {
             return;
         }
         for (var cascadingUpdateShadowVariableDescriptor : cascadingUpdateShadowVarDescriptorList) {
-            for (var listVariableEvent : listVariableEventMap.entrySet()) {
-                var values = listVariableDescriptor.getValue(listVariableEvent.getKey());
-                var fromIndex = listVariableEvent.getValue().nextSetBit(0);
-                var toIndex =
-                        fromIndex > -1 ? Math.min(listVariableEvent.getValue().nextClearBit(fromIndex), values.size()) : -1;
-                int nextIndex;
-                while (fromIndex > -1 && fromIndex < values.size()) {
-                    nextIndex = evaluateRange(values, fromIndex, toIndex, cascadingUpdateShadowVariableDescriptor);
-                    if (nextIndex < values.size()) {
-                        fromIndex = listVariableEvent.getValue().nextSetBit(nextIndex);
-                        toIndex = fromIndex > -1 ? Math.min(listVariableEvent.getValue().nextClearBit(fromIndex), values.size())
-                                : -1;
-                    } else {
-                        fromIndex = -1;
-                    }
-                }
+            for (var event : listVariableEventList) {
+                var values = listVariableDescriptor.getValue(event.entity());
+                // Evaluate all elements inside the range
+                evaluateFromIndex(values, event.fromIndex(), event.toIndex(), true, cascadingUpdateShadowVariableDescriptor);
+                // Evaluate later elements, but stops when there is no change
+                evaluateFromIndex(values, event.toIndex(), values.size(), false, cascadingUpdateShadowVariableDescriptor);
             }
         }
     }
 
-    private int evaluateRange(List<Object> values, int fromIndex, int toIndex,
-            CascadingUpdateShadowVariableDescriptor<Solution_> cascadingUpdateShadowVariableDescriptor) {
-        if (values.isEmpty()) {
-            return toIndex;
-        }
-        // The first and last elements of the range must be analyzed
-        // because moves that use the same entity generate a list change
-        // that includes all elements between the original position and the destination position.
-        // For example, swapping two elements in the same entity
-        // or changing an element to another position in the same entity.
-        // Analyze the elements in the range, starting from the first element
-        var lastUpdated = evaluateFromIndex(values, fromIndex, toIndex, cascadingUpdateShadowVariableDescriptor);
-        // Analyze the last element of the range if needed
-        if (lastUpdated < toIndex - 1) {
-            lastUpdated = evaluateFromIndex(values, toIndex - 1, values.size(), cascadingUpdateShadowVariableDescriptor);
-        }
-        // Analyze next elements if needed
-        if (lastUpdated <= toIndex) {
-            lastUpdated = evaluateFromIndex(values, toIndex, values.size(), cascadingUpdateShadowVariableDescriptor);
-        }
-        return Math.max(lastUpdated, toIndex);
-    }
-
-    private int evaluateFromIndex(List<Object> values, int fromIndex, int toIndex,
+    private void evaluateFromIndex(List<Object> values, int fromIndex, int toIndex, boolean forceUpdate,
             CascadingUpdateShadowVariableDescriptor<Solution_> cascadingUpdateShadowVariableDescriptor) {
         var lastUpdated = fromIndex;
         while (lastUpdated < toIndex) {
-            if (!cascadingUpdateShadowVariableDescriptor.testAndUpdate(scoreDirector, values.get(lastUpdated))) {
+            if (!cascadingUpdateShadowVariableDescriptor.update(scoreDirector, values.get(lastUpdated))
+                    && !forceUpdate) {
                 break;
             }
             lastUpdated++;
         }
-        return lastUpdated;
     }
 
     /**

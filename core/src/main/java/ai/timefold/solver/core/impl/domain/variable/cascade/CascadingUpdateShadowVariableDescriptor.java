@@ -28,6 +28,7 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
 
     private final List<ShadowVariableTarget<Solution_>> shadowVariableTargetList;
     private final List<VariableDescriptor<Solution_>> targetVariableDescriptorList = new ArrayList<>();
+    private VariableDescriptor<Solution_> firstTargetVariableDescriptor;
     private MemberAccessor targetMethod;
 
     public CascadingUpdateShadowVariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
@@ -60,12 +61,11 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
     }
 
     private boolean updateSingle(ScoreDirector<Solution_> scoreDirector, Object entity) {
-        var targetVariableDescriptor = targetVariableDescriptorList.get(0);
-        var oldValue = targetVariableDescriptor.getValue(entity);
-        scoreDirector.beforeVariableChanged(entity, targetVariableDescriptor.getVariableName());
+        var oldValue = firstTargetVariableDescriptor.getValue(entity);
+        scoreDirector.beforeVariableChanged(entity, firstTargetVariableDescriptor.getVariableName());
         targetMethod.executeGetter(entity);
-        var newValue = targetVariableDescriptor.getValue(entity);
-        scoreDirector.afterVariableChanged(entity, targetVariableDescriptor.getVariableName());
+        var newValue = firstTargetVariableDescriptor.getValue(entity);
+        scoreDirector.afterVariableChanged(entity, firstTargetVariableDescriptor.getVariableName());
         return !Objects.equals(oldValue, newValue);
     }
 
@@ -97,15 +97,14 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
     }
 
     private boolean testAndUpdateSingle(ScoreDirector<Solution_> scoreDirector, Object entity) {
-        var targetVariableDescriptor = targetVariableDescriptorList.get(0);
-        var oldValue = targetVariableDescriptor.getValue(entity);
+        var oldValue = firstTargetVariableDescriptor.getValue(entity);
         targetMethod.executeGetter(entity);
-        var newValue = targetVariableDescriptor.getValue(entity);
+        var newValue = firstTargetVariableDescriptor.getValue(entity);
         if (!Objects.equals(oldValue, newValue)) {
-            targetVariableDescriptor.setValue(entity, oldValue);
-            scoreDirector.beforeVariableChanged(entity, targetVariableDescriptor.getVariableName());
-            targetVariableDescriptor.setValue(entity, newValue);
-            scoreDirector.afterVariableChanged(entity, targetVariableDescriptor.getVariableName());
+            firstTargetVariableDescriptor.setValue(entity, oldValue);
+            scoreDirector.beforeVariableChanged(entity, firstTargetVariableDescriptor.getVariableName());
+            firstTargetVariableDescriptor.setValue(entity, newValue);
+            scoreDirector.afterVariableChanged(entity, firstTargetVariableDescriptor.getVariableName());
             return true;
         }
         return false;
@@ -176,6 +175,7 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
         }
         targetMethod = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(allSourceMethodMembers.get(0),
                 MemberAccessorFactory.MemberAccessorType.REGULAR_METHOD, null, descriptorPolicy.getDomainAccessType());
+        firstTargetVariableDescriptor = targetVariableDescriptorList.get(0);
     }
 
     @Override
