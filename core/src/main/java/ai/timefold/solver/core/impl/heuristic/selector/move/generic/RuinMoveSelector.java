@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 import java.util.Iterator;
 import java.util.function.ToLongFunction;
 
-import ai.timefold.solver.core.impl.constructionheuristic.RuinRecreateConstructionHeuristicPhase;
+import ai.timefold.solver.core.impl.constructionheuristic.RuinRecreateConstructionHeuristicPhase.RuinRecreateBuilderConstructionHeuristicPhaseBuilder;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
@@ -11,25 +11,25 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.apache.commons.math3.util.CombinatoricsUtils;
 
-public class RuinMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
-    protected final EntitySelector<Solution_> entitySelector;
-    protected final GenuineVariableDescriptor<Solution_> variableDescriptor;
-    protected final RuinRecreateConstructionHeuristicPhase<Solution_> constructionHeuristicPhase;
+final class RuinMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
 
-    protected final ToLongFunction<Long> minimumSelectedCountSupplier;
-    protected final ToLongFunction<Long> maximumSelectedCountSupplier;
+    private final EntitySelector<Solution_> entitySelector;
+    private final GenuineVariableDescriptor<Solution_> variableDescriptor;
+    private final RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder;
+    private final ToLongFunction<Long> minimumSelectedCountSupplier;
+    private final ToLongFunction<Long> maximumSelectedCountSupplier;
 
-    protected SolverScope<Solution_> solverScope;
+    private SolverScope<Solution_> solverScope;
 
     public RuinMoveSelector(EntitySelector<Solution_> entitySelector,
             GenuineVariableDescriptor<Solution_> variableDescriptor,
-            RuinRecreateConstructionHeuristicPhase<Solution_> constructionHeuristicPhase,
+            RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
             ToLongFunction<Long> minimumSelectedCountSupplier,
             ToLongFunction<Long> maximumSelectedCountSupplier) {
         super();
         this.entitySelector = entitySelector;
         this.variableDescriptor = variableDescriptor;
-        this.constructionHeuristicPhase = constructionHeuristicPhase;
+        this.constructionHeuristicPhaseBuilder = constructionHeuristicPhaseBuilder;
         this.minimumSelectedCountSupplier = minimumSelectedCountSupplier;
         this.maximumSelectedCountSupplier = maximumSelectedCountSupplier;
 
@@ -62,17 +62,13 @@ public class RuinMoveSelector<Solution_> extends GenericMoveSelector<Solution_> 
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         super.solvingStarted(solverScope);
-        constructionHeuristicPhase.setSolver(solverScope.getSolver());
         this.solverScope = solverScope;
         this.workingRandom = solverScope.getWorkingRandom();
     }
 
     @Override
     public Iterator<Move<Solution_>> iterator() {
-        return new RuinMoveIterator<>(entitySelector,
-                variableDescriptor,
-                constructionHeuristicPhase,
-                solverScope,
+        return new RuinMoveIterator<>(entitySelector, variableDescriptor, constructionHeuristicPhaseBuilder, solverScope,
                 minimumSelectedCountSupplier.applyAsLong(entitySelector.getSize()),
                 maximumSelectedCountSupplier.applyAsLong(entitySelector.getSize()),
                 workingRandom);

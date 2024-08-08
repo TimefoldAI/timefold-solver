@@ -2,29 +2,14 @@ package ai.timefold.solver.core.impl.constructionheuristic;
 
 import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHeuristicDecider;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
 public final class RuinRecreateConstructionHeuristicPhase<Solution_>
         extends DefaultConstructionHeuristicPhase<Solution_>
         implements ConstructionHeuristicPhase<Solution_> {
 
-    public RuinRecreateConstructionHeuristicPhase(RuinRecreateBuilder<Solution_> builder) {
+    public RuinRecreateConstructionHeuristicPhase(RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_> builder) {
         super(builder);
-    }
-
-    public void recreateValues(SolverScope<Solution_> solverScope, Object[] entities) {
-        entityPlacer = baseEntityPlacer.rebuildWithFilter((scoreDirector, selection) -> {
-            for (var entity : entities) {
-                if (selection == entity) {
-                    return true;
-                }
-            }
-            return false;
-        });
-        solvingStarted(solverScope);
-        solve(solverScope);
-        entityPlacer = baseEntityPlacer;
     }
 
     @Override
@@ -32,15 +17,38 @@ public final class RuinRecreateConstructionHeuristicPhase<Solution_>
         return true;
     }
 
-    public static final class RuinRecreateBuilder<Solution_> extends Builder<Solution_> {
+    public static final class RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_>
+            extends DefaultConstructionHeuristicPhaseBuilder<Solution_> {
 
-        public RuinRecreateBuilder(Termination<Solution_> phaseTermination, EntityPlacer<Solution_> entityPlacer,
-                ConstructionHeuristicDecider<Solution_> decider) {
+        private Object[] elementsToRecreate;
+
+        public RuinRecreateBuilderConstructionHeuristicPhaseBuilder(Termination<Solution_> phaseTermination,
+                EntityPlacer<Solution_> entityPlacer, ConstructionHeuristicDecider<Solution_> decider) {
             super(0, false, "", phaseTermination, entityPlacer, decider);
         }
 
+        public RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_> setElementsToRecreate(Object[] elements) {
+            this.elementsToRecreate = elements;
+            return this;
+        }
+
         @Override
-        public DefaultConstructionHeuristicPhase<Solution_> build() {
+        public EntityPlacer<Solution_> getEntityPlacer() {
+            if (elementsToRecreate == null || elementsToRecreate.length == 0) {
+                return super.getEntityPlacer();
+            }
+            return super.getEntityPlacer().rebuildWithFilter((scoreDirector, selection) -> {
+                for (var element : elementsToRecreate) {
+                    if (selection == element) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+        }
+
+        @Override
+        public RuinRecreateConstructionHeuristicPhase<Solution_> build() {
             return new RuinRecreateConstructionHeuristicPhase<>(this);
         }
     }

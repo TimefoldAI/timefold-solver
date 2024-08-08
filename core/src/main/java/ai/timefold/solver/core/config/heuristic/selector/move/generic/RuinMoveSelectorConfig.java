@@ -6,7 +6,6 @@ import java.util.function.Consumer;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
-import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
@@ -16,8 +15,7 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
         "maximumRuinedCount",
         "minimumRuinedPercentage",
         "maximumRuinedPercentage",
-        "entitySelectorConfig",
-        "constructionHeuristicConfig"
+        "entitySelectorConfig"
 })
 public class RuinMoveSelectorConfig extends MoveSelectorConfig<RuinMoveSelectorConfig> {
 
@@ -35,9 +33,6 @@ public class RuinMoveSelectorConfig extends MoveSelectorConfig<RuinMoveSelectorC
 
     @XmlElement(name = "entitySelector")
     protected EntitySelectorConfig entitySelectorConfig = null;
-
-    @XmlElement(name = "constructionHeuristic")
-    protected ConstructionHeuristicPhaseConfig constructionHeuristicConfig = null;
 
     public RuinMoveSelectorConfig() {
 
@@ -113,29 +108,13 @@ public class RuinMoveSelectorConfig extends MoveSelectorConfig<RuinMoveSelectorC
         return this;
     }
 
-    public ConstructionHeuristicPhaseConfig getConstructionHeuristicConfig() {
-        return constructionHeuristicConfig;
-    }
-
-    public void setConstructionHeuristicConfig(
-            ConstructionHeuristicPhaseConfig constructionHeuristicConfig) {
-        this.constructionHeuristicConfig = constructionHeuristicConfig;
-    }
-
-    public RuinMoveSelectorConfig
-            withConstructionHeuristicConfig(ConstructionHeuristicPhaseConfig constructionHeuristicConfig) {
-        this.constructionHeuristicConfig = constructionHeuristicConfig;
-        return this;
-    }
-
     // **************************
     // Interface methods
     // **************************
 
     @Override
     public boolean hasNearbySelectionConfig() {
-        return constructionHeuristicConfig != null && constructionHeuristicConfig.getMoveSelectorConfigList()
-                .stream().anyMatch(MoveSelectorConfig::hasNearbySelectionConfig);
+        return false;
     }
 
     @Override
@@ -146,8 +125,6 @@ public class RuinMoveSelectorConfig extends MoveSelectorConfig<RuinMoveSelectorC
     @Override
     public RuinMoveSelectorConfig inherit(RuinMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
-        constructionHeuristicConfig = ConfigUtils.inheritConfig(constructionHeuristicConfig,
-                inheritedConfig.getConstructionHeuristicConfig());
         entitySelectorConfig = ConfigUtils.inheritConfig(entitySelectorConfig, inheritedConfig.getEntitySelectorConfig());
         minimumRuinedCount =
                 ConfigUtils.inheritOverwritableProperty(minimumRuinedCount, inheritedConfig.getMinimumRuinedCount());
@@ -164,9 +141,6 @@ public class RuinMoveSelectorConfig extends MoveSelectorConfig<RuinMoveSelectorC
     public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
         if (entitySelectorConfig != null) {
             entitySelectorConfig.visitReferencedClasses(classVisitor);
-        }
-        if (constructionHeuristicConfig != null) {
-            constructionHeuristicConfig.visitReferencedClasses(classVisitor);
         }
     }
 
@@ -197,7 +171,4 @@ public class RuinMoveSelectorConfig extends MoveSelectorConfig<RuinMoveSelectorC
         return Math.min(DEFAULT_MAXIMUM_RUINED_COUNT, entityCount);
     }
 
-    public ConstructionHeuristicPhaseConfig determineConstructionHeuristicConfig() {
-        return Objects.requireNonNullElseGet(constructionHeuristicConfig, ConstructionHeuristicPhaseConfig::new);
-    }
 }

@@ -866,8 +866,6 @@
           <xs:element minOccurs="0" name="maximumRuinedPercentage" type="xs:double"/>
                     
           <xs:element minOccurs="0" name="entitySelector" type="tns:entitySelectorConfig"/>
-                    
-          <xs:element minOccurs="0" name="constructionHeuristic" type="tns:constructionHeuristicPhaseConfig"/>
                   
         </xs:sequence>
               
@@ -894,8 +892,6 @@
           <xs:element minOccurs="0" name="maximumRuinedPercentage" type="xs:double"/>
                     
           <xs:element minOccurs="0" name="valueSelector" type="tns:valueSelectorConfig"/>
-                    
-          <xs:element minOccurs="0" name="constructionHeuristic" type="tns:constructionHeuristicPhaseConfig"/>
                   
         </xs:sequence>
               
