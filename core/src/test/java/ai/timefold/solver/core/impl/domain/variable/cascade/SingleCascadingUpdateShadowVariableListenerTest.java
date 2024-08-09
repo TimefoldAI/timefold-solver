@@ -32,7 +32,8 @@ class SingleCascadingUpdateShadowVariableListenerTest {
                         "The entityClass (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingInvalidSource)")
                 .withMessageContaining("has a @ShadowVariable annotated property (cascadeValue2)")
                 .withMessageContaining("with sourceVariableName (cascadeValue) which cannot be used as source")
-                .withMessageContaining("Shadow variables such as @CascadingUpdateShadowVariable are not allowed to be used as source")
+                .withMessageContaining(
+                        "Shadow variables such as @CascadingUpdateShadowVariable are not allowed to be used as source")
                 .withMessageContaining("Maybe check if cascadeValue is annotated with @CascadingUpdateShadowVariable");
     }
 
