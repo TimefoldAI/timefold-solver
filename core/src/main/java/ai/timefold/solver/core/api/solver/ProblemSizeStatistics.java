@@ -39,6 +39,10 @@ public record ProblemSizeStatistics(long entityCount,
     }
 
     String approximateProblemScaleAsFormattedString(Locale locale) {
+        if (Double.isNaN(approximateProblemSizeLog) || Double.isInfinite(approximateProblemSizeLog)) {
+            return "0";
+        }
+
         if (approximateProblemSizeLog < 10) { // log_10(10_000_000_000) = 10
             return "%s".formatted(format(Math.pow(10d, approximateProblemSizeLog), BASIC_FORMATTER, locale));
         }

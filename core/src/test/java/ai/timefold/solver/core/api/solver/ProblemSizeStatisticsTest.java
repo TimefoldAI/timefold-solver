@@ -67,5 +67,25 @@ class ProblemSizeStatisticsTest {
         statistics = getProblemSizeStatistics(321_123_456_789L);
         assertThat(statistics.approximateProblemScaleAsFormattedString())
                 .isEqualTo("3.211235 × 10^11");
+
+        // scale = -infinity
+        statistics = new ProblemSizeStatistics(0L, 0L, 0L, Double.NEGATIVE_INFINITY);
+        assertThat(statistics.approximateProblemScaleAsFormattedString())
+                .isEqualTo("0");
+
+        // scale = +infinity
+        statistics = new ProblemSizeStatistics(0L, 0L, 0L, Double.POSITIVE_INFINITY);
+        assertThat(statistics.approximateProblemScaleAsFormattedString())
+                .isEqualTo("0");
+
+        // scale = NaN
+        statistics = new ProblemSizeStatistics(0L, 0L, 0L, Double.NaN);
+        assertThat(statistics.approximateProblemScaleAsFormattedString())
+                .isEqualTo("0");
+
+        // scale = 0
+        statistics = new ProblemSizeStatistics(0L, 0L, 0L, 0);
+        assertThat(statistics.approximateProblemScaleAsFormattedString())
+                .isEqualTo("1");
     }
 }

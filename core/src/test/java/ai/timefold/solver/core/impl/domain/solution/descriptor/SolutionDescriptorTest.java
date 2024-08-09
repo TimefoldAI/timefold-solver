@@ -410,6 +410,23 @@ class SolutionDescriptorTest {
     }
 
     @Test
+    void emptyProblemScale() {
+        int valueCount = 27;
+        int entityCount = 27;
+        SolutionDescriptor<TestdataSolution> solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+        TestdataSolution solution = TestdataSolution.generateSolution(valueCount, entityCount);
+        solution.getValueList().clear();
+        assertSoftly(softly -> {
+            softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
+            softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
+            softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution)).isEqualTo(0);
+            softly.assertThat(solutionDescriptor.getApproximateValueCount(solution)).isEqualTo(0);
+            softly.assertThat(solutionDescriptor.getProblemScale(null, solution))
+                    .isEqualTo(0);
+        });
+    }
+
+    @Test
     void problemScaleMultipleValueRanges() {
         var solutionDescriptor = TestdataValueRangeSolution.buildSolutionDescriptor();
         var solution = new TestdataValueRangeSolution("Solution");
