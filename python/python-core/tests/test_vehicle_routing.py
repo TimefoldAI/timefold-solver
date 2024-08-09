@@ -35,8 +35,7 @@ class Visit:
         default=None)
     arrival_time: Annotated[
         Optional[datetime],
-        CascadingUpdateShadowVariable(source_variable_names=['vehicle', 'previous_visit'],
-                                      target_method_name='update_arrival_time')] = field(default=None)
+        CascadingUpdateShadowVariable(target_method_name='update_arrival_time')] = field(default=None)
     piggyback_arrival_time: Annotated[
         Optional[datetime],
         PiggybackShadowVariable(shadow_variable_name='arrival_time')] = field(default=None)

@@ -7,19 +7,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.variable.AbstractVariableListener;
 import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable;
+import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateDemand;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWithSources;
@@ -29,12 +27,9 @@ import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
 
     private final List<ShadowVariableTarget<Solution_>> shadowVariableTargetList;
-    private ListVariableDescriptor<Solution_> sourceListVariableDescriptor;
     private final List<VariableDescriptor<Solution_>> targetVariableDescriptorList = new ArrayList<>();
-    private final Set<VariableDescriptor<Solution_>> sourceVariableDescriptorSet = new HashSet<>();
+    private VariableDescriptor<Solution_> firstTargetVariableDescriptor;
     private MemberAccessor targetMethod;
-    // This flag defines if the planning variable generates a listener, which will be notified later by the event system
-    private boolean notifiable = true;
 
     public CascadingUpdateShadowVariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
@@ -48,33 +43,49 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
         shadowVariableTargetList.add(new ShadowVariableTarget<>(entityDescriptor, variableMemberAccessor));
     }
 
-    public void setNotifiable(boolean notifiable) {
-        this.notifiable = notifiable;
-    }
-
-    private List<CascadingUpdateShadowVariable> getDeclaredShadowVariables(MemberAccessor variableMemberAccessor) {
-        var declaredShadowVariableList = Arrays.asList(variableMemberAccessor
-                .getDeclaredAnnotationsByType(CascadingUpdateShadowVariable.class));
-        var targetMethodList = declaredShadowVariableList.stream()
-                .map(CascadingUpdateShadowVariable::targetMethodName)
-                .distinct()
-                .toList();
-        if (targetMethodList.size() > 1) {
-            throw new IllegalArgumentException(
-                    """
-                            The entityClass (%s) has multiple @%s in the annotated property (%s), and there are distinct targetMethodName values [%s].
-                            Maybe update targetMethodName to use same method in the field %s."""
-                            .formatted(entityDescriptor.getEntityClass(),
-                                    CascadingUpdateShadowVariable.class.getSimpleName(),
-                                    variableMemberAccessor.getName(),
-                                    String.join(", ", targetMethodList),
-                                    variableMemberAccessor.getName()));
-        }
-        return declaredShadowVariableList;
-    }
-
     public String getTargetMethodName() {
-        return getDeclaredShadowVariables(variableMemberAccessor).get(0).targetMethodName();
+        var variableMemberAccessor = shadowVariableTargetList.get(0).variableMemberAccessor();
+        return Arrays
+                .stream(variableMemberAccessor.getDeclaredAnnotationsByType(CascadingUpdateShadowVariable.class))
+                .findFirst().map(CascadingUpdateShadowVariable::targetMethodName)
+                .orElseThrow(() -> new IllegalStateException("The entity %s is not annotated with @%s."
+                        .formatted(entityDescriptor.getEntityClass(), CascadingUpdateShadowVariable.class.getSimpleName())));
+    }
+
+    public boolean update(ScoreDirector<Solution_> scoreDirector, Object entity) {
+        if (targetVariableDescriptorList.size() == 1) {
+            return updateSingle(scoreDirector, entity);
+        } else {
+            return updateMultiple(scoreDirector, entity);
+        }
+    }
+
+    private boolean updateSingle(ScoreDirector<Solution_> scoreDirector, Object entity) {
+        var oldValue = firstTargetVariableDescriptor.getValue(entity);
+        scoreDirector.beforeVariableChanged(entity, firstTargetVariableDescriptor.getVariableName());
+        targetMethod.executeGetter(entity);
+        var newValue = firstTargetVariableDescriptor.getValue(entity);
+        scoreDirector.afterVariableChanged(entity, firstTargetVariableDescriptor.getVariableName());
+        return !Objects.equals(oldValue, newValue);
+    }
+
+    private boolean updateMultiple(ScoreDirector<Solution_> scoreDirector, Object entity) {
+        var oldValueList = new ArrayList<>(targetVariableDescriptorList.size());
+        for (var targetVariableDescriptor : targetVariableDescriptorList) {
+            scoreDirector.beforeVariableChanged(entity, targetVariableDescriptor.getVariableName());
+            oldValueList.add(targetVariableDescriptor.getValue(entity));
+        }
+        targetMethod.executeGetter(entity);
+        var hasChange = false;
+        for (var i = 0; i < targetVariableDescriptorList.size(); i++) {
+            var targetVariableDescriptor = targetVariableDescriptorList.get(i);
+            var newValue = targetVariableDescriptor.getValue(entity);
+            scoreDirector.afterVariableChanged(entity, targetVariableDescriptor.getVariableName());
+            if (!hasChange && !Objects.equals(oldValueList.get(i), newValue)) {
+                hasChange = true;
+            }
+        }
+        return hasChange;
     }
 
     @Override
@@ -85,11 +96,6 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
     @Override
     public void linkVariableDescriptors(DescriptorPolicy descriptorPolicy) {
         for (var shadowVariableTarget : shadowVariableTargetList) {
-            var declaredShadowVariableList =
-                    getDeclaredShadowVariables(shadowVariableTarget.variableMemberAccessor());
-            for (var shadowVariable : declaredShadowVariableList) {
-                linkVariableDescriptorToSource(shadowVariableTarget.variableMemberAccessor(), shadowVariable);
-            }
             targetVariableDescriptorList.add(shadowVariableTarget.entityDescriptor()
                     .getShadowVariableDescriptor(shadowVariableTarget.variableMemberAccessor().getName()));
         }
@@ -107,21 +113,6 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
                             listVariableDescriptorList.stream().map(
                                     v -> v.getEntityDescriptor().getEntityClass().getSimpleName() + "::" + v.getVariableName())
                                     .collect(joining(", "))));
-        }
-        sourceListVariableDescriptor = (ListVariableDescriptor<Solution_>) listVariableDescriptorList.get(0);
-
-        // Defining the source variable and the source entity class may result in references to different sources,
-        // such as regular shadow or planning list variables.
-        // In order to simplify implementation,
-        // the cascading listener can be configured for multiple shadow variables or a single planning list variable.
-        if (hasShadowVariable() && hasPlanningListVariable()) {
-            throw new IllegalArgumentException(
-                    """
-                            The entity class (%s) has @%s-annotated properties configured with targetMethodName (%s) and defines both a shadow variable and a list variable sources, which is not supported.
-                            Maybe configure a different targetMethodName for the list variable source and the shadow variable source(s)."""
-                            .formatted(entityDescriptor.getEntityClass(),
-                                    CascadingUpdateShadowVariable.class.getSimpleName(),
-                                    variableMemberAccessor.getName()));
         }
 
         var targetMethodName = getTargetMethodName();
@@ -141,113 +132,17 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
         }
         targetMethod = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(allSourceMethodMembers.get(0),
                 MemberAccessorFactory.MemberAccessorType.REGULAR_METHOD, null, descriptorPolicy.getDomainAccessType());
-    }
-
-    public void linkVariableDescriptorToSource(MemberAccessor targetMemberAccessor,
-            CascadingUpdateShadowVariable shadowVariable) {
-        var nonEmptySources = Arrays.stream(shadowVariable.sourceVariableNames())
-                .filter(s -> !s.isBlank())
-                .toList();
-        if (shadowVariable.sourceVariableName().isBlank() && nonEmptySources.isEmpty()) {
-            throw new IllegalArgumentException(
-                    """
-                            The entity class (%s) has an @%s annotated property (%s), but neither the sourceVariableName nor the sourceVariableNames properties are set.
-                            Maybe update the field "%s" and set one of the properties ([sourceVariableName, sourceVariableNames])."""
-                            .formatted(entityDescriptor.getEntityClass(),
-                                    CascadingUpdateShadowVariable.class.getSimpleName(),
-                                    variableMemberAccessor.getName(),
-                                    variableMemberAccessor.getName()));
-        }
-        if (!shadowVariable.sourceVariableName().isBlank() && !nonEmptySources.isEmpty()) {
-            throw new IllegalArgumentException(
-                    """
-                            The entity class (%s) has an @%s annotated property (%s), but it is only possible to define either sourceVariableName or sourceVariableNames.
-                            Maybe update the field "%s" to set only one of the properties ([sourceVariableName, sourceVariableNames])."""
-                            .formatted(entityDescriptor.getEntityClass(),
-                                    CascadingUpdateShadowVariable.class.getSimpleName(),
-                                    variableMemberAccessor.getName(),
-                                    variableMemberAccessor.getName()));
-        }
-        if (nonEmptySources.isEmpty()) {
-            registerSource(shadowVariable.sourceEntityClass(), shadowVariable.sourceVariableName(), targetMemberAccessor);
-        } else {
-            nonEmptySources.forEach(name -> registerSource(shadowVariable.sourceEntityClass(), name, targetMemberAccessor));
-        }
-    }
-
-    private void registerSource(Class<?> sourceEntityClass, String sourceVariableName, MemberAccessor targetMemberAccessor) {
-        var sourceEntityDescriptor = entityDescriptor;
-        if (!sourceEntityClass.equals(CascadingUpdateShadowVariable.NullEntityClass.class)) {
-            sourceEntityDescriptor = entityDescriptor.getSolutionDescriptor().findEntityDescriptor(sourceEntityClass);
-            if (sourceEntityDescriptor == null) {
-                throw new IllegalArgumentException(
-                        """
-                                The entityClass (%s) has a @%s annotated property (%s) with a sourceEntityClass (%s) which is not a valid planning entity.
-                                Maybe check the annotations of the class (%s).
-                                Maybe add the class (%s) among planning entities in the solver configuration."""
-                                .formatted(entityDescriptor.getEntityClass(),
-                                        CascadingUpdateShadowVariable.class.getSimpleName(), targetMemberAccessor.getName(),
-                                        sourceEntityClass, sourceEntityClass, sourceEntityClass));
-            }
-        }
-
-        var sourceVariableDescriptor = sourceEntityDescriptor.getVariableDescriptor(sourceVariableName);
-        if (sourceVariableDescriptor == null) {
-            if (sourceEntityDescriptor != entityDescriptor) {
-                throw new IllegalArgumentException(
-                        """
-                                The entityClass (%s) has a @%s annotated property (%s) with a sourceEntityClass (%s), but the shadow variable "%s" cannot be found in the planning entity %s.
-                                Maybe update sourceVariableName to an existing shadow variable in the entity %s."""
-                                .formatted(entityDescriptor.getEntityClass(),
-                                        CascadingUpdateShadowVariable.class.getSimpleName(),
-                                        targetMemberAccessor.getName(),
-                                        sourceEntityClass,
-                                        sourceVariableName,
-                                        sourceEntityDescriptor.getEntityClass(),
-                                        sourceEntityDescriptor.getEntityClass()));
-            } else {
-                throw new IllegalArgumentException(
-                        """
-                                The entity class (%s) has an @%s annotated property (%s), but the shadow variable "%s" cannot be found.
-                                Maybe update sourceVariableName to an existing shadow variable in the entity %s."""
-                                .formatted(sourceEntityDescriptor.getEntityClass(),
-                                        CascadingUpdateShadowVariable.class.getSimpleName(),
-                                        targetMemberAccessor.getName(),
-                                        sourceVariableName,
-                                        sourceEntityDescriptor.getEntityClass()));
-            }
-        }
-        if (sourceVariableDescriptorSet.add(sourceVariableDescriptor)) {
-            sourceVariableDescriptor.registerSinkVariableDescriptor(this);
-        }
-    }
-
-    private boolean hasShadowVariable() {
-        return this.sourceVariableDescriptorSet.stream()
-                .anyMatch(v -> ShadowVariableDescriptor.class.isAssignableFrom(v.getClass()));
-    }
-
-    private boolean hasPlanningListVariable() {
-        return this.sourceVariableDescriptorSet.stream()
-                .anyMatch(v -> ListVariableDescriptor.class.isAssignableFrom(v.getClass()));
+        firstTargetVariableDescriptor = targetVariableDescriptorList.get(0);
     }
 
     @Override
     public List<VariableDescriptor<Solution_>> getSourceVariableDescriptorList() {
-        return List.copyOf(sourceVariableDescriptorSet);
+        return Collections.emptyList();
     }
 
     @Override
     public Collection<Class<? extends AbstractVariableListener>> getVariableListenerClasses() {
-        if (targetVariableDescriptorList.size() == 1) {
-            if (hasShadowVariable()) {
-                return Collections.singleton(SingleCascadingUpdateShadowVariableListener.class);
-            } else {
-                return Collections.singleton(SingleCascadingUpdateListVariableListener.class);
-            }
-        } else {
-            return Collections.singleton(CollectionCascadingUpdateShadowVariableListener.class);
-        }
+        return Collections.emptyList();
     }
 
     @Override
@@ -257,30 +152,17 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
 
     @Override
     public boolean hasVariableListener() {
-        // There are use cases where the shadow variable is applied to different fields
-        // and relies on the same method to update their values.
-        // Therefore, only one listener will be generated when multiple descriptors use the same method,
-        //and the notifiable flag won't be enabled in such cases.
-        return notifiable;
+        return false;
+    }
+
+    @Override
+    public boolean canBeUsedAsSource() {
+        return false;
     }
 
     @Override
     public Iterable<VariableListenerWithSources<Solution_>> buildVariableListeners(SupplyManager supplyManager) {
-        AbstractCascadingUpdateShadowVariableListener<Solution_> listener;
-        var listVariableStateSupply = supplyManager.demand(new ListVariableStateDemand<>(sourceListVariableDescriptor));
-        if (targetVariableDescriptorList.size() == 1) {
-            if (hasShadowVariable()) {
-                listener = new SingleCascadingUpdateShadowVariableListener<>(sourceListVariableDescriptor,
-                        targetVariableDescriptorList, targetMethod, listVariableStateSupply);
-            } else {
-                listener = new SingleCascadingUpdateListVariableListener<>(sourceListVariableDescriptor,
-                        targetVariableDescriptorList, targetMethod, listVariableStateSupply);
-            }
-        } else {
-            listener = new CollectionCascadingUpdateShadowVariableListener<>(sourceListVariableDescriptor,
-                    targetVariableDescriptorList, targetMethod, listVariableStateSupply);
-        }
-        return Collections.singleton(new VariableListenerWithSources<>(listener, getSourceVariableDescriptorList()));
+        throw new UnsupportedOperationException("Cascade update element generates no listeners.");
     }
 
     private record ShadowVariableTarget<Solution_>(EntityDescriptor<Solution_> entityDescriptor,

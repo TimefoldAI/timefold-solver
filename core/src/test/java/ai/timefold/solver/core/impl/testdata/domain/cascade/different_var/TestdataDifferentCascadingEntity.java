@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.shadow_var;
+package ai.timefold.solver.core.impl.testdata.domain.cascade.different_var;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,24 +12,24 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
 
 @PlanningEntity
-public class TestdataSingleCascadingEntity extends TestdataObject {
+public class TestdataDifferentCascadingEntity extends TestdataObject {
 
-    public static EntityDescriptor<TestdataSingleCascadingSolution> buildEntityDescriptor() {
-        return TestdataSingleCascadingSolution.buildSolutionDescriptor()
-                .findEntityDescriptorOrFail(TestdataSingleCascadingEntity.class);
+    public static EntityDescriptor<TestdataDifferentCascadingSolution> buildEntityDescriptor() {
+        return TestdataDifferentCascadingSolution.buildSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataDifferentCascadingEntity.class);
     }
 
-    public static ListVariableDescriptor<TestdataSingleCascadingSolution> buildVariableDescriptorForValueList() {
-        return (ListVariableDescriptor<TestdataSingleCascadingSolution>) buildEntityDescriptor()
+    public static ListVariableDescriptor<TestdataDifferentCascadingSolution> buildVariableDescriptorForValueList() {
+        return (ListVariableDescriptor<TestdataDifferentCascadingSolution>) buildEntityDescriptor()
                 .getGenuineVariableDescriptor("valueList");
     }
 
-    public static TestdataSingleCascadingEntity createWithValues(String code, TestdataSingleCascadingValue... values) {
+    public static TestdataDifferentCascadingEntity createWithValues(String code, TestdataDifferentCascadingValue... values) {
         // Set up shadow variables to preserve consistency.
-        return new TestdataSingleCascadingEntity(code, new ArrayList<>(Arrays.asList(values))).setUpShadowVariables();
+        return new TestdataDifferentCascadingEntity(code, new ArrayList<>(Arrays.asList(values))).setUpShadowVariables();
     }
 
-    TestdataSingleCascadingEntity setUpShadowVariables() {
+    TestdataDifferentCascadingEntity setUpShadowVariables() {
         if (valueList != null && !valueList.isEmpty()) {
             int i = 0;
             var previous = valueList.get(i);
@@ -45,36 +45,40 @@ public class TestdataSingleCascadingEntity extends TestdataObject {
             }
             for (var v : valueList) {
                 v.updateCascadeValue();
-                v.updateCascadeValueWithReturnType();
+                v.updateSecondCascadeValue();
             }
         }
         return this;
     }
 
     @PlanningListVariable(valueRangeProviderRefs = "valueRange")
-    private List<TestdataSingleCascadingValue> valueList;
+    private List<TestdataDifferentCascadingValue> valueList;
 
-    public TestdataSingleCascadingEntity(String code) {
+    public TestdataDifferentCascadingEntity() {
+    }
+
+    public TestdataDifferentCascadingEntity(String code) {
         super(code);
         this.valueList = new LinkedList<>();
     }
 
-    public TestdataSingleCascadingEntity(String code, List<TestdataSingleCascadingValue> valueList) {
+    public TestdataDifferentCascadingEntity(String code, List<TestdataDifferentCascadingValue> valueList) {
         super(code);
         this.valueList = valueList;
     }
 
-    public void setValueList(List<TestdataSingleCascadingValue> valueList) {
+    @SuppressWarnings("rawtypes")
+    public void setValueList(List valueList) {
         this.valueList = valueList;
     }
 
-    public List<TestdataSingleCascadingValue> getValueList() {
+    public List<TestdataDifferentCascadingValue> getValueList() {
         return valueList;
     }
 
     @Override
     public String toString() {
-        return "TestdataSingleCascadingEntity{" +
+        return "TestdataDifferentCascadingEntity{" +
                 "code='" + code + '\'' +
                 '}';
     }

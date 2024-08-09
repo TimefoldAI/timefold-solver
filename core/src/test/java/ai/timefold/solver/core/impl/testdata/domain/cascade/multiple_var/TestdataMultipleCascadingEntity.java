@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.shadow_var;
+package ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,11 +10,9 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.multiple_var.TestdataCascadingBaseEntity;
 
 @PlanningEntity
-public class TestdataMultipleCascadingEntity extends TestdataObject
-        implements TestdataCascadingBaseEntity<TestdataMultipleCascadingValue> {
+public class TestdataMultipleCascadingEntity extends TestdataObject {
 
     public static EntityDescriptor<TestdataMultipleCascadingSolution> buildEntityDescriptor() {
         return TestdataMultipleCascadingSolution.buildSolutionDescriptor()
@@ -68,13 +66,11 @@ public class TestdataMultipleCascadingEntity extends TestdataObject
         this.valueList = valueList;
     }
 
-    @Override
     @SuppressWarnings("rawtypes")
     public void setValueList(List valueList) {
         this.valueList = valueList;
     }
 
-    @Override
     public List<TestdataMultipleCascadingValue> getValueList() {
         return valueList;
     }

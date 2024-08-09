@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.shadow_var;
+package ai.timefold.solver.core.impl.testdata.domain.cascade.single_var;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable;
@@ -21,19 +21,14 @@ public class TestdataSingleCascadingValue {
     private TestdataSingleCascadingValue previous;
     @NextElementShadowVariable(sourceVariableName = "valueList")
     private TestdataSingleCascadingValue next;
-    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue", sourceVariableName = "entity")
-    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue", sourceVariableName = "previous")
+    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue")
     private Integer cascadeValue;
     // Having a field with the same name as the targetMethodName should not cause any failure
     // when parsing @CascadingUpdateShadowVariable
     @SuppressWarnings("unused")
     private Integer updateCascadeValue;
-    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValueWithReturnType", sourceVariableName = "entity")
-    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValueWithReturnType", sourceVariableName = "previous")
-    private Integer cascadeValueReturnType;
     private Integer value;
-    private int firstNumberOfCalls = 0;
-    private int secondNumberOfCalls = 0;
+    private int numberOfCalls = 0;
 
     public TestdataSingleCascadingValue(Integer value) {
         this.value = value;
@@ -79,21 +74,13 @@ public class TestdataSingleCascadingValue {
         return cascadeValue;
     }
 
-    public Integer getCascadeValueReturnType() {
-        return cascadeValueReturnType;
-    }
-
-    public int getFirstNumberOfCalls() {
-        return firstNumberOfCalls;
-    }
-
-    public int getSecondNumberOfCalls() {
-        return secondNumberOfCalls;
+    public int getNumberOfCalls() {
+        return numberOfCalls;
     }
 
     //---Complex methods---//
     public void updateCascadeValue() {
-        firstNumberOfCalls++;
+        numberOfCalls++;
         if (cascadeValue == null || cascadeValue != value + 1) {
             cascadeValue = value + 1;
         }
@@ -101,14 +88,6 @@ public class TestdataSingleCascadingValue {
 
     public void updateCascadeValue(@SuppressWarnings("unused") int i) {
         // Overloaded methods should not cause any failures when parsing @CascadingUpdateShadowVariable
-    }
-
-    public Integer updateCascadeValueWithReturnType() {
-        secondNumberOfCalls++;
-        if (cascadeValueReturnType == null || cascadeValueReturnType != value + 2) {
-            cascadeValueReturnType = value + 2;
-        }
-        return cascadeValueReturnType;
     }
 
     @Override
