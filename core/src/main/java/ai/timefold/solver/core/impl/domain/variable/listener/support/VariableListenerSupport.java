@@ -32,6 +32,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         return new VariableListenerSupport<>(scoreDirector, new NotifiableRegistry<>(scoreDirector.getSolutionDescriptor()));
     }
 
+    private static final int SHADOW_VARIABLE_VIOLATION_DISPLAY_LIMIT = 3;
     private final InnerScoreDirector<Solution_, ?> scoreDirector;
     private final NotifiableRegistry<Solution_> notifiableRegistry;
     private final Map<Demand<?>, SupplyWithDemandCount> supplyMap = new HashMap<>();
@@ -268,8 +269,6 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                 ShadowVariablesAssert.takeSnapshot(scoreDirector.getSolutionDescriptor(), workingSolution);
 
         forceTriggerAllVariableListeners(workingSolution);
-
-        final var SHADOW_VARIABLE_VIOLATION_DISPLAY_LIMIT = 3;
         return snapshot.createShadowVariablesViolationMessage(SHADOW_VARIABLE_VIOLATION_DISPLAY_LIMIT);
     }
 
