@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.AbstractVariableListener;
+import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ListVariableListener;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.VariableListener;
@@ -79,9 +80,14 @@ public final class CustomShadowVariableDescriptor<Solution_> extends ShadowVaria
         }
         if (!sourceVariableDescriptor.canBeUsedAsSource()) {
             throw new IllegalArgumentException(
-                    "The entityClass (%s) has a @%s annotated property (%s) with sourceVariableName (%s) which cannot be used as source."
+                    """
+                            The entityClass (%s) has a @%s annotated property (%s) with sourceVariableName (%s) which cannot be used as source.
+                            Shadow variables such as @%s are not allowed to be used as source.
+                            Maybe check if %s is annotated with @%s."""
                             .formatted(entityDescriptor.getEntityClass(), ShadowVariable.class.getSimpleName(),
-                                    variableMemberAccessor.getName(), sourceVariableName));
+                                    variableMemberAccessor.getName(), sourceVariableName,
+                                    CascadingUpdateShadowVariable.class.getSimpleName(), sourceVariableName,
+                                    CascadingUpdateShadowVariable.class.getSimpleName()));
         }
         var variableListenerClass = shadowVariable.variableListenerClass();
         if (sourceVariableDescriptor.isListVariable()

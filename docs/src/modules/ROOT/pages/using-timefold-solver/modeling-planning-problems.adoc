@@ -1427,7 +1427,13 @@ A user-defined logic can only change shadow variables.
 It must never change a genuine planning variable or a problem fact.
 ====
 
-==== Multiple shadow variables
+[WARNING]
+====
+Except for `@PiggybackShadowVariable`,
+the use of `@CascadingUpdateShadowVariable` as a source for other variables is not allowed.
+====
+
+==== Multiple sources
 
 If the user-defined logic requires updating multiple shadow variables,
 apply the `@CascadingUpdateShadowVariable` annotation to only one shadow variable.
@@ -1460,6 +1466,11 @@ It stops when both `arrivalTime` and `weightAtVisit` values do not change or whe
 ====
 It is not allowed to specify the property `shadowEntityClass` in `@PiggybackShadowVariable`
 when the source shadow variable is `@CascadingUpdateShadowVariable`.
+====
+
+[WARNING]
+====
+The user's logic is responsible for defining the order in which each variable is updated.
 ====
 
 [#chainedPlanningVariable]
