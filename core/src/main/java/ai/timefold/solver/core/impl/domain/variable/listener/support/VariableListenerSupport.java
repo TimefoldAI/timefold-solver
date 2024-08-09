@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.impl.domain.variable.listener.support;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -49,13 +49,8 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         this.cascadingUpdateShadowVarDescriptorList = scoreDirector.getSolutionDescriptor().getEntityDescriptors().stream()
                 .flatMap(e -> e.getDeclaredCascadingUpdateShadowVariableDescriptors().stream())
                 .toList();
-        this.listVariableDescriptor = scoreDirector.getSolutionDescriptor().getEntityDescriptors().stream()
-                .flatMap(e -> e.getGenuineVariableDescriptorList().stream())
-                .filter(VariableDescriptor::isListVariable)
-                .map(d -> (ListVariableDescriptor<Solution_>) d)
-                .findFirst()
-                .orElse(null);
-        this.listVariableEventList = new LinkedList<>();
+        this.listVariableDescriptor = scoreDirector.getSolutionDescriptor().getListVariableDescriptor();
+        this.listVariableEventList = new ArrayList<>();
     }
 
     public void linkVariableListeners() {
