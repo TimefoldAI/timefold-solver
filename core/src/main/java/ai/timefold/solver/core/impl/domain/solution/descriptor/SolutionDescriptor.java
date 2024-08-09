@@ -1095,7 +1095,11 @@ public class SolutionDescriptor<Solution_> {
             result += MathUtils.getPossibleArrangementsScaledApproximateLog(MathUtils.LOG_PRECISION, logBase,
                     totalListMovableValueCount, possibleTargetsForListValue);
         }
-        return (result / (double) MathUtils.LOG_PRECISION) / MathUtils.getLogInBase(logBase, 10d);
+        var scale = (result / (double) MathUtils.LOG_PRECISION) / MathUtils.getLogInBase(logBase, 10d);
+        if (Double.isNaN(scale) || Double.isInfinite(scale)) {
+            return 0;
+        }
+        return scale;
     }
 
     public ProblemSizeStatistics getProblemSizeStatistics(ScoreDirector<Solution_> scoreDirector, Solution_ solution) {
