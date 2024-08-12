@@ -83,6 +83,10 @@ public abstract class VariableDescriptor<Solution_> {
         return this instanceof ListVariableDescriptor;
     }
 
+    public boolean canBeUsedAsSource() {
+        return true;
+    }
+
     // ************************************************************************
     // Shadows
     // ************************************************************************

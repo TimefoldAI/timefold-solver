@@ -1,13 +1,16 @@
 package ai.timefold.solver.core.impl.domain.variable.listener.support;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -29,9 +32,14 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         return new VariableListenerSupport<>(scoreDirector, new NotifiableRegistry<>(scoreDirector.getSolutionDescriptor()));
     }
 
+    private static final int SHADOW_VARIABLE_VIOLATION_DISPLAY_LIMIT = 3;
     private final InnerScoreDirector<Solution_, ?> scoreDirector;
     private final NotifiableRegistry<Solution_> notifiableRegistry;
     private final Map<Demand<?>, SupplyWithDemandCount> supplyMap = new HashMap<>();
+
+    private final List<ListVariableEvent> listVariableEventList;
+    private final ListVariableDescriptor<Solution_> listVariableDescriptor;
+    private final List<CascadingUpdateShadowVariableDescriptor<Solution_>> cascadingUpdateShadowVarDescriptorList;
 
     private boolean notificationQueuesAreEmpty = true;
     private int nextGlobalOrder = 0;
@@ -39,6 +47,11 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     VariableListenerSupport(InnerScoreDirector<Solution_, ?> scoreDirector, NotifiableRegistry<Solution_> notifiableRegistry) {
         this.scoreDirector = scoreDirector;
         this.notifiableRegistry = notifiableRegistry;
+        this.cascadingUpdateShadowVarDescriptorList = scoreDirector.getSolutionDescriptor().getEntityDescriptors().stream()
+                .flatMap(e -> e.getDeclaredCascadingUpdateShadowVariableDescriptors().stream())
+                .toList();
+        this.listVariableDescriptor = scoreDirector.getSolutionDescriptor().getListVariableDescriptor();
+        this.listVariableEventList = new ArrayList<>();
     }
 
     public void linkVariableListeners() {
@@ -138,10 +151,10 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     }
 
     public void beforeEntityAdded(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
-        Collection<EntityNotifiable<Solution_>> notifiables = notifiableRegistry.get(entityDescriptor);
+        var notifiables = notifiableRegistry.get(entityDescriptor);
         if (!notifiables.isEmpty()) {
             EntityNotification<Solution_> notification = Notification.entityAdded(entity);
-            for (EntityNotifiable<Solution_> notifiable : notifiables) {
+            for (var notifiable : notifiables) {
                 notifiable.notifyBefore(notification);
             }
             notificationQueuesAreEmpty = false;
@@ -149,7 +162,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     }
 
     public void beforeEntityRemoved(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
-        Collection<EntityNotifiable<Solution_>> notifiables = notifiableRegistry.get(entityDescriptor);
+        var notifiables = notifiableRegistry.get(entityDescriptor);
         if (!notifiables.isEmpty()) {
             EntityNotification<Solution_> notification = Notification.entityRemoved(entity);
             for (EntityNotifiable<Solution_> notifiable : notifiables) {
@@ -160,10 +173,10 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     }
 
     public void beforeVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
-        Collection<VariableListenerNotifiable<Solution_>> notifiables = notifiableRegistry.get(variableDescriptor);
+        var notifiables = notifiableRegistry.get(variableDescriptor);
         if (!notifiables.isEmpty()) {
             BasicVariableNotification<Solution_> notification = Notification.variableChanged(entity);
-            for (VariableListenerNotifiable<Solution_> notifiable : notifiables) {
+            for (var notifiable : notifiables) {
                 notifiable.notifyBefore(notification);
             }
             notificationQueuesAreEmpty = false;
@@ -174,7 +187,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         Collection<ListVariableListenerNotifiable<Solution_>> notifiables = notifiableRegistry.get(variableDescriptor);
         if (!notifiables.isEmpty()) {
             ListVariableNotification<Solution_> notification = Notification.elementUnassigned(element);
-            for (ListVariableListenerNotifiable<Solution_> notifiable : notifiables) {
+            for (var notifiable : notifiables) {
                 notifiable.notifyAfter(notification);
             }
             notificationQueuesAreEmpty = false;
@@ -183,10 +196,10 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
 
     public void beforeListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
             int toIndex) {
-        Collection<ListVariableListenerNotifiable<Solution_>> notifiables = notifiableRegistry.get(variableDescriptor);
+        var notifiables = notifiableRegistry.get(variableDescriptor);
         if (!notifiables.isEmpty()) {
             ListVariableNotification<Solution_> notification = Notification.listVariableChanged(entity, fromIndex, toIndex);
-            for (ListVariableListenerNotifiable<Solution_> notifiable : notifiables) {
+            for (var notifiable : notifiables) {
                 notifiable.notifyBefore(notification);
             }
             notificationQueuesAreEmpty = false;
@@ -195,34 +208,67 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
 
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
             int toIndex) {
-        Collection<ListVariableListenerNotifiable<Solution_>> notifiables = notifiableRegistry.get(variableDescriptor);
+        var notifiables = notifiableRegistry.get(variableDescriptor);
         if (!notifiables.isEmpty()) {
             ListVariableNotification<Solution_> notification = Notification.listVariableChanged(entity, fromIndex, toIndex);
-            for (ListVariableListenerNotifiable<Solution_> notifiable : notifiables) {
+            for (var notifiable : notifiables) {
                 notifiable.notifyAfter(notification);
             }
             notificationQueuesAreEmpty = false;
         }
+        listVariableEventList.add(new ListVariableEvent(entity, fromIndex, toIndex));
     }
 
     public void triggerVariableListenersInNotificationQueues() {
-        for (Notifiable notifiable : notifiableRegistry.getAll()) {
+        for (var notifiable : notifiableRegistry.getAll()) {
             notifiable.triggerAllNotifications();
         }
+        if (listVariableDescriptor != null && !cascadingUpdateShadowVarDescriptorList.isEmpty()) {
+            triggerCascadingUpdateShadowVariableUpdate();
+        }
         notificationQueuesAreEmpty = true;
+        listVariableEventList.clear();
+    }
+
+    /**
+     * Triggers all cascading update shadow variable user-logic.
+     */
+    private void triggerCascadingUpdateShadowVariableUpdate() {
+        if (listVariableEventList.isEmpty() || cascadingUpdateShadowVarDescriptorList.isEmpty()) {
+            return;
+        }
+        for (var cascadingUpdateShadowVariableDescriptor : cascadingUpdateShadowVarDescriptorList) {
+            for (var event : listVariableEventList) {
+                var values = listVariableDescriptor.getValue(event.entity());
+                // Evaluate all elements inside the range
+                evaluateFromIndex(values, event.fromIndex(), event.toIndex(), true, cascadingUpdateShadowVariableDescriptor);
+                // Evaluate later elements, but stops when there is no change
+                evaluateFromIndex(values, event.toIndex(), values.size(), false, cascadingUpdateShadowVariableDescriptor);
+            }
+        }
+    }
+
+    private void evaluateFromIndex(List<Object> values, int fromIndex, int toIndex, boolean forceUpdate,
+            CascadingUpdateShadowVariableDescriptor<Solution_> cascadingUpdateShadowVariableDescriptor) {
+        var lastUpdated = fromIndex;
+        while (lastUpdated < toIndex) {
+            if (!cascadingUpdateShadowVariableDescriptor.update(scoreDirector, values.get(lastUpdated))
+                    && !forceUpdate) {
+                break;
+            }
+            lastUpdated++;
+        }
     }
 
     /**
      * @return null if there are no violations
      */
     public String createShadowVariablesViolationMessage() {
-        Solution_ workingSolution = scoreDirector.getWorkingSolution();
-        ShadowVariablesAssert snapshot =
+        var workingSolution = scoreDirector.getWorkingSolution();
+        var snapshot =
                 ShadowVariablesAssert.takeSnapshot(scoreDirector.getSolutionDescriptor(), workingSolution);
 
         forceTriggerAllVariableListeners(workingSolution);
-
-        final int SHADOW_VARIABLE_VIOLATION_DISPLAY_LIMIT = 3;
         return snapshot.createShadowVariablesViolationMessage(SHADOW_VARIABLE_VIOLATION_DISPLAY_LIMIT);
     }
 
@@ -250,10 +296,10 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         }
         for (var variableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
             if (variableDescriptor.isListVariable()) {
-                var listVariableDescriptor = (ListVariableDescriptor<Solution_>) variableDescriptor;
-                int size = listVariableDescriptor.getValue(entity).size();
-                beforeListVariableChanged(listVariableDescriptor, entity, 0, size);
-                afterListVariableChanged(listVariableDescriptor, entity, 0, size);
+                var descriptor = (ListVariableDescriptor<Solution_>) variableDescriptor;
+                int size = descriptor.getValue(entity).size();
+                beforeListVariableChanged(descriptor, entity, 0, size);
+                afterListVariableChanged(descriptor, entity, 0, size);
             } else {
                 // Triggering before...() is enough, as that will add the after...() call to the queue automatically.
                 beforeVariableChanged(variableDescriptor, entity);

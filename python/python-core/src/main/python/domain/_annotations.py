@@ -236,7 +236,7 @@ class PiggybackShadowVariable(JavaAnnotation):
 
 class CascadingUpdateShadowVariable(JavaAnnotation):
     """
-    Specifies that field may be updated by the target method when one or more source variables change.
+    Specifies that field may be updated by the target method when a dependency changes.
 
     Automatically cascades change events to `NextElementShadowVariable` of a `PlanningListVariable`.
 
@@ -252,8 +252,6 @@ class CascadingUpdateShadowVariable(JavaAnnotation):
     Examples
     --------
 
-    Single source
-
     >>> from timefold.solver.domain import CascadingUpdateShadowVariable, PreviousElementShadowVariable, planning_entity
     >>> from typing import Annotated
     >>> from domain import ArrivalTimeVariableListener
@@ -264,30 +262,7 @@ class CascadingUpdateShadowVariable(JavaAnnotation):
     ...     previous: Annotated['Visit', PreviousElementShadowVariable]
     ...     arrival_time: Annotated[datetime,
     ...                             CascadingUpdateShadowVariable(
-    ...                                 target_method_name='update_arrival_time',
-    ...                                 source_variable_name='previous'
-    ...                             )
-    ...                            ]
-    ...
-    ...     def update_arrival_time(self):
-    ...         self.arrival_time = previous.arrival_time + timedelta(hours=1)
-
-    Multiple sources
-
-    >>> from timefold.solver.domain import CascadingUpdateShadowVariable, PreviousElementShadowVariable, planning_entity
-    >>> from typing import Annotated
-    >>> from domain import ArrivalTimeVariableListener
-    >>> from datetime import datetime, timedelta
-    >>>
-    >>> @planning_entity
-    >>> class Visit:
-    ...     vehicle: Annotated[Optional['Vehicle'],
-    ...                        InverseRelationShadowVariable(source_variable_name='visits')] = (field(default=None))
-    ...     previous: Annotated['Visit', PreviousElementShadowVariable]
-    ...     arrival_time: Annotated[datetime,
-    ...                             CascadingUpdateShadowVariable(
-    ...                                 target_method_name='update_arrival_time',
-    ...                                 source_variable_names=['vehicle', 'previous']
+    ...                                 target_method_name='update_arrival_time'
     ...                             )
     ...                            ]
     ...
@@ -296,9 +271,6 @@ class CascadingUpdateShadowVariable(JavaAnnotation):
     """
 
     def __init__(self, *,
-                 source_variable_name: str = None,
-                 source_variable_names: List[str] = None,
-                 source_entity_class: Type = None,
                  target_method_name: str):
         ensure_init()
         from ai.timefold.jpyinterpreter import PythonClassTranslator
@@ -307,9 +279,6 @@ class CascadingUpdateShadowVariable(JavaAnnotation):
 
         super().__init__(JavaCascadingUpdateShadowVariable,
                          {
-                             'sourceVariableName': PythonClassTranslator.getJavaFieldName(source_variable_name),
-                             'sourceVariableNames': source_variable_names,
-                             'sourceEntityClass': source_entity_class,
                              'targetMethodName': PythonClassTranslator.getJavaMethodName(target_method_name),
                          })
 

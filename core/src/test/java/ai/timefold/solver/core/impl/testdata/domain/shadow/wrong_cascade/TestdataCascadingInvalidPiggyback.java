@@ -4,34 +4,36 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.PiggybackShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.shadow_var.TestdataSingleCascadingEntity;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.shadow_var.TestdataSingleCascadingSolution;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadingEntity;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadingSolution;
 
 @PlanningEntity
-public class TestdataCascadingWrongSource {
+public class TestdataCascadingInvalidPiggyback {
 
     public static EntityDescriptor<TestdataSingleCascadingSolution> buildEntityDescriptor() {
         return SolutionDescriptor
                 .buildSolutionDescriptor(TestdataSingleCascadingSolution.class, TestdataSingleCascadingEntity.class,
-                        TestdataCascadingWrongSource.class)
-                .findEntityDescriptorOrFail(TestdataCascadingWrongSource.class);
+                        TestdataCascadingInvalidPiggyback.class)
+                .findEntityDescriptorOrFail(TestdataCascadingInvalidPiggyback.class);
     }
 
     @InverseRelationShadowVariable(sourceVariableName = "valueList")
     private TestdataSingleCascadingEntity entity;
     @PreviousElementShadowVariable(sourceVariableName = "valueList")
-    private TestdataCascadingWrongSource previous;
+    private TestdataCascadingInvalidPiggyback previous;
     @NextElementShadowVariable(sourceVariableName = "valueList")
-    private TestdataCascadingWrongSource next;
-    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue", sourceVariableName = "entity")
-    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue", sourceVariableName = "bad")
+    private TestdataCascadingInvalidPiggyback next;
+    @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue")
     private Integer cascadeValue;
+    @PiggybackShadowVariable(shadowVariableName = "cascadeValue")
+    private Integer cascadeValue2;
     private Integer value;
 
-    public TestdataCascadingWrongSource(Integer value) {
+    public TestdataCascadingInvalidPiggyback(Integer value) {
         this.value = value;
     }
 
@@ -43,19 +45,19 @@ public class TestdataCascadingWrongSource {
         this.entity = entity;
     }
 
-    public TestdataCascadingWrongSource getPrevious() {
+    public TestdataCascadingInvalidPiggyback getPrevious() {
         return previous;
     }
 
-    public void setPrevious(TestdataCascadingWrongSource previous) {
+    public void setPrevious(TestdataCascadingInvalidPiggyback previous) {
         this.previous = previous;
     }
 
-    public TestdataCascadingWrongSource getNext() {
+    public TestdataCascadingInvalidPiggyback getNext() {
         return next;
     }
 
-    public void setNext(TestdataCascadingWrongSource next) {
+    public void setNext(TestdataCascadingInvalidPiggyback next) {
         this.next = next;
     }
 

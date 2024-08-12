@@ -3,53 +3,36 @@ package ai.timefold.solver.core.api.domain.variable;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-
 /**
- * Specifies that field may be updated by the target method when one or more source variables change.
+ * Specifies that a field may be updated by the target method when any of its variables change, genuine or shadow.
  * <p>
- * Automatically cascades change events to {@link NextElementShadowVariable} of a {@link PlanningListVariable}.
+ * Automatically cascades change events to the subsequent elements of a {@link PlanningListVariable}.
+ * <p>
+ * A single listener is created
+ * to execute user-defined logic from the {@code targetMethod} after all variable changes have been applied.
+ * This means it will be the last step executed during the event lifecycle.
+ * <p>
+ * It can be applied in multiple fields to update various shadow variables.
+ * The user's logic is responsible for defining the order in which each variable is updated.
+ * <p>
+ * Distinct {@code targetMethod} can be defined, but there is no guarantee about the order in which they are executed.
+ * Therefore, caution is required when using multiple {@code targetMethod} per model.
+ * <p>
+ * Except for {@link PiggybackShadowVariable},
+ * the use of {@link CascadingUpdateShadowVariable} as a source for other variables,
+ * such as {@link ShadowVariable}, is not allowed.
  * <p>
  * Important: it must only change the shadow variable(s) for which it's configured.
- * It is only possible to define either {@code sourceVariableName} or {@code sourceVariableNames}.
- * It can be applied to multiple fields to modify different shadow variables.
  * It should never change a genuine variable or a problem fact.
  * It can change its shadow variable(s) on multiple entity instances
  * (for example: an arrivalTime change affects all trailing entities too).
  */
 @Target({ FIELD })
 @Retention(RUNTIME)
-@Repeatable(CascadingUpdateShadowVariable.List.class)
 public @interface CascadingUpdateShadowVariable {
-
-    /**
-     * The source variable name.
-     *
-     * @return never null, a genuine or shadow variable name
-     */
-    String sourceVariableName() default "";
-
-    /**
-     * The source variable name.
-     *
-     * @return never null, a genuine or shadow variable name
-     */
-    String[] sourceVariableNames() default {};
-
-    /**
-     * The {@link PlanningEntity} class of the source variable.
-     * <p>
-     * Specified if the source variable is on a different {@link Class} than the class that uses this referencing annotation.
-     *
-     * @return {@link CascadingUpdateShadowVariable.NullEntityClass} when the attribute is omitted
-     *         (workaround for annotation limitation).
-     *         Defaults to the same {@link Class} as the one that uses this annotation.
-     */
-    Class<?> sourceEntityClass() default CascadingUpdateShadowVariable.NullEntityClass.class;
 
     /**
      * The target method element.
@@ -62,18 +45,4 @@ public @interface CascadingUpdateShadowVariable {
      * @return method name of the source host element which will update the shadow variable
      */
     String targetMethodName();
-
-    /**
-     * Defines several {@link ShadowVariable} annotations on the same element.
-     */
-    @Target({ FIELD })
-    @Retention(RUNTIME)
-    @interface List {
-
-        CascadingUpdateShadowVariable[] value();
-    }
-
-    /** Workaround for annotation limitation in {@link #sourceEntityClass()}. */
-    interface NullEntityClass {
-    }
 }

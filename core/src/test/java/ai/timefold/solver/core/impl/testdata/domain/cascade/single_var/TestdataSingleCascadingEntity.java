@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.suply;
+package ai.timefold.solver.core.impl.testdata.domain.cascade.single_var;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,25 +12,24 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
 
 @PlanningEntity
-public class TestdataSingleCascadingWithSupplyEntity extends TestdataObject {
+public class TestdataSingleCascadingEntity extends TestdataObject {
 
-    public static EntityDescriptor<TestdataSingleCascadingWithSupplySolution> buildEntityDescriptor() {
-        return TestdataSingleCascadingWithSupplySolution.buildSolutionDescriptor()
-                .findEntityDescriptorOrFail(TestdataSingleCascadingWithSupplyEntity.class);
+    public static EntityDescriptor<TestdataSingleCascadingSolution> buildEntityDescriptor() {
+        return TestdataSingleCascadingSolution.buildSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataSingleCascadingEntity.class);
     }
 
-    public static ListVariableDescriptor<TestdataSingleCascadingWithSupplySolution> buildVariableDescriptorForValueList() {
-        return (ListVariableDescriptor<TestdataSingleCascadingWithSupplySolution>) buildEntityDescriptor()
+    public static ListVariableDescriptor<TestdataSingleCascadingSolution> buildVariableDescriptorForValueList() {
+        return (ListVariableDescriptor<TestdataSingleCascadingSolution>) buildEntityDescriptor()
                 .getGenuineVariableDescriptor("valueList");
     }
 
-    public static TestdataSingleCascadingWithSupplyEntity createWithValues(String code,
-            TestdataSingleCascadingWithSupplyValue... values) {
+    public static TestdataSingleCascadingEntity createWithValues(String code, TestdataSingleCascadingValue... values) {
         // Set up shadow variables to preserve consistency.
-        return new TestdataSingleCascadingWithSupplyEntity(code, new ArrayList<>(Arrays.asList(values))).setUpShadowVariables();
+        return new TestdataSingleCascadingEntity(code, new ArrayList<>(Arrays.asList(values))).setUpShadowVariables();
     }
 
-    TestdataSingleCascadingWithSupplyEntity setUpShadowVariables() {
+    TestdataSingleCascadingEntity setUpShadowVariables() {
         if (valueList != null && !valueList.isEmpty()) {
             int i = 0;
             var previous = valueList.get(i);
@@ -38,41 +37,43 @@ public class TestdataSingleCascadingWithSupplyEntity extends TestdataObject {
             while (current != null) {
                 current.setEntity(this);
                 current.setPrevious(previous);
+                if (previous != null) {
+                    previous.setNext(current);
+                }
                 previous = current;
                 current = ++i < valueList.size() ? valueList.get(i) : null;
             }
             for (var v : valueList) {
                 v.updateCascadeValue();
-                v.updateCascadeValueWithReturnType();
             }
         }
         return this;
     }
 
     @PlanningListVariable(valueRangeProviderRefs = "valueRange")
-    private List<TestdataSingleCascadingWithSupplyValue> valueList;
+    private List<TestdataSingleCascadingValue> valueList;
 
-    public TestdataSingleCascadingWithSupplyEntity(String code) {
+    public TestdataSingleCascadingEntity(String code) {
         super(code);
         this.valueList = new LinkedList<>();
     }
 
-    public TestdataSingleCascadingWithSupplyEntity(String code, List<TestdataSingleCascadingWithSupplyValue> valueList) {
+    public TestdataSingleCascadingEntity(String code, List<TestdataSingleCascadingValue> valueList) {
         super(code);
         this.valueList = valueList;
     }
 
-    public void setValueList(List<TestdataSingleCascadingWithSupplyValue> valueList) {
+    public void setValueList(List<TestdataSingleCascadingValue> valueList) {
         this.valueList = valueList;
     }
 
-    public List<TestdataSingleCascadingWithSupplyValue> getValueList() {
+    public List<TestdataSingleCascadingValue> getValueList() {
         return valueList;
     }
 
     @Override
     public String toString() {
-        return "TestdataSingleCascadingWithSupplyEntity{" +
+        return "TestdataSingleCascadingEntity{" +
                 "code='" + code + '\'' +
                 '}';
     }

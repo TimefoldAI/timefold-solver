@@ -35,11 +35,7 @@ class Visit:
         default=None)
     arrival_time: Annotated[
         Optional[datetime],
-        CascadingUpdateShadowVariable(source_variable_names=['vehicle', 'previous_visit'],
-                                      target_method_name='update_arrival_time')] = field(default=None)
-    piggyback_arrival_time: Annotated[
-        Optional[datetime],
-        PiggybackShadowVariable(shadow_variable_name='arrival_time')] = field(default=None)
+        CascadingUpdateShadowVariable(target_method_name='update_arrival_time')] = field(default=None)
 
     def update_arrival_time(self):
         if self.vehicle is None or (self.previous_visit is not None and self.previous_visit.arrival_time is None):
@@ -50,7 +46,6 @@ class Visit:
         else:
             self.arrival_time = (self.previous_visit.departure_time() +
                                  timedelta(seconds=self.previous_visit.location.driving_time_to(self.location)))
-        self.piggyback_arrival_time = self.arrival_time
 
     def departure_time(self) -> Optional[datetime]:
         if self.arrival_time is None:
@@ -286,14 +281,6 @@ def test_vrp():
     )
     solution = solver.solve(problem)
     assert [visit.arrival_time for visit in solution.visits] == [
-        # Visit 1: 1-minute travel time from Vehicle A start
-        datetime(2020, 1, 1, hour=0, minute=1),
-        # Visit 2: 1-minute travel time from visit 1 + 1-hour service
-        datetime(2020, 1, 1, hour=1, minute=2),
-        # Visit 3: 1-minute travel time from Vehicle B start
-        datetime(2020, 1, 1, hour=0, minute=1)
-    ]
-    assert [visit.piggyback_arrival_time for visit in solution.visits] == [
         # Visit 1: 1-minute travel time from Vehicle A start
         datetime(2020, 1, 1, hour=0, minute=1),
         # Visit 2: 1-minute travel time from visit 1 + 1-hour service
