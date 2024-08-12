@@ -38,10 +38,10 @@ class SingleCascadingUpdateShadowVariableListenerTest {
                 .withMessageContaining("Maybe check if cascadeValue is annotated with @CascadingUpdateShadowVariable");
         assertThatIllegalArgumentException().isThrownBy(TestdataCascadingInvalidPiggyback::buildEntityDescriptor)
                 .withMessageContaining(
-                        "The entityClass (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingPiggyback)")
+                        "The entityClass (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingInvalidPiggyback)")
                 .withMessageContaining("has a @PiggybackShadowVariable annotated property (cascadeValue2)")
                 .withMessageContaining(
-                        "with refVariable (TestdataCascadingPiggyback.cascadeValue) that lacks a @ShadowVariable annotation");
+                        "with refVariable (TestdataCascadingInvalidPiggyback.cascadeValue) that lacks a @ShadowVariable annotation");
     }
 
     @Test
