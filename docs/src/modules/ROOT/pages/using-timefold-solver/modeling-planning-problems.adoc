@@ -1433,6 +1433,32 @@ When distinct target methods are used by separate `@CascadingUpdateShadowVariabl
 there will be no guarantees regarding which target method is executed first.
 ====
 
+==== Multiple sources
+
+If the user-defined logic requires updating multiple shadow variables,
+apply the `@CascadingUpdateShadowVariable` to all shadow variables.
+
+[source,java]
+----
+@PlanningEntity
+public class Customer {
+
+    @PreviousElementShadowVariable(sourceVariableName = "customers")
+    private Customer previousCustomer;
+    @NextElementShadowVariable(sourceVariableName = "customers")
+    private Customer nextCustomer;
+    @CascadingUpdateShadowVariable(targetMethodName = "updateWeightAndArrivalTime")
+    private LocalDateTime arrivalTime;
+    @CascadingUpdateShadowVariable(targetMethodName = "updateWeightAndArrivalTime")
+    private Integer weightAtVisit;
+    ...
+
+    public void updateWeightAndArrivalTime() {...}
+----
+
+Timefold Solver triggers a single listener to run the user-defined logic at the end of the event lifecycle.
+It stops when both `arrivalTime` and `weightAtVisit` values do not change or when it reaches the end.
+
 [#chainedPlanningVariable]
 == Chained planning variable (TSP, VRP, ...)
 
