@@ -13,7 +13,7 @@ import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
-public final class RuinMove<Solution_> extends AbstractMove<Solution_> {
+public final class RuinRecreateMove<Solution_> extends AbstractMove<Solution_> {
 
     private final GenuineVariableDescriptor<Solution_> genuineVariableDescriptor;
     private final RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder;
@@ -23,7 +23,7 @@ public final class RuinMove<Solution_> extends AbstractMove<Solution_> {
 
     private Object[] recordedNewValues;
 
-    public RuinMove(GenuineVariableDescriptor<Solution_> genuineVariableDescriptor,
+    public RuinRecreateMove(GenuineVariableDescriptor<Solution_> genuineVariableDescriptor,
             RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
             SolverScope<Solution_> solverScope, List<Object> ruinedEntityList, Set<Object> affectedValueSet) {
         this.genuineVariableDescriptor = genuineVariableDescriptor;
@@ -40,7 +40,7 @@ public final class RuinMove<Solution_> extends AbstractMove<Solution_> {
         for (var i = 0; i < ruinedEntityList.size(); i++) {
             recordedOldValues[i] = genuineVariableDescriptor.getValue(ruinedEntityList.get(i));
         }
-        return new RuinUndoMove<>(this, genuineVariableDescriptor, ruinedEntityList, recordedOldValues);
+        return new RuinRecreateUndoMove<>(this, genuineVariableDescriptor, ruinedEntityList, recordedOldValues);
     }
 
     @Override

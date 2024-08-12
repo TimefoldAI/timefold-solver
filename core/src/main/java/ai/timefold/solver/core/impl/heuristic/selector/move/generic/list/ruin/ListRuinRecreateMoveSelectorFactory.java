@@ -5,7 +5,7 @@ import java.util.function.ToLongFunction;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhaseFactory;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -14,12 +14,12 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
 
-public final class ListRuinMoveSelectorFactory<Solution_>
-        extends AbstractMoveSelectorFactory<Solution_, ListRuinMoveSelectorConfig> {
+public final class ListRuinRecreateMoveSelectorFactory<Solution_>
+        extends AbstractMoveSelectorFactory<Solution_, ListRuinRecreateMoveSelectorConfig> {
 
-    private final ListRuinMoveSelectorConfig ruinMoveSelectorConfig;
+    private final ListRuinRecreateMoveSelectorConfig ruinMoveSelectorConfig;
 
-    public ListRuinMoveSelectorFactory(ListRuinMoveSelectorConfig ruinMoveSelectorConfig) {
+    public ListRuinRecreateMoveSelectorFactory(ListRuinRecreateMoveSelectorConfig ruinMoveSelectorConfig) {
         super(ruinMoveSelectorConfig);
         this.ruinMoveSelectorConfig = ruinMoveSelectorConfig;
     }
@@ -45,7 +45,7 @@ public final class ListRuinMoveSelectorFactory<Solution_>
         constructionHeuristicConfig.setEntityPlacerConfig(entityPlacerConfig);
         var constructionHeuristicPhaseFactory =
                 new DefaultConstructionHeuristicPhaseFactory<Solution_>(constructionHeuristicConfig);
-        return new ListRuinMoveSelector<>(valueSelector, listVariableDescriptor,
+        return new ListRuinRecreateMoveSelector<>(valueSelector, listVariableDescriptor,
                 constructionHeuristicPhaseFactory.getRuinPhaseBuilder(configPolicy),
                 minimumSelectedSupplier, maximumSelectedSupplier);
     }

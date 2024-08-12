@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.config.heuristic.selector.move.generic.list;
+package ai.timefold.solver.core.config.heuristic.selector.move.generic;
 
 import java.util.function.Consumer;
 
@@ -13,13 +13,13 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
         "minimumRuinedPercentage",
         "maximumRuinedPercentage"
 })
-public class ListRuinMoveSelectorConfig extends MoveSelectorConfig<ListRuinMoveSelectorConfig> {
+public class RuinRecreateMoveSelectorConfig extends MoveSelectorConfig<RuinRecreateMoveSelectorConfig> {
 
     // Determined by benchmarking on multiple datasets.
     private static final int DEFAULT_MINIMUM_RUINED_COUNT = 5;
-    private static final int DEFAULT_MAXIMUM_RUINED_COUNT = 40;
+    private static final int DEFAULT_MAXIMUM_RUINED_COUNT = 20;
 
-    public static final String XML_ELEMENT_NAME = "listRuinMoveSelector";
+    public static final String XML_ELEMENT_NAME = "ruinRecreateMoveSelector";
 
     protected Long minimumRuinedCount = null;
     protected Long maximumRuinedCount = null;
@@ -27,7 +27,7 @@ public class ListRuinMoveSelectorConfig extends MoveSelectorConfig<ListRuinMoveS
     protected Double minimumRuinedPercentage = null;
     protected Double maximumRuinedPercentage = null;
 
-    public ListRuinMoveSelectorConfig() {
+    public RuinRecreateMoveSelectorConfig() {
 
     }
 
@@ -43,7 +43,7 @@ public class ListRuinMoveSelectorConfig extends MoveSelectorConfig<ListRuinMoveS
         this.minimumRuinedCount = minimumRuinedCount;
     }
 
-    public ListRuinMoveSelectorConfig withMinimumRuinedCount(Long minimumRuinedCount) {
+    public RuinRecreateMoveSelectorConfig withMinimumRuinedCount(Long minimumRuinedCount) {
         this.minimumRuinedCount = minimumRuinedCount;
         return this;
     }
@@ -56,7 +56,7 @@ public class ListRuinMoveSelectorConfig extends MoveSelectorConfig<ListRuinMoveS
         this.maximumRuinedCount = maximumRuinedCount;
     }
 
-    public ListRuinMoveSelectorConfig withMaximumRuinedCount(Long maximumRuinedCount) {
+    public RuinRecreateMoveSelectorConfig withMaximumRuinedCount(Long maximumRuinedCount) {
         this.maximumRuinedCount = maximumRuinedCount;
         return this;
     }
@@ -69,7 +69,7 @@ public class ListRuinMoveSelectorConfig extends MoveSelectorConfig<ListRuinMoveS
         this.minimumRuinedPercentage = minimumRuinedPercentage;
     }
 
-    public ListRuinMoveSelectorConfig withMinimumRuinedPercentage(Double minimumRuinedPercentage) {
+    public RuinRecreateMoveSelectorConfig withMinimumRuinedPercentage(Double minimumRuinedPercentage) {
         this.minimumRuinedPercentage = minimumRuinedPercentage;
         return this;
     }
@@ -82,7 +82,7 @@ public class ListRuinMoveSelectorConfig extends MoveSelectorConfig<ListRuinMoveS
         this.maximumRuinedPercentage = maximumRuinedPercentage;
     }
 
-    public ListRuinMoveSelectorConfig withMaximumRuinedPercentage(Double maximumRuinedPercentage) {
+    public RuinRecreateMoveSelectorConfig withMaximumRuinedPercentage(Double maximumRuinedPercentage) {
         this.maximumRuinedPercentage = maximumRuinedPercentage;
         return this;
     }
@@ -97,12 +97,17 @@ public class ListRuinMoveSelectorConfig extends MoveSelectorConfig<ListRuinMoveS
     }
 
     @Override
-    public ListRuinMoveSelectorConfig copyConfig() {
-        return new ListRuinMoveSelectorConfig().inherit(this);
+    public RuinRecreateMoveSelectorConfig copyConfig() {
+        return new RuinRecreateMoveSelectorConfig().inherit(this);
     }
 
     @Override
-    public ListRuinMoveSelectorConfig inherit(ListRuinMoveSelectorConfig inheritedConfig) {
+    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+        // No referenced classes.
+    }
+
+    @Override
+    public RuinRecreateMoveSelectorConfig inherit(RuinRecreateMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         minimumRuinedCount =
                 ConfigUtils.inheritOverwritableProperty(minimumRuinedCount, inheritedConfig.getMinimumRuinedCount());
@@ -113,11 +118,6 @@ public class ListRuinMoveSelectorConfig extends MoveSelectorConfig<ListRuinMoveS
         maximumRuinedPercentage =
                 ConfigUtils.inheritOverwritableProperty(maximumRuinedPercentage, inheritedConfig.getMaximumRuinedPercentage());
         return this;
-    }
-
-    @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
-        // No referenced classes.
     }
 
     public long determineMinimumRuinedCount(long entityCount) {

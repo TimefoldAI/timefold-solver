@@ -7,13 +7,13 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 import ai.timefold.solver.core.impl.heuristic.move.AbstractUndoMove;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
-public final class RuinUndoMove<Solution_> extends AbstractUndoMove<Solution_> {
+public final class RuinRecreateUndoMove<Solution_> extends AbstractUndoMove<Solution_> {
 
     private final GenuineVariableDescriptor<Solution_> genuineVariableDescriptor;
     private final List<Object> ruinedEntityList;
     private final Object[] recordedNewValues;
 
-    RuinUndoMove(RuinMove<Solution_> parentMove, GenuineVariableDescriptor<Solution_> genuineVariableDescriptor,
+    RuinRecreateUndoMove(RuinRecreateMove<Solution_> parentMove, GenuineVariableDescriptor<Solution_> genuineVariableDescriptor,
             List<Object> ruinedEntityList, Object[] recordedNewValues) {
         super(parentMove);
         this.genuineVariableDescriptor = genuineVariableDescriptor;

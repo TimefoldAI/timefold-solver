@@ -11,7 +11,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.apache.commons.math3.util.CombinatoricsUtils;
 
-final class RuinMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
+final class RuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
 
     private final EntitySelector<Solution_> entitySelector;
     private final GenuineVariableDescriptor<Solution_> variableDescriptor;
@@ -21,7 +21,7 @@ final class RuinMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
 
     private SolverScope<Solution_> solverScope;
 
-    public RuinMoveSelector(EntitySelector<Solution_> entitySelector,
+    public RuinRecreateMoveSelector(EntitySelector<Solution_> entitySelector,
             GenuineVariableDescriptor<Solution_> variableDescriptor,
             RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
             ToLongFunction<Long> minimumSelectedCountSupplier,
@@ -68,7 +68,8 @@ final class RuinMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
 
     @Override
     public Iterator<Move<Solution_>> iterator() {
-        return new RuinMoveIterator<>(entitySelector, variableDescriptor, constructionHeuristicPhaseBuilder, solverScope,
+        return new RuinRecreateMoveIterator<>(entitySelector, variableDescriptor, constructionHeuristicPhaseBuilder,
+                solverScope,
                 minimumSelectedCountSupplier.applyAsLong(entitySelector.getSize()),
                 maximumSelectedCountSupplier.applyAsLong(entitySelector.getSize()),
                 workingRandom);

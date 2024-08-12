@@ -543,9 +543,9 @@
                         
             <xs:element name="pillarSwapMoveSelector" type="tns:pillarSwapMoveSelectorConfig"/>
                         
-            <xs:element name="ruinMoveSelector" type="tns:ruinMoveSelectorConfig"/>
+            <xs:element name="ruinRecreateMoveSelector" type="tns:ruinRecreateMoveSelectorConfig"/>
                         
-            <xs:element name="listRuinMoveSelector" type="tns:listRuinMoveSelectorConfig"/>
+            <xs:element name="listRuinRecreateMoveSelector" type="tns:listRuinRecreateMoveSelectorConfig"/>
                         
             <xs:element name="subChainChangeMoveSelector" type="tns:subChainChangeMoveSelectorConfig"/>
                         
@@ -849,7 +849,7 @@
       
   </xs:complexType>
     
-  <xs:complexType name="ruinMoveSelectorConfig">
+  <xs:complexType name="ruinRecreateMoveSelectorConfig">
         
     <xs:complexContent>
             
@@ -873,7 +873,7 @@
       
   </xs:complexType>
     
-  <xs:complexType name="listRuinMoveSelectorConfig">
+  <xs:complexType name="listRuinRecreateMoveSelectorConfig">
         
     <xs:complexContent>
             
@@ -1101,9 +1101,9 @@
                         
             <xs:element name="pillarSwapMoveSelector" type="tns:pillarSwapMoveSelectorConfig"/>
                         
-            <xs:element name="ruinMoveSelector" type="tns:ruinMoveSelectorConfig"/>
+            <xs:element name="ruinRecreateMoveSelector" type="tns:ruinRecreateMoveSelectorConfig"/>
                         
-            <xs:element name="listRuinMoveSelector" type="tns:listRuinMoveSelectorConfig"/>
+            <xs:element name="listRuinRecreateMoveSelector" type="tns:listRuinRecreateMoveSelectorConfig"/>
                         
             <xs:element name="subChainChangeMoveSelector" type="tns:subChainChangeMoveSelectorConfig"/>
                         
@@ -1337,9 +1337,9 @@
                         
             <xs:element name="pillarSwapMoveSelector" type="tns:pillarSwapMoveSelectorConfig"/>
                         
-            <xs:element name="ruinMoveSelector" type="tns:ruinMoveSelectorConfig"/>
+            <xs:element name="ruinRecreateMoveSelector" type="tns:ruinRecreateMoveSelectorConfig"/>
                         
-            <xs:element name="listRuinMoveSelector" type="tns:listRuinMoveSelectorConfig"/>
+            <xs:element name="listRuinRecreateMoveSelector" type="tns:listRuinRecreateMoveSelectorConfig"/>
                         
             <xs:element name="subChainChangeMoveSelector" type="tns:subChainChangeMoveSelectorConfig"/>
                         

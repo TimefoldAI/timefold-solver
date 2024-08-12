@@ -18,13 +18,13 @@ import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveListFa
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.RuinMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.RuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListSwapMoveSelectorConfig;
@@ -49,8 +49,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
         MoveListFactoryConfig.class,
         PillarChangeMoveSelectorConfig.class,
         PillarSwapMoveSelectorConfig.class,
-        RuinMoveSelectorConfig.class,
-        ListRuinMoveSelectorConfig.class,
+        RuinRecreateMoveSelectorConfig.class,
+        ListRuinRecreateMoveSelectorConfig.class,
         SubChainChangeMoveSelectorConfig.class,
         SubChainSwapMoveSelectorConfig.class,
         SubListChangeMoveSelectorConfig.class,

@@ -13,7 +13,7 @@ import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -31,7 +31,7 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
 @Execution(ExecutionMode.CONCURRENT)
-class ListRuinMoveSelectorTest {
+class ListRuinRecreateMoveSelectorTest {
 
     public static final class TestdataListConstraintProvider implements ConstraintProvider {
 
@@ -58,7 +58,7 @@ class ListRuinMoveSelectorTest {
                 .withPhaseList(List.of(
                         new ConstructionHeuristicPhaseConfig(),
                         new LocalSearchPhaseConfig()
-                                .withMoveSelectorConfig(new ListRuinMoveSelectorConfig())
+                                .withMoveSelectorConfig(new ListRuinRecreateMoveSelectorConfig())
                                 .withTerminationConfig(new TerminationConfig()
                                         .withStepCountLimit(100))));
         var problem = TestdataListSolution.generateUninitializedSolution(10, 3);
@@ -103,7 +103,7 @@ class ListRuinMoveSelectorTest {
                                                 .withFixedProbabilityWeight(0.4),
                                         new ListSwapMoveSelectorConfig()
                                                 .withFixedProbabilityWeight(0.4),
-                                        new ListRuinMoveSelectorConfig()
+                                        new ListRuinRecreateMoveSelectorConfig()
                                                 .withFixedProbabilityWeight(0.2))))
                                 .withTerminationConfig(new TerminationConfig()
                                         .withStepCountLimit(100))));

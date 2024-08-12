@@ -17,7 +17,7 @@ import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreD
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
-public final class ListRuinMove<Solution_> extends AbstractMove<Solution_> {
+public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution_> {
 
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
     private final List<Object> ruinedValueList;
@@ -27,7 +27,7 @@ public final class ListRuinMove<Solution_> extends AbstractMove<Solution_> {
     private final Map<Object, NavigableSet<RuinedLocation>> entityToOriginalPositionMap;
     private final Map<Object, NavigableSet<RuinedLocation>> entityToNewPositionMap;
 
-    public ListRuinMove(ListVariableStateSupply<Solution_> listVariableStateSupply,
+    public ListRuinRecreateMove(ListVariableStateSupply<Solution_> listVariableStateSupply,
             RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
             SolverScope<Solution_> solverScope, List<Object> ruinedValueList, Set<Object> affectedEntitySet) {
         this.listVariableStateSupply = listVariableStateSupply;
@@ -41,7 +41,7 @@ public final class ListRuinMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     protected Move<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        return new ListRuinUndoMove<>(this, listVariableStateSupply.getSourceVariableDescriptor(),
+        return new ListRuinRecreateUndoMove<>(this, listVariableStateSupply.getSourceVariableDescriptor(),
                 entityToNewPositionMap, entityToOriginalPositionMap);
     }
 

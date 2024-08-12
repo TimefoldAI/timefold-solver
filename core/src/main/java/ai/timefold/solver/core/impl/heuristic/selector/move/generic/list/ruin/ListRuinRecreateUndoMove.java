@@ -10,13 +10,14 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.heuristic.move.AbstractUndoMove;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
-public final class ListRuinUndoMove<Solution_> extends AbstractUndoMove<Solution_> {
+public final class ListRuinRecreateUndoMove<Solution_> extends AbstractUndoMove<Solution_> {
 
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final Map<Object, NavigableSet<RuinedLocation>> entityToOriginalPositionMap;
     private final Map<Object, NavigableSet<RuinedLocation>> entityToNewPositionMap;
 
-    ListRuinUndoMove(ListRuinMove<Solution_> parentMove, ListVariableDescriptor<Solution_> listVariableDescriptor,
+    ListRuinRecreateUndoMove(ListRuinRecreateMove<Solution_> parentMove,
+            ListVariableDescriptor<Solution_> listVariableDescriptor,
             Map<Object, NavigableSet<RuinedLocation>> entityToOriginalPositionMap,
             Map<Object, NavigableSet<RuinedLocation>> entityToNewPositionMap) {
         super(parentMove);

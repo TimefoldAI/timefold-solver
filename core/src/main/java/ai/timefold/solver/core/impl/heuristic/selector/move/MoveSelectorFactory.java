@@ -10,14 +10,14 @@ import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveListFa
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.RuinMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.RuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.KOptMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListSwapMoveSelectorConfig;
@@ -30,7 +30,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveListFact
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.PillarChangeMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.PillarSwapMoveSelectorFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinMoveSelectorFactory;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SwapMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.chained.KOptMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorFactory;
@@ -41,7 +41,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListSwa
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListChangeMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListSwapMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin.ListRuinMoveSelectorFactory;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin.ListRuinRecreateMoveSelectorFactory;
 
 public interface MoveSelectorFactory<Solution_> {
 
@@ -72,10 +72,10 @@ public interface MoveSelectorFactory<Solution_> {
             return new KOptMoveSelectorFactory<>((KOptMoveSelectorConfig) moveSelectorConfig);
         } else if (KOptListMoveSelectorConfig.class.isAssignableFrom(moveSelectorConfig.getClass())) {
             return new KOptListMoveSelectorFactory<>((KOptListMoveSelectorConfig) moveSelectorConfig);
-        } else if (moveSelectorConfig instanceof RuinMoveSelectorConfig ruinMoveSelectorConfig) {
-            return new RuinMoveSelectorFactory<>(ruinMoveSelectorConfig);
-        } else if (moveSelectorConfig instanceof ListRuinMoveSelectorConfig listRuinMoveSelectorConfig) {
-            return new ListRuinMoveSelectorFactory<>(listRuinMoveSelectorConfig);
+        } else if (moveSelectorConfig instanceof RuinRecreateMoveSelectorConfig ruinRecreateMoveSelectorConfig) {
+            return new RuinRecreateMoveSelectorFactory<>(ruinRecreateMoveSelectorConfig);
+        } else if (moveSelectorConfig instanceof ListRuinRecreateMoveSelectorConfig listRuinRecreateMoveSelectorConfig) {
+            return new ListRuinRecreateMoveSelectorFactory<>(listRuinRecreateMoveSelectorConfig);
         } else if (moveSelectorConfig instanceof MoveIteratorFactoryConfig moveIteratorFactoryConfig) {
             return new MoveIteratorFactoryFactory<>(moveIteratorFactoryConfig);
         } else if (moveSelectorConfig instanceof MoveListFactoryConfig moveListFactoryConfig) {

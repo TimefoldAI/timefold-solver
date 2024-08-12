@@ -14,7 +14,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.apache.commons.math3.util.CombinatoricsUtils;
 
-final class ListRuinMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
+final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
 
     private final EntityIndependentValueSelector<Solution_> valueSelector;
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
@@ -25,7 +25,7 @@ final class ListRuinMoveSelector<Solution_> extends GenericMoveSelector<Solution
     private SolverScope<Solution_> solverScope;
     private ListVariableStateSupply<Solution_> listVariableStateSupply;
 
-    public ListRuinMoveSelector(EntityIndependentValueSelector<Solution_> valueSelector,
+    public ListRuinRecreateMoveSelector(EntityIndependentValueSelector<Solution_> valueSelector,
             ListVariableDescriptor<Solution_> listVariableDescriptor,
             RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
             ToLongFunction<Long> minimumSelectedCountSupplier,
@@ -92,7 +92,7 @@ final class ListRuinMoveSelector<Solution_> extends GenericMoveSelector<Solution
     @Override
     public Iterator<Move<Solution_>> iterator() {
         var assignedValueSelector = filterNotAssignedValues(valueSelector, listVariableStateSupply);
-        return new ListRuinMoveIterator<>(assignedValueSelector, constructionHeuristicPhaseBuilder,
+        return new ListRuinRecreateMoveIterator<>(assignedValueSelector, constructionHeuristicPhaseBuilder,
                 solverScope, listVariableStateSupply,
                 minimumSelectedCountSupplier.applyAsLong(assignedValueSelector.getSize()),
                 maximumSelectedCountSupplier.applyAsLong(assignedValueSelector.getSize()),

@@ -6,27 +6,28 @@ import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristi
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.RuinMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.RuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhaseFactory;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 
-public final class RuinMoveSelectorFactory<Solution_> extends AbstractMoveSelectorFactory<Solution_, RuinMoveSelectorConfig> {
+public final class RuinRecreateMoveSelectorFactory<Solution_>
+        extends AbstractMoveSelectorFactory<Solution_, RuinRecreateMoveSelectorConfig> {
 
-    private final RuinMoveSelectorConfig ruinMoveSelectorConfig;
+    private final RuinRecreateMoveSelectorConfig ruinRecreateMoveSelectorConfig;
 
-    public RuinMoveSelectorFactory(RuinMoveSelectorConfig ruinMoveSelectorConfig) {
-        super(ruinMoveSelectorConfig);
-        this.ruinMoveSelectorConfig = ruinMoveSelectorConfig;
+    public RuinRecreateMoveSelectorFactory(RuinRecreateMoveSelectorConfig ruinRecreateMoveSelectorConfig) {
+        super(ruinRecreateMoveSelectorConfig);
+        this.ruinRecreateMoveSelectorConfig = ruinRecreateMoveSelectorConfig;
     }
 
     @Override
     protected MoveSelector<Solution_> buildBaseMoveSelector(HeuristicConfigPolicy<Solution_> configPolicy,
             SelectionCacheType minimumCacheType, boolean randomSelection) {
-        ToLongFunction<Long> minimumSelectedSupplier = ruinMoveSelectorConfig::determineMinimumRuinedCount;
-        ToLongFunction<Long> maximumSelectedSupplier = ruinMoveSelectorConfig::determineMaximumRuinedCount;
+        ToLongFunction<Long> minimumSelectedSupplier = ruinRecreateMoveSelectorConfig::determineMinimumRuinedCount;
+        ToLongFunction<Long> maximumSelectedSupplier = ruinRecreateMoveSelectorConfig::determineMaximumRuinedCount;
 
         var entitySelector = EntitySelectorFactory.<Solution_> create(new EntitySelectorConfig())
                 .buildEntitySelector(configPolicy, minimumCacheType,
@@ -42,7 +43,7 @@ public final class RuinMoveSelectorFactory<Solution_> extends AbstractMoveSelect
         var constructionHeuristicPhaseFactory =
                 new DefaultConstructionHeuristicPhaseFactory<Solution_>(constructionHeuristicConfig);
         var constructionHeuristicPhase = constructionHeuristicPhaseFactory.getRuinPhaseBuilder(configPolicy);
-        return new RuinMoveSelector<>(entitySelector, variableDescriptor, constructionHeuristicPhase,
+        return new RuinRecreateMoveSelector<>(entitySelector, variableDescriptor, constructionHeuristicPhase,
                 minimumSelectedSupplier, maximumSelectedSupplier);
     }
 }
