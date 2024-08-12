@@ -18,7 +18,12 @@
 ** xref:constraints-and-score/constraint-configuration.adoc[leveloffset=+1]
 ** xref:constraints-and-score/load-balancing-and-fairness.adoc[leveloffset=+1]
 ** xref:constraints-and-score/performance.adoc[leveloffset=+1]
-* xref:optimization-algorithms/optimization-algorithms.adoc[leveloffset=+1]
+* Optimization algorithms
+** xref:optimization-algorithms/overview.adoc[leveloffset=+1]
+** xref:optimization-algorithms/construction-heuristics.adoc[leveloffset=+1]
+** xref:optimization-algorithms/local-search.adoc[leveloffset=+1]
+** xref:optimization-algorithms/exhaustive-search.adoc[leveloffset=+1]
+** xref:optimization-algorithms/move-selector-reference.adoc[leveloffset=+1]
 * xref:responding-to-change/responding-to-change.adoc[leveloffset=+1]
 * xref:integration/integration.adoc[leveloffset=+1]
 * xref:design-patterns/design-patterns.adoc[leveloffset=+1]

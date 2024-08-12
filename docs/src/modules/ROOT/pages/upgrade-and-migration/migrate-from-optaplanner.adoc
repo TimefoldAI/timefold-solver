@@ -5,7 +5,7 @@
 :icons: font
 
 In spring of 2024, Red Hat announced https://access.redhat.com/articles/7060671[end of life for OptaPlanner].
-Timefold Solver is a faster, feature-rich and actively developed fork of OptaPlanner.
+Timefold Solver is a faster, feature-rich, and actively developed fork of OptaPlanner.
 
 Upgrading from OptaPlanner to Timefold Solver Community Edition only takes two minutes.
 Run the command below to upgrade your code automatically.

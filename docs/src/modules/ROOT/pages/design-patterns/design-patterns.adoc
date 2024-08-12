@@ -51,12 +51,21 @@ image::design-patterns/employeeShiftRosteringModelingGuideA.png[align="center"]
 
 . *Annotate a many-to-one relationship with a `@PlanningEntity` annotation.* Usually the _many_ side of the relationship is the planning entity class that contains the planning variable. If the relationship is bi-directional, both sides are a planning entity class but usually the _many_ side has the planning variable and the _one_ side has the shadow variable. For example, in employee rostering, the `ShiftAssignment` class has an `@PlanningEntity` annotation.
 
-. *Make sure that the planning entity class has at least one problem property*. A planning entity class cannot consist of only planning variables or an ID and only planning variables.
-.. Remove any surplus `@PlanningVariable` annotations so that they become problem properties. Doing this significantly decreases xref:optimization-algorithms/optimization-algorithms.adoc#searchSpaceSize[the search space size] and significantly increases solving efficiency. For example, in employee rostering, the `ShiftAssignment` class should not annotate both the `Shift` and `Employee` relationship with `@PlanningVariable`.
-.. Make sure that when all planning variables have a value of `null`, the planning entity instance is describable to the business people. Planning variables have a value of `null` when the planning solution is uninitialized.
+. *Make sure that the planning entity class has at least one problem property*.
+A planning entity class cannot consist of only planning variables or an ID and only planning variables.
+.. Remove any surplus `@PlanningVariable` annotations so that they become problem properties.
+Doing this significantly decreases xref:optimization-algorithms/overview.adoc#searchSpaceSize[the search space size] and significantly increases solving efficiency. For example, in employee rostering, the `ShiftAssignment` class should not annotate both the `Shift` and `Employee` relationship with `@PlanningVariable`.
+.. Make sure that when all planning variables have a value of `null`,
+the planning entity instance is describable to the business people.
+Planning variables have a value of `null` when the planning solution is uninitialized.
 ** A surrogate ID does not suffice as the required minimum of one problem property.
-** There is no need to add a hard constraint to assure that two planning entities are different. They are already different due to their problem properties.
-** In some cases, multiple planning entity instances have the same set of problem properties. In such cases, it can be useful to create an extra problem property to distinguish them. For example, in employee rostering, the `ShiftAssignment` class has the problem property `Shift` as well as the problem property `indexInShift` which is an `int` class.
+** There is no need to add a hard constraint to assure that two planning entities are different.
+They are already different due to their problem properties.
+** In some cases, multiple planning entity instances have the same set of problem properties.
+In such cases, it can be useful to create an extra problem property to distinguish them.
+For example, in employee rostering,
+the `ShiftAssignment` class has the problem property `Shift`
+as well as the problem property `indexInShift` which is an `int` class.
 
 . *Choose the model in which the number of planning entities is fixed during planning*.
 For example, in the employee rostering,
@@ -156,7 +165,7 @@ Overlap of two entities is determined by comparing their start and end time grai
 
 *The TimeGrain pattern doesn't scale well*.
 Especially with a finer time granularity (such as 1 minute) and a long planning window,
-the value range (and therefore xref:optimization-algorithms/optimization-algorithms.adoc#searchSpaceSize[the search space]) is too big to scale well.
+the value range (and therefore xref:optimization-algorithms/overview.adoc#searchSpaceSize[the search space]) is too big to scale well.
 It's recommended to use a coarse time granularity (such as 1 week, 1 day, 1 half day, ...) or shorten the planning window size to scale.
 To resolve scaling issues, the <<timeBucketPattern,Time Bucket pattern>> is often a good alternative.
 
@@ -217,7 +226,7 @@ For example, a cross-continent truck driver needs to rest 15 minutes after two h
 (which may also occur during loading or unloading time at a customer location)
 and also needs to rest 10 hours after 14 hours of work.
 * Planning variable gaps: This is uncommon, because that extra planning variable reduces efficiency and scalability,
-(besides impacting the xref:optimization-algorithms/optimization-algorithms.adoc#searchSpaceSize[search space] too).
+(besides impacting the xref:optimization-algorithms/overview.adoc#searchSpaceSize[search space] too).
 
 
 [#chainedThroughTimeAutomaticCollapse]

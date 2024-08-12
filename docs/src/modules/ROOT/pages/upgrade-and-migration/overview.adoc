@@ -13,6 +13,6 @@ In this section, you will:
 To find out what's new in the latest version of Timefold Solver,
 see the https://github.com/TimefoldAI/timefold-solver/releases[Timefold Solver release notes]
 in our Github repository,
-read https://timefold.ai/blog[our blog]
+read https://timefold.ai/blog[our blog],
 or subscribe to our newsletter.
 

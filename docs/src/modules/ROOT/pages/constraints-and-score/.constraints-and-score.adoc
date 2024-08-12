@@ -5,13 +5,8 @@
 :icons: font
 
 include::overview.adoc[leveloffset=+1]
-
 include::score-calculation.adoc[leveloffset=+1]
-
 include::understanding-the-score.adoc[leveloffset=+1]
-
 include::constraint-configuration.adoc[leveloffset=+1]
-
 include::load-balancing-and-fairness.adoc[leveloffset=+1]
-
 include::performance.adoc[leveloffset=+1]
