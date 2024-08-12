@@ -14,6 +14,11 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
         "maximumRuinedPercentage"
 })
 public class ListRuinMoveSelectorConfig extends MoveSelectorConfig<ListRuinMoveSelectorConfig> {
+
+    // Determined by benchmarking on multiple datasets.
+    private static final int DEFAULT_MINIMUM_RUINED_COUNT = 5;
+    private static final int DEFAULT_MAXIMUM_RUINED_COUNT = 40;
+
     public static final String XML_ELEMENT_NAME = "listRuinMoveSelector";
 
     protected Long minimumRuinedCount = null;
@@ -122,7 +127,7 @@ public class ListRuinMoveSelectorConfig extends MoveSelectorConfig<ListRuinMoveS
         if (minimumRuinedPercentage != null) {
             return (long) Math.floor(minimumRuinedPercentage * entityCount);
         }
-        return 1L;
+        return Math.min(DEFAULT_MINIMUM_RUINED_COUNT, entityCount);
     }
 
     public long determineMaximumRuinedCount(long entityCount) {
@@ -132,7 +137,7 @@ public class ListRuinMoveSelectorConfig extends MoveSelectorConfig<ListRuinMoveS
         if (maximumRuinedPercentage != null) {
             return (long) Math.floor(maximumRuinedPercentage * entityCount);
         }
-        return entityCount;
+        return Math.min(DEFAULT_MAXIMUM_RUINED_COUNT, entityCount);
     }
 
 }
