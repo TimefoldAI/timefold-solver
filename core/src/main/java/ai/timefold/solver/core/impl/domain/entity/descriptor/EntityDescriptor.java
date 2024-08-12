@@ -216,7 +216,6 @@ public class EntityDescriptor<Solution_> {
                     + ") should have at least 1 getter method or 1 field with a "
                     + PlanningVariable.class.getSimpleName() + " annotation or a shadow variable annotation.");
         }
-        processPiggyBackForCascadingUpdateShadowVariables();
         processVariableAnnotations(descriptorPolicy);
     }
 
@@ -300,25 +299,6 @@ public class EntityDescriptor<Solution_> {
                     memberAccessorType, variableAnnotationClass, descriptorPolicy.getDomainAccessType());
             registerVariableAccessor(variableDescriptorCounter.intValue(), variableAnnotationClass, memberAccessor);
             variableDescriptorCounter.increment();
-        }
-    }
-
-    private void processPiggyBackForCascadingUpdateShadowVariables() {
-        if (!declaredCascadingUpdateShadowVariableDecriptorMap.isEmpty()) {
-            var piggybackShadowVariableDescriptorList = declaredShadowVariableDescriptorMap
-                    .values()
-                    .stream()
-                    .filter(v -> PiggybackShadowVariableDescriptor.class.isAssignableFrom(v.getClass()))
-                    .map(v -> (PiggybackShadowVariableDescriptor<Solution_>) v)
-                    .toList();
-            for (var descriptor : piggybackShadowVariableDescriptorList) {
-                var cascadingUpdateShadowVariableDescriptor =
-                        findNotifiableCascadingUpdateDescriptor(descriptor.getShadowVariableName());
-                if (cascadingUpdateShadowVariableDescriptor != null) {
-                    cascadingUpdateShadowVariableDescriptor.addTargetVariable(descriptor.getEntityDescriptor(),
-                            descriptor.getMemberAccessor());
-                }
-            }
         }
     }
 

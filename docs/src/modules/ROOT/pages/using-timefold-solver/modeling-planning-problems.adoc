@@ -1429,43 +1429,8 @@ It must never change a genuine planning variable or a problem fact.
 
 [NOTE]
 ====
-Except for `@PiggybackShadowVariable`,
-the use of `@CascadingUpdateShadowVariable` as a source for other variables is not allowed.
-====
-
-==== Multiple sources
-
-If the user-defined logic requires updating multiple shadow variables,
-apply the `@CascadingUpdateShadowVariable` annotation to only one shadow variable.
-Next,
-use the `@PiggybackShadowVariable` for all other shadow variables
-that will also be updated by the specified target method.
-
-[source,java]
-----
-@PlanningEntity
-public class Customer {
-
-    @PreviousElementShadowVariable(sourceVariableName = "customers")
-    private Customer previousCustomer;
-    @NextElementShadowVariable(sourceVariableName = "customers")
-    private Customer nextCustomer;
-    @CascadingUpdateShadowVariable(targetMethodName = "updateWeightAndArrivalTime",)
-    private LocalDateTime arrivalTime;
-    @PiggybackShadowVariable(shadowVariableName = "arrivalTime")
-    private Integer weightAtVisit;
-    ...
-
-    public void updateWeightAndArrivalTime() {...}
-----
-
-Timefold Solver triggers a single listener to run the user-defined logic at the end of the event lifecycle.
-It stops when both `arrivalTime` and `weightAtVisit` values do not change or when it reaches the end.
-
-[WARNING]
-====
-It is not allowed to specify the property `shadowEntityClass` in `@PiggybackShadowVariable`
-when the source shadow variable is `@CascadingUpdateShadowVariable`.
+When distinct target methods are used by separate `@CascadingUpdateShadowVariable` variables in the same model,
+there will be no guarantees regarding which target method is executed first.
 ====
 
 [#chainedPlanningVariable]
