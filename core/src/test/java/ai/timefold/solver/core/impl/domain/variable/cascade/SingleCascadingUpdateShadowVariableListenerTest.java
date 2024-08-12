@@ -7,7 +7,7 @@ import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataS
 import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadingSolution;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingInvalidField;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingInvalidSource;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingPiggyback;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingInvalidPiggyback;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingWrongMethod;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
@@ -36,7 +36,7 @@ class SingleCascadingUpdateShadowVariableListenerTest {
                 .withMessageContaining(
                         "Shadow variables such as @CascadingUpdateShadowVariable are not allowed to be used as source")
                 .withMessageContaining("Maybe check if cascadeValue is annotated with @CascadingUpdateShadowVariable");
-        assertThatIllegalArgumentException().isThrownBy(TestdataCascadingPiggyback::buildEntityDescriptor)
+        assertThatIllegalArgumentException().isThrownBy(TestdataCascadingInvalidPiggyback::buildEntityDescriptor)
                 .withMessageContaining(
                         "The entityClass (class ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingPiggyback)")
                 .withMessageContaining("has a @PiggybackShadowVariable annotated property (cascadeValue2)")

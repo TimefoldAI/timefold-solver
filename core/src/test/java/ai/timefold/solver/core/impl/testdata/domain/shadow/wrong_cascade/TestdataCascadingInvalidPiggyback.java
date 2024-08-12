@@ -12,28 +12,28 @@ import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataS
 import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadingSolution;
 
 @PlanningEntity
-public class TestdataCascadingPiggyback {
+public class TestdataCascadingInvalidPiggyback {
 
     public static EntityDescriptor<TestdataSingleCascadingSolution> buildEntityDescriptor() {
         return SolutionDescriptor
                 .buildSolutionDescriptor(TestdataSingleCascadingSolution.class, TestdataSingleCascadingEntity.class,
-                        TestdataCascadingPiggyback.class)
-                .findEntityDescriptorOrFail(TestdataCascadingPiggyback.class);
+                        TestdataCascadingInvalidPiggyback.class)
+                .findEntityDescriptorOrFail(TestdataCascadingInvalidPiggyback.class);
     }
 
     @InverseRelationShadowVariable(sourceVariableName = "valueList")
     private TestdataSingleCascadingEntity entity;
     @PreviousElementShadowVariable(sourceVariableName = "valueList")
-    private TestdataCascadingPiggyback previous;
+    private TestdataCascadingInvalidPiggyback previous;
     @NextElementShadowVariable(sourceVariableName = "valueList")
-    private TestdataCascadingPiggyback next;
+    private TestdataCascadingInvalidPiggyback next;
     @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue")
     private Integer cascadeValue;
     @PiggybackShadowVariable(shadowVariableName = "cascadeValue")
     private Integer cascadeValue2;
     private Integer value;
 
-    public TestdataCascadingPiggyback(Integer value) {
+    public TestdataCascadingInvalidPiggyback(Integer value) {
         this.value = value;
     }
 
@@ -45,19 +45,19 @@ public class TestdataCascadingPiggyback {
         this.entity = entity;
     }
 
-    public TestdataCascadingPiggyback getPrevious() {
+    public TestdataCascadingInvalidPiggyback getPrevious() {
         return previous;
     }
 
-    public void setPrevious(TestdataCascadingPiggyback previous) {
+    public void setPrevious(TestdataCascadingInvalidPiggyback previous) {
         this.previous = previous;
     }
 
-    public TestdataCascadingPiggyback getNext() {
+    public TestdataCascadingInvalidPiggyback getNext() {
         return next;
     }
 
-    public void setNext(TestdataCascadingPiggyback next) {
+    public void setNext(TestdataCascadingInvalidPiggyback next) {
         this.next = next;
     }
 
