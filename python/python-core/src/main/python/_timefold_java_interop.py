@@ -78,6 +78,7 @@ def init(*args, path: list[str] = None, include_timefold_jars: bool = True) -> N
     """
     from _jpyinterpreter import init
 
+
     if jpype.isJVMStarted():  # noqa
         raise RuntimeError('JVM already started. Maybe call init before timefold.solver.types imports?')
     if path is None:
@@ -86,7 +87,11 @@ def init(*args, path: list[str] = None, include_timefold_jars: bool = True) -> N
     if include_timefold_jars:
         path = path + extract_timefold_jars()
     if len(args) == 0:
-        args = [jpype.getDefaultJVMPath()]
+        try:
+            args = [jpype.getDefaultJVMPath()]
+        except jpype.JVMNotFoundException:
+            raise RuntimeError("""Timefold Solver for Python requires JVM (java) version 17 or later. You have none installed.
+                     Maybe use sdkman (https://sdkman.io) to install a modern version of Java.""")
     init(*args, path=path, include_translator_jars=False)
 
     from ai.timefold.solver.python.logging import PythonDelegateAppender
