@@ -302,19 +302,6 @@ public class EntityDescriptor<Solution_> {
         }
     }
 
-    private CascadingUpdateShadowVariableDescriptor<Solution_>
-            findNotifiableCascadingUpdateDescriptor(String variableName) {
-        var descriptor = declaredShadowVariableDescriptorMap.get(variableName);
-        var isCascadingUpdateDescriptor =
-                descriptor != null && CascadingUpdateShadowVariableDescriptor.class.isAssignableFrom(descriptor.getClass());
-        if (isCascadingUpdateDescriptor && !descriptor.hasVariableListener()) {
-            descriptor =
-                    declaredCascadingUpdateShadowVariableDecriptorMap
-                            .get(((CascadingUpdateShadowVariableDescriptor<Solution_>) descriptor).getTargetMethodName());
-        }
-        return isCascadingUpdateDescriptor ? (CascadingUpdateShadowVariableDescriptor<Solution_>) descriptor : null;
-    }
-
     private void registerVariableAccessor(int nextVariableDescriptorOrdinal,
             Class<? extends Annotation> variableAnnotationClass, MemberAccessor memberAccessor) {
         var memberName = memberAccessor.getName();

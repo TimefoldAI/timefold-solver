@@ -6,8 +6,8 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadingEntity;
 import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadingSolution;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingInvalidField;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingInvalidSource;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingInvalidPiggyback;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingInvalidSource;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_cascade.TestdataCascadingWrongMethod;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
