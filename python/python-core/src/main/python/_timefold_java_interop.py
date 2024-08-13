@@ -91,8 +91,17 @@ def init(*args, path: list[str] = None, include_timefold_jars: bool = True) -> N
             args = [jpype.getDefaultJVMPath()]
         except jpype.JVMNotFoundException:
             raise RuntimeError("""Timefold Solver for Python requires JVM (java) version 17 or later. You have none installed.
-                     Maybe use sdkman (https://sdkman.io) to install a modern version of Java.""")
-    init(*args, path=path, include_translator_jars=False)
+            Maybe use sdkman (https://sdkman.io) to install a modern version of Java.""")
+
+    error = None
+    try:
+        init(*args, path=path, include_translator_jars=False)
+    except ImportError as e:
+        error = str(e)
+
+    if error is not None and "due to incorrect Java version" in error:
+        raise RuntimeError("""Timefold Solver for Python requires JVM (java) version 17 or later. Your JVM version is not supported.
+        Maybe use sdkman (https://sdkman.io) to install a more modern version of Java.""")
 
     from ai.timefold.solver.python.logging import PythonDelegateAppender
     PythonDelegateAppender.setLogEventConsumer(PythonConsumer(forward_logging_events))

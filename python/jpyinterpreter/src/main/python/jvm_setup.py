@@ -76,14 +76,7 @@ def init(*args, path: List[str] = None, include_translator_jars: bool = True,
         from ai.timefold.jpyinterpreter import InterpreterStartupOptions # noqa
         InterpreterStartupOptions.classOutputRootPath = class_output_path
 
-    error = None
-    try:
-        import ai.timefold.jpyinterpreter.CPythonBackedPythonInterpreter as CPythonBackedPythonInterpreter
-    except ImportError as e:
-        error = str(e)
-    if error is not None and "due to incorrect Java version" in error:
-        raise RuntimeError("""Timefold Solver for Python requires JVM (java) version 17 or later. Your JVM version is not supported.
-        Maybe use sdkman (https://sdkman.io) to install a more modern version of Java.""")
+    import ai.timefold.jpyinterpreter.CPythonBackedPythonInterpreter as CPythonBackedPythonInterpreter
     CPythonBackedPythonInterpreter.lookupPythonReferenceIdPythonFunction = GetPythonObjectId()
     CPythonBackedPythonInterpreter.lookupPythonReferenceTypePythonFunction = GetPythonObjectType()
     CPythonBackedPythonInterpreter.lookupAttributeOnPythonReferencePythonFunction = GetAttributeOnPythonObject()
