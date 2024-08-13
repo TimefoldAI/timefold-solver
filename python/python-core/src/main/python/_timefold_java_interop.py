@@ -76,17 +76,18 @@ def init(*args, path: list[str] = None, include_timefold_jars: bool = True) -> N
         If the Timefold dependencies should be added to `path`.
         Defaults to True.
     """
-    from _jpyinterpreter import init
+    from _jpyinterpreter import init, get_default_jvm_path
 
     if jpype.isJVMStarted():  # noqa
         raise RuntimeError('JVM already started. Maybe call init before timefold.solver.types imports?')
+
     if path is None:
         include_timefold_jars = True
         path = []
     if include_timefold_jars:
         path = path + extract_timefold_jars()
     if len(args) == 0:
-        args = [jpype.getDefaultJVMPath()]
+        args = [get_default_jvm_path()]
     init(*args, path=path, include_translator_jars=False)
 
     from ai.timefold.solver.python.logging import PythonDelegateAppender
