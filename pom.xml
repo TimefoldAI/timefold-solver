@@ -6,7 +6,7 @@
   <groupId>ai.timefold.solver</groupId>
   <artifactId>timefold-solver-parent</artifactId>
   <packaging>pom</packaging>
-  <version>1.13.0</version>
+  <version>999-SNAPSHOT</version>
 
   <name>Timefold Solver multiproject parent</name>
   <description>
