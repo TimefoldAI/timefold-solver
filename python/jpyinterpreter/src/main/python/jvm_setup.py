@@ -72,8 +72,10 @@ def init(*args, path: List[str] = None, include_translator_jars: bool = True,
 
     jpype.startJVM(*args, *extra_jvm_args, classpath=path, convertStrings=True)  # noqa
 
+    ensure_valid_jvm()
+
     if class_output_path is not None:
-        from ai.timefold.jpyinterpreter import InterpreterStartupOptions # noqa
+        from ai.timefold.jpyinterpreter import InterpreterStartupOptions  # noqa
         InterpreterStartupOptions.classOutputRootPath = class_output_path
 
     import ai.timefold.jpyinterpreter.CPythonBackedPythonInterpreter as CPythonBackedPythonInterpreter
@@ -260,7 +262,6 @@ class CreateFunctionFromCode:
         return out
 
 
-
 @jpype.JImplements('ai.timefold.jpyinterpreter.util.function.PentaFunction', deferred=True)
 class ImportModule:
     @jpype.JOverride()
@@ -276,6 +277,23 @@ class ImportModule:
         )
 
 
+class InvalidJVMVersionError(Exception):
+    pass
+
+
+def ensure_valid_jvm(runtime=None):
+    if runtime is None:
+        import java.lang.Runtime as runtime
+    try:
+        version = runtime.version().feature()
+        if version < 17:
+            raise InvalidJVMVersionError("""Timefold Solver for Python requires JVM (java) version 17 or later. Your JVM version {0} is not supported.
+        Maybe use sdkman (https://sdkman.io) to install a more modern version of Java.""".format(version))
+    except AttributeError:
+        raise InvalidJVMVersionError("""Timefold Solver for Python requires JVM (java) version 17 or later. Your JVM version is not supported.
+        Maybe use sdkman (https://sdkman.io) to install a more modern version of Java.""")
+
+
 def ensure_init():
     """Start the JVM if it isn't started; does nothing otherwise
 
@@ -284,7 +302,7 @@ def ensure_init():
 
     :return: None
     """
-    if jpype.isJVMStarted(): # noqa
+    if jpype.isJVMStarted():  # noqa
         return
     else:
         init()
@@ -293,5 +311,5 @@ def ensure_init():
 def set_class_output_directory(path: pathlib.Path):
     ensure_init()
 
-    from ai.timefold.jpyinterpreter import PythonBytecodeToJavaBytecodeTranslator # noqa
+    from ai.timefold.jpyinterpreter import PythonBytecodeToJavaBytecodeTranslator  # noqa
     PythonBytecodeToJavaBytecodeTranslator.classOutputRootPath = path
