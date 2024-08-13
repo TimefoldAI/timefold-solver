@@ -85,7 +85,7 @@ jobs:
       - name: Set release version and build release
         run: |
           mvn -Dfull versions:set -DnewVersion=${{ github.event.inputs.version }}
-          sed -i "s/^timefold_solver_python_version.*=.*/timefold_solver_python_version = '$NEW_VERSION_PYTHON'/" setup.py
+          sed -i "s/^timefold_solver_python_version.*=.*/timefold_solver_python_version = '${{ github.event.inputs.version }}${{ github.event.inputs.pythonVersionSuffix }}'/" setup.py
           mvn -Dfull deploy -DskipTests=${{ github.event.inputs.dryRun }} -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
           python -m build
           cp docs/target/antora-template.yml docs/src/antora.yml
