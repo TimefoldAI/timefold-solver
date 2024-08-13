@@ -96,13 +96,16 @@ public final class LoadBalanceImpl<Balanced_> implements LoadBalance<Balanced_> 
     @Override
     public BigDecimal unfairness() {
         var totalToBalanceCount = balancedItemCountMap.size();
-        if (totalToBalanceCount == 0) {
-            return BigDecimal.ZERO;
-        }
-        return BigDecimal.valueOf(squaredDeviationFractionNumerator)
-                .divide(BigDecimal.valueOf(totalToBalanceCount), MathContext.DECIMAL32) // Compute w/ greater precision.
-                .add(BigDecimal.valueOf(squaredDeviationIntegralPart))
-                .sqrt(RESULT_MATH_CONTEXT);
+        return switch (totalToBalanceCount) {
+            case 0 -> BigDecimal.ZERO;
+            case 1 -> BigDecimal.valueOf(squaredDeviationFractionNumerator + squaredDeviationIntegralPart)
+                    .sqrt(RESULT_MATH_CONTEXT);
+            default -> { // Only do the final sqrt as BigDecimal, fast floating point math is good enough for the rest.
+                var tmp = (squaredDeviationFractionNumerator / (double) totalToBalanceCount) + squaredDeviationIntegralPart;
+                yield BigDecimal.valueOf(tmp)
+                        .sqrt(RESULT_MATH_CONTEXT);
+            }
+        };
     }
 
 }
