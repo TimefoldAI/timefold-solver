@@ -8,6 +8,8 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.ScoreExplanation;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Explains the {@link Score} of a {@link PlanningSolution}, from the opposite side than {@link Indictment}.
  * Retrievable from {@link ScoreExplanation#getConstraintMatchTotalMap()}.
@@ -30,9 +32,7 @@ public interface ConstraintMatchTotal<Score_ extends Score<Score_>> {
         return constraintPackage + "/" + constraintName;
     }
 
-    /**
-     * @return never null
-     */
+    @NonNull
     ConstraintRef getConstraintRef();
 
     /**
@@ -57,14 +57,11 @@ public interface ConstraintMatchTotal<Score_ extends Score<Score_>> {
      * The effective value of constraint weight after applying optional overrides.
      * It is independent to the state of the {@link PlanningVariable planning variables}.
      * Do not confuse with {@link #getScore()}.
-     *
-     * @return never null
      */
+    @NonNull
     Score_ getConstraintWeight();
 
-    /**
-     * @return never null
-     */
+    @NonNull
     Set<ConstraintMatch<Score_>> getConstraintMatchSet();
 
     /**
@@ -76,9 +73,8 @@ public interface ConstraintMatchTotal<Score_ extends Score<Score_>> {
 
     /**
      * Sum of the {@link #getConstraintMatchSet()}'s {@link ConstraintMatch#getScore()}.
-     *
-     * @return never null
      */
+    @NonNull
     Score_ getScore();
 
     /**

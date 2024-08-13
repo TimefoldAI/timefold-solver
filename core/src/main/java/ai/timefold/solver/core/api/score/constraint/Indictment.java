@@ -9,6 +9,8 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.ScoreExplanation;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Explains the {@link Score} of a {@link PlanningSolution}, from the opposite side than {@link ConstraintMatchTotal}.
  * Retrievable from {@link ScoreExplanation#getIndictmentMap()}.
@@ -36,14 +38,11 @@ public interface Indictment<Score_ extends Score<Score_>> {
      * It is part of {@link ConstraintMatch#getIndictedObjectList()} of every {@link ConstraintMatch}
      * returned by {@link #getConstraintMatchSet()}.
      *
-     * @return never null
      * @param <IndictedObject_> Shorthand so that the user does not need to cast in user code.
      */
-    <IndictedObject_> IndictedObject_ getIndictedObject();
+    <IndictedObject_> @NonNull IndictedObject_ getIndictedObject();
 
-    /**
-     * @return never null
-     */
+    @NonNull
     Set<ConstraintMatch<Score_>> getConstraintMatchSet();
 
     /**
@@ -59,8 +58,9 @@ public interface Indictment<Score_ extends Score<Score_>> {
      * This is equivalent to retrieving {@link #getConstraintMatchSet()}
      * and collecting all {@link ConstraintMatch#getJustification()} objects into a list.
      *
-     * @return never null, guaranteed to contain unique instances
+     * @return guaranteed to contain unique instances
      */
+    @NonNull
     List<ConstraintJustification> getJustificationList();
 
     /**
@@ -69,8 +69,9 @@ public interface Indictment<Score_ extends Score<Score_>> {
      * This is equivalent to retrieving {@link #getConstraintMatchSet()}
      * and collecting all matching {@link ConstraintMatch#getJustification()} objects into a list.
      *
-     * @return never null, guaranteed to contain unique instances
+     * @return guaranteed to contain unique instances
      */
+    @NonNull
     default <ConstraintJustification_ extends ConstraintJustification> List<ConstraintJustification_>
             getJustificationList(Class<ConstraintJustification_> justificationClass) {
         return getJustificationList()
@@ -82,9 +83,8 @@ public interface Indictment<Score_ extends Score<Score_>> {
 
     /**
      * Sum of the {@link #getConstraintMatchSet()}'s {@link ConstraintMatch#getScore()}.
-     *
-     * @return never null
      */
+    @NonNull
     Score_ getScore();
 
 }

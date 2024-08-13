@@ -11,6 +11,8 @@ import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Retrievable from {@link ConstraintMatchTotal#getConstraintMatchSet()}
  * and {@link Indictment#getConstraintMatchSet()}.
@@ -83,13 +85,8 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
         this(new ConstraintRef(constraintPackage, constraintName, constraintId), justification, indictedObjectList, score);
     }
 
-    /**
-     * @param constraintRef never null
-     * @param justification never null
-     * @param score never null
-     */
-    public ConstraintMatch(ConstraintRef constraintRef, ConstraintJustification justification,
-            Collection<Object> indictedObjectList, Score_ score) {
+    public ConstraintMatch(@NonNull ConstraintRef constraintRef, @NonNull ConstraintJustification justification,
+            @NonNull Collection<Object> indictedObjectList, @NonNull Score_ score) {
         this.constraintRef = requireNonNull(constraintRef);
         this.justification = requireNonNull(justification);
         this.indictedObjectList =
@@ -97,7 +94,7 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
         this.score = requireNonNull(score);
     }
 
-    public ConstraintRef getConstraintRef() {
+    public @NonNull ConstraintRef getConstraintRef() {
         return constraintRef;
     }
 
@@ -164,10 +161,8 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
      * in which case it returns the return value of that function.</li>
      * <li>For incremental score calculation, it returns what the calculator is implemented to return.</li>
      * </ul>
-     *
-     * @return never null
      */
-    public <Justification_ extends ConstraintJustification> Justification_ getJustification() {
+    public <Justification_ extends ConstraintJustification> @NonNull Justification_ getJustification() {
         return (Justification_) justification;
     }
 
@@ -182,13 +177,13 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
      * <li>For incremental score calculation, it returns what the calculator is implemented to return.</li>
      * </ul>
      *
-     * @return never null, may be empty or contain null
+     * @return may be empty or contain null
      */
-    public List<Object> getIndictedObjectList() {
+    public @NonNull List<Object> getIndictedObjectList() {
         return indictedObjectList;
     }
 
-    public Score_ getScore() {
+    public @NonNull Score_ getScore() {
         return score;
     }
 
