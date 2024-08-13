@@ -11,6 +11,8 @@ import java.util.Collection;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Provides the planning values that can be used for a {@link PlanningVariable}.
  * <p>
@@ -29,6 +31,7 @@ public @interface ValueRangeProvider {
      *
      * @return if provided, must be unique across a {@link SolverFactory}
      */
+    @NonNull
     String id() default "";
 
 }
