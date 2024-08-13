@@ -6,6 +6,9 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * The ScoreDirector holds the {@link PlanningSolution working solution}
  * and calculates the {@link Score} for it.
@@ -19,9 +22,8 @@ public interface ScoreDirector<Solution_> {
      * <p>
      * Because a {@link Score} is best calculated incrementally (by deltas),
      * the {@link ScoreDirector} needs to be notified when its {@link PlanningSolution working solution} changes.
-     *
-     * @return never null
      */
+    @NonNull
     Solution_ getWorkingSolution();
 
     void beforeVariableChanged(Object entity, String variableName);
@@ -140,14 +142,13 @@ public interface ScoreDirector<Solution_> {
      * Matching is determined by the {@link LookUpStrategyType} on {@link PlanningSolution}.
      * Matching uses a {@link PlanningId} by default.
      *
-     * @param externalObject sometimes null
      * @return null if externalObject is null
      * @throws IllegalArgumentException if there is no workingObject for externalObject, if it cannot be looked up
      *         or if the externalObject's class is not supported
      * @throws IllegalStateException if it cannot be looked up
      * @param <E> the object type
      */
-    <E> E lookUpWorkingObject(E externalObject);
+    <E> @Nullable E lookUpWorkingObject(@Nullable E externalObject);
 
     /**
      * As defined by {@link #lookUpWorkingObject(Object)},
@@ -155,12 +156,11 @@ public interface ScoreDirector<Solution_> {
      * It's recommended to use {@link #lookUpWorkingObject(Object)} instead,
      * especially in move rebasing code.
      *
-     * @param externalObject sometimes null
      * @return null if externalObject is null or if there is no workingObject for externalObject
      * @throws IllegalArgumentException if it cannot be looked up or if the externalObject's class is not supported
      * @throws IllegalStateException if it cannot be looked up
      * @param <E> the object type
      */
-    <E> E lookUpWorkingObjectOrReturnNull(E externalObject);
+    <E> @Nullable E lookUpWorkingObjectOrReturnNull(@Nullable E externalObject);
 
 }

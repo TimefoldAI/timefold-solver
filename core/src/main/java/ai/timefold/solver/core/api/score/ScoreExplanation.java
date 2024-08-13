@@ -18,6 +18,8 @@ import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Build by {@link SolutionManager#explain(Object)} to hold {@link ConstraintMatchTotal}s and {@link Indictment}s
  * necessary to explain the quality of a particular {@link Score}.
@@ -31,18 +33,16 @@ public interface ScoreExplanation<Solution_, Score_ extends Score<Score_>> {
 
     /**
      * Retrieve the {@link PlanningSolution} that the score being explained comes from.
-     *
-     * @return never null
      */
+    @NonNull
     Solution_ getSolution();
 
     /**
      * Return the {@link Score} being explained.
      * If the specific {@link Score} type used by the {@link PlanningSolution} is required,
      * call {@link #getSolution()} and retrieve it from there.
-     *
-     * @return never null
      */
+    @NonNull
     Score_ getScore();
 
     /**
@@ -56,9 +56,8 @@ public interface ScoreExplanation<Solution_, Score_ extends Score<Score_>> {
      * Instead, to provide this information in a UI or a service,
      * use {@link ScoreExplanation#getConstraintMatchTotalMap()} and {@link ScoreExplanation#getIndictmentMap()}
      * and convert those into a domain-specific API.
-     *
-     * @return never null
      */
+    @NonNull
     String getSummary();
 
     /**
@@ -66,10 +65,11 @@ public interface ScoreExplanation<Solution_, Score_ extends Score<Score_>> {
      * <p>
      * The sum of {@link ConstraintMatchTotal#getScore()} equals {@link #getScore()}.
      *
-     * @return never null, the key is the constraintId
+     * @return the key is the constraintId
      *         (to create one, use {@link ConstraintRef#composeConstraintId(String, String)}).
      * @see #getIndictmentMap()
      */
+    @NonNull
     Map<String, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap();
 
     /**
@@ -90,9 +90,10 @@ public interface ScoreExplanation<Solution_, Score_ extends Score<Score_>> {
      * </li>
      * </ul>
      *
-     * @return never null, all constraint matches
+     * @return all constraint matches
      * @see #getIndictmentMap()
      */
+    @NonNull
     List<ConstraintJustification> getJustificationList();
 
     /**
@@ -100,12 +101,11 @@ public interface ScoreExplanation<Solution_, Score_ extends Score<Score_>> {
      * justified with a given {@link ConstraintJustification} type.
      * Otherwise, as defined by {@link #getJustificationList()}.
      *
-     * @param constraintJustificationClass never null
-     * @return never null, all constraint matches associated with the given justification class
+     * @return all constraint matches associated with the given justification class
      * @see #getIndictmentMap()
      */
-    default <ConstraintJustification_ extends ConstraintJustification> List<ConstraintJustification_>
-            getJustificationList(Class<? extends ConstraintJustification_> constraintJustificationClass) {
+    default <ConstraintJustification_ extends ConstraintJustification> @NonNull List<ConstraintJustification_>
+            getJustificationList(@NonNull Class<? extends ConstraintJustification_> constraintJustificationClass) {
         return getJustificationList()
                 .stream()
                 .filter(constraintJustification -> constraintJustificationClass
@@ -123,10 +123,11 @@ public interface ScoreExplanation<Solution_, Score_ extends Score<Score_>> {
      * because each {@link ConstraintMatch#getScore()} is counted
      * for each of the {@link ConstraintMatch#getIndictedObjectList() indicted objects}.
      *
-     * @return never null, the key is a {@link ProblemFactCollectionProperty problem fact} or a
+     * @return the key is a {@link ProblemFactCollectionProperty problem fact} or a
      *         {@link PlanningEntity planning entity}
      * @see #getConstraintMatchTotalMap()
      */
+    @NonNull
     Map<Object, Indictment<Score_>> getIndictmentMap();
 
 }

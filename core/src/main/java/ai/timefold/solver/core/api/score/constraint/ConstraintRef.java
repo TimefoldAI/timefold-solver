@@ -5,6 +5,8 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Represents a unique identifier of a constraint.
  * <p>
@@ -23,7 +25,7 @@ import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
  *        it is equal to the {@link ConstraintWeight#value()}.
  * @param constraintId Always derived from {@code packageName} and {@code constraintName}.
  */
-public record ConstraintRef(String packageName, String constraintName, String constraintId)
+public record ConstraintRef(@NonNull String packageName, @NonNull String constraintName, String constraintId)
         implements
             Comparable<ConstraintRef> {
 
