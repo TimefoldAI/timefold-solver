@@ -11,6 +11,9 @@ import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.impl.domain.solution.DefaultConstraintWeightOverrides;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * Used to override constraint weights defined in Constraint Streams,
  * e.g., in {@link UniConstraintStream#penalize(Score)}.
@@ -46,16 +49,17 @@ public interface ConstraintWeightOverrides<Score_ extends Score<Score_>> {
     /**
      * Return a constraint weight for a particular constraint.
      *
-     * @param constraintName never null
      * @return null if the constraint name is not known
      */
-    Score_ getConstraintWeight(String constraintName);
+    @Nullable
+    Score_ getConstraintWeight(@NonNull String constraintName);
 
     /**
      * Returns all known constraints.
-     * 
+     *
      * @return All constraint names for which {@link #getConstraintWeight(String)} returns a non-null value.
      */
+    @NonNull
     Set<String> getKnownConstraintNames();
 
 }

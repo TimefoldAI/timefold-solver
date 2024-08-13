@@ -6,6 +6,8 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Common ancestor for specialized planning variable listeners.
  * <p>
@@ -20,38 +22,20 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
  */
 public interface AbstractVariableListener<Solution_, Entity_> extends Closeable {
 
-    /**
-     * @param scoreDirector never null
-     * @param entity never null
-     */
-    void beforeEntityAdded(ScoreDirector<Solution_> scoreDirector, Entity_ entity);
+    void beforeEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Entity_ entity);
 
-    /**
-     * @param scoreDirector never null
-     * @param entity never null
-     */
-    void afterEntityAdded(ScoreDirector<Solution_> scoreDirector, Entity_ entity);
+    void afterEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Entity_ entity);
 
-    /**
-     * @param scoreDirector never null
-     * @param entity never null
-     */
-    void beforeEntityRemoved(ScoreDirector<Solution_> scoreDirector, Entity_ entity);
+    void beforeEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Entity_ entity);
 
-    /**
-     * @param scoreDirector never null
-     * @param entity never null
-     */
-    void afterEntityRemoved(ScoreDirector<Solution_> scoreDirector, Entity_ entity);
+    void afterEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Entity_ entity);
 
     /**
      * Called when the entire working solution changes. In this event, the other before..()/after...() methods will not
      * be called.
      * At this point, implementations should clear state, if any.
-     *
-     * @param scoreDirector never null
      */
-    default void resetWorkingSolution(ScoreDirector<Solution_> scoreDirector) {
+    default void resetWorkingSolution(@NonNull ScoreDirector<Solution_> scoreDirector) {
         // No need to do anything for stateless implementations.
     }
 

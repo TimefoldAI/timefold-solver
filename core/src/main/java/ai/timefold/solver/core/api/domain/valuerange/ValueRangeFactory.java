@@ -16,6 +16,8 @@ import ai.timefold.solver.core.impl.domain.valuerange.buildin.primint.IntValueRa
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.primlong.LongValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.temporal.TemporalValueRange;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Factory for {@link ValueRange}.
  */
@@ -23,10 +25,8 @@ public final class ValueRangeFactory {
 
     /**
      * Build a {@link CountableValueRange} of both {@code boolean} values.
-     *
-     * @return never null
      */
-    public static CountableValueRange<Boolean> createBooleanValueRange() {
+    public static @NonNull CountableValueRange<Boolean> createBooleanValueRange() {
         return new BooleanValueRange();
     }
 
@@ -35,9 +35,8 @@ public final class ValueRangeFactory {
      *
      * @param from inclusive minimum
      * @param to exclusive maximum, {@code >= from}
-     * @return never null
      */
-    public static CountableValueRange<Integer> createIntValueRange(int from, int to) {
+    public static @NonNull CountableValueRange<Integer> createIntValueRange(int from, int to) {
         return new IntValueRange(from, to);
     }
 
@@ -47,9 +46,8 @@ public final class ValueRangeFactory {
      * @param from inclusive minimum
      * @param to exclusive maximum, {@code >= from}
      * @param incrementUnit {@code > 0}
-     * @return never null
      */
-    public static CountableValueRange<Integer> createIntValueRange(int from, int to, int incrementUnit) {
+    public static @NonNull CountableValueRange<Integer> createIntValueRange(int from, int to, int incrementUnit) {
         return new IntValueRange(from, to, incrementUnit);
     }
 
@@ -58,9 +56,8 @@ public final class ValueRangeFactory {
      *
      * @param from inclusive minimum
      * @param to exclusive maximum, {@code >= from}
-     * @return never null
      */
-    public static CountableValueRange<Long> createLongValueRange(long from, long to) {
+    public static @NonNull CountableValueRange<Long> createLongValueRange(long from, long to) {
         return new LongValueRange(from, to);
     }
 
@@ -70,9 +67,8 @@ public final class ValueRangeFactory {
      * @param from inclusive minimum
      * @param to exclusive maximum, {@code >= from}
      * @param incrementUnit {@code > 0}
-     * @return never null
      */
-    public static CountableValueRange<Long> createLongValueRange(long from, long to, long incrementUnit) {
+    public static @NonNull CountableValueRange<Long> createLongValueRange(long from, long to, long incrementUnit) {
         return new LongValueRange(from, to, incrementUnit);
     }
 
@@ -81,11 +77,10 @@ public final class ValueRangeFactory {
      *
      * @param from inclusive minimum
      * @param to exclusive maximum, {@code >= from}
-     * @return never null
      * @deprecated Prefer {@link #createBigDecimalValueRange(BigDecimal, BigDecimal)}.
      */
     @Deprecated(forRemoval = true, since = "1.1.0")
-    public static ValueRange<Double> createDoubleValueRange(double from, double to) {
+    public static @NonNull ValueRange<Double> createDoubleValueRange(double from, double to) {
         return new DoubleValueRange(from, to);
     }
 
@@ -94,9 +89,9 @@ public final class ValueRangeFactory {
      *
      * @param from inclusive minimum
      * @param to exclusive maximum, {@code >= from}
-     * @return never null
      */
-    public static CountableValueRange<BigInteger> createBigIntegerValueRange(BigInteger from, BigInteger to) {
+    public static @NonNull CountableValueRange<BigInteger> createBigIntegerValueRange(@NonNull BigInteger from,
+            @NonNull BigInteger to) {
         return new BigIntegerValueRange(from, to);
     }
 
@@ -106,10 +101,10 @@ public final class ValueRangeFactory {
      * @param from inclusive minimum
      * @param to exclusive maximum, {@code >= from}
      * @param incrementUnit {@code > 0}
-     * @return never null
      */
-    public static CountableValueRange<BigInteger> createBigIntegerValueRange(BigInteger from, BigInteger to,
-            BigInteger incrementUnit) {
+    public static @NonNull CountableValueRange<BigInteger> createBigIntegerValueRange(@NonNull BigInteger from,
+            @NonNull BigInteger to,
+            @NonNull BigInteger incrementUnit) {
         return new BigIntegerValueRange(from, to, incrementUnit);
     }
 
@@ -119,9 +114,9 @@ public final class ValueRangeFactory {
      *
      * @param from inclusive minimum
      * @param to exclusive maximum, {@code >= from}
-     * @return never null
      */
-    public static CountableValueRange<BigDecimal> createBigDecimalValueRange(BigDecimal from, BigDecimal to) {
+    public static @NonNull CountableValueRange<BigDecimal> createBigDecimalValueRange(@NonNull BigDecimal from,
+            @NonNull BigDecimal to) {
         return new BigDecimalValueRange(from, to);
     }
 
@@ -132,10 +127,10 @@ public final class ValueRangeFactory {
      * @param from inclusive minimum
      * @param to exclusive maximum, {@code >= from}
      * @param incrementUnit {@code > 0}
-     * @return never null
      */
-    public static CountableValueRange<BigDecimal> createBigDecimalValueRange(BigDecimal from, BigDecimal to,
-            BigDecimal incrementUnit) {
+    public static @NonNull CountableValueRange<BigDecimal> createBigDecimalValueRange(@NonNull BigDecimal from,
+            @NonNull BigDecimal to,
+            @NonNull BigDecimal incrementUnit) {
         return new BigDecimalValueRange(from, to, incrementUnit);
     }
 
@@ -144,13 +139,13 @@ public final class ValueRangeFactory {
      * <p>
      * Facade for {@link #createTemporalValueRange(Temporal, Temporal, long, TemporalUnit)}.
      *
-     * @param from never null, inclusive minimum
-     * @param to never null, exclusive maximum, {@code >= from}
+     * @param from inclusive minimum
+     * @param to exclusive maximum, {@code >= from}
      * @param incrementUnitAmount {@code > 0}
-     * @param incrementUnitType never null, must be {@link LocalDate#isSupported(TemporalUnit) supported}
+     * @param incrementUnitType must be {@link LocalDate#isSupported(TemporalUnit) supported}
      */
-    public static CountableValueRange<LocalDate> createLocalDateValueRange(
-            LocalDate from, LocalDate to, long incrementUnitAmount, TemporalUnit incrementUnitType) {
+    public static @NonNull CountableValueRange<LocalDate> createLocalDateValueRange(
+            @NonNull LocalDate from, @NonNull LocalDate to, long incrementUnitAmount, @NonNull TemporalUnit incrementUnitType) {
         return createTemporalValueRange(from, to, incrementUnitAmount, incrementUnitType);
     }
 
@@ -159,13 +154,13 @@ public final class ValueRangeFactory {
      * <p>
      * Facade for {@link #createTemporalValueRange(Temporal, Temporal, long, TemporalUnit)}.
      *
-     * @param from never null, inclusive minimum
-     * @param to never null, exclusive maximum, {@code >= from}
+     * @param from inclusive minimum
+     * @param to exclusive maximum, {@code >= from}
      * @param incrementUnitAmount {@code > 0}
-     * @param incrementUnitType never null, must be {@link LocalTime#isSupported(TemporalUnit) supported}
+     * @param incrementUnitType must be {@link LocalTime#isSupported(TemporalUnit) supported}
      */
     public static CountableValueRange<LocalTime> createLocalTimeValueRange(
-            LocalTime from, LocalTime to, long incrementUnitAmount, TemporalUnit incrementUnitType) {
+            @NonNull LocalTime from, @NonNull LocalTime to, long incrementUnitAmount, @NonNull TemporalUnit incrementUnitType) {
         return createTemporalValueRange(from, to, incrementUnitAmount, incrementUnitType);
     }
 
@@ -174,13 +169,14 @@ public final class ValueRangeFactory {
      * <p>
      * Facade for {@link #createTemporalValueRange(Temporal, Temporal, long, TemporalUnit)}.
      *
-     * @param from never null, inclusive minimum
-     * @param to never null, exclusive maximum, {@code >= from}
+     * @param from inclusive minimum
+     * @param to exclusive maximum, {@code >= from}
      * @param incrementUnitAmount {@code > 0}
-     * @param incrementUnitType never null, must be {@link LocalDateTime#isSupported(TemporalUnit) supported}
+     * @param incrementUnitType must be {@link LocalDateTime#isSupported(TemporalUnit) supported}
      */
     public static CountableValueRange<LocalDateTime> createLocalDateTimeValueRange(
-            LocalDateTime from, LocalDateTime to, long incrementUnitAmount, TemporalUnit incrementUnitType) {
+            @NonNull LocalDateTime from, @NonNull LocalDateTime to, long incrementUnitAmount,
+            @NonNull TemporalUnit incrementUnitType) {
         return createTemporalValueRange(from, to, incrementUnitAmount, incrementUnitType);
     }
 
@@ -189,14 +185,15 @@ public final class ValueRangeFactory {
      * {@link LocalDateTime}) between 2 bounds.
      * All parameters must have the same {@link TemporalUnit}.
      *
-     * @param from never null, inclusive minimum
-     * @param to never null, exclusive maximum, {@code >= from}
+     * @param from inclusive minimum
+     * @param to exclusive maximum, {@code >= from}
      * @param incrementUnitAmount {@code > 0}
-     * @param incrementUnitType never null, must be {@link Temporal#isSupported(TemporalUnit) supported} by {@code from} and
+     * @param incrementUnitType must be {@link Temporal#isSupported(TemporalUnit) supported} by {@code from} and
      *        {@code to}
      */
-    public static <Temporal_ extends Temporal & Comparable<? super Temporal_>> CountableValueRange<Temporal_>
-            createTemporalValueRange(Temporal_ from, Temporal_ to, long incrementUnitAmount, TemporalUnit incrementUnitType) {
+    public static <Temporal_ extends Temporal & Comparable<? super Temporal_>> @NonNull CountableValueRange<Temporal_>
+            createTemporalValueRange(@NonNull Temporal_ from, @NonNull Temporal_ to, long incrementUnitAmount,
+                    @NonNull TemporalUnit incrementUnitType) {
         return new TemporalValueRange<>(from, to, incrementUnitAmount, incrementUnitType);
     }
 

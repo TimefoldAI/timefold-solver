@@ -8,6 +8,9 @@ import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * A ValueRange is a set of a values for a {@link PlanningVariable}.
  * These values might be stored in memory as a {@link Collection} (usually a {@link List} or {@link Set}),
@@ -34,17 +37,17 @@ public interface ValueRange<T> {
      * @param value sometimes null
      * @return true if the ValueRange contains that value
      */
-    boolean contains(T value);
+    boolean contains(@Nullable T value);
 
     /**
      * Select in random order, but without shuffling the elements.
      * Each element might be selected multiple times.
      * Scales well because it does not require caching.
      *
-     * @param workingRandom never null, the {@link Random} to use when any random number is needed,
+     * @param workingRandom the {@link Random} to use when any random number is needed,
      *        so runs are reproducible.
-     * @return never null
      */
-    Iterator<T> createRandomIterator(Random workingRandom);
+    @NonNull
+    Iterator<T> createRandomIterator(@NonNull Random workingRandom);
 
 }

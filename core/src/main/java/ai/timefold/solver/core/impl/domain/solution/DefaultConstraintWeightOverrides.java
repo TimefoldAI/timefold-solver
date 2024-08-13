@@ -8,6 +8,9 @@ import java.util.TreeMap;
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.score.Score;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 public record DefaultConstraintWeightOverrides<Score_ extends Score<Score_>>(Map<String, Score_> constraintWeightMap)
         implements
             ConstraintWeightOverrides<Score_> {
@@ -17,12 +20,12 @@ public record DefaultConstraintWeightOverrides<Score_ extends Score<Score_>>(Map
     }
 
     @Override
-    public Score_ getConstraintWeight(String constraintName) {
+    public @Nullable Score_ getConstraintWeight(@NonNull String constraintName) {
         return constraintWeightMap.get(constraintName);
     }
 
     @Override
-    public Set<String> getKnownConstraintNames() {
+    public @NonNull Set<String> getKnownConstraintNames() {
         return Collections.unmodifiableSet(constraintWeightMap.keySet());
     }
 

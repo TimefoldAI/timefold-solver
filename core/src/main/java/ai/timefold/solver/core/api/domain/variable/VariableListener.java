@@ -4,6 +4,8 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * A listener sourced on a basic {@link PlanningVariable}.
  * <p>
@@ -35,15 +37,7 @@ public interface VariableListener<Solution_, Entity_> extends AbstractVariableLi
         return false;
     }
 
-    /**
-     * @param scoreDirector never null
-     * @param entity never null
-     */
-    void beforeVariableChanged(ScoreDirector<Solution_> scoreDirector, Entity_ entity);
+    void beforeVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Entity_ entity);
 
-    /**
-     * @param scoreDirector never null
-     * @param entity never null
-     */
-    void afterVariableChanged(ScoreDirector<Solution_> scoreDirector, Entity_ entity);
+    void afterVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Entity_ entity);
 }

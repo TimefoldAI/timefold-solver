@@ -2,6 +2,8 @@ package ai.timefold.solver.core.api.domain.entity;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Decides on accepting or discarding a {@link PlanningEntity}.
  * A pinned {@link PlanningEntity}'s planning variables are never changed.
@@ -13,10 +15,10 @@ public interface PinningFilter<Solution_, Entity_> {
 
     /**
      * @param solution working solution to which the entity belongs
-     * @param entity never null, a {@link PlanningEntity}
+     * @param entity a {@link PlanningEntity}
      * @return true if the entity it is pinned, false if the entity is movable.
      */
-    // TODO solution is probably never null?
-    boolean accept(Solution_ solution, Entity_ entity);
+    // TODO @param solution is probably never null?
+    boolean accept(Solution_ solution, @NonNull Entity_ entity);
 
 }
