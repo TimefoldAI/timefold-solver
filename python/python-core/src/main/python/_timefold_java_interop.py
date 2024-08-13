@@ -76,7 +76,7 @@ def init(*args, path: list[str] = None, include_timefold_jars: bool = True) -> N
         If the Timefold dependencies should be added to `path`.
         Defaults to True.
     """
-    from _jpyinterpreter import init
+    from _jpyinterpreter import init, get_default_jvm_path
 
     if jpype.isJVMStarted():  # noqa
         raise RuntimeError('JVM already started. Maybe call init before timefold.solver.types imports?')
@@ -93,15 +93,6 @@ def init(*args, path: list[str] = None, include_timefold_jars: bool = True) -> N
     from ai.timefold.solver.python.logging import PythonDelegateAppender
     PythonDelegateAppender.setLogEventConsumer(PythonConsumer(forward_logging_events))
     update_log_level()
-
-
-def get_default_jvm_path():
-    from _jpyinterpreter import InvalidJVMVersionError
-    try:
-        return jpype.getDefaultJVMPath()
-    except jpype.JVMNotFoundException:
-        raise InvalidJVMVersionError("""Timefold Solver for Python requires JVM (java) version 17 or later. You have none installed.
-                 Maybe use sdkman (https://sdkman.io) to install a modern version of Java.""")
 
 
 def update_log_level() -> None:

@@ -1,10 +1,11 @@
+import importlib.resources
+import locale
+import os
 import pathlib
+from typing import List, ContextManager
+
 import jpype
 import jpype.imports
-import importlib.resources
-import os
-import locale
-from typing import List, ContextManager
 
 
 def _normalize_path(path):
@@ -287,11 +288,19 @@ def ensure_valid_jvm(runtime=None):
     try:
         version = runtime.version().feature()
         if version < 17:
-            raise InvalidJVMVersionError("""Timefold Solver for Python requires JVM (java) version 17 or later. Your JVM version {0} is not supported.
-        Maybe use sdkman (https://sdkman.io) to install a more modern version of Java.""".format(version))
+            raise InvalidJVMVersionError(
+                f"Timefold Solver for Python requires JVM (java) version 17 or later. Your JVM version {version} is not supported. Maybe use sdkman (https://sdkman.io) to install a more modern version of Java.")
     except AttributeError:
-        raise InvalidJVMVersionError("""Timefold Solver for Python requires JVM (java) version 17 or later. Your JVM version is not supported.
-        Maybe use sdkman (https://sdkman.io) to install a more modern version of Java.""")
+        raise InvalidJVMVersionError(
+            f"Timefold Solver for Python requires JVM (java) version 17 or later. Your JVM version is not supported. Maybe use sdkman (https://sdkman.io) to install a more modern version of Java.")
+
+
+def get_default_jvm_path(jvm_getter=jpype.getDefaultJVMPath):
+    try:
+        return jvm_getter()
+    except jpype.JVMNotFoundException:
+        raise InvalidJVMVersionError(
+            f"Timefold Solver for Python requires JVM (java) version 17 or later. You have none installed. Maybe use sdkman (https://sdkman.io) to install a more modern version of Java.")
 
 
 def ensure_init():
