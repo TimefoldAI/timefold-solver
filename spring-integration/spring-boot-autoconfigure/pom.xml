@@ -6,7 +6,7 @@
   <parent>
     <groupId>ai.timefold.solver</groupId>
     <artifactId>timefold-solver-spring-integration</artifactId>
-    <version>1.13.0</version>
+    <version>999-SNAPSHOT</version>
   </parent>
 
   <artifactId>timefold-solver-spring-boot-autoconfigure</artifactId>
