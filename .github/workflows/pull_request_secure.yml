@@ -1,0 +1,311 @@
+# Jobs in this workflow deal with secrets.
+# Since they may be executed from forks by untrusted users,
+# we need to ensure that the user is a member of the organization
+# or that there is explicit approval for their jobs to run.
+name: Secured Workflow
+
+on:
+  # There are two differences to "pull_request" here:
+  # - The workflow will receive secrets, even in PRs from forks.
+  # - The workflow will be executed automatically, without requiring a manual approval.
+  # Therefore the workflow needs to be explicitly secured; see "known_user" and "approval_required" jobs below.
+  pull_request_target:
+    branches: [main] # Benchmarks aren't branched, so they will only ever work against current main.
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths-ignore:
+      - 'LICENSE*'
+      - '.gitignore'
+      - '**.md'
+      - '**.adoc'
+      - '*.txt'
+
+jobs:
+  # Check if the user is a member of the organization; if so, allow the PR to sail through.
+  known_user:
+    runs-on: ubuntu-latest
+    outputs:
+      is_member_of_org: ${{ steps.auth_check.outputs.authorized }}
+    steps:
+      - id: auth_check
+        env:
+          GH_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}  # Release account is a Solver Gatekeeper.
+        shell: bash
+        run: |
+          # -g to allow actors such as dependabot[bot]
+          ORG_MEMBERSHIP=`curl -g -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $GH_TOKEN" "https://api.github.com/orgs/TimefoldAI/memberships/${{ github.actor }}" | jq -r '.state == "active"'`
+          echo "authorized=$ORG_MEMBERSHIP" >> "$GITHUB_OUTPUT"
+      - id: validation
+        shell: bash
+        run: |
+            echo "Authorized user: ${{ steps.auth_check.outputs.authorized }}"
+  # If the user is not a member, require a member to approve the PR.
+  approval_required:
+    needs: known_user
+    environment:
+      ${{ 
+          github.event_name == 'pull_request_target' &&
+          github.event.pull_request.head.repo.full_name != github.repository &&
+          (needs.known_user.outputs.is_member_of_org != 'true' || github.actor == 'dependabot[bot]') &&
+          'external' || 'internal' 
+      }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: true
+  integration-tests:
+    needs: approval_required
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    concurrency:
+      group: pr-${{ github.event_name }}-${{ github.head_ref }}
+      cancel-in-progress: true
+    steps:
+      # Clone timefold-solver
+      # No need to check for stale repo, as Github merges the main repo into the fork automatically.
+      - name: Checkout timefold-solver
+        uses: actions/checkout@v4
+        with:
+          path: ./timefold-solver
+          ref: ${{ github.event.pull_request.head.sha }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
+
+      - name: Setup Temurin 21 and Maven
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Quickly build timefold-solver
+        working-directory: ./timefold-solver
+        shell: bash
+        run: mvn -B -Dquickly clean install
+
+      # Clone timefold-solver-enterprise
+      - name: Checkout timefold-solver-enterprise (PR) # Checkout the PR branch first, if it exists
+        id: checkout-solver-enterprise
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          repository: TimefoldAI/timefold-solver-enterprise
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
+          path: ./timefold-solver-enterprise
+          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
+      - name: Checkout timefold-solver-enterprise (main) # Checkout the main branch if the PR branch does not exist
+        if: steps.checkout-solver-enterprise.outcome != 'success'
+        uses: actions/checkout@v4
+        with:
+          repository: TimefoldAI/timefold-solver-enterprise
+          ref: main
+          token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
+          path: ./timefold-solver-enterprise
+          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
+
+      - name: Quickly build timefold-solver-enterprise
+        working-directory: ./timefold-solver-enterprise
+        shell: bash
+        run: mvn -B -Dquickly clean install
+
+      # Clone timefold-solver-benchmarks
+      - name: Checkout timefold-solver-benchmarks (PR) # Checkout the PR branch first, if it exists
+        if: github.head_ref # Only true if this is a PR.
+        id: checkout-solver-benchmarks-pr
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          repository: TimefoldAI/timefold-solver-benchmarks
+          ref: ${{ github.head_ref }}
+          path: ./timefold-solver-benchmarks
+          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
+      - name: Checkout timefold-solver-benchmarks (main) # Checkout the main branch if the PR branch does not exist
+        if: ${{ steps.checkout-solver-benchmarks-pr.outcome != 'success' }}
+        uses: actions/checkout@v4
+        with:
+          repository: TimefoldAI/timefold-solver-benchmarks
+          ref: main
+          path: ./timefold-solver-benchmarks
+          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
+
+      - name: Build and test timefold-solver-benchmarks
+        working-directory: ./timefold-solver-benchmarks
+        shell: bash
+        run: mvn -B -DskipJMH clean verify
+  enterprise-java:
+    needs: approval_required
+    name: Enterprise Edition (Java)
+    runs-on: ubuntu-latest
+    concurrency:
+      group: downstream-enterprise-${{ github.event_name }}-${{ github.head_ref }}
+      cancel-in-progress: true
+    timeout-minutes: 120
+    steps:
+      # Clone timefold-solver
+      # No need to check for stale repo, as Github merges the main repo into the fork automatically.
+      - name: Checkout timefold-solver
+        uses: actions/checkout@v4
+        with:
+          path: ./timefold-solver
+          ref: ${{ github.event.pull_request.head.sha }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
+
+      # Clone timefold-solver-enterprise
+      # Need to check for stale repo, since Github is not aware of the build chain and therefore doesn't automate it.
+      - name: Checkout timefold-solver-enterprise (PR) # Checkout the PR branch first, if it exists
+        id: checkout-solver-enterprise
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          repository: TimefoldAI/timefold-solver-enterprise
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
+          path: ./timefold-solver-enterprise
+          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
+      - name: Checkout timefold-solver-enterprise (main) # Checkout the main branch if the PR branch does not exist
+        if: steps.checkout-solver-enterprise.outcome != 'success'
+        uses: actions/checkout@v4
+        with:
+          repository: TimefoldAI/timefold-solver-enterprise
+          ref: main
+          token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
+          path: ./timefold-solver-enterprise
+          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
+
+      # Build and test
+      - name: Setup Temurin 21 and Maven
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+      - name: Quickly build timefold-solver
+        working-directory: ./timefold-solver
+        shell: bash
+        run: mvn -B -Dquickly clean install
+      - name: Build and test timefold-solver-enterprise
+        working-directory: ./timefold-solver-enterprise
+        shell: bash
+        run: mvn -B clean verify
+  enterprise-python:
+    needs: approval_required
+    name: Enterprise Edition (Python)
+    concurrency:
+      group: downstream-enterprise-python-${{ github.event_name }}-${{ github.head_ref }}
+      cancel-in-progress: true
+    timeout-minutes: 120
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          path: './timefold-solver'
+          ref: ${{ github.event.pull_request.head.sha }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
+
+      # Clone timefold-solver-enterprise
+      # Need to check for stale repo, since Github is not aware of the build chain and therefore doesn't automate it.
+      - name: Checkout timefold-solver-enterprise (PR) # Checkout the PR branch first, if it exists
+        id: checkout-solver-enterprise
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          repository: TimefoldAI/timefold-solver-enterprise
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
+          path: ./timefold-solver-enterprise
+          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
+
+      - name: Checkout timefold-solver-enterprise (main) # Checkout the main branch if the PR branch does not exist
+        if: steps.checkout-solver-enterprise.outcome != 'success'
+        uses: actions/checkout@v4
+        with:
+          repository: TimefoldAI/timefold-solver-enterprise
+          ref: main
+          token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
+          path: ./timefold-solver-enterprise
+          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
+
+      # Build and test
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+          cache: 'maven'
+
+      # Need to install all Python versions in the same run for tox
+      - name: Python 3.10, Python 3.11, Python 3.12 Setup
+        uses: actions/setup-python@v5
+        with:
+          python-version: |
+            3.10
+            3.11
+            3.12
+          cache: 'pip'
+          cache-dependency-path: |
+            **/setup.py
+
+      - name: Install tox
+        run:
+          pip install tox build
+
+      - name: Build Timefold Solver for Python
+        working-directory: ./timefold-solver
+        run: python -m build
+
+      - name: Run tox on Timefold Solver Enterprise for Python test suite
+        working-directory: ./timefold-solver-enterprise
+        env:
+          PIP_FIND_LINKS: ${{ github.workspace }}/timefold-solver/dist
+        run: tox
+  sonarcloud:
+    needs: approval_required
+    name: SonarCloud
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          ref: ${{ github.event.pull_request.head.sha }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: 'temurin'
+          cache: 'maven'
+      - name: Python 3.10, Python 3.11, Python 3.12 Setup
+        uses: actions/setup-python@v5
+        with:
+          python-version: |
+            3.10
+            3.11
+            3.12
+          cache: 'pip'
+          cache-dependency-path: |
+            **/setup.py
+      - name: Install tox
+        run:
+          pip install tox coverage pytest pytest-cov
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - name: Build with Maven to measure code coverage # The ENV variables are limited to the scope of the current step. Avoid adding sensitive ENV variables here as the tests could leak them.
+        run: mvn -B clean install -Prun-code-coverage
+
+      - name: Get JaCoCo Agent
+        run: mvn org.apache.maven.plugins:maven-dependency-plugin:2.8:get -Dartifact=org.jacoco:org.jacoco.agent:0.8.11:jar:runtime -Ddest=target/jacocoagent.jar
+
+      - name: Run tox to measure timefold solver python code coverage from Python tests
+        run: python -m tox -- --cov=timefold --cov-report=xml:target/coverage.xml --cov-config=tox.ini --cov-branch --cov-append --jacoco-agent=./target/jacocoagent.jar
+
+      - name: Run tox to measure jpyinterpreter code coverage from Python tests
+        working-directory: ./python/jpyinterpreter
+        run: python -m tox -- --cov=jpyinterpreter --cov-report=xml:target/coverage.xml --cov-config=tox.ini --cov-branch --cov-append --jacoco-agent=../../target/jacocoagent.jar --jacoco-output=../../target/jacoco.exec
+
+      - name: Run analysis
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # Needed to run the SonarCloud analysis
+        run: mvn -B -Psonarcloud-analysis validate org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.organization=timefold -Dsonar.projectKey=ai.timefold:timefold-solver -Dsonar.host.url=https://sonarcloud.io -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} -Dsonar.pullrequest.branch=${{ github.event.pull_request.head.ref }} -Dsonar.scm.revision=${{ github.event.pull_request.head.sha }}
