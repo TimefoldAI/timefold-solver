@@ -37,6 +37,7 @@ def test_jvm_setup():
 
 def jvm_not_found():
     raise jpype.JVMNotFoundException()
+
 def test_jvm_get_default_jvm_path():
     jpyinterpreter.get_default_jvm_path()
     with pytest.raises(jpyinterpreter.InvalidJVMVersionError):
