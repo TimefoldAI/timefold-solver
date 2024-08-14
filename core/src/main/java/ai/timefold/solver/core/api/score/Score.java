@@ -118,6 +118,7 @@ public interface Score<Score_ extends Score<Score_>>
      * @param exponent value by which this Score is to be powered
      * @return this ^ exponent
      */
+    @NonNull
     Score_ power(double exponent);
 
     /**
@@ -143,6 +144,7 @@ public interface Score<Score_ extends Score<Score_>>
     /**
      * Returns a Score, all levels of which are zero.
      */
+    @NonNull
     Score_ zero();
 
     /**
@@ -171,8 +173,6 @@ public interface Score<Score_ extends Score<Score_>>
 
     /**
      * As defined by {@link #toLevelNumbers()}, only returns double[] instead of Number[].
-     *
-     * @return never null
      */
     default double @NonNull [] toLevelDoubles() {
         Number[] levelNumbers = toLevelNumbers();

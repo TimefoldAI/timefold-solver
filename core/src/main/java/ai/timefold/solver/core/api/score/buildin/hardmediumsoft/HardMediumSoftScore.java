@@ -10,6 +10,8 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.score.ScoreUtil;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * This {@link Score} is based on 3 levels of int constraints: hard, medium and soft.
  * Hard constraints have priority over medium constraints.
@@ -200,7 +202,7 @@ public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
     // ************************************************************************
 
     @Override
-    public HardMediumSoftScore withInitScore(int newInitScore) {
+    public @NonNull HardMediumSoftScore withInitScore(int newInitScore) {
         return ofUninitialized(newInitScore, hardScore, mediumScore, softScore);
     }
 
@@ -215,7 +217,7 @@ public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
     }
 
     @Override
-    public HardMediumSoftScore add(HardMediumSoftScore addend) {
+    public @NonNull HardMediumSoftScore add(@NonNull HardMediumSoftScore addend) {
         return ofUninitialized(
                 initScore + addend.initScore(),
                 hardScore + addend.hardScore(),
@@ -224,7 +226,7 @@ public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
     }
 
     @Override
-    public HardMediumSoftScore subtract(HardMediumSoftScore subtrahend) {
+    public @NonNull HardMediumSoftScore subtract(@NonNull HardMediumSoftScore subtrahend) {
         return ofUninitialized(
                 initScore - subtrahend.initScore(),
                 hardScore - subtrahend.hardScore(),
@@ -233,7 +235,7 @@ public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
     }
 
     @Override
-    public HardMediumSoftScore multiply(double multiplicand) {
+    public @NonNull HardMediumSoftScore multiply(double multiplicand) {
         return ofUninitialized(
                 (int) Math.floor(initScore * multiplicand),
                 (int) Math.floor(hardScore * multiplicand),
@@ -242,7 +244,7 @@ public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
     }
 
     @Override
-    public HardMediumSoftScore divide(double divisor) {
+    public @NonNull HardMediumSoftScore divide(double divisor) {
         return ofUninitialized(
                 (int) Math.floor(initScore / divisor),
                 (int) Math.floor(hardScore / divisor),
@@ -251,7 +253,7 @@ public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
     }
 
     @Override
-    public HardMediumSoftScore power(double exponent) {
+    public @NonNull HardMediumSoftScore power(double exponent) {
         return ofUninitialized(
                 (int) Math.floor(Math.pow(initScore, exponent)),
                 (int) Math.floor(Math.pow(hardScore, exponent)),
@@ -260,17 +262,17 @@ public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
     }
 
     @Override
-    public HardMediumSoftScore abs() {
+    public @NonNull HardMediumSoftScore abs() {
         return ofUninitialized(Math.abs(initScore), Math.abs(hardScore), Math.abs(mediumScore), Math.abs(softScore));
     }
 
     @Override
-    public HardMediumSoftScore zero() {
+    public @NonNull HardMediumSoftScore zero() {
         return HardMediumSoftScore.ZERO;
     }
 
     @Override
-    public Number[] toLevelNumbers() {
+    public Number @NonNull [] toLevelNumbers() {
         return new Number[] { hardScore, mediumScore, softScore };
     }
 
@@ -304,7 +306,7 @@ public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
     }
 
     @Override
-    public String toShortString() {
+    public @NonNull String toShortString() {
         return ScoreUtil.buildShortString(this, n -> n.intValue() != 0, HARD_LABEL, MEDIUM_LABEL, SOFT_LABEL);
     }
 

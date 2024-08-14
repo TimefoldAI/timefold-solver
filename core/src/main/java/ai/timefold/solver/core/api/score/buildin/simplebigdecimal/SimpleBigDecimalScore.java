@@ -7,6 +7,8 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.score.ScoreUtil;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * This {@link Score} is based on 1 level of {@link BigDecimal} constraints.
  * <p>
@@ -96,26 +98,26 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
     // ************************************************************************
 
     @Override
-    public SimpleBigDecimalScore withInitScore(int newInitScore) {
+    public @NonNull SimpleBigDecimalScore withInitScore(int newInitScore) {
         return ofUninitialized(newInitScore, score);
     }
 
     @Override
-    public SimpleBigDecimalScore add(SimpleBigDecimalScore addend) {
+    public @NonNull SimpleBigDecimalScore add(@NonNull SimpleBigDecimalScore addend) {
         return ofUninitialized(
                 initScore + addend.initScore(),
                 score.add(addend.score()));
     }
 
     @Override
-    public SimpleBigDecimalScore subtract(SimpleBigDecimalScore subtrahend) {
+    public @NonNull SimpleBigDecimalScore subtract(@NonNull SimpleBigDecimalScore subtrahend) {
         return ofUninitialized(
                 initScore - subtrahend.initScore(),
                 score.subtract(subtrahend.score()));
     }
 
     @Override
-    public SimpleBigDecimalScore multiply(double multiplicand) {
+    public @NonNull SimpleBigDecimalScore multiply(double multiplicand) {
         // Intentionally not taken "new BigDecimal(multiplicand, MathContext.UNLIMITED)"
         // because together with the floor rounding it gives unwanted behaviour
         BigDecimal multiplicandBigDecimal = BigDecimal.valueOf(multiplicand);
@@ -126,7 +128,7 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
     }
 
     @Override
-    public SimpleBigDecimalScore divide(double divisor) {
+    public @NonNull SimpleBigDecimalScore divide(double divisor) {
         // Intentionally not taken "new BigDecimal(multiplicand, MathContext.UNLIMITED)"
         // because together with the floor rounding it gives unwanted behaviour
         BigDecimal divisorBigDecimal = BigDecimal.valueOf(divisor);
@@ -137,7 +139,7 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
     }
 
     @Override
-    public SimpleBigDecimalScore power(double exponent) {
+    public @NonNull SimpleBigDecimalScore power(double exponent) {
         // Intentionally not taken "new BigDecimal(multiplicand, MathContext.UNLIMITED)"
         // because together with the floor rounding it gives unwanted behaviour
         BigDecimal exponentBigDecimal = BigDecimal.valueOf(exponent);
@@ -150,12 +152,12 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
     }
 
     @Override
-    public SimpleBigDecimalScore abs() {
+    public @NonNull SimpleBigDecimalScore abs() {
         return ofUninitialized(Math.abs(initScore), score.abs());
     }
 
     @Override
-    public SimpleBigDecimalScore zero() {
+    public @NonNull SimpleBigDecimalScore zero() {
         return ZERO;
     }
 
@@ -165,7 +167,7 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
     }
 
     @Override
-    public Number[] toLevelNumbers() {
+    public Number @NonNull [] toLevelNumbers() {
         return new Number[] { score };
     }
 
@@ -193,7 +195,7 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
     }
 
     @Override
-    public String toShortString() {
+    public @NonNull String toShortString() {
         return ScoreUtil.buildShortString(this, n -> ((BigDecimal) n).compareTo(BigDecimal.ZERO) != 0, "");
     }
 
