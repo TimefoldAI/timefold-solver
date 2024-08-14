@@ -3,6 +3,8 @@ package ai.timefold.solver.core.api.function;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Represents a predicate (boolean-valued function) of five arguments.
  * This is the five-arity specialization of {@link Predicate}.
@@ -51,8 +53,8 @@ public interface PentaPredicate<A, B, C, D, E> {
      *         AND of this predicate and the {@code other} predicate
      * @throws NullPointerException if other is null
      */
-    default PentaPredicate<A, B, C, D, E> and(
-            PentaPredicate<? super A, ? super B, ? super C, ? super D, ? super E> other) {
+    default @NonNull PentaPredicate<A, B, C, D, E> and(
+            @NonNull PentaPredicate<? super A, ? super B, ? super C, ? super D, ? super E> other) {
         Objects.requireNonNull(other);
         return (A a, B b, C c, D d, E e) -> test(a, b, c, d, e) && other.test(a, b, c, d, e);
     }
@@ -64,7 +66,7 @@ public interface PentaPredicate<A, B, C, D, E> {
      * @return a predicate that represents the logical negation of this
      *         predicate
      */
-    default PentaPredicate<A, B, C, D, E> negate() {
+    default @NonNull PentaPredicate<A, B, C, D, E> negate() {
         return (A a, B b, C c, D d, E e) -> !test(a, b, c, d, e);
     }
 
@@ -84,8 +86,8 @@ public interface PentaPredicate<A, B, C, D, E> {
      *         OR of this predicate and the {@code other} predicate
      * @throws NullPointerException if other is null
      */
-    default PentaPredicate<A, B, C, D, E> or(
-            PentaPredicate<? super A, ? super B, ? super C, ? super D, ? super E> other) {
+    default @NonNull PentaPredicate<A, B, C, D, E> or(
+            @NonNull PentaPredicate<? super A, ? super B, ? super C, ? super D, ? super E> other) {
         Objects.requireNonNull(other);
         return (A a, B b, C c, D d, E e) -> test(a, b, c, d, e) || other.test(a, b, c, d, e);
     }
