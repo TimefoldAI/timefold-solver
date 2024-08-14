@@ -7,6 +7,8 @@ import java.util.Random;
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.CachedListRandomIterator;
 
+import org.jspecify.annotations.NonNull;
+
 public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
 
     private final List<T> list;
@@ -34,12 +36,12 @@ public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
     }
 
     @Override
-    public Iterator<T> createOriginalIterator() {
+    public @NonNull Iterator<T> createOriginalIterator() {
         return list.iterator();
     }
 
     @Override
-    public Iterator<T> createRandomIterator(Random workingRandom) {
+    public @NonNull Iterator<T> createRandomIterator(@NonNull Random workingRandom) {
         return new CachedListRandomIterator<>(list, workingRandom);
     }
 

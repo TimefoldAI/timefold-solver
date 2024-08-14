@@ -14,6 +14,8 @@ import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRang
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 
+import org.jspecify.annotations.NonNull;
+
 public final class CompositeCountableValueRange<T> extends AbstractCountableValueRange<T> {
 
     private final List<? extends CountableValueRange<T>> childValueRangeList;
@@ -57,7 +59,7 @@ public final class CompositeCountableValueRange<T> extends AbstractCountableValu
     }
 
     @Override
-    public Iterator<T> createOriginalIterator() {
+    public @NonNull Iterator<T> createOriginalIterator() {
         Stream<T> stream = Stream.empty();
         for (CountableValueRange<T> childValueRange : childValueRangeList) {
             stream = Stream.concat(stream, originalIteratorToStream(childValueRange));
@@ -72,7 +74,7 @@ public final class CompositeCountableValueRange<T> extends AbstractCountableValu
     }
 
     @Override
-    public Iterator<T> createRandomIterator(Random workingRandom) {
+    public @NonNull Iterator<T> createRandomIterator(@NonNull Random workingRandom) {
         return new RandomCompositeValueRangeIterator(workingRandom);
     }
 

@@ -5,6 +5,8 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.score.Score;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Used for incremental java {@link Score} calculation.
  * This is much faster than {@link EasyScoreCalculator} but requires much more code to implement too.
@@ -19,33 +21,32 @@ public interface IncrementalScoreCalculator<Solution_, Score_ extends Score<Scor
     /**
      * There are no {@link #beforeEntityAdded(Object)} and {@link #afterEntityAdded(Object)} calls
      * for entities that are already present in the workingSolution.
-     *
-     * @param workingSolution never null
      */
-    void resetWorkingSolution(Solution_ workingSolution);
+    void resetWorkingSolution(@NonNull Solution_ workingSolution);
 
     /**
-     * @param entity never null, an instance of a {@link PlanningEntity} class
+     * @param entity an instance of a {@link PlanningEntity} class
      */
-    void beforeEntityAdded(Object entity);
+    void beforeEntityAdded(@NonNull Object entity);
 
     /**
-     * @param entity never null, an instance of a {@link PlanningEntity} class
+     * @param entity an instance of a {@link PlanningEntity} class
      */
-    void afterEntityAdded(Object entity);
+    void afterEntityAdded(@NonNull Object entity);
 
     /**
-     * @param entity never null, an instance of a {@link PlanningEntity} class
-     * @param variableName never null, either a genuine or shadow {@link PlanningVariable}
+     * @param entity an instance of a {@link PlanningEntity} class
+     * @param variableName either a genuine or shadow {@link PlanningVariable}
      */
-    void beforeVariableChanged(Object entity, String variableName);
+    void beforeVariableChanged(@NonNull Object entity, @NonNull String variableName);
 
     /**
-     * @param entity never null, an instance of a {@link PlanningEntity} class
-     * @param variableName never null, either a genuine or shadow {@link PlanningVariable}
+     * @param entity an instance of a {@link PlanningEntity} class
+     * @param variableName either a genuine or shadow {@link PlanningVariable}
      */
-    void afterVariableChanged(Object entity, String variableName);
+    void afterVariableChanged(@NonNull Object entity, @NonNull String variableName);
 
+    // TODO: should these params be @NonNull?
     default void beforeListVariableElementAssigned(String variableName, Object element) {
     }
 
@@ -65,21 +66,20 @@ public interface IncrementalScoreCalculator<Solution_, Score_ extends Score<Scor
     }
 
     /**
-     * @param entity never null, an instance of a {@link PlanningEntity} class
+     * @param entity an instance of a {@link PlanningEntity} class
      */
-    void beforeEntityRemoved(Object entity);
+    void beforeEntityRemoved(@NonNull Object entity);
 
     /**
-     * @param entity never null, an instance of a {@link PlanningEntity} class
+     * @param entity an instance of a {@link PlanningEntity} class
      */
-    void afterEntityRemoved(Object entity);
+    void afterEntityRemoved(@NonNull Object entity);
 
     /**
      * This method is only called if the {@link Score} cannot be predicted.
      * The {@link Score} can be predicted for example after an undo move.
-     *
-     * @return never null
      */
+    @NonNull
     Score_ calculateScore();
 
 }

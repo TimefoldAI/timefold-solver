@@ -10,6 +10,8 @@ import ai.timefold.solver.core.impl.testdata.domain.DummyVariableListener;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 
+import org.jspecify.annotations.NonNull;
+
 @PlanningEntity
 public class TestdataCyclicShadowedEntity extends TestdataObject {
 
@@ -87,14 +89,14 @@ public class TestdataCyclicShadowedEntity extends TestdataObject {
             extends DummyVariableListener<TestdataCyclicShadowedSolution, TestdataCyclicShadowedEntity> {
 
         @Override
-        public void afterEntityAdded(ScoreDirector<TestdataCyclicShadowedSolution> scoreDirector,
-                TestdataCyclicShadowedEntity entity) {
+        public void afterEntityAdded(@NonNull ScoreDirector<TestdataCyclicShadowedSolution> scoreDirector,
+                @NonNull TestdataCyclicShadowedEntity entity) {
             updateShadow(entity, scoreDirector);
         }
 
         @Override
-        public void afterVariableChanged(ScoreDirector<TestdataCyclicShadowedSolution> scoreDirector,
-                TestdataCyclicShadowedEntity entity) {
+        public void afterVariableChanged(@NonNull ScoreDirector<TestdataCyclicShadowedSolution> scoreDirector,
+                @NonNull TestdataCyclicShadowedEntity entity) {
             updateShadow(entity, scoreDirector);
         }
 
@@ -112,14 +114,14 @@ public class TestdataCyclicShadowedEntity extends TestdataObject {
             extends DummyVariableListener<TestdataCyclicShadowedSolution, TestdataCyclicShadowedEntity> {
 
         @Override
-        public void afterEntityAdded(ScoreDirector<TestdataCyclicShadowedSolution> scoreDirector,
-                TestdataCyclicShadowedEntity entity) {
+        public void afterEntityAdded(@NonNull ScoreDirector<TestdataCyclicShadowedSolution> scoreDirector,
+                @NonNull TestdataCyclicShadowedEntity entity) {
             updateShadow(entity, scoreDirector);
         }
 
         @Override
-        public void afterVariableChanged(ScoreDirector<TestdataCyclicShadowedSolution> scoreDirector,
-                TestdataCyclicShadowedEntity entity) {
+        public void afterVariableChanged(@NonNull ScoreDirector<TestdataCyclicShadowedSolution> scoreDirector,
+                @NonNull TestdataCyclicShadowedEntity entity) {
             updateShadow(entity, scoreDirector);
         }
 
@@ -137,14 +139,14 @@ public class TestdataCyclicShadowedEntity extends TestdataObject {
             extends DummyVariableListener<TestdataCyclicShadowedSolution, TestdataCyclicShadowedEntity> {
 
         @Override
-        public void afterEntityAdded(ScoreDirector<TestdataCyclicShadowedSolution> scoreDirector,
-                TestdataCyclicShadowedEntity entity) {
+        public void afterEntityAdded(@NonNull ScoreDirector<TestdataCyclicShadowedSolution> scoreDirector,
+                @NonNull TestdataCyclicShadowedEntity entity) {
             updateShadow(entity, scoreDirector);
         }
 
         @Override
-        public void afterVariableChanged(ScoreDirector<TestdataCyclicShadowedSolution> scoreDirector,
-                TestdataCyclicShadowedEntity entity) {
+        public void afterVariableChanged(@NonNull ScoreDirector<TestdataCyclicShadowedSolution> scoreDirector,
+                @NonNull TestdataCyclicShadowedEntity entity) {
             updateShadow(entity, scoreDirector);
         }
 

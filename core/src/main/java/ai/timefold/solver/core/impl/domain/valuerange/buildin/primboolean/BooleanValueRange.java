@@ -7,6 +7,8 @@ import java.util.Random;
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
 
+import org.jspecify.annotations.NonNull;
+
 public final class BooleanValueRange extends AbstractCountableValueRange<Boolean> {
 
     @Override
@@ -31,7 +33,7 @@ public final class BooleanValueRange extends AbstractCountableValueRange<Boolean
     }
 
     @Override
-    public Iterator<Boolean> createOriginalIterator() {
+    public @NonNull Iterator<Boolean> createOriginalIterator() {
         return new OriginalBooleanValueRangeIterator();
     }
 
@@ -62,7 +64,7 @@ public final class BooleanValueRange extends AbstractCountableValueRange<Boolean
     }
 
     @Override
-    public Iterator<Boolean> createRandomIterator(Random workingRandom) {
+    public @NonNull Iterator<Boolean> createRandomIterator(@NonNull Random workingRandom) {
         return new RandomBooleanValueRangeIterator(workingRandom);
     }
 

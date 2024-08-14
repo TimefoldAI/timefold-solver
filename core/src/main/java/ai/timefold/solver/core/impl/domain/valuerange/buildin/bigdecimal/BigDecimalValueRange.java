@@ -10,6 +10,8 @@ import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRang
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 
+import org.jspecify.annotations.NonNull;
+
 public final class BigDecimalValueRange extends AbstractCountableValueRange<BigDecimal> {
 
     private final BigDecimal from;
@@ -88,7 +90,7 @@ public final class BigDecimalValueRange extends AbstractCountableValueRange<BigD
     }
 
     @Override
-    public Iterator<BigDecimal> createOriginalIterator() {
+    public @NonNull Iterator<BigDecimal> createOriginalIterator() {
         return new OriginalBigDecimalValueRangeIterator();
     }
 
@@ -114,7 +116,7 @@ public final class BigDecimalValueRange extends AbstractCountableValueRange<BigD
     }
 
     @Override
-    public Iterator<BigDecimal> createRandomIterator(Random workingRandom) {
+    public @NonNull Iterator<BigDecimal> createRandomIterator(@NonNull Random workingRandom) {
         return new RandomBigDecimalValueRangeIterator(workingRandom);
     }
 
