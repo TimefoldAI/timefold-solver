@@ -120,24 +120,24 @@ public class ListRuinRecreateMoveSelectorConfig extends MoveSelectorConfig<ListR
         // No referenced classes.
     }
 
-    public long determineMinimumRuinedCount(long entityCount) {
+    public long determineMinimumRuinedCount(long valueCount) {
         if (minimumRuinedCount != null) {
             return minimumRuinedCount;
         }
         if (minimumRuinedPercentage != null) {
-            return (long) Math.floor(minimumRuinedPercentage * entityCount);
+            return (long) Math.floor(minimumRuinedPercentage * valueCount);
         }
-        return Math.min(DEFAULT_MINIMUM_RUINED_COUNT, entityCount);
+        return Math.min(DEFAULT_MINIMUM_RUINED_COUNT, valueCount);
     }
 
-    public long determineMaximumRuinedCount(long entityCount) {
+    public long determineMaximumRuinedCount(long valueCount) {
         if (maximumRuinedCount != null) {
             return maximumRuinedCount;
         }
         if (maximumRuinedPercentage != null) {
-            return (long) Math.floor(maximumRuinedPercentage * entityCount);
+            return (long) Math.floor(maximumRuinedPercentage * valueCount);
         }
-        return Math.min(DEFAULT_MAXIMUM_RUINED_COUNT, entityCount);
+        return Math.min(DEFAULT_MAXIMUM_RUINED_COUNT, valueCount);
     }
 
 }

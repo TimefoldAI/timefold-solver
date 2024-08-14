@@ -43,12 +43,12 @@ final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<
     @Override
     public long getSize() {
         var totalSize = 0L;
-        var entityCount = valueSelector.getSize();
-        var minimumSelectedCount = minimumSelectedCountSupplier.applyAsLong(entityCount);
-        var maximumSelectedCount = maximumSelectedCountSupplier.applyAsLong(entityCount);
+        var valueCount = valueSelector.getSize();
+        var minimumSelectedCount = minimumSelectedCountSupplier.applyAsLong(valueCount);
+        var maximumSelectedCount = maximumSelectedCountSupplier.applyAsLong(valueCount);
         for (var selectedCount = minimumSelectedCount; selectedCount <= maximumSelectedCount; selectedCount++) {
             // Order is significant, and each entity can only be picked once
-            totalSize += CombinatoricsUtils.factorial((int) entityCount) / CombinatoricsUtils.factorial((int) selectedCount);
+            totalSize += CombinatoricsUtils.factorial((int) valueCount) / CombinatoricsUtils.factorial((int) selectedCount);
         }
         return totalSize;
     }
