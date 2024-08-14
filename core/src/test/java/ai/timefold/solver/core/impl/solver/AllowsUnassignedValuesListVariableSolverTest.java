@@ -1,7 +1,9 @@
 package ai.timefold.solver.core.impl.solver;
 
+import java.util.List;
 import java.util.stream.IntStream;
 
+import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
@@ -14,15 +16,18 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig;
 import ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchForagerConfig;
+import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+import ai.timefold.solver.core.impl.phase.custom.CustomPhaseCommand;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEasyScoreCalculator;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListValue;
 
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -67,6 +72,59 @@ class AllowsUnassignedValuesListVariableSolverTest {
         // Run solver.
         var bestSolution = solver.solve(solution);
         Assertions.assertThat(bestSolution).isNotNull();
+    }
+
+    @Test
+    void runSolverWithCustomConstructionHeuristic() {
+        // Generate solution.
+        var solution = new TestdataAllowsUnassignedValuesListSolution();
+        solution.setEntityList(IntStream.range(0, 5)
+                .mapToObj(i -> new TestdataAllowsUnassignedValuesListEntity("e" + i))
+                .toList());
+        solution.setValueList(IntStream.range(0, 25)
+                .mapToObj(i -> new TestdataAllowsUnassignedValuesListValue("v" + i))
+                .toList());
+
+        // Generate deterministic, fully asserted solver.
+        var solverConfig = new SolverConfig()
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
+                .withSolutionClass(TestdataAllowsUnassignedValuesListSolution.class)
+                .withEntityClasses(TestdataAllowsUnassignedValuesListEntity.class,
+                        TestdataAllowsUnassignedValuesListValue.class)
+                .withEasyScoreCalculatorClass(TestdataAllowsUnassignedValuesListEasyScoreCalculator.class)
+                .withPhases(new CustomPhaseConfig()
+                        .withCustomPhaseCommandList(List.of(new TestdataFirstEntityInitializer())),
+                        new LocalSearchPhaseConfig()
+                                .withAcceptorConfig(new LocalSearchAcceptorConfig()
+                                        .withEntityTabuSize(1)
+                                        .withValueTabuSize(1)
+                                        .withMoveTabuSize(1))
+                                .withForagerConfig(new LocalSearchForagerConfig()
+                                        .withAcceptedCountLimit(1))
+                                .withTerminationConfig(new TerminationConfig().withStepCountLimit(1))
+                        );
+        var solverFactory = SolverFactory.create(solverConfig);
+        var solver = solverFactory.buildSolver();
+
+        // Run solver.
+        var bestSolution = solver.solve(solution);
+        Assertions.assertThat(bestSolution).isNotNull();
+        Assertions.assertThat(((TestdataAllowsUnassignedValuesListSolution) bestSolution).getEntityList().stream()
+                .filter(e -> !e.getValueList().isEmpty())).hasSize(1);
+    }
+
+    public static class TestdataFirstEntityInitializer
+            implements CustomPhaseCommand<TestdataAllowsUnassignedValuesListSolution> {
+
+        @Override
+        public void changeWorkingSolution(ScoreDirector<TestdataAllowsUnassignedValuesListSolution> scoreDirector) {
+            TestdataAllowsUnassignedValuesListSolution solution = scoreDirector.getWorkingSolution();
+            TestdataAllowsUnassignedValuesListValue firstValue = solution.getValueList().get(0);
+            scoreDirector.beforeListVariableChanged(solution.getEntityList().get(0), "valueList", 0, 0);
+            solution.getEntityList().get(0).setValueList(List.of(firstValue));
+            scoreDirector.afterListVariableChanged(solution.getEntityList().get(0), "valueList", 0, 1);
+            scoreDirector.triggerVariableListeners();
+        }
     }
 
     enum ListVariableMoveType {
