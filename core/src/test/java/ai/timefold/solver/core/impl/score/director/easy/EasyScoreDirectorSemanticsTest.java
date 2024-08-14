@@ -22,6 +22,7 @@ import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedLi
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListEasyScoreCalculator;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListSolution;
 
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 final class EasyScoreDirectorSemanticsTest extends AbstractScoreDirectorSemanticsTest {
@@ -112,7 +113,7 @@ final class EasyScoreDirectorSemanticsTest extends AbstractScoreDirectorSemantic
         }
 
         @Override
-        public SimpleScore calculateScore(TestdataSolution testdataSolution) {
+        public @NonNull SimpleScore calculateScore(@NonNull TestdataSolution testdataSolution) {
             return SimpleScore.ZERO;
         }
     }

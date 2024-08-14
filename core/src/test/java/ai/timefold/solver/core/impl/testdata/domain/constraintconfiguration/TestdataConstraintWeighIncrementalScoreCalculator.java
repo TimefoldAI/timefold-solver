@@ -7,6 +7,8 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 
+import org.jspecify.annotations.NonNull;
+
 @Deprecated(forRemoval = true, since = "1.13.0")
 public final class TestdataConstraintWeighIncrementalScoreCalculator
         implements IncrementalScoreCalculator<TestdataConstraintConfigurationSolution, SimpleScore> {
@@ -15,43 +17,43 @@ public final class TestdataConstraintWeighIncrementalScoreCalculator
     private List<TestdataEntity> entityList;
 
     @Override
-    public void resetWorkingSolution(TestdataConstraintConfigurationSolution workingSolution) {
+    public void resetWorkingSolution(@NonNull TestdataConstraintConfigurationSolution workingSolution) {
         this.workingSolution = workingSolution;
         this.entityList = new ArrayList<>(workingSolution.getEntityList());
     }
 
     @Override
-    public void beforeEntityAdded(Object entity) {
+    public void beforeEntityAdded(@NonNull Object entity) {
         // No need to do anything.
     }
 
     @Override
-    public void afterEntityAdded(Object entity) {
+    public void afterEntityAdded(@NonNull Object entity) {
         entityList.add((TestdataEntity) entity);
     }
 
     @Override
-    public void beforeVariableChanged(Object entity, String variableName) {
+    public void beforeVariableChanged(@NonNull Object entity, @NonNull String variableName) {
         throw new UnsupportedOperationException(); // Will not be called.
     }
 
     @Override
-    public void afterVariableChanged(Object entity, String variableName) {
+    public void afterVariableChanged(@NonNull Object entity, @NonNull String variableName) {
         throw new UnsupportedOperationException(); // Will not be called.
     }
 
     @Override
-    public void beforeEntityRemoved(Object entity) {
+    public void beforeEntityRemoved(@NonNull Object entity) {
         // No need to do anything.
     }
 
     @Override
-    public void afterEntityRemoved(Object entity) {
+    public void afterEntityRemoved(@NonNull Object entity) {
         entityList.remove((TestdataEntity) entity);
     }
 
     @Override
-    public SimpleScore calculateScore() {
+    public @NonNull SimpleScore calculateScore() {
         SimpleScore constraintWeight = workingSolution.getConstraintConfiguration().getFirstWeight();
         return constraintWeight.multiply(entityList.size());
     }

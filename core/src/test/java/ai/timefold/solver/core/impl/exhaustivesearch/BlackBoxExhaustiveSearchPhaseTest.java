@@ -39,6 +39,7 @@ import ai.timefold.solver.core.impl.testdata.domain.comparable.TestdataDifficult
 import ai.timefold.solver.core.impl.testdata.domain.comparable.TestdataDifficultyComparingSolution;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -436,7 +437,7 @@ class BlackBoxExhaustiveSearchPhaseTest {
             implements EasyScoreCalculator<TestdataDifficultyComparingSolution, SimpleScore> {
 
         @Override
-        public SimpleScore calculateScore(TestdataDifficultyComparingSolution solution) {
+        public @NonNull SimpleScore calculateScore(@NonNull TestdataDifficultyComparingSolution solution) {
             int score = 0;
             Set<TestdataValue> alreadyUsedValues = new HashSet<>();
 

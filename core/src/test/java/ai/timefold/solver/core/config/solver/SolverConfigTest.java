@@ -56,6 +56,7 @@ import ai.timefold.solver.core.impl.testdata.domain.record.TestdataRecordSolutio
 
 import org.apache.commons.io.IOUtils;
 import org.assertj.core.api.Assertions;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -356,7 +357,7 @@ class SolverConfigTest {
     public static class DummyRecordEasyScoreCalculator implements EasyScoreCalculator<TestdataRecordSolution, SimpleScore> {
 
         @Override
-        public SimpleScore calculateScore(TestdataRecordSolution solution) {
+        public @NonNull SimpleScore calculateScore(@NonNull TestdataRecordSolution solution) {
             return SimpleScore.of(solution.getEntityList().size());
         }
     }

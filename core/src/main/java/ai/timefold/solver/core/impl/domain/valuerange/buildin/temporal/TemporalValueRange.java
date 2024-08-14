@@ -12,6 +12,8 @@ import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRang
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 
+import org.jspecify.annotations.NonNull;
+
 public final class TemporalValueRange<Temporal_ extends Temporal & Comparable<? super Temporal_>>
         extends AbstractCountableValueRange<Temporal_> {
 
@@ -126,7 +128,7 @@ public final class TemporalValueRange<Temporal_ extends Temporal & Comparable<? 
     }
 
     @Override
-    public Iterator<Temporal_> createOriginalIterator() {
+    public @NonNull Iterator<Temporal_> createOriginalIterator() {
         return new OriginalTemporalValueRangeIterator();
     }
 
@@ -154,7 +156,7 @@ public final class TemporalValueRange<Temporal_ extends Temporal & Comparable<? 
     }
 
     @Override
-    public Iterator<Temporal_> createRandomIterator(Random workingRandom) {
+    public @NonNull Iterator<Temporal_> createRandomIterator(@NonNull Random workingRandom) {
         return new RandomTemporalValueRangeIterator(workingRandom);
     }
 

@@ -10,6 +10,8 @@ import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
 
+import org.jspecify.annotations.NonNull;
+
 @PlanningEntity
 public class TestdataWrongListShadowEntity {
 
@@ -36,27 +38,33 @@ public class TestdataWrongListShadowEntity {
     public static class MyBasicVariableListener implements VariableListener<TestdataListSolution, TestdataListEntity> {
 
         @Override
-        public void beforeEntityAdded(ScoreDirector<TestdataListSolution> scoreDirector, TestdataListEntity entity) {
+        public void beforeEntityAdded(@NonNull ScoreDirector<TestdataListSolution> scoreDirector,
+                @NonNull TestdataListEntity entity) {
         }
 
         @Override
-        public void afterEntityAdded(ScoreDirector<TestdataListSolution> scoreDirector, TestdataListEntity entity) {
+        public void afterEntityAdded(@NonNull ScoreDirector<TestdataListSolution> scoreDirector,
+                @NonNull TestdataListEntity entity) {
         }
 
         @Override
-        public void beforeEntityRemoved(ScoreDirector<TestdataListSolution> scoreDirector, TestdataListEntity entity) {
+        public void beforeEntityRemoved(@NonNull ScoreDirector<TestdataListSolution> scoreDirector,
+                @NonNull TestdataListEntity entity) {
         }
 
         @Override
-        public void afterEntityRemoved(ScoreDirector<TestdataListSolution> scoreDirector, TestdataListEntity entity) {
+        public void afterEntityRemoved(@NonNull ScoreDirector<TestdataListSolution> scoreDirector,
+                @NonNull TestdataListEntity entity) {
         }
 
         @Override
-        public void beforeVariableChanged(ScoreDirector<TestdataListSolution> scoreDirector, TestdataListEntity entity) {
+        public void beforeVariableChanged(@NonNull ScoreDirector<TestdataListSolution> scoreDirector,
+                @NonNull TestdataListEntity entity) {
         }
 
         @Override
-        public void afterVariableChanged(ScoreDirector<TestdataListSolution> scoreDirector, TestdataListEntity entity) {
+        public void afterVariableChanged(@NonNull ScoreDirector<TestdataListSolution> scoreDirector,
+                @NonNull TestdataListEntity entity) {
         }
     }
 }

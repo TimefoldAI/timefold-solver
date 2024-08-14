@@ -9,6 +9,8 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 
+import org.jspecify.annotations.NonNull;
+
 public class AbstractTestdataDifferentValuesCalculator implements EasyScoreCalculator<TestdataSolution, SimpleScore> {
 
     private boolean isCorrupted;
@@ -19,7 +21,7 @@ public class AbstractTestdataDifferentValuesCalculator implements EasyScoreCalcu
     }
 
     @Override
-    public SimpleScore calculateScore(TestdataSolution solution) {
+    public @NonNull SimpleScore calculateScore(@NonNull TestdataSolution solution) {
         int score = 0;
         Set<TestdataValue> alreadyUsedValues = new HashSet<>();
 

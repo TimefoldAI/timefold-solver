@@ -7,6 +7,8 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.testdata.domain.DummyVariableListener;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 
+import org.jspecify.annotations.NonNull;
+
 @PlanningEntity
 public class TestdataExtendedShadowedChildEntity extends TestdataExtendedShadowedParentEntity {
 
@@ -49,14 +51,14 @@ public class TestdataExtendedShadowedChildEntity extends TestdataExtendedShadowe
             extends DummyVariableListener<TestdataExtendedShadowedSolution, TestdataExtendedShadowedParentEntity> {
 
         @Override
-        public void afterEntityAdded(ScoreDirector<TestdataExtendedShadowedSolution> scoreDirector,
-                TestdataExtendedShadowedParentEntity entity) {
+        public void afterEntityAdded(@NonNull ScoreDirector<TestdataExtendedShadowedSolution> scoreDirector,
+                @NonNull TestdataExtendedShadowedParentEntity entity) {
             updateShadow(scoreDirector, entity);
         }
 
         @Override
-        public void afterVariableChanged(ScoreDirector<TestdataExtendedShadowedSolution> scoreDirector,
-                TestdataExtendedShadowedParentEntity entity) {
+        public void afterVariableChanged(@NonNull ScoreDirector<TestdataExtendedShadowedSolution> scoreDirector,
+                @NonNull TestdataExtendedShadowedParentEntity entity) {
             updateShadow(scoreDirector, entity);
         }
 

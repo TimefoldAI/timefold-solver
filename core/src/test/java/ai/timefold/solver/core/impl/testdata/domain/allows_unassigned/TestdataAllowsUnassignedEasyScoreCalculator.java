@@ -6,10 +6,12 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 
+import org.jspecify.annotations.NonNull;
+
 public class TestdataAllowsUnassignedEasyScoreCalculator
         implements EasyScoreCalculator<TestdataAllowsUnassignedSolution, SimpleScore> {
     @Override
-    public SimpleScore calculateScore(TestdataAllowsUnassignedSolution solution) {
+    public @NonNull SimpleScore calculateScore(@NonNull TestdataAllowsUnassignedSolution solution) {
         int score = 0;
         for (TestdataAllowsUnassignedEntity left : solution.getEntityList()) {
             TestdataValue value = left.getValue();
