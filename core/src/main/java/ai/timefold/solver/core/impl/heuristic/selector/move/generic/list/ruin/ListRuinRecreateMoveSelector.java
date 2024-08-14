@@ -24,6 +24,7 @@ final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<
 
     private SolverScope<Solution_> solverScope;
     private ListVariableStateSupply<Solution_> listVariableStateSupply;
+    private EntityIndependentValueSelector<Solution_> effectiveValueSelector;
 
     public ListRuinRecreateMoveSelector(EntityIndependentValueSelector<Solution_> valueSelector,
             ListVariableDescriptor<Solution_> listVariableDescriptor,
@@ -70,32 +71,17 @@ final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<
         this.listVariableStateSupply = solverScope.getScoreDirector()
                 .getSupplyManager()
                 .demand(listVariableDescriptor.getStateDemand());
+        this.effectiveValueSelector = FilteringValueSelector.ofAssigned(valueSelector, listVariableStateSupply);
         this.workingRandom = solverScope.getWorkingRandom();
-    }
-
-    private EntityIndependentValueSelector<Solution_> filterNotAssignedValues(
-            EntityIndependentValueSelector<Solution_> entityIndependentValueSelector,
-            ListVariableStateSupply<Solution_> listVariableStateSupply) {
-        if (!listVariableDescriptor.allowsUnassignedValues()) {
-            return entityIndependentValueSelector;
-        }
-        // We need to filter out unassigned vars.
-        return (EntityIndependentValueSelector<Solution_>) FilteringValueSelector.of(entityIndependentValueSelector,
-                (scoreDirector, selection) -> {
-                    if (listVariableStateSupply.getUnassignedCount() == 0) {
-                        return true;
-                    }
-                    return listVariableStateSupply.isAssigned(selection);
-                });
     }
 
     @Override
     public Iterator<Move<Solution_>> iterator() {
-        var assignedValueSelector = filterNotAssignedValues(valueSelector, listVariableStateSupply);
-        return new ListRuinRecreateMoveIterator<>(assignedValueSelector, constructionHeuristicPhaseBuilder,
+        var valueSelectorSize = effectiveValueSelector.getSize();
+        return new ListRuinRecreateMoveIterator<>(effectiveValueSelector, constructionHeuristicPhaseBuilder,
                 solverScope, listVariableStateSupply,
-                minimumSelectedCountSupplier.applyAsLong(assignedValueSelector.getSize()),
-                maximumSelectedCountSupplier.applyAsLong(assignedValueSelector.getSize()),
+                minimumSelectedCountSupplier.applyAsLong(valueSelectorSize),
+                maximumSelectedCountSupplier.applyAsLong(valueSelectorSize),
                 workingRandom);
     }
 }

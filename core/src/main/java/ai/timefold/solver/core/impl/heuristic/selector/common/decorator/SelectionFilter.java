@@ -31,13 +31,14 @@ public interface SelectionFilter<Solution_, T> {
 
     /**
      * Creates a {@link SelectionFilter} which applies all the provided filters one after another.
-     * Once one filter in the sequence returns false, no subsequent filers are evaluated.
+     * Once one filter in the sequence returns false, no later filers are evaluated.
      *
      * @param filterArray filters to apply, never null
      * @return never null
      * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
      * @param <T> the selection type
      */
+    @SafeVarargs
     static <Solution_, T> SelectionFilter<Solution_, T> compose(SelectionFilter<Solution_, T>... filterArray) {
         return compose(Arrays.asList(filterArray));
     }
@@ -45,6 +46,7 @@ public interface SelectionFilter<Solution_, T> {
     /**
      * As defined by {@link #compose(SelectionFilter[])}.
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     static <Solution_, T> SelectionFilter<Solution_, T> compose(List<SelectionFilter<Solution_, T>> filterList) {
         return switch (filterList.size()) {
             case 0 -> CompositeSelectionFilter.NOOP;

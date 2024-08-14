@@ -38,8 +38,8 @@ final class RuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<Solu
 
     @Override
     public long getSize() {
-        long totalSize = 0;
-        long entityCount = entitySelector.getSize();
+        var totalSize = 0L;
+        var entityCount = entitySelector.getSize();
         var minimumSelectedCount = minimumSelectedCountSupplier.applyAsLong(entityCount);
         var maximumSelectedCount = maximumSelectedCountSupplier.applyAsLong(entityCount);
         for (long selectedCount = minimumSelectedCount; selectedCount <= maximumSelectedCount; selectedCount++) {
@@ -68,10 +68,11 @@ final class RuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<Solu
 
     @Override
     public Iterator<Move<Solution_>> iterator() {
+        var entitySelectorSize = entitySelector.getSize();
         return new RuinRecreateMoveIterator<>(entitySelector, variableDescriptor, constructionHeuristicPhaseBuilder,
                 solverScope,
-                minimumSelectedCountSupplier.applyAsLong(entitySelector.getSize()),
-                maximumSelectedCountSupplier.applyAsLong(entitySelector.getSize()),
+                minimumSelectedCountSupplier.applyAsLong(entitySelectorSize),
+                maximumSelectedCountSupplier.applyAsLong(entitySelectorSize),
                 workingRandom);
     }
 }

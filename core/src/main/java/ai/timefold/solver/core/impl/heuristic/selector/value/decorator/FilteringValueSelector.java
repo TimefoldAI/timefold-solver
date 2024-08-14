@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
@@ -30,6 +31,28 @@ public class FilteringValueSelector<Solution_>
         } else {
             return new FilteringValueSelector<>(valueSelector, filter);
         }
+    }
+
+    public static <Solution_> ValueSelector<Solution_> ofAssigned(ValueSelector<Solution_> valueSelector,
+            ListVariableStateSupply<Solution_> listVariableStateSupply) {
+        var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
+        if (!listVariableDescriptor.allowsUnassignedValues()) {
+            return valueSelector;
+        }
+        // We need to filter out unassigned vars.
+        return FilteringValueSelector.of(valueSelector, (scoreDirector, selection) -> {
+            if (listVariableStateSupply.getUnassignedCount() == 0) {
+                return true;
+            }
+            return listVariableStateSupply.isAssigned(selection);
+        });
+    }
+
+    public static <Solution_> EntityIndependentValueSelector<Solution_> ofAssigned(
+            EntityIndependentValueSelector<Solution_> entityIndependentValueSelector,
+            ListVariableStateSupply<Solution_> listVariableStateSupply) {
+        return (EntityIndependentValueSelector<Solution_>) ofAssigned((ValueSelector<Solution_>) entityIndependentValueSelector,
+                listVariableStateSupply);
     }
 
     protected final ValueSelector<Solution_> childValueSelector;
