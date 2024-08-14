@@ -20,6 +20,9 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * Represents the breakdown of a {@link Score} into individual {@link ConstraintAnalysis} instances,
  * one for each constraint.
@@ -41,9 +44,7 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
  * Note: the constructors of this record are off-limits.
  * We ask users to use exclusively {@link SolutionManager#analyze(Object)} to obtain instances of this record.
  *
- * @param score never null
- * @param constraintMap never null;
- *        for each constraint identified by its {@link Constraint#getConstraintRef()},
+ * @param constraintMap for each constraint identified by its {@link Constraint#getConstraintRef()},
  *        the {@link ConstraintAnalysis} that describes the impact of that constraint on the overall score.
  *        Constraints are present even if they have no matches, unless their weight is zero;
  *        zero-weight constraints are not present.
@@ -52,8 +53,8 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
  *
  * @param <Score_>
  */
-public record ScoreAnalysis<Score_ extends Score<Score_>>(Score_ score,
-        Map<ConstraintRef, ConstraintAnalysis<Score_>> constraintMap) {
+public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
+        @NonNull Map<ConstraintRef, ConstraintAnalysis<Score_>> constraintMap) {
 
     static final int DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT = 3;
 
@@ -78,10 +79,9 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(Score_ score,
      * Performs a lookup on {@link #constraintMap()}.
      * Equivalent to {@code constraintMap().get(constraintRef)}.
      *
-     * @param constraintRef never null
      * @return null if no constraint matches of such constraint are present
      */
-    public ConstraintAnalysis<Score_> getConstraintAnalysis(ConstraintRef constraintRef) {
+    public @Nullable ConstraintAnalysis<Score_> getConstraintAnalysis(@NonNull ConstraintRef constraintRef) {
         return constraintMap.get(constraintRef);
     }
 
@@ -89,20 +89,18 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(Score_ score,
      * As defined by {@link #getConstraintAnalysis(ConstraintRef)}
      * where the arguments are first composed into a singular constraint ID.
      *
-     * @param constraintPackage never null
-     * @param constraintName never null
      * @return null if no constraint matches of such constraint are present
      * @deprecated Use {@link #getConstraintAnalysis(String)} instead.
      */
     @Deprecated(forRemoval = true, since = "1.13.0")
-    public ConstraintAnalysis<Score_> getConstraintAnalysis(String constraintPackage, String constraintName) {
+    public @Nullable ConstraintAnalysis<Score_> getConstraintAnalysis(@NonNull String constraintPackage,
+            @NonNull String constraintName) {
         return getConstraintAnalysis(ConstraintRef.of(constraintPackage, constraintName));
     }
 
     /**
      * As defined by {@link #getConstraintAnalysis(ConstraintRef)}.
      *
-     * @param constraintName never null
      * @return null if no constraint matches of such constraint are present
      * @throws IllegalStateException if multiple constraints with the same name are present,
      *         which is possible if they are in different constraint packages.
@@ -110,7 +108,7 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(Score_ score,
      *         If you must use constraint packages, see {@link #getConstraintAnalysis(String, String)}
      *         (also deprecated) and reach out to us to discuss your use case.
      */
-    public ConstraintAnalysis<Score_> getConstraintAnalysis(String constraintName) {
+    public @Nullable ConstraintAnalysis<Score_> getConstraintAnalysis(@NonNull String constraintName) {
         var constraintAnalysisList = constraintMap.entrySet()
                 .stream()
                 .filter(entry -> entry.getKey().constraintName().equals(constraintName))
@@ -146,11 +144,8 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(Score_ score,
      * <p>
      * If one {@link ScoreAnalysis} provides {@link MatchAnalysis} and the other doesn't, exception is thrown.
      * Such {@link ScoreAnalysis} instances are mutually incompatible.
-     *
-     * @param other never null
-     * @return never null
      */
-    public ScoreAnalysis<Score_> diff(ScoreAnalysis<Score_> other) {
+    public @NonNull ScoreAnalysis<Score_> diff(@NonNull ScoreAnalysis<Score_> other) {
         var result = Stream.concat(constraintMap.keySet().stream(),
                 other.constraintMap.keySet().stream())
                 .distinct()
@@ -187,11 +182,9 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(Score_ score,
      * Instead, provide this information in a UI or a service,
      * use {@link ScoreAnalysis#constraintAnalyses()}
      * and convert those into a domain-specific API.
-     *
-     * @return never null
      */
     @SuppressWarnings("java:S3457")
-    public String summarize() {
+    public @NonNull String summarize() {
         StringBuilder summary = new StringBuilder();
         summary.append("""
                 Explanation of score (%s):
