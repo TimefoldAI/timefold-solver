@@ -13,6 +13,9 @@ import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorCache;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 final class VariableChangeRecordingScoreDirector<Solution_> implements VariableDescriptorAwareScoreDirector<Solution_> {
 
     private final AbstractScoreDirector<Solution_, ?, ?> delegate;
@@ -116,7 +119,7 @@ final class VariableChangeRecordingScoreDirector<Solution_> implements VariableD
     }
 
     @Override
-    public Solution_ getWorkingSolution() {
+    public @NonNull Solution_ getWorkingSolution() {
         return delegate.getWorkingSolution();
     }
 
@@ -131,12 +134,12 @@ final class VariableChangeRecordingScoreDirector<Solution_> implements VariableD
     }
 
     @Override
-    public <E> E lookUpWorkingObject(E externalObject) {
+    public <E> @Nullable E lookUpWorkingObject(@Nullable E externalObject) {
         return delegate.lookUpWorkingObject(externalObject);
     }
 
     @Override
-    public <E> E lookUpWorkingObjectOrReturnNull(E externalObject) {
+    public <E> @Nullable E lookUpWorkingObjectOrReturnNull(@Nullable E externalObject) {
         return delegate.lookUpWorkingObjectOrReturnNull(externalObject);
     }
 

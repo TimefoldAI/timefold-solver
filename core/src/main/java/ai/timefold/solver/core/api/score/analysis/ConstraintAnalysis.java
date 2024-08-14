@@ -18,31 +18,33 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * Note: Users should never create instances of this type directly.
  * It is available transitively via {@link SolutionManager#analyze(Object)}.
  *
  * @param <Score_>
- * @param constraintRef never null
- * @param weight never null
- * @param score never null
  * @param matches null if analysis not available;
  *        empty if constraint has no matches, but still non-zero constraint weight;
  *        non-empty if constraint has matches.
  *        This is a {@link List} to simplify access to individual elements,
  *        but it contains no duplicates just like {@link HashSet} wouldn't.
  */
-public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef constraintRef, Score_ weight,
-        Score_ score, List<MatchAnalysis<Score_>> matches) {
+public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull ConstraintRef constraintRef, @NonNull Score_ weight,
+        @NonNull Score_ score, @Nullable List<MatchAnalysis<Score_>> matches) {
 
-    static <Score_ extends Score<Score_>> ConstraintAnalysis<Score_> of(ConstraintRef constraintRef, Score_ constraintWeight,
-            Score_ score) {
+    static <Score_ extends Score<Score_>> @NonNull ConstraintAnalysis<Score_> of(
+            @NonNull ConstraintRef constraintRef,
+            @NonNull Score_ constraintWeight,
+            @NonNull Score_ score) {
         return new ConstraintAnalysis<>(constraintRef, constraintWeight, score, null);
     }
 
     public ConstraintAnalysis {
         Objects.requireNonNull(constraintRef);
-        if (weight == null) {
+        if (weight == null) { // TODO: clarify - why illegal arg exception vs NPE from requireNonNull?
             /*
              * Only possible in ConstraintMatchAwareIncrementalScoreCalculator and/or tests.
              * Easy doesn't support constraint analysis at all.
@@ -172,18 +174,16 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(ConstraintRef con
      *
      * @return equal to {@code constraintRef.constraintName()}
      */
-    public String constraintName() {
+    public @NonNull String constraintName() {
         return constraintRef.constraintName();
     }
 
     /**
      * Returns a diagnostic text that explains part of the score quality through the {@link ConstraintAnalysis} API.
      * The string is built fresh every time the method is called.
-     *
-     * @return never null
      */
     @SuppressWarnings("java:S3457")
-    public String summarize() {
+    public @NonNull String summarize() {
         var summary = new StringBuilder();
         summary.append("""
                 Explanation of score (%s):
