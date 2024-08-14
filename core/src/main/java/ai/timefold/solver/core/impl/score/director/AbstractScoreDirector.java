@@ -696,6 +696,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         uncorruptedAnalysis.constraintMap().forEach((constraintRef, uncorruptedConstraintAnalysis) -> {
             var corruptedConstraintAnalysis = corruptedAnalysis.constraintMap()
                     .get(constraintRef);
+            // TODO: matches() is Nullable
             if (corruptedConstraintAnalysis == null || corruptedConstraintAnalysis.matches().isEmpty()) {
                 missingSet.addAll(uncorruptedConstraintAnalysis.matches());
                 return;
@@ -707,6 +708,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         corruptedAnalysis.constraintMap().forEach((constraintRef, corruptedConstraintAnalysis) -> {
             var uncorruptedConstraintAnalysis = uncorruptedAnalysis.constraintMap()
                     .get(constraintRef);
+            // TODO: matches() is Nullable
             if (uncorruptedConstraintAnalysis == null || uncorruptedConstraintAnalysis.matches().isEmpty()) {
                 excessSet.addAll(corruptedConstraintAnalysis.matches());
                 return;
