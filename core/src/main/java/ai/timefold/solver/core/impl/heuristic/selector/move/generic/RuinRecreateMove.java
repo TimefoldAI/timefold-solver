@@ -6,17 +6,17 @@ import java.util.List;
 import java.util.Set;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.impl.constructionheuristic.RuinRecreateConstructionHeuristicPhase.RuinRecreateBuilderConstructionHeuristicPhaseBuilder;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhase.RuinRecreateConstructionHeuristicPhaseBuilder;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 public final class RuinRecreateMove<Solution_> extends AbstractMove<Solution_> {
 
     private final GenuineVariableDescriptor<Solution_> genuineVariableDescriptor;
-    private final RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder;
+    private final RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder;
     private final SolverScope<Solution_> solverScope;
     private final List<Object> ruinedEntityList;
     private final Set<Object> affectedValueSet;
@@ -24,7 +24,7 @@ public final class RuinRecreateMove<Solution_> extends AbstractMove<Solution_> {
     private Object[] recordedNewValues;
 
     public RuinRecreateMove(GenuineVariableDescriptor<Solution_> genuineVariableDescriptor,
-            RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
+            RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
             SolverScope<Solution_> solverScope, List<Object> ruinedEntityList, Set<Object> affectedValueSet) {
         this.genuineVariableDescriptor = genuineVariableDescriptor;
         this.ruinedEntityList = ruinedEntityList;

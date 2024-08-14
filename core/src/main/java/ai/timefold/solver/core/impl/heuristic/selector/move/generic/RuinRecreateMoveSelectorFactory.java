@@ -42,8 +42,8 @@ public final class RuinRecreateMoveSelectorFactory<Solution_>
         var constructionHeuristicConfig = new ConstructionHeuristicPhaseConfig();
         var constructionHeuristicPhaseFactory =
                 new DefaultConstructionHeuristicPhaseFactory<Solution_>(constructionHeuristicConfig);
-        var constructionHeuristicPhase = constructionHeuristicPhaseFactory.getRuinPhaseBuilder(configPolicy);
-        return new RuinRecreateMoveSelector<>(entitySelector, variableDescriptor, constructionHeuristicPhase,
+        var constructionHeuristicPhaseBuilder = constructionHeuristicPhaseFactory.getRuinPhaseBuilder(configPolicy);
+        return new RuinRecreateMoveSelector<>(entitySelector, variableDescriptor, constructionHeuristicPhaseBuilder,
                 minimumSelectedSupplier, maximumSelectedSupplier);
     }
 }

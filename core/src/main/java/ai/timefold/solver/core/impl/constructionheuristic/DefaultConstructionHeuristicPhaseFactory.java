@@ -20,8 +20,8 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConf
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
+import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhase.DefaultConstructionHeuristicPhaseBuilder;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHeuristicDecider;
-import ai.timefold.solver.core.impl.constructionheuristic.decider.RuinRecreateConstructionHeuristicDecider;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForager;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForagerFactory;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacerFactory;
@@ -31,6 +31,8 @@ import ai.timefold.solver.core.impl.constructionheuristic.placer.QueuedValuePlac
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicDecider;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhase.RuinRecreateConstructionHeuristicPhaseBuilder;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.BasicPlumbingTermination;
@@ -45,9 +47,9 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         super(phaseConfig);
     }
 
-    private DefaultConstructionHeuristicPhase.DefaultConstructionHeuristicPhaseBuilder<Solution_> getBaseBuilder(int phaseIndex,
+    protected DefaultConstructionHeuristicPhaseBuilder<Solution_> getBaseBuilder(int phaseIndex,
             boolean triggerFirstInitializedSolutionEvent, HeuristicConfigPolicy<Solution_> solverConfigPolicy,
-            Termination<Solution_> solverTermination, boolean isRuinPhase) {
+            Termination<Solution_> solverTermination, boolean isNested) {
         var constructionHeuristicType_ = Objects.requireNonNullElse(phaseConfig.getConstructionHeuristicType(),
                 ConstructionHeuristicType.ALLOCATE_ENTITY_FROM_QUEUE);
         var entitySorterManner = Objects.requireNonNullElse(phaseConfig.getEntitySorterManner(),
@@ -66,15 +68,13 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         var entityPlacer = EntityPlacerFactory.<Solution_> create(entityPlacerConfig_)
                 .buildEntityPlacer(phaseConfigPolicy);
 
-        if (isRuinPhase) { // The ruin phase ignores terminations and always finishes, as it is nested in a move.
+        if (isNested) { // Nested phases ignore terminations and always finish, as they are nested inside a move.
             var phaseTermination = new PhaseToSolverTerminationBridge<>(new BasicPlumbingTermination<Solution_>(false));
-            return new RuinRecreateConstructionHeuristicPhase.RuinRecreateBuilderConstructionHeuristicPhaseBuilder<>(
-                    phaseTermination, entityPlacer,
+            return new RuinRecreateConstructionHeuristicPhaseBuilder<>(phaseTermination, entityPlacer,
                     buildRuinRecreateDecider(phaseConfigPolicy, phaseTermination));
         }
         var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
-        var builder = new DefaultConstructionHeuristicPhase.DefaultConstructionHeuristicPhaseBuilder<>(phaseIndex,
-                triggerFirstInitializedSolutionEvent,
+        var builder = new DefaultConstructionHeuristicPhaseBuilder<>(phaseIndex, triggerFirstInitializedSolutionEvent,
                 solverConfigPolicy.getLogIndentation(), phaseTermination, entityPlacer,
                 buildDecider(phaseConfigPolicy, phaseTermination));
         var environmentMode = phaseConfigPolicy.getEnvironmentMode();
@@ -96,17 +96,16 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
                 .build();
     }
 
-    public RuinRecreateConstructionHeuristicPhase.RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_>
+    public RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>
             getRuinPhaseBuilder(HeuristicConfigPolicy<Solution_> solverConfigPolicy) {
-        var solverTermination =
-                TerminationFactory.<Solution_> create(new TerminationConfig()).buildTermination(solverConfigPolicy);
-        return (RuinRecreateConstructionHeuristicPhase.RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_>) getBaseBuilder(
-                0, false,
-                solverConfigPolicy, solverTermination, true);
+        var solverTermination = TerminationFactory.<Solution_> create(new TerminationConfig())
+                .buildTermination(solverConfigPolicy);
+        return (RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>) getBaseBuilder(0, false, solverConfigPolicy,
+                solverTermination, true);
     }
 
-    private Optional<EntityPlacerConfig> getValidEntityPlacerConfig() {
-        EntityPlacerConfig entityPlacerConfig = phaseConfig.getEntityPlacerConfig();
+    private Optional<EntityPlacerConfig<?>> getValidEntityPlacerConfig() {
+        EntityPlacerConfig<?> entityPlacerConfig = phaseConfig.getEntityPlacerConfig();
         if (entityPlacerConfig == null) {
             return Optional.empty();
         }
@@ -124,7 +123,7 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         return Optional.of(entityPlacerConfig);
     }
 
-    private EntityPlacerConfig buildDefaultEntityPlacerConfig(HeuristicConfigPolicy<Solution_> configPolicy,
+    private EntityPlacerConfig<?> buildDefaultEntityPlacerConfig(HeuristicConfigPolicy<Solution_> configPolicy,
             ConstructionHeuristicType constructionHeuristicType) {
         return findValidListVariableDescriptor(configPolicy.getSolutionDescriptor())
                 .map(listVariableDescriptor -> buildListVariableQueuedValuePlacerConfig(configPolicy, listVariableDescriptor))
@@ -150,13 +149,13 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         }
     }
 
-    public static EntityPlacerConfig buildListVariableQueuedValuePlacerConfig(
-            HeuristicConfigPolicy<?> configPolicy,
+    @SuppressWarnings("rawtypes")
+    public static EntityPlacerConfig buildListVariableQueuedValuePlacerConfig(HeuristicConfigPolicy<?> configPolicy,
             ListVariableDescriptor<?> variableDescriptor) {
-        String mimicSelectorId = variableDescriptor.getVariableName();
+        var mimicSelectorId = variableDescriptor.getVariableName();
 
         // Prepare recording ValueSelector config.
-        ValueSelectorConfig mimicRecordingValueSelectorConfig = new ValueSelectorConfig(variableDescriptor.getVariableName())
+        var mimicRecordingValueSelectorConfig = new ValueSelectorConfig(variableDescriptor.getVariableName())
                 .withId(mimicSelectorId);
         if (ValueSelectorConfig.hasSorter(configPolicy.getValueSorterManner(), variableDescriptor)) {
             mimicRecordingValueSelectorConfig = mimicRecordingValueSelectorConfig.withCacheType(SelectionCacheType.PHASE)
@@ -164,11 +163,11 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
                     .withSorterManner(configPolicy.getValueSorterManner());
         }
         // Prepare replaying ValueSelector config.
-        ValueSelectorConfig mimicReplayingValueSelectorConfig = new ValueSelectorConfig()
+        var mimicReplayingValueSelectorConfig = new ValueSelectorConfig()
                 .withMimicSelectorRef(mimicSelectorId);
 
         // ListChangeMoveSelector uses the replaying ValueSelector.
-        ListChangeMoveSelectorConfig listChangeMoveSelectorConfig = new ListChangeMoveSelectorConfig()
+        var listChangeMoveSelectorConfig = new ListChangeMoveSelectorConfig()
                 .withValueSelectorConfig(mimicReplayingValueSelectorConfig);
 
         // Finally, QueuedValuePlacer uses the recording ValueSelector and a ListChangeMoveSelector.
@@ -201,35 +200,29 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         return new RuinRecreateConstructionHeuristicDecider<>(termination, buildForager(configPolicy));
     }
 
-    private EntityPlacerConfig buildUnfoldedEntityPlacerConfig(HeuristicConfigPolicy<Solution_> phaseConfigPolicy,
+    private EntityPlacerConfig<?> buildUnfoldedEntityPlacerConfig(HeuristicConfigPolicy<Solution_> phaseConfigPolicy,
             ConstructionHeuristicType constructionHeuristicType) {
-        switch (constructionHeuristicType) {
-            case FIRST_FIT:
-            case FIRST_FIT_DECREASING:
-            case WEAKEST_FIT:
-            case WEAKEST_FIT_DECREASING:
-            case STRONGEST_FIT:
-            case STRONGEST_FIT_DECREASING:
-            case ALLOCATE_ENTITY_FROM_QUEUE:
+        return switch (constructionHeuristicType) {
+            case FIRST_FIT, FIRST_FIT_DECREASING, WEAKEST_FIT, WEAKEST_FIT_DECREASING, STRONGEST_FIT, STRONGEST_FIT_DECREASING,
+                    ALLOCATE_ENTITY_FROM_QUEUE -> {
                 if (!ConfigUtils.isEmptyCollection(phaseConfig.getMoveSelectorConfigList())) {
-                    return QueuedEntityPlacerFactory.unfoldNew(phaseConfigPolicy, phaseConfig.getMoveSelectorConfigList());
+                    yield QueuedEntityPlacerFactory.unfoldNew(phaseConfigPolicy, phaseConfig.getMoveSelectorConfigList());
                 }
-                return new QueuedEntityPlacerConfig();
-            case ALLOCATE_TO_VALUE_FROM_QUEUE:
+                yield new QueuedEntityPlacerConfig();
+            }
+            case ALLOCATE_TO_VALUE_FROM_QUEUE -> {
                 if (!ConfigUtils.isEmptyCollection(phaseConfig.getMoveSelectorConfigList())) {
-                    return QueuedValuePlacerFactory.unfoldNew(checkSingleMoveSelectorConfig());
+                    yield QueuedValuePlacerFactory.unfoldNew(checkSingleMoveSelectorConfig());
                 }
-                return new QueuedValuePlacerConfig();
-            case CHEAPEST_INSERTION:
-            case ALLOCATE_FROM_POOL:
+                yield new QueuedValuePlacerConfig();
+            }
+            case CHEAPEST_INSERTION, ALLOCATE_FROM_POOL -> {
                 if (!ConfigUtils.isEmptyCollection(phaseConfig.getMoveSelectorConfigList())) {
-                    return PooledEntityPlacerFactory.unfoldNew(phaseConfigPolicy, checkSingleMoveSelectorConfig());
+                    yield PooledEntityPlacerFactory.unfoldNew(phaseConfigPolicy, checkSingleMoveSelectorConfig());
                 }
-                return new PooledEntityPlacerConfig();
-            default:
-                throw new IllegalStateException(
-                        "The constructionHeuristicType (" + constructionHeuristicType + ") is not implemented.");
-        }
+                yield new PooledEntityPlacerConfig();
+            }
+        };
     }
 
     private MoveSelectorConfig<?> checkSingleMoveSelectorConfig() {

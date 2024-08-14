@@ -1,6 +1,7 @@
-package ai.timefold.solver.core.impl.constructionheuristic.decider;
+package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHeuristicDecider;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForager;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 

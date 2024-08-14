@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 
-import ai.timefold.solver.core.impl.constructionheuristic.RuinRecreateConstructionHeuristicPhase.RuinRecreateBuilderConstructionHeuristicPhaseBuilder;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhase.RuinRecreateConstructionHeuristicPhaseBuilder;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
@@ -16,7 +16,7 @@ import ai.timefold.solver.core.impl.util.CollectionUtils;
 public final class ListRuinRecreateMoveIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
 
     private final EntityIndependentValueSelector<Solution_> valueSelector;
-    private final RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder;
+    private final RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder;
     private final SolverScope<Solution_> solverScope;
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
     private final long minimumRuinedCount;
@@ -24,7 +24,7 @@ public final class ListRuinRecreateMoveIterator<Solution_> extends UpcomingSelec
     private final Random workingRandom;
 
     public ListRuinRecreateMoveIterator(EntityIndependentValueSelector<Solution_> valueSelector,
-            RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
+            RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
             SolverScope<Solution_> solverScope,
             ListVariableStateSupply<Solution_> listVariableStateSupply, long minimumRuinedCount, long maximumRuinedCount,
             Random workingRandom) {

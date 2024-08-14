@@ -1,7 +1,9 @@
-package ai.timefold.solver.core.impl.constructionheuristic;
+package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 
 import java.util.List;
 
+import ai.timefold.solver.core.impl.constructionheuristic.ConstructionHeuristicPhase;
+import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhase;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHeuristicDecider;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
@@ -10,7 +12,7 @@ public final class RuinRecreateConstructionHeuristicPhase<Solution_>
         extends DefaultConstructionHeuristicPhase<Solution_>
         implements ConstructionHeuristicPhase<Solution_> {
 
-    public RuinRecreateConstructionHeuristicPhase(RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_> builder) {
+    public RuinRecreateConstructionHeuristicPhase(RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> builder) {
         super(builder);
     }
 
@@ -19,17 +21,17 @@ public final class RuinRecreateConstructionHeuristicPhase<Solution_>
         return true;
     }
 
-    public static final class RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_>
+    public static final class RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>
             extends DefaultConstructionHeuristicPhaseBuilder<Solution_> {
 
         private List<Object> elementsToRecreate;
 
-        public RuinRecreateBuilderConstructionHeuristicPhaseBuilder(Termination<Solution_> phaseTermination,
+        public RuinRecreateConstructionHeuristicPhaseBuilder(Termination<Solution_> phaseTermination,
                 EntityPlacer<Solution_> entityPlacer, ConstructionHeuristicDecider<Solution_> decider) {
             super(0, false, "", phaseTermination, entityPlacer, decider);
         }
 
-        public RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_> setElementsToRecreate(List<Object> elements) {
+        public RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> setElementsToRecreate(List<Object> elements) {
             this.elementsToRecreate = elements;
             return this;
         }

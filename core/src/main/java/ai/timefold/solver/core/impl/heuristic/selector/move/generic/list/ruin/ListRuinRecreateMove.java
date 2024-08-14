@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.impl.constructionheuristic.RuinRecreateConstructionHeuristicPhase.RuinRecreateBuilderConstructionHeuristicPhaseBuilder;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhase.RuinRecreateConstructionHeuristicPhaseBuilder;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
@@ -22,13 +22,13 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
     private final List<Object> ruinedValueList;
     private final Set<Object> affectedEntitySet;
-    private final RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder;
+    private final RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder;
     private final SolverScope<Solution_> solverScope;
     private final Map<Object, NavigableSet<RuinedLocation>> entityToOriginalPositionMap;
     private final Map<Object, NavigableSet<RuinedLocation>> entityToNewPositionMap;
 
     public ListRuinRecreateMove(ListVariableStateSupply<Solution_> listVariableStateSupply,
-            RuinRecreateBuilderConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
+            RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
             SolverScope<Solution_> solverScope, List<Object> ruinedValueList, Set<Object> affectedEntitySet) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.constructionHeuristicPhaseBuilder = constructionHeuristicPhaseBuilder;
