@@ -5,6 +5,8 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.score.ScoreUtil;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * This {@link Score} is based on 1 level of long constraints.
  * <p>
@@ -97,52 +99,52 @@ public final class SimpleLongScore implements Score<SimpleLongScore> {
     // ************************************************************************
 
     @Override
-    public SimpleLongScore withInitScore(int newInitScore) {
+    public @NonNull SimpleLongScore withInitScore(int newInitScore) {
         return ofUninitialized(newInitScore, score);
     }
 
     @Override
-    public SimpleLongScore add(SimpleLongScore addend) {
+    public @NonNull SimpleLongScore add(@NonNull SimpleLongScore addend) {
         return ofUninitialized(
                 initScore + addend.initScore(),
                 score + addend.score());
     }
 
     @Override
-    public SimpleLongScore subtract(SimpleLongScore subtrahend) {
+    public @NonNull SimpleLongScore subtract(@NonNull SimpleLongScore subtrahend) {
         return ofUninitialized(
                 initScore - subtrahend.initScore(),
                 score - subtrahend.score());
     }
 
     @Override
-    public SimpleLongScore multiply(double multiplicand) {
+    public @NonNull SimpleLongScore multiply(double multiplicand) {
         return ofUninitialized(
                 (int) Math.floor(initScore * multiplicand),
                 (long) Math.floor(score * multiplicand));
     }
 
     @Override
-    public SimpleLongScore divide(double divisor) {
+    public @NonNull SimpleLongScore divide(double divisor) {
         return ofUninitialized(
                 (int) Math.floor(initScore / divisor),
                 (long) Math.floor(score / divisor));
     }
 
     @Override
-    public SimpleLongScore power(double exponent) {
+    public @NonNull SimpleLongScore power(double exponent) {
         return ofUninitialized(
                 (int) Math.floor(Math.pow(initScore, exponent)),
                 (long) Math.floor(Math.pow(score, exponent)));
     }
 
     @Override
-    public SimpleLongScore abs() {
+    public @NonNull SimpleLongScore abs() {
         return ofUninitialized(Math.abs(initScore), Math.abs(score));
     }
 
     @Override
-    public SimpleLongScore zero() {
+    public @NonNull SimpleLongScore zero() {
         return ZERO;
     }
 
@@ -152,7 +154,7 @@ public final class SimpleLongScore implements Score<SimpleLongScore> {
     }
 
     @Override
-    public Number[] toLevelNumbers() {
+    public Number @NonNull [] toLevelNumbers() {
         return new Number[] { score };
     }
 
@@ -180,7 +182,7 @@ public final class SimpleLongScore implements Score<SimpleLongScore> {
     }
 
     @Override
-    public String toShortString() {
+    public @NonNull String toShortString() {
         return ScoreUtil.buildShortString(this, n -> n.longValue() != 0L, "");
     }
 

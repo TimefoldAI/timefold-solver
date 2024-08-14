@@ -8,6 +8,8 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.score.ScoreUtil;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * This {@link Score} is based on 2 levels of long constraints: hard and soft.
  * Hard constraints have priority over soft constraints.
@@ -165,7 +167,7 @@ public final class HardSoftLongScore implements Score<HardSoftLongScore> {
     // ************************************************************************
 
     @Override
-    public HardSoftLongScore withInitScore(int newInitScore) {
+    public @NonNull HardSoftLongScore withInitScore(int newInitScore) {
         return ofUninitialized(newInitScore, hardScore, softScore);
     }
 
@@ -175,7 +177,7 @@ public final class HardSoftLongScore implements Score<HardSoftLongScore> {
     }
 
     @Override
-    public HardSoftLongScore add(HardSoftLongScore addend) {
+    public @NonNull HardSoftLongScore add(@NonNull HardSoftLongScore addend) {
         return ofUninitialized(
                 initScore + addend.initScore(),
                 hardScore + addend.hardScore(),
@@ -183,7 +185,7 @@ public final class HardSoftLongScore implements Score<HardSoftLongScore> {
     }
 
     @Override
-    public HardSoftLongScore subtract(HardSoftLongScore subtrahend) {
+    public @NonNull HardSoftLongScore subtract(@NonNull HardSoftLongScore subtrahend) {
         return ofUninitialized(
                 initScore - subtrahend.initScore(),
                 hardScore - subtrahend.hardScore(),
@@ -191,7 +193,7 @@ public final class HardSoftLongScore implements Score<HardSoftLongScore> {
     }
 
     @Override
-    public HardSoftLongScore multiply(double multiplicand) {
+    public @NonNull HardSoftLongScore multiply(double multiplicand) {
         return ofUninitialized(
                 (int) Math.floor(initScore * multiplicand),
                 (long) Math.floor(hardScore * multiplicand),
@@ -199,7 +201,7 @@ public final class HardSoftLongScore implements Score<HardSoftLongScore> {
     }
 
     @Override
-    public HardSoftLongScore divide(double divisor) {
+    public @NonNull HardSoftLongScore divide(double divisor) {
         return ofUninitialized(
                 (int) Math.floor(initScore / divisor),
                 (long) Math.floor(hardScore / divisor),
@@ -207,7 +209,7 @@ public final class HardSoftLongScore implements Score<HardSoftLongScore> {
     }
 
     @Override
-    public HardSoftLongScore power(double exponent) {
+    public @NonNull HardSoftLongScore power(double exponent) {
         return ofUninitialized(
                 (int) Math.floor(Math.pow(initScore, exponent)),
                 (long) Math.floor(Math.pow(hardScore, exponent)),
@@ -215,17 +217,17 @@ public final class HardSoftLongScore implements Score<HardSoftLongScore> {
     }
 
     @Override
-    public HardSoftLongScore abs() {
+    public @NonNull HardSoftLongScore abs() {
         return ofUninitialized(Math.abs(initScore), Math.abs(hardScore), Math.abs(softScore));
     }
 
     @Override
-    public HardSoftLongScore zero() {
+    public @NonNull HardSoftLongScore zero() {
         return ZERO;
     }
 
     @Override
-    public Number[] toLevelNumbers() {
+    public Number @NonNull [] toLevelNumbers() {
         return new Number[] { hardScore, softScore };
     }
 
@@ -256,7 +258,7 @@ public final class HardSoftLongScore implements Score<HardSoftLongScore> {
     }
 
     @Override
-    public String toShortString() {
+    public @NonNull String toShortString() {
         return ScoreUtil.buildShortString(this, n -> n.longValue() != 0L, HARD_LABEL, SOFT_LABEL);
     }
 

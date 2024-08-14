@@ -11,6 +11,8 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.score.ScoreUtil;
 import ai.timefold.solver.core.impl.score.buildin.BendableScoreDefinition;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * This {@link Score} is based on n levels of {@link BigDecimal} constraints.
  * The number of levels is bendable at configuration time.
@@ -235,7 +237,7 @@ public final class BendableBigDecimalScore implements IBendableScore<BendableBig
     // ************************************************************************
 
     @Override
-    public BendableBigDecimalScore withInitScore(int newInitScore) {
+    public @NonNull BendableBigDecimalScore withInitScore(int newInitScore) {
         return new BendableBigDecimalScore(newInitScore, hardScores, softScores);
     }
 
@@ -275,7 +277,7 @@ public final class BendableBigDecimalScore implements IBendableScore<BendableBig
     }
 
     @Override
-    public BendableBigDecimalScore add(BendableBigDecimalScore addend) {
+    public @NonNull BendableBigDecimalScore add(@NonNull BendableBigDecimalScore addend) {
         validateCompatible(addend);
         BigDecimal[] newHardScores = new BigDecimal[hardScores.length];
         BigDecimal[] newSoftScores = new BigDecimal[softScores.length];
@@ -291,7 +293,7 @@ public final class BendableBigDecimalScore implements IBendableScore<BendableBig
     }
 
     @Override
-    public BendableBigDecimalScore subtract(BendableBigDecimalScore subtrahend) {
+    public @NonNull BendableBigDecimalScore subtract(@NonNull BendableBigDecimalScore subtrahend) {
         validateCompatible(subtrahend);
         BigDecimal[] newHardScores = new BigDecimal[hardScores.length];
         BigDecimal[] newSoftScores = new BigDecimal[softScores.length];
@@ -307,7 +309,7 @@ public final class BendableBigDecimalScore implements IBendableScore<BendableBig
     }
 
     @Override
-    public BendableBigDecimalScore multiply(double multiplicand) {
+    public @NonNull BendableBigDecimalScore multiply(double multiplicand) {
         BigDecimal[] newHardScores = new BigDecimal[hardScores.length];
         BigDecimal[] newSoftScores = new BigDecimal[softScores.length];
         BigDecimal bigDecimalMultiplicand = BigDecimal.valueOf(multiplicand);
@@ -327,7 +329,7 @@ public final class BendableBigDecimalScore implements IBendableScore<BendableBig
     }
 
     @Override
-    public BendableBigDecimalScore divide(double divisor) {
+    public @NonNull BendableBigDecimalScore divide(double divisor) {
         BigDecimal[] newHardScores = new BigDecimal[hardScores.length];
         BigDecimal[] newSoftScores = new BigDecimal[softScores.length];
         BigDecimal bigDecimalDivisor = BigDecimal.valueOf(divisor);
@@ -345,7 +347,7 @@ public final class BendableBigDecimalScore implements IBendableScore<BendableBig
     }
 
     @Override
-    public BendableBigDecimalScore power(double exponent) {
+    public @NonNull BendableBigDecimalScore power(double exponent) {
         BigDecimal[] newHardScores = new BigDecimal[hardScores.length];
         BigDecimal[] newSoftScores = new BigDecimal[softScores.length];
         BigDecimal actualExponent = BigDecimal.valueOf(exponent);
@@ -366,7 +368,7 @@ public final class BendableBigDecimalScore implements IBendableScore<BendableBig
     }
 
     @Override
-    public BendableBigDecimalScore negate() { // Overridden as the default impl would create zero() all the time.
+    public @NonNull BendableBigDecimalScore negate() { // Overridden as the default impl would create zero() all the time.
         BigDecimal[] newHardScores = new BigDecimal[hardScores.length];
         BigDecimal[] newSoftScores = new BigDecimal[softScores.length];
         for (int i = 0; i < newHardScores.length; i++) {
@@ -379,7 +381,7 @@ public final class BendableBigDecimalScore implements IBendableScore<BendableBig
     }
 
     @Override
-    public BendableBigDecimalScore abs() {
+    public @NonNull BendableBigDecimalScore abs() {
         BigDecimal[] newHardScores = new BigDecimal[hardScores.length];
         BigDecimal[] newSoftScores = new BigDecimal[softScores.length];
         for (int i = 0; i < newHardScores.length; i++) {
@@ -392,12 +394,12 @@ public final class BendableBigDecimalScore implements IBendableScore<BendableBig
     }
 
     @Override
-    public BendableBigDecimalScore zero() {
+    public @NonNull BendableBigDecimalScore zero() {
         return BendableBigDecimalScore.zero(hardLevelsSize(), softLevelsSize());
     }
 
     @Override
-    public Number[] toLevelNumbers() {
+    public Number @NonNull [] toLevelNumbers() {
         Number[] levelNumbers = new Number[hardScores.length + softScores.length];
         for (int i = 0; i < hardScores.length; i++) {
             levelNumbers[i] = hardScores[i];
@@ -464,7 +466,7 @@ public final class BendableBigDecimalScore implements IBendableScore<BendableBig
     }
 
     @Override
-    public String toShortString() {
+    public @NonNull String toShortString() {
         return ScoreUtil.buildBendableShortString(this, n -> ((BigDecimal) n).compareTo(BigDecimal.ZERO) != 0);
     }
 
