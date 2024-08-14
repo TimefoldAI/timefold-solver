@@ -61,7 +61,7 @@ The following `MoveSelector` implementations are available out of the box:
 [#basicMoveSelectors]
 == Move selectors for basic variables
 
-These moves are applicable to planning variables that are not part of a list or a chain,
+These moves are applicable to planning variables that aren’t part of a list or a chain,
 also called xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic variables].
 
 [#changeMoveSelector]
@@ -210,7 +210,7 @@ Advanced configuration:
 For a description of `subPillarType` and related properties, please refer to <<subPillars,Sub-pillars>>.
 
 The other properties are explained in <<changeMoveSelector,changeMoveSelector>>.
-This move selector does not support xref:optimization-algorithms/overview.adoc#cacheType[phase or solver caching]
+This move selector doesn’t support xref:optimization-algorithms/overview.adoc#cacheType[phase or solver caching]
 and step caching scales badly memory wise.
 
 
@@ -262,14 +262,14 @@ For a description of `subPillarType` and related properties, please refer to <<s
 The `secondaryPillarSelector` is rarely needed: if it is not specified, entities from the same `pillarSelector` are swapped.
 
 The other properties are explained in <<swapMoveSelector,swapMoveSelector>> and <<pillarChangeMoveSelector,pillarChangeMoveSelector>>.
-This move selector does not support xref:optimization-algorithms/overview.adoc#cacheType[phase or solver caching]
+This move selector doesn’t support xref:optimization-algorithms/overview.adoc#cacheType[phase or solver caching]
 and step caching scales badly memory wise.
 
 [#subPillars]
 ==== Sub-pillars
 
 A sub-pillar is a subset of entities that share the same value(s) for their variable(s).
-For example if queen A, B, C and D are all located on row 0, they are a pillar and `[A, D]` is one of the many sub-pillars.
+For example if queen A, B, C and D are all located on row 0, they’re a pillar and `[A, D]` is one of the many sub-pillars.
 
 There are several ways how sub-pillars can be selected by the `subPillarType` property:
 
@@ -292,7 +292,7 @@ Therefore a `pillarSelector` only supports xref:optimization-algorithms/overview
 sub-pillars can be sorted with a `Comparator`. A sequential sub-pillar is a continuous subset of its sorted base pillar.
 
 For example, if an employee has shifts on Monday (`M`), Tuesday (`T`), and Wednesday (`W`),
-they are a pillar and only the following are its sequential sub-pillars: `[M], [T], [W], [M, T], [T, W], [M, T, W]`.
+they’re a pillar and only the following are its sequential sub-pillars: `[M], [T], [W], [M, T], [T, W], [M, T, W]`.
 But `[M, W]` is not a sub-pillar in this case, as there is a gap on Tuesday.
 
 Sequential sub-pillars apply to both <<pillarChangeMoveSelector,Pillar change move>> and
@@ -324,7 +324,7 @@ An advanced configuration looks like this:
     </pillar...MoveSelector>
 ----
 
-In this case, the entity being operated on need not be `Comparable`.
+In this case, the entity being operated on needn’t be `Comparable`.
 The given `subPillarSequenceComparatorClass` is used to establish the sequence instead.
 Also, the size of the sub-pillars is limited in length of up to 1000 entities.
 
@@ -338,13 +338,13 @@ If xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariableAl
 it may leave them unassigned.
 
 This coarse-grained move is useful to help get the solver out of a local optimum.
-It allows the solver to effectively "undo" a number of previous decisions in one step,
+It allows the solver to effectively "undo" a number of earlier decisions in one step,
 opening up a new part of the solution space.
 
 [NOTE]
 ====
 If xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[nearby selection] is enabled,
-the `RuinRecreateMove` is likely to under-perform
+the `RuinRecreateMove` is likely to underperform
 as it won't be able to rebuild the solution using nearby selection.
 This almost always results in worse solutions than those that were originally ruined,
 without a big likelihood of leading to a better solution further down the line.
@@ -380,6 +380,14 @@ Advanced configuration:
 The `minimumRuinedCount` and `maximumRuinedCount` properties limit the number of entities that are unassigned.
 The default values are `5` and `20` respectively, but for large datasets,
 it may prove beneficial to increase these values.
+
+[NOTE]
+====
+`RuinRecreateMove` doesn’t support customizing the construction heuristic that it runs.
+Neither does it support customizing any entity or value selectors.
+If your problem needs more control over the construction heuristic,
+don’t enable this move.
+====
 
 Since the `RuinRecreateMove` is a coarse-grained move,
 it is expensive and can slow the solver down significantly.
@@ -559,13 +567,13 @@ If xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariab
 it may leave them unassigned.
 
 This coarse-grained move is useful to help get the solver out of a local optimum.
-It allows the solver to effectively "undo" a number of previous decisions in one step,
+It allows the solver to effectively "undo" a number of earlier decisions in one step,
 opening up a new part of the solution space.
 
 [NOTE]
 ====
 If xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[nearby selection] is enabled,
-the `RuinRecreateMove` is likely to under-perform
+the `ListRuinRecreateMove` is likely to underperform
 as it won't be able to rebuild the solution using nearby selection.
 This almost always results in worse solutions than those that were originally ruined,
 without a big likelihood of leading to a better solution further down the line.
@@ -602,7 +610,15 @@ The `minimumRuinedCount` and `maximumRuinedCount` properties limit the number of
 The default values are `5` and `20` respectively, but for large datasets,
 it may prove beneficial to increase these values.
 
-Since the `RuinRecreateMove` is a coarse-grained move,
+[NOTE]
+====
+`ListRuinRecreateMove` doesn’t support customizing the construction heuristic that it runs.
+Neither does it support customizing any entity or value selectors.
+If your problem needs more control over the construction heuristic,
+don’t enable this move.
+====
+
+Since the `ListRuinRecreateMove` is a coarse-grained move,
 it is expensive and can slow the solver down significantly.
 However, the default local search configuration will attempt to run it at the same frequency
 as the other fine-grained moves.
@@ -625,7 +641,7 @@ to control the frequency of this move:
     </unionMoveSelector>
 ----
 
-The above configuration will run the `RuinRecreateMove` once for every 100 fine-grained moves.
+The above configuration will run the `ListRuinRecreateMove` once for every 100 fine-grained moves.
 As always, benchmarking is recommended to find the optimal value for your use case.
 
 
@@ -678,7 +694,7 @@ and to work correctly with xref:enterprise-edition/enterprise-edition.adoc#nearb
 Although `subChainChangeMoveSelector` and `subChainSwapMoveSelector` include almost every possible ``tailChainSwapMove``, experiments have shown that focusing on ``tailChainSwapMove``s increases efficiency.
 ====
 
-This move selector does not support xref:optimization-algorithms/overview.adoc#cacheType[phase or solver caching].
+This move selector doesn’t support xref:optimization-algorithms/overview.adoc#cacheType[phase or solver caching].
 
 [#subChainChangeMoveSelector]
 === `SubChainChangeMoveSelector`
@@ -725,7 +741,7 @@ Furthermore, in a ``SubChainSwapMoveSelector``, setting `minimumSubChainSize` pr
 
 The `selectReversingMoveToo` property (defaults to true) enables selecting the reverse of every subchain too.
 
-This move selector does not support xref:optimization-algorithms/overview.adoc#cacheType[phase or solver caching]
+This move selector doesn’t support xref:optimization-algorithms/overview.adoc#cacheType[phase or solver caching]
 and step caching scales badly memory wise.
 
 
@@ -769,5 +785,5 @@ Advanced configuration:
 The `secondarySubChainSelector` is rarely needed: if it is not specified, entities from the same `subChainSelector` are swapped.
 
 The other properties are explained in <<subChainChangeMoveSelector,subChainChangeMoveSelector>>.
-This move selector does not support xref:optimization-algorithms/overview.adoc#cacheType[phase or solver caching]
+This move selector doesn’t support xref:optimization-algorithms/overview.adoc#cacheType[phase or solver caching]
 and step caching scales badly memory wise.
