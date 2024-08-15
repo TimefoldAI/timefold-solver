@@ -101,8 +101,7 @@ class AllowsUnassignedValuesListVariableSolverTest {
                                         .withMoveTabuSize(1))
                                 .withForagerConfig(new LocalSearchForagerConfig()
                                         .withAcceptedCountLimit(1))
-                                .withTerminationConfig(new TerminationConfig().withStepCountLimit(1))
-                        );
+                                .withTerminationConfig(new TerminationConfig().withStepCountLimit(1)));
         var solverFactory = SolverFactory.create(solverConfig);
         var solver = solverFactory.buildSolver();
 
