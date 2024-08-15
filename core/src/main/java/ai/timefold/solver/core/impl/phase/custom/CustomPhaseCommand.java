@@ -52,7 +52,7 @@ public interface CustomPhaseCommand<Solution_> {
      * That doesn't mean the solution should not be accepted, as the phase is building an initial solution.
      * 
      * @return false, update the best solution only if it is improved;
-     *         otherwise, update it if it differs from the starting phase solution.
+     *         otherwise, update it whichever the score is.
      */
     default boolean requireUpdateBestSolution() {
         return false;
