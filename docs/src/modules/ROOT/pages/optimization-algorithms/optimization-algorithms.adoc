@@ -723,10 +723,12 @@ The `CustomPhaseCommand` interface appears as follows:
 [source,java,options="nowrap"]
 ----
 public interface CustomPhaseCommand<Solution_> {
-    ...
 
     void changeWorkingSolution(ScoreDirector<Solution_> scoreDirector);
-
+    ...
+    default boolean requireUpdateBestSolution() {
+        return false;
+    }
 }
 ----
 
@@ -740,6 +742,13 @@ Any change on the planning entities in a `CustomPhaseCommand` must be notified t
 Do not change any of the problem facts in a `CustomPhaseCommand`.
 That will corrupt the `Solver` because any previous score or solution was for a different problem.
 To do that, read about xref:responding-to-change/responding-to-change.adoc[repeated planning] and do it with a xref:responding-to-change/responding-to-change.adoc#problemChange[ProblemChange] instead.
+====
+
+[NOTE]
+====
+When initializing the solution for a planning list variable model that accepts unassigned values,
+the custom command may override `requireUpdateBestSolution`
+to return `true` in order to ensure the best solution is updated.
 ====
 
 Configure the `CustomPhaseCommand` in the solver configuration:
