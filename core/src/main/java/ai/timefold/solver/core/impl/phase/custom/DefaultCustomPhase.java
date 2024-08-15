@@ -55,7 +55,7 @@ final class DefaultCustomPhase<Solution_> extends AbstractPhase<Solution_> imple
         InnerScoreDirector<Solution_, ?> scoreDirector = stepScope.getScoreDirector();
         customPhaseCommand.changeWorkingSolution(scoreDirector);
         calculateWorkingStepScore(stepScope, customPhaseCommand);
-        if (triggersFirstInitializedSolutionEvent()) {
+        if (customPhaseCommand.requireUpdateBestSolution()) {
             solver.getBestSolutionRecaller().processWorkingSolutionDuringConstructionHeuristicsStep(stepScope);
         } else {
             solver.getBestSolutionRecaller().processWorkingSolutionDuringStep(stepScope);
@@ -78,10 +78,6 @@ final class DefaultCustomPhase<Solution_> extends AbstractPhase<Solution_> imple
 
     public void phaseEnded(CustomPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
-        // Only update the best solution if the custom phase first initializes the solution and made any change.
-        if (triggersFirstInitializedSolutionEvent() && !phaseScope.getStartingScore().equals(phaseScope.getBestScore())) {
-            solver.getBestSolutionRecaller().updateBestSolutionAndFire(phaseScope.getSolverScope());
-        }
         phaseScope.endingNow();
         logger.info("{}Custom phase ({}) ended: time spent ({}), best score ({}),"
                 + " score calculation speed ({}/sec), step total ({}).",

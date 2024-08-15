@@ -6,6 +6,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.ProblemFactChange;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.impl.phase.Phase;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 /**
@@ -34,5 +35,27 @@ public interface CustomPhaseCommand<Solution_> {
      * @param scoreDirector never null, the {@link ScoreDirector} that needs to get notified of the changes.
      */
     void changeWorkingSolution(ScoreDirector<Solution_> scoreDirector);
+
+    /**
+     * By default,
+     * when the solution returned by the custom phase is worse than the {@link AbstractPhaseScope#getStartingScore() starting
+     * solution} from the phase,
+     * it is expected to be ignored as it needs to improve the current best solution.
+     * <p>
+     * However, in some cases,
+     * the current best solution needs to be updated with a new one to avoid losing the result
+     * and ending up in an inconsistent state for the next phase.
+     * <p>
+     * For example, let's consider a custom construction heuristic phase for a model
+     * using a planning list variable that accepts unassigned values.
+     * The initial score might be better than the result of the custom phase, as some constraints may be violated.
+     * That doesn't mean the solution should not be accepted, as the phase is building an initial solution.
+     * 
+     * @return false, update the best solution only if it is improved;
+     *         otherwise, update it if it differs from the starting phase solution.
+     */
+    default boolean requireUpdateBestSolution() {
+        return false;
+    }
 
 }

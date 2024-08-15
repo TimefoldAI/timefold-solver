@@ -124,6 +124,11 @@ class AllowsUnassignedValuesListVariableSolverTest {
             scoreDirector.afterListVariableChanged(solution.getEntityList().get(0), "valueList", 0, 1);
             scoreDirector.triggerVariableListeners();
         }
+
+        @Override
+        public boolean requireUpdateBestSolution() {
+            return true;
+        }
     }
 
     enum ListVariableMoveType {
