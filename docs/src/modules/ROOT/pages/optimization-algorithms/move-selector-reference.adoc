@@ -337,7 +337,7 @@ Then it runs a construction heuristic to assign them again.
 If xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariableAllowingUnassigned[unassigned values] are allowed,
 it may leave them unassigned.
 
-This coarse-grained move is useful to help get the solver out of a local optimum.
+This coarse-grained move is useful to help the solver to escape from a local optimum.
 It allows the solver to effectively "undo" a number of earlier decisions in one step,
 opening up a new part of the solution space.
 
@@ -566,7 +566,7 @@ Then it runs a construction heuristic to assign them again.
 If xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariableAllowingUnassigned[unassigned values] are allowed,
 it may leave them unassigned.
 
-This coarse-grained move is useful to help get the solver out of a local optimum.
+This coarse-grained move is useful to help the solver to escape from a local optimum.
 It allows the solver to effectively "undo" a number of earlier decisions in one step,
 opening up a new part of the solution space.
 
