@@ -75,7 +75,7 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
         }
         scoreDirector.triggerVariableListeners();
 
-        var constructionHeuristicPhase = constructionHeuristicPhaseBuilder.setElementsToRecreate(ruinedValueList)
+        var constructionHeuristicPhase = constructionHeuristicPhaseBuilder.withElementsToRecreate(ruinedValueList)
                 .build();
         constructionHeuristicPhase.setSolver(solverScope.getSolver());
         constructionHeuristicPhase.solvingStarted(solverScope);

@@ -31,7 +31,7 @@ public final class RuinRecreateConstructionHeuristicPhase<Solution_>
             super(0, false, "", phaseTermination, entityPlacer, decider);
         }
 
-        public RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> setElementsToRecreate(List<Object> elements) {
+        public RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> withElementsToRecreate(List<Object> elements) {
             this.elementsToRecreate = elements;
             return this;
         }
