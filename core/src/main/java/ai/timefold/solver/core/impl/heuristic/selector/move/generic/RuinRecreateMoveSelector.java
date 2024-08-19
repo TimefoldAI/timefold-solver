@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 
 import java.util.Iterator;
-import java.util.function.ToLongFunction;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
@@ -16,16 +15,15 @@ final class RuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<Solu
     private final EntitySelector<Solution_> entitySelector;
     private final GenuineVariableDescriptor<Solution_> variableDescriptor;
     private final RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder;
-    private final ToLongFunction<Long> minimumSelectedCountSupplier;
-    private final ToLongFunction<Long> maximumSelectedCountSupplier;
+    private final CountSupplier minimumSelectedCountSupplier;
+    private final CountSupplier maximumSelectedCountSupplier;
 
     private SolverScope<Solution_> solverScope;
 
     public RuinRecreateMoveSelector(EntitySelector<Solution_> entitySelector,
             GenuineVariableDescriptor<Solution_> variableDescriptor,
             RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
-            ToLongFunction<Long> minimumSelectedCountSupplier,
-            ToLongFunction<Long> maximumSelectedCountSupplier) {
+            CountSupplier minimumSelectedCountSupplier, CountSupplier maximumSelectedCountSupplier) {
         super();
         this.entitySelector = entitySelector;
         this.variableDescriptor = variableDescriptor;
@@ -40,9 +38,9 @@ final class RuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<Solu
     public long getSize() {
         var totalSize = 0L;
         var entityCount = entitySelector.getSize();
-        var minimumSelectedCount = minimumSelectedCountSupplier.applyAsLong(entityCount);
-        var maximumSelectedCount = maximumSelectedCountSupplier.applyAsLong(entityCount);
-        for (long selectedCount = minimumSelectedCount; selectedCount <= maximumSelectedCount; selectedCount++) {
+        var minimumSelectedCount = minimumSelectedCountSupplier.applyAsInt(entityCount);
+        var maximumSelectedCount = maximumSelectedCountSupplier.applyAsInt(entityCount);
+        for (int selectedCount = minimumSelectedCount; selectedCount <= maximumSelectedCount; selectedCount++) {
             // Order is significant, and each entity can only be picked once
             totalSize += CombinatoricsUtils.factorial((int) entityCount) / CombinatoricsUtils.factorial((int) selectedCount);
         }
@@ -71,8 +69,8 @@ final class RuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<Solu
         var entitySelectorSize = entitySelector.getSize();
         return new RuinRecreateMoveIterator<>(entitySelector, variableDescriptor, constructionHeuristicPhaseBuilder,
                 solverScope,
-                minimumSelectedCountSupplier.applyAsLong(entitySelectorSize),
-                maximumSelectedCountSupplier.applyAsLong(entitySelectorSize),
+                minimumSelectedCountSupplier.applyAsInt(entitySelectorSize),
+                maximumSelectedCountSupplier.applyAsInt(entitySelectorSize),
                 workingRandom);
     }
 }

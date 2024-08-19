@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 
-import java.util.function.ToLongFunction;
-
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
@@ -26,8 +24,8 @@ public final class RuinRecreateMoveSelectorFactory<Solution_>
     @Override
     protected MoveSelector<Solution_> buildBaseMoveSelector(HeuristicConfigPolicy<Solution_> configPolicy,
             SelectionCacheType minimumCacheType, boolean randomSelection) {
-        ToLongFunction<Long> minimumSelectedSupplier = ruinRecreateMoveSelectorConfig::determineMinimumRuinedCount;
-        ToLongFunction<Long> maximumSelectedSupplier = ruinRecreateMoveSelectorConfig::determineMaximumRuinedCount;
+        CountSupplier minimumSelectedSupplier = ruinRecreateMoveSelectorConfig::determineMinimumRuinedCount;
+        CountSupplier maximumSelectedSupplier = ruinRecreateMoveSelectorConfig::determineMaximumRuinedCount;
 
         var entitySelector = EntitySelectorFactory.<Solution_> create(new EntitySelectorConfig())
                 .buildEntitySelector(configPolicy, minimumCacheType,

@@ -1,11 +1,11 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin;
 
 import java.util.Iterator;
-import java.util.function.ToLongFunction;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.CountSupplier;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhase.RuinRecreateConstructionHeuristicPhaseBuilder;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
@@ -19,8 +19,8 @@ final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<
     private final EntityIndependentValueSelector<Solution_> valueSelector;
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder;
-    private final ToLongFunction<Long> minimumSelectedCountSupplier;
-    private final ToLongFunction<Long> maximumSelectedCountSupplier;
+    private final CountSupplier minimumSelectedCountSupplier;
+    private final CountSupplier maximumSelectedCountSupplier;
 
     private SolverScope<Solution_> solverScope;
     private ListVariableStateSupply<Solution_> listVariableStateSupply;
@@ -29,8 +29,7 @@ final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<
     public ListRuinRecreateMoveSelector(EntityIndependentValueSelector<Solution_> valueSelector,
             ListVariableDescriptor<Solution_> listVariableDescriptor,
             RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
-            ToLongFunction<Long> minimumSelectedCountSupplier,
-            ToLongFunction<Long> maximumSelectedCountSupplier) {
+            CountSupplier minimumSelectedCountSupplier, CountSupplier maximumSelectedCountSupplier) {
         super();
         this.valueSelector = valueSelector;
         this.listVariableDescriptor = listVariableDescriptor;
@@ -45,8 +44,8 @@ final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<
     public long getSize() {
         var totalSize = 0L;
         var valueCount = valueSelector.getSize();
-        var minimumSelectedCount = minimumSelectedCountSupplier.applyAsLong(valueCount);
-        var maximumSelectedCount = maximumSelectedCountSupplier.applyAsLong(valueCount);
+        var minimumSelectedCount = minimumSelectedCountSupplier.applyAsInt(valueCount);
+        var maximumSelectedCount = maximumSelectedCountSupplier.applyAsInt(valueCount);
         for (var selectedCount = minimumSelectedCount; selectedCount <= maximumSelectedCount; selectedCount++) {
             // Order is significant, and each entity can only be picked once
             totalSize += CombinatoricsUtils.factorial((int) valueCount) / CombinatoricsUtils.factorial((int) selectedCount);
@@ -80,8 +79,8 @@ final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<
         var valueSelectorSize = effectiveValueSelector.getSize();
         return new ListRuinRecreateMoveIterator<>(effectiveValueSelector, constructionHeuristicPhaseBuilder,
                 solverScope, listVariableStateSupply,
-                minimumSelectedCountSupplier.applyAsLong(valueSelectorSize),
-                maximumSelectedCountSupplier.applyAsLong(valueSelectorSize),
+                minimumSelectedCountSupplier.applyAsInt(valueSelectorSize),
+                maximumSelectedCountSupplier.applyAsInt(valueSelectorSize),
                 workingRandom);
     }
 }

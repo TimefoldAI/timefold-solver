@@ -13,20 +13,20 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreate
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
-public final class RuinRecreateMoveIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
+final class RuinRecreateMoveIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
 
     private final EntitySelector<Solution_> entitySelector;
     private final GenuineVariableDescriptor<Solution_> variableDescriptor;
     private final RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder;
     private final SolverScope<Solution_> solverScope;
-    private final long minimumRuinedCount;
-    private final long maximumRuinedCount;
+    private final int minimumRuinedCount;
+    private final int maximumRuinedCount;
     private final Random workingRandom;
 
     public RuinRecreateMoveIterator(EntitySelector<Solution_> entitySelector,
             GenuineVariableDescriptor<Solution_> variableDescriptor,
             RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
-            SolverScope<Solution_> solverScope, long minimumRuinedCount, long maximumRuinedCount, Random workingRandom) {
+            SolverScope<Solution_> solverScope, int minimumRuinedCount, int maximumRuinedCount, Random workingRandom) {
         this.entitySelector = entitySelector;
         this.variableDescriptor = variableDescriptor;
         this.constructionHeuristicPhaseBuilder = constructionHeuristicPhaseBuilder;
@@ -39,7 +39,7 @@ public final class RuinRecreateMoveIterator<Solution_> extends UpcomingSelection
     @Override
     protected Move<Solution_> createUpcomingSelection() {
         var entityIterator = entitySelector.iterator();
-        var ruinedCount = workingRandom.nextInt((int) minimumRuinedCount, (int) maximumRuinedCount + 1);
+        var ruinedCount = workingRandom.nextInt(minimumRuinedCount, maximumRuinedCount + 1);
         var selectedEntityList = new ArrayList<>(ruinedCount);
         var affectedValueSet = CollectionUtils.newLinkedHashSet(ruinedCount);
         var selectedEntitySet = Collections.newSetFromMap(CollectionUtils.newIdentityHashMap(ruinedCount));

@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin;
 
-import java.util.function.ToLongFunction;
-
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
@@ -11,6 +9,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeu
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.CountSupplier;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
 
@@ -27,8 +26,8 @@ public final class ListRuinRecreateMoveSelectorFactory<Solution_>
     @Override
     protected MoveSelector<Solution_> buildBaseMoveSelector(HeuristicConfigPolicy<Solution_> configPolicy,
             SelectionCacheType minimumCacheType, boolean randomSelection) {
-        ToLongFunction<Long> minimumSelectedSupplier = ruinMoveSelectorConfig::determineMinimumRuinedCount;
-        ToLongFunction<Long> maximumSelectedSupplier = ruinMoveSelectorConfig::determineMaximumRuinedCount;
+        CountSupplier minimumSelectedSupplier = ruinMoveSelectorConfig::determineMinimumRuinedCount;
+        CountSupplier maximumSelectedSupplier = ruinMoveSelectorConfig::determineMaximumRuinedCount;
 
         this.getTheOnlyEntityDescriptor(configPolicy.getSolutionDescriptor());
 

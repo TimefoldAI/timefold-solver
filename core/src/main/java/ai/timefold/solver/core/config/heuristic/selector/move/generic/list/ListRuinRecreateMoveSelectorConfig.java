@@ -21,8 +21,8 @@ public class ListRuinRecreateMoveSelectorConfig extends MoveSelectorConfig<ListR
 
     public static final String XML_ELEMENT_NAME = "listRuinRecreateMoveSelector";
 
-    protected Long minimumRuinedCount = null;
-    protected Long maximumRuinedCount = null;
+    protected Integer minimumRuinedCount = null;
+    protected Integer maximumRuinedCount = null;
 
     protected Double minimumRuinedPercentage = null;
     protected Double maximumRuinedPercentage = null;
@@ -35,28 +35,28 @@ public class ListRuinRecreateMoveSelectorConfig extends MoveSelectorConfig<ListR
     // Getters/Setters
     // **************************
 
-    public Long getMinimumRuinedCount() {
+    public Integer getMinimumRuinedCount() {
         return minimumRuinedCount;
     }
 
-    public void setMinimumRuinedCount(Long minimumRuinedCount) {
+    public void setMinimumRuinedCount(Integer minimumRuinedCount) {
         this.minimumRuinedCount = minimumRuinedCount;
     }
 
-    public ListRuinRecreateMoveSelectorConfig withMinimumRuinedCount(Long minimumRuinedCount) {
+    public ListRuinRecreateMoveSelectorConfig withMinimumRuinedCount(Integer minimumRuinedCount) {
         this.minimumRuinedCount = minimumRuinedCount;
         return this;
     }
 
-    public Long getMaximumRuinedCount() {
+    public Integer getMaximumRuinedCount() {
         return maximumRuinedCount;
     }
 
-    public void setMaximumRuinedCount(Long maximumRuinedCount) {
+    public void setMaximumRuinedCount(Integer maximumRuinedCount) {
         this.maximumRuinedCount = maximumRuinedCount;
     }
 
-    public ListRuinRecreateMoveSelectorConfig withMaximumRuinedCount(Long maximumRuinedCount) {
+    public ListRuinRecreateMoveSelectorConfig withMaximumRuinedCount(Integer maximumRuinedCount) {
         this.maximumRuinedCount = maximumRuinedCount;
         return this;
     }
@@ -120,24 +120,24 @@ public class ListRuinRecreateMoveSelectorConfig extends MoveSelectorConfig<ListR
         // No referenced classes.
     }
 
-    public long determineMinimumRuinedCount(long valueCount) {
+    public int determineMinimumRuinedCount(long valueCount) {
         if (minimumRuinedCount != null) {
             return minimumRuinedCount;
         }
         if (minimumRuinedPercentage != null) {
-            return (long) Math.floor(minimumRuinedPercentage * valueCount);
+            return (int) Math.floor(minimumRuinedPercentage * valueCount);
         }
-        return Math.min(DEFAULT_MINIMUM_RUINED_COUNT, valueCount);
+        return (int) Math.min(DEFAULT_MINIMUM_RUINED_COUNT, valueCount);
     }
 
-    public long determineMaximumRuinedCount(long valueCount) {
+    public int determineMaximumRuinedCount(long valueCount) {
         if (maximumRuinedCount != null) {
             return maximumRuinedCount;
         }
         if (maximumRuinedPercentage != null) {
-            return (long) Math.floor(maximumRuinedPercentage * valueCount);
+            return (int) Math.floor(maximumRuinedPercentage * valueCount);
         }
-        return Math.min(DEFAULT_MAXIMUM_RUINED_COUNT, valueCount);
+        return (int) Math.min(DEFAULT_MAXIMUM_RUINED_COUNT, valueCount);
     }
 
 }

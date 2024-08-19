@@ -1571,10 +1571,10 @@
         <xs:sequence>
                               
           
-          <xs:element minOccurs="0" name="minimumRuinedCount" type="xs:long"/>
+          <xs:element minOccurs="0" name="minimumRuinedCount" type="xs:int"/>
                               
           
-          <xs:element minOccurs="0" name="maximumRuinedCount" type="xs:long"/>
+          <xs:element minOccurs="0" name="maximumRuinedCount" type="xs:int"/>
                               
           
           <xs:element minOccurs="0" name="minimumRuinedPercentage" type="xs:double"/>
@@ -1607,10 +1607,10 @@
         <xs:sequence>
                               
           
-          <xs:element minOccurs="0" name="minimumRuinedCount" type="xs:long"/>
+          <xs:element minOccurs="0" name="minimumRuinedCount" type="xs:int"/>
                               
           
-          <xs:element minOccurs="0" name="maximumRuinedCount" type="xs:long"/>
+          <xs:element minOccurs="0" name="maximumRuinedCount" type="xs:int"/>
                               
           
           <xs:element minOccurs="0" name="minimumRuinedPercentage" type="xs:double"/>
