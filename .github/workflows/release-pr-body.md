@@ -2,7 +2,7 @@ At this point, the release of _Timefold Solver Community Edition_ is ready to be
 Artifacts have been uploaded to a staging repository.
 Release branch has been created.
 
-To finish the release of _Timefold Solver_, 
+To finish the release of _Timefold Solver_,
 please follow the steps below __in the given order__:
 
 1. [ ] Release the [staging repository on OSSRH](https://s01.oss.sonatype.org/#stagingRepositories).
@@ -15,8 +15,8 @@ please follow the steps below __in the given order__:
    for [Timefold Quickstarts](https://github.com/TimefoldAI/timefold-quickstarts).
 8. [ ] After finishing all above release automation, run
    the [website release automation](https://github.com/TimefoldAI/frontend/actions/workflows/solver-release.yml).
-9.[ ] Bump Solver version on [start.spring.io](https://start.spring.io) by submitting a PR
-  to [this file](https://github.com/spring-io/start.spring.io/blob/main/start-site/src/main/resources/application.yml).
+9. [ ] Bump Solver version on [start.spring.io](https://start.spring.io) by submitting a PR
+   to [this file](https://github.com/spring-io/start.spring.io/blob/main/start-site/src/main/resources/application.yml).
 
-Note: If this is a dry run, 
+Note: If this is a dry run,
 none of the above applies and this PR should not be merged.
