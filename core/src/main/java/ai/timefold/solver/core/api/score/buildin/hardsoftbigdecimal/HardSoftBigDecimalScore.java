@@ -27,7 +27,7 @@ public final class HardSoftBigDecimalScore implements Score<HardSoftBigDecimalSc
     public static final HardSoftBigDecimalScore ONE_HARD = new HardSoftBigDecimalScore(0, BigDecimal.ONE, BigDecimal.ZERO);
     public static final HardSoftBigDecimalScore ONE_SOFT = new HardSoftBigDecimalScore(0, BigDecimal.ZERO, BigDecimal.ONE);
 
-    public static HardSoftBigDecimalScore parseScore(String scoreString) {
+    public static @NonNull HardSoftBigDecimalScore parseScore(@NonNull String scoreString) {
         String[] scoreTokens = ScoreUtil.parseScoreTokens(HardSoftBigDecimalScore.class, scoreString, HARD_LABEL, SOFT_LABEL);
         int initScore = ScoreUtil.parseInitScore(HardSoftBigDecimalScore.class, scoreString, scoreTokens[0]);
         BigDecimal hardScore = ScoreUtil.parseLevelAsBigDecimal(HardSoftBigDecimalScore.class, scoreString, scoreTokens[1]);
@@ -35,14 +35,15 @@ public final class HardSoftBigDecimalScore implements Score<HardSoftBigDecimalSc
         return ofUninitialized(initScore, hardScore, softScore);
     }
 
-    public static HardSoftBigDecimalScore ofUninitialized(int initScore, BigDecimal hardScore, BigDecimal softScore) {
+    // TODO: params nonnull?
+    public static @NonNull HardSoftBigDecimalScore ofUninitialized(int initScore, BigDecimal hardScore, BigDecimal softScore) {
         if (initScore == 0) {
             return of(hardScore, softScore);
         }
         return new HardSoftBigDecimalScore(initScore, hardScore, softScore);
     }
 
-    public static HardSoftBigDecimalScore of(BigDecimal hardScore, BigDecimal softScore) {
+    public static @NonNull HardSoftBigDecimalScore of(BigDecimal hardScore, BigDecimal softScore) {
         // Optimization for frequently seen values.
         if (hardScore.signum() == 0) {
             if (softScore.signum() == 0) {
@@ -57,7 +58,7 @@ public final class HardSoftBigDecimalScore implements Score<HardSoftBigDecimalSc
         return new HardSoftBigDecimalScore(0, hardScore, softScore);
     }
 
-    public static HardSoftBigDecimalScore ofHard(BigDecimal hardScore) {
+    public static @NonNull HardSoftBigDecimalScore ofHard(BigDecimal hardScore) {
         // Optimization for frequently seen values.
         if (hardScore.signum() == 0) {
             return ZERO;
@@ -68,7 +69,7 @@ public final class HardSoftBigDecimalScore implements Score<HardSoftBigDecimalSc
         return new HardSoftBigDecimalScore(0, hardScore, BigDecimal.ZERO);
     }
 
-    public static HardSoftBigDecimalScore ofSoft(BigDecimal softScore) {
+    public static @NonNull HardSoftBigDecimalScore ofSoft(BigDecimal softScore) {
         // Optimization for frequently seen values.
         if (softScore.signum() == 0) {
             return ZERO;
@@ -93,6 +94,7 @@ public final class HardSoftBigDecimalScore implements Score<HardSoftBigDecimalSc
      * timefold-solver-jpa, timefold-solver-jackson, timefold-solver-jaxb, ...
      */
     @SuppressWarnings("unused")
+    // TODO default instead of null?
     private HardSoftBigDecimalScore() {
         this(Integer.MIN_VALUE, null, null);
     }
@@ -115,6 +117,7 @@ public final class HardSoftBigDecimalScore implements Score<HardSoftBigDecimalSc
      *
      * @return higher is better, usually negative, 0 if no hard constraints are broken/fulfilled
      */
+    // TODO: nonnull result?
     public BigDecimal hardScore() {
         return hardScore;
     }
@@ -138,6 +141,7 @@ public final class HardSoftBigDecimalScore implements Score<HardSoftBigDecimalSc
      *
      * @return higher is better, usually negative, 0 if no soft constraints are broken/fulfilled
      */
+    // TODO nonnull result?
     public BigDecimal softScore() {
         return softScore;
     }

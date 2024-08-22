@@ -20,21 +20,21 @@ public final class SimpleLongScore implements Score<SimpleLongScore> {
     public static final SimpleLongScore ONE = new SimpleLongScore(0, 1L);
     public static final SimpleLongScore MINUS_ONE = new SimpleLongScore(0, -1L);
 
-    public static SimpleLongScore parseScore(String scoreString) {
+    public static @NonNull SimpleLongScore parseScore(@NonNull String scoreString) {
         String[] scoreTokens = ScoreUtil.parseScoreTokens(SimpleLongScore.class, scoreString, "");
         int initScore = ScoreUtil.parseInitScore(SimpleLongScore.class, scoreString, scoreTokens[0]);
         long score = ScoreUtil.parseLevelAsLong(SimpleLongScore.class, scoreString, scoreTokens[1]);
         return ofUninitialized(initScore, score);
     }
 
-    public static SimpleLongScore ofUninitialized(int initScore, long score) {
+    public static @NonNull SimpleLongScore ofUninitialized(int initScore, long score) {
         if (initScore == 0) {
             return of(score);
         }
         return new SimpleLongScore(initScore, score);
     }
 
-    public static SimpleLongScore of(long score) {
+    public static @NonNull SimpleLongScore of(long score) {
         if (score == -1L) {
             return MINUS_ONE;
         } else if (score == 0L) {

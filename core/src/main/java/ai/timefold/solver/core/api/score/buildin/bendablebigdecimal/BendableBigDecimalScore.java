@@ -26,11 +26,7 @@ import org.jspecify.annotations.NonNull;
  */
 public final class BendableBigDecimalScore implements IBendableScore<BendableBigDecimalScore> {
 
-    /**
-     * @param scoreString never null
-     * @return never null
-     */
-    public static BendableBigDecimalScore parseScore(String scoreString) {
+    public static @NonNull BendableBigDecimalScore parseScore(@NonNull String scoreString) {
         String[][] scoreTokens = ScoreUtil.parseBendableScoreTokens(BendableBigDecimalScore.class, scoreString);
         int initScore = ScoreUtil.parseInitScore(BendableBigDecimalScore.class, scoreString, scoreTokens[0][0]);
         BigDecimal[] hardScores = new BigDecimal[scoreTokens[1].length];
@@ -48,22 +44,22 @@ public final class BendableBigDecimalScore implements IBendableScore<BendableBig
      * Creates a new {@link BendableBigDecimalScore}.
      *
      * @param initScore see {@link Score#initScore()}
-     * @param hardScores never null, never change that array afterwards: it must be immutable
-     * @param softScores never null, never change that array afterwards: it must be immutable
-     * @return never null
+     * @param hardScores never change that array afterwards: it must be immutable
+     * @param softScores never change that array afterwards: it must be immutable
      */
-    public static BendableBigDecimalScore ofUninitialized(int initScore, BigDecimal[] hardScores, BigDecimal[] softScores) {
+    // TODO: @NonNull BigDecimal?
+    public static @NonNull BendableBigDecimalScore ofUninitialized(int initScore, BigDecimal @NonNull [] hardScores,
+            BigDecimal @NonNull [] softScores) {
         return new BendableBigDecimalScore(initScore, hardScores, softScores);
     }
 
     /**
      * Creates a new {@link BendableBigDecimalScore}.
      *
-     * @param hardScores never null, never change that array afterwards: it must be immutable
-     * @param softScores never null, never change that array afterwards: it must be immutable
-     * @return never null
+     * @param hardScores never change that array afterwards: it must be immutable
+     * @param softScores never change that array afterwards: it must be immutable
      */
-    public static BendableBigDecimalScore of(BigDecimal[] hardScores, BigDecimal[] softScores) {
+    public static @NonNull BendableBigDecimalScore of(BigDecimal @NonNull [] hardScores, BigDecimal @NonNull [] softScores) {
         return new BendableBigDecimalScore(0, hardScores, softScores);
     }
 
@@ -72,9 +68,8 @@ public final class BendableBigDecimalScore implements IBendableScore<BendableBig
      *
      * @param hardLevelsSize at least 0
      * @param softLevelsSize at least 0
-     * @return never null
      */
-    public static BendableBigDecimalScore zero(int hardLevelsSize, int softLevelsSize) {
+    public static @NonNull BendableBigDecimalScore zero(int hardLevelsSize, int softLevelsSize) {
         BigDecimal[] hardScores = new BigDecimal[hardLevelsSize];
         Arrays.fill(hardScores, BigDecimal.ZERO);
         BigDecimal[] softScores = new BigDecimal[softLevelsSize];
@@ -88,10 +83,9 @@ public final class BendableBigDecimalScore implements IBendableScore<BendableBig
      * @param hardLevelsSize at least 0
      * @param softLevelsSize at least 0
      * @param hardLevel at least 0, less than hardLevelsSize
-     * @param hardScore never null
-     * @return never null
      */
-    public static BendableBigDecimalScore ofHard(int hardLevelsSize, int softLevelsSize, int hardLevel, BigDecimal hardScore) {
+    public static @NonNull BendableBigDecimalScore ofHard(int hardLevelsSize, int softLevelsSize, int hardLevel,
+            @NonNull BigDecimal hardScore) {
         BigDecimal[] hardScores = new BigDecimal[hardLevelsSize];
         Arrays.fill(hardScores, BigDecimal.ZERO);
         BigDecimal[] softScores = new BigDecimal[softLevelsSize];
@@ -106,10 +100,9 @@ public final class BendableBigDecimalScore implements IBendableScore<BendableBig
      * @param hardLevelsSize at least 0
      * @param softLevelsSize at least 0
      * @param softLevel at least 0, less than softLevelsSize
-     * @param softScore never null
-     * @return never null
      */
-    public static BendableBigDecimalScore ofSoft(int hardLevelsSize, int softLevelsSize, int softLevel, BigDecimal softScore) {
+    public static @NonNull BendableBigDecimalScore ofSoft(int hardLevelsSize, int softLevelsSize, int softLevel,
+            @NonNull BigDecimal softScore) {
         BigDecimal[] hardScores = new BigDecimal[hardLevelsSize];
         Arrays.fill(hardScores, BigDecimal.ZERO);
         BigDecimal[] softScores = new BigDecimal[softLevelsSize];
@@ -133,15 +126,14 @@ public final class BendableBigDecimalScore implements IBendableScore<BendableBig
      */
     @SuppressWarnings("unused")
     private BendableBigDecimalScore() {
+        // TODO
         this(Integer.MIN_VALUE, null, null);
     }
 
     /**
      * @param initScore see {@link Score#initScore()}
-     * @param hardScores never null
-     * @param softScores never null
      */
-    private BendableBigDecimalScore(int initScore, BigDecimal[] hardScores, BigDecimal[] softScores) {
+    private BendableBigDecimalScore(int initScore, BigDecimal @NonNull [] hardScores, BigDecimal @NonNull [] softScores) {
         this.initScore = initScore;
         this.hardScores = hardScores;
         this.softScores = softScores;
@@ -153,9 +145,9 @@ public final class BendableBigDecimalScore implements IBendableScore<BendableBig
     }
 
     /**
-     * @return not null, array copy because this class is immutable
+     * @return array copy because this class is immutable
      */
-    public BigDecimal[] hardScores() {
+    public BigDecimal @NonNull [] hardScores() {
         return Arrays.copyOf(hardScores, hardScores.length);
     }
 
@@ -165,14 +157,14 @@ public final class BendableBigDecimalScore implements IBendableScore<BendableBig
      * @deprecated Use {@link #hardScores()} instead.
      */
     @Deprecated(forRemoval = true)
-    public BigDecimal[] getHardScores() {
+    public BigDecimal @NonNull [] getHardScores() {
         return hardScores();
     }
 
     /**
-     * @return not null, array copy because this class is immutable
+     * @return array copy because this class is immutable
      */
-    public BigDecimal[] softScores() {
+    public BigDecimal @NonNull [] softScores() {
         return Arrays.copyOf(softScores, softScores.length);
     }
 
@@ -182,7 +174,7 @@ public final class BendableBigDecimalScore implements IBendableScore<BendableBig
      * @deprecated Use {@link #softScores()} instead.
      */
     @Deprecated(forRemoval = true)
-    public BigDecimal[] getSoftScores() {
+    public BigDecimal @NonNull [] getSoftScores() {
         return softScores();
     }
 
@@ -218,6 +210,7 @@ public final class BendableBigDecimalScore implements IBendableScore<BendableBig
      * @param index {@code 0 <= index <} {@link #softLevelsSize()}
      * @return higher is better
      */
+    // TODO: is this also NonNull?
     public BigDecimal softScore(int index) {
         return softScores[index];
     }
@@ -245,6 +238,7 @@ public final class BendableBigDecimalScore implements IBendableScore<BendableBig
      * @param index {@code 0 <= index <} {@link #levelsSize()}
      * @return higher is better
      */
+    // TODO: return nonnull?
     public BigDecimal hardOrSoftScore(int index) {
         if (index < hardScores.length) {
             return hardScores[index];
@@ -445,7 +439,7 @@ public final class BendableBigDecimalScore implements IBendableScore<BendableBig
     }
 
     @Override
-    public int compareTo(BendableBigDecimalScore other) {
+    public int compareTo(@NonNull BendableBigDecimalScore other) {
         validateCompatible(other);
         if (initScore != other.initScore()) {
             return Integer.compare(initScore, other.initScore());

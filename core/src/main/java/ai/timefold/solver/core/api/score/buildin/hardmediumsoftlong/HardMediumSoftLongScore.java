@@ -32,7 +32,7 @@ public final class HardMediumSoftLongScore implements Score<HardMediumSoftLongSc
     public static final HardMediumSoftLongScore ONE_SOFT = new HardMediumSoftLongScore(0, 0L, 0L, 1L);
     private static final HardMediumSoftLongScore MINUS_ONE_SOFT = new HardMediumSoftLongScore(0, 0L, 0L, -1L);
 
-    public static HardMediumSoftLongScore parseScore(String scoreString) {
+    public static @NonNull HardMediumSoftLongScore parseScore(@NonNull String scoreString) {
         String[] scoreTokens = ScoreUtil.parseScoreTokens(HardMediumSoftLongScore.class, scoreString,
                 HARD_LABEL, MEDIUM_LABEL, SOFT_LABEL);
         int initScore = ScoreUtil.parseInitScore(HardMediumSoftLongScore.class, scoreString, scoreTokens[0]);
@@ -42,14 +42,15 @@ public final class HardMediumSoftLongScore implements Score<HardMediumSoftLongSc
         return ofUninitialized(initScore, hardScore, mediumScore, softScore);
     }
 
-    public static HardMediumSoftLongScore ofUninitialized(int initScore, long hardScore, long mediumScore, long softScore) {
+    public static @NonNull HardMediumSoftLongScore ofUninitialized(int initScore, long hardScore, long mediumScore,
+            long softScore) {
         if (initScore == 0) {
             return of(hardScore, mediumScore, softScore);
         }
         return new HardMediumSoftLongScore(initScore, hardScore, mediumScore, softScore);
     }
 
-    public static HardMediumSoftLongScore of(long hardScore, long mediumScore, long softScore) {
+    public static @NonNull HardMediumSoftLongScore of(long hardScore, long mediumScore, long softScore) {
         if (hardScore == -1L && mediumScore == 0L && softScore == 0L) {
             return MINUS_ONE_HARD;
         } else if (hardScore == 0L) {
@@ -72,7 +73,7 @@ public final class HardMediumSoftLongScore implements Score<HardMediumSoftLongSc
         return new HardMediumSoftLongScore(0, hardScore, mediumScore, softScore);
     }
 
-    public static HardMediumSoftLongScore ofHard(long hardScore) {
+    public static @NonNull HardMediumSoftLongScore ofHard(long hardScore) {
         if (hardScore == -1L) {
             return MINUS_ONE_HARD;
         } else if (hardScore == 0L) {
@@ -83,7 +84,7 @@ public final class HardMediumSoftLongScore implements Score<HardMediumSoftLongSc
         return new HardMediumSoftLongScore(0, hardScore, 0L, 0L);
     }
 
-    public static HardMediumSoftLongScore ofMedium(long mediumScore) {
+    public static @NonNull HardMediumSoftLongScore ofMedium(long mediumScore) {
         if (mediumScore == -1L) {
             return MINUS_ONE_MEDIUM;
         } else if (mediumScore == 0L) {
@@ -94,7 +95,7 @@ public final class HardMediumSoftLongScore implements Score<HardMediumSoftLongSc
         return new HardMediumSoftLongScore(0, 0L, mediumScore, 0L);
     }
 
-    public static HardMediumSoftLongScore ofSoft(long softScore) {
+    public static @NonNull HardMediumSoftLongScore ofSoft(long softScore) {
         if (softScore == -1L) {
             return MINUS_ONE_SOFT;
         } else if (softScore == 0L) {
