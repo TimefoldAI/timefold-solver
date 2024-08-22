@@ -23,11 +23,7 @@ import org.jspecify.annotations.NonNull;
  */
 public final class BendableLongScore implements IBendableScore<BendableLongScore> {
 
-    /**
-     * @param scoreString never null
-     * @return never null
-     */
-    public static BendableLongScore parseScore(String scoreString) {
+    public static @NonNull BendableLongScore parseScore(@NonNull String scoreString) {
         String[][] scoreTokens = ScoreUtil.parseBendableScoreTokens(BendableLongScore.class, scoreString);
         int initScore = ScoreUtil.parseInitScore(BendableLongScore.class, scoreString, scoreTokens[0][0]);
         long[] hardScores = new long[scoreTokens[1].length];
@@ -45,22 +41,21 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
      * Creates a new {@link BendableLongScore}.
      *
      * @param initScore see {@link Score#initScore()}
-     * @param hardScores never null, never change that array afterwards: it must be immutable
-     * @param softScores never null, never change that array afterwards: it must be immutable
-     * @return never null
+     * @param hardScores never change that array afterwards: it must be immutable
+     * @param softScores never change that array afterwards: it must be immutable
      */
-    public static BendableLongScore ofUninitialized(int initScore, long[] hardScores, long[] softScores) {
+    public static @NonNull BendableLongScore ofUninitialized(int initScore, long @NonNull [] hardScores,
+            long @NonNull [] softScores) {
         return new BendableLongScore(initScore, hardScores, softScores);
     }
 
     /**
      * Creates a new {@link BendableLongScore}.
      *
-     * @param hardScores never null, never change that array afterwards: it must be immutable
-     * @param softScores never null, never change that array afterwards: it must be immutable
-     * @return never null
+     * @param hardScores never change that array afterwards: it must be immutable
+     * @param softScores never change that array afterwards: it must be immutable
      */
-    public static BendableLongScore of(long[] hardScores, long[] softScores) {
+    public static @NonNull BendableLongScore of(long @NonNull [] hardScores, long @NonNull [] softScores) {
         return new BendableLongScore(0, hardScores, softScores);
     }
 
@@ -69,9 +64,8 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
      *
      * @param hardLevelsSize at least 0
      * @param softLevelsSize at least 0
-     * @return never null
      */
-    public static BendableLongScore zero(int hardLevelsSize, int softLevelsSize) {
+    public static @NonNull BendableLongScore zero(int hardLevelsSize, int softLevelsSize) {
         return new BendableLongScore(0, new long[hardLevelsSize], new long[softLevelsSize]);
     }
 
@@ -82,9 +76,8 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
      * @param softLevelsSize at least 0
      * @param hardLevel at least 0, less than hardLevelsSize
      * @param hardScore any
-     * @return never null
      */
-    public static BendableLongScore ofHard(int hardLevelsSize, int softLevelsSize, int hardLevel, long hardScore) {
+    public static @NonNull BendableLongScore ofHard(int hardLevelsSize, int softLevelsSize, int hardLevel, long hardScore) {
         long[] hardScores = new long[hardLevelsSize];
         hardScores[hardLevel] = hardScore;
         return new BendableLongScore(0, hardScores, new long[softLevelsSize]);
@@ -97,9 +90,8 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
      * @param softLevelsSize at least 0
      * @param softLevel at least 0, less than softLevelsSize
      * @param softScore any
-     * @return never null
      */
-    public static BendableLongScore ofSoft(int hardLevelsSize, int softLevelsSize, int softLevel, long softScore) {
+    public static @NonNull BendableLongScore ofSoft(int hardLevelsSize, int softLevelsSize, int softLevel, long softScore) {
         long[] softScores = new long[softLevelsSize];
         softScores[softLevel] = softScore;
         return new BendableLongScore(0, new long[hardLevelsSize], softScores);
@@ -120,15 +112,14 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
      */
     @SuppressWarnings("unused")
     private BendableLongScore() {
+        // TODO
         this(Integer.MIN_VALUE, null, null);
     }
 
     /**
      * @param initScore see {@link Score#initScore()}
-     * @param hardScores never null
-     * @param softScores never null
      */
-    private BendableLongScore(int initScore, long[] hardScores, long[] softScores) {
+    private BendableLongScore(int initScore, long @NonNull [] hardScores, long @NonNull [] softScores) {
         this.initScore = initScore;
         this.hardScores = hardScores;
         this.softScores = softScores;
@@ -140,9 +131,9 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
     }
 
     /**
-     * @return not null, array copy because this class is immutable
+     * @return array copy because this class is immutable
      */
-    public long[] hardScores() {
+    public long @NonNull [] hardScores() {
         return Arrays.copyOf(hardScores, hardScores.length);
     }
 
@@ -152,14 +143,14 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
      * @deprecated Use {@link #hardScores()} instead.
      */
     @Deprecated(forRemoval = true)
-    public long[] getHardScores() {
+    public long @NonNull [] getHardScores() {
         return hardScores();
     }
 
     /**
-     * @return not null, array copy because this class is immutable
+     * @return array copy because this class is immutable
      */
-    public long[] softScores() {
+    public long @NonNull [] softScores() {
         return Arrays.copyOf(softScores, softScores.length);
     }
 
@@ -169,7 +160,7 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
      * @deprecated Use {@link #softScores()} instead.
      */
     @Deprecated(forRemoval = true)
-    public long[] getSoftScores() {
+    public long @NonNull [] getSoftScores() {
         return softScores();
     }
 

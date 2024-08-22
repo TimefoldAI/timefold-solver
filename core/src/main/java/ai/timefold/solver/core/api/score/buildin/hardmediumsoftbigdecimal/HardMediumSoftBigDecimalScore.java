@@ -42,7 +42,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
     private static final HardMediumSoftBigDecimalScore MINUS_ONE_SOFT =
             new HardMediumSoftBigDecimalScore(0, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ONE.negate());
 
-    public static HardMediumSoftBigDecimalScore parseScore(String scoreString) {
+    public static @NonNull HardMediumSoftBigDecimalScore parseScore(@NonNull String scoreString) {
         String[] scoreTokens = ScoreUtil.parseScoreTokens(HardMediumSoftBigDecimalScore.class, scoreString,
                 HARD_LABEL, MEDIUM_LABEL, SOFT_LABEL);
         int initScore = ScoreUtil.parseInitScore(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[0]);
@@ -55,7 +55,8 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
         return ofUninitialized(initScore, hardScore, mediumScore, softScore);
     }
 
-    public static HardMediumSoftBigDecimalScore ofUninitialized(int initScore, BigDecimal hardScore, BigDecimal mediumScore,
+    public static @NonNull HardMediumSoftBigDecimalScore ofUninitialized(int initScore, BigDecimal hardScore,
+            BigDecimal mediumScore,
             BigDecimal softScore) {
         if (initScore == 0) {
             return of(hardScore, mediumScore, softScore);
@@ -63,7 +64,9 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
         return new HardMediumSoftBigDecimalScore(initScore, hardScore, mediumScore, softScore);
     }
 
-    public static HardMediumSoftBigDecimalScore of(BigDecimal hardScore, BigDecimal mediumScore, BigDecimal softScore) {
+    // TODO: params nonnull?
+    public static @NonNull HardMediumSoftBigDecimalScore of(BigDecimal hardScore, BigDecimal mediumScore,
+            BigDecimal softScore) {
         if (Objects.equals(hardScore, BigDecimal.ONE.negate()) && mediumScore.signum() == 0 && softScore.signum() == 0) {
             return MINUS_ONE_HARD;
         } else if (hardScore.signum() == 0) {
@@ -86,7 +89,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
         return new HardMediumSoftBigDecimalScore(0, hardScore, mediumScore, softScore);
     }
 
-    public static HardMediumSoftBigDecimalScore ofHard(BigDecimal hardScore) {
+    public static @NonNull HardMediumSoftBigDecimalScore ofHard(BigDecimal hardScore) {
         if (Objects.equals(hardScore, BigDecimal.ONE.negate())) {
             return MINUS_ONE_HARD;
         } else if (hardScore.signum() == 0) {
@@ -97,7 +100,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
         return new HardMediumSoftBigDecimalScore(0, hardScore, BigDecimal.ZERO, BigDecimal.ZERO);
     }
 
-    public static HardMediumSoftBigDecimalScore ofMedium(BigDecimal mediumScore) {
+    public static @NonNull HardMediumSoftBigDecimalScore ofMedium(BigDecimal mediumScore) {
         if (Objects.equals(mediumScore, BigDecimal.ONE.negate())) {
             return MINUS_ONE_MEDIUM;
         } else if (mediumScore.signum() == 0) {
@@ -108,7 +111,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
         return new HardMediumSoftBigDecimalScore(0, BigDecimal.ZERO, mediumScore, BigDecimal.ZERO);
     }
 
-    public static HardMediumSoftBigDecimalScore ofSoft(BigDecimal softScore) {
+    public static @NonNull HardMediumSoftBigDecimalScore ofSoft(BigDecimal softScore) {
         if (Objects.equals(softScore, BigDecimal.ONE.negate())) {
             return MINUS_ONE_SOFT;
         } else if (softScore.signum() == 0) {
@@ -134,6 +137,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
      * timefold-solver-jpa, timefold-solver-jackson, timefold-solver-jaxb, ...
      */
     @SuppressWarnings("unused")
+    // TODO: params default or null?
     private HardMediumSoftBigDecimalScore() {
         this(Integer.MIN_VALUE, null, null, null);
     }
@@ -157,6 +161,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
      *
      * @return higher is better, usually negative, 0 if no hard constraints are broken/fulfilled
      */
+    // TODO: nonnull?
     public BigDecimal hardScore() {
         return hardScore;
     }

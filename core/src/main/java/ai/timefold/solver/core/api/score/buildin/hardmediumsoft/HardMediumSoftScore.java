@@ -32,7 +32,7 @@ public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
     public static final HardMediumSoftScore ONE_SOFT = new HardMediumSoftScore(0, 0, 0, 1);
     private static final HardMediumSoftScore MINUS_ONE_SOFT = new HardMediumSoftScore(0, 0, 0, -1);
 
-    public static HardMediumSoftScore parseScore(String scoreString) {
+    public static @NonNull HardMediumSoftScore parseScore(@NonNull String scoreString) {
         String[] scoreTokens = ScoreUtil.parseScoreTokens(HardMediumSoftScore.class, scoreString,
                 HARD_LABEL, MEDIUM_LABEL, SOFT_LABEL);
         int initScore = ScoreUtil.parseInitScore(HardMediumSoftScore.class, scoreString, scoreTokens[0]);
@@ -42,14 +42,14 @@ public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
         return ofUninitialized(initScore, hardScore, mediumScore, softScore);
     }
 
-    public static HardMediumSoftScore ofUninitialized(int initScore, int hardScore, int mediumScore, int softScore) {
+    public static @NonNull HardMediumSoftScore ofUninitialized(int initScore, int hardScore, int mediumScore, int softScore) {
         if (initScore == 0) {
             return of(hardScore, mediumScore, softScore);
         }
         return new HardMediumSoftScore(initScore, hardScore, mediumScore, softScore);
     }
 
-    public static HardMediumSoftScore of(int hardScore, int mediumScore, int softScore) {
+    public static @NonNull HardMediumSoftScore of(int hardScore, int mediumScore, int softScore) {
         if (hardScore == -1 && mediumScore == 0 && softScore == 0) {
             return MINUS_ONE_HARD;
         } else if (hardScore == 0) {
@@ -72,7 +72,7 @@ public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
         return new HardMediumSoftScore(0, hardScore, mediumScore, softScore);
     }
 
-    public static HardMediumSoftScore ofHard(int hardScore) {
+    public static @NonNull HardMediumSoftScore ofHard(int hardScore) {
         return switch (hardScore) {
             case -1 -> MINUS_ONE_HARD;
             case 0 -> ZERO;
@@ -81,7 +81,7 @@ public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
         };
     }
 
-    public static HardMediumSoftScore ofMedium(int mediumScore) {
+    public static @NonNull HardMediumSoftScore ofMedium(int mediumScore) {
         return switch (mediumScore) {
             case -1 -> MINUS_ONE_MEDIUM;
             case 0 -> ZERO;
@@ -90,7 +90,7 @@ public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
         };
     }
 
-    public static HardMediumSoftScore ofSoft(int softScore) {
+    public static @NonNull HardMediumSoftScore ofSoft(int softScore) {
         return switch (softScore) {
             case -1 -> MINUS_ONE_SOFT;
             case 0 -> ZERO;

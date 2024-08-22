@@ -21,21 +21,23 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
     public static final SimpleBigDecimalScore ZERO = new SimpleBigDecimalScore(0, BigDecimal.ZERO);
     public static final SimpleBigDecimalScore ONE = new SimpleBigDecimalScore(0, BigDecimal.ONE);
 
-    public static SimpleBigDecimalScore parseScore(String scoreString) {
+    public static @NonNull SimpleBigDecimalScore parseScore(@NonNull String scoreString) {
         String[] scoreTokens = ScoreUtil.parseScoreTokens(SimpleBigDecimalScore.class, scoreString, "");
         int initScore = ScoreUtil.parseInitScore(SimpleBigDecimalScore.class, scoreString, scoreTokens[0]);
         BigDecimal score = ScoreUtil.parseLevelAsBigDecimal(SimpleBigDecimalScore.class, scoreString, scoreTokens[1]);
         return ofUninitialized(initScore, score);
     }
 
-    public static SimpleBigDecimalScore ofUninitialized(int initScore, BigDecimal score) {
+    // TODO: param score nonnull?
+    public static @NonNull SimpleBigDecimalScore ofUninitialized(int initScore, BigDecimal score) {
         if (initScore == 0) {
             return of(score);
         }
         return new SimpleBigDecimalScore(initScore, score);
     }
 
-    public static SimpleBigDecimalScore of(BigDecimal score) {
+    // TODO: params score nonnull?
+    public static @NonNull SimpleBigDecimalScore of(BigDecimal score) {
         if (score.signum() == 0) {
             return ZERO;
         } else if (score.equals(BigDecimal.ONE)) {
@@ -58,6 +60,7 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
      * timefold-solver-jpa, timefold-solver-jackson, timefold-solver-jaxb, ...
      */
     @SuppressWarnings("unused")
+    // TODO null or default val?
     private SimpleBigDecimalScore() {
         this(Integer.MIN_VALUE, null);
     }
@@ -79,6 +82,7 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
      *
      * @return higher is better, usually negative, 0 if no constraints are broken/fulfilled
      */
+    // TODO return nonnull?
     public BigDecimal score() {
         return score;
     }

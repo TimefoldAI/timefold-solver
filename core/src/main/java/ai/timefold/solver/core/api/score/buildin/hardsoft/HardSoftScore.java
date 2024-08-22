@@ -30,7 +30,7 @@ public final class HardSoftScore implements Score<HardSoftScore> {
     private static final HardSoftScore MINUS_ONE_SOFT = new HardSoftScore(0, 0, -1);
     private static final HardSoftScore MINUS_ONE_HARD = new HardSoftScore(0, -1, 0);
 
-    public static HardSoftScore parseScore(String scoreString) {
+    public static @NonNull HardSoftScore parseScore(@NonNull String scoreString) {
         String[] scoreTokens = parseScoreTokens(HardSoftScore.class, scoreString, HARD_LABEL, SOFT_LABEL);
         int initScore = parseInitScore(HardSoftScore.class, scoreString, scoreTokens[0]);
         int hardScore = parseLevelAsInt(HardSoftScore.class, scoreString, scoreTokens[1]);
@@ -38,14 +38,14 @@ public final class HardSoftScore implements Score<HardSoftScore> {
         return ofUninitialized(initScore, hardScore, softScore);
     }
 
-    public static HardSoftScore ofUninitialized(int initScore, int hardScore, int softScore) {
+    public static @NonNull HardSoftScore ofUninitialized(int initScore, int hardScore, int softScore) {
         if (initScore == 0) {
             return of(hardScore, softScore);
         }
         return new HardSoftScore(initScore, hardScore, softScore);
     }
 
-    public static HardSoftScore of(int hardScore, int softScore) {
+    public static @NonNull HardSoftScore of(int hardScore, int softScore) {
         // Optimization for frequently seen values.
         if (hardScore == 0) {
             if (softScore == -1) {
@@ -66,7 +66,7 @@ public final class HardSoftScore implements Score<HardSoftScore> {
         return new HardSoftScore(0, hardScore, softScore);
     }
 
-    public static HardSoftScore ofHard(int hardScore) {
+    public static @NonNull HardSoftScore ofHard(int hardScore) {
         // Optimization for frequently seen values.
         if (hardScore == -1) {
             return MINUS_ONE_HARD;
@@ -79,7 +79,7 @@ public final class HardSoftScore implements Score<HardSoftScore> {
         return new HardSoftScore(0, hardScore, 0);
     }
 
-    public static HardSoftScore ofSoft(int softScore) {
+    public static @NonNull HardSoftScore ofSoft(int softScore) {
         // Optimization for frequently seen values.
         if (softScore == -1) {
             return MINUS_ONE_SOFT;
