@@ -15,6 +15,11 @@ For example:
 * To read a planning problem from an XML file (and store the best solution in it), annotate the domain POJOs with JAXB annotations.
 * To expose the Solver as a REST Service that reads the planning problem and responds with the best solution, annotate the domain POJOs with JAXB or Jackson annotations and hook the `Solver` in RESTEasy.
 
+[NOTE]
+====
+In Python, Timefold Solver's input and output data (the planning problem and the best solution) are Python objects (that are defined in a Python source file, and not a C extension).
+====
+
 image::integration/integrationOverview.png[align="center"]
 
 
@@ -202,7 +207,7 @@ public class VehicleRoutePlan {
 
 For example, this generates:
 
-[source,json]
+[source,json,options="nowrap"]
 ----
 {
    "score":"0hard/-200soft"
@@ -215,7 +220,7 @@ For example, this generates:
 When reading a `BendableScore`, the `hardLevelsSize` and `softLevelsSize` implied in the JSON element,
 must always be in sync with those defined in the `@PlanningScore` annotation in the solution class.For example:
 
-[source,json]
+[source,json,options="nowrap"]
 ----
 {
    "score":"[0/0]hard/[-100/-20/-3]soft"
@@ -257,7 +262,7 @@ public class VehicleRoutePlan {
 
 For example, this generates:
 
-[source,json]
+[source,json,options="nowrap"]
 ----
 {
    "score":{"HardSoftScore":"0hard/-200soft"}
@@ -265,6 +270,138 @@ For example, this generates:
 }
 ----
 
+[#integrationWithPydantic]
+=== JSON: Pydantic/FastAPI
+
+Enrich domain objects (solution, entities and problem facts) with Pydantic annotations to serialize them to/from JSON (allowing them to directly be used in routes such as in FastAPI).
+
+The score classes are dataclasses and will use the default serialization/deserialization provided by Pydantic and FastAPI.
+To serialize to the score string instead of a JSON object with attributes for each score level, use a custom Serializer/Validator:
+
+[source,python,options="nowrap"]
+----
+from timefold.solver.domain import planning_solution, PlanningScore
+from timefold.solver.score import HardSoftScore
+from typing import Annotated
+from pydantic import BaseModel, PlainSerializer, BeforeValidator, ValidationInfo, Field
+
+ScoreSerializer = PlainSerializer(lambda score: str(score) if score is not None else None,
+                                  return_type=str | None)
+
+
+def validate_score(v: Any, info: ValidationInfo) -> Any:
+    if isinstance(v, HardSoftScore) or v is None:
+        return v
+    if isinstance(v, str):
+        return HardSoftScore.parse(v)
+    raise ValueError('"score" should be a string')
+
+
+ScoreValidator = BeforeValidator(validate_score)
+
+
+@planning_solution
+class Solution(BaseModel):
+    score: Annotated[HardSoftScore | None,
+                     PlanningScore,
+                     ScoreSerializer,
+                     ScoreValidator,
+                     Field(default=None)]
+    # ...Other attributes and methods...
+----
+
+If your domain objects can reference each other, a custom validator should be used, so they will deserialize to the same object.
+For example, with FastAPI:
+
+[source,python,options="nowrap"]
+----
+from datetime import time
+from fastapi import FastAPI, Depends, Request
+from timefold.solver.domain import planning_entity, planning_solution, PlanningVariable, PlanningId
+from typing import Annotated
+from pydantic import BaseModel, PlainSerializer, BeforeValidator, ValidationInfo, Field
+
+app = FastAPI()
+
+IdSerializer = PlainSerializer(lambda item: item.id if item is not None else None,
+return_type=str | None)
+
+
+def make_list_item_validator(key: str):
+    def validator(v: Any, info: ValidationInfo) -> Any:
+        if v is None:
+            return None
+
+        if not isinstance(v, str) or not info.context:
+            return v
+
+        return info.context.get(key)[v]
+
+    return BeforeValidator(validator)
+
+
+RoomDeserializer = make_list_item_validator('rooms')
+TimeslotDeserializer = make_list_item_validator('timeslots')
+
+
+class Timeslot(BaseModel):
+    id: Annotated[str, PlanningId]
+    day_of_week: str
+    start_time: time
+    end_time: time
+
+
+class Room(BaseModel):
+    id: Annotated[str, PlanningId]
+    name: str
+
+
+@planning_entity
+class Lesson(BaseModel):
+    id: Annotated[str, PlanningId]
+    subject: str
+    teacher: str
+    student_group: str
+    timeslot: Annotated[Timeslot | None,
+                        PlanningVariable,
+                        IdSerializer,
+                        TimeslotDeserializer,
+                        Field(default=None)]
+    room: Annotated[Room | None,
+                    PlanningVariable,
+                    IdSerializer,
+                    RoomDeserializer,
+                    Field(default=None)]
+
+
+@planning_solution
+class Timetable(BaseModel):
+    timeslots: Annotated[list[Timeslot], ...]
+    rooms: Annotated[list[Room], ...]
+    lessons: Annotated[list[Lesson], ...]
+    # ...Other attributes and methods...
+
+
+async def setup_context(request: Request) -> Timetable:
+    json = await request.json()
+    return Timetable.model_validate(json,
+                                    context={
+                                        'rooms': {
+                                            room['id']: Room.model_validate(room) for room in json.get('rooms', [])
+                                        },
+                                        'timeslots': {
+                                            timeslot['id']: Timeslot.model_validate(timeslot) for
+                                            timeslot in json.get('timeslots', [])
+                                        },
+                                    })
+
+
+@app.put("/timetables/analyze")
+async def analyze_timetable(timetable: Annotated[Timetable, Depends(setup_context)]) -> HardSoftScore:
+    ...
+----
+
+Neglecting to do this can lead to incorrect score analysis and score calculation.
 
 [#integrationWithQuarkus]
 == Quarkus
@@ -299,7 +436,7 @@ The available resouses can be injected as follows:
 Java::
 +
 --
-[source,java]
+[source,java,options="nowrap"]
 ----
 @Path("/path")
 public class Resource {
@@ -330,7 +467,7 @@ public class Resource {
 Kotlin::
 +
 --
-[source,kotlin]
+[source,kotlin,options="nowrap"]
 ----
 @Path("path")
 class Resource {
@@ -367,7 +504,7 @@ Timefold provides all the necessary resources for problem-solving and analysis. 
 Java::
 +
 --
-[source,java]
+[source,java,options="nowrap"]
 ----
 package org.acme.employeescheduling.rest;
 
@@ -396,7 +533,7 @@ public class BeanProducer {
 Kotlin::
 +
 --
-[source,kotlin]
+[source,kotlin,options="nowrap"]
 ----
 package org.acme.employeescheduling.rest
 
@@ -449,7 +586,7 @@ include::config-properties.adoc[]
 The different solver settings are configured in the `application.properties` file. For example, two different time
 settings for `spent-limit` are defined as follows:
 
-[source,properties]
+[source,properties,options="nowrap"]
 ----
 # The solver "fastSolver" runs only for 5 seconds, and "regularSolver" runs for 10s
 quarkus.timefold.solver."fastSolver".termination.spent-limit=5s // <1>
@@ -465,7 +602,7 @@ To inject a specific `SolverManager`, use the `@Named` annotation along with the
 Java::
 +
 --
-[source,java]
+[source,java,options="nowrap"]
 ----
 @Path("/path")
 public class Resource {
@@ -483,7 +620,7 @@ public class Resource {
 Kotlin::
 +
 --
-[source,kotlin]
+[source,kotlin,options="nowrap"]
 ----
 @Path("path")
 class Resource {
@@ -539,7 +676,7 @@ roomsSolverConfig.xml::
 
 Set the solvers with the specific XML files in the `application.properties` file:
 
-[source,properties]
+[source,properties,options="nowrap"]
 ----
 quarkus.timefold.solver."teacherSolver".solver-config-xml=teachersSolverConfig.xml // <1>
 quarkus.timefold.solver."roomSolver".solver-config-xml=roomsSolverConfig.xml // <2>
@@ -554,7 +691,7 @@ Now let's inject both solvers.
 Java::
 +
 --
-[source,java]
+[source,java,options="nowrap"]
 ----
 @PlanningSolution
 public class TeacherToLessonSchedule {
@@ -584,7 +721,7 @@ public class Resource {
 Kotlin::
 +
 --
-[source,kotlin]
+[source,kotlin,options="nowrap"]
 ----
 
 @PlanningSolution
@@ -652,7 +789,7 @@ The available resouses can be injected as follows:
 Java::
 +
 --
-[source,java]
+[source,java,options="nowrap"]
 ----
 @RestController
 @RequestMapping("/path")
@@ -684,7 +821,7 @@ public class Resource {
 Kotlin::
 +
 --
-[source,kotlin]
+[source,kotlin,options="nowrap"]
 ----
 @RestController
 @RequestMapping("/path")
@@ -722,7 +859,7 @@ Timefold provides all the necessary resources for problem-solving and analysis. 
 Java::
 +
 --
-[source,java]
+[source,java,options="nowrap"]
 ----
 package org.acme.schooltimetabling.rest;
 
@@ -753,7 +890,7 @@ public class BeanProducer {
 Kotlin::
 +
 --
-[source,kotlin]
+[source,kotlin,options="nowrap"]
 ----
 package org.acme.schooltimetabling.rest
 
@@ -810,7 +947,7 @@ include::config-properties.adoc[]
 The different solver settings are configured in the `application.properties` file. For example, two different time
 settings for `spent-limit` are defined as follows:
 
-[source,properties]
+[source,properties,options="nowrap"]
 ----
 # The solver "fastSolver" runs only for 5 seconds, and "regularSolver" runs for 10s
 timefold.solver.fastSolver.termination.spent-limit=5s // <1>
@@ -826,7 +963,7 @@ To inject a specific `SolverManager`, use the `@Qualifier` annotation along with
 Java::
 +
 --
-[source,java]
+[source,java,options="nowrap"]
 ----
 @RestController
 @RequestMapping("/path")
@@ -847,7 +984,7 @@ public class Resource {
 Kotlin::
 +
 --
-[source,kotlin]
+[source,kotlin,options="nowrap"]
 ----
 @RestController
 @RequestMapping("/path")
@@ -900,7 +1037,7 @@ roomsSolverConfig.xml::
 
 Set the solvers with the specific XML files in the `application.properties` file:
 
-[source,properties]
+[source,properties,options="nowrap"]
 ----
 timefold.solver.teacherSolver.solver-config-xml=teachersSolverConfig.xml // <1>
 timefold.solver.roomSolver.solver-config-xml=roomsSolverConfig.xml // <2>
@@ -915,7 +1052,7 @@ Now let's inject both solvers.
 Java::
 +
 --
-[source,java]
+[source,java,options="nowrap"]
 ----
 @PlanningSolution
 public class TeacherToLessonSchedule {
@@ -948,7 +1085,7 @@ public class Resource {
 Kotlin::
 +
 --
-[source,kotlin]
+[source,kotlin,options="nowrap"]
 ----
 
 @PlanningSolution

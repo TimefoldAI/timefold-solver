@@ -656,10 +656,22 @@ For example, a user action or a server restart could require a solver to termina
 To terminate a solver from another thread asynchronously
 call the `terminateEarly()` method from another thread:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 solver.terminateEarly();
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+solver.terminate_early()
+----
+====
 
 The solver then terminates at its earliest convenience.
 After termination, the `Solver.solve(Solution)` method returns in the solver thread (which is the original thread that called it).
@@ -680,6 +692,10 @@ Each time a new best solution is found, a new `BestSolutionChangedEvent` is fire
 
 To listen to such events, add a `SolverEventListener` to the ``Solver``:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 public interface Solver<Solution_> {
@@ -690,6 +706,20 @@ public interface Solver<Solution_> {
 
 }
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+class Solver(Generic[Solution_]):
+    ...
+    def add_event_listener(self, event_listener: Callable[[BestSolutionChangedEvent[Solution_]], None]):
+        ...
+
+    def remove_event_listener(self, event_listener: Callable[[BestSolutionChangedEvent[Solution_]], None]):
+        ...
+----
+====
 
 The ``BestSolutionChangedEvent``'s `newBestSolution` may not be initialized or feasible.
 Use the `isFeasible()` method on ``BestSolutionChangedEvent``'s new best `Score` to detect such cases.
@@ -705,6 +735,11 @@ So it should return quickly to avoid slowing down the solving.
 
 [#customSolverPhase]
 === Custom solver phase
+
+[NOTE]
+====
+This feature is currently unsupported in Timefold Solver for Python.
+====
 
 Run a custom optimization algorithm between phases or before the first phase to initialize the solution, or to get a better score quickly.
 You will still want to reuse the score calculation.
@@ -1867,6 +1902,11 @@ This combination is often a worthy competitor for medium use cases, especially w
 [#filteredSelection]
 ==== Filtered selection
 
+[NOTE]
+====
+This feature is currently unsupported in Timefold Solver for Python.
+====
+
 There can be certain moves that you don't want to select, because:
 
 * The move is pointless and would only waste CPU time.
@@ -2156,6 +2196,11 @@ The solver may choose to reuse them in different contexts.
 [#probabilisticSelection]
 ==== Probabilistic selection
 
+[NOTE]
+====
+This feature is currently unsupported in Timefold Solver for Python.
+====
+
 Probabilistic selection can happen on any Selector in the selector tree, including any ``MoveSelector``, `EntitySelector` or ``ValueSelector``.
 It does not work with `cacheType` ``JUST_IN_TIME`` and it only works with ``selectionOrder`` ``PROBABILISTIC``.
 
@@ -2256,6 +2301,11 @@ of the xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition manual
 
 [#customMoves]
 === Custom moves
+
+[NOTE]
+====
+This feature is currently unsupported in Timefold Solver for Python.
+====
 
 
 [#whichMoveTypesMightBeMissing]

@@ -29,6 +29,10 @@ Let's define three constraints:
 Using xref:constraints-and-score/score-calculation.adoc#constraintStreams[the Constraint Streams API],
 this is done as follows:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 public class VehicleRoutingConstraintProvider implements ConstraintProvider {
@@ -67,10 +71,51 @@ public class VehicleRoutingConstraintProvider implements ConstraintProvider {
 }
 ----
 
+Python::
++
+[source,python,options="nowrap"]
+----
+def vehicle_routing_constraints(factory: ConstraintFactory) -> list[Constraint]:
+    return [
+        vehicle_capacity(factory),
+        service_finished_after_max_end_time(factory),
+        minimize_travel_time(factory)
+    ]
+
+
+def vehicle_capacity(factory: ConstraintFactory) -> Constraint:
+    return (factory.for_each(Vehicle)
+                   ...
+                   .penalize(HardSoftScore.ONE_HARD, ...)
+                   .as_constraint("Vehicle capacity")
+    )
+
+
+def service_finished_after_max_end_time(factory: ConstraintFactory) -> Constraint:
+    return (factory.forEach(Visit)
+                   ...
+                   .penalize(HardSoftScore.ONE_HARD, ...)
+                   .as_constraint("Service finished after max end time")
+    )
+
+
+def minimize_travel_time(factory: ConstraintFactory) -> Constraint:
+    return (factory.forEach(Vehicle)
+                   ...
+                   .penalize(HardSoftScore.ONE_SOFT, ...)
+                   .as_constraint("Minimize travel time")
+    )
+----
+====
+
 Without anything else, the constraint weights are fixed to the values we've given them in our `ConstraintProvider`.
 To be able to override these weights at runtime, we need to introduce the `ConstraintWeightOverrides` class
 to our planning solution class:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 @PlanningSolution
@@ -92,12 +137,29 @@ public class VehicleRoutePlan {
 }
 ----
 
+Python::
++
+[source,python,options="nowrap"]
+----
+@planning_solution
+@dataclass
+class VehicleRoutePlan:
+    ...
+    weight_overrides: ConstraintWeightOverrides
+}
+----
+====
+
 We've just introduced a new field of type `ConstraintWeightOverrides`,
 and we provided a getter and a setter for it.
 The field will be automatically exposed as a xref:using-timefold-solver/modeling-planning-problems.adoc#problemFacts[problem fact],
 there is no need to add a `@ProblemFactProperty` annotation.
 But we need to fill it with the desired constraint weights:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 ...
@@ -114,6 +176,25 @@ solution.setConstraintWeightOverrides(constraintWeightOverrides);
 
 ...
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+...
+
+constraint_weight_overrides = ConstraintWeightOverrides(
+    {
+        "Vehicle capacity": HardSoftScore.of(2, 0),
+        "Service finished after max end time", HardSoftScore.ZERO
+    }
+)
+
+solution = VehicleRoutePlan(weight_overrides=constraint_weight_overrides)
+
+...
+----
+====
 
 The `Vehicle capacity` constraint in this planning solution has a weight of `2hard`,
 as opposed to its original `1hard`.
@@ -161,19 +242,37 @@ First, create a new class to hold the parameters for the constraint.
 For this document, we call it `ConstraintParameters`,
 but you're free to choose any name you like:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 public record ConstraintParameters(int minimumPauseInMinutes) {
 }
 ----
 
+Python::
++
+[source,python,options="nowrap"]
+----
+@dataclass
+class ConstraintParameters:
+    minimum_pause_in_minutes: int
+----
+====
+
 Then, add a field of type `ConstraintParameters` to your planning solution
 and annotate it with `@PlanningFactProperty`:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 @PlanningSolution
-public record MyPlanningSolution {
+public class MyPlanningSolution {
 
     ...
 
@@ -185,11 +284,28 @@ public record MyPlanningSolution {
 }
 ----
 
+Python::
++
+[source,python,options="nowrap"]
+----
+@planning_solution
+@dataclass
+class MyPlanningSolution:
+    ...
+    constraint_parameters: Annotated[ConstraintParameters, PlanningFactProperty]
+    ...
+----
+====
+
 This will expose the `ConstraintParameters` as a xref:using-timefold-solver/modeling-planning-problems.adoc#problemFacts[problem fact],
 making it available to the constraints.
 Finally, use the xref:constraints-and-score/score-calculation.adoc#constraintStreamsJoin[join building block]
 to adjust the constraint implementation to use the parameters:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 public class MyConstraintProvider implements ConstraintProvider {
@@ -210,6 +326,19 @@ public class MyConstraintProvider implements ConstraintProvider {
 
 }
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+def minimum_pause_between_shifts(factory: ConstraintFactory) -> Constraint:
+    return (factory.for_each(Shift)
+                   .join(ConstraintParameters)
+                   .penalize(HardSoftScore.ONE_HARD, lambda shift, parameters: max(0, shift.pause_in_minutes - parameters.pause_in_minutes))
+                   .as_constraint("Minimum pause between shifts")
+    )
+----
+====
 
 
 [#legacyConstraintConfiguration]

@@ -203,6 +203,10 @@ That boolean is `true` if the entity is pinned down to its current planning valu
 
 . Add the `@PlanningPin` annotation on a `boolean`:
 +
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 @PlanningEntity
@@ -220,6 +224,16 @@ public class Lecture {
 }
 ----
 
+Python::
++
+[source,python,options="nowrap"]
+----
+@planning_entity
+class Lecture:
+    pinned: Annotated[bool, PlanningPin]
+----
+====
+
 In the example above, if `pinned` is `true`,
 the lecture will not be assigned to another period or room (even if the current period and rooms fields are `null`).
 
@@ -233,6 +247,10 @@ For example, on the employee scheduling quickstart:
 
 . Add the `PinningFilter`:
 +
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 public class ShiftPinningFilter implements PinningFilter<EmployeeSchedule, Shift> {
@@ -245,7 +263,21 @@ public class ShiftPinningFilter implements PinningFilter<EmployeeSchedule, Shift
 }
 ----
 
+Python::
++
+[source,python,options="nowrap"]
+----
+def is_shift_pinned(employee_schedule: 'EmployeeSchedule', shift: 'Shift') -> bool:
+    schedule_state = employee_schedule.schedule_state
+    return not schedule_state.is_draft(shift)
+----
+====
+
 . Configure the `PinningFilter`:
++
+[tabs]
+====
+Java::
 +
 [source,java,options="nowrap"]
 ----
@@ -254,6 +286,16 @@ public class Shift {
     ...
 }
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+@planning_entity(pinning_filter=is_entity_pinned)
+class Shift:
+    ...
+----
+====
 
 [#partiallyPinnedPlanningListVariable]
 ==== Pinning a planning list variable
@@ -264,6 +306,10 @@ it makes sense to pin them down.
 
 To achieve that, use a `@PlanningPinToIndex` annotation instead:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 @PlanningEntity
@@ -280,6 +326,19 @@ public class Vehicle {
 
 }
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+@planning_entity
+class Vehicle:
+    ...
+    customers: Annotated[list[Customer], PlanningListVariable] = ...  # Includes some customers.
+    first_unpinned_index: Annotated[int, PlanningPinToIndex] = 1
+    ...
+----
+====
 
 When `@PlanningPinToIndex` is used, the list is split in two parts.
 
@@ -311,6 +370,10 @@ image::responding-to-change/nonDisruptiveReplanning.png[align="center"]
 
 In conference scheduling, the entity has both a planning variable `timeslot` and its original value ``publishedTimeslot``:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 @PlanningEntity
@@ -327,19 +390,50 @@ public class Talk {
 }
 ----
 
+Python::
++
+[source,python,options="nowrap"]
+----
+@planning_entity
+class Talk:
+    ...
+    timeslot: Annotated[Timeslot | None, PlanningVariable]
+    published_timeslot: Timeslot | None
+    ...
+----
+====
+
 During planning, the planning variable `timeslot` changes.
 By writing a constraint comparing it with the `publishedTimeslot`, a change in plan can be penalized:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
     Constraint publishedTimeslot(ConstraintFactory factory) {
         return factory.forEach(Talk.class)
                 .filter(talk -> talk.getPublishedTimeslot() != null
                         && talk.getTimeslot() != talk.getPublishedTimeslot())
-                .penalizeConfigurable()
+                .penalize(HardSoftScore.ofSoft(1000))
                 .asConstraint("Published timeslot");
     }
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+def published_timeslot(factory: ConstraintFactory) -> Constraint:
+    return (factory.for_each(Talk)
+                   .filter(lambda talk: talk.published_timeslot is not None
+                           and talk.timeslot != talk.published_timeslot)
+                   .penalize(HardSoftScore.of(0, 1000))
+                   .as_constraint("Published timeslot")
+    )
+----
+====
 
 By configuring a penalty weight of `-1000` we can express that a solution will only be accepted
 if it improves the soft score for at least `1000` points per variable changed (or if it improves the hard score).
@@ -379,6 +473,10 @@ Do not change the problem fact instances used by the `Solver` while it is solvin
 Add a `ProblemChange` to the `Solver`, which it executes in the solver thread as soon as possible.
 For example:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 public interface Solver<Solution_> {
@@ -394,8 +492,26 @@ public interface Solver<Solution_> {
 }
 ----
 
+Python::
++
+[source,python,options="nowrap"]
+----
+class Solver(Generic[Solution_]):
+    ...
+    def add_problem_change(self, problem_change: ProblemChange[Solution_]) -> None:
+        ...
+
+    def is_every_problem_change_processed(self) -> bool:
+        ...
+----
+====
+
 Similarly, you can pass the `ProblemChange` to the `SolverManager`:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 public interface SolverManager<Solution_, ProblemId_> {
@@ -409,8 +525,23 @@ public interface SolverManager<Solution_, ProblemId_> {
 }
 ----
 
+Python::
++
+[source,python,options="nowrap"]
+----
+class SolverManager(Generic[Solution_, ProblemId_]):
+    ...
+    def add_problem_change(self, problem_id: ProblemId_, problem_change: ProblemChange[Solution_]) -> Awaitable[None]:
+        ...
+----
+====
+
 and the `SolverJob`:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 public interface SolverJob<Solution_, ProblemId_> {
@@ -424,9 +555,24 @@ public interface SolverJob<Solution_, ProblemId_> {
 }
 ----
 
+Python::
++
+[source,python,options="nowrap"]
+----
+class SolverJob(Generic[Solution_, ProblemId_]):
+    ...
+    def add_problem_change(self, problem_change: ProblemChange[Solution_]) -> Awaitable[None]:
+        ...
+----
+====
+
 Notice the method returns `CompletableFuture<Void>`, which is completed when a user-defined `Consumer` accepts
 the best solution containing this problem change.
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 public interface ProblemChange<Solution_> {
@@ -436,9 +582,20 @@ public interface ProblemChange<Solution_> {
 }
 ----
 
+Python::
++
+[source,python,options="nowrap"]
+----
+class ProblemChange(Generic[Solution_], ABC):
+    @abstractmethod
+    def do_change(self, working_solution: Solution_, problem_change_director: ProblemChangeDirector) -> None:
+        ...
+----
+====
+
 [WARNING]
 ====
-The `ScoreDirector` must be updated with any change on the problem facts of planning entities in a `ProblemChange`.
+The `ProblemChangeDirector` must be updated with any change on the problem facts of planning entities in a `ProblemChange`.
 ====
 
 To write a `ProblemChange` correctly,
@@ -536,9 +693,13 @@ nor that the solution is initialized and feasible.
 
 . To ignore ``BestSolutionChangedEvent``s with such invalid solutions, do the following:
 +
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
-    public void bestSolutionChanged(BestSolutionChangedEvent<VehicleRoutePlain> event) {
+    public void bestSolutionChanged(BestSolutionChangedEvent<VehicleRoutePlan> event) {
         if (event.isEveryProblemChangeProcessed()
                 // Ignore infeasible (including uninitialized) solutions
                 && event.getNewBestSolution().getScore().isFeasible()) {
@@ -547,12 +708,29 @@ nor that the solution is initialized and feasible.
     }
 ----
 
+Python::
++
+[source,python,options="nowrap"]
+----
+def on_best_solution_changed(event: BestSolutionChangedEvent[VehicleRoutePlan]) -> None:
+    if (event.is_every_problem_change_processed
+            # Ignore infeasible (including uninitialized) solutions
+            and event.new_best_score.is_feasible):
+        ...
+----
+====
+
 . Use `Score.isSolutionInitialized()` instead of `Score.isFeasible()` to only ignore uninitialized solutions,
 but do accept infeasible solutions too.
 
 
 [#recommendedFitAPI]
 == Responding to adhoc changes
+
+[NOTE]
+====
+This feature is currently not supported in Timefold Solver for Python.
+====
 
 With <<realTimePlanning,real-time planning>>, we can respond to a continuous stream of external changes.
 However, it is often necessary to respond to adhoc changes too,

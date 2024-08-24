@@ -138,7 +138,11 @@ through the use of xref:constraints-and-score/score-calculation.adoc#constraintS
 and the xref:constraints-and-score/score-calculation.adoc#collectorsLoadBalance[load balancing constraint collector].
 In your `ConstraintProvider` implementation, a load-balancing constraint may look like this:
 
-[source,java]
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
 ----
 Constraint fairAssignments(ConstraintFactory constraintFactory) {
     return constraintFactory.forEach(ShiftAssignment.class)
@@ -147,6 +151,20 @@ Constraint fairAssignments(ConstraintFactory constraintFactory) {
             .asConstraint("fairAssignments");
 }
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+def fair_assignments(factory: ConstraintFactory) -> Constraint:
+    return (factory.for_each(ShiftAssignment)
+                   .group_by(ConstraintCollectors.load_balance(lambda shift: shift.employee))
+                   .penalize_decimal(HardSoftDecimalScore.ONE_SOFT,
+                                     lambda load_balance: load_balance.unfairness())
+                   .as_constraint("fair_assignments")
+    )
+----
+====
 
 [IMPORTANT]
 ====

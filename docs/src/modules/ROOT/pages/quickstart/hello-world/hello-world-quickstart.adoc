@@ -6,7 +6,7 @@
 :icons: font
 include::../../_attributes.adoc[]
 
-This guide walks you through the process of creating a simple Java application
+This guide walks you through the process of creating a simple Java, Python or Kotlin application
 with https://timefold.ai[Timefold]'s constraint solving Artificial Intelligence (AI).
 
 == What you will build
@@ -68,7 +68,17 @@ $ git clone {quickstarts-clone-url}
 +
 .. Download an {quickstarts-archive-url}[archive].
 
-. Find the solution in {hello-world-java-quickstart-url}[the `java` directory].
+. Find the solution in
++
+[tabs]
+====
+Java / Kotlin::
+{hello-world-java-quickstart-url}[the `java` directory].
+
+Python::
+{hello-world-python-quickstart-url}[the `python` directory].
+====
+
 . Follow the instructions in the README file to run the application.
 
 == Prerequisites
@@ -1353,10 +1363,9 @@ $ run-app
 == Summary
 
 Congratulations!
-You have just developed a Java application with https://timefold.ai[Timefold]!
+You have just developed a Java, Python or Kotlin application with https://timefold.ai[Timefold]!
 
-If you ran into any issues,
-take a look at {hello-world-java-quickstart-url}[the quickstart source code].
+If you ran into any issues, take a look at {hello-world-java-quickstart-url}[the Java quickstart source code] or {hello-world-python-quickstart-url}[the Python quickstart source code].
 
 Read the next guide to build a pretty web application for school timetabling
 with a REST service and database integration, by leveraging Quarkus.

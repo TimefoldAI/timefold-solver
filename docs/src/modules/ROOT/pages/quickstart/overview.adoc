@@ -13,7 +13,7 @@ Each _quick start guide_ gets you up and running with Timefold Solver quickly.
 Pick one that aligns with your requirements:
 
 * xref:quickstart/hello-world/hello-world-quickstart.adoc#helloWorldQuickStart[*Hello World*]
-** Build a simple Java or Kotlin application that uses Timefold Solver to optimize a school timetable for students and teachers.
+** Build a simple Java, Python or Kotlin application that uses Timefold Solver to optimize a school timetable for students and teachers.
 * xref:quickstart/quarkus/quarkus-quickstart.adoc#quarkusQuickStart[*Quarkus*]
 ** Build a REST application with Java or Kotlin that uses Timefold Solver to optimize a school timetable for students and teachers.
 ** https://quarkus.io[Quarkus] is a popular platform in the Java ecosystem that supports native compilation.

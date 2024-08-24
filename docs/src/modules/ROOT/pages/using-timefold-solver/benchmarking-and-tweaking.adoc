@@ -9,6 +9,11 @@
 [#findTheBestSolverConfiguration]
 == Find the best solver configuration
 
+[NOTE]
+====
+Timefold Solver for Python does not include a benchmarker currently.
+====
+
 Timefold Solver supports several optimization algorithms, so you're probably wondering which is the best one?
 Although some optimization algorithms generally perform better than others, it really depends on your problem domain.
 Most solver phases have parameters which can be tweaked.

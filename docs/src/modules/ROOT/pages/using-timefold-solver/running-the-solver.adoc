@@ -10,6 +10,10 @@
 
 A `Solver` solves your planning problem.
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 public interface Solver<Solution_> {
@@ -19,6 +23,17 @@ public interface Solver<Solution_> {
     ...
 }
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+class Solver(Generic[Solution_]):
+    ...
+    def solve(self, problem: Solution_) -> Solution_:
+        ...
+----
+====
 
 A `Solver` can only solve one planning problem instance at a time.
 It is built with a ``SolverFactory``, there is no need to implement it yourself.
@@ -39,11 +54,24 @@ Solving a problem is quite easy once you have:
 
 Just provide the planning problem as argument to the `solve()` method and it will return the best solution found:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
     Timetable problem = ...;
     Timetable bestSolution = solver.solve(problem);
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+problem = Timetable(...)
+best_solution = solver.solve(problem)
+----
+====
 
 In school timetabling,
 the `solve()` method will return a `Timetable` instance with every `Lesson` assigned to a `Teacher` and a `Timeslot`.
@@ -281,12 +309,16 @@ INFO  Solving ended: time spent (100), best score (0hard/1soft), score calculati
 ----
 All time spent values are in milliseconds.
 
+[tabs]
+====
+Java::
++
 Everything is logged to http://www.slf4j.org/[SLF4J], which is a simple logging facade
 which delegates every log message to Logback, Apache Commons Logging, Log4j or java.util.logging.
 Add a dependency to the logging adaptor for your logging framework of choice.
-
++
 If you are not using any logging framework yet, use Logback by adding this Maven dependency (there is no need to add an extra bridge dependency):
-
++
 [source,xml,options="nowrap"]
 ----
     <dependency>
@@ -295,9 +327,9 @@ If you are not using any logging framework yet, use Logback by adding this Maven
       <version>1.x</version>
     </dependency>
 ----
-
++
 Configure the logging level on the `ai.timefold.solver` package in your `logback.xml` file:
-
++
 [source,xml,options="nowrap"]
 ----
 <configuration>
@@ -308,8 +340,55 @@ Configure the logging level on the `ai.timefold.solver` package in your `logback
 
 </configuration>
 ----
-
++
 If it isn't picked up, temporarily add the system property `-Dlogback.debug=true` to figure out why.
+
+Python::
++
+Everything is logged to the `timefold.solver` logger in Python's builtin `logging` module.
++
+Configure the logging level on the `timefold.solver` logger in a `logging.conf` file:
++
+[source,text,options="nowrap"]
+----
+[loggers]
+keys=root,timefold_solver
+
+[handlers]
+keys=consoleHandler
+
+[formatters]
+keys=simpleFormatter
+
+[logger_root]
+level=INFO
+handlers=consoleHandler
+
+[logger_timefold_solver]
+level=INFO
+qualname=timefold.solver
+handlers=consoleHandler
+propagate=0
+
+[handler_consoleHandler]
+class=StreamHandler
+level=INFO
+formatter=simpleFormatter
+
+[formatter_simpleFormatter]
+format=%(asctime)s - %(name)s - %(levelname)s - %(message)s
+----
++
+Then load the logging configuration in Python:
++
+[source,python,options="nowrap"]
+----
+import logging
+import logging.config
+
+logging.config.fileConfig('logging.conf')
+----
+====
 
 [NOTE]
 ====
@@ -353,6 +432,11 @@ In Logback, use a `SiftingAppender` in ``logback.xml``:
 [#monitoring]
 == Monitoring the solver
 
+[NOTE]
+====
+This feature is currently not supported in Timefold Solver for Python.
+====
+
 Timefold Solver exposes metrics through https://micrometer.io/[Micrometer] which you can use to monitor the solver. Timefold automatically connects to configured registries when it is used in Quarkus or Spring Boot. If you use Timefold with plain Java, you must add the metrics registry to the global registry.
 
 .Prerequisites
@@ -363,13 +447,13 @@ Timefold Solver exposes metrics through https://micrometer.io/[Micrometer] which
 . Add configuration information for the Micrometer registry for your desired monitoring system to the global registry.
 . Add the following line below the configuration information, where `<REGISTRY>` is the name of the registry that you configured:
 +
-[source,java,nowrap]
+[source,java,options="nowrap"]
 ----
 Metrics.addRegistry(<REGISTRY>);
 ----
 The following example shows how to add the Prometheus registry:
 +
-[source,java,nowrap]
+[source,java,options="nowrap"]
 ----
 PrometheusMeterRegistry prometheusRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
 
@@ -544,11 +628,26 @@ In xref:integration/integration.adoc#integrationWithQuarkus[Quarkus] and xref:in
 the `SolverManager` instance is automatically injected in your code.
 Otherwise, build a `SolverManager` instance with the `create(...)` method:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 SolverConfig solverConfig = SolverConfig.createFromXmlResource(".../solverConfig.xml");
 SolverManager<VehicleRoutePlan, String> solverManager = SolverManager.create(solverConfig, new SolverManagerConfig());
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+from pathlib import Path
+
+solver_config = SolverConfig.create_from_xml_resource(Path(...) / 'solver_config.xml')
+solver_manager = SolverManager.create(solver_config)
+----
+====
 
 Each problem submitted to the `SolverManager.solve(...)` methods needs a unique problem ID.
 Later calls to `getSolverStatus(problemId)` or `terminateEarly(problemId)` use that problem ID
@@ -565,6 +664,10 @@ regardless of the xref:enterprise-edition/enterprise-edition.adoc#multithreadedS
 
 To retrieve the best solution, after solving terminates normally, use `SolverJob.getFinalBestSolution()`:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 VehicleRoutePlan problem1 = ...;
@@ -580,6 +683,27 @@ try {
     throw ...;
 }
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+import uuid
+
+problem1 = ...
+problem_id = str(uuid.uuid4())
+
+# Returns immediately
+solver_job = solver_manager.solve(problem_id, problem1)
+...
+
+try:
+    # Returns only after solving terminates
+    solution1 = solver_job.get_final_best_solution()
+except:
+    raise ...
+----
+====
 
 However, there are better approaches, both for solving batch problems before an end-user needs the solution
 as well as for live solving while an end-user is actively waiting for the solution, as explained below.
@@ -600,6 +724,10 @@ Some organizations even enforce a deadline, for example, _submit all day off req
 To solve a multiple datasets in parallel (limited by `parallelSolverCount`),
 call `solve(...)` for each dataset:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 public class TimetableService {
@@ -622,6 +750,29 @@ public class TimetableService {
 }
 ----
 
+Python::
++
+[source,python,options="nowrap"]
+----
+class TimetableService:
+    solver_manager: SolverManager[Timetable, int]
+
+    # Returns immediately, call it for every dataset
+    def solve_batch(self, timetable_id: int) -> None:
+        self.solver_manager.solve(timetable_id,
+                                  # Called once, when solving starts
+                                  lambda problem_id: self.find_by_id(problem_id),
+                                  # Called once, when solving ends
+                                  lambda solution: self.save(solution))
+
+    def find_by_id(self, timetable_id: int) -> Timetable:
+        ...
+
+    def save(self, timetable: Timetable) -> None:
+        ...
+----
+====
+
 A solid plan delivered by breakfast is great,
 even if you need to react on problem changes during the day.
 
@@ -636,6 +787,10 @@ show progress by displaying the best solution and best score attained so far.
 
 To handle intermediate best solutions, use `solveAndListen(...)`:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 public class TimetableService {
@@ -662,6 +817,32 @@ public class TimetableService {
 }
 ----
 
+Python::
++
+[source,python,options="nowrap"]
+----
+class TimetableService:
+    solver_manager: SolverManager[Timetable, int]
+
+    # Returns immediately
+    def solve_live(self, timetable_id: int) -> None:
+        self.solver_manager.solve_and_listen(timetable_id,
+                                             # Called once, when solving starts
+                                             lambda problem_id: self.find_by_id(problem_id),
+                                             # Called multiple times, for every best solution change
+                                             lambda solution: self.save(solution))
+
+    def find_by_id(self, timetable_id: int) -> Timetable:
+        ...
+
+    def save(self, timetable: Timetable) -> None:
+        ...
+
+    def stop_solving(self, timetable_id: int) -> None:
+        self.solver_manager.terminate_early(timetable_id)
+----
+====
+
 This implementation is using the database to communicate with the UI, which polls the database.
 More advanced implementations push the best solutions directly to the UI or a messaging queue.
 
@@ -679,4 +860,3 @@ to limit the number of best solution events fired over any period of time.
 
 Community Edition users may implement their own throttling mechanism within the `Consumer` itself.
 ====
-
