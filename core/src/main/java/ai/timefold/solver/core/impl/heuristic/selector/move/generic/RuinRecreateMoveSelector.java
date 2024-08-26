@@ -5,7 +5,6 @@ import java.util.Iterator;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhase.RuinRecreateConstructionHeuristicPhaseBuilder;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.apache.commons.math3.util.CombinatoricsUtils;

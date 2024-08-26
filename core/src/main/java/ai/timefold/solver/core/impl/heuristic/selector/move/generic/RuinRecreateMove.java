@@ -9,7 +9,6 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhase.RuinRecreateConstructionHeuristicPhaseBuilder;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 

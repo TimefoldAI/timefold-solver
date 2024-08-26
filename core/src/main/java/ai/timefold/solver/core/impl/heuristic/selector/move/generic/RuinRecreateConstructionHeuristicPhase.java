@@ -1,60 +1,31 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 
-import java.util.List;
-
 import ai.timefold.solver.core.impl.constructionheuristic.ConstructionHeuristicPhase;
 import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhase;
-import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHeuristicDecider;
-import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
-import ai.timefold.solver.core.impl.solver.termination.Termination;
+import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
+import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
 
-public final class RuinRecreateConstructionHeuristicPhase<Solution_>
+final class RuinRecreateConstructionHeuristicPhase<Solution_>
         extends DefaultConstructionHeuristicPhase<Solution_>
         implements ConstructionHeuristicPhase<Solution_> {
 
-    public RuinRecreateConstructionHeuristicPhase(RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> builder) {
+    RuinRecreateConstructionHeuristicPhase(RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> builder) {
         super(builder);
     }
 
     @Override
-    protected boolean isNested() {
-        return true;
+    protected void processWorkingSolutionDuringStep(ConstructionHeuristicStepScope<Solution_> stepScope) {
+        // Ruin and Recreate CH doesn't process the working solution, it is a nested phase.
     }
 
-    public static final class RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>
-            extends DefaultConstructionHeuristicPhaseBuilder<Solution_> {
+    @Override
+    protected void updateBestSolutionAndFire(ConstructionHeuristicPhaseScope<Solution_> phaseScope) {
+        // Ruin and Recreate CH doesn't update the best solution, it is a nested phase.
+    }
 
-        private List<Object> elementsToRecreate;
-
-        public RuinRecreateConstructionHeuristicPhaseBuilder(Termination<Solution_> phaseTermination,
-                EntityPlacer<Solution_> entityPlacer, ConstructionHeuristicDecider<Solution_> decider) {
-            super(0, false, "", phaseTermination, entityPlacer, decider);
-        }
-
-        public RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> withElementsToRecreate(List<Object> elements) {
-            this.elementsToRecreate = elements;
-            return this;
-        }
-
-        @Override
-        public EntityPlacer<Solution_> getEntityPlacer() {
-            if (elementsToRecreate == null || elementsToRecreate.isEmpty()) {
-                return super.getEntityPlacer();
-            }
-            return super.getEntityPlacer().rebuildWithFilter((scoreDirector, selection) -> {
-                for (var element : elementsToRecreate) {
-                    if (selection == element) {
-                        return true;
-                    }
-                }
-                return false;
-            });
-        }
-
-        @Override
-        public RuinRecreateConstructionHeuristicPhase<Solution_> build() {
-            return new RuinRecreateConstructionHeuristicPhase<>(this);
-        }
+    @Override
+    public String getPhaseTypeString() {
+        return "Ruin & Recreate Construction Heuristics";
     }
 
 }

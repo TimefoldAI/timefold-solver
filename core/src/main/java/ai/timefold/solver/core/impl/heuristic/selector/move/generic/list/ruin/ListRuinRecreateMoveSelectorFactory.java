@@ -10,6 +10,7 @@ import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.CountSupplier;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhaseBuilder;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
 
@@ -40,12 +41,11 @@ public final class ListRuinRecreateMoveSelectorFactory<Solution_>
         var entityPlacerConfig = DefaultConstructionHeuristicPhaseFactory.buildListVariableQueuedValuePlacerConfig(configPolicy,
                 listVariableDescriptor);
 
-        var constructionHeuristicConfig = new ConstructionHeuristicPhaseConfig();
-        constructionHeuristicConfig.setEntityPlacerConfig(entityPlacerConfig);
-        var constructionHeuristicPhaseFactory =
-                new DefaultConstructionHeuristicPhaseFactory<Solution_>(constructionHeuristicConfig);
-        return new ListRuinRecreateMoveSelector<>(valueSelector, listVariableDescriptor,
-                constructionHeuristicPhaseFactory.getRuinPhaseBuilder(configPolicy),
+        var constructionHeuristicPhaseConfig = new ConstructionHeuristicPhaseConfig()
+                .withEntityPlacerConfig(entityPlacerConfig);
+        var constructionHeuristicPhaseBuilder =
+                RuinRecreateConstructionHeuristicPhaseBuilder.create(configPolicy, constructionHeuristicPhaseConfig);
+        return new ListRuinRecreateMoveSelector<>(valueSelector, listVariableDescriptor, constructionHeuristicPhaseBuilder,
                 minimumSelectedSupplier, maximumSelectedSupplier);
     }
 }

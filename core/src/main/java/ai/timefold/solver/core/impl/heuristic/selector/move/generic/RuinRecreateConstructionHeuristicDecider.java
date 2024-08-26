@@ -5,10 +5,10 @@ import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHe
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForager;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
-public final class RuinRecreateConstructionHeuristicDecider<Solution_>
+final class RuinRecreateConstructionHeuristicDecider<Solution_>
         extends ConstructionHeuristicDecider<Solution_> {
 
-    public RuinRecreateConstructionHeuristicDecider(Termination<Solution_> termination,
+    RuinRecreateConstructionHeuristicDecider(Termination<Solution_> termination,
             ConstructionHeuristicForager<Solution_> forager) {
         super("", termination, forager);
     }

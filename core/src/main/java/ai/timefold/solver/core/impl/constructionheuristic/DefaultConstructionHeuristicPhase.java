@@ -26,10 +26,6 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
         entityPlacer = builder.getEntityPlacer();
     }
 
-    protected boolean isNested() {
-        return false;
-    }
-
     public EntityPlacer<Solution_> getEntityPlacer() {
         return entityPlacer;
     }
@@ -102,9 +98,11 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
         var step = stepScope.getStep();
         step.doMoveOnly(stepScope.getScoreDirector());
         predictWorkingStepScore(stepScope, step);
-        if (!isNested()) {
-            solver.getBestSolutionRecaller().processWorkingSolutionDuringConstructionHeuristicsStep(stepScope);
-        }
+        processWorkingSolutionDuringStep(stepScope);
+    }
+
+    protected void processWorkingSolutionDuringStep(ConstructionHeuristicStepScope<Solution_> stepScope) {
+        solver.getBestSolutionRecaller().processWorkingSolutionDuringConstructionHeuristicsStep(stepScope);
     }
 
     @Override
@@ -143,10 +141,7 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
 
     public void phaseEnded(ConstructionHeuristicPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
-        // Only update the best solution if it is not a ruin+recreate CH and the CH made any change.
-        if (!isNested() && !phaseScope.getStartingScore().equals(phaseScope.getBestScore())) {
-            solver.getBestSolutionRecaller().updateBestSolutionAndFire(phaseScope.getSolverScope());
-        }
+        updateBestSolutionAndFire(phaseScope);
         entityPlacer.phaseEnded(phaseScope);
         decider.phaseEnded(phaseScope);
         phaseScope.endingNow();
@@ -159,6 +154,13 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
                     phaseScope.getBestScore(),
                     phaseScope.getPhaseScoreCalculationSpeed(),
                     phaseScope.getNextStepIndex());
+        }
+    }
+
+    protected void updateBestSolutionAndFire(ConstructionHeuristicPhaseScope<Solution_> phaseScope) {
+        // Only update the best solution if the CH made any change.
+        if (!phaseScope.getStartingScore().equals(phaseScope.getBestScore())) {
+            solver.getBestSolutionRecaller().updateBestSolutionAndFire(phaseScope.getSolverScope());
         }
     }
 
