@@ -496,12 +496,12 @@ There are several ways to calculate the `Score` of a solution in Java, Python or
 * **xref:constraints-and-score/score-calculation.adoc[Constraint Streams API]**:
 Implement each constraint as a separate Constraint Stream.
 Fast and scalable.
-* **xref:constraints-and-score/score-calculation.adoc#incrementalJavaScoreCalculation[Incremental Java/Python score calculation]** (not recommended):
+* **xref:constraints-and-score/score-calculation.adoc#incrementalScoreCalculation[Incremental score calculator]** (not recommended):
 Implement multiple low-level methods.
 Fast and scalable.
 Very difficult to implement and maintain.
 Supports xref:constraints-and-score/understanding-the-score.adoc[score explanations] with extra effort.
-* **xref:constraints-and-score/score-calculation.adoc#easyJavaScoreCalculation[Easy Java/Python score calculation]** (not recommended):
+* **xref:constraints-and-score/score-calculation.adoc#easyScoreCalculation[Easy score calculator]** (not recommended):
 Implement all constraints together in a single method.
 Does not scale.
 Does not support xref:constraints-and-score/understanding-the-score.adoc[score explanations].

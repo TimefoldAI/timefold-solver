@@ -18,7 +18,7 @@ This is a good measurement of Score calculation performance,
 despite that it is affected by non-score calculation execution time.
 It depends on the problem scale of the problem dataset.
 Normally, even for large scale problems, it is higher than ``1000``,
-except if you are using xref:constraints-and-score/score-calculation.adoc#easyJavaScoreCalculation[``EasyScoreCalculator``].
+except if you are using xref:constraints-and-score/score-calculation.adoc#easyScoreCalculation[``EasyScoreCalculator``].
 
 [IMPORTANT]
 ====

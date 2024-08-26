@@ -69,9 +69,9 @@ Indictments are typically used for xref:indictmentHeatMap[heat map visualization
 [NOTE]
 ====
 xref:constraints-and-score/score-calculation.adoc[Constraint Streams API] can analyze the score natively.
-xref:constraints-and-score/score-calculation.adoc#incrementalJavaScoreCalculation[Incremental Java score calculation] requires
+xref:constraints-and-score/score-calculation.adoc#incrementalScoreCalculation[Incremental Java score calculation] requires
 xref:constraints-and-score/score-calculation.adoc#constraintMatchAwareIncrementalScoreCalculator[implementing an extra interface].
-xref:constraints-and-score/score-calculation.adoc#easyJavaScoreCalculation[Easy Java score calculation] does not support score explanation.
+xref:constraints-and-score/score-calculation.adoc#easyScoreCalculation[Easy Java score calculation] does not support score explanation.
 ====
 
 

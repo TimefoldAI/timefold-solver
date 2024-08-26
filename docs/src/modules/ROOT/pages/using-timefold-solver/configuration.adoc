@@ -83,8 +83,7 @@ These various parts of a configuration are explained further in this manual.
 
 *Timefold Solver makes it relatively easy to switch optimization algorithm(s) just by changing the configuration.* There is even a xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] which allows you to play out different configurations against each other and report the most appropriate configuration for your use case.
 
-
-[#solverConfigurationByJavaAPI]
+[#solverConfigurationAsCode]
 == Solver configuration as code
 
 A solver configuration can also be configured with the `SolverConfig` API.
@@ -189,11 +188,19 @@ Timefold Solver needs to be told which classes in your domain model are planning
 which properties are planning variables, etc.
 There are several ways to deliver this information:
 
-* Add class annotations and JavaBean property annotations on the domain model (recommended in Java).
+[tabs]
+====
+Java::
+* Add class annotations and JavaBean property annotations on the domain model (recommended).
 The property annotations must be on the getter method, not on the setter method.
 Such a getter does not need to be public.
-* Add class annotations and field annotations on the domain model (recommended in Python).
+* Add class annotations and field annotations on the domain model.
 Such a field does not need to be public.
+
+Python::
+* Add class decorators and annotations on attributes in the domain model (recommended).
+* Add class decorators and annotations on the return type of methods in the domain model.
+====
 
 This manual focuses on the first manner, but every feature supports both, even if it's not explicitly mentioned.
 

@@ -91,6 +91,10 @@ repositories {
 Pyproject.toml::
 +
 --
+[IMPORTANT]
+======
+Timefold does not offer Enterprise support for Python yet.
+======
 Add the following in your `pyproject.toml`:
 
 [source,toml,options="nowrap"]

@@ -5,8 +5,7 @@
 :sectnums:
 :icons: font
 
-Using Java's Streams API or Python's generator expressions,
-we could implement an xref:constraints-and-score/score-calculation.adoc#easyJavaScoreCalculation[easy score calculator]
+We could implement an xref:constraints-and-score/score-calculation.adoc#easyScoreCalculation[easy score calculator]
 that uses a functional approach:
 
 [tabs]
@@ -2468,8 +2467,8 @@ public class MyConstraintProviderTest {
 
 Timefold Solver supports two other types of score calculation.
 
-[#easyJavaScoreCalculation]
-=== Easy Java/Python score calculation
+[#easyScoreCalculation]
+=== Easy score calculation
 
 An easy way to implement your score calculation as imperative code:
 
@@ -2482,7 +2481,7 @@ An easy way to implement your score calculation as imperative code:
 ** Does not scale because there is no xref:constraints-and-score/performance.adoc#incrementalScoreCalculation[incremental score calculation].
 ** Can not xref:constraints-and-score/understanding-the-score.adoc[explain the score].
 
-To start using Easy Java/Python score calculation, implement the one method of the interface ``EasyScoreCalculator``:
+To start using an Easy score calculator, implement the one method of the interface ``EasyScoreCalculator``:
 
 [tabs]
 ====
@@ -2533,8 +2532,8 @@ add the `easyScoreCalculatorCustomProperties` element and use xref:using-timefol
 ----
 
 
-[#incrementalJavaScoreCalculation]
-=== Incremental Java/Python score calculation
+[#incrementalScoreCalculation]
+=== Incremental score calculation
 
 A way to implement your score calculation incrementally in a supported programming language.
 
@@ -2548,7 +2547,7 @@ Why not have <<constraintStreams,constraint streams>> do the hard work for you?
 ** Hard to read
 *** Regular score constraint changes can lead to high maintenance costs.
 
-To start using Incremental Java/Python score calculation,
+To start using an Incremental score calculator,
 implement all the methods of the interface `IncrementalScoreCalculator`:
 
 [tabs]

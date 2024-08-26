@@ -883,7 +883,7 @@ image::using-timefold-solver/benchmarking-and-tweaking/constraintMatchTotalBestS
 
 Requires the score calculation to support xref:constraints-and-score/understanding-the-score.adoc[score explanation].
 xref:constraints-and-score/score-calculation.adoc[Constraint Streams] supports constraint matches automatically,
-but xref:constraints-and-score/score-calculation.adoc#incrementalJavaScoreCalculation[incremental Java score calculation] requires more work.
+but xref:constraints-and-score/score-calculation.adoc#incrementalScoreCalculation[incremental Java score calculation] requires more work.
 
 [WARNING]
 ====
