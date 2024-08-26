@@ -1,5 +1,6 @@
 from _jpyinterpreter import JavaAnnotation
-from jpype import JImplements, JOverride
+from enum import Enum
+from jpype import JImplements, JOverride, JClass
 from typing import Union, List, Callable, Type, TypeVar
 
 from ._variable_listener import VariableListener
@@ -63,6 +64,15 @@ class PlanningPin:
     pass
 
 
+class PlanningVariableGraphType(Enum):
+    CHAINED = 'CHAINED'
+    NONE = 'NONE'
+
+    def _to_java_value(self):
+        return getattr(JClass('ai.timefold.solver.core.api.domain.variable.PlanningVariableGraphType'),
+                       self.name)
+
+
 class PlanningVariable(JavaAnnotation):
     """
     Specifies that an attribute can be changed and should be optimized by the optimization algorithms.
@@ -83,13 +93,13 @@ class PlanningVariable(JavaAnnotation):
     def __init__(self, *,
                  value_range_provider_refs: List[str] = None,
                  allows_unassigned: bool = False,
-                 graph_type=None):
+                 graph_type: PlanningVariableGraphType = PlanningVariableGraphType.NONE):
         ensure_init()
         from ai.timefold.solver.core.api.domain.variable import PlanningVariable as JavaPlanningVariable
         super().__init__(JavaPlanningVariable,
                          {
                              'valueRangeProviderRefs': value_range_provider_refs,
-                             'graphType': graph_type,
+                             'graphType': graph_type._to_java_value(),
                              'allowsUnassigned': allows_unassigned
                          })
 
@@ -814,7 +824,7 @@ def constraint_configuration(constraint_configuration_class: Type[Solution_]) ->
 
 
 __all__ = ['PlanningId', 'PlanningScore', 'PlanningPin', 'PlanningVariable',
-           'PlanningListVariable', 'ShadowVariable',
+           'PlanningVariableGraphType', 'PlanningListVariable', 'ShadowVariable',
            'PiggybackShadowVariable', 'CascadingUpdateShadowVariable',
            'IndexShadowVariable', 'PreviousElementShadowVariable', 'NextElementShadowVariable',
            'AnchorShadowVariable', 'InverseRelationShadowVariable',
