@@ -33,7 +33,7 @@ and still compare it with the original's calculation speed.
 Comparing the best score with the original's best score is pointless: it's comparing apples and oranges.
 ====
 
-[#incrementalScoreCalculation]
+[#incrementalScoreCalculationPerformance]
 == Incremental score calculation (with deltas)
 
 When a solution changes, incremental score calculation (AKA delta based score calculation)

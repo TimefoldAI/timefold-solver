@@ -2408,7 +2408,7 @@ def test_given_facts_multiple_constraints():
 
     (constraint_verifier.verify_that()
             .given(vehicleA, visit1, visit2)
-            .scores(HardSoftScore.of(0, 20)))
+            .scores(HardSoftScore.of_soft(20)))
 ----
 ====
 

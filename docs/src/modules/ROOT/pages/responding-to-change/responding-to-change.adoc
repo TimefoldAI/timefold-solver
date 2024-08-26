@@ -429,7 +429,7 @@ def published_timeslot(factory: ConstraintFactory) -> Constraint:
     return (factory.for_each(Talk)
                    .filter(lambda talk: talk.published_timeslot is not None
                            and talk.timeslot != talk.published_timeslot)
-                   .penalize(HardSoftScore.of(0, 1000))
+                   .penalize(HardSoftScore.of_soft(1000))
                    .as_constraint("Published timeslot")
     )
 ----

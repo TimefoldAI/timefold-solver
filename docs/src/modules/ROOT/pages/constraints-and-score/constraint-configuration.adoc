@@ -185,7 +185,7 @@ Python::
 
 constraint_weight_overrides = ConstraintWeightOverrides(
     {
-        "Vehicle capacity": HardSoftScore.of(2, 0),
+        "Vehicle capacity": HardSoftScore.of_hard(2),
         "Service finished after max end time", HardSoftScore.ZERO
     }
 )
