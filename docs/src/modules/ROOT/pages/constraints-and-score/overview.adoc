@@ -491,7 +491,7 @@ Variants of this `Score` type:
 [#scoreCalculationTypes]
 === Score calculation types
 
-There are several ways to calculate the `Score` of a solution in Java, Python or another JVM language:
+There are several ways to calculate the `Score` of a solution:
 
 * **xref:constraints-and-score/score-calculation.adoc[Constraint Streams API]**:
 Implement each constraint as a separate Constraint Stream.
