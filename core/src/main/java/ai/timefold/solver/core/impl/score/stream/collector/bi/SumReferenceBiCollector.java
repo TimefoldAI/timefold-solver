@@ -8,7 +8,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.impl.score.stream.collector.ReferenceSumCalculator;
 
 final class SumReferenceBiCollector<A, B, Result_>
-        extends ObjectCalculatorBiCollector<A, B, Result_, Result_, ReferenceSumCalculator<Result_>> {
+        extends ObjectCalculatorBiCollector<A, B, Result_, Result_, Result_, ReferenceSumCalculator<Result_>> {
     private final Result_ zero;
     private final BinaryOperator<Result_> adder;
     private final BinaryOperator<Result_> subtractor;

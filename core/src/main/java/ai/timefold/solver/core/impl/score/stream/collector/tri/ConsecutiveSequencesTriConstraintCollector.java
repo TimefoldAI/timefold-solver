@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.SequenceCalculator;
 
 final class ConsecutiveSequencesTriConstraintCollector<A, B, C, Result_>
         extends
-        ObjectCalculatorTriCollector<A, B, C, Result_, SequenceChain<Result_, Integer>, SequenceCalculator<Result_>> {
+        ObjectCalculatorTriCollector<A, B, C, Result_, SequenceChain<Result_, Integer>, Result_, SequenceCalculator<Result_>> {
 
     private final ToIntFunction<Result_> indexMap;
 

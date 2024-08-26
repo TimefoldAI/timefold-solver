@@ -8,7 +8,7 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.ObjectCalculator;
 
-abstract sealed class ObjectCalculatorQuadCollector<A, B, C, D, Input_, Output_, Calculator_ extends ObjectCalculator<Input_, Output_>>
+abstract sealed class ObjectCalculatorQuadCollector<A, B, C, D, Input_, Output_, Mapped_, Calculator_ extends ObjectCalculator<Input_, Output_, Mapped_>>
         implements QuadConstraintCollector<A, B, C, D, Calculator_, Output_>
         permits AverageReferenceQuadCollector, ConnectedRangesQuadConstraintCollector,
         ConsecutiveSequencesQuadConstraintCollector, CountDistinctIntQuadCollector, CountDistinctLongQuadCollector,
@@ -23,9 +23,9 @@ abstract sealed class ObjectCalculatorQuadCollector<A, B, C, D, Input_, Output_,
     @Override
     public PentaFunction<Calculator_, A, B, C, D, Runnable> accumulator() {
         return (calculator, a, b, c, d) -> {
-            final Input_ mapped = mapper.apply(a, b, c, d);
-            calculator.insert(mapped);
-            return () -> calculator.retract(mapped);
+            final var mapped = mapper.apply(a, b, c, d);
+            final var saved = calculator.insert(mapped);
+            return () -> calculator.retract(saved);
         };
     }
 
@@ -40,7 +40,7 @@ abstract sealed class ObjectCalculatorQuadCollector<A, B, C, D, Input_, Output_,
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (ObjectCalculatorQuadCollector<?, ?, ?, ?, ?, ?, ?>) object;
+        var that = (ObjectCalculatorQuadCollector<?, ?, ?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

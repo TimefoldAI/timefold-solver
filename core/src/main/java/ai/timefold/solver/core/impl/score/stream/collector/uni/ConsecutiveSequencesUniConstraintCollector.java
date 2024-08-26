@@ -9,7 +9,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.SequenceCalculator;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 final class ConsecutiveSequencesUniConstraintCollector<A>
-        extends ObjectCalculatorUniCollector<A, A, SequenceChain<A, Integer>, SequenceCalculator<A>> {
+        extends ObjectCalculatorUniCollector<A, A, SequenceChain<A, Integer>, A, SequenceCalculator<A>> {
 
     private final ToIntFunction<A> indexMap;
 

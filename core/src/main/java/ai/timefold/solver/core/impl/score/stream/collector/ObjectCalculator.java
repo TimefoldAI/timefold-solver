@@ -1,11 +1,11 @@
 package ai.timefold.solver.core.impl.score.stream.collector;
 
-public sealed interface ObjectCalculator<Input_, Output_>
+public sealed interface ObjectCalculator<Input_, Output_, Mapped_>
         permits ConnectedRangesCalculator, IntDistinctCountCalculator, LongDistinctCountCalculator, ReferenceAverageCalculator,
         ReferenceSumCalculator, SequenceCalculator {
-    void insert(Input_ input);
+    Mapped_ insert(Input_ input);
 
-    void retract(Input_ input);
+    void retract(Mapped_ mapped);
 
     Output_ result();
 }

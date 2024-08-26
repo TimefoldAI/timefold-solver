@@ -8,7 +8,7 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.impl.score.stream.collector.ReferenceSumCalculator;
 
 final class SumReferenceQuadCollector<A, B, C, D, Result_>
-        extends ObjectCalculatorQuadCollector<A, B, C, D, Result_, Result_, ReferenceSumCalculator<Result_>> {
+        extends ObjectCalculatorQuadCollector<A, B, C, D, Result_, Result_, Result_, ReferenceSumCalculator<Result_>> {
     private final Result_ zero;
     private final BinaryOperator<Result_> adder;
     private final BinaryOperator<Result_> subtractor;

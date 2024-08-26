@@ -7,7 +7,7 @@ import java.util.function.Function;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.ObjectCalculator;
 
-abstract sealed class ObjectCalculatorUniCollector<A, Input_, Output_, Calculator_ extends ObjectCalculator<Input_, Output_>>
+abstract sealed class ObjectCalculatorUniCollector<A, Input_, Output_, Mapped_, Calculator_ extends ObjectCalculator<Input_, Output_, Mapped_>>
         implements UniConstraintCollector<A, Calculator_, Output_>
         permits AverageReferenceUniCollector, ConnectedRangesUniConstraintCollector, ConsecutiveSequencesUniConstraintCollector,
         CountDistinctIntUniCollector, CountDistinctLongUniCollector, SumReferenceUniCollector {
@@ -21,9 +21,9 @@ abstract sealed class ObjectCalculatorUniCollector<A, Input_, Output_, Calculato
     @Override
     public BiFunction<Calculator_, A, Runnable> accumulator() {
         return (calculator, a) -> {
-            final Input_ mapped = mapper.apply(a);
-            calculator.insert(mapped);
-            return () -> calculator.retract(mapped);
+            final var mapped = mapper.apply(a);
+            final var saved = calculator.insert(mapped);
+            return () -> calculator.retract(saved);
         };
     }
 
@@ -38,7 +38,7 @@ abstract sealed class ObjectCalculatorUniCollector<A, Input_, Output_, Calculato
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (ObjectCalculatorUniCollector<?, ?, ?, ?>) object;
+        var that = (ObjectCalculatorUniCollector<?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

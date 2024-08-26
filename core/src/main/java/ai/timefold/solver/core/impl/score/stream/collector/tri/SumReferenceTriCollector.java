@@ -8,7 +8,7 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.impl.score.stream.collector.ReferenceSumCalculator;
 
 final class SumReferenceTriCollector<A, B, C, Result_>
-        extends ObjectCalculatorTriCollector<A, B, C, Result_, Result_, ReferenceSumCalculator<Result_>> {
+        extends ObjectCalculatorTriCollector<A, B, C, Result_, Result_, Result_, ReferenceSumCalculator<Result_>> {
     private final Result_ zero;
     private final BinaryOperator<Result_> adder;
     private final BinaryOperator<Result_> subtractor;
