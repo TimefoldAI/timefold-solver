@@ -41,7 +41,7 @@ final class RuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<Solu
         var maximumSelectedCount = maximumSelectedCountSupplier.applyAsInt(entityCount);
         for (int selectedCount = minimumSelectedCount; selectedCount <= maximumSelectedCount; selectedCount++) {
             // Order is significant, and each entity can only be picked once
-            totalSize += CombinatoricsUtils.factorial((int) entityCount) / CombinatoricsUtils.factorial((int) selectedCount);
+            totalSize += CombinatoricsUtils.factorial((int) entityCount) / CombinatoricsUtils.factorial(selectedCount);
         }
         return totalSize;
     }

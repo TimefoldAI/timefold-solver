@@ -27,10 +27,6 @@ public class ListRuinRecreateMoveSelectorConfig extends MoveSelectorConfig<ListR
     protected Double minimumRuinedPercentage = null;
     protected Double maximumRuinedPercentage = null;
 
-    public ListRuinRecreateMoveSelectorConfig() {
-
-    }
-
     // **************************
     // Getters/Setters
     // **************************
