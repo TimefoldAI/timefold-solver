@@ -113,7 +113,7 @@ In order for constraints to scale well, it is necessary to limit the amount of d
 In Constraint Streams, it starts with
 xref:constraints-and-score/score-calculation.adoc#constraintStreamsJoin[joins].
 Consider a school timetabling problem, where a teacher must not have two overlapping lessons.
-This is how the lesson could look in Java/Python:
+This is how the lesson could look:
 
 [tabs]
 ====

@@ -507,7 +507,7 @@ Does not scale.
 Does not support xref:constraints-and-score/understanding-the-score.adoc[score explanations].
 
 Every score calculation type can work with any Score definition (such as ``HardSoftScore`` or ``HardMediumSoftScore``).
-All score calculation types are Object Oriented and can reuse existing Java or Python code.
+All score calculation types are object-oriented and can reuse existing Java or Python code.
 
 [IMPORTANT]
 ====

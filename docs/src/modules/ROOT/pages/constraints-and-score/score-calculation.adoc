@@ -39,11 +39,11 @@ the normal Streams API has to execute the entire stream from scratch.
 [#constraintStreams]
 == Introducing Constraint Streams
 
-Constraint streams are a Functional Programming form of incremental score calculation in plain Java, Python or Kotlin
+Constraint streams are a functional programming form of incremental score calculation
 that is easy to read, write and debug.
 The API should feel familiar if you're familiar with Java Streams or SQL.
 
-The Constraint Streams API enables you to write similar code in pure Java, Python or Kotlin,
+The Constraint Streams API enables you to write similar code in a language of your choice,
 while reaping the performance benefits of incremental score calculation.
 This is an example of the same code we've shown above,
 only using the Constraint Streams API:
@@ -99,7 +99,7 @@ image::constraints-and-score/score-calculation/constraintStreamJustification.png
 [#constraintStreamsConfiguration]
 == Creating a constraint stream
 
-To use the Constraint Streams API in your project, first write a pure Java, Python or Kotlin `ConstraintProvider` implementation similar
+To use the Constraint Streams API in your project, first write a `ConstraintProvider` implementation similar
 to the following example.
 
 [tabs]
@@ -2278,7 +2278,7 @@ constraint_verifier = ConstraintVerifier.build(vehicle_routing_constraints, Vehi
 ====
 
 The `@Test` annotation indicates that the method is a unit test in a testing framework of your choice.
-Constraint Verifier works with many testing frameworks including JUnit, AssertJ and PyTest.
+Constraint Verifier works with testing frameworks popular in your ecosystem, including JUnit and PyTest.
 
 The first part of the test prepares the test data.
 In this case, the test data includes a vehicle and a visit:
@@ -2471,10 +2471,10 @@ Timefold Solver supports two other types of score calculation.
 [#easyJavaScoreCalculation]
 === Easy Java/Python score calculation
 
-An easy way to implement your score calculation in Java or Python.
+An easy way to implement your score calculation as imperative code:
 
 * Advantages:
-** Plain old Java/Python: no learning curve.
+** No learning curve; use the language you're already familiar with.
 ** Opportunity to delegate score calculation to an existing code base or legacy system.
 ** Useful for prototyping.
 * Disadvantages:
@@ -2536,7 +2536,7 @@ add the `easyScoreCalculatorCustomProperties` element and use xref:using-timefol
 [#incrementalJavaScoreCalculation]
 === Incremental Java/Python score calculation
 
-A way to implement your score calculation incrementally in Java or Python.
+A way to implement your score calculation incrementally in a supported programming language.
 
 * Advantages:
 ** Very fast and scalable; currently the fastest if implemented correctly.

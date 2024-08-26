@@ -85,7 +85,7 @@ These various parts of a configuration are explained further in this manual.
 
 
 [#solverConfigurationByJavaAPI]
-== Solver configuration by Java/Python API
+== Solver configuration as code
 
 A solver configuration can also be configured with the `SolverConfig` API.
 This is especially useful to change some values dynamically at runtime.

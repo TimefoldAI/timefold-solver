@@ -31,12 +31,12 @@ In xref:responding-to-change/responding-to-change.adoc#realTimePlanning[real-tim
 
 To create a good domain model, read the xref:design-patterns/design-patterns.adoc#domainModelingGuide[domain modeling guide].
 
-*In Timefold Solver, all problem facts and planning entities are plain old JavaBeans (POJOs) or Python objects.* Load them from a database, an XML file, a data repository, a REST service, a noSQL cloud, ... (see xref:integration/integration.adoc#integration[integration]): it doesn't matter.
+*In Timefold Solver, all problem facts and planning entities are plain objects.* Load them from a database, an XML file, a data repository, a REST service, a noSQL cloud, ... (see xref:integration/integration.adoc#integration[integration]): it doesn't matter.
 
 [#problemFact]
 == Problem fact
 
-A problem fact is any JavaBean (POJO) or Python object with getters that does not change during planning.
+A problem fact is any object with getters that does not change during planning.
 In school timetabling, the timeslots and rooms are problem facts:
 
 [tabs]
@@ -1583,7 +1583,7 @@ For example, none of the `timeslot` variables of any `Lesson` may be used to det
 Use the planning list variable to model problems where the goal is to distribute a number of workload elements among limited resources in a specific order.
 This includes, for example, vehicle routing, traveling salesman, task assigning, and similar problems, that have previously been modeled using the <<chainedPlanningVariable,chained planning variable>>.
 
-The planning list variable is a successor to the chained planning variable and provides a more intuitive way to express the problem domain with Java/Python classes.
+The planning list variable is a successor to the chained planning variable and provides a more intuitive way to express the problem domain.
 
 [WARNING]
 ====
