@@ -31,7 +31,7 @@ def do_not_assign_ann() -> int:
 ----
 ====
 
-However, that scales poorly because it doesn't do an xref:constraints-and-score/performance.adoc#incrementalScoreCalculation[incremental calculation]:
+However, that scales poorly because it doesn't do an xref:constraints-and-score/performance.adoc#incrementalScoreCalculationPerformance[incremental calculation]:
 When the planning variable of a single `Shift` changes, to recalculate the score,
 the normal Streams API has to execute the entire stream from scratch.
 
@@ -85,7 +85,7 @@ image::constraints-and-score/score-calculation/constraintStreamIntroduction.png[
 
 If any of the instances change during solving, the constraint stream automatically detects the change
 and only recalculates the minimum necessary portion of the problem that is affected by the change.
-The following figure illustrates this xref:constraints-and-score/performance.adoc#incrementalScoreCalculation[incremental score calculation]:
+The following figure illustrates this xref:constraints-and-score/performance.adoc#incrementalScoreCalculationPerformance[incremental score calculation]:
 
 image::constraints-and-score/score-calculation/constraintStreamIncrementalCalculation.png[align="center"]
 
@@ -1191,7 +1191,7 @@ unless it is a sorted collector such as `toSortedSet` or `toSortedMap`.
 [NOTE]
 ====
 Collecting elements into a `Collection` negates benefits of
-xref:constraints-and-score/performance.adoc#incrementalScoreCalculation[incremental score calculation],
+xref:constraints-and-score/performance.adoc#incrementalScoreCalculationPerformance[incremental score calculation],
 as all operations on the resulting `Collection` will no longer be incremental.
 If performance is a concern, avoid these collectors.
 ====
@@ -2478,7 +2478,7 @@ An easy way to implement your score calculation as imperative code:
 ** Useful for prototyping.
 * Disadvantages:
 ** Slower, typically not suitable for production.
-** Does not scale because there is no xref:constraints-and-score/performance.adoc#incrementalScoreCalculation[incremental score calculation].
+** Does not scale because there is no xref:constraints-and-score/performance.adoc#incrementalScoreCalculationPerformance[incremental score calculation].
 ** Can not xref:constraints-and-score/understanding-the-score.adoc[explain the score].
 
 To start using an Easy score calculator, implement the one method of the interface ``EasyScoreCalculator``:

@@ -744,7 +744,7 @@ while providing a selection of the best available options for fitting the change
 It doesn't use the full xref:optimization-algorithms/optimization-algorithms.adoc#localSearch[local search algorithm].
 Instead,
 it uses a simple xref:optimization-algorithms/optimization-algorithms.adoc#constructionHeuristics[greedy algorithm]
-together with xref:constraints-and-score/performance.adoc#incrementalScoreCalculation[incremental calculation].
+together with xref:constraints-and-score/performance.adoc#incrementalScoreCalculationPerformance[incremental calculation].
 This combination allows the API to find the best possible fit within the existing solution in a matter of milliseconds,
 even for large planning problems.
 
