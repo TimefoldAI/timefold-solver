@@ -467,7 +467,7 @@ It is not available in the Community Edition.
 There are several ways of doing multi-threaded solving:
 
 * *<<multithreadedIncrementalSolving,Multi-threaded incremental solving>>*:
-Solve 1 dataset with multiple threads without sacrificing xref:constraints-and-score/performance.adoc#incrementalScoreCalculation[incremental score calculation].
+Solve 1 dataset with multiple threads without sacrificing xref:constraints-and-score/performance.adoc#incrementalScoreCalculationPerformance[incremental score calculation].
 ** Donate a portion of your CPU cores to Timefold Solver to scale up the score calculation speed and get the same results in fraction of the time.
 * *<<partitionedSearch,Partitioned Search>>*:
 Split 1 dataset in multiple parts and solve them independently.

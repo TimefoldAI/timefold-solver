@@ -429,7 +429,7 @@ def published_timeslot(factory: ConstraintFactory) -> Constraint:
     return (factory.for_each(Talk)
                    .filter(lambda talk: talk.published_timeslot is not None
                            and talk.timeslot != talk.published_timeslot)
-                   .penalize(HardSoftScore.of(0, 1000))
+                   .penalize(HardSoftScore.of_soft(1000))
                    .as_constraint("Published timeslot")
     )
 ----
@@ -744,7 +744,7 @@ while providing a selection of the best available options for fitting the change
 It doesn't use the full xref:optimization-algorithms/optimization-algorithms.adoc#localSearch[local search algorithm].
 Instead,
 it uses a simple xref:optimization-algorithms/optimization-algorithms.adoc#constructionHeuristics[greedy algorithm]
-together with xref:constraints-and-score/performance.adoc#incrementalScoreCalculation[incremental calculation].
+together with xref:constraints-and-score/performance.adoc#incrementalScoreCalculationPerformance[incremental calculation].
 This combination allows the API to find the best possible fit within the existing solution in a matter of milliseconds,
 even for large planning problems.
 

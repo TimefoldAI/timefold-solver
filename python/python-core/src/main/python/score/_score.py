@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import ClassVar
 from dataclasses import dataclass, field
-from jpype import JArray, JLong
 from decimal import Decimal
+from jpype import JArray, JLong
+from typing import ClassVar
+
 from .._timefold_java_interop import _java_score_mapping_dict
 
 
@@ -76,6 +77,10 @@ class SimpleScore(Score):
         return SimpleScore(score, init_score=0)
 
     @staticmethod
+    def of_uninitialized(init_score: int, score: int) -> 'SimpleScore':
+        return SimpleScore(score, init_score=init_score)
+
+    @staticmethod
     def parse(score_text: str) -> 'SimpleScore':
         if 'init' in score_text:
             init, score = score_text.split('/')
@@ -139,6 +144,18 @@ class HardSoftScore(Score):
         return HardSoftScore(hard_score, soft_score, init_score=0)
 
     @staticmethod
+    def of_uninitialized(init_score: int, hard_score: int, soft_score: int) -> 'HardSoftScore':
+        return HardSoftScore(hard_score, soft_score, init_score=init_score)
+
+    @staticmethod
+    def of_hard(hard_score: int) -> 'HardSoftScore':
+        return HardSoftScore(hard_score, 0, init_score=0)
+
+    @staticmethod
+    def of_soft(soft_score: int) -> 'HardSoftScore':
+        return HardSoftScore(0, soft_score, init_score=0)
+
+    @staticmethod
     def parse(score_text: str) -> 'HardSoftScore':
         if 'init' in score_text:
             init, hard, soft = score_text.split('/')
@@ -161,8 +178,8 @@ class HardSoftScore(Score):
 
 
 HardSoftScore.ZERO = HardSoftScore.of(0, 0)
-HardSoftScore.ONE_HARD = HardSoftScore.of(1, 0)
-HardSoftScore.ONE_SOFT = HardSoftScore.of(0, 1)
+HardSoftScore.ONE_HARD = HardSoftScore.of_hard(1)
+HardSoftScore.ONE_SOFT = HardSoftScore.of_soft(1)
 
 
 @dataclass(unsafe_hash=True, order=True)
@@ -216,6 +233,22 @@ class HardMediumSoftScore(Score):
         return HardMediumSoftScore(hard_score, medium_score, soft_score, init_score=0)
 
     @staticmethod
+    def of_uninitialized(init_score: int, hard_score: int, medium_score: int, soft_score: int) -> 'HardMediumSoftScore':
+        return HardMediumSoftScore(hard_score, medium_score, soft_score, init_score=init_score)
+
+    @staticmethod
+    def of_hard(hard_score: int) -> 'HardMediumSoftScore':
+        return HardMediumSoftScore(hard_score, 0, 0, init_score=0)
+
+    @staticmethod
+    def of_medium(medium_score: int) -> 'HardMediumSoftScore':
+        return HardMediumSoftScore(0, medium_score, 0, init_score=0)
+
+    @staticmethod
+    def of_soft(soft_score: int) -> 'HardMediumSoftScore':
+        return HardMediumSoftScore(0, 0, soft_score, init_score=0)
+
+    @staticmethod
     def parse(score_text: str) -> 'HardMediumSoftScore':
         if 'init' in score_text:
             init, hard, medium, soft = score_text.split('/')
@@ -240,9 +273,9 @@ class HardMediumSoftScore(Score):
 
 
 HardMediumSoftScore.ZERO = HardMediumSoftScore.of(0, 0, 0)
-HardMediumSoftScore.ONE_HARD = HardMediumSoftScore.of(1, 0, 0)
-HardMediumSoftScore.ONE_MEDIUM = HardMediumSoftScore.of(0, 1, 0)
-HardMediumSoftScore.ONE_SOFT = HardMediumSoftScore.of(0, 0, 1)
+HardMediumSoftScore.ONE_HARD = HardMediumSoftScore.of_hard(1)
+HardMediumSoftScore.ONE_MEDIUM = HardMediumSoftScore.of_medium(1)
+HardMediumSoftScore.ONE_SOFT = HardMediumSoftScore.of_soft(1)
 
 
 @dataclass(unsafe_hash=True, order=True)
@@ -269,8 +302,31 @@ class BendableScore(Score):
         return self.is_solution_initialized and all(score >= 0 for score in self.hard_scores)
 
     @staticmethod
+    def zero(hard_levels_size: int, soft_levels_size: int) -> 'BendableScore':
+        return BendableScore(tuple([0] * hard_levels_size), tuple([0] * soft_levels_size))
+
+    @staticmethod
     def of(hard_scores: tuple[int, ...], soft_scores: tuple[int, ...]) -> 'BendableScore':
         return BendableScore(hard_scores, soft_scores, init_score=0)
+
+    @staticmethod
+    def of_uninitialized(init_score: int, hard_scores: tuple[int, ...],
+                         soft_scores: tuple[int, ...]) -> 'BendableScore':
+        return BendableScore(hard_scores, soft_scores, init_score=init_score)
+
+    @staticmethod
+    def of_hard(hard_levels_size: int, soft_levels_size: int, hard_level: int, hard_score: int) -> 'BendableScore':
+        hard_scores = [0] * hard_levels_size
+        hard_scores[hard_level] = hard_score
+        soft_scores = [0] * soft_levels_size
+        return BendableScore(tuple(hard_scores), tuple(soft_scores), init_score=0)
+
+    @staticmethod
+    def of_soft(hard_levels_size: int, soft_levels_size: int, soft_level: int, soft_score: int) -> 'BendableScore':
+        hard_scores = [0] * hard_levels_size
+        soft_scores = [0] * soft_levels_size
+        soft_scores[soft_level] = soft_score
+        return BendableScore(tuple(hard_scores), tuple(soft_scores), init_score=0)
 
     @staticmethod
     def parse(score_text: str) -> 'BendableScore':
@@ -332,6 +388,10 @@ class SimpleDecimalScore(Score):
     @staticmethod
     def of(score: Decimal) -> 'SimpleDecimalScore':
         return SimpleDecimalScore(score, init_score=0)
+
+    @staticmethod
+    def of_uninitialized(init_score: int, score: Decimal) -> 'SimpleDecimalScore':
+        return SimpleDecimalScore(score, init_score=init_score)
 
     @staticmethod
     def parse(score_text: str) -> 'SimpleDecimalScore':
@@ -397,6 +457,18 @@ class HardSoftDecimalScore(Score):
         return HardSoftDecimalScore(hard_score, soft_score, init_score=0)
 
     @staticmethod
+    def of_uninitialized(init_score: int, hard_score: Decimal, soft_score: Decimal) -> 'HardSoftDecimalScore':
+        return HardSoftDecimalScore(hard_score, soft_score, init_score=init_score)
+
+    @staticmethod
+    def of_hard(hard_score: Decimal) -> 'HardSoftDecimalScore':
+        return HardSoftDecimalScore(hard_score, Decimal(0), init_score=0)
+
+    @staticmethod
+    def of_soft(soft_score: Decimal) -> 'HardSoftDecimalScore':
+        return HardSoftDecimalScore(Decimal(0), soft_score, init_score=0)
+
+    @staticmethod
     def parse(score_text: str) -> 'HardSoftDecimalScore':
         if 'init' in score_text:
             init, hard, soft = score_text.split('/')
@@ -419,8 +491,8 @@ class HardSoftDecimalScore(Score):
 
 
 HardSoftDecimalScore.ZERO = HardSoftDecimalScore.of(Decimal(0), Decimal(0))
-HardSoftDecimalScore.ONE_HARD = HardSoftDecimalScore.of(Decimal(1), Decimal(0))
-HardSoftDecimalScore.ONE_SOFT = HardSoftDecimalScore.of(Decimal(0), Decimal(1))
+HardSoftDecimalScore.ONE_HARD = HardSoftDecimalScore.of_hard(Decimal(1))
+HardSoftDecimalScore.ONE_SOFT = HardSoftDecimalScore.of_soft(Decimal(1))
 
 
 @dataclass(unsafe_hash=True, order=True)
@@ -474,6 +546,23 @@ class HardMediumSoftDecimalScore(Score):
         return HardMediumSoftDecimalScore(hard_score, medium_score, soft_score, init_score=0)
 
     @staticmethod
+    def of_uninitialized(init_score: int, hard_score: Decimal, medium_score: Decimal,
+                         soft_score: Decimal) -> 'HardMediumSoftDecimalScore':
+        return HardMediumSoftDecimalScore(hard_score, medium_score, soft_score, init_score=init_score)
+
+    @staticmethod
+    def of_hard(hard_score: Decimal) -> 'HardMediumSoftDecimalScore':
+        return HardMediumSoftDecimalScore(hard_score, Decimal(0), Decimal(0), init_score=0)
+
+    @staticmethod
+    def of_medium(medium_score: Decimal) -> 'HardMediumSoftDecimalScore':
+        return HardMediumSoftDecimalScore(Decimal(0), medium_score, Decimal(0), init_score=0)
+
+    @staticmethod
+    def of_soft(soft_score: Decimal) -> 'HardMediumSoftDecimalScore':
+        return HardMediumSoftDecimalScore(Decimal(0), Decimal(0), soft_score, init_score=0)
+
+    @staticmethod
     def parse(score_text: str) -> 'HardMediumSoftDecimalScore':
         if 'init' in score_text:
             init, hard, medium, soft = score_text.split('/')
@@ -498,9 +587,9 @@ class HardMediumSoftDecimalScore(Score):
 
 
 HardMediumSoftDecimalScore.ZERO = HardMediumSoftDecimalScore.of(Decimal(0), Decimal(0), Decimal(0))
-HardMediumSoftDecimalScore.ONE_HARD = HardMediumSoftDecimalScore.of(Decimal(1), Decimal(0), Decimal(0))
-HardMediumSoftDecimalScore.ONE_MEDIUM = HardMediumSoftDecimalScore.of(Decimal(0), Decimal(1), Decimal(0))
-HardMediumSoftDecimalScore.ONE_SOFT = HardMediumSoftDecimalScore.of(Decimal(0), Decimal(0), Decimal(1))
+HardMediumSoftDecimalScore.ONE_HARD = HardMediumSoftDecimalScore.of_hard(Decimal(1))
+HardMediumSoftDecimalScore.ONE_MEDIUM = HardMediumSoftDecimalScore.of_medium(Decimal(1))
+HardMediumSoftDecimalScore.ONE_SOFT = HardMediumSoftDecimalScore.of_soft(Decimal(1))
 
 
 @dataclass(unsafe_hash=True, order=True)
@@ -527,8 +616,33 @@ class BendableDecimalScore(Score):
         return self.is_solution_initialized and all(score >= 0 for score in self.hard_scores)
 
     @staticmethod
+    def zero(hard_levels_size: int, soft_levels_size: int) -> 'BendableDecimalScore':
+        return BendableDecimalScore(tuple([Decimal(0)] * hard_levels_size), tuple([Decimal(0)] * soft_levels_size))
+
+    @staticmethod
     def of(hard_scores: tuple[Decimal, ...], soft_scores: tuple[Decimal, ...]) -> 'BendableDecimalScore':
         return BendableDecimalScore(hard_scores, soft_scores, init_score=0)
+
+    @staticmethod
+    def of_uninitialized(init_score: int, hard_scores: tuple[Decimal, ...], soft_scores: tuple[Decimal, ...]) -> \
+            'BendableDecimalScore':
+        return BendableDecimalScore(hard_scores, soft_scores, init_score=init_score)
+
+    @staticmethod
+    def of_hard(hard_levels_size: int, soft_levels_size: int, hard_level: int, hard_score: Decimal) -> \
+            'BendableDecimalScore':
+        hard_scores = [Decimal(0)] * hard_levels_size
+        hard_scores[hard_level] = hard_score
+        soft_scores = [Decimal(0)] * soft_levels_size
+        return BendableDecimalScore(tuple(hard_scores), tuple(soft_scores), init_score=0)
+
+    @staticmethod
+    def of_soft(hard_levels_size: int, soft_levels_size: int, soft_level: int, soft_score: Decimal) -> \
+            'BendableDecimalScore':
+        hard_scores = [Decimal(0)] * hard_levels_size
+        soft_scores = [Decimal(0)] * soft_levels_size
+        soft_scores[soft_level] = soft_score
+        return BendableDecimalScore(tuple(hard_scores), tuple(soft_scores), init_score=0)
 
     @staticmethod
     def parse(score_text: str) -> 'BendableDecimalScore':
