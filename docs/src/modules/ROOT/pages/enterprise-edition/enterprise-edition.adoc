@@ -64,6 +64,7 @@ Then create `.m2/settings.xml` in your home directory with the following content
 
 See https://maven.apache.org/settings.html[Settings Reference] for more information on Maven settings.
 --
+
 Gradle::
 +
 --
@@ -85,6 +86,44 @@ repositories {
   }
 }
 ----
+--
+
+Pyproject.toml::
++
+--
+[IMPORTANT]
+======
+Timefold does not offer Enterprise support for Python yet.
+======
+Add the following in your `pyproject.toml`:
+
+[source,toml,options="nowrap"]
+----
+[project]
+dependencies = [
+    'timefold-enterprise == ...',
+    # ...
+]
+----
+
+Then create `.netrc` in your home directory with the following content (replace "my_username" and "my_password" with credentials obtained from a Timefold representative):
+
+[source,text,options="nowrap"]
+----
+machine timefold.jfrog.io
+    login my_username
+    password my_password
+----
+
+Then configure Pip to use the enterprise package index:
+
+[source,ini,options="nowrap"]
+----
+[global]
+extra-index-url = https://timefold.jfrog.io/artifactory/api/pypi/releases-python/simple
+----
+
+See https://pip.pypa.io/en/stable/topics/configuration/[Settings Reference] for more information on Pip settings.
 --
 ====
 
@@ -115,8 +154,9 @@ The following features are only available in Timefold Solver Enterprise Edition:
 
 * <<nearbySelection,Nearby selection>>,
 * <<multithreadedSolving,multi-threaded solving>>,
-* <<partitionedSearch,partitioned Search>>,
-* and <<automaticNodeSharing, automatic node sharing>>.
+* <<partitionedSearch,partitioned search>>,
+* <<automaticNodeSharing,automatic node sharing>>,
+* and <<throttlingBestSolutionEvents, throttling best solution events>>.
 
 
 [#nearbySelection]
@@ -144,6 +184,10 @@ image::enterprise-edition/nearbySelectionRandomDistribution.png[align="center"]
 The distance between two entities or values is domain specific.
 Therefore, implement the `NearbyDistanceMeter` interface:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 public interface NearbyDistanceMeter<Origin_, Desination_> {
@@ -152,11 +196,32 @@ public interface NearbyDistanceMeter<Origin_, Desination_> {
 
 }
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+from timefold.solver.heuristic import nearby_distance_meter
+from typing import TypeVar
+
+Origin_ = TypeVar('Origin_')
+Destination_ = TypeVar('Destination_')
+
+@nearby_distance_meter
+def distance_function(origin: Origin_, destination: Destination_) -> float:
+    ...
+----
+====
+
 In a nutshell, when nearby selection is used in a list move selector,
 `Origin_` is always a planning value (for example `Customer`)
 but `Destination_` can be either a planning value or a planning entity.
 That means that in VRP the distance meter must be able to handle both `Customer` and `Vehicle` as the `Destination_` argument:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 public class CustomerNearbyDistanceMeter implements NearbyDistanceMeter<Customer, LocationAware> {
@@ -167,6 +232,18 @@ public class CustomerNearbyDistanceMeter implements NearbyDistanceMeter<Customer
 
 }
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+from timefold.solver.heuristic import nearby_distance_meter
+
+@nearby_distance_meter
+def customer_nearby_distance_meter(origin: visit, destination: HasLocation) -> float:
+    return origin.distance_to(destination)
+----
+====
 
 [NOTE]
 ====
@@ -475,13 +552,27 @@ timefold.solver.move-thread-count=AUTO
 Java::
 +
 --
-[source,java,options="nowrap"]
 Use the `SolverConfig` class:
 
+[source,java,options="nowrap"]
 ----
 SolverConfig solverConfig = new SolverConfig()
     ...
     .withMoveThreadCount("AUTO");
+----
+--
+Python::
++
+--
+Use the `SolverConfig` class:
+
+[source,python,options="nowrap"]
+----
+from timefold.solver.config import SolverConfig, MoveThreadCount
+
+solver_config = SolverConfig(
+    move_thread_count=MoveThreadCount.AUTO
+)
 ----
 --
 XML::
@@ -562,6 +653,7 @@ use `threadFactoryClass` to plug in a <<customThreadFactory,custom thread factor
 ====
 This feature is a commercial feature of Timefold Solver Enterprise Edition.
 It is not available in the Community Edition.
+It is not available yet in Timefold Solver for Python Enterprise Edition.
 ====
 
 [#partitionedSearchAlgorithm]
@@ -776,6 +868,7 @@ and the <<partitionedSearch,Partition Search threads>> with it:
 ====
 This feature is a commercial feature of Timefold Solver Enterprise Edition.
 It is not available in the Community Edition.
+It is not applicable to Timefold Solver for Python.
 ====
 
 When a `ConstraintProvider` does an operation for multiple constraints (such as finding all shifts corresponding to an employee), that work can be shared.
@@ -972,6 +1065,13 @@ From the above, you can see how this feature allows building blocks to share fun
 
 [#throttlingBestSolutionEvents]
 === Throttling best solution events in `SolverManager`
+
+[NOTE]
+====
+This feature is a commercial feature of Timefold Solver Enterprise Edition.
+It is not available in the Community Edition.
+It is not available yet in Timefold Solver for Python Enterprise Edition.
+====
 
 This feature helps you avoid overloading your system with best solution events,
 especially in the early phase of the solving process when the solver is typically improving the solution very rapidly.

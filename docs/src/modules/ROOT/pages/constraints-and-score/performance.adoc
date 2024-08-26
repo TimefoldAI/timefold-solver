@@ -18,7 +18,7 @@ This is a good measurement of Score calculation performance,
 despite that it is affected by non-score calculation execution time.
 It depends on the problem scale of the problem dataset.
 Normally, even for large scale problems, it is higher than ``1000``,
-except if you are using xref:constraints-and-score/score-calculation.adoc#easyJavaScoreCalculation[``EasyScoreCalculator``].
+except if you are using xref:constraints-and-score/score-calculation.adoc#easyScoreCalculation[``EasyScoreCalculator``].
 
 [IMPORTANT]
 ====
@@ -113,9 +113,13 @@ In order for constraints to scale well, it is necessary to limit the amount of d
 In Constraint Streams, it starts with
 xref:constraints-and-score/score-calculation.adoc#constraintStreamsJoin[joins].
 Consider a school timetabling problem, where a teacher must not have two overlapping lessons.
-This is how the lesson could look in Java:
+This is how the lesson could look:
 
-[source, java]
+[tabs]
+====
+Java::
++
+[source, java, options="nowrap"]
 ----
     @PlanningEntity
     class Lesson {
@@ -133,9 +137,32 @@ This is how the lesson could look in Java:
     }
 ----
 
+Python::
++
+[source, python, options="nowrap"]
+----
+@planning_entity
+@dataclass
+class Lesson:
+    teacher: Teacher
+    ...
+
+    def overlaps(self, another_lesson: Lesson) -> bool:
+        ...
+
+    @property
+    def is_cancelled() -> bool:
+        ...
+----
+====
+
 The simplest possible Constraint Stream we could write to penalize all overlapping lessons would then look like:
 
-[source, java]
+[tabs]
+====
+Java::
++
+[source, java, options="nowrap"]
 ----
     constraintFactory.forEach(Lesson.class)
         .join(Lesson.class)
@@ -148,6 +175,22 @@ The simplest possible Constraint Stream we could write to penalize all overlappi
         .penalize(HardSoftScore.ONE_HARD)
         .asConstraint("Teacher lesson overlap")
 ----
+
+Python::
++
+[source, python, options="nowrap"]
+----
+(constraint_factory.for_each(Lesson)
+                   .join(Lesson)
+                   .filter(lambda left_lesson, right_lesson:
+                               not left_lesson.is_cancelled
+                               and not right_lesson.is_cancelled
+                               and left_lesson.teacher == right_lesson.teacher
+                               and left_lesson.overlaps(right_lesson))
+    .penalize(HardSoftScore.ONE_HARD)
+    .asConstraint("Teacher lesson overlap"))
+----
+====
 
 The join creates a cross-product between lessons,
 producing a match (also called a tuple) for every possible combination of two lessons,
@@ -179,23 +222,47 @@ Let's instead remove them from the cross-product entirely.
 For the first lesson in the join, also called “left,”
 we put the cancellation check before the join like so:
 
-[source, java]
+[tabs]
+====
+Java::
++
+[source, java, options="nowrap"]
 ----
     constraintFactory.forEach(Lesson.class)
         .filter(lesson -> !lesson.isCancelled())
         .join(Lesson.class)
         .filter((leftLesson, rightLesson) ->
             !rightLesson.isCancelled()
-            && leftLesson.getTeacher() == rightLesson.getTeacher()
+            && leftLesson.getTeacher().equals(rightLesson.getTeacher())
             && leftLesson.overlaps(rightLesson))
         ...
 ----
+
+Python::
++
+[source, python, options="nowrap"]
+----
+(constraint_factory.for_each(Lesson)
+    .filter(lambda lesson: not lesson.is_cancelled)
+    .join(Lesson)
+    .filter(lambda left_lesson, right_lesson:
+                not right_lesson.is_cancelled
+                and left_lesson.teacher == right_lesson.teacher
+                and left_lesson.overlaps(right_lesson))
+    ...
+)
+----
+====
 
 The canceled lessons are no longer coming in from the left, which reduces the cross-product.
 However, some canceled lessons are still coming in from the right through the join.
 They can be eliminated using a filtered nested stream:
 
-[source, java]
+[tabs]
+====
+Java::
++
+[source, java, options="nowrap"]
 ----
     constraintFactory.forEach(Lesson.class)
         .filter(lesson -> !lesson.isCancelled())
@@ -203,10 +270,27 @@ They can be eliminated using a filtered nested stream:
             constraintFactory.forEach(Lesson.class)
                 .filter(lesson -> !lesson.isCancelled()))
         .filter((leftLesson, rightLesson) ->
-            leftLesson.getTeacher() == rightLesson.getTeacher()
+            leftLesson.getTeacher().equals(rightLesson.getTeacher())
             && leftLesson.overlaps(rightLesson))
         ...
 ----
+
+Python::
++
+[source, python, options="nowrap"]
+----
+(constraint_factory.for_each(Lesson)
+                   .filter(lambda lesson: not lesson.is_cancelled)
+                   .join(
+                         constraint_factory.for_each(Lesson)
+                                           .filter(lambda lesson: not lesson.is_cancelled))
+                   .filter(lambda left_lesson, right_lesson:
+                               left_lesson.teacher == right_lesson.teacher
+                               and left_lesson.overlaps(right_lesson))
+    ...
+)
+----
+====
 
 We've created a new Constraint Stream from `Lesson`, filtering before it entered our join.
 We have now applied the same improvement on both the left and right sides of the join,
@@ -221,7 +305,11 @@ When a `Lesson` changes, all pairs with that `Lesson` will be wastefully re-eval
 Let's move the `Teacher` equality check moved from the final filter to a `Joiner`:
 
 
-[source, java]
+[tabs]
+====
+Java::
++
+[source, java, options="nowrap"]
 ----
     constraintFactory.forEach(Lesson.class)
         .filter(lesson -> !lesson.isCancelled())
@@ -232,6 +320,21 @@ Let's move the `Teacher` equality check moved from the final filter to a `Joiner
         .filter(Lesson::overlaps)
         ...
 ----
+
+Python::
++
+[source, python, options="nowrap"]
+----
+    constraintFactory.forEach(Lesson.class)
+        .filter(lesson -> !lesson.isCancelled())
+        .join(
+            constraintFactory.forEach(Lesson.class)
+                .filter(lesson -> !lesson.isCancelled()),
+	        Joiners.equal(Lesson::getTeacher))
+        .filter(Lesson::overlaps)
+        ...
+----
+====
 
 The constraint still says the same thing:
 a `Lesson` pair will only be sent downstream if they share the same `Teacher`.
@@ -251,7 +354,11 @@ Consider a new situation, where lessons also have rooms in which they happen.
 Although there are possibly dozens of teachers, there are only three rooms.
 Therefore, the join should look like this:
 
-[source, java]
+[tabs]
+====
+Java::
++
+[source, java, options="nowrap"]
 ----
     constraintFactory.forEach(Lesson.class)
         .join(Lesson.class,
@@ -259,6 +366,19 @@ Therefore, the join should look like this:
             Joiners.equal(Lesson::getRoom))
     ...
 ----
+
+Python::
++
+[source, python, options="nowrap"]
+----
+(constraint_factory.for_each(Lesson)
+                   .join(Lesson,
+                         Joiners.equal(lambda lesson: lesson.teacher),
+                         Joiners.equal(lambda lesson: lesson.room))
+...
+)
+----
+====
 
 This way, we first create “buckets” for each of the many teachers,
 and these buckets will only contain a relatively small number of lessons per room.

@@ -11,11 +11,24 @@ To understand the score, it needs to be broken down.
 
 The easiest way to do that during development is to print the score summary:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 SolutionManager<VehicleRoutePlan, HardSoftLongScore> solutionManager = SolutionManager.create(solverFactory);
 System.out.println(solutionManager.explain(vehicleRoutePlan));
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+solution_manager = SolutionManager.create(solver_factory)
+print(solution_manager.explain(vehicle_route_plan))
+----
+====
 
 For example, in vehicle routing,
 this prints that vehicle `vehicle '1'` matched the soft constraint `minimizeTravelTime`:
@@ -56,9 +69,9 @@ Indictments are typically used for xref:indictmentHeatMap[heat map visualization
 [NOTE]
 ====
 xref:constraints-and-score/score-calculation.adoc[Constraint Streams API] can analyze the score natively.
-xref:constraints-and-score/score-calculation.adoc#incrementalJavaScoreCalculation[Incremental Java score calculation] requires
+xref:constraints-and-score/score-calculation.adoc#incrementalScoreCalculation[Incremental Java score calculation] requires
 xref:constraints-and-score/score-calculation.adoc#constraintMatchAwareIncrementalScoreCalculator[implementing an extra interface].
-xref:constraints-and-score/score-calculation.adoc#easyJavaScoreCalculation[Easy Java score calculation] does not support score explanation.
+xref:constraints-and-score/score-calculation.adoc#easyScoreCalculation[Easy Java score calculation] does not support score explanation.
 ====
 
 
@@ -68,11 +81,24 @@ xref:constraints-and-score/score-calculation.adoc#easyJavaScoreCalculation[Easy 
 If other parts of your application, such as your web interface,
 need to describe the solution to the user, use the `SolutionManager` API:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 SolutionManager<VehicleRoutePlan, HardSoftLongScore> solutionManager = SolutionManager.create(solverFactory);
 ScoreAnalysis<HardSoftLongScore> scoreAnalysis = solutionManager.analyze(vehicleRoutePlan);
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+solution_manager = SolutionManager.create(solver_factory)
+score_analysis = solution_manager.analyze(vehicle_route_plan)
+----
+====
 
 `ScoreAnalysis` is a JSON-friendly representation of the score,
 breaking down the score into individual constraints.
@@ -84,12 +110,26 @@ Using score analysis, you can find out:
 
 It is also possible to print the score summary:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 SolutionManager<VehicleRoutePlan, HardSoftLongScore> solutionManager = SolutionManager.create(solverFactory);
 ScoreAnalysis<HardSoftLongScore> scoreAnalysis = solutionManager.analyze(vehicleRoutePlan);
 System.out.println(scoreAnalysis.summarize());
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+solution_manager = SolutionManager.create(solver_factory)
+score_analysis = solution_manager.analyze(vehicle_route_plan)
+print(score_analysis.summary)
+----
+====
 
 For example,
 this prints that vehicle `vehicle '1'` matched the soft constraint `minimizeTravelTime`:
@@ -114,6 +154,10 @@ It serves for debugging purposes only.
 
 When you have the `ScoreAnalysis` instance, you can find out which constraints are broken:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 scoreAnalysis.constraintMap().forEach((constraintRef, constraintAnalysis) -> {
@@ -123,10 +167,25 @@ scoreAnalysis.constraintMap().forEach((constraintRef, constraintAnalysis) -> {
 });
 ----
 
+Python::
++
+[source,python,options="nowrap"]
+----
+for constraint_ref, constraint_analysis in score_analysis.constraint_map.items():
+   constraint_id = constraint_ref.constraint_id
+   score_per_constraint = constraint_analysis.score
+   ...
+----
+====
+
 If you wish to go further
 and find out which planning entities and problem facts are responsible for breaking the constraint,
 you can further explore the `ConstraintAnalysis` instance you received from `ScoreAnalysis.constraintMap()`:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 int matchCount = constraintAnalysis.matchCount();
@@ -136,6 +195,19 @@ constraintAnalysis.matches().forEach(matchAnalysis -> {
     ...
 });
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+match_count = constraint_analysis.match_count
+
+for match_analysis in constraint_analysis.matches:
+    score_per_match = match_analysis.score
+    justification = match_analysis.justification
+    ...
+----
+====
 
 Each match is accompanied by the score difference it caused, and a justification object (see above).
 Typically, the scoring engine creates justification objects automatically
@@ -149,6 +221,10 @@ If you have two different solutions from the Solver,
 you can compare them using `ScoreAnalysis`
 and find out what changed between them:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 ScoreAnalysis<HardSoftScore>  firstAnalysis = solutionManager.analyze(firstSolution);
@@ -168,6 +244,27 @@ diff.constraintMap().forEach((constraintRef, constraintAnalysis) -> {
    });
 });
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+first_analysis = solution_manager.analyze(firstSolution)
+second_analysis = solution_manager.analyze(second_solution)
+diff = first_analysis - second_analysis
+
+# Score difference only carries the constraints whose matches changed from first to second solution.
+for constraint_ref, constraint_analysis in diff.constraint_map.items():
+    constraint_id = constraint_ref.constraint_id
+    score_diff = constraint_analysis.score
+    # Matches only include constraint matches that:
+    #   - the second solution either added to or removed from the first solution.
+    #   - had their score changed.
+    # Two matches are considered equal if their justification objects are equal.
+    for match_analysis in constraint_analysis.matches:
+        ...
+----
+====
 
 Think of `diff(...)` as a subtraction operation,
 where the second solution is subtracted from the first solution.
@@ -214,6 +311,10 @@ and registering it with Jackson's `ObjectMapper`.
 To show a heat map in the UI that highlights the planning entities and problem facts have an impact on the ``Score``,
 get the `Indictment` map from the ``ScoreExplanation``:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 SolutionManager<VehicleRoutePlan, HardSoftLongScore> solutionManager = SolutionManager.create(solverFactory);
@@ -234,6 +335,28 @@ for (Visit visit : vehicleRoutePlan.getVisits()) {
     }
 }
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+solution_manager = SolutionManager.create(solver_factory)
+score_explanation = solution_manager.explain(vehicle_route_plan)
+indictment_map = score_explanation.indictment_map
+for visit in vehicle_route_plan.visits:
+    indictment = indictment_map.get(visit)
+    if indictment is None:
+        continue
+    # The score impact of that planning entity
+    total_score = indictment.score
+
+    for constraint_match in indictment.constraint_match_set:
+        constraint_name = constraint_match.constraint_name
+        score = constraint_match.score
+        ...
+
+----
+====
 
 [NOTE]
 ====

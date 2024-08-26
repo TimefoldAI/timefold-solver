@@ -122,7 +122,7 @@ by changing the solver configuration in a few lines of code.
 == Status of Timefold Solver
 
 Timefold Solver is 100% pure Java^TM^ and runs on Java {java-version} or higher.
-It xref:integration/integration.adoc#integration[integrates very easily] with other Java^TM^ technologies.
+It xref:integration/integration.adoc#integration[integrates very easily] with other Java^TM^, Python and other technologies.
 Timefold Solver works on any Java Virtual Machine and is compatible with the major JVM languages and all major platforms.
 It also supports Kotlin and Python.
 
@@ -185,14 +185,19 @@ Those documented `impl` classes are reliable and safe to use (unless explicitly 
 but we're just not entirely comfortable yet to write their signatures in stone.
 ====
 
+[NOTE]
+====
+The Python Solver is currently in beta and its API is subject to change.
+====
+
 
 [#startUsingTimefoldSolver]
 == Start using Timefold Solver
 
 [#useWithMavenGradleEtc]
-=== Use Timefold Solver with Maven or Gradle
+=== Use Timefold Solver with Maven, Gradle or PyPI
 
-The Timefold Solver jars are available in https://central.sonatype.com/namespace/ai.timefold.solver[the central maven repository].
+The Timefold Solver jars are available in https://central.sonatype.com/namespace/ai.timefold.solver[the central maven repository] and https://pypi.org/project/timefold[PyPI].
 
 [tabs]
 ====
@@ -242,6 +247,7 @@ when adding other timefold dependencies later on:
 </project>
 ----
 --
+
 Gradle::
 +
 --
@@ -252,6 +258,21 @@ Add a dependency to `timefold-solver-core` in your `build.gradle`:
 dependencies {
   implementation 'ai.timefold.solver:timefold-solver-core:...'
 }
+----
+--
+
+Pyproject.toml::
++
+--
+Add a dependency to `timefold` in your `pyproject.toml`:
+
+[source,toml,options="nowrap"]
+----
+[project]
+dependencies = [
+    'timefold == ...',
+    # ...
+]
 ----
 --
 ====

@@ -217,12 +217,26 @@ image::constraints-and-score/overview/scoreComposition.png[align="center"]
 
 A score is represented by the `Score` interface, which naturally extends ``Comparable``:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 public interface Score<...> extends Comparable<...> {
     ...
 }
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+@dataclass(order=True)
+class Score:
+    ...
+----
+====
 
 The `Score` implementation to use depends on your use case.
 Your score might not efficiently fit in a single `long` value.
@@ -238,6 +252,10 @@ From a user's perspective this is ``0``, unless a Construction Heuristic is term
 The `Score` implementation (for example ``HardSoftScore``) must be the same throughout a `Solver` runtime.
 The `Score` implementation is configured in the solution domain class:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 @PlanningSolution
@@ -249,6 +267,17 @@ public class VehicleRoutePlan {
 
 }
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+@planning_solution
+class VehicleRoutePlan:
+    ...
+    score: Annotated[HardSoftScore, PlanningScore]
+----
+====
 
 [#avoidFloatingPointNumbersInScoreCalculation]
 === Avoid floating point numbers in score calculation
@@ -265,10 +294,22 @@ image::constraints-and-score/overview/scoreWeightType.png[align="center"]
 
 Additionally, floating point number addition is not associative:
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
 System.out.println( ((0.01 + 0.02) + 0.03) == (0.01 + (0.02 + 0.03)) ); // returns false
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+print(((0.01 + 0.02) + 0.03) == (0.01 + (0.02 + 0.03)) )  # returns false
+----
+====
 
 This leads to __score corruption__.
 
@@ -292,6 +333,11 @@ To properly write a `Score` to a database (with JPA/Hibernate) or to XML/JSON (w
 see xref:integration/integration.adoc#integration[the integration chapter].
 ====
 
+[NOTE]
+====
+In Python, only the normal variant and BigDecimal variants are available for each score type (with the normal variant using longs and the BigDecimal variant using Python's `Decimal`).
+====
+
 
 [#simpleScore]
 === `SimpleScore`
@@ -299,11 +345,24 @@ see xref:integration/integration.adoc#integration[the integration chapter].
 A `SimpleScore` has a single `int` value, for example ``-123``.
 It has a single score level.
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
     @PlanningScore
     private SimpleScore score;
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+
+score: Annotated[SimpleScore, PlanningScore]
+----
+====
 
 Variants of this `Score` type:
 
@@ -317,11 +376,24 @@ Variants of this `Score` type:
 A `HardSoftScore` has a hard `int` value and a soft `int` value, for example ``-123hard/-456soft``.
 It has two score levels (hard and soft).
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
     @PlanningScore
     private HardSoftScore score;
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+
+score: Annotated[HardSoftScore, PlanningScore]
+----
+====
 
 Variants of this `Score` type:
 
@@ -339,11 +411,24 @@ and the medium level and soft level score values determine
 how well the solution meets business goals.
 Higher medium values take precedence over soft values irrespective of the soft value.
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
     @PlanningScore
     private HardMediumSoftScore score;
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+
+score: Annotated[HardMediumSoftScore, PlanningScore]
+----
+====
 
 Variants of this `Score` type:
 
@@ -363,11 +448,23 @@ A solution is feasible if all hard levels are at least zero.
 A BendableScore with one hard level and one soft level is equivalent to a HardSoftScore,
 while a BendableScore with one hard level and two soft levels is equivalent to a HardMediumSoftScore.
 
+[tabs]
+====
+Java::
++
 [source,java,options="nowrap"]
 ----
     @PlanningScore(bendableHardLevelsSize = 2, bendableSoftLevelsSize = 3)
     private BendableScore score;
 ----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+score: Annotated[BendableScore, PlanningScore(bendable_hard_levels_size=2, bendable_soft_levels_size=3)]
+----
+====
 
 The number of hard and soft score levels need to be set at compilation time.
 It is not flexible to change during solving.
@@ -394,23 +491,23 @@ Variants of this `Score` type:
 [#scoreCalculationTypes]
 === Score calculation types
 
-There are several ways to calculate the `Score` of a solution in Java or another JVM language:
+There are several ways to calculate the `Score` of a solution:
 
 * **xref:constraints-and-score/score-calculation.adoc[Constraint Streams API]**:
 Implement each constraint as a separate Constraint Stream.
 Fast and scalable.
-* **xref:constraints-and-score/score-calculation.adoc#incrementalJavaScoreCalculation[Incremental Java score calculation]** (not recommended):
+* **xref:constraints-and-score/score-calculation.adoc#incrementalScoreCalculation[Incremental score calculator]** (not recommended):
 Implement multiple low-level methods.
 Fast and scalable.
 Very difficult to implement and maintain.
 Supports xref:constraints-and-score/understanding-the-score.adoc[score explanations] with extra effort.
-* **xref:constraints-and-score/score-calculation.adoc#easyJavaScoreCalculation[Easy Java score calculation]** (not recommended):
+* **xref:constraints-and-score/score-calculation.adoc#easyScoreCalculation[Easy score calculator]** (not recommended):
 Implement all constraints together in a single method.
 Does not scale.
 Does not support xref:constraints-and-score/understanding-the-score.adoc[score explanations].
 
 Every score calculation type can work with any Score definition (such as ``HardSoftScore`` or ``HardMediumSoftScore``).
-All score calculation types are Object Oriented and can reuse existing Java code.
+All score calculation types are object-oriented and can reuse existing Java or Python code.
 
 [IMPORTANT]
 ====
