@@ -112,6 +112,9 @@ public abstract class AbstractConstraintCollectorsTest {
     public abstract void consecutiveUsage();
 
     @Test
+    public abstract void consecutiveUsageDynamic();
+
+    @Test
     public abstract void loadBalance();
 
     @Test

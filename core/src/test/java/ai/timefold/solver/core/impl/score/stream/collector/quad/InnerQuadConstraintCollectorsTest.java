@@ -1146,7 +1146,11 @@ final class InnerQuadConstraintCollectorsTest extends AbstractConstraintCollecto
         // Retract last value; there are no values now.
         firstRetractor.run();
         assertResult(collector, container, buildConsecutiveUsage());
+    }
 
+    @Override
+    @Test
+    public void consecutiveUsageDynamic() {
         var dynamicCollector =
                 ConstraintCollectors.toConnectedRanges((DynamicInterval a, Object b, Object c, Object d) -> a,
                         DynamicInterval::getStart,
@@ -1155,10 +1159,10 @@ final class InnerQuadConstraintCollectorsTest extends AbstractConstraintCollecto
         var first = new DynamicInterval(0);
         var second = new DynamicInterval(10);
         var third = new DynamicInterval(20);
-        container = dynamicCollector.supplier().get();
+        var container = dynamicCollector.supplier().get();
 
         // Add first value, sequence is [[(0, 10)]]
-        firstRetractor = accumulate(dynamicCollector, container, first, null, null, null);
+        var firstRetractor = accumulate(dynamicCollector, container, first, null, null, null);
         assertResult(dynamicCollector, container, buildDynamicConsecutiveUsage(new DynamicInterval(0)));
 
         // Add third value, sequence is [[(0, 10)], [(20, 30)]]
