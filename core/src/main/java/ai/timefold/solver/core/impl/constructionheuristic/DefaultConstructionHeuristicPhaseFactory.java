@@ -12,16 +12,14 @@ import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityP
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
-import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.CartesianProductMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
-import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
+import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhase.DefaultConstructionHeuristicPhaseBuilder;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHeuristicDecider;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForager;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForagerFactory;
@@ -44,41 +42,38 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         super(phaseConfig);
     }
 
-    @Override
-    public ConstructionHeuristicPhase<Solution_> buildPhase(int phaseIndex, boolean triggerFirstInitializedSolutionEvent,
-            HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
+    public final DefaultConstructionHeuristicPhaseBuilder<Solution_> getBuilder(int phaseIndex,
+            boolean triggerFirstInitializedSolutionEvent, HeuristicConfigPolicy<Solution_> solverConfigPolicy,
             Termination<Solution_> solverTermination) {
-        ConstructionHeuristicType constructionHeuristicType_ = Objects.requireNonNullElse(
-                phaseConfig.getConstructionHeuristicType(),
+        var constructionHeuristicType_ = Objects.requireNonNullElse(phaseConfig.getConstructionHeuristicType(),
                 ConstructionHeuristicType.ALLOCATE_ENTITY_FROM_QUEUE);
-        EntitySorterManner entitySorterManner = Objects.requireNonNullElse(
-                phaseConfig.getEntitySorterManner(),
+        var entitySorterManner = Objects.requireNonNullElse(phaseConfig.getEntitySorterManner(),
                 constructionHeuristicType_.getDefaultEntitySorterManner());
-        ValueSorterManner valueSorterManner = Objects.requireNonNullElse(
-                phaseConfig.getValueSorterManner(),
+        var valueSorterManner = Objects.requireNonNullElse(phaseConfig.getValueSorterManner(),
                 constructionHeuristicType_.getDefaultValueSorterManner());
-        HeuristicConfigPolicy<Solution_> phaseConfigPolicy = solverConfigPolicy.cloneBuilder()
+        var phaseConfigPolicy = solverConfigPolicy.cloneBuilder()
                 .withReinitializeVariableFilterEnabled(true)
                 .withInitializedChainedValueFilterEnabled(true)
                 .withUnassignedValuesAllowed(true)
                 .withEntitySorterManner(entitySorterManner)
                 .withValueSorterManner(valueSorterManner)
                 .build();
-        Termination<Solution_> phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
-        EntityPlacerConfig entityPlacerConfig_ = getValidEntityPlacerConfig()
+        var entityPlacerConfig_ = getValidEntityPlacerConfig()
                 .orElseGet(() -> buildDefaultEntityPlacerConfig(phaseConfigPolicy, constructionHeuristicType_));
-        EntityPlacer<Solution_> entityPlacer = EntityPlacerFactory.<Solution_> create(entityPlacerConfig_)
+        var entityPlacer = EntityPlacerFactory.<Solution_> create(entityPlacerConfig_)
                 .buildEntityPlacer(phaseConfigPolicy);
+        return createBuilder(phaseConfigPolicy, solverTermination, phaseIndex, triggerFirstInitializedSolutionEvent,
+                entityPlacer);
+    }
 
-        DefaultConstructionHeuristicPhase.Builder<Solution_> builder = new DefaultConstructionHeuristicPhase.Builder<>(
-                phaseIndex,
-                triggerFirstInitializedSolutionEvent,
-                solverConfigPolicy.getLogIndentation(),
-                phaseTermination,
-                entityPlacer,
+    protected DefaultConstructionHeuristicPhaseBuilder<Solution_> createBuilder(
+            HeuristicConfigPolicy<Solution_> phaseConfigPolicy, Termination<Solution_> solverTermination, int phaseIndex,
+            boolean triggerFirstInitializedSolutionEvent, EntityPlacer<Solution_> entityPlacer) {
+        var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
+        var builder = new DefaultConstructionHeuristicPhaseBuilder<>(phaseIndex, triggerFirstInitializedSolutionEvent,
+                phaseConfigPolicy.getLogIndentation(), phaseTermination, entityPlacer,
                 buildDecider(phaseConfigPolicy, phaseTermination));
-
-        EnvironmentMode environmentMode = phaseConfigPolicy.getEnvironmentMode();
+        var environmentMode = phaseConfigPolicy.getEnvironmentMode();
         if (environmentMode.isNonIntrusiveFullAsserted()) {
             builder.setAssertStepScoreFromScratch(true);
         }
@@ -86,11 +81,19 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
             builder.setAssertExpectedStepScore(true);
             builder.setAssertShadowVariablesAreNotStaleAfterStep(true);
         }
-        return builder.build();
+        return builder;
     }
 
-    private Optional<EntityPlacerConfig> getValidEntityPlacerConfig() {
-        EntityPlacerConfig entityPlacerConfig = phaseConfig.getEntityPlacerConfig();
+    @Override
+    public ConstructionHeuristicPhase<Solution_> buildPhase(int phaseIndex, boolean triggerFirstInitializedSolutionEvent,
+            HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
+            Termination<Solution_> solverTermination) {
+        return getBuilder(phaseIndex, triggerFirstInitializedSolutionEvent, solverConfigPolicy, solverTermination)
+                .build();
+    }
+
+    private Optional<EntityPlacerConfig<?>> getValidEntityPlacerConfig() {
+        EntityPlacerConfig<?> entityPlacerConfig = phaseConfig.getEntityPlacerConfig();
         if (entityPlacerConfig == null) {
             return Optional.empty();
         }
@@ -108,7 +111,7 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         return Optional.of(entityPlacerConfig);
     }
 
-    private EntityPlacerConfig buildDefaultEntityPlacerConfig(HeuristicConfigPolicy<Solution_> configPolicy,
+    private EntityPlacerConfig<?> buildDefaultEntityPlacerConfig(HeuristicConfigPolicy<Solution_> configPolicy,
             ConstructionHeuristicType constructionHeuristicType) {
         return findValidListVariableDescriptor(configPolicy.getSolutionDescriptor())
                 .map(listVariableDescriptor -> buildListVariableQueuedValuePlacerConfig(configPolicy, listVariableDescriptor))
@@ -134,13 +137,13 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         }
     }
 
-    public static EntityPlacerConfig buildListVariableQueuedValuePlacerConfig(
-            HeuristicConfigPolicy<?> configPolicy,
+    @SuppressWarnings("rawtypes")
+    public static EntityPlacerConfig buildListVariableQueuedValuePlacerConfig(HeuristicConfigPolicy<?> configPolicy,
             ListVariableDescriptor<?> variableDescriptor) {
-        String mimicSelectorId = variableDescriptor.getVariableName();
+        var mimicSelectorId = variableDescriptor.getVariableName();
 
         // Prepare recording ValueSelector config.
-        ValueSelectorConfig mimicRecordingValueSelectorConfig = new ValueSelectorConfig(variableDescriptor.getVariableName())
+        var mimicRecordingValueSelectorConfig = new ValueSelectorConfig(variableDescriptor.getVariableName())
                 .withId(mimicSelectorId);
         if (ValueSelectorConfig.hasSorter(configPolicy.getValueSorterManner(), variableDescriptor)) {
             mimicRecordingValueSelectorConfig = mimicRecordingValueSelectorConfig.withCacheType(SelectionCacheType.PHASE)
@@ -148,11 +151,11 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
                     .withSorterManner(configPolicy.getValueSorterManner());
         }
         // Prepare replaying ValueSelector config.
-        ValueSelectorConfig mimicReplayingValueSelectorConfig = new ValueSelectorConfig()
+        var mimicReplayingValueSelectorConfig = new ValueSelectorConfig()
                 .withMimicSelectorRef(mimicSelectorId);
 
         // ListChangeMoveSelector uses the replaying ValueSelector.
-        ListChangeMoveSelectorConfig listChangeMoveSelectorConfig = new ListChangeMoveSelectorConfig()
+        var listChangeMoveSelectorConfig = new ListChangeMoveSelectorConfig()
                 .withValueSelectorConfig(mimicReplayingValueSelectorConfig);
 
         // Finally, QueuedValuePlacer uses the recording ValueSelector and a ListChangeMoveSelector.
@@ -162,59 +165,47 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
                 .withMoveSelectorConfig(listChangeMoveSelectorConfig);
     }
 
-    private ConstructionHeuristicDecider<Solution_> buildDecider(HeuristicConfigPolicy<Solution_> configPolicy,
+    protected ConstructionHeuristicDecider<Solution_> buildDecider(HeuristicConfigPolicy<Solution_> configPolicy,
             Termination<Solution_> termination) {
-        ConstructionHeuristicForagerConfig foragerConfig_ =
-                Objects.requireNonNullElseGet(phaseConfig.getForagerConfig(), ConstructionHeuristicForagerConfig::new);
-        ConstructionHeuristicForager<Solution_> forager =
-                ConstructionHeuristicForagerFactory.<Solution_> create(foragerConfig_).buildForager(configPolicy);
-        EnvironmentMode environmentMode = configPolicy.getEnvironmentMode();
-        ConstructionHeuristicDecider<Solution_> decider;
-        Integer moveThreadCount = configPolicy.getMoveThreadCount();
-        if (moveThreadCount == null) {
-            decider = new ConstructionHeuristicDecider<>(configPolicy.getLogIndentation(), termination, forager);
-        } else {
-            decider = TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTITHREADED_SOLVING)
-                    .buildConstructionHeuristic(moveThreadCount, termination, forager, environmentMode, configPolicy);
-        }
-        if (environmentMode.isNonIntrusiveFullAsserted()) {
-            decider.setAssertMoveScoreFromScratch(true);
-        }
-        if (environmentMode.isIntrusiveFastAsserted()) {
-            decider.setAssertExpectedUndoMoveScore(true);
-        }
+        var forager = buildForager(configPolicy);
+        var moveThreadCount = configPolicy.getMoveThreadCount();
+        var decider = (moveThreadCount == null)
+                ? new ConstructionHeuristicDecider<>(configPolicy.getLogIndentation(), termination, forager)
+                : TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTITHREADED_SOLVING)
+                        .buildConstructionHeuristic(termination, forager, configPolicy);
+        decider.enableAssertions(configPolicy.getEnvironmentMode());
         return decider;
     }
 
-    private EntityPlacerConfig buildUnfoldedEntityPlacerConfig(HeuristicConfigPolicy<Solution_> phaseConfigPolicy,
+    protected ConstructionHeuristicForager<Solution_> buildForager(HeuristicConfigPolicy<Solution_> configPolicy) {
+        var foragerConfig_ =
+                Objects.requireNonNullElseGet(phaseConfig.getForagerConfig(), ConstructionHeuristicForagerConfig::new);
+        return ConstructionHeuristicForagerFactory.<Solution_> create(foragerConfig_).buildForager(configPolicy);
+    }
+
+    private EntityPlacerConfig<?> buildUnfoldedEntityPlacerConfig(HeuristicConfigPolicy<Solution_> phaseConfigPolicy,
             ConstructionHeuristicType constructionHeuristicType) {
-        switch (constructionHeuristicType) {
-            case FIRST_FIT:
-            case FIRST_FIT_DECREASING:
-            case WEAKEST_FIT:
-            case WEAKEST_FIT_DECREASING:
-            case STRONGEST_FIT:
-            case STRONGEST_FIT_DECREASING:
-            case ALLOCATE_ENTITY_FROM_QUEUE:
+        return switch (constructionHeuristicType) {
+            case FIRST_FIT, FIRST_FIT_DECREASING, WEAKEST_FIT, WEAKEST_FIT_DECREASING, STRONGEST_FIT, STRONGEST_FIT_DECREASING,
+                    ALLOCATE_ENTITY_FROM_QUEUE -> {
                 if (!ConfigUtils.isEmptyCollection(phaseConfig.getMoveSelectorConfigList())) {
-                    return QueuedEntityPlacerFactory.unfoldNew(phaseConfigPolicy, phaseConfig.getMoveSelectorConfigList());
+                    yield QueuedEntityPlacerFactory.unfoldNew(phaseConfigPolicy, phaseConfig.getMoveSelectorConfigList());
                 }
-                return new QueuedEntityPlacerConfig();
-            case ALLOCATE_TO_VALUE_FROM_QUEUE:
+                yield new QueuedEntityPlacerConfig();
+            }
+            case ALLOCATE_TO_VALUE_FROM_QUEUE -> {
                 if (!ConfigUtils.isEmptyCollection(phaseConfig.getMoveSelectorConfigList())) {
-                    return QueuedValuePlacerFactory.unfoldNew(checkSingleMoveSelectorConfig());
+                    yield QueuedValuePlacerFactory.unfoldNew(checkSingleMoveSelectorConfig());
                 }
-                return new QueuedValuePlacerConfig();
-            case CHEAPEST_INSERTION:
-            case ALLOCATE_FROM_POOL:
+                yield new QueuedValuePlacerConfig();
+            }
+            case CHEAPEST_INSERTION, ALLOCATE_FROM_POOL -> {
                 if (!ConfigUtils.isEmptyCollection(phaseConfig.getMoveSelectorConfigList())) {
-                    return PooledEntityPlacerFactory.unfoldNew(phaseConfigPolicy, checkSingleMoveSelectorConfig());
+                    yield PooledEntityPlacerFactory.unfoldNew(phaseConfigPolicy, checkSingleMoveSelectorConfig());
                 }
-                return new PooledEntityPlacerConfig();
-            default:
-                throw new IllegalStateException(
-                        "The constructionHeuristicType (" + constructionHeuristicType + ") is not implemented.");
-        }
+                yield new PooledEntityPlacerConfig();
+            }
+        };
     }
 
     private MoveSelectorConfig<?> checkSingleMoveSelectorConfig() {

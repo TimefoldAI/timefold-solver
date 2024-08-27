@@ -56,23 +56,7 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
             ListVariableStateSupply<Solution_> listVariableStateSupply) {
         var filteredValueSelector =
                 filterPinnedListPlanningVariableValuesWithIndex(entityIndependentValueSelector, listVariableStateSupply);
-        return filterNotAssignedValues(filteredValueSelector, listVariableStateSupply);
-    }
-
-    private EntityIndependentValueSelector<Solution_> filterNotAssignedValues(
-            EntityIndependentValueSelector<Solution_> entityIndependentValueSelector,
-            ListVariableStateSupply<Solution_> listVariableStateSupply) {
-        if (!listVariableDescriptor.allowsUnassignedValues()) {
-            return entityIndependentValueSelector;
-        }
-        // We need to filter out unassigned vars.
-        return (EntityIndependentValueSelector<Solution_>) FilteringValueSelector.of(entityIndependentValueSelector,
-                (scoreDirector, selection) -> {
-                    if (listVariableStateSupply.getUnassignedCount() == 0) {
-                        return true;
-                    }
-                    return listVariableStateSupply.isAssigned(selection);
-                });
+        return FilteringValueSelector.ofAssigned(filteredValueSelector, listVariableStateSupply);
     }
 
     @Override
@@ -108,8 +92,7 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
     @Override
     public Iterator<Move<Solution_>> iterator() {
         return new KOptListMoveIterator<>(workingRandom, listVariableDescriptor, listVariableStateSupply,
-                effectiveOriginSelector,
-                effectiveValueSelector, minK, maxK, pickedKDistribution);
+                effectiveOriginSelector, effectiveValueSelector, minK, maxK, pickedKDistribution);
     }
 
     @Override

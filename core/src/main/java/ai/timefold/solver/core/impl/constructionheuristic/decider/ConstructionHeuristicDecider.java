@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.constructionheuristic.decider;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForager;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.Placement;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicMoveScope;
@@ -39,16 +40,17 @@ public class ConstructionHeuristicDecider<Solution_> {
         this.forager = forager;
     }
 
+    public boolean isLoggingEnabled() {
+        return true;
+    }
+
     public ConstructionHeuristicForager<Solution_> getForager() {
         return forager;
     }
 
-    public void setAssertMoveScoreFromScratch(boolean assertMoveScoreFromScratch) {
-        this.assertMoveScoreFromScratch = assertMoveScoreFromScratch;
-    }
-
-    public void setAssertExpectedUndoMoveScore(boolean assertExpectedUndoMoveScore) {
-        this.assertExpectedUndoMoveScore = assertExpectedUndoMoveScore;
+    public void enableAssertions(EnvironmentMode environmentMode) {
+        this.assertMoveScoreFromScratch = environmentMode.isNonIntrusiveFullAsserted();
+        this.assertExpectedUndoMoveScore = environmentMode.isIntrusiveFastAsserted();
     }
 
     // ************************************************************************
@@ -84,9 +86,9 @@ public class ConstructionHeuristicDecider<Solution_> {
     }
 
     public void decideNextStep(ConstructionHeuristicStepScope<Solution_> stepScope, Placement<Solution_> placement) {
-        int moveIndex = 0;
-        for (Move<Solution_> move : placement) {
-            boolean allowedNonDoableMove = move instanceof NoChangeMove<Solution_> || move instanceof ChangeMove<Solution_>;
+        var moveIndex = 0;
+        for (var move : placement) {
+            var allowedNonDoableMove = move instanceof NoChangeMove<Solution_> || move instanceof ChangeMove<Solution_>;
             if (!allowedNonDoableMove && !move.isMoveDoable(stepScope.getScoreDirector())) {
                 // Construction Heuristic should not do non-doable moves, but in some cases, it has to.
                 // Specifically:
@@ -101,8 +103,7 @@ public class ConstructionHeuristicDecider<Solution_> {
                 //      It will never do anything more complex than that.
                 continue;
             }
-            ConstructionHeuristicMoveScope<Solution_> moveScope = new ConstructionHeuristicMoveScope<>(stepScope, moveIndex,
-                    move);
+            var moveScope = new ConstructionHeuristicMoveScope<>(stepScope, moveIndex, move);
             moveIndex++;
             doMove(moveScope);
             if (forager.isQuitEarly()) {
@@ -121,7 +122,7 @@ public class ConstructionHeuristicDecider<Solution_> {
         if (pickedMoveScope != null) {
             Move<Solution_> step = pickedMoveScope.getMove();
             stepScope.setStep(step);
-            if (logger.isDebugEnabled()) {
+            if (isLoggingEnabled() && logger.isDebugEnabled()) {
                 stepScope.setStepString(step.toString());
             }
             stepScope.setScore(pickedMoveScope.getScore());
@@ -139,8 +140,10 @@ public class ConstructionHeuristicDecider<Solution_> {
                     (Score_) moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore(),
                     SolverLifecyclePoint.of(moveScope));
         }
-        logger.trace("{}        Move index ({}), score ({}), move ({}).",
-                logIndentation, moveScope.getMoveIndex(), moveScope.getScore(), moveScope.getMove());
+        if (isLoggingEnabled()) {
+            logger.trace("{}        Move index ({}), score ({}), move ({}).",
+                    logIndentation, moveScope.getMoveIndex(), moveScope.getScore(), moveScope.getMove());
+        }
     }
 
 }

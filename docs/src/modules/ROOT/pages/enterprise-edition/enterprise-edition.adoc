@@ -1,4 +1,5 @@
 = Enterprise Edition
+:page-aliases: partitioned-search/partitioned-search.adoc
 :doctype: book
 :sectnums:
 :icons: font
@@ -274,18 +275,18 @@ for the local search:
 ----
 
 By default, the following move selectors are included:
-xref:optimization-algorithms/optimization-algorithms.adoc#changeMoveSelector[Change],
-xref:optimization-algorithms/optimization-algorithms.adoc#swapMoveSelector[Swap],
+xref:optimization-algorithms/move-selector-reference.adoc#changeMoveSelector[Change],
+xref:optimization-algorithms/move-selector-reference.adoc#swapMoveSelector[Swap],
 Change with Nearby,
 Swap with Nearby,
-and xref:optimization-algorithms/optimization-algorithms.adoc#kOptListMoveSelector[2-OPT] with Nearby.
+and xref:optimization-algorithms/move-selector-reference.adoc#kOptListMoveSelector[2-OPT] with Nearby.
 
 ===== Advanced configuration for local search
 
 To customize the move selectors,
 add a `nearbySelection` element in the `destinationSelector`, `valueSelector` or `subListSelector`
-and use xref:optimization-algorithms/optimization-algorithms.adoc#mimicSelection[mimic selection]
-to specify which destination, value, or subList should be near by the selection.
+and use xref:optimization-algorithms/overview.adoc#mimicSelection[mimic selection]
+to specify which destination, value, or subList should be nearby the selection.
 
 [source,xml,options="nowrap"]
 ----
@@ -350,17 +351,18 @@ for the local search:
 
 By default, the following move selectors are included:
 
-- xref:optimization-algorithms/optimization-algorithms.adoc#changeMoveSelector[Change],
-- xref:optimization-algorithms/optimization-algorithms.adoc#swapMoveSelector[Swap],
+- xref:optimization-algorithms/move-selector-reference.adoc#changeMoveSelector[Change],
+- xref:optimization-algorithms/move-selector-reference.adoc#swapMoveSelector[Swap],
 - Change with Nearby,
 - Swap with Nearby
-- and xref:optimization-algorithms/optimization-algorithms.adoc#tailChainSwapMoveSelector[Tail Chain Swap] with Nearby.
+- and xref:optimization-algorithms/move-selector-reference.adoc#tailChainSwapMoveSelector[Tail Chain Swap] with Nearby.
 
 ===== Advanced configuration for local search
 
 To customize the move selectors,
 add a `nearbySelection` element in the `entitySelector` or `valueSelector`
-and use <<mimicSelection,mimic selection>> to specify which entity should be near by the selection.
+and use xref:optimization-algorithms/overview.adoc#mimicSelection[mimic selection]
+to specify which entity should be nearby the selection.
 
 [source,xml,options="nowrap"]
 ----
@@ -509,7 +511,7 @@ the feature does not bring any benefit.
 At these speeds, score calculation is no longer the bottleneck.
 If the solver continues to underperform,
 perhaps you're suffering from xref:constraints-and-score/performance.adoc#scoreTrap[score traps]
-or you may benefit from xref:optimization-algorithms/optimization-algorithms.adoc#customMoves[custom moves]
+or you may benefit from xref:optimization-algorithms/overview.adoc#customMoves[custom moves]
 to help the solver escape local optima.
 
 [NOTE]
@@ -723,7 +725,8 @@ A xref:using-timefold-solver/running-the-solver.adoc#logging[logging level] of `
 and slows down the xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calculation speed].
 ====
 
-Just like a `<solver>` element, the `<partitionedSearch>` element can contain one or more xref:optimization-algorithms/optimization-algorithms.adoc#solverPhase[phases].
+Just like a `<solver>` element,
+the `<partitionedSearch>` element can contain one or more xref:optimization-algorithms/overview.adoc#solverPhase[phases].
 Each of those phases will be run on each partition.
 
 A common configuration is to first run a Partitioned Search phase
@@ -806,7 +809,7 @@ As explained in xref:integration/integration.adoc#sizingHardwareAndSoftware[sizi
 each solver (including each child solver) does no IO during `solve()` and therefore saturates one CPU core completely.
 In Partitioned Search, every partition always has its own thread, called a part thread.
 It is impossible for two partitions to share a thread,
-because of xref:optimization-algorithms/optimization-algorithms.adoc#asynchronousTermination[asynchronous termination]:
+because of xref:optimization-algorithms/overview.adoc#asynchronousTermination[asynchronous termination]:
 the second thread would never run.
 Every part thread will try to consume one CPU core entirely, so if there are more partitions than CPU cores,
 this will probably hang the system.

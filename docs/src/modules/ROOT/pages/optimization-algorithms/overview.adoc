@@ -1,0 +1,2183 @@
+[#optimizationAlgorithmsOverview]
+= Optimization Algorithms: Overview
+:page-aliases: optimization-algorithms/optimization-algorithms.adoc, \
+    move-and-neighborhood-selection/move-and-neighborhood-selection.adoc, \
+    evolutionary-algorithms/evolutionary-algorithms.adoc, \
+    hyperheuristics/hyperheuristics.adoc
+:doctype: book
+:sectnums:
+:icons: font
+
+== The basics
+
+[#searchSpaceSize]
+=== Search space size in the real world
+
+The number of possible solutions for a planning problem can be mind blowing.
+For example:
+
+* Four queens has `256` possible solutions (``4^4``) and two optimal solutions.
+* Five queens has `3125` possible solutions (``5^5``) and one optimal solution.
+* Eight queens has `16777216` possible solutions (``8^8``) and 92 optimal solutions.
+* 64 queens has more than `10^115` possible solutions (``64^64``).
+* Most real-life planning problems have an incredible number of possible solutions and only one or a few optimal solutions.
+
+For comparison: the minimal number of atoms in the known universe (10^80).
+As a planning problem gets bigger, the search space tends to blow up really fast.
+Adding only one extra planning entity or planning value can heavily multiply the running time of some algorithms.
+Calculating the number of possible solutions depends on the design of the domain model:
+
+image::optimization-algorithms/overview/searchSpaceSizeCalculation.png[align="center"]
+
+
+[NOTE]
+====
+This search space size calculation includes infeasible solutions (if they can be represented by the model), because:
+
+* The optimal solution might be infeasible.
+* There are many types of hard constraints that cannot be incorporated in the formula practically.
+
+Even in cases where adding some of the hard constraints in the formula is practical, the resulting search space is still huge.
+====
+
+An algorithm that checks every possible solution
+(even with pruning, such as in xref:optimization-algorithms/exhaustive-search.adoc#branchAndBound[Branch And Bound])
+can easily run for billions of years on a single real-life planning problem.
+The aim is to find the best solution in the available timeframe.
+Planning competitions (such as the International Timetabling Competition) show
+that xref:optimization-algorithms/local-search.adoc#localSearch[Local Search]
+usually performs best for real-world problems given real-world time limitations.
+
+
+[#doesTimefoldFindTheOptimalSolution]
+=== Does Timefold Solver find the optimal solution?
+
+The business wants the optimal solution, but they also have other requirements:
+
+* Scale out: Large production data sets must not crash and have also good results.
+* Optimize the right problem: The constraints must match the actual business needs.
+* Available time: The solution must be found in time, before it becomes useless to execute.
+* Reliability: Every data set must have at least a decent result (better than a human planner).
+
+Given these requirements, and despite the promises of some salesmen,
+it is usually impossible for anyone or anything to find the optimal solution.
+Therefore, Timefold Solver focuses on finding the best solution in available time.
+
+The nature of NP-complete problems make scaling a prime concern.
+
+[NOTE]
+====
+The quality of a result from a small data set is no indication of the quality of a result from a large data set.
+====
+
+Scaling issues cannot be mitigated by hardware purchases later on.
+Start testing with a production sized data set as soon as possible.
+Do not assess quality on small data sets (unless production encounters only such data sets). Instead, solve a production sized data set and compare the results of longer executions, different algorithms and - if available - the human planner.
+
+
+[#supportedOptimizationAlgorithms]
+=== Supported optimization algorithms
+
+Timefold Solver supports three _families_ of optimization algorithms: Exhaustive Search, Construction Heuristics and Metaheuristics.
+In practice, Metaheuristics (in combination with Construction Heuristics to initialize) are the recommended choice:
+
+image::optimization-algorithms/overview/scalabilityOfOptimizationAlgorithms.png[align="center"]
+
+Each of these algorithm families have multiple optimization algorithms:
+
+.Optimization Algorithms Overview
+[cols="15,^7,^7,^7,^7,^8", options="header"]
+|===
+|Algorithm |Scalable? |Optimal? |Easy to use? |Tweakable? |Requires CH?
+
+6+|**xref:optimization-algorithms/exhaustive-search.adoc#exhaustiveSearch[Exhaustive Search] (ES)**
+|  xref:optimization-algorithms/exhaustive-search.adoc#bruteForce[Brute Force] |0/5 |5/5 |5/5 |0/5 |No
+|  xref:optimization-algorithms/exhaustive-search.adoc#branchAndBound[Branch And Bound] |0/5 |5/5 |4/5 |2/5 |No
+6+|**xref:optimization-algorithms/construction-heuristics.adoc#constructionHeuristics[Construction heuristics] (CH)**
+|  xref:optimization-algorithms/construction-heuristics.adoc#firstFit[First Fit] |5/5 |1/5 |5/5 |1/5 |No
+|  xref:optimization-algorithms/construction-heuristics.adoc#firstFitDecreasing[First Fit Decreasing] |5/5 |2/5 |4/5 |2/5 |No
+|  xref:optimization-algorithms/construction-heuristics.adoc#weakestFit[Weakest Fit] |5/5 |2/5 |4/5 |2/5 |No
+|  xref:optimization-algorithms/construction-heuristics.adoc#weakestFitDecreasing[Weakest Fit Decreasing] |5/5 |2/5 |4/5 |2/5 |No
+|  xref:optimization-algorithms/construction-heuristics.adoc#strongestFit[Strongest Fit] |5/5 |2/5 |4/5 |2/5 |No
+|  xref:optimization-algorithms/construction-heuristics.adoc#strongestFitDecreasing[Strongest Fit Decreasing] |5/5 |2/5 |4/5 |2/5 |No
+|  xref:optimization-algorithms/construction-heuristics.adoc#cheapestInsertion[Cheapest Insertion] |3/5 |2/5 |5/5 |2/5 |No
+|  xref:optimization-algorithms/construction-heuristics.adoc#regretInsertion[Regret Insertion] |3/5 |2/5 |5/5 |2/5 |No
+6+|**Metaheuristics (MH)**
+6+|  xref:optimization-algorithms/local-search.adoc#localSearch[Local Search] (LS)
+|    xref:optimization-algorithms/local-search.adoc#hillClimbing[Hill Climbing] |5/5 |2/5 |4/5 |3/5 |Yes
+|    xref:optimization-algorithms/local-search.adoc#tabuSearch[Tabu Search] |5/5 |4/5 |3/5 |5/5 |Yes
+|    xref:optimization-algorithms/local-search.adoc#simulatedAnnealing[Simulated Annealing] |5/5 |4/5 |2/5 |5/5 |Yes
+|    xref:optimization-algorithms/local-search.adoc#lateAcceptance[Late Acceptance] |5/5 |4/5 |3/5 |5/5 |Yes
+|    xref:optimization-algorithms/local-search.adoc#greatDeluge[Great Deluge] |5/5 |4/5 |3/5 |5/5 |Yes
+|    xref:optimization-algorithms/local-search.adoc#stepCountingHillClimbing[Step Counting Hill Climbing] |5/5 |4/5 |3/5 |5/5 |Yes
+|    xref:optimization-algorithms/local-search.adoc#variableNeighborhoodDescent[Variable Neighborhood Descent] |3/5 |3/5 |2/5 |5/5 |Yes
+|===
+
+To learn more about metaheuristics, see http://www.cs.gmu.edu/~sean/book/metaheuristics/[Essentials of Metaheuristics] or http://www.cleveralgorithms.com/[Clever Algorithms].
+
+
+[#whichOptimizationAlgorithmsShouldIUse]
+=== Which optimization algorithms should I use?
+
+The best optimization algorithm configuration to use depends heavily on your use case.
+However, this basic procedure provides a good starting configuration that will produce better than average results.
+
+. Start with a quick configuration that involves little or no configuration and optimization code:
+See xref:optimization-algorithms/construction-heuristics.adoc#firstFit[First Fit].
+
+. Next, implement xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntityDifficulty[planning entity difficulty] comparison
+and turn it into xref:optimization-algorithms/construction-heuristics.adoc#firstFitDecreasing[First Fit Decreasing].
+
+. Next, add Late Acceptance behind it:
+.. First Fit Decreasing.
+.. xref:optimization-algorithms/local-search.adoc#lateAcceptance[Late Acceptance].
+
+At this point, the return on invested time lowers and the result is likely to be sufficient.
+
+However, this can be improved at a lower return on invested time.
+Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker]
+and try a couple of different Tabu Search, Simulated Annealing and Late Acceptance configurations,
+for example:
+
+. First Fit Decreasing
+. xref:optimization-algorithms/local-search.adoc#tabuSearch[Tabu Search].
+
+Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker]
+to improve the values for the size parameters.
+
+Other experiments can also be run.
+For example, the following multiple algorithms can be combined together:
+
+. First Fit Decreasing
+. Late Acceptance (relatively long time)
+. Tabu Search (relatively short time)
+
+[#architectureOverview]
+== Architecture
+
+Timefold Solver combines optimization algorithms (metaheuristics, ...)
+with score calculation by a score calculation engine.
+This combination is very efficient, because:
+
+* A score calculation engine, is *great for calculating the score* of a solution of a planning problem.
+It makes it easy and scalable to add additional soft or hard constraints.
+It does xref:constraints-and-score/performance.adoc#incrementalScoreCalculation[incremental score calculation (deltas)] without any extra code.
+However it tends to be not suitable to actually find new solutions.
+* An optimization algorithm is *great at finding new improving solutions* for a planning problem,
+without necessarily brute-forcing every possibility.
+However, it needs to know the score of a solution and offers no support in calculating that score efficiently.
+
+image::optimization-algorithms/overview/architectureOverview.png[align="center"]
+
+
+[#powerTweaking]
+=== Power tweaking or default parameter values
+
+Many optimization algorithms have parameters that affect results and scalability.
+Timefold Solver applies __configuration by exception__, so all optimization algorithms have default parameter values.
+This is very similar to the Garbage Collection parameters in a JVM: most users have no need to tweak them, but power users often do.
+
+The default parameter values are sufficient for many cases (and especially for prototypes), but if development time allows, it may be beneficial to power tweak them with the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[benchmarker] for better results and scalability on a specific use case.
+The documentation for each optimization algorithm also declares the advanced configuration for power tweaking.
+
+[WARNING]
+====
+The default value of parameters will change between minor versions, to improve them for most users. The advanced configuration can be used to prevent unwanted changes, however, this is not recommended.
+====
+
+
+[#solverPhase]
+=== Solver phase
+
+A `Solver` can use multiple optimization algorithms in sequence.
+*Each optimization algorithm is represented by one solver `Phase`.*
+There is never more than one `Phase` solving at the same time.
+
+[NOTE]
+====
+Some `Phase` implementations can combine techniques from multiple optimization algorithms, but it is still just one `Phase`.
+For example: a Local Search `Phase` can do Simulated Annealing with entity Tabu.
+====
+
+Here is a configuration that runs three phases in sequence:
+
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  ...
+  <constructionHeuristic>
+    ... <!-- First phase: First Fit Decreasing -->
+  </constructionHeuristic>
+  <localSearch>
+    ... <!-- Second phase: Late Acceptance -->
+  </localSearch>
+  <localSearch>
+    ... <!-- Third phase: Tabu Search -->
+  </localSearch>
+</solver>
+----
+
+The solver phases are run in the order defined by solver configuration.
+
+* When the first `Phase` terminates, the second `Phase` starts, and so on.
+* When the last `Phase` terminates, the `Solver` terminates.
+
+Usually, a `Solver` will first run a construction heuristic and then run one or multiple metaheuristics:
+
+image::optimization-algorithms/overview/generalPhaseSequence.png[align="center"]
+
+If no phases are configured, Timefold Solver will default to a Construction Heuristic phase followed by a Local Search phase.
+
+Some phases (especially construction heuristics) will terminate automatically.
+Other phases (especially metaheuristics) will only terminate if the `Phase` is configured to terminate:
+
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  ...
+  <termination><!-- Solver termination -->
+    <secondsSpentLimit>90</secondsSpentLimit>
+  </termination>
+  <localSearch>
+    <termination><!-- Phase termination -->
+      <secondsSpentLimit>60</secondsSpentLimit><!-- Give the next phase a chance to run too, before the Solver terminates -->
+    </termination>
+    ...
+  </localSearch>
+  <localSearch>
+    ...
+  </localSearch>
+</solver>
+----
+
+If the `Solver` terminates (before the last `Phase` terminates itself),
+the current phase is terminated and all subsequent phases will not run.
+
+
+[#scopeOverview]
+=== Scope overview
+
+A solver will iteratively run phases. Each phase will usually iteratively run steps. Each step, in turn, usually iteratively runs moves.
+These form four nested scopes:
+
+. Solver
+. Phase
+. Step
+. Move
+
+image::optimization-algorithms/overview/scopeOverview.png[align="center"]
+
+Configure xref:using-timefold-solver/running-the-solver.adoc#logging[logging] to display the log messages of each scope.
+
+
+[#termination]
+=== Termination
+
+Not all phases terminate automatically and may take a significant amount of time.
+A `Solver` can be terminated synchronously by up-front configuration, or asynchronously from another thread.
+
+Metaheuristic phases in particular need to be instructed to stop solving.
+This can be because of a number of reasons, for example, if the time is up, or the perfect score has been reached just before its solution is used.
+Finding the optimal solution cannot be relied on (unless you know the optimal score), because a metaheuristic algorithm is generally unaware of the optimal solution.
+
+This is not an issue for real-life problems, as finding the optimal solution may take more time than is available.
+Finding the best solution in the available time is the most important outcome.
+
+[IMPORTANT]
+====
+If no termination is configured (and a metaheuristic algorithm is used), the `Solver` will run forever, until <<asynchronousTermination,terminateEarly()>> is called from another thread.
+This is especially common during xref:responding-to-change/responding-to-change.adoc#realTimePlanning[real-time planning].
+====
+
+For synchronous termination, configure a `Termination` on a `Solver` or a `Phase` when it needs to stop.
+Every `Termination` can calculate a _time gradient_ (needed for some optimization algorithms),
+which is a ratio between the time already spent solving and the estimated entire solving time of the `Solver` or `Phase`.
+
+
+[#timeMillisSpentTermination]
+==== Time spent termination
+
+Terminates when an amount of time has been used.
+
+[source,xml,options="nowrap"]
+----
+  <termination>
+    <!-- 2 minutes and 30 seconds in ISO 8601 format P[n]Y[n]M[n]DT[n]H[n]M[n]S -->
+    <spentLimit>PT2M30S</spentLimit>
+  </termination>
+----
+
+Alternatively to a `java.util.Duration` in ISO 8601 format, you can also use:
+
+* Milliseconds
++
+[source,xml,options="nowrap"]
+----
+  <termination>
+    <millisecondsSpentLimit>500</millisecondsSpentLimit>
+  </termination>
+----
+
+* Seconds
++
+[source,xml,options="nowrap"]
+----
+  <termination>
+    <secondsSpentLimit>10</secondsSpentLimit>
+  </termination>
+----
+
+* Minutes
++
+[source,xml,options="nowrap"]
+----
+  <termination>
+    <minutesSpentLimit>5</minutesSpentLimit>
+  </termination>
+----
+
+* Hours
++
+[source,xml,options="nowrap"]
+----
+  <termination>
+    <hoursSpentLimit>1</hoursSpentLimit>
+  </termination>
+----
+
+* Days
++
+[source,xml,options="nowrap"]
+----
+  <termination>
+    <daysSpentLimit>2</daysSpentLimit>
+  </termination>
+----
+
+Multiple time types can be used together, for example to configure 150 minutes, either configure it directly:
+
+[source,xml,options="nowrap"]
+----
+  <termination>
+    <minutesSpentLimit>150</minutesSpentLimit>
+  </termination>
+----
+
+Or use a combination that sums up to 150 minutes:
+
+[source,xml,options="nowrap"]
+----
+  <termination>
+    <hoursSpentLimit>2</hoursSpentLimit>
+    <minutesSpentLimit>30</minutesSpentLimit>
+  </termination>
+----
+
+[NOTE]
+====
+This `Termination` will most likely sacrifice perfect reproducibility (even with `environmentMode` `REPRODUCIBLE`)
+because the available CPU time differs frequently between runs:
+
+* The available CPU time influences the number of steps that can be taken, which might be a few more or less.
+* The `Termination` might produce slightly different time gradient values,
+which will send time gradient-based algorithms (such as Simulated Annealing) on a radically different path.
+====
+
+
+[#unimprovedTimeMillisSpentTermination]
+==== Unimproved time spent termination
+
+Terminates when the best score has not improved in a specified amount of time.
+Each time a new best solution is found, the timer basically resets.
+
+[source,xml,options="nowrap"]
+----
+  <localSearch>
+    <termination>
+      <!-- 2 minutes and 30 seconds in ISO 8601 format P[n]Y[n]M[n]DT[n]H[n]M[n]S -->
+      <unimprovedSpentLimit>PT2M30S</unimprovedSpentLimit>
+    </termination>
+  </localSearch>
+----
+
+Alternatively to a `java.util.Duration` in ISO 8601 format, you can also use:
+
+* Milliseconds
++
+[source,xml,options="nowrap"]
+----
+  <localSearch>
+    <termination>
+      <unimprovedMillisecondsSpentLimit>500</unimprovedMillisecondsSpentLimit>
+    </termination>
+  </localSearch>
+----
+
+* Seconds
++
+[source,xml,options="nowrap"]
+----
+  <localSearch>
+    <termination>
+      <unimprovedSecondsSpentLimit>10</unimprovedSecondsSpentLimit>
+    </termination>
+  </localSearch>
+----
+
+* Minutes
++
+[source,xml,options="nowrap"]
+----
+  <localSearch>
+    <termination>
+      <unimprovedMinutesSpentLimit>5</unimprovedMinutesSpentLimit>
+    </termination>
+  </localSearch>
+----
+
+* Hours
++
+[source,xml,options="nowrap"]
+----
+  <localSearch>
+    <termination>
+      <unimprovedHoursSpentLimit>1</unimprovedHoursSpentLimit>
+    </termination>
+  </localSearch>
+----
+
+* Days
++
+[source,xml,options="nowrap"]
+----
+  <localSearch>
+    <termination>
+      <unimprovedDaysSpentLimit>1</unimprovedDaysSpentLimit>
+    </termination>
+  </localSearch>
+----
+
+Just like <<timeMillisSpentTermination,time spent termination>>, combinations are summed up.
+
+It is preffered to configure this termination on a specific `Phase` (such as ``<localSearch>``) instead of on the `Solver` itself.
+
+Several phases, such as construction heuristics, do not count towards this termination because
+they only trigger new best solution events when they are done.
+If such a phase is encountered, the termination is disabled and when the next phase is started,
+the termination is enabled again and the timer resets back to zero.
+In the most typical case, where a local search phase follows a construction heuristic phase,
+the termination will only trigger if the local search phase does not improve the best solution for the specified time.
+
+[NOTE]
+====
+This `Termination` will most likely sacrifice perfect reproducibility (even with `environmentMode` ``REPRODUCIBLE``)
+as the available CPU time differs frequently between runs:
+
+* The available CPU time influences the number of steps that can be taken, which might be a few more or less.
+* The `Termination` might produce slightly different time gradient values,
+which will send time gradient based algorithms (such as Simulated Annealing) on a radically different path.
+====
+
+Optionally, configure a score difference threshold by which the best score must improve in the specified time.
+For example, if the score doesn't improve by at least `100` soft points every 30 seconds or less, it terminates:
+
+[source,xml,options="nowrap"]
+----
+  <localSearch>
+    <termination>
+      <unimprovedSecondsSpentLimit>30</unimprovedSecondsSpentLimit>
+      <unimprovedScoreDifferenceThreshold>0hard/100soft</unimprovedScoreDifferenceThreshold>
+    </termination>
+  </localSearch>
+----
+
+If the score improves by 1 hard point and drops 900 soft points, it's still meets the threshold,
+because `1hard/-900soft` is larger than the threshold `0hard/100soft`.
+
+On the other hand, a threshold of `1hard/0soft` is not met by any new best solution
+that improves 1 hard point at the expense of 1 or more soft points,
+because `1hard/-100soft` is smaller than the threshold `1hard/0soft`.
+
+To require a feasibility improvement every 30 seconds while avoiding the pitfall above,
+use a wildcard `*` for lower score levels that are allowed to deteriorate if a higher score level improves:
+
+[source,xml,options="nowrap"]
+----
+  <localSearch>
+    <termination>
+      <unimprovedSecondsSpentLimit>30</unimprovedSecondsSpentLimit>
+      <unimprovedScoreDifferenceThreshold>1hard/*soft</unimprovedScoreDifferenceThreshold>
+    </termination>
+  </localSearch>
+----
+
+This effectively implies a threshold of `1hard/-2147483648soft`, because it relies on `Integer.MIN_VALUE`.
+
+
+[#bestScoreTermination]
+==== `BestScoreTermination`
+
+`BestScoreTermination` terminates when a certain score has been reached.
+Use this `Termination` where the perfect score is known,
+for example for four queens (which uses a xref:constraints-and-score/overview.adoc#simpleScore[SimpleScore]):
+
+[source,xml,options="nowrap"]
+----
+  <termination>
+    <bestScoreLimit>0</bestScoreLimit>
+  </termination>
+----
+
+A planning problem with a xref:constraints-and-score/overview.adoc#hardSoftScore[HardSoftScore] may look like this:
+
+[source,xml,options="nowrap"]
+----
+  <termination>
+    <bestScoreLimit>0hard/-5000soft</bestScoreLimit>
+  </termination>
+----
+
+A planning problem with a xref:constraints-and-score/overview.adoc#bendableScore[BendableScore] with three hard levels and one soft level may look like this:
+
+[source,xml,options="nowrap"]
+----
+  <termination>
+    <bestScoreLimit>[0/0/0]hard/[-5000]soft</bestScoreLimit>
+  </termination>
+----
+
+In this instance, `Termination` once a feasible solution has been reached is not practical because it requires a `bestScoreLimit` such as ``0hard/-2147483648soft``. Use the next termination instead.
+
+
+[#bestScoreFeasibleTermination]
+==== `BestScoreFeasibleTermination`
+
+Terminates as soon as a feasible solution has been discovered.
+
+[source,xml,options="nowrap"]
+----
+  <termination>
+    <bestScoreFeasible>true</bestScoreFeasible>
+  </termination>
+----
+
+This `Termination` is usually combined with other terminations.
+
+
+[#stepCountTermination]
+==== `StepCountTermination`
+
+Terminates when a number of steps has been reached.
+This is useful for hardware performance independent runs.
+
+[source,xml,options="nowrap"]
+----
+  <localSearch>
+    <termination>
+      <stepCountLimit>100</stepCountLimit>
+    </termination>
+  </localSearch>
+----
+
+This `Termination` can only be used for a `Phase` (such as ``<localSearch>``), not for the `Solver` itself.
+
+
+[#unimprovedStepCountTermination]
+==== `UnimprovedStepCountTermination`
+
+Terminates when the best score has not improved in a number of steps.
+This is useful for hardware performance independent runs.
+
+[source,xml,options="nowrap"]
+----
+  <localSearch>
+    <termination>
+      <unimprovedStepCountLimit>100</unimprovedStepCountLimit>
+    </termination>
+  </localSearch>
+----
+
+If the score has not improved recently, it is unlikely to improve in a reasonable timeframe.
+It has been observed that once a new best solution is found (even after a long time without improvement on the best solution),
+the next few steps tend to improve the best solution.
+
+This `Termination` can only be used for a `Phase` (such as ``<localSearch>``), not for the `Solver` itself.
+
+
+[#scoreCalculationCountTermination]
+==== `ScoreCalculationCountTermination`
+
+`ScoreCalculationCountTermination` terminates when a number of score calculations have been reached.
+This is often the sum of the number of moves and the number of steps.
+This is useful for benchmarking.
+
+[source,xml,options="nowrap"]
+----
+  <termination>
+    <scoreCalculationCountLimit>100000</scoreCalculationCountLimit>
+  </termination>
+----
+
+Switching xref:using-timefold-solver/running-the-solver.adoc#environmentMode[EnvironmentMode] can heavily impact when this termination ends.
+
+
+[#combiningMultipleTerminations]
+==== Combining multiple terminations
+
+Terminations can be combined, for example: terminate after `100` steps or if a score of `0` has been reached:
+
+[source,xml,options="nowrap"]
+----
+  <termination>
+    <terminationCompositionStyle>OR</terminationCompositionStyle>
+    <bestScoreLimit>0</bestScoreLimit>
+    <stepCountLimit>100</stepCountLimit>
+  </termination>
+----
+
+Alternatively you can use `AND`, for example: terminate after reaching a feasible score of at least `-100` and no improvements in `5` steps:
+
+[source,xml,options="nowrap"]
+----
+  <termination>
+    <terminationCompositionStyle>AND</terminationCompositionStyle>
+    <bestScoreLimit>-100</bestScoreLimit>
+    <unimprovedStepCountLimit>5</unimprovedStepCountLimit>
+  </termination>
+----
+
+This example ensures it does not just terminate after finding a feasible solution, but also completes any obvious improvements on that solution before terminating.
+
+
+[#asynchronousTermination]
+==== Asynchronous termination from another thread
+
+Asynchronous termination cannot be configured by a `Termination` as it is impossible to predict when and if it will occur.
+For example, a user action or a server restart could require a solver to terminate earlier than predicted.
+
+To terminate a solver from another thread asynchronously
+call the `terminateEarly()` method from another thread:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+solver.terminateEarly();
+----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+solver.terminate_early()
+----
+====
+
+The solver then terminates at its earliest convenience.
+After termination, the `Solver.solve(Solution)` method returns in the solver thread (which is the original thread that called it).
+
+[NOTE]
+====
+When an `ExecutorService` shuts down, it interrupts all threads in its thread pool.
+
+To guarantee a graceful shutdown of a thread pool that contains solver threads,
+an _interrupt_ of a solver thread has the same effect as calling `Solver.terminateEarly()` explicitly.
+====
+
+
+[#SolverEventListener]
+=== `SolverEventListener`
+
+Each time a new best solution is found, a new `BestSolutionChangedEvent` is fired in the `Solver` thread.
+
+To listen to such events, add a `SolverEventListener` to the ``Solver``:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public interface Solver<Solution_> {
+    ...
+
+    void addEventListener(SolverEventListener<S> eventListener);
+    void removeEventListener(SolverEventListener<S> eventListener);
+
+}
+----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+class Solver(Generic[Solution_]):
+    ...
+    def add_event_listener(self, event_listener: Callable[[BestSolutionChangedEvent[Solution_]], None]):
+        ...
+
+    def remove_event_listener(self, event_listener: Callable[[BestSolutionChangedEvent[Solution_]], None]):
+        ...
+----
+====
+
+The ``BestSolutionChangedEvent``'s `newBestSolution` may not be initialized or feasible.
+Use the `isFeasible()` method on ``BestSolutionChangedEvent``'s new best `Score` to detect such cases.
+Use `Score.isSolutionInitialized()` instead of `Score.isFeasible()` to only ignore uninitialized solutions,
+but also accept infeasible solutions.
+
+[WARNING]
+====
+The `bestSolutionChanged()` method is called in the solver's thread, as part of `Solver.solve()`.
+So it should return quickly to avoid slowing down the solving.
+====
+
+
+[#customSolverPhase]
+=== Custom solver phase
+
+[NOTE]
+====
+This feature is not yet supported in Timefold Solver for Python.
+====
+
+Run a custom optimization algorithm between phases or before the first phase to initialize the solution, or to get a better score quickly.
+You will still want to reuse the score calculation.
+For example, to implement a custom Construction Heuristic without implementing an entire `Phase`.
+
+[NOTE]
+====
+Most of the time, a custom solver phase is not worth the development time investment.
+xref:optimization-algorithms/construction-heuristics.adoc#constructionHeuristics[Construction Heuristics] are configurable,
+`Termination`-aware and support partially initialized solutions too.
+You can use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to tweak them.
+====
+
+The `CustomPhaseCommand` interface appears as follows:
+
+[source,java,options="nowrap"]
+----
+public interface CustomPhaseCommand<Solution_> {
+    ...
+
+    void changeWorkingSolution(ScoreDirector<Solution_> scoreDirector);
+
+}
+----
+
+[WARNING]
+====
+Any change on the planning entities in a `CustomPhaseCommand` must be notified to the ``ScoreDirector``.
+====
+
+[NOTE]
+====
+Do not change any of the problem facts in a `CustomPhaseCommand`.
+That will corrupt the `Solver` because any previous score or solution was for a different problem.
+To do that, read about xref:responding-to-change/responding-to-change.adoc[repeated planning] and do it with a xref:responding-to-change/responding-to-change.adoc#problemChange[ProblemChange] instead.
+====
+
+Configure the `CustomPhaseCommand` in the solver configuration:
+
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  ...
+  <customPhase>
+    <customPhaseCommandClass>...MyCustomPhase</customPhaseCommandClass>
+  </customPhase>
+  ... <!-- Other phases -->
+</solver>
+----
+
+Configure multiple `customPhaseCommandClass` instances to run them in sequence.
+
+[IMPORTANT]
+====
+If the changes of a `CustomPhaseCommand` do not result in a better score, the best solution will not be changed
+(so effectively nothing will have changed for the next `Phase` or `CustomPhaseCommand`).
+====
+
+[NOTE]
+====
+If the `Solver` or a `Phase` wants to terminate while a `CustomPhaseCommand` is still running,
+it waits to terminate until the `CustomPhaseCommand` is complete.
+This may take a significant amount of time.
+The built-in solver phases do not have this issue.
+====
+
+To configure values of a `CustomPhaseCommand` dynamically in the solver configuration
+(so the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
+add the `customProperties` element and use xref:using-timefold-solver/configuration.adoc#customPropertiesConfiguration[custom properties]:
+
+[source,xml,options="nowrap"]
+----
+  <customPhase>
+    <customPhaseCommandClass>...MyCustomPhase</customPhaseCommandClass>
+    <customProperties>
+      <property name="mySelectionSize" value="5"/>
+    </customProperties>
+  </customPhase>
+----
+
+
+[#noChangeSolverPhase]
+=== No change solver phase
+
+In rare cases, it's useful not to run any solver phases.
+But by default, configuring no phase will trigger running the default phases.
+To avoid those, configure a `NoChangePhase`:
+
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+  ...
+  <noChangePhase/>
+</solver>
+----
+
+
+[#moveAndNeighborhoodSelection]
+== Move and neighborhood selection
+:doctype: book
+:sectnums:
+:icons: font
+
+
+[#moveAndNeighborhoodSelectionIntroduction]
+=== Move and neighborhood introduction
+
+
+[#whatIsAMove]
+==== What is a `Move`?
+
+A `Move` is a change (or set of changes) from a solution A to a solution B.
+For example, the move below changes queen `C` from row `0` to row ``2``:
+
+image::optimization-algorithms/overview/singleMoveNQueens04.png[align="center"]
+
+The new solution is called a _neighbor_ of the original solution, because it can be reached in a single ``Move``.
+Although a single move can change multiple queens,
+the neighbors of a solution should always be a tiny subset of all possible solutions.
+For example, on that original solution, these are all possible ``changeMove``s:
+
+image::optimization-algorithms/overview/possibleMovesNQueens04.png[align="center"]
+
+If we ignore the four ``changeMove``s that have no impact and are therefore not doable, we can see that the number of moves is ``n * (n - 1) = 12``.
+This is far less than the number of possible solutions, which is ``n ^ n = 256``.
+As the problem scales out, the number of possible moves increases far less than the number of possible solutions.
+
+Yet, in four ``changeMove``s or less we can reach any solution.
+For example we can reach a very different solution in three ``changeMove``s:
+
+image::optimization-algorithms/overview/sequentialMovesNQueens04.png[align="center"]
+
+
+[NOTE]
+====
+There are many other types of moves besides ``changeMove``s.
+Many move types are included out-of-the-box, but you can also implement custom moves.
+
+A `Move` can affect multiple entities or even create/delete entities.
+But it must not change the problem facts.
+====
+
+All optimization algorithms use ``Move``s to transition from one solution to a neighbor solution.
+Therefore, all the optimization algorithms are confronted with `Move` selection: the craft of creating and iterating moves efficiently and the art of finding the most promising subset of random moves to evaluate first.
+
+
+[#whatIsAMoveSelector]
+==== What is a `MoveSelector`?
+
+A ``MoveSelector``'s main function is to create `Iterator<Move>` when needed.
+An optimization algorithm will iterate through a subset of those moves.
+
+Here's an example how to configure a `changeMoveSelector` for the optimization algorithm Local Search:
+
+[source,xml,options="nowrap"]
+----
+  <localSearch>
+    <changeMoveSelector/>
+    ...
+  </localSearch>
+----
+
+Out of the box, this works and all properties of the `changeMoveSelector` are defaulted sensibly (unless that fails fast due to ambiguity). On the other hand, the configuration can be customized significantly for specific use cases.
+For example: you might want to configure a <<filteredSelection,filter>> to discard pointless moves.
+
+
+[#subselectingOfEntitiesValuesAndOtherMoves]
+==== Subselecting of entities, values, and other moves
+
+To create a ``Move``, a `MoveSelector` needs to select one or more planning entities and/or planning values to move.
+Just like ``MoveSelector``s, ``EntitySelector``s and ``ValueSelector``s need to support a similar feature set (such as scalable just-in-time selection). Therefore, they all implement a common interface `Selector` and they are configured similarly.
+
+A MoveSelector is often composed out of ``EntitySelector``s, ``ValueSelector``s or even other ``MoveSelector``s, which can be configured individually if desired:
+
+[source,xml,options="nowrap"]
+----
+    <unionMoveSelector>
+      <changeMoveSelector>
+        <entitySelector>
+          ...
+        </entitySelector>
+        <valueSelector>
+          ...
+        </valueSelector>
+        ...
+      </changeMoveSelector>
+      <swapMoveSelector>
+        ...
+      </swapMoveSelector>
+    </unionMoveSelector>
+----
+
+Together, this structure forms a `Selector` tree:
+
+image::optimization-algorithms/overview/selectorTree.png[align="center"]
+
+The root of this tree is a `MoveSelector` which is injected into the optimization algorithm implementation to be (partially) iterated in every step.
+For a full list of `MoveSelector` implementations available out of the box,
+see xref:optimization-algorithms/move-selector-reference.adoc[Move Selector reference].
+
+
+[#combiningMultipleMoveSelectors]
+=== Combining multiple ``MoveSelector``s
+
+
+[#unionMoveSelector]
+==== `unionMoveSelector`
+
+A `unionMoveSelector` selects a `Move` by selecting one of its `MoveSelector` children to supply the next ``Move``.
+
+Simplest configuration:
+
+[source,xml,options="nowrap"]
+----
+    <unionMoveSelector>
+      <...MoveSelector/>
+      <...MoveSelector/>
+      <...MoveSelector/>
+      ...
+    </unionMoveSelector>
+----
+
+Advanced configuration:
+
+[source,xml,options="nowrap"]
+----
+    <unionMoveSelector>
+      ... <!-- Normal selector properties -->
+      <changeMoveSelector>
+        <fixedProbabilityWeight>...</fixedProbabilityWeight>
+        ...
+      </changeMoveSelector>
+      <swapMoveSelector>
+        <fixedProbabilityWeight>...</fixedProbabilityWeight>
+        ...
+      </swapMoveSelector>
+      <...MoveSelector>
+        <fixedProbabilityWeight>...</fixedProbabilityWeight>
+        ...
+      </...MoveSelector>
+      ...
+      <selectorProbabilityWeightFactoryClass>...ProbabilityWeightFactory</selectorProbabilityWeightFactoryClass>
+    </unionMoveSelector>
+----
+
+The `selectorProbabilityWeightFactory` determines in `selectionOrder` ``RANDOM`` how often a `MoveSelector` child is selected to supply the next Move.
+By default, each `MoveSelector` child has the same chance of being selected.
+
+image::optimization-algorithms/overview/selectorProbabilityInUnion.png[align="center"]
+
+Change the `fixedProbabilityWeight` of such a child to select it more often.
+For example, the `unionMoveSelector` can return a `SwapMove` twice as often as a ``ChangeMove``:
+
+[source,xml,options="nowrap"]
+----
+    <unionMoveSelector>
+      <changeMoveSelector>
+        <fixedProbabilityWeight>1.0</fixedProbabilityWeight>
+        ...
+      </changeMoveSelector>
+      <swapMoveSelector>
+        <fixedProbabilityWeight>2.0</fixedProbabilityWeight>
+        ...
+      </swapMoveSelector>
+    </unionMoveSelector>
+----
+
+The number of possible ``ChangeMove``s is very different from the number of possible ``SwapMove``s and furthermore it's problem dependent.
+To give each individual `Move` the same selection chance (as opposed to each ``MoveSelector``), use the ``FairSelectorProbabilityWeightFactory``:
+
+[source,xml,options="nowrap"]
+----
+    <unionMoveSelector>
+      <changeMoveSelector/>
+      <swapMoveSelector/>
+      <selectorProbabilityWeightFactoryClass>ai.timefold.solver.core.impl.heuristic.selector.common.decorator.FairSelectorProbabilityWeightFactory</selectorProbabilityWeightFactoryClass>
+    </unionMoveSelector>
+----
+
+
+[#cartesianProductMoveSelector]
+==== `cartesianProductMoveSelector`
+
+A `cartesianProductMoveSelector` selects a new ``CompositeMove``.
+It builds that `CompositeMove` by selecting one `Move` per `MoveSelector` child and adding it to the ``CompositeMove``.
+
+Simplest configuration:
+
+[source,xml,options="nowrap"]
+----
+    <cartesianProductMoveSelector>
+      <...MoveSelector/>
+      <...MoveSelector/>
+      <...MoveSelector/>
+      ...
+    </cartesianProductMoveSelector>
+----
+
+Advanced configuration:
+
+[source,xml,options="nowrap"]
+----
+    <cartesianProductMoveSelector>
+      ... <!-- Normal selector properties -->
+      <changeMoveSelector>
+        ...
+      </changeMoveSelector>
+      <swapMoveSelector>
+        ...
+      </swapMoveSelector>
+      <...MoveSelector>
+        ...
+      </...MoveSelector>
+      ...
+      <ignoreEmptyChildIterators>true</ignoreEmptyChildIterators>
+    </cartesianProductMoveSelector>
+----
+
+The `ignoreEmptyChildIterators` property (true by default) will ignore every empty `childMoveSelector` to avoid returning no moves.
+For example: a cartesian product of `changeMoveSelector` A and B, for which B is empty (because all it's entities are pinned) returns no move if `ignoreEmptyChildIterators` is `false` and the moves of A if `ignoreEmptyChildIterators` is ``true``.
+
+To enforce that two child selectors use the same entity or value efficiently, use <<mimicSelection,mimic selection>>, not move filtering.
+
+
+[#entitySelector]
+=== `EntitySelector`
+
+Simplest configuration:
+
+[source,xml,options="nowrap"]
+----
+      <entitySelector/>
+----
+
+Advanced configuration:
+
+[source,xml,options="nowrap"]
+----
+      <entitySelector>
+        ... <!-- Normal selector properties -->
+        <entityClass>org.acme.vehiclerouting.domain.Vehicle</entityClass>
+      </entitySelector>
+----
+
+The `entityClass` property is only required if it cannot be deduced automatically because there are multiple entity classes.
+
+
+[#valueSelector]
+=== `ValueSelector`
+
+Simplest configuration:
+
+[source,xml,options="nowrap"]
+----
+      <valueSelector/>
+----
+
+Advanced configuration:
+
+[source,xml,options="nowrap"]
+----
+      <valueSelector variableName="room">
+        ... <!-- Normal selector properties -->
+      </valueSelector>
+----
+
+The `variableName` property is only required if it cannot be deduced automatically because there are multiple variables (for the related entity class).
+
+In exotic Construction Heuristic configurations, the `entityClass` from the `EntitySelector` sometimes needs to be downcasted, which can be done with the property ``downcastEntityClass``:
+
+[source,xml,options="nowrap"]
+----
+      <valueSelector variableName="period">
+        <downcastEntityClass>...LeadingExam</downcastEntityClass>
+      </valueSelector>
+----
+
+If a selected entity cannot be downcasted, the `ValueSelector` is empty for that entity.
+
+
+[#generalSelectorFeatures]
+=== General `Selector` features
+
+
+[#cacheType]
+==== `CacheType`: create moves ahead of time or just in time
+
+A ``Selector``'s `cacheType` determines when a selection (such as a ``Move``, an entity, a value, ...)
+is created and how long it lives.
+
+Almost every `Selector` supports setting a ``cacheType``:
+
+[source,xml,options="nowrap"]
+----
+    <changeMoveSelector>
+      <cacheType>PHASE</cacheType>
+      ...
+    </changeMoveSelector>
+----
+
+The following ``cacheType``s are supported:
+
+* `JUST_IN_TIME` (default, recommended): Not cached. Construct each selection (``Move``, ...) just before it's used.
+This scales up well in memory footprint.
+* ``STEP``: Cached. Create each selection (``Move``, ...) at the beginning of a step and cache them in a list for the remainder of the step.
+This scales up badly in memory footprint.
+* ``PHASE``: Cached. Create each selection (``Move``, ...) at the beginning of a solver phase and cache them in a list for the remainder of the phase. Some selections cannot be phase cached because the list changes every step.
+This scales up badly in memory footprint, but has a slight performance gain.
+* ``SOLVER``: Cached. Create each selection (``Move``, ...) at the beginning of a `Solver` and cache them in a list for the remainder of the ``Solver``. Some selections cannot be solver cached because the list changes every step.
+This scales up badly in memory footprint, but has a slight performance gain.
+
+A `cacheType` can be set on composite selectors too:
+
+[source,xml,options="nowrap"]
+----
+    <unionMoveSelector>
+      <cacheType>PHASE</cacheType>
+      <changeMoveSelector/>
+      <swapMoveSelector/>
+      ...
+    </unionMoveSelector>
+----
+
+Nested selectors of a cached selector cannot be configured to be cached themselves, unless it's a higher ``cacheType``.
+For example: a `STEP` cached `unionMoveSelector` can contain a `PHASE` cached ``changeMoveSelector``,
+but it cannot contain a `STEP` cached ``changeMoveSelector``.
+
+
+[#selectionOrder]
+==== `SelectionOrder`: original, sorted, random, shuffled, or probabilistic
+
+A ``Selector``'s `selectionOrder` determines the order in which the selections (such as ``Move``s, entities, values, ...) are iterated.
+An optimization algorithm will usually only iterate through a subset of its ``MoveSelector``'s selections, starting from the start, so the `selectionOrder` is critical to decide which ``Move``s are actually evaluated.
+
+Almost every `Selector` supports setting a ``selectionOrder``:
+
+[source,xml,options="nowrap"]
+----
+    <changeMoveSelector>
+      ...
+      <selectionOrder>RANDOM</selectionOrder>
+      ...
+    </changeMoveSelector>
+----
+
+The following ``selectionOrder``s are supported:
+
+* ``ORIGINAL``: Select the selections (``Move``s, entities, values, ...) in default order. Each selection will be selected only once.
+** For example: A0, A1, A2, A3, ..., B0, B1, B2, B3, ..., C0, C1, C2, C3, ...
+* SORTED: Select the selections (``Move``s, entities, values, ...) in sorted order. Each selection will be selected only once. Requires ``cacheType >= STEP``. Mostly used on an `entitySelector` or `valueSelector` for construction heuristics. See <<sortedSelection,sorted selection>>.
+** For example: A0, B0, C0, ..., A2, B2, C2, ..., A1, B1, C1, ...
+* RANDOM (default): Select the selections (``Move``s, entities, values, ...) in non-shuffled random order. A selection might be selected multiple times. This scales up well in performance because it does not require caching.
+** For example: C2, A3, B1, C2, A0, C0, ...
+* SHUFFLED: Select the selections (``Move``s, entities, values, ...) in shuffled random order. Each selection will be selected only once. Requires ``cacheType >= STEP``. This scales up badly in performance, not just because it requires caching, but also because a random number is generated for each element, even if it's not selected (which is the grand majority when scaling up).
+** For example: C2, A3, B1, A0, C0, ...
+* PROBABILISTIC: Select the selections (``Move``s, entities, values, ...) in random order, based on the selection probability of each element. A selection with a higher probability has a higher chance to be selected than elements with a lower probability. A selection might be selected multiple times. Requires ``cacheType >= STEP``. Mostly used on an `entitySelector` or ``valueSelector``. See <<probabilisticSelection,probabilistic selection>>.
+** For example: B1, B1, A1, B2, B1, C2, B1, B1, ...
+
+A `selectionOrder` can be set on composite selectors too.
+
+[NOTE]
+====
+When a `Selector` is cached, all of its nested ``Selector``s will naturally default to `selectionOrder` ``ORIGINAL``.
+Avoid overwriting the `selectionOrder` of those nested ``Selector``s.
+====
+
+
+[#recommendedCombinationsOfCacheTypeAndSelectionOrder]
+==== Recommended combinations of `CacheType` and `SelectionOrder`
+
+
+[#justInTimeRandomSelection]
+===== Just in time random selection (default)
+
+This combination is great for big use cases (10 000 entities or more), as it scales up well in memory footprint and performance.
+Other combinations are often not even viable on such sizes.
+It works for smaller use cases too, so it's a good way to start out.
+It's the default, so this explicit configuration of `cacheType` and `selectionOrder` is actually obsolete:
+
+[source,xml,options="nowrap"]
+----
+    <unionMoveSelector>
+      <cacheType>JUST_IN_TIME</cacheType>
+      <selectionOrder>RANDOM</selectionOrder>
+
+      <changeMoveSelector/>
+      <swapMoveSelector/>
+    </unionMoveSelector>
+----
+
+Here's how it works.
+When `Iterator<Move>.next()` is called, a child `MoveSelector` is randomly selected (1), which creates a random `Move` (2, 3, 4) and is then returned (5):
+
+image::optimization-algorithms/overview/jitRandomSelection.png[align="center"]
+
+Notice that *it never creates a list of ``**Move**``s* and it generates random numbers only for ``Move``s that are actually selected.
+
+
+[#cachedShuffledSelection]
+===== Cached shuffled selection
+
+This combination often wins for small use cases (1000 entities or less).
+Beyond that size, it scales up badly in memory footprint and performance.
+
+[source,xml,options="nowrap"]
+----
+    <unionMoveSelector>
+      <cacheType>PHASE</cacheType>
+      <selectionOrder>SHUFFLED</selectionOrder>
+
+      <changeMoveSelector/>
+      <swapMoveSelector/>
+    </unionMoveSelector>
+----
+
+Here's how it works: At the start of the phase (or step depending on the ``cacheType``), all moves are created (1) and cached (2). When `MoveSelector.iterator()` is called, the moves are shuffled (3). When `Iterator<Move>.next()` is called, the next element in the shuffled list is returned (4):
+
+image::optimization-algorithms/overview/cachedShuffledSelection.png[align="center"]
+
+Notice that **each ``Move`` will only be selected once**, even though they are selected in random order.
+
+Use cacheType PHASE if none of the (possibly nested) Selectors require ``STEP``.
+Otherwise, do something like this:
+
+[source,xml,options="nowrap"]
+----
+    <unionMoveSelector>
+      <cacheType>STEP</cacheType>
+      <selectionOrder>SHUFFLED</selectionOrder>
+
+      <changeMoveSelector>
+        <cacheType>PHASE</cacheType>
+      </changeMoveSelector>
+      <swapMoveSelector>
+        <cacheType>PHASE</cacheType>
+      </swapMoveSelector>
+      <pillarSwapMoveSelector/><!-- Does not support cacheType PHASE -->
+    </unionMoveSelector>
+----
+
+
+[#cachedRandomSelection]
+===== Cached random selection
+
+This combination is often a worthy competitor for medium use cases, especially with fast stepping optimization algorithms (such as Simulated Annealing). Unlike cached shuffled selection, it doesn't waste time shuffling the moves list at the beginning of every step.
+
+[source,xml,options="nowrap"]
+----
+    <unionMoveSelector>
+      <cacheType>PHASE</cacheType>
+      <selectionOrder>RANDOM</selectionOrder>
+
+      <changeMoveSelector/>
+      <swapMoveSelector/>
+    </unionMoveSelector>
+----
+
+
+[#filteredSelection]
+==== Filtered selection
+
+[NOTE]
+====
+This feature is not yet supported in Timefold Solver for Python.
+====
+
+There can be certain moves that you don't want to select, because:
+
+* The move is pointless and would only waste CPU time.
+For example, swapping two lectures of the same course will result in the same score and the same schedule,
+because all lectures of one course are interchangeable (same teacher, same students, same topic).
+* Doing the move would break xref:constraints-and-score/performance.adoc#buildInHardConstraint[a built-in hard constraint],
+so the solution would be infeasible but the score function doesn't check built-in hard constraints for performance reasons.
+For example, don't change a gym lecture to a room which is not a gym room.
+It's usually better to not use move filtering for such cases,
+because it allows the metaheuristics to temporarily break hard constraints to escape local optima.
++
+[NOTE]
+====
+Any built-in hard constraint must probably be filtered on every move type of every solver phase.
+For example if it filters the change move of Local Search, it must also filter the swap move that swaps the room of a gym lecture with another lecture for which the other lecture's original room isn't a gym room.
+Furthermore, it must also filter the change moves of the Construction Heuristics (which requires an advanced configuration).
+====
+
+If a move is unaccepted by the filter, it's not executed and the score isn't calculated.
+
+image::optimization-algorithms/overview/filteredSelection.png[align="center"]
+
+Filtering uses the interface ``SelectionFilter``:
+
+[source,java,options="nowrap"]
+----
+public interface SelectionFilter<Solution_, T> {
+
+    boolean accept(ScoreDirector<Solution_> scoreDirector, T selection);
+
+}
+----
+
+Implement the `accept` method to return `false` on a discarded `selection` (see below).
+Filtered selection can happen on any Selector in the selector tree, including any ``MoveSelector``, `EntitySelector`
+or ``ValueSelector``.
+It works with any `cacheType` and ``selectionOrder``.
+
+[NOTE]
+====
+Apply the filter on the lowest level possible.
+In most cases, you'll need to know both the entity and the value involved so you'll have to apply it on the move selector.
+====
+
+[NOTE]
+====
+`SelectionFilter` implementations are expected to be stateless.
+The solver may choose to reuse them in different contexts.
+====
+
+[#filteredMoveSelection]
+===== Filtered move selection
+
+Unaccepted moves will not be selected and will therefore never have their `doMove()` method called:
+
+[source,java,options="nowrap"]
+----
+public class DifferentCourseSwapMoveFilter implements SelectionFilter<CourseSchedule, SwapMove> {
+
+    @Override
+    public boolean accept(ScoreDirector<CourseSchedule> scoreDirector, SwapMove move) {
+        Lecture leftLecture = (Lecture) move.getLeftEntity();
+        Lecture rightLecture = (Lecture) move.getRightEntity();
+        return !leftLecture.getCourse().equals(rightLecture.getCourse());
+    }
+
+}
+----
+
+Configure the `filterClass` on every targeted `moveSelector`
+(potentially both in the Local Search and the Construction Heuristics if it filters ``ChangeMove``s):
+
+[source,xml,options="nowrap"]
+----
+    <swapMoveSelector>
+      <filterClass>...DifferentCourseSwapMoveFilter</filterClass>
+    </swapMoveSelector>
+----
+
+
+[#filteredEntitySelection]
+===== Filtered entity selection
+
+Unaccepted entities will not be selected and will therefore never be used to create a move.
+
+[source,java,options="nowrap"]
+----
+public class LongLectureSelectionFilter implements SelectionFilter<CourseSchedule, Lecture> {
+
+    @Override
+    public boolean accept(ScoreDirector<CourseSchedule> scoreDirector, Lecture lecture) {
+        return lecture.isLong();
+    }
+
+}
+----
+
+Configure the `filterClass` on every targeted `entitySelector` (potentially both in the Local Search and the Construction Heuristics):
+
+[source,xml,options="nowrap"]
+----
+    <changeMoveSelector>
+      <entitySelector>
+        <filterClass>...LongLectureSelectionFilter</filterClass>
+      </entitySelector>
+    </changeMoveSelector>
+----
+
+If that filter should apply on all entities, configure it as a xref:responding-to-change/responding-to-change.adoc#pinnedPlanningEntities[global pinningFilter] instead.
+
+[#filteredValueSelection]
+===== Filtered value selection
+
+Unaccepted values will not be selected and will therefore never be used to create a move.
+
+[source,java,options="nowrap"]
+----
+public class LongPeriodSelectionFilter implements SelectionFilter<CourseSchedule, Period> {
+
+    @Override
+    public boolean accept(ScoreDirector<CourseSchedule> scoreDirector, Period period) {
+        return period();
+    }
+
+}
+----
+
+Configure the `filterClass` on every targeted `valueSelector` (potentially both in the Local Search and the Construction Heuristics):
+
+[source,xml,options="nowrap"]
+----
+    <changeMoveSelector>
+      <valueSelector>
+        <filterClass>...LongPeriodSelectionFilter</filterClass>
+      </valueSelector>
+    </changeMoveSelector>
+----
+
+
+[#sortedSelection]
+==== Sorted selection
+
+Sorted selection can happen on any Selector in the selector tree, including any ``MoveSelector``, `EntitySelector` or ``ValueSelector``.
+It does not work with `cacheType` ``JUST_IN_TIME`` and it only works with ``selectionOrder`` ``SORTED``.
+
+It's mostly used in construction heuristics.
+
+[NOTE]
+====
+If the chosen construction heuristic implies sorting, for example `FIRST_FIT_DECREASING` implies that the `EntitySelector` is sorted, there is no need to explicitly configure a `Selector` with sorting.
+If you do explicitly configure the ``Selector``, it overwrites the default settings of that construction heuristic.
+====
+
+
+[#sortedSelectionBySorterManner]
+===== Sorted selection by `SorterManner`
+
+Some `Selector` types implement a `SorterManner` out of the box:
+
+* `EntitySelector` supports:
+** ``DECREASING_DIFFICULTY``: Sorts the planning entities according to decreasing xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntityDifficulty[planning entity difficulty]. Requires that planning entity difficulty is annotated on the domain model.
++
+[source,xml,options="nowrap"]
+----
+    <entitySelector>
+      <cacheType>PHASE</cacheType>
+      <selectionOrder>SORTED</selectionOrder>
+      <sorterManner>DECREASING_DIFFICULTY</sorterManner>
+    </entitySelector>
+----
+* `ValueSelector` supports:
+** ``INCREASING_STRENGTH``: Sorts the planning values according to increasing xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueStrength[planning value strength]. Requires that planning value strength is annotated on the domain model.
++
+[source,xml,options="nowrap"]
+----
+    <valueSelector>
+      <cacheType>PHASE</cacheType>
+      <selectionOrder>SORTED</selectionOrder>
+      <sorterManner>INCREASING_STRENGTH</sorterManner>
+    </valueSelector>
+----
+
+
+[#sortedSelectionByComparator]
+===== Sorted selection by `Comparator`
+
+An easy way to sort a `Selector` is with a plain old ``Comparator``:
+
+[source,java,options="nowrap"]
+----
+public class VisitDifficultyComparator implements Comparator<Visit> {
+
+    public int compare(Visit a, Visit b) {
+        return new CompareToBuilder()
+                .append(a.getServiceDuration(), b.getServiceDuration())
+                .append(a.getId(), b.getId())
+                .toComparison();
+    }
+
+}
+----
+
+You'll also need to configure it (unless it's annotated on the domain model and automatically applied by the optimization algorithm):
+
+[source,xml,options="nowrap"]
+----
+    <entitySelector>
+      <cacheType>PHASE</cacheType>
+      <selectionOrder>SORTED</selectionOrder>
+      <sorterComparatorClass>...VisitDifficultyComparator</sorterComparatorClass>
+      <sorterOrder>DESCENDING</sorterOrder>
+    </entitySelector>
+----
+
+[NOTE]
+====
+`Comparator` implementations are expected to be stateless.
+The solver may choose to reuse them in different contexts.
+====
+
+
+[#sortedSelectionBySelectionSorterWeightFactory]
+===== Sorted selection by `SelectionSorterWeightFactory`
+
+If you need the entire solution to sort a ``Selector``, use a `SelectionSorterWeightFactory` instead:
+
+[source,java,options="nowrap"]
+----
+public interface SelectionSorterWeightFactory<Solution_, T> {
+
+    Comparable createSorterWeight(Solution_ solution, T selection);
+
+}
+----
+
+You'll also need to configure it (unless it's annotated on the domain model and automatically applied by the optimization algorithm):
+
+[source,xml,options="nowrap"]
+----
+    <entitySelector>
+      <cacheType>PHASE</cacheType>
+      <selectionOrder>SORTED</selectionOrder>
+      <sorterWeightFactoryClass>...MyDifficultyWeightFactory</sorterWeightFactoryClass>
+      <sorterOrder>DESCENDING</sorterOrder>
+    </entitySelector>
+----
+
+[NOTE]
+====
+`SelectionSorterWeightFactory` implementations are expected to be stateless.
+The solver may choose to reuse them in different contexts.
+====
+
+
+[#sortedSelectionBySelectionSorter]
+===== Sorted selection by `SelectionSorter`
+
+Alternatively, you can also use the interface `SelectionSorter` directly:
+
+[source,java,options="nowrap"]
+----
+public interface SelectionSorter<Solution_, T> {
+
+    void sort(ScoreDirector<Solution_> scoreDirector, List<T> selectionList);
+
+}
+----
+
+
+
+[source,xml,options="nowrap"]
+----
+    <entitySelector>
+      <cacheType>PHASE</cacheType>
+      <selectionOrder>SORTED</selectionOrder>
+      <sorterClass>...MyEntitySorter</sorterClass>
+    </entitySelector>
+----
+
+[NOTE]
+====
+`SelectionSorter` implementations are expected to be stateless.
+The solver may choose to reuse them in different contexts.
+====
+
+
+[#probabilisticSelection]
+==== Probabilistic selection
+
+[NOTE]
+====
+This feature is not yet supported in Timefold Solver for Python.
+====
+
+Probabilistic selection can happen on any Selector in the selector tree, including any ``MoveSelector``, `EntitySelector` or ``ValueSelector``.
+It does not work with `cacheType` ``JUST_IN_TIME`` and it only works with ``selectionOrder`` ``PROBABILISTIC``.
+
+image::optimization-algorithms/overview/probabilisticSelection.png[align="center"]
+
+Each selection has a ``probabilityWeight``, which determines the chance that selection will be selected:
+
+[source,java,options="nowrap"]
+----
+public interface SelectionProbabilityWeightFactory<Solution_, T> {
+
+    double createProbabilityWeight(ScoreDirector<Solution_> scoreDirector, T selection);
+
+}
+----
+
+[source,xml,options="nowrap"]
+----
+    <entitySelector>
+      <cacheType>PHASE</cacheType>
+      <selectionOrder>PROBABILISTIC</selectionOrder>
+      <probabilityWeightFactoryClass>...MyEntityProbabilityWeightFactoryClass</probabilityWeightFactoryClass>
+    </entitySelector>
+----
+
+Assume the following entities: lesson A (probabilityWeight 2.0), lesson B (probabilityWeight 0.5) and lesson C (probabilityWeight 0.5).
+Then lesson A will be selected four times more than B and C.
+
+[NOTE]
+====
+`SelectionProbabilityWeightFactory` implementations are expected to be stateless.
+The solver may choose to reuse them in different contexts.
+====
+
+
+[#limitedSelection]
+==== Limited selection
+
+Selecting all possible moves sometimes does not scale well enough,
+especially for xref:optimization-algorithms/construction-heuristics.adoc#constructionHeuristics[construction heuristics],
+which don't support xref:optimization-algorithms/local-search.adoc#acceptedCountLimit[`acceptedCountLimit`].
+
+To limit the number of selected selection per step, apply a `selectedCountLimit` on the selector:
+
+[source,xml,options="nowrap"]
+----
+    <changeMoveSelector>
+      <selectedCountLimit>100</selectedCountLimit>
+    </changeMoveSelector>
+----
+
+[NOTE]
+====
+To scale xref:optimization-algorithms/local-search.adoc#localSearch[Local Search],
+setting xref:optimization-algorithms/local-search.adoc#acceptedCountLimit[`acceptedCountLimit`]
+is usually better than using ``selectedCountLimit``.
+====
+
+
+[#mimicSelection]
+==== Mimic selection (record/replay)
+
+During mimic selection, one normal selector records its selection and one or multiple other special selectors replay that selection.
+The recording selector acts as a normal selector and supports all other configuration properties.
+A replaying selector mimics the recording selection and supports no other configuration properties.
+
+The recording selector needs an ``id``.
+A replaying selector must reference a recorder's id with a ``mimicSelectorRef``:
+
+[source,xml,options="nowrap"]
+----
+      <cartesianProductMoveSelector>
+        <changeMoveSelector>
+          <entitySelector id="entitySelector"/>
+          <valueSelector variableName="period"/>
+        </changeMoveSelector>
+        <changeMoveSelector>
+          <entitySelector mimicSelectorRef="entitySelector"/>
+          <valueSelector variableName="room"/>
+        </changeMoveSelector>
+      </cartesianProductMoveSelector>
+----
+
+Mimic selection is useful to create <<cartesianProductMoveSelector,a composite move>> from two moves that affect the same entity.
+
+
+[#nearbySelectionTeaser]
+==== Nearby selection
+
+[NOTE]
+====
+Nearby selection is a commercial feature of xref:enterprise-edition/enterprise-edition.adoc[Timefold Solver Enterprise Edition].
+It is not open source, and it is free for development use only.
+https://timefold.ai/blog/2023/optaplanner-fork/[Learn more about Timefold].
+====
+
+Read about nearby selection in the xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[Nearby selection section]
+of the xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition manual].
+
+
+[#customMoves]
+=== Custom moves
+
+[NOTE]
+====
+This feature is not yet supported in Timefold Solver for Python.
+====
+
+[#whichMoveTypesMightBeMissing]
+==== Which move types might be missing in my implementation?
+
+To determine which move types might be missing in your implementation,
+run a xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] __for a short amount of time__
+and xref:using-timefold-solver/benchmarking-and-tweaking.adoc#writeTheOutputSolutionOfBenchmarkRuns[configure it to write the best solutions to disk].
+Take a look at such a best solution: it will likely be a local optima.
+Try to figure out if there's a move that could get out of that local optima faster.
+
+If you find one, implement that coarse-grained move, mix it with the existing moves
+and benchmark it against the previous configurations to see if you want to keep it.
+
+
+[#customMovesIntroduction]
+==== Custom moves introduction
+
+Instead of using the generic ``Move``s (such as ``ChangeMove``) you can also implement your own ``Move``.
+Generic and custom ``MoveSelector``s can be <<combiningMultipleMoveSelectors,combined>> as desired.
+
+A custom `Move` can be tailored to work to the advantage of your constraints.
+For example, in examination scheduling, changing the period of an exam A
+would also change the period of all the other exams that need to coincide with exam A.
+
+A custom `Move` is far more work to implement and much harder to avoid bugs than a generic ``Move``.
+After implementing a custom ``Move``, turn on `environmentMode` ``TRACED_FULL_ASSERT`` to check for score corruptions.
+
+
+[#theInterfaceMove]
+==== The `Move` interface
+
+All moves implement the `Move` interface:
+
+[source,java,options="nowrap"]
+----
+public interface Move<Solution_> {
+
+    boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector);
+
+    Move<Solution_> doMove(ScoreDirector<Solution_> scoreDirector);
+
+    ...
+}
+----
+
+To implement a custom move, it's recommended to extend `AbstractMove` instead implementing `Move` directly.
+Timefold Solver calls `AbstractMove.doMove(ScoreDirector)`, which calls `doMoveOnGenuineVariables(ScoreDirector)`.
+For example, in school timetabling, this move changes one lesson to another timeslot:
+
+[source,java,options="nowrap"]
+----
+public class TimeslotChangeMove extends AbstractMove<Timetable> {
+
+    private Lesson lesson;
+    private Timeslot toTimeslot;
+
+    public CloudComputerChangeMove(Lesson lesson, Timeslot toTimeslot) {
+        this.lesson = lesson;
+        this.toTimeslot = toTimeslot;
+    }
+
+    @Override
+    protected void doMoveOnGenuineVariables(ScoreDirector<Timetable> scoreDirector) {
+        scoreDirector.beforeVariableChanged(lesson, "timeslot");
+        lesson.setTimeslot(toTimeslot);
+        scoreDirector.afterVariableChanged(lesson, "timeslot");
+    }
+
+    // ...
+
+}
+----
+
+The implementation must notify the `ScoreDirector` of any changes it makes to planning entity's variables:
+Call the `scoreDirector.beforeVariableChanged(Object, String)` and `scoreDirector.afterVariableChanged(Object, String)`
+methods directly before and after modifying an entity's planning variable.
+
+The example move above is a fine-grained move because it changes only one planning variable.
+On the other hand, a coarse-grained move changes multiple entities or multiple planning variables
+in a single move, usually to avoid breaking hard constraints by making multiple related changes at once.
+For example, a swap move is really just two change moves, but it keeps those two changes together.
+
+[WARNING]
+====
+A `Move` can only change/add/remove planning entities,
+it must not change any of the problem facts as that will cause score corruption.
+Use xref:responding-to-change/responding-to-change.adoc#realTimePlanning[real-time planning] to change problem facts while solving.
+====
+
+Timefold Solver automatically filters out _non doable moves_ by calling the `isMoveDoable(ScoreDirector)` method on each selected move.
+A _non doable move_ is:
+
+* A move that changes nothing on the current solution.
+For example, moving lesson `L1` from timeslot `X` to timeslot `X` is not doable, because it is already there.
+* A move that is impossible to do on the current solution.
+For example, moving lesson `L1` to timeslot `Q`  (when `Q` isn't in the list of lessons) is not doable
+because it would assign a planning value that's not inside the planning variable's value range.
+
+In the school timetabling example, a move which assigns a lesson to the timeslot it's already assigned to is not doable:
+
+[source,java,options="nowrap"]
+----
+    @Override
+    public boolean isMoveDoable(ScoreDirector<Timetable> scoreDirector) {
+        return !Objects.equals(lesson.getTimeslot(), toTimeslot);
+    }
+----
+
+We don't need to check if `toTimeslot` is in the value range,
+because we only generate moves for which that is the case.
+A move that is currently not doable can become doable when the working solution changes in a later step,
+otherwise we probably shouldn't have created it in the first place.
+
+Each move has an __undo move__: a move (normally of the same type) which does the exact opposite.
+In the cloud balancing example the undo move of `L1 {X -> Y}` is the move `L1 {Y -> X}`.
+The undo move of a move is created when the `Move` is being done on the current solution,
+before the genuine variables change:
+
+[source,java,options="nowrap"]
+----
+    @Override
+    public TimeslotChangeMove createUndoMove(ScoreDirector<Timetable> scoreDirector) {
+        return new TimeslotChangeMove(lesson, lesson.getTimeslot());
+    }
+----
+
+Notice that if `L1` would have already been moved to `Y`, the undo move would create the move `L1 {Y -> Y}`,
+instead of the move `L1 {Y -> X}`.
+
+A solver phase might do and undo the same `Move` more than once.
+In fact, many solver phases will iteratively do and undo a number of moves to evaluate them,
+before selecting one of those and doing that move again (without undoing it the last time).
+
+Always implement the `toString()` method to keep Timefold Solver's logs readable.
+Keep it non-verbose and make it consistent
+with xref:optimization-algorithms/move-selector-reference.adoc#moveSelectorReference[the generic moves]:
+
+[source,java,options="nowrap"]
+----
+    public String toString() {
+        return lesson + " {" + lesson.getTimeslot() + " -> " + toTimeslot + "}";
+    }
+----
+
+Optionally, implement the `getSimpleMoveTypeDescription()` method to support
+xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarkReportPickedMoveTypeBestScoreDiffOverTimeStatistic[picked move statistics]:
+
+[source,java,options="nowrap"]
+----
+    @Override
+    public String getSimpleMoveTypeDescription() {
+        return "TimeslotChangeMove(Lesson.timeslot)";
+    }
+----
+
+
+===== Custom move: `rebase()`
+
+For xref:enterprise-edition/enterprise-edition.adoc#multithreadedIncrementalSolving[multi-threaded incremental solving],
+the custom move must implement the `rebase()` method:
+
+[source,java,options="nowrap"]
+----
+    @Override
+    public TimeslotChangeMove rebase(ScoreDirector<Timetable> destinationScoreDirector) {
+        return new TimeslotChangeMove(destinationScoreDirector.lookUpWorkingObject(lesson),
+                destinationScoreDirector.lookUpWorkingObject(toTimeslot));
+    }
+----
+
+Rebasing a move takes a move generated from one working solution and creates a new move
+that does the same change as the original move,
+but rewired as if it was generated from the destination working solution.
+This allows multi-threaded solving to migrate moves from one thread to another.
+
+The `lookUpWorkingObject()` method translates a planning entity instance or problem fact instance
+from one working solution to that of the destination's working solution.
+Internally it often uses a mapping technique based on the xref:using-timefold-solver/modeling-planning-problems.adoc#planningId[planning ID].
+
+To rebase lists or arrays in bulk, use `rebaseList()` and `rebaseArray()` on `AbstractMove`.
+
+
+[#customMoveGetPlanningEntitiesAndGetPlanningValues]
+===== Custom move: `getPlanningEntities()` and `getPlanningValues()`
+
+A custom move should also implement the `getPlanningEntities()` and `getPlanningValues()` methods.
+Those are used by xref:optimization-algorithms/local-search.adoc#tabuSearch[entity tabu and value tabu] respectively.
+They are called after the `Move` has already been done.
+
+[source,java,options="nowrap"]
+----
+    @Override
+    public Collection<? extends Object> getPlanningEntities() {
+        return Collections.singletonList(lesson);
+    }
+
+    @Override
+    public Collection<? extends Object> getPlanningValues() {
+        return Collections.singletonList(toTimeslot);
+    }
+----
+
+If the `Move` changes multiple planning entities, such as in a swap move,
+return all of them in `getPlanningEntities()`
+and return all their values (to which they are changing) in ``getPlanningValues()``.
+
+[source,java,options="nowrap"]
+----
+    @Override
+    public Collection<? extends Object> getPlanningEntities() {
+        return Arrays.asList(leftLesson, rightLesson);
+    }
+
+    @Override
+    public Collection<? extends Object> getPlanningValues() {
+        return Arrays.asList(leftLesson.getTimeslot(), rightLesson.getTimeslot());
+    }
+----
+
+
+[#customMoveEqualsAndHashCode]
+===== Custom move: `equals()` and `hashCode()`
+
+A `Move` must implement the `equals()` and `hashCode()` methods
+for xref:optimization-algorithms/local-search.adoc#tabuSearch[move tabu].
+Two moves which make the same change on a solution, should be equal ideally.
+
+[source,java,options="nowrap"]
+----
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof TimeslotChangeMove other
+                && lesson.equals(other.lesson)
+                && toTimeslot.equals(other.toTimeslot);
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(lesson)
+                .append(toTimeslot)
+                .toHashCode();
+    }
+----
+
+Notice that it checks if the other move is an instance of the same move type.
+This `instanceof` check is important because a move are compared to a move of another move type.
+For example a `ChangeMove` and `SwapMove` are compared.
+
+[#generatingCustomMoves]
+==== Generating custom moves
+
+Now, let's generate instances of this custom ``Move`` class.
+There are 2 ways:
+
+[#moveListFactory]
+===== `MoveListFactory`: the easy way to generate custom moves
+
+The easiest way to generate custom moves is by implementing the interface ``MoveListFactory``:
+
+[source,java,options="nowrap"]
+----
+public interface MoveListFactory<Solution_> {
+
+    List<Move> createMoveList(Solution_ solution);
+
+}
+----
+
+Simple configuration (which can be nested in a `unionMoveSelector` just like any other ``MoveSelector``):
+
+[source,xml,options="nowrap"]
+----
+    <moveListFactory>
+      <moveListFactoryClass>...MyMoveFactory</moveListFactoryClass>
+    </moveListFactory>
+----
+
+Advanced configuration:
+
+[source,xml,options="nowrap"]
+----
+    <moveListFactory>
+      ... <!-- Normal moveSelector properties -->
+      <moveListFactoryClass>...MyMoveFactory</moveListFactoryClass>
+      <moveListFactoryCustomProperties>
+        ...<!-- Custom properties -->
+      </moveListFactoryCustomProperties>
+    </moveListFactory>
+----
+
+Because the `MoveListFactory` generates all moves at once in a ``List<Move>``,
+it does not support `cacheType` ``JUST_IN_TIME``.
+Therefore, `moveListFactory` uses `cacheType` ``STEP`` by default and it scales badly.
+
+To configure values of a `MoveListFactory` dynamically in the solver configuration
+(so the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
+add the `moveListFactoryCustomProperties` element and use xref:using-timefold-solver/configuration.adoc#customPropertiesConfiguration[custom properties].
+
+[WARNING]
+====
+A custom `MoveListFactory` implementation must ensure that it does not move xref:responding-to-change/responding-to-change.adoc#pinnedPlanningEntities[pinned entities].
+====
+
+
+[#moveIteratorFactory]
+===== ``MoveIteratorFactory``: generate Custom moves just in time
+
+Use this advanced form to generate custom moves Just In Time
+by implementing the `MoveIteratorFactory` interface:
+
+[source,java,options="nowrap"]
+----
+public interface MoveIteratorFactory<Solution_> {
+
+    long getSize(ScoreDirector<Solution_> scoreDirector);
+
+    Iterator<Move> createOriginalMoveIterator(ScoreDirector<Solution_> scoreDirector);
+
+    Iterator<Move> createRandomMoveIterator(ScoreDirector<Solution_> scoreDirector, Random workingRandom);
+
+}
+----
+
+The `getSize()` method must return an estimation of the size.
+It doesn't need to be correct, but it's better too big than too small.
+The `createOriginalMoveIterator` method is called if the `selectionOrder` is `ORIGINAL` or if it is cached.
+The `createRandomMoveIterator` method is called for `selectionOrder` ``RANDOM`` combined with cacheType ``JUST_IN_TIME``.
+
+[IMPORTANT]
+====
+Don't create a collection (array, list, set or map) of ``Move``s when creating the ``Iterator<Move>``:
+the whole purpose of `MoveIteratorFactory` over `MoveListFactory` is to create a `Move` just in time
+in a custom ``Iterator.next()``.
+====
+
+For example:
+
+[source,java,options="nowrap"]
+----
+public class PossibleAssignmentsOnlyMoveIteratorFactory implements MoveIteratorFactory<MyPlanningSolution, MyChangeMove> {
+    @Override
+    public long getSize(ScoreDirector<MyPlanningSolution> scoreDirector) {
+        // In this case, we return the exact size, but an estimate can be used
+        // if it too expensive to calculate or unknown
+        long totalSize = 0L;
+        var solution = scoreDirector.getWorkingSolution();
+        for (MyEntity entity : solution.getEntities()) {
+            for (MyPlanningValue value : solution.getValues()) {
+                if (entity.canBeAssigned(value)) {
+                    totalSize++;
+                }
+            }
+        }
+        return totalSize;
+    }
+
+    @Override
+    public Iterator<MyChangeMove> createOriginalMoveIterator(ScoreDirector<MyPlanningSolution> scoreDirector) {
+        // Only needed if selectionOrder is ORIGINAL or if it is cached
+        var solution = scoreDirector.getWorkingSolution();
+        var entities = solution.getEntities();
+        var values = solution.getValues();
+        // Assumes each entity has at least one assignable value
+        var firstEntityIndex = 0;
+        var firstValueIndex = 0;
+        while (!entities.get(firstEntityIndex).canBeAssigned(values.get(firstValueIndex))) {
+            firstValueIndex++;
+        }
+
+
+        return new Iterator<>() {
+            int nextEntityIndex = firstEntityIndex;
+            int nextValueIndex = firstValueIndex;
+
+            @Override
+            public boolean hasNext() {
+                return nextEntityIndex < entities.size();
+            }
+
+            @Override
+            public MyChangeMove next() {
+                var selectedEntity = entities.get(nextEntityIndex);
+                var selectedValue = values.get(nextValueIndex);
+                nextValueIndex++;
+                while (nextValueIndex < values.size() && !selectedEntity.canBeAssigned(values.get(nextValueIndex))) {
+                    nextValueIndex++;
+                }
+                if (nextValueIndex >= values.size()) {
+                    // value list exhausted, go to next entity
+                    nextEntityIndex++;
+                    if (nextEntityIndex < entities.size()) {
+                        nextValueIndex = 0;
+                        while (nextValueIndex < values.size() && !entities.get(nextEntityIndex).canBeAssigned(values.get(nextValueIndex))) {
+                            // Assumes each entity has at least one assignable value
+                            nextValueIndex++;
+                        }
+                    }
+                }
+                return new MyChangeMove(selectedEntity, selectedValue);
+            }
+        };
+    }
+
+    @Override
+    public Iterator<MyChangeMove> createRandomMoveIterator(ScoreDirector<MyPlanningSolution> scoreDirector,
+            Random workingRandom) {
+        // Not needed if selectionOrder is ORIGINAL or if it is cached
+        var solution = scoreDirector.getWorkingSolution();
+        var entities = solution.getEntities();
+        var values = solution.getValues();
+
+        return new Iterator<>() {
+            @Override
+            public boolean hasNext() {
+                return !entities.isEmpty();
+            }
+
+            @Override
+            public MyChangeMove next() {
+                var selectedEntity = entities.get(workingRandom.nextInt(entities.size()));
+                var selectedValue = values.get(workingRandom.nextInt(values.size()));
+                while (!selectedEntity.canBeAssigned(selectedValue)) {
+                    // This assumes there at least one value that can be assigned to the selected entity
+                    selectedValue = values.get(workingRandom.nextInt(values.size()));
+                }
+                return new MyChangeMove(selectedEntity, selectedValue);
+            }
+        };
+    }
+}
+----
+
+[NOTE]
+====
+The same effect can also be accomplished using <<filteredSelection,filtered selection>>.
+====
+
+Simple configuration (which can be nested in a `unionMoveSelector` just like any other ``MoveSelector``):
+
+[source,xml,options="nowrap"]
+----
+    <moveIteratorFactory>
+      <moveIteratorFactoryClass>...</moveIteratorFactoryClass>
+    </moveIteratorFactory>
+----
+
+Advanced configuration:
+
+[source,xml,options="nowrap"]
+----
+    <moveIteratorFactory>
+      ... <!-- Normal moveSelector properties -->
+      <moveIteratorFactoryClass>...</moveIteratorFactoryClass>
+      <moveIteratorFactoryCustomProperties>
+        ...<!-- Custom properties -->
+      </moveIteratorFactoryCustomProperties>
+    </moveIteratorFactory>
+----
+
+To configure values of a `MoveIteratorFactory` dynamically in the solver configuration
+(so the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
+add the `moveIteratorFactoryCustomProperties` element and use xref:using-timefold-solver/configuration.adoc#customPropertiesConfiguration[custom properties].
+
+[WARNING]
+====
+A custom `MoveIteratorFactory` implementation must ensure that it does not move xref:responding-to-change/responding-to-change.adoc#pinnedPlanningEntities[pinned entities].
+====

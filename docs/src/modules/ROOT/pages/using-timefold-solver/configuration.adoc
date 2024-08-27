@@ -35,8 +35,8 @@ In a typical project (following the Maven directory structure), that solverConfi
 Alternatively, a `SolverFactory` can be created from a ``File`` with ``SolverFactory.createFromXmlFile()``.
 However, for portability reasons, a classpath resource is recommended.
 
-Both a `Solver` and a `SolverFactory` have a generic type called ``Solution_``,
-which is the class representing a <<planningProblemAndPlanningSolution,planning problem and solution>>.
+Both a `Solver` and a `SolverFactory` have a generic type called ``Solution_``, which is the class
+representing a xref:using-timefold-solver/modeling-planning-problems.adoc#planningProblemAndPlanningSolution[planning problem and solution].
 
 A solver configuration XML file looks like this:
 

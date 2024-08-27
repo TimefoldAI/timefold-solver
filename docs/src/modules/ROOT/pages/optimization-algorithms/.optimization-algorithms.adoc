@@ -1,0 +1,11 @@
+[#optimizationAlgorithms]
+= Optimization Algorithms
+:doctype: book
+:sectnums:
+:icons: font
+
+include::overview.adoc[leveloffset=+1]
+include::construction-heuristics.adoc[leveloffset=+1]
+include::local-search.adoc[leveloffset=+1]
+include::exhaustive-search.adoc[leveloffset=+1]
+include::move-selector-reference.adoc[leveloffset=+1]

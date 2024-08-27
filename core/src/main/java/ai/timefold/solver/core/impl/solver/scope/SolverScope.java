@@ -19,6 +19,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.solver.AbstractSolver;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
@@ -42,6 +43,7 @@ public class SolverScope<Solution_> {
     private int startingSolverCount;
     private Random workingRandom;
     private InnerScoreDirector<Solution_, ?> scoreDirector;
+    private AbstractSolver<Solution_> solver;
     private DefaultProblemChangeDirector<Solution_> problemChangeDirector;
     /**
      * Used for capping CPU power usage in multithreaded scenarios.
@@ -49,6 +51,7 @@ public class SolverScope<Solution_> {
     private Semaphore runnableThreadSemaphore = null;
 
     private long childThreadsScoreCalculationCount = 0;
+    private long moveEvaluationCount = 0;
 
     private Score<?> startingInitializedScore;
 
@@ -72,6 +75,13 @@ public class SolverScope<Solution_> {
     // ************************************************************************
     // Constructors and simple getters/setters
     // ************************************************************************
+    public AbstractSolver<Solution_> getSolver() {
+        return solver;
+    }
+
+    public void setSolver(AbstractSolver<Solution_> solver) {
+        this.solver = solver;
+    }
 
     public DefaultProblemChangeDirector<Solution_> getProblemChangeDirector() {
         return problemChangeDirector;
@@ -177,6 +187,19 @@ public class SolverScope<Solution_> {
         return scoreDirector.getCalculationCount() + childThreadsScoreCalculationCount;
     }
 
+    public void addMoveEvaluationCount(long addition) {
+        moveEvaluationCount += addition;
+    }
+
+    public long getMoveEvaluationCount() {
+        return moveEvaluationCount;
+    }
+
+    public long getMoveEvaluationSpeed() {
+        long timeMillisSpent = getTimeMillisSpent();
+        return getSpeed(getMoveEvaluationCount(), timeMillisSpent);
+    }
+
     public Solution_ getBestSolution() {
         return bestSolution.get();
     }
@@ -233,12 +256,20 @@ public class SolverScope<Solution_> {
     }
 
     public long calculateTimeMillisSpentUpToNow() {
-        long now = System.currentTimeMillis();
+        var now = System.currentTimeMillis();
         return now - getStartingSystemTimeMillis();
     }
 
     public long getTimeMillisSpent() {
-        return getEndingSystemTimeMillis() - getStartingSystemTimeMillis();
+        var startingMillis = getStartingSystemTimeMillis();
+        if (startingMillis == null) { // The solver hasn't started yet.
+            return 0L;
+        }
+        var endingMillis = getEndingSystemTimeMillis();
+        if (endingMillis == null) { // The solver hasn't ended yet.
+            endingMillis = System.currentTimeMillis();
+        }
+        return endingMillis - startingMillis;
     }
 
     public ProblemSizeStatistics getProblemSizeStatistics() {
@@ -254,10 +285,10 @@ public class SolverScope<Solution_> {
      */
     public long getScoreCalculationSpeed() {
         long timeMillisSpent = getTimeMillisSpent();
-        return getScoreCalculationSpeed(getScoreCalculationCount(), timeMillisSpent);
+        return getSpeed(getScoreCalculationCount(), timeMillisSpent);
     }
 
-    public static long getScoreCalculationSpeed(long scoreCalculationCount, long timeMillisSpent) {
+    public static long getSpeed(long scoreCalculationCount, long timeMillisSpent) {
         // Avoid divide by zero exception on a fast CPU
         return scoreCalculationCount * 1000L / (timeMillisSpent == 0L ? 1L : timeMillisSpent);
     }

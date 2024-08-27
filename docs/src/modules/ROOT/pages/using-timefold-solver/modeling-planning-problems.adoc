@@ -343,7 +343,7 @@ public class VisitDifficultyComparator implements Comparator<Visit> {
 Alternatively, you can also set a `difficultyWeightFactoryClass` to the `@PlanningEntity` annotation,
 so that you have access to the rest of the problem facts from the solution too.
 
-See xref:optimization-algorithms/optimization-algorithms.adoc#sortedSelection[sorted selection] for more information.
+See xref:optimization-algorithms/overview.adoc#sortedSelection[sorted selection] for more information.
 
 [IMPORTANT]
 ====
@@ -503,7 +503,7 @@ xref:responding-to-change/responding-to-change.adoc[Repeated planning]
 (especially xref:responding-to-change/responding-to-change.adoc#realTimePlanning[real-time planning])
 does not mix well with a planning variable that allows unassigned values.
 Every time the Solver starts or a problem fact change is made,
-the xref:optimization-algorithms/optimization-algorithms.adoc#constructionHeuristics[Construction Heuristics]
+the xref:optimization-algorithms/construction-heuristics.adoc#constructionHeuristics[Construction Heuristics]
 will try to initialize all the `null` variables again, which can be a huge waste of time.
 One way to deal with this is to filter the entity selector of the placer in the construction heuristic.
 
@@ -1564,7 +1564,7 @@ and be able to handle comparing instances of those different classes.
 Alternatively, you can also set a `strengthWeightFactoryClass` to the `@PlanningVariable` annotation,
 so you have access to the rest of the problem facts from the solution too.
 
-See xref:optimization-algorithms/optimization-algorithms.adoc#sortedSelection[sorted selection] for more information.
+See xref:optimization-algorithms/overview.adoc#sortedSelection[sorted selection] for more information.
 
 [IMPORTANT]
 ====
@@ -1592,8 +1592,8 @@ Use a <<chainedPlanningVariable,chained planning variable>> instead of a plannin
 if you need any of the following planning techniques:
 
 - <<planningEntityDifficulty,planning entity difficulty comparison>> or <<planningValueStrength,planning value strength comparison>>,
-- xref:optimization-algorithms/optimization-algorithms.adoc#exhaustiveSearch[exhaustive search],
-- xref:optimization-algorithms/optimization-algorithms.adoc#partitionedSearch[partitioned search],
+- xref:optimization-algorithms/exhaustive-search.adoc#exhaustiveSearch[exhaustive search],
+- xref:enterprise-edition/enterprise-edition.adoc#partitionedSearch[partitioned search],
 - coexistence with another list or basic planning variable.
 ====
 
@@ -1688,7 +1688,7 @@ xref:responding-to-change/responding-to-change.adoc[Repeated planning]
 (especially xref:responding-to-change/responding-to-change.adoc#realTimePlanning[real-time planning])
 does not mix well with a planning list variable that allows unassigned values.
 Every time the Solver starts or a problem fact change is made,
-the xref:optimization-algorithms/optimization-algorithms.adoc#constructionHeuristics[Construction Heuristics]
+the xref:optimization-algorithms/construction-heuristics.adoc#constructionHeuristics[Construction Heuristics]
 will try to initialize all the `null` variables again, which can be a huge waste of time.
 One way to deal with this is to filter the entity selector of the placer in the construction heuristic.
 

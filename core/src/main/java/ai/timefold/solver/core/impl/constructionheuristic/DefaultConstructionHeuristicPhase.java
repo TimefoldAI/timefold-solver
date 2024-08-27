@@ -17,13 +17,13 @@ import ai.timefold.solver.core.impl.solver.termination.Termination;
 public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<Solution_>
         implements ConstructionHeuristicPhase<Solution_> {
 
-    protected final EntityPlacer<Solution_> entityPlacer;
     protected final ConstructionHeuristicDecider<Solution_> decider;
+    protected final EntityPlacer<Solution_> entityPlacer;
 
-    private DefaultConstructionHeuristicPhase(Builder<Solution_> builder) {
+    protected DefaultConstructionHeuristicPhase(DefaultConstructionHeuristicPhaseBuilder<Solution_> builder) {
         super(builder);
-        entityPlacer = builder.entityPlacer;
         decider = builder.decider;
+        entityPlacer = builder.getEntityPlacer();
     }
 
     public EntityPlacer<Solution_> getEntityPlacer() {
@@ -38,7 +38,6 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
     // ************************************************************************
     // Worker methods
     // ************************************************************************
-
     @Override
     public void solve(SolverScope<Solution_> solverScope) {
         var phaseScope = new ConstructionHeuristicPhaseScope<>(solverScope, phaseIndex);
@@ -61,12 +60,16 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
             stepStarted(stepScope);
             decider.decideNextStep(stepScope, placement);
             if (stepScope.getStep() == null) {
-                if (phaseTermination.isPhaseTerminated(phaseScope)) {
+                if (phaseTermination.isPhaseTerminated(phaseScope)
+                        && decider.isLoggingEnabled()
+                        && logger.isTraceEnabled()) {
                     logger.trace("{}    Step index ({}), time spent ({}) terminated without picking a nextStep.",
                             logIndentation,
                             stepScope.getStepIndex(),
                             stepScope.getPhaseScope().calculateSolverTimeMillisSpentUpToNow());
-                } else if (stepScope.getSelectedMoveCount() == 0L) {
+                } else if (stepScope.getSelectedMoveCount() == 0L
+                        && decider.isLoggingEnabled()
+                        && logger.isWarnEnabled()) {
                     logger.warn("{}    No doable selected move at step index ({}), time spent ({})."
                             + " Terminating phase early.",
                             logIndentation,
@@ -95,6 +98,10 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
         var step = stepScope.getStep();
         step.doMoveOnly(stepScope.getScoreDirector());
         predictWorkingStepScore(stepScope, step);
+        processWorkingSolutionDuringStep(stepScope);
+    }
+
+    protected void processWorkingSolutionDuringStep(ConstructionHeuristicStepScope<Solution_> stepScope) {
         solver.getBestSolutionRecaller().processWorkingSolutionDuringConstructionHeuristicsStep(stepScope);
     }
 
@@ -121,10 +128,9 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
         super.stepEnded(stepScope);
         entityPlacer.stepEnded(stepScope);
         decider.stepEnded(stepScope);
-        if (logger.isDebugEnabled()) {
+        if (decider.isLoggingEnabled() && logger.isDebugEnabled()) {
             var timeMillisSpent = stepScope.getPhaseScope().calculateSolverTimeMillisSpentUpToNow();
-            logger.debug("{}    CH step ({}), time spent ({}), score ({}), selected move count ({}),"
-                    + " picked move ({}).",
+            logger.debug("{}    CH step ({}), time spent ({}), score ({}), selected move count ({}), picked move ({}).",
                     logIndentation,
                     stepScope.getStepIndex(), timeMillisSpent,
                     stepScope.getScore(),
@@ -135,21 +141,27 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
 
     public void phaseEnded(ConstructionHeuristicPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
+        updateBestSolutionAndFire(phaseScope);
+        entityPlacer.phaseEnded(phaseScope);
+        decider.phaseEnded(phaseScope);
+        phaseScope.endingNow();
+        if (decider.isLoggingEnabled() && logger.isInfoEnabled()) {
+            logger.info(
+                    "{}Construction Heuristic phase ({}) ended: time spent ({}), best score ({}), score calculation speed ({}/sec), step total ({}).",
+                    logIndentation,
+                    phaseIndex,
+                    phaseScope.calculateSolverTimeMillisSpentUpToNow(),
+                    phaseScope.getBestScore(),
+                    phaseScope.getPhaseScoreCalculationSpeed(),
+                    phaseScope.getNextStepIndex());
+        }
+    }
+
+    protected void updateBestSolutionAndFire(ConstructionHeuristicPhaseScope<Solution_> phaseScope) {
         // Only update the best solution if the CH made any change.
         if (!phaseScope.getStartingScore().equals(phaseScope.getBestScore())) {
             solver.getBestSolutionRecaller().updateBestSolutionAndFire(phaseScope.getSolverScope());
         }
-        entityPlacer.phaseEnded(phaseScope);
-        decider.phaseEnded(phaseScope);
-        phaseScope.endingNow();
-        logger.info("{}Construction Heuristic phase ({}) ended: time spent ({}), best score ({}),"
-                + " score calculation speed ({}/sec), step total ({}).",
-                logIndentation,
-                phaseIndex,
-                phaseScope.calculateSolverTimeMillisSpentUpToNow(),
-                phaseScope.getBestScore(),
-                phaseScope.getPhaseScoreCalculationSpeed(),
-                phaseScope.getNextStepIndex());
     }
 
     @Override
@@ -165,17 +177,22 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
         decider.solvingError(solverScope, exception);
     }
 
-    public static class Builder<Solution_> extends AbstractPhase.Builder<Solution_> {
+    public static class DefaultConstructionHeuristicPhaseBuilder<Solution_>
+            extends AbstractPhase.Builder<Solution_> {
 
         private final EntityPlacer<Solution_> entityPlacer;
         private final ConstructionHeuristicDecider<Solution_> decider;
 
-        public Builder(int phaseIndex, boolean triggerFirstInitializedSolutionEvent, String logIndentation,
-                Termination<Solution_> phaseTermination,
-                EntityPlacer<Solution_> entityPlacer, ConstructionHeuristicDecider<Solution_> decider) {
+        public DefaultConstructionHeuristicPhaseBuilder(int phaseIndex, boolean triggerFirstInitializedSolutionEvent,
+                String logIndentation, Termination<Solution_> phaseTermination, EntityPlacer<Solution_> entityPlacer,
+                ConstructionHeuristicDecider<Solution_> decider) {
             super(phaseIndex, triggerFirstInitializedSolutionEvent, logIndentation, phaseTermination);
             this.entityPlacer = entityPlacer;
             this.decider = decider;
+        }
+
+        public EntityPlacer<Solution_> getEntityPlacer() {
+            return entityPlacer;
         }
 
         @Override

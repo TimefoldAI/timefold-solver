@@ -1,0 +1,789 @@
+[#moveSelectorReference]
+= Move Selector reference
+:doctype: book
+:sectnums:
+:icons: font
+
+This chapter describes the move selectors that can be used to select moves for the optimization algorithms.
+For a general introduction to move selectors,
+see xref:optimization-algorithms/overview.adoc#moveAndNeighborhoodSelection[Move and neighborhood selection].
+
+The following `MoveSelector` implementations are available out of the box:
+
+[cols="1,2a",options="header"]
+|===
+|Name |Description
+
+|<<changeMoveSelector,Change move>>
+|Change 1 entity's variable
+
+|<<swapMoveSelector,Swap move>>
+|Swap all variables of 2 entities
+
+|<<pillarChangeMoveSelector,Pillar change move>>
+|Change a set of entities with the same value
+
+|<<pillarSwapMoveSelector,Pillar swap move>>
+|Swap 2 sets of entities with the same values
+
+|<<ruinRecreateMoveSelector,Ruin and Recreate move>>
+|Take a subset of entities, uninitialize them and run a construction heuristic to put them back
+
+|<<listChangeMoveSelector,List change move>>
+|Move a list element to a different index or to another entity's list variable
+
+|<<listSwapMoveSelector,List swap move>>
+|Swap 2 list elements
+
+|<<subListChangeMoveSelector,SubList change move>>
+|Move a subList from one position to another
+
+|<<subListSwapMoveSelector,SubList swap move>>
+|Swap 2 subLists
+
+|<<kOptListMoveSelector,k-opt move>>
+|Select an entity, remove k edges from its list variable, add k new edges from the removed endpoints
+
+|<<listRuinRecreateMoveSelector,List Ruin and Recreate move>>
+|Take a subset of values, remove them from their lists, and run a construction heuristic to recreate the lists
+
+|<<tailChainSwapMoveSelector,Tail chain swap move>>
+|Swap 2 tails chains
+
+|<<subChainChangeMoveSelector,Sub chain change move>>
+|Cut a subchain and paste it into another chain
+
+|<<subChainSwapMoveSelector,Sub chain swap move>>
+|Swap 2 subchains
+
+|===
+
+[#basicMoveSelectors]
+== Move selectors for basic variables
+
+These moves are applicable to planning variables that aren’t part of a list or a chain,
+also called xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic variables].
+
+[#changeMoveSelector]
+=== `ChangeMoveSelector`
+
+For one planning variable, the `ChangeMove` selects one planning entity and one planning value and assigns the entity's variable to that value.
+
+image::optimization-algorithms/move-selector-reference/changeMove.png[align="center"]
+
+Simplest configuration:
+
+[source,xml,options="nowrap"]
+----
+    <changeMoveSelector/>
+----
+
+If there are multiple entity classes or multiple planning variables for one entity class,
+a simple configuration will automatically unfold into
+an xref:optimization-algorithms/overview.adoc#unionMoveSelector[union]
+of `ChangeMove` selectors for every planning variable.
+
+Advanced configuration:
+
+[source,xml,options="nowrap"]
+----
+    <changeMoveSelector>
+      ... <!-- Normal selector properties -->
+      <entitySelector>
+        <entityClass>...Lecture</entityClass>
+        ...
+      </entitySelector>
+      <valueSelector variableName="room">
+        ...
+      </valueSelector>
+    </changeMoveSelector>
+----
+
+A `ChangeMove` is the finest grained move.
+
+[IMPORTANT]
+====
+Almost every `moveSelector` configuration injected into a metaheuristic algorithm should include a `changeMoveSelector`.
+This guarantees that every possible solution can be reached in theory through applying a number of moves in sequence.
+Of course, normally it is unioned with other, more coarse grained move selectors.
+====
+
+This move selector only supports xref:optimization-algorithms/overview.adoc#cacheType[phase or solver caching] 
+if it doesn't apply on a xref:using-timefold-solver/modeling-planning-problems.adoc#chainedPlanningVariable[chained] variable.
+
+
+[#swapMoveSelector]
+=== `SwapMoveSelector`
+
+The `SwapMove` selects two different planning entities and swaps the planning values of all their planning variables.
+
+image::optimization-algorithms/move-selector-reference/swapMove.png[align="center"]
+
+Although a `SwapMove` on a single variable is essentially just two ``ChangeMove``s,
+it's often the winning step in cases that the first of the two ``ChangeMove``s would not win
+because it leaves the solution in a state with broken hard constraints.
+For example: swapping the room of two lectures doesn't bring the solution in an intermediate state where both lectures are in the same room which breaks a hard constraint.
+
+Simplest configuration:
+
+[source,xml,options="nowrap"]
+----
+    <swapMoveSelector/>
+----
+
+If there are multiple entity classes, a simple configuration will automatically unfold 
+into an xref:optimization-algorithms/overview.adoc#unionMoveSelector[union] 
+of `SwapMove` selectors for every entity class.
+
+Advanced configuration:
+
+[source,xml,options="nowrap"]
+----
+    <swapMoveSelector>
+      ... <!-- Normal selector properties -->
+      <entitySelector>
+        <entityClass>...Lecture</entityClass>
+        ...
+      </entitySelector>
+      <secondaryEntitySelector>
+        <entityClass>...Lecture</entityClass>
+        ...
+      </secondaryEntitySelector>
+      <variableNameIncludes>
+        <variableNameInclude>room</variableNameInclude>
+        <variableNameInclude>...</variableNameInclude>
+      </variableNameIncludes>
+    </swapMoveSelector>
+----
+
+The `secondaryEntitySelector` is rarely needed: if it is not specified, entities from the same `entitySelector` are swapped.
+
+If one or more `variableNameInclude` properties are specified, not all planning variables will be swapped, but only those specified.
+
+This move selector only supports xref:optimization-algorithms/overview.adoc#cacheType[phase or solver caching]
+if it doesn't apply on any xref:using-timefold-solver/modeling-planning-problems.adoc#chainedPlanningVariable[chained] variables.
+
+[#pillarMoveSelectors]
+=== Pillar-based move selectors
+
+A _pillar_ is a set of planning entities which have the same planning value(s) for their planning variable(s).
+
+[#pillarChangeMoveSelector]
+==== `PillarChangeMoveSelector`
+
+The `PillarChangeMove` selects one entity pillar (or subset of those) and changes the value of one variable (which is the same for all entities) to another value.
+
+image::optimization-algorithms/move-selector-reference/pillarChangeMove.png[align="center"]
+
+In the example above, queen A and C have the same value (row 0) and are moved to row 2.
+Also the yellow and blue process have the same value (computer Y) and are moved to computer X.
+
+Simplest configuration:
+
+[source,xml,options="nowrap"]
+----
+    <pillarChangeMoveSelector/>
+----
+
+Advanced configuration:
+
+[source,xml,options="nowrap"]
+----
+    <pillarChangeMoveSelector>
+      <subPillarType>SEQUENCE</subPillarType>
+      <subPillarSequenceComparatorClass>...ShiftComparator</subPillarSequenceComparatorClass>
+      ... <!-- Normal selector properties -->
+      <pillarSelector>
+        <entitySelector>
+          <entityClass>...Shift</entityClass>
+          ...
+        </entitySelector>
+        <minimumSubPillarSize>1</minimumSubPillarSize>
+        <maximumSubPillarSize>1000</maximumSubPillarSize>
+      </pillarSelector>
+      <valueSelector variableName="employee">
+        ...
+      </valueSelector>
+    </pillarChangeMoveSelector>
+----
+
+For a description of `subPillarType` and related properties, please refer to <<subPillars,Sub-pillars>>.
+
+The other properties are explained in <<changeMoveSelector,changeMoveSelector>>.
+This move selector doesn’t support xref:optimization-algorithms/overview.adoc#cacheType[phase or solver caching]
+and step caching scales badly memory wise.
+
+
+[#pillarSwapMoveSelector]
+==== `PillarSwapMoveSelector`
+
+The `PillarSwapMove` selects two different entity pillars and swaps the values of all their variables for all their entities.
+
+image::optimization-algorithms/move-selector-reference/pillarSwapMove.png[align="center"]
+
+Simplest configuration:
+
+[source,xml,options="nowrap"]
+----
+    <pillarSwapMoveSelector/>
+----
+
+Advanced configuration:
+
+[source,xml,options="nowrap"]
+----
+    <pillarSwapMoveSelector>
+      <subPillarType>SEQUENCE</subPillarType>
+      <subPillarSequenceComparatorClass>...ShiftComparator</subPillarSequenceComparatorClass>
+      ... <!-- Normal selector properties -->
+      <pillarSelector>
+        <entitySelector>
+          <entityClass>...Shift</entityClass>
+          ...
+        </entitySelector>
+        <minimumSubPillarSize>1</minimumSubPillarSize>
+        <maximumSubPillarSize>1000</maximumSubPillarSize>
+      </pillarSelector>
+      <secondaryPillarSelector>
+        <entitySelector>
+          ...
+        </entitySelector>
+        ...
+      </secondaryPillarSelector>
+      <variableNameIncludes>
+        <variableNameInclude>employee</variableNameInclude>
+        <variableNameInclude>...</variableNameInclude>
+      </variableNameIncludes>
+    </pillarSwapMoveSelector>
+----
+
+For a description of `subPillarType` and related properties, please refer to <<subPillars,sub-pillars>>.
+
+The `secondaryPillarSelector` is rarely needed: if it is not specified, entities from the same `pillarSelector` are swapped.
+
+The other properties are explained in <<swapMoveSelector,swapMoveSelector>> and <<pillarChangeMoveSelector,pillarChangeMoveSelector>>.
+This move selector doesn’t support xref:optimization-algorithms/overview.adoc#cacheType[phase or solver caching]
+and step caching scales badly memory wise.
+
+[#subPillars]
+==== Sub-pillars
+
+A sub-pillar is a subset of entities that share the same value(s) for their variable(s).
+For example if queen A, B, C and D are all located on row 0, they’re a pillar and `[A, D]` is one of the many sub-pillars.
+
+There are several ways how sub-pillars can be selected by the `subPillarType` property:
+
+- `ALL` (default) selects all possible sub-pillars.
+- `SEQUENCE` limits selection of sub-pillars to <<sequentialSubPillars,Sequential sub-pillars>>.
+- `NONE` never selects any sub-pillars.
+
+If sub-pillars are enabled, the pillar itself is also included and the properties `minimumSubPillarSize` (defaults to ``1``) and `maximumSubPillarSize` (defaults to ``infinity``) limit the size of the selected (sub) pillar.
+
+[NOTE]
+====
+The number of sub-pillars of a pillar is exponential to the size of the pillar.
+For example a pillar of size 32 has `(2^32 - 1)` sub-pillars.
+Therefore a `pillarSelector` only supports xref:optimization-algorithms/overview.adoc#justInTimeRandomSelection[JIT random selection] (which is the default).
+====
+
+[#sequentialSubPillars]
+===== Sequential sub-pillars
+
+sub-pillars can be sorted with a `Comparator`. A sequential sub-pillar is a continuous subset of its sorted base pillar.
+
+For example, if an employee has shifts on Monday (`M`), Tuesday (`T`), and Wednesday (`W`),
+they’re a pillar and only the following are its sequential sub-pillars: `[M], [T], [W], [M, T], [T, W], [M, T, W]`.
+But `[M, W]` is not a sub-pillar in this case, as there is a gap on Tuesday.
+
+Sequential sub-pillars apply to both <<pillarChangeMoveSelector,Pillar change move>> and
+<<pillarSwapMoveSelector,Pillar swap move>>. A minimal configuration looks like this:
+
+[source,xml,options="nowrap"]
+----
+    <pillar...MoveSelector>
+      <subPillarType>SEQUENCE</subPillarType>
+    </pillar...MoveSelector>
+----
+
+In this case, the entity being operated on must implement the `Comparable` interface. The size of sub-pillars will not be limited in any way.
+
+An advanced configuration looks like this:
+
+[source,xml,options="nowrap"]
+----
+    <pillar...MoveSelector>
+      ...
+      <subPillarType>SEQUENCE</subPillarType>
+      <subPillarSequenceComparatorClass>...ShiftComparator</subPillarSequenceComparatorClass>
+      <pillarSelector>
+        ...
+        <minimumSubPillarSize>1</minimumSubPillarSize>
+        <maximumSubPillarSize>1000</maximumSubPillarSize>
+      </pillarSelector>
+      ...
+    </pillar...MoveSelector>
+----
+
+In this case, the entity being operated on needn’t be `Comparable`.
+The given `subPillarSequenceComparatorClass` is used to establish the sequence instead.
+Also, the size of the sub-pillars is limited in length of up to 1000 entities.
+
+[#ruinRecreateMoveSelector]
+=== `RuinRecreateMoveSelector`
+
+The `RuinRecreateMove` selects a subset of entities and sets their values to null,
+effectively unassigning them.
+Then it runs a construction heuristic to assign them again.
+If xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariableAllowingUnassigned[unassigned values] are allowed,
+it may leave them unassigned.
+
+This coarse-grained move is useful to help the solver to escape from a local optimum.
+It allows the solver to effectively "undo" a number of earlier decisions in one step,
+opening up a new part of the solution space.
+
+[NOTE]
+====
+If xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[nearby selection] is enabled,
+the `RuinRecreateMove` is likely to underperform
+as it won't be able to rebuild the solution using nearby selection.
+This almost always results in worse solutions than those that were originally ruined,
+without a big likelihood of leading to a better solution further down the line.
+We recommend not using this move together with nearby selection.
+====
+
+This move is not enabled by default.
+To enable it, add the following to the `localSearch` section of the solver configuration:
+
+[source,xml,options="nowrap"]
+----
+    <ruinRecreateMoveSelector/>
+----
+
+[IMPORTANT]
+====
+The default values have been determined by extensive benchmarking.
+That said, the optimal values may vary depending on the problem, available solving time, and dataset at hand.
+We recommend that you xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[experiment with these values]
+to find the best fit for your problem.
+====
+
+Advanced configuration:
+
+[source,xml,options="nowrap"]
+----
+    <ruinRecreateMoveSelector>
+      <minimumRuinedCount>5</minimumRuinedCount>
+      <maximumRuinedCount>40</maximumRuinedCount>
+    </ruinRecreateMoveSelector>
+----
+
+The `minimumRuinedCount` and `maximumRuinedCount` properties limit the number of entities that are unassigned.
+The default values are `5` and `20` respectively, but for large datasets,
+it may prove beneficial to increase these values.
+
+[NOTE]
+====
+`RuinRecreateMove` doesn’t support customizing the construction heuristic that it runs.
+Neither does it support customizing any entity or value selectors.
+If your problem needs more control over the construction heuristic,
+don’t enable this move.
+====
+
+Since the `RuinRecreateMove` is a coarse-grained move,
+it is expensive and can slow the solver down significantly.
+However, the default local search configuration will attempt to run it at the same frequency
+as the other fine-grained moves.
+For that reason, we recommend that you use xref:optimization-algorithms/overview.adoc#probabilisticSelection[probabilistic selection]
+to control the frequency of this move:
+
+[source,xml,options="nowrap"]
+----
+    <unionMoveSelector>
+        <unionMoveSelector>
+            <fixedProbabilityWeight>100.0</fixedProbabilityWeight>
+            <changeMoveSelector/>
+            <swapMoveSelector/>
+            <pillarChangeMoveSelector/>
+            <pillarSwapMoveSelector/>
+        </unionMoveSelector>
+        <ruinMoveSelector>
+            <fixedProbabilityWeight>1.0</fixedProbabilityWeight>
+        </ruinMoveSelector>
+    </unionMoveSelector>
+----
+
+The above configuration will run the `RuinRecreateMove` once for every 100 fine-grained moves.
+As always, benchmarking is recommended to find the optimal value for your use case.
+
+
+[#listMoveSelectors]
+== Move selectors for list variables
+
+These moves are applicable to xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[list planning variables].
+
+[#listChangeMoveSelector]
+=== `ListChangeMoveSelector`
+
+The `ListChangeMoveSelector` selects an element from a list variable's value range and moves it from its current position to a new one.
+
+Simplest configuration:
+
+[source,xml]
+----
+    <listChangeMoveSelector/>
+----
+
+Advanced configuration:
+
+[source,xml]
+----
+    <listChangeMoveSelector>
+      ... <!-- Normal selector properties -->
+      <valueSelector id="valueSelector1">
+        ...
+      </valueSelector>
+      <destinationSelector>
+        <entitySelector>
+          ...
+        </entitySelector>
+        <valueSelector>
+          ...
+        </valueSelector>
+      </destinationSelector>
+    </listChangeMoveSelector>
+----
+
+[#listSwapMoveSelector]
+=== `ListSwapMoveSelector`
+
+The `ListSwapMoveSelector` selects two elements from the same list variable value range and swaps their positions.
+
+Simplest configuration:
+
+[source,xml]
+----
+    <listSwapMoveSelector/>
+----
+
+[#subListChangeMoveSelector]
+=== `SubListChangeMoveSelector`
+
+A _subList_ is a sequence of elements in a specific entity's list variable between `fromIndex` and `toIndex`.
+The `SubListChangeMoveSelector` selects a source subList by selecting a source entity and the source subList's `fromIndex` and `toIndex`.
+Then it selects a destination entity and a `destinationIndex` in the destination entity's list variable.
+Selecting these parameters results in a `SubListChangeMove` that removes the source subList elements from the source entity and adds them to the destination entity's list variable at the `destinationIndex`.
+
+Simplest configuration:
+
+[source,xml]
+----
+    <subListChangeMoveSelector/>
+----
+
+Advanced configuration:
+
+[source,xml]
+----
+    <subListChangeMoveSelector>
+      ... <!-- Normal selector properties -->
+      <selectReversingMoveToo>true</selectReversingMoveToo>
+      <subListSelector id="subListSelector1">
+        <valueSelector>
+          ...
+        </valueSelector>
+        <minimumSubListSize>2</minimumSubListSize>
+        <maximumSubListSize>6</maximumSubListSize>
+      </subListSelector>
+    </subListChangeMoveSelector>
+----
+
+[#subListSwapMoveSelector]
+=== `SubListSwapMoveSelector`
+
+A _subList_ is a sequence of elements in a specific entity's list variable between `fromIndex` and `toIndex`.
+The `SubListSwapMoveSelector` selects a left subList by selecting a left entity and the left subList's `fromIndex` and `toIndex`.
+Then it selects a right subList by selecting a right entity and the right subList's `fromIndex` and `toIndex`.
+Selecting these parameters results in a `SubListSwapMove` that swaps the right and left subLists between right and left entities.
+
+Simplest configuration:
+
+[source,xml]
+----
+    <subListSwapMoveSelector/>
+----
+
+Advanced configuration:
+
+[source,xml]
+----
+    <subListSwapMoveSelector>
+      ... <!-- Normal selector properties -->
+      <selectReversingMoveToo>true</selectReversingMoveToo>
+      <subListSelector id="subListSelector1">
+        <valueSelector>
+          ...
+        </valueSelector>
+        <minimumSubListSize>2</minimumSubListSize>
+        <maximumSubListSize>6</maximumSubListSize>
+      </subListSelector>
+    </subListSwapMoveSelector>
+----
+
+[#kOptListMoveSelector]
+=== `KOptListMoveSelector`
+
+The `KOptListMoveSelector` considers the list variable to be
+a graph whose edges are the consecutive elements of the list
+(with the last element being consecutive to the first element).
+A `KOptListMove` selects an entity, remove `k` edges from its list variable, and add `k` new edges from the removed edges' endpoints.
+This move may reverse segments of the graph.
+
+image::optimization-algorithms/move-selector-reference/koptMove.png[align="center"]
+
+Simplest configuration:
+
+[source,xml]
+----
+    <kOptListMoveSelector/>
+----
+
+Advanced configuration:
+
+[source,xml]
+----
+    <kOptListMoveSelector>
+      ... <!-- Normal selector properties -->
+      <minimumK>2</minimumK>
+      <maximumK>4</maximumK>
+    </kOptListMoveSelector>
+----
+
+[#listRuinRecreateMoveSelector]
+=== `ListRuinRecreateMoveSelector`
+
+The `ListRuinRecreateMove` selects a subset of values, and removes them from their list variables.
+Then it runs a construction heuristic to assign them again.
+If xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariableAllowingUnassigned[unassigned values] are allowed,
+it may leave them unassigned.
+
+This coarse-grained move is useful to help the solver to escape from a local optimum.
+It allows the solver to effectively "undo" a number of earlier decisions in one step,
+opening up a new part of the solution space.
+
+[NOTE]
+====
+If xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[nearby selection] is enabled,
+the `ListRuinRecreateMove` is likely to underperform
+as it won't be able to rebuild the solution using nearby selection.
+This almost always results in worse solutions than those that were originally ruined,
+without a big likelihood of leading to a better solution further down the line.
+We recommend not using this move together with nearby selection.
+====
+
+This move is not enabled by default.
+To enable it, add the following to the `localSearch` section of the solver configuration:
+
+[source,xml,options="nowrap"]
+----
+    <listRuinRecreateMoveSelector/>
+----
+
+[IMPORTANT]
+====
+The default values have been determined by extensive benchmarking.
+That said, the optimal values may vary depending on the problem, available solving time, and dataset at hand.
+We recommend that you xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[experiment with these values]
+to find the best fit for your problem.
+====
+
+Advanced configuration:
+
+[source,xml,options="nowrap"]
+----
+    <listRuinRecreateMoveSelector>
+      <minimumRuinedCount>5</minimumRuinedCount>
+      <maximumRuinedCount>40</maximumRuinedCount>
+    </listRuinRecreateMoveSelector>
+----
+
+The `minimumRuinedCount` and `maximumRuinedCount` properties limit the number of values that are unassigned.
+The default values are `5` and `20` respectively, but for large datasets,
+it may prove beneficial to increase these values.
+
+[NOTE]
+====
+`ListRuinRecreateMove` doesn’t support customizing the construction heuristic that it runs.
+Neither does it support customizing any entity or value selectors.
+If your problem needs more control over the construction heuristic,
+don’t enable this move.
+====
+
+Since the `ListRuinRecreateMove` is a coarse-grained move,
+it is expensive and can slow the solver down significantly.
+However, the default local search configuration will attempt to run it at the same frequency
+as the other fine-grained moves.
+For that reason, we recommend that you use xref:optimization-algorithms/overview.adoc#probabilisticSelection[probabilistic selection]
+to control the frequency of this move:
+
+[source,xml,options="nowrap"]
+----
+    <unionMoveSelector>
+        <unionMoveSelector>
+            <fixedProbabilityWeight>100.0</fixedProbabilityWeight>
+            <changeMoveSelector/>
+            <swapMoveSelector/>
+            <pillarChangeMoveSelector/>
+            <pillarSwapMoveSelector/>
+        </unionMoveSelector>
+        <listRuinMoveSelector>
+            <fixedProbabilityWeight>1.0</fixedProbabilityWeight>
+        </listRuinMoveSelector>
+    </unionMoveSelector>
+----
+
+The above configuration will run the `ListRuinRecreateMove` once for every 100 fine-grained moves.
+As always, benchmarking is recommended to find the optimal value for your use case.
+
+
+[#chainMoveSelectors]
+== Move selectors for chained variables
+
+These moves are applicable to xref:using-timefold-solver/modeling-planning-problems.adoc#chainedPlanningVariable[chained planning variable].
+
+[#tailChainSwapMoveSelector]
+=== `TailChainSwapMoveSelector` or 2-opt
+
+A _tailChain_ is a set of planning entities with a chained planning variable which form the last part of a chain.
+The `tailChainSwapMove` selects a tail chain and swaps it with the tail chain of another planning value (in a different or the same anchor chain). If the targeted planning value, doesn't have a tail chain, it swaps with nothing (resulting in a change like move). If it occurs within the same anchor chain, a partial chain reverse occurs.
+In academic papers, this is often called a 2-opt move.
+
+Simplest configuration:
+
+[source,xml,options="nowrap"]
+----
+    <tailChainSwapMoveSelector/>
+----
+
+Advanced configuration:
+
+[source,xml,options="nowrap"]
+----
+    <tailChainSwapMoveSelector>
+      ... <!-- Normal selector properties -->
+      <entitySelector>
+        <entityClass>...Customer</entityClass>
+        ...
+      </entitySelector>
+      <valueSelector variableName="previousStandstill">
+        ...
+      </valueSelector>
+    </tailChainSwapMoveSelector>
+----
+
+The `entitySelector` selects the start of the tail chain that is being moved.
+The `valueSelector` selects to where that tail chain is moved.
+If it has a tail chain itself, that is moved to the location of the original tail chain.
+It uses a `valueSelector` instead of a `secondaryEntitySelector`
+to be able
+to include all possible 2opt moves (such as moving to the end of a tail)
+and to work correctly with xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[nearby selection]
+(because of asymmetric distances and also swapped entity distance gives an incorrect selection probability).
+
+[NOTE]
+====
+Although `subChainChangeMoveSelector` and `subChainSwapMoveSelector` include almost every possible ``tailChainSwapMove``, experiments have shown that focusing on ``tailChainSwapMove``s increases efficiency.
+====
+
+This move selector doesn’t support xref:optimization-algorithms/overview.adoc#cacheType[phase or solver caching].
+
+[#subChainChangeMoveSelector]
+=== `SubChainChangeMoveSelector`
+
+A _subChain_ is a set of planning entities with a chained planning variable which form part of a chain.
+The `subChainChangeMoveSelector` selects a subChain and moves it to another place (in a different or the same anchor chain).
+
+Simplest configuration:
+
+[source,xml,options="nowrap"]
+----
+    <subChainChangeMoveSelector/>
+----
+
+Advanced configuration:
+
+[source,xml,options="nowrap"]
+----
+    <subChainChangeMoveSelector>
+      ... <!-- Normal selector properties -->
+      <entityClass>...Customer</entityClass>
+      <subChainSelector>
+        <valueSelector variableName="previousStandstill">
+          ...
+        </valueSelector>
+        <minimumSubChainSize>2</minimumSubChainSize>
+        <maximumSubChainSize>40</maximumSubChainSize>
+      </subChainSelector>
+      <valueSelector variableName="previousStandstill">
+        ...
+      </valueSelector>
+      <selectReversingMoveToo>true</selectReversingMoveToo>
+    </subChainChangeMoveSelector>
+----
+
+The `subChainSelector` selects a number of entities, no less than `minimumSubChainSize` (defaults to ``1``) and no more than `maximumSubChainSize` (defaults to ``infinity``).
+
+[NOTE]
+====
+If `minimumSubChainSize` is `1` (which is the default), this selector might select the same move as a ``ChangeMoveSelector``, at a far lower selection probability (because each move _type_ has the same selection chance by default (not every move instance) and there are far more `SubChainChangeMove` instances than `ChangeMove` instances). However, don't just remove the ``ChangeMoveSelector``, because experiments show that it's good to focus on ``ChangeMove``s.
+
+Furthermore, in a ``SubChainSwapMoveSelector``, setting `minimumSubChainSize` prevents swapping a subchain of size `1` with a subchain of size ``2`` or more.
+====
+
+The `selectReversingMoveToo` property (defaults to true) enables selecting the reverse of every subchain too.
+
+This move selector doesn’t support xref:optimization-algorithms/overview.adoc#cacheType[phase or solver caching]
+and step caching scales badly memory wise.
+
+
+[#subChainSwapMoveSelector]
+=== `SubChainSwapMoveSelector`
+
+The `subChainSwapMoveSelector` selects two different subChains and moves them to another place in a different or the same anchor chain.
+
+Simplest configuration:
+
+[source,xml,options="nowrap"]
+----
+    <subChainSwapMoveSelector/>
+----
+
+Advanced configuration:
+
+[source,xml,options="nowrap"]
+----
+    <subChainSwapMoveSelector>
+      ... <!-- Normal selector properties -->
+      <entityClass>...Customer</entityClass>
+      <subChainSelector>
+        <valueSelector variableName="previousStandstill">
+          ...
+        </valueSelector>
+        <minimumSubChainSize>2</minimumSubChainSize>
+        <maximumSubChainSize>40</maximumSubChainSize>
+      </subChainSelector>
+      <secondarySubChainSelector>
+        <valueSelector variableName="previousStandstill">
+          ...
+        </valueSelector>
+        <minimumSubChainSize>2</minimumSubChainSize>
+        <maximumSubChainSize>40</maximumSubChainSize>
+      </secondarySubChainSelector>
+      <selectReversingMoveToo>true</selectReversingMoveToo>
+    </subChainSwapMoveSelector>
+----
+
+The `secondarySubChainSelector` is rarely needed: if it is not specified, entities from the same `subChainSelector` are swapped.
+
+The other properties are explained in <<subChainChangeMoveSelector,subChainChangeMoveSelector>>.
+This move selector doesn’t support xref:optimization-algorithms/overview.adoc#cacheType[phase or solver caching]
+and step caching scales badly memory wise.

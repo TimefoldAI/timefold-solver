@@ -77,17 +77,19 @@ In school timetabling,
 the `solve()` method will return a `Timetable` instance with every `Lesson` assigned to a `Teacher` and a `Timeslot`.
 
 The `solve(Solution)` method can take a long time (depending on the problem size and the solver configuration).
-The `Solver` intelligently wades through xref:optimization-algorithms/optimization-algorithms.adoc#searchSpaceSize[the search space] of possible solutions
+The `Solver` intelligently wades through xref:optimization-algorithms/overview.adoc#searchSpaceSize[the search space] of possible solutions
 and remembers the best solution it encounters during solving.
 Depending on a number of factors (including problem size, how much time the `Solver` has, the solver configuration, ...),
-xref:optimization-algorithms/optimization-algorithms.adoc#doesTimefoldFindTheOptimalSolution[that best solution might or might not be an optimal solution].
+xref:optimization-algorithms/overview.adoc#doesTimefoldFindTheOptimalSolution[that best solution might or might not be an optimal solution].
 
 [NOTE]
 ====
 The solution instance given to the method `solve(solution)` is changed by the ``Solver``,
 but do not mistake it for the best solution.
 
-The solution instance returned by the methods `solve(solution)` or `getBestSolution()` is most likely <<cloningASolution,a planning clone>> of the instance given to the method ``solve(solution)``, which implies it is a different instance.
+The solution instance returned by the methods `solve(solution)` or `getBestSolution()`
+is most likely xref:using-timefold-solver/modeling-planning-problems.adoc#cloningASolution[a planning clone] of the instance
+given to the method ``solve(solution)``, which implies it is a different instance.
 ====
 
 [NOTE]
@@ -270,9 +272,9 @@ Except if the calling code explicitly catches and eats that ``RuntimeException``
 Meanwhile, the code is disrupted from doing further harm or obfuscating the error.
 ====
 * **warn**: Log suspicious circumstances.
-* **info**: Log every phase and the solver itself. See xref:optimization-algorithms/optimization-algorithms.adoc#scopeOverview[scope overview].
-* **debug**: Log every step of every phase. See xref:optimization-algorithms/optimization-algorithms.adoc#scopeOverview[scope overview].
-* **trace**: Log every move of every step of every phase. See xref:optimization-algorithms/optimization-algorithms.adoc#scopeOverview[scope overview].
+* **info**: Log every phase and the solver itself. See xref:optimization-algorithms/overview.adoc#scopeOverview[scope overview].
+* **debug**: Log every step of every phase. See xref:optimization-algorithms/overview.adoc#scopeOverview[scope overview].
+* **trace**: Log every move of every step of every phase. See xref:optimization-algorithms/overview.adoc#scopeOverview[scope overview].
 
 [NOTE]
 ====

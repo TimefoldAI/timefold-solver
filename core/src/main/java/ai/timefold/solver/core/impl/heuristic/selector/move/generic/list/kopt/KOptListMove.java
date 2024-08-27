@@ -9,6 +9,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
+import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 /**
@@ -82,7 +83,7 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     @Override
-    protected AbstractMove<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
+    protected Move<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
         if (equivalent2Opts.isEmpty()) {
             return this;
         } else {
@@ -98,7 +99,7 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
             }
             originalEndIndices[originalEndIndices.length - 1] = combinedList.size() - 1;
 
-            return new UndoKOptListMove<>(listVariableDescriptor, descriptor, inverse2Opts, -postShiftAmount,
+            return new UndoKOptListMove<>(this, listVariableDescriptor, inverse2Opts, -postShiftAmount,
                     originalEndIndices, originalEntities);
         }
     }
@@ -185,8 +186,8 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
         return descriptor.toString();
     }
 
-    private static <Solution_> MultipleDelegateList<?>
-            computeCombinedList(ListVariableDescriptor<Solution_> listVariableDescriptor, Object[] entities) {
+    static <Solution_> MultipleDelegateList<?> computeCombinedList(ListVariableDescriptor<Solution_> listVariableDescriptor,
+            Object[] entities) {
         @SuppressWarnings("unchecked")
         List<Object>[] delegates = new List[entities.length];
 
@@ -194,79 +195,6 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
             delegates[i] = listVariableDescriptor.getUnpinnedSubList(entities[i]);
         }
         return new MultipleDelegateList<>(entities, delegates);
-    }
-
-    /**
-     * A K-Opt move that does the list rotation before performing the flips instead of after, allowing
-     * it to act as the undo move of a K-Opt move that does the rotation after the flips.
-     *
-     * @param <Solution_>
-     */
-    private static final class UndoKOptListMove<Solution_, Node_> extends AbstractMove<Solution_> {
-        private final ListVariableDescriptor<Solution_> listVariableDescriptor;
-        private final KOptDescriptor<Node_> descriptor;
-        private final List<FlipSublistAction> equivalent2Opts;
-        private final int preShiftAmount;
-        private final int[] newEndIndices;
-
-        private final Object[] originalEntities;
-
-        public UndoKOptListMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
-                KOptDescriptor<Node_> descriptor,
-                List<FlipSublistAction> equivalent2Opts,
-                int preShiftAmount,
-                int[] newEndIndices,
-                Object[] originalEntities) {
-            this.listVariableDescriptor = listVariableDescriptor;
-            this.descriptor = descriptor;
-            this.equivalent2Opts = equivalent2Opts;
-            this.preShiftAmount = preShiftAmount;
-            this.newEndIndices = newEndIndices;
-            this.originalEntities = originalEntities;
-        }
-
-        @Override
-        public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-            return true;
-        }
-
-        @Override
-        protected AbstractMove<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-            var innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
-
-            var combinedList = computeCombinedList(listVariableDescriptor, originalEntities);
-            combinedList.actOnAffectedElements(
-                    listVariableDescriptor,
-                    originalEntities,
-                    (entity, start, end) -> innerScoreDirector.beforeListVariableChanged(listVariableDescriptor, entity,
-                            start,
-                            end));
-
-            // subLists will get corrupted by ConcurrentModifications, so do the operations
-            // on a clone
-            var combinedListCopy = combinedList.copy();
-            Collections.rotate(combinedListCopy, preShiftAmount);
-            combinedListCopy.moveElementsOfDelegates(newEndIndices);
-
-            for (var move : equivalent2Opts) {
-                move.doMoveOnGenuineVariables(combinedListCopy);
-            }
-            combinedList.applyChangesFromCopy(combinedListCopy);
-            combinedList.actOnAffectedElements(listVariableDescriptor,
-                    originalEntities,
-                    (entity, start, end) -> innerScoreDirector.afterListVariableChanged(listVariableDescriptor, entity,
-                            start,
-                            end));
-        }
-
-        public String toString() {
-            return "Undo" + descriptor.toString();
-        }
     }
 
 }
