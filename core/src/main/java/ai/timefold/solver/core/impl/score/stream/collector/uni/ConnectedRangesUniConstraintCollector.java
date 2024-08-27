@@ -7,10 +7,11 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.impl.score.stream.collector.ConnectedRangesCalculator;
+import ai.timefold.solver.core.impl.score.stream.collector.connected_ranges.Range;
 
 final class ConnectedRangesUniConstraintCollector<A, Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
         extends
-        ObjectCalculatorUniCollector<A, Interval_, ConnectedRangeChain<Interval_, Point_, Difference_>, ConnectedRangesCalculator<Interval_, Point_, Difference_>> {
+        ObjectCalculatorUniCollector<A, Interval_, ConnectedRangeChain<Interval_, Point_, Difference_>, Range<Interval_, Point_>, ConnectedRangesCalculator<Interval_, Point_, Difference_>> {
 
     private final Function<? super Interval_, ? extends Point_> startMap;
     private final Function<? super Interval_, ? extends Point_> endMap;

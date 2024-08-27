@@ -7,7 +7,8 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.impl.score.stream.collector.ReferenceAverageCalculator;
 
 final class AverageReferenceTriCollector<A, B, C, Mapped_, Average_>
-        extends ObjectCalculatorTriCollector<A, B, C, Mapped_, Average_, ReferenceAverageCalculator<Mapped_, Average_>> {
+        extends
+        ObjectCalculatorTriCollector<A, B, C, Mapped_, Average_, Mapped_, ReferenceAverageCalculator<Mapped_, Average_>> {
     private final Supplier<ReferenceAverageCalculator<Mapped_, Average_>> calculatorSupplier;
 
     AverageReferenceTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Mapped_> mapper,

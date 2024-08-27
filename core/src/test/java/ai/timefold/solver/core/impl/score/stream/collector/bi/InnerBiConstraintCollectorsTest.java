@@ -32,7 +32,6 @@ import java.util.function.BiFunction;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
-import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.impl.score.stream.collector.AbstractConstraintCollectorsTest;
 import ai.timefold.solver.core.impl.util.Pair;
@@ -1071,19 +1070,19 @@ final class InnerBiConstraintCollectorsTest extends AbstractConstraintCollectors
     @Override
     @Test
     public void consecutiveUsage() {
-        BiConstraintCollector<Integer, Integer, ?, ConnectedRangeChain<Interval, Integer, Integer>> collector =
+        var collector =
                 ConstraintCollectors.toConnectedRanges(Interval::new,
                         Interval::start,
                         Interval::end, (a, b) -> b - a);
         var container = collector.supplier().get();
         // Add first value, sequence is [(1,3)]
-        Runnable firstRetractor = accumulate(collector, container, 1, 3);
+        var firstRetractor = accumulate(collector, container, 1, 3);
         assertResult(collector, container, buildConsecutiveUsage(new Interval(1, 3)));
         // Add second value, sequence is [(1,3),(2,4)]
-        Runnable secondRetractor = accumulate(collector, container, 2, 4);
+        var secondRetractor = accumulate(collector, container, 2, 4);
         assertResult(collector, container, buildConsecutiveUsage(new Interval(1, 3), new Interval(2, 4)));
         // Add third value, same as the second. Sequence is [{1,1},2}]
-        Runnable thirdRetractor = accumulate(collector, container, 2, 4);
+        var thirdRetractor = accumulate(collector, container, 2, 4);
         assertResult(collector, container, buildConsecutiveUsage(new Interval(1, 3), new Interval(2, 4), new Interval(2, 4)));
         // Retract one instance of the second value; we only have two values now.
         secondRetractor.run();
@@ -1094,6 +1093,42 @@ final class InnerBiConstraintCollectorsTest extends AbstractConstraintCollectors
         // Retract last value; there are no values now.
         firstRetractor.run();
         assertResult(collector, container, buildConsecutiveUsage());
+    }
+
+    @Override
+    @Test
+    public void consecutiveUsageDynamic() {
+        var dynamicCollector =
+                ConstraintCollectors.toConnectedRanges((DynamicInterval a, Object b) -> a,
+                        DynamicInterval::getStart,
+                        DynamicInterval::getEnd, (a, b) -> b - a);
+
+        var first = new DynamicInterval(0);
+        var second = new DynamicInterval(10);
+        var third = new DynamicInterval(20);
+        var container = dynamicCollector.supplier().get();
+
+        // Add first value, sequence is [[(0, 10)]]
+        var firstRetractor = accumulate(dynamicCollector, container, first, null);
+        assertResult(dynamicCollector, container, buildDynamicConsecutiveUsage(new DynamicInterval(0)));
+
+        // Add third value, sequence is [[(0, 10)], [(20, 30)]]
+        accumulate(dynamicCollector, container, third, null);
+        assertResult(dynamicCollector, container,
+                buildDynamicConsecutiveUsage(new DynamicInterval(0), new DynamicInterval(20)));
+
+        // Add second value, sequence is [[(0, 10), (10, 20), (20, 30)]]
+        accumulate(dynamicCollector, container, second, null);
+        assertResult(dynamicCollector, container,
+                buildDynamicConsecutiveUsage(new DynamicInterval(0), new DynamicInterval(10), new DynamicInterval(20)));
+
+        // Change first value, retract it, then re-add it
+        first.setStart(-5);
+        firstRetractor.run();
+        accumulate(dynamicCollector, container, first, null);
+
+        assertResult(dynamicCollector, container,
+                buildDynamicConsecutiveUsage(new DynamicInterval(-5), new DynamicInterval(10), new DynamicInterval(20)));
     }
 
     @Override

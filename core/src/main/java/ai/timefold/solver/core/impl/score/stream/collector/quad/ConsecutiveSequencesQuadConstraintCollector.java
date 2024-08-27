@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.score.stream.collector.SequenceCalculator;
 
 final class ConsecutiveSequencesQuadConstraintCollector<A, B, C, D, Result_>
         extends
-        ObjectCalculatorQuadCollector<A, B, C, D, Result_, SequenceChain<Result_, Integer>, SequenceCalculator<Result_>> {
+        ObjectCalculatorQuadCollector<A, B, C, D, Result_, SequenceChain<Result_, Integer>, Result_, SequenceCalculator<Result_>> {
 
     private final ToIntFunction<Result_> indexMap;
 

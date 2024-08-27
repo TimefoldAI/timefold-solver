@@ -7,7 +7,8 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.impl.score.stream.collector.ReferenceAverageCalculator;
 
 final class AverageReferenceQuadCollector<A, B, C, D, Mapped_, Average_>
-        extends ObjectCalculatorQuadCollector<A, B, C, D, Mapped_, Average_, ReferenceAverageCalculator<Mapped_, Average_>> {
+        extends
+        ObjectCalculatorQuadCollector<A, B, C, D, Mapped_, Average_, Mapped_, ReferenceAverageCalculator<Mapped_, Average_>> {
     private final Supplier<ReferenceAverageCalculator<Mapped_, Average_>> calculatorSupplier;
 
     AverageReferenceQuadCollector(QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Mapped_> mapper,

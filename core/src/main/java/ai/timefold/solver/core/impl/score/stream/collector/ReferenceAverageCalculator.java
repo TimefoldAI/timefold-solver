@@ -8,7 +8,7 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 
-public final class ReferenceAverageCalculator<Input_, Output_> implements ObjectCalculator<Input_, Output_> {
+public final class ReferenceAverageCalculator<Input_, Output_> implements ObjectCalculator<Input_, Output_, Input_> {
     int count = 0;
     Input_ sum;
     final BinaryOperator<Input_> adder;
@@ -51,15 +51,16 @@ public final class ReferenceAverageCalculator<Input_, Output_> implements Object
     }
 
     @Override
-    public void insert(Input_ input) {
+    public Input_ insert(Input_ input) {
         count++;
         sum = adder.apply(sum, input);
+        return input;
     }
 
     @Override
-    public void retract(Input_ input) {
+    public void retract(Input_ mapped) {
         count--;
-        sum = subtractor.apply(sum, input);
+        sum = subtractor.apply(sum, mapped);
     }
 
     @Override

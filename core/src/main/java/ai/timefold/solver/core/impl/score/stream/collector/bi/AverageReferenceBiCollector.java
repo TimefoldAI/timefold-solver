@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.impl.score.stream.collector.ReferenceAverageCalculator;
 
 final class AverageReferenceBiCollector<A, B, Mapped_, Average_>
-        extends ObjectCalculatorBiCollector<A, B, Mapped_, Average_, ReferenceAverageCalculator<Mapped_, Average_>> {
+        extends ObjectCalculatorBiCollector<A, B, Mapped_, Average_, Mapped_, ReferenceAverageCalculator<Mapped_, Average_>> {
     private final Supplier<ReferenceAverageCalculator<Mapped_, Average_>> calculatorSupplier;
 
     AverageReferenceBiCollector(BiFunction<? super A, ? super B, ? extends Mapped_> mapper,

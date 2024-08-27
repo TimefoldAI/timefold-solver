@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.impl.score.stream.collector.IntDistinctCountCalculator;
 
 final class CountDistinctIntUniCollector<A, Mapped_>
-        extends ObjectCalculatorUniCollector<A, Mapped_, Integer, IntDistinctCountCalculator<Mapped_>> {
+        extends ObjectCalculatorUniCollector<A, Mapped_, Integer, Mapped_, IntDistinctCountCalculator<Mapped_>> {
     CountDistinctIntUniCollector(Function<? super A, ? extends Mapped_> mapper) {
         super(mapper);
     }

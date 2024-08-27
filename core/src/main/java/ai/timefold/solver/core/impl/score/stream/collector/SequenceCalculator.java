@@ -7,7 +7,7 @@ import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.impl.score.stream.collector.consecutive.ConsecutiveSetTree;
 
 public final class SequenceCalculator<Result_>
-        implements ObjectCalculator<Result_, SequenceChain<Result_, Integer>> {
+        implements ObjectCalculator<Result_, SequenceChain<Result_, Integer>, Result_> {
 
     private final ConsecutiveSetTree<Result_, Integer, Integer> context = new ConsecutiveSetTree<>(
             (Integer a, Integer b) -> b - a,
@@ -20,9 +20,10 @@ public final class SequenceCalculator<Result_>
     }
 
     @Override
-    public void insert(Result_ result) {
+    public Result_ insert(Result_ result) {
         var value = indexMap.applyAsInt(result);
         context.add(result, value);
+        return result;
     }
 
     @Override

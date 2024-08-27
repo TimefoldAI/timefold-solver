@@ -5,9 +5,11 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.impl.score.stream.collector.connected_ranges.ConnectedRangeTracker;
+import ai.timefold.solver.core.impl.score.stream.collector.connected_ranges.Range;
 
 public final class ConnectedRangesCalculator<Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
-        implements ObjectCalculator<Interval_, ConnectedRangeChain<Interval_, Point_, Difference_>> {
+        implements
+        ObjectCalculator<Interval_, ConnectedRangeChain<Interval_, Point_, Difference_>, Range<Interval_, Point_>> {
 
     private final ConnectedRangeTracker<Interval_, Point_, Difference_> context;
 
@@ -21,13 +23,15 @@ public final class ConnectedRangesCalculator<Interval_, Point_ extends Comparabl
     }
 
     @Override
-    public void insert(Interval_ result) {
-        context.add(context.getRange(result));
+    public Range<Interval_, Point_> insert(Interval_ result) {
+        final var saved = context.getRange(result);
+        context.add(saved);
+        return saved;
     }
 
     @Override
-    public void retract(Interval_ result) {
-        context.remove(context.getRange(result));
+    public void retract(Range<Interval_, Point_> range) {
+        context.remove(range);
     }
 
     @Override

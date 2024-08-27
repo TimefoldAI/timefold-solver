@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.collector;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
@@ -111,6 +112,9 @@ public abstract class AbstractConstraintCollectorsTest {
     public abstract void consecutiveUsage();
 
     @Test
+    public abstract void consecutiveUsageDynamic();
+
+    @Test
     public abstract void loadBalance();
 
     @Test
@@ -134,8 +138,56 @@ public abstract class AbstractConstraintCollectorsTest {
                 }).getConnectedRangeChain();
     }
 
+    protected ConnectedRangeChain<DynamicInterval, Integer, Integer> buildDynamicConsecutiveUsage(DynamicInterval... data) {
+        return Arrays.stream(data).collect(
+                () -> new ConnectedRangeTracker<>(DynamicInterval::getStart, DynamicInterval::getEnd, (a, b) -> b - a),
+                (tree, datum) -> tree.add(tree.getRange(datum)),
+                (a, b) -> {
+                    throw new UnsupportedOperationException();
+                }).getConnectedRangeChain();
+    }
+
     public record Interval(int start, int end) {
 
+    }
+
+    public static final class DynamicInterval {
+        int start;
+
+        public DynamicInterval(int start) {
+            this.start = start;
+        }
+
+        public int getStart() {
+            return start;
+        }
+
+        public int getEnd() {
+            return start + 10;
+        }
+
+        public void setStart(int start) {
+            this.start = start;
+        }
+
+        @Override
+        public String toString() {
+            return "DynamicInterval(%d, %d)".formatted(getStart(), getEnd());
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (!(o instanceof DynamicInterval that))
+                return false;
+            return start == that.start;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(start);
+        }
     }
 
 }

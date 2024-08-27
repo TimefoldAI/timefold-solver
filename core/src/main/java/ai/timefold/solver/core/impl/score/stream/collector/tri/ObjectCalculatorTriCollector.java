@@ -8,7 +8,7 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.ObjectCalculator;
 
-abstract sealed class ObjectCalculatorTriCollector<A, B, C, Input_, Output_, Calculator_ extends ObjectCalculator<Input_, Output_>>
+abstract sealed class ObjectCalculatorTriCollector<A, B, C, Input_, Output_, Mapped_, Calculator_ extends ObjectCalculator<Input_, Output_, Mapped_>>
         implements TriConstraintCollector<A, B, C, Calculator_, Output_>
         permits AverageReferenceTriCollector, ConnectedRangesTriConstraintCollector, ConsecutiveSequencesTriConstraintCollector,
         CountDistinctIntTriCollector, CountDistinctLongTriCollector, SumReferenceTriCollector {
@@ -21,9 +21,9 @@ abstract sealed class ObjectCalculatorTriCollector<A, B, C, Input_, Output_, Cal
     @Override
     public QuadFunction<Calculator_, A, B, C, Runnable> accumulator() {
         return (calculator, a, b, c) -> {
-            final Input_ mapped = mapper.apply(a, b, c);
-            calculator.insert(mapped);
-            return () -> calculator.retract(mapped);
+            final var mapped = mapper.apply(a, b, c);
+            final var saved = calculator.insert(mapped);
+            return () -> calculator.retract(saved);
         };
     }
 
@@ -38,7 +38,7 @@ abstract sealed class ObjectCalculatorTriCollector<A, B, C, Input_, Output_, Cal
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (ObjectCalculatorTriCollector<?, ?, ?, ?, ?, ?>) object;
+        var that = (ObjectCalculatorTriCollector<?, ?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

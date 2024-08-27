@@ -8,7 +8,7 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.ObjectCalculator;
 
-abstract sealed class ObjectCalculatorBiCollector<A, B, Input_, Output_, Calculator_ extends ObjectCalculator<Input_, Output_>>
+abstract sealed class ObjectCalculatorBiCollector<A, B, Input_, Output_, Mapped_, Calculator_ extends ObjectCalculator<Input_, Output_, Mapped_>>
         implements BiConstraintCollector<A, B, Calculator_, Output_>
         permits AverageReferenceBiCollector, ConnectedRangesBiConstraintCollector, ConsecutiveSequencesBiConstraintCollector,
         CountDistinctIntBiCollector, CountDistinctLongBiCollector, SumReferenceBiCollector {
@@ -21,9 +21,9 @@ abstract sealed class ObjectCalculatorBiCollector<A, B, Input_, Output_, Calcula
     @Override
     public TriFunction<Calculator_, A, B, Runnable> accumulator() {
         return (calculator, a, b) -> {
-            final Input_ mapped = mapper.apply(a, b);
-            calculator.insert(mapped);
-            return () -> calculator.retract(mapped);
+            final var mapped = mapper.apply(a, b);
+            final var saved = calculator.insert(mapped);
+            return () -> calculator.retract(saved);
         };
     }
 
@@ -38,7 +38,7 @@ abstract sealed class ObjectCalculatorBiCollector<A, B, Input_, Output_, Calcula
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        var that = (ObjectCalculatorBiCollector<?, ?, ?, ?, ?>) object;
+        var that = (ObjectCalculatorBiCollector<?, ?, ?, ?, ?, ?>) object;
         return Objects.equals(mapper, that.mapper);
     }
 

@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.impl.score.stream.collector.ReferenceAverageCalculator;
 
 final class AverageReferenceUniCollector<A, Mapped_, Average_>
-        extends ObjectCalculatorUniCollector<A, Mapped_, Average_, ReferenceAverageCalculator<Mapped_, Average_>> {
+        extends ObjectCalculatorUniCollector<A, Mapped_, Average_, Mapped_, ReferenceAverageCalculator<Mapped_, Average_>> {
     private final Supplier<ReferenceAverageCalculator<Mapped_, Average_>> calculatorSupplier;
 
     AverageReferenceUniCollector(Function<? super A, ? extends Mapped_> mapper,
