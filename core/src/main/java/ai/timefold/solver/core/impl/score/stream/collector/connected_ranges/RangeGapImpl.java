@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.collector.connected_ranges;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRange;
 import ai.timefold.solver.core.api.score.stream.common.RangeGap;
 
@@ -49,6 +51,21 @@ final class RangeGapImpl<Range_, Point_ extends Comparable<Point_>, Difference_ 
 
     void setLength(Difference_ length) {
         this.length = length;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof RangeGapImpl<?, ?, ?> rangeGap))
+            return false;
+        return Objects.equals(getPreviousRangeEnd(), rangeGap.getPreviousRangeEnd()) &&
+                Objects.equals(getNextRangeStart(), rangeGap.getNextRangeStart());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getPreviousRangeEnd(), getNextRangeStart());
     }
 
     @Override
