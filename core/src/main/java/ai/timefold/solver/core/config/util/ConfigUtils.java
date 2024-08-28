@@ -372,12 +372,19 @@ public class ConfigUtils {
                     .filter(field -> field.isAnnotationPresent(annotationClass) && !field.isSynthetic())
                     .sorted(alphabeticMemberComparator);
             var methodStream = Stream.of(clazz.getDeclaredMethods())
-                    .filter(method -> method.isAnnotationPresent(annotationClass) && !method.isSynthetic())
-                    .sorted(alphabeticMemberComparator);
+                    .filter(method -> method.isAnnotationPresent(annotationClass) && !method.isSynthetic());
+
+            for (var implementedInterface : clazz.getInterfaces()) {
+                methodStream = Stream.concat(
+                        methodStream,
+                        Arrays.stream(implementedInterface.getMethods())
+                                .filter(method -> method.isAnnotationPresent(annotationClass) && !method.isSynthetic()));
+            }
+            methodStream = methodStream.sorted(alphabeticMemberComparator);
             memberStream = Stream.concat(memberStream, Stream.concat(fieldStream, methodStream));
             clazz = clazz.getSuperclass();
         }
-        return memberStream.collect(Collectors.toList());
+        return memberStream.distinct().collect(Collectors.toList());
     }
 
     @SafeVarargs
