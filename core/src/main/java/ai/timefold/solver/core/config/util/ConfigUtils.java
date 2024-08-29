@@ -369,22 +369,19 @@ public class ConfigUtils {
         Stream<Member> memberStream = Stream.empty();
         while (clazz != null) {
             var fieldStream = Stream.of(clazz.getDeclaredFields())
-                    .filter(field -> field.isAnnotationPresent(annotationClass) && !field.isSynthetic())
-                    .sorted(alphabeticMemberComparator);
-            var methodStream = Stream.of(clazz.getDeclaredMethods())
-                    .filter(method -> method.isAnnotationPresent(annotationClass) && !method.isSynthetic());
+                    .filter(field -> field.isAnnotationPresent(annotationClass) && !field.isSynthetic());
 
-            for (var implementedInterface : clazz.getInterfaces()) {
-                methodStream = Stream.concat(
-                        methodStream,
-                        Arrays.stream(implementedInterface.getMethods())
-                                .filter(method -> method.isAnnotationPresent(annotationClass) && !method.isSynthetic()));
-            }
-            methodStream = methodStream.sorted(alphabeticMemberComparator);
+            // Implementations of an interface method do not inherit the annotations of the declared method in
+            // the interface, so we need to also add the interface's methods to the stream.
+            var methodStream = Stream.concat(
+                    Stream.of(clazz.getDeclaredMethods()),
+                    Arrays.stream(clazz.getInterfaces())
+                            .flatMap(implementedInterface -> Arrays.stream(implementedInterface.getMethods())))
+                    .filter(method -> method.isAnnotationPresent(annotationClass) && !method.isSynthetic());
             memberStream = Stream.concat(memberStream, Stream.concat(fieldStream, methodStream));
             clazz = clazz.getSuperclass();
         }
-        return memberStream.distinct().collect(Collectors.toList());
+        return memberStream.distinct().sorted(alphabeticMemberComparator).collect(Collectors.toList());
     }
 
     @SafeVarargs
