@@ -57,6 +57,11 @@ public interface TestdataInterfaceSolution {
                     private TestdataInterfaceValue value;
 
                     @Override
+                    public String getId() {
+                        return "entity";
+                    }
+
+                    @Override
                     public TestdataInterfaceValue getValue() {
                         return value;
                     }
