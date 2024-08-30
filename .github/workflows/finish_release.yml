@@ -1,0 +1,41 @@
+name: Finish Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    env:
+      RELEASE_BRANCH_NAME: "__timefold_release_branch__"
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout timefold-solver
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
+
+      - name: Update release branch
+        shell: bash
+        run: |
+          tag=${{ github.ref }}
+          tag_version=${tag##*/}
+          version=${tag_version%.*}
+          version="${version:1}.x"
+          echo $version
+          exists="$(git branch -a | grep -w $version || true)"
+          echo "branch $exists"
+          if [ -n "$exists" ]; then
+            git checkout $RELEASE_BRANCH_NAME
+            git checkout $version
+            git merge -Xtheirs --no-edit --squash -m "build: release version $tag_version" $RELEASE_BRANCH_NAME
+            git push origin $version
+            git push -d origin $RELEASE_BRANCH_NAME
+          else
+            git checkout $RELEASE_BRANCH_NAME
+            git branch -m $RELEASE_BRANCH_NAME $version
+            git push origin -u $version
+            git push -d origin $RELEASE_BRANCH_NAME
+          fi
