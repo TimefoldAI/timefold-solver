@@ -619,7 +619,7 @@ Java::
 public class Timeslot {
 
     @InverseRelationShadowVariable(sourceVariableName = "timeslot")
-    public List<Timeslot> timeslotList;
+    public List<Lesson> lessons;
 
     ...
 
@@ -632,7 +632,7 @@ Python::
 ----
 @planning_entity
 class Timeslot:
-    timeslot_list: Annotated[list[Timeslot], InverseRelationShadowVariable(source_variable_name ="timeslot")]
+    lesson_list: Annotated[list[Lesson], InverseRelationShadowVariable(source_variable_name ="timeslot")]
     ...
 ----
 ====
