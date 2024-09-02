@@ -23,7 +23,6 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.lookup.LookUpManager;
 import ai.timefold.solver.core.impl.domain.solution.ConstraintWeightSupplier;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;
@@ -61,13 +60,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     protected final Factory_ scoreDirectorFactory;
     private final VariableDescriptorCache<Solution_> variableDescriptorCache;
     protected final VariableListenerSupport<Solution_> variableListenerSupport;
-    /**
-     * The first dimension is the entity descriptor ordinal.
-     * The second dimension is the ordinal of list variable descriptor in that entity.
-     * This is a performance optimization which helps avoid requesting a new supply in before/after methods,
-     * and avoids hash lookups which would be used by the map that otherwise would have been used for this.
-     */
-    protected final ListVariableStateSupply<Solution_>[][] listVariableDataSupplies;
     protected final boolean constraintMatchEnabledPreference;
 
     private long workingEntityListRevision = 0L;
@@ -94,7 +86,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         this.variableDescriptorCache = new VariableDescriptorCache<>(solutionDescriptor);
         this.variableListenerSupport = VariableListenerSupport.create(this);
         this.variableListenerSupport.linkVariableListeners();
-        this.listVariableDataSupplies = buildListVariableDataSupplies(solutionDescriptor, variableListenerSupport);
         this.constraintMatchEnabledPreference = constraintMatchEnabledPreference;
         if (scoreDirectorFactory.isTrackingWorkingSolution()) {
             this.solutionTracker = new SolutionTracker<>(getSolutionDescriptor(),
@@ -104,24 +95,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             this.solutionTracker = null;
             this.trackingWorkingSolution = false;
         }
-    }
-
-    private static <Solution_> ListVariableStateSupply<Solution_>[][] buildListVariableDataSupplies(
-            SolutionDescriptor<Solution_> solutionDescriptor, VariableListenerSupport<Solution_> variableListenerSupport) {
-        var entityDescriptorCollection = solutionDescriptor.getEntityDescriptors();
-        var listVariableDataSupplyArrayArray = new ListVariableStateSupply[entityDescriptorCollection.size()][];
-        for (var entityDescriptor : entityDescriptorCollection) {
-            var variableDescriptorList = entityDescriptor.getGenuineVariableDescriptorList();
-            var listVariableDataSupplyArray = new ListVariableStateSupply[variableDescriptorList.size()];
-            for (var variableDescriptor : variableDescriptorList) {
-                if (variableDescriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor) {
-                    var demand = variableListenerSupport.demand(listVariableDescriptor.getStateDemand());
-                    listVariableDataSupplyArray[variableDescriptor.getOrdinal()] = demand;
-                }
-            }
-            listVariableDataSupplyArrayArray[entityDescriptor.getOrdinal()] = listVariableDataSupplyArray;
-        }
-        return listVariableDataSupplyArrayArray;
     }
 
     @Override
@@ -443,7 +416,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             int toIndex) {
         // Pinning is implemented in generic moves, but custom moves need to take it into account as well.
         // This fail-fast exists to detect situations where pinned things are being moved, in case of user error.
-        if (variableDescriptor.isElementPinned(this, entity, fromIndex)) {
+        if (variableDescriptor.isElementPinned(getWorkingSolution(), entity, fromIndex)) {
             throw new IllegalStateException(
                     """
                             Attempting to change list variable (%s) on an entity (%s) in range [%d, %d), which is partially or entirely pinned.

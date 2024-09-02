@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
+import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.phaseStarted;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.solvingStarted;
 import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.getAllowsUnassignedvaluesListVariableDescriptor;
 import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.getListVariableDescriptor;
@@ -119,7 +120,8 @@ class ListChangeMoveSelectorTest {
                         new LocationInList(a, 1)),
                 false);
 
-        solvingStarted(moveSelector, scoreDirector);
+        var solverScope = solvingStarted(moveSelector, scoreDirector);
+        phaseStarted(moveSelector, solverScope);
 
         // Value order: [3, 1, 2]
         // Entity order: [A, B, C]
@@ -280,7 +282,8 @@ class ListChangeMoveSelectorTest {
                         new LocationInList(c, 0)),
                 true);
 
-        solvingStarted(moveSelector, scoreDirector);
+        var solverScope = solvingStarted(moveSelector, scoreDirector);
+        phaseStarted(moveSelector, solverScope);
 
         // Initial state:
         // - A [1, 2]

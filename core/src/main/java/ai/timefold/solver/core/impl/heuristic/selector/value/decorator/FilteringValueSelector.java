@@ -2,10 +2,12 @@ package ai.timefold.solver.core.impl.heuristic.selector.value.decorator;
 
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
@@ -34,13 +36,14 @@ public class FilteringValueSelector<Solution_>
     }
 
     public static <Solution_> ValueSelector<Solution_> ofAssigned(ValueSelector<Solution_> valueSelector,
-            ListVariableStateSupply<Solution_> listVariableStateSupply) {
-        var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
+            Supplier<ListVariableStateSupply<Solution_>> listVariableStateSupplier) {
+        var listVariableDescriptor = (ListVariableDescriptor<Solution_>) valueSelector.getVariableDescriptor();
         if (!listVariableDescriptor.allowsUnassignedValues()) {
             return valueSelector;
         }
         // We need to filter out unassigned vars.
         return FilteringValueSelector.of(valueSelector, (scoreDirector, selection) -> {
+            var listVariableStateSupply = listVariableStateSupplier.get();
             if (listVariableStateSupply.getUnassignedCount() == 0) {
                 return true;
             }
@@ -50,9 +53,9 @@ public class FilteringValueSelector<Solution_>
 
     public static <Solution_> EntityIndependentValueSelector<Solution_> ofAssigned(
             EntityIndependentValueSelector<Solution_> entityIndependentValueSelector,
-            ListVariableStateSupply<Solution_> listVariableStateSupply) {
+            Supplier<ListVariableStateSupply<Solution_>> listVariableStateSupplier) {
         return (EntityIndependentValueSelector<Solution_>) ofAssigned((ValueSelector<Solution_>) entityIndependentValueSelector,
-                listVariableStateSupply);
+                listVariableStateSupplier);
     }
 
     protected final ValueSelector<Solution_> childValueSelector;

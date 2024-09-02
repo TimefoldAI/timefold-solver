@@ -12,7 +12,6 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
@@ -189,10 +188,10 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
         return entityDescriptor.supportsPinning();
     }
 
-    public boolean isElementPinned(ScoreDirector<Solution_> scoreDirector, Object entity, int index) {
+    public boolean isElementPinned(Solution_ workingSolution, Object entity, int index) {
         if (!supportsPinning()) {
             return false;
-        } else if (!entityDescriptor.isMovable(scoreDirector, entity)) { // Skipping due to @PlanningPin.
+        } else if (!entityDescriptor.isMovable(workingSolution, entity)) { // Skipping due to @PlanningPin.
             return true;
         } else {
             return index < getFirstUnpinnedIndex(entity);

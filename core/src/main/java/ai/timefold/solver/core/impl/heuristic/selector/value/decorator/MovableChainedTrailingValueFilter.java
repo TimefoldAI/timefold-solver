@@ -34,7 +34,8 @@ public final class MovableChainedTrailingValueFilter<Solution_> implements Selec
         if (trailingEntity == null || !entityDescriptor.matchesEntity(trailingEntity)) {
             return true;
         }
-        return entityDescriptor.getEffectiveMovableEntitySelectionFilter().accept(scoreDirector, trailingEntity);
+        return entityDescriptor.getEffectiveMovableEntityFilter().test(scoreDirector.getWorkingSolution(),
+                trailingEntity);
     }
 
     private SingletonInverseVariableSupply retrieveSingletonInverseVariableSupply(ScoreDirector<Solution_> scoreDirector) {

@@ -107,7 +107,8 @@ class RandomSubListSelectorTest {
 
         var random = new TestRandom(0, 1, 2, 3, 4, 5, 0);
 
-        solvingStarted(selector, scoreDirector, random);
+        var solverScope = solvingStarted(selector, scoreDirector, random);
+        phaseStarted(selector, solverScope);
 
         // Every possible subList is selected.
         assertCodesOfNeverEndingIterableSelector(selector, subListCount,

@@ -169,7 +169,7 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
     }
 
     private boolean hasFiltering(EntityDescriptor<Solution_> entityDescriptor) {
-        return config.getFilterClass() != null || entityDescriptor.hasEffectiveMovableEntitySelectionFilter();
+        return config.getFilterClass() != null || entityDescriptor.hasEffectiveMovableEntityFilter();
     }
 
     private EntitySelector<Solution_> applyNearbySelection(HeuristicConfigPolicy<Solution_> configPolicy,
@@ -191,8 +191,9 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
                 filterList.add(selectionFilter);
             }
             // Filter out pinned entities
-            if (entityDescriptor.hasEffectiveMovableEntitySelectionFilter()) {
-                filterList.add(entityDescriptor.getEffectiveMovableEntitySelectionFilter());
+            if (entityDescriptor.hasEffectiveMovableEntityFilter()) {
+                filterList.add((scoreDirector, selection) -> entityDescriptor.getEffectiveMovableEntityFilter()
+                        .test(scoreDirector.getWorkingSolution(), selection));
             }
             // Do not filter out initialized entities here for CH and ES, because they can be partially initialized
             // Instead, ValueSelectorConfig.applyReinitializeVariableFiltering() does that.

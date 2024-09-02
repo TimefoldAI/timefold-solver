@@ -1003,8 +1003,9 @@ public class SolutionDescriptor<Solution_> {
      * @return {@code >= 0}
      */
     public boolean hasMovableEntities(ScoreDirector<Solution_> scoreDirector) {
-        return extractAllEntitiesStream(scoreDirector.getWorkingSolution())
-                .anyMatch(entity -> findEntityDescriptorOrFail(entity.getClass()).isMovable(scoreDirector, entity));
+        var workingSolution = scoreDirector.getWorkingSolution();
+        return extractAllEntitiesStream(workingSolution)
+                .anyMatch(entity -> findEntityDescriptorOrFail(entity.getClass()).isMovable(workingSolution, entity));
     }
 
     /**
@@ -1071,13 +1072,13 @@ public class SolutionDescriptor<Solution_> {
      * @param solution never null
      * @return {@code >= 0}
      */
-    public double getProblemScale(ScoreDirector<Solution_> scoreDirector, Solution_ solution) {
+    public double getProblemScale(Solution_ solution) {
         long logBase = getMaximumValueRangeSize(solution);
         ProblemScaleTracker problemScaleTracker = new ProblemScaleTracker(logBase);
         visitAllEntities(solution, entity -> {
             var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
             if (entityDescriptor.isGenuine()) {
-                entityDescriptor.processProblemScale(scoreDirector, solution, entity, problemScaleTracker);
+                entityDescriptor.processProblemScale(solution, entity, problemScaleTracker);
             }
         });
         long result = problemScaleTracker.getBasicProblemScaleLog();
@@ -1102,12 +1103,12 @@ public class SolutionDescriptor<Solution_> {
         return scale;
     }
 
-    public ProblemSizeStatistics getProblemSizeStatistics(ScoreDirector<Solution_> scoreDirector, Solution_ solution) {
+    public ProblemSizeStatistics getProblemSizeStatistics(Solution_ solution) {
         return new ProblemSizeStatistics(
                 getGenuineEntityCount(solution),
                 getGenuineVariableCount(solution),
                 getApproximateValueCount(solution),
-                getProblemScale(scoreDirector, solution));
+                getProblemScale(solution));
     }
 
     public SolutionInitializationStatistics computeInitializationStatistics(Solution_ solution) {

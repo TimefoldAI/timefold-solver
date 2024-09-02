@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -37,7 +38,6 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
@@ -61,11 +61,9 @@ import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelat
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.PinEntityFilter;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 
@@ -102,7 +100,7 @@ public class EntityDescriptor<Solution_> {
     private Predicate<Object> hasNoNullVariablesBasicVar;
     private Predicate<Object> hasNoNullVariablesListVar;
     // Only declared movable filter, excludes inherited and descending movable filters
-    private SelectionFilter<Solution_, Object> declaredMovableEntitySelectionFilter;
+    private MovableFilter<Solution_> declaredMovableEntityFilter;
     private SelectionSorter<Solution_, Object> decreasingDifficultySorter;
 
     // Only declared variable descriptors, excludes inherited variable descriptors
@@ -110,11 +108,11 @@ public class EntityDescriptor<Solution_> {
     private Map<String, ShadowVariableDescriptor<Solution_>> declaredShadowVariableDescriptorMap;
     private Map<String, CascadingUpdateShadowVariableDescriptor<Solution_>> declaredCascadingUpdateShadowVariableDecriptorMap;
 
-    private List<SelectionFilter<Solution_, Object>> declaredPinEntityFilterList;
+    private List<MovableFilter<Solution_>> declaredPinEntityFilterList;
     private List<EntityDescriptor<Solution_>> inheritedEntityDescriptorList;
 
     // Caches the inherited, declared and descending movable filters (including @PlanningPin filters) as a composite filter
-    private SelectionFilter<Solution_, Object> effectiveMovableEntitySelectionFilter;
+    private MovableFilter<Solution_> effectiveMovableEntityFilter;
     private PlanningPinToIndexReader<Solution_> effectivePlanningPinToIndexReader;
 
     // Caches the inherited and declared variable descriptors
@@ -198,7 +196,7 @@ public class EntityDescriptor<Solution_> {
     // ************************************************************************
 
     public void processAnnotations(DescriptorPolicy descriptorPolicy) {
-        processEntityAnnotations(descriptorPolicy);
+        processEntityAnnotations();
         declaredGenuineVariableDescriptorMap = new LinkedHashMap<>();
         declaredShadowVariableDescriptorMap = new LinkedHashMap<>();
         declaredCascadingUpdateShadowVariableDecriptorMap = new HashMap<>();
@@ -219,29 +217,28 @@ public class EntityDescriptor<Solution_> {
         processVariableAnnotations(descriptorPolicy);
     }
 
-    private void processEntityAnnotations(DescriptorPolicy descriptorPolicy) {
+    private void processEntityAnnotations() {
         PlanningEntity entityAnnotation = entityClass.getAnnotation(PlanningEntity.class);
         if (entityAnnotation == null) {
             throw new IllegalStateException("The entityClass (" + entityClass
                     + ") has been specified as a planning entity in the configuration," +
                     " but does not have a @" + PlanningEntity.class.getSimpleName() + " annotation.");
         }
-        processMovable(descriptorPolicy, entityAnnotation);
-        processDifficulty(descriptorPolicy, entityAnnotation);
+        processMovable(entityAnnotation);
+        processDifficulty(entityAnnotation);
     }
 
-    private void processMovable(DescriptorPolicy descriptorPolicy, PlanningEntity entityAnnotation) {
-        Class<? extends PinningFilter> pinningFilterClass = entityAnnotation.pinningFilter();
-        boolean hasPinningFilter = pinningFilterClass != PlanningEntity.NullPinningFilter.class;
+    private void processMovable(PlanningEntity entityAnnotation) {
+        var pinningFilterClass = entityAnnotation.pinningFilter();
+        var hasPinningFilter = pinningFilterClass != PlanningEntity.NullPinningFilter.class;
         if (hasPinningFilter) {
-            PinningFilter<Solution_, Object> pinningFilter = ConfigUtils.newInstance(this::toString, "pinningFilterClass",
+            var pinningFilter = ConfigUtils.newInstance(this::toString, "pinningFilterClass",
                     (Class<? extends PinningFilter<Solution_, Object>>) pinningFilterClass);
-            declaredMovableEntitySelectionFilter =
-                    (scoreDirector, selection) -> !pinningFilter.accept(scoreDirector.getWorkingSolution(), selection);
+            declaredMovableEntityFilter = (solution, selection) -> !pinningFilter.accept(solution, selection);
         }
     }
 
-    private void processDifficulty(DescriptorPolicy descriptorPolicy, PlanningEntity entityAnnotation) {
+    private void processDifficulty(PlanningEntity entityAnnotation) {
         Class<? extends Comparator> difficultyComparatorClass = entityAnnotation.difficultyComparatorClass();
         if (difficultyComparatorClass == PlanningEntity.NullDifficultyComparator.class) {
             difficultyComparatorClass = null;
@@ -479,27 +476,29 @@ public class EntityDescriptor<Solution_> {
     }
 
     private void createEffectiveMovableEntitySelectionFilter() {
-        if (declaredMovableEntitySelectionFilter != null && !hasAnyDeclaredGenuineVariableDescriptor()) {
+        if (declaredMovableEntityFilter != null && !hasAnyDeclaredGenuineVariableDescriptor()) {
             throw new IllegalStateException("The entityClass (" + entityClass
-                    + ") has a movableEntitySelectionFilterClass (" + declaredMovableEntitySelectionFilter.getClass()
+                    + ") has a movableEntitySelectionFilterClass (" + declaredMovableEntityFilter.getClass()
                     + "), but it has no declared genuine variables, only shadow variables.");
         }
-        List<SelectionFilter<Solution_, Object>> selectionFilterList = new ArrayList<>();
+        var movableFilterList = new ArrayList<MovableFilter<Solution_>>();
         // TODO Also add in child entity selectors
-        for (EntityDescriptor<Solution_> inheritedEntityDescriptor : inheritedEntityDescriptorList) {
-            if (inheritedEntityDescriptor.hasEffectiveMovableEntitySelectionFilter()) {
+        for (var inheritedEntityDescriptor : inheritedEntityDescriptorList) {
+            if (inheritedEntityDescriptor.hasEffectiveMovableEntityFilter()) {
                 // Includes movable and pinned
-                selectionFilterList.add(inheritedEntityDescriptor.getEffectiveMovableEntitySelectionFilter());
+                movableFilterList.add(inheritedEntityDescriptor.effectiveMovableEntityFilter);
             }
         }
-        if (declaredMovableEntitySelectionFilter != null) {
-            selectionFilterList.add(declaredMovableEntitySelectionFilter);
+        if (declaredMovableEntityFilter != null) {
+            movableFilterList.add(declaredMovableEntityFilter);
         }
-        selectionFilterList.addAll(declaredPinEntityFilterList);
-        if (selectionFilterList.isEmpty()) {
-            effectiveMovableEntitySelectionFilter = null;
+        movableFilterList.addAll(declaredPinEntityFilterList);
+        if (movableFilterList.isEmpty()) {
+            effectiveMovableEntityFilter = null;
         } else {
-            effectiveMovableEntitySelectionFilter = SelectionFilter.compose(selectionFilterList);
+            effectiveMovableEntityFilter = movableFilterList.stream()
+                    .reduce(MovableFilter::and)
+                    .orElseThrow(() -> new IllegalStateException("Impossible state: no movable filters."));
         }
     }
 
@@ -562,8 +561,8 @@ public class EntityDescriptor<Solution_> {
         return entityClass.isAssignableFrom(entity.getClass());
     }
 
-    public boolean hasEffectiveMovableEntitySelectionFilter() {
-        return effectiveMovableEntitySelectionFilter != null;
+    public boolean hasEffectiveMovableEntityFilter() {
+        return effectiveMovableEntityFilter != null;
     }
 
     public boolean hasCascadingShadowVariables() {
@@ -571,11 +570,11 @@ public class EntityDescriptor<Solution_> {
     }
 
     public boolean supportsPinning() {
-        return hasEffectiveMovableEntitySelectionFilter() || effectivePlanningPinToIndexReader != null;
+        return hasEffectiveMovableEntityFilter() || effectivePlanningPinToIndexReader != null;
     }
 
-    public SelectionFilter<Solution_, Object> getEffectiveMovableEntitySelectionFilter() {
-        return effectiveMovableEntitySelectionFilter;
+    public BiPredicate<Solution_, Object> getEffectiveMovableEntityFilter() {
+        return effectiveMovableEntityFilter;
     }
 
     public SelectionSorter<Solution_, Object> getDecreasingDifficultySorter() {
@@ -724,8 +723,7 @@ public class EntityDescriptor<Solution_> {
 
     }
 
-    public void processProblemScale(ScoreDirector<Solution_> scoreDirector, Solution_ solution, Object entity,
-            ProblemScaleTracker tracker) {
+    public void processProblemScale(Solution_ solution, Object entity, ProblemScaleTracker tracker) {
         for (GenuineVariableDescriptor<Solution_> variableDescriptor : effectiveGenuineVariableDescriptorList) {
             long valueCount = variableDescriptor.getValueRangeSize(solution, entity);
             // TODO: When minimum Java supported is 21, this can be replaced with a sealed interface switch
@@ -733,7 +731,7 @@ public class EntityDescriptor<Solution_> {
                 if (basicVariableDescriptor.isChained()) {
                     // An entity is a value
                     tracker.addListValueCount(1);
-                    if (!isMovable(scoreDirector, entity)) {
+                    if (!isMovable(solution, entity)) {
                         tracker.addPinnedListValueCount(1);
                     }
                     // Anchors are entities
@@ -759,13 +757,13 @@ public class EntityDescriptor<Solution_> {
                                 CountableValueRange.class.getSimpleName(), Collection.class.getSimpleName()));
                     }
                 } else {
-                    if (isMovable(scoreDirector, entity)) {
+                    if (isMovable(solution, entity)) {
                         tracker.addBasicProblemScale(valueCount);
                     }
                 }
             } else if (variableDescriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor) {
                 tracker.setListTotalValueCount((int) listVariableDescriptor.getValueRangeSize(solution, entity));
-                if (isMovable(scoreDirector, entity)) {
+                if (isMovable(solution, entity)) {
                     tracker.incrementListEntityCount(true);
                     tracker.addPinnedListValueCount(listVariableDescriptor.getFirstUnpinnedIndex(entity));
                 } else {
@@ -824,10 +822,10 @@ public class EntityDescriptor<Solution_> {
         return count;
     }
 
-    public boolean isMovable(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public boolean isMovable(Solution_ workingSolution, Object entity) {
         return isGenuine() &&
-                (effectiveMovableEntitySelectionFilter == null
-                        || effectiveMovableEntitySelectionFilter.accept(scoreDirector, entity));
+                (effectiveMovableEntityFilter == null
+                        || effectiveMovableEntityFilter.test(workingSolution, entity));
     }
 
     @Override

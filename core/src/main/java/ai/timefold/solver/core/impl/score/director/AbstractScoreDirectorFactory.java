@@ -116,7 +116,7 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
     public void validateEntity(ScoreDirector<Solution_> scoreDirector, Object entity) {
         if (listVariableDescriptor == null) { // Only basic variables.
             var entityDescriptor = solutionDescriptor.findEntityDescriptorOrFail(entity.getClass());
-            if (entityDescriptor.isMovable(scoreDirector, entity)) {
+            if (entityDescriptor.isMovable(scoreDirector.getWorkingSolution(), entity)) {
                 return;
             }
             for (var variableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {

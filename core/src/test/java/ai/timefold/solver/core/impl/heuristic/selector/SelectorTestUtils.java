@@ -243,9 +243,9 @@ public class SelectorTestUtils {
 
     public static <Solution_, Score_ extends Score<Score_>> SolverScope<Solution_> solvingStarted(
             PhaseLifecycleListener<Solution_> listener, InnerScoreDirector<Solution_, Score_> scoreDirector, Random random) {
-        SolverScope<Solution_> solverScope = mock(SolverScope.class);
-        when(solverScope.<Score_> getScoreDirector()).thenReturn(scoreDirector);
-        when(solverScope.getWorkingRandom()).thenReturn(random);
+        SolverScope<Solution_> solverScope = new SolverScope<>();
+        solverScope.setScoreDirector(scoreDirector);
+        solverScope.setWorkingRandom(random);
         listener.solvingStarted(solverScope);
         return solverScope;
     }

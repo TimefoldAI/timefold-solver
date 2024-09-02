@@ -3,12 +3,10 @@ package ai.timefold.solver.core.impl.heuristic.selector.list;
 import java.util.Iterator;
 import java.util.Random;
 
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 
 final class ElementLocationRandomIterator<Solution_> implements Iterator<ElementLocation> {
@@ -29,7 +27,7 @@ final class ElementLocationRandomIterator<Solution_> implements Iterator<Element
         this.listVariableStateSupply = listVariableStateSupply;
         this.listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         this.entitySelector = entitySelector;
-        this.valueSelector = getEffectiveValueSelector(valueSelector, allowsUnassignedValues);
+        this.valueSelector = valueSelector;
         this.entityIterator = entitySelector.iterator();
         this.workingRandom = workingRandom;
         this.totalSize = totalSize;
@@ -39,34 +37,6 @@ final class ElementLocationRandomIterator<Solution_> implements Iterator<Element
         }
         this.allowsUnassignedValues = allowsUnassignedValues;
         this.valueIterator = null;
-    }
-
-    private EntityIndependentValueSelector<Solution_> getEffectiveValueSelector(
-            EntityIndependentValueSelector<Solution_> valueSelector, boolean allowsUnassignedValues) {
-        var effectiveValueSelector = valueSelector;
-        if (allowsUnassignedValues) {
-            /*
-             * In case of list variable that allows unassigned values,
-             * unassigned elements will show up in the valueSelector.
-             * These skew the selection probability, so we need to exclude them.
-             * The option to unassign needs to be added to the iterator once later,
-             * to make sure that it can get selected.
-             *
-             * Example: for destination elements [A, B, C] where C is not initialized,
-             * the probability of unassigning a source element is 1/3 as it should be.
-             * (If destination is not initialized, it means source will be unassigned.)
-             * However, if B and C were not initialized, the probability of unassigning goes up to 2/3.
-             * The probability should be 1/2 instead.
-             * (Either select A as the destination, or unassign.)
-             * If we always remove unassigned elements from the iterator,
-             * and always add one option to unassign at the end,
-             * we can keep the correct probabilities throughout.
-             */
-            effectiveValueSelector = (EntityIndependentValueSelector<Solution_>) FilteringValueSelector
-                    .of(effectiveValueSelector, (ScoreDirector<Solution_> scoreDirector,
-                            Object selection) -> listVariableStateSupply.getInverseSingleton(selection) != null);
-        }
-        return effectiveValueSelector;
     }
 
     @Override
