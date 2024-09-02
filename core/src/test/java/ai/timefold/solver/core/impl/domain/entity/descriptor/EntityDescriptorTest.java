@@ -1,130 +1,90 @@
 package ai.timefold.solver.core.impl.domain.entity.descriptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 import java.util.List;
 
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.extended.entity.TestdataExtendedEntitySolution;
 import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.pinned.extended.TestdataExtendedPinnedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.pinned.extended.TestdataExtendedPinnedSolution;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class EntityDescriptorTest {
 
     @Test
     void movableEntitySelectionFilter() {
-        ScoreDirector<TestdataPinnedSolution> scoreDirector = mock(ScoreDirector.class);
-        EntityDescriptor<TestdataPinnedSolution> entityDescriptor = TestdataPinnedEntity.buildEntityDescriptor();
-        assertThat(entityDescriptor.hasEffectiveMovableEntitySelectionFilter()).isTrue();
-        SelectionFilter<TestdataPinnedSolution, Object> movableEntitySelectionFilter =
-                entityDescriptor.getEffectiveMovableEntitySelectionFilter();
-        assertThat(movableEntitySelectionFilter).isNotNull();
+        var entityDescriptor = TestdataPinnedEntity.buildEntityDescriptor();
+        assertThat(entityDescriptor.hasEffectiveMovableEntityFilter()).isTrue();
+        var movableEntityFilter =
+                entityDescriptor.getEffectiveMovableEntityFilter();
+        assertThat(movableEntityFilter).isNotNull();
 
-        assertThat(movableEntitySelectionFilter.accept(scoreDirector,
+        assertThat(movableEntityFilter.test(null,
                 new TestdataPinnedEntity("e1", null, false, false))).isTrue();
-        assertThat(movableEntitySelectionFilter.accept(scoreDirector,
+        assertThat(movableEntityFilter.test(null,
                 new TestdataPinnedEntity("e2", null, true, false))).isFalse();
-    }
-
-    @Test
-    @Disabled // TODO FIXME PLANNER-849
-    void extendedMovableEntitySelectionFilterUsedByParentSelector() {
-        ScoreDirector<TestdataExtendedPinnedSolution> scoreDirector = mock(ScoreDirector.class);
-        SolutionDescriptor<TestdataExtendedPinnedSolution> solutionDescriptor =
-                TestdataExtendedPinnedSolution.buildSolutionDescriptor();
-
-        EntityDescriptor<TestdataExtendedPinnedSolution> parentEntityDescriptor =
-                solutionDescriptor.findEntityDescriptor(TestdataPinnedEntity.class);
-        assertThat(parentEntityDescriptor.hasEffectiveMovableEntitySelectionFilter()).isTrue();
-        SelectionFilter<TestdataExtendedPinnedSolution, Object> parentMovableEntitySelectionFilter =
-                parentEntityDescriptor.getEffectiveMovableEntitySelectionFilter();
-        assertThat(parentMovableEntitySelectionFilter).isNotNull();
-
-        assertThat(parentMovableEntitySelectionFilter.accept(scoreDirector,
-                new TestdataPinnedEntity("e1", null, false, false))).isTrue();
-        assertThat(parentMovableEntitySelectionFilter.accept(scoreDirector,
-                new TestdataPinnedEntity("e2", null, true, false))).isFalse();
-        assertThat(parentMovableEntitySelectionFilter.accept(scoreDirector,
-                new TestdataExtendedPinnedEntity("e3", null, false, false, null, false, false))).isTrue();
-        assertThat(parentMovableEntitySelectionFilter.accept(scoreDirector,
-                new TestdataExtendedPinnedEntity("e4", null, true, false, null, false, false))).isFalse();
-        assertThat(parentMovableEntitySelectionFilter.accept(scoreDirector,
-                new TestdataExtendedPinnedEntity("e5", null, false, true, null, false, false))).isFalse();
-        assertThat(parentMovableEntitySelectionFilter.accept(scoreDirector,
-                new TestdataExtendedPinnedEntity("e6", null, false, false, null, true, false))).isFalse();
-        assertThat(parentMovableEntitySelectionFilter.accept(scoreDirector,
-                new TestdataExtendedPinnedEntity("e7", null, false, false, null, false, true))).isFalse();
-        assertThat(parentMovableEntitySelectionFilter.accept(scoreDirector,
-                new TestdataExtendedPinnedEntity("e8", null, true, true, null, true, true))).isFalse();
     }
 
     @Test
     void extendedMovableEntitySelectionFilterUsedByChildSelector() {
-        ScoreDirector<TestdataExtendedPinnedSolution> scoreDirector = mock(ScoreDirector.class);
-        SolutionDescriptor<TestdataExtendedPinnedSolution> solutionDescriptor =
+        var solutionDescriptor =
                 TestdataExtendedPinnedSolution.buildSolutionDescriptor();
 
-        EntityDescriptor<TestdataExtendedPinnedSolution> childEntityDescriptor =
+        var childEntityDescriptor =
                 solutionDescriptor.findEntityDescriptor(TestdataExtendedPinnedEntity.class);
-        assertThat(childEntityDescriptor.hasEffectiveMovableEntitySelectionFilter()).isTrue();
-        SelectionFilter<TestdataExtendedPinnedSolution, Object> childMovableEntitySelectionFilter =
-                childEntityDescriptor.getEffectiveMovableEntitySelectionFilter();
-        assertThat(childMovableEntitySelectionFilter).isNotNull();
+        assertThat(childEntityDescriptor.hasEffectiveMovableEntityFilter()).isTrue();
+        var childMovableEntityFilter =
+                childEntityDescriptor.getEffectiveMovableEntityFilter();
+        assertThat(childMovableEntityFilter).isNotNull();
 
         // No new TestdataPinnedEntity() because a child selector would never select a pure parent instance
-        assertThat(childMovableEntitySelectionFilter.accept(scoreDirector,
+        assertThat(childMovableEntityFilter.test(null,
                 new TestdataExtendedPinnedEntity("e3", null, false, false, null, false, false))).isTrue();
-        assertThat(childMovableEntitySelectionFilter.accept(scoreDirector,
+        assertThat(childMovableEntityFilter.test(null,
                 new TestdataExtendedPinnedEntity("e4", null, true, false, null, false, false))).isFalse();
-        assertThat(childMovableEntitySelectionFilter.accept(scoreDirector,
+        assertThat(childMovableEntityFilter.test(null,
                 new TestdataExtendedPinnedEntity("e5", null, false, true, null, false, false))).isFalse();
-        assertThat(childMovableEntitySelectionFilter.accept(scoreDirector,
+        assertThat(childMovableEntityFilter.test(null,
                 new TestdataExtendedPinnedEntity("e6", null, false, false, null, true, false))).isFalse();
-        assertThat(childMovableEntitySelectionFilter.accept(scoreDirector,
+        assertThat(childMovableEntityFilter.test(null,
                 new TestdataExtendedPinnedEntity("e7", null, false, false, null, false, true))).isFalse();
-        assertThat(childMovableEntitySelectionFilter.accept(scoreDirector,
+        assertThat(childMovableEntityFilter.test(null,
                 new TestdataExtendedPinnedEntity("e8", null, true, true, null, true, true))).isFalse();
     }
 
     @Test
     void extractExtendedEntities() {
-        TestdataExtendedEntitySolution solution = new TestdataExtendedEntitySolution();
+        var solution = new TestdataExtendedEntitySolution();
 
-        TestdataEntity entity = new TestdataEntity("entity-singleton");
+        var entity = new TestdataEntity("entity-singleton");
         solution.setEntity(entity);
 
-        TestdataUnannotatedExtendedEntity subEntity = new TestdataUnannotatedExtendedEntity("subEntity-singleton");
+        var subEntity = new TestdataUnannotatedExtendedEntity("subEntity-singleton");
         solution.setSubEntity(subEntity);
 
-        TestdataEntity e1 = new TestdataEntity("entity1");
-        TestdataEntity e2 = new TestdataEntity("entity2");
+        var e1 = new TestdataEntity("entity1");
+        var e2 = new TestdataEntity("entity2");
         solution.setEntityList(List.of(e1, e2));
 
-        TestdataUnannotatedExtendedEntity s1 = new TestdataUnannotatedExtendedEntity("subEntity1");
-        TestdataUnannotatedExtendedEntity s2 = new TestdataUnannotatedExtendedEntity("subEntity2");
-        TestdataUnannotatedExtendedEntity s3 = new TestdataUnannotatedExtendedEntity("subEntity3");
+        var s1 = new TestdataUnannotatedExtendedEntity("subEntity1");
+        var s2 = new TestdataUnannotatedExtendedEntity("subEntity2");
+        var s3 = new TestdataUnannotatedExtendedEntity("subEntity3");
         solution.setSubEntityList(List.of(s1, s2, s3));
 
-        TestdataUnannotatedExtendedEntity r1 = new TestdataUnannotatedExtendedEntity("subEntity1-R");
-        TestdataUnannotatedExtendedEntity r2 = new TestdataUnannotatedExtendedEntity("subEntity2-R");
+        var r1 = new TestdataUnannotatedExtendedEntity("subEntity1-R");
+        var r2 = new TestdataUnannotatedExtendedEntity("subEntity2-R");
         solution.setRawEntityList(List.of(r1, r2));
 
-        TestdataEntity e3 = new TestdataEntity("entity3");
-        TestdataEntity e4 = new TestdataEntity("entity4");
-        String randomData = "randomData";
+        var e3 = new TestdataEntity("entity3");
+        var e4 = new TestdataEntity("entity4");
+        var randomData = "randomData";
         solution.setObjectEntityList(List.of(e3, e4, randomData));
 
-        EntityDescriptor<TestdataExtendedEntitySolution> entityDescriptor =
+        var entityDescriptor =
                 TestdataExtendedEntitySolution.buildEntityDescriptor();
         assertThat(entityDescriptor.extractEntities(solution))
                 .containsExactlyInAnyOrder(entity, subEntity, e1, e2, e3, e4, s1, s2, s3, r1, r2);

@@ -187,8 +187,8 @@ class ElementDestinationSelectorTest {
                 getPinnedAllowsUnassignedvaluesListVariableDescriptor(scoreDirector),
                 unassignedValue, v6, v5, v4, v3, v2, v1);
         var selector = new ElementDestinationSelector<>(entitySelector, valueSelector, true);
-
-        solvingStarted(selector, scoreDirector, random);
+        selector.solvingStarted(solverScope);
+        selector.phaseStarted(new LocalSearchPhaseScope<>(solverScope, 0));
 
         assertCodesOfNeverEndingIterator(selector.iterator(),
                 "UnassignedLocation[]",
@@ -231,7 +231,11 @@ class ElementDestinationSelectorTest {
                 4, // => v3 => B[0]
                 -1); // (not tested)
 
-        solvingStarted(selector, scoreDirector, random);
+        var solverScope = new SolverScope<TestdataPinnedWithIndexListSolution>();
+        solverScope.setScoreDirector(scoreDirector);
+        solverScope.setWorkingRandom(random);
+        selector.solvingStarted(solverScope);
+        selector.phaseStarted(new LocalSearchPhaseScope<>(solverScope, 0));
 
         // Initial state:
         // - A [1, 2]

@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
+import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.phaseStarted;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.solvingStarted;
 import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.getAllowsUnassignedvaluesListVariableDescriptor;
 import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.getListVariableDescriptor;
@@ -91,7 +92,8 @@ class ListSwapMoveSelectorTest {
                 mockEntityIndependentValueSelector(listVariableDescriptor, v3, v1, v2),
                 false);
 
-        solvingStarted(moveSelector, scoreDirector);
+        var solverScope = solvingStarted(moveSelector, scoreDirector);
+        phaseStarted(moveSelector, solverScope);
 
         // Value order: [3, 1, 2]
         // Entity order: [A, B, C]
@@ -213,7 +215,8 @@ class ListSwapMoveSelectorTest {
                 mockEntityIndependentValueSelector(listVariableDescriptor, v1, v3, v2, v1, v3, v2, v1, v3, v2),
                 true);
 
-        solvingStarted(moveSelector, scoreDirector);
+        var solverScope = solvingStarted(moveSelector, scoreDirector);
+        phaseStarted(moveSelector, solverScope);
 
         assertCodesOfNeverEndingMoveSelector(moveSelector,
                 "2 {A[1]} <-> 3 {C[0]}",

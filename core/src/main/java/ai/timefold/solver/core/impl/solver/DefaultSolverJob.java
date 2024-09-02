@@ -236,9 +236,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
             return problemSizeStatistics;
         }
         // Solving has not started yet
-        return solver.getSolverScope().getSolutionDescriptor().getProblemSizeStatistics(
-                solver.getSolverScope().getScoreDirector(),
-                problemFinder.apply(problemId));
+        return solver.getSolverScope().getSolutionDescriptor().getProblemSizeStatistics(problemFinder.apply(problemId));
     }
 
     public Termination<Solution_> getSolverTermination() {

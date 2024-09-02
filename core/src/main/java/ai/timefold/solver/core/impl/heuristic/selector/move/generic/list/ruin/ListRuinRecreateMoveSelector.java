@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin;
 
 import java.util.Iterator;
+import java.util.Objects;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -24,20 +25,24 @@ final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<
 
     private SolverScope<Solution_> solverScope;
     private ListVariableStateSupply<Solution_> listVariableStateSupply;
-    private EntityIndependentValueSelector<Solution_> effectiveValueSelector;
 
     public ListRuinRecreateMoveSelector(EntityIndependentValueSelector<Solution_> valueSelector,
             ListVariableDescriptor<Solution_> listVariableDescriptor,
             RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
             CountSupplier minimumSelectedCountSupplier, CountSupplier maximumSelectedCountSupplier) {
         super();
-        this.valueSelector = valueSelector;
+        this.valueSelector = FilteringValueSelector.ofAssigned(valueSelector, this::getListVariableStateSupply);
         this.listVariableDescriptor = listVariableDescriptor;
         this.constructionHeuristicPhaseBuilder = constructionHeuristicPhaseBuilder;
         this.minimumSelectedCountSupplier = minimumSelectedCountSupplier;
         this.maximumSelectedCountSupplier = maximumSelectedCountSupplier;
 
-        phaseLifecycleSupport.addEventListener(valueSelector);
+        phaseLifecycleSupport.addEventListener(this.valueSelector);
+    }
+
+    private ListVariableStateSupply<Solution_> getListVariableStateSupply() {
+        return Objects.requireNonNull(listVariableStateSupply,
+                "Impossible state: The listVariableStateSupply is not initialized yet.");
     }
 
     @Override
@@ -70,14 +75,13 @@ final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<
         this.listVariableStateSupply = solverScope.getScoreDirector()
                 .getSupplyManager()
                 .demand(listVariableDescriptor.getStateDemand());
-        this.effectiveValueSelector = FilteringValueSelector.ofAssigned(valueSelector, listVariableStateSupply);
         this.workingRandom = solverScope.getWorkingRandom();
     }
 
     @Override
     public Iterator<Move<Solution_>> iterator() {
-        var valueSelectorSize = effectiveValueSelector.getSize();
-        return new ListRuinRecreateMoveIterator<>(effectiveValueSelector, constructionHeuristicPhaseBuilder,
+        var valueSelectorSize = valueSelector.getSize();
+        return new ListRuinRecreateMoveIterator<>(valueSelector, constructionHeuristicPhaseBuilder,
                 solverScope, listVariableStateSupply,
                 minimumSelectedCountSupplier.applyAsInt(valueSelectorSize),
                 maximumSelectedCountSupplier.applyAsInt(valueSelectorSize),

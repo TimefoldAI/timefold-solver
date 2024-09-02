@@ -3,6 +3,8 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelector.filterPinnedListPlanningVariableValuesWithIndex;
 
 import java.util.Iterator;
+import java.util.Objects;
+import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -26,20 +28,32 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
     private final int[] pickedKDistribution;
 
     private ListVariableStateSupply<Solution_> listVariableStateSupply;
-    private EntityIndependentValueSelector<Solution_> effectiveOriginSelector;
-    private EntityIndependentValueSelector<Solution_> effectiveValueSelector;
 
     public KOptListMoveSelector(ListVariableDescriptor<Solution_> listVariableDescriptor,
             EntityIndependentValueSelector<Solution_> originSelector, EntityIndependentValueSelector<Solution_> valueSelector,
             int minK, int maxK, int[] pickedKDistribution) {
         this.listVariableDescriptor = listVariableDescriptor;
-        this.originSelector = originSelector;
-        this.valueSelector = valueSelector;
+        this.originSelector = createEffectiveValueSelector(originSelector, this::getListVariableStateSupply);
+        this.valueSelector = createEffectiveValueSelector(valueSelector, this::getListVariableStateSupply);
         this.minK = minK;
         this.maxK = maxK;
         this.pickedKDistribution = pickedKDistribution;
-        phaseLifecycleSupport.addEventListener(originSelector);
-        phaseLifecycleSupport.addEventListener(valueSelector);
+
+        phaseLifecycleSupport.addEventListener(this.originSelector);
+        phaseLifecycleSupport.addEventListener(this.valueSelector);
+    }
+
+    private EntityIndependentValueSelector<Solution_> createEffectiveValueSelector(
+            EntityIndependentValueSelector<Solution_> entityIndependentValueSelector,
+            Supplier<ListVariableStateSupply<Solution_>> listVariableStateSupplier) {
+        var filteredValueSelector =
+                filterPinnedListPlanningVariableValuesWithIndex(entityIndependentValueSelector, listVariableStateSupplier);
+        return FilteringValueSelector.ofAssigned(filteredValueSelector, listVariableStateSupplier);
+    }
+
+    private ListVariableStateSupply<Solution_> getListVariableStateSupply() {
+        return Objects.requireNonNull(listVariableStateSupply,
+                "Impossible state: The listVariableStateSupply is not initialized yet.");
     }
 
     @Override
@@ -47,30 +61,18 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
         super.solvingStarted(solverScope);
         var supplyManager = solverScope.getScoreDirector().getSupplyManager();
         listVariableStateSupply = supplyManager.demand(listVariableDescriptor.getStateDemand());
-        effectiveOriginSelector = createEffectiveValueSelector(originSelector, listVariableStateSupply);
-        effectiveValueSelector = createEffectiveValueSelector(valueSelector, listVariableStateSupply);
-    }
-
-    private EntityIndependentValueSelector<Solution_> createEffectiveValueSelector(
-            EntityIndependentValueSelector<Solution_> entityIndependentValueSelector,
-            ListVariableStateSupply<Solution_> listVariableStateSupply) {
-        var filteredValueSelector =
-                filterPinnedListPlanningVariableValuesWithIndex(entityIndependentValueSelector, listVariableStateSupply);
-        return FilteringValueSelector.ofAssigned(filteredValueSelector, listVariableStateSupply);
     }
 
     @Override
     public void solvingEnded(SolverScope<Solution_> solverScope) {
         super.solvingEnded(solverScope);
         listVariableStateSupply = null;
-        effectiveOriginSelector = null;
-        effectiveValueSelector = null;
     }
 
     @Override
     public long getSize() {
         long total = 0;
-        long valueSelectorSize = effectiveValueSelector.getSize();
+        long valueSelectorSize = valueSelector.getSize();
         for (int i = minK; i < Math.min(valueSelectorSize, maxK); i++) {
             if (valueSelectorSize > i) { // need more than k nodes in order to perform a k-opt
                 long kOptMoveTypes = KOptUtils.getPureKOptMoveTypes(i);
@@ -92,7 +94,7 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
     @Override
     public Iterator<Move<Solution_>> iterator() {
         return new KOptListMoveIterator<>(workingRandom, listVariableDescriptor, listVariableStateSupply,
-                effectiveOriginSelector, effectiveValueSelector, minK, maxK, pickedKDistribution);
+                originSelector, valueSelector, minK, maxK, pickedKDistribution);
     }
 
     @Override

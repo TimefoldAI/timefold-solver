@@ -101,7 +101,7 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
     @Override
     public void linkVariableDescriptors(DescriptorPolicy descriptorPolicy) {
         super.linkVariableDescriptors(descriptorPolicy);
-        if (chained && entityDescriptor.hasEffectiveMovableEntitySelectionFilter()) {
+        if (chained && entityDescriptor.hasEffectiveMovableEntityFilter()) {
             movableChainedTrailingValueFilter = new MovableChainedTrailingValueFilter<>(this);
         } else {
             movableChainedTrailingValueFilter = null;

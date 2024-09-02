@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.list;
 import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelector.filterPinnedListPlanningVariableValuesWithIndex;
 
 import java.util.Iterator;
+import java.util.Objects;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -23,14 +24,12 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
     private TriangleElementFactory triangleElementFactory;
     private ListVariableStateSupply<Solution_> listVariableStateSupply;
 
-    private EntityIndependentValueSelector<Solution_> movableValueSelector;
-
     public RandomSubListSelector(
             EntitySelector<Solution_> entitySelector,
             EntityIndependentValueSelector<Solution_> valueSelector,
             int minimumSubListSize, int maximumSubListSize) {
         this.entitySelector = entitySelector;
-        this.valueSelector = valueSelector;
+        this.valueSelector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, this::getListVariableStateSupply);
         this.listVariableDescriptor = (ListVariableDescriptor<Solution_>) valueSelector.getVariableDescriptor();
         if (minimumSubListSize < 1) {
             // TODO raise this to 2 in Timefold Solver 2.0
@@ -44,8 +43,13 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
         this.minimumSubListSize = minimumSubListSize;
         this.maximumSubListSize = maximumSubListSize;
 
-        phaseLifecycleSupport.addEventListener(entitySelector);
-        phaseLifecycleSupport.addEventListener(valueSelector);
+        phaseLifecycleSupport.addEventListener(this.entitySelector);
+        phaseLifecycleSupport.addEventListener(this.valueSelector);
+    }
+
+    private ListVariableStateSupply<Solution_> getListVariableStateSupply() {
+        return Objects.requireNonNull(listVariableStateSupply,
+                "Impossible state: The listVariableStateSupply is not initialized yet.");
     }
 
     @Override
@@ -54,7 +58,6 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
         triangleElementFactory = new TriangleElementFactory(minimumSubListSize, maximumSubListSize, workingRandom);
         var supplyManager = solverScope.getScoreDirector().getSupplyManager();
         listVariableStateSupply = supplyManager.demand(listVariableDescriptor.getStateDemand());
-        movableValueSelector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, listVariableStateSupply);
     }
 
     @Override
@@ -98,12 +101,12 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
     @Override
     public Iterator<Object> endingValueIterator() {
         // Child value selector is entity independent, so passing null entity is OK.
-        return movableValueSelector.endingIterator(null);
+        return valueSelector.endingIterator(null);
     }
 
     @Override
     public long getValueCount() {
-        return movableValueSelector.getSize();
+        return valueSelector.getSize();
     }
 
     @Override
@@ -121,7 +124,7 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
                 }
             };
         }
-        return new RandomSubListIterator(movableValueSelector.iterator());
+        return new RandomSubListIterator(valueSelector.iterator());
     }
 
     private final class RandomSubListIterator extends UpcomingSelectionIterator<SubList> {
