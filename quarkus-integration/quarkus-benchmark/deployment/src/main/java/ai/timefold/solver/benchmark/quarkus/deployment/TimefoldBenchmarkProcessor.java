@@ -1,5 +1,7 @@
 package ai.timefold.solver.benchmark.quarkus.deployment;
 
+import java.util.Optional;
+
 import ai.timefold.solver.benchmark.config.PlannerBenchmarkConfig;
 import ai.timefold.solver.benchmark.quarkus.TimefoldBenchmarkBeanProvider;
 import ai.timefold.solver.benchmark.quarkus.TimefoldBenchmarkRecorder;
@@ -34,7 +36,7 @@ class TimefoldBenchmarkProcessor {
 
     @BuildStep
     HotDeploymentWatchedFileBuildItem watchSolverBenchmarkConfigXml() {
-        String solverBenchmarkConfigXML = timefoldBenchmarkBuildTimeConfig.solverBenchmarkConfigXml
+        String solverBenchmarkConfigXML = timefoldBenchmarkBuildTimeConfig.solverBenchmarkConfigXml()
                 .orElse(TimefoldBenchmarkBuildTimeConfig.DEFAULT_SOLVER_BENCHMARK_CONFIG_URL);
         return new HotDeploymentWatchedFileBuildItem(solverBenchmarkConfigXML);
     }
@@ -56,8 +58,9 @@ class TimefoldBenchmarkProcessor {
         }
         PlannerBenchmarkConfig benchmarkConfig;
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        if (timefoldBenchmarkBuildTimeConfig.solverBenchmarkConfigXml.isPresent()) {
-            String solverBenchmarkConfigXML = timefoldBenchmarkBuildTimeConfig.solverBenchmarkConfigXml.get();
+        Optional<String> benchmarkConfigFile = timefoldBenchmarkBuildTimeConfig.solverBenchmarkConfigXml();
+        if (benchmarkConfigFile.isPresent()) {
+            String solverBenchmarkConfigXML = benchmarkConfigFile.get();
             if (classLoader.getResource(solverBenchmarkConfigXML) == null) {
                 throw new ConfigurationException("Invalid quarkus.timefold.benchmark.solver-benchmark-config-xml property ("
                         + solverBenchmarkConfigXML + "): that classpath resource does not exist.");
