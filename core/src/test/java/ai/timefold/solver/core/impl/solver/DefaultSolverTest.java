@@ -246,6 +246,11 @@ class DefaultSolverTest {
                                         null,
                                         null,
                                         Meter.Type.GAUGE),
+                                new Meter.Id(SolverMetric.MOVE_CALCULATION_COUNT.getMeterId(),
+                                        Tags.empty(),
+                                        null,
+                                        null,
+                                        Meter.Type.GAUGE),
                                 new Meter.Id(SolverMetric.PROBLEM_ENTITY_COUNT.getMeterId(),
                                         Tags.empty(),
                                         null,
@@ -324,6 +329,11 @@ class DefaultSolverTest {
                                         null,
                                         Meter.Type.COUNTER),
                                 new Meter.Id(SolverMetric.SCORE_CALCULATION_COUNT.getMeterId(),
+                                        Tags.of("tag.key", "tag.value"),
+                                        null,
+                                        null,
+                                        Meter.Type.GAUGE),
+                                new Meter.Id(SolverMetric.MOVE_CALCULATION_COUNT.getMeterId(),
                                         Tags.of("tag.key", "tag.value"),
                                         null,
                                         null,
@@ -419,6 +429,8 @@ class DefaultSolverTest {
         assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "DURATION")).isZero();
         assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "ACTIVE_TASKS")).isZero();
         assertThat(meterRegistry.getMeasurement(SolverMetric.ERROR_COUNT.getMeterId(), "COUNT")).isZero();
+        assertThat(meterRegistry.getMeasurement(SolverMetric.SCORE_CALCULATION_COUNT.getMeterId(), "VALUE")).isPositive();
+        assertThat(meterRegistry.getMeasurement(SolverMetric.MOVE_CALCULATION_COUNT.getMeterId(), "VALUE")).isPositive();
     }
 
     @Test

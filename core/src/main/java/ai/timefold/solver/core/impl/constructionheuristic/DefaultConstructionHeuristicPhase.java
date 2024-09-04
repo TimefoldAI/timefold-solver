@@ -146,13 +146,14 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
         decider.phaseEnded(phaseScope);
         phaseScope.endingNow();
         if (decider.isLoggingEnabled() && logger.isInfoEnabled()) {
-            logger.info(
-                    "{}Construction Heuristic phase ({}) ended: time spent ({}), best score ({}), score calculation speed ({}/sec), step total ({}).",
+            logger.info("{}Construction Heuristic phase ({}) ended: time spent ({}), best score ({}),"
+                    + " score calculation speed ({}/sec), move calculation speed ({}/sec), step total ({}).",
                     logIndentation,
                     phaseIndex,
                     phaseScope.calculateSolverTimeMillisSpentUpToNow(),
                     phaseScope.getBestScore(),
                     phaseScope.getPhaseScoreCalculationSpeed(),
+                    phaseScope.getPhaseMoveCalculationSpeed(),
                     phaseScope.getNextStepIndex());
         }
     }

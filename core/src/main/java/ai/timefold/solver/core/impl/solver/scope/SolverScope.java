@@ -53,6 +53,8 @@ public class SolverScope<Solution_> {
     private long childThreadsScoreCalculationCount = 0;
     private long moveEvaluationCount = 0;
 
+    private long childThreadsMoveCalculationCount = 0L;
+
     private Score<?> startingInitializedScore;
 
     private Long bestSolutionTimeMillis;
@@ -187,6 +189,14 @@ public class SolverScope<Solution_> {
         return scoreDirector.getCalculationCount() + childThreadsScoreCalculationCount;
     }
 
+    public void addChildThreadsMoveCalculationCount(long addition) {
+        childThreadsMoveCalculationCount += addition;
+    }
+
+    public long getMoveCalculationCount() {
+        return scoreDirector.getMoveCalculationCount() + childThreadsMoveCalculationCount;
+    }
+
     public void addMoveEvaluationCount(long addition) {
         moveEvaluationCount += addition;
     }
@@ -288,9 +298,17 @@ public class SolverScope<Solution_> {
         return getSpeed(getScoreCalculationCount(), timeMillisSpent);
     }
 
-    public static long getSpeed(long scoreCalculationCount, long timeMillisSpent) {
+    /**
+     * @return at least 0, per second
+     */
+    public long getMoveCalculationSpeed() {
+        long timeMillisSpent = getTimeMillisSpent();
+        return getSpeed(getMoveCalculationCount(), timeMillisSpent);
+    }
+
+    public static long getSpeed(long metric, long timeMillisSpent) {
         // Avoid divide by zero exception on a fast CPU
-        return scoreCalculationCount * 1000L / (timeMillisSpent == 0L ? 1L : timeMillisSpent);
+        return metric * 1000L / (timeMillisSpent == 0L ? 1L : timeMillisSpent);
     }
 
     public void setWorkingSolutionFromBestSolution() {

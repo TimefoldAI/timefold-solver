@@ -24,10 +24,13 @@ public abstract class AbstractPhaseScope<Solution_> {
 
     protected Long startingSystemTimeMillis;
     protected Long startingScoreCalculationCount;
+    protected Long startingMoveCalculationCount;
     protected Score startingScore;
     protected Long endingSystemTimeMillis;
     protected Long endingScoreCalculationCount;
-    protected long childThreadsScoreCalculationCount = 0;
+    protected Long endingMoveCalculationCount;
+    protected long childThreadsScoreCalculationCount = 0L;
+    protected long childThreadsMoveCalculationCount = 0L;
 
     protected int bestSolutionStepIndex;
 
@@ -104,11 +107,13 @@ public abstract class AbstractPhaseScope<Solution_> {
     public void startingNow() {
         startingSystemTimeMillis = System.currentTimeMillis();
         startingScoreCalculationCount = getScoreDirector().getCalculationCount();
+        startingMoveCalculationCount = getScoreDirector().getMoveCalculationCount();
     }
 
     public void endingNow() {
         endingSystemTimeMillis = System.currentTimeMillis();
-        endingScoreCalculationCount = getScoreDirector().getCalculationCount();
+        endingScoreCalculationCount = getScoreDirector().getCalculationCount() + childThreadsScoreCalculationCount;
+        endingMoveCalculationCount = getScoreDirector().getMoveCalculationCount() + childThreadsMoveCalculationCount;
     }
 
     public SolutionDescriptor<Solution_> getSolutionDescriptor() {
@@ -133,17 +138,37 @@ public abstract class AbstractPhaseScope<Solution_> {
         childThreadsScoreCalculationCount += addition;
     }
 
+    public void addChildThreadsMoveCalculationCount(long addition) {
+        solverScope.addChildThreadsMoveCalculationCount(addition);
+        childThreadsMoveCalculationCount += addition;
+    }
+
     public long getPhaseScoreCalculationCount() {
         return endingScoreCalculationCount - startingScoreCalculationCount + childThreadsScoreCalculationCount;
+    }
+
+    public long getPhaseMoveCalculationCount() {
+        return endingMoveCalculationCount - startingMoveCalculationCount + childThreadsMoveCalculationCount;
     }
 
     /**
      * @return at least 0, per second
      */
     public long getPhaseScoreCalculationSpeed() {
+        return getMetricCalculationSpeed(getPhaseScoreCalculationCount());
+    }
+
+    /**
+     * @return at least 0, per second
+     */
+    public long getPhaseMoveCalculationSpeed() {
+        return getMetricCalculationSpeed(getPhaseMoveCalculationCount());
+    }
+
+    private long getMetricCalculationSpeed(long metric) {
         long timeMillisSpent = getPhaseTimeMillisSpent();
         // Avoid divide by zero exception on a fast CPU
-        return getPhaseScoreCalculationCount() * 1000L / (timeMillisSpent == 0L ? 1L : timeMillisSpent);
+        return metric * 1000L / (timeMillisSpent == 0L ? 1L : timeMillisSpent);
     }
 
     public <Score_ extends Score<Score_>> InnerScoreDirector<Solution_, Score_> getScoreDirector() {

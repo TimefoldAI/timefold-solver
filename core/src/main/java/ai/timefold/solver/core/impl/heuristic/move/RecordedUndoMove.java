@@ -24,4 +24,8 @@ public final class RecordedUndoMove<Solution_> extends AbstractUndoMove<Solution
         scoreDirector.triggerVariableListeners();
     }
 
+    @Override
+    public int getMoveWeightCount() {
+        return 0;
+    }
 }

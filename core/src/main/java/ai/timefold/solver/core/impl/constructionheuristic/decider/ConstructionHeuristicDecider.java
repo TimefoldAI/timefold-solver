@@ -103,6 +103,7 @@ public class ConstructionHeuristicDecider<Solution_> {
                 //      It will never do anything more complex than that.
                 continue;
             }
+            prepare(move);
             var moveScope = new ConstructionHeuristicMoveScope<>(stepScope, moveIndex, move);
             moveIndex++;
             doMove(moveScope);
@@ -144,6 +145,10 @@ public class ConstructionHeuristicDecider<Solution_> {
             logger.trace("{}        Move index ({}), score ({}), move ({}).",
                     logIndentation, moveScope.getMoveIndex(), moveScope.getScore(), moveScope.getMove());
         }
+    }
+
+    protected void prepare(Move<Solution_> move) {
+        // Ignored by default
     }
 
 }

@@ -113,6 +113,11 @@ public final class CompositeMove<Solution_> implements Move<Solution_> {
         return new CompositeMove<>(rebasedMoves);
     }
 
+    @Override
+    public int getMoveWeightCount() {
+        return moves.length;
+    }
+
     // ************************************************************************
     // Introspection methods
     // ************************************************************************

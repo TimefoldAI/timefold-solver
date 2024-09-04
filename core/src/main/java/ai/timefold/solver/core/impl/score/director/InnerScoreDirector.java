@@ -225,6 +225,12 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     void incrementCalculationCount();
 
+    long getMoveCalculationCount();
+
+    void resetMoveCalculationCount();
+
+    void incrementMoveCalculationCount(int addition);
+
     /**
      * @return never null
      */

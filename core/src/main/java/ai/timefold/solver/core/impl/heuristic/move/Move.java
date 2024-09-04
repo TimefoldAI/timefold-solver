@@ -173,4 +173,14 @@ public interface Move<Solution_> {
                         .formatted(getClass()));
     }
 
+    /**
+     * Return the weight count of a given move that contributes to the speed metric.
+     * Every move counts as one single move by default.
+     *
+     * @return 1 by default
+     */
+    default int getMoveWeightCount() {
+        return 1;
+    }
+
 }

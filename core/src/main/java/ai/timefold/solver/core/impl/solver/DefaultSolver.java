@@ -216,6 +216,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         assertCorrectSolutionState();
         solverScope.startingNow();
         solverScope.getScoreDirector().resetCalculationCount();
+        solverScope.getScoreDirector().resetMoveCalculationCount();
         super.solvingStarted(solverScope);
         var startingSolverCount = solverScope.getStartingSolverCount() + 1;
         solverScope.setStartingSolverCount(startingSolverCount);
@@ -306,10 +307,11 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
 
     public void outerSolvingEnded(SolverScope<Solution_> solverScope) {
         logger.info("Solving ended: time spent ({}), best score ({}), score calculation speed ({}/sec), "
-                + "phase total ({}), environment mode ({}), move thread count ({}).",
+                + "move calculation speed ({}/sec), phase total ({}), environment mode ({}), move thread count ({}).",
                 solverScope.getTimeMillisSpent(),
                 solverScope.getBestScore(),
                 solverScope.getScoreCalculationSpeed(),
+                solverScope.getMoveCalculationSpeed(),
                 phaseList.size(),
                 environmentMode.name(),
                 moveThreadCountDescription);

@@ -1573,6 +1573,8 @@
             
       <xs:enumeration value="SCORE_CALCULATION_COUNT"/>
             
+      <xs:enumeration value="MOVE_CALCULATION_COUNT"/>
+            
       <xs:enumeration value="PROBLEM_ENTITY_COUNT"/>
             
       <xs:enumeration value="PROBLEM_VARIABLE_COUNT"/>

@@ -197,12 +197,13 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
         decider.phaseEnded(phaseScope);
         phaseScope.endingNow();
         logger.info("{}Local Search phase ({}) ended: time spent ({}), best score ({}),"
-                + " score calculation speed ({}/sec), step total ({}).",
+                + " score calculation speed ({}/sec), move calculation speed ({}/sec), step total ({}).",
                 logIndentation,
                 phaseIndex,
                 phaseScope.calculateSolverTimeMillisSpentUpToNow(),
                 phaseScope.getBestScore(),
                 phaseScope.getPhaseScoreCalculationSpeed(),
+                phaseScope.getPhaseMoveCalculationSpeed(),
                 phaseScope.getNextStepIndex());
     }
 
