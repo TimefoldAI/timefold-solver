@@ -1,5 +1,6 @@
-[#migrateFromOptaPlanner]
-= Migrate from OptaPlanner
+[#upgradeFromOptaPlanner]
+= Upgrade from OptaPlanner
+:page-aliases: upgrade-and-migration/migrate-from-optaplanner.adoc
 :doctype: book
 :sectnums:
 :icons: font

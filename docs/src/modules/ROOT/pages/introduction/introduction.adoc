@@ -175,7 +175,7 @@ The solver configuration is defined by the classes in the following package name
 They will change in future major or minor releases,
 but probably not in hotfix releases.
 
-Backwards incompatible changes will be clearly documented in xref:upgrade-and-migration/upgrade-to-latest-version.adoc#manualUpgrade[the upgrade recipe].
+Backwards incompatible changes will be clearly documented in xref:upgrading-timefold-solver/upgrade-to-latest-version.adoc#manualUpgrade[the upgrade recipe].
 
 
 [NOTE]
@@ -286,4 +286,4 @@ see xref:quickstart/overview.adoc[Quickstarts].
 
 === Upgrade to the latest version
 
-See the dedicated section on xref:upgrade-and-migration/upgrade-to-latest-version.adoc[Upgrade and Migration].
+See the dedicated section on xref:upgrading-timefold-solver/upgrade-to-latest-version.adoc[Upgrading Timefold Solver].
