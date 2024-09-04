@@ -1,5 +1,6 @@
-[#upgradeAndMigrationOverview]
-= Upgrade and Migration: Overview
+[#upgradingTimefoldSolverOverview]
+= Upgrading Timefold Solver: Overview
+:page-aliases: upgrading-timefold-solver/overview.adoc
 :doctype: book
 :sectnums:
 :icons: font

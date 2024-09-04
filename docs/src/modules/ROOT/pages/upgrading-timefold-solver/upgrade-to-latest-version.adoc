@@ -1,5 +1,6 @@
 [#upgradeToLatestVersion]
 = Upgrade to the latest version
+:page-aliases: upgrading-timefold-solver/upgrade-to-latest-version.adoc
 :doctype: book
 :sectnums:
 :icons: font
@@ -13,7 +14,7 @@ and to take advantage of the newest features in Timefold Solver.
 == Automatic upgrade to the latest version
 
 For many of the upgrade steps mentioned later,
-we actually provide a migration tool that can automatically apply those changes to Java files.
+we actually provide an upgrade tool that can automatically apply those changes to Java files.
 This tool is based on OpenRewrite and can be run as a Maven or Gradle plugin.
 To run the tool, execute the following command in your project directory:
 
@@ -49,7 +50,7 @@ For the time being, Kotlin users need to follow the upgrade recipe and apply the
 
 Every upgrade note indicates how likely your code will be affected by that change:
 
-- icon:magic[] *Automated*: Can be applied automatically using our <<automaticUpgradeToLatestVersion,migration tooling>>.
+- icon:magic[] *Automated*: Can be applied automatically using our <<automaticUpgradeToLatestVersion,upgrade tooling>>.
 - icon:exclamation-triangle[role=red] *Major*: Likely to affect your code.
 - icon:info-circle[role=yellow] *Minor*: Unlikely to affect your code, especially if you stick to public API.
 - icon:eye[] *Recommended*: Does not affect backwards compatibility, but you probably want to be aware.
