@@ -362,6 +362,9 @@
                     <li class="active">
                         <button class="nav-link active" id="summary_scoreCalculationSpeed-tab" data-bs-toggle="pill" data-bs-target="#summary_scoreCalculationSpeed-tab-pane" type="button">Score calculation speed</button>
                     </li>
+                    <li class="active">
+                        <button class="nav-link" id="summary_moveCalculationSpeed-tab" data-bs-toggle="pill" data-bs-target="#summary_moveCalculationSpeed-tab-pane" type="button">Move calculation speed</button>
+                    </li>
                     <li>
                         <button class="nav-link" id="summary_worstScoreCalculationSpeedDifferencePercentage-tab" data-bs-toggle="pill" data-bs-target="#summary_worstScoreCalculationSpeedDifferencePercentage-tab-pane" type="button">Worst score calculation speed difference percentage</button>
                     </li>
@@ -430,6 +433,74 @@
                                                                         <#list singleBenchmarkResult.subSingleBenchmarkResultList as subSingleBenchmarkResult>
                                                                             <li class="dropdown-header"><strong>Run #${subSingleBenchmarkResult.getSubSingleBenchmarkIndex()}</strong></li>
                                                                             <li class="dropdown-item">${subSingleBenchmarkResult.scoreCalculationSpeed!""}/s</li>
+                                                                        </#list>
+                                                                    </ul>
+                                                                </span>
+                                                            </td>
+                                                        </#if>
+                                                    </#if>
+                                                </#if>
+                                            </#list>
+                                        </tr>
+                                    </#list>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="tab-pane show active" id="summary_moveCalculationSpeed-tab-pane">
+                        <h3 class="visually-hidden">Move calculation speed summary</h3>
+                        <p>
+                            Useful for comparing different score calculators and/or constraint implementations
+                            (presuming that the solver configurations do not differ otherwise).
+                            Also useful to measure the scalability cost of an extra constraint.
+                        </p>
+                        <@addChart chart=benchmarkReport.moveCalculationSpeedSummaryChart />
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th rowspan="2">Solver</th>
+                                        <th rowspan="2">Average</th>
+                                        <th colspan="${benchmarkReport.plannerBenchmarkResult.unifiedProblemBenchmarkResultList?size}">Problem</th>
+                                    </tr>
+                                    <tr>
+                                        <#list benchmarkReport.plannerBenchmarkResult.unifiedProblemBenchmarkResultList as problemBenchmarkResult>
+                                            <th>${problemBenchmarkResult.name}</th>
+                                        </#list>
+                                    </tr>
+                                    <tr class="table-info">
+                                        <th>Problem scale</th>
+                                        <td>${benchmarkReport.plannerBenchmarkResult.averageProblemScale!""}</td>
+                                        <#list benchmarkReport.plannerBenchmarkResult.unifiedProblemBenchmarkResultList as problemBenchmarkResult>
+                                            <td class="problemScale">${problemBenchmarkResult.problemScale!""}</td>
+                                        </#list>
+                                    </tr>
+                                </thead>
+                                <tbody class="table-group-divider">
+                                    <#list benchmarkReport.plannerBenchmarkResult.solverBenchmarkResultList as solverBenchmarkResult>
+                                        <tr<#if solverBenchmarkResult.favorite> class="table-success"</#if>>
+                                            <th>${solverBenchmarkResult.name}&nbsp;<@addSolverBenchmarkBadges solverBenchmarkResult=solverBenchmarkResult/></th>
+                                            <td>${solverBenchmarkResult.averageMoveCalculationSpeed!""}/s</td>
+                                            <#list benchmarkReport.plannerBenchmarkResult.unifiedProblemBenchmarkResultList as problemBenchmarkResult>
+                                                <#if !solverBenchmarkResult.findSingleBenchmark(problemBenchmarkResult)??>
+                                                    <td></td>
+                                                <#else>
+                                                    <#assign singleBenchmarkResult = solverBenchmarkResult.findSingleBenchmark(problemBenchmarkResult)>
+                                                    <#if !singleBenchmarkResult.hasAllSuccess()>
+                                                        <td><span class="label label-important">Failed</span></td>
+                                                    <#else>
+                                                        <#if solverBenchmarkResult.subSingleCount lte 1>
+                                                            <td>${singleBenchmarkResult.moveCalculationSpeed}/s</td>
+                                                        <#else>
+                                                            <td>
+                                                                <span class="dropdown">
+                                                                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                                        ${singleBenchmarkResult.moveCalculationSpeed!""}/s&nbsp;<@addSolverProblemBenchmarkResultBadges solverProblemBenchmarkResult=singleBenchmarkResult/>
+                                                                    </button>
+                                                                    <ul class="dropdown-menu">
+                                                                        <#list singleBenchmarkResult.subSingleBenchmarkResultList as subSingleBenchmarkResult>
+                                                                            <li class="dropdown-header"><strong>Run #${subSingleBenchmarkResult.getSubSingleBenchmarkIndex()}</strong></li>
+                                                                            <li class="dropdown-item">${subSingleBenchmarkResult.moveCalculationSpeed!""}/s</li>
                                                                         </#list>
                                                                     </ul>
                                                                 </span>

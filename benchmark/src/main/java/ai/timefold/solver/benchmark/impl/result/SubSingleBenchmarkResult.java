@@ -58,6 +58,7 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
     private Score<?> score = null;
     private long timeMillisSpent = -1L;
     private long scoreCalculationCount = -1L;
+    private long moveCalculationCount = -1L;
     private String scoreExplanationSummary = null;
 
     // ************************************************************************
@@ -161,6 +162,14 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
         this.scoreCalculationCount = scoreCalculationCount;
     }
 
+    public long getMoveCalculationCount() {
+        return moveCalculationCount;
+    }
+
+    public void setMoveCalculationCount(long moveCalculationCount) {
+        this.moveCalculationCount = moveCalculationCount;
+    }
+
     public String getScoreExplanationSummary() {
         return scoreExplanationSummary;
     }
@@ -215,6 +224,16 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
             timeMillisSpent = 1L;
         }
         return scoreCalculationCount * 1000L / timeMillisSpent;
+    }
+
+    @SuppressWarnings("unused") // Used by FreeMarker.
+    public Long getMoveCalculationSpeed() {
+        long timeMillisSpent = this.timeMillisSpent;
+        if (timeMillisSpent == 0L) {
+            // Avoid divide by zero exception on a fast CPU
+            timeMillisSpent = 1L;
+        }
+        return moveCalculationCount * 1000L / timeMillisSpent;
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.
@@ -293,6 +312,7 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
         newResult.score = oldResult.score;
         newResult.timeMillisSpent = oldResult.timeMillisSpent;
         newResult.scoreCalculationCount = oldResult.scoreCalculationCount;
+        newResult.moveCalculationCount = oldResult.moveCalculationCount;
 
         singleBenchmarkResult.getSubSingleBenchmarkResultList().add(newResult);
         return newResult;
