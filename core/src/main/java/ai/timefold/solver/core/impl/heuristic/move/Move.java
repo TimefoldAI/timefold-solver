@@ -175,7 +175,7 @@ public interface Move<Solution_> {
 
     /**
      * Flag that enables metric collection for the move.
-     * In cases like Ruin & Recreate or undo moves, metrics such as move count should not be considered.
+     * In cases like Ruin and Recreate or undo moves, metrics such as move count should not be considered.
      *
      * @return true by default, which means this move updates the related metrics.
      */
