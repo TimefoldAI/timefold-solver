@@ -17,7 +17,7 @@ on:
 jobs:
   java:
     name: "Java Quickstarts"
-    runs-on: ubuntu-latest
+    runs-on: linux-arm64-4core
     concurrency:
       group: downstream-quickstarts-${{ github.event_name }}-${{ github.head_ref }}
       cancel-in-progress: true
@@ -73,7 +73,7 @@ jobs:
       cancel-in-progress: true
     strategy:
       matrix:
-        os: [ ubuntu-latest ]
+        os: [ linux-arm64-4core ]
         java-version: [ 17 ] # Only the first supported LTS; already too many jobs here.
         # TODO: Add Python 3.10 once employee scheduling and school timetabling support it
         python-version: ['3.11', '3.12']

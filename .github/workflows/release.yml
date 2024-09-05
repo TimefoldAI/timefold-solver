@@ -33,7 +33,7 @@ jobs:
     env:
       MAVEN_ARGS: "--no-transfer-progress --batch-mode"
       RELEASE_BRANCH_NAME: "__timefold_release_branch__"
-    runs-on: ubuntu-latest
+    runs-on: linux-arm64-4core
     environment:
       name: pypi
       url: https://pypi.org/p/timefold

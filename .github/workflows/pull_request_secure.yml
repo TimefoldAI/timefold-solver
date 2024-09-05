@@ -25,7 +25,7 @@ on:
 jobs:
   # Check if the user is a member of the organization; if so, allow the PR to sail through.
   known_user:
-    runs-on: ubuntu-latest
+    runs-on: linux-arm64-4core
     outputs:
       is_member_of_org: ${{ steps.auth_check.outputs.authorized }}
     steps:
@@ -51,13 +51,13 @@ jobs:
           (needs.known_user.outputs.is_member_of_org != 'true' || github.actor == 'dependabot[bot]') &&
           'external' || 'internal' 
       }}
-    runs-on: ubuntu-latest
+    runs-on: linux-arm64-4core
     steps:
       - run: true
   integration-tests:
     needs: approval_required
     name: Integration Tests
-    runs-on: ubuntu-latest
+    runs-on: linux-arm64-4core
     concurrency:
       group: pr-${{ github.event_name }}-${{ github.head_ref }}
       cancel-in-progress: true
@@ -135,7 +135,7 @@ jobs:
   enterprise-java:
     needs: approval_required
     name: Enterprise Edition (Java)
-    runs-on: ubuntu-latest
+    runs-on: linux-arm64-4core
     concurrency:
       group: downstream-enterprise-${{ github.event_name }}-${{ github.head_ref }}
       cancel-in-progress: true
@@ -193,7 +193,7 @@ jobs:
       group: downstream-enterprise-python-${{ github.event_name }}-${{ github.head_ref }}
       cancel-in-progress: true
     timeout-minutes: 120
-    runs-on: ubuntu-latest
+    runs-on: linux-arm64-4core
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -260,7 +260,7 @@ jobs:
   sonarcloud:
     needs: approval_required
     name: SonarCloud
-    runs-on: ubuntu-latest
+    runs-on: linux-arm64-4core
     steps:
       - uses: actions/checkout@v4
         with:

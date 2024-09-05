@@ -8,7 +8,7 @@ jobs:
   build:
     env:
       RELEASE_BRANCH_NAME: "__timefold_release_branch__"
-    runs-on: ubuntu-latest
+    runs-on: linux-arm64-4core
     timeout-minutes: 120
     steps:
       - name: Checkout timefold-solver
