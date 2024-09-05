@@ -173,8 +173,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public void incrementMoveCalculationCount(int addition) {
-        this.moveCalculationCount += addition;
+    public void incrementMoveCalculationCount() {
+        this.moveCalculationCount++;
     }
 
     @Override
@@ -240,7 +240,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
         Move<Solution_> undoMove = move.doMove(this);
         Score_ score = calculateScore();
-        incrementMoveCalculationCount(move.getMoveWeightCount());
+        if (move.isCollectMetricEnabled()) {
+            incrementMoveCalculationCount();
+        }
         if (assertMoveScoreFromScratch) {
             undoMoveText = undoMove.toString();
             if (trackingWorkingSolution) {

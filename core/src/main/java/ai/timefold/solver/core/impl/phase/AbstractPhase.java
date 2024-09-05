@@ -34,6 +34,8 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     protected final boolean assertShadowVariablesAreNotStaleAfterStep;
     protected final boolean triggerFirstInitializedSolutionEvent;
 
+    protected final boolean enableCollectMetrics;
+
     /** Used for {@link #addPhaseLifecycleListener(PhaseLifecycleListener)}. */
     protected PhaseLifecycleSupport<Solution_> phaseLifecycleSupport = new PhaseLifecycleSupport<>();
 
@@ -46,6 +48,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         assertStepScoreFromScratch = builder.assertStepScoreFromScratch;
         assertExpectedStepScore = builder.assertExpectedStepScore;
         assertShadowVariablesAreNotStaleAfterStep = builder.assertShadowVariablesAreNotStaleAfterStep;
+        enableCollectMetrics = builder.enableCollectMetrics;
         triggerFirstInitializedSolutionEvent = builder.triggerFirstInitializedSolutionEvent;
     }
 
@@ -104,6 +107,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         phaseScope.startingNow();
         phaseScope.reset();
+        phaseScope.setEnableCollectMetrics(enableCollectMetrics);
         solver.phaseStarted(phaseScope);
         phaseTermination.phaseStarted(phaseScope);
         phaseLifecycleSupport.firePhaseStarted(phaseScope);
@@ -156,7 +160,9 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     @Override
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
         solver.stepEnded(stepScope);
-        collectMetrics(stepScope);
+        if (enableCollectMetrics) {
+            collectMetrics(stepScope);
+        }
         phaseTermination.stepEnded(stepScope);
         phaseLifecycleSupport.fireStepEnded(stepScope);
     }
@@ -225,6 +231,8 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         private boolean assertExpectedStepScore = false;
         private boolean assertShadowVariablesAreNotStaleAfterStep = false;
 
+        private boolean enableCollectMetrics = true;
+
         protected Builder(int phaseIndex, String logIndentation, Termination<Solution_> phaseTermination) {
             this(phaseIndex, false, logIndentation, phaseTermination);
         }
@@ -247,6 +255,10 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
 
         public void setAssertShadowVariablesAreNotStaleAfterStep(boolean assertShadowVariablesAreNotStaleAfterStep) {
             this.assertShadowVariablesAreNotStaleAfterStep = assertShadowVariablesAreNotStaleAfterStep;
+        }
+
+        public void setEnableCollectMetrics(boolean enableCollectMetrics) {
+            this.enableCollectMetrics = enableCollectMetrics;
         }
 
         protected abstract AbstractPhase<Solution_> build();

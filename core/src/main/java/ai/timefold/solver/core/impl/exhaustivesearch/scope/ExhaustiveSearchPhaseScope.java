@@ -59,6 +59,12 @@ public final class ExhaustiveSearchPhaseScope<Solution_> extends AbstractPhaseSc
         this.lastCompletedStepScope = lastCompletedStepScope;
     }
 
+    @Override
+    public <Score_ extends Score<Score_>> Score_ calculateScore() {
+        getScoreDirector().incrementMoveCalculationCount();
+        return super.calculateScore();
+    }
+
     // ************************************************************************
     // Calculated methods
     // ************************************************************************

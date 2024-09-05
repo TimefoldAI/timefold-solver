@@ -34,6 +34,8 @@ public abstract class AbstractPhaseScope<Solution_> {
 
     protected int bestSolutionStepIndex;
 
+    protected boolean enableCollectMetrics = true;
+
     /**
      * As defined by #AbstractPhaseScope(SolverScope, int, boolean)
      * with the phaseSendingBestSolutionEvents parameter set to true.
@@ -91,12 +93,21 @@ public abstract class AbstractPhaseScope<Solution_> {
 
     public abstract AbstractStepScope<Solution_> getLastCompletedStepScope();
 
+    public boolean isEnableCollectMetrics() {
+        return enableCollectMetrics;
+    }
+
+    public void setEnableCollectMetrics(boolean enableCollectMetrics) {
+        this.enableCollectMetrics = enableCollectMetrics;
+    }
+
     // ************************************************************************
     // Calculated methods
     // ************************************************************************
 
     public void reset() {
         bestSolutionStepIndex = -1;
+        enableCollectMetrics = true;
         // solverScope.getBestScore() is null with an uninitialized score
         startingScore = solverScope.getBestScore() == null ? solverScope.calculateScore() : solverScope.getBestScore();
         if (getLastCompletedStepScope().getStepIndex() < 0) {

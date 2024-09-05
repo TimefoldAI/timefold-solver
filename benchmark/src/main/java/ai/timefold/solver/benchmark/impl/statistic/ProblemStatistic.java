@@ -19,6 +19,7 @@ import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.statistic.bestscore.BestScoreProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.bestsolutionmutation.BestSolutionMutationProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.memoryuse.MemoryUseProblemStatistic;
+import ai.timefold.solver.benchmark.impl.statistic.movecalculationspeed.MoveCalculationSpeedProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.movecountperstep.MoveCountPerStepProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.scorecalculationspeed.ScoreCalculationSpeedProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.stepscore.StepScoreProblemStatistic;
@@ -31,6 +32,7 @@ import ai.timefold.solver.benchmark.impl.statistic.stepscore.StepScoreProblemSta
         BestScoreProblemStatistic.class,
         StepScoreProblemStatistic.class,
         ScoreCalculationSpeedProblemStatistic.class,
+        MoveCalculationSpeedProblemStatistic.class,
         BestSolutionMutationProblemStatistic.class,
         MoveCountPerStepProblemStatistic.class,
         MemoryUseProblemStatistic.class

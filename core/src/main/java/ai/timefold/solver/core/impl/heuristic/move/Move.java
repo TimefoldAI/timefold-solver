@@ -174,13 +174,13 @@ public interface Move<Solution_> {
     }
 
     /**
-     * Return the weight count of a given move that contributes to the speed metric.
-     * Every move counts as one single move by default.
+     * Flag that enables metric collection for the move.
+     * In cases like Ruin & Recreate or undo moves, metrics such as move count should not be considered.
      *
-     * @return 1 by default
+     * @return true by default, which means this move updates the related metrics.
      */
-    default int getMoveWeightCount() {
-        return 1;
+    default boolean isCollectMetricEnabled() {
+        return true;
     }
 
 }

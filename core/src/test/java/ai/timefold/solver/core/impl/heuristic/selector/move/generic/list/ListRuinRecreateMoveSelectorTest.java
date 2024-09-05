@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
@@ -18,6 +20,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListS
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
@@ -25,10 +28,13 @@ import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListValue;
+import ai.timefold.solver.core.impl.testutil.TestMeterRegistry;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+
+import io.micrometer.core.instrument.Metrics;
 
 @Execution(ExecutionMode.CONCURRENT)
 class ListRuinRecreateMoveSelectorTest {
@@ -64,6 +70,37 @@ class ListRuinRecreateMoveSelectorTest {
         var problem = TestdataListSolution.generateUninitializedSolution(10, 3);
         var solver = SolverFactory.create(solverConfig).buildSolver();
         solver.solve(problem);
+    }
+
+    @Test
+    void testRuiningWithMetric() {
+        var meterRegistry = new TestMeterRegistry();
+        Metrics.addRegistry(meterRegistry);
+
+        var solverConfig = new SolverConfig()
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
+                .withSolutionClass(TestdataListSolution.class)
+                .withEntityClasses(TestdataListEntity.class, TestdataListValue.class)
+                .withConstraintProviderClass(TestdataListConstraintProvider.class)
+                .withPhaseList(List.of(
+                        new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig()
+                                .withMoveSelectorConfig(new ListRuinRecreateMoveSelectorConfig())
+                                .withTerminationConfig(new TerminationConfig()
+                                        .withStepCountLimit(100))));
+        var problem = TestdataListSolution.generateUninitializedSolution(10, 3);
+        var solver = SolverFactory.create(solverConfig).buildSolver();
+        solver.addEventListener(event -> meterRegistry.publish(solver));
+        solver.solve(problem);
+
+        SolverMetric.MOVE_CALCULATION_COUNT.register(solver);
+        SolverMetric.SCORE_CALCULATION_COUNT.register(solver);
+        meterRegistry.publish(solver);
+        var scoreCount = meterRegistry.getMeasurement(SolverMetric.SCORE_CALCULATION_COUNT.getMeterId(), "VALUE");
+        var moveCount = meterRegistry.getMeasurement(SolverMetric.MOVE_CALCULATION_COUNT.getMeterId(), "VALUE");
+        assertThat(scoreCount).isPositive();
+        assertThat(moveCount).isPositive();
+        assertThat(scoreCount).isGreaterThan(moveCount);
     }
 
     public static final class TestdataAllowsUnassignedValuesListMixedConstraintProvider

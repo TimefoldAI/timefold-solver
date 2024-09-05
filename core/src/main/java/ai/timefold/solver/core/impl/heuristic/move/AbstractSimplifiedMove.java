@@ -11,7 +11,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
  *
  * @param <Solution_>
  */
-public abstract class AbstractSimplifiedMove<Solution_> extends AbstractWeightMove<Solution_> {
+public abstract class AbstractSimplifiedMove<Solution_> extends AbstractMetricMove<Solution_> {
 
     @Override
     public final Move<Solution_> doMove(ScoreDirector<Solution_> scoreDirector) {

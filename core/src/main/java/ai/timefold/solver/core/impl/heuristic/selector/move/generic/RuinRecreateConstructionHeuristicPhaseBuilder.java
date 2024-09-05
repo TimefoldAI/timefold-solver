@@ -58,6 +58,7 @@ public final class RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>
 
     @Override
     public DefaultConstructionHeuristicPhase<Solution_> build() {
+        this.setEnableCollectMetrics(false);
         return new RuinRecreateConstructionHeuristicPhase<>(this);
     }
 }

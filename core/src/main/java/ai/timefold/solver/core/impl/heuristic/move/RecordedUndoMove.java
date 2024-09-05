@@ -25,7 +25,7 @@ public final class RecordedUndoMove<Solution_> extends AbstractUndoMove<Solution
     }
 
     @Override
-    public int getMoveWeightCount() {
-        return 0;
+    public boolean isCollectMetricEnabled() {
+        return false;
     }
 }

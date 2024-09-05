@@ -229,7 +229,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     void resetMoveCalculationCount();
 
-    void incrementMoveCalculationCount(int addition);
+    void incrementMoveCalculationCount();
 
     /**
      * @return never null

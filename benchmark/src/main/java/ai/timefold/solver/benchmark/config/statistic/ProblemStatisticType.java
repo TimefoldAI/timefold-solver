@@ -10,6 +10,7 @@ import ai.timefold.solver.benchmark.impl.statistic.StatisticType;
 import ai.timefold.solver.benchmark.impl.statistic.bestscore.BestScoreProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.bestsolutionmutation.BestSolutionMutationProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.memoryuse.MemoryUseProblemStatistic;
+import ai.timefold.solver.benchmark.impl.statistic.movecalculationspeed.MoveCalculationSpeedProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.movecountperstep.MoveCountPerStepProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.scorecalculationspeed.ScoreCalculationSpeedProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.stepscore.StepScoreProblemStatistic;
@@ -19,6 +20,7 @@ public enum ProblemStatisticType implements StatisticType {
     BEST_SCORE,
     STEP_SCORE,
     SCORE_CALCULATION_SPEED,
+    MOVE_CALCULATION_SPEED,
     BEST_SOLUTION_MUTATION,
     MOVE_COUNT_PER_STEP,
     MEMORY_USE;
@@ -31,6 +33,8 @@ public enum ProblemStatisticType implements StatisticType {
                 return new StepScoreProblemStatistic(problemBenchmarkResult);
             case SCORE_CALCULATION_SPEED:
                 return new ScoreCalculationSpeedProblemStatistic(problemBenchmarkResult);
+            case MOVE_CALCULATION_SPEED:
+                return new MoveCalculationSpeedProblemStatistic(problemBenchmarkResult);
             case BEST_SOLUTION_MUTATION:
                 return new BestSolutionMutationProblemStatistic(problemBenchmarkResult);
             case MOVE_COUNT_PER_STEP:
