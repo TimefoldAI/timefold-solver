@@ -231,8 +231,18 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     }
 
     @Override
+    public long getMoveCalculationCount() {
+        return solver.getMoveCalculationCount();
+    }
+
+    @Override
     public long getScoreCalculationSpeed() {
         return solver.getScoreCalculationSpeed();
+    }
+
+    @Override
+    public long getMoveCalculationSpeed() {
+        return solver.getMoveCalculationSpeed();
     }
 
     @Override

@@ -1,6 +1,8 @@
 package ai.timefold.solver.core.impl.solver.termination;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.data.Offset.offset;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -39,5 +41,15 @@ class UnimprovedMoveCountTerminationTest {
         when(lastCompletedStepScope.getMoveCalculationCount()).thenReturn(16L);
         assertThat(termination.isPhaseTerminated(phaseScope)).isTrue();
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(1.0, offset(0.0));
+    }
+
+    @Test
+    void invalidTermination() {
+        assertThatIllegalArgumentException().isThrownBy(() -> new UnimprovedMoveCountTermination<TestdataSolution>(-1L));
+        var termination = new UnimprovedMoveCountTermination<TestdataSolution>(4);
+        assertThatThrownBy(() -> termination.isSolverTerminated(null))
+                .isInstanceOf(UnsupportedOperationException.class);
+        assertThatThrownBy(() -> termination.calculateSolverTimeGradient(null))
+                .isInstanceOf(UnsupportedOperationException.class);
     }
 }

@@ -84,4 +84,18 @@ class TerminationConfigTest {
         assertThat(child.getMinutesSpentLimit()).isNull();
     }
 
+    @Test
+    void checkMoveCountMetrics() {
+        TerminationConfig parent = new TerminationConfig()
+                .withMoveCountLimit(2L)
+                .withUnimprovedMoveCountLimit(3L);
+
+        TerminationConfig child = new TerminationConfig();
+        child.inherit(parent);
+
+        assertThat(child.getMoveCountLimit()).isEqualTo(2L);
+        assertThat(child.getUnimprovedMoveCountLimit()).isEqualTo(3L);
+        assertThat(parent.isConfigured()).isTrue();
+    }
+
 }

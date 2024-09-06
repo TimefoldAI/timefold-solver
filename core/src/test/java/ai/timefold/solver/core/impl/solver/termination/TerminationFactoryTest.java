@@ -168,6 +168,18 @@ class TerminationFactoryTest {
     }
 
     @Test
+    void buildWithMoveCount() {
+        TerminationConfig terminationConfig = new TerminationConfig()
+                .withMoveCountLimit(1L)
+                .withUnimprovedMoveCountLimit(2L);
+        List<Termination<TestdataSolution>> terminationList =
+                TerminationFactory.<TestdataSolution> create(terminationConfig)
+                        .buildTimeBasedTermination(mock(HeuristicConfigPolicy.class));
+        assertThat(terminationList).hasOnlyElementsOfTypes(MoveCountTermination.class,
+                UnimprovedMoveCountTermination.class);
+    }
+
+    @Test
     void scoreDifferenceThreshold_mustBeUsedWithUnimprovedTimeSpent() {
         HeuristicConfigPolicy<TestdataSolution> heuristicConfigPolicy = mock(HeuristicConfigPolicy.class);
 

@@ -96,8 +96,16 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         return solverScope.getScoreCalculationCount();
     }
 
+    public long getMoveCalculationCount() {
+        return solverScope.getMoveCalculationCount();
+    }
+
     public long getScoreCalculationSpeed() {
         return solverScope.getScoreCalculationSpeed();
+    }
+
+    public long getMoveCalculationSpeed() {
+        return solverScope.getMoveCalculationSpeed();
     }
 
     @Override
