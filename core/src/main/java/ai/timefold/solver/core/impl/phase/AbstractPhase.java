@@ -160,6 +160,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     @Override
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
         solver.stepEnded(stepScope);
+        stepScope.setMoveCalculationCount(stepScope.getPhaseScope().getPhaseMoveCalculationCount());
         if (enableCollectMetrics) {
             collectMetrics(stepScope);
         }

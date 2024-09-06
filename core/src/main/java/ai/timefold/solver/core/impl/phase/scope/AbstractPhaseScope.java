@@ -34,6 +34,8 @@ public abstract class AbstractPhaseScope<Solution_> {
 
     protected int bestSolutionStepIndex;
 
+    protected long bestSolutionMoveCalculationCount = 0L;
+
     protected boolean enableCollectMetrics = true;
 
     /**
@@ -89,6 +91,14 @@ public abstract class AbstractPhaseScope<Solution_> {
 
     public void setBestSolutionStepIndex(int bestSolutionStepIndex) {
         this.bestSolutionStepIndex = bestSolutionStepIndex;
+    }
+
+    public long getBestSolutionMoveCalculationCount() {
+        return bestSolutionMoveCalculationCount;
+    }
+
+    public void setBestSolutionMoveCalculationCount(long bestSolutionMoveCalculationCount) {
+        this.bestSolutionMoveCalculationCount = bestSolutionMoveCalculationCount;
     }
 
     public abstract AbstractStepScope<Solution_> getLastCompletedStepScope();

@@ -35,6 +35,8 @@ import ai.timefold.solver.core.impl.solver.termination.Termination;
         "stepCountLimit",
         "unimprovedStepCountLimit",
         "scoreCalculationCountLimit",
+        "moveCountLimit",
+        "unimprovedMoveCountLimit",
         "terminationConfigList"
 })
 public class TerminationConfig extends AbstractConfig<TerminationConfig> {
@@ -71,6 +73,9 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
     private Integer unimprovedStepCountLimit = null;
 
     private Long scoreCalculationCountLimit = null;
+
+    private Long moveCountLimit = null;
+    private Long unimprovedMoveCountLimit = null;
 
     @XmlElement(name = "termination")
     private List<TerminationConfig> terminationConfigList = null;
@@ -243,6 +248,22 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         this.scoreCalculationCountLimit = scoreCalculationCountLimit;
     }
 
+    public Long getMoveCountLimit() {
+        return moveCountLimit;
+    }
+
+    public void setMoveCountLimit(Long moveCountLimit) {
+        this.moveCountLimit = moveCountLimit;
+    }
+
+    public Long getUnimprovedMoveCountLimit() {
+        return unimprovedMoveCountLimit;
+    }
+
+    public void setUnimprovedMoveCountLimit(Long unimprovedMoveCountLimit) {
+        this.unimprovedMoveCountLimit = unimprovedMoveCountLimit;
+    }
+
     public List<TerminationConfig> getTerminationConfigList() {
         return terminationConfigList;
     }
@@ -359,6 +380,16 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         return this;
     }
 
+    public TerminationConfig withMoveCountLimit(Long moveCountLimit) {
+        this.moveCountLimit = moveCountLimit;
+        return this;
+    }
+
+    public TerminationConfig withUnimprovedMoveCountLimit(Long unimprovedMoveCountLimit) {
+        this.unimprovedMoveCountLimit = unimprovedMoveCountLimit;
+        return this;
+    }
+
     public TerminationConfig withTerminationConfigList(List<TerminationConfig> terminationConfigList) {
         this.terminationConfigList = terminationConfigList;
         return this;
@@ -466,6 +497,8 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
                 stepCountLimit != null ||
                 unimprovedStepCountLimit != null ||
                 scoreCalculationCountLimit != null ||
+                moveCountLimit != null ||
+                unimprovedMoveCountLimit != null ||
                 isTerminationListConfigured();
     }
 
@@ -508,6 +541,10 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
                 inheritedConfig.getUnimprovedStepCountLimit());
         scoreCalculationCountLimit = ConfigUtils.inheritOverwritableProperty(scoreCalculationCountLimit,
                 inheritedConfig.getScoreCalculationCountLimit());
+        moveCountLimit = ConfigUtils.inheritOverwritableProperty(moveCountLimit,
+                inheritedConfig.getMoveCountLimit());
+        unimprovedMoveCountLimit = ConfigUtils.inheritOverwritableProperty(unimprovedMoveCountLimit,
+                inheritedConfig.getUnimprovedMoveCountLimit());
         terminationConfigList = ConfigUtils.inheritMergeableListConfig(
                 terminationConfigList, inheritedConfig.getTerminationConfigList());
         return this;
