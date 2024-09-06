@@ -106,8 +106,8 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         phaseScope.startingNow();
-        phaseScope.reset();
         phaseScope.setEnableCollectMetrics(enableCollectMetrics);
+        phaseScope.reset();
         solver.phaseStarted(phaseScope);
         phaseTermination.phaseStarted(phaseScope);
         phaseLifecycleSupport.firePhaseStarted(phaseScope);
@@ -116,6 +116,8 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         solver.phaseEnded(phaseScope);
+        phaseScope.setEnableCollectMetrics(true);
+        phaseScope.resetScoreDirectorMetrics();
         phaseTermination.phaseEnded(phaseScope);
         phaseLifecycleSupport.firePhaseEnded(phaseScope);
     }

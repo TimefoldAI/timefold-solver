@@ -8,7 +8,6 @@ import ai.timefold.solver.core.impl.constructionheuristic.placer.Placement;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicMoveScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
-import ai.timefold.solver.core.impl.heuristic.move.AbstractMetricMove;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
@@ -104,7 +103,6 @@ public class ConstructionHeuristicDecider<Solution_> {
                 //      It will never do anything more complex than that.
                 continue;
             }
-            prepare(stepScope, move);
             var moveScope = new ConstructionHeuristicMoveScope<>(stepScope, moveIndex, move);
             moveIndex++;
             doMove(moveScope);
@@ -145,12 +143,6 @@ public class ConstructionHeuristicDecider<Solution_> {
         if (isLoggingEnabled()) {
             logger.trace("{}        Move index ({}), score ({}), move ({}).",
                     logIndentation, moveScope.getMoveIndex(), moveScope.getScore(), moveScope.getMove());
-        }
-    }
-
-    private void prepare(ConstructionHeuristicStepScope<Solution_> stepScope, Move<Solution_> move) {
-        if (move instanceof AbstractMetricMove<Solution_> metricMove) {
-            metricMove.setCollectMetricEnabled(stepScope.getPhaseScope().isEnableCollectMetrics());
         }
     }
 

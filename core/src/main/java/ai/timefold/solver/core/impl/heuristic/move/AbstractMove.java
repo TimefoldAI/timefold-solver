@@ -15,7 +15,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @see Move
  */
-public abstract class AbstractMove<Solution_> extends AbstractMetricMove<Solution_> {
+public abstract class AbstractMove<Solution_> implements Move<Solution_> {
 
     @Override
     public final Move<Solution_> doMove(ScoreDirector<Solution_> scoreDirector) {

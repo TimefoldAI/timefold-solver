@@ -75,6 +75,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private final boolean trackingWorkingSolution;
     private final SolutionTracker<Solution_> solutionTracker;
 
+    private boolean collectMetricEnabled = false;
+
     protected AbstractScoreDirector(Factory_ scoreDirectorFactory, boolean lookUpEnabled,
             boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
         var solutionDescriptor = scoreDirectorFactory.getSolutionDescriptor();
@@ -174,12 +176,19 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void incrementMoveCalculationCount() {
-        this.moveCalculationCount++;
+        if (collectMetricEnabled) {
+            this.moveCalculationCount++;
+        }
     }
 
     @Override
     public SupplyManager getSupplyManager() {
         return variableListenerSupport;
+    }
+
+    @Override
+    public void setEnableMetricCollection(boolean enable) {
+        this.collectMetricEnabled = enable;
     }
 
     // ************************************************************************
@@ -240,9 +249,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
         Move<Solution_> undoMove = move.doMove(this);
         Score_ score = calculateScore();
-        if (move.isCollectMetricEnabled()) {
-            incrementMoveCalculationCount();
-        }
+        incrementMoveCalculationCount();
         if (assertMoveScoreFromScratch) {
             undoMoveText = undoMove.toString();
             if (trackingWorkingSolution) {

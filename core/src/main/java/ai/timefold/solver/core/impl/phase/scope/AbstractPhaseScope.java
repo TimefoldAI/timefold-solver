@@ -117,12 +117,16 @@ public abstract class AbstractPhaseScope<Solution_> {
 
     public void reset() {
         bestSolutionStepIndex = -1;
-        enableCollectMetrics = true;
         // solverScope.getBestScore() is null with an uninitialized score
         startingScore = solverScope.getBestScore() == null ? solverScope.calculateScore() : solverScope.getBestScore();
         if (getLastCompletedStepScope().getStepIndex() < 0) {
             getLastCompletedStepScope().setScore(startingScore);
         }
+        resetScoreDirectorMetrics();
+    }
+
+    public void resetScoreDirectorMetrics() {
+        getScoreDirector().setEnableMetricCollection(enableCollectMetrics);
     }
 
     public void startingNow() {

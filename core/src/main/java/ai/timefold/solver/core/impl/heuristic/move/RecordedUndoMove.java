@@ -23,9 +23,4 @@ public final class RecordedUndoMove<Solution_> extends AbstractUndoMove<Solution
         }
         scoreDirector.triggerVariableListeners();
     }
-
-    @Override
-    public boolean isCollectMetricEnabled() {
-        return false;
-    }
 }
