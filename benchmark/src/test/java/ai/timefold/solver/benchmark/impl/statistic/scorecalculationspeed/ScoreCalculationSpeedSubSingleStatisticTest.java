@@ -6,13 +6,14 @@ import java.util.function.Function;
 
 import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.statistic.AbstractSubSingleStatisticTest;
+import ai.timefold.solver.benchmark.impl.statistic.common.LongStatisticPoint;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
 import org.assertj.core.api.SoftAssertions;
 
 public final class ScoreCalculationSpeedSubSingleStatisticTest
         extends
-        AbstractSubSingleStatisticTest<ScoreCalculationSpeedStatisticPoint, ScoreCalculationSpeedSubSingleStatistic<TestdataSolution>> {
+        AbstractSubSingleStatisticTest<LongStatisticPoint, ScoreCalculationSpeedSubSingleStatistic<TestdataSolution>> {
 
     @Override
     protected Function<SubSingleBenchmarkResult, ScoreCalculationSpeedSubSingleStatistic<TestdataSolution>>
@@ -21,16 +22,16 @@ public final class ScoreCalculationSpeedSubSingleStatisticTest
     }
 
     @Override
-    protected List<ScoreCalculationSpeedStatisticPoint> getInputPoints() {
-        return Collections.singletonList(new ScoreCalculationSpeedStatisticPoint(Long.MAX_VALUE, Long.MAX_VALUE));
+    protected List<LongStatisticPoint> getInputPoints() {
+        return Collections.singletonList(new LongStatisticPoint(Long.MAX_VALUE, Long.MAX_VALUE));
     }
 
     @Override
-    protected void runTest(SoftAssertions assertions, List<ScoreCalculationSpeedStatisticPoint> outputPoints) {
+    protected void runTest(SoftAssertions assertions, List<LongStatisticPoint> outputPoints) {
         assertions.assertThat(outputPoints)
                 .hasSize(1)
                 .first()
-                .matches(s -> s.getScoreCalculationSpeed() == Long.MAX_VALUE, "Score calculation speeds do not match.")
+                .matches(s -> s.getValue() == Long.MAX_VALUE, "Score calculation speeds do not match.")
                 .matches(s -> s.getTimeMillisSpent() == Long.MAX_VALUE, "Millis do not match.");
     }
 

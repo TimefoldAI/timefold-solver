@@ -581,6 +581,12 @@
           <xs:element minOccurs="0" name="scoreCalculationCountLimit" type="xs:long"/>
                               
           
+          <xs:element minOccurs="0" name="moveCountLimit" type="xs:long"/>
+                              
+          
+          <xs:element minOccurs="0" name="unimprovedMoveCountLimit" type="xs:long"/>
+                              
+          
           <xs:element maxOccurs="unbounded" minOccurs="0" name="termination" type="tns:terminationConfig"/>
                             
         
