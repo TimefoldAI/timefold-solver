@@ -33,15 +33,15 @@ public class MoveCalculationSpeedProblemStatistic extends ProblemStatistic<LineC
      */
     @Override
     protected List<LineChart<Long, Long>> generateCharts(BenchmarkReport benchmarkReport) {
-        LineChart.Builder<Long, Long> builder = new LineChart.Builder<>();
-        for (SingleBenchmarkResult singleBenchmarkResult : problemBenchmarkResult.getSingleBenchmarkResultList()) {
-            String solverLabel = singleBenchmarkResult.getSolverBenchmarkResult().getNameWithFavoriteSuffix();
+        var builder = new LineChart.Builder<Long, Long>();
+        for (var singleBenchmarkResult : problemBenchmarkResult.getSingleBenchmarkResultList()) {
+            var solverLabel = singleBenchmarkResult.getSolverBenchmarkResult().getNameWithFavoriteSuffix();
             if (singleBenchmarkResult.hasAllSuccess()) {
                 var subSingleStatistic = singleBenchmarkResult.getSubSingleStatistic(problemStatisticType);
                 List<MoveCalculationSpeedStatisticPoint> points = subSingleStatistic.getPointList();
-                for (MoveCalculationSpeedStatisticPoint point : points) {
-                    long timeMillisSpent = point.getTimeMillisSpent();
-                    long moveCalculationSpeed = point.getMoveCalculationSpeed();
+                for (var point : points) {
+                    var timeMillisSpent = point.getTimeMillisSpent();
+                    var moveCalculationSpeed = point.getMoveCalculationSpeed();
                     builder.add(solverLabel, timeMillisSpent, moveCalculationSpeed);
                 }
             }

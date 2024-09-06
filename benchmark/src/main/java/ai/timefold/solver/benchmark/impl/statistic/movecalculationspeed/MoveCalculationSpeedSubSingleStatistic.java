@@ -44,21 +44,21 @@ public class MoveCalculationSpeedSubSingleStatistic<Solution_>
     public void open(StatisticRegistry<Solution_> registry, Tags runTag) {
         registry.addListener(SolverMetric.MOVE_CALCULATION_COUNT, new Consumer<>() {
             long nextTimeMillisThreshold = timeMillisThresholdInterval;
-            long lastTimeMillisSpent = 0;
+            long lastTimeMillisSpent = 0L;
             final AtomicLong lastMoveCalculationCount = new AtomicLong(0);
 
             @Override
             public void accept(Long timeMillisSpent) {
                 if (timeMillisSpent >= nextTimeMillisThreshold) {
                     registry.getGaugeValue(SolverMetric.MOVE_CALCULATION_COUNT, runTag, moveCalculationCountNumber -> {
-                        long moveCalculationCount = moveCalculationCountNumber.longValue();
-                        long calculationCountInterval = moveCalculationCount - lastMoveCalculationCount.get();
-                        long timeMillisSpentInterval = timeMillisSpent - lastTimeMillisSpent;
+                        var moveCalculationCount = moveCalculationCountNumber.longValue();
+                        var calculationCountInterval = moveCalculationCount - lastMoveCalculationCount.get();
+                        var timeMillisSpentInterval = timeMillisSpent - lastTimeMillisSpent;
                         if (timeMillisSpentInterval == 0L) {
                             // Avoid divide by zero exception on a fast CPU
                             timeMillisSpentInterval = 1L;
                         }
-                        long moveCalculationSpeed = calculationCountInterval * 1000L / timeMillisSpentInterval;
+                        var moveCalculationSpeed = calculationCountInterval * 1000L / timeMillisSpentInterval;
                         pointList.add(new MoveCalculationSpeedStatisticPoint(timeMillisSpent, moveCalculationSpeed));
                         lastMoveCalculationCount.set(moveCalculationCount);
                     });
