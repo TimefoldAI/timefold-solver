@@ -169,7 +169,11 @@ public abstract class AbstractPhaseScope<Solution_> {
     }
 
     public long getPhaseMoveCalculationCount() {
-        return endingMoveCalculationCount - startingMoveCalculationCount + childThreadsMoveCalculationCount;
+        var currentMoveCalculationCount = endingMoveCalculationCount;
+        if (endingMoveCalculationCount == null) {
+            currentMoveCalculationCount = getScoreDirector().getMoveCalculationCount();
+        }
+        return currentMoveCalculationCount - startingMoveCalculationCount + childThreadsMoveCalculationCount;
     }
 
     /**
