@@ -11,7 +11,6 @@ import java.util.function.Function;
 
 import ai.timefold.solver.benchmark.config.statistic.ProblemStatisticType;
 import ai.timefold.solver.benchmark.impl.report.BenchmarkReport;
-import ai.timefold.solver.benchmark.impl.report.LineChart;
 import ai.timefold.solver.benchmark.impl.result.ProblemBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.result.SingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.result.SolverBenchmarkResult;
