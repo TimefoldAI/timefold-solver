@@ -7,7 +7,7 @@ import ai.timefold.jpyinterpreter.PythonLikeObject;
 import ai.timefold.jpyinterpreter.types.wrappers.OpaquePythonReference;
 
 public class PythonModule extends AbstractPythonLikeObject {
-    public static PythonLikeType MODULE_TYPE = new PythonLikeType("module", PythonModule.class);
+    public static PythonLikeType MODULE_TYPE = BuiltinTypes.MODULE_TYPE;
     public static PythonLikeType $TYPE = MODULE_TYPE;
 
     private OpaquePythonReference pythonReference;

@@ -3,7 +3,6 @@ package ai.timefold.jpyinterpreter;
 import java.util.List;
 import java.util.Map;
 
-import ai.timefold.jpyinterpreter.types.PythonModule;
 import ai.timefold.jpyinterpreter.types.PythonString;
 import ai.timefold.jpyinterpreter.types.errors.PythonTraceback;
 import ai.timefold.jpyinterpreter.types.numeric.PythonInteger;
@@ -22,7 +21,7 @@ public interface PythonInterpreter {
 
     void deleteGlobal(Map<String, PythonLikeObject> globalsMap, String name);
 
-    PythonModule importModule(PythonInteger level, List<PythonString> fromList, Map<String, PythonLikeObject> globalsMap,
+    PythonLikeObject importModule(PythonInteger level, List<PythonString> fromList, Map<String, PythonLikeObject> globalsMap,
             Map<String, PythonLikeObject> localsMap, String moduleName);
 
     /**

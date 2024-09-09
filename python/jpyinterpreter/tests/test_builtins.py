@@ -1,9 +1,8 @@
 import jpyinterpreter
 import pytest
 import sys
-from typing import SupportsAbs, Iterable, Callable, Sequence, Union, Iterator, Sized, Reversible, SupportsIndex
-
 from jpype import JImplementationFor
+from typing import SupportsAbs, Iterable, Callable, Sequence, Union, Iterator, Sized, Reversible, SupportsIndex
 
 from .conftest import verifier_for
 

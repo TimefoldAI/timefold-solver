@@ -6,7 +6,7 @@ import ai.timefold.jpyinterpreter.StackMetadata;
 import ai.timefold.jpyinterpreter.ValueSourceInfo;
 import ai.timefold.jpyinterpreter.implementors.ModuleImplementor;
 import ai.timefold.jpyinterpreter.opcodes.AbstractOpcode;
-import ai.timefold.jpyinterpreter.types.PythonModule;
+import ai.timefold.jpyinterpreter.types.BuiltinTypes;
 
 public class ImportNameOpcode extends AbstractOpcode {
 
@@ -17,7 +17,7 @@ public class ImportNameOpcode extends AbstractOpcode {
     @Override
     protected StackMetadata getStackMetadataAfterInstruction(FunctionMetadata functionMetadata, StackMetadata stackMetadata) {
         return stackMetadata.pop(2)
-                .push(ValueSourceInfo.of(this, PythonModule.MODULE_TYPE,
+                .push(ValueSourceInfo.of(this, BuiltinTypes.BASE_TYPE,
                         stackMetadata.getValueSourcesUpToStackIndex(2)));
     }
 

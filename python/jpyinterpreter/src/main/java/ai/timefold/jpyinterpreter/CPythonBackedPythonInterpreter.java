@@ -15,7 +15,6 @@ import java.util.function.Function;
 
 import ai.timefold.jpyinterpreter.builtins.GlobalBuiltins;
 import ai.timefold.jpyinterpreter.types.CPythonBackedPythonLikeObject;
-import ai.timefold.jpyinterpreter.types.PythonModule;
 import ai.timefold.jpyinterpreter.types.PythonString;
 import ai.timefold.jpyinterpreter.types.collections.PythonLikeTuple;
 import ai.timefold.jpyinterpreter.types.errors.PythonTraceback;
@@ -33,7 +32,7 @@ public class CPythonBackedPythonInterpreter implements PythonInterpreter {
     PrintStream standardOutput;
     Scanner inputScanner;
 
-    Map<ModuleSpec, PythonModule> moduleSpecToModuleMap = new HashMap<>();
+    Map<ModuleSpec, PythonLikeObject> moduleSpecToModuleMap = new HashMap<>();
 
     final Set<PythonLikeObject> hasReferenceSet =
             Collections.newSetFromMap(new ConcurrentWeakIdentityHashMap<>());
@@ -54,7 +53,7 @@ public class CPythonBackedPythonInterpreter implements PythonInterpreter {
     public static BiFunction<OpaquePythonReference, Map<Number, PythonLikeObject>, Map<String, PythonLikeObject>> lookupDictOnPythonReferencePythonFunction;
     public static TriFunction<OpaquePythonReference, List<PythonLikeObject>, Map<PythonString, PythonLikeObject>, PythonLikeObject> callPythonFunction;
 
-    public static PentaFunction<String, Map<String, PythonLikeObject>, Map<String, PythonLikeObject>, List<String>, Long, PythonModule> importModuleFunction;
+    public static PentaFunction<String, Map<String, PythonLikeObject>, Map<String, PythonLikeObject>, List<String>, Long, PythonLikeObject> importModuleFunction;
     public static QuadFunction<OpaquePythonReference, Map<String, PythonLikeObject>, PythonLikeTuple, PythonString, PythonObjectWrapper> createFunctionFromCodeFunction;
 
     public CPythonBackedPythonInterpreter() {
@@ -178,7 +177,8 @@ public class CPythonBackedPythonInterpreter implements PythonInterpreter {
     }
 
     @Override
-    public PythonModule importModule(PythonInteger level, List<PythonString> fromList, Map<String, PythonLikeObject> globalsMap,
+    public PythonLikeObject importModule(PythonInteger level, List<PythonString> fromList,
+            Map<String, PythonLikeObject> globalsMap,
             Map<String, PythonLikeObject> localsMap, String moduleName) {
         // See https://docs.python.org/3/library/functions.html#import__ for semantics
         ModuleSpec moduleSpec = new ModuleSpec(level, fromList, globalsMap, localsMap, moduleName);
