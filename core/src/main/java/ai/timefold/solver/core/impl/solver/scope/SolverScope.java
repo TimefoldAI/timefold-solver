@@ -50,10 +50,10 @@ public class SolverScope<Solution_> {
      */
     private Semaphore runnableThreadSemaphore = null;
 
-    private long childThreadsScoreCalculationCount = 0;
-    private long moveEvaluationCount = 0;
+    private long childThreadsScoreCalculationCount = 0L;
 
-    private long childThreadsMoveCalculationCount = 0L;
+    private long moveEvaluationCount = 0L;
+    private long childThreadsMoveEvaluationCount = 0L;
 
     private Score<?> startingInitializedScore;
 
@@ -189,25 +189,16 @@ public class SolverScope<Solution_> {
         return scoreDirector.getCalculationCount() + childThreadsScoreCalculationCount;
     }
 
-    public void addChildThreadsMoveCalculationCount(long addition) {
-        childThreadsMoveCalculationCount += addition;
-    }
-
-    public long getMoveCalculationCount() {
-        return scoreDirector.getMoveCalculationCount() + childThreadsMoveCalculationCount;
-    }
-
     public void addMoveEvaluationCount(long addition) {
         moveEvaluationCount += addition;
     }
 
-    public long getMoveEvaluationCount() {
-        return moveEvaluationCount;
+    public void addChildThreadsMoveEvaluationCount(long addition) {
+        childThreadsMoveEvaluationCount += addition;
     }
 
-    public long getMoveEvaluationSpeed() {
-        long timeMillisSpent = getTimeMillisSpent();
-        return getSpeed(getMoveEvaluationCount(), timeMillisSpent);
+    public long getMoveEvaluationCount() {
+        return moveEvaluationCount + childThreadsMoveEvaluationCount;
     }
 
     public Solution_ getBestSolution() {
@@ -251,6 +242,7 @@ public class SolverScope<Solution_> {
     public void startingNow() {
         startingSystemTimeMillis.set(System.currentTimeMillis());
         resetAtomicLongTimeMillis(endingSystemTimeMillis);
+        this.moveEvaluationCount = 0L;
     }
 
     public Long getBestSolutionTimeMillisSpent() {
@@ -301,9 +293,9 @@ public class SolverScope<Solution_> {
     /**
      * @return at least 0, per second
      */
-    public long getMoveCalculationSpeed() {
+    public long getMoveEvaluationSpeed() {
         long timeMillisSpent = getTimeMillisSpent();
-        return getSpeed(getMoveCalculationCount(), timeMillisSpent);
+        return getSpeed(getMoveEvaluationCount(), timeMillisSpent);
     }
 
     public static long getSpeed(long metric, long timeMillisSpent) {

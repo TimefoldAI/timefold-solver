@@ -538,7 +538,7 @@ class SolverManagerTest {
 
         solverJob.getFinalBestSolution();
         assertThat(solverJob.getScoreCalculationCount()).isEqualTo(5L);
-        assertThat(solverJob.getMoveCalculationCount()).isEqualTo(4L);
+        assertThat(solverJob.getMoveEvaluationCount()).isEqualTo(4L);
 
         // Score calculation speed and solve duration are non-deterministic.
         // On an exceptionally fast machine, getSolvingDuration() can return Duration.ZERO.
@@ -546,7 +546,7 @@ class SolverManagerTest {
         // (i.e. by taking more than 5 seconds to finish solving).
         assertThat(solverJob.getSolvingDuration()).isGreaterThanOrEqualTo(Duration.ZERO);
         assertThat(solverJob.getScoreCalculationSpeed()).isNotNegative();
-        assertThat(solverJob.getMoveCalculationSpeed()).isNotNegative();
+        assertThat(solverJob.getMoveEvaluationSpeed()).isNotNegative();
     }
 
     @Test

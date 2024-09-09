@@ -86,9 +86,6 @@ public class TerminationFactory<Solution_> {
         if (terminationConfig.getMoveCountLimit() != null) {
             terminationList.add(new MoveCountTermination<>(terminationConfig.getMoveCountLimit()));
         }
-        if (terminationConfig.getUnimprovedMoveCountLimit() != null) {
-            terminationList.add(new UnimprovedMoveCountTermination<>(terminationConfig.getUnimprovedMoveCountLimit()));
-        }
         terminationList.addAll(buildInnerTermination(configPolicy));
         return buildTerminationFromList(terminationList);
     }

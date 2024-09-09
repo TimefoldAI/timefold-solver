@@ -231,8 +231,8 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     }
 
     @Override
-    public long getMoveCalculationCount() {
-        return solver.getMoveCalculationCount();
+    public long getMoveEvaluationCount() {
+        return solver.getMoveEvaluationCount();
     }
 
     @Override
@@ -241,8 +241,8 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     }
 
     @Override
-    public long getMoveCalculationSpeed() {
-        return solver.getMoveCalculationSpeed();
+    public long getMoveEvaluationSpeed() {
+        return solver.getMoveEvaluationSpeed();
     }
 
     @Override

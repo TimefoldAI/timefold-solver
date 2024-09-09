@@ -114,6 +114,7 @@ public final class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearc
             // If the original value is null and the variable allows unassigned values,
             // the move to null must be done too.
             doMove(stepScope, moveNode);
+            stepScope.incrementMoveEvaluationCount();
             // TODO in the lowest level (and only in that level) QuitEarly can be useful
             // No QuitEarly because lower layers might be promising
             stepScope.getPhaseScope().getSolverScope().checkYielding();

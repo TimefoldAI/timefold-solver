@@ -170,13 +170,11 @@ class TerminationFactoryTest {
     @Test
     void buildWithMoveCount() {
         TerminationConfig terminationConfig = new TerminationConfig()
-                .withMoveCountLimit(1L)
-                .withUnimprovedMoveCountLimit(2L);
+                .withMoveCountLimit(1L);
         List<Termination<TestdataSolution>> terminationList =
                 TerminationFactory.<TestdataSolution> create(terminationConfig)
                         .buildTimeBasedTermination(mock(HeuristicConfigPolicy.class));
-        assertThat(terminationList).hasOnlyElementsOfTypes(MoveCountTermination.class,
-                UnimprovedMoveCountTermination.class);
+        assertThat(terminationList).hasOnlyElementsOfTypes(MoveCountTermination.class);
     }
 
     @Test

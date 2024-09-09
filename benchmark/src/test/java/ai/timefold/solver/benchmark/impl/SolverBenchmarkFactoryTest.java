@@ -113,9 +113,9 @@ class SolverBenchmarkFactoryTest {
         SolverBenchmarkFactory solverBenchmarkFactory = new SolverBenchmarkFactory(config);
         ProblemBenchmarksConfig problemBenchmarksConfig = new ProblemBenchmarksConfig();
         problemBenchmarksConfig.setProblemStatisticTypeList(
-                List.of(ProblemStatisticType.SCORE_CALCULATION_SPEED, ProblemStatisticType.MOVE_CALCULATION_SPEED));
+                List.of(ProblemStatisticType.SCORE_CALCULATION_SPEED, ProblemStatisticType.MOVE_EVALUATION_SPEED));
         assertThat(solverBenchmarkFactory.getSolverMetrics(problemBenchmarksConfig))
-                .containsExactly(SolverMetric.SCORE_CALCULATION_COUNT, SolverMetric.MOVE_CALCULATION_COUNT);
+                .containsExactly(SolverMetric.SCORE_CALCULATION_COUNT, SolverMetric.MOVE_EVALUATION_COUNT);
     }
 
     @Test

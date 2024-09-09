@@ -1,5 +1,5 @@
 
-package ai.timefold.solver.benchmark.impl.statistic.movecalculationspeed;
+package ai.timefold.solver.benchmark.impl.statistic.moveevaluationspeed;
 
 import java.util.Collections;
 import java.util.List;
@@ -12,13 +12,13 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
 import org.assertj.core.api.SoftAssertions;
 
-public final class MoveCalculationSpeedSubSingleStatisticTest
-        extends AbstractSubSingleStatisticTest<LongStatisticPoint, MoveCalculationSpeedSubSingleStatistic<TestdataSolution>> {
+public final class MoveEvaluationSpeedSubSingleStatisticTest
+        extends AbstractSubSingleStatisticTest<LongStatisticPoint, MoveEvaluationSpeedSubSingleStatistic<TestdataSolution>> {
 
     @Override
-    protected Function<SubSingleBenchmarkResult, MoveCalculationSpeedSubSingleStatistic<TestdataSolution>>
+    protected Function<SubSingleBenchmarkResult, MoveEvaluationSpeedSubSingleStatistic<TestdataSolution>>
             getSubSingleStatisticConstructor() {
-        return MoveCalculationSpeedSubSingleStatistic::new;
+        return MoveEvaluationSpeedSubSingleStatistic::new;
     }
 
     @Override
@@ -31,7 +31,7 @@ public final class MoveCalculationSpeedSubSingleStatisticTest
         assertions.assertThat(outputPoints)
                 .hasSize(1)
                 .first()
-                .matches(s -> s.getValue() == Long.MAX_VALUE, "Move calculation speeds do not match.")
+                .matches(s -> s.getValue() == Long.MAX_VALUE, "Move evaluation speeds do not match.")
                 .matches(s -> s.getTimeMillisSpent() == Long.MAX_VALUE, "Millis do not match.");
     }
 

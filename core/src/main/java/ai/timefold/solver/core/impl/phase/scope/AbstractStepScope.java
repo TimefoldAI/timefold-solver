@@ -13,8 +13,6 @@ public abstract class AbstractStepScope<Solution_> {
 
     protected final int stepIndex;
 
-    protected long moveCalculationCount = 0L;
-
     protected Score<?> score = null;
     protected boolean bestScoreImproved = false;
     // Stays null if there is no need to clone it
@@ -28,14 +26,6 @@ public abstract class AbstractStepScope<Solution_> {
 
     public int getStepIndex() {
         return stepIndex;
-    }
-
-    public long getMoveCalculationCount() {
-        return moveCalculationCount;
-    }
-
-    public void setMoveCalculationCount(long moveCalculationCount) {
-        this.moveCalculationCount = moveCalculationCount;
     }
 
     public Score<?> getScore() {
@@ -54,9 +44,19 @@ public abstract class AbstractStepScope<Solution_> {
         this.bestScoreImproved = bestScoreImproved;
     }
 
+    public void incrementMoveEvaluationCount() {
+        if (isPhaseEnableCollectMetrics()) {
+            getPhaseScope().getSolverScope().addMoveEvaluationCount(1L);
+        }
+    }
+
     // ************************************************************************
     // Calculated methods
     // ************************************************************************
+
+    public boolean isPhaseEnableCollectMetrics() {
+        return getPhaseScope().isEnableCollectMetrics();
+    }
 
     public <Score_ extends Score<Score_>> InnerScoreDirector<Solution_, Score_> getScoreDirector() {
         return getPhaseScope().getScoreDirector();

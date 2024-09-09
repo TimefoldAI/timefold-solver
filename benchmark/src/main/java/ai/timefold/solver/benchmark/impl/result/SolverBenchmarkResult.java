@@ -56,7 +56,7 @@ public class SolverBenchmarkResult {
     private ScoreDifferencePercentage averageWorstScoreDifferencePercentage = null;
     // The average of the average is not just the overall average if the SingleBenchmarkResult's timeMillisSpent differ
     private Long averageScoreCalculationSpeed = null;
-    private Long averageMoveCalculationSpeed = null;
+    private Long averageMoveEvaluationSpeed = null;
     private Long averageTimeMillisSpent = null;
     private Double averageWorstScoreCalculationSpeedDifferencePercentage = null;
 
@@ -161,8 +161,8 @@ public class SolverBenchmarkResult {
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.
-    public Long getAverageMoveCalculationSpeed() {
-        return averageMoveCalculationSpeed;
+    public Long getAverageMoveEvaluationSpeed() {
+        return averageMoveEvaluationSpeed;
     }
 
     public Long getAverageTimeMillisSpent() {
@@ -288,7 +288,7 @@ public class SolverBenchmarkResult {
         totalWinningScoreDifference = null;
         ScoreDifferencePercentage totalWorstScoreDifferencePercentage = null;
         long totalScoreCalculationSpeed = 0L;
-        long totalMoveCalculationSpeed = 0L;
+        long totalMoveEvaluationSpeed = 0L;
         long totalTimeMillisSpent = 0L;
         double totalWorstScoreCalculationSpeedDifferencePercentage = 0.0;
         uninitializedSolutionCount = 0;
@@ -307,7 +307,7 @@ public class SolverBenchmarkResult {
                     totalWinningScoreDifference = singleBenchmarkResult.getWinningScoreDifference();
                     totalWorstScoreDifferencePercentage = singleBenchmarkResult.getWorstScoreDifferencePercentage();
                     totalScoreCalculationSpeed = singleBenchmarkResult.getScoreCalculationSpeed();
-                    totalMoveCalculationSpeed = singleBenchmarkResult.getMoveCalculationSpeed();
+                    totalMoveEvaluationSpeed = singleBenchmarkResult.getMoveEvaluationSpeed();
                     totalTimeMillisSpent = singleBenchmarkResult.getTimeMillisSpent();
                     totalWorstScoreCalculationSpeedDifferencePercentage = singleBenchmarkResult
                             .getWorstScoreCalculationSpeedDifferencePercentage();
@@ -319,7 +319,7 @@ public class SolverBenchmarkResult {
                     totalWorstScoreDifferencePercentage = totalWorstScoreDifferencePercentage.add(
                             singleBenchmarkResult.getWorstScoreDifferencePercentage());
                     totalScoreCalculationSpeed += singleBenchmarkResult.getScoreCalculationSpeed();
-                    totalMoveCalculationSpeed += singleBenchmarkResult.getMoveCalculationSpeed();
+                    totalMoveEvaluationSpeed += singleBenchmarkResult.getMoveEvaluationSpeed();
                     totalTimeMillisSpent += singleBenchmarkResult.getTimeMillisSpent();
                     totalWorstScoreCalculationSpeedDifferencePercentage += singleBenchmarkResult
                             .getWorstScoreCalculationSpeedDifferencePercentage();
@@ -331,7 +331,7 @@ public class SolverBenchmarkResult {
             averageScore = totalScore.divide(successCount);
             averageWorstScoreDifferencePercentage = totalWorstScoreDifferencePercentage.divide(successCount);
             averageScoreCalculationSpeed = totalScoreCalculationSpeed / successCount;
-            averageMoveCalculationSpeed = totalMoveCalculationSpeed / successCount;
+            averageMoveEvaluationSpeed = totalMoveEvaluationSpeed / successCount;
             averageTimeMillisSpent = totalTimeMillisSpent / successCount;
             averageWorstScoreCalculationSpeedDifferencePercentage = totalWorstScoreCalculationSpeedDifferencePercentage
                     / successCount;

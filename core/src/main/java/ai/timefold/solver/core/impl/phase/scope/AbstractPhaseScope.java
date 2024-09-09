@@ -24,17 +24,17 @@ public abstract class AbstractPhaseScope<Solution_> {
 
     protected Long startingSystemTimeMillis;
     protected Long startingScoreCalculationCount;
-    protected Long startingMoveCalculationCount;
+    protected Long startingMoveEvaluationCount;
     protected Score startingScore;
     protected Long endingSystemTimeMillis;
     protected Long endingScoreCalculationCount;
-    protected Long endingMoveCalculationCount;
+    protected Long endingMoveEvaluationCount;
     protected long childThreadsScoreCalculationCount = 0L;
-    protected long childThreadsMoveCalculationCount = 0L;
+    protected long childThreadsMoveEvaluationCount = 0L;
 
     protected int bestSolutionStepIndex;
 
-    protected long bestSolutionMoveCalculationCount = 0L;
+    protected long bestSolutionMoveEvaluationCount = 0L;
 
     protected boolean enableCollectMetrics = true;
 
@@ -93,14 +93,6 @@ public abstract class AbstractPhaseScope<Solution_> {
         this.bestSolutionStepIndex = bestSolutionStepIndex;
     }
 
-    public long getBestSolutionMoveCalculationCount() {
-        return bestSolutionMoveCalculationCount;
-    }
-
-    public void setBestSolutionMoveCalculationCount(long bestSolutionMoveCalculationCount) {
-        this.bestSolutionMoveCalculationCount = bestSolutionMoveCalculationCount;
-    }
-
     public abstract AbstractStepScope<Solution_> getLastCompletedStepScope();
 
     public boolean isEnableCollectMetrics() {
@@ -122,23 +114,18 @@ public abstract class AbstractPhaseScope<Solution_> {
         if (getLastCompletedStepScope().getStepIndex() < 0) {
             getLastCompletedStepScope().setScore(startingScore);
         }
-        resetScoreDirectorMetrics();
-    }
-
-    public void resetScoreDirectorMetrics() {
-        getScoreDirector().setEnableMetricCollection(enableCollectMetrics);
     }
 
     public void startingNow() {
         startingSystemTimeMillis = System.currentTimeMillis();
         startingScoreCalculationCount = getScoreDirector().getCalculationCount();
-        startingMoveCalculationCount = getScoreDirector().getMoveCalculationCount();
+        startingMoveEvaluationCount = getSolverScope().getMoveEvaluationCount();
     }
 
     public void endingNow() {
         endingSystemTimeMillis = System.currentTimeMillis();
-        endingScoreCalculationCount = getScoreDirector().getCalculationCount() + childThreadsScoreCalculationCount;
-        endingMoveCalculationCount = getScoreDirector().getMoveCalculationCount() + childThreadsMoveCalculationCount;
+        endingScoreCalculationCount = getScoreDirector().getCalculationCount();
+        endingMoveEvaluationCount = getSolverScope().getMoveEvaluationCount();
     }
 
     public SolutionDescriptor<Solution_> getSolutionDescriptor() {
@@ -163,21 +150,21 @@ public abstract class AbstractPhaseScope<Solution_> {
         childThreadsScoreCalculationCount += addition;
     }
 
-    public void addChildThreadsMoveCalculationCount(long addition) {
-        solverScope.addChildThreadsMoveCalculationCount(addition);
-        childThreadsMoveCalculationCount += addition;
+    public void addChildThreadsMoveEvaluationCount(long addition) {
+        solverScope.addChildThreadsMoveEvaluationCount(addition);
+        childThreadsMoveEvaluationCount += addition;
     }
 
     public long getPhaseScoreCalculationCount() {
         return endingScoreCalculationCount - startingScoreCalculationCount + childThreadsScoreCalculationCount;
     }
 
-    public long getPhaseMoveCalculationCount() {
-        var currentMoveCalculationCount = endingMoveCalculationCount;
-        if (endingMoveCalculationCount == null) {
-            currentMoveCalculationCount = getScoreDirector().getMoveCalculationCount();
+    public long getPhaseMoveEvaluationCount() {
+        var currentMoveEvaluationCount = endingMoveEvaluationCount;
+        if (endingMoveEvaluationCount == null) {
+            currentMoveEvaluationCount = getSolverScope().getMoveEvaluationCount();
         }
-        return currentMoveCalculationCount - startingMoveCalculationCount + childThreadsMoveCalculationCount;
+        return currentMoveEvaluationCount - startingMoveEvaluationCount + childThreadsMoveEvaluationCount;
     }
 
     /**
@@ -190,8 +177,8 @@ public abstract class AbstractPhaseScope<Solution_> {
     /**
      * @return at least 0, per second
      */
-    public long getPhaseMoveCalculationSpeed() {
-        return getMetricCalculationSpeed(getPhaseMoveCalculationCount());
+    public long getPhaseMoveEvaluationSpeed() {
+        return getMetricCalculationSpeed(getPhaseMoveEvaluationCount());
     }
 
     private long getMetricCalculationSpeed(long metric) {

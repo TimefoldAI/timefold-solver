@@ -103,7 +103,7 @@ public interface SolverJob<Solution_, ProblemId_> {
      *
      * @return the number of move evaluations that had occurred during solving since the last (re)start, at least 0
      */
-    long getMoveCalculationCount();
+    long getMoveEvaluationCount();
 
     /**
      * Return the {@link ProblemSizeStatistics} for the {@link PlanningSolution problem} submitted to the
@@ -133,5 +133,5 @@ public interface SolverJob<Solution_, ProblemId_> {
      * @return the average number of move evaluations per second that had occurred during solving
      *         since the last (re)start, at least 0
      */
-    long getMoveCalculationSpeed();
+    long getMoveEvaluationSpeed();
 }

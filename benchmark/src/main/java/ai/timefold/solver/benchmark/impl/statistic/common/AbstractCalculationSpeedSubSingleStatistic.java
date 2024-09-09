@@ -44,17 +44,17 @@ public abstract class AbstractCalculationSpeedSubSingleStatistic<Solution_>
             @Override
             public void accept(Long timeMillisSpent) {
                 if (timeMillisSpent >= nextTimeMillisThreshold) {
-                    registry.getGaugeValue(solverMetric, runTag, calculationCountNumber -> {
-                        var moveCalculationCount = calculationCountNumber.longValue();
-                        var calculationCountInterval = moveCalculationCount - lastCalculationCount.get();
+                    registry.getGaugeValue(solverMetric, runTag, countNumber -> {
+                        var moveEvaluationCount = countNumber.longValue();
+                        var countInterval = moveEvaluationCount - lastCalculationCount.get();
                         var timeMillisSpentInterval = timeMillisSpent - lastTimeMillisSpent;
                         if (timeMillisSpentInterval == 0L) {
                             // Avoid divide by zero exception on a fast CPU
                             timeMillisSpentInterval = 1L;
                         }
-                        var calculationSpeed = calculationCountInterval * 1000L / timeMillisSpentInterval;
-                        pointList.add(new LongStatisticPoint(timeMillisSpent, calculationSpeed));
-                        lastCalculationCount.set(moveCalculationCount);
+                        var speed = countInterval * 1000L / timeMillisSpentInterval;
+                        pointList.add(new LongStatisticPoint(timeMillisSpent, speed));
+                        lastCalculationCount.set(moveEvaluationCount);
                     });
                     lastTimeMillisSpent = timeMillisSpent;
                     nextTimeMillisThreshold += timeMillisThresholdInterval;

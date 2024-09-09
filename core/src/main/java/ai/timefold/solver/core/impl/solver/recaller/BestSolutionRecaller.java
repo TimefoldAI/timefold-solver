@@ -70,7 +70,6 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
         SolverScope<Solution_> solverScope = phaseScope.getSolverScope();
         stepScope.setBestScoreImproved(true);
         phaseScope.setBestSolutionStepIndex(stepScope.getStepIndex());
-        phaseScope.setBestSolutionMoveCalculationCount(phaseScope.getPhaseMoveCalculationCount());
         Solution_ newBestSolution = stepScope.getWorkingSolution();
         // Construction heuristics don't fire intermediate best solution changed events.
         // But the best solution and score are updated, so that unimproved* terminations work correctly.
@@ -85,7 +84,6 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
         stepScope.setBestScoreImproved(bestScoreImproved);
         if (bestScoreImproved) {
             phaseScope.setBestSolutionStepIndex(stepScope.getStepIndex());
-            phaseScope.setBestSolutionMoveCalculationCount(phaseScope.getPhaseMoveCalculationCount());
             Solution_ newBestSolution = stepScope.createOrGetClonedSolution();
             updateBestSolutionAndFire(solverScope, score, newBestSolution);
         } else if (assertBestScoreIsUnmodified) {
@@ -104,7 +102,6 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
         }
         if (bestScoreImproved) {
             phaseScope.setBestSolutionStepIndex(stepScope.getStepIndex());
-            phaseScope.setBestSolutionMoveCalculationCount(phaseScope.getPhaseMoveCalculationCount());
             Solution_ newBestSolution = solverScope.getScoreDirector().cloneWorkingSolution();
             updateBestSolutionAndFire(solverScope, score, newBestSolution);
         } else if (assertBestScoreIsUnmodified) {

@@ -125,7 +125,7 @@ public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBe
             subSingleBenchmarkResult.setScore(solutionDescriptor.getScore(solution));
             subSingleBenchmarkResult.setTimeMillisSpent(timeMillisSpent);
             subSingleBenchmarkResult.setScoreCalculationCount(solverScope.getScoreCalculationCount());
-            subSingleBenchmarkResult.setMoveCalculationCount(solverScope.getMoveCalculationCount());
+            subSingleBenchmarkResult.setMoveEvaluationCount(solverScope.getMoveEvaluationCount());
 
             SolutionManager<Solution_, ?> solutionManager = SolutionManager.create(solverFactory);
             boolean isConstraintMatchEnabled = solver.getSolverScope().getScoreDirector().isConstraintMatchEnabled();

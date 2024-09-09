@@ -58,7 +58,7 @@ public class SingleBenchmarkResult implements BenchmarkResult {
     private double[] standardDeviationDoubles = null;
     private long timeMillisSpent = -1L;
     private long scoreCalculationCount = -1L;
-    private long moveCalculationCount = -1L;
+    private long moveEvaluationCount = -1L;
     private String scoreExplanationSummary = null;
 
     // ************************************************************************
@@ -152,12 +152,12 @@ public class SingleBenchmarkResult implements BenchmarkResult {
         this.scoreCalculationCount = scoreCalculationCount;
     }
 
-    public long getMoveCalculationCount() {
-        return moveCalculationCount;
+    public long getMoveEvaluationCount() {
+        return moveEvaluationCount;
     }
 
-    public void setMoveCalculationCount(long moveCalculationCount) {
-        this.moveCalculationCount = moveCalculationCount;
+    public void setMoveEvaluationCount(long moveEvaluationCount) {
+        this.moveEvaluationCount = moveEvaluationCount;
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.
@@ -267,13 +267,13 @@ public class SingleBenchmarkResult implements BenchmarkResult {
         return scoreCalculationCount * 1000L / timeMillisSpent;
     }
 
-    public Long getMoveCalculationSpeed() {
-        long timeMillisSpent = this.timeMillisSpent;
-        if (timeMillisSpent == 0L) {
+    public Long getMoveEvaluationSpeed() {
+        long timeSpent = this.timeMillisSpent;
+        if (timeSpent == 0L) {
             // Avoid divide by zero exception on a fast CPU
-            timeMillisSpent = 1L;
+            timeSpent = 1L;
         }
-        return moveCalculationCount * 1000L / timeMillisSpent;
+        return moveEvaluationCount * 1000L / timeSpent;
     }
 
     @SuppressWarnings("unused") // Used By FreeMarker.
@@ -344,7 +344,7 @@ public class SingleBenchmarkResult implements BenchmarkResult {
         usedMemoryAfterInputSolution = median.getUsedMemoryAfterInputSolution();
         timeMillisSpent = median.getTimeMillisSpent();
         scoreCalculationCount = median.getScoreCalculationCount();
-        moveCalculationCount = median.getMoveCalculationCount();
+        moveEvaluationCount = median.getMoveEvaluationCount();
         scoreExplanationSummary = median.getScoreExplanationSummary();
     }
 

@@ -223,7 +223,7 @@
       <xs:enumeration value="SCORE_CALCULATION_SPEED"/>
                   
       
-      <xs:enumeration value="MOVE_CALCULATION_SPEED"/>
+      <xs:enumeration value="MOVE_EVALUATION_SPEED"/>
                   
       
       <xs:enumeration value="BEST_SOLUTION_MUTATION"/>
@@ -582,9 +582,6 @@
                               
           
           <xs:element minOccurs="0" name="moveCountLimit" type="xs:long"/>
-                              
-          
-          <xs:element minOccurs="0" name="unimprovedMoveCountLimit" type="xs:long"/>
                               
           
           <xs:element maxOccurs="unbounded" minOccurs="0" name="termination" type="tns:terminationConfig"/>
@@ -2624,7 +2621,7 @@
       <xs:enumeration value="SCORE_CALCULATION_COUNT"/>
                   
       
-      <xs:enumeration value="MOVE_CALCULATION_COUNT"/>
+      <xs:enumeration value="MOVE_EVALUATION_COUNT"/>
                   
       
       <xs:enumeration value="PROBLEM_ENTITY_COUNT"/>

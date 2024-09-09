@@ -14,7 +14,7 @@ public abstract sealed class AbstractTermination<Solution_>
         ChildThreadPlumbingTermination, PhaseToSolverTerminationBridge, ScoreCalculationCountTermination, StepCountTermination,
         TimeMillisSpentTermination, UnimprovedStepCountTermination,
         UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination, UnimprovedTimeMillisSpentTermination,
-        MoveCountTermination, UnimprovedMoveCountTermination {
+        MoveCountTermination {
 
     protected final transient Logger logger = LoggerFactory.getLogger(getClass());
 

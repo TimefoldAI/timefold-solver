@@ -66,7 +66,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private int workingGenuineEntityCount = 0;
     private boolean allChangesWillBeUndoneBeforeStepEnds = false;
     private long calculationCount = 0L;
-    private long moveCalculationCount = 0L;
     protected Solution_ workingSolution;
     private int workingInitScore = 0;
     private String undoMoveText;
@@ -74,8 +73,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     // Null when tracking disabled
     private final boolean trackingWorkingSolution;
     private final SolutionTracker<Solution_> solutionTracker;
-
-    private boolean collectMetricEnabled = false;
 
     protected AbstractScoreDirector(Factory_ scoreDirectorFactory, boolean lookUpEnabled,
             boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
@@ -165,30 +162,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public long getMoveCalculationCount() {
-        return moveCalculationCount;
-    }
-
-    @Override
-    public void resetMoveCalculationCount() {
-        this.moveCalculationCount = 0L;
-    }
-
-    @Override
-    public void incrementMoveCalculationCount() {
-        if (collectMetricEnabled) {
-            this.moveCalculationCount++;
-        }
-    }
-
-    @Override
     public SupplyManager getSupplyManager() {
         return variableListenerSupport;
-    }
-
-    @Override
-    public void setEnableMetricCollection(boolean enable) {
-        this.collectMetricEnabled = enable;
     }
 
     // ************************************************************************
@@ -249,7 +224,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
         Move<Solution_> undoMove = move.doMove(this);
         Score_ score = calculateScore();
-        incrementMoveCalculationCount();
         if (assertMoveScoreFromScratch) {
             undoMoveText = undoMove.toString();
             if (trackingWorkingSolution) {

@@ -176,13 +176,13 @@ class DefaultExhaustiveSearchPhaseTest {
         var solvedE3 = solution.getEntityList().get(2);
         assertCode("e3", solvedE3);
         assertThat(solvedE3.getValue()).isEqualTo(v1);
-        assertThat(solution.getScore().initScore()).isEqualTo(0);
+        assertThat(solution.getScore().initScore()).isZero();
 
-        SolverMetric.MOVE_CALCULATION_COUNT.register(solver);
+        SolverMetric.MOVE_EVALUATION_COUNT.register(solver);
         SolverMetric.SCORE_CALCULATION_COUNT.register(solver);
         meterRegistry.publish(solver);
         var scoreCount = meterRegistry.getMeasurement(SolverMetric.SCORE_CALCULATION_COUNT.getMeterId(), "VALUE");
-        var moveCount = meterRegistry.getMeasurement(SolverMetric.MOVE_CALCULATION_COUNT.getMeterId(), "VALUE");
+        var moveCount = meterRegistry.getMeasurement(SolverMetric.MOVE_EVALUATION_COUNT.getMeterId(), "VALUE");
         assertThat(scoreCount).isPositive();
         assertThat(moveCount).isPositive();
     }

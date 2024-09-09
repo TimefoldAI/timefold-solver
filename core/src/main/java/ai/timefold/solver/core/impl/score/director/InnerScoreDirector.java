@@ -38,7 +38,7 @@ import ai.timefold.solver.core.impl.util.CollectionUtils;
  * @param <Score_> the score type to go with the solution
  */
 public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
-        extends VariableDescriptorAwareScoreDirector<Solution_>, MetricCollector, AutoCloseable {
+        extends VariableDescriptorAwareScoreDirector<Solution_>, AutoCloseable {
 
     static <Score_ extends Score<Score_>> ConstraintAnalysis<Score_> getConstraintAnalysis(
             ConstraintMatchTotal<Score_> constraintMatchTotal, boolean analyzeConstraintMatches) {
@@ -224,12 +224,6 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     void resetCalculationCount();
 
     void incrementCalculationCount();
-
-    long getMoveCalculationCount();
-
-    void resetMoveCalculationCount();
-
-    void incrementMoveCalculationCount();
 
     /**
      * @return never null

@@ -58,7 +58,7 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
     private Score<?> score = null;
     private long timeMillisSpent = -1L;
     private long scoreCalculationCount = -1L;
-    private long moveCalculationCount = -1L;
+    private long moveEvaluationCount = -1L;
     private String scoreExplanationSummary = null;
 
     // ************************************************************************
@@ -162,12 +162,12 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
         this.scoreCalculationCount = scoreCalculationCount;
     }
 
-    public long getMoveCalculationCount() {
-        return moveCalculationCount;
+    public long getMoveEvaluationCount() {
+        return moveEvaluationCount;
     }
 
-    public void setMoveCalculationCount(long moveCalculationCount) {
-        this.moveCalculationCount = moveCalculationCount;
+    public void setMoveEvaluationCount(long moveEvaluationCount) {
+        this.moveEvaluationCount = moveEvaluationCount;
     }
 
     public String getScoreExplanationSummary() {
@@ -227,13 +227,13 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.
-    public Long getMoveCalculationSpeed() {
-        long timeMillisSpent = this.timeMillisSpent;
-        if (timeMillisSpent == 0L) {
+    public Long getMoveEvaluationSpeed() {
+        long timeSpent = this.timeMillisSpent;
+        if (timeSpent == 0L) {
             // Avoid divide by zero exception on a fast CPU
-            timeMillisSpent = 1L;
+            timeSpent = 1L;
         }
-        return moveCalculationCount * 1000L / timeMillisSpent;
+        return moveEvaluationCount * 1000L / timeSpent;
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.
@@ -312,7 +312,7 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
         newResult.score = oldResult.score;
         newResult.timeMillisSpent = oldResult.timeMillisSpent;
         newResult.scoreCalculationCount = oldResult.scoreCalculationCount;
-        newResult.moveCalculationCount = oldResult.moveCalculationCount;
+        newResult.moveEvaluationCount = oldResult.moveEvaluationCount;
 
         singleBenchmarkResult.getSubSingleBenchmarkResultList().add(newResult);
         return newResult;

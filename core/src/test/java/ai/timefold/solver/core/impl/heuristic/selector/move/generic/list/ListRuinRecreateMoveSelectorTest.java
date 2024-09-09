@@ -93,11 +93,11 @@ class ListRuinRecreateMoveSelectorTest {
         solver.addEventListener(event -> meterRegistry.publish(solver));
         solver.solve(problem);
 
-        SolverMetric.MOVE_CALCULATION_COUNT.register(solver);
+        SolverMetric.MOVE_EVALUATION_COUNT.register(solver);
         SolverMetric.SCORE_CALCULATION_COUNT.register(solver);
         meterRegistry.publish(solver);
         var scoreCount = meterRegistry.getMeasurement(SolverMetric.SCORE_CALCULATION_COUNT.getMeterId(), "VALUE");
-        var moveCount = meterRegistry.getMeasurement(SolverMetric.MOVE_CALCULATION_COUNT.getMeterId(), "VALUE");
+        var moveCount = meterRegistry.getMeasurement(SolverMetric.MOVE_EVALUATION_COUNT.getMeterId(), "VALUE");
         assertThat(scoreCount).isPositive();
         assertThat(moveCount).isPositive();
         assertThat(scoreCount).isGreaterThan(moveCount);

@@ -87,14 +87,12 @@ class TerminationConfigTest {
     @Test
     void checkMoveCountMetrics() {
         TerminationConfig parent = new TerminationConfig()
-                .withMoveCountLimit(2L)
-                .withUnimprovedMoveCountLimit(3L);
+                .withMoveCountLimit(2L);
 
         TerminationConfig child = new TerminationConfig();
         child.inherit(parent);
 
         assertThat(child.getMoveCountLimit()).isEqualTo(2L);
-        assertThat(child.getUnimprovedMoveCountLimit()).isEqualTo(3L);
         assertThat(parent.isConfigured()).isTrue();
     }
 

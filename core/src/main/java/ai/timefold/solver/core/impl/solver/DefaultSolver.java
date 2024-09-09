@@ -96,16 +96,16 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         return solverScope.getScoreCalculationCount();
     }
 
-    public long getMoveCalculationCount() {
-        return solverScope.getMoveCalculationCount();
+    public long getMoveEvaluationCount() {
+        return solverScope.getMoveEvaluationCount();
     }
 
     public long getScoreCalculationSpeed() {
         return solverScope.getScoreCalculationSpeed();
     }
 
-    public long getMoveCalculationSpeed() {
-        return solverScope.getMoveCalculationSpeed();
+    public long getMoveEvaluationSpeed() {
+        return solverScope.getMoveEvaluationSpeed();
     }
 
     @Override
@@ -224,7 +224,6 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         assertCorrectSolutionState();
         solverScope.startingNow();
         solverScope.getScoreDirector().resetCalculationCount();
-        solverScope.getScoreDirector().resetMoveCalculationCount();
         super.solvingStarted(solverScope);
         var startingSolverCount = solverScope.getStartingSolverCount() + 1;
         solverScope.setStartingSolverCount(startingSolverCount);
@@ -315,11 +314,11 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
 
     public void outerSolvingEnded(SolverScope<Solution_> solverScope) {
         logger.info("Solving ended: time spent ({}), best score ({}), score calculation speed ({}/sec), "
-                + "move calculation speed ({}/sec), phase total ({}), environment mode ({}), move thread count ({}).",
+                + "move evaluation speed ({}/sec), phase total ({}), environment mode ({}), move thread count ({}).",
                 solverScope.getTimeMillisSpent(),
                 solverScope.getBestScore(),
                 solverScope.getScoreCalculationSpeed(),
-                solverScope.getMoveCalculationSpeed(),
+                solverScope.getMoveEvaluationSpeed(),
                 phaseList.size(),
                 environmentMode.name(),
                 moveThreadCountDescription);
