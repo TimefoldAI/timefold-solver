@@ -293,18 +293,6 @@ def wrap_errors(func):
     return wrapped_func
 
 
-def wrap_errors_in_functions(cls):
-    import inspect
-    modified = {}
-    for member in inspect.getmembers(cls, predicate=inspect.isfunction):
-        modified[member[0]] = wrap_errors(member[1])
-
-    for member in modified.items():
-        setattr(cls, member[0], member[1])
-
-    return cls
-
-
 unique_class_id = 0
 """A unique identifier; used to guarantee the generated class java name is unique"""
 
