@@ -1,13 +1,13 @@
+import re
+from dataclasses import dataclass, field
+from typing import Annotated, List
+
+import pytest
 from timefold.solver import *
 from timefold.solver.config import *
 from timefold.solver.domain import *
 from timefold.solver.heuristic import *
 from timefold.solver.score import *
-
-import pytest
-import re
-from typing import Annotated, List
-from dataclasses import dataclass, field
 
 
 @planning_entity
@@ -104,6 +104,30 @@ def test_non_proxied_function_passed():
                 constraint_provider_function=not_proxied  # noqa
             )
         )._to_java_solver_config()
+
+
+def test_constraint_construction_failed():
+    import inspect
+    line = inspect.getframeinfo(inspect.stack()[0][0]).lineno + 4
+
+    def bad_constraints(constraint_factory: ConstraintFactory):
+        return [
+            constraint_factory.for_each(BadEntity)
+            .penalize(SimpleScore.ONE)
+            .as_constraint('Penalize each entity')
+        ]
+
+    bad_constraints = constraint_provider(bad_constraints)
+    solver_config = SolverConfig(
+        solution_class=Solution,
+        entity_class_list=[Entity],
+        score_director_factory_config=ScoreDirectorFactoryConfig(
+            constraint_provider_function=bad_constraints
+        )
+    )
+
+    with pytest.raises(RuntimeError, match=re.escape(f'line {line}, in bad_constraints')):
+        SolverFactory.create(solver_config).build_solver()
 
 
 def test_missing_enterprise():
