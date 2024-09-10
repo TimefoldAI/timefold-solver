@@ -33,6 +33,18 @@ and still compare it with the original's calculation speed.
 Comparing the best score with the original's best score is pointless: it's comparing apples and oranges.
 ====
 
+The solver usually calculates the score for each move it evaluates.
+This means a direct relationship exists between the score calculation and the evaluated move, typically a `1:1` ratio.
+However, some moves,
+such as xref:optimization-algorithms/move-selector-reference.adoc#ruinRecreateMoveSelector[Ruin and Recreate],
+involve processing the score multiple times within the same move.
+
+The use of moves like Ruin and Recreate may increase the number of score calculations,
+which makes the relationship `1:1` invalid.
+In such cases,
+the metric xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarkReportMoveEvaluationSpeedSummary[__move evaluation speed per second__] makes more sense,
+as it will count the number of moves individually.
+
 [#incrementalScoreCalculationPerformance]
 == Incremental score calculation (with deltas)
 
