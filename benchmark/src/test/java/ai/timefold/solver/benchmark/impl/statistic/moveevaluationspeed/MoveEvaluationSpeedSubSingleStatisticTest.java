@@ -24,7 +24,7 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 
-public final class MoveEvaluationSpeedSubSingleStatisticTest
+final class MoveEvaluationSpeedSubSingleStatisticTest
         extends AbstractSubSingleStatisticTest<LongStatisticPoint, MoveEvaluationSpeedSubSingleStatistic<TestdataSolution>> {
 
     @Override

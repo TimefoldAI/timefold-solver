@@ -23,7 +23,7 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 
-public final class ScoreCalculationSpeedSubSingleStatisticTest
+final class ScoreCalculationSpeedSubSingleStatisticTest
         extends
         AbstractSubSingleStatisticTest<LongStatisticPoint, ScoreCalculationSpeedSubSingleStatistic<TestdataSolution>> {
 

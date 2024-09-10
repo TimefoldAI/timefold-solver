@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.util.List;
 import java.util.Objects;
@@ -69,7 +70,7 @@ class ListRuinRecreateMoveSelectorTest {
                                         .withStepCountLimit(100))));
         var problem = TestdataListSolution.generateUninitializedSolution(10, 3);
         var solver = SolverFactory.create(solverConfig).buildSolver();
-        solver.solve(problem);
+        assertDoesNotThrow(() -> solver.solve(problem));
     }
 
     @Test
@@ -152,7 +153,7 @@ class ListRuinRecreateMoveSelectorTest {
                 .mapToObj(id -> new TestdataAllowsUnassignedValuesListValue("v" + id))
                 .toList());
         var solver = SolverFactory.create(solverConfig).buildSolver();
-        solver.solve(problem);
+        assertDoesNotThrow(() -> solver.solve(problem));
     }
 
 }
