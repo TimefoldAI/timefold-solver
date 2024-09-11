@@ -277,6 +277,22 @@ def register_java_class(python_object: Solution_,
     return python_object
 
 
+def wrap_errors(func):
+    def wrapped_func(*args, **kwargs):
+        nonlocal func
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            import traceback
+            msg = ''.join(traceback.TracebackException.from_exception(e).format())
+            raise RuntimeError(msg)
+
+    wrapped_func.__doc__ = func.__doc__
+    wrapped_func.__qualname__ = func.__qualname__
+    wrapped_func.__name__ = func.__name__
+    return wrapped_func
+
+
 unique_class_id = 0
 """A unique identifier; used to guarantee the generated class java name is unique"""
 

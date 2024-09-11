@@ -1,7 +1,8 @@
-from ._constraint_factory import ConstraintFactory
-from ._constraint_builder import Constraint
-from .._timefold_java_interop import ensure_init, _generate_constraint_provider_class, register_java_class
 from typing import TypeVar, Callable, TYPE_CHECKING
+
+from ._constraint_builder import Constraint
+from ._constraint_factory import ConstraintFactory
+from .._timefold_java_interop import ensure_init, _generate_constraint_provider_class, register_java_class, wrap_errors
 
 if TYPE_CHECKING:
     from ..score import Score
@@ -46,7 +47,7 @@ def constraint_provider(constraint_provider_function: Callable[[ConstraintFactor
     def constraint_provider_wrapper(function):
         def wrapped_constraint_provider(constraint_factory):
             from ..score import ConstraintFactory
-            out = function(ConstraintFactory(constraint_factory))
+            out = wrap_errors(function)(ConstraintFactory(constraint_factory))
             return out
         java_class = _generate_constraint_provider_class(function, wrapped_constraint_provider)
         return register_java_class(wrapped_constraint_provider, java_class)
