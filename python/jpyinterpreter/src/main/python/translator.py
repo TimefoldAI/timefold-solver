@@ -2,11 +2,8 @@ import ctypes
 import dis
 import inspect
 import sys
-import abc
-from typing import Protocol
-
 from jpype import JInt, JBoolean, JProxy, JClass, JArray
-
+from typing import Protocol
 
 MINIMUM_SUPPORTED_PYTHON_VERSION = (3, 10)
 MAXIMUM_SUPPORTED_PYTHON_VERSION = (3, 12)
@@ -146,6 +143,7 @@ def copy_globals(globals_dict, co_names, python_class):
     from ai.timefold.jpyinterpreter import CPythonBackedPythonInterpreter
 
     globals_dict_key = id(globals_dict)
+    instance_map = CPythonBackedPythonInterpreter.pythonObjectIdToConvertedObjectMap
     if globals_dict_key in global_dict_to_instance:
         out = global_dict_to_instance[globals_dict_key]
         key_set = global_dict_to_key_set[globals_dict_key]
@@ -155,8 +153,9 @@ def copy_globals(globals_dict, co_names, python_class):
         global_dict_to_instance[globals_dict_key] = out
         global_dict_to_key_set[globals_dict_key] = key_set
         java_globals_to_python_globals[globals_dict_key] = globals_dict
+        out['__name__'] = convert_to_java_python_like_object(globals_dict['__name__'],
+                                                             instance_map)  # required for imports
 
-    instance_map = CPythonBackedPythonInterpreter.pythonObjectIdToConvertedObjectMap
     for key, value in globals_dict.items():
         if key not in key_set and key in co_names:
             if python_class is not None:
@@ -174,6 +173,13 @@ def find_globals_dict_for_java_map(java_globals):
     for python_global_id in global_dict_to_instance:
         if global_dict_to_instance[python_global_id] == java_globals:
             return ctypes.cast(python_global_id, ctypes.py_object).value
+
+    if java_globals.isEmpty():
+        # Java globals should have at least one entry (__name__) if it
+        # was generated from Python.
+        # If it is an empty map, then it not from Python and we can return
+        # an empty dict
+        return {}
 
     raise ValueError(f'Could not find python globals corresponding to {str(java_globals.toString())}')
 

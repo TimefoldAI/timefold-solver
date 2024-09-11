@@ -1,6 +1,8 @@
 import dataclasses
-from jpype import JClass
 from typing import Callable, Any, Sequence, TypeVar, List, Set, Dict, TYPE_CHECKING, overload
+
+from jpype import JClass
+
 if TYPE_CHECKING:
     from ai.timefold.solver.core.api.score.stream.common import SequenceChain
     from ai.timefold.solver.core.api.score.stream.common import LoadBalance
@@ -10,60 +12,68 @@ if TYPE_CHECKING:
     from ai.timefold.solver.core.api.score.stream.quad import QuadConstraintCollector
 
 
+class _ConstraintCollectorData:
+    def __hash__(self):
+        raise TypeError('A ConstraintCollector should not be used as a key. '
+                        'Maybe you accidentally used a constraint collector in a lambda? '
+                        '(i.e. instead of doing `lambda shift: ConstraintCollectors.sum(shift.duration)`, '
+                        'do `ConstraintCollectors.sum(lambda shift: shift.duration)` instead).')
+
+
 @dataclasses.dataclass
-class NoArgsConstraintCollector:
+class NoArgsConstraintCollector(_ConstraintCollectorData):
     collector_creator: Callable
 
 
 @dataclasses.dataclass
-class GroupMappingSingleArgConstraintCollector:
+class GroupMappingSingleArgConstraintCollector(_ConstraintCollectorData):
     collector_creator: Callable
     group_mapping: Callable
 
 
 @dataclasses.dataclass
-class KeyValueMappingConstraintCollector:
+class KeyValueMappingConstraintCollector(_ConstraintCollectorData):
     collector_creator: Callable
     key_mapping: Callable
     value_mapping: Callable
 
 
 @dataclasses.dataclass
-class GroupIntMappingSingleArgConstraintCollector:
+class GroupIntMappingSingleArgConstraintCollector(_ConstraintCollectorData):
     collector_creator: Callable
     group_mapping: Callable
 
 
 @dataclasses.dataclass
-class GroupMappingIntMappingTwoArgConstraintCollector:
+class GroupMappingIntMappingTwoArgConstraintCollector(_ConstraintCollectorData):
     collector_creator: Callable
     group_mapping: Callable
     index_mapping: Callable
 
 
 @dataclasses.dataclass
-class ComposeConstraintCollector:
+class ComposeConstraintCollector(_ConstraintCollectorData):
     collector_creator: Callable
     subcollectors: Sequence[Any]
     compose_function: Callable
 
 
 @dataclasses.dataclass
-class ConditionalConstraintCollector:
+class ConditionalConstraintCollector(_ConstraintCollectorData):
     collector_creator: Callable
     predicate: Callable
     delegate: Any
 
 
 @dataclasses.dataclass
-class CollectAndThenCollector:
+class CollectAndThenCollector(_ConstraintCollectorData):
     collector_creator: Callable
     delegate_collector: Any
     mapping_function: Callable
 
 
 @dataclasses.dataclass
-class LoadBalanceCollector:
+class LoadBalanceCollector(_ConstraintCollectorData):
     collector_creator: Callable
     balanced_item_function: Callable
     load_function: Callable | None

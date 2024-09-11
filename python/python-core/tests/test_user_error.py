@@ -144,3 +144,31 @@ def test_missing_enterprise():
         solver_config = SolverConfig(
             nearby_distance_meter_function=my_distance_meter
         )._to_java_solver_config()
+
+
+def test_using_collector_as_group_key():
+    @constraint_provider
+    def bad_constraints(constraint_factory: ConstraintFactory):
+        return [
+            constraint_factory.for_each(Entity)
+            .group_by(lambda entity: ConstraintCollectors.sum(10))
+            .penalize(SimpleScore.ONE)
+            .as_constraint("Minimize overtime")
+        ]
+
+    solver_config = SolverConfig(
+        solution_class=Solution,
+        entity_class_list=[Entity],
+        score_director_factory_config=ScoreDirectorFactoryConfig(
+            constraint_provider_function=bad_constraints
+        ),
+        termination_config=TerminationConfig(
+            score_calculation_count_limit=10
+        )
+    )
+    solver = SolverFactory.create(solver_config).build_solver()
+    problem = Solution([Entity()], ['1', '2', '3'])
+    with pytest.raises(TypeError, match=re.escape(
+            f'A ConstraintCollector should not be used as a key'
+    )):
+        solver.solve(problem)

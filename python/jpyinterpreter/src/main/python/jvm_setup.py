@@ -1,11 +1,10 @@
 import importlib.resources
+import jpype
+import jpype.imports
 import locale
 import os
 import pathlib
 from typing import List, ContextManager
-
-import jpype
-import jpype.imports
 
 
 def _normalize_path(path):
@@ -272,9 +271,14 @@ class ImportModule:
         python_globals = unwrap_python_like_object(globals_map, None)
         python_locals = unwrap_python_like_object(locals_map, None)
         python_from_list = unwrap_python_like_object(from_list, None)
-        return convert_to_java_python_like_object(
-            __import__(module_name, python_globals, python_locals, python_from_list, level),
-            CPythonBackedPythonInterpreter.pythonObjectIdToConvertedObjectMap
+
+        try:
+            item = __import__(module_name, python_globals, python_locals, python_from_list, level)
+        except KeyError:
+            from ai.timefold.jpyinterpreter.types.errors.lookup import KeyError as JavaKeyError
+            raise JavaKeyError(f'Failed to import "{module_name}"')
+        return convert_to_java_python_like_object(item,
+                                                  CPythonBackedPythonInterpreter.pythonObjectIdToConvertedObjectMap
         )
 
 

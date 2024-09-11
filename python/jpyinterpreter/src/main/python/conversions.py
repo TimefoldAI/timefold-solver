@@ -1,13 +1,11 @@
 import builtins
-import inspect
 import importlib
-from dataclasses import dataclass
-from typing import TYPE_CHECKING
-from traceback import TracebackException, StackSummary, FrameSummary
+import inspect
 from copy import copy
-
+from dataclasses import dataclass
 from jpype import JLong, JDouble, JBoolean, JProxy
-
+from traceback import TracebackException, StackSummary, FrameSummary
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from java.util import IdentityHashMap
@@ -54,13 +52,13 @@ def get_traceback_exception(java_error: 'Throwable', python_exception_type: type
     out.exceptions = None
     out.exc_type = python_exception_type
     out.stack = StackSummary.from_list(extract_frames_from_java_error(java_error))
-    out._str = java_error.getMessage()
+    out._str = java_error.getMessage() or ''
     return out
 
 
 def get_translated_java_system_error_message(error):
     from ai.timefold.jpyinterpreter.util import TracebackUtils
-    top_line = f'{error.getClass().getSimpleName()}:  {error.getMessage()}'
+    top_line = f'{error.getClass().getSimpleName()}:  {error.getMessage() or ""}'
     traceback = TracebackUtils.getTraceback(error)
     return f'{top_line}\n{traceback}'
 
@@ -380,7 +378,7 @@ def convert_to_java_python_like_object(value, instance_map=None):
         PythonLikeFrozenSet, PythonLikeDict
     from ai.timefold.jpyinterpreter.types.numeric import PythonInteger, PythonFloat, PythonBoolean, PythonComplex, \
         PythonDecimal
-    from ai.timefold.jpyinterpreter.types.wrappers import PythonObjectWrapper, CPythonType, OpaquePythonReference
+    from ai.timefold.jpyinterpreter.types.wrappers import PythonObjectWrapper, OpaquePythonReference
 
     if instance_map is None:
         instance_map = HashMap()
@@ -517,6 +515,11 @@ class PythonCloneMap:
 
     def get_clone(self, java_object):
         return self.clone_id_to_python_object[self.java_object_to_clone_id.get(java_object)]
+
+
+class WrappedExceptionMeta(type):
+    def __new__(cls, name, bases, attrs, *, exception_cls=None):
+        return super().__new__(cls, exception_cls.__name__, bases, attrs)
 
 
 def unwrap_python_like_object(python_like_object, clone_map=None, default=NotImplementedError):
@@ -676,13 +679,16 @@ def unwrap_python_like_object(python_like_object, clone_map=None, default=NotImp
                                              clone_map, default)
             traceback_exception = get_traceback_exception(python_like_object, exception_python_type, clone_map)
 
-            class WrappedException(exception_python_type):
+            class WrappedException(exception_python_type,
+                                   metaclass=WrappedExceptionMeta,
+                                   exception_cls=exception_python_type):
                 wrapped_type: type
                 def __init__(self, *args):
                     super().__init__(*args)
 
                 def __str__(self):
-                    return ''.join(traceback_exception.format())
+                    return '\n' + exception_name + ': ' + (
+                            python_like_object.getMessage() or '') + '\n' + ''.join(traceback_exception.format())
 
             return clone_map.add_clone(python_like_object, WrappedException(*args))
         except AttributeError:

@@ -10,7 +10,6 @@ import ai.timefold.jpyinterpreter.PythonBytecodeToJavaBytecodeTranslator;
 import ai.timefold.jpyinterpreter.PythonInterpreter;
 import ai.timefold.jpyinterpreter.PythonLikeObject;
 import ai.timefold.jpyinterpreter.StackMetadata;
-import ai.timefold.jpyinterpreter.types.PythonModule;
 import ai.timefold.jpyinterpreter.types.numeric.PythonInteger;
 
 import org.objectweb.asm.Label;
@@ -90,7 +89,7 @@ public class ModuleImplementor {
 
         // Now call the interpreter's importModule function
         methodVisitor.visitMethodInsn(Opcodes.INVOKEINTERFACE, Type.getInternalName(PythonInterpreter.class),
-                "importModule", Type.getMethodDescriptor(Type.getType(PythonModule.class),
+                "importModule", Type.getMethodDescriptor(Type.getType(PythonLikeObject.class),
                         Type.getType(PythonInteger.class), Type.getType(List.class),
                         Type.getType(Map.class), Type.getType(Map.class), Type.getType(String.class)),
                 true);
