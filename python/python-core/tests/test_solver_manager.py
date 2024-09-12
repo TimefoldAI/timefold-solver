@@ -244,7 +244,7 @@ def test_error():
         assert the_exception is not None
 
 
-def test_solver_config_override():
+def test_solver_config():
     @dataclass
     class Value:
         value: Annotated[int, PlanningId]
@@ -285,6 +285,15 @@ def test_solver_config_override():
     )
     problem: Solution = Solution([Entity('A')], [Value(1), Value(2), Value(3)],
                                  SimpleScore.ONE)
+    first_initialized_solution_consumer_called = []
+    start_solver_job_handler_called = []
+
+    def on_first_initialized_solution_consumer(solution):
+        first_initialized_solution_consumer_called.append(1)
+
+    def on_start_solver_job_handler():
+        start_solver_job_handler_called.append(1)
+
     with SolverManager.create(SolverFactory.create(solver_config)) as solver_manager:
         solver_job = (solver_manager.solve_builder()
                       .with_problem_id(1)
@@ -294,7 +303,11 @@ def test_solver_config_override():
                                best_score_limit='3'
                            )
                       ))
+                      .with_first_initialized_solution_consumer(on_first_initialized_solution_consumer)
+                      .with_start_solver_job_handler(on_start_solver_job_handler)
                       .run())
 
         solution = solver_job.get_final_best_solution()
         assert solution.score.score == 3
+        assert len(first_initialized_solution_consumer_called) == 1
+        assert len(start_solver_job_handler_called) == 1

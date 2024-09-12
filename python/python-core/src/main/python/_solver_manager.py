@@ -285,6 +285,49 @@ class SolverJobBuilder(Generic[Solution_, ProblemId_]):
         return SolverJobBuilder(
             self._delegate.withFinalBestSolutionConsumer(java_consumer))
 
+    def with_first_initialized_solution_consumer(self, first_initialized_solution_consumer: Callable[[Solution_], None]) -> 'SolverJobBuilder':
+        """
+        Sets the consumer of the first initialized solution. First initialized solution is the solution at the end of
+        the last phase that immediately precedes the first local search phase. This solution marks the beginning of
+        actual optimization process.
+
+        Parameters
+        ----------
+        first_initialized_solution_consumer : Callable[[Solution_], None]
+            called only once before starting the first Local Search phase
+
+        Returns
+        -------
+        SolverJobBuilder
+            This `SolverJobBuilder`.
+        """
+        from java.util.function import Consumer
+        from _jpyinterpreter import unwrap_python_like_object
+
+        java_consumer = Consumer @ (lambda solution: first_initialized_solution_consumer(unwrap_python_like_object(solution)))
+        return SolverJobBuilder(
+            self._delegate.withFirstInitializedSolutionConsumer(java_consumer))
+
+    def with_start_solver_job_handler(self, start_solver_job_handler: Callable[[], None]) -> 'SolverJobBuilder':
+        """
+        Sets the runnable action for when the solver starts its solving process.
+
+        Parameters
+        ----------
+        start_solver_job_handler : Callable[[], None]
+            called only once when the solver is starting the solving process
+
+        Returns
+        -------
+        SolverJobBuilder
+            This `SolverJobBuilder`.
+        """
+        from java.lang import Runnable
+
+        java_runnable = Runnable @ (lambda: start_solver_job_handler())
+        return SolverJobBuilder(
+            self._delegate.withStartSolverJobHandler(java_runnable))
+
     def with_exception_handler(self, exception_handler: Callable[[ProblemId_, Exception], None]) -> 'SolverJobBuilder':
         """
         Sets the custom exception handler.
