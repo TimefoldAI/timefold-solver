@@ -14,6 +14,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
     private final Consumer<? super Solution_> bestSolutionConsumer;
     private final Consumer<? super Solution_> finalBestSolutionConsumer;
     private final Consumer<? super Solution_> firstInitializedSolutionConsumer;
+    private final Runnable startSolverJobHandler;
     private final BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler;
     private final Semaphore activeConsumption = new Semaphore(1);
     private final Semaphore firstSolutionConsumption = new Semaphore(1);
@@ -23,7 +24,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
 
     public ConsumerSupport(ProblemId_ problemId, Consumer<? super Solution_> bestSolutionConsumer,
             Consumer<? super Solution_> finalBestSolutionConsumer, Consumer<? super Solution_> firstInitializedSolutionConsumer,
-            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
+            Runnable startSolverJobHandler, BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
             BestSolutionHolder<Solution_> bestSolutionHolder) {
         this.problemId = problemId;
         this.bestSolutionConsumer = bestSolutionConsumer;
@@ -33,6 +34,8 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         this.exceptionHandler = exceptionHandler;
         this.bestSolutionHolder = bestSolutionHolder;
         this.firstInitializedSolution = null;
+        this.startSolverJobHandler = startSolverJobHandler != null ? startSolverJobHandler : () -> {
+        };
     }
 
     // Called on the Solver thread.
@@ -60,6 +63,11 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         // called on the Consumer thread
         this.firstInitializedSolution = firstInitializedSolution;
         scheduleFirstInitializedSolutionConsumption();
+    }
+
+    // Called on the solver thread when it starts
+    void triggerStartSolverJob() {
+        startSolverJobHandler.run();
     }
 
     // Called on the Solver thread after Solver#solve() returns.

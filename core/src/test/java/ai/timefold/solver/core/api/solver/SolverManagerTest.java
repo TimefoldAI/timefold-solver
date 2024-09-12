@@ -462,6 +462,28 @@ class SolverManagerTest {
     }
 
     @Test
+    @Timeout(60)
+    void testStartJobRunnable() throws ExecutionException, InterruptedException {
+        SolverConfig solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        solverManager = SolverManager
+                .create(solverConfig, new SolverManagerConfig());
+
+        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
+                PlannerTestUtils.generateTestdataSolution("s1"));
+
+        MutableObject<Boolean> started = new MutableObject<>(Boolean.FALSE);
+
+        SolverJob<TestdataSolution, Long> solverJob = solverManager.solveBuilder()
+                .withProblemId(1L)
+                .withProblemFinder(problemFinder)
+                .withStartSolverJobHandler(() -> started.setValue(Boolean.TRUE))
+                .run();
+        solverJob.getFinalBestSolution();
+        assertThat(started.getValue()).isTrue();
+    }
+
+    @Test
     void solveWithOverride() {
         // Default spent limit is 1L
         TerminationConfig terminationConfig = new TerminationConfig()

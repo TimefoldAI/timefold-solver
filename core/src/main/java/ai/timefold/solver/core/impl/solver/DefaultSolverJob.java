@@ -46,6 +46,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     private final Consumer<? super Solution_> bestSolutionConsumer;
     private final Consumer<? super Solution_> finalBestSolutionConsumer;
     private final Consumer<? super Solution_> firstInitializedSolutionConsumer;
+    private final Runnable startSolverJobHandler;
     private final BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler;
 
     private volatile SolverStatus solverStatus;
@@ -63,7 +64,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
             Consumer<? super Solution_> bestSolutionConsumer,
             Consumer<? super Solution_> finalBestSolutionConsumer,
             Consumer<? super Solution_> firstInitializedSolutionConsumer,
-            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
+            Runnable startSolverJobHandler, BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
         this.solverManager = solverManager;
         this.problemId = problemId;
         if (!(solver instanceof DefaultSolver)) {
@@ -75,6 +76,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
         this.bestSolutionConsumer = bestSolutionConsumer;
         this.finalBestSolutionConsumer = finalBestSolutionConsumer;
         this.firstInitializedSolutionConsumer = firstInitializedSolutionConsumer;
+        this.startSolverJobHandler = startSolverJobHandler;
         this.exceptionHandler = exceptionHandler;
         solverStatus = SolverStatus.SOLVING_SCHEDULED;
         terminatedLatch = new CountDownLatch(1);
@@ -108,13 +110,15 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
             solverStatus = SolverStatus.SOLVING_ACTIVE;
             // Create the consumer thread pool only when this solver job is active.
             consumerSupport = new ConsumerSupport<>(getProblemId(), bestSolutionConsumer, finalBestSolutionConsumer,
-                    firstInitializedSolutionConsumer, exceptionHandler, bestSolutionHolder);
+                    firstInitializedSolutionConsumer, startSolverJobHandler, exceptionHandler, bestSolutionHolder);
 
             Solution_ problem = problemFinder.apply(problemId);
             // add a phase lifecycle listener that unlock the solver status lock when solving started
             solver.addPhaseLifecycleListener(new UnlockLockPhaseLifecycleListener());
             // add a phase lifecycle listener that consumes the first initialized solution
             solver.addPhaseLifecycleListener(new FirstInitializedSolutionPhaseLifecycleListener(consumerSupport));
+            // add a phase lifecycle listener once when the solver starts its execution
+            solver.addPhaseLifecycleListener(new StartSolverJobPhaseLifecycleListener(consumerSupport));
             solver.addEventListener(this::onBestSolutionChangedEvent);
             final Solution_ finalBestSolution = solver.solve(problem);
             consumerSupport.consumeFinalBestSolution(finalBestSolution);
@@ -303,6 +307,26 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
             if (eventPhase.triggersFirstInitializedSolutionEvent()) {
                 // The Solver thread calls the method, but the consumption is done asynchronously by the Consumer thread
                 consumerSupport.consumeFirstInitializedSolution(phaseScope.getWorkingSolution());
+            }
+        }
+    }
+
+    /**
+     * A listener that is triggered once when the solver starts the solving process.
+     */
+    private final class StartSolverJobPhaseLifecycleListener extends PhaseLifecycleListenerAdapter<Solution_> {
+
+        private final ConsumerSupport<Solution_, ProblemId_> consumerSupport;
+
+        public StartSolverJobPhaseLifecycleListener(ConsumerSupport<Solution_, ProblemId_> consumerSupport) {
+            this.consumerSupport = consumerSupport;
+        }
+
+        @Override
+        public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
+            // The event is triggered once in the first phase of the solving process
+            if (phaseScope.getPhaseIndex() == 0) {
+                consumerSupport.triggerStartSolverJob();
             }
         }
     }
