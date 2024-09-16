@@ -23,7 +23,7 @@ public final class DefaultSolverJobBuilder<Solution_, ProblemId_> implements Sol
     private Consumer<? super Solution_> bestSolutionConsumer;
     private Consumer<? super Solution_> finalBestSolutionConsumer;
     private Consumer<? super Solution_> initializedSolutionConsumer;
-    private Runnable startSolverJobHandler;
+    private Consumer<? super Solution_> startSolverJobConsumer;
     private BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler;
     private SolverConfigOverride<Solution_> solverConfigOverride;
 
@@ -69,8 +69,8 @@ public final class DefaultSolverJobBuilder<Solution_, ProblemId_> implements Sol
 
     @Override
     public SolverJobBuilder<Solution_, ProblemId_>
-            withStartSolverJobHandler(Runnable startSolverJobHandler) {
-        this.startSolverJobHandler = Objects.requireNonNull(startSolverJobHandler,
+            withStartSolverJobConsumer(Consumer<? super Solution_> startSolverJobConsumer) {
+        this.startSolverJobConsumer = Objects.requireNonNull(startSolverJobConsumer,
                 "Invalid startSolverJobHandler (null) given to SolverJobBuilder.");
         return this;
     }
@@ -99,10 +99,10 @@ public final class DefaultSolverJobBuilder<Solution_, ProblemId_> implements Sol
 
         if (this.bestSolutionConsumer == null) {
             return solverManager.solve(problemId, problemFinder, null, finalBestSolutionConsumer,
-                    initializedSolutionConsumer, startSolverJobHandler, exceptionHandler, solverConfigOverride);
+                    initializedSolutionConsumer, startSolverJobConsumer, exceptionHandler, solverConfigOverride);
         } else {
             return solverManager.solveAndListen(problemId, problemFinder, bestSolutionConsumer, finalBestSolutionConsumer,
-                    initializedSolutionConsumer, startSolverJobHandler, exceptionHandler, solverConfigOverride);
+                    initializedSolutionConsumer, startSolverJobConsumer, exceptionHandler, solverConfigOverride);
         }
     }
 }

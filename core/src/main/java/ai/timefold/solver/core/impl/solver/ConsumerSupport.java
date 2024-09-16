@@ -14,17 +14,20 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
     private final Consumer<? super Solution_> bestSolutionConsumer;
     private final Consumer<? super Solution_> finalBestSolutionConsumer;
     private final Consumer<? super Solution_> firstInitializedSolutionConsumer;
-    private final Runnable startSolverJobHandler;
+    private final Consumer<? super Solution_> startSolverJobConsumer;
     private final BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler;
     private final Semaphore activeConsumption = new Semaphore(1);
     private final Semaphore firstSolutionConsumption = new Semaphore(1);
+    private final Semaphore startSolverJobConsumption = new Semaphore(1);
     private final BestSolutionHolder<Solution_> bestSolutionHolder;
     private final ExecutorService consumerExecutor = Executors.newSingleThreadExecutor();
     private Solution_ firstInitializedSolution;
+    private Solution_ initialSolution;
 
     public ConsumerSupport(ProblemId_ problemId, Consumer<? super Solution_> bestSolutionConsumer,
             Consumer<? super Solution_> finalBestSolutionConsumer, Consumer<? super Solution_> firstInitializedSolutionConsumer,
-            Runnable startSolverJobHandler, BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
+            Consumer<? super Solution_> startSolverJobConsumer,
+            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
             BestSolutionHolder<Solution_> bestSolutionHolder) {
         this.problemId = problemId;
         this.bestSolutionConsumer = bestSolutionConsumer;
@@ -34,8 +37,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         this.exceptionHandler = exceptionHandler;
         this.bestSolutionHolder = bestSolutionHolder;
         this.firstInitializedSolution = null;
-        this.startSolverJobHandler = startSolverJobHandler != null ? startSolverJobHandler : () -> {
-        };
+        this.startSolverJobConsumer = startSolverJobConsumer;
     }
 
     // Called on the Solver thread.
@@ -65,9 +67,19 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         scheduleFirstInitializedSolutionConsumption();
     }
 
-    // Called on the solver thread when it starts
-    void triggerStartSolverJob() {
-        startSolverJobHandler.run();
+    // Called on the consumer thread
+    void consumeStartSolverJob(Solution_ initialSolution) {
+        try {
+            // Called on the solver thread
+            // During the solving process, this lock is called once, and it won't block the Solver thread
+            startSolverJobConsumption.acquire();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted when waiting for the start solver job consumption.");
+        }
+        // called on the Consumer thread
+        this.initialSolution = initialSolution;
+        scheduleStartJobConsumption();
     }
 
     // Called on the Solver thread after Solver#solve() returns.
@@ -76,6 +88,8 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
             // Wait for the previous consumption to complete.
             // As the solver has already finished, holding the solver thread is not an issue.
             activeConsumption.acquire();
+            // Wait for the start job event to complete
+            startSolverJobConsumption.acquire();
             // Wait for the first solution consumption to complete
             firstSolutionConsumption.acquire();
         } catch (InterruptedException e) {
@@ -143,21 +157,34 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
 
     /**
      * Called on the Consumer thread.
-     * Don't call without locking firstSolutionConsumption, because the consumption may not be executed before the final best
-     * solution is executed.
+     * Don't call without locking firstSolutionConsumption,
+     * because the consumption may not be executed before the final best solution is executed.
      */
     private void scheduleFirstInitializedSolutionConsumption() {
+        scheduleConsumption(firstSolutionConsumption, firstInitializedSolutionConsumer, firstInitializedSolution);
+    }
+
+    /**
+     * Called on the Consumer thread.
+     * Don't call without locking startSolverJobConsumption,
+     * because the consumption may not be executed before the final best solution is executed.
+     */
+    private void scheduleStartJobConsumption() {
+        scheduleConsumption(startSolverJobConsumption, startSolverJobConsumer, initialSolution);
+    }
+
+    private void scheduleConsumption(Semaphore semaphore, Consumer<? super Solution_> consumer, Solution_ solution) {
         CompletableFuture.runAsync(() -> {
             try {
-                if (firstInitializedSolutionConsumer != null && firstInitializedSolution != null) {
-                    firstInitializedSolutionConsumer.accept(firstInitializedSolution);
+                if (consumer != null && solution != null) {
+                    consumer.accept(solution);
                 }
             } catch (Throwable throwable) {
                 if (exceptionHandler != null) {
                     exceptionHandler.accept(problemId, throwable);
                 }
             } finally {
-                firstSolutionConsumption.release();
+                semaphore.release();
             }
         }, consumerExecutor);
     }

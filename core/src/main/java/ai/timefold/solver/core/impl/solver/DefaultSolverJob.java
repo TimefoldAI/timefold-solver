@@ -46,7 +46,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     private final Consumer<? super Solution_> bestSolutionConsumer;
     private final Consumer<? super Solution_> finalBestSolutionConsumer;
     private final Consumer<? super Solution_> firstInitializedSolutionConsumer;
-    private final Runnable startSolverJobHandler;
+    private final Consumer<? super Solution_> startSolverJobConsumer;
     private final BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler;
 
     private volatile SolverStatus solverStatus;
@@ -64,7 +64,8 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
             Consumer<? super Solution_> bestSolutionConsumer,
             Consumer<? super Solution_> finalBestSolutionConsumer,
             Consumer<? super Solution_> firstInitializedSolutionConsumer,
-            Runnable startSolverJobHandler, BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
+            Consumer<? super Solution_> startSolverJobConsumer,
+            BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
         this.solverManager = solverManager;
         this.problemId = problemId;
         if (!(solver instanceof DefaultSolver)) {
@@ -76,7 +77,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
         this.bestSolutionConsumer = bestSolutionConsumer;
         this.finalBestSolutionConsumer = finalBestSolutionConsumer;
         this.firstInitializedSolutionConsumer = firstInitializedSolutionConsumer;
-        this.startSolverJobHandler = startSolverJobHandler;
+        this.startSolverJobConsumer = startSolverJobConsumer;
         this.exceptionHandler = exceptionHandler;
         solverStatus = SolverStatus.SOLVING_SCHEDULED;
         terminatedLatch = new CountDownLatch(1);
@@ -110,7 +111,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
             solverStatus = SolverStatus.SOLVING_ACTIVE;
             // Create the consumer thread pool only when this solver job is active.
             consumerSupport = new ConsumerSupport<>(getProblemId(), bestSolutionConsumer, finalBestSolutionConsumer,
-                    firstInitializedSolutionConsumer, startSolverJobHandler, exceptionHandler, bestSolutionHolder);
+                    firstInitializedSolutionConsumer, startSolverJobConsumer, exceptionHandler, bestSolutionHolder);
 
             Solution_ problem = problemFinder.apply(problemId);
             // add a phase lifecycle listener that unlock the solver status lock when solving started
@@ -326,7 +327,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
         public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
             // The event is triggered once in the first phase of the solving process
             if (phaseScope.getPhaseIndex() == 0) {
-                consumerSupport.triggerStartSolverJob();
+                consumerSupport.consumeStartSolverJob(phaseScope.getWorkingSolution());
             }
         }
     }

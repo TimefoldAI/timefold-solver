@@ -463,7 +463,7 @@ class SolverManagerTest {
 
     @Test
     @Timeout(60)
-    void testStartJobRunnable() throws ExecutionException, InterruptedException {
+    void testStartJobConsumer() throws ExecutionException, InterruptedException {
         SolverConfig solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         solverManager = SolverManager
@@ -477,7 +477,7 @@ class SolverManagerTest {
         SolverJob<TestdataSolution, Long> solverJob = solverManager.solveBuilder()
                 .withProblemId(1L)
                 .withProblemFinder(problemFinder)
-                .withStartSolverJobHandler(() -> started.setValue(Boolean.TRUE))
+                .withStartSolverJobConsumer((solution) -> started.setValue(Boolean.TRUE))
                 .run();
         solverJob.getFinalBestSolution();
         assertThat(started.getValue()).isTrue();

@@ -82,12 +82,12 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
             withFirstInitializedSolutionConsumer(Consumer<? super Solution_> firstInitializedSolutionConsumer);
 
     /**
-     * Sets the runnable action for when the solver starts its solving process.
+     * Sets the consumer for when the solver starts its solving process.
      *
-     * @param startSolverJobHandler never null, called only once when the solver is starting the solving process
+     * @param startSolverJobConsumer never null, called only once when the solver is starting the solving process
      * @return this, never null
      */
-    SolverJobBuilder<Solution_, ProblemId_> withStartSolverJobHandler(Runnable startSolverJobHandler);
+    SolverJobBuilder<Solution_, ProblemId_> withStartSolverJobConsumer(Consumer<? super Solution_> startSolverJobConsumer);
 
     /**
      * Sets the custom exception handler.

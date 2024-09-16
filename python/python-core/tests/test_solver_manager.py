@@ -286,13 +286,13 @@ def test_solver_config():
     problem: Solution = Solution([Entity('A')], [Value(1), Value(2), Value(3)],
                                  SimpleScore.ONE)
     first_initialized_solution_consumer_called = []
-    start_solver_job_handler_called = []
+    start_solver_job_consumer_called = []
 
     def on_first_initialized_solution_consumer(solution):
         first_initialized_solution_consumer_called.append(1)
 
-    def on_start_solver_job_handler():
-        start_solver_job_handler_called.append(1)
+    def on_start_solver_job_consumer(solution):
+        start_solver_job_consumer_called.append(1)
 
     with SolverManager.create(SolverFactory.create(solver_config)) as solver_manager:
         solver_job = (solver_manager.solve_builder()
@@ -304,10 +304,10 @@ def test_solver_config():
                            )
                       ))
                       .with_first_initialized_solution_consumer(on_first_initialized_solution_consumer)
-                      .with_start_solver_job_handler(on_start_solver_job_handler)
+                      .with_start_solver_job_consumer(on_start_solver_job_consumer)
                       .run())
 
         solution = solver_job.get_final_best_solution()
         assert solution.score.score == 3
         assert len(first_initialized_solution_consumer_called) == 1
-        assert len(start_solver_job_handler_called) == 1
+        assert len(start_solver_job_consumer_called) == 1
