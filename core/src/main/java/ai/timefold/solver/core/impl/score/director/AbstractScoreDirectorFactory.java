@@ -100,8 +100,8 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
     @Override
     public void assertScoreFromScratch(Solution_ solution) {
         // Get the score before uncorruptedScoreDirector.calculateScore() modifies it
-        Score_ score = (Score_) getSolutionDescriptor().getScore(solution);
-        try (InnerScoreDirector<Solution_, Score_> uncorruptedScoreDirector = buildScoreDirector(false, true)) {
+        Score_ score = getSolutionDescriptor().getScore(solution);
+        try (var uncorruptedScoreDirector = buildDerivedScoreDirector(false, true)) {
             uncorruptedScoreDirector.setWorkingSolution(solution);
             Score_ uncorruptedScore = uncorruptedScoreDirector.calculateScore();
             if (!score.equals(uncorruptedScore)) {

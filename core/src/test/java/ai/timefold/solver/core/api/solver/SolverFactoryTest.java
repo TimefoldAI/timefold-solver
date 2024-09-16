@@ -168,8 +168,7 @@ class SolverFactoryTest {
         TestdataSolution solution = new TestdataSolution("s1");
         solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2"), new TestdataEntity("e3")));
         solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
-        try (InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
-                scoreDirectorFactory.buildScoreDirector()) {
+        try (InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
             scoreDirector.setWorkingSolution(solution);
             SimpleScore score = scoreDirector.calculateScore();
             assertThat(score).isNotNull();

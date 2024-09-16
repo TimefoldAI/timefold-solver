@@ -13,6 +13,7 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSession;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSessionFactory;
@@ -72,13 +73,21 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
                 expectShadowVariablesInCorrectState);
     }
 
-    public BavetConstraintSession<Score_> newSession(Solution_ workingSolution, boolean constraintMatchEnabled) {
-        return constraintSessionFactory.buildSession(workingSolution, constraintMatchEnabled);
+    @Override
+    public InnerScoreDirector<Solution_, Score_> buildDerivedScoreDirector(boolean lookUpEnabled,
+            boolean constraintMatchEnabledPreference) {
+        return new BavetConstraintStreamScoreDirector<>(this, lookUpEnabled, constraintMatchEnabledPreference,
+                true, true);
+    }
+
+    public BavetConstraintSession<Score_> newSession(Solution_ workingSolution, boolean constraintMatchEnabled,
+            boolean scoreDirectorDerived) {
+        return constraintSessionFactory.buildSession(workingSolution, constraintMatchEnabled, scoreDirectorDerived);
     }
 
     @Override
     public AbstractScoreInliner<Score_> fireAndForget(Object... facts) {
-        var session = newSession(null, true);
+        var session = newSession(null, true, true);
         Arrays.stream(facts).forEach(session::insert);
         session.calculateScore(0);
         return session.getScoreInliner();

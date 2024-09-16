@@ -63,6 +63,25 @@ public interface InnerScoreDirectorFactory<Solution_, Score_ extends Score<Score
             boolean expectShadowVariablesInCorrectState);
 
     /**
+     * Like {@link #buildScoreDirector(boolean, boolean)}, but makes the score director a derived one.
+     * Derived score directors may make choices which the main score director can not make, such as reducing logging.
+     * Derived score directors are typically used for multithreaded solving, testing and assert modes.
+     *
+     * @param lookUpEnabled true if a {@link ScoreDirector} implementation should track all working objects
+     *        for {@link ScoreDirector#lookUpWorkingObject(Object)}
+     * @param constraintMatchEnabledPreference false if a {@link ScoreDirector} implementation
+     *        should not do {@link ConstraintMatch} tracking even if it supports it.
+     * @return never null
+     * @see InnerScoreDirector#isConstraintMatchEnabled()
+     * @see InnerScoreDirector#getConstraintMatchTotalMap()
+     */
+    default InnerScoreDirector<Solution_, Score_> buildDerivedScoreDirector(boolean lookUpEnabled,
+            boolean constraintMatchEnabledPreference) {
+        // Most score directors don't need derived status; CS will override this.
+        return buildScoreDirector(lookUpEnabled, constraintMatchEnabledPreference, true);
+    }
+
+    /**
      * @return never null
      */
     InitializingScoreTrend getInitializingScoreTrend();

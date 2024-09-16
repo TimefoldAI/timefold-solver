@@ -248,16 +248,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public Solution_ cloneWorkingSolution() {
-        return cloneSolution(workingSolution);
-    }
-
-    @Override
     public Solution_ cloneSolution(Solution_ originalSolution) {
         SolutionDescriptor<Solution_> solutionDescriptor = getSolutionDescriptor();
-        Score_ originalScore = (Score_) solutionDescriptor.getScore(originalSolution);
+        Score_ originalScore = solutionDescriptor.getScore(originalSolution);
         Solution_ cloneSolution = solutionDescriptor.getSolutionCloner().cloneSolution(originalSolution);
-        Score_ cloneScore = (Score_) solutionDescriptor.getScore(cloneSolution);
+        Score_ cloneScore = solutionDescriptor.getScore(cloneSolution);
         if (scoreDirectorFactory.isAssertClonedSolution()) {
             if (!Objects.equals(originalScore, cloneScore)) {
                 throw new IllegalStateException("Cloning corruption: "
@@ -297,23 +292,20 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         calculationCount++;
     }
 
+    /**
+     * @deprecated Unused, but kept for backward compatibility.
+     */
+    @Deprecated(forRemoval = true, since = "1.14.0")
     @Override
     public AbstractScoreDirector<Solution_, Score_, Factory_> clone() {
-        // Breaks incremental score calculation.
-        // Subclasses should overwrite this method to avoid breaking it if possible.
-        AbstractScoreDirector<Solution_, Score_, Factory_> clone =
-                (AbstractScoreDirector<Solution_, Score_, Factory_>) scoreDirectorFactory
-                        .buildScoreDirector(lookUpEnabled, constraintMatchEnabledPreference);
-        clone.setWorkingSolution(cloneWorkingSolution());
-        return clone;
+        throw new UnsupportedOperationException("Cloning score directors is not supported.");
     }
 
     @Override
     public InnerScoreDirector<Solution_, Score_> createChildThreadScoreDirector(ChildThreadType childThreadType) {
         if (childThreadType == ChildThreadType.PART_THREAD) {
-            AbstractScoreDirector<Solution_, Score_, Factory_> childThreadScoreDirector =
-                    (AbstractScoreDirector<Solution_, Score_, Factory_>) scoreDirectorFactory
-                            .buildScoreDirector(lookUpEnabled, constraintMatchEnabledPreference);
+            var childThreadScoreDirector = (AbstractScoreDirector<Solution_, Score_, Factory_>) scoreDirectorFactory
+                    .buildDerivedScoreDirector(lookUpEnabled, constraintMatchEnabledPreference);
             // ScoreCalculationCountTermination takes into account previous phases
             // but the calculationCount of partitions is maxed, not summed.
             childThreadScoreDirector.calculationCount = calculationCount;
@@ -321,9 +313,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         } else if (childThreadType == ChildThreadType.MOVE_THREAD) {
             // TODO The move thread must use constraintMatchEnabledPreference in FULL_ASSERT,
             // but it doesn't have to for Indictment Local Search, in which case it is a performance loss
-            AbstractScoreDirector<Solution_, Score_, Factory_> childThreadScoreDirector =
-                    (AbstractScoreDirector<Solution_, Score_, Factory_>) scoreDirectorFactory
-                            .buildScoreDirector(true, constraintMatchEnabledPreference);
+            var childThreadScoreDirector = (AbstractScoreDirector<Solution_, Score_, Factory_>) scoreDirectorFactory
+                    .buildDerivedScoreDirector(true, constraintMatchEnabledPreference);
             childThreadScoreDirector.setWorkingSolution(cloneWorkingSolution());
             return childThreadScoreDirector;
         } else {
@@ -593,7 +584,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (assertionScoreDirectorFactory == null) {
             assertionScoreDirectorFactory = scoreDirectorFactory;
         }
-        try (var uncorruptedScoreDirector = assertionScoreDirectorFactory.buildScoreDirector(false, true)) {
+        try (var uncorruptedScoreDirector = assertionScoreDirectorFactory.buildDerivedScoreDirector(false, true)) {
             uncorruptedScoreDirector.setWorkingSolution(workingSolution);
             Score_ uncorruptedScore = uncorruptedScoreDirector.calculateScore();
             if (!score.equals(uncorruptedScore)) {
