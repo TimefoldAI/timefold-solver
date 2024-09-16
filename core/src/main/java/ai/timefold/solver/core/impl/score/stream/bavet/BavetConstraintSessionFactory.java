@@ -2,11 +2,11 @@ package ai.timefold.solver.core.impl.score.stream.bavet;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -28,6 +28,7 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintLibrary;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
+import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +67,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
         var scoreDefinition = solutionDescriptor.<Score_> getScoreDefinition();
         var zeroScore = scoreDefinition.getZeroScore();
         var constraintStreamSet = new LinkedHashSet<BavetAbstractConstraintStream<Solution_>>();
-        var constraintWeightMap = new HashMap<Constraint, Score_>(constraintLibrary.getConstraints().size());
+        var constraintWeightMap = CollectionUtils.<Constraint, Score_> newHashMap(constraintLibrary.getConstraints().size());
 
         // Only log constraint weights if logging is enabled; otherwise we don't need to build the string.
         var constraintWeightLoggingEnabled = !scoreDirectorDerived && LOGGER.isEnabledForLevel(CONSTRAINT_WEIGHT_LOGGING_LEVEL);
@@ -118,6 +119,11 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
             LOGGER.atLevel(CONSTRAINT_WEIGHT_LOGGING_LEVEL)
                     .log(constraintWeightString.toString().trim());
         }
+        return new BavetConstraintSession<>(scoreInliner, buildNodeNetwork(constraintStreamSet, scoreInliner));
+    }
+
+    private static <Solution_, Score_ extends Score<Score_>> NodeNetwork buildNodeNetwork(
+            Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet, AbstractScoreInliner<Score_> scoreInliner) {
         /*
          * Build constraintStreamSet in reverse order to create downstream nodes first
          * so every node only has final variables (some of which have downstream node method references).
@@ -162,7 +168,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
             var layer = layerMap.get((long) i);
             layeredNodes[i] = layer.toArray(new Propagator[0]);
         }
-        return new BavetConstraintSession<>(scoreInliner, declaredClassToNodeMap, layeredNodes);
+        return new NodeNetwork(declaredClassToNodeMap, layeredNodes);
     }
 
     /**
@@ -180,7 +186,8 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
      * @param buildHelper never null
      * @return at least 0
      */
-    private long determineLayerIndex(AbstractNode node, NodeBuildHelper<Score_> buildHelper) {
+    private static <Score_ extends Score<Score_>> long determineLayerIndex(AbstractNode node,
+            NodeBuildHelper<Score_> buildHelper) {
         if (node instanceof AbstractForEachUniNode<?>) { // ForEach nodes, and only they, are in layer 0.
             return 0;
         } else if (node instanceof AbstractJoinNode<?, ?, ?> joinNode) {
@@ -199,8 +206,8 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
         }
     }
 
-    private long determineLayerIndexOfBinaryOperation(BavetStreamBinaryOperation<?> nodeCreator,
-            NodeBuildHelper<Score_> buildHelper) {
+    private static <Score_ extends Score<Score_>> long determineLayerIndexOfBinaryOperation(
+            BavetStreamBinaryOperation<?> nodeCreator, NodeBuildHelper<Score_> buildHelper) {
         var leftParent = nodeCreator.getLeftParent();
         var rightParent = nodeCreator.getRightParent();
         var leftParentNode = buildHelper.findParentNode(leftParent);
