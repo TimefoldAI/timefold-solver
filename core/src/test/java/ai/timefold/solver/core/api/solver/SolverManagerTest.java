@@ -537,6 +537,8 @@ class SolverManagerTest {
                 .run();
 
         solverJob.getFinalBestSolution();
+        // The score is calculated during the solving starting phase without applying any moves.
+        // This explains why the count has one more unit.
         assertThat(solverJob.getScoreCalculationCount()).isEqualTo(5L);
         assertThat(solverJob.getMoveEvaluationCount()).isEqualTo(4L);
 
