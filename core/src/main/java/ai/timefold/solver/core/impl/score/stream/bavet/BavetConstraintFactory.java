@@ -65,11 +65,10 @@ public final class BavetConstraintFactory<Solution_>
 
     /**
      * Enables node sharing.
-     * If a constraint already exists in this factory, it replaces it by the old copy.
+     * If a constraint already exists in this factory, it replaces it with the old copy.
      * {@link BavetAbstractConstraintStream} implement equals/hashcode ignoring child streams.
      * <p>
-     * {@link BavetConstraintSessionFactory#buildSession(Object, boolean)} relies on this
-     * occurring for all streams.
+     * {@link BavetConstraintSessionFactory#buildSession(Object, boolean, boolean)} needs this to happen for all streams.
      * <p>
      * This must be called before the stream receives child streams.
      *

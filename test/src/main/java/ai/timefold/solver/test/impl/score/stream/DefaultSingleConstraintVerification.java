@@ -3,7 +3,6 @@ package ai.timefold.solver.test.impl.score.stream;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.test.api.score.stream.SingleConstraintVerification;
 
@@ -23,7 +22,7 @@ public final class DefaultSingleConstraintVerification<Solution_, Score_ extends
 
     @Override
     public DefaultSingleConstraintAssertion<Solution_, Score_> givenSolution(Solution_ solution) {
-        try (InnerScoreDirector<Solution_, Score_> scoreDirector = scoreDirectorFactory.buildScoreDirector(true, true)) {
+        try (var scoreDirector = scoreDirectorFactory.buildDerivedScoreDirector(true, true)) {
             scoreDirector.setWorkingSolution(Objects.requireNonNull(solution));
             return new DefaultSingleConstraintAssertion<>(scoreDirectorFactory, scoreDirector.calculateScore(),
                     scoreDirector.getConstraintMatchTotalMap(), scoreDirector.getIndictmentMap());

@@ -203,7 +203,9 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      *
      * @return never null, planning clone
      */
-    Solution_ cloneWorkingSolution();
+    default Solution_ cloneWorkingSolution() {
+        return cloneSolution(getWorkingSolution());
+    }
 
     /**
      * Returns a planning clone of the solution,
@@ -227,17 +229,6 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @return never null
      */
     SupplyManager getSupplyManager();
-
-    /**
-     * Clones this {@link ScoreDirector} and its {@link PlanningSolution working solution}.
-     * Use {@link #getWorkingSolution()} to retrieve the {@link PlanningSolution working solution} of that clone.
-     * <p>
-     * This is heavy method, because it usually breaks incremental score calculation. Use it sparingly.
-     * Therefore it's best to clone lazily by delaying the clone call as long as possible.
-     *
-     * @return never null
-     */
-    InnerScoreDirector<Solution_, Score_> clone();
 
     InnerScoreDirector<Solution_, Score_> createChildThreadScoreDirector(ChildThreadType childThreadType);
 

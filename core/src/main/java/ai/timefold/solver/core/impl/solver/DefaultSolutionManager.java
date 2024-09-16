@@ -48,7 +48,7 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
                     + ".update() with this solutionUpdatePolicy (" + solutionUpdatePolicy + ").");
         }
         return callScoreDirector(solution, solutionUpdatePolicy,
-                s -> (Score_) s.getSolutionDescriptor().getScore(s.getWorkingSolution()), false, false);
+                s -> s.getSolutionDescriptor().getScore(s.getWorkingSolution()), false, false);
     }
 
     private <Result_> Result_ callScoreDirector(Solution_ solution,
