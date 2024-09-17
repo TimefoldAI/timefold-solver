@@ -25,6 +25,7 @@ import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
+import ai.timefold.solver.core.impl.solver.event.SolverLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
@@ -324,11 +325,8 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
         }
 
         @Override
-        public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-            // The event is triggered once in the first phase of the solving process
-            if (phaseScope.getPhaseIndex() == 0) {
-                consumerSupport.consumeStartSolverJob(phaseScope.getWorkingSolution());
-            }
+        public void solvingStarted(SolverScope<Solution_> solverScope) {
+            consumerSupport.consumeStartSolverJob(solverScope.getWorkingSolution());
         }
     }
 }
