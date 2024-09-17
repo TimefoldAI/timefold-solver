@@ -1,6 +1,6 @@
 [#localSearch]
 = Local search
-:page-aliases: olocal-search/local-search.adoc
+:page-aliases: local-search/local-search.adoc
 :doctype: book
 :sectnums:
 :icons: font
