@@ -53,6 +53,7 @@ import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotated
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
@@ -472,15 +473,15 @@ class SolverManagerTest {
         Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
                 PlannerTestUtils.generateTestdataSolution("s1"));
 
-        MutableObject<Boolean> started = new MutableObject<>(Boolean.FALSE);
+        MutableInt started = new MutableInt(0);
 
         SolverJob<TestdataSolution, Long> solverJob = solverManager.solveBuilder()
                 .withProblemId(1L)
                 .withProblemFinder(problemFinder)
-                .withStartSolverJobConsumer((solution) -> started.setValue(Boolean.TRUE))
+                .withSolverJobStartedConsumer((solution) -> started.increment())
                 .run();
         solverJob.getFinalBestSolution();
-        assertThat(started.getValue()).isTrue();
+        assertThat(started.getValue()).isOne();
     }
 
     @Test

@@ -14,7 +14,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
     private final Consumer<? super Solution_> bestSolutionConsumer;
     private final Consumer<? super Solution_> finalBestSolutionConsumer;
     private final Consumer<? super Solution_> firstInitializedSolutionConsumer;
-    private final Consumer<? super Solution_> startSolverJobConsumer;
+    private final Consumer<? super Solution_> solverJobStartedConsumer;
     private final BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler;
     private final Semaphore activeConsumption = new Semaphore(1);
     private final Semaphore firstSolutionConsumption = new Semaphore(1);
@@ -26,7 +26,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
 
     public ConsumerSupport(ProblemId_ problemId, Consumer<? super Solution_> bestSolutionConsumer,
             Consumer<? super Solution_> finalBestSolutionConsumer, Consumer<? super Solution_> firstInitializedSolutionConsumer,
-            Consumer<? super Solution_> startSolverJobConsumer,
+            Consumer<? super Solution_> solverJobStartedConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
             BestSolutionHolder<Solution_> bestSolutionHolder) {
         this.problemId = problemId;
@@ -37,7 +37,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         this.exceptionHandler = exceptionHandler;
         this.bestSolutionHolder = bestSolutionHolder;
         this.firstInitializedSolution = null;
-        this.startSolverJobConsumer = startSolverJobConsumer;
+        this.solverJobStartedConsumer = solverJobStartedConsumer;
     }
 
     // Called on the Solver thread.
@@ -170,7 +170,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
      * because the consumption may not be executed before the final best solution is executed.
      */
     private void scheduleStartJobConsumption() {
-        scheduleConsumption(startSolverJobConsumption, startSolverJobConsumer, initialSolution);
+        scheduleConsumption(startSolverJobConsumption, solverJobStartedConsumer, initialSolution);
     }
 
     private void scheduleConsumption(Semaphore semaphore, Consumer<? super Solution_> consumer, Solution_ solution) {

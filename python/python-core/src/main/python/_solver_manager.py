@@ -308,13 +308,13 @@ class SolverJobBuilder(Generic[Solution_, ProblemId_]):
         return SolverJobBuilder(
             self._delegate.withFirstInitializedSolutionConsumer(java_consumer))
 
-    def with_start_solver_job_consumer(self, start_solver_job_consumer: Callable[[Solution_], None]) -> 'SolverJobBuilder':
+    def with_solver_job_started_consumer(self, solver_job_started_consumer: Callable[[Solution_], None]) -> 'SolverJobBuilder':
         """
         Sets the consumer for when the solver starts its solving process.
 
         Parameters
         ----------
-        start_solver_job_consumer : Callable[[Solution_], None]
+        solver_job_started_consumer : Callable[[Solution_], None]
             called only once when the solver is starting the solving process
 
         Returns
@@ -325,9 +325,9 @@ class SolverJobBuilder(Generic[Solution_, ProblemId_]):
         from java.util.function import Consumer
         from _jpyinterpreter import unwrap_python_like_object
 
-        java_consumer = Consumer @ (lambda solution: start_solver_job_consumer(unwrap_python_like_object(solution)))
+        java_consumer = Consumer @ (lambda solution: solver_job_started_consumer(unwrap_python_like_object(solution)))
         return SolverJobBuilder(
-            self._delegate.withStartSolverJobConsumer(java_consumer))
+            self._delegate.withSolverJobStartedConsumer(java_consumer))
 
     def with_exception_handler(self, exception_handler: Callable[[ProblemId_, Exception], None]) -> 'SolverJobBuilder':
         """
