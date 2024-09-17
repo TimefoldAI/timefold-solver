@@ -1,23 +1,23 @@
 [#exhaustiveSearch]
-== Exhaustive search
+= Exhaustive search
 :page-aliases: exhaustive-search/exhaustive-search.adoc
 :doctype: book
 :sectnums:
 :icons: font
 
 [#exhaustiveSearchOverview]
-=== Overview
+== Overview
 
 Exhaustive Search will always find the global optimum and recognize it too.
 That being said, it doesn't scale (not even beyond toy data sets) and is therefore mostly useless.
 
 
 [#bruteForce]
-=== Brute force
+== Brute force
 
 
 [#bruteForceAlgorithm]
-==== Algorithm description
+=== Algorithm description
 
 The Brute Force algorithm creates and evaluates every possible solution.
 
@@ -33,7 +33,7 @@ as shown in <<scalabilityOfExhaustiveSearch,scalability of Exhaustive Search>>.
 
 
 [#bruteForceConfiguration]
-==== Configuration
+=== Configuration
 
 Simplest configuration of Brute Force:
 
@@ -50,11 +50,11 @@ Simplest configuration of Brute Force:
 
 
 [#branchAndBound]
-=== Branch and bound
+== Branch and bound
 
 
 [#branchAndBoundAlgorithm]
-==== Algorithm description
+=== Algorithm description
 
 Branch And Bound also explores nodes in an exponential search tree, but it investigates more promising nodes first and prunes away worthless nodes.
 
@@ -84,7 +84,7 @@ as shown in <<scalabilityOfExhaustiveSearch,scalability of Exhaustive Search>>.
 
 
 [#branchAndBoundConfiguration]
-==== Configuration
+=== Configuration
 
 Simplest configuration of Branch And Bound:
 
@@ -175,7 +175,7 @@ The `valueSorterManner` options are:
 
 
 [#scalabilityOfExhaustiveSearch]
-=== Scalability of exhaustive search
+== Scalability of exhaustive search
 
 Exhaustive Search variants suffer from two big scalability issues:
 
