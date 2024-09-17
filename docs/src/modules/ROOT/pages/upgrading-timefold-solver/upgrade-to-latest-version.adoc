@@ -1,6 +1,5 @@
 [#upgradeToLatestVersion]
 = Upgrade to the latest version
-:page-aliases: upgrading-timefold-solver/upgrade-to-latest-version.adoc
 :doctype: book
 :sectnums:
 :icons: font
