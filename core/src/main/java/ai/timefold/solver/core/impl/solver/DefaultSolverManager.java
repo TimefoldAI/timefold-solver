@@ -1,5 +1,8 @@
 package ai.timefold.solver.core.impl.solver;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -40,6 +43,7 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
     private final SolverFactory<Solution_> solverFactory;
     private final ExecutorService solverThreadPool;
     private final ConcurrentMap<Object, DefaultSolverJob<Solution_, ProblemId_>> problemIdToSolverJobMap;
+    private final List<DefaultSolverJob<Solution_, ProblemId_>> resourcesToRelease;
 
     public DefaultSolverManager(SolverFactory<Solution_> solverFactory,
             SolverManagerConfig solverManagerConfig) {
@@ -55,6 +59,7 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
         }
         solverThreadPool = Executors.newFixedThreadPool(parallelSolverCount, threadFactory);
         problemIdToSolverJobMap = new ConcurrentHashMap<>(parallelSolverCount * 10);
+        resourcesToRelease = Collections.synchronizedList(new ArrayList<>(parallelSolverCount * 10));
     }
 
     public SolverFactory<Solution_> getSolverFactory() {
@@ -170,10 +175,12 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
     public void close() {
         solverThreadPool.shutdownNow();
         problemIdToSolverJobMap.values().forEach(DefaultSolverJob::close);
+        resourcesToRelease.forEach(DefaultSolverJob::close);
     }
 
     void unregisterSolverJob(ProblemId_ problemId) {
-        problemIdToSolverJobMap.remove(getProblemIdOrThrow(problemId));
+        var job = problemIdToSolverJobMap.remove(getProblemIdOrThrow(problemId));
+        resourcesToRelease.add(job);
     }
 
 }
