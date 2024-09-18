@@ -403,12 +403,10 @@ to control the frequency of this move:
             <fixedProbabilityWeight>100.0</fixedProbabilityWeight>
             <changeMoveSelector/>
             <swapMoveSelector/>
-            <pillarChangeMoveSelector/>
-            <pillarSwapMoveSelector/>
         </unionMoveSelector>
-        <ruinMoveSelector>
+        <ruinRecreateMoveSelector>
             <fixedProbabilityWeight>1.0</fixedProbabilityWeight>
-        </ruinMoveSelector>
+        </ruinRecreateMoveSelector>
     </unionMoveSelector>
 ----
 
@@ -630,14 +628,12 @@ to control the frequency of this move:
     <unionMoveSelector>
         <unionMoveSelector>
             <fixedProbabilityWeight>100.0</fixedProbabilityWeight>
-            <changeMoveSelector/>
-            <swapMoveSelector/>
-            <pillarChangeMoveSelector/>
-            <pillarSwapMoveSelector/>
+            <listChangeMoveSelector/>
+            <listSwapMoveSelector/>
         </unionMoveSelector>
-        <listRuinMoveSelector>
+        <listRuinRecreateMoveSelector>
             <fixedProbabilityWeight>1.0</fixedProbabilityWeight>
-        </listRuinMoveSelector>
+        </listRuinRecreateMoveSelector>
     </unionMoveSelector>
 ----
 
