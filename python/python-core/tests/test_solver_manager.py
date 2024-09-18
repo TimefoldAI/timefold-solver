@@ -243,7 +243,6 @@ def test_error():
         assert the_problem_id == 1
         assert the_exception is not None
 
-
 def test_solver_config():
     @dataclass
     class Value:

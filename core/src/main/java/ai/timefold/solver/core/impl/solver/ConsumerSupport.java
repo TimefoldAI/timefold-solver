@@ -34,10 +34,11 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         this.finalBestSolutionConsumer = finalBestSolutionConsumer == null ? finalBestSolution -> {
         } : finalBestSolutionConsumer;
         this.firstInitializedSolutionConsumer = firstInitializedSolutionConsumer;
+        this.solverJobStartedConsumer = solverJobStartedConsumer;
         this.exceptionHandler = exceptionHandler;
         this.bestSolutionHolder = bestSolutionHolder;
         this.firstInitializedSolution = null;
-        this.solverJobStartedConsumer = solverJobStartedConsumer;
+        this.initialSolution = null;
     }
 
     // Called on the Solver thread.
@@ -115,6 +116,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
                 // Cancel problem changes that arrived after the solver terminated.
                 bestSolutionHolder.cancelPendingChanges();
                 activeConsumption.release();
+                startSolverJobConsumption.release();
                 firstSolutionConsumption.release();
                 disposeConsumerThread();
             }
