@@ -29,94 +29,92 @@ It solves use cases such as:
 image::introduction/useCaseOverview.png[align="center"]
 
 [#whatIsAPlanningProblem]
-== What is a planning problem?
+== Planning
 
-image::introduction/whatIsAPlanningProblem.png[align="center"]
+The need to create plans generally arises from a desire to achieve a *goal*:
 
-A planning problem has an optimal goal, based on limited resources and under specific constraints. Optimal goals can be any number of things, such as:
+* Build a house.
+* Correctly staff a hospital shift.
+* Complete work at all customer locations.
 
-* Maximized profits - the optimal goal results in the highest possible profit.
-* Minimized ecological footprint - the optimal goal has the least amount of environmental impact.
-* Maximized satisfaction for employees or customers - the optimal goal prioritizes the needs of employees or customers.
+Achieving those goals involves organizing the available *resources*.
+To correctly staff a hospital you need enough qualified personnel in a variety of fields and specializations to cover the opening hours of the hospital.
 
-The ability to achieve these goals relies on the number of resources available, such as:
+Any plan to deploy resources, whether to staff a hospital shift or to assemble the building materials for a new house, is done under *constraints*.
 
-* The number of people.
-* Amount of time.
-* Budget.
-* Physical assets, for example, machinery, vehicles, computers, buildings, etc.
+Constraints could be laws of the universe; people can't work two shifts in two separate locations at the same time,
+and you can't mount a roof on a house that doesn't exist.
+Constraints can also be relevant legislation; employees need a certain number of hours between shifts or are only allowed to work a maximum number of hours per week.
+Employee preferences can also be considered constraints, such as, certain employees prefer to work specific shift patterns.
 
-Specific constraints related to these resources must also be taken into account, such as the number of hours a person works, their ability to use certain machines, or compatibility between pieces of equipment.
+[#feasiblePlans]
+=== Feasible plans
 
-Timefold Solver helps Java^TM^, Kotlin and Python programmers solve constraint satisfaction problems efficiently.
-Under the hood, it combines optimization heuristics and metaheuristics with very efficient score calculation.
-
-
-[#aPlanningProblemIsNPCompleteOrNPHard]
-=== A planning problem is NP-complete or NP-hard
-
-All the use cases above are _probably_ https://en.wikipedia.org/wiki/NP-completeness[NP-complete/NP-hard],
-which means in layman's terms:
-
-* It's easy to verify a given solution to a problem in reasonable time.
-* There is no silver bullet to find the optimal solution of a problem in reasonable time (*).
+Any plan needs to consider all three elements, goals, resources, and constraints, in balance to be a feasible plan.
+A plan that fails to account for all the elements of the problem is an infeasible plan.
+For instance, if a hospital staff roster covers all shifts, but assigns employees back-to-back shifts with no breaks for sleep or life outside work,
+it is not a valid plan.
 
 
-[NOTE]
-====
-(*) At least, none of the smartest computer scientists in the world have found such a silver bullet yet.
-But if they find one for 1 NP-complete problem, it will work for every NP-complete problem.
+== Planning problems are hard to solve
 
-In fact, there's a $ 1,000,000 reward for anyone that proves if https://en.wikipedia.org/wiki/P_%3D_NP_problem[such a silver bullet actually exists or not].
-====
+Planning problems become harder to solve as the number of resources and constraints increase.
+Creating an employee shift schedule for a small team of four employees is fairly straightforward.
+However, if each employee performs a specific function within the business and those functions need to be performed in a specific order,
+changes that affect one employee quickly cascade and affect everybody on the team.
+If parts are delivered late and prevent one employee from completing their tasks, subsequent work will also be delayed.
 
-The implication of this is pretty dire: solving your problem is probably harder than you anticipated, because the two common techniques won't suffice:
+As more employees and different work specializations are added, things become much more complicated.
 
-* A Brute Force algorithm (even a smarter variant) will take too long.
-* A quick algorithm, such as in bin packing, __putting in the largest items first__, will return a solution that is far from optimal.
+For a trivial field service routing problem with 4 vehicles and 8 visits, the number of possibilities that a brute algorithm considers is 19,958,418.
 
-By using advanced optimization algorithms, *Timefold Solver does find a near-optimal solution in reasonable time for such planning problems.*
+What would take a team of planners many hours to schedule can be automatically scheduled by Timefold in a fraction of the time.
 
+== Operations Research
+
+Operations Research (OR) is a field of research that is focused on finding optimal (or near optimal) solutions to problems with techniques that improve decision-making.
+
+Constraint satisfaction programming is part of Operations Research that aims to satisfy all the constraints of a problem.
+
+== Planning AI
+
+Planning AI is a type of artificial intelligence designed specifically to handle complex planning and scheduling tasks, and to satisfy the constraints of planning problems.
+Instead of just automating simple, repetitive tasks, it helps you make better decisions by sorting through countless possibilities to find the best solutions—saving you time, reducing costs, and improving efficiency.
+
+=== Why Planning AI is Different
+Traditional methods of planning often involve manually sifting through options or relying on basic tools that can’t keep up with the complexity of real-world problems.
+Planning AI, on the other hand, uses advanced strategies to quickly focus on the most promising solutions, even when the situation is extremely complicated.
+Planning AI also makes it possible to understand the final solution with a breakdown of which constraints have been violated and scores for individual constraints and an overall score.
+This makes Planning AI incredibly valuable in industries where getting the right plan is crucial—whether that’s scheduling workers, routing deliveries, or managing resources in a factory.
+
+Planning AI is designed to be accessible, so you can start improving your planning process right away.
 
 [#aPlanningProblemHasConstraints]
-=== A planning problem has (hard and soft) constraints
+== Constraints
 
-Usually, a planning problem has at least two levels of constraints:
+Constraints can be considered hard, medium, or soft.
 
-* A _(negative) hard constraint_ must not be broken. For example: __1 teacher cannot teach 2 different lessons at the same time__.
-* A _(negative) soft constraint_ should not be broken if it can be avoided. For example: __Teacher A does not like to teach on Friday afternoon__.
+Hard constraints represent rules and limitations of the real world that any planning solution has to respect.
+For instance, there are only 24 hours in a day and people can only be in one place at a time.
+Hard constraints also include rules that must be adhered to, for instance,  employee contracts and the order in which dependent tasks are completed.
 
-Some problems have positive constraints too:
+Breaking hard constraints would result in infeasible plans.
 
-* A _positive soft constraint (or reward)_ should be fulfilled if possible. For example: __Teacher B likes to teach on Monday morning__.
+Medium constraints help manage plans when resources are limited, (for instance, when there aren't enough technicians to complete all the customer visits or there aren't enough employees to work all the available shifts).
+Medium constraints incentivize Timefold Platform to assign as many entities (visits or shifts) as possible.
 
-Some basic problems only have hard constraints.
-Some problems have three or more levels of constraints - hard, medium and soft constraints.
+Soft constraints help optimize plans based on the business goals, for instance, minimize travel time between customer visits or assign employees to their preferred shifts.
 
-These constraints define the _score calculation_ (AKA __fitness function__) of a planning problem.
-Each solution of a planning problem can be graded with a score.
-**With Timefold Solver, problems are modeled in an object-oriented paradigm in languages such as Java^TM^, Kotlin or Python.**.
-Such code is easy, flexible and scalable.
+To help determine the quality of the solution, plans are assigned a score with values for hard, medium, and soft constraints.
 
+`"0hard/-257medium/-6119520soft"`
 
-[#aPlanningProblemHasAHugeSearchSpace]
-=== A planning problem has a huge search space
+From this example score we can see zero hard constraints were broken, while both the medium and soft scores have negative values (the scores do not show how many constraints were broken, but values associated with those constraints).
 
-A planning problem has a number of __solutions__.
-There are several categories of solutions:
+Because breaking hard constraints would result in an infeasible solution, a solution that breaks zero hard constraints and has a soft constraint score of -1,000,000
+is better than a solution that breaks one hard constraint and has a soft constraint score of 0.
 
-* A _possible solution_ is any solution, whether or not it breaks any number of constraints. Planning problems tend to have an incredibly large number of possible solutions. Many of those solutions are worthless.
-* A _feasible solution_ is a solution that does not break any (negative) hard constraints. The number of feasible solutions tends to be relative to the number of possible solutions. Sometimes there are no feasible solutions. Every feasible solution is a possible solution.
-* An _optimal solution_ is a solution with the highest score. Planning problems tend to have 1 or a few optimal solutions. There is always at least 1 optimal solution, even in the case that there are no feasible solutions and the optimal solution isn't feasible.
-* The _best solution found_ is the solution with the highest score found by an implementation in a given amount of time. The best solution found is likely to be feasible and, given enough time, it's an optimal solution.
-
-Counterintuitively, the number of possible solutions is huge (if calculated correctly), even with a small dataset.
-As you can see in the examples, most instances have a lot more possible solutions than the minimal number of atoms in the known universe (10^80). Because there is no silver bullet to find the optimal solution, any implementation is forced to evaluate at least a subset of all those possible solutions.
-
-Timefold Solver supports several optimization algorithms to efficiently wade through that incredibly large number of possible solutions.
-Depending on the use case, some optimization algorithms perform better than others, but it's impossible to tell in advance.
-**With Timefold Solver, it is easy to switch the optimization algorithm**,
-by changing the solver configuration in a few lines of code.
+The weight of constraints can be tweaked to adjust their impact on the solution.
 
 [#timefoldSolverStatus]
 == Status of Timefold Solver
