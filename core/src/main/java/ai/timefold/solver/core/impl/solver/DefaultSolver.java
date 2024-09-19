@@ -313,11 +313,11 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
     }
 
     public void outerSolvingEnded(SolverScope<Solution_> solverScope) {
-        logger.info("Solving ended: time spent ({}), best score ({}), score calculation speed ({}/sec), "
+        logger.info("Solving ended: time spent ({}), best score ({}), move evaluation speed ({}/sec), "
                 + "phase total ({}), environment mode ({}), move thread count ({}).",
                 solverScope.getTimeMillisSpent(),
                 solverScope.getBestScore(),
-                solverScope.getScoreCalculationSpeed(),
+                solverScope.getMoveEvaluationSpeed(),
                 phaseList.size(),
                 environmentMode.name(),
                 moveThreadCountDescription);
