@@ -1,6 +1,5 @@
 [#introduction]
 = Introduction
-// Redirect to this page from .../docs/timefold/latest.
 :page-aliases: ../index.adoc
 :doctype: book
 :sectnums:
@@ -10,8 +9,7 @@
 == What is Timefold Solver?
 
 Every organization faces planning problems: providing products or services with a limited set of _constrained_ resources (employees, assets, time and money).
-Timefold Solver optimizes such planning to do more business with less resources.
-This is known as _Constraint Satisfaction Programming_ (which is part of the _Operations Research_ discipline).
+Timefold Solver's <<planningAI,Planning AI>> optimizes these problems to do more business with less resources using _Constraint Satisfaction Programming_, which is part of the _<<operationsResearch,Operations Research>>_ discipline.
 
 https://timefold.ai[Timefold Solver] is a lightweight, embeddable constraint satisfaction engine which optimizes planning problems.
 It solves use cases such as:
@@ -55,8 +53,7 @@ A plan that fails to account for all the elements of the problem is an infeasibl
 For instance, if a hospital staff roster covers all shifts, but assigns employees back-to-back shifts with no breaks for sleep or life outside work,
 it is not a valid plan.
 
-
-== Planning problems are hard to solve
+=== Planning problems are hard to solve
 
 Planning problems become harder to solve as the number of resources and constraints increase.
 Creating an employee shift schedule for a small team of four employees is fairly straightforward.
@@ -68,20 +65,22 @@ As more employees and different work specializations are added, things become mu
 
 For a trivial field service routing problem with 4 vehicles and 8 visits, the number of possibilities that a brute algorithm considers is 19,958,418.
 
-What would take a team of planners many hours to schedule can be automatically scheduled by Timefold in a fraction of the time.
+What would take a team of planners many hours to schedule can be automatically scheduled by Timefold Solver in a fraction of the time.
 
-== Operations Research
+[#operationsResearch]
+==== Operations Research
 
 Operations Research (OR) is a field of research that is focused on finding optimal (or near optimal) solutions to problems with techniques that improve decision-making.
 
 Constraint satisfaction programming is part of Operations Research that aims to satisfy all the constraints of a problem.
 
-== Planning AI
+[#planningAI]
+=== Planning AI
 
 Planning AI is a type of artificial intelligence designed specifically to handle complex planning and scheduling tasks, and to satisfy the constraints of planning problems.
 Instead of just automating simple, repetitive tasks, it helps you make better decisions by sorting through countless possibilities to find the best solutions—saving you time, reducing costs, and improving efficiency.
 
-=== Why Planning AI is Different
+==== Why Planning AI is different
 Traditional methods of planning often involve manually sifting through options or relying on basic tools that can’t keep up with the complexity of real-world problems.
 Planning AI, on the other hand, uses advanced strategies to quickly focus on the most promising solutions, even when the situation is extremely complicated.
 Planning AI also makes it possible to understand the final solution with a breakdown of which constraints have been violated and scores for individual constraints and an overall score.
@@ -90,7 +89,7 @@ This makes Planning AI incredibly valuable in industries where getting the right
 Planning AI is designed to be accessible, so you can start improving your planning process right away.
 
 [#aPlanningProblemHasConstraints]
-== Constraints
+=== Constraints
 
 Constraints can be considered hard, medium, or soft.
 
@@ -111,8 +110,9 @@ To help determine the quality of the solution, plans are assigned a score with v
 
 From this example score we can see zero hard constraints were broken, while both the medium and soft scores have negative values (the scores do not show how many constraints were broken, but values associated with those constraints).
 
-Because breaking hard constraints would result in an infeasible solution, a solution that breaks zero hard constraints and has a soft constraint score of -1,000,000
-is better than a solution that breaks one hard constraint and has a soft constraint score of 0.
+Because breaking hard constraints would result in an infeasible solution,
+a solution that breaks zero hard constraints and has a soft constraint score of -1,000,000 is better
+than a solution that breaks one hard constraint and has a soft constraint score of 0.
 
 The weight of constraints can be tweaked to adjust their impact on the solution.
 
