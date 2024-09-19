@@ -3,29 +3,27 @@
 _Planning optimization made easy._  
 [timefold.ai](https://timefold.ai)
 
-[![PyPI](https://img.shields.io/pypi/v/timefold?style=for-the-badge& "PyPI")](https://pypi.org/project/timefold/)
-[![License](https://img.shields.io/github/license/TimefoldAI/timefold-solver?style=for-the-badge&logo=apache)](https://www.apache.org/licenses/LICENSE-2.0)
-[![JVM support](https://img.shields.io/badge/Java-17+-brightgreen.svg?style=for-the-badge)](https://sdkman.io)
-[![Python support](https://img.shields.io/badge/Python-3.10+-brightgreen.svg?style=for-the-badge)](https://www.python.org/downloads)
-[![Commit Activity](https://img.shields.io/github/commit-activity/m/TimefoldAI/timefold-solver?label=commits&style=for-the-badge)](https://github.com/TimefoldAI/timefold-solver/pulse)
-
-[![Stackoverflow](https://img.shields.io/badge/stackoverflow-ask_question-orange.svg?logo=stackoverflow&style=for-the-badge)](https://stackoverflow.com/questions/tagged/timefold)
+[![Stackoverflow](https://img.shields.io/badge/stackoverflow-ask_question-orange.svg?logo=stackoverflow&style=for-the-badge)](https://stackoverflow.com/questions/tagged/timefold) 
 [![GitHub Discussions](https://img.shields.io/github/discussions/TimefoldAI/timefold-solver?style=for-the-badge&logo=github)](https://github.com/TimefoldAI/timefold-solver/discussions)
-[![GitHub Issues](https://img.shields.io/github/issues/TimefoldAI/timefold-solver?style=for-the-badge&logo=github)](https://github.com/TimefoldAI/timefold-solver/issues)
+
+[![PyPI](https://img.shields.io/pypi/v/timefold?style=for-the-badge& "PyPI")](https://pypi.org/project/timefold/) 
+[![Python support](https://img.shields.io/badge/Python-3.10+-brightgreen.svg?style=for-the-badge)](https://www.python.org/downloads)
+[![License](https://img.shields.io/github/license/TimefoldAI/timefold-solver?style=for-the-badge&logo=apache)](https://www.apache.org/licenses/LICENSE-2.0)
 
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=ai.timefold:timefold-solver&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=ai.timefold:timefold-solver)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=ai.timefold:timefold-solver&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=ai.timefold:timefold-solver)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=ai.timefold:timefold-solver&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=ai.timefold:timefold-solver)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=ai.timefold:timefold-solver&metric=coverage)](https://sonarcloud.io/summary/new_code?id=ai.timefold:timefold-solver)
 
-Timefold Solver for Python is an AI constraint solver to optimize
+
+Timefold Solver is an AI constraint solver you can use to optimize
 the Vehicle Routing Problem, Employee Rostering, Maintenance Scheduling, Task Assignment, School Timetabling,
 Cloud Optimization, Conference Scheduling, Job Shop Scheduling and many more planning problems.
 
-Using Timefold Solver for Python is significantly slower 
+Using Timefold Solver in Python is significantly slower 
 than using [Timefold Solver for Java](https://github.com/TimefoldAI/timefold-solver) or Kotlin.
 
-## Get started with Timefold Solver for Python
+## Get started with Timefold Solver in Python
 
 * [Read a Getting Started guide](https://timefold.ai/docs)
 * [Clone the Quickstarts repository](https://github.com/TimefoldAI/timefold-quickstarts)
@@ -41,7 +39,7 @@ than using [Timefold Solver for Java](https://github.com/TimefoldAI/timefold-sol
 
 ## Build from source
 
-1. [Build the main branch of Timefold Solver for Java from source](https://github.com/TimefoldAI/timefold-solver?tab=readme-ov-file#build-from-source)
+1. [Build the main branch of Timefold Solver from source](https://github.com/TimefoldAI/timefold-solver?tab=readme-ov-file#build-from-source)
 2. Install the repo
    ```shell
    $ pip install git+https://github.com/TimefoldAI/timefold-solver.git
@@ -187,7 +185,7 @@ For a full API spec, visit [the Timefold Documentation](https://timefold.ai/docs
 
 ## Legal notice
 
-Timefold Solver for Python is a derivative work of OptaPy,
+Timefold Solver is a derivative work of OptaPlanner and OptaPy,
 which includes copyrights of the original creator, Red Hat Inc., affiliates, and contributors,
 that were all entirely licensed under the Apache-2.0 license.
 Every source file has been modified.
