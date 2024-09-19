@@ -1,7 +1,6 @@
 :projectKey: ai.timefold:timefold-solver
 :sonarBadge: image:https://sonarcloud.io/api/project_badges/measure?project={projectKey}
 :sonarLink: link="https://sonarcloud.io/dashboard?id={projectKey}"
-
 :branch: main
 
 image::docs/src/modules/ROOT/images/shared/timefold-logo.png[link="https://timefold.ai",Timefold,align="center"]
@@ -9,13 +8,11 @@ image::docs/src/modules/ROOT/images/shared/timefold-logo.png[link="https://timef
 _Planning optimization made easy._ +
 https://timefold.ai[timefold.ai]
 
-image:https://img.shields.io/maven-central/v/ai.timefold.solver/timefold-solver-bom?logo=apache-maven&style=for-the-badge["Maven artifact", link="https://ossindex.sonatype.org/component/pkg:maven/ai.timefold.solver/timefold-solver-bom"]
-image:https://img.shields.io/github/license/TimefoldAI/timefold-solver?style=for-the-badge&logo=apache["License", link="https://www.apache.org/licenses/LICENSE-2.0"]
-image:https://img.shields.io/badge/Java-17+-brightgreen.svg?style=for-the-badge["JVM support", link="https://sdkman.io"]
-image:https://img.shields.io/github/commit-activity/m/TimefoldAI/timefold-solver?label=commits&style=for-the-badge["Commit Activity", link="https://github.com/TimefoldAI/timefold-solver/pulse"]
-
 image:https://img.shields.io/badge/stackoverflow-ask_question-orange.svg?logo=stackoverflow&style=for-the-badge["Stackoverflow", link="https://stackoverflow.com/questions/tagged/timefold"]
 image:https://img.shields.io/github/discussions/TimefoldAI/timefold-solver?style=for-the-badge&logo=github["GitHub Discussions", link="https://github.com/TimefoldAI/timefold-solver/discussions"]
+
+
+image:https://img.shields.io/github/commit-activity/m/TimefoldAI/timefold-solver?label=commits&style=for-the-badge["Commit Activity", link="https://github.com/TimefoldAI/timefold-solver/pulse"]
 image:https://img.shields.io/github/issues/TimefoldAI/timefold-solver?style=for-the-badge&logo=github["GitHub Issues", link="https://github.com/TimefoldAI/timefold-solver/issues"]
 
 {sonarBadge}&style=for-the-badge&metric=reliability_rating["Reliability Rating", {sonarLink}]
@@ -23,13 +20,18 @@ image:https://img.shields.io/github/issues/TimefoldAI/timefold-solver?style=for-
 {sonarBadge}&metric=sqale_rating["Maintainability Rating", {sonarLink}]
 {sonarBadge}&metric=coverage["Coverage", {sonarLink}]
 
-Timefold Solver is an optimization engine evolved from OptaPlanner.
+Timefold Solver is an AI constraint solver for Java,
+https://github.com/TimefoldAI/timefold-solver/tree/main/python#readme[Python] and Kotlin.
+You can use Timefold Solver to optimize the Vehicle Routing Problem, Employee Rostering,
+Maintenance Scheduling, Task Assignment, School Timetabling, Cloud Optimization,
+Conference Scheduling, Job Shop Scheduling and many more planning problems.
+
 Developed by the original OptaPlanner team, our aim is to free the world of wasteful planning.
 
-This README deals with Timefold Solver for Java.
-We also have a version of https://github.com/TimefoldAI/timefold-solver/tree/main/python#readme[Timefold Solver for Python].
+== Get started with Timefold Solver in Java
 
-== Get started with Timefold Solver
+image:https://img.shields.io/maven-central/v/ai.timefold.solver/timefold-solver-bom?logo=apache-maven&style=for-the-badge["Maven artifact", link="https://ossindex.sonatype.org/component/pkg:maven/ai.timefold.solver/timefold-solver-bom"]
+image:https://img.shields.io/badge/Java-17+-brightgreen.svg?style=for-the-badge["JVM support", link="https://sdkman.io"]
 
 * https://timefold.ai/docs[Read a Getting Started guide.]
 * https://github.com/TimefoldAI/timefold-quickstarts[Clone the Quickstarts repository.]
@@ -87,7 +89,7 @@ please https://timefold.ai/company/contact/[contact Timefold] to obtain the appr
 Timefold Solver was https://timefold.ai/blog/2023/optaplanner-fork/[forked] on 20 April 2023 from OptaPlanner,
 which was entirely Apache-2.0 licensed (a permissive license).
 
-Timefold Solver is a derivative work of OptaPlanner,
+Timefold Solver is a derivative work of OptaPlanner and OptaPy,
 which includes copyrights of the original creator, Red Hat Inc., affiliates, and contributors,
 that were all entirely licensed under the Apache-2.0 license.
 Every source file has been modified.
