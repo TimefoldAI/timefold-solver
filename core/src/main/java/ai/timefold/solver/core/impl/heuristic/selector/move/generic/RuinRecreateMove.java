@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
@@ -80,6 +81,30 @@ public final class RuinRecreateMove<Solution_> extends AbstractMove<Solution_> {
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
         return true;
+    }
+
+    @Override
+    public Move<Solution_> rebase(ScoreDirector<Solution_> destinationScoreDirector) {
+        var rebasedRuinedEntityList = rebaseList(ruinedEntityList, destinationScoreDirector);
+        var rebasedAffectedValueSet = rebaseSet(affectedValueSet, destinationScoreDirector);
+        return new RuinRecreateMove<>(genuineVariableDescriptor, constructionHeuristicPhaseBuilder, solverScope,
+                rebasedRuinedEntityList, rebasedAffectedValueSet);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof RuinRecreateMove<?> that))
+            return false;
+        return Objects.equals(genuineVariableDescriptor, that.genuineVariableDescriptor)
+                && Objects.equals(ruinedEntityList, that.ruinedEntityList)
+                && Objects.equals(affectedValueSet, that.affectedValueSet);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(genuineVariableDescriptor, ruinedEntityList, affectedValueSet);
     }
 
     @Override

@@ -1,7 +1,9 @@
 package ai.timefold.solver.core.impl.heuristic.move;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
@@ -50,19 +52,19 @@ public abstract class AbstractMove<Solution_> implements Move<Solution_> {
     // ************************************************************************
 
     public static <E> List<E> rebaseList(List<E> externalObjectList, ScoreDirector<?> destinationScoreDirector) {
-        List<E> rebasedObjectList = new ArrayList<>(externalObjectList.size());
-        for (E entity : externalObjectList) {
+        var rebasedObjectList = new ArrayList<E>(externalObjectList.size());
+        for (var entity : externalObjectList) {
             rebasedObjectList.add(destinationScoreDirector.lookUpWorkingObject(entity));
         }
         return rebasedObjectList;
     }
 
-    public static Object[] rebaseArray(Object[] externalObjects, ScoreDirector<?> destinationScoreDirector) {
-        Object[] rebasedObjects = new Object[externalObjects.length];
-        for (int i = 0; i < externalObjects.length; i++) {
-            rebasedObjects[i] = destinationScoreDirector.lookUpWorkingObject(externalObjects[i]);
+    public static <E> Set<E> rebaseSet(Set<E> externalObjectSet, ScoreDirector<?> destinationScoreDirector) {
+        var rebasedObjectSet = new LinkedHashSet<E>(externalObjectSet.size());
+        for (var entity : externalObjectSet) {
+            rebasedObjectSet.add(destinationScoreDirector.lookUpWorkingObject(entity));
         }
-        return rebasedObjects;
+        return rebasedObjectSet;
     }
 
 }
