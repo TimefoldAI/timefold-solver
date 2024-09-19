@@ -53,6 +53,7 @@ import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotated
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
@@ -459,6 +460,28 @@ class SolverManagerTest {
                 .run();
         solverJob.getFinalBestSolution();
         assertThat(hasInitializedSolution.booleanValue()).isFalse();
+    }
+
+    @Test
+    @Timeout(60)
+    void testStartJobConsumer() throws ExecutionException, InterruptedException {
+        SolverConfig solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        solverManager = SolverManager
+                .create(solverConfig, new SolverManagerConfig());
+
+        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
+                PlannerTestUtils.generateTestdataSolution("s1"));
+
+        MutableInt started = new MutableInt(0);
+
+        SolverJob<TestdataSolution, Long> solverJob = solverManager.solveBuilder()
+                .withProblemId(1L)
+                .withProblemFinder(problemFinder)
+                .withSolverJobStartedConsumer(solution -> started.increment())
+                .run();
+        solverJob.getFinalBestSolution();
+        assertThat(started.getValue()).isOne();
     }
 
     @Test

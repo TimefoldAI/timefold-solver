@@ -83,13 +83,14 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
             Consumer<? super Solution_> bestSolutionConsumer,
             Consumer<? super Solution_> finalBestSolutionConsumer,
             Consumer<? super Solution_> initializedSolutionConsumer,
+            Consumer<? super Solution_> solverJobStartedConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
             SolverConfigOverride<Solution_> solverConfigOverride) {
         if (bestSolutionConsumer == null) {
             throw new IllegalStateException("The consumer bestSolutionConsumer is required.");
         }
         return solve(getProblemIdOrThrow(problemId), problemFinder, bestSolutionConsumer, finalBestSolutionConsumer,
-                initializedSolutionConsumer, exceptionHandler, solverConfigOverride);
+                initializedSolutionConsumer, solverJobStartedConsumer, exceptionHandler, solverConfigOverride);
     }
 
     protected SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
@@ -97,6 +98,7 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
             Consumer<? super Solution_> bestSolutionConsumer,
             Consumer<? super Solution_> finalBestSolutionConsumer,
             Consumer<? super Solution_> initializedSolutionConsumer,
+            Consumer<? super Solution_> solverJobStartedConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
             SolverConfigOverride<Solution_> configOverride) {
         Solver<Solution_> solver = solverFactory.buildSolver(configOverride);
@@ -111,7 +113,8 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
                         throw new IllegalStateException("The problemId (" + problemId + ") is already solving.");
                     } else {
                         return new DefaultSolverJob<>(this, solver, problemId, problemFinder, bestSolutionConsumer,
-                                finalBestSolutionConsumer, initializedSolutionConsumer, finalExceptionHandler);
+                                finalBestSolutionConsumer, initializedSolutionConsumer, solverJobStartedConsumer,
+                                finalExceptionHandler);
                     }
                 });
         Future<Solution_> future = solverThreadPool.submit(solverJob);

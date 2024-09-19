@@ -82,6 +82,14 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
             withFirstInitializedSolutionConsumer(Consumer<? super Solution_> firstInitializedSolutionConsumer);
 
     /**
+     * Sets the consumer for when the solver starts its solving process.
+     *
+     * @param solverJobStartedConsumer never null, called only once when the solver is starting the solving process
+     * @return this, never null
+     */
+    SolverJobBuilder<Solution_, ProblemId_> withSolverJobStartedConsumer(Consumer<? super Solution_> solverJobStartedConsumer);
+
+    /**
      * Sets the custom exception handler.
      *
      * @param exceptionHandler never null, called if an exception or error occurs. If null it defaults to logging the
