@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -103,6 +104,30 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
         return true;
+    }
+
+    @Override
+    public Move<Solution_> rebase(ScoreDirector<Solution_> destinationScoreDirector) {
+        var rebasedRuinedValueList = rebaseList(ruinedValueList, destinationScoreDirector);
+        var rebasedAffectedEntitySet = rebaseSet(affectedEntitySet, destinationScoreDirector);
+        return new ListRuinRecreateMove<>(listVariableStateSupply, constructionHeuristicPhaseBuilder, solverScope,
+                rebasedRuinedValueList, rebasedAffectedEntitySet);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof ListRuinRecreateMove<?> that))
+            return false;
+        return Objects.equals(listVariableStateSupply, that.listVariableStateSupply)
+                && Objects.equals(ruinedValueList, that.ruinedValueList)
+                && Objects.equals(affectedEntitySet, that.affectedEntitySet);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(listVariableStateSupply, ruinedValueList, affectedEntitySet);
     }
 
     @Override
