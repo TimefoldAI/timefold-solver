@@ -151,6 +151,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
         solverStatus = SolverStatus.NOT_SOLVING;
         solverManager.unregisterSolverJob(problemId);
         terminatedLatch.countDown();
+        close();
     }
 
     // TODO Future features

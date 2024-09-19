@@ -478,7 +478,7 @@ class SolverManagerTest {
         SolverJob<TestdataSolution, Long> solverJob = solverManager.solveBuilder()
                 .withProblemId(1L)
                 .withProblemFinder(problemFinder)
-                .withSolverJobStartedConsumer((solution) -> started.increment())
+                .withSolverJobStartedConsumer(solution -> started.increment())
                 .run();
         solverJob.getFinalBestSolution();
         assertThat(started.getValue()).isOne();
