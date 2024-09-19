@@ -263,7 +263,7 @@ class ConstraintParameters:
 ====
 
 Then, add a field of type `ConstraintParameters` to your planning solution
-and annotate it with `@PlanningFactProperty`:
+and annotate it with `@ProblemFactProperty`:
 
 [tabs]
 ====
@@ -276,7 +276,7 @@ public class MyPlanningSolution {
 
     ...
 
-    @PlanningFactProperty
+    @ProblemFactProperty
     ConstraintParameters constraintParameters;
 
     ...
@@ -292,7 +292,7 @@ Python::
 @dataclass
 class MyPlanningSolution:
     ...
-    constraint_parameters: Annotated[ConstraintParameters, PlanningFactProperty]
+    constraint_parameters: Annotated[ConstraintParameters, ProblemFactProperty]
     ...
 ----
 ====

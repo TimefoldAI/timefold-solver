@@ -8,6 +8,7 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.solution.ProblemFactProperty;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
@@ -102,8 +103,9 @@ public interface Move<Solution_> {
      * and creates a new move instance of the same move type, using those translated instances.
      * <p>
      * The destination {@link PlanningSolution} can be in a different state than the original {@link PlanningSolution}.
-     * So, rebasing can only depend on the identity of {@link PlanningEntity planning entities} and planning facts,
-     * which is usually declared by a {@link PlanningId} on those classes.
+     * So, rebasing can only depend on the identity of {@link PlanningEntity planning entities}
+     * and {@link ProblemFactProperty problem facts},
+     * which are usually declared by a {@link PlanningId} on those classes.
      * It must not depend on the state of the {@link PlanningVariable planning variables}.
      * One thread might rebase a move before, amid or after another thread does that same move instance.
      * <p>
