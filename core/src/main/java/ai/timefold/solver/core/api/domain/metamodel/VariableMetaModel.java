@@ -1,12 +1,12 @@
 package ai.timefold.solver.core.api.domain.metamodel;
 
-public interface VariableMetaModel<Solution_, Entity_> {
+public interface VariableMetaModel<Solution_, Entity_, Value_> {
 
     EntityMetaModel<Solution_, Entity_> entity();
 
-    String name();
+    Class<Value_> type();
 
-    Class<?> type();
+    String name();
 
     boolean isList();
 

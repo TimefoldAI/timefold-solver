@@ -3,19 +3,19 @@ package ai.timefold.solver.core.api.move.generic;
 import java.util.Collection;
 import java.util.List;
 
-import ai.timefold.solver.core.api.move.factory.ContextlessMove;
-import ai.timefold.solver.core.api.move.factory.MoveDirector;
-import ai.timefold.solver.core.api.move.factory.Rebaser;
 import ai.timefold.solver.core.api.domain.metamodel.BasicVariableMetaModel;
+import ai.timefold.solver.core.api.domain.metamodel.MutableSolutionState;
+import ai.timefold.solver.core.api.move.factory.ContextlessMove;
+import ai.timefold.solver.core.api.move.factory.Rebaser;
 
-public record ChangeMove<Solution_, Entity_, Value_>(BasicVariableMetaModel<Solution_, Entity_> variableMetaModel,
+public record ChangeMove<Solution_, Entity_, Value_>(BasicVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
         Entity_ entity, Value_ value)
         implements
             ContextlessMove<Solution_> {
 
     @Override
-    public void run(MoveDirector<Solution_> moveDirector) {
-        moveDirector.changeVariable(variableMetaModel, entity, value);
+    public void run(MutableSolutionState<Solution_> mutableSolutionState) {
+        mutableSolutionState.changeVariable(variableMetaModel, entity, value);
     }
 
     @Override

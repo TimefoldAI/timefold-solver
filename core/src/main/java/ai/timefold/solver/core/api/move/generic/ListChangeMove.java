@@ -3,34 +3,38 @@ package ai.timefold.solver.core.api.move.generic;
 import java.util.Collection;
 import java.util.List;
 
-import ai.timefold.solver.core.api.move.factory.Move;
-import ai.timefold.solver.core.api.move.factory.MoveDirector;
-import ai.timefold.solver.core.api.move.factory.Rebaser;
 import ai.timefold.solver.core.api.domain.metamodel.ListVariableMetaModel;
-import ai.timefold.solver.core.api.domain.metamodel.ListVariableMetaModel.LocationInList;
+import ai.timefold.solver.core.api.domain.metamodel.LocationInList;
+import ai.timefold.solver.core.api.domain.metamodel.MutableSolutionState;
+import ai.timefold.solver.core.api.domain.metamodel.SolutionState;
+import ai.timefold.solver.core.api.move.factory.Move;
+import ai.timefold.solver.core.api.move.factory.Rebaser;
 
-public record ListChangeMove<Solution_, Entity_>(ListVariableMetaModel<Solution_, Entity_> variableMetaModel, Object value,
-        Object insertAfter)
+public record ListChangeMove<Solution_, Entity_, Value_>(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+        Value_ value, Value_ insertAfter)
         implements
             Move<Solution_, ListChangeMove.ListChangeMoveContext<Entity_>> {
 
     @Override
-    public ListChangeMoveContext<Entity_> prepareContext() {
-        var sourcePosition = variableMetaModel.positionOf(value);
-        var destinationPosition = variableMetaModel.positionOf(insertAfter);
+    public ListChangeMoveContext<Entity_> prepareContext(SolutionState<Solution_> solutionState) {
+        var sourcePosition = solutionState.getPositionOf(variableMetaModel, value)
+                .<Entity_> ensureAssigned();
+        var destinationPosition = solutionState.getPositionOf(variableMetaModel, insertAfter)
+                .<Entity_> ensureAssigned();
         return new ListChangeMoveContext<>(sourcePosition, destinationPosition);
     }
 
     @Override
-    public void run(MoveDirector<Solution_> moveDirector, ListChangeMoveContext<Entity_> ctx) {
+    public void run(MutableSolutionState<Solution_> mutableSolutionState, ListChangeMoveContext<Entity_> ctx) {
         var sourceEntity = ctx.source().entity();
         var sourceIndex = ctx.source().index();
         var destinationEntity = ctx.destination().entity();
         var destinationIndex = ctx.destination().index();
         if (sourceEntity == destinationEntity) {
-            moveDirector.moveValue(variableMetaModel, sourceEntity, sourceIndex, destinationIndex);
+            mutableSolutionState.moveValue(variableMetaModel, sourceEntity, sourceIndex, destinationIndex);
         } else {
-            moveDirector.moveValue(variableMetaModel, sourceEntity, sourceIndex, destinationEntity, destinationIndex + 1);
+            mutableSolutionState.moveValue(variableMetaModel, sourceEntity, sourceIndex, destinationEntity,
+                    destinationIndex + 1);
         }
     }
 

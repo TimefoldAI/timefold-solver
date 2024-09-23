@@ -8,12 +8,19 @@ public interface EntityMetaModel<Solution_, Entity_> {
 
     Class<Entity_> type();
 
-    List<VariableMetaModel<Solution_, Entity_>> variables();
+    List<VariableMetaModel<Solution_, Entity_, ?>> variables();
 
-    default VariableMetaModel<Solution_, Entity_> variable(String variableName) {
+    default List<VariableMetaModel<Solution_, Entity_, ?>> genuineVariables() {
+        return variables().stream()
+                .filter(VariableMetaModel::isGenuine)
+                .toList();
+    }
+
+    @SuppressWarnings("unchecked")
+    default <Value_> VariableMetaModel<Solution_, Entity_, Value_> variable(String variableName) {
         for (var variableMetaModel : variables()) {
             if (variableMetaModel.name().equals(variableName)) {
-                return variableMetaModel;
+                return (VariableMetaModel<Solution_, Entity_, Value_>) variableMetaModel;
             }
         }
         throw new IllegalArgumentException(

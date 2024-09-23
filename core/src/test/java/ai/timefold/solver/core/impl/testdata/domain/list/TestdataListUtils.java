@@ -8,12 +8,12 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
+import ai.timefold.solver.core.api.domain.metamodel.LocationInList;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.list.ElementLocation;
-import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEntity;
@@ -117,7 +117,7 @@ public final class TestdataListUtils {
     }
 
     public static DestinationSelector<TestdataPinnedWithIndexListSolution> mockPinnedNeverEndingDestinationSelector(
-            LocationInList... locationsInList) {
+            LocationInList<?>... locationsInList) {
         return mockNeverEndingDestinationSelector(locationsInList.length, locationsInList);
     }
 

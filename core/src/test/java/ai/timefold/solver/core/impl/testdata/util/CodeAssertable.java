@@ -3,12 +3,12 @@ package ai.timefold.solver.core.impl.testdata.util;
 import java.util.List;
 import java.util.Objects;
 
+import ai.timefold.solver.core.api.domain.metamodel.LocationInList;
+import ai.timefold.solver.core.api.domain.metamodel.UnassignedLocation;
 import ai.timefold.solver.core.impl.heuristic.move.CompositeMove;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
-import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubList;
-import ai.timefold.solver.core.impl.heuristic.selector.list.UnassignedLocation;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SwapMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListAssignMove;

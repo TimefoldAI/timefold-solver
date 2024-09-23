@@ -4,16 +4,16 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
+import ai.timefold.solver.core.api.domain.metamodel.LocationInList;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.list.ElementLocation;
-import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 
 final class ExternalizedListVariableStateSupply<Solution_>
         implements ListVariableStateSupply<Solution_> {
 
     private final ListVariableDescriptor<Solution_> sourceVariableDescriptor;
-    private Map<Object, LocationInList> elementLocationMap;
+    private Map<Object, LocationInList<?>> elementLocationMap;
     private int unassignedCount;
 
     public ExternalizedListVariableStateSupply(ListVariableDescriptor<Solution_> sourceVariableDescriptor) {
@@ -38,7 +38,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
         var assignedElements = sourceVariableDescriptor.getValue(entity);
         var index = 0;
         for (var element : assignedElements) {
-            var oldLocation = elementLocationMap.put(element, new LocationInList(entity, index));
+            var oldLocation = elementLocationMap.put(element, ElementLocation.of(entity, index));
             if (oldLocation != null) {
                 throw new IllegalStateException(
                         "The supply (%s) is corrupted, because the element (%s) at index (%d) already exists (%s)."
@@ -121,7 +121,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
         var assignedElements = sourceVariableDescriptor.getValue(entity);
         for (var index = startIndex; index < assignedElements.size(); index++) {
             var element = assignedElements.get(index);
-            var newLocation = new LocationInList(entity, index);
+            var newLocation = ElementLocation.of(entity, index);
             var oldLocation = elementLocationMap.put(element, newLocation);
             if (oldLocation == null) {
                 unassignedCount--;
