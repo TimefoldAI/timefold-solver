@@ -25,4 +25,10 @@ public record DefaultListVariableMetaModel<Solution_, Entity_, Value_>(EntityMet
         return false;
     }
 
+    @Override
+    public String toString() {
+        return "Genuine List Variable '%s %s.%s' (allowsUnassignedValues: %b)"
+                .formatted(type(), entity.getClass().getSimpleName(), name(), allowsUnassignedValues());
+    }
+
 }

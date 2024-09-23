@@ -19,4 +19,11 @@ public record DefaultShadowVariableMetaModel<Solution_, Entity_, Value_>(EntityM
     public String name() {
         return variableDescriptor.getVariableName();
     }
+
+    @Override
+    public String toString() {
+        return "Shadow Variable '%s %s.%s'"
+                .formatted(type(), entity.getClass().getSimpleName(), name());
+    }
+
 }

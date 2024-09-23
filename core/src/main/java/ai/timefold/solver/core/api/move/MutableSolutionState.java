@@ -1,4 +1,7 @@
-package ai.timefold.solver.core.api.domain.metamodel;
+package ai.timefold.solver.core.api.move;
+
+import ai.timefold.solver.core.api.domain.metamodel.BasicVariableMetaModel;
+import ai.timefold.solver.core.api.domain.metamodel.ListVariableMetaModel;
 
 public interface MutableSolutionState<Solution_> extends SolutionState<Solution_> {
 

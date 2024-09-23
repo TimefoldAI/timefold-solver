@@ -1,9 +1,6 @@
-package ai.timefold.solver.core.api.move.factory;
+package ai.timefold.solver.core.api.move;
 
 import java.util.Collection;
-
-import ai.timefold.solver.core.api.domain.metamodel.MutableSolutionState;
-import ai.timefold.solver.core.api.domain.metamodel.SolutionState;
 
 /**
  * A simplified version of {@link Move} which requires no context.
@@ -26,11 +23,11 @@ public interface ContextlessMove<Solution_> extends Move<Solution_, Void> {
     void run(MutableSolutionState<Solution_> mutableSolutionState);
 
     @Override
-    default ContextlessMove<Solution_> rebase(Rebaser rebaser, Void unused) {
+    default ContextlessMove<Solution_> rebase(SolutionState<Solution_> rebaser, Void unused) {
         return rebase(rebaser);
     }
 
-    ContextlessMove<Solution_> rebase(Rebaser rebaser);
+    ContextlessMove<Solution_> rebase(SolutionState<Solution_> solutionState);
 
     @Override
     default Collection<?> getPlanningEntities(Void unused) {
