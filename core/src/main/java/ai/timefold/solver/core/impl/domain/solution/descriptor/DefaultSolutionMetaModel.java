@@ -8,7 +8,7 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.domain.metamodel.EntityMetaModel;
 import ai.timefold.solver.core.api.domain.metamodel.SolutionMetaModel;
 
-final class DefaultSolutionMetaModel<Solution_> implements SolutionMetaModel<Solution_> {
+public final class DefaultSolutionMetaModel<Solution_> implements SolutionMetaModel<Solution_> {
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final Class<Solution_> type;

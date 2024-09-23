@@ -25,4 +25,11 @@ public interface SolutionMetaModel<Solution_> {
                 "The type (" + entityClass + ") does not exist in the entities (" + entities() + ").");
     }
 
+    default boolean hasListVariable() {
+        return entities().stream()
+                .filter(EntityMetaModel::isGenuine)
+                .flatMap(entityMetaModel -> entityMetaModel.variables().stream())
+                .anyMatch(VariableMetaModel::isList);
+    }
+
 }

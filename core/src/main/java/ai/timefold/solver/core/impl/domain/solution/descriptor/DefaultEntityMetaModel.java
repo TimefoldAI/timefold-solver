@@ -10,7 +10,7 @@ import ai.timefold.solver.core.api.domain.metamodel.SolutionMetaModel;
 import ai.timefold.solver.core.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 
-final class DefaultEntityMetaModel<Solution_, Entity_>
+public final class DefaultEntityMetaModel<Solution_, Entity_>
         implements EntityMetaModel<Solution_, Entity_> {
 
     private final EntityDescriptor<Solution_> entityDescriptor;
