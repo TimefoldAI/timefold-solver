@@ -5,7 +5,7 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.domain.metamodel.BasicVariableMetaModel;
 import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.api.domain.metamodel.ListVariableMetaModel;
-import ai.timefold.solver.core.api.domain.metamodel.MutableSolutionState;
+import ai.timefold.solver.core.api.move.MutableSolutionState;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultBasicVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
@@ -84,6 +84,11 @@ public final class MoveDirector<Solution_> implements MutableSolutionState<Solut
             Value_ value) {
         return scoreDirector.getListVariableStateSupply(extractVariableDescriptor(variableMetaModel))
                 .getLocationInList(value);
+    }
+
+    @Override
+    public <T> T rebase(T problemFactOrPlanningEntity) {
+        return scoreDirector.lookUpWorkingObject(problemFactOrPlanningEntity);
     }
 
     private static <Solution_, Entity_, Value_> BasicVariableDescriptor<Solution_>

@@ -1,12 +1,12 @@
-package ai.timefold.solver.core.api.move.generic;
+package ai.timefold.solver.core.impl.move.generic;
 
 import java.util.Collection;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.metamodel.BasicVariableMetaModel;
-import ai.timefold.solver.core.api.domain.metamodel.MutableSolutionState;
-import ai.timefold.solver.core.api.move.factory.ContextlessMove;
-import ai.timefold.solver.core.api.move.factory.Rebaser;
+import ai.timefold.solver.core.api.move.ContextlessMove;
+import ai.timefold.solver.core.api.move.MutableSolutionState;
+import ai.timefold.solver.core.api.move.SolutionState;
 
 public record ChangeMove<Solution_, Entity_, Value_>(BasicVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
         Entity_ entity, Value_ value)
@@ -19,8 +19,8 @@ public record ChangeMove<Solution_, Entity_, Value_>(BasicVariableMetaModel<Solu
     }
 
     @Override
-    public ContextlessMove<Solution_> rebase(Rebaser rebaser) {
-        return new ChangeMove<>(variableMetaModel, rebaser.apply(entity), rebaser.apply(value));
+    public ContextlessMove<Solution_> rebase(SolutionState<Solution_> solutionState) {
+        return new ChangeMove<>(variableMetaModel, solutionState.rebase(entity), solutionState.rebase(value));
     }
 
     @Override

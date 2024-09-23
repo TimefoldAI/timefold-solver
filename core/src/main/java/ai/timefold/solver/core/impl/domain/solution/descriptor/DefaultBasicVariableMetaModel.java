@@ -24,4 +24,10 @@ public record DefaultBasicVariableMetaModel<Solution_, Entity_, Value_>(EntityMe
     public String name() {
         return variableDescriptor.getVariableName();
     }
+
+    @Override
+    public String toString() {
+        return "Genuine Variable '%s %s.%s' (allowsUnassigned: %b)"
+                .formatted(type(), entity.getClass().getSimpleName(), name(), allowsUnassigned());
+    }
 }

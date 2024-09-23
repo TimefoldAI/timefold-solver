@@ -1,14 +1,13 @@
-package ai.timefold.solver.core.api.move.generic;
+package ai.timefold.solver.core.impl.move.generic;
 
 import java.util.Collection;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.metamodel.ListVariableMetaModel;
 import ai.timefold.solver.core.api.domain.metamodel.LocationInList;
-import ai.timefold.solver.core.api.domain.metamodel.MutableSolutionState;
-import ai.timefold.solver.core.api.domain.metamodel.SolutionState;
-import ai.timefold.solver.core.api.move.factory.Move;
-import ai.timefold.solver.core.api.move.factory.Rebaser;
+import ai.timefold.solver.core.api.move.Move;
+import ai.timefold.solver.core.api.move.MutableSolutionState;
+import ai.timefold.solver.core.api.move.SolutionState;
 
 public record ListChangeMove<Solution_, Entity_, Value_>(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
         Value_ value, Value_ insertAfter)
@@ -39,8 +38,9 @@ public record ListChangeMove<Solution_, Entity_, Value_>(ListVariableMetaModel<S
     }
 
     @Override
-    public Move<Solution_, ListChangeMoveContext<Entity_>> rebase(Rebaser rebaser, ListChangeMoveContext<Entity_> ctx) {
-        return new ListChangeMove<>(variableMetaModel, rebaser.apply(value), rebaser.apply(insertAfter));
+    public Move<Solution_, ListChangeMoveContext<Entity_>> rebase(SolutionState<Solution_> solutionState,
+            ListChangeMoveContext<Entity_> ctx) {
+        return new ListChangeMove<>(variableMetaModel, solutionState.rebase(value), solutionState.rebase(insertAfter));
     }
 
     @Override

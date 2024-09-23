@@ -57,10 +57,11 @@ public final class DefaultSolutionMetaModel<Solution_> implements SolutionMetaMo
 
     @Override
     public String toString() {
-        return "SolutionMetaModel{" +
-                "type=" + type +
-                ", entities=" + entities +
-                '}';
+        return "Planning Solution (%s) with entities (%s)"
+                .formatted(type.getSimpleName(),
+                        entities.stream()
+                                .map(e -> e.type().getSimpleName())
+                                .toList());
     }
 
 }

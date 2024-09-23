@@ -1,9 +1,7 @@
-package ai.timefold.solver.core.api.move.factory;
+package ai.timefold.solver.core.api.move;
 
 import java.util.Collection;
 
-import ai.timefold.solver.core.api.domain.metamodel.MutableSolutionState;
-import ai.timefold.solver.core.api.domain.metamodel.SolutionState;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractSimplifiedMove;
 
 /**
@@ -54,11 +52,11 @@ public interface Move<Solution_, Context_> {
      * Equivalent of the rebase() method from the old API.
      * Used in multi-threaded solving.
      *
-     * @param rebaser Simplified public API that knows how to rebase.
+     * @param solutionState never null
      * @param context
      * @return The rebased move.
      */
-    Move<Solution_, Context_> rebase(Rebaser rebaser, Context_ context);
+    Move<Solution_, Context_> rebase(SolutionState<Solution_> solutionState, Context_ context);
 
     /**
      * Equivalent of getPlanningEntities() from the old API.

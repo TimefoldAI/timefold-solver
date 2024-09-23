@@ -51,4 +51,13 @@ public final class DefaultEntityMetaModel<Solution_, Entity_>
         variables.add(variable);
     }
 
+    @Override
+    public String toString() {
+        return "%s Entity (%s) with variables (%s)"
+                .formatted(isGenuine() ? "Genuine" : "Shadow", type,
+                        variables().stream()
+                                .map(VariableMetaModel::name)
+                                .toList());
+    }
+
 }
