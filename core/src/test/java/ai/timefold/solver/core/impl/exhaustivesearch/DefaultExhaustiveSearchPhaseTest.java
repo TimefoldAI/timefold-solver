@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
@@ -28,7 +29,10 @@ import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchPhase
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchStepScope;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
+import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.solver.DefaultSolver;
+import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
@@ -211,13 +215,21 @@ class DefaultExhaustiveSearchPhaseTest {
 
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
         Solver<TestdataSolution> solver = solverFactory.buildSolver();
+        var moveCountPerChange = new AtomicLong();
+        ((DefaultSolver<TestdataSolution>) solver).addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void solvingEnded(SolverScope<TestdataSolution> solverScope) {
+                meterRegistry.publish(solver);
+                var changeMoveKey = "ChangeMove(TestdataEntity.value)";
+                if (solverScope.getMoveCountTypes().contains(changeMoveKey)) {
+                    var counter = meterRegistry
+                            .getMeasurement(SolverMetric.MOVE_COUNT_PER_TYPE.getMeterId() + "." + changeMoveKey, "VALUE");
+                    moveCountPerChange.set(counter.longValue());
+                }
+            }
+        });
         solver.solve(problem);
-
-        SolverMetric.MOVE_COUNT_PER_TYPE.register(solver);
-        meterRegistry.publish(solver);
-        var moveCount = meterRegistry.getMeasurement(
-                SolverMetric.MOVE_COUNT_PER_TYPE.getMeterId() + "." + "ChangeMove(TestdataEntity.value)", "VALUE");
-        assertThat(moveCount).isPositive();
+        assertThat(moveCountPerChange.get()).isPositive();
     }
 
     @Test

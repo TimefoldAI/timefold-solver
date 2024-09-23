@@ -382,13 +382,16 @@ public class SolverScope<Solution_> {
     }
 
     public void incrementMoveEvaluationCountPerType(Move<?> move) {
-        moveEvaluationCountPerTypeMap.compute(move.getSimpleMoveTypeDescription(), (key, count) -> {
-            if (count == null) {
-                count = new AtomicLong();
-            }
-            count.incrementAndGet();
-            return count;
-        });
+        addMoveEvaluationCountPerType(move.getSimpleMoveTypeDescription(), 1L);
     }
 
+    public void addMoveEvaluationCountPerType(String moveType, long count) {
+        moveEvaluationCountPerTypeMap.compute(moveType, (key, counter) -> {
+            if (counter == null) {
+                counter = new AtomicLong();
+            }
+            counter.addAndGet(count);
+            return counter;
+        });
+    }
 }

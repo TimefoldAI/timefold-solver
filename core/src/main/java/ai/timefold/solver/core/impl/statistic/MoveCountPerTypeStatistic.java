@@ -11,7 +11,9 @@ import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
+import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
 
@@ -22,9 +24,10 @@ public class MoveCountPerTypeStatistic<Solution_> implements SolverStatistic<Sol
 
     @Override
     public void unregister(Solver<Solution_> solver) {
-        PhaseLifecycleListenerAdapter<Solution_> listener = solverToPhaseLifecycleListenerMap.remove(solver);
+        var listener = solverToPhaseLifecycleListenerMap.remove(solver);
         if (listener != null) {
             ((DefaultSolver<Solution_>) solver).removePhaseLifecycleListener(listener);
+            ((MoveCountPerTypeStatisticListener<Solution_>) listener).unregister(solver);
         }
     }
 
@@ -63,6 +66,16 @@ public class MoveCountPerTypeStatistic<Solution_> implements SolverStatistic<Sol
                 countMap.put(key, count);
                 return countMap;
             });
+        }
+
+        void unregister(Solver<Solution_> solver) {
+            SolverScope<Solution_> solverScope = ((DefaultSolver<Solution_>) solver).getSolverScope();
+            tagsToMoveCountMap.values().stream().flatMap(v -> v.keySet().stream())
+                    .forEach(meter -> Metrics.globalRegistry.remove(new Meter.Id(meter,
+                            solverScope.getMonitoringTags(),
+                            null,
+                            null,
+                            Meter.Type.GAUGE)));
         }
     }
 

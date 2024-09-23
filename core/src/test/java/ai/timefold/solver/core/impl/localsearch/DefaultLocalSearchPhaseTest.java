@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.Solver;
@@ -16,6 +17,9 @@ import ai.timefold.solver.core.config.localsearch.LocalSearchType;
 import ai.timefold.solver.core.config.solver.monitoring.MonitoringConfig;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
+import ai.timefold.solver.core.impl.solver.DefaultSolver;
+import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
@@ -92,16 +96,29 @@ class DefaultLocalSearchPhaseTest {
 
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
         Solver<TestdataSolution> solver = solverFactory.buildSolver();
+        var moveCountPerChange = new AtomicLong();
+        var moveCountPerSwap = new AtomicLong();
+        ((DefaultSolver<TestdataSolution>) solver).addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void solvingEnded(SolverScope<TestdataSolution> solverScope) {
+                meterRegistry.publish(solver);
+                var changeMoveKey = "ChangeMove(TestdataEntity.value)";
+                if (solverScope.getMoveCountTypes().contains(changeMoveKey)) {
+                    var counter = meterRegistry
+                            .getMeasurement(SolverMetric.MOVE_COUNT_PER_TYPE.getMeterId() + "." + changeMoveKey, "VALUE");
+                    moveCountPerChange.set(counter.longValue());
+                }
+                var swapMoveKey = "SwapMove(TestdataEntity.value)";
+                if (solverScope.getMoveCountTypes().contains(swapMoveKey)) {
+                    var counter = meterRegistry
+                            .getMeasurement(SolverMetric.MOVE_COUNT_PER_TYPE.getMeterId() + "." + swapMoveKey, "VALUE");
+                    moveCountPerSwap.set(counter.longValue());
+                }
+            }
+        });
         solver.solve(problem);
-
-        SolverMetric.MOVE_COUNT_PER_TYPE.register(solver);
-        meterRegistry.publish(solver);
-        var moveCountPerChange = meterRegistry.getMeasurement(
-                SolverMetric.MOVE_COUNT_PER_TYPE.getMeterId() + "." + "ChangeMove(TestdataEntity.value)", "VALUE");
-        var moveCountPerSwap = meterRegistry.getMeasurement(
-                SolverMetric.MOVE_COUNT_PER_TYPE.getMeterId() + "." + "SwapMove(TestdataEntity.value)", "VALUE");
-        assertThat(moveCountPerChange).isPositive();
-        assertThat(moveCountPerSwap).isPositive();
+        assertThat(moveCountPerChange.get()).isPositive();
+        assertThat(moveCountPerSwap.get()).isPositive();
     }
 
     @Test
@@ -125,19 +142,37 @@ class DefaultLocalSearchPhaseTest {
 
         SolverFactory<TestdataListSolution> solverFactory = SolverFactory.create(solverConfig);
         Solver<TestdataListSolution> solver = solverFactory.buildSolver();
+        var moveCountPerChange = new AtomicLong();
+        var moveCountPerSwap = new AtomicLong();
+        var moveCountPer2Opt = new AtomicLong();
+        ((DefaultSolver<TestdataListSolution>) solver).addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void solvingEnded(SolverScope<TestdataListSolution> solverScope) {
+                meterRegistry.publish(solver);
+                var changeMoveKey = "ListChangeMove(TestdataListEntity.valueList)";
+                if (solverScope.getMoveCountTypes().contains(changeMoveKey)) {
+                    var counter = meterRegistry
+                            .getMeasurement(SolverMetric.MOVE_COUNT_PER_TYPE.getMeterId() + "." + changeMoveKey, "VALUE");
+                    moveCountPerChange.set(counter.longValue());
+                }
+                var swapMoveKey = "ListSwapMove(TestdataListEntity.valueList)";
+                if (solverScope.getMoveCountTypes().contains(swapMoveKey)) {
+                    var counter = meterRegistry
+                            .getMeasurement(SolverMetric.MOVE_COUNT_PER_TYPE.getMeterId() + "." + swapMoveKey, "VALUE");
+                    moveCountPerSwap.set(counter.longValue());
+                }
+                var twoOptMoveKey = "2-Opt(TestdataListEntity.valueList)";
+                if (solverScope.getMoveCountTypes().contains(twoOptMoveKey)) {
+                    var counter = meterRegistry
+                            .getMeasurement(SolverMetric.MOVE_COUNT_PER_TYPE.getMeterId() + "." + twoOptMoveKey, "VALUE");
+                    moveCountPer2Opt.set(counter.longValue());
+                }
+            }
+        });
         solver.solve(problem);
-
-        SolverMetric.MOVE_COUNT_PER_TYPE.register(solver);
-        meterRegistry.publish(solver);
-        var moveCountPerChange = meterRegistry.getMeasurement(
-                SolverMetric.MOVE_COUNT_PER_TYPE.getMeterId() + "." + "ListChangeMove(TestdataListEntity.valueList)", "VALUE");
-        var moveCountPerSwap = meterRegistry.getMeasurement(
-                SolverMetric.MOVE_COUNT_PER_TYPE.getMeterId() + "." + "ListSwapMove(TestdataListEntity.valueList)", "VALUE");
-        var moveCountPer2Opt = meterRegistry.getMeasurement(
-                SolverMetric.MOVE_COUNT_PER_TYPE.getMeterId() + "." + "2-Opt(TestdataListEntity.valueList)", "VALUE");
-        assertThat(moveCountPerChange).isPositive();
-        assertThat(moveCountPerSwap).isPositive();
-        assertThat(moveCountPer2Opt).isPositive();
+        assertThat(moveCountPerChange.get()).isPositive();
+        assertThat(moveCountPerSwap.get()).isPositive();
+        assertThat(moveCountPer2Opt.get()).isPositive();
     }
 
     @Test

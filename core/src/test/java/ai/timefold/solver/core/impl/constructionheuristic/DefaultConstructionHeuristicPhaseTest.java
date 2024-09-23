@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.Solver;
@@ -17,6 +18,9 @@ import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristi
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicType;
 import ai.timefold.solver.core.config.solver.monitoring.MonitoringConfig;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
+import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
+import ai.timefold.solver.core.impl.solver.DefaultSolver;
+import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
@@ -112,13 +116,21 @@ class DefaultConstructionHeuristicPhaseTest {
 
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
         Solver<TestdataSolution> solver = solverFactory.buildSolver();
+        var moveCountPerChange = new AtomicLong();
+        ((DefaultSolver<TestdataSolution>) solver).addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void solvingEnded(SolverScope<TestdataSolution> solverScope) {
+                meterRegistry.publish(solver);
+                var changeMoveKey = "ChangeMove(TestdataEntity.value)";
+                if (solverScope.getMoveCountTypes().contains(changeMoveKey)) {
+                    var counter = meterRegistry
+                            .getMeasurement(SolverMetric.MOVE_COUNT_PER_TYPE.getMeterId() + "." + changeMoveKey, "VALUE");
+                    moveCountPerChange.set(counter.longValue());
+                }
+            }
+        });
         solver.solve(problem);
-
-        SolverMetric.MOVE_COUNT_PER_TYPE.register(solver);
-        meterRegistry.publish(solver);
-        var moveCount = meterRegistry.getMeasurement(
-                SolverMetric.MOVE_COUNT_PER_TYPE.getMeterId() + "." + "ChangeMove(TestdataEntity.value)", "VALUE");
-        assertThat(moveCount).isPositive();
+        assertThat(moveCountPerChange.get()).isPositive();
     }
 
     @Test
@@ -140,13 +152,21 @@ class DefaultConstructionHeuristicPhaseTest {
 
         SolverFactory<TestdataListSolution> solverFactory = SolverFactory.create(solverConfig);
         Solver<TestdataListSolution> solver = solverFactory.buildSolver();
+        var moveCount = new AtomicLong();
+        ((DefaultSolver<TestdataListSolution>) solver).addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+            @Override
+            public void solvingEnded(SolverScope<TestdataListSolution> solverScope) {
+                meterRegistry.publish(solver);
+                var changeMoveKey = "ListAssignMove(TestdataListEntity.valueList)";
+                if (solverScope.getMoveCountTypes().contains(changeMoveKey)) {
+                    var counter = meterRegistry
+                            .getMeasurement(SolverMetric.MOVE_COUNT_PER_TYPE.getMeterId() + "." + changeMoveKey, "VALUE");
+                    moveCount.set(counter.longValue());
+                }
+            }
+        });
         solver.solve(problem);
-
-        SolverMetric.MOVE_COUNT_PER_TYPE.register(solver);
-        meterRegistry.publish(solver);
-        var moveCount = meterRegistry.getMeasurement(
-                SolverMetric.MOVE_COUNT_PER_TYPE.getMeterId() + "." + "ListAssignMove(TestdataListEntity.valueList)", "VALUE");
-        assertThat(moveCount).isPositive();
+        assertThat(moveCount.get()).isPositive();
     }
 
     @Test
