@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.solver.scope;
 
+import static java.util.stream.Collectors.toMap;
+
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +18,7 @@ import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -63,6 +66,11 @@ public class SolverScope<Solution_> {
      * Used for tracking step score
      */
     private final Map<Tags, List<AtomicReference<Number>>> stepScoreMap = new ConcurrentHashMap<>();
+
+    /**
+     * Used for tracking move count per move type
+     */
+    private final Map<String, AtomicLong> moveEvaluationCountPerTypeMap = new ConcurrentHashMap<>();
 
     private static AtomicLong resetAtomicLongTimeMillis(AtomicLong atomicLong) {
         atomicLong.set(-1);
@@ -231,6 +239,14 @@ public class SolverScope<Solution_> {
         this.bestSolutionTimeMillis = bestSolutionTimeMillis;
     }
 
+    public Set<String> getMoveCountTypes() {
+        return moveEvaluationCountPerTypeMap.keySet();
+    }
+
+    public Map<String, Long> getMoveEvaluationCountPerType() {
+        return moveEvaluationCountPerTypeMap.entrySet().stream().collect(toMap(Map.Entry::getKey, e -> e.getValue().get()));
+    }
+
     // ************************************************************************
     // Calculated methods
     // ************************************************************************
@@ -363,6 +379,16 @@ public class SolverScope<Solution_> {
         if (runnableThreadSemaphore != null) {
             runnableThreadSemaphore.release();
         }
+    }
+
+    public void incrementMoveEvaluationCountPerType(Move<?> move) {
+        moveEvaluationCountPerTypeMap.compute(move.getSimpleMoveTypeDescription(), (key, count) -> {
+            if (count == null) {
+                count = new AtomicLong();
+            }
+            count.incrementAndGet();
+            return count;
+        });
     }
 
 }

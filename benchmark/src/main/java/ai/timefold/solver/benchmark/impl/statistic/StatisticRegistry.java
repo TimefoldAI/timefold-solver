@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.ObjLongConsumer;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.score.Score;
@@ -32,6 +33,7 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
     private static final String CONSTRAINT_PACKAGE_TAG = "constraint.package";
     private static final String CONSTRAINT_NAME_TAG = "constraint.name";
 
+    List<Consumer<SolverScope<Solution_>>> solverMeterListenerList = new ArrayList<>();
     List<BiConsumer<Long, AbstractStepScope<Solution_>>> stepMeterListenerList = new ArrayList<>();
     List<BiConsumer<Long, AbstractStepScope<Solution_>>> bestSolutionMeterListenerList = new ArrayList<>();
     AbstractStepScope<Solution_> bestSolutionStepScope = null;
@@ -75,6 +77,10 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
         } else {
             stepMeterListenerList.add(listener);
         }
+    }
+
+    public void addListener(Consumer<SolverScope<Solution_>> listener) {
+        solverMeterListenerList.add(listener);
     }
 
     public Set<Meter.Id> getMeterIds(SolverMetric metric, Tags runId) {
@@ -131,6 +137,16 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
         }
     }
 
+    public void extractMoveCountPerType(SolverScope<Solution_> solverScope, ObjLongConsumer<String> gaugeConsumer) {
+        solverScope.getMoveCountTypes().forEach(type -> {
+            var gauge = this.find(SolverMetric.MOVE_COUNT_PER_TYPE.getMeterId() + "." + type)
+                    .tags(solverScope.getMonitoringTags()).gauge();
+            if (gauge != null) {
+                gaugeConsumer.accept(type, (long) gauge.value());
+            }
+        });
+    }
+
     @Override
     protected TimeUnit getBaseTimeUnit() {
         return TimeUnit.MILLISECONDS;
@@ -181,5 +197,6 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
                     .forEach(listener -> listener.accept(bestSolutionChangedTimestamp, bestSolutionStepScope));
             lastStepImprovedSolution = false;
         }
+        solverMeterListenerList.forEach(listener -> listener.accept(solverScope));
     }
 }

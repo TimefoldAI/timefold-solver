@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
@@ -18,6 +19,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchPhaseConfig;
+import ai.timefold.solver.core.config.solver.monitoring.MonitoringConfig;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.exhaustivesearch.decider.ExhaustiveSearchDecider;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchLayer;
@@ -184,6 +186,37 @@ class DefaultExhaustiveSearchPhaseTest {
         var scoreCount = meterRegistry.getMeasurement(SolverMetric.SCORE_CALCULATION_COUNT.getMeterId(), "VALUE");
         var moveCount = meterRegistry.getMeasurement(SolverMetric.MOVE_EVALUATION_COUNT.getMeterId(), "VALUE");
         assertThat(scoreCount).isPositive();
+        assertThat(moveCount).isPositive();
+    }
+
+    @Test
+    void solveCustomMetrics() {
+        var meterRegistry = new TestMeterRegistry();
+        Metrics.addRegistry(meterRegistry);
+
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class,
+                TestdataEntity.class);
+        solverConfig.withPhases(new ExhaustiveSearchPhaseConfig())
+                .withMonitoringConfig(new MonitoringConfig().withSolverMetricList(List.of(SolverMetric.MOVE_COUNT_PER_TYPE)));
+
+        var problem = new TestdataSolution("s1");
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var v3 = new TestdataValue("v3");
+        problem.setValueList(Arrays.asList(v1, v2, v3));
+        problem.setEntityList(Arrays.asList(
+                new TestdataEntity("e1", null),
+                new TestdataEntity("e2", v2),
+                new TestdataEntity("e3", v1)));
+
+        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
+        Solver<TestdataSolution> solver = solverFactory.buildSolver();
+        solver.solve(problem);
+
+        SolverMetric.MOVE_COUNT_PER_TYPE.register(solver);
+        meterRegistry.publish(solver);
+        var moveCount = meterRegistry.getMeasurement(
+                SolverMetric.MOVE_COUNT_PER_TYPE.getMeterId() + "." + "ChangeMove(TestdataEntity.value)", "VALUE");
         assertThat(moveCount).isPositive();
     }
 

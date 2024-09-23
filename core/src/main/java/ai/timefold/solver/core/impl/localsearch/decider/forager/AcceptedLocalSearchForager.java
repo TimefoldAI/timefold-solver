@@ -74,7 +74,7 @@ public class AcceptedLocalSearchForager<Solution_> extends AbstractLocalSearchFo
     @Override
     public void addMove(LocalSearchMoveScope<Solution_> moveScope) {
         selectedMoveCount++;
-        moveScope.getStepScope().incrementMoveEvaluationCount();
+        moveScope.getStepScope().incrementMoveEvaluationCount(moveScope.getMove());
         if (moveScope.getAccepted()) {
             acceptedMoveCount++;
             checkPickEarly(moveScope);

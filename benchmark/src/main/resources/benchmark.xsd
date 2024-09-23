@@ -232,6 +232,9 @@
       <xs:enumeration value="MOVE_COUNT_PER_STEP"/>
                   
       
+      <xs:enumeration value="MOVE_COUNT_PER_TYPE"/>
+                  
+      
       <xs:enumeration value="MEMORY_USE"/>
                 
     
@@ -2646,6 +2649,9 @@
                   
       
       <xs:enumeration value="MOVE_COUNT_PER_STEP"/>
+                  
+      
+      <xs:enumeration value="MOVE_COUNT_PER_TYPE"/>
                   
       
       <xs:enumeration value="MEMORY_USE"/>

@@ -34,8 +34,6 @@ public abstract class AbstractPhaseScope<Solution_> {
 
     protected int bestSolutionStepIndex;
 
-    protected long bestSolutionMoveEvaluationCount = 0L;
-
     protected boolean enableCollectMetrics = true;
 
     /**
