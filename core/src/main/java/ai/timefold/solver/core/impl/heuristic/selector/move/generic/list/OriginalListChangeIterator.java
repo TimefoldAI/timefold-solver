@@ -3,14 +3,14 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 import java.util.Collections;
 import java.util.Iterator;
 
+import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
+import ai.timefold.solver.core.api.domain.metamodel.LocationInList;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.list.ElementLocation;
-import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 
 /**
@@ -59,15 +59,15 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
             return null;
         }
         var upcomingSource = listVariableStateSupply.getLocationInList(upcomingLeftValue);
-        if (upcomingSource instanceof LocationInList sourceElement) {
-            if (upcomingDestination instanceof LocationInList destinationElement) {
+        if (upcomingSource instanceof LocationInList<?> sourceElement) {
+            if (upcomingDestination instanceof LocationInList<?> destinationElement) {
                 return new ListChangeMove<>(listVariableDescriptor, sourceElement.entity(), sourceElement.index(),
                         destinationElement.entity(), destinationElement.index());
             } else {
                 return new ListUnassignMove<>(listVariableDescriptor, sourceElement.entity(), sourceElement.index());
             }
         } else {
-            if (upcomingDestination instanceof LocationInList destinationElement) {
+            if (upcomingDestination instanceof LocationInList<?> destinationElement) {
                 return new ListAssignMove<>(listVariableDescriptor, upcomingLeftValue, destinationElement.entity(),
                         destinationElement.index());
             } else {

@@ -12,7 +12,6 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
-import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhaseBuilder;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -53,7 +52,8 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
 
         var innerScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         for (var value : ruinedValueList) {
-            var location = (LocationInList) listVariableStateSupply.getLocationInList(value);
+            var location = listVariableStateSupply.getLocationInList(value)
+                    .ensureAssigned();
             entityToOriginalPositionMap.computeIfAbsent(location.entity(),
                     ignored -> new TreeSet<>()).add(new RuinedLocation(value, location.index()));
         }
@@ -85,7 +85,8 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
         scoreDirector.triggerVariableListeners();
 
         for (var ruinedValue : ruinedValueList) {
-            var location = (LocationInList) listVariableStateSupply.getLocationInList(ruinedValue);
+            var location = listVariableStateSupply.getLocationInList(ruinedValue)
+                    .ensureAssigned();
             entityToNewPositionMap.computeIfAbsent(location.entity(), ignored -> new TreeSet<>())
                     .add(new RuinedLocation(ruinedValue, location.index()));
         }

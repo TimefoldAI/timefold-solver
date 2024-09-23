@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
-import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 
 record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityIndex, int[] offsets) {
 
@@ -54,7 +53,8 @@ record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityInd
     @SuppressWarnings("unchecked")
     public <Node_> Node_ successor(Node_ object, ListVariableStateSupply<?> listVariableStateSupply) {
         var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
-        var elementLocation = (LocationInList) listVariableStateSupply.getLocationInList(object);
+        var elementLocation = listVariableStateSupply.getLocationInList(object)
+                .ensureAssigned();
         var entity = elementLocation.entity();
         var indexInEntityList = elementLocation.index();
         var listVariable = listVariableDescriptor.getValue(entity);
@@ -71,7 +71,8 @@ record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityInd
     @SuppressWarnings("unchecked")
     public <Node_> Node_ predecessor(Node_ object, ListVariableStateSupply<?> listVariableStateSupply) {
         var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
-        var elementLocation = (LocationInList) listVariableStateSupply.getLocationInList(object);
+        var elementLocation = listVariableStateSupply.getLocationInList(object)
+                .ensureAssigned();
         var entity = elementLocation.entity();
         var indexInEntityList = elementLocation.index();
         var firstUnpinnedIndexInList = listVariableDescriptor.getFirstUnpinnedIndex(entity);
@@ -86,9 +87,12 @@ record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityInd
     }
 
     public <Node_> boolean between(Node_ start, Node_ middle, Node_ end, ListVariableStateSupply<?> listVariableStateSupply) {
-        var startElementLocation = (LocationInList) listVariableStateSupply.getLocationInList(start);
-        var middleElementLocation = (LocationInList) listVariableStateSupply.getLocationInList(middle);
-        var endElementLocation = (LocationInList) listVariableStateSupply.getLocationInList(end);
+        var startElementLocation = listVariableStateSupply.getLocationInList(start)
+                .ensureAssigned();
+        var middleElementLocation = listVariableStateSupply.getLocationInList(middle)
+                .ensureAssigned();
+        var endElementLocation = listVariableStateSupply.getLocationInList(end)
+                .ensureAssigned();
         int startEntityIndex = entityToEntityIndex.get(startElementLocation.entity());
         int middleEntityIndex = entityToEntityIndex.get(middleElementLocation.entity());
         int endEntityIndex = entityToEntityIndex.get(endElementLocation.entity());

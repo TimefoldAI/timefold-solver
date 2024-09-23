@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.api.domain.metamodel;
 
-public interface BasicVariableMetaModel<Solution_, Entity_> extends VariableMetaModel<Solution_, Entity_> {
+public interface BasicVariableMetaModel<Solution_, Entity_, Value_>
+        extends VariableMetaModel<Solution_, Entity_, Value_> {
 
     @Override
     default boolean isList() {
@@ -13,9 +14,5 @@ public interface BasicVariableMetaModel<Solution_, Entity_> extends VariableMeta
     }
 
     boolean allowsUnassigned();
-
-    <T> T read(Entity_ entity);
-
-    <T> T write(Entity_ entity, Object value);
 
 }

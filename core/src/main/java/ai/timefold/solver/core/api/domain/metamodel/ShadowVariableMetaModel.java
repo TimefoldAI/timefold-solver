@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.api.domain.metamodel;
 
-public interface ShadowVariableMetaModel<Solution_, Entity_> extends VariableMetaModel<Solution_, Entity_> {
+public interface ShadowVariableMetaModel<Solution_, Entity_, Value_>
+        extends VariableMetaModel<Solution_, Entity_, Value_> {
 
     @Override
     default boolean isList() {
@@ -11,7 +12,5 @@ public interface ShadowVariableMetaModel<Solution_, Entity_> extends VariableMet
     default boolean isGenuine() {
         return false;
     }
-
-    <T> T read(Entity_ entity);
 
 }

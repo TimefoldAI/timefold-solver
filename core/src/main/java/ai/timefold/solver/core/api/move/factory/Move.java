@@ -2,6 +2,8 @@ package ai.timefold.solver.core.api.move.factory;
 
 import java.util.Collection;
 
+import ai.timefold.solver.core.api.domain.metamodel.MutableSolutionState;
+import ai.timefold.solver.core.api.domain.metamodel.SolutionState;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractSimplifiedMove;
 
 /**
@@ -30,22 +32,23 @@ public interface Move<Solution_, Context_> {
      * Called by the solver before a move is run.
      * The result of this call will be passed to all the other methods in the move,
      * when the solver calls them.
-     * 
+     *
+     * @param solutionState never null; allows to read values of the variables.
      * @return may be null, with {@link ContextlessMove}.
      */
-    Context_ prepareContext();
+    Context_ prepareContext(SolutionState<Solution_> solutionState);
 
     /**
      * The equivalent to doMove() from the old API.
      * There is no undo move.
      *
-     * @param moveDirector Exposes all possible mutative operations on the variables.
+     * @param mutableSolutionState Exposes all possible mutative operations on the variables.
      *        Remembers those mutative operations and can replay them in reverse order
      *        when the solver needs to undo the move.
      *        We already have this functionality in the old API via the {@link AbstractSimplifiedMove}.
      * @param context
      */
-    void run(MoveDirector<Solution_> moveDirector, Context_ context);
+    void run(MutableSolutionState<Solution_> mutableSolutionState, Context_ context);
 
     /**
      * Equivalent of the rebase() method from the old API.

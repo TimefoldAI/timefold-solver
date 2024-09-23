@@ -4,12 +4,12 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+import ai.timefold.solver.core.api.domain.metamodel.LocationInList;
+import ai.timefold.solver.core.api.domain.metamodel.UnassignedLocation;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
-import ai.timefold.solver.core.impl.heuristic.selector.list.UnassignedLocation;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
@@ -65,7 +65,7 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
                     if (elementLocation instanceof UnassignedLocation) {
                         return true;
                     }
-                    var elementDestination = (LocationInList) elementLocation;
+                    var elementDestination = (LocationInList<?>) elementLocation;
                     var entity = elementDestination.entity();
                     return !listVariableDescriptor.isElementPinned(scoreDirector.getWorkingSolution(), entity,
                             elementDestination.index());

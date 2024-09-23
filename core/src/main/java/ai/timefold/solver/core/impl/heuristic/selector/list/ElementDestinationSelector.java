@@ -9,6 +9,8 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
+import ai.timefold.solver.core.api.domain.metamodel.LocationInList;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
@@ -127,7 +129,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
             // Simplify tests.
             stream = Stream.concat(stream,
                     StreamSupport.stream(valueSelector.spliterator(), false)
-                            .map(v -> (LocationInList) listVariableStateSupply.getLocationInList(v))
+                            .map(v -> (LocationInList<?>) listVariableStateSupply.getLocationInList(v))
                             .map(locationInList -> ElementLocation.of(locationInList.entity(), locationInList.index() + 1)));
             // If the list variable allows unassigned values, add the option of unassigning.
             if (listVariableDescriptor.allowsUnassignedValues()) {

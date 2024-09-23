@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
+import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.api.domain.variable.ListVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableListener;
-import ai.timefold.solver.core.impl.heuristic.selector.list.ElementLocation;
 
 public interface ListVariableElementStateSupply<Solution_> extends
         SourcedVariableListener<Solution_>,

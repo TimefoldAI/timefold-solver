@@ -9,7 +9,6 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
-import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 
 final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIterator<Move<Solution_>> {
@@ -77,8 +76,10 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
         Object firstValue = originIterator.next();
         Object secondValue = valueIterator.next();
 
-        var firstElementLocation = (LocationInList) listVariableStateSupply.getLocationInList(firstValue);
-        var secondElementLocation = (LocationInList) listVariableStateSupply.getLocationInList(secondValue);
+        var firstElementLocation = listVariableStateSupply.getLocationInList(firstValue)
+                .ensureAssigned();
+        var secondElementLocation = listVariableStateSupply.getLocationInList(secondValue)
+                .ensureAssigned();
         return new TwoOptListMove<>(listVariableDescriptor, firstElementLocation.entity(), secondElementLocation.entity(),
                 firstElementLocation.index(), secondElementLocation.index());
     }
@@ -376,8 +377,10 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
 
     private int getSegmentSize(EntityOrderInfo entityOrderInfo, Object from, Object to) {
         var entityToEntityIndex = entityOrderInfo.entityToEntityIndex();
-        var startElementLocation = (LocationInList) listVariableStateSupply.getLocationInList(from);
-        var endElementLocation = (LocationInList) listVariableStateSupply.getLocationInList(to);
+        var startElementLocation = listVariableStateSupply.getLocationInList(from)
+                .ensureAssigned();
+        var endElementLocation = listVariableStateSupply.getLocationInList(to)
+                .ensureAssigned();
         int startEntityIndex = entityToEntityIndex.get(startElementLocation.entity());
         int endEntityIndex = entityToEntityIndex.get(endElementLocation.entity());
         var offsets = entityOrderInfo.offsets();
@@ -417,7 +420,8 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
     }
 
     private boolean isNodeEndpointOfList(Object node) {
-        var elementLocation = (LocationInList) listVariableStateSupply.getLocationInList(node);
+        var elementLocation = listVariableStateSupply.getLocationInList(node)
+                .ensureAssigned();
         var index = elementLocation.index();
         var firstUnpinnedIndex = listVariableDescriptor.getFirstUnpinnedIndex(elementLocation.entity());
         if (index == firstUnpinnedIndex) {

@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.api.move.generic;
 
-import ai.timefold.solver.core.api.move.factory.BiMoveConstructor;
 import ai.timefold.solver.core.api.domain.metamodel.SolutionMetaModel;
+import ai.timefold.solver.core.api.move.factory.BiMoveConstructor;
 
 public final class Moves {
 

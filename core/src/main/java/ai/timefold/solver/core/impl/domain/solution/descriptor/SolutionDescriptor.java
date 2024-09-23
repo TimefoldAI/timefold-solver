@@ -36,6 +36,7 @@ import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfigurationProvider;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.metamodel.SolutionMetaModel;
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityProperty;
@@ -64,6 +65,7 @@ import ai.timefold.solver.core.impl.domain.solution.cloner.FieldAccessingSolutio
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionCloner;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionClonerFactory;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.EntityIndependentValueRangeDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
@@ -187,6 +189,7 @@ public class SolutionDescriptor<Solution_> {
     private final ConcurrentMap<Class<?>, EntityDescriptor<Solution_>> lowestEntityDescriptorMap = new ConcurrentHashMap<>();
     private final ConcurrentMap<Class<?>, MemberAccessor> planningIdMemberAccessorMap = new ConcurrentHashMap<>();
 
+    private SolutionMetaModel<Solution_> solutionMetaModel;
     private SolutionCloner<Solution_> solutionCloner;
     private boolean assertModelForCloning = false;
 
@@ -742,6 +745,36 @@ public class SolutionDescriptor<Solution_> {
     // ************************************************************************
     // Model methods
     // ************************************************************************
+
+    public SolutionMetaModel<Solution_> getMetaModel() {
+        if (solutionMetaModel == null) {
+            var metaModel = new DefaultSolutionMetaModel<>(this);
+            for (var entityDescriptor : getEntityDescriptors()) {
+                var entityMetaModel = new DefaultEntityMetaModel<>(metaModel, entityDescriptor);
+                for (var variableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
+                    if (variableDescriptor.isListVariable()) {
+                        var listVariableDescriptor = (ListVariableDescriptor<Solution_>) variableDescriptor;
+                        var listVariableMetaModel = new DefaultListVariableMetaModel<>(entityMetaModel,
+                                listVariableDescriptor);
+                        entityMetaModel.addVariable(listVariableMetaModel);
+                    } else {
+                        var basicVariableDescriptor = (BasicVariableDescriptor<Solution_>) variableDescriptor;
+                        var basicVariableMetaModel =
+                                new DefaultBasicVariableMetaModel<>(entityMetaModel, basicVariableDescriptor);
+                        entityMetaModel.addVariable(basicVariableMetaModel);
+                    }
+                }
+                for (var shadowVariableDescriptor : entityDescriptor.getShadowVariableDescriptors()) {
+                    var shadowVariableMetaModel =
+                            new DefaultShadowVariableMetaModel<>(entityMetaModel, shadowVariableDescriptor);
+                    entityMetaModel.addVariable(shadowVariableMetaModel);
+                }
+                metaModel.addEntity(entityMetaModel);
+            }
+            this.solutionMetaModel = metaModel;
+        }
+        return solutionMetaModel;
+    }
 
     /**
      * @deprecated {@link ConstraintConfiguration} was replaced by {@link ConstraintWeightOverrides}.
