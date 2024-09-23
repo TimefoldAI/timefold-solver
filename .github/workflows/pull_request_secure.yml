@@ -225,10 +225,10 @@ jobs:
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
 
       # Build and test
-      - name: Set up JDK 17
+      - name: Set up the JDK
         uses: actions/setup-java@v4
         with:
-          java-version: 17
+          java-version: 21
           distribution: 'temurin'
           cache: 'maven'
 

@@ -27,7 +27,7 @@ jobs:
           - os: ubuntu-latest
             java-version: 17
           - os: ubuntu-latest
-            java-version: 22
+            java-version: 23
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
@@ -54,7 +54,7 @@ jobs:
           - os: ubuntu-latest
             java-version: 17
           - os: ubuntu-latest
-            java-version: 22
+            java-version: 23
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
@@ -97,7 +97,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest ] # Windows doesn't work, Mac is not a deploy OS.
         module: ["spring-integration", "quarkus-integration"]
-        java-version: [ 17, 21, 22 ] # LTS + latest.
+        java-version: [ 17, 21, 23 ] # LTS + latest.
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
