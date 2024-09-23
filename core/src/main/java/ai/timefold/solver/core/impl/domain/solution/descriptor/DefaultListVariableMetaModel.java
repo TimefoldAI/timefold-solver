@@ -4,7 +4,7 @@ import ai.timefold.solver.core.api.domain.metamodel.EntityMetaModel;
 import ai.timefold.solver.core.api.domain.metamodel.ListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 
-record DefaultListVariableMetaModel<Solution_, Entity_, Value_>(EntityMetaModel<Solution_, Entity_> entity,
+public record DefaultListVariableMetaModel<Solution_, Entity_, Value_>(EntityMetaModel<Solution_, Entity_> entity,
         ListVariableDescriptor<Solution_> variableDescriptor)
         implements
             ListVariableMetaModel<Solution_, Entity_, Value_> {

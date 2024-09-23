@@ -23,6 +23,7 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.lookup.LookUpManager;
 import ai.timefold.solver.core.impl.domain.solution.ConstraintWeightSupplier;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;
@@ -76,6 +77,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private final boolean trackingWorkingSolution;
     private final SolutionTracker<Solution_> solutionTracker;
 
+    // Null when no list variable
+    private final ListVariableStateSupply<Solution_> listVariableStateSupply;
+
     protected AbstractScoreDirector(Factory_ scoreDirectorFactory, boolean lookUpEnabled,
             boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
         var solutionDescriptor = scoreDirectorFactory.getSolutionDescriptor();
@@ -97,6 +101,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             this.solutionTracker = null;
             this.trackingWorkingSolution = false;
         }
+        var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
+        if (listVariableDescriptor == null) {
+            this.listVariableStateSupply = null;
+        } else {
+            this.listVariableStateSupply = getSupplyManager().demand(listVariableDescriptor.getStateDemand());
+        }
     }
 
     @Override
@@ -117,6 +127,16 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public VariableDescriptorCache<Solution_> getVariableDescriptorCache() {
         return variableDescriptorCache;
+    }
+
+    public ListVariableStateSupply<Solution_> getListVariableStateSupply(ListVariableDescriptor<Solution_> variableDescriptor) {
+        var originalListVariableDescriptor = getSolutionDescriptor().getListVariableDescriptor();
+        if (variableDescriptor != originalListVariableDescriptor) {
+            throw new IllegalStateException(
+                    "The variableDescriptor (%s) is not the same as the solution's variableDescriptor (%s)."
+                            .formatted(variableDescriptor, originalListVariableDescriptor));
+        }
+        return Objects.requireNonNull(listVariableStateSupply);
     }
 
     @Override
@@ -330,6 +350,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         workingInitScore = 0;
         if (lookUpEnabled) {
             lookUpManager.reset();
+        }
+        if (listVariableStateSupply != null) {
+            getSupplyManager().cancel(listVariableStateSupply.getSourceVariableDescriptor().getStateDemand());
         }
         variableListenerSupport.close();
     }

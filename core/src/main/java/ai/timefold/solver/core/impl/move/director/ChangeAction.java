@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.heuristic.move;
+package ai.timefold.solver.core.impl.move.director;
 
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 

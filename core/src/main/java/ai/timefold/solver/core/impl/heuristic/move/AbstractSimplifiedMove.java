@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.move;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.move.director.VariableChangeRecordingScoreDirector;
 
 /**
  * This is an alternative to {@link AbstractMove},
@@ -17,7 +18,7 @@ public abstract class AbstractSimplifiedMove<Solution_> implements Move<Solution
     public final Move<Solution_> doMove(ScoreDirector<Solution_> scoreDirector) {
         var recordingScoreDirector = new VariableChangeRecordingScoreDirector<>(scoreDirector);
         doMoveOnly(recordingScoreDirector);
-        return new RecordedUndoMove<>(this, recordingScoreDirector.getVariableChanges());
+        return new RecordedUndoMove<>(this, recordingScoreDirector::undoChanges);
     }
 
     @Override

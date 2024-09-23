@@ -4,7 +4,7 @@ import ai.timefold.solver.core.api.domain.metamodel.BasicVariableMetaModel;
 import ai.timefold.solver.core.api.domain.metamodel.EntityMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 
-record DefaultBasicVariableMetaModel<Solution_, Entity_, Value_>(EntityMetaModel<Solution_, Entity_> entity,
+public record DefaultBasicVariableMetaModel<Solution_, Entity_, Value_>(EntityMetaModel<Solution_, Entity_> entity,
         BasicVariableDescriptor<Solution_> variableDescriptor)
         implements
             BasicVariableMetaModel<Solution_, Entity_, Value_> {

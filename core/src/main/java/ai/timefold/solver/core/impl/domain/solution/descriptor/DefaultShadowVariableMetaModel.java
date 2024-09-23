@@ -4,7 +4,7 @@ import ai.timefold.solver.core.api.domain.metamodel.EntityMetaModel;
 import ai.timefold.solver.core.api.domain.metamodel.ShadowVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 
-record DefaultShadowVariableMetaModel<Solution_, Entity_, Value_>(EntityMetaModel<Solution_, Entity_> entity,
+public record DefaultShadowVariableMetaModel<Solution_, Entity_, Value_>(EntityMetaModel<Solution_, Entity_> entity,
         ShadowVariableDescriptor<Solution_> variableDescriptor)
         implements
             ShadowVariableMetaModel<Solution_, Entity_, Value_> {
