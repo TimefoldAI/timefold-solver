@@ -11,6 +11,8 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
  */
 public interface Constraint {
 
+    String DEFAULT_CONSTRAINT_GROUP = "default";
+
     /**
      * The {@link ConstraintFactory} that built this.
      *
@@ -30,6 +32,10 @@ public interface Constraint {
      */
     default String getDescription() {
         return "";
+    }
+
+    default String getConstraintGroup() {
+        return DEFAULT_CONSTRAINT_GROUP;
     }
 
     /**

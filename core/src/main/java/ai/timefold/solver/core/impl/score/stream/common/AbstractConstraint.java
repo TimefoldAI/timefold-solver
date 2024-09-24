@@ -17,6 +17,7 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
     private final ConstraintFactory_ constraintFactory;
     private final ConstraintRef constraintRef;
     private final String description;
+    private final String constraintGroup;
     private final Score<?> defaultConstraintWeight;
     private final ScoreImpactType scoreImpactType;
     // Constraint is not generic in uni/bi/..., therefore these can not be typed.
@@ -27,6 +28,8 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
      *
      * @param constraintFactory never null
      * @param constraintRef never null
+     * @param description never null
+     * @param constraintGroup never null
      * @param defaultConstraintWeight if null, it means legacy constraint configuration code;
      *        will require {@link ConstraintConfiguration} to be present.
      * @param scoreImpactType never null
@@ -34,11 +37,12 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
      * @param indictedObjectsMapping never null
      */
     protected AbstractConstraint(ConstraintFactory_ constraintFactory, ConstraintRef constraintRef, String description,
-            Score<?> defaultConstraintWeight, ScoreImpactType scoreImpactType, Object justificationMapping,
-            Object indictedObjectsMapping) {
+            String constraintGroup, Score<?> defaultConstraintWeight, ScoreImpactType scoreImpactType,
+            Object justificationMapping, Object indictedObjectsMapping) {
         this.constraintFactory = Objects.requireNonNull(constraintFactory);
         this.constraintRef = Objects.requireNonNull(constraintRef);
         this.description = Objects.requireNonNull(description);
+        this.constraintGroup = Objects.requireNonNull(constraintGroup);
         this.defaultConstraintWeight = defaultConstraintWeight;
         this.scoreImpactType = Objects.requireNonNull(scoreImpactType);
         this.justificationMapping = justificationMapping; // May be omitted in test code.
@@ -140,6 +144,11 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
     @Override
     public String getDescription() {
         return description;
+    }
+
+    @Override
+    public String getConstraintGroup() {
+        return constraintGroup;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

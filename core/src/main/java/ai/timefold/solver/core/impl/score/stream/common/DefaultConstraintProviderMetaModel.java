@@ -12,7 +12,7 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 public record DefaultConstraintProviderMetaModel<Score_ extends Score<Score_>>(
         Map<ConstraintRef, AbstractConstraint<?, ?, ?>> constraintDescriptorMap)
         implements
-        ConstraintProviderMetaModel<Score_> {
+            ConstraintProviderMetaModel<Score_> {
 
     public DefaultConstraintProviderMetaModel(Map<ConstraintRef, AbstractConstraint<?, ?, ?>> constraintDescriptorMap) {
         this.constraintDescriptorMap = Collections.unmodifiableMap(constraintDescriptorMap);
