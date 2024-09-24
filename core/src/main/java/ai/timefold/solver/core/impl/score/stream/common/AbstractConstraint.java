@@ -151,12 +151,12 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
         return constraintGroup;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public Score<?> getDefaultConstraintWeight() {
+    @Override
+    public <Score_ extends Score<Score_>> Score_ getConstraintWeight() {
         if (defaultConstraintWeight == null) { // Configurable weights (deprecated) have no default.
             return null;
         }
-        return adjustConstraintWeight((Score) defaultConstraintWeight);
+        return adjustConstraintWeight((Score_) defaultConstraintWeight);
     }
 
     public final ScoreImpactType getScoreImpactType() {

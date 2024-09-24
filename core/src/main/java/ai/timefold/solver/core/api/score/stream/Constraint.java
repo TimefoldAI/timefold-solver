@@ -39,6 +39,16 @@ public interface Constraint {
     }
 
     /**
+     * Returns the weight of the constraint as defined in the {@link ConstraintProvider},
+     * without any overrides.
+     *
+     * @return null if the constraint does not have a weight defined
+     */
+    default <Score_ extends Score<Score_>> Score_ getConstraintWeight() {
+        return null;
+    }
+
+    /**
      * @deprecated Prefer {@link #getConstraintRef()}.
      * @return never null
      */

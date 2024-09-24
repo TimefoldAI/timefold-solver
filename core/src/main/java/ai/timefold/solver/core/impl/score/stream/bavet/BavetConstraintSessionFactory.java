@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintProviderMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractIfExistsNode;
@@ -26,7 +27,6 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.PropagationQueue;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.AbstractForEachUniNode;
-import ai.timefold.solver.core.impl.score.stream.common.DefaultConstraintProviderMetaModel;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
@@ -40,10 +40,10 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
     private static final Level CONSTRAINT_WEIGHT_LOGGING_LEVEL = Level.DEBUG;
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
-    private final DefaultConstraintProviderMetaModel<Score_> constraintProviderMetaModel;
+    private final ConstraintProviderMetaModel constraintProviderMetaModel;
 
     public BavetConstraintSessionFactory(SolutionDescriptor<Solution_> solutionDescriptor,
-            DefaultConstraintProviderMetaModel<Score_> constraintProviderMetaModel) {
+            ConstraintProviderMetaModel constraintProviderMetaModel) {
         this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
         this.constraintProviderMetaModel = Objects.requireNonNull(constraintProviderMetaModel);
     }
@@ -78,7 +78,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
         for (var constraint : constraints) {
             var constraintRef = constraint.getConstraintRef();
             var castConstraint = (BavetConstraint<Solution_>) constraint;
-            var defaultConstraintWeight = castConstraint.getDefaultConstraintWeight();
+            var defaultConstraintWeight = castConstraint.getConstraintWeight();
             var constraintWeight = (Score_) castConstraint.extractConstraintWeight(workingSolution);
             if (!constraintWeight.equals(zeroScore)) {
                 if (constraintWeightLoggingEnabled) {
