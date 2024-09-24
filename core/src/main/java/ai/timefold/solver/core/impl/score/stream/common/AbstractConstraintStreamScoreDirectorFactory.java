@@ -30,7 +30,7 @@ public abstract class AbstractConstraintStreamScoreDirectorFactory<Solution_, Sc
      */
     public abstract AbstractScoreInliner<Score_> fireAndForget(Object... facts);
 
-    public abstract ConstraintLibrary<Score_> getConstraintLibrary();
+    public abstract DefaultConstraintProviderMetaModel<Score_> getConstraintProviderMetaModel();
 
     @Override
     public boolean supportsConstraintMatching() {
