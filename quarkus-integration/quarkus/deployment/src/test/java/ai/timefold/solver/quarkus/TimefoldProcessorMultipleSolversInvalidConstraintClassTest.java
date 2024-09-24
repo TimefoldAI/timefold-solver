@@ -4,10 +4,10 @@ package ai.timefold.solver.quarkus;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusEasyScoreProvider;
-import ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusIncrementalScoreProvider;
-import ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusShadowVariableEasyScoreProvider;
-import ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusShadowVariableIncrementalScoreProvider;
+import ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusEasyScoreCalculator;
+import ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusIncrementalScoreCalculator;
+import ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusShadowVariableEasyScoreCalculator;
+import ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusShadowVariableIncrementalScoreCalculator;
 import ai.timefold.solver.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider;
 import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusEntity;
 import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusSolution;
@@ -41,8 +41,8 @@ class TimefoldProcessorMultipleSolversInvalidConstraintClassTest {
             .overrideConfigKey("quarkus.timefold.solver.\"solver2\".environment-mode", "REPRODUCIBLE")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
-                            DummyTestdataQuarkusEasyScoreProvider.class)
-                    .addClasses(DummyTestdataQuarkusShadowVariableEasyScoreProvider.class))
+                            DummyTestdataQuarkusEasyScoreCalculator.class)
+                    .addClasses(DummyTestdataQuarkusShadowVariableEasyScoreCalculator.class))
             .assertException(t -> assertThat(t)
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("Some solver configs")
@@ -50,9 +50,9 @@ class TimefoldProcessorMultipleSolversInvalidConstraintClassTest {
                     .hasMessageContaining("solver2")
                     .hasMessageContaining("don't specify a EasyScoreCalculator score class, yet there are multiple available")
                     .hasMessageContaining(
-                            "ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusEasyScoreProvider")
+                            "ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusEasyScoreCalculator")
                     .hasMessageContaining(
-                            "ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusShadowVariableEasyScoreProvider")
+                            "ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusShadowVariableEasyScoreCalculator")
                     .hasMessageContaining("on the classpath."));
     // Multiple classes - EasyScoreCalculator with XML
     @RegisterExtension
@@ -65,8 +65,8 @@ class TimefoldProcessorMultipleSolversInvalidConstraintClassTest {
                     "ai/timefold/solver/quarkus/customSolverConfig.xml")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class)
-                    .addClasses(DummyTestdataQuarkusEasyScoreProvider.class,
-                            DummyTestdataQuarkusShadowVariableEasyScoreProvider.class)
+                    .addClasses(DummyTestdataQuarkusEasyScoreCalculator.class,
+                            DummyTestdataQuarkusShadowVariableEasyScoreCalculator.class)
                     .addAsResource("ai/timefold/solver/quarkus/customSolverConfig.xml"))
             .assertException(t -> assertThat(t)
                     .isInstanceOf(IllegalStateException.class)
@@ -75,9 +75,9 @@ class TimefoldProcessorMultipleSolversInvalidConstraintClassTest {
                     .hasMessageContaining("solver2")
                     .hasMessageContaining("don't specify a EasyScoreCalculator score class, yet there are multiple available")
                     .hasMessageContaining(
-                            "ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusEasyScoreProvider")
+                            "ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusEasyScoreCalculator")
                     .hasMessageContaining(
-                            "ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusShadowVariableEasyScoreProvider")
+                            "ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusShadowVariableEasyScoreCalculator")
                     .hasMessageContaining("on the classpath."));
 
     // Multiple classes - ConstraintProvider
@@ -133,8 +133,8 @@ class TimefoldProcessorMultipleSolversInvalidConstraintClassTest {
             .overrideConfigKey("quarkus.timefold.solver.\"solver2\".environment-mode", "REPRODUCIBLE")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
-                            DummyTestdataQuarkusIncrementalScoreProvider.class)
-                    .addClasses(DummyTestdataQuarkusShadowVariableIncrementalScoreProvider.class))
+                            DummyTestdataQuarkusIncrementalScoreCalculator.class)
+                    .addClasses(DummyTestdataQuarkusShadowVariableIncrementalScoreCalculator.class))
             .assertException(t -> assertThat(t)
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("Some solver configs")
@@ -143,9 +143,9 @@ class TimefoldProcessorMultipleSolversInvalidConstraintClassTest {
                     .hasMessageContaining(
                             "don't specify a IncrementalScoreCalculator score class, yet there are multiple available")
                     .hasMessageContaining(
-                            "ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusIncrementalScoreProvider")
+                            "ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusIncrementalScoreCalculator")
                     .hasMessageContaining(
-                            "ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusShadowVariableIncrementalScoreProvider")
+                            "ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusShadowVariableIncrementalScoreCalculator")
                     .hasMessageContaining("on the classpath."));
     // Multiple classes - IncrementalScoreCalculator with XML
     @RegisterExtension
@@ -159,8 +159,8 @@ class TimefoldProcessorMultipleSolversInvalidConstraintClassTest {
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
                             TestdataQuarkusConstraintProvider.class)
-                    .addClasses(DummyTestdataQuarkusIncrementalScoreProvider.class,
-                            DummyTestdataQuarkusShadowVariableIncrementalScoreProvider.class)
+                    .addClasses(DummyTestdataQuarkusIncrementalScoreCalculator.class,
+                            DummyTestdataQuarkusShadowVariableIncrementalScoreCalculator.class)
                     .addAsResource("ai/timefold/solver/quarkus/customSolverConfigWithoutScore.xml"))
             .assertException(t -> assertThat(t)
                     .isInstanceOf(IllegalStateException.class)
@@ -170,9 +170,9 @@ class TimefoldProcessorMultipleSolversInvalidConstraintClassTest {
                     .hasMessageContaining(
                             "don't specify a IncrementalScoreCalculator score class, yet there are multiple available")
                     .hasMessageContaining(
-                            "ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusIncrementalScoreProvider")
+                            "ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusIncrementalScoreCalculator")
                     .hasMessageContaining(
-                            "ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusShadowVariableIncrementalScoreProvider")
+                            "ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusShadowVariableIncrementalScoreCalculator")
                     .hasMessageContaining("on the classpath."));
 
     // Unused classes - EasyScoreCalculator
@@ -184,13 +184,13 @@ class TimefoldProcessorMultipleSolversInvalidConstraintClassTest {
                     "ai/timefold/solver/quarkus/customSolverWithEasyScore.xml")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
-                            DummyTestdataQuarkusEasyScoreProvider.class)
-                    .addClasses(DummyTestdataQuarkusShadowVariableEasyScoreProvider.class)
+                            DummyTestdataQuarkusEasyScoreCalculator.class)
+                    .addClasses(DummyTestdataQuarkusShadowVariableEasyScoreCalculator.class)
                     .addAsResource("ai/timefold/solver/quarkus/customSolverWithEasyScore.xml"))
             .assertException(t -> assertThat(t)
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining(
-                            "Unused classes ([ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusShadowVariableEasyScoreProvider]) that implements EasyScoreCalculator were found."));
+                            "Unused classes ([ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusShadowVariableEasyScoreCalculator]) that implements EasyScoreCalculator were found."));
 
     // Unused classes - ConstraintProvider
     @RegisterExtension
@@ -218,13 +218,13 @@ class TimefoldProcessorMultipleSolversInvalidConstraintClassTest {
                     "ai/timefold/solver/quarkus/customSolverWithIncrementalScore.xml")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
-                            DummyTestdataQuarkusIncrementalScoreProvider.class)
-                    .addClasses(DummyTestdataQuarkusShadowVariableIncrementalScoreProvider.class)
+                            DummyTestdataQuarkusIncrementalScoreCalculator.class)
+                    .addClasses(DummyTestdataQuarkusShadowVariableIncrementalScoreCalculator.class)
                     .addAsResource("ai/timefold/solver/quarkus/customSolverWithIncrementalScore.xml"))
             .assertException(t -> assertThat(t)
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining(
-                            "Unused classes ([ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusShadowVariableIncrementalScoreProvider]) that implements IncrementalScoreCalculator were found."));
+                            "Unused classes ([ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusShadowVariableIncrementalScoreCalculator]) that implements IncrementalScoreCalculator were found."));
 
     @Test
     void test() {

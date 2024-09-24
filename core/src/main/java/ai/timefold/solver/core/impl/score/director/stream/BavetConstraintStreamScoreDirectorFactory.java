@@ -6,16 +6,16 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.constraint.ConstraintMetaModel;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import ai.timefold.solver.core.api.score.stream.ConstraintProviderMetaModel;
 import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMetaModel;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.score.stream.DefaultConstraintProviderMetaModel;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSession;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSessionFactory;
@@ -57,15 +57,15 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
     }
 
     private final BavetConstraintSessionFactory<Solution_, Score_> constraintSessionFactory;
-    private final ConstraintProviderMetaModel constraintProviderMetaModel;
+    private final ConstraintMetaModel constraintMetaModel;
 
     public BavetConstraintStreamScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor,
             ConstraintProvider constraintProvider, EnvironmentMode environmentMode) {
         super(solutionDescriptor);
         var constraintFactory = new BavetConstraintFactory<>(solutionDescriptor, environmentMode);
-        constraintProviderMetaModel =
-                DefaultConstraintProviderMetaModel.of(constraintFactory.buildConstraints(constraintProvider));
-        constraintSessionFactory = new BavetConstraintSessionFactory<>(solutionDescriptor, constraintProviderMetaModel);
+        constraintMetaModel =
+                DefaultConstraintMetaModel.of(constraintFactory.buildConstraints(constraintProvider));
+        constraintSessionFactory = new BavetConstraintSessionFactory<>(solutionDescriptor, constraintMetaModel);
     }
 
     @Override
@@ -96,8 +96,8 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
     }
 
     @Override
-    public ConstraintProviderMetaModel getConstraintProviderMetaModel() {
-        return constraintProviderMetaModel;
+    public ConstraintMetaModel getConstraintProviderMetaModel() {
+        return constraintMetaModel;
     }
 
 }

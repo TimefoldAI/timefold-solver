@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.score.stream.common;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.stream.ConstraintProviderMetaModel;
+import ai.timefold.solver.core.api.score.constraint.ConstraintMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -31,7 +31,7 @@ public abstract class AbstractConstraintStreamScoreDirectorFactory<Solution_, Sc
      */
     public abstract AbstractScoreInliner<Score_> fireAndForget(Object... facts);
 
-    public abstract ConstraintProviderMetaModel getConstraintProviderMetaModel();
+    public abstract ConstraintMetaModel getConstraintProviderMetaModel();
 
     @Override
     public boolean supportsConstraintMatching() {

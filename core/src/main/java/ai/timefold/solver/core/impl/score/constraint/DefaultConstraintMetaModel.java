@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.score.stream;
+package ai.timefold.solver.core.impl.score.constraint;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -7,22 +7,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import ai.timefold.solver.core.api.score.constraint.ConstraintMetaModel;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
-import ai.timefold.solver.core.api.score.stream.ConstraintProviderMetaModel;
 
-public record DefaultConstraintProviderMetaModel(
-        Map<ConstraintRef, Constraint> constraintDescriptorMap) implements ConstraintProviderMetaModel {
+public record DefaultConstraintMetaModel(
+        Map<ConstraintRef, Constraint> constraintDescriptorMap) implements ConstraintMetaModel {
 
-    public static ConstraintProviderMetaModel of(List<? extends Constraint> constraints) {
+    public static ConstraintMetaModel of(List<? extends Constraint> constraints) {
         var map = new LinkedHashMap<ConstraintRef, Constraint>(); // Preserve iteration order.
         for (var constraint : constraints) {
             map.put(constraint.getConstraintRef(), constraint);
         }
-        return new DefaultConstraintProviderMetaModel(map);
+        return new DefaultConstraintMetaModel(map);
     }
 
-    public DefaultConstraintProviderMetaModel(Map<ConstraintRef, Constraint> constraintDescriptorMap) {
+    public DefaultConstraintMetaModel(Map<ConstraintRef, Constraint> constraintDescriptorMap) {
         this.constraintDescriptorMap = Collections.unmodifiableMap(constraintDescriptorMap);
     }
 

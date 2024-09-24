@@ -4,7 +4,7 @@
   <solutionClass>ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusSolution</solutionClass>
   <entityClass>ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusEntity</entityClass>
   <scoreDirectorFactory>
-    <incrementalScoreCalculatorClass>ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusIncrementalScoreProvider</incrementalScoreCalculatorClass>
+    <incrementalScoreCalculatorClass>ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusIncrementalScoreCalculator</incrementalScoreCalculatorClass>
   </scoreDirectorFactory>
   <termination>
     <secondsSpentLimit>1</secondsSpentLimit>

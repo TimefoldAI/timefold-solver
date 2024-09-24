@@ -18,11 +18,14 @@ import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
 import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
+import ai.timefold.solver.core.api.score.constraint.ConstraintMetaModel;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
+import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
+import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 
 import io.quarkus.arc.DefaultBean;
 
@@ -34,11 +37,34 @@ public class DefaultTimefoldBeanProvider {
 
     private SolverFactory<?> solverFactory;
 
+    private volatile ConstraintMetaModel constraintMetaModel;
+
     private SolverManager<?, ?> solverManager;
 
     private SolutionManager<?, ?> solutionManager;
 
     private ScoreManager<?, ?> scoreManager;
+
+    @DefaultBean
+    @Dependent
+    @Produces
+    ConstraintMetaModel constraintProviderMetaModel(SolverFactory<?> solverFactory) {
+        if (constraintMetaModel == null) {
+            synchronized (this) {
+                if (constraintMetaModel == null) {
+                    var scoreDirectorFactory = ((DefaultSolverFactory<?>) solverFactory).getScoreDirectorFactory();
+                    if (scoreDirectorFactory instanceof AbstractConstraintStreamScoreDirectorFactory<?, ?> castScoreDirectorFactory) {
+                        constraintMetaModel = castScoreDirectorFactory.getConstraintProviderMetaModel();
+                    } else {
+                        throw new IllegalStateException(
+                                "Cannot provide %s because the score director does not use the Constraint Streams API."
+                                        .formatted(ConstraintMetaModel.class.getSimpleName()));
+                    }
+                }
+            }
+        }
+        return constraintMetaModel;
+    }
 
     @DefaultBean
     @Dependent

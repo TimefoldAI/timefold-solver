@@ -1,16 +1,18 @@
-package ai.timefold.solver.core.api.score.stream;
+package ai.timefold.solver.core.api.score.constraint;
 
 import java.util.Collection;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
+import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 
 /**
- * Provides information about the constraints defined in the {@link ConstraintProvider}.
+ * Provides information about the known constraints.
+ * Works in combination with the Constraint Streams API.
  */
-public interface ConstraintProviderMetaModel {
+public interface ConstraintMetaModel {
 
     /**
      * Returns the constraint for the given reference.

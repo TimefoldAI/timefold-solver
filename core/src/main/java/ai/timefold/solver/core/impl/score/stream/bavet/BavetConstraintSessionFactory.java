@@ -11,8 +11,8 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.constraint.ConstraintMetaModel;
 import ai.timefold.solver.core.api.score.stream.Constraint;
-import ai.timefold.solver.core.api.score.stream.ConstraintProviderMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractIfExistsNode;
@@ -40,12 +40,12 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
     private static final Level CONSTRAINT_WEIGHT_LOGGING_LEVEL = Level.DEBUG;
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
-    private final ConstraintProviderMetaModel constraintProviderMetaModel;
+    private final ConstraintMetaModel constraintMetaModel;
 
     public BavetConstraintSessionFactory(SolutionDescriptor<Solution_> solutionDescriptor,
-            ConstraintProviderMetaModel constraintProviderMetaModel) {
+            ConstraintMetaModel constraintMetaModel) {
         this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
-        this.constraintProviderMetaModel = Objects.requireNonNull(constraintProviderMetaModel);
+        this.constraintMetaModel = Objects.requireNonNull(constraintMetaModel);
     }
 
     // ************************************************************************
@@ -56,7 +56,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
     public BavetConstraintSession<Score_> buildSession(Solution_ workingSolution, boolean constraintMatchEnabled,
             boolean scoreDirectorDerived) {
         var constraintWeightSupplier = solutionDescriptor.getConstraintWeightSupplier();
-        var constraints = constraintProviderMetaModel.getConstraints();
+        var constraints = constraintMetaModel.getConstraints();
         if (constraintWeightSupplier != null) { // Fail fast on unknown constraints.
             var knownConstraints = constraints.stream()
                     .map(Constraint::getConstraintRef)

@@ -6,12 +6,13 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMetaModel;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class DefaultConstraintProviderMetaModelTest {
+class DefaultConstraintMetaModelTest {
 
     @Test
     void test() {
@@ -21,7 +22,7 @@ class DefaultConstraintProviderMetaModelTest {
         var constraint2 = new TestConstraint<>(constraintFactory, "Test Constraint 2", SimpleScore.of(10));
         var constraint3 = new TestConstraint<>(constraintFactory, "Test Constraint 3", "test", SimpleScore.of(100));
         var constraint4 = new TestConstraint<>(constraintFactory, "Test Constraint 4", "another-test", SimpleScore.ZERO);
-        var metaModel = DefaultConstraintProviderMetaModel.of(List.of(constraint1, constraint2, constraint3, constraint4));
+        var metaModel = DefaultConstraintMetaModel.of(List.of(constraint1, constraint2, constraint3, constraint4));
 
         assertSoftly(softly -> {
             softly.assertThat(metaModel.getConstraint(constraint1.getConstraintRef())).isSameAs(constraint1);
