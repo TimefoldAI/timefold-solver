@@ -54,7 +54,7 @@ public class DefaultTimefoldBeanProvider {
                 if (constraintMetaModel == null) {
                     var scoreDirectorFactory = ((DefaultSolverFactory<?>) solverFactory).getScoreDirectorFactory();
                     if (scoreDirectorFactory instanceof AbstractConstraintStreamScoreDirectorFactory<?, ?> castScoreDirectorFactory) {
-                        constraintMetaModel = castScoreDirectorFactory.getConstraintProviderMetaModel();
+                        constraintMetaModel = castScoreDirectorFactory.getConstraintMetaModel();
                     } else {
                         throw new IllegalStateException(
                                 "Cannot provide %s because the score director does not use the Constraint Streams API."

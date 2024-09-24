@@ -96,7 +96,7 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
     }
 
     @Override
-    public ConstraintMetaModel getConstraintProviderMetaModel() {
+    public ConstraintMetaModel getConstraintMetaModel() {
         return constraintMetaModel;
     }
 

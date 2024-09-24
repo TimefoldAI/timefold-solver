@@ -423,7 +423,7 @@ include::config-properties.adoc[]
 === Injecting managed resources
 
 The Quarkus integration allows the injection of several managed resources, including `SolverConfig`, `SolverFactory`,
-`SolverManager`, `SolutionManager`, `ScoreManager`, and `ConstraintVerifier`.
+`SolverManager`, `SolutionManager`, `ScoreManager`, `ConstraintVerifier` and `ConstraintMetaModel`.
 
 The `SolverConfig` resource is constructed by reading the `application.properties` file and classpath. Therefore, Domain entities
 (solution, entities, and constraint classes) and customized properties (`spent-limit`, `domain-access-type`, etc.) for the
@@ -457,6 +457,9 @@ public class Resource {
     ScoreManager<Timetable, SimpleScore> simpleScoreManager; // <1>
 
     @Inject
+    ConstraintMetaModel constraintMetaModel;
+
+    @Inject
     ConstraintVerifier<TimetableConstraintProvider, Timetable> constraintVerifier;
 
     ...
@@ -486,6 +489,9 @@ class Resource {
 
     @Inject
     var simpleScoreManager:ScoreManager<Timetable, SimpleScore>? // <1>
+
+    @Inject
+    var constraintMetaModel: ConstraintMetaModel?
 
     @Inject
     var constraintVerifier:ConstraintVerifier<TimetableConstraintProvider, Timetable>? = null
@@ -776,7 +782,7 @@ include::config-properties.adoc[]
 === Injecting managed resources
 
 The Spring Boot integration allows the injection of several managed resources, including `SolverConfig`, `SolverFactory`,
-`SolverManager`, `SolutionManager`, `ScoreManager`, and `ConstraintVerifier`.
+`SolverManager`, `SolutionManager`, `ScoreManager`, `ConstraintMetaModel` and `ConstraintVerifier`.
 
 The `SolverConfig` resource is constructed by reading the `application.properties` file and classpath. Therefore, Domain entities
 (solution, entities, and constraint classes) and customized properties (`spent-limit`, `domain-access-type`, etc.) for the
@@ -811,6 +817,9 @@ public class Resource {
     ScoreManager<Timetable, SimpleScore> simpleScoreManager; // <1>
 
     @Autowired
+    ConstraintMetaModel constraintMetaModel;
+
+    @Autowired
     ConstraintVerifier<TimetableConstraintProvider, Timetable> constraintVerifier;
 
     ...
@@ -841,6 +850,9 @@ class Resource {
 
     @Autowired
     var simpleScoreManager:ScoreManager<Timetable, SimpleScore>? // <1>
+
+    @Autowired
+    var constraintMetaModel:ConstraintMetaModel? = null
 
     @Autowired
     var constraintVerifier:ConstraintVerifier<TimetableConstraintProvider, Timetable>? = null
