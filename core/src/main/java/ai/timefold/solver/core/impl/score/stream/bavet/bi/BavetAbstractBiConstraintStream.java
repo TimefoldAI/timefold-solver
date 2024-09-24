@@ -439,10 +439,9 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
             BavetScoringConstraintStream<Solution_> stream, ScoreImpactType impactType, Score_ constraintWeight) {
         return new BiConstraintBuilderImpl<>(
                 (constraintPackage, constraintName, constraintDescription, constraintGroup, constraintWeight_, impactType_,
-                        justificationMapping,
-                        indictedObjectsMapping) -> buildConstraint(constraintPackage, constraintName, constraintGroup,
-                                constraintDescription,
-                                constraintWeight_, impactType_, justificationMapping, indictedObjectsMapping, stream),
+                        justificationMapping, indictedObjectsMapping) -> buildConstraint(constraintPackage, constraintName,
+                                constraintDescription, constraintGroup, constraintWeight_, impactType_, justificationMapping,
+                                indictedObjectsMapping, stream),
                 impactType, constraintWeight);
     }
 

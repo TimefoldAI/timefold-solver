@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.score.stream.common;
 
 import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
 import ai.timefold.solver.core.api.score.IBendableScore;
@@ -13,6 +14,9 @@ import ai.timefold.solver.core.impl.score.definition.AbstractBendableScoreDefini
 
 public abstract class AbstractConstraint<Solution_, Constraint_ extends AbstractConstraint<Solution_, Constraint_, ConstraintFactory_>, ConstraintFactory_ extends InnerConstraintFactory<Solution_, Constraint_>>
         implements Constraint {
+
+    private static final String CONSTRAINT_GROUP_REGEX = "^[\\p{L}][\\p{L}\\p{N}\\p{M}\\p{So}_-]*$";
+    private static final Pattern CONSTRAINT_GROUP_REGEX_PATTERN = Pattern.compile(CONSTRAINT_GROUP_REGEX);
 
     private final ConstraintFactory_ constraintFactory;
     private final ConstraintRef constraintRef;
@@ -43,6 +47,14 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
         this.constraintRef = Objects.requireNonNull(constraintRef);
         this.description = Objects.requireNonNull(description);
         this.constraintGroup = Objects.requireNonNull(constraintGroup);
+        var matcher = CONSTRAINT_GROUP_REGEX_PATTERN.matcher(constraintGroup);
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("""
+                    The constraintGroup (%s) contains invalid characters.
+                    Only alphanumeric characters, "-" and "_" are allowed.
+                    The string must start with an alphabetic character.
+                    """.formatted(constraintGroup));
+        }
         this.defaultConstraintWeight = defaultConstraintWeight;
         this.scoreImpactType = Objects.requireNonNull(scoreImpactType);
         this.justificationMapping = justificationMapping; // May be omitted in test code.

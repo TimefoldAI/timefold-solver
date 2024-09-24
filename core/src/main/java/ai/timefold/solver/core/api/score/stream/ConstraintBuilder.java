@@ -37,7 +37,7 @@ public interface ConstraintBuilder {
      *
      * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
      * @param constraintDescription never null
-     * @param constraintGroup never null
+     * @param constraintGroup never null, only allows alphanumeric characters, "-" and "_"
      * @return never null
      */
     Constraint asConstraintDescribed(String constraintName, String constraintDescription, String constraintGroup);

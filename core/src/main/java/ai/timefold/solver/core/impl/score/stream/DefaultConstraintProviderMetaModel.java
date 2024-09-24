@@ -10,12 +10,11 @@ import java.util.stream.Collectors;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintProviderMetaModel;
-import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraint;
 
 public record DefaultConstraintProviderMetaModel(
         Map<ConstraintRef, Constraint> constraintDescriptorMap) implements ConstraintProviderMetaModel {
 
-    public static <Solution_> ConstraintProviderMetaModel of(List<BavetConstraint<Solution_>> constraints) {
+    public static ConstraintProviderMetaModel of(List<? extends Constraint> constraints) {
         var map = new LinkedHashMap<ConstraintRef, Constraint>(); // Preserve iteration order.
         for (var constraint : constraints) {
             map.put(constraint.getConstraintRef(), constraint);
