@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.TreeMap;
 
 import ai.timefold.solver.core.api.score.constraint.ConstraintMetaModel;
@@ -16,7 +15,7 @@ import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 record DefaultConstraintMetaModel(
         Map<ConstraintRef, Constraint> constraintPerRefMap,
-        SortedMap<String, List<Constraint>> constraintPerGroupMap) implements ConstraintMetaModel {
+        Map<String, List<Constraint>> constraintPerGroupMap) implements ConstraintMetaModel {
 
     public static ConstraintMetaModel of(List<? extends Constraint> constraints) {
         var constraintCount = constraints.size();
@@ -31,7 +30,10 @@ record DefaultConstraintMetaModel(
             perGroupMap.computeIfAbsent(constraint.getConstraintGroup(), k -> new ArrayList<>(constraintCount))
                     .add(constraint);
         }
-        return new DefaultConstraintMetaModel(perRefMap, perGroupMap);
+        return new DefaultConstraintMetaModel(
+                Collections.unmodifiableMap(perRefMap),
+                Collections.unmodifiableMap(perGroupMap)
+        );
     }
 
     @Override
