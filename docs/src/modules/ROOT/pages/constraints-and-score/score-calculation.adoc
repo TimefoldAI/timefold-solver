@@ -1858,7 +1858,7 @@ the expensive computation will not be reevaluated again unless the `Talk` itself
 [NOTE]
 ====
 There is a performance cost to `expand()`.
-Always check your solver's score calculation speed to see if the cost is offset by the gains.
+Always check your solver's move evaluation speed to see if the cost is offset by the gains.
 ====
 
 [#constraintStreamsFlattening]

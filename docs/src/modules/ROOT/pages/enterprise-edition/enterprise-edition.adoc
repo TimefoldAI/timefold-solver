@@ -470,7 +470,7 @@ There are several ways of doing multi-threaded solving:
 
 * *<<multithreadedIncrementalSolving,Multi-threaded incremental solving>>*:
 Solve 1 dataset with multiple threads without sacrificing xref:constraints-and-score/performance.adoc#incrementalScoreCalculationPerformance[incremental score calculation].
-** Donate a portion of your CPU cores to Timefold Solver to scale up the score calculation speed and get the same results in fraction of the time.
+** Donate a portion of your CPU cores to Timefold Solver to scale up the move evaluation speed and get the same results in fraction of the time.
 * *<<partitionedSearch,Partitioned Search>>*:
 Split 1 dataset in multiple parts and solve them independently.
 * *Multi bet solving*: solve 1 dataset with multiple, isolated solvers and take the best result.
@@ -486,7 +486,7 @@ In this section, we will focus on multi-threaded incremental solving and partiti
 [NOTE]
 ====
 A xref:using-timefold-solver/running-the-solver.adoc#logging[logging level] of `debug` or `trace` might cause congestion
-and slow down the xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calculation speed].
+and slow down the xref:constraints-and-score/performance.adoc#moveEvaluationSpeed[move evaluation speed].
 ====
 
 
@@ -495,20 +495,20 @@ and slow down the xref:constraints-and-score/performance.adoc#scoreCalculationSp
 
 With this feature, the solver can run significantly faster, 
 getting you the right solution earlier.
-It has been designed to speed up the solver in cases where score calculation is the bottleneck.
+It has been designed to speed up the solver in cases where move evaluation is the bottleneck.
 This typically happens when the constraints are computationally expensive,
 or when the dataset is large.
 
-- The sweet spot for this feature is when the score calculation speed is up to 10 thousand per second.
+- The sweet spot for this feature is when the move evaluation speed is up to 10 thousand per second.
 In this case, we have observed the algorithm to scale linearly with the number of move threads.
 Every additional move thread will bring a speedup,
 albeit with diminishing returns.
-- For score calculation speeds on the order of 100 thousand per second,
+- For move evaluation speeds on the order of 100 thousand per second,
 the algorithm no longer scales linearly,
 but using 4 to 8 move threads may still be beneficial.
-- For even higher score calculation speeds,
+- For even higher move evaluation speeds,
 the feature does not bring any benefit.
-At these speeds, score calculation is no longer the bottleneck.
+At these speeds, move evaluation is no longer the bottleneck.
 If the solver continues to underperform,
 perhaps you're suffering from xref:constraints-and-score/performance.adoc#scoreTrap[score traps]
 or you may benefit from xref:optimization-algorithms/overview.adoc#customMoves[custom moves]
@@ -612,7 +612,7 @@ On machines or containers with little or no CPUs, this falls back to the single 
 
 It is counter-effective to set a `moveThreadCount`
 that is higher than the number of available CPU cores,
-as that will slow down the score calculation speed.
+as that will slow down the move evaluation speed.
 
 [IMPORTANT]
 ====
@@ -722,7 +722,7 @@ plug in a <<customThreadFactory,custom thread factory>>.
 [IMPORTANT]
 ====
 A xref:using-timefold-solver/running-the-solver.adoc#logging[logging level] of `debug` or `trace` causes congestion in multi-threaded Partitioned Search
-and slows down the xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calculation speed].
+and slows down the xref:constraints-and-score/performance.adoc#moveEvaluationSpeed[move evaluation speed].
 ====
 
 Just like a `<solver>` element,
@@ -875,7 +875,7 @@ It is not applicable to Timefold Solver for Python.
 ====
 
 When a `ConstraintProvider` does an operation for multiple constraints (such as finding all shifts corresponding to an employee), that work can be shared.
-This can significantly improve score calculation speed if the repeated operation is computationally expensive:
+This can significantly improve move evaluation speed if the repeated operation is computationally expensive:
 
 image::enterprise-edition/nodeSharingValueProposition.png[align="center"]
 
