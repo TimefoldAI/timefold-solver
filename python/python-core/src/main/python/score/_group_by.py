@@ -132,18 +132,19 @@ def perform_group_by(constraint_stream, package, group_by_args, *type_arguments)
             created_collector = extract_collector(collector_info, *type_arguments)
             actual_group_by_args.append(created_collector)
 
-    if len(group_by_args) is 1:
+    arg_count = len(group_by_args)
+    if arg_count == 1:
         return UniConstraintStream(constraint_stream.groupBy(*actual_group_by_args), package,
                                    JClass('java.lang.Object'))
-    elif len(group_by_args) is 2:
+    elif arg_count == 2:
         return BiConstraintStream(constraint_stream.groupBy(*actual_group_by_args), package,
                                   JClass('java.lang.Object'),
                                   JClass('java.lang.Object'))
-    elif len(group_by_args) is 3:
+    elif arg_count == 3:
         return TriConstraintStream(constraint_stream.groupBy(*actual_group_by_args), package,
                                    JClass('java.lang.Object'),
                                    JClass('java.lang.Object'), JClass('java.lang.Object'))
-    elif len(group_by_args) is 4:
+    elif arg_count == 4:
         return QuadConstraintStream(constraint_stream.groupBy(*actual_group_by_args), package,
                                     JClass('java.lang.Object'),
                                     JClass('java.lang.Object'), JClass('java.lang.Object'),
