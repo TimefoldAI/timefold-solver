@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.score.stream;
+package ai.timefold.solver.core.impl.score.director.stream;
 
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
@@ -6,7 +6,8 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
-import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMetaModel;
+import ai.timefold.solver.core.impl.testdata.TestConstraint;
+import ai.timefold.solver.core.impl.testdata.TestConstraintFactory;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
 import org.assertj.core.api.Assertions;

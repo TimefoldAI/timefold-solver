@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.impl.score.stream.TestConstraint;
-import ai.timefold.solver.core.impl.score.stream.TestConstraintFactory;
+import ai.timefold.solver.core.impl.testdata.TestConstraint;
+import ai.timefold.solver.core.impl.testdata.TestConstraintFactory;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
 import org.junit.jupiter.params.ParameterizedTest;

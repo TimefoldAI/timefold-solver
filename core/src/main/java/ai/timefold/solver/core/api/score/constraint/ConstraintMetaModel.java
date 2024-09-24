@@ -2,8 +2,6 @@ package ai.timefold.solver.core.api.score.constraint;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
@@ -42,10 +40,6 @@ public interface ConstraintMetaModel {
      *
      * @return never null, iteration order is undefined
      */
-    default Set<String> getConstraintGroups() {
-        return getConstraints().stream()
-                .map(Constraint::getConstraintGroup)
-                .collect(Collectors.toCollection(TreeSet::new));
-    }
+    Set<String> getConstraintGroups();
 
 }

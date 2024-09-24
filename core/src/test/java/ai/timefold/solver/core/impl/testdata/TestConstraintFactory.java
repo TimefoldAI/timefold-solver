@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.score.stream;
+package ai.timefold.solver.core.impl.testdata;
 
 import java.util.Objects;
 
