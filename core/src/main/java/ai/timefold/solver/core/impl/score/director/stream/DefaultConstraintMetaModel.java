@@ -8,9 +8,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import ai.timefold.solver.core.api.score.constraint.ConstraintMetaModel;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 record DefaultConstraintMetaModel(
@@ -20,7 +20,7 @@ record DefaultConstraintMetaModel(
     public static ConstraintMetaModel of(List<? extends Constraint> constraints) {
         var constraintCount = constraints.size();
         // Preserve iteration order by using LinkedHashMap.
-        var perRefMap = CollectionUtils.<ConstraintRef, Constraint>newLinkedHashMap(constraintCount);
+        var perRefMap = CollectionUtils.<ConstraintRef, Constraint> newLinkedHashMap(constraintCount);
         var perGroupMap = new TreeMap<String, List<Constraint>>();
         for (var constraint : constraints) {
             perRefMap.put(constraint.getConstraintRef(), constraint);
@@ -32,8 +32,7 @@ record DefaultConstraintMetaModel(
         }
         return new DefaultConstraintMetaModel(
                 Collections.unmodifiableMap(perRefMap),
-                Collections.unmodifiableMap(perGroupMap)
-        );
+                Collections.unmodifiableMap(perGroupMap));
     }
 
     @Override

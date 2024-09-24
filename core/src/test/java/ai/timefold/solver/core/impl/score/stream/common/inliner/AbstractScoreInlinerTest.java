@@ -6,9 +6,9 @@ import java.util.Map;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 import ai.timefold.solver.core.impl.testdata.TestConstraint;
 import ai.timefold.solver.core.impl.testdata.TestConstraintFactory;
-import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 public abstract class AbstractScoreInlinerTest<Solution_, Score_ extends Score<Score_>> {
 
