@@ -130,9 +130,7 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
         super.stepEnded(stepScope);
         decider.stepEnded(stepScope);
-        if (stepScope.getPhaseScope().isEnableCollectMetrics()) {
-            collectMetrics(stepScope);
-        }
+        collectMetrics(stepScope);
         LocalSearchPhaseScope<Solution_> phaseScope = stepScope.getPhaseScope();
         if (logger.isDebugEnabled()) {
             logger.debug("{}    LS step ({}), time spent ({}), score ({}), {} best score ({})," +
