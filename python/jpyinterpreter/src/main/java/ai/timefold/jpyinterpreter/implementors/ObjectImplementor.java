@@ -124,6 +124,8 @@ public class ObjectImplementor {
             DunderOperatorImplementor.binaryOperator(methodVisitor,
                     stackMetadata.pushTemp(BuiltinTypes.STRING_TYPE),
                     PythonBinaryOperator.DELETE_ATTRIBUTE);
+            // Pop off the result of __delattr__
+            methodVisitor.visitInsn(Opcodes.POP);
         }
     }
 
@@ -167,6 +169,8 @@ public class ObjectImplementor {
                     .pushTemp(BuiltinTypes.STRING_TYPE)
                     .push(stackMetadata.getValueSourceForStackIndex(1)),
                     PythonTernaryOperator.SET_ATTRIBUTE);
+            // Pop off the result of __setattr__
+            methodVisitor.visitInsn(Opcodes.POP);
         }
     }
 

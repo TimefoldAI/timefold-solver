@@ -19,6 +19,29 @@ def test_while_loops():
     function_verifier.verify(5, expected_result=15)
 
 
+def test_attribute_assignment_in_loops():
+    class A:
+        x: int
+
+        def __init__(self):
+            self.x = 0
+
+    def my_function(count: int):
+        current = A()
+
+        while current.x != count:
+            current.x = count
+
+        return current.x
+
+    function_verifier = verifier_for(my_function)
+
+    function_verifier.verify(0, expected_result=0)
+    function_verifier.verify(1, expected_result=1)
+    function_verifier.verify(2, expected_result=2)
+    function_verifier.verify(3, expected_result=3)
+
+
 def test_inner_loops():
     def my_function(x: int, y: int) -> int:
         total = 0

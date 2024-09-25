@@ -10,8 +10,16 @@ Solution_ = TypeVar('Solution_')
 Entity_ = TypeVar('Entity_')
 
 
+class VariableListenerMeta(type):
+    def __new__(cls, clsname, bases, attrs):
+        from .._timefold_java_interop import _add_to_compilation_queue
+        out = super().__new__(cls, clsname, bases, attrs)
+        _add_to_compilation_queue(out)
+        return out
+
+
 @add_java_interface('ai.timefold.solver.core.api.domain.variable.VariableListener')
-class VariableListener:
+class VariableListener(metaclass=VariableListenerMeta):
     """
     A listener sourced on a basic PlanningVariable.
 
