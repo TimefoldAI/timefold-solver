@@ -2,8 +2,9 @@ import ctypes
 import dis
 import inspect
 import sys
-from jpype import JInt, JBoolean, JProxy, JClass, JArray
 from typing import Protocol
+
+from jpype import JInt, JBoolean, JProxy, JClass, JArray
 
 MINIMUM_SUPPORTED_PYTHON_VERSION = (3, 10)
 MAXIMUM_SUPPORTED_PYTHON_VERSION = (3, 12)
@@ -754,7 +755,11 @@ def translate_python_class_to_java_class(python_class):
     python_compiled_class.staticAttributeNameToClassInstance = static_attributes_to_class_instance_map
     python_compiled_class.staticAttributeDescriptorNames = static_attribute_descriptor_names
 
-    out = PythonClassTranslator.translatePythonClass(python_compiled_class, prepared_class_info)
-    PythonClassTranslator.setSelfStaticInstances(python_compiled_class, out.getJavaClass(), out,
-                                                 CPythonBackedPythonInterpreter.pythonObjectIdToConvertedObjectMap)
+    try:
+        out = PythonClassTranslator.translatePythonClass(python_compiled_class, prepared_class_info)
+        PythonClassTranslator.setSelfStaticInstances(python_compiled_class, out.getJavaClass(), out,
+                                                     CPythonBackedPythonInterpreter.pythonObjectIdToConvertedObjectMap)
+    except Exception as e:
+        e.printStackTrace()
+        raise e
     return out

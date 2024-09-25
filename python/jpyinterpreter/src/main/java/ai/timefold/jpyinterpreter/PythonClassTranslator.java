@@ -1,9 +1,8 @@
 package ai.timefold.jpyinterpreter;
 
-import static ai.timefold.jpyinterpreter.PythonBytecodeToJavaBytecodeTranslator.ARGUMENT_SPEC_INSTANCE_FIELD_NAME;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,9 +45,11 @@ import ai.timefold.jpyinterpreter.types.PythonNone;
 import ai.timefold.jpyinterpreter.types.PythonString;
 import ai.timefold.jpyinterpreter.types.collections.PythonLikeDict;
 import ai.timefold.jpyinterpreter.types.collections.PythonLikeTuple;
+import ai.timefold.jpyinterpreter.types.errors.NotImplementedError;
 import ai.timefold.jpyinterpreter.types.wrappers.JavaObjectWrapper;
 import ai.timefold.jpyinterpreter.types.wrappers.OpaquePythonReference;
 import ai.timefold.jpyinterpreter.util.JavaPythonClassWriter;
+import ai.timefold.jpyinterpreter.util.OverrideMethod;
 import ai.timefold.jpyinterpreter.util.arguments.ArgumentSpec;
 
 import org.objectweb.asm.ClassWriter;
@@ -59,6 +60,8 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.signature.SignatureVisitor;
 import org.objectweb.asm.signature.SignatureWriter;
+
+import static ai.timefold.jpyinterpreter.PythonBytecodeToJavaBytecodeTranslator.ARGUMENT_SPEC_INSTANCE_FIELD_NAME;
 
 public class PythonClassTranslator {
     static Map<FunctionSignature, InterfaceDeclaration> functionSignatureToInterfaceName = new HashMap<>();
@@ -527,7 +530,8 @@ public class PythonClassTranslator {
             PythonCompiledFunction function = methodEntry.getValue();
             pythonLikeType.clearMethod(methodEntry.getKey());
             String javaMethodDescriptor = Arrays.stream(generatedClass.getDeclaredMethods())
-                    .filter(method -> method.getName().equals(getJavaMethodName(methodEntry.getKey())))
+                    .filter(method -> method.getName().equals(getJavaMethodName(methodEntry.getKey()))
+                            && !method.isAnnotationPresent(OverrideMethod.class))
                     .map(Type::getMethodDescriptor)
                     .findFirst().orElseThrow();
             ArgumentSpec<?> argumentSpec = function.getArgumentSpecMapper()
@@ -982,6 +986,25 @@ public class PythonClassTranslator {
                 interfaceDeclaration.methodDescriptor, function,
                 interfaceDeclaration.interfaceName, interfaceDescriptor, methodVisitor);
 
+        Set<String> overrides = new HashSet<>();
+        for (var parent : pythonLikeType.getParentList()) {
+            try {
+                var parentType = parent.getJavaClass();
+                for (var method : parentType.getMethods()) {
+                    var parentMethodDescriptor = Type.getMethodDescriptor(method);
+                    if (method.getName().equals(javaMethodName)
+                            && !Modifier.isStatic(method.getModifiers())
+                            && !parentMethodDescriptor.equals(javaMethodDescriptor)
+                            && !overrides.contains(parentMethodDescriptor)) {
+                        overrides.add(parentMethodDescriptor);
+                        createOverrideMethod(classWriter, internalClassName, method, javaMethodDescriptor, javaParameterTypes);
+                    }
+                }
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         pythonLikeType.addMethod(methodName,
                 new PythonFunctionSignature(new MethodDescriptor(internalClassName, MethodDescriptor.MethodType.VIRTUAL,
                         javaMethodName, javaMethodDescriptor),
@@ -1102,9 +1125,41 @@ public class PythonClassTranslator {
         methodVisitor.visitEnd();
     }
 
+    private static void createOverrideMethod(ClassWriter classWriter, String internalClassName, Method overridenMethod,
+            String overrideMethodDescriptor, Type[] overrideParameterTypes) {
+        var methodVisitor = classWriter.visitMethod(Modifier.PUBLIC, overridenMethod.getName(),
+                Type.getMethodDescriptor(overridenMethod), null, null);
+        methodVisitor.visitAnnotation(Type.getDescriptor(OverrideMethod.class), true).visitEnd();
+
+        methodVisitor.visitCode();
+
+        if (overridenMethod.getParameterCount() != overrideParameterTypes.length) {
+            methodVisitor.visitTypeInsn(Opcodes.NEW, Type.getInternalName(NotImplementedError.class));
+            methodVisitor.visitInsn(Opcodes.DUP);
+            methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, Type.getInternalName(NotImplementedError.class),
+                    "<init>", Type.getMethodDescriptor(Type.VOID_TYPE), false);
+            methodVisitor.visitInsn(Opcodes.ATHROW);
+        } else {
+            methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
+            for (int i = 0; i < overrideParameterTypes.length; i++) {
+                methodVisitor.visitVarInsn(Opcodes.ALOAD, i + 1);
+                methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, overrideParameterTypes[i].getInternalName());
+            }
+            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, internalClassName, overridenMethod.getName(),
+                    overrideMethodDescriptor, false);
+            methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(overridenMethod.getReturnType()));
+            methodVisitor.visitInsn(Opcodes.ARETURN);
+        }
+
+        methodVisitor.visitMaxs(-1, -1);
+        methodVisitor.visitEnd();
+    }
+
     public static Type getVirtualFunctionReturnType(PythonCompiledFunction function) {
-        return Type.getType('L' + function.getReturnType().map(PythonLikeType::getJavaTypeInternalName)
-                .orElseGet(() -> getPythonReturnTypeOfFunction(function, true).getJavaTypeInternalName()) + ';');
+        // Do not determine return type from method body if type annotation absent,
+        // since overrides might return a different type
+        var returnType = function.getReturnType().orElse(BuiltinTypes.BASE_TYPE);
+        return Type.getType(returnType.getJavaTypeDescriptor());
     }
 
     public static String getFunctionSignature(PythonCompiledFunction function,

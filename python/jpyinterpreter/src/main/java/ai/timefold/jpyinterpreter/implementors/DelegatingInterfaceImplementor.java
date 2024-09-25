@@ -105,7 +105,10 @@ public class DelegatingInterfaceImplementor extends JavaInterfaceImplementor {
         for (int i = 1; i < argumentCount; i++) {
             javaParameterTypes[i - 1] = methodType.getArgumentTypes()[i];
         }
-        String javaMethodDescriptor = Type.getMethodDescriptor(methodType.getReturnType(), javaParameterTypes);
+        var methodReturnType =
+                PythonClassTranslator.getVirtualFunctionReturnType(compiledClass.instanceFunctionNameToPythonBytecode
+                        .get(interfaceMethod.getName()));
+        String javaMethodDescriptor = Type.getMethodDescriptor(methodReturnType, javaParameterTypes);
 
         interfaceMethodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, internalClassName,
                 PythonClassTranslator.getJavaMethodName(interfaceMethod.getName()),

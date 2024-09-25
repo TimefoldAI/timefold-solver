@@ -1,9 +1,10 @@
-from ..score import ScoreDirector
 from _jpyinterpreter import add_java_interface
 from typing import TYPE_CHECKING, TypeVar
 
+from ..score import ScoreDirector
+
 if TYPE_CHECKING:
-    from ai.timefold.solver.core.api.domain.variable import VariableListener
+    pass
 
 Solution_ = TypeVar('Solution_')
 Entity_ = TypeVar('Entity_')
@@ -57,48 +58,48 @@ class VariableListener:
 if not TYPE_CHECKING:  # We do not want these methods to appear in the API
     def afterEntityAdded(self, java_score_director, entity) -> None:
         score_director = ScoreDirector(java_score_director)
-        type(self).after_entity_added(self, score_director, entity)
+        self.after_entity_added(score_director, entity)
 
     VariableListener.afterEntityAdded = afterEntityAdded
 
     def afterEntityRemoved(self, java_score_director, entity) -> None:
         score_director = ScoreDirector(java_score_director)
-        type(self).after_entity_removed(self, score_director, entity)
+        self.after_entity_removed(score_director, entity)
 
     VariableListener.afterEntityRemoved = afterEntityRemoved
 
     def beforeEntityAdded(self, java_score_director, entity) -> None:
         score_director = ScoreDirector(java_score_director)
-        type(self).before_entity_added(self, score_director, entity)
+        self.before_entity_added(score_director, entity)
 
     VariableListener.beforeEntityAdded = beforeEntityAdded
 
     def beforeEntityRemoved(self, java_score_director, entity) -> None:
         score_director = ScoreDirector(java_score_director)
-        type(self).before_entity_removed(self, score_director, entity)
+        self.before_entity_removed(score_director, entity)
 
     VariableListener.beforeEntityRemoved = beforeEntityRemoved
 
     def resetWorkingSolution(self, java_score_director) -> None:
         score_director = ScoreDirector(java_score_director)
-        type(self).reset_working_solution(self, score_director)
+        self.reset_working_solution(score_director)
 
     VariableListener.resetWorkingSolution = resetWorkingSolution
 
     def afterVariableChanged(self, java_score_director, entity) -> None:
         score_director = ScoreDirector(java_score_director)
-        type(self).after_variable_changed(self, score_director, entity)
+        self.after_variable_changed(score_director, entity)
 
     VariableListener.afterVariableChanged = afterVariableChanged
 
     def beforeVariableChanged(self, java_score_director, entity) -> None:
         score_director = ScoreDirector(java_score_director)
-        type(self).before_variable_changed(self, score_director, entity)
+        self.before_variable_changed(score_director, entity)
 
     VariableListener.beforeVariableChanged = beforeVariableChanged
 
     def requiresUniqueEntityEvents(self) -> bool:
-        return type(self).requires_unique_entity_events(self)
+        return self.requires_unique_entity_events()
 
     VariableListener.requiresUniqueEntityEvents = requiresUniqueEntityEvents
 
