@@ -15,7 +15,7 @@ import ai.timefold.solver.core.impl.score.definition.AbstractBendableScoreDefini
 public abstract class AbstractConstraint<Solution_, Constraint_ extends AbstractConstraint<Solution_, Constraint_, ConstraintFactory_>, ConstraintFactory_ extends InnerConstraintFactory<Solution_, Constraint_>>
         implements Constraint {
 
-    private static final String CONSTRAINT_GROUP_REGEX = "^[\\p{L}][\\p{L}\\p{N}\\p{M}\\p{So}_-]*$";
+    private static final String CONSTRAINT_GROUP_REGEX = "^[\\p{L}][\\p{L}\\p{N}\\p{M}_-]*$";
     private static final Pattern CONSTRAINT_GROUP_REGEX_PATTERN = Pattern.compile(CONSTRAINT_GROUP_REGEX);
 
     private final ConstraintFactory_ constraintFactory;

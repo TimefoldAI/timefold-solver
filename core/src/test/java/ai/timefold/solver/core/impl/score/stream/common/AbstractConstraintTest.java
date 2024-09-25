@@ -20,7 +20,7 @@ class AbstractConstraintTest {
             "你好123,        true",
             "Hello_123,     true",
             "Hello-123,     true",
-            "Hello_123😊,   true",
+            "Hello_123😊,   false",
             "_Hello123,     false",
             "-Hello123,     false",
             "😊Hello123,    false",

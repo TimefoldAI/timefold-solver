@@ -32,6 +32,4 @@ public abstract class AbstractScoreInlinerTest<Solution_, Score_ extends Score<S
     abstract protected AbstractScoreInliner<Score_> buildScoreInliner(Map<Constraint, Score_> constraintWeightMap,
             boolean constraintMatchEnabled);
 
-    ;
-
 }
