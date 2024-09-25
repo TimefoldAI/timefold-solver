@@ -11,6 +11,8 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
  */
 public interface Constraint {
 
+    String DEFAULT_CONSTRAINT_GROUP = "default";
+
     /**
      * The {@link ConstraintFactory} that built this.
      *
@@ -30,6 +32,20 @@ public interface Constraint {
      */
     default String getDescription() {
         return "";
+    }
+
+    default String getConstraintGroup() {
+        return DEFAULT_CONSTRAINT_GROUP;
+    }
+
+    /**
+     * Returns the weight of the constraint as defined in the {@link ConstraintProvider},
+     * without any overrides.
+     *
+     * @return null if the constraint does not have a weight defined
+     */
+    default <Score_ extends Score<Score_>> Score_ getConstraintWeight() {
+        return null;
     }
 
     /**

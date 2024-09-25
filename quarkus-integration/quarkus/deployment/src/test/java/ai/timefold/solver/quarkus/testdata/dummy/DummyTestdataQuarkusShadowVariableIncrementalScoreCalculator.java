@@ -3,7 +3,7 @@ package ai.timefold.solver.quarkus.testdata.dummy;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 
-public class DummyTestdataQuarkusIncrementalScoreProvider implements IncrementalScoreCalculator {
+public class DummyTestdataQuarkusShadowVariableIncrementalScoreCalculator implements IncrementalScoreCalculator {
 
     @Override
     public void resetWorkingSolution(Object workingSolution) {

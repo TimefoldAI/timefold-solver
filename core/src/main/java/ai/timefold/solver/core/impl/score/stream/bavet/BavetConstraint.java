@@ -15,10 +15,11 @@ public final class BavetConstraint<Solution_> extends
     private final BavetScoringConstraintStream<Solution_> scoringConstraintStream;
 
     public BavetConstraint(BavetConstraintFactory<Solution_> constraintFactory, ConstraintRef constraintRef,
-            String description, Score<?> constraintWeight, ScoreImpactType scoreImpactType, Object justificationMapping,
-            Object indictedObjectsMapping, BavetScoringConstraintStream<Solution_> scoringConstraintStream) {
-        super(constraintFactory, constraintRef, description, constraintWeight, scoreImpactType, justificationMapping,
-                indictedObjectsMapping);
+            String description, String constraintGroup, Score<?> constraintWeight, ScoreImpactType scoreImpactType,
+            Object justificationMapping, Object indictedObjectsMapping,
+            BavetScoringConstraintStream<Solution_> scoringConstraintStream) {
+        super(constraintFactory, constraintRef, description, constraintGroup, constraintWeight, scoreImpactType,
+                justificationMapping, indictedObjectsMapping);
         this.scoringConstraintStream = scoringConstraintStream;
     }
 

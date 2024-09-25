@@ -40,7 +40,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
     DefaultSingleConstraintAssertion(AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
             Score_ score, Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
             Map<Object, Indictment<Score_>> indictmentMap) {
-        this.constraint = (AbstractConstraint<Solution_, ?, ?>) scoreDirectorFactory.getConstraintLibrary()
+        this.constraint = (AbstractConstraint<Solution_, ?, ?>) scoreDirectorFactory.getConstraintMetaModel()
                 .getConstraints()
                 .stream()
                 .findFirst()

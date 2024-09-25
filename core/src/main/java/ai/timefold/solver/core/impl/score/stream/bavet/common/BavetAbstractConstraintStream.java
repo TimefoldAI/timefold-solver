@@ -55,9 +55,8 @@ public abstract class BavetAbstractConstraintStream<Solution_> extends AbstractC
 
     @SuppressWarnings("unchecked")
     protected <Score_ extends Score<Score_>> Constraint buildConstraint(String constraintPackage, String constraintName,
-            String description, Score_ constraintWeight, ScoreImpactType impactType, Object justificationFunction,
-            Object indictedObjectsMapping,
-            BavetScoringConstraintStream<Solution_> stream) {
+            String description, String constraintGroup, Score_ constraintWeight, ScoreImpactType impactType,
+            Object justificationFunction, Object indictedObjectsMapping, BavetScoringConstraintStream<Solution_> stream) {
         var resolvedConstraintPackage =
                 Objects.requireNonNullElseGet(constraintPackage, this.constraintFactory::getDefaultConstraintPackage);
         var resolvedJustificationMapping =
@@ -66,7 +65,7 @@ public abstract class BavetAbstractConstraintStream<Solution_> extends AbstractC
                 Objects.requireNonNullElseGet(indictedObjectsMapping, this::getDefaultIndictedObjectsMapping);
         var isConstraintWeightConfigurable = constraintWeight == null;
         var constraintRef = ConstraintRef.of(resolvedConstraintPackage, constraintName);
-        var constraint = new BavetConstraint<>(constraintFactory, constraintRef, description,
+        var constraint = new BavetConstraint<>(constraintFactory, constraintRef, description, constraintGroup,
                 isConstraintWeightConfigurable ? null : constraintWeight, impactType, resolvedJustificationMapping,
                 resolvedIndictedObjectsMapping, stream);
         stream.setConstraint(constraint);

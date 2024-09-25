@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractIfExistsNode;
@@ -26,7 +27,6 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.PropagationQueue;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.AbstractForEachUniNode;
-import ai.timefold.solver.core.impl.score.stream.common.ConstraintLibrary;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
@@ -40,13 +40,12 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
     private static final Level CONSTRAINT_WEIGHT_LOGGING_LEVEL = Level.DEBUG;
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
-    private final ConstraintLibrary<Score_> constraintLibrary;
+    private final ConstraintMetaModel constraintMetaModel;
 
-    @SuppressWarnings("unchecked")
     public BavetConstraintSessionFactory(SolutionDescriptor<Solution_> solutionDescriptor,
-            ConstraintLibrary<Score_> constraintLibrary) {
+            ConstraintMetaModel constraintMetaModel) {
         this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
-        this.constraintLibrary = Objects.requireNonNull(constraintLibrary);
+        this.constraintMetaModel = Objects.requireNonNull(constraintMetaModel);
     }
 
     // ************************************************************************
@@ -57,9 +56,9 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
     public BavetConstraintSession<Score_> buildSession(Solution_ workingSolution, boolean constraintMatchEnabled,
             boolean scoreDirectorDerived) {
         var constraintWeightSupplier = solutionDescriptor.getConstraintWeightSupplier();
+        var constraints = constraintMetaModel.getConstraints();
         if (constraintWeightSupplier != null) { // Fail fast on unknown constraints.
-            var knownConstraints = constraintLibrary.getConstraints()
-                    .stream()
+            var knownConstraints = constraints.stream()
                     .map(Constraint::getConstraintRef)
                     .collect(Collectors.toSet());
             constraintWeightSupplier.validate(workingSolution, knownConstraints);
@@ -67,7 +66,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
         var scoreDefinition = solutionDescriptor.<Score_> getScoreDefinition();
         var zeroScore = scoreDefinition.getZeroScore();
         var constraintStreamSet = new LinkedHashSet<BavetAbstractConstraintStream<Solution_>>();
-        var constraintWeightMap = CollectionUtils.<Constraint, Score_> newHashMap(constraintLibrary.getConstraints().size());
+        var constraintWeightMap = CollectionUtils.<Constraint, Score_> newHashMap(constraints.size());
 
         // Only log constraint weights if logging is enabled; otherwise we don't need to build the string.
         var constraintWeightLoggingEnabled = !scoreDirectorDerived && LOGGER.isEnabledForLevel(CONSTRAINT_WEIGHT_LOGGING_LEVEL);
@@ -76,10 +75,10 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
                         .formatted(workingSolution))
                 : null;
 
-        for (var constraint : constraintLibrary.getConstraints()) {
+        for (var constraint : constraints) {
             var constraintRef = constraint.getConstraintRef();
             var castConstraint = (BavetConstraint<Solution_>) constraint;
-            var defaultConstraintWeight = castConstraint.getDefaultConstraintWeight();
+            var defaultConstraintWeight = castConstraint.getConstraintWeight();
             var constraintWeight = (Score_) castConstraint.extractConstraintWeight(workingSolution);
             if (!constraintWeight.equals(zeroScore)) {
                 if (constraintWeightLoggingEnabled) {
@@ -122,6 +121,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
         return new BavetConstraintSession<>(scoreInliner, buildNodeNetwork(constraintStreamSet, scoreInliner));
     }
 
+    @SuppressWarnings("unchecked")
     private static <Solution_, Score_ extends Score<Score_>> NodeNetwork buildNodeNetwork(
             Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet, AbstractScoreInliner<Score_> scoreInliner) {
         /*

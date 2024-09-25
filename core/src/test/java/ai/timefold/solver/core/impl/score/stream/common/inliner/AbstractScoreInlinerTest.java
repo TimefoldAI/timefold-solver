@@ -2,16 +2,13 @@ package ai.timefold.solver.core.impl.score.stream.common.inliner;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
-import ai.timefold.solver.core.impl.score.stream.common.InnerConstraintFactory;
-import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
+import ai.timefold.solver.core.impl.testdata.TestConstraint;
+import ai.timefold.solver.core.impl.testdata.TestConstraintFactory;
 
 public abstract class AbstractScoreInlinerTest<Solution_, Score_ extends Score<Score_>> {
 
@@ -34,55 +31,5 @@ public abstract class AbstractScoreInlinerTest<Solution_, Score_ extends Score<S
 
     abstract protected AbstractScoreInliner<Score_> buildScoreInliner(Map<Constraint, Score_> constraintWeightMap,
             boolean constraintMatchEnabled);
-
-    public static final class TestConstraintFactory<Solution_, Score_ extends Score<Score_>>
-            extends InnerConstraintFactory<Solution_, TestConstraint<Solution_, Score_>> {
-
-        private final SolutionDescriptor<Solution_> solutionDescriptor;
-
-        public TestConstraintFactory(SolutionDescriptor<Solution_> solutionDescriptor) {
-            this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
-        }
-
-        @Override
-        public SolutionDescriptor<Solution_> getSolutionDescriptor() {
-            return solutionDescriptor;
-        }
-
-        @Override
-        public String getDefaultConstraintPackage() {
-            return "constraintPackage";
-        }
-
-        @Override
-        public <A> UniConstraintStream<A> forEach(Class<A> sourceClass) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <A> UniConstraintStream<A> forEachIncludingUnassigned(Class<A> sourceClass) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <A> UniConstraintStream<A> from(Class<A> fromClass) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <A> UniConstraintStream<A> fromUnfiltered(Class<A> fromClass) {
-            throw new UnsupportedOperationException();
-        }
-    };
-
-    public static final class TestConstraint<Solution_, Score_ extends Score<Score_>>
-            extends AbstractConstraint<Solution_, TestConstraint<Solution_, Score_>, TestConstraintFactory<Solution_, Score_>> {
-
-        protected TestConstraint(TestConstraintFactory<Solution_, Score_> constraintFactory, String constraintName,
-                Score_ constraintWeight) {
-            super(constraintFactory, ConstraintRef.of(constraintFactory.getDefaultConstraintPackage(), constraintName), "",
-                    constraintWeight, ScoreImpactType.REWARD, null, null);
-        }
-    }
 
 }

@@ -1,9 +1,6 @@
 package ai.timefold.solver.quarkus;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 
@@ -23,6 +20,7 @@ import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
 import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
+import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
@@ -52,6 +50,9 @@ class TimefoldProcessorSolverResourcesTest {
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
                             TestdataQuarkusConstraintProvider.class));
+
+    @Inject
+    ConstraintMetaModel constraintMetaModel;
 
     @Inject
     SolverConfig solverConfig;
@@ -114,44 +115,47 @@ class TimefoldProcessorSolverResourcesTest {
 
     @Test
     void solverProperties() {
+        assertThat(constraintMetaModel).isNotNull();
+        assertThat(constraintMetaModel.getConstraints())
+                .isNotEmpty();
+
         // solver1
-        assertEquals(EnvironmentMode.FULL_ASSERT, solverConfig.getEnvironmentMode());
-        assertNull(solverConfig.getNearbyDistanceMeterClass());
-        assertTrue(solverConfig.getDaemon());
-        assertEquals(DomainAccessType.REFLECTION, solverConfig.getDomainAccessType());
-        assertEquals(null,
-                solverConfig.getScoreDirectorFactoryConfig().getConstraintStreamImplType());
-        assertNotNull(solver1Factory);
-        assertEquals(Duration.ofHours(4), solverConfig.getTerminationConfig().getSpentLimit());
-        assertEquals(Duration.ofHours(5), solverConfig.getTerminationConfig().getUnimprovedSpentLimit());
-        assertEquals(SimpleScore.of(0).toString(), solverConfig.getTerminationConfig().getBestScoreLimit());
-        assertNotNull(solver1Factory);
-        assertNotNull(solver1Manager);
+        assertThat((Object) solverConfig.getEnvironmentMode()).isEqualTo(EnvironmentMode.FULL_ASSERT);
+        assertThat(solverConfig.getNearbyDistanceMeterClass()).isNull();
+        assertThat(solverConfig.getDaemon()).isTrue();
+        assertThat(solverConfig.getDomainAccessType()).isEqualTo(DomainAccessType.REFLECTION);
+        assertThat(solverConfig.getScoreDirectorFactoryConfig().getConstraintStreamImplType()).isNull();
+        assertThat(solver1Factory).isNotNull();
+        assertThat(solverConfig.getTerminationConfig().getSpentLimit()).isEqualTo(Duration.ofHours(4));
+        assertThat(solverConfig.getTerminationConfig().getUnimprovedSpentLimit()).isEqualTo(Duration.ofHours(5));
+        assertThat(solverConfig.getTerminationConfig().getBestScoreLimit()).isEqualTo(SimpleScore.of(0).toString());
+        assertThat(solver1Factory).isNotNull();
+        assertThat(solver1Manager).isNotNull();
         // SolutionManager
-        assertNotNull(simpleSolutionManager1);
-        assertNotNull(simpleLongSolutionManager1);
-        assertNotNull(simpleBigDecimalSolutionManager1);
-        assertNotNull(hardSoftSolutionManager1);
-        assertNotNull(hardSoftLongSolutionManager1);
-        assertNotNull(hardSoftBigDecimalSolutionManager1);
-        assertNotNull(hardMediumSoftSolutionManager1);
-        assertNotNull(hardMediumSoftLongSolutionManager1);
-        assertNotNull(hardMediumSoftBigDecimalSolutionManager1);
-        assertNotNull(bendableSolutionManager1);
-        assertNotNull(bendableLongSolutionManager1);
-        assertNotNull(bendableBigDecimalSolutionManager1);
+        assertThat(simpleSolutionManager1).isNotNull();
+        assertThat(simpleLongSolutionManager1).isNotNull();
+        assertThat(simpleBigDecimalSolutionManager1).isNotNull();
+        assertThat(hardSoftSolutionManager1).isNotNull();
+        assertThat(hardSoftLongSolutionManager1).isNotNull();
+        assertThat(hardSoftBigDecimalSolutionManager1).isNotNull();
+        assertThat(hardMediumSoftSolutionManager1).isNotNull();
+        assertThat(hardMediumSoftLongSolutionManager1).isNotNull();
+        assertThat(hardMediumSoftBigDecimalSolutionManager1).isNotNull();
+        assertThat(bendableSolutionManager1).isNotNull();
+        assertThat(bendableLongSolutionManager1).isNotNull();
+        assertThat(bendableBigDecimalSolutionManager1).isNotNull();
         // ScoreManager
-        assertNotNull(simpleScoreManager1);
-        assertNotNull(simpleLongScoreManager1);
-        assertNotNull(simpleBigDecimalScoreManager1);
-        assertNotNull(hardSoftScoreManager1);
-        assertNotNull(hardSoftLongScoreManager1);
-        assertNotNull(hardSoftBigDecimalScoreManager1);
-        assertNotNull(hardMediumSoftScoreManager1);
-        assertNotNull(hardMediumSoftLongScoreManager1);
-        assertNotNull(hardMediumSoftBigDecimalScoreManager1);
-        assertNotNull(bendableScoreManager1);
-        assertNotNull(bendableLongScoreManager1);
-        assertNotNull(bendableBigDecimalScoreManager1);
+        assertThat(simpleScoreManager1).isNotNull();
+        assertThat(simpleLongScoreManager1).isNotNull();
+        assertThat(simpleBigDecimalScoreManager1).isNotNull();
+        assertThat(hardSoftScoreManager1).isNotNull();
+        assertThat(hardSoftLongScoreManager1).isNotNull();
+        assertThat(hardSoftBigDecimalScoreManager1).isNotNull();
+        assertThat(hardMediumSoftScoreManager1).isNotNull();
+        assertThat(hardMediumSoftLongScoreManager1).isNotNull();
+        assertThat(hardMediumSoftBigDecimalScoreManager1).isNotNull();
+        assertThat(bendableScoreManager1).isNotNull();
+        assertThat(bendableLongScoreManager1).isNotNull();
+        assertThat(bendableBigDecimalScoreManager1).isNotNull();
     }
 }

@@ -16,7 +16,7 @@ import io.quarkus.runtime.annotations.ConfigGroup;
  * During build time, this is translated into Timefold's {@link SolverConfig}
  * (except for termination properties which are translated at bootstrap time).
  *
- * See also {@link SolverRuntimeConfig}
+ * @see SolverRuntimeConfig
  */
 @ConfigGroup
 public interface SolverBuildTimeConfig {

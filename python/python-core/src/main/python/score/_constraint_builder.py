@@ -91,7 +91,7 @@ class UniConstraintBuilder(Generic[A, ScoreType]):
         return UniConstraintBuilder(self.delegate.justifyWith(
             function_cast(wrapped, self.a_type, Score)), self.a_type)
 
-    def as_constraint(self, constraint_name: str, constraint_description: str = None) \
+    def as_constraint(self, constraint_name: str, constraint_description: str = None, constraint_group: str = None) \
             -> Constraint:
         """
         Builds a Constraint from the constraint stream.
@@ -106,15 +106,25 @@ class UniConstraintBuilder(Generic[A, ScoreType]):
             The constraint description.
             Empty string if not present.
 
+        constraint_group : str, optional
+            The constraint group.
+            If not present, the constraint will be put in the default group.
+            Must start with a letter, only alphanumeric characters, "-" and "_" are allowed.
+
         Returns
         -------
         Constraint
             A `Constraint`.
         """
         if constraint_description is None:
-            return self.delegate.asConstraint(constraint_name)
-        else:
+            if constraint_group is None:
+                return self.delegate.asConstraint(constraint_name)
+            else:
+                return self.delegate.asConstraintDescribed(constraint_name, "", constraint_group)
+        elif constraint_group is None:
             return self.delegate.asConstraintDescribed(constraint_name, constraint_description)
+        else:
+            return self.delegate.asConstraintDescribed(constraint_name, constraint_description, constraint_group)
 
 
 class BiConstraintBuilder(Generic[A, B, ScoreType]):
@@ -184,7 +194,7 @@ class BiConstraintBuilder(Generic[A, B, ScoreType]):
         return BiConstraintBuilder(self.delegate.justifyWith(
             function_cast(wrapped, self.a_type, self.b_type, Score)), self.a_type, self.b_type)
 
-    def as_constraint(self, constraint_name: str, constraint_description: str = None) \
+    def as_constraint(self, constraint_name: str, constraint_description: str = None, constraint_group: str = None) \
             -> Constraint:
         """
         Builds a Constraint from the constraint stream.
@@ -199,15 +209,25 @@ class BiConstraintBuilder(Generic[A, B, ScoreType]):
             The constraint description.
             Empty string if not present.
 
+        constraint_group : str, optional
+            The constraint group.
+            If not present, the constraint will be put in the default group.
+            Must start with a letter, only alphanumeric characters, "-" and "_" are allowed.
+
         Returns
         -------
         Constraint
             A `Constraint`.
         """
         if constraint_description is None:
-            return self.delegate.asConstraint(constraint_name)
-        else:
+            if constraint_group is None:
+                return self.delegate.asConstraint(constraint_name)
+            else:
+                return self.delegate.asConstraintDescribed(constraint_name, "", constraint_group)
+        elif constraint_group is None:
             return self.delegate.asConstraintDescribed(constraint_name, constraint_description)
+        else:
+            return self.delegate.asConstraintDescribed(constraint_name, constraint_description, constraint_group)
 
 
 class TriConstraintBuilder(Generic[A, B, C, ScoreType]):
@@ -282,7 +302,7 @@ class TriConstraintBuilder(Generic[A, B, C, ScoreType]):
             function_cast(wrapped, self.a_type, self.b_type, self.c_type, Score)),
             self.a_type, self.b_type, self.c_type)
 
-    def as_constraint(self, constraint_name: str, constraint_description: str = None) \
+    def as_constraint(self, constraint_name: str, constraint_description: str = None, constraint_group: str = None) \
             -> Constraint:
         """
         Builds a Constraint from the constraint stream.
@@ -297,15 +317,25 @@ class TriConstraintBuilder(Generic[A, B, C, ScoreType]):
             The constraint description.
             Empty string if not present.
 
+        constraint_group : str, optional
+            The constraint group.
+            If not present, the constraint will be put in the default group.
+            Must start with a letter, only alphanumeric characters, "-" and "_" are allowed.
+
         Returns
         -------
         Constraint
             A `Constraint`.
         """
         if constraint_description is None:
-            return self.delegate.asConstraint(constraint_name)
-        else:
+            if constraint_group is None:
+                return self.delegate.asConstraint(constraint_name)
+            else:
+                return self.delegate.asConstraintDescribed(constraint_name, "", constraint_group)
+        elif constraint_group is None:
             return self.delegate.asConstraintDescribed(constraint_name, constraint_description)
+        else:
+            return self.delegate.asConstraintDescribed(constraint_name, constraint_description, constraint_group)
 
 
 class QuadConstraintBuilder(Generic[A, B, C, D, ScoreType]):
@@ -382,7 +412,7 @@ class QuadConstraintBuilder(Generic[A, B, C, D, ScoreType]):
             function_cast(wrapped, self.a_type, self.b_type, self.c_type, self.d_type, Score)),
             self.a_type, self.b_type, self.c_type, self.d_type)
 
-    def as_constraint(self, constraint_name: str, constraint_description: str = None) \
+    def as_constraint(self, constraint_name: str, constraint_description: str = None, constraint_group: str = None) \
             -> Constraint:
         """
         Builds a Constraint from the constraint stream.
@@ -397,15 +427,25 @@ class QuadConstraintBuilder(Generic[A, B, C, D, ScoreType]):
             The constraint description.
             Empty string if not present.
 
+        constraint_group : str, optional
+            The constraint group.
+            If not present, the constraint will be put in the default group.
+            Must start with a letter, only alphanumeric characters, "-" and "_" are allowed.
+
         Returns
         -------
         Constraint
             A `Constraint`.
         """
         if constraint_description is None:
-            return self.delegate.asConstraint(constraint_name)
-        else:
+            if constraint_group is None:
+                return self.delegate.asConstraint(constraint_name)
+            else:
+                return self.delegate.asConstraintDescribed(constraint_name, "", constraint_group)
+        elif constraint_group is None:
             return self.delegate.asConstraintDescribed(constraint_name, constraint_description)
+        else:
+            return self.delegate.asConstraintDescribed(constraint_name, constraint_description, constraint_group)
 
 
 __all__ = ['Constraint',

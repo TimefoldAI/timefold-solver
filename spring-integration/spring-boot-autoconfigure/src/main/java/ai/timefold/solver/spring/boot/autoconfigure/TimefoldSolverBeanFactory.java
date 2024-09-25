@@ -6,6 +6,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.ScoreManager;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
+import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.api.solver.SolutionManager;
@@ -14,6 +15,8 @@ import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
+import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
+import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 import ai.timefold.solver.jackson.api.TimefoldJacksonModule;
 import ai.timefold.solver.spring.boot.autoconfigure.config.SolverManagerProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TimefoldProperties;
@@ -125,6 +128,22 @@ public class TimefoldSolverBeanFactory implements ApplicationContextAware, Envir
         failInjectionWithMultipleSolvers(SolutionManager.class.getName());
         SolverFactory<Solution_> solverFactory = context.getBean(SolverFactory.class);
         return SolutionManager.create(solverFactory);
+    }
+
+    @Bean
+    @Lazy
+    @ConditionalOnMissingBean
+    public <Solution_> ConstraintMetaModel constraintMetaModel() {
+        failInjectionWithMultipleSolvers(ConstraintMetaModel.class.getName());
+        var solverFactory = (DefaultSolverFactory<Solution_>) context.getBean(SolverFactory.class);
+        var scoreDirectorFactory = solverFactory.getScoreDirectorFactory();
+        if (scoreDirectorFactory instanceof AbstractConstraintStreamScoreDirectorFactory<Solution_, ?> castScoreDirectorFactory) {
+            return castScoreDirectorFactory.getConstraintMetaModel();
+        } else {
+            throw new IllegalStateException(
+                    "Cannot provide %s because the score director does not use the Constraint Streams API."
+                            .formatted(ConstraintMetaModel.class.getSimpleName()));
+        }
     }
 
     // @Bean wrapped by static class to avoid classloading issues if dependencies are absent
