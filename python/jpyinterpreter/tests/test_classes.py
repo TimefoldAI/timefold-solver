@@ -1,5 +1,6 @@
-import pytest
 from typing import Type
+
+import pytest
 
 from .conftest import verifier_for
 
@@ -1096,6 +1097,38 @@ def test_functional_interface():
     assert ToIntFunction.class_.isAssignableFrom(translated_class)
     java_object = translated_class.getConstructor().newInstance()
     assert java_object.applyAsInt(1) == 2
+
+
+def test_extend_interface_wrapper():
+    from ai.timefold.jpyinterpreter.test import TestdataExtendedInterface
+    from jpyinterpreter import translate_python_class_to_java_class, add_java_interface
+
+    @add_java_interface(TestdataExtendedInterface)
+    class A:
+        def stringMethod(self, name):
+            return self.string_method(name)
+
+        def intMethod(self, value):
+            return self.int_method(value)
+
+        def string_method(self, name):
+            raise NotImplementedError
+
+        def int_method(self, value):
+            raise NotImplementedError
+
+    class B(A):
+        def string_method(self, name: str) -> str:
+            return f'Hello {name}!'
+
+        def int_method(self, value: int) -> int:
+            return value + 1
+
+    translated_class = translate_python_class_to_java_class(B).getJavaClass()
+    assert TestdataExtendedInterface.class_.isAssignableFrom(translated_class)
+    java_object = translated_class.getConstructor().newInstance()
+    assert TestdataExtendedInterface.getString(java_object, 'World') == 'Hello World!'
+    assert TestdataExtendedInterface.getInt(java_object, 1) == 2
 
 
 def test_python_java_type_mapping():
