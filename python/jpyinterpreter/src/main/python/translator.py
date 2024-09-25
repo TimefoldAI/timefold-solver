@@ -755,11 +755,7 @@ def translate_python_class_to_java_class(python_class):
     python_compiled_class.staticAttributeNameToClassInstance = static_attributes_to_class_instance_map
     python_compiled_class.staticAttributeDescriptorNames = static_attribute_descriptor_names
 
-    try:
-        out = PythonClassTranslator.translatePythonClass(python_compiled_class, prepared_class_info)
-        PythonClassTranslator.setSelfStaticInstances(python_compiled_class, out.getJavaClass(), out,
-                                                     CPythonBackedPythonInterpreter.pythonObjectIdToConvertedObjectMap)
-    except Exception as e:
-        e.printStackTrace()
-        raise e
+    out = PythonClassTranslator.translatePythonClass(python_compiled_class, prepared_class_info)
+    PythonClassTranslator.setSelfStaticInstances(python_compiled_class, out.getJavaClass(), out,
+                                                 CPythonBackedPythonInterpreter.pythonObjectIdToConvertedObjectMap)
     return out
