@@ -35,15 +35,30 @@ import io.quarkus.arc.DefaultBean;
 @ApplicationScoped
 public class DefaultTimefoldBeanProvider {
 
-    private SolverFactory<?> solverFactory;
+    private volatile SolverFactory<?> solverFactory;
 
     private volatile ConstraintMetaModel constraintMetaModel;
 
-    private SolverManager<?, ?> solverManager;
+    private volatile SolverManager<?, ?> solverManager;
 
-    private SolutionManager<?, ?> solutionManager;
+    private volatile SolutionManager<?, ?> solutionManager;
 
-    private ScoreManager<?, ?> scoreManager;
+    private volatile ScoreManager<?, ?> scoreManager;
+
+    @SuppressWarnings("unchecked")
+    @DefaultBean
+    @Dependent
+    @Produces
+    <Solution_> SolverFactory<Solution_> solverFactory(SolverConfig solverConfig) {
+        if (solverFactory == null) {
+            synchronized (this) {
+                if (solverFactory == null) {
+                    solverFactory = SolverFactory.create(solverConfig);
+                }
+            }
+        }
+        return (SolverFactory<Solution_>) solverFactory;
+    }
 
     @DefaultBean
     @Dependent
@@ -66,26 +81,17 @@ public class DefaultTimefoldBeanProvider {
         return constraintMetaModel;
     }
 
-    @DefaultBean
-    @Dependent
-    @Produces
-    <Solution_> SolverFactory<Solution_> solverFactory(SolverConfig solverConfig) {
-        synchronized (this) {
-            if (solverFactory == null) {
-                solverFactory = SolverFactory.create(solverConfig);
-            }
-        }
-        return (SolverFactory<Solution_>) solverFactory;
-    }
-
+    @SuppressWarnings("unchecked")
     @DefaultBean
     @Dependent
     @Produces
     <Solution_, ProblemId_> SolverManager<Solution_, ProblemId_> solverManager(SolverFactory<Solution_> solverFactory,
             SolverManagerConfig solverManagerConfig) {
-        synchronized (this) {
-            if (solverManager == null) {
-                solverManager = SolverManager.create(solverFactory, solverManagerConfig);
+        if (solverManager == null) {
+            synchronized (this) {
+                if (solverManager == null) {
+                    solverManager = SolverManager.create(solverFactory, solverManagerConfig);
+                }
             }
         }
         return (SolverManager<Solution_, ProblemId_>) solverManager;
@@ -96,12 +102,15 @@ public class DefaultTimefoldBeanProvider {
     //    @DefaultBean
     //    @Dependent
     //    @Produces
+    @SuppressWarnings("unchecked")
     @Deprecated(forRemoval = true)
     <Solution_, Score_ extends Score<Score_>> ScoreManager<Solution_, Score_> scoreManager(
             SolverFactory<Solution_> solverFactory) {
-        synchronized (this) {
-            if (scoreManager == null) {
-                scoreManager = ScoreManager.create(solverFactory);
+        if (scoreManager == null) {
+            synchronized (this) {
+                if (scoreManager == null) {
+                    scoreManager = ScoreManager.create(solverFactory);
+                }
             }
         }
         return (ScoreManager<Solution_, Score_>) scoreManager;
@@ -220,11 +229,14 @@ public class DefaultTimefoldBeanProvider {
     //    @DefaultBean
     //    @Dependent
     //    @Produces
+    @SuppressWarnings("unchecked")
     <Solution_, Score_ extends Score<Score_>> SolutionManager<Solution_, Score_> solutionManager(
             SolverFactory<Solution_> solverFactory) {
-        synchronized (this) {
-            if (solutionManager == null) {
-                solutionManager = SolutionManager.create(solverFactory);
+        if (solutionManager == null) {
+            synchronized (this) {
+                if (solutionManager == null) {
+                    solutionManager = SolutionManager.create(solverFactory);
+                }
             }
         }
         return (SolutionManager<Solution_, Score_>) solutionManager;
