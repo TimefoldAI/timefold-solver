@@ -47,7 +47,7 @@ public abstract class AbstractStepScope<Solution_> {
     }
 
     public void incrementMoveEvaluationCount(Move<?> move) {
-        if (getPhaseScope().isEnableCollectMetrics()) {
+        if (getPhaseScope().isMetricCollectionEnabled()) {
             getPhaseScope().getSolverScope().addMoveEvaluationCount(1L);
             if (getPhaseScope().getSolverScope().isMetricEnabled(SolverMetric.MOVE_COUNT_PER_TYPE)) {
                 getPhaseScope().getSolverScope().incrementMoveEvaluationCountPerType(move);
