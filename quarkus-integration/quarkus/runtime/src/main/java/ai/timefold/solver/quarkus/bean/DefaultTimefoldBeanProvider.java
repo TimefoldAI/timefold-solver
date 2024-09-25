@@ -28,22 +28,24 @@ import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStream
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 
 import io.quarkus.arc.DefaultBean;
+import io.quarkus.arc.Lock;
 
 /**
  * Provider for managed resources of the default solver.
  */
 @ApplicationScoped
+@Lock(Lock.Type.WRITE)
 public class DefaultTimefoldBeanProvider {
 
-    private volatile SolverFactory<?> solverFactory;
+    private SolverFactory<?> solverFactory;
 
-    private volatile ConstraintMetaModel constraintMetaModel;
+    private ConstraintMetaModel constraintMetaModel;
 
-    private volatile SolverManager<?, ?> solverManager;
+    private SolverManager<?, ?> solverManager;
 
-    private volatile SolutionManager<?, ?> solutionManager;
+    private SolutionManager<?, ?> solutionManager;
 
-    private volatile ScoreManager<?, ?> scoreManager;
+    private ScoreManager<?, ?> scoreManager;
 
     @SuppressWarnings("unchecked")
     @DefaultBean
@@ -51,11 +53,7 @@ public class DefaultTimefoldBeanProvider {
     @Produces
     <Solution_> SolverFactory<Solution_> solverFactory(SolverConfig solverConfig) {
         if (solverFactory == null) {
-            synchronized (this) {
-                if (solverFactory == null) {
-                    solverFactory = SolverFactory.create(solverConfig);
-                }
-            }
+            solverFactory = SolverFactory.create(solverConfig);
         }
         return (SolverFactory<Solution_>) solverFactory;
     }
@@ -65,17 +63,13 @@ public class DefaultTimefoldBeanProvider {
     @Produces
     ConstraintMetaModel constraintProviderMetaModel(SolverFactory<?> solverFactory) {
         if (constraintMetaModel == null) {
-            synchronized (this) {
-                if (constraintMetaModel == null) {
-                    var scoreDirectorFactory = ((DefaultSolverFactory<?>) solverFactory).getScoreDirectorFactory();
-                    if (scoreDirectorFactory instanceof AbstractConstraintStreamScoreDirectorFactory<?, ?> castScoreDirectorFactory) {
-                        constraintMetaModel = castScoreDirectorFactory.getConstraintMetaModel();
-                    } else {
-                        throw new IllegalStateException(
-                                "Cannot provide %s because the score director does not use the Constraint Streams API."
-                                        .formatted(ConstraintMetaModel.class.getSimpleName()));
-                    }
-                }
+            var scoreDirectorFactory = ((DefaultSolverFactory<?>) solverFactory).getScoreDirectorFactory();
+            if (scoreDirectorFactory instanceof AbstractConstraintStreamScoreDirectorFactory<?, ?> castScoreDirectorFactory) {
+                constraintMetaModel = castScoreDirectorFactory.getConstraintMetaModel();
+            } else {
+                throw new IllegalStateException(
+                        "Cannot provide %s because the score director does not use the Constraint Streams API."
+                                .formatted(ConstraintMetaModel.class.getSimpleName()));
             }
         }
         return constraintMetaModel;
@@ -88,11 +82,7 @@ public class DefaultTimefoldBeanProvider {
     <Solution_, ProblemId_> SolverManager<Solution_, ProblemId_> solverManager(SolverFactory<Solution_> solverFactory,
             SolverManagerConfig solverManagerConfig) {
         if (solverManager == null) {
-            synchronized (this) {
-                if (solverManager == null) {
-                    solverManager = SolverManager.create(solverFactory, solverManagerConfig);
-                }
-            }
+            solverManager = SolverManager.create(solverFactory, solverManagerConfig);
         }
         return (SolverManager<Solution_, ProblemId_>) solverManager;
     }
@@ -104,14 +94,10 @@ public class DefaultTimefoldBeanProvider {
     //    @Produces
     @SuppressWarnings("unchecked")
     @Deprecated(forRemoval = true)
-    <Solution_, Score_ extends Score<Score_>> ScoreManager<Solution_, Score_> scoreManager(
-            SolverFactory<Solution_> solverFactory) {
+    <Solution_, Score_ extends Score<Score_>> ScoreManager<Solution_, Score_>
+            scoreManager(SolverFactory<Solution_> solverFactory) {
         if (scoreManager == null) {
-            synchronized (this) {
-                if (scoreManager == null) {
-                    scoreManager = ScoreManager.create(solverFactory);
-                }
-            }
+            scoreManager = ScoreManager.create(solverFactory);
         }
         return (ScoreManager<Solution_, Score_>) scoreManager;
     }
@@ -233,11 +219,7 @@ public class DefaultTimefoldBeanProvider {
     <Solution_, Score_ extends Score<Score_>> SolutionManager<Solution_, Score_> solutionManager(
             SolverFactory<Solution_> solverFactory) {
         if (solutionManager == null) {
-            synchronized (this) {
-                if (solutionManager == null) {
-                    solutionManager = SolutionManager.create(solverFactory);
-                }
-            }
+            solutionManager = SolutionManager.create(solverFactory);
         }
         return (SolutionManager<Solution_, Score_>) solutionManager;
     }
