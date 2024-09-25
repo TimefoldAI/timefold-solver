@@ -3,9 +3,10 @@ import importlib
 import inspect
 from copy import copy
 from dataclasses import dataclass
-from jpype import JLong, JDouble, JBoolean, JProxy
 from traceback import TracebackException, StackSummary, FrameSummary
 from typing import TYPE_CHECKING
+
+from jpype import JLong, JDouble, JBoolean, JProxy
 
 if TYPE_CHECKING:
     from java.util import IdentityHashMap
@@ -212,6 +213,7 @@ class CodeWrapper:
 
 def convert_object_to_java_python_like_object(value, instance_map=None):
     import datetime
+    from enum import Enum
     from .annotations import JavaAnnotation
     from .translator import (translate_python_bytecode_to_java_bytecode,
                              translate_python_class_to_java_class)
@@ -286,6 +288,11 @@ def convert_object_to_java_python_like_object(value, instance_map=None):
             return None
 
         try:
+            if issubclass(type(value), Enum):
+                out = CPythonBackedPythonInterpreter.pythonObjectIdToConvertedObjectMap.get(id(value))
+                if out is not None:
+                    return out
+
             out = java_class.getConstructor(PythonInterpreter, PythonLikeType).newInstance(PythonInterpreter.DEFAULT,
                                                                                            java_type)
         except NoSuchMethodException:
@@ -304,6 +311,9 @@ def convert_object_to_java_python_like_object(value, instance_map=None):
                     out.setAttribute(key, convert_to_java_python_like_object(value, instance_map))
             except AttributeError:
                 pass
+
+        if issubclass(type(value), Enum):
+            CPythonBackedPythonInterpreter.pythonObjectIdToConvertedObjectMap.put(id(value), out)
 
         return out
     elif inspect.isbuiltin(value) or is_c_native(value):

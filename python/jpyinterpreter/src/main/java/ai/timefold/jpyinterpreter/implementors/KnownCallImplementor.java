@@ -120,8 +120,13 @@ public class KnownCallImplementor {
                             Type.getType(PythonLikeObject.class),
                             Type.getType(Class.class)),
                     false);
-            methodVisitor.visitTypeInsn(Opcodes.CHECKCAST,
-                    pythonFunctionSignature.getArgumentSpec().getArgumentTypeInternalName(i));
+            if (i == 0 && pythonFunctionSignature.isClassMethod()) {
+                methodVisitor.visitTypeInsn(Opcodes.CHECKCAST,
+                        Type.getInternalName(PythonLikeType.class));
+            } else {
+                methodVisitor.visitTypeInsn(Opcodes.CHECKCAST,
+                        pythonFunctionSignature.getArgumentSpec().getArgumentTypeInternalName(i));
+            }
         }
 
         // Load any arguments missing values

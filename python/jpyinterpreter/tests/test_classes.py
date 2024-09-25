@@ -906,8 +906,16 @@ def test_enum_translate_to_class():
         GREEN = 'GREEN'
         BLUE = 'BLUE'
 
+    def is_red(color: Color):
+        return color is Color.RED
+
     translated_class = translate_python_class_to_java_class(Color)
     assert not isinstance(translated_class, CPythonType)
+
+    verifier = verifier_for(is_red)
+    verifier.verify(Color.RED, expected_result=True)
+    verifier.verify(Color.GREEN, expected_result=False)
+    verifier.verify(Color.BLUE, expected_result=False)
 
 
 def test_class_annotations():
