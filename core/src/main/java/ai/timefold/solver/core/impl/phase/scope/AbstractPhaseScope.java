@@ -96,7 +96,8 @@ public abstract class AbstractPhaseScope<Solution_> {
     /**
      * @return true, if the metrics collection, such as
      *         {@link ai.timefold.solver.core.config.solver.monitoring.SolverMetric#MOVE_COUNT_PER_TYPE MOVE_COUNT_PER_TYPE},
-     *         is enabled; false, if the collection is disabled for the phase.
+     *         is enabled.
+     *         This is disabled for nested phases, such as Construction heuristics in Ruin and Recreate.
      */
     public boolean isMetricCollectionEnabled() {
         return enableCollectMetrics;
