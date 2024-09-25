@@ -287,7 +287,7 @@ but not for slow stepping algorithms (such as Tabu Search).
 
 Both cause congestion in xref:enterprise-edition/enterprise-edition.adoc#multithreadedSolving[multi-threaded solving] with most appenders, see below.
 
-In Eclipse, `debug` logging to the console tends to cause congestion with a move evaluation speeds above 10 000 per second.
+In Eclipse, `debug` logging to the console tends to cause congestion with move evaluation speeds above 10 000 per second.
 Nor IntelliJ, nor the Maven command line suffer from this problem.
 ====
 

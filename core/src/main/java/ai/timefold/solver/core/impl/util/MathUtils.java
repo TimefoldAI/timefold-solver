@@ -48,4 +48,9 @@ public class MathUtils {
     public static double getLogInBase(double base, double value) {
         return Math.log(value) / Math.log(base);
     }
+
+    public static long getSpeed(long count, long timeMillisSpent) {
+        // Avoid divide by zero exception on a fast CPU
+        return count * 1000L / (timeMillisSpent == 0L ? 1L : timeMillisSpent);
+    }
 }

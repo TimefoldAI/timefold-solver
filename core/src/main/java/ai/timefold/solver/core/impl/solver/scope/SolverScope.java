@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.solver.scope;
 
-import static java.util.stream.Collectors.toMap;
+import static ai.timefold.solver.core.impl.util.MathUtils.getSpeed;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -70,7 +70,7 @@ public class SolverScope<Solution_> {
     /**
      * Used for tracking move count per move type
      */
-    private final Map<String, AtomicLong> moveEvaluationCountPerTypeMap = new ConcurrentHashMap<>();
+    private final Map<String, Long> moveEvaluationCountPerTypeMap = new ConcurrentHashMap<>();
 
     private static AtomicLong resetAtomicLongTimeMillis(AtomicLong atomicLong) {
         atomicLong.set(-1);
@@ -244,7 +244,7 @@ public class SolverScope<Solution_> {
     }
 
     public Map<String, Long> getMoveEvaluationCountPerType() {
-        return moveEvaluationCountPerTypeMap.entrySet().stream().collect(toMap(Map.Entry::getKey, e -> e.getValue().get()));
+        return moveEvaluationCountPerTypeMap;
     }
 
     // ************************************************************************
@@ -312,11 +312,6 @@ public class SolverScope<Solution_> {
     public long getMoveEvaluationSpeed() {
         long timeMillisSpent = getTimeMillisSpent();
         return getSpeed(getMoveEvaluationCount(), timeMillisSpent);
-    }
-
-    public static long getSpeed(long metric, long timeMillisSpent) {
-        // Avoid divide by zero exception on a fast CPU
-        return metric * 1000L / (timeMillisSpent == 0L ? 1L : timeMillisSpent);
     }
 
     public void setWorkingSolutionFromBestSolution() {
@@ -388,9 +383,9 @@ public class SolverScope<Solution_> {
     public void addMoveEvaluationCountPerType(String moveType, long count) {
         moveEvaluationCountPerTypeMap.compute(moveType, (key, counter) -> {
             if (counter == null) {
-                counter = new AtomicLong();
+                counter = 0L;
             }
-            counter.addAndGet(count);
+            counter += count;
             return counter;
         });
     }

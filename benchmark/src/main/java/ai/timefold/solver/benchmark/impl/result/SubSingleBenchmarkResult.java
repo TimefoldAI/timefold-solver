@@ -1,5 +1,7 @@
 package ai.timefold.solver.benchmark.impl.result;
 
+import static ai.timefold.solver.core.impl.util.MathUtils.getSpeed;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -218,22 +220,12 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
 
     @SuppressWarnings("unused") // Used by FreeMarker.
     public Long getScoreCalculationSpeed() {
-        long timeMillisSpent = this.timeMillisSpent;
-        if (timeMillisSpent == 0L) {
-            // Avoid divide by zero exception on a fast CPU
-            timeMillisSpent = 1L;
-        }
-        return scoreCalculationCount * 1000L / timeMillisSpent;
+        return getSpeed(scoreCalculationCount, this.timeMillisSpent);
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.
     public Long getMoveEvaluationSpeed() {
-        long timeSpent = this.timeMillisSpent;
-        if (timeSpent == 0L) {
-            // Avoid divide by zero exception on a fast CPU
-            timeSpent = 1L;
-        }
-        return moveEvaluationCount * 1000L / timeSpent;
+        return getSpeed(moveEvaluationCount, this.timeMillisSpent);
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.

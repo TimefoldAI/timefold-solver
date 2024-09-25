@@ -597,9 +597,9 @@ Also useful to measure the scalability cost of an extra constraint.
 
 [IMPORTANT]
 ====
-When improving your score speed,
-it's important to note that comparing a configuration
-that uses xref:optimization-algorithms/move-selector-reference.adoc#ruinRecreateMoveSelector[Ruin and Recreate] moves
+When improving your score calculation speed,
+comparing a configuration that uses
+xref:optimization-algorithms/move-selector-reference.adoc#ruinRecreateMoveSelector[Ruin and Recreate] moves
 with one that doesn't may not be realistic.
 This is because the configuration using "Ruin and Recreate" will likely execute more score calculations than without,
 but it doesn't mean it will evaluate more moves.
@@ -793,7 +793,7 @@ image::using-timefold-solver/benchmarking-and-tweaking/moveEvaluationSpeedStatis
 
 [NOTE]
 ====
-The initial high calculation speed is typical during solution initialization:
+The initial high evaluation speed is typical during solution initialization:
 it's far easier to calculate the score of a solution if only a handful planning entities have been initialized,
 than when all the planning entities are initialized.
 

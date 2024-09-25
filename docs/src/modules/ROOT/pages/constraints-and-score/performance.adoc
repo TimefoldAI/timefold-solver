@@ -6,12 +6,12 @@
 
 The `Solver` will normally spend most of its execution time evaluating moves and running score calculation,
 which is called in its deepest loops.
-Faster move evaluation will return the same solution in less time with the same algorithm,
+Faster score calculation will return the same solution in less time with the same algorithm,
 which normally means a better solution in equal time.
 
 
 [#moveEvaluationSpeed]
-== Move evaluation speed
+== Move evaluation and score calculation speed
 
 After solving a problem, the `Solver` will log the __move evaluation speed per second__.
 This is a good measurement of Move evaluation performance,
@@ -22,14 +22,15 @@ except if you are using xref:constraints-and-score/score-calculation.adoc#easySc
 
 [IMPORTANT]
 ====
-When improving your move evaluation, focus on maximizing the move evaluation speed,
+When improving your solver's performance,
+focus on maximizing the score calculation speed while keeping the existing moves,
 instead of maximizing the best score.
-A big improvement in move evaluation can sometimes yield little or no best score improvement,
+A big improvement in score calculation can sometimes yield little or no best score improvement,
 for example when the algorithm is stuck in a local or global optima.
-If you are watching the move evaluation speed instead, move evaluation improvements are far more visible.
+If you are watching the calculation speed instead, score calculation improvements are far more visible.
 
-Furthermore, watching the evaluation speed allows you to remove or add score constraints,
-and still compare it with the original's evaluation speed.
+Furthermore, watching the calculation speed allows you to remove or add score constraints,
+and still compare it with the original's calculation speed.
 Comparing the best score with the original's best score is pointless: it's comparing apples and oranges.
 ====
 
@@ -467,7 +468,7 @@ For example, move multiple items from the same container to another container.
 == `stepLimit` benchmark
 
 Not all score constraints have the same performance cost.
-Sometimes one score constraint can kill the move evaluation performance outright.
+Sometimes one score constraint can performance outright.
 Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker]
 to do a one minute run and check what happens to the move evaluation speed
 if you comment out all but one of the score constraints.

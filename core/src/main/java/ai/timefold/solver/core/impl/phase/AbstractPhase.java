@@ -257,8 +257,8 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
             this.assertShadowVariablesAreNotStaleAfterStep = assertShadowVariablesAreNotStaleAfterStep;
         }
 
-        public void setEnableCollectMetrics(boolean enableCollectMetrics) {
-            this.enableCollectMetrics = enableCollectMetrics;
+        public void disableMetricCollection() {
+            this.enableCollectMetrics = false;
         }
 
         protected abstract AbstractPhase<Solution_> build();
