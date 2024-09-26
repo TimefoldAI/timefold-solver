@@ -104,9 +104,12 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
             }
             acceptorConfig_ = phaseConfig.getAcceptorConfig();
         } else {
-            LocalSearchType localSearchType_ =
+            var localSearchType_ =
                     Objects.requireNonNullElse(phaseConfig.getLocalSearchType(), LocalSearchType.LATE_ACCEPTANCE);
             acceptorConfig_ = new LocalSearchAcceptorConfig();
+            if (phaseConfig.getAcceptorConfig() != null && phaseConfig.getAcceptorConfig().getReconfigurationConfig() != null) {
+                acceptorConfig_.setReconfigurationConfig(phaseConfig.getAcceptorConfig().getReconfigurationConfig());
+            }
             switch (localSearchType_) {
                 case HILL_CLIMBING:
                 case VARIABLE_NEIGHBORHOOD_DESCENT:
