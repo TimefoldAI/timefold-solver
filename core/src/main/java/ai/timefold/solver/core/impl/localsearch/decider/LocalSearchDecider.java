@@ -99,6 +99,11 @@ public class LocalSearchDecider<Solution_> {
             if (forager.isQuitEarly()) {
                 break;
             }
+            if (acceptor.needReconfiguration(stepScope)) {
+                logger.debug("{}        Move index ({}), score ({}), reconfiguration triggered.",
+                        logIndentation, moveScope.getMoveIndex(), moveScope.getScore());
+                break;
+            }
             stepScope.getPhaseScope().getSolverScope().checkYielding();
             if (termination.isPhaseTerminated(stepScope.getPhaseScope())) {
                 break;
@@ -138,6 +143,9 @@ public class LocalSearchDecider<Solution_> {
                 stepScope.setStepString(step.toString());
             }
             stepScope.setScore(pickedMoveScope.getScore());
+        }
+        if (acceptor.needReconfiguration(stepScope)) {
+            acceptor.applyReconfiguration();
         }
     }
 

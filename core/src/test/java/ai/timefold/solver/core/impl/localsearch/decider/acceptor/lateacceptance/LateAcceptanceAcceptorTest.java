@@ -18,6 +18,8 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         var acceptor = new LateAcceptanceAcceptor<>();
         acceptor.setLateAcceptanceSize(3);
         acceptor.setHillClimbingEnabled(false);
+        acceptor.setMoveCountLimitPercentage(1.0);
+        acceptor.setMoveReconfigurationRatio(1.0);
 
         var solverScope = new SolverScope<>();
         solverScope.setBestScore(SimpleScore.of(-1000));
@@ -131,6 +133,8 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         var acceptor = new LateAcceptanceAcceptor<>();
         acceptor.setLateAcceptanceSize(2);
         acceptor.setHillClimbingEnabled(true);
+        acceptor.setMoveCountLimitPercentage(1.0);
+        acceptor.setMoveReconfigurationRatio(1.0);
 
         var solverScope = new SolverScope<>();
         solverScope.setBestScore(SimpleScore.of(-1000));
@@ -251,5 +255,48 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         var acceptor = new LateAcceptanceAcceptor<>();
         acceptor.setLateAcceptanceSize(-1);
         assertThatIllegalArgumentException().isThrownBy(() -> acceptor.phaseStarted(null));
+    }
+
+    @Test
+    void applyReconfiguration() {
+        var acceptor = new LateAcceptanceAcceptor<>();
+        acceptor.setLateAcceptanceSize(2);
+        acceptor.setHillClimbingEnabled(true);
+        acceptor.setMoveCountLimitPercentage(20.0);
+        acceptor.setMoveReconfigurationRatio(20.0);
+
+        var solverScope = new SolverScope<>();
+        solverScope.setBestScore(SimpleScore.of(-1000));
+        var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
+        phaseScope.setMoveSelectorSize(10L);
+        var lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
+        lastCompletedStepScope.setScore(solverScope.getBestScore());
+        phaseScope.setLastCompletedStepScope(lastCompletedStepScope);
+        acceptor.phaseStarted(phaseScope);
+
+        // No change
+        var stepScope0 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope0 = buildMoveScope(stepScope0, -2000);
+        assertThat(acceptor.isAccepted(moveScope0)).isFalse();
+        assertThat(acceptor.needReconfiguration(stepScope0)).isFalse();
+
+        // Reconfiguration
+        solverScope.addMoveEvaluationCount(1);
+        assertThat(acceptor.needReconfiguration(stepScope0)).isFalse();
+        solverScope.addMoveEvaluationCount(1);
+        assertThat(acceptor.needReconfiguration(stepScope0)).isTrue();
+        assertThat(acceptor.isAccepted(moveScope0)).isFalse();
+
+        // Apply reconfiguration
+        stepScope0.setScore(SimpleScore.of(-3000));
+        var moveScope1 = buildMoveScope(stepScope0, -3000);
+        acceptor.applyReconfiguration();
+        assertThat(acceptor.isAccepted(moveScope1)).isTrue();
+        acceptor.stepEnded(stepScope0);
+        assertThat(acceptor.isAccepted(moveScope1)).isTrue();
+        acceptor.stepEnded(stepScope0);
+        var moveScope2 = buildMoveScope(stepScope0, -4000);
+        assertThat(acceptor.needReconfiguration(stepScope0)).isFalse();
+        assertThat(acceptor.isAccepted(moveScope2)).isFalse();
     }
 }
