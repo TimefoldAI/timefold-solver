@@ -7,7 +7,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public final class ConstructionHeuristicPhaseScope<Solution_> extends AbstractPhaseScope<Solution_> {
+public class ConstructionHeuristicPhaseScope<Solution_> extends AbstractPhaseScope<Solution_> {
 
     private ConstructionHeuristicStepScope<Solution_> lastCompletedStepScope;
 
@@ -24,9 +24,5 @@ public final class ConstructionHeuristicPhaseScope<Solution_> extends AbstractPh
     public void setLastCompletedStepScope(ConstructionHeuristicStepScope<Solution_> lastCompletedStepScope) {
         this.lastCompletedStepScope = lastCompletedStepScope;
     }
-
-    // ************************************************************************
-    // Calculated methods
-    // ************************************************************************
 
 }

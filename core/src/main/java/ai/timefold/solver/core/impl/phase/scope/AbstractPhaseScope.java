@@ -4,7 +4,9 @@ import java.util.Random;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
@@ -33,8 +35,6 @@ public abstract class AbstractPhaseScope<Solution_> {
     protected long childThreadsMoveEvaluationCount = 0L;
 
     protected int bestSolutionStepIndex;
-
-    protected boolean enableCollectMetrics = true;
 
     /**
      * As defined by #AbstractPhaseScope(SolverScope, int, boolean)
@@ -93,20 +93,6 @@ public abstract class AbstractPhaseScope<Solution_> {
 
     public abstract AbstractStepScope<Solution_> getLastCompletedStepScope();
 
-    /**
-     * @return true, if the metrics collection, such as
-     *         {@link ai.timefold.solver.core.config.solver.monitoring.SolverMetric#MOVE_COUNT_PER_TYPE MOVE_COUNT_PER_TYPE},
-     *         is enabled.
-     *         This is disabled for nested phases, such as Construction heuristics in Ruin and Recreate.
-     */
-    public boolean isMetricCollectionEnabled() {
-        return enableCollectMetrics;
-    }
-
-    public void setEnableCollectMetrics(boolean enableCollectMetrics) {
-        this.enableCollectMetrics = enableCollectMetrics;
-    }
-
     // ************************************************************************
     // Calculated methods
     // ************************************************************************
@@ -157,6 +143,23 @@ public abstract class AbstractPhaseScope<Solution_> {
     public void addChildThreadsMoveEvaluationCount(long addition) {
         solverScope.addChildThreadsMoveEvaluationCount(addition);
         childThreadsMoveEvaluationCount += addition;
+    }
+
+    public void addMoveEvaluationCount(Move<?> move, long count) {
+        solverScope.addMoveEvaluationCount(1);
+        addMoveEvaluationCountPerType(move, count);
+    }
+
+    public void addMoveEvaluationCountPerType(Move<?> move, long count) {
+        if (solverScope.isMetricEnabled(SolverMetric.MOVE_COUNT_PER_TYPE)) {
+            solverScope.addMoveEvaluationCountPerType(move.getSimpleMoveTypeDescription(), count);
+        }
+    }
+
+    public void addMoveEvaluationCountPerType(String moveDescription, long count) {
+        if (solverScope.isMetricEnabled(SolverMetric.MOVE_COUNT_PER_TYPE)) {
+            solverScope.addMoveEvaluationCountPerType(moveDescription, count);
+        }
     }
 
     public long getPhaseScoreCalculationCount() {

@@ -4,6 +4,8 @@ import ai.timefold.solver.core.impl.constructionheuristic.ConstructionHeuristicP
 import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhase;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
+import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
+import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 final class RuinRecreateConstructionHeuristicPhase<Solution_>
         extends DefaultConstructionHeuristicPhase<Solution_>
@@ -11,6 +13,16 @@ final class RuinRecreateConstructionHeuristicPhase<Solution_>
 
     RuinRecreateConstructionHeuristicPhase(RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> builder) {
         super(builder);
+    }
+
+    @Override
+    protected void collectMetrics(AbstractStepScope<Solution_> stepScope) {
+        // Nested phase doesn't collect metrics.
+    }
+
+    @Override
+    protected ConstructionHeuristicPhaseScope<Solution_> buildPhaseScope(SolverScope<Solution_> solverScope, int phaseIndex) {
+        return new RuinRecreateConstructionHeuristicPhaseScope<>(solverScope, phaseIndex);
     }
 
     @Override

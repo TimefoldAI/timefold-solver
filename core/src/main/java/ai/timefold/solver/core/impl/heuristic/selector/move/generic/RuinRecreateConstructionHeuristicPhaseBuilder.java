@@ -58,7 +58,6 @@ public final class RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>
 
     @Override
     public DefaultConstructionHeuristicPhase<Solution_> build() {
-        disableMetricCollection();
         return new RuinRecreateConstructionHeuristicPhase<>(this);
     }
 }

@@ -4,8 +4,6 @@ import java.util.Random;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 /**
@@ -44,15 +42,6 @@ public abstract class AbstractStepScope<Solution_> {
 
     public void setBestScoreImproved(Boolean bestScoreImproved) {
         this.bestScoreImproved = bestScoreImproved;
-    }
-
-    public void incrementMoveEvaluationCount(Move<?> move) {
-        if (getPhaseScope().isMetricCollectionEnabled()) {
-            getPhaseScope().getSolverScope().addMoveEvaluationCount(1L);
-            if (getPhaseScope().getSolverScope().isMetricEnabled(SolverMetric.MOVE_COUNT_PER_TYPE)) {
-                getPhaseScope().getSolverScope().incrementMoveEvaluationCountPerType(move);
-            }
-        }
     }
 
     // ************************************************************************

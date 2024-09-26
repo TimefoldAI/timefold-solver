@@ -18,7 +18,6 @@ import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -374,10 +373,6 @@ public class SolverScope<Solution_> {
         if (runnableThreadSemaphore != null) {
             runnableThreadSemaphore.release();
         }
-    }
-
-    public void incrementMoveEvaluationCountPerType(Move<?> move) {
-        addMoveEvaluationCountPerType(move.getSimpleMoveTypeDescription(), 1L);
     }
 
     public void addMoveEvaluationCountPerType(String moveType, long count) {
