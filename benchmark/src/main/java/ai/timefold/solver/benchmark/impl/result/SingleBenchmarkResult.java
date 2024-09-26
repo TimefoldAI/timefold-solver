@@ -58,6 +58,7 @@ public class SingleBenchmarkResult implements BenchmarkResult {
     private double[] standardDeviationDoubles = null;
     private long timeMillisSpent = -1L;
     private long scoreCalculationCount = -1L;
+    private long moveEvaluationCount = -1L;
     private String scoreExplanationSummary = null;
 
     // ************************************************************************
@@ -149,6 +150,14 @@ public class SingleBenchmarkResult implements BenchmarkResult {
 
     public void setScoreCalculationCount(long scoreCalculationCount) {
         this.scoreCalculationCount = scoreCalculationCount;
+    }
+
+    public long getMoveEvaluationCount() {
+        return moveEvaluationCount;
+    }
+
+    public void setMoveEvaluationCount(long moveEvaluationCount) {
+        this.moveEvaluationCount = moveEvaluationCount;
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.
@@ -258,6 +267,15 @@ public class SingleBenchmarkResult implements BenchmarkResult {
         return scoreCalculationCount * 1000L / timeMillisSpent;
     }
 
+    public Long getMoveEvaluationSpeed() {
+        long timeSpent = this.timeMillisSpent;
+        if (timeSpent == 0L) {
+            // Avoid divide by zero exception on a fast CPU
+            timeSpent = 1L;
+        }
+        return moveEvaluationCount * 1000L / timeSpent;
+    }
+
     @SuppressWarnings("unused") // Used By FreeMarker.
     public boolean isWinner() {
         return ranking != null && ranking.intValue() == 0;
@@ -326,6 +344,7 @@ public class SingleBenchmarkResult implements BenchmarkResult {
         usedMemoryAfterInputSolution = median.getUsedMemoryAfterInputSolution();
         timeMillisSpent = median.getTimeMillisSpent();
         scoreCalculationCount = median.getScoreCalculationCount();
+        moveEvaluationCount = median.getMoveEvaluationCount();
         scoreExplanationSummary = median.getScoreExplanationSummary();
     }
 

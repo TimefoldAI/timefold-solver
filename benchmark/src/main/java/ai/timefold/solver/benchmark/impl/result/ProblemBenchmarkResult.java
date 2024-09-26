@@ -33,6 +33,7 @@ import ai.timefold.solver.benchmark.impl.statistic.bestscore.BestScoreProblemSta
 import ai.timefold.solver.benchmark.impl.statistic.bestsolutionmutation.BestSolutionMutationProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.memoryuse.MemoryUseProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.movecountperstep.MoveCountPerStepProblemStatistic;
+import ai.timefold.solver.benchmark.impl.statistic.moveevaluationspeed.MoveEvaluationSpeedProblemStatisticTime;
 import ai.timefold.solver.benchmark.impl.statistic.scorecalculationspeed.ScoreCalculationSpeedProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.stepscore.StepScoreProblemStatistic;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
@@ -67,6 +68,7 @@ public class ProblemBenchmarkResult<Solution_> {
             @XmlElement(name = "bestScoreProblemStatistic", type = BestScoreProblemStatistic.class),
             @XmlElement(name = "stepScoreProblemStatistic", type = StepScoreProblemStatistic.class),
             @XmlElement(name = "scoreCalculationSpeedProblemStatistic", type = ScoreCalculationSpeedProblemStatistic.class),
+            @XmlElement(name = "moveEvaluationSpeedProblemStatistic", type = MoveEvaluationSpeedProblemStatisticTime.class),
             @XmlElement(name = "bestSolutionMutationProblemStatistic", type = BestSolutionMutationProblemStatistic.class),
             @XmlElement(name = "moveCountPerStepProblemStatistic", type = MoveCountPerStepProblemStatistic.class),
             @XmlElement(name = "memoryUseProblemStatistic", type = MemoryUseProblemStatistic.class),

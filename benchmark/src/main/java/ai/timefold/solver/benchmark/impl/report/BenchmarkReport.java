@@ -63,6 +63,7 @@ public class BenchmarkReport {
     private List<BarChart<Double>> winningScoreDifferenceSummaryChartList = null;
     private List<BarChart<Double>> worstScoreDifferencePercentageSummaryChartList = null;
     private LineChart<Long, Long> scoreCalculationSpeedSummaryChart;
+    private LineChart<Long, Long> moveEvaluationSpeedSummaryChart;
     private BarChart<Double> worstScoreCalculationSpeedDifferencePercentageSummaryChart = null;
     private BarChart<Long> timeSpentSummaryChart = null;
     private LineChart<Long, Long> timeSpentScalabilitySummaryChart = null;
@@ -143,6 +144,11 @@ public class BenchmarkReport {
     }
 
     @SuppressWarnings("unused") // Used by FreeMarker.
+    public LineChart<Long, Long> getMoveEvaluationSpeedSummaryChart() {
+        return moveEvaluationSpeedSummaryChart;
+    }
+
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public BarChart<Double> getWorstScoreCalculationSpeedDifferencePercentageSummaryChart() {
         return worstScoreCalculationSpeedDifferencePercentageSummaryChart;
     }
@@ -200,6 +206,7 @@ public class BenchmarkReport {
         worstScoreDifferencePercentageSummaryChartList = createWorstScoreDifferencePercentageSummaryChart();
         bestScoreDistributionSummaryChartList = createBestScoreDistributionSummaryChart();
         scoreCalculationSpeedSummaryChart = createScoreCalculationSpeedSummaryChart();
+        moveEvaluationSpeedSummaryChart = createMoveEvaluationSpeedSummaryChart();
         worstScoreCalculationSpeedDifferencePercentageSummaryChart =
                 createWorstScoreCalculationSpeedDifferencePercentageSummaryChart();
         timeSpentSummaryChart = createTimeSpentSummaryChart();
@@ -239,6 +246,7 @@ public class BenchmarkReport {
         chartsToWrite.addAll(worstScoreDifferencePercentageSummaryChartList);
         chartsToWrite.addAll(bestScoreDistributionSummaryChartList);
         chartsToWrite.add(scoreCalculationSpeedSummaryChart);
+        chartsToWrite.add(moveEvaluationSpeedSummaryChart);
         chartsToWrite.add(worstScoreCalculationSpeedDifferencePercentageSummaryChart);
         chartsToWrite.add(timeSpentSummaryChart);
         chartsToWrite.add(timeSpentScalabilitySummaryChart);
@@ -492,6 +500,12 @@ public class BenchmarkReport {
         return createScalabilitySummaryChart(SingleBenchmarkResult::getScoreCalculationSpeed,
                 "scoreCalculationSpeedSummaryChart", "Score calculation speed summary (higher is better)",
                 "Score calculation speed per second", false);
+    }
+
+    private LineChart<Long, Long> createMoveEvaluationSpeedSummaryChart() {
+        return createScalabilitySummaryChart(SingleBenchmarkResult::getMoveEvaluationSpeed,
+                "moveEvaluationSpeedSummaryChart", "Move evaluation speed summary (higher is better)",
+                "Move evaluation speed per second", false);
     }
 
     private BarChart<Double> createWorstScoreCalculationSpeedDifferencePercentageSummaryChart() {

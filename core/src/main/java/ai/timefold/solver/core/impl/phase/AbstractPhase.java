@@ -161,8 +161,8 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         phaseLifecycleSupport.fireStepEnded(stepScope);
     }
 
-    private void collectMetrics(AbstractStepScope<Solution_> stepScope) {
-        SolverScope<Solution_> solverScope = stepScope.getPhaseScope().getSolverScope();
+    protected void collectMetrics(AbstractStepScope<Solution_> stepScope) {
+        var solverScope = stepScope.getPhaseScope().getSolverScope();
         if (solverScope.isMetricEnabled(SolverMetric.STEP_SCORE) && stepScope.getScore().isSolutionInitialized()) {
             SolverMetric.registerScoreMetrics(SolverMetric.STEP_SCORE,
                     solverScope.getMonitoringTags(),

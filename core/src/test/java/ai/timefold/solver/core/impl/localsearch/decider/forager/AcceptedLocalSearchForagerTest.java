@@ -4,10 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.EnumSet;
 import java.util.Random;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchPickEarlyType;
+import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.heuristic.move.DummyMove;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.finalist.HighestScoreFinalistPodium;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
@@ -219,6 +221,7 @@ class AcceptedLocalSearchForagerTest {
         Random workingRandom = new TestRandom(1, 1);
         solverScope.setWorkingRandom(workingRandom);
         solverScope.setBestScore(SimpleScore.of(-10));
+        solverScope.setSolverMetricSet(EnumSet.of(SolverMetric.MOVE_EVALUATION_COUNT));
         LocalSearchStepScope<TestdataSolution> lastLocalSearchStepScope = new LocalSearchStepScope<>(phaseScope);
         lastLocalSearchStepScope.setScore(SimpleScore.of(-100));
         phaseScope.setLastCompletedStepScope(lastLocalSearchStepScope);

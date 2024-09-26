@@ -91,6 +91,8 @@ public class SolverBenchmarkFactory {
                 .orElseGet(ProblemStatisticType::defaultList)) {
             if (problemStatisticType == ProblemStatisticType.SCORE_CALCULATION_SPEED) {
                 out.add(SolverMetric.SCORE_CALCULATION_COUNT);
+            } else if (problemStatisticType == ProblemStatisticType.MOVE_EVALUATION_SPEED) {
+                out.add(SolverMetric.MOVE_EVALUATION_COUNT);
             } else {
                 out.add(SolverMetric.valueOf(problemStatisticType.name()));
             }

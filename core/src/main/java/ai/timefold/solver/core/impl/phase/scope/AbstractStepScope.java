@@ -47,7 +47,6 @@ public abstract class AbstractStepScope<Solution_> {
     // ************************************************************************
     // Calculated methods
     // ************************************************************************
-
     public <Score_ extends Score<Score_>> InnerScoreDirector<Solution_, Score_> getScoreDirector() {
         return getPhaseScope().getScoreDirector();
     }

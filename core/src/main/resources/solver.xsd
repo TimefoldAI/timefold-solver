@@ -195,6 +195,8 @@
                     
           <xs:element minOccurs="0" name="scoreCalculationCountLimit" type="xs:long"/>
                     
+          <xs:element minOccurs="0" name="moveCountLimit" type="xs:long"/>
+                    
           <xs:element maxOccurs="unbounded" minOccurs="0" name="termination" type="tns:terminationConfig"/>
                   
         </xs:sequence>
@@ -1573,6 +1575,8 @@
             
       <xs:enumeration value="SCORE_CALCULATION_COUNT"/>
             
+      <xs:enumeration value="MOVE_EVALUATION_COUNT"/>
+            
       <xs:enumeration value="PROBLEM_ENTITY_COUNT"/>
             
       <xs:enumeration value="PROBLEM_VARIABLE_COUNT"/>
@@ -1588,6 +1592,8 @@
       <xs:enumeration value="BEST_SOLUTION_MUTATION"/>
             
       <xs:enumeration value="MOVE_COUNT_PER_STEP"/>
+            
+      <xs:enumeration value="MOVE_COUNT_PER_TYPE"/>
             
       <xs:enumeration value="MEMORY_USE"/>
             

@@ -272,7 +272,7 @@ Having multiple planning entity classes directly raises the implementation compl
 
 [NOTE]
 ====
-_Do not create unnecessary planning entity classes._ This leads to difficult `Move` implementations and slower score calculation.
+_Do not create unnecessary planning entity classes._ This leads to difficult `Move` implementations and slower move evaluation.
 
 For example, do not create a planning entity class to hold the total free time of a teacher, which needs to be kept up to date as the `Lecture` planning entities change.
 Instead, calculate the free time in the score constraints (or as a <<shadowVariable,shadow variable>>) and put the result per teacher into a logically inserted score object.

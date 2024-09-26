@@ -1002,9 +1002,9 @@ The `info` log shows what Timefold Solver did in those five seconds:
 [source,options="nowrap"]
 ----
 ... Solving started: time spent (33), best score (-8init/0hard/0soft), environment mode (REPRODUCIBLE), random (JDK with seed 0).
-... Construction Heuristic phase (0) ended: time spent (73), best score (0hard/0soft), score calculation speed (459/sec), step total (4).
-... Local Search phase (1) ended: time spent (5000), best score (0hard/0soft), score calculation speed (28949/sec), step total (28398).
-... Solving ended: time spent (5000), best score (0hard/0soft), score calculation speed (28524/sec), phase total (2), environment mode (REPRODUCIBLE).
+... Construction Heuristic phase (0) ended: time spent (73), best score (0hard/0soft), move evaluation speed (459/sec), step total (4).
+... Local Search phase (1) ended: time spent (5000), best score (0hard/0soft), move evaluation speed (28949/sec), step total (28398).
+... Solving ended: time spent (5000), best score (0hard/0soft), move evaluation speed (28524/sec), phase total (2), environment mode (REPRODUCIBLE).
 ----
 
 === Test the application
@@ -1158,12 +1158,12 @@ For more, see xref:constraints-and-score/score-calculation.adoc#constraintStream
 === Logging
 
 When adding constraints in your `ConstraintProvider`,
-keep an eye on the _score calculation speed_ in the `info` log,
+keep an eye on the _move evaluation speed_ in the `info` log,
 after solving for the same amount of time, to assess the performance impact:
 
 [source]
 ----
-... Solving ended: ..., score calculation speed (29455/sec), ...
+... Solving ended: ..., move evaluation speed (29455/sec), ...
 ----
 
 To understand how Timefold Solver is solving your problem internally:

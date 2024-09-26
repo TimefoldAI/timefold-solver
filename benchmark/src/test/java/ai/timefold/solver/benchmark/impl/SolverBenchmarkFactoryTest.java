@@ -1,6 +1,7 @@
 package ai.timefold.solver.benchmark.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 import java.util.List;
@@ -9,6 +10,8 @@ import ai.timefold.solver.benchmark.config.ProblemBenchmarksConfig;
 import ai.timefold.solver.benchmark.config.SolverBenchmarkConfig;
 import ai.timefold.solver.benchmark.config.statistic.ProblemStatisticType;
 import ai.timefold.solver.benchmark.config.statistic.SingleStatisticType;
+import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.config.solver.monitoring.MonitoringConfig;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 
 import org.junit.jupiter.api.Test;
@@ -80,6 +83,18 @@ class SolverBenchmarkFactoryTest {
     }
 
     @Test
+    void invalidMonitorConfig() {
+        SolverConfig solverConfig = new SolverConfig();
+        solverConfig.withMonitoringConfig(new MonitoringConfig().withSolverMetricList(List.of(SolverMetric.STEP_SCORE)));
+        SolverBenchmarkConfig config = new SolverBenchmarkConfig();
+        config.setSolverConfig(solverConfig);
+        config.setName("name");
+        config.setSubSingleCount(1);
+        SolverBenchmarkFactory solverBenchmarkFactory = new SolverBenchmarkFactory(config);
+        assertThatIllegalArgumentException().isThrownBy(() -> solverBenchmarkFactory.buildSolverBenchmark(null, null, null));
+    }
+
+    @Test
     void defaultStatisticsAreUsedIfNotPresent() {
         SolverBenchmarkConfig config = new SolverBenchmarkConfig();
         config.setName("name");
@@ -88,6 +103,19 @@ class SolverBenchmarkFactoryTest {
         ProblemBenchmarksConfig problemBenchmarksConfig = new ProblemBenchmarksConfig();
         assertThat(solverBenchmarkFactory.getSolverMetrics(problemBenchmarksConfig))
                 .containsExactly(SolverMetric.BEST_SCORE);
+    }
+
+    @Test
+    void convertToSolverMetric() {
+        SolverBenchmarkConfig config = new SolverBenchmarkConfig();
+        config.setName("name");
+        config.setSubSingleCount(0);
+        SolverBenchmarkFactory solverBenchmarkFactory = new SolverBenchmarkFactory(config);
+        ProblemBenchmarksConfig problemBenchmarksConfig = new ProblemBenchmarksConfig();
+        problemBenchmarksConfig.setProblemStatisticTypeList(
+                List.of(ProblemStatisticType.SCORE_CALCULATION_SPEED, ProblemStatisticType.MOVE_EVALUATION_SPEED));
+        assertThat(solverBenchmarkFactory.getSolverMetrics(problemBenchmarksConfig))
+                .containsExactly(SolverMetric.SCORE_CALCULATION_COUNT, SolverMetric.MOVE_EVALUATION_COUNT);
     }
 
     @Test

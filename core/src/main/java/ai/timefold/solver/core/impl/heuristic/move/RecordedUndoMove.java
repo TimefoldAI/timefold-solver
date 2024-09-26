@@ -23,5 +23,4 @@ public final class RecordedUndoMove<Solution_> extends AbstractUndoMove<Solution
         }
         scoreDirector.triggerVariableListeners();
     }
-
 }

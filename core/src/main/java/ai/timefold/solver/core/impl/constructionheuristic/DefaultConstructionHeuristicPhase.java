@@ -40,7 +40,7 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
     // ************************************************************************
     @Override
     public void solve(SolverScope<Solution_> solverScope) {
-        var phaseScope = new ConstructionHeuristicPhaseScope<>(solverScope, phaseIndex);
+        var phaseScope = buildPhaseScope(solverScope, phaseIndex);
         phaseStarted(phaseScope);
 
         var solutionDescriptor = solverScope.getSolutionDescriptor();
@@ -92,6 +92,10 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
             }
         }
         phaseEnded(phaseScope);
+    }
+
+    protected ConstructionHeuristicPhaseScope<Solution_> buildPhaseScope(SolverScope<Solution_> solverScope, int phaseIndex) {
+        return new ConstructionHeuristicPhaseScope<>(solverScope, phaseIndex);
     }
 
     private void doStep(ConstructionHeuristicStepScope<Solution_> stepScope) {
@@ -147,12 +151,12 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
         phaseScope.endingNow();
         if (decider.isLoggingEnabled() && logger.isInfoEnabled()) {
             logger.info(
-                    "{}Construction Heuristic phase ({}) ended: time spent ({}), best score ({}), score calculation speed ({}/sec), step total ({}).",
+                    "{}Construction Heuristic phase ({}) ended: time spent ({}), best score ({}), move evaluation speed ({}/sec), step total ({}).",
                     logIndentation,
                     phaseIndex,
                     phaseScope.calculateSolverTimeMillisSpentUpToNow(),
                     phaseScope.getBestScore(),
-                    phaseScope.getPhaseScoreCalculationSpeed(),
+                    phaseScope.getPhaseMoveEvaluationSpeed(),
                     phaseScope.getNextStepIndex());
         }
     }

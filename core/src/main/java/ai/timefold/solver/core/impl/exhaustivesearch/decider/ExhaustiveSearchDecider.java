@@ -105,7 +105,8 @@ public final class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearc
         manualEntityMimicRecorder.setRecordedEntity(expandingNode.getEntity());
 
         int moveIndex = 0;
-        ExhaustiveSearchLayer moveLayer = stepScope.getPhaseScope().getLayerList().get(expandingNode.getDepth() + 1);
+        var phaseScope = stepScope.getPhaseScope();
+        ExhaustiveSearchLayer moveLayer = phaseScope.getLayerList().get(expandingNode.getDepth() + 1);
         for (Move<?> move : moveSelector) {
             ExhaustiveSearchNode moveNode = new ExhaustiveSearchNode(moveLayer, expandingNode);
             moveIndex++;
@@ -114,9 +115,10 @@ public final class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearc
             // If the original value is null and the variable allows unassigned values,
             // the move to null must be done too.
             doMove(stepScope, moveNode);
+            phaseScope.addMoveEvaluationCount(move, 1);
             // TODO in the lowest level (and only in that level) QuitEarly can be useful
             // No QuitEarly because lower layers might be promising
-            stepScope.getPhaseScope().getSolverScope().checkYielding();
+            phaseScope.getSolverScope().checkYielding();
             if (termination.isPhaseTerminated(stepScope.getPhaseScope())) {
                 break;
             }

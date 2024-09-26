@@ -39,6 +39,8 @@ public class DefaultConstructionHeuristicForager<Solution_> extends AbstractCons
     @Override
     public void addMove(ConstructionHeuristicMoveScope<Solution_> moveScope) {
         selectedMoveCount++;
+        moveScope.getStepScope().getPhaseScope()
+                .addMoveEvaluationCount(moveScope.getMove(), 1L);
         checkPickEarly(moveScope);
         if (maxScoreMoveScope == null || moveScope.getScore().compareTo(maxScoreMoveScope.getScore()) > 0) {
             maxScoreMoveScope = moveScope;

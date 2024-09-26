@@ -287,7 +287,7 @@ but not for slow stepping algorithms (such as Tabu Search).
 
 Both cause congestion in xref:enterprise-edition/enterprise-edition.adoc#multithreadedSolving[multi-threaded solving] with most appenders, see below.
 
-In Eclipse, `debug` logging to the console tends to cause congestion with a score calculation speeds above 10 000 per second.
+In Eclipse, `debug` logging to the console tends to cause congestion with move evaluation speeds above 10 000 per second.
 Nor IntelliJ, nor the Maven command line suffer from this problem.
 ====
 
@@ -301,13 +301,13 @@ DEBUG     CH step (0), time spent (47), score (-6init/0hard/0soft), selected mov
 DEBUG     CH step (1), time spent (50), score (-4init/0hard/0soft), selected move count (4), picked move ([Physics(1) {null -> Room A}, Physics(1) {null -> MONDAY 09:30}]).
 DEBUG     CH step (2), time spent (51), score (-2init/-1hard/-1soft), selected move count (4), picked move ([Chemistry(2) {null -> Room B}, Chemistry(2) {null -> MONDAY 08:30}]).
 DEBUG     CH step (3), time spent (52), score (-2hard/-1soft), selected move count (4), picked move ([Biology(3) {null -> Room A}, Biology(3) {null -> MONDAY 08:30}]).
-INFO  Construction Heuristic phase (0) ended: time spent (53), best score (-2hard/-1soft), score calculation speed (1066/sec), step total (4).
+INFO  Construction Heuristic phase (0) ended: time spent (53), best score (-2hard/-1soft), move evaluation speed (1066/sec), step total (4).
 DEBUG     LS step (0), time spent (56), score (-2hard/0soft), new best score (-2hard/0soft), accepted/selected move count (1/1), picked move (Chemistry(2) {Room B, MONDAY 08:30} <-> Physics(1) {Room A, MONDAY 09:30}).
 DEBUG     LS step (1), time spent (60), score (-2hard/1soft), new best score (-2hard/1soft), accepted/selected move count (1/2), picked move (Math(0) {Room A, MONDAY 08:30} <-> Physics(1) {Room B, MONDAY 08:30}).
 DEBUG     LS step (2), time spent (60), score (-2hard/0soft),     best score (-2hard/1soft), accepted/selected move count (1/1), picked move (Math(0) {Room B, MONDAY 08:30} <-> Physics(1) {Room A, MONDAY 08:30}).
 ...
-INFO  Local Search phase (1) ended: time spent (100), best score (0hard/1soft), score calculation speed (2021/sec), step total (59).
-INFO  Solving ended: time spent (100), best score (0hard/1soft), score calculation speed (1100/sec), phase total (2), environment mode (REPRODUCIBLE), move thread count (NONE).
+INFO  Local Search phase (1) ended: time spent (100), best score (0hard/1soft), move evaluation speed (2021/sec), step total (59).
+INFO  Solving ended: time spent (100), best score (0hard/1soft), move evaluation speed (1100/sec), phase total (2), environment mode (REPRODUCIBLE), move thread count (NONE).
 ----
 All time spent values are in milliseconds.
 
@@ -519,6 +519,9 @@ Measures the number of errors that occur while solving.
 - `SCORE_CALCULATION_COUNT` (default, Micrometer meter id: "timefold.solver.score.calculation.count"):
 Measures the number of score calculations Timefold Solver performed.
 
+- `MOVE_EVALUATION_COUNT` (default, Micrometer meter id: "timefold.solver.move.evaluation.count"):
+Measures the number of move evaluations Timefold Solver performed.
+
 - `PROBLEM_ENTITY_COUNT` (default, Micrometer meter id: "timefold.solver.problem.entities"):
 Measures the number of entities in the problem submitted to Timefold Solver.
 
@@ -546,6 +549,9 @@ Measures the number of changed planning variables between consecutive best solut
 
 - `MOVE_COUNT_PER_STEP` (Micrometer meter id: "timefold.solver.step.move.count"):
 Measures the number of moves evaluated in a step.
+
+- `MOVE_COUNT_PER_TYPE` (Micrometer meter id: "timefold.solver.move.type.count"):
+Measures the number of moves evaluated per move type.
 
 - `MEMORY_USE` (Micrometer meter id: "jvm.memory.used"):
 Measures the amount of memory used across the JVM.

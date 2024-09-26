@@ -76,12 +76,12 @@ final class DefaultCustomPhase<Solution_> extends AbstractPhase<Solution_> imple
         super.phaseEnded(phaseScope);
         phaseScope.endingNow();
         logger.info("{}Custom phase ({}) ended: time spent ({}), best score ({}),"
-                + " score calculation speed ({}/sec), step total ({}).",
+                + " move evaluation speed ({}/sec), step total ({}).",
                 logIndentation,
                 phaseIndex,
                 phaseScope.calculateSolverTimeMillisSpentUpToNow(),
                 phaseScope.getBestScore(),
-                phaseScope.getPhaseScoreCalculationSpeed(),
+                phaseScope.getPhaseMoveEvaluationSpeed(),
                 phaseScope.getNextStepIndex());
     }
 

@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.solver.scope;
 
+import static ai.timefold.solver.core.impl.util.MathUtils.getSpeed;
+
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -50,8 +52,10 @@ public class SolverScope<Solution_> {
      */
     private Semaphore runnableThreadSemaphore = null;
 
-    private long childThreadsScoreCalculationCount = 0;
-    private long moveEvaluationCount = 0;
+    private long childThreadsScoreCalculationCount = 0L;
+
+    private long moveEvaluationCount = 0L;
+    private long childThreadsMoveEvaluationCount = 0L;
 
     private Score<?> startingInitializedScore;
 
@@ -61,6 +65,11 @@ public class SolverScope<Solution_> {
      * Used for tracking step score
      */
     private final Map<Tags, List<AtomicReference<Number>>> stepScoreMap = new ConcurrentHashMap<>();
+
+    /**
+     * Used for tracking move count per move type
+     */
+    private final Map<String, Long> moveEvaluationCountPerTypeMap = new ConcurrentHashMap<>();
 
     private static AtomicLong resetAtomicLongTimeMillis(AtomicLong atomicLong) {
         atomicLong.set(-1);
@@ -191,13 +200,12 @@ public class SolverScope<Solution_> {
         moveEvaluationCount += addition;
     }
 
-    public long getMoveEvaluationCount() {
-        return moveEvaluationCount;
+    public void addChildThreadsMoveEvaluationCount(long addition) {
+        childThreadsMoveEvaluationCount += addition;
     }
 
-    public long getMoveEvaluationSpeed() {
-        long timeMillisSpent = getTimeMillisSpent();
-        return getSpeed(getMoveEvaluationCount(), timeMillisSpent);
+    public long getMoveEvaluationCount() {
+        return moveEvaluationCount + childThreadsMoveEvaluationCount;
     }
 
     public Solution_ getBestSolution() {
@@ -230,6 +238,14 @@ public class SolverScope<Solution_> {
         this.bestSolutionTimeMillis = bestSolutionTimeMillis;
     }
 
+    public Set<String> getMoveCountTypes() {
+        return moveEvaluationCountPerTypeMap.keySet();
+    }
+
+    public Map<String, Long> getMoveEvaluationCountPerType() {
+        return moveEvaluationCountPerTypeMap;
+    }
+
     // ************************************************************************
     // Calculated methods
     // ************************************************************************
@@ -241,6 +257,7 @@ public class SolverScope<Solution_> {
     public void startingNow() {
         startingSystemTimeMillis.set(System.currentTimeMillis());
         resetAtomicLongTimeMillis(endingSystemTimeMillis);
+        this.moveEvaluationCount = 0L;
     }
 
     public Long getBestSolutionTimeMillisSpent() {
@@ -288,9 +305,12 @@ public class SolverScope<Solution_> {
         return getSpeed(getScoreCalculationCount(), timeMillisSpent);
     }
 
-    public static long getSpeed(long scoreCalculationCount, long timeMillisSpent) {
-        // Avoid divide by zero exception on a fast CPU
-        return scoreCalculationCount * 1000L / (timeMillisSpent == 0L ? 1L : timeMillisSpent);
+    /**
+     * @return at least 0, per second
+     */
+    public long getMoveEvaluationSpeed() {
+        long timeMillisSpent = getTimeMillisSpent();
+        return getSpeed(getMoveEvaluationCount(), timeMillisSpent);
     }
 
     public void setWorkingSolutionFromBestSolution() {
@@ -355,4 +375,13 @@ public class SolverScope<Solution_> {
         }
     }
 
+    public void addMoveEvaluationCountPerType(String moveType, long count) {
+        moveEvaluationCountPerTypeMap.compute(moveType, (key, counter) -> {
+            if (counter == null) {
+                counter = 0L;
+            }
+            counter += count;
+            return counter;
+        });
+    }
 }

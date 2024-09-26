@@ -4,7 +4,9 @@ import java.util.Random;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
@@ -24,10 +26,13 @@ public abstract class AbstractPhaseScope<Solution_> {
 
     protected Long startingSystemTimeMillis;
     protected Long startingScoreCalculationCount;
+    protected Long startingMoveEvaluationCount;
     protected Score startingScore;
     protected Long endingSystemTimeMillis;
     protected Long endingScoreCalculationCount;
-    protected long childThreadsScoreCalculationCount = 0;
+    protected Long endingMoveEvaluationCount;
+    protected long childThreadsScoreCalculationCount = 0L;
+    protected long childThreadsMoveEvaluationCount = 0L;
 
     protected int bestSolutionStepIndex;
 
@@ -104,11 +109,13 @@ public abstract class AbstractPhaseScope<Solution_> {
     public void startingNow() {
         startingSystemTimeMillis = System.currentTimeMillis();
         startingScoreCalculationCount = getScoreDirector().getCalculationCount();
+        startingMoveEvaluationCount = getSolverScope().getMoveEvaluationCount();
     }
 
     public void endingNow() {
         endingSystemTimeMillis = System.currentTimeMillis();
         endingScoreCalculationCount = getScoreDirector().getCalculationCount();
+        endingMoveEvaluationCount = getSolverScope().getMoveEvaluationCount();
     }
 
     public SolutionDescriptor<Solution_> getSolutionDescriptor() {
@@ -133,17 +140,58 @@ public abstract class AbstractPhaseScope<Solution_> {
         childThreadsScoreCalculationCount += addition;
     }
 
+    public void addChildThreadsMoveEvaluationCount(long addition) {
+        solverScope.addChildThreadsMoveEvaluationCount(addition);
+        childThreadsMoveEvaluationCount += addition;
+    }
+
+    public void addMoveEvaluationCount(Move<?> move, long count) {
+        solverScope.addMoveEvaluationCount(1);
+        addMoveEvaluationCountPerType(move, count);
+    }
+
+    public void addMoveEvaluationCountPerType(Move<?> move, long count) {
+        if (solverScope.isMetricEnabled(SolverMetric.MOVE_COUNT_PER_TYPE)) {
+            solverScope.addMoveEvaluationCountPerType(move.getSimpleMoveTypeDescription(), count);
+        }
+    }
+
+    public void addMoveEvaluationCountPerType(String moveDescription, long count) {
+        if (solverScope.isMetricEnabled(SolverMetric.MOVE_COUNT_PER_TYPE)) {
+            solverScope.addMoveEvaluationCountPerType(moveDescription, count);
+        }
+    }
+
     public long getPhaseScoreCalculationCount() {
         return endingScoreCalculationCount - startingScoreCalculationCount + childThreadsScoreCalculationCount;
+    }
+
+    public long getPhaseMoveEvaluationCount() {
+        var currentMoveEvaluationCount = endingMoveEvaluationCount;
+        if (endingMoveEvaluationCount == null) {
+            currentMoveEvaluationCount = getSolverScope().getMoveEvaluationCount();
+        }
+        return currentMoveEvaluationCount - startingMoveEvaluationCount + childThreadsMoveEvaluationCount;
     }
 
     /**
      * @return at least 0, per second
      */
     public long getPhaseScoreCalculationSpeed() {
+        return getMetricCalculationSpeed(getPhaseScoreCalculationCount());
+    }
+
+    /**
+     * @return at least 0, per second
+     */
+    public long getPhaseMoveEvaluationSpeed() {
+        return getMetricCalculationSpeed(getPhaseMoveEvaluationCount());
+    }
+
+    private long getMetricCalculationSpeed(long metric) {
         long timeMillisSpent = getPhaseTimeMillisSpent();
         // Avoid divide by zero exception on a fast CPU
-        return getPhaseScoreCalculationCount() * 1000L / (timeMillisSpent == 0L ? 1L : timeMillisSpent);
+        return metric * 1000L / (timeMillisSpent == 0L ? 1L : timeMillisSpent);
     }
 
     public <Score_ extends Score<Score_>> InnerScoreDirector<Solution_, Score_> getScoreDirector() {

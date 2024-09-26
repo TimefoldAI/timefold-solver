@@ -96,6 +96,16 @@ public interface SolverJob<Solution_, ProblemId_> {
     long getScoreCalculationCount();
 
     /**
+     * Return the number of move evaluations since the last start.
+     * If it hasn't started yet, it returns 0.
+     * If it hasn't ended yet, it returns the number of moves evaluations so far.
+     * If it has ended already, it returns the total number of move evaluations that occurred during solving.
+     *
+     * @return the number of move evaluations that had occurred during solving since the last (re)start, at least 0
+     */
+    long getMoveEvaluationCount();
+
+    /**
      * Return the {@link ProblemSizeStatistics} for the {@link PlanningSolution problem} submitted to the
      * {@link SolverManager}.
      *
@@ -113,4 +123,15 @@ public interface SolverJob<Solution_, ProblemId_> {
      *         since the last (re)start, at least 0
      */
     long getScoreCalculationSpeed();
+
+    /**
+     * Return the average number of move evaluations per second since the last start.
+     * If it hasn't started yet, it returns 0.
+     * If it hasn't ended yet, it returns the average number of move evaluations per second so far.
+     * If it has ended already, it returns the average number of move evaluations per second during solving.
+     *
+     * @return the average number of move evaluations per second that had occurred during solving
+     *         since the last (re)start, at least 0
+     */
+    long getMoveEvaluationSpeed();
 }

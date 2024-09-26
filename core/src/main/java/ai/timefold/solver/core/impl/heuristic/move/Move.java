@@ -172,5 +172,4 @@ public interface Move<Solution_> {
                 "Move class (%s) doesn't implement the getPlanningEntities() method, so Value Tabu Search is impossible."
                         .formatted(getClass()));
     }
-
 }

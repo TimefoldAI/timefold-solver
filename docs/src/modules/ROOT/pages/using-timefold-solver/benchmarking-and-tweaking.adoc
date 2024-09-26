@@ -595,6 +595,27 @@ Useful for comparing different score calculators and/or constraint implementatio
 (presuming that the solver configurations do not differ otherwise).
 Also useful to measure the scalability cost of an extra constraint.
 
+[IMPORTANT]
+====
+When improving your score calculation speed,
+comparing a configuration that uses
+xref:optimization-algorithms/move-selector-reference.adoc#ruinRecreateMoveSelector[Ruin and Recreate] moves
+with one that doesn't may not be realistic.
+This is because the configuration using "Ruin and Recreate" will likely execute more score calculations than without,
+but it doesn't mean it will evaluate more moves.
+The Ruin and Recreate recreate step runs a construction heuristic,
+which uses greedy logic to find a better location to assign each one of the entities removed with the ruin step.
+====
+
+[#benchmarkReportMoveEvaluationSpeedSummary]
+=== Move evaluation speed summary (graph and table)
+
+Shows the move evaluation speed: a count per move, per second and per problem scale for each solver configuration.
+
+Useful for comparing different solver algorithms,
+score calculators and/or constraint implementations
+(presuming that the solver configurations do not differ otherwise, including the move selector configuration).
+Also useful to measure the scalability cost of an extra constraint.
 
 [#benchmarkReportTimeSpentSummary]
 === Time spent summary (graph And table)
@@ -751,6 +772,50 @@ The initial high calculation speed is typical during solution initialization: it
 
 After those few seconds of initialization, the calculation speed is relatively stable, apart from an occasional stop-the-world garbage collector disruption.
 ====
+
+
+[#benchmarkReportMoveEvaluationSpeedOverTimeStatistic]
+=== Move evaluation speed over time statistic (graph and CSV)
+
+To see how fast the moves are evaluated, add:
+
+[source,xml,options="nowrap"]
+----
+    <problemBenchmarks>
+      ...
+      <problemStatisticType>MOVE_EVALUATION_SPEED</problemStatisticType>
+    </problemBenchmarks>
+----
+
+.Move Evaluation Speed Statistic
+image::using-timefold-solver/benchmarking-and-tweaking/moveEvaluationSpeedStatistic.png[align="center"]
+
+
+[NOTE]
+====
+The initial high evaluation speed is typical during solution initialization:
+it's far easier to calculate the score of a solution if only a handful planning entities have been initialized,
+than when all the planning entities are initialized.
+
+After the construction heuristic phase, the evaluation speed is relatively stable,
+apart from an occasional stop-the-world garbage collector disruption.
+====
+
+[#benchmarkReportMoveEvaluationCountPerTypeStastistic]
+=== Move evaluation count per move type statistic (graph and CSV)
+
+To see how many moves are evaluated per move type, add:
+
+[source,xml,options="nowrap"]
+----
+    <problemBenchmarks>
+      ...
+      <problemStatisticType>MOVE_COUNT_PER_TYPE</problemStatisticType>
+    </problemBenchmarks>
+----
+
+.Evaluation Count per Move Type Summary Statistic
+image::using-timefold-solver/benchmarking-and-tweaking/moveCountPerTypeStatistic.png[align="center"]
 
 
 [#benchmarkReportBestSolutionMutationOverTimeStatistic]

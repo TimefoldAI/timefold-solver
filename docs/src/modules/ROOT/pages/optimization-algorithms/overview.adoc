@@ -159,7 +159,7 @@ Timefold Solver combines optimization algorithms (metaheuristics, ...)
 with score calculation by a score calculation engine.
 This combination is very efficient, because:
 
-* A score calculation engine, is *great for calculating the score* of a solution of a planning problem.
+* A score calculation engine is *great for calculating the score* of a solution of a planning problem.
 It makes it easy and scalable to add additional soft or hard constraints.
 It does xref:constraints-and-score/performance.adoc#incrementalScoreCalculation[incremental score calculation (deltas)] without any extra code.
 However it tends to be not suitable to actually find new solutions.
@@ -617,6 +617,21 @@ This is useful for benchmarking.
 ----
   <termination>
     <scoreCalculationCountLimit>100000</scoreCalculationCountLimit>
+  </termination>
+----
+
+Switching xref:using-timefold-solver/running-the-solver.adoc#environmentMode[EnvironmentMode] can heavily impact when this termination ends.
+
+[#moveCountTermination]
+==== `MoveCountTermination`
+
+`MoveCountTermination` terminates when a number of evaluated moves have been reached.
+This is useful for benchmarking.
+
+[source,xml,options="nowrap"]
+----
+  <termination>
+    <moveCountLimit>100000</moveCountLimit>
   </termination>
 ----
 

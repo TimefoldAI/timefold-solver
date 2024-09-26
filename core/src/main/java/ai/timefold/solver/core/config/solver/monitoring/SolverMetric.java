@@ -15,6 +15,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.statistic.BestScoreStatistic;
 import ai.timefold.solver.core.impl.statistic.BestSolutionMutationCountStatistic;
 import ai.timefold.solver.core.impl.statistic.MemoryUseStatistic;
+import ai.timefold.solver.core.impl.statistic.MoveCountPerTypeStatistic;
 import ai.timefold.solver.core.impl.statistic.PickedMoveBestScoreDiffStatistic;
 import ai.timefold.solver.core.impl.statistic.PickedMoveStepScoreDiffStatistic;
 import ai.timefold.solver.core.impl.statistic.SolverScopeStatistic;
@@ -30,6 +31,9 @@ public enum SolverMetric {
     ERROR_COUNT("timefold.solver.errors", false),
     SCORE_CALCULATION_COUNT("timefold.solver.score.calculation.count",
             SolverScope::getScoreCalculationCount,
+            false),
+    MOVE_EVALUATION_COUNT("timefold.solver.move.evaluation.count",
+            SolverScope::getMoveEvaluationCount,
             false),
     PROBLEM_ENTITY_COUNT("timefold.solver.problem.entities",
             solverScope -> solverScope.getProblemSizeStatistics().entityCount(),
@@ -47,6 +51,7 @@ public enum SolverMetric {
     STEP_SCORE("timefold.solver.step.score", false),
     BEST_SOLUTION_MUTATION("timefold.solver.best.solution.mutation", new BestSolutionMutationCountStatistic<>(), true),
     MOVE_COUNT_PER_STEP("timefold.solver.step.move.count", false),
+    MOVE_COUNT_PER_TYPE("timefold.solver.move.type.count", new MoveCountPerTypeStatistic<>(), false),
     MEMORY_USE("jvm.memory.used", new MemoryUseStatistic<>(), false),
     CONSTRAINT_MATCH_TOTAL_BEST_SCORE("timefold.solver.constraint.match.best.score", true, true),
     CONSTRAINT_MATCH_TOTAL_STEP_SCORE("timefold.solver.constraint.match.step.score", false, true),

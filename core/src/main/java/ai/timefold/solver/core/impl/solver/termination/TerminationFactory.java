@@ -83,7 +83,9 @@ public class TerminationFactory<Solution_> {
         if (terminationConfig.getUnimprovedStepCountLimit() != null) {
             terminationList.add(new UnimprovedStepCountTermination<>(terminationConfig.getUnimprovedStepCountLimit()));
         }
-
+        if (terminationConfig.getMoveCountLimit() != null) {
+            terminationList.add(new MoveCountTermination<>(terminationConfig.getMoveCountLimit()));
+        }
         terminationList.addAll(buildInnerTermination(configPolicy));
         return buildTerminationFromList(terminationList);
     }

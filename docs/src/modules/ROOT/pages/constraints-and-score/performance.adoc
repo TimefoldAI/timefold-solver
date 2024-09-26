@@ -4,17 +4,17 @@
 [#scoreCalculationPerformanceTricksOverview]
 == Overview
 
-The `Solver` will normally spend most of its execution time running score calculation,
+The `Solver` will normally spend most of its execution time evaluating moves and running score calculation,
 which is called in its deepest loops.
 Faster score calculation will return the same solution in less time with the same algorithm,
 which normally means a better solution in equal time.
 
 
-[#scoreCalculationSpeed]
-== Score calculation speed
+[#moveEvaluationSpeed]
+== Move evaluation and score calculation speed
 
-After solving a problem, the `Solver` will log the __score calculation speed per second__.
-This is a good measurement of Score calculation performance,
+After solving a problem, the `Solver` will log the __move evaluation speed per second__.
+This is a good measurement of Move evaluation performance,
 despite that it is affected by non-score calculation execution time.
 It depends on the problem scale of the problem dataset.
 Normally, even for large scale problems, it is higher than ``1000``,
@@ -22,7 +22,8 @@ except if you are using xref:constraints-and-score/score-calculation.adoc#easySc
 
 [IMPORTANT]
 ====
-When improving your score calculation, focus on maximizing the score calculation speed,
+When improving your solver's performance,
+focus on maximizing the score calculation speed while keeping the existing moves,
 instead of maximizing the best score.
 A big improvement in score calculation can sometimes yield little or no best score improvement,
 for example when the algorithm is stuck in a local or global optima.
@@ -32,6 +33,15 @@ Furthermore, watching the calculation speed allows you to remove or add score co
 and still compare it with the original's calculation speed.
 Comparing the best score with the original's best score is pointless: it's comparing apples and oranges.
 ====
+
+The solver usually calculates the score for each move it evaluates.
+This means a direct relationship exists between the score calculation and the evaluated move, typically a `1:1` ratio.
+However, some moves,
+such as xref:optimization-algorithms/move-selector-reference.adoc#ruinRecreateMoveSelector[Ruin and Recreate],
+involve processing the score multiple times within the same move.
+
+The use of moves like Ruin and Recreate may increase the number of score calculations,
+making this ratio `N:1`.
 
 [#incrementalScoreCalculationPerformance]
 == Incremental score calculation (with deltas)
@@ -58,7 +68,7 @@ making incremental score calculation far more scalable.
 
 Do not call remote services in your score calculation,
 except if you are bridging `EasyScoreCalculator` to a legacy system.
-The network latency will kill your score calculation performance.
+The network latency will kill your move evaluation performance.
 Cache the results of those remote services if possible.
 
 If some parts of a constraint can be calculated once, when the `Solver` starts, and never change during solving,
@@ -96,7 +106,7 @@ Use xref:using-timefold-solver/modeling-planning-problems.adoc#valueRangeProvide
 or xref:optimization-algorithms/overview.adoc#filteredSelection[filtered selection]
 to define that Course A should only be assigned a `Room` different than X.
 
-This can give a good performance gain in some use cases, not just because the score calculation is faster,
+This can give a good performance gain in some use cases, not just because the move evaluation is faster,
 but mainly because most optimization algorithms will spend less time evaluating infeasible solutions.
 However, usually this is not a good idea because there is a real risk of trading short-term benefits for long-term harm:
 
@@ -213,7 +223,7 @@ This shows the problem in numbers:
 
 To process a thousand lessons, the constraint first creates a cross-product of one million pairs,
 only to throw away pretty much all of them before penalizing.
-Reducing the size of the cross-product by half will therefore double the score calculation speed.
+Reducing the size of the cross-product by half will therefore double the move evaluation speed.
 
 === Filters before joins
 
@@ -458,5 +468,7 @@ For example, move multiple items from the same container to another container.
 == `stepLimit` benchmark
 
 Not all score constraints have the same performance cost.
-Sometimes one score constraint can kill the score calculation performance outright.
-Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to do a one minute run and check what happens to the score calculation speed if you comment out all but one of the score constraints.
+Sometimes one score constraint can performance outright.
+Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker]
+to do a one minute run and check what happens to the move evaluation speed
+if you comment out all but one of the score constraints.

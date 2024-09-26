@@ -1200,14 +1200,14 @@ Understand these guidelines to decide the hardware for a Timefold Solver service
 *** **Insufficient**: An `OutOfMemoryException` is thrown (often because the Garbage Collector is using more than 98% of the CPU time).
 *** **Narrow**: The heap buffer for those short-lived instances is too small, therefore the Garbage Collector needs to run more than it would like to, which causes a performance loss.
 **** Profiling shows that in the heap chart, the used heap space frequently touches the max heap space during solving. It also shows that the Garbage Collector has a significant CPU usage impact.
-**** Adding more heap space increases the xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calculation speed].
+**** Adding more heap space increases the xref:constraints-and-score/performance.adoc#moveEvaluationSpeed[move evaluation speed].
 *** **Plenty**: There is enough heap space. The Garbage Collector is active, but its CPU usage is low.
 **** Adding more heap space does _not_ increase performance.
 **** Usually, this is around 300 to 500MB above the dataset size, _regardless of the problem scale_,
 except with xref:enterprise-edition/enterprise-edition.adoc#nearbySelection[nearby selection] and caching move selector,
 neither of which are used by default.
 * **CPU power**: More is better.
-** Improving CPU speed directly increases the xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calculation speed].
+** Improving CPU speed directly increases the xref:constraints-and-score/performance.adoc#moveEvaluationSpeed[move evaluation speed].
 *** If the CPU power is twice as fast, it takes half the time to find the same result. However, this does not guarantee that it finds a better result in the same time, nor that it finds a similar result for a problem twice as big in the same time.
 *** Increasing CPU power usually does not resolve scaling issues, because planning problems scale exponentially. Power tweaking the solver configuration has far better results for scaling issues than throwing hardware at it.
 ** During the `solve()` method, the CPU power will max out until it returns
@@ -1224,7 +1224,7 @@ or if your xref:optimization-algorithms/overview.adoc#SolverEventListener[Solver
 * **I/O (network, disk, ...)**: Not used during solving.
 ** Timefold Solver is not a web server: a solver thread does not block (unlike a servlet thread), each one fully drains a CPU.
 *** A web server can handle 24 active servlets threads with eight cores without performance loss, because most servlets threads are blocking on I/O.
-*** However, 24 active solver threads with eight cores will cause each solver's xref:constraints-and-score/performance.adoc#scoreCalculationSpeed[score calculation speed] to be three times slower, causing a big performance loss.
+*** However, 24 active solver threads with eight cores will cause each solver's xref:constraints-and-score/performance.adoc#moveEvaluationSpeed[move evaluation speed] to be three times slower, causing a big performance loss.
 ** Note that calling any I/O during solving, for example a remote service in your score calculation, causes a huge performance loss because it's called thousands of times per second, so it should complete in microseconds. So no good implementation does that.
 
 Keep these guidelines in mind when selecting and configuring the software.
