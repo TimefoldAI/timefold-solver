@@ -1,7 +1,7 @@
 package ai.timefold.jpyinterpreter.util;
 
-import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 
 public class TracebackUtils {
     private TracebackUtils() {
@@ -9,9 +9,9 @@ public class TracebackUtils {
     }
 
     public static String getTraceback(Throwable t) {
-        ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
-        PrintWriter printWriter = new PrintWriter(byteOutputStream);
+        var output = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(output);
         t.printStackTrace(printWriter);
-        return byteOutputStream.toString();
+        return output.toString();
     }
 }
