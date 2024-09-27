@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.composite;
 
+import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
@@ -79,11 +80,12 @@ public class UnionMoveSelector<Solution_> extends CompositeMoveSelector<Solution
 
     @Override
     public long getSize() {
-        long size = 0L;
+        BigInteger totalSize = BigInteger.valueOf(0L);
         for (MoveSelector<Solution_> moveSelector : childMoveSelectorList) {
-            size += moveSelector.getSize();
+            totalSize = totalSize.add(BigInteger.valueOf(moveSelector.getSize()));
         }
-        return size;
+        var size = totalSize.longValue();
+        return size < 0 ? Long.MAX_VALUE : size;
     }
 
     @Override
