@@ -36,7 +36,7 @@ public interface Acceptor<Solution_> extends LocalSearchPhaseLifecycleListener<S
      * <p>
      * One typical example is the reheat operation used in the Simulated Annealing method.
      */
-    default void applyReconfiguration() {
+    default void applyReconfiguration(LocalSearchStepScope<Solution_> stepScope) {
         // By default, executes nothing
     }
 }

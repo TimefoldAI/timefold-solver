@@ -290,7 +290,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         // Apply reconfiguration
         stepScope0.setScore(SimpleScore.of(-3000));
         var moveScope1 = buildMoveScope(stepScope0, -3000);
-        acceptor.applyReconfiguration();
+        acceptor.applyReconfiguration(stepScope0);
         assertThat(acceptor.isAccepted(moveScope1)).isTrue();
         acceptor.stepEnded(stepScope0);
         assertThat(acceptor.isAccepted(moveScope1)).isTrue();
