@@ -1,12 +1,13 @@
-from ._problem_change import ProblemChange, ProblemChangeWrapper
-from .config import SolverConfig, SolverConfigOverride, SolverManagerConfig
-from ._solver_factory import SolverFactory
-from ._future import wrap_future
-from ._timefold_java_interop import update_log_level
-
-from typing import Awaitable, TypeVar, Generic, Callable, TYPE_CHECKING
+import logging
 from datetime import timedelta
 from enum import Enum
+from typing import Awaitable, TypeVar, Generic, Callable, TYPE_CHECKING
+
+from ._future import wrap_future
+from ._problem_change import ProblemChange, ProblemChangeWrapper
+from ._solver_factory import SolverFactory
+from ._timefold_java_interop import update_log_level
+from .config import SolverConfig, SolverConfigOverride, SolverManagerConfig
 
 if TYPE_CHECKING:
     # These imports require a JVM to be running, so only import if type checking
@@ -16,6 +17,7 @@ if TYPE_CHECKING:
 
 Solution_ = TypeVar('Solution_')
 ProblemId_ = TypeVar('ProblemId_')
+logger = logging.getLogger('timefold.solver')
 
 
 class SolverStatus(Enum):
@@ -153,6 +155,17 @@ class SolverJob(Generic[Solution_, ProblemId_]):
             An awaitable that completes after the best solution containing this change has been consumed.
         """
         return wrap_future(self._delegate.addProblemChange(ProblemChangeWrapper(problem_change)))
+
+
+def default_exception_handler(problem_id, error):
+    try:
+        raise error
+    except:
+        # logger does not have a method for printing a message with exception info,
+        # so we need to raise the unwrapped recorded error to include the traceback
+        # in the logs
+        logger.exception(f'Solving failed for problem_id ({problem_id}).')
+        raise
 
 
 class SolverJobBuilder(Generic[Solution_, ProblemId_]):
@@ -348,7 +361,7 @@ class SolverJobBuilder(Generic[Solution_, ProblemId_]):
         from _jpyinterpreter import unwrap_python_like_object
 
         java_consumer = BiConsumer @ (lambda problem_id, error: exception_handler(unwrap_python_like_object(problem_id),
-                                                                                  error))
+                                                                                  unwrap_python_like_object(error)))
         return SolverJobBuilder(
             self._delegate.withExceptionHandler(java_consumer))
 
@@ -508,7 +521,7 @@ class SolverManager(Generic[Solution_, ProblemId_]):
         SolverJobBuilder
             A new `SolverJobBuilder`.
         """
-        return SolverJobBuilder(self._delegate.solveBuilder())
+        return SolverJobBuilder(self._delegate.solveBuilder()).with_exception_handler(default_exception_handler)
 
     def get_solver_status(self, problem_id: ProblemId_) -> SolverStatus:
         """
