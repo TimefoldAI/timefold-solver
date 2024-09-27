@@ -1,13 +1,13 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 
+import java.math.BigInteger;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-
-import org.apache.commons.math3.util.CombinatoricsUtils;
+import ai.timefold.solver.core.impl.util.MathUtils;
 
 final class RuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
 
@@ -35,15 +35,17 @@ final class RuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<Solu
 
     @Override
     public long getSize() {
-        var totalSize = 0L;
+        var totalSize = BigInteger.valueOf(0L);
         var entityCount = entitySelector.getSize();
         var minimumSelectedCount = minimumSelectedCountSupplier.applyAsInt(entityCount);
         var maximumSelectedCount = maximumSelectedCountSupplier.applyAsInt(entityCount);
         for (int selectedCount = minimumSelectedCount; selectedCount <= maximumSelectedCount; selectedCount++) {
             // Order is significant, and each entity can only be picked once
-            totalSize += CombinatoricsUtils.factorial((int) entityCount) / CombinatoricsUtils.factorial(selectedCount);
+            totalSize = totalSize
+                    .add(BigInteger.valueOf(MathUtils.factorial((int) entityCount) / MathUtils.factorial(selectedCount)));
         }
-        return totalSize;
+        var size = totalSize.longValue();
+        return size < 0 ? Long.MAX_VALUE : size;
     }
 
     @Override

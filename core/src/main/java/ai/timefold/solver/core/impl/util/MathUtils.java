@@ -53,4 +53,9 @@ public class MathUtils {
         // Avoid divide by zero exception on a fast CPU
         return count * 1000L / (timeMillisSpent == 0L ? 1L : timeMillisSpent);
     }
+
+    public static long factorial(int n) {
+        // The largest value of n for which n! does not exceed Long.MAX_VALUE is 20.
+        return n <= 20 ? CombinatoricsUtils.factorial(n) : Long.MAX_VALUE;
+    }
 }

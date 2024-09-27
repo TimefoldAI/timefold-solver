@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.composite;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -51,7 +52,7 @@ public class CartesianProductMoveSelector<Solution_> extends CompositeMoveSelect
 
     @Override
     public long getSize() {
-        long size = 0L;
+        BigInteger totalSize = BigInteger.valueOf(0L);
         for (MoveSelector<Solution_> moveSelector : childMoveSelectorList) {
             long childSize = moveSelector.getSize();
             if (childSize == 0L) {
@@ -60,15 +61,16 @@ public class CartesianProductMoveSelector<Solution_> extends CompositeMoveSelect
                 }
                 // else ignore that child
             } else {
-                if (size == 0L) {
+                if (totalSize.longValue() == 0L) {
                     // There must be at least 1 non-empty child to change the size from 0
-                    size = childSize;
+                    totalSize = BigInteger.valueOf(childSize);
                 } else {
-                    size *= childSize;
+                    totalSize = totalSize.multiply(BigInteger.valueOf(childSize));
                 }
             }
         }
-        return size;
+        var size = totalSize.longValue();
+        return size < 0 ? Long.MAX_VALUE : size;
     }
 
     @Override
