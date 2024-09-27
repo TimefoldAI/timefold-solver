@@ -33,8 +33,12 @@ public final class MoveDirector<Solution_> implements MutableSolutionState<Solut
     }
 
     @Override
-    public <Entity_, Value_> void moveValue(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+    public <Entity_, Value_> void moveValueBetweenLists(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Entity_ sourceEntity, int sourceIndex, Entity_ destinationEntity, int destinationIndex) {
+        if (sourceEntity == destinationEntity) {
+            moveValueInList(variableMetaModel, sourceEntity, sourceIndex, destinationIndex);
+            return;
+        }
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
         changeRecordingScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex + 1);
         var element = variableDescriptor.removeElement(sourceEntity, sourceIndex);
@@ -49,14 +53,21 @@ public final class MoveDirector<Solution_> implements MutableSolutionState<Solut
     }
 
     @Override
-    public <Entity_, Value_> void moveValue(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity,
-            int sourceIndex, int destinationIndex) {
+    public <Entity_, Value_> void moveValueInList(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Entity_ entity, int sourceIndex, int destinationIndex) {
+        if (sourceIndex == destinationIndex) {
+            return;
+        } else if (sourceIndex > destinationIndex) { // Always start from the lower index.
+            moveValueInList(variableMetaModel, entity, destinationIndex, sourceIndex);
+            return;
+        }
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
         var fromIndex = Math.min(sourceIndex, destinationIndex);
         var toIndex = Math.max(sourceIndex, destinationIndex) + 1;
         changeRecordingScoreDirector.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
-        var element = variableDescriptor.removeElement(entity, sourceIndex);
-        variableDescriptor.addElement(entity, destinationIndex, element);
+        var variable = variableDescriptor.getValue(entity);
+        var value = variable.remove(sourceIndex);
+        variable.add(destinationIndex, value);
         changeRecordingScoreDirector.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
     }
 
@@ -89,6 +100,10 @@ public final class MoveDirector<Solution_> implements MutableSolutionState<Solut
     @Override
     public <T> T rebase(T problemFactOrPlanningEntity) {
         return scoreDirector.lookUpWorkingObject(problemFactOrPlanningEntity);
+    }
+
+    public void undo() {
+        changeRecordingScoreDirector.undoChanges();
     }
 
     private static <Solution_, Entity_, Value_> BasicVariableDescriptor<Solution_>
