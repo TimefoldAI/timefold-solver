@@ -50,16 +50,12 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
         var initialScore = phaseScope.getBestScore();
         Arrays.fill(previousScores, initialScore);
         lateScoreIndex = 0;
-        lateAcceptanceReconfigurationRatioCount = (long) (phaseScope.getMoveSelectorSize() * moveReconfigurationRatio / 100);
+        lateAcceptanceReconfigurationRatioCount = (long) (lateAcceptanceSize * moveReconfigurationRatio / 100);
         var lateAcceptanceReconfigurationMoveCount = (long) (phaseScope.getMoveSelectorSize() * moveCountLimitPercentage / 100);
         moveCountTermination = new MoveCountTermination<>(lateAcceptanceReconfigurationMoveCount, true);
         moveCountTermination.phaseStarted(phaseScope);
-    }
-
-    @Override
-    public void stepStarted(LocalSearchStepScope<Solution_> stepScope) {
-        super.stepStarted(stepScope);
-        moveCountTermination.stepStarted(stepScope);
+        logger.info("Late Acceptance reconfiguration move count({}), late elements count({}) ",
+                lateAcceptanceReconfigurationMoveCount, lateAcceptanceReconfigurationRatioCount);
     }
 
     private void validate() {
@@ -75,7 +71,7 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
         var moveScore = moveScope.getScore();
         var lateScore = previousScores[lateScoreIndex];
         if (lateScore == null) {
-            logger.trace("Move index ({}), score ({}), accepted after reconfiguration ({}).", moveScope.getMoveIndex(),
+            logger.info("Move index ({}), score ({}), accepted after reconfiguration ({}).", moveScope.getMoveIndex(),
                     moveScope.getScore(), moveScope.getMove());
             return true;
         }
@@ -89,11 +85,21 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
         return false;
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
         super.stepEnded(stepScope);
+        Score stepScore = stepScope.getScore();
+        var lateScoreCmp = stepScore.compareTo(previousScores[lateScoreIndex]);
+        var lastStepScore = stepScope.getPhaseScope().getLastCompletedStepScope().getScore();
+        var lastStepScoreCmp = stepScore.compareTo(lastStepScore);
         previousScores[lateScoreIndex] = stepScope.getScore();
         lateScoreIndex = (lateScoreIndex + 1) % lateAcceptanceSize;
+        if (lateScoreCmp > 0 || lastStepScoreCmp > 0) {
+            // The terminator is only updated when a superior solution is found.
+            // Otherwise, we continue incrementing the moves until the reconfiguration is triggered
+            moveCountTermination.stepEnded(stepScope);
+        }
     }
 
     @Override
@@ -110,7 +116,7 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
     }
 
     @Override
-    public void applyReconfiguration() {
+    public void applyReconfiguration(LocalSearchStepScope<Solution_> stepScope) {
         var idx = lateScoreIndex;
         if (previousScores[idx] == null) {
             // The method still has null values from the last reconfiguration,

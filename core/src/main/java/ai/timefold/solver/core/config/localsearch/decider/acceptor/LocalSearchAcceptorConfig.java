@@ -378,6 +378,8 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
                 inheritedConfig.getStepCountingHillClimbingSize());
         stepCountingHillClimbingType = ConfigUtils.inheritOverwritableProperty(stepCountingHillClimbingType,
                 inheritedConfig.getStepCountingHillClimbingType());
+        reconfigurationConfig = ConfigUtils.inheritOverwritableProperty(reconfigurationConfig,
+                inheritedConfig.getReconfigurationConfig());
         return this;
     }
 
