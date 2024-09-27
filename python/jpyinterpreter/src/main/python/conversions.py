@@ -307,8 +307,8 @@ def convert_object_to_java_python_like_object(value, instance_map=None):
 
         if isinstance(out, AbstractPythonLikeObject):
             try:
-                for (key, value) in object.__getattribute__(value, '__dict__').items():
-                    out.setAttribute(key, convert_to_java_python_like_object(value, instance_map))
+                for (attribute_name, attribute_value) in object.__getattribute__(value, '__dict__').items():
+                    out.setAttribute(attribute_name, convert_to_java_python_like_object(attribute_value, instance_map))
             except AttributeError:
                 pass
 
