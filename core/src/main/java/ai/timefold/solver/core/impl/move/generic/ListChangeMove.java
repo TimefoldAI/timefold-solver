@@ -30,10 +30,10 @@ public record ListChangeMove<Solution_, Entity_, Value_>(ListVariableMetaModel<S
         var destinationEntity = ctx.destination().entity();
         var destinationIndex = ctx.destination().index();
         if (sourceEntity == destinationEntity) {
-            mutableSolutionState.moveValue(variableMetaModel, sourceEntity, sourceIndex, destinationIndex);
+            mutableSolutionState.moveValueInList(variableMetaModel, sourceEntity, sourceIndex, destinationIndex);
         } else {
-            mutableSolutionState.moveValue(variableMetaModel, sourceEntity, sourceIndex, destinationEntity,
-                    destinationIndex + 1);
+            mutableSolutionState.moveValueBetweenLists(variableMetaModel, sourceEntity, sourceIndex, destinationEntity,
+                    destinationIndex);
         }
     }
 

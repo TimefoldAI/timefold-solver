@@ -27,6 +27,21 @@ public interface EntityMetaModel<Solution_, Entity_> {
                 "The variableName (" + variableName + ") does not exist in the variables (" + variables() + ").");
     }
 
+    @SuppressWarnings("unchecked")
+    default <Value_> BasicVariableMetaModel<Solution_, Entity_, Value_> basicVariable(String variableName) {
+        return (BasicVariableMetaModel<Solution_, Entity_, Value_>) variable(variableName);
+    }
+
+    @SuppressWarnings("unchecked")
+    default <Value_> ListVariableMetaModel<Solution_, Entity_, Value_> listVariable(String variableName) {
+        return (ListVariableMetaModel<Solution_, Entity_, Value_>) variable(variableName);
+    }
+
+    @SuppressWarnings("unchecked")
+    default <Value_> ShadowVariableMetaModel<Solution_, Entity_, Value_> shadowVariable(String variableName) {
+        return (ShadowVariableMetaModel<Solution_, Entity_, Value_>) variable(variableName);
+    }
+
     default boolean isGenuine() {
         for (var variableMetaModel : variables()) {
             if (variableMetaModel.isGenuine()) {
