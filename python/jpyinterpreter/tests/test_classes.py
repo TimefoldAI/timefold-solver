@@ -918,6 +918,28 @@ def test_enum_translate_to_class():
     verifier.verify(Color.BLUE, expected_result=False)
 
 
+def test_enum_as_attribute_in_class():
+    from enum import Enum
+    from dataclasses import dataclass
+
+    class Color(Enum):
+        RED = 'RED'
+        GREEN = 'GREEN'
+        BLUE = 'BLUE'
+
+    @dataclass
+    class Order:
+        color: Color
+
+    def is_red(order: Order):
+        return order.color is Color.RED
+
+    verifier = verifier_for(is_red)
+    verifier.verify(Order(Color.RED), expected_result=True)
+    verifier.verify(Order(Color.GREEN), expected_result=False)
+    verifier.verify(Order(Color.BLUE), expected_result=False)
+
+
 def test_class_annotations():
     from typing import Annotated
     from java.lang import Deprecated
