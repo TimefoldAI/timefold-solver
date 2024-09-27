@@ -165,6 +165,7 @@ def default_exception_handler(problem_id, error):
         # so we need to raise the unwrapped recorded error to include the traceback
         # in the logs
         logger.exception(f'Solving failed for problem_id ({problem_id}).')
+        raise
 
 
 class SolverJobBuilder(Generic[Solution_, ProblemId_]):

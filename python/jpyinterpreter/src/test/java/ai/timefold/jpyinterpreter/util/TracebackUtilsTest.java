@@ -4,9 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-public class TracebackUtilsTest {
+class TracebackUtilsTest {
     @Test
-    public void getTraceback() {
+    void getTraceback() {
         try {
             throw new RuntimeException("A runtime error has occurred.");
         } catch (RuntimeException e) {
