@@ -76,7 +76,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
             // No need for re-indexing because the index properties didn't change
             // Prefer an update over retract-insert if possible
             indexerRight.forEach(oldIndexProperties,
-                    rightTuple -> innerRightUpdater.accept(leftTuple, rightTuple));
+                    rightTuple -> rightTupleUpdater.accept(leftTuple, rightTuple));
         } else {
             ElementAwareListEntry<LeftTuple_> leftEntry = leftTuple.getStore(inputStoreIndexLeftEntry);
             ElementAwareList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
@@ -92,7 +92,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
         leftTuple.setStore(inputStoreIndexLeftProperties, indexProperties);
         ElementAwareListEntry<LeftTuple_> leftEntry = indexerLeft.put(indexProperties, leftTuple);
         leftTuple.setStore(inputStoreIndexLeftEntry, leftEntry);
-        indexerRight.forEach(indexProperties, rightTuple -> tupleInserter.accept(leftTuple, rightTuple));
+        indexerRight.forEach(indexProperties, rightTuple -> outTupleInserter.accept(leftTuple, rightTuple));
     }
 
     @Override
@@ -134,7 +134,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
             // No need for re-indexing because the index properties didn't change
             // Prefer an update over retract-insert if possible
             indexerLeft.forEach(oldIndexProperties,
-                    leftTuple -> innerLeftUpdater.accept(leftTuple, rightTuple));
+                    leftTuple -> leftTupleUpdater.accept(leftTuple, rightTuple));
         } else {
             ElementAwareListEntry<UniTuple<Right_>> rightEntry = rightTuple.getStore(inputStoreIndexRightEntry);
             ElementAwareList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
@@ -150,7 +150,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
         rightTuple.setStore(inputStoreIndexRightProperties, indexProperties);
         ElementAwareListEntry<UniTuple<Right_>> rightEntry = indexerRight.put(indexProperties, rightTuple);
         rightTuple.setStore(inputStoreIndexRightEntry, rightEntry);
-        indexerLeft.forEach(indexProperties, leftTuple -> tupleInserter.accept(leftTuple, rightTuple));
+        indexerLeft.forEach(indexProperties, leftTuple -> outTupleInserter.accept(leftTuple, rightTuple));
     }
 
     @Override
