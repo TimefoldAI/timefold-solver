@@ -244,11 +244,11 @@ public class AcceptorFactory<Solution_> {
             acceptor.setLateAcceptanceSize(Objects.requireNonNullElse(acceptorConfig.getLateAcceptanceSize(), 400));
             var moveCountLimitPercentage = acceptorConfig.getReconfigurationConfig() != null
                     ? acceptorConfig.getReconfigurationConfig().getMoveCountLimitPercentage()
-                    : 100.0;
+                    : 0.0;
             acceptor.setMoveCountLimitPercentage(moveCountLimitPercentage);
             var reconfigurationRatio = acceptorConfig.getReconfigurationConfig() != null
                     ? acceptorConfig.getReconfigurationConfig().getLateAcceptanceReconfigurationSize()
-                    : 10;
+                    : 0;
             acceptor.setLateAcceptanceReconfigurationSize(reconfigurationRatio);
             return Optional.of(acceptor);
         }

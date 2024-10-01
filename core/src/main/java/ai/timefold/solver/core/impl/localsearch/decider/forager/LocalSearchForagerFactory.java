@@ -21,7 +21,7 @@ public class LocalSearchForagerFactory<Solution_> {
     public LocalSearchForager<Solution_> buildForager() {
         var pickEarlyType = Objects.requireNonNullElse(foragerConfig.getPickEarlyType(), LocalSearchPickEarlyType.NEVER);
         var acceptedCountLimit = Objects.requireNonNullElse(foragerConfig.getAcceptedCountLimit(), Integer.MAX_VALUE);
-        var selectedCountLimitRatio = Objects.requireNonNullElse(foragerConfig.getSelectedCountLimitRatio(), 100.0);
+        var selectedCountLimitRatio = Objects.requireNonNullElse(foragerConfig.getSelectedCountLimitRatio(), 0.0);
         var finalistPodiumType =
                 Objects.requireNonNullElse(foragerConfig.getFinalistPodiumType(), FinalistPodiumType.HIGHEST_SCORE);
         // Breaking ties randomly leads to better results statistically
