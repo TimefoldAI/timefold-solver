@@ -247,9 +247,9 @@ public class AcceptorFactory<Solution_> {
                     : 100.0;
             acceptor.setMoveCountLimitPercentage(moveCountLimitPercentage);
             var reconfigurationRatio = acceptorConfig.getReconfigurationConfig() != null
-                    ? acceptorConfig.getReconfigurationConfig().getReconfigurationRatio()
-                    : 10.0;
-            acceptor.setMoveReconfigurationRatio(reconfigurationRatio);
+                    ? acceptorConfig.getReconfigurationConfig().getLateAcceptanceReconfigurationSize()
+                    : 10;
+            acceptor.setLateAcceptanceReconfigurationSize(reconfigurationRatio);
             return Optional.of(acceptor);
         }
         return Optional.empty();

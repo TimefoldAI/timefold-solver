@@ -49,8 +49,8 @@ public final class MoveCountTermination<Solution_> extends AbstractTermination<S
     }
 
     @Override
-    public void stepStarted(AbstractStepScope<Solution_> stepScope) {
-        super.stepStarted(stepScope);
+    public void stepEnded(AbstractStepScope<Solution_> stepScope) {
+        super.stepEnded(stepScope);
         if (updateMoveCountPerStep) {
             lastMoveCount = stepScope.getPhaseScope().getSolverScope().getMoveEvaluationCount();
         }

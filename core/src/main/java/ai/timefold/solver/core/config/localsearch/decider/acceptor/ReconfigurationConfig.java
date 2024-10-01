@@ -8,12 +8,12 @@ import ai.timefold.solver.core.config.AbstractConfig;
 
 @XmlType(propOrder = {
         "moveCountLimitPercentage",
-        "reconfigurationRatio"
+        "lateAcceptanceReconfigurationSize"
 })
 public class ReconfigurationConfig extends AbstractConfig<ReconfigurationConfig> {
 
     private Double moveCountLimitPercentage = null;
-    private Double reconfigurationRatio = null;
+    private Long lateAcceptanceReconfigurationSize = null;
 
     public Double getMoveCountLimitPercentage() {
         return moveCountLimitPercentage;
@@ -23,12 +23,12 @@ public class ReconfigurationConfig extends AbstractConfig<ReconfigurationConfig>
         this.moveCountLimitPercentage = moveCountLimitPercentage;
     }
 
-    public Double getReconfigurationRatio() {
-        return reconfigurationRatio;
+    public Long getLateAcceptanceReconfigurationSize() {
+        return lateAcceptanceReconfigurationSize;
     }
 
-    public void setReconfigurationRatio(Double reconfigurationRatio) {
-        this.reconfigurationRatio = reconfigurationRatio;
+    public void setLateAcceptanceReconfigurationSize(Long lateAcceptanceReconfigurationSize) {
+        this.lateAcceptanceReconfigurationSize = lateAcceptanceReconfigurationSize;
     }
 
     // ************************************************************************
@@ -40,15 +40,15 @@ public class ReconfigurationConfig extends AbstractConfig<ReconfigurationConfig>
         return this;
     }
 
-    public ReconfigurationConfig withReconfigurationRatio(Double reconfigurationRatio) {
-        this.reconfigurationRatio = reconfigurationRatio;
+    public ReconfigurationConfig withReconfigurationRatio(Long reconfigurationRatio) {
+        this.lateAcceptanceReconfigurationSize = reconfigurationRatio;
         return this;
     }
 
     @Override
     public ReconfigurationConfig inherit(ReconfigurationConfig inheritedConfig) {
         moveCountLimitPercentage = inheritedConfig.getMoveCountLimitPercentage();
-        reconfigurationRatio = inheritedConfig.getReconfigurationRatio();
+        lateAcceptanceReconfigurationSize = inheritedConfig.getLateAcceptanceReconfigurationSize();
         return this;
     }
 

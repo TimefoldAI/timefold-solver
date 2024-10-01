@@ -2447,7 +2447,7 @@
           <xs:element minOccurs="0" name="moveCountLimitPercentage" type="xs:double"/>
                               
           
-          <xs:element minOccurs="0" name="reconfigurationRatio" type="xs:double"/>
+          <xs:element minOccurs="0" name="lateAcceptanceReconfigurationSize" type="xs:long"/>
                             
         
         </xs:sequence>
