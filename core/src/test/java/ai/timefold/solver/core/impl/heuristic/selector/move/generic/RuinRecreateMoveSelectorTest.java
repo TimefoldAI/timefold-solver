@@ -37,12 +37,12 @@ class RuinRecreateMoveSelectorTest {
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
                 .withConstraintProviderClass(TestdataConstraintProvider.class)
+                .withTerminationConfig(new TerminationConfig()
+                        .withUnimprovedMillisecondsSpentLimit(1000L))
                 .withPhaseList(List.of(
                         new ConstructionHeuristicPhaseConfig(),
                         new LocalSearchPhaseConfig()
-                                .withMoveSelectorConfig(new RuinRecreateMoveSelectorConfig())
-                                .withTerminationConfig(new TerminationConfig()
-                                        .withStepCountLimit(100))));
+                                .withMoveSelectorConfig(new RuinRecreateMoveSelectorConfig())));
         var problem = TestdataSolution.generateSolution(5, 30);
         var solver = SolverFactory.create(solverConfig).buildSolver();
         assertDoesNotThrow(() -> solver.solve(problem));
@@ -58,12 +58,12 @@ class RuinRecreateMoveSelectorTest {
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
                 .withConstraintProviderClass(TestdataConstraintProvider.class)
+                .withTerminationConfig(new TerminationConfig()
+                        .withUnimprovedMillisecondsSpentLimit(1000L))
                 .withPhaseList(List.of(
                         new ConstructionHeuristicPhaseConfig(),
                         new LocalSearchPhaseConfig()
-                                .withMoveSelectorConfig(new RuinRecreateMoveSelectorConfig())
-                                .withTerminationConfig(new TerminationConfig()
-                                        .withStepCountLimit(100))));
+                                .withMoveSelectorConfig(new RuinRecreateMoveSelectorConfig())));
         var problem = TestdataSolution.generateSolution(5, 30);
         var solver = SolverFactory.create(solverConfig).buildSolver();
         solver.addEventListener(event -> meterRegistry.publish(solver));

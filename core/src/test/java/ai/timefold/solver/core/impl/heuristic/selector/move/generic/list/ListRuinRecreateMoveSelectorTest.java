@@ -62,12 +62,12 @@ class ListRuinRecreateMoveSelectorTest {
                 .withSolutionClass(TestdataListSolution.class)
                 .withEntityClasses(TestdataListEntity.class, TestdataListValue.class)
                 .withConstraintProviderClass(TestdataListConstraintProvider.class)
+                .withTerminationConfig(new TerminationConfig()
+                        .withUnimprovedMillisecondsSpentLimit(1000L))
                 .withPhaseList(List.of(
                         new ConstructionHeuristicPhaseConfig(),
                         new LocalSearchPhaseConfig()
-                                .withMoveSelectorConfig(new ListRuinRecreateMoveSelectorConfig())
-                                .withTerminationConfig(new TerminationConfig()
-                                        .withStepCountLimit(100))));
+                                .withMoveSelectorConfig(new ListRuinRecreateMoveSelectorConfig())));
         var problem = TestdataListSolution.generateUninitializedSolution(10, 3);
         var solver = SolverFactory.create(solverConfig).buildSolver();
         assertDoesNotThrow(() -> solver.solve(problem));
@@ -83,12 +83,12 @@ class ListRuinRecreateMoveSelectorTest {
                 .withSolutionClass(TestdataListSolution.class)
                 .withEntityClasses(TestdataListEntity.class, TestdataListValue.class)
                 .withConstraintProviderClass(TestdataListConstraintProvider.class)
+                .withTerminationConfig(new TerminationConfig()
+                        .withUnimprovedMillisecondsSpentLimit(1000L))
                 .withPhaseList(List.of(
                         new ConstructionHeuristicPhaseConfig(),
                         new LocalSearchPhaseConfig()
-                                .withMoveSelectorConfig(new ListRuinRecreateMoveSelectorConfig())
-                                .withTerminationConfig(new TerminationConfig()
-                                        .withStepCountLimit(100))));
+                                .withMoveSelectorConfig(new ListRuinRecreateMoveSelectorConfig())));
         var problem = TestdataListSolution.generateUninitializedSolution(10, 3);
         var solver = SolverFactory.create(solverConfig).buildSolver();
         solver.addEventListener(event -> meterRegistry.publish(solver));

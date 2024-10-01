@@ -102,10 +102,12 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
         var step = stepScope.getStep();
         step.doMoveOnly(stepScope.getScoreDirector());
         predictWorkingStepScore(stepScope, step);
-        processWorkingSolutionDuringStep(stepScope);
+        if (!isNested()) {
+            processWorkingSolutionDuringStep(stepScope);
+        }
     }
 
-    protected void processWorkingSolutionDuringStep(ConstructionHeuristicStepScope<Solution_> stepScope) {
+    private void processWorkingSolutionDuringStep(ConstructionHeuristicStepScope<Solution_> stepScope) {
         solver.getBestSolutionRecaller().processWorkingSolutionDuringConstructionHeuristicsStep(stepScope);
     }
 
@@ -161,9 +163,9 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
         }
     }
 
-    protected void updateBestSolutionAndFire(ConstructionHeuristicPhaseScope<Solution_> phaseScope) {
-        // Only update the best solution if the CH made any change.
-        if (!phaseScope.getStartingScore().equals(phaseScope.getBestScore())) {
+    private void updateBestSolutionAndFire(ConstructionHeuristicPhaseScope<Solution_> phaseScope) {
+        if (!isNested() && !phaseScope.getStartingScore().equals(phaseScope.getBestScore())) {
+            // Only update the best solution if the CH made any change; nested phases don't update the best solution.
             solver.getBestSolutionRecaller().updateBestSolutionAndFire(phaseScope.getSolverScope());
         }
     }

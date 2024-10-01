@@ -104,21 +104,40 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         phaseScope.startingNow();
         phaseScope.reset();
-        solver.phaseStarted(phaseScope);
+        if (!isNested()) {
+            solver.phaseStarted(phaseScope);
+        }
         phaseTermination.phaseStarted(phaseScope);
         phaseLifecycleSupport.firePhaseStarted(phaseScope);
     }
 
+    /**
+     * Whether this phase is nested inside another phase.
+     * Nested phases, such as ruin and recreate, must not notify the solver of their starting;
+     * otherwise unimproved termination of local search would be reset every time the nested phase starts,
+     * effectively disabling this termination.
+     * Nested phases also do not collect step and phase metrics.
+     *
+     * @return false for nested phases, true for every other phase
+     */
+    protected boolean isNested() {
+        return false;
+    }
+
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
-        solver.phaseEnded(phaseScope);
+        if (!isNested()) {
+            solver.phaseEnded(phaseScope);
+        }
         phaseTermination.phaseEnded(phaseScope);
         phaseLifecycleSupport.firePhaseEnded(phaseScope);
     }
 
     @Override
     public void stepStarted(AbstractStepScope<Solution_> stepScope) {
-        solver.stepStarted(stepScope);
+        if (!isNested()) {
+            solver.stepStarted(stepScope);
+        }
         phaseTermination.stepStarted(stepScope);
         phaseLifecycleSupport.fireStepStarted(stepScope);
     }
@@ -155,13 +174,15 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
 
     @Override
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
-        solver.stepEnded(stepScope);
-        collectMetrics(stepScope);
+        if (!isNested()) {
+            solver.stepEnded(stepScope);
+            collectMetrics(stepScope);
+        }
         phaseTermination.stepEnded(stepScope);
         phaseLifecycleSupport.fireStepEnded(stepScope);
     }
 
-    protected void collectMetrics(AbstractStepScope<Solution_> stepScope) {
+    private static <Solution_> void collectMetrics(AbstractStepScope<Solution_> stepScope) {
         var solverScope = stepScope.getPhaseScope().getSolverScope();
         if (solverScope.isMetricEnabled(SolverMetric.STEP_SCORE) && stepScope.getScore().isSolutionInitialized()) {
             SolverMetric.registerScoreMetrics(SolverMetric.STEP_SCORE,

@@ -11,10 +11,9 @@ public abstract sealed class AbstractTermination<Solution_>
         extends PhaseLifecycleListenerAdapter<Solution_>
         implements Termination<Solution_>
         permits AbstractCompositeTermination, BasicPlumbingTermination, BestScoreFeasibleTermination, BestScoreTermination,
-        ChildThreadPlumbingTermination, PhaseToSolverTerminationBridge, ScoreCalculationCountTermination, StepCountTermination,
-        TimeMillisSpentTermination, UnimprovedStepCountTermination,
-        UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination, UnimprovedTimeMillisSpentTermination,
-        MoveCountTermination {
+        ChildThreadPlumbingTermination, MoveCountTermination, PhaseToSolverTerminationBridge, ScoreCalculationCountTermination,
+        StepCountTermination, TimeMillisSpentTermination, UnimprovedStepCountTermination,
+        UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination, UnimprovedTimeMillisSpentTermination {
 
     protected final transient Logger logger = LoggerFactory.getLogger(getClass());
 
