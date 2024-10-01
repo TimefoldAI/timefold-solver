@@ -68,6 +68,17 @@
           "oldValue": "{\"acceptorTypeList\", \"entityTabuSize\", \"entityTabuRatio\", \"fadingEntityTabuSize\", \"fadingEntityTabuRatio\", \"valueTabuSize\", \"valueTabuRatio\", \"fadingValueTabuSize\", \"fadingValueTabuRatio\", \"moveTabuSize\", \"fadingMoveTabuSize\", \"undoMoveTabuSize\", \"fadingUndoMoveTabuSize\", \"simulatedAnnealingStartingTemperature\", \"lateAcceptanceSize\", \"greatDelugeWaterLevelIncrementScore\", \"greatDelugeWaterLevelIncrementRatio\", \"stepCountingHillClimbingSize\", \"stepCountingHillClimbingType\"}",
           "newValue": "{\"acceptorTypeList\", \"entityTabuSize\", \"entityTabuRatio\", \"fadingEntityTabuSize\", \"fadingEntityTabuRatio\", \"valueTabuSize\", \"valueTabuRatio\", \"fadingValueTabuSize\", \"fadingValueTabuRatio\", \"moveTabuSize\", \"fadingMoveTabuSize\", \"undoMoveTabuSize\", \"fadingUndoMoveTabuSize\", \"simulatedAnnealingStartingTemperature\", \"lateAcceptanceSize\", \"greatDelugeWaterLevelIncrementScore\", \"greatDelugeWaterLevelIncrementRatio\", \"stepCountingHillClimbingSize\", \"stepCountingHillClimbingType\", \"reconfigurationConfig\"}",
           "justification": "Add a temporally acceptor configuration"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchForagerConfig",
+          "new": "class ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchForagerConfig",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"pickEarlyType\", \"acceptedCountLimit\", \"finalistPodiumType\", \"breakTieRandomly\"}",
+          "newValue": "{\"pickEarlyType\", \"acceptedCountLimit\", \"selectedCountLimitRatio\", \"finalistPodiumType\", \"breakTieRandomly\"}",
+          "justification": "Add a temporally forager configuration"
         }
       ]
     }

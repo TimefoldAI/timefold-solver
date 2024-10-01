@@ -29,7 +29,7 @@ class AcceptedLocalSearchForagerTest {
     void pickMoveMaxScoreAccepted() {
         // Setup
         LocalSearchForager<TestdataSolution> forager = new AcceptedLocalSearchForager<>(new HighestScoreFinalistPodium<>(),
-                LocalSearchPickEarlyType.NEVER, Integer.MAX_VALUE, true);
+                LocalSearchPickEarlyType.NEVER, Integer.MAX_VALUE, 0.0, true);
         LocalSearchPhaseScope<TestdataSolution> phaseScope = createPhaseScope();
         forager.phaseStarted(phaseScope);
         LocalSearchStepScope<TestdataSolution> stepScope = new LocalSearchStepScope<>(phaseScope);
@@ -42,15 +42,15 @@ class AcceptedLocalSearchForagerTest {
         LocalSearchMoveScope<TestdataSolution> e = createMoveScope(stepScope, SimpleScore.of(-300), true);
         // Do stuff
         forager.addMove(a);
-        assertThat(forager.isQuitEarly()).isFalse();
+        assertThat(forager.isQuitEarly(stepScope)).isFalse();
         forager.addMove(b);
-        assertThat(forager.isQuitEarly()).isFalse();
+        assertThat(forager.isQuitEarly(stepScope)).isFalse();
         forager.addMove(c);
-        assertThat(forager.isQuitEarly()).isFalse();
+        assertThat(forager.isQuitEarly(stepScope)).isFalse();
         forager.addMove(d);
-        assertThat(forager.isQuitEarly()).isFalse();
+        assertThat(forager.isQuitEarly(stepScope)).isFalse();
         forager.addMove(e);
-        assertThat(forager.isQuitEarly()).isFalse();
+        assertThat(forager.isQuitEarly(stepScope)).isFalse();
         LocalSearchMoveScope<TestdataSolution> pickedScope = forager.pickMove(stepScope);
         // Post conditions
         assertThat(pickedScope).isSameAs(d);
@@ -61,7 +61,7 @@ class AcceptedLocalSearchForagerTest {
     void pickMoveMaxScoreUnaccepted() {
         // Setup
         LocalSearchForager<TestdataSolution> forager = new AcceptedLocalSearchForager<>(new HighestScoreFinalistPodium<>(),
-                LocalSearchPickEarlyType.NEVER, Integer.MAX_VALUE, true);
+                LocalSearchPickEarlyType.NEVER, Integer.MAX_VALUE, 0.0, true);
         LocalSearchPhaseScope<TestdataSolution> phaseScope = createPhaseScope();
         forager.phaseStarted(phaseScope);
         LocalSearchStepScope<TestdataSolution> stepScope = new LocalSearchStepScope<>(phaseScope);
@@ -74,15 +74,15 @@ class AcceptedLocalSearchForagerTest {
         LocalSearchMoveScope<TestdataSolution> e = createMoveScope(stepScope, SimpleScore.of(-300), false);
         // Do stuff
         forager.addMove(a);
-        assertThat(forager.isQuitEarly()).isFalse();
+        assertThat(forager.isQuitEarly(stepScope)).isFalse();
         forager.addMove(b);
-        assertThat(forager.isQuitEarly()).isFalse();
+        assertThat(forager.isQuitEarly(stepScope)).isFalse();
         forager.addMove(c);
-        assertThat(forager.isQuitEarly()).isFalse();
+        assertThat(forager.isQuitEarly(stepScope)).isFalse();
         forager.addMove(d);
-        assertThat(forager.isQuitEarly()).isFalse();
+        assertThat(forager.isQuitEarly(stepScope)).isFalse();
         forager.addMove(e);
-        assertThat(forager.isQuitEarly()).isFalse();
+        assertThat(forager.isQuitEarly(stepScope)).isFalse();
         LocalSearchMoveScope<TestdataSolution> pickedScope = forager.pickMove(stepScope);
         // Post conditions
         assertThat(pickedScope).isSameAs(b);
@@ -93,7 +93,7 @@ class AcceptedLocalSearchForagerTest {
     void pickMoveFirstBestScoreImproving() {
         // Setup
         LocalSearchForager<TestdataSolution> forager = new AcceptedLocalSearchForager<>(new HighestScoreFinalistPodium<>(),
-                LocalSearchPickEarlyType.FIRST_BEST_SCORE_IMPROVING, Integer.MAX_VALUE, true);
+                LocalSearchPickEarlyType.FIRST_BEST_SCORE_IMPROVING, Integer.MAX_VALUE, 0.0, true);
         LocalSearchPhaseScope<TestdataSolution> phaseScope = createPhaseScope();
         forager.phaseStarted(phaseScope);
         LocalSearchStepScope<TestdataSolution> stepScope = new LocalSearchStepScope<>(phaseScope);
@@ -105,13 +105,13 @@ class AcceptedLocalSearchForagerTest {
         LocalSearchMoveScope<TestdataSolution> d = createMoveScope(stepScope, SimpleScore.of(-1), true);
         // Do stuff
         forager.addMove(a);
-        assertThat(forager.isQuitEarly()).isFalse();
+        assertThat(forager.isQuitEarly(stepScope)).isFalse();
         forager.addMove(b);
-        assertThat(forager.isQuitEarly()).isFalse();
+        assertThat(forager.isQuitEarly(stepScope)).isFalse();
         forager.addMove(c);
-        assertThat(forager.isQuitEarly()).isFalse();
+        assertThat(forager.isQuitEarly(stepScope)).isFalse();
         forager.addMove(d);
-        assertThat(forager.isQuitEarly()).isTrue();
+        assertThat(forager.isQuitEarly(stepScope)).isTrue();
         // Post conditions
         LocalSearchMoveScope<TestdataSolution> pickedScope = forager.pickMove(stepScope);
         assertThat(pickedScope).isSameAs(d);
@@ -122,7 +122,7 @@ class AcceptedLocalSearchForagerTest {
     void pickMoveFirstLastStepScoreImproving() {
         // Setup
         LocalSearchForager<TestdataSolution> forager = new AcceptedLocalSearchForager<>(new HighestScoreFinalistPodium<>(),
-                LocalSearchPickEarlyType.FIRST_LAST_STEP_SCORE_IMPROVING, Integer.MAX_VALUE, true);
+                LocalSearchPickEarlyType.FIRST_LAST_STEP_SCORE_IMPROVING, Integer.MAX_VALUE, 0.0, true);
         LocalSearchPhaseScope<TestdataSolution> phaseScope = createPhaseScope();
         forager.phaseStarted(phaseScope);
         LocalSearchStepScope<TestdataSolution> stepScope = new LocalSearchStepScope<>(phaseScope);
@@ -134,13 +134,13 @@ class AcceptedLocalSearchForagerTest {
         LocalSearchMoveScope<TestdataSolution> d = createMoveScope(stepScope, SimpleScore.of(-20), true);
         // Do stuff
         forager.addMove(a);
-        assertThat(forager.isQuitEarly()).isFalse();
+        assertThat(forager.isQuitEarly(stepScope)).isFalse();
         forager.addMove(b);
-        assertThat(forager.isQuitEarly()).isFalse();
+        assertThat(forager.isQuitEarly(stepScope)).isFalse();
         forager.addMove(c);
-        assertThat(forager.isQuitEarly()).isFalse();
+        assertThat(forager.isQuitEarly(stepScope)).isFalse();
         forager.addMove(d);
-        assertThat(forager.isQuitEarly()).isTrue();
+        assertThat(forager.isQuitEarly(stepScope)).isTrue();
         // Post conditions
         LocalSearchMoveScope<TestdataSolution> pickedScope = forager.pickMove(stepScope);
         assertThat(pickedScope).isSameAs(d);
@@ -151,7 +151,7 @@ class AcceptedLocalSearchForagerTest {
     void pickMoveAcceptedBreakTieRandomly() {
         // Setup
         LocalSearchForager<TestdataSolution> forager = new AcceptedLocalSearchForager<>(new HighestScoreFinalistPodium<>(),
-                LocalSearchPickEarlyType.NEVER, 4, true);
+                LocalSearchPickEarlyType.NEVER, 4, 0.0, true);
         LocalSearchPhaseScope<TestdataSolution> phaseScope = createPhaseScope();
         forager.phaseStarted(phaseScope);
         LocalSearchStepScope<TestdataSolution> stepScope = new LocalSearchStepScope<>(phaseScope);
@@ -164,15 +164,15 @@ class AcceptedLocalSearchForagerTest {
         LocalSearchMoveScope<TestdataSolution> e = createMoveScope(stepScope, SimpleScore.of(-1), true);
         // Do stuff
         forager.addMove(a);
-        assertThat(forager.isQuitEarly()).isFalse();
+        assertThat(forager.isQuitEarly(stepScope)).isFalse();
         forager.addMove(b);
-        assertThat(forager.isQuitEarly()).isFalse();
+        assertThat(forager.isQuitEarly(stepScope)).isFalse();
         forager.addMove(c);
-        assertThat(forager.isQuitEarly()).isFalse();
+        assertThat(forager.isQuitEarly(stepScope)).isFalse();
         forager.addMove(d);
-        assertThat(forager.isQuitEarly()).isFalse();
+        assertThat(forager.isQuitEarly(stepScope)).isFalse();
         forager.addMove(e);
-        assertThat(forager.isQuitEarly()).isTrue();
+        assertThat(forager.isQuitEarly(stepScope)).isTrue();
         // Post conditions
         LocalSearchMoveScope<TestdataSolution> pickedScope = forager.pickMove(stepScope);
         assertThat(pickedScope).isSameAs(c);
@@ -183,7 +183,7 @@ class AcceptedLocalSearchForagerTest {
     void pickMoveAcceptedBreakTieFirst() {
         // Setup
         LocalSearchForager<TestdataSolution> forager = new AcceptedLocalSearchForager<>(new HighestScoreFinalistPodium<>(),
-                LocalSearchPickEarlyType.NEVER, 4, false);
+                LocalSearchPickEarlyType.NEVER, 4, 0.0, false);
         LocalSearchPhaseScope<TestdataSolution> phaseScope = createPhaseScope();
         forager.phaseStarted(phaseScope);
         LocalSearchStepScope<TestdataSolution> stepScope = new LocalSearchStepScope<>(phaseScope);
@@ -196,15 +196,15 @@ class AcceptedLocalSearchForagerTest {
         LocalSearchMoveScope<TestdataSolution> e = createMoveScope(stepScope, SimpleScore.of(-1), true);
         // Do stuff
         forager.addMove(a);
-        assertThat(forager.isQuitEarly()).isFalse();
+        assertThat(forager.isQuitEarly(stepScope)).isFalse();
         forager.addMove(b);
-        assertThat(forager.isQuitEarly()).isFalse();
+        assertThat(forager.isQuitEarly(stepScope)).isFalse();
         forager.addMove(c);
-        assertThat(forager.isQuitEarly()).isFalse();
+        assertThat(forager.isQuitEarly(stepScope)).isFalse();
         forager.addMove(d);
-        assertThat(forager.isQuitEarly()).isFalse();
+        assertThat(forager.isQuitEarly(stepScope)).isFalse();
         forager.addMove(e);
-        assertThat(forager.isQuitEarly()).isTrue();
+        assertThat(forager.isQuitEarly(stepScope)).isTrue();
         // Post conditions
         LocalSearchMoveScope<TestdataSolution> pickedScope = forager.pickMove(stepScope);
         assertThat(pickedScope).isSameAs(b);

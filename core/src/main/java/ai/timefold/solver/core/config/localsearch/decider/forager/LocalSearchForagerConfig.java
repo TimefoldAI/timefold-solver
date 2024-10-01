@@ -10,13 +10,15 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 @XmlType(propOrder = {
         "pickEarlyType",
         "acceptedCountLimit",
+        "selectedCountLimitRatio",
         "finalistPodiumType",
-        "breakTieRandomly"
+        "breakTieRandomly",
 })
 public class LocalSearchForagerConfig extends AbstractConfig<LocalSearchForagerConfig> {
 
     protected LocalSearchPickEarlyType pickEarlyType = null;
     protected Integer acceptedCountLimit = null;
+    protected Double selectedCountLimitRatio = null;
     protected FinalistPodiumType finalistPodiumType = null;
     protected Boolean breakTieRandomly = null;
 
@@ -52,6 +54,14 @@ public class LocalSearchForagerConfig extends AbstractConfig<LocalSearchForagerC
         this.breakTieRandomly = breakTieRandomly;
     }
 
+    public Double getSelectedCountLimitRatio() {
+        return selectedCountLimitRatio;
+    }
+
+    public void setSelectedCountLimitRatio(Double selectedCountLimitRatio) {
+        this.selectedCountLimitRatio = selectedCountLimitRatio;
+    }
+
     // ************************************************************************
     // With methods
     // ************************************************************************
@@ -76,6 +86,11 @@ public class LocalSearchForagerConfig extends AbstractConfig<LocalSearchForagerC
         return this;
     }
 
+    public LocalSearchForagerConfig withSelectedCountLimitRatio(Double selectedCountLimitRatio) {
+        this.selectedCountLimitRatio = selectedCountLimitRatio;
+        return this;
+    }
+
     @Override
     public LocalSearchForagerConfig inherit(LocalSearchForagerConfig inheritedConfig) {
         pickEarlyType = ConfigUtils.inheritOverwritableProperty(pickEarlyType,
@@ -86,6 +101,8 @@ public class LocalSearchForagerConfig extends AbstractConfig<LocalSearchForagerC
                 inheritedConfig.getFinalistPodiumType());
         breakTieRandomly = ConfigUtils.inheritOverwritableProperty(breakTieRandomly,
                 inheritedConfig.getBreakTieRandomly());
+        selectedCountLimitRatio = ConfigUtils.inheritOverwritableProperty(selectedCountLimitRatio,
+                inheritedConfig.getSelectedCountLimitRatio());
         return this;
     }
 

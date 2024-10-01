@@ -22,6 +22,8 @@ public class AcceptedLocalSearchForager<Solution_> extends AbstractLocalSearchFo
     protected final FinalistPodium<Solution_> finalistPodium;
     protected final LocalSearchPickEarlyType pickEarlyType;
     protected final int acceptedCountLimit;
+    protected long selectedCountLimit;
+    protected final double selectedCountLimitRatio;
     protected final boolean breakTieRandomly;
 
     protected long selectedMoveCount;
@@ -29,10 +31,12 @@ public class AcceptedLocalSearchForager<Solution_> extends AbstractLocalSearchFo
     protected LocalSearchMoveScope<Solution_> earlyPickedMoveScope;
 
     public AcceptedLocalSearchForager(FinalistPodium<Solution_> finalistPodium,
-            LocalSearchPickEarlyType pickEarlyType, int acceptedCountLimit, boolean breakTieRandomly) {
+            LocalSearchPickEarlyType pickEarlyType, int acceptedCountLimit, double selectedCountLimitRatio,
+            boolean breakTieRandomly) {
         this.finalistPodium = finalistPodium;
         this.pickEarlyType = pickEarlyType;
         this.acceptedCountLimit = acceptedCountLimit;
+        this.selectedCountLimitRatio = selectedCountLimitRatio;
         if (acceptedCountLimit < 1) {
             throw new IllegalArgumentException("The acceptedCountLimit (" + acceptedCountLimit
                     + ") cannot be negative or zero.");
@@ -54,6 +58,7 @@ public class AcceptedLocalSearchForager<Solution_> extends AbstractLocalSearchFo
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
         finalistPodium.phaseStarted(phaseScope);
+        selectedCountLimit = (long) (phaseScope.getMoveSelectorSize() * selectedCountLimitRatio / 100);
     }
 
     @Override
@@ -105,8 +110,14 @@ public class AcceptedLocalSearchForager<Solution_> extends AbstractLocalSearchFo
     }
 
     @Override
-    public boolean isQuitEarly() {
-        return earlyPickedMoveScope != null || acceptedMoveCount >= acceptedCountLimit;
+    public boolean isQuitEarly(LocalSearchStepScope<Solution_> stepScope) {
+        var countLimitReached = selectedCountLimit > 0 && selectedMoveCount >= selectedCountLimit;
+        if (countLimitReached) {
+            logger.info("Quitting early because the selected move count reached the limit ({})", selectedCountLimit);
+        }
+        return earlyPickedMoveScope != null
+                || acceptedMoveCount >= acceptedCountLimit
+                || countLimitReached;
     }
 
     @Override
