@@ -19,7 +19,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         acceptor.setLateAcceptanceSize(3);
         acceptor.setHillClimbingEnabled(false);
         acceptor.setMoveCountLimitPercentage(1.0);
-        acceptor.setMoveReconfigurationRatio(1.0);
+        acceptor.setLateAcceptanceReconfigurationSize(1L);
 
         var solverScope = new SolverScope<>();
         solverScope.setBestScore(SimpleScore.of(-1000));
@@ -134,7 +134,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         acceptor.setLateAcceptanceSize(2);
         acceptor.setHillClimbingEnabled(true);
         acceptor.setMoveCountLimitPercentage(1.0);
-        acceptor.setMoveReconfigurationRatio(1.0);
+        acceptor.setLateAcceptanceReconfigurationSize(1L);
 
         var solverScope = new SolverScope<>();
         solverScope.setBestScore(SimpleScore.of(-1000));
@@ -260,10 +260,10 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
     @Test
     void applyReconfiguration() {
         var acceptor = new LateAcceptanceAcceptor<>();
-        acceptor.setLateAcceptanceSize(2);
+        acceptor.setLateAcceptanceSize(3);
         acceptor.setHillClimbingEnabled(true);
         acceptor.setMoveCountLimitPercentage(20.0);
-        acceptor.setMoveReconfigurationRatio(20.0);
+        acceptor.setLateAcceptanceReconfigurationSize(20L);
 
         var solverScope = new SolverScope<>();
         solverScope.setBestScore(SimpleScore.of(-1000));
@@ -280,7 +280,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         assertThat(acceptor.isAccepted(moveScope0)).isFalse();
         assertThat(acceptor.needReconfiguration(stepScope0)).isFalse();
 
-        // Reconfiguration
+        // Test reconfiguration
         solverScope.addMoveEvaluationCount(1);
         assertThat(acceptor.needReconfiguration(stepScope0)).isFalse();
         solverScope.addMoveEvaluationCount(1);
@@ -288,16 +288,55 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         assertThat(acceptor.isAccepted(moveScope0)).isFalse();
 
         // Apply reconfiguration
+        // One iteration
+        acceptor.phaseStarted(phaseScope);
         stepScope0.setScore(SimpleScore.of(-3000));
         var moveScope1 = buildMoveScope(stepScope0, -3000);
         acceptor.applyReconfiguration(stepScope0);
-        assertThat(acceptor.isAccepted(moveScope1)).isTrue();
         acceptor.stepEnded(stepScope0);
         assertThat(acceptor.isAccepted(moveScope1)).isTrue();
         acceptor.stepEnded(stepScope0);
+        assertThat(acceptor.isAccepted(moveScope1)).isFalse();
+        acceptor.stepEnded(stepScope0);
+
+        // Two iterations
+        acceptor.phaseStarted(phaseScope);
         var moveScope2 = buildMoveScope(stepScope0, -4000);
-        acceptor.stepStarted(stepScope0);
-        assertThat(acceptor.needReconfiguration(stepScope0)).isFalse();
+        acceptor.applyReconfiguration(stepScope0);
+        acceptor.stepEnded(stepScope0);
+        assertThat(acceptor.isAccepted(moveScope2)).isTrue();
+        acceptor.stepEnded(stepScope0);
         assertThat(acceptor.isAccepted(moveScope2)).isFalse();
+        acceptor.stepEnded(stepScope0);
+        acceptor.applyReconfiguration(stepScope0);
+        acceptor.stepEnded(stepScope0);
+        assertThat(acceptor.isAccepted(moveScope2)).isTrue();
+        acceptor.stepEnded(stepScope0);
+        assertThat(acceptor.isAccepted(moveScope2)).isTrue();
+        acceptor.stepEnded(stepScope0);
+        assertThat(acceptor.isAccepted(moveScope2)).isFalse();
+        acceptor.stepEnded(stepScope0);
+
+        // Reset
+        acceptor.phaseStarted(phaseScope);
+        var moveScope3 = buildMoveScope(stepScope0, -4000);
+        acceptor.applyReconfiguration(stepScope0);
+        acceptor.stepEnded(stepScope0);
+        assertThat(acceptor.isAccepted(moveScope3)).isTrue();
+        acceptor.stepEnded(stepScope0);
+        assertThat(acceptor.isAccepted(moveScope3)).isFalse();
+        acceptor.stepEnded(stepScope0);
+        // This step will reset currentReconfigurationRationCount
+        var moveScope4 = buildMoveScope(stepScope0, -900);
+        stepScope0.setScore(SimpleScore.of(-900));
+        assertThat(acceptor.isAccepted(moveScope4)).isTrue();
+        acceptor.stepEnded(stepScope0);
+        // Rerun the reconfiguration
+        acceptor.applyReconfiguration(stepScope0);
+        acceptor.stepEnded(stepScope0);
+        assertThat(acceptor.isAccepted(moveScope3)).isTrue();
+        acceptor.stepEnded(stepScope0);
+        assertThat(acceptor.isAccepted(moveScope3)).isFalse();
+        acceptor.stepEnded(stepScope0);
     }
 }
