@@ -57,7 +57,7 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends AbstractTuple
             insertLeft(leftTuple);
             return;
         }
-        innerUpdateLeft(leftTuple, rightTupleList::forEach);
+        rightTupleList.forEach(rightTuple -> innerLeftUpdater.accept(leftTuple, rightTuple));
     }
 
     @Override
@@ -95,7 +95,7 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends AbstractTuple
             insertRight(rightTuple);
             return;
         }
-        innerUpdateRight(rightTuple, leftTupleList::forEach);
+        leftTupleList.forEach(leftTuple -> innerRightUpdater.accept(leftTuple, rightTuple));
     }
 
     @Override

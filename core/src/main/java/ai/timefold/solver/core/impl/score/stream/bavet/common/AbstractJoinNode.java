@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.common;
 
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.LeftTupleLifecycle;
@@ -31,6 +31,9 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     private final int outputStoreIndexRightOutEntry;
     private final StaticPropagationQueue<OutTuple_> propagationQueue;
 
+    protected final TupleUpdater<LeftTuple_, Right_> innerLeftUpdater;
+    protected final TupleUpdater<LeftTuple_, Right_> innerRightUpdater;
+
     protected AbstractJoinNode(int inputStoreIndexLeftOutTupleList, int inputStoreIndexRightOutTupleList,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, boolean isFiltering,
             int outputStoreIndexLeftOutEntry, int outputStoreIndexRightOutEntry) {
@@ -40,6 +43,8 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         this.outputStoreIndexLeftOutEntry = outputStoreIndexLeftOutEntry;
         this.outputStoreIndexRightOutEntry = outputStoreIndexRightOutEntry;
         this.propagationQueue = new StaticPropagationQueue<>(nextNodesTupleLifecycle);
+        this.innerLeftUpdater = isFiltering ? getInnerLeftUpdaterWithFiltering() : getInnerLeftUpdaterWithoutFiltering();
+        this.innerRightUpdater = isFiltering ? getInnerRightUpdaterWithFiltering() : getInnerRightUpdaterWithoutFiltering();
     }
 
     protected abstract OutTuple_ createOutTuple(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple);
@@ -67,22 +72,6 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         }
     }
 
-    protected final void innerUpdateLeft(LeftTuple_ leftTuple, Consumer<Consumer<UniTuple<Right_>>> rightTupleConsumer) {
-        // Prefer an update over retract-insert if possible
-        ElementAwareList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
-        // Propagate the update for downstream filters, matchWeighers, ...
-        if (!isFiltering) {
-            for (var outTuple : outTupleListLeft) {
-                updateOutTupleLeft(outTuple, leftTuple);
-            }
-        } else {
-            rightTupleConsumer.accept(rightTuple -> {
-                ElementAwareList<OutTuple_> rightOutList = rightTuple.getStore(inputStoreIndexRightOutTupleList);
-                processOutTupleUpdate(leftTuple, rightTuple, rightOutList, outTupleListLeft, outputStoreIndexRightOutEntry);
-            });
-        }
-    }
-
     private void updateOutTupleLeft(OutTuple_ outTuple, LeftTuple_ leftTuple) {
         setOutTupleLeftFacts(outTuple, leftTuple);
         doUpdateOutTuple(outTuple);
@@ -99,21 +88,39 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         propagationQueue.update(outTuple);
     }
 
-    protected final void innerUpdateRight(UniTuple<Right_> rightTuple, Consumer<Consumer<LeftTuple_>> leftTupleConsumer) {
-        // Prefer an update over retract-insert if possible
-        ElementAwareList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
-        if (!isFiltering) {
-            // Propagate the update for downstream filters, matchWeighers, ...
+    private TupleUpdater<LeftTuple_, Right_> getInnerLeftUpdaterWithoutFiltering() {
+        return (leftTuple, rightTuple) -> {
+            ElementAwareList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
+            for (var outTuple : outTupleListLeft) {
+                updateOutTupleLeft(outTuple, leftTuple);
+            }
+        };
+    }
+
+    private TupleUpdater<LeftTuple_, Right_> getInnerRightUpdaterWithoutFiltering() {
+        return (leftTuple, rightTuple) -> {
+            ElementAwareList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
             for (var outTuple : outTupleListRight) {
                 setOutTupleRightFact(outTuple, rightTuple);
                 doUpdateOutTuple(outTuple);
             }
-        } else {
-            leftTupleConsumer.accept(leftTuple -> {
-                ElementAwareList<OutTuple_> leftOutList = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
-                processOutTupleUpdate(leftTuple, rightTuple, leftOutList, outTupleListRight, outputStoreIndexLeftOutEntry);
-            });
-        }
+        };
+    }
+
+    protected final TupleUpdater<LeftTuple_, Right_> getInnerLeftUpdaterWithFiltering() {
+        return (leftTuple, rightTuple) -> {
+            ElementAwareList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
+            ElementAwareList<OutTuple_> rightOutList = rightTuple.getStore(inputStoreIndexRightOutTupleList);
+            processOutTupleUpdate(leftTuple, rightTuple, rightOutList, outTupleListLeft, outputStoreIndexRightOutEntry);
+        };
+    }
+
+    protected final TupleUpdater<LeftTuple_, Right_> getInnerRightUpdaterWithFiltering() {
+        return (leftTuple, rightTuple) -> {
+            ElementAwareList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
+            ElementAwareList<OutTuple_> leftOutList = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
+            processOutTupleUpdate(leftTuple, rightTuple, leftOutList, outTupleListRight, outputStoreIndexLeftOutEntry);
+        };
     }
 
     private void processOutTupleUpdate(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, ElementAwareList<OutTuple_> outList,
@@ -166,6 +173,11 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     @Override
     public Propagator getPropagator() {
         return propagationQueue;
+    }
+
+    @FunctionalInterface
+    public interface TupleUpdater<LeftTuple_ extends AbstractTuple, Right_> extends BiConsumer<LeftTuple_, UniTuple<Right_>> {
+
     }
 
 }
