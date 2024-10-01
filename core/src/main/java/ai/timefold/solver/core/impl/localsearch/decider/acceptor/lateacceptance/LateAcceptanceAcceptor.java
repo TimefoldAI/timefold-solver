@@ -60,8 +60,10 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
         maxReconfigurationMoveCount = (long) (phaseScope.getMoveSelectorSize() * moveCountLimitPercentage / 100);
         moveCountTermination = new MoveCountTermination<>(maxReconfigurationMoveCount, true);
         moveCountTermination.phaseStarted(phaseScope);
-        logger.info("Late Acceptance reconfiguration move count({}), max inferior elements count({}) ",
-                maxReconfigurationMoveCount, lateAcceptanceReconfigurationSize);
+        if (maxReconfigurationMoveCount > 0) {
+            logger.info("Late Acceptance reconfiguration move count({}), max inferior elements count({}) ",
+                    maxReconfigurationMoveCount, lateAcceptanceReconfigurationSize);
+        }
     }
 
     private void validate() {
@@ -119,8 +121,8 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
     @Override
     public void phaseEnded(LocalSearchPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
+        moveCountTermination.phaseEnded(phaseScope);
         previousScores = null;
-        moveCountTermination = null;
         lateScoreIndex = -1;
         currentReconfigurationRationCount = 1;
         lastAcceptedScore = null;

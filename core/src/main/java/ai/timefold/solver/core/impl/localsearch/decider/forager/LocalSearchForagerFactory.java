@@ -19,14 +19,14 @@ public class LocalSearchForagerFactory<Solution_> {
     }
 
     public LocalSearchForager<Solution_> buildForager() {
-        LocalSearchPickEarlyType pickEarlyType_ =
-                Objects.requireNonNullElse(foragerConfig.getPickEarlyType(), LocalSearchPickEarlyType.NEVER);
-        int acceptedCountLimit_ = Objects.requireNonNullElse(foragerConfig.getAcceptedCountLimit(), Integer.MAX_VALUE);
-        FinalistPodiumType finalistPodiumType_ =
+        var pickEarlyType = Objects.requireNonNullElse(foragerConfig.getPickEarlyType(), LocalSearchPickEarlyType.NEVER);
+        var acceptedCountLimit = Objects.requireNonNullElse(foragerConfig.getAcceptedCountLimit(), Integer.MAX_VALUE);
+        var selectedCountLimitRatio = Objects.requireNonNullElse(foragerConfig.getSelectedCountLimitRatio(), 100.0);
+        var finalistPodiumType =
                 Objects.requireNonNullElse(foragerConfig.getFinalistPodiumType(), FinalistPodiumType.HIGHEST_SCORE);
         // Breaking ties randomly leads to better results statistically
-        boolean breakTieRandomly_ = Objects.requireNonNullElse(foragerConfig.getBreakTieRandomly(), true);
-        return new AcceptedLocalSearchForager<>(finalistPodiumType_.buildFinalistPodium(), pickEarlyType_,
-                acceptedCountLimit_, breakTieRandomly_);
+        var breakTieRandomly = Objects.requireNonNullElse(foragerConfig.getBreakTieRandomly(), true);
+        return new AcceptedLocalSearchForager<>(finalistPodiumType.buildFinalistPodium(), pickEarlyType,
+                acceptedCountLimit, selectedCountLimitRatio, breakTieRandomly);
     }
 }

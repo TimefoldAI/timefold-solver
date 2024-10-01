@@ -2480,6 +2480,9 @@
           <xs:element minOccurs="0" name="acceptedCountLimit" type="xs:int"/>
                               
           
+          <xs:element minOccurs="0" name="selectedCountLimitRatio" type="xs:double"/>
+                              
+          
           <xs:element minOccurs="0" name="finalistPodiumType" type="tns:finalistPodiumType"/>
                               
           
