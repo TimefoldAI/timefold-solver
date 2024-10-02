@@ -9,6 +9,8 @@ import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
+import org.slf4j.event.Level;
+
 /**
  * Default implementation of {@link ConstructionHeuristicPhase}.
  *
@@ -60,21 +62,22 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
             stepStarted(stepScope);
             decider.decideNextStep(stepScope, placement);
             if (stepScope.getStep() == null) {
-                if (phaseTermination.isPhaseTerminated(phaseScope)
-                        && decider.isLoggingEnabled()
-                        && logger.isTraceEnabled()) {
-                    logger.trace("{}    Step index ({}), time spent ({}) terminated without picking a nextStep.",
-                            logIndentation,
-                            stepScope.getStepIndex(),
-                            stepScope.getPhaseScope().calculateSolverTimeMillisSpentUpToNow());
-                } else if (stepScope.getSelectedMoveCount() == 0L
-                        && decider.isLoggingEnabled()
-                        && logger.isWarnEnabled()) {
-                    logger.warn("{}    No doable selected move at step index ({}), time spent ({})."
-                            + " Terminating phase early.",
-                            logIndentation,
-                            stepScope.getStepIndex(),
-                            stepScope.getPhaseScope().calculateSolverTimeMillisSpentUpToNow());
+                if (phaseTermination.isPhaseTerminated(phaseScope)) {
+                    var logLevel = Level.TRACE;
+                    if (decider.isLoggingEnabled() && logger.isEnabledForLevel(logLevel)) {
+                        logger.atLevel(logLevel).log(
+                                "{}    Step index ({}), time spent ({}) terminated without picking a nextStep.",
+                                logIndentation, stepScope.getStepIndex(),
+                                stepScope.getPhaseScope().calculateSolverTimeMillisSpentUpToNow());
+                    }
+                } else if (stepScope.getSelectedMoveCount() == 0L) {
+                    var logLevel = Level.WARN;
+                    if (decider.isLoggingEnabled() && logger.isEnabledForLevel(logLevel)) {
+                        logger.atLevel(logLevel).log(
+                                "{}    No doable selected move at step index ({}), time spent ({}). Terminating phase early.",
+                                logIndentation, stepScope.getStepIndex(),
+                                stepScope.getPhaseScope().calculateSolverTimeMillisSpentUpToNow());
+                    }
                 } else {
                     throw new IllegalStateException("The step index (" + stepScope.getStepIndex()
                             + ") has selected move count (" + stepScope.getSelectedMoveCount()

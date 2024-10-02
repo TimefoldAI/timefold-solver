@@ -87,6 +87,7 @@ public class ConstructionHeuristicDecider<Solution_> {
 
     public void decideNextStep(ConstructionHeuristicStepScope<Solution_> stepScope, Placement<Solution_> placement) {
         var moveIndex = 0;
+        var terminatedPrematurely = false;
         for (var move : placement) {
             var allowedNonDoableMove = move instanceof NoChangeMove<Solution_> || move instanceof ChangeMove<Solution_>;
             if (!allowedNonDoableMove && !move.isMoveDoable(stepScope.getScoreDirector())) {
@@ -111,10 +112,19 @@ public class ConstructionHeuristicDecider<Solution_> {
             }
             stepScope.getPhaseScope().getSolverScope().checkYielding();
             if (termination.isPhaseTerminated(stepScope.getPhaseScope())) {
+                terminatedPrematurely = true;
                 break;
             }
         }
-        pickMove(stepScope);
+        // Only pick a move when CH has finished all moves within the step, or when pick early was enabled.
+        // If CH terminated prematurely, it means a move could have been picked which makes the solution worse,
+        // while there were moves still to be evaluated that could have been better.
+        // This typically happens for list variable with allowsUnassignedValues=true,
+        // where most moves make the score worse and the only move that doesn't is the move which assigns null.
+        // This move typically comes last, and therefore if the phase terminates early, it will not be attempted.
+        if (!terminatedPrematurely) {
+            pickMove(stepScope);
+        }
     }
 
     protected void pickMove(ConstructionHeuristicStepScope<Solution_> stepScope) {
