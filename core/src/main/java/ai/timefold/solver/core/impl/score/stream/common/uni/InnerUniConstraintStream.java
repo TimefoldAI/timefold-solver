@@ -46,7 +46,7 @@ public interface InnerUniConstraintStream<A> extends UniConstraintStream<A> {
     boolean guaranteesDistinct();
 
     @Override
-    default <B> BiConstraintStream<A, B> join(Class<B> otherClass, BiJoiner<A, B>... joiners) {
+    default @NonNull <B> BiConstraintStream<A, B> join(@NonNull Class<B> otherClass, @NonNull BiJoiner<A, B>... joiners) {
         if (getRetrievalSemantics() == STANDARD) {
             return join(getConstraintFactory().forEach(otherClass), joiners);
         } else {
@@ -65,7 +65,7 @@ public interface InnerUniConstraintStream<A> extends UniConstraintStream<A> {
     <B> BiConstraintStream<A, B> join(UniConstraintStream<B> otherStream, BiJoinerComber<A, B> joinerComber);
 
     @Override
-    default <B> UniConstraintStream<A> ifExists(Class<B> otherClass, BiJoiner<A, B>... joiners) {
+    default @NonNull <B> UniConstraintStream<A> ifExists(@NonNull Class<B> otherClass, @NonNull BiJoiner<A, B>... joiners) {
         if (getRetrievalSemantics() == STANDARD) {
             return ifExists(getConstraintFactory().forEach(otherClass), joiners);
         } else {
@@ -75,7 +75,8 @@ public interface InnerUniConstraintStream<A> extends UniConstraintStream<A> {
     }
 
     @Override
-    default <B> UniConstraintStream<A> ifExistsIncludingUnassigned(Class<B> otherClass, BiJoiner<A, B>... joiners) {
+    default @NonNull <B> UniConstraintStream<A> ifExistsIncludingUnassigned(@NonNull Class<B> otherClass,
+            @NonNull BiJoiner<A, B>... joiners) {
         if (getRetrievalSemantics() == STANDARD) {
             return ifExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
         } else {
@@ -84,7 +85,7 @@ public interface InnerUniConstraintStream<A> extends UniConstraintStream<A> {
     }
 
     @Override
-    default <B> UniConstraintStream<A> ifNotExists(Class<B> otherClass, BiJoiner<A, B>... joiners) {
+    default @NonNull <B> UniConstraintStream<A> ifNotExists(@NonNull Class<B> otherClass, @NonNull BiJoiner<A, B>... joiners) {
         if (getRetrievalSemantics() == STANDARD) {
             return ifNotExists(getConstraintFactory().forEach(otherClass), joiners);
         } else {
@@ -94,7 +95,8 @@ public interface InnerUniConstraintStream<A> extends UniConstraintStream<A> {
     }
 
     @Override
-    default <B> UniConstraintStream<A> ifNotExistsIncludingUnassigned(Class<B> otherClass, BiJoiner<A, B>... joiners) {
+    default @NonNull <B> UniConstraintStream<A> ifNotExistsIncludingUnassigned(@NonNull Class<B> otherClass,
+            @NonNull BiJoiner<A, B>... joiners) {
         if (getRetrievalSemantics() == STANDARD) {
             return ifNotExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
         } else {
