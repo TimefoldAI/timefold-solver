@@ -4,6 +4,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * This represents a single constraint in the {@link ConstraintStream} API
@@ -36,7 +37,7 @@ public interface Constraint {
         return "";
     }
 
-    default String getConstraintGroup() {
+    default @NonNull String getConstraintGroup() {
         return DEFAULT_CONSTRAINT_GROUP;
     }
 
@@ -46,7 +47,7 @@ public interface Constraint {
      *
      * @return null if the constraint does not have a weight defined
      */
-    default <Score_ extends Score<Score_>> Score_ getConstraintWeight() {
+    default <Score_ extends Score<Score_>> @Nullable Score_ getConstraintWeight() {
         return null;
     }
 

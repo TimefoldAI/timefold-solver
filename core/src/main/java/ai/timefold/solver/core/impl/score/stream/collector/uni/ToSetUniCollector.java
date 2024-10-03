@@ -6,6 +6,8 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.collector.SetUndoableActionable;
 
+import org.jspecify.annotations.NonNull;
+
 final class ToSetUniCollector<A, Mapped_>
         extends UndoableActionableUniCollector<A, Mapped_, Set<Mapped_>, SetUndoableActionable<Mapped_>> {
     ToSetUniCollector(Function<? super A, ? extends Mapped_> mapper) {
@@ -13,7 +15,7 @@ final class ToSetUniCollector<A, Mapped_>
     }
 
     @Override
-    public Supplier<SetUndoableActionable<Mapped_>> supplier() {
+    public @NonNull Supplier<SetUndoableActionable<Mapped_>> supplier() {
         return SetUndoableActionable::new;
     }
 }

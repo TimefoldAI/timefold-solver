@@ -7,6 +7,9 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 final class AndThenUniCollector<A, ResultContainer_, Intermediate_, Result_>
         implements UniConstraintCollector<A, ResultContainer_, Result_> {
 
@@ -20,17 +23,17 @@ final class AndThenUniCollector<A, ResultContainer_, Intermediate_, Result_>
     }
 
     @Override
-    public Supplier<ResultContainer_> supplier() {
+    public @NonNull Supplier<ResultContainer_> supplier() {
         return delegate.supplier();
     }
 
     @Override
-    public BiFunction<ResultContainer_, A, Runnable> accumulator() {
+    public @NonNull BiFunction<ResultContainer_, A, Runnable> accumulator() {
         return delegate.accumulator();
     }
 
     @Override
-    public Function<ResultContainer_, Result_> finisher() {
+    public @Nullable Function<ResultContainer_, Result_> finisher() {
         var finisher = delegate.finisher();
         return container -> mappingFunction.apply(finisher.apply(container));
     }

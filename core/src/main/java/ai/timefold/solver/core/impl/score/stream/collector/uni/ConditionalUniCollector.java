@@ -9,6 +9,9 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 final class ConditionalUniCollector<A, ResultContainer_, Result_>
         implements UniConstraintCollector<A, ResultContainer_, Result_> {
     private final Predicate<A> predicate;
@@ -22,12 +25,12 @@ final class ConditionalUniCollector<A, ResultContainer_, Result_>
     }
 
     @Override
-    public Supplier<ResultContainer_> supplier() {
+    public @NonNull Supplier<ResultContainer_> supplier() {
         return delegate.supplier();
     }
 
     @Override
-    public BiFunction<ResultContainer_, A, Runnable> accumulator() {
+    public @NonNull BiFunction<ResultContainer_, A, Runnable> accumulator() {
         return (resultContainer, a) -> {
             if (predicate.test(a)) {
                 return innerAccumulator.apply(resultContainer, a);
@@ -38,7 +41,7 @@ final class ConditionalUniCollector<A, ResultContainer_, Result_>
     }
 
     @Override
-    public Function<ResultContainer_, Result_> finisher() {
+    public @Nullable Function<ResultContainer_, Result_> finisher() {
         return delegate.finisher();
     }
 

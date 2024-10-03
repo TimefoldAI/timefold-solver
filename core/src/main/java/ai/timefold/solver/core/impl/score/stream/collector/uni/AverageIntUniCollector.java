@@ -5,13 +5,15 @@ import java.util.function.ToIntFunction;
 
 import ai.timefold.solver.core.impl.score.stream.collector.IntAverageCalculator;
 
+import org.jspecify.annotations.NonNull;
+
 final class AverageIntUniCollector<A> extends IntCalculatorUniCollector<A, Double, IntAverageCalculator> {
     AverageIntUniCollector(ToIntFunction<? super A> mapper) {
         super(mapper);
     }
 
     @Override
-    public Supplier<IntAverageCalculator> supplier() {
+    public @NonNull Supplier<IntAverageCalculator> supplier() {
         return IntAverageCalculator::new;
     }
 }

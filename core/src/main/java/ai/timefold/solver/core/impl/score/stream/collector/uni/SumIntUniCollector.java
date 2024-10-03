@@ -5,13 +5,15 @@ import java.util.function.ToIntFunction;
 
 import ai.timefold.solver.core.impl.score.stream.collector.IntSumCalculator;
 
+import org.jspecify.annotations.NonNull;
+
 final class SumIntUniCollector<A> extends IntCalculatorUniCollector<A, Integer, IntSumCalculator> {
     SumIntUniCollector(ToIntFunction<? super A> mapper) {
         super(mapper);
     }
 
     @Override
-    public Supplier<IntSumCalculator> supplier() {
+    public @NonNull Supplier<IntSumCalculator> supplier() {
         return IntSumCalculator::new;
     }
 }

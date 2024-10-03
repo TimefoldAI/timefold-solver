@@ -161,7 +161,7 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
     }
 
     @Override
-    public String getConstraintGroup() {
+    public @NonNull String getConstraintGroup() {
         return constraintGroup;
     }
 
