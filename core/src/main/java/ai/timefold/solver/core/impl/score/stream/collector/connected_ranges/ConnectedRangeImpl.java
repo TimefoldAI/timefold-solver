@@ -7,6 +7,8 @@ import java.util.function.BiFunction;
 
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRange;
 
+import org.jspecify.annotations.NonNull;
+
 final class ConnectedRangeImpl<Range_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
         implements ConnectedRange<Range_, Point_, Difference_> {
 
@@ -133,17 +135,17 @@ final class ConnectedRangeImpl<Range_, Point_ extends Comparable<Point_>, Differ
     }
 
     @Override
-    public Point_ getStart() {
+    public @NonNull Point_ getStart() {
         return startSplitPoint.splitPoint;
     }
 
     @Override
-    public Point_ getEnd() {
+    public @NonNull Point_ getEnd() {
         return endSplitPoint.splitPoint;
     }
 
     @Override
-    public Difference_ getLength() {
+    public @NonNull Difference_ getLength() {
         return differenceFunction.apply(startSplitPoint.splitPoint, endSplitPoint.splitPoint);
     }
 

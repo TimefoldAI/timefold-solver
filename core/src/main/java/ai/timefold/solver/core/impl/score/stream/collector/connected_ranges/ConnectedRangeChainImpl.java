@@ -10,6 +10,8 @@ import ai.timefold.solver.core.api.score.stream.common.ConnectedRange;
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.api.score.stream.common.RangeGap;
 
+import org.jspecify.annotations.NonNull;
+
 public final class ConnectedRangeChainImpl<Range_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
         implements ConnectedRangeChain<Range_, Point_, Difference_> {
 
@@ -240,12 +242,12 @@ public final class ConnectedRangeChainImpl<Range_, Point_ extends Comparable<Poi
     }
 
     @Override
-    public Iterable<ConnectedRange<Range_, Point_, Difference_>> getConnectedRanges() {
+    public @NonNull Iterable<ConnectedRange<Range_, Point_, Difference_>> getConnectedRanges() {
         return (Iterable) startSplitPointToConnectedRange.values();
     }
 
     @Override
-    public Iterable<RangeGap<Point_, Difference_>> getGaps() {
+    public @NonNull Iterable<RangeGap<Point_, Difference_>> getGaps() {
         return (Iterable) startSplitPointToNextGap.values();
     }
 

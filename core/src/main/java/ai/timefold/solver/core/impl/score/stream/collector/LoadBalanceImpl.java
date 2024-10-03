@@ -11,6 +11,8 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 
+import org.jspecify.annotations.NonNull;
+
 public final class LoadBalanceImpl<Balanced_> implements LoadBalance<Balanced_> {
 
     // If need be, precision can be made configurable on the constraint collector level.
@@ -86,7 +88,7 @@ public final class LoadBalanceImpl<Balanced_> implements LoadBalance<Balanced_> 
     }
 
     @Override
-    public Map<Balanced_, Long> loads() {
+    public @NonNull Map<Balanced_, Long> loads() {
         if (balancedItemCountMap.isEmpty()) {
             return Collections.emptyMap();
         }
@@ -94,7 +96,7 @@ public final class LoadBalanceImpl<Balanced_> implements LoadBalance<Balanced_> 
     }
 
     @Override
-    public BigDecimal unfairness() {
+    public @NonNull BigDecimal unfairness() {
         var totalToBalanceCount = balancedItemCountMap.size();
         return switch (totalToBalanceCount) {
             case 0 -> BigDecimal.ZERO;

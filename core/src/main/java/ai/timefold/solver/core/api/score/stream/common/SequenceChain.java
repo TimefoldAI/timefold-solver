@@ -2,6 +2,9 @@ package ai.timefold.solver.core.api.score.stream.common;
 
 import java.util.Collection;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * Contains info regarding the consecutive sequences and breaks in a collection of points.
  *
@@ -11,13 +14,15 @@ import java.util.Collection;
 public interface SequenceChain<Value_, Difference_ extends Comparable<Difference_>> {
 
     /**
-     * @return never null; the sequences contained in the collection in ascending order.
+     * @return the sequences contained in the collection in ascending order.
      */
+    @NonNull
     Collection<Sequence<Value_, Difference_>> getConsecutiveSequences();
 
     /**
-     * @return never null; the breaks contained in the collection in ascending order.
+     * @return the breaks contained in the collection in ascending order.
      */
+    @NonNull
     Collection<Break<Value_, Difference_>> getBreaks();
 
     /**
@@ -25,6 +30,7 @@ public interface SequenceChain<Value_, Difference_ extends Comparable<Difference
      *
      * @return null if there are no sequences
      */
+    @Nullable
     Sequence<Value_, Difference_> getFirstSequence();
 
     /**
@@ -32,6 +38,7 @@ public interface SequenceChain<Value_, Difference_ extends Comparable<Difference
      *
      * @return null if there are no sequences
      */
+    @Nullable
     Sequence<Value_, Difference_> getLastSequence();
 
     /**
@@ -39,6 +46,7 @@ public interface SequenceChain<Value_, Difference_ extends Comparable<Difference
      *
      * @return null if there are less than two sequences
      */
+    @Nullable
     Break<Value_, Difference_> getFirstBreak();
 
     /**
@@ -46,6 +54,7 @@ public interface SequenceChain<Value_, Difference_ extends Comparable<Difference
      *
      * @return null if there are less than two sequences
      */
+    @Nullable
     Break<Value_, Difference_> getLastBreak();
 
 }
