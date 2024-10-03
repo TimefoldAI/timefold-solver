@@ -6,6 +6,9 @@ import java.util.List;
 import ai.timefold.solver.core.api.score.stream.common.Break;
 import ai.timefold.solver.core.api.score.stream.common.Sequence;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 record DeserializableSequence<Value_, Difference_ extends Comparable<Difference_>>(
@@ -16,12 +19,12 @@ record DeserializableSequence<Value_, Difference_ extends Comparable<Difference_
             Sequence<Value_, Difference_> {
 
     @Override
-    public Value_ getFirstItem() {
+    public @NonNull Value_ getFirstItem() {
         return items.get(0);
     }
 
     @Override
-    public Value_ getLastItem() {
+    public @NonNull Value_ getLastItem() {
         return items.get(items.size() - 1);
     }
 
@@ -36,17 +39,17 @@ record DeserializableSequence<Value_, Difference_ extends Comparable<Difference_
     }
 
     @Override
-    public Break<Value_, Difference_> getPreviousBreak() {
+    public @Nullable Break<Value_, Difference_> getPreviousBreak() {
         return previousBreak();
     }
 
     @Override
-    public Break<Value_, Difference_> getNextBreak() {
+    public @Nullable Break<Value_, Difference_> getNextBreak() {
         return nextBreak();
     }
 
     @Override
-    public Collection<Value_> getItems() {
+    public @NonNull Collection<Value_> getItems() {
         return items();
     }
 
@@ -56,7 +59,7 @@ record DeserializableSequence<Value_, Difference_ extends Comparable<Difference_
     }
 
     @Override
-    public Difference_ getLength() {
+    public @NonNull Difference_ getLength() {
         /*
          * Difference_ is a custom type, hidden deep within the object tree.
          * Allowing for deserialization of this would have significantly complicated the code,

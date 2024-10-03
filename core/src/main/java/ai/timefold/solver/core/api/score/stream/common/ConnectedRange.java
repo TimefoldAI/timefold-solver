@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.api.score.stream.common;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Represents a collection of ranges that are connected, meaning
  * the union of all the ranges results in the range
@@ -13,24 +15,24 @@ public interface ConnectedRange<Range_, Point_ extends Comparable<Point_>, Diffe
         extends Iterable<Range_> {
     /**
      * Get the number of ranges contained by this {@link ConnectedRange}.
-     * 
-     * @return never null, the number of ranges contained by this {@link ConnectedRange}.
+     *
+     * @return the number of ranges contained by this {@link ConnectedRange}.
      */
     int getContainedRangeCount();
 
     /**
      * True if this {@link ConnectedRange} has at least one pair of
      * ranges that overlaps each other, false otherwise.
-     * 
-     * @return never null, true iff there at least one pair of overlapping ranges in this {@link ConnectedRange}.
+     *
+     * @return true iff there at least one pair of overlapping ranges in this {@link ConnectedRange}.
      */
     boolean hasOverlap();
 
     /**
      * Get the minimum number of overlapping ranges for any point contained by
      * this {@link ConnectedRange}.
-     * 
-     * @return never null, the minimum number of overlapping ranges for any point
+     *
+     * @return the minimum number of overlapping ranges for any point
      *         in this {@link ConnectedRange}.
      */
     int getMinimumOverlap();
@@ -38,30 +40,33 @@ public interface ConnectedRange<Range_, Point_ extends Comparable<Point_>, Diffe
     /**
      * Get the maximum number of overlapping ranges for any point contained by
      * this {@link ConnectedRange}.
-     * 
-     * @return never null, the maximum number of overlapping ranges for any point
+     *
+     * @return the maximum number of overlapping ranges for any point
      *         in this {@link ConnectedRange}.
      */
     int getMaximumOverlap();
 
     /**
      * Get the length of this {@link ConnectedRange}.
-     * 
+     *
      * @return The difference between {@link #getEnd()} and {@link #getStart()}.
      */
+    @NonNull
     Difference_ getLength();
 
     /**
      * Gets the first start point represented by this {@link ConnectedRange}.
-     * 
+     *
      * @return never null, the first start point represented by this {@link ConnectedRange}.
      */
+    @NonNull
     Point_ getStart();
 
     /**
      * Gets the last end point represented by this {@link ConnectedRange}.
-     * 
-     * @return never null, the last end point represented by this {@link ConnectedRange}.
+     *
+     * @return the last end point represented by this {@link ConnectedRange}.
      */
+    @NonNull
     Point_ getEnd();
 }

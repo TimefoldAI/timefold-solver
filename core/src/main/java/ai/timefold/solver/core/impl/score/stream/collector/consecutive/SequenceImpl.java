@@ -8,6 +8,9 @@ import java.util.stream.Collectors;
 import ai.timefold.solver.core.api.score.stream.common.Break;
 import ai.timefold.solver.core.api.score.stream.common.Sequence;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * When adding fields, remember to add them to the JSON serialization code as well, if you want them exposed.
  *
@@ -42,22 +45,22 @@ final class SequenceImpl<Value_, Point_ extends Comparable<Point_>, Difference_ 
     }
 
     @Override
-    public Value_ getFirstItem() {
+    public @NonNull Value_ getFirstItem() {
         return firstItem.value();
     }
 
     @Override
-    public Value_ getLastItem() {
+    public @NonNull Value_ getLastItem() {
         return lastItem.value();
     }
 
     @Override
-    public Break<Value_, Difference_> getPreviousBreak() {
+    public @Nullable Break<Value_, Difference_> getPreviousBreak() {
         return sourceTree.getBreakBefore(firstItem);
     }
 
     @Override
-    public Break<Value_, Difference_> getNextBreak() {
+    public @Nullable Break<Value_, Difference_> getNextBreak() {
         return sourceTree.getBreakAfter(lastItem);
     }
 
@@ -72,7 +75,7 @@ final class SequenceImpl<Value_, Point_ extends Comparable<Point_>, Difference_ 
     }
 
     @Override
-    public Collection<Value_> getItems() {
+    public @NonNull Collection<Value_> getItems() {
         if (items == null) {
             return items = getComparableItems().values();
         }
@@ -93,7 +96,7 @@ final class SequenceImpl<Value_, Point_ extends Comparable<Point_>, Difference_ 
     }
 
     @Override
-    public Difference_ getLength() {
+    public @NonNull Difference_ getLength() {
         if (length == null) {
             // memoize length for later calls
             // (assignment returns the right hand side)
