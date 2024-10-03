@@ -5,6 +5,8 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.collector.IntDistinctCountCalculator;
 
+import org.jspecify.annotations.NonNull;
+
 final class CountDistinctIntUniCollector<A, Mapped_>
         extends ObjectCalculatorUniCollector<A, Mapped_, Integer, Mapped_, IntDistinctCountCalculator<Mapped_>> {
     CountDistinctIntUniCollector(Function<? super A, ? extends Mapped_> mapper) {
@@ -12,7 +14,7 @@ final class CountDistinctIntUniCollector<A, Mapped_>
     }
 
     @Override
-    public Supplier<IntDistinctCountCalculator<Mapped_>> supplier() {
+    public @NonNull Supplier<IntDistinctCountCalculator<Mapped_>> supplier() {
         return IntDistinctCountCalculator::new;
     }
 }

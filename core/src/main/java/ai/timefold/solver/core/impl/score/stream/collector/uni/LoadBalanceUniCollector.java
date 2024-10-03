@@ -10,6 +10,9 @@ import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.LoadBalanceImpl;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 final class LoadBalanceUniCollector<A, Balanced_>
         implements UniConstraintCollector<A, LoadBalanceImpl<Balanced_>, LoadBalance<Balanced_>> {
 
@@ -25,12 +28,12 @@ final class LoadBalanceUniCollector<A, Balanced_>
     }
 
     @Override
-    public Supplier<LoadBalanceImpl<Balanced_>> supplier() {
+    public @NonNull Supplier<LoadBalanceImpl<Balanced_>> supplier() {
         return LoadBalanceImpl::new;
     }
 
     @Override
-    public BiFunction<LoadBalanceImpl<Balanced_>, A, Runnable> accumulator() {
+    public @NonNull BiFunction<LoadBalanceImpl<Balanced_>, A, Runnable> accumulator() {
         return (balanceStatistics, a) -> {
             var balanced = balancedItemFunction.apply(a);
             var initialLoad = initialLoadFunction.applyAsLong(a);
@@ -40,7 +43,7 @@ final class LoadBalanceUniCollector<A, Balanced_>
     }
 
     @Override
-    public Function<LoadBalanceImpl<Balanced_>, LoadBalance<Balanced_>> finisher() {
+    public @Nullable Function<LoadBalanceImpl<Balanced_>, LoadBalance<Balanced_>> finisher() {
         return balanceStatistics -> balanceStatistics;
     }
 

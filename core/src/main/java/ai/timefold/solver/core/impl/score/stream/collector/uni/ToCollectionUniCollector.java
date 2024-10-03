@@ -8,6 +8,8 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.collector.CustomCollectionUndoableActionable;
 
+import org.jspecify.annotations.NonNull;
+
 final class ToCollectionUniCollector<A, Mapped_, Result_ extends Collection<Mapped_>>
         extends UndoableActionableUniCollector<A, Mapped_, Result_, CustomCollectionUndoableActionable<Mapped_, Result_>> {
     private final IntFunction<Result_> collectionFunction;
@@ -19,7 +21,7 @@ final class ToCollectionUniCollector<A, Mapped_, Result_ extends Collection<Mapp
     }
 
     @Override
-    public Supplier<CustomCollectionUndoableActionable<Mapped_, Result_>> supplier() {
+    public @NonNull Supplier<CustomCollectionUndoableActionable<Mapped_, Result_>> supplier() {
         return () -> new CustomCollectionUndoableActionable<>(collectionFunction);
     }
 

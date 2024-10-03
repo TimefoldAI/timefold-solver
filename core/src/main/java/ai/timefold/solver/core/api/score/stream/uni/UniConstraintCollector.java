@@ -8,6 +8,9 @@ import java.util.stream.Collector;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * Usually created with {@link ConstraintCollectors}.
  * Used by {@link UniConstraintStream#groupBy(Function, UniConstraintCollector)}, ...
@@ -34,9 +37,8 @@ public interface UniConstraintCollector<A, ResultContainer_, Result_> {
 
     /**
      * A lambda that creates the result container, one for each group key combination.
-     *
-     * @return never null
      */
+    @NonNull
     Supplier<ResultContainer_> supplier();
 
     /**
@@ -44,8 +46,9 @@ public interface UniConstraintCollector<A, ResultContainer_, Result_> {
      * accumulates it in the result container
      * and returns an undo operation for that accumulation.
      *
-     * @return never null, the undo operation. This lambda is called when the fact no longer matches.
+     * @return the undo operation. This lambda is called when the fact no longer matches.
      */
+    @NonNull
     BiFunction<ResultContainer_, A, Runnable> accumulator();
 
     /**
@@ -53,6 +56,7 @@ public interface UniConstraintCollector<A, ResultContainer_, Result_> {
      *
      * @return null when the result would be invalid, such as maximum value from an empty container.
      */
+    @Nullable
     Function<ResultContainer_, Result_> finisher();
 
 }
