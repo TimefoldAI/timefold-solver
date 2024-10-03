@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.common.index;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Objects;
@@ -18,7 +19,14 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     private final Supplier<Indexer<T>> downstreamIndexerSupplier;
     private final Comparator<Key_> keyComparator;
     private final boolean hasOrEquals;
+
     private final NavigableMap<Key_, Indexer<T>> comparisonMap;
+    /*
+     * Exists to look up indexers by key, which is a constant time operation,
+     * as opposed to looking up the key in the comparison map, which is a log(n) operation.
+     * Lookup happens often enough for this to be worth the memory overhead.
+     */
+    private final Map<Key_, Indexer<T>> lookupMap = new HashMap<>();
 
     public ComparisonIndexer(JoinerType comparisonJoinerType, Supplier<Indexer<T>> downstreamIndexerSupplier) {
         this(comparisonJoinerType, 0, downstreamIndexerSupplier);
@@ -46,10 +54,11 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     public ElementAwareListEntry<T> put(IndexProperties indexProperties, T tuple) {
         Key_ indexKey = indexProperties.toKey(propertyIndex);
         // Avoids computeIfAbsent in order to not create lambdas on the hot path.
-        var downstreamIndexer = comparisonMap.get(indexKey);
+        var downstreamIndexer = lookupMap.get(indexKey);
         if (downstreamIndexer == null) {
             downstreamIndexer = downstreamIndexerSupplier.get();
             comparisonMap.put(indexKey, downstreamIndexer);
+            lookupMap.put(indexKey, downstreamIndexer);
         }
         return downstreamIndexer.put(indexProperties, tuple);
     }
@@ -61,11 +70,12 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         downstreamIndexer.remove(indexProperties, entry);
         if (downstreamIndexer.isEmpty()) {
             comparisonMap.remove(indexKey);
+            lookupMap.remove(indexKey);
         }
     }
 
     private Indexer<T> getDownstreamIndexer(IndexProperties indexProperties, Key_ indexerKey, ElementAwareListEntry<T> entry) {
-        var downstreamIndexer = comparisonMap.get(indexerKey);
+        var downstreamIndexer = lookupMap.get(indexerKey);
         if (downstreamIndexer == null) {
             throw new IllegalStateException("Impossible state: the tuple (" + entry.getElement()
                     + ") with indexProperties (" + indexProperties
