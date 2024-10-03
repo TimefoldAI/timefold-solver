@@ -3,6 +3,8 @@ package ai.timefold.solver.core.api.score.stream;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * This represents a single constraint in the {@link ConstraintStream} API
  * that impacts the {@link Score}.
@@ -28,9 +30,9 @@ public interface Constraint {
      * Returns a human-friendly description of the constraint.
      * The format of the description is left unspecified and will not be parsed in any way.
      *
-     * @return never null, may be left empty
+     * @return may be left empty
      */
-    default String getDescription() {
+    default @NonNull String getDescription() {
         return "";
     }
 

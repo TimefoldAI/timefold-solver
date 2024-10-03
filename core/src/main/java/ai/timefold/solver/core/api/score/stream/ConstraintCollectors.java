@@ -51,6 +51,8 @@ import ai.timefold.solver.core.impl.score.stream.collector.tri.InnerTriConstrain
 import ai.timefold.solver.core.impl.score.stream.collector.uni.InnerUniConstraintCollectors;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Creates an {@link UniConstraintCollector}, {@link BiConstraintCollector}, ... instance
  * for use in {@link UniConstraintStream#groupBy(Function, UniConstraintCollector)}, ...
@@ -69,58 +71,57 @@ public final class ConstraintCollectors {
      * The default result of the collector (e.g. when never called) is {@code 0}.
      *
      * @param <A> type of the matched fact
-     * @return never null
      */
-    public static <A> UniConstraintCollector<A, ?, Integer> count() {
+    public static <A> @NonNull UniConstraintCollector<A, ?, Integer> count() {
         return InnerUniConstraintCollectors.count();
     }
 
     /**
      * As defined by {@link #count()}.
      */
-    public static <A> UniConstraintCollector<A, ?, Long> countLong() {
+    public static <A> @NonNull UniConstraintCollector<A, ?, Long> countLong() {
         return InnerUniConstraintCollectors.countLong();
     }
 
     /**
      * As defined by {@link #count()}.
      */
-    public static <A, B> BiConstraintCollector<A, B, ?, Integer> countBi() {
+    public static <A, B> @NonNull BiConstraintCollector<A, B, ?, Integer> countBi() {
         return InnerBiConstraintCollectors.count();
     }
 
     /**
      * As defined by {@link #count()}.
      */
-    public static <A, B> BiConstraintCollector<A, B, ?, Long> countLongBi() {
+    public static <A, B> @NonNull BiConstraintCollector<A, B, ?, Long> countLongBi() {
         return InnerBiConstraintCollectors.countLong();
     }
 
     /**
      * As defined by {@link #count()}.
      */
-    public static <A, B, C> TriConstraintCollector<A, B, C, ?, Integer> countTri() {
+    public static <A, B, C> @NonNull TriConstraintCollector<A, B, C, ?, Integer> countTri() {
         return InnerTriConstraintCollectors.count();
     }
 
     /**
      * As defined by {@link #count()}.
      */
-    public static <A, B, C> TriConstraintCollector<A, B, C, ?, Long> countLongTri() {
+    public static <A, B, C> @NonNull TriConstraintCollector<A, B, C, ?, Long> countLongTri() {
         return InnerTriConstraintCollectors.countLong();
     }
 
     /**
      * As defined by {@link #count()}.
      */
-    public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Integer> countQuad() {
+    public static <A, B, C, D> @NonNull QuadConstraintCollector<A, B, C, D, ?, Integer> countQuad() {
         return InnerQuadConstraintCollectors.count();
     }
 
     /**
      * As defined by {@link #count()}.
      */
-    public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Long> countLongQuad() {
+    public static <A, B, C, D> @NonNull QuadConstraintCollector<A, B, C, D, ?, Long> countLongQuad() {
         return InnerQuadConstraintCollectors.countLong();
     }
 
@@ -145,64 +146,63 @@ public final class ConstraintCollectors {
      * The default result of the collector (e.g. when never called) is {@code 0}.
      *
      * @param <A> type of the matched fact
-     * @return never null
      */
-    public static <A> UniConstraintCollector<A, ?, Integer> countDistinct(Function<A, ?> groupValueMapping) {
+    public static <A> @NonNull UniConstraintCollector<A, ?, Integer> countDistinct(@NonNull Function<A, ?> groupValueMapping) {
         return InnerUniConstraintCollectors.countDistinct(groupValueMapping);
     }
 
     /**
      * As defined by {@link #countDistinct(Function)}.
      */
-    public static <A> UniConstraintCollector<A, ?, Long> countDistinctLong(Function<A, ?> groupValueMapping) {
+    public static <A> @NonNull UniConstraintCollector<A, ?, Long> countDistinctLong(@NonNull Function<A, ?> groupValueMapping) {
         return InnerUniConstraintCollectors.countDistinctLong(groupValueMapping);
     }
 
     /**
      * As defined by {@link #countDistinct(Function)}.
      */
-    public static <A, B> BiConstraintCollector<A, B, ?, Integer> countDistinct(
-            BiFunction<A, B, ?> groupValueMapping) {
+    public static <A, B> @NonNull BiConstraintCollector<A, B, ?, Integer> countDistinct(
+            @NonNull BiFunction<A, B, ?> groupValueMapping) {
         return InnerBiConstraintCollectors.countDistinct(groupValueMapping);
     }
 
     /**
      * As defined by {@link #countDistinct(Function)}.
      */
-    public static <A, B> BiConstraintCollector<A, B, ?, Long> countDistinctLong(
-            BiFunction<A, B, ?> groupValueMapping) {
+    public static <A, B> @NonNull BiConstraintCollector<A, B, ?, Long> countDistinctLong(
+            @NonNull BiFunction<A, B, ?> groupValueMapping) {
         return InnerBiConstraintCollectors.countDistinctLong(groupValueMapping);
     }
 
     /**
      * As defined by {@link #countDistinct(Function)}.
      */
-    public static <A, B, C> TriConstraintCollector<A, B, C, ?, Integer> countDistinct(
-            TriFunction<A, B, C, ?> groupValueMapping) {
+    public static <A, B, C> @NonNull TriConstraintCollector<A, B, C, ?, Integer> countDistinct(
+            @NonNull TriFunction<A, B, C, ?> groupValueMapping) {
         return InnerTriConstraintCollectors.countDistinct(groupValueMapping);
     }
 
     /**
      * As defined by {@link #countDistinct(Function)}.
      */
-    public static <A, B, C> TriConstraintCollector<A, B, C, ?, Long> countDistinctLong(
-            TriFunction<A, B, C, ?> groupValueMapping) {
+    public static <A, B, C> @NonNull TriConstraintCollector<A, B, C, ?, Long> countDistinctLong(
+            @NonNull TriFunction<A, B, C, ?> groupValueMapping) {
         return InnerTriConstraintCollectors.countDistinctLong(groupValueMapping);
     }
 
     /**
      * As defined by {@link #countDistinct(Function)}.
      */
-    public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Integer> countDistinct(
-            QuadFunction<A, B, C, D, ?> groupValueMapping) {
+    public static <A, B, C, D> @NonNull QuadConstraintCollector<A, B, C, D, ?, Integer> countDistinct(
+            @NonNull QuadFunction<A, B, C, D, ?> groupValueMapping) {
         return InnerQuadConstraintCollectors.countDistinct(groupValueMapping);
     }
 
     /**
      * As defined by {@link #countDistinct(Function)}.
      */
-    public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Long> countDistinctLong(
-            QuadFunction<A, B, C, D, ?> groupValueMapping) {
+    public static <A, B, C, D> @NonNull QuadConstraintCollector<A, B, C, D, ?, Long> countDistinctLong(
+            @NonNull QuadFunction<A, B, C, D, ?> groupValueMapping) {
         return InnerQuadConstraintCollectors.countDistinctLong(groupValueMapping);
     }
 

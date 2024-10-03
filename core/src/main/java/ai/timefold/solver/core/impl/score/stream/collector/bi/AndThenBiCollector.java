@@ -7,6 +7,8 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 
+import org.jspecify.annotations.NonNull;
+
 final class AndThenBiCollector<A, B, ResultContainer_, Intermediate_, Result_>
         implements BiConstraintCollector<A, B, ResultContainer_, Result_> {
 
@@ -20,17 +22,17 @@ final class AndThenBiCollector<A, B, ResultContainer_, Intermediate_, Result_>
     }
 
     @Override
-    public Supplier<ResultContainer_> supplier() {
+    public @NonNull Supplier<ResultContainer_> supplier() {
         return delegate.supplier();
     }
 
     @Override
-    public TriFunction<ResultContainer_, A, B, Runnable> accumulator() {
+    public @NonNull TriFunction<ResultContainer_, A, B, Runnable> accumulator() {
         return delegate.accumulator();
     }
 
     @Override
-    public Function<ResultContainer_, Result_> finisher() {
+    public @NonNull Function<ResultContainer_, Result_> finisher() {
         var finisher = delegate.finisher();
         return container -> mappingFunction.apply(finisher.apply(container));
     }

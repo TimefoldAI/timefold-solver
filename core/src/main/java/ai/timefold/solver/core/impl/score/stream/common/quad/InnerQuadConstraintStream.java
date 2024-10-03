@@ -18,6 +18,8 @@ import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
+import org.jspecify.annotations.NonNull;
+
 public interface InnerQuadConstraintStream<A, B, C, D> extends QuadConstraintStream<A, B, C, D> {
 
     static <A, B, C, D> PentaFunction<A, B, C, D, Score<?>, DefaultConstraintJustification>
@@ -203,61 +205,64 @@ public interface InnerQuadConstraintStream<A, B, C, D> extends QuadConstraintStr
             QuadFunction<A, B, C, D, BigDecimal> matchWeigher, ScoreImpactType scoreImpactType);
 
     @Override
-    default Constraint penalize(String constraintName, Score<?> constraintWeight) {
+    default @NonNull Constraint penalize(@NonNull String constraintName, @NonNull Score<?> constraintWeight) {
         return penalize((Score) constraintWeight)
                 .asConstraint(constraintName);
     }
 
     @Override
-    default Constraint penalize(String constraintPackage, String constraintName, Score<?> constraintWeight) {
+    default @NonNull Constraint penalize(@NonNull String constraintPackage, @NonNull String constraintName,
+            @NonNull Score<?> constraintWeight) {
         return penalize((Score) constraintWeight)
                 .asConstraint(constraintPackage, constraintName);
     }
 
     @Override
-    default Constraint penalizeConfigurable(String constraintName) {
+    default @NonNull Constraint penalizeConfigurable(@NonNull String constraintName) {
         return penalizeConfigurable()
                 .asConstraint(constraintName);
     }
 
     @Override
-    default Constraint penalizeConfigurable(String constraintPackage, String constraintName) {
+    default @NonNull Constraint penalizeConfigurable(@NonNull String constraintPackage, @NonNull String constraintName) {
         return penalizeConfigurable()
                 .asConstraint(constraintPackage, constraintName);
     }
 
     @Override
-    default Constraint reward(String constraintName, Score<?> constraintWeight) {
+    default @NonNull Constraint reward(@NonNull String constraintName, @NonNull Score<?> constraintWeight) {
         return reward((Score) constraintWeight)
                 .asConstraint(constraintName);
     }
 
     @Override
-    default Constraint reward(String constraintPackage, String constraintName, Score<?> constraintWeight) {
+    default @NonNull Constraint reward(@NonNull String constraintPackage, @NonNull String constraintName,
+            @NonNull Score<?> constraintWeight) {
         return reward((Score) constraintWeight)
                 .asConstraint(constraintPackage, constraintName);
     }
 
     @Override
-    default Constraint rewardConfigurable(String constraintName) {
+    default @NonNull Constraint rewardConfigurable(@NonNull String constraintName) {
         return rewardConfigurable()
                 .asConstraint(constraintName);
     }
 
     @Override
-    default Constraint rewardConfigurable(String constraintPackage, String constraintName) {
+    default @NonNull Constraint rewardConfigurable(@NonNull String constraintPackage, @NonNull String constraintName) {
         return penalizeConfigurable()
                 .asConstraint(constraintPackage, constraintName);
     }
 
     @Override
-    default Constraint impact(String constraintName, Score<?> constraintWeight) {
+    default @NonNull Constraint impact(@NonNull String constraintName, @NonNull Score<?> constraintWeight) {
         return impact((Score) constraintWeight)
                 .asConstraint(constraintName);
     }
 
     @Override
-    default Constraint impact(String constraintPackage, String constraintName, Score<?> constraintWeight) {
+    default @NonNull Constraint impact(@NonNull String constraintPackage, @NonNull String constraintName,
+            @NonNull Score<?> constraintWeight) {
         return impact((Score) constraintWeight)
                 .asConstraint(constraintPackage, constraintName);
     }
