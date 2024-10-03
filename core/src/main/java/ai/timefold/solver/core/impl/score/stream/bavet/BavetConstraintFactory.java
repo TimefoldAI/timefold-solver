@@ -11,10 +11,11 @@ import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetAbstractConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.uni.BavetAbstractUniConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.BavetForEachUniConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.InnerConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
+
+import org.jspecify.annotations.NonNull;
 
 public final class BavetConstraintFactory<Solution_>
         extends InnerConstraintFactory<Solution_, BavetConstraint<Solution_>> {
@@ -90,7 +91,7 @@ public final class BavetConstraintFactory<Solution_>
     // ************************************************************************
 
     @Override
-    public <A> UniConstraintStream<A> forEach(Class<A> sourceClass) {
+    public <A> @NonNull UniConstraintStream<A> forEach(@NonNull Class<A> sourceClass) {
         assertValidFromType(sourceClass);
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(sourceClass);
         if (entityDescriptor == null) {
@@ -123,13 +124,13 @@ public final class BavetConstraintFactory<Solution_>
     }
 
     @Override
-    public <A> UniConstraintStream<A> forEachIncludingUnassigned(Class<A> sourceClass) {
+    public <A> @NonNull UniConstraintStream<A> forEachIncludingUnassigned(@NonNull Class<A> sourceClass) {
         assertValidFromType(sourceClass);
         return share(new BavetForEachUniConstraintStream<>(this, sourceClass, null, RetrievalSemantics.STANDARD));
     }
 
     @Override
-    public <A> UniConstraintStream<A> from(Class<A> fromClass) {
+    public @NonNull <A> UniConstraintStream<A> from(@NonNull Class<A> fromClass) {
         assertValidFromType(fromClass);
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(fromClass);
         if (entityDescriptor != null && entityDescriptor.hasAnyGenuineVariables()) {
@@ -141,7 +142,7 @@ public final class BavetConstraintFactory<Solution_>
     }
 
     @Override
-    public <A> BavetAbstractUniConstraintStream<Solution_, A> fromUnfiltered(Class<A> fromClass) {
+    public @NonNull <A> UniConstraintStream<A> fromUnfiltered(@NonNull Class<A> fromClass) {
         assertValidFromType(fromClass);
         return share(new BavetForEachUniConstraintStream<>(this, fromClass, null, RetrievalSemantics.LEGACY));
     }
@@ -160,7 +161,7 @@ public final class BavetConstraintFactory<Solution_>
     }
 
     @Override
-    public String getDefaultConstraintPackage() {
+    public @NonNull String getDefaultConstraintPackage() {
         return defaultConstraintPackage;
     }
 

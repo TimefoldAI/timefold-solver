@@ -11,6 +11,8 @@ import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.impl.score.stream.collector.LoadBalanceImpl;
 
+import org.jspecify.annotations.NonNull;
+
 final class LoadBalanceBiCollector<A, B, Balanced_>
         implements BiConstraintCollector<A, B, LoadBalanceImpl<Balanced_>, LoadBalance<Balanced_>> {
 
@@ -26,12 +28,12 @@ final class LoadBalanceBiCollector<A, B, Balanced_>
     }
 
     @Override
-    public Supplier<LoadBalanceImpl<Balanced_>> supplier() {
+    public @NonNull Supplier<LoadBalanceImpl<Balanced_>> supplier() {
         return LoadBalanceImpl::new;
     }
 
     @Override
-    public TriFunction<LoadBalanceImpl<Balanced_>, A, B, Runnable> accumulator() {
+    public @NonNull TriFunction<LoadBalanceImpl<Balanced_>, A, B, Runnable> accumulator() {
         return (balanceStatistics, a, b) -> {
             var balanced = balancedItemFunction.apply(a, b);
             var initialLoad = initialLoadFunction.applyAsLong(a, b);
@@ -41,7 +43,7 @@ final class LoadBalanceBiCollector<A, B, Balanced_>
     }
 
     @Override
-    public Function<LoadBalanceImpl<Balanced_>, LoadBalance<Balanced_>> finisher() {
+    public @NonNull Function<LoadBalanceImpl<Balanced_>, LoadBalance<Balanced_>> finisher() {
         return balanceStatistics -> balanceStatistics;
     }
 

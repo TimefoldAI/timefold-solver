@@ -4,6 +4,8 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
 
+import org.jspecify.annotations.NonNull;
+
 public abstract class AbstractConstraintStream<Solution_> implements ConstraintStream {
 
     private final RetrievalSemantics retrievalSemantics;
@@ -21,7 +23,7 @@ public abstract class AbstractConstraintStream<Solution_> implements ConstraintS
     // ************************************************************************
 
     @Override
-    public abstract InnerConstraintFactory<Solution_, ?> getConstraintFactory();
+    public abstract @NonNull InnerConstraintFactory<Solution_, ?> getConstraintFactory();
 
     protected abstract <JustificationMapping_> JustificationMapping_ getDefaultJustificationMapping();
 

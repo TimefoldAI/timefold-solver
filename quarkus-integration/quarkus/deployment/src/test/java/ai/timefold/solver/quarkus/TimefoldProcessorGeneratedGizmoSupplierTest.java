@@ -169,7 +169,7 @@ class TimefoldProcessorGeneratedGizmoSupplierTest {
 
     public static class DummyConstraintProvider implements ConstraintProvider {
         @Override
-        public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+        public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
             return new Constraint[0];
         }
     }

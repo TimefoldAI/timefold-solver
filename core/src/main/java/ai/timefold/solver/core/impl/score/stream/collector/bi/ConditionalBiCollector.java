@@ -9,6 +9,8 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
+import org.jspecify.annotations.NonNull;
+
 final class ConditionalBiCollector<A, B, ResultContainer_, Result_>
         implements BiConstraintCollector<A, B, ResultContainer_, Result_> {
     private final BiPredicate<A, B> predicate;
@@ -23,12 +25,12 @@ final class ConditionalBiCollector<A, B, ResultContainer_, Result_>
     }
 
     @Override
-    public Supplier<ResultContainer_> supplier() {
+    public @NonNull Supplier<ResultContainer_> supplier() {
         return delegate.supplier();
     }
 
     @Override
-    public TriFunction<ResultContainer_, A, B, Runnable> accumulator() {
+    public @NonNull TriFunction<ResultContainer_, A, B, Runnable> accumulator() {
         return (resultContainer, a, b) -> {
             if (predicate.test(a, b)) {
                 return innerAccumulator.apply(resultContainer, a, b);
@@ -39,7 +41,7 @@ final class ConditionalBiCollector<A, B, ResultContainer_, Result_>
     }
 
     @Override
-    public Function<ResultContainer_, Result_> finisher() {
+    public @NonNull Function<ResultContainer_, Result_> finisher() {
         return delegate.finisher();
     }
 

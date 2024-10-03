@@ -9,6 +9,8 @@ import ai.timefold.solver.core.api.score.stream.common.ConnectedRangeChain;
 import ai.timefold.solver.core.impl.score.stream.collector.ConnectedRangesCalculator;
 import ai.timefold.solver.core.impl.score.stream.collector.connected_ranges.Range;
 
+import org.jspecify.annotations.NonNull;
+
 final class ConnectedRangesBiConstraintCollector<A, B, Interval_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
         extends
         ObjectCalculatorBiCollector<A, B, Interval_, ConnectedRangeChain<Interval_, Point_, Difference_>, Range<Interval_, Point_>, ConnectedRangesCalculator<Interval_, Point_, Difference_>> {
@@ -27,7 +29,7 @@ final class ConnectedRangesBiConstraintCollector<A, B, Interval_, Point_ extends
     }
 
     @Override
-    public Supplier<ConnectedRangesCalculator<Interval_, Point_, Difference_>> supplier() {
+    public @NonNull Supplier<ConnectedRangesCalculator<Interval_, Point_, Difference_>> supplier() {
         return () -> new ConnectedRangesCalculator<>(startMap, endMap, differenceFunction);
     }
 
