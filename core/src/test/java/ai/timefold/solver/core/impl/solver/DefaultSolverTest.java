@@ -999,6 +999,41 @@ class DefaultSolverTest {
 
     }
 
+    /**
+     * This test is to verify that the CH step is only picked if all moves of the step have been processed.
+     * If the CH is terminated before all moves have been processed,
+     * the solution should use the result of the previous fully completed step.
+     * 
+     * @see <a href="https://github.com/TimefoldAI/timefold-solver/issues/1130">Github issue 1130</a>.
+     */
+    @Test
+    void solveWithCHAllowsUnassignedValuesListVariableAndTerminateInStep() {
+        // This test relies on the implementation detail (!) 
+        // that the move to keep the entity unassigned is the last move.
+        // Therefore, when our termination kills the solver after the first move in the first step,
+        // the move to keep the entity unassigned won't have happened yet.
+        // This means the final best solution will have nothing assigned.
+        var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
+                .withEasyScoreCalculatorClass(MaximizeUnusedEntitiesEasyScoreCalculator.class);
+        var constructionHeuristicConfig = new ConstructionHeuristicPhaseConfig()
+                .withTerminationConfig(new TerminationConfig()
+                        .withMoveCountLimit(1L));
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataAllowsUnassignedValuesListSolution.class,
+                TestdataAllowsUnassignedValuesListEntity.class, TestdataAllowsUnassignedValuesListValue.class)
+                .withScoreDirectorFactory(scoreDirectorFactoryConfig)
+                .withPhases(constructionHeuristicConfig);
+
+        var value1 = new TestdataAllowsUnassignedValuesListValue("v1");
+        var entity = TestdataAllowsUnassignedValuesListEntity.createWithValues("e1");
+
+        var solution = new TestdataAllowsUnassignedValuesListSolution();
+        solution.setEntityList(List.of(entity));
+        solution.setValueList(List.of(value1));
+
+        var bestSolution = PlannerTestUtils.solve(solverConfig, solution, false);
+        assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.of(1));
+    }
+
     @Test
     void solveWithMultipleGenuinePlanningEntities() {
         var solverConfig = new SolverConfig()
@@ -1248,6 +1283,14 @@ class DefaultSolverTest {
             } else if (solution instanceof TestdataPinnedWithIndexListSolution testdataPinnedWithIndexListSolution) {
                 var unusedEntities = 0;
                 for (var entity : testdataPinnedWithIndexListSolution.getEntityList()) {
+                    if (entity.getValueList().isEmpty()) {
+                        unusedEntities++;
+                    }
+                }
+                return SimpleScore.of(unusedEntities);
+            } else if (solution instanceof TestdataAllowsUnassignedValuesListSolution testdataAllowsUnassignedValuesListSolution) {
+                var unusedEntities = 0;
+                for (var entity : testdataAllowsUnassignedValuesListSolution.getEntityList()) {
                     if (entity.getValueList().isEmpty()) {
                         unusedEntities++;
                     }
