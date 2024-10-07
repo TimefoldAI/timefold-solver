@@ -23,26 +23,29 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListUna
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
-public final class AssignmentProcessor<Solution_, In_, Out_, Score_ extends Score<Score_>>
-        implements Function<InnerScoreDirector<Solution_, Score_>, List<DefaultRecommendedAssignment<Out_, Score_>>> {
+final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recommendation_, In_, Out_>
+        implements Function<InnerScoreDirector<Solution_, Score_>, List<Recommendation_>> {
 
     private final DefaultSolverFactory<Solution_> solverFactory;
-    private final ScoreAnalysis<Score_> originalScoreAnalysis;
-    private final ScoreAnalysisFetchPolicy fetchPolicy;
     private final Function<In_, Out_> valueResultFunction;
+    private final RecommendationConstructor<Score_, Recommendation_, Out_> recommendationConstructor;
+    private final ScoreAnalysisFetchPolicy fetchPolicy;
+    private final ScoreAnalysis<Score_> originalScoreAnalysis;
     private final In_ clonedElement;
 
     public AssignmentProcessor(DefaultSolverFactory<Solution_> solverFactory, Function<In_, Out_> valueResultFunction,
-            ScoreAnalysis<Score_> originalScoreAnalysis, In_ clonedElement, ScoreAnalysisFetchPolicy fetchPolicy) {
+            RecommendationConstructor<Score_, Recommendation_, Out_> recommendationConstructor,
+            ScoreAnalysisFetchPolicy fetchPolicy, In_ clonedElement, ScoreAnalysis<Score_> originalScoreAnalysis) {
         this.solverFactory = Objects.requireNonNull(solverFactory);
-        this.originalScoreAnalysis = Objects.requireNonNull(originalScoreAnalysis);
-        this.fetchPolicy = Objects.requireNonNull(fetchPolicy);
         this.valueResultFunction = valueResultFunction;
+        this.recommendationConstructor = Objects.requireNonNull(recommendationConstructor);
+        this.fetchPolicy = Objects.requireNonNull(fetchPolicy);
+        this.originalScoreAnalysis = Objects.requireNonNull(originalScoreAnalysis);
         this.clonedElement = clonedElement;
     }
 
     @Override
-    public List<DefaultRecommendedAssignment<Out_, Score_>> apply(InnerScoreDirector<Solution_, Score_> scoreDirector) {
+    public List<Recommendation_> apply(InnerScoreDirector<Solution_, Score_> scoreDirector) {
         // The cloned element may already be assigned.
         // If it is, we need to unassign it before we can run the construction heuristic.
         var supplyManager = scoreDirector.getSupplyManager();
@@ -105,7 +108,7 @@ public final class AssignmentProcessor<Solution_, In_, Out_, Score_ extends Scor
                         """.formatted(entityPlacer));
             }
             var placement = placementIterator.next();
-            var recommendedAssignmentList = new ArrayList<DefaultRecommendedAssignment<Out_, Score_>>();
+            var recommendedAssignmentList = new ArrayList<Recommendation_>();
             var moveIndex = 0L;
             for (var move : placement) {
                 recommendedAssignmentList.add(execute(scoreDirector, move, moveIndex, clonedElement, valueResultFunction));
@@ -141,13 +144,13 @@ public final class AssignmentProcessor<Solution_, In_, Out_, Score_ extends Scor
         }
     }
 
-    private DefaultRecommendedAssignment<Out_, Score_> execute(InnerScoreDirector<Solution_, Score_> scoreDirector,
-            Move<Solution_> move, long moveIndex, In_ clonedElement, Function<In_, Out_> propositionFunction) {
+    private Recommendation_ execute(InnerScoreDirector<Solution_, Score_> scoreDirector, Move<Solution_> move, long moveIndex,
+            In_ clonedElement, Function<In_, Out_> propositionFunction) {
         var undo = move.doMove(scoreDirector);
         var newScoreAnalysis = scoreDirector.buildScoreAnalysis(fetchPolicy == ScoreAnalysisFetchPolicy.FETCH_ALL);
         var newScoreDifference = newScoreAnalysis.diff(originalScoreAnalysis);
         var result = propositionFunction.apply(clonedElement);
-        var recommendation = new DefaultRecommendedAssignment<>(moveIndex, result, newScoreDifference);
+        var recommendation = recommendationConstructor.apply(moveIndex, result, newScoreDifference);
         undo.doMoveOnly(scoreDirector);
         return recommendation;
     }

@@ -116,20 +116,20 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
         return analysis;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <In_, Out_> List<RecommendedAssignment<Out_, Score_>> recommendAssignment(Solution_ solution,
             In_ evaluatedEntityOrElement, Function<In_, Out_> propositionFunction, ScoreAnalysisFetchPolicy fetchPolicy) {
-        var assigner = new Assigner<Solution_, In_, Out_, Score_>(solverFactory, solution, evaluatedEntityOrElement,
-                propositionFunction, fetchPolicy);
-        return (List) callScoreDirector(solution, SolutionUpdatePolicy.UPDATE_ALL, assigner, true, true);
+        var assigner = new Assigner<Solution_, Score_, RecommendedAssignment<Out_, Score_>, In_, Out_>(solverFactory,
+                propositionFunction, DefaultRecommendedAssignment::new, fetchPolicy, solution, evaluatedEntityOrElement);
+        return callScoreDirector(solution, SolutionUpdatePolicy.UPDATE_ALL, assigner, true, true);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <In_, Out_> List<RecommendedFit<Out_, Score_>> recommendFit(Solution_ solution, In_ fittedEntityOrElement,
             Function<In_, Out_> propositionFunction, ScoreAnalysisFetchPolicy fetchPolicy) {
-        return (List) recommendAssignment(solution, fittedEntityOrElement, propositionFunction, fetchPolicy);
+        var assigner = new Assigner<Solution_, Score_, RecommendedFit<Out_, Score_>, In_, Out_>(solverFactory,
+                propositionFunction, DefaultRecommendedFit::new, fetchPolicy, solution, fittedEntityOrElement);
+        return callScoreDirector(solution, SolutionUpdatePolicy.UPDATE_ALL, assigner, true, true);
     }
 
 }
