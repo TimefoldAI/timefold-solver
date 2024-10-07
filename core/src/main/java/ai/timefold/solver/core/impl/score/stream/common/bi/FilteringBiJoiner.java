@@ -5,6 +5,8 @@ import java.util.function.BiPredicate;
 
 import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 
+import org.jspecify.annotations.NonNull;
+
 public final class FilteringBiJoiner<A, B> implements BiJoiner<A, B> {
 
     private final BiPredicate<A, B> filter;
@@ -14,7 +16,7 @@ public final class FilteringBiJoiner<A, B> implements BiJoiner<A, B> {
     }
 
     @Override
-    public FilteringBiJoiner<A, B> and(BiJoiner<A, B> otherJoiner) {
+    public @NonNull FilteringBiJoiner<A, B> and(@NonNull BiJoiner<A, B> otherJoiner) {
         FilteringBiJoiner<A, B> castJoiner = (FilteringBiJoiner<A, B>) otherJoiner;
         return new FilteringBiJoiner<>(filter.and(castJoiner.getFilter()));
     }

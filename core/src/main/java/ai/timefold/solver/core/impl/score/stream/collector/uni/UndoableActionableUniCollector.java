@@ -7,6 +7,9 @@ import java.util.function.Function;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.UndoableActionable;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 abstract sealed class UndoableActionableUniCollector<A, Input_, Output_, Calculator_ extends UndoableActionable<Input_, Output_>>
         implements UniConstraintCollector<A, Calculator_, Output_>
         permits MaxComparableUniCollector, MaxComparatorUniCollector, MaxPropertyUniCollector, MinComparableUniCollector,
@@ -19,7 +22,7 @@ abstract sealed class UndoableActionableUniCollector<A, Input_, Output_, Calcula
     }
 
     @Override
-    public BiFunction<Calculator_, A, Runnable> accumulator() {
+    public @NonNull BiFunction<Calculator_, A, Runnable> accumulator() {
         return (calculator, a) -> {
             final Input_ mapped = mapper.apply(a);
             return calculator.insert(mapped);
@@ -27,7 +30,7 @@ abstract sealed class UndoableActionableUniCollector<A, Input_, Output_, Calcula
     }
 
     @Override
-    public Function<Calculator_, Output_> finisher() {
+    public @Nullable Function<Calculator_, Output_> finisher() {
         return UndoableActionable::result;
     }
 

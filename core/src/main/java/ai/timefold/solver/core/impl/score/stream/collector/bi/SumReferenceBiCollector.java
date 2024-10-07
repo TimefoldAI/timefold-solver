@@ -7,6 +7,8 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.collector.ReferenceSumCalculator;
 
+import org.jspecify.annotations.NonNull;
+
 final class SumReferenceBiCollector<A, B, Result_>
         extends ObjectCalculatorBiCollector<A, B, Result_, Result_, Result_, ReferenceSumCalculator<Result_>> {
     private final Result_ zero;
@@ -23,7 +25,7 @@ final class SumReferenceBiCollector<A, B, Result_>
     }
 
     @Override
-    public Supplier<ReferenceSumCalculator<Result_>> supplier() {
+    public @NonNull Supplier<ReferenceSumCalculator<Result_>> supplier() {
         return () -> new ReferenceSumCalculator<>(zero, adder, subtractor);
     }
 

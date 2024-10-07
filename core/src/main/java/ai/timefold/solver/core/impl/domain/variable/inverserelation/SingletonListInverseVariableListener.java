@@ -5,6 +5,8 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
+import org.jspecify.annotations.NonNull;
+
 public class SingletonListInverseVariableListener<Solution_>
         implements ListVariableListener<Solution_, Object, Object>, SingletonInverseVariableSupply {
 
@@ -19,7 +21,7 @@ public class SingletonListInverseVariableListener<Solution_>
     }
 
     @Override
-    public void resetWorkingSolution(ScoreDirector<Solution_> scoreDirector) {
+    public void resetWorkingSolution(@NonNull ScoreDirector<Solution_> scoreDirector) {
         if (sourceVariableDescriptor.supportsPinning()) {
             // Required for variable pinning, otherwise pinned values have their inverse set to null.
             var entityDescriptor = sourceVariableDescriptor.getEntityDescriptor();
@@ -34,24 +36,24 @@ public class SingletonListInverseVariableListener<Solution_>
     }
 
     @Override
-    public void beforeEntityAdded(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public void beforeEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         // Do nothing
     }
 
     @Override
-    public void afterEntityAdded(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public void afterEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         for (var element : sourceVariableDescriptor.getValue(entity)) {
             setInverse((InnerScoreDirector<Solution_, ?>) scoreDirector, element, entity, null);
         }
     }
 
     @Override
-    public void beforeEntityRemoved(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public void beforeEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         // Do nothing
     }
 
     @Override
-    public void afterEntityRemoved(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public void afterEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         var innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
         for (var element : sourceVariableDescriptor.getValue(entity)) {
             setInverse(innerScoreDirector, element, null, entity);
@@ -59,7 +61,7 @@ public class SingletonListInverseVariableListener<Solution_>
     }
 
     @Override
-    public void afterListVariableElementUnassigned(ScoreDirector<Solution_> scoreDirector, Object element) {
+    public void afterListVariableElementUnassigned(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object element) {
         var innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
         innerScoreDirector.beforeVariableChanged(shadowVariableDescriptor, element);
         shadowVariableDescriptor.setValue(element, null);
@@ -67,12 +69,14 @@ public class SingletonListInverseVariableListener<Solution_>
     }
 
     @Override
-    public void beforeListVariableChanged(ScoreDirector<Solution_> scoreDirector, Object entity, int fromIndex, int toIndex) {
+    public void beforeListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity,
+            int fromIndex, int toIndex) {
         // Do nothing
     }
 
     @Override
-    public void afterListVariableChanged(ScoreDirector<Solution_> scoreDirector, Object entity, int fromIndex, int toIndex) {
+    public void afterListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity, int fromIndex,
+            int toIndex) {
         var innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
         var listVariable = sourceVariableDescriptor.getValue(entity);
         for (var i = fromIndex; i < toIndex; i++) {

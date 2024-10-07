@@ -13,6 +13,8 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 
+import org.jspecify.annotations.NonNull;
+
 @PlanningSolution(solutionCloner = TestdataScoreNotEqualSolution.class)
 public class TestdataScoreNotEqualSolution implements SolutionCloner<TestdataScoreNotEqualSolution> {
 
@@ -28,7 +30,7 @@ public class TestdataScoreNotEqualSolution implements SolutionCloner<TestdataSco
     }
 
     @Override
-    public TestdataScoreNotEqualSolution cloneSolution(TestdataScoreNotEqualSolution original) {
+    public @NonNull TestdataScoreNotEqualSolution cloneSolution(@NonNull TestdataScoreNotEqualSolution original) {
         TestdataScoreNotEqualSolution clone = new TestdataScoreNotEqualSolution();
         clone.entity.setValue(original.entity.getValue());
         if (original.score != null) {

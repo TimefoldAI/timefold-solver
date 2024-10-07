@@ -18,6 +18,8 @@ import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
+import org.jspecify.annotations.NonNull;
+
 public final class DefaultScoreExplanation<Solution_, Score_ extends Score<Score_>>
         implements ScoreExplanation<Solution_, Score_> {
 
@@ -137,32 +139,32 @@ public final class DefaultScoreExplanation<Solution_, Score_ extends Score<Score
     }
 
     @Override
-    public Solution_ getSolution() {
+    public @NonNull Solution_ getSolution() {
         return solution;
     }
 
     @Override
-    public Score_ getScore() {
+    public @NonNull Score_ getScore() {
         return score;
     }
 
     @Override
-    public Map<String, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
+    public @NonNull Map<String, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
         return constraintMatchTotalMap;
     }
 
     @Override
-    public List<ConstraintJustification> getJustificationList() {
+    public @NonNull List<ConstraintJustification> getJustificationList() {
         return constraintJustificationList;
     }
 
     @Override
-    public Map<Object, Indictment<Score_>> getIndictmentMap() {
+    public @NonNull Map<Object, Indictment<Score_>> getIndictmentMap() {
         return indictmentMap;
     }
 
     @Override
-    public String getSummary() {
+    public @NonNull String getSummary() {
         return summary.updateAndGet(currentSummary -> Objects.requireNonNullElseGet(currentSummary,
                 () -> explainScore(score, constraintMatchTotalMap.values(), indictmentMap.values())));
     }

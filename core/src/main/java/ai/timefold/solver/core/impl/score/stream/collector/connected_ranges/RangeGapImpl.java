@@ -5,6 +5,8 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.score.stream.common.ConnectedRange;
 import ai.timefold.solver.core.api.score.stream.common.RangeGap;
 
+import org.jspecify.annotations.NonNull;
+
 final class RangeGapImpl<Range_, Point_ extends Comparable<Point_>, Difference_ extends Comparable<Difference_>>
         implements RangeGap<Point_, Difference_> {
     private ConnectedRange<Range_, Point_, Difference_> previousConnectedRange;
@@ -27,17 +29,17 @@ final class RangeGapImpl<Range_, Point_ extends Comparable<Point_>, Difference_ 
     }
 
     @Override
-    public Point_ getPreviousRangeEnd() {
+    public @NonNull Point_ getPreviousRangeEnd() {
         return previousConnectedRange.getEnd();
     }
 
     @Override
-    public Point_ getNextRangeStart() {
+    public @NonNull Point_ getNextRangeStart() {
         return nextConnectedRange.getStart();
     }
 
     @Override
-    public Difference_ getLength() {
+    public @NonNull Difference_ getLength() {
         return length;
     }
 

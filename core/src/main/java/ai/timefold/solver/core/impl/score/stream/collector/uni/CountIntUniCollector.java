@@ -7,6 +7,9 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.IntCounter;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 final class CountIntUniCollector<A> implements UniConstraintCollector<A, IntCounter, Integer> {
     private final static CountIntUniCollector<?> INSTANCE = new CountIntUniCollector<>();
 
@@ -19,12 +22,12 @@ final class CountIntUniCollector<A> implements UniConstraintCollector<A, IntCoun
     }
 
     @Override
-    public Supplier<IntCounter> supplier() {
+    public @NonNull Supplier<IntCounter> supplier() {
         return IntCounter::new;
     }
 
     @Override
-    public BiFunction<IntCounter, A, Runnable> accumulator() {
+    public @NonNull BiFunction<IntCounter, A, Runnable> accumulator() {
         return (counter, a) -> {
             counter.increment();
             return counter::decrement;
@@ -32,7 +35,7 @@ final class CountIntUniCollector<A> implements UniConstraintCollector<A, IntCoun
     }
 
     @Override
-    public Function<IntCounter, Integer> finisher() {
+    public @Nullable Function<IntCounter, Integer> finisher() {
         return IntCounter::result;
     }
 }

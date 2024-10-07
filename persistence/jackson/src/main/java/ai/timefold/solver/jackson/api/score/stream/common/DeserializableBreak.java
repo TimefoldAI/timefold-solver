@@ -2,6 +2,8 @@ package ai.timefold.solver.jackson.api.score.stream.common;
 
 import ai.timefold.solver.core.api.score.stream.common.Break;
 
+import org.jspecify.annotations.NonNull;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 record DeserializableBreak<Value_, Difference_ extends Comparable<Difference_>>(
@@ -22,17 +24,17 @@ record DeserializableBreak<Value_, Difference_ extends Comparable<Difference_>>(
     }
 
     @Override
-    public Value_ getPreviousSequenceEnd() {
+    public @NonNull Value_ getPreviousSequenceEnd() {
         return previousSequenceEnd();
     }
 
     @Override
-    public Value_ getNextSequenceStart() {
+    public @NonNull Value_ getNextSequenceStart() {
         return nextSequenceStart();
     }
 
     @Override
-    public Difference_ getLength() {
+    public @NonNull Difference_ getLength() {
         /*
          * Difference_ is a custom type, hidden deep within the object tree.
          * Allowing for deserialization of this would have significantly complicated the code,

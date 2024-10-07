@@ -17,6 +17,9 @@ import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal
 import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 public class TestdataShadowedIncrementalScoreCalculator
         implements ConstraintMatchAwareIncrementalScoreCalculator<TestdataShadowedSolution, SimpleScore> {
 
@@ -24,48 +27,48 @@ public class TestdataShadowedIncrementalScoreCalculator
     private Map<Object, Indictment<SimpleScore>> indictmentMap;
 
     @Override
-    public void resetWorkingSolution(TestdataShadowedSolution workingSolution) {
+    public void resetWorkingSolution(@NonNull TestdataShadowedSolution workingSolution) {
         resetWorkingSolution(workingSolution, true);
     }
 
     @Override
-    public void resetWorkingSolution(TestdataShadowedSolution workingSolution, boolean constraintMatchEnabled) {
+    public void resetWorkingSolution(@NonNull TestdataShadowedSolution workingSolution, boolean constraintMatchEnabled) {
         this.workingSolution = workingSolution;
         this.indictmentMap = null;
     }
 
     @Override
-    public void beforeEntityAdded(Object entity) {
+    public void beforeEntityAdded(@NonNull Object entity) {
 
     }
 
     @Override
-    public void afterEntityAdded(Object entity) {
+    public void afterEntityAdded(@NonNull Object entity) {
 
     }
 
     @Override
-    public void beforeVariableChanged(Object entity, String variableName) {
+    public void beforeVariableChanged(@NonNull Object entity, @NonNull String variableName) {
 
     }
 
     @Override
-    public void afterVariableChanged(Object entity, String variableName) {
+    public void afterVariableChanged(@NonNull Object entity, @NonNull String variableName) {
 
     }
 
     @Override
-    public void beforeEntityRemoved(Object entity) {
+    public void beforeEntityRemoved(@NonNull Object entity) {
 
     }
 
     @Override
-    public void afterEntityRemoved(Object entity) {
+    public void afterEntityRemoved(@NonNull Object entity) {
 
     }
 
     @Override
-    public SimpleScore calculateScore() {
+    public @NonNull SimpleScore calculateScore() {
         return update().getScore();
     }
 
@@ -95,12 +98,12 @@ public class TestdataShadowedIncrementalScoreCalculator
     }
 
     @Override
-    public Collection<ConstraintMatchTotal<SimpleScore>> getConstraintMatchTotals() {
+    public @NonNull Collection<ConstraintMatchTotal<SimpleScore>> getConstraintMatchTotals() {
         return Collections.singleton(update());
     }
 
     @Override
-    public Map<Object, Indictment<SimpleScore>> getIndictmentMap() {
+    public @Nullable Map<Object, Indictment<SimpleScore>> getIndictmentMap() {
         update();
         return indictmentMap;
     }

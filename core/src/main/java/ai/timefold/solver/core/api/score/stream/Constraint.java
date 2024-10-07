@@ -3,6 +3,9 @@ package ai.timefold.solver.core.api.score.stream;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * This represents a single constraint in the {@link ConstraintStream} API
  * that impacts the {@link Score}.
@@ -28,13 +31,13 @@ public interface Constraint {
      * Returns a human-friendly description of the constraint.
      * The format of the description is left unspecified and will not be parsed in any way.
      *
-     * @return never null, may be left empty
+     * @return may be left empty
      */
-    default String getDescription() {
+    default @NonNull String getDescription() {
         return "";
     }
 
-    default String getConstraintGroup() {
+    default @NonNull String getConstraintGroup() {
         return DEFAULT_CONSTRAINT_GROUP;
     }
 
@@ -44,7 +47,7 @@ public interface Constraint {
      *
      * @return null if the constraint does not have a weight defined
      */
-    default <Score_ extends Score<Score_>> Score_ getConstraintWeight() {
+    default <Score_ extends Score<Score_>> @Nullable Score_ getConstraintWeight() {
         return null;
     }
 

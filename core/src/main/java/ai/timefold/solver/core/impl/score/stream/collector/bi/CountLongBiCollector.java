@@ -7,6 +7,8 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.LongCounter;
 
+import org.jspecify.annotations.NonNull;
+
 final class CountLongBiCollector<A, B> implements BiConstraintCollector<A, B, LongCounter, Long> {
     private final static CountLongBiCollector<?, ?> INSTANCE = new CountLongBiCollector<>();
 
@@ -19,12 +21,12 @@ final class CountLongBiCollector<A, B> implements BiConstraintCollector<A, B, Lo
     }
 
     @Override
-    public Supplier<LongCounter> supplier() {
+    public @NonNull Supplier<LongCounter> supplier() {
         return LongCounter::new;
     }
 
     @Override
-    public TriFunction<LongCounter, A, B, Runnable> accumulator() {
+    public @NonNull TriFunction<LongCounter, A, B, Runnable> accumulator() {
         return (counter, a, b) -> {
             counter.increment();
             return counter::decrement;
@@ -32,7 +34,7 @@ final class CountLongBiCollector<A, B> implements BiConstraintCollector<A, B, Lo
     }
 
     @Override
-    public Function<LongCounter, Long> finisher() {
+    public @NonNull Function<LongCounter, Long> finisher() {
         return LongCounter::result;
     }
 }

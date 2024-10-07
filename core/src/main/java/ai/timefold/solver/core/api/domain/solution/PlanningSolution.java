@@ -12,6 +12,8 @@ import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Specifies that the class is a planning solution.
  * A solution represents a problem and a possible solution of that problem.
@@ -53,9 +55,8 @@ public @interface PlanningSolution {
      * This feature is not supported under Quarkus.
      * When using Quarkus,
      * setting this to anything other than {@link AutoDiscoverMemberType#NONE} will result in a build-time exception.
-     *
-     * @return never null
      */
+    @NonNull
     AutoDiscoverMemberType autoDiscoverMemberType() default AutoDiscoverMemberType.NONE;
 
     /**
@@ -66,6 +67,7 @@ public @interface PlanningSolution {
      *
      * @return {@link NullSolutionCloner} when it is null (workaround for annotation limitation)
      */
+    // TODO: return @NonNull?
     Class<? extends SolutionCloner> solutionCloner() default NullSolutionCloner.class;
 
     /** Workaround for annotation limitation in {@link #solutionCloner()}. */
@@ -74,9 +76,9 @@ public @interface PlanningSolution {
 
     /**
      * @deprecated When multi-threaded solving, ensure your domain classes use @{@link PlanningId} instead.
-     * @return never null
      */
     @Deprecated(forRemoval = true, since = "1.10.0")
+    @NonNull
     LookUpStrategyType lookUpStrategyType() default LookUpStrategyType.PLANNING_ID_OR_NONE;
 
 }

@@ -9,6 +9,8 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.impl.util.Pair;
 
+import org.jspecify.annotations.NonNull;
+
 final class ComposeTwoBiCollector<A, B, ResultHolder1_, ResultHolder2_, Result1_, Result2_, Result_>
         implements BiConstraintCollector<A, B, Pair<ResultHolder1_, ResultHolder2_>, Result_> {
     private final BiConstraintCollector<A, B, ResultHolder1_, Result1_> first;
@@ -42,12 +44,12 @@ final class ComposeTwoBiCollector<A, B, ResultHolder1_, ResultHolder2_, Result1_
     }
 
     @Override
-    public Supplier<Pair<ResultHolder1_, ResultHolder2_>> supplier() {
+    public @NonNull Supplier<Pair<ResultHolder1_, ResultHolder2_>> supplier() {
         return () -> new Pair<>(firstSupplier.get(), secondSupplier.get());
     }
 
     @Override
-    public TriFunction<Pair<ResultHolder1_, ResultHolder2_>, A, B, Runnable> accumulator() {
+    public @NonNull TriFunction<Pair<ResultHolder1_, ResultHolder2_>, A, B, Runnable> accumulator() {
         return (resultHolder, a, b) -> composeUndo(firstAccumulator.apply(resultHolder.key(), a, b),
                 secondAccumulator.apply(resultHolder.value(), a, b));
     }
@@ -60,7 +62,7 @@ final class ComposeTwoBiCollector<A, B, ResultHolder1_, ResultHolder2_, Result1_
     }
 
     @Override
-    public Function<Pair<ResultHolder1_, ResultHolder2_>, Result_> finisher() {
+    public @NonNull Function<Pair<ResultHolder1_, ResultHolder2_>, Result_> finisher() {
         return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.key()),
                 secondFinisher.apply(resultHolder.value()));
     }

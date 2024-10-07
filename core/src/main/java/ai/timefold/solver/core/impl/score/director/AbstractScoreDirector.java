@@ -34,6 +34,8 @@ import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.exception.UndoScoreCorruptionException;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,7 +125,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public Solution_ getWorkingSolution() {
+    public @NonNull Solution_ getWorkingSolution() {
         return workingSolution;
     }
 
@@ -491,7 +493,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public <E> E lookUpWorkingObject(E externalObject) {
+    public <E> @Nullable E lookUpWorkingObject(@Nullable E externalObject) {
         if (!lookUpEnabled) {
             throw new IllegalStateException("When lookUpEnabled (" + lookUpEnabled
                     + ") is disabled in the constructor, this method should not be called.");
@@ -500,7 +502,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public <E> E lookUpWorkingObjectOrReturnNull(E externalObject) {
+    public <E> @Nullable E lookUpWorkingObjectOrReturnNull(@Nullable E externalObject) {
         if (!lookUpEnabled) {
             throw new IllegalStateException("When lookUpEnabled (" + lookUpEnabled
                     + ") is disabled in the constructor, this method should not be called.");
@@ -694,6 +696,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         uncorruptedAnalysis.constraintMap().forEach((constraintRef, uncorruptedConstraintAnalysis) -> {
             var corruptedConstraintAnalysis = corruptedAnalysis.constraintMap()
                     .get(constraintRef);
+            // TODO: matches() is Nullable
             if (corruptedConstraintAnalysis == null || corruptedConstraintAnalysis.matches().isEmpty()) {
                 missingSet.addAll(uncorruptedConstraintAnalysis.matches());
                 return;
@@ -705,6 +708,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         corruptedAnalysis.constraintMap().forEach((constraintRef, corruptedConstraintAnalysis) -> {
             var uncorruptedConstraintAnalysis = uncorruptedAnalysis.constraintMap()
                     .get(constraintRef);
+            // TODO: matches() is Nullable
             if (uncorruptedConstraintAnalysis == null || uncorruptedConstraintAnalysis.matches().isEmpty()) {
                 excessSet.addAll(corruptedConstraintAnalysis.matches());
                 return;

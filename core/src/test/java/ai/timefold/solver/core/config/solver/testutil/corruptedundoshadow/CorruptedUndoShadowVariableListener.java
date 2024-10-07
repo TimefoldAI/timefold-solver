@@ -5,41 +5,43 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.domain.variable.VariableListener;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 
+import org.jspecify.annotations.NonNull;
+
 public class CorruptedUndoShadowVariableListener
         implements VariableListener<CorruptedUndoShadowSolution, CorruptedUndoShadowEntity> {
     @Override
-    public void beforeEntityAdded(ScoreDirector<CorruptedUndoShadowSolution> scoreDirector,
-            CorruptedUndoShadowEntity corruptedUndoShadowEntity) {
+    public void beforeEntityAdded(@NonNull ScoreDirector<CorruptedUndoShadowSolution> scoreDirector,
+            @NonNull CorruptedUndoShadowEntity corruptedUndoShadowEntity) {
 
     }
 
     @Override
-    public void afterEntityAdded(ScoreDirector<CorruptedUndoShadowSolution> scoreDirector,
-            CorruptedUndoShadowEntity corruptedUndoShadowEntity) {
+    public void afterEntityAdded(@NonNull ScoreDirector<CorruptedUndoShadowSolution> scoreDirector,
+            @NonNull CorruptedUndoShadowEntity corruptedUndoShadowEntity) {
         update(scoreDirector, corruptedUndoShadowEntity);
     }
 
     @Override
-    public void beforeEntityRemoved(ScoreDirector<CorruptedUndoShadowSolution> scoreDirector,
-            CorruptedUndoShadowEntity corruptedUndoShadowEntity) {
+    public void beforeEntityRemoved(@NonNull ScoreDirector<CorruptedUndoShadowSolution> scoreDirector,
+            @NonNull CorruptedUndoShadowEntity corruptedUndoShadowEntity) {
 
     }
 
     @Override
-    public void afterEntityRemoved(ScoreDirector<CorruptedUndoShadowSolution> scoreDirector,
-            CorruptedUndoShadowEntity corruptedUndoShadowEntity) {
+    public void afterEntityRemoved(@NonNull ScoreDirector<CorruptedUndoShadowSolution> scoreDirector,
+            @NonNull CorruptedUndoShadowEntity corruptedUndoShadowEntity) {
 
     }
 
     @Override
-    public void beforeVariableChanged(ScoreDirector<CorruptedUndoShadowSolution> scoreDirector,
-            CorruptedUndoShadowEntity corruptedUndoShadowEntity) {
+    public void beforeVariableChanged(@NonNull ScoreDirector<CorruptedUndoShadowSolution> scoreDirector,
+            @NonNull CorruptedUndoShadowEntity corruptedUndoShadowEntity) {
 
     }
 
     @Override
-    public void afterVariableChanged(ScoreDirector<CorruptedUndoShadowSolution> scoreDirector,
-            CorruptedUndoShadowEntity corruptedUndoShadowEntity) {
+    public void afterVariableChanged(@NonNull ScoreDirector<CorruptedUndoShadowSolution> scoreDirector,
+            @NonNull CorruptedUndoShadowEntity corruptedUndoShadowEntity) {
         update(scoreDirector, corruptedUndoShadowEntity);
     }
 

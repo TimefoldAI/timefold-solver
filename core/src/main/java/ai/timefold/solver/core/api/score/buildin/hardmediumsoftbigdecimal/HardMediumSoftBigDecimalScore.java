@@ -12,6 +12,8 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.score.ScoreUtil;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * This {@link Score} is based on 3 levels of {@link BigDecimal} constraints: hard, medium and soft.
  * Hard constraints have priority over medium constraints.
@@ -40,7 +42,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
     private static final HardMediumSoftBigDecimalScore MINUS_ONE_SOFT =
             new HardMediumSoftBigDecimalScore(0, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ONE.negate());
 
-    public static HardMediumSoftBigDecimalScore parseScore(String scoreString) {
+    public static @NonNull HardMediumSoftBigDecimalScore parseScore(@NonNull String scoreString) {
         String[] scoreTokens = ScoreUtil.parseScoreTokens(HardMediumSoftBigDecimalScore.class, scoreString,
                 HARD_LABEL, MEDIUM_LABEL, SOFT_LABEL);
         int initScore = ScoreUtil.parseInitScore(HardMediumSoftBigDecimalScore.class, scoreString, scoreTokens[0]);
@@ -53,7 +55,8 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
         return ofUninitialized(initScore, hardScore, mediumScore, softScore);
     }
 
-    public static HardMediumSoftBigDecimalScore ofUninitialized(int initScore, BigDecimal hardScore, BigDecimal mediumScore,
+    public static @NonNull HardMediumSoftBigDecimalScore ofUninitialized(int initScore, BigDecimal hardScore,
+            BigDecimal mediumScore,
             BigDecimal softScore) {
         if (initScore == 0) {
             return of(hardScore, mediumScore, softScore);
@@ -61,7 +64,9 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
         return new HardMediumSoftBigDecimalScore(initScore, hardScore, mediumScore, softScore);
     }
 
-    public static HardMediumSoftBigDecimalScore of(BigDecimal hardScore, BigDecimal mediumScore, BigDecimal softScore) {
+    // TODO: params nonnull?
+    public static @NonNull HardMediumSoftBigDecimalScore of(BigDecimal hardScore, BigDecimal mediumScore,
+            BigDecimal softScore) {
         if (Objects.equals(hardScore, BigDecimal.ONE.negate()) && mediumScore.signum() == 0 && softScore.signum() == 0) {
             return MINUS_ONE_HARD;
         } else if (hardScore.signum() == 0) {
@@ -84,7 +89,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
         return new HardMediumSoftBigDecimalScore(0, hardScore, mediumScore, softScore);
     }
 
-    public static HardMediumSoftBigDecimalScore ofHard(BigDecimal hardScore) {
+    public static @NonNull HardMediumSoftBigDecimalScore ofHard(BigDecimal hardScore) {
         if (Objects.equals(hardScore, BigDecimal.ONE.negate())) {
             return MINUS_ONE_HARD;
         } else if (hardScore.signum() == 0) {
@@ -95,7 +100,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
         return new HardMediumSoftBigDecimalScore(0, hardScore, BigDecimal.ZERO, BigDecimal.ZERO);
     }
 
-    public static HardMediumSoftBigDecimalScore ofMedium(BigDecimal mediumScore) {
+    public static @NonNull HardMediumSoftBigDecimalScore ofMedium(BigDecimal mediumScore) {
         if (Objects.equals(mediumScore, BigDecimal.ONE.negate())) {
             return MINUS_ONE_MEDIUM;
         } else if (mediumScore.signum() == 0) {
@@ -106,7 +111,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
         return new HardMediumSoftBigDecimalScore(0, BigDecimal.ZERO, mediumScore, BigDecimal.ZERO);
     }
 
-    public static HardMediumSoftBigDecimalScore ofSoft(BigDecimal softScore) {
+    public static @NonNull HardMediumSoftBigDecimalScore ofSoft(BigDecimal softScore) {
         if (Objects.equals(softScore, BigDecimal.ONE.negate())) {
             return MINUS_ONE_SOFT;
         } else if (softScore.signum() == 0) {
@@ -132,6 +137,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
      * timefold-solver-jpa, timefold-solver-jackson, timefold-solver-jaxb, ...
      */
     @SuppressWarnings("unused")
+    // TODO: params default or null?
     private HardMediumSoftBigDecimalScore() {
         this(Integer.MIN_VALUE, null, null, null);
     }
@@ -155,6 +161,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
      *
      * @return higher is better, usually negative, 0 if no hard constraints are broken/fulfilled
      */
+    // TODO: nonnull?
     public BigDecimal hardScore() {
         return hardScore;
     }
@@ -220,7 +227,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
     // ************************************************************************
 
     @Override
-    public HardMediumSoftBigDecimalScore withInitScore(int newInitScore) {
+    public @NonNull HardMediumSoftBigDecimalScore withInitScore(int newInitScore) {
         return ofUninitialized(newInitScore, hardScore, mediumScore, softScore);
     }
 
@@ -235,7 +242,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
     }
 
     @Override
-    public HardMediumSoftBigDecimalScore add(HardMediumSoftBigDecimalScore addend) {
+    public @NonNull HardMediumSoftBigDecimalScore add(@NonNull HardMediumSoftBigDecimalScore addend) {
         return ofUninitialized(
                 initScore + addend.initScore(),
                 hardScore.add(addend.hardScore()),
@@ -244,7 +251,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
     }
 
     @Override
-    public HardMediumSoftBigDecimalScore subtract(HardMediumSoftBigDecimalScore subtrahend) {
+    public @NonNull HardMediumSoftBigDecimalScore subtract(@NonNull HardMediumSoftBigDecimalScore subtrahend) {
         return ofUninitialized(
                 initScore - subtrahend.initScore(),
                 hardScore.subtract(subtrahend.hardScore()),
@@ -253,7 +260,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
     }
 
     @Override
-    public HardMediumSoftBigDecimalScore multiply(double multiplicand) {
+    public @NonNull HardMediumSoftBigDecimalScore multiply(double multiplicand) {
         // Intentionally not taken "new BigDecimal(multiplicand, MathContext.UNLIMITED)"
         // because together with the floor rounding it gives unwanted behaviour
         BigDecimal multiplicandBigDecimal = BigDecimal.valueOf(multiplicand);
@@ -266,7 +273,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
     }
 
     @Override
-    public HardMediumSoftBigDecimalScore divide(double divisor) {
+    public @NonNull HardMediumSoftBigDecimalScore divide(double divisor) {
         BigDecimal divisorBigDecimal = BigDecimal.valueOf(divisor);
         // The (unspecified) scale/precision of the divisor should have no impact on the returned scale/precision
         return ofUninitialized(
@@ -277,7 +284,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
     }
 
     @Override
-    public HardMediumSoftBigDecimalScore power(double exponent) {
+    public @NonNull HardMediumSoftBigDecimalScore power(double exponent) {
         BigDecimal exponentBigDecimal = BigDecimal.valueOf(exponent);
         // The (unspecified) scale/precision of the exponent should have no impact on the returned scale/precision
         // TODO FIXME remove .intValue() so non-integer exponents produce correct results
@@ -290,17 +297,17 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
     }
 
     @Override
-    public HardMediumSoftBigDecimalScore abs() {
+    public @NonNull HardMediumSoftBigDecimalScore abs() {
         return ofUninitialized(Math.abs(initScore), hardScore.abs(), mediumScore.abs(), softScore.abs());
     }
 
     @Override
-    public HardMediumSoftBigDecimalScore zero() {
+    public @NonNull HardMediumSoftBigDecimalScore zero() {
         return HardMediumSoftBigDecimalScore.ZERO;
     }
 
     @Override
-    public Number[] toLevelNumbers() {
+    public Number @NonNull [] toLevelNumbers() {
         return new Number[] { hardScore, mediumScore, softScore };
     }
 
@@ -339,7 +346,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
     }
 
     @Override
-    public String toShortString() {
+    public @NonNull String toShortString() {
         return ScoreUtil.buildShortString(this, n -> ((BigDecimal) n).compareTo(BigDecimal.ZERO) != 0,
                 HARD_LABEL, MEDIUM_LABEL, SOFT_LABEL);
     }

@@ -11,54 +11,58 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 public class TestdataShadowingChainedIncrementalScoreCalculator
         implements ConstraintMatchAwareIncrementalScoreCalculator<TestdataShadowingChainedSolution, SimpleScore> {
 
     private TestdataShadowingChainedSolution workingSolution;
 
     @Override
-    public void beforeEntityAdded(Object entity) {
+    public void beforeEntityAdded(@NonNull Object entity) {
 
     }
 
     @Override
-    public void afterEntityAdded(Object entity) {
+    public void afterEntityAdded(@NonNull Object entity) {
 
     }
 
     @Override
-    public void beforeVariableChanged(Object entity, String variableName) {
+    public void beforeVariableChanged(@NonNull Object entity, @NonNull String variableName) {
 
     }
 
     @Override
-    public void afterVariableChanged(Object entity, String variableName) {
+    public void afterVariableChanged(@NonNull Object entity, @NonNull String variableName) {
 
     }
 
     @Override
-    public void beforeEntityRemoved(Object entity) {
+    public void beforeEntityRemoved(@NonNull Object entity) {
 
     }
 
     @Override
-    public void afterEntityRemoved(Object entity) {
+    public void afterEntityRemoved(@NonNull Object entity) {
 
     }
 
     @Override
-    public SimpleScore calculateScore() {
+    public @NonNull SimpleScore calculateScore() {
         var constraintMatchTotal = update(workingSolution);
         return constraintMatchTotal.getScore();
     }
 
     @Override
-    public void resetWorkingSolution(TestdataShadowingChainedSolution workingSolution, boolean constraintMatchEnabled) {
+    public void resetWorkingSolution(@NonNull TestdataShadowingChainedSolution workingSolution,
+            boolean constraintMatchEnabled) {
         this.workingSolution = workingSolution;
     }
 
     @Override
-    public void resetWorkingSolution(TestdataShadowingChainedSolution workingSolution) {
+    public void resetWorkingSolution(@NonNull TestdataShadowingChainedSolution workingSolution) {
         resetWorkingSolution(workingSolution, true);
     }
 
@@ -81,13 +85,13 @@ public class TestdataShadowingChainedIncrementalScoreCalculator
     }
 
     @Override
-    public Collection<ConstraintMatchTotal<SimpleScore>> getConstraintMatchTotals() {
+    public @NonNull Collection<ConstraintMatchTotal<SimpleScore>> getConstraintMatchTotals() {
         var constraintMatchTotal = update(workingSolution);
         return Collections.singleton(constraintMatchTotal);
     }
 
     @Override
-    public Map<Object, Indictment<SimpleScore>> getIndictmentMap() {
+    public @Nullable Map<Object, Indictment<SimpleScore>> getIndictmentMap() {
         throw new UnsupportedOperationException();
     }
 

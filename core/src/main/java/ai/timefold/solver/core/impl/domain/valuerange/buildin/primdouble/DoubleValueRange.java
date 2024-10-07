@@ -8,6 +8,8 @@ import ai.timefold.solver.core.impl.domain.valuerange.AbstractUncountableValueRa
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.bigdecimal.BigDecimalValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Note: Floating point numbers (float, double) cannot represent a decimal number correctly.
  * If floating point numbers leak into the scoring function, they are likely to cause score corruptions.
@@ -51,7 +53,7 @@ public class DoubleValueRange extends AbstractUncountableValueRange<Double> {
     // But in practice, no one could use it.
 
     @Override
-    public Iterator<Double> createRandomIterator(Random workingRandom) {
+    public @NonNull Iterator<Double> createRandomIterator(@NonNull Random workingRandom) {
         return new RandomDoubleValueRangeIterator(workingRandom);
     }
 

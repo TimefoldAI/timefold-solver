@@ -28,6 +28,7 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,12 +90,12 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     }
 
     @Override
-    public ProblemId_ getProblemId() {
+    public @NonNull ProblemId_ getProblemId() {
         return problemId;
     }
 
     @Override
-    public SolverStatus getSolverStatus() {
+    public @NonNull SolverStatus getSolverStatus() {
         return solverStatus;
     }
 
@@ -161,7 +162,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     //    }
 
     @Override
-    public CompletableFuture<Void> addProblemChange(ProblemChange<Solution_> problemChange) {
+    public @NonNull CompletableFuture<Void> addProblemChange(@NonNull ProblemChange<Solution_> problemChange) {
         Objects.requireNonNull(problemChange, () -> "A problem change (%s) must not be null.".formatted(problemId));
         if (solverStatus == SolverStatus.NOT_SOLVING) {
             throw new IllegalStateException("Cannot add the problem change (%s) because the solver job (%s) is not solving."
@@ -210,7 +211,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     }
 
     @Override
-    public Solution_ getFinalBestSolution() throws InterruptedException, ExecutionException {
+    public @NonNull Solution_ getFinalBestSolution() throws InterruptedException, ExecutionException {
         try {
             return finalBestSolutionFuture.get();
         } catch (CancellationException cancellationException) {
@@ -221,7 +222,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     }
 
     @Override
-    public Duration getSolvingDuration() {
+    public @NonNull Duration getSolvingDuration() {
         return Duration.ofMillis(solver.getTimeMillisSpent());
     }
 
@@ -246,7 +247,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     }
 
     @Override
-    public ProblemSizeStatistics getProblemSizeStatistics() {
+    public @NonNull ProblemSizeStatistics getProblemSizeStatistics() {
         var problemSizeStatistics = solver.getSolverScope().getProblemSizeStatistics();
         if (problemSizeStatistics != null) {
             return problemSizeStatistics;

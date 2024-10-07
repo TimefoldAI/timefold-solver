@@ -4,6 +4,8 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * A listener sourced on a {@link PlanningListVariable}.
  * <p>
@@ -33,7 +35,7 @@ public interface ListVariableListener<Solution_, Entity_, Element_> extends Abst
      * @param scoreDirector score director
      * @param element the unassigned element
      */
-    void afterListVariableElementUnassigned(ScoreDirector<Solution_> scoreDirector, Element_ element);
+    void afterListVariableElementUnassigned(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Element_ element);
 
     /**
      * Tells the listener that some elements within the range starting at {@code fromIndex} (inclusive) and ending at
@@ -67,7 +69,8 @@ public interface ListVariableListener<Solution_, Entity_, Element_> extends Abst
      * @param fromIndex low endpoint (inclusive) of the changed range
      * @param toIndex high endpoint (exclusive) of the changed range
      */
-    void beforeListVariableChanged(ScoreDirector<Solution_> scoreDirector, Entity_ entity, int fromIndex, int toIndex);
+    void beforeListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Entity_ entity, int fromIndex,
+            int toIndex);
 
     /**
      * Tells the listener that some elements within the range starting at {@code fromIndex} (inclusive) and ending at
@@ -98,5 +101,6 @@ public interface ListVariableListener<Solution_, Entity_, Element_> extends Abst
      * @param fromIndex low endpoint (inclusive) of the changed range
      * @param toIndex high endpoint (exclusive) of the changed range
      */
-    void afterListVariableChanged(ScoreDirector<Solution_> scoreDirector, Entity_ entity, int fromIndex, int toIndex);
+    void afterListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Entity_ entity, int fromIndex,
+            int toIndex);
 }

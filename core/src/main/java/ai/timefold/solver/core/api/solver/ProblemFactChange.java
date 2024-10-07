@@ -6,6 +6,8 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * This interface is deprecated.
  * A ProblemFactChange represents a change in 1 or more problem facts of a {@link PlanningSolution}.
@@ -29,11 +31,11 @@ public interface ProblemFactChange<Solution_> {
      * Every modification to the {@link PlanningSolution}, must be correctly notified to the {@link ScoreDirector},
      * otherwise the {@link Score} calculation will be corrupted.
      *
-     * @param scoreDirector never null
+     * @param scoreDirector
      *        Contains the {@link PlanningSolution working solution} which contains the problem facts
      *        (and {@link PlanningEntity planning entities}) to change.
      *        Also needs to get notified of those changes.
      */
-    void doChange(ScoreDirector<Solution_> scoreDirector);
+    void doChange(@NonNull ScoreDirector<Solution_> scoreDirector);
 
 }

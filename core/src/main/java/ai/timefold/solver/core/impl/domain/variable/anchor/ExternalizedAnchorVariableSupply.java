@@ -9,6 +9,8 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescripto
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableListener;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Alternative to {@link AnchorVariableListener}.
  */
@@ -34,7 +36,7 @@ public class ExternalizedAnchorVariableSupply<Solution_> implements
     }
 
     @Override
-    public void resetWorkingSolution(ScoreDirector<Solution_> scoreDirector) {
+    public void resetWorkingSolution(@NonNull ScoreDirector<Solution_> scoreDirector) {
         anchorMap = new IdentityHashMap<>();
         previousVariableDescriptor.getEntityDescriptor().visitAllEntities(scoreDirector.getWorkingSolution(), this::insert);
     }
@@ -45,27 +47,27 @@ public class ExternalizedAnchorVariableSupply<Solution_> implements
     }
 
     @Override
-    public void beforeEntityAdded(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public void beforeEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         // Do nothing
     }
 
     @Override
-    public void afterEntityAdded(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public void afterEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         insert(entity);
     }
 
     @Override
-    public void beforeVariableChanged(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public void beforeVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         // No need to retract() because the insert (which is guaranteed to be called later) affects the same trailing entities.
     }
 
     @Override
-    public void afterVariableChanged(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public void afterVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         insert(entity);
     }
 
     @Override
-    public void beforeEntityRemoved(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public void beforeEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         boolean removeSucceeded = anchorMap.remove(entity) != null;
         if (!removeSucceeded) {
             throw new IllegalStateException("The supply (" + this + ") is corrupted,"
@@ -77,7 +79,7 @@ public class ExternalizedAnchorVariableSupply<Solution_> implements
     }
 
     @Override
-    public void afterEntityRemoved(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public void afterEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         // Do nothing
     }
 

@@ -8,6 +8,8 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableListener;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Alternative to {@link SingletonInverseVariableListener}.
  */
@@ -30,7 +32,7 @@ public class ExternalizedSingletonInverseVariableSupply<Solution_> implements
     }
 
     @Override
-    public void resetWorkingSolution(ScoreDirector<Solution_> scoreDirector) {
+    public void resetWorkingSolution(@NonNull ScoreDirector<Solution_> scoreDirector) {
         inverseEntityMap = new IdentityHashMap<>();
         sourceVariableDescriptor.getEntityDescriptor().visitAllEntities(scoreDirector.getWorkingSolution(), this::insert);
     }
@@ -41,32 +43,32 @@ public class ExternalizedSingletonInverseVariableSupply<Solution_> implements
     }
 
     @Override
-    public void beforeEntityAdded(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public void beforeEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         // Do nothing
     }
 
     @Override
-    public void afterEntityAdded(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public void afterEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         insert(entity);
     }
 
     @Override
-    public void beforeVariableChanged(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public void beforeVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         retract(entity);
     }
 
     @Override
-    public void afterVariableChanged(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public void afterVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         insert(entity);
     }
 
     @Override
-    public void beforeEntityRemoved(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public void beforeEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         retract(entity);
     }
 
     @Override
-    public void afterEntityRemoved(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public void afterEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         // Do nothing
     }
 

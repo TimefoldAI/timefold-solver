@@ -8,6 +8,9 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * Default implementation of {@link ConstraintJustification}, returned by {@link ConstraintMatch#getJustification()}
  * unless the user defined a custom justification mapping.
@@ -15,27 +18,28 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 public final class DefaultConstraintJustification
         implements ConstraintJustification, Comparable<DefaultConstraintJustification> {
 
-    public static DefaultConstraintJustification of(Score<?> impact, Object fact) {
+    public static @NonNull DefaultConstraintJustification of(Score<?> impact, Object fact) {
         return of(impact, Collections.singletonList(fact));
     }
 
-    public static DefaultConstraintJustification of(Score<?> impact, Object factA, Object factB) {
+    public static @NonNull DefaultConstraintJustification of(Score<?> impact, Object factA, Object factB) {
         return of(impact, Arrays.asList(factA, factB));
     }
 
-    public static DefaultConstraintJustification of(Score<?> impact, Object factA, Object factB, Object factC) {
+    public static @NonNull DefaultConstraintJustification of(Score<?> impact, Object factA, Object factB, Object factC) {
         return of(impact, Arrays.asList(factA, factB, factC));
     }
 
-    public static DefaultConstraintJustification of(Score<?> impact, Object factA, Object factB, Object factC, Object factD) {
+    public static @NonNull DefaultConstraintJustification of(Score<?> impact, Object factA, Object factB, Object factC,
+            Object factD) {
         return of(impact, Arrays.asList(factA, factB, factC, factD));
     }
 
-    public static DefaultConstraintJustification of(Score<?> impact, Object... facts) {
+    public static @NonNull DefaultConstraintJustification of(Score<?> impact, Object... facts) {
         return of(impact, Arrays.asList(facts));
     }
 
-    public static DefaultConstraintJustification of(Score<?> impact, List<Object> facts) {
+    public static @NonNull DefaultConstraintJustification of(Score<?> impact, List<Object> facts) {
         return new DefaultConstraintJustification(impact, facts);
     }
 
@@ -51,11 +55,7 @@ public final class DefaultConstraintJustification
         return (Score_) impact;
     }
 
-    /**
-     *
-     * @return never null; may contain null
-     */
-    public List<Object> getFacts() {
+    public @NonNull List<@Nullable Object> getFacts() {
         return facts;
     }
 

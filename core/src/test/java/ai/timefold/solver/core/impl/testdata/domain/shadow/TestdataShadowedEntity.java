@@ -10,6 +10,8 @@ import ai.timefold.solver.core.impl.testdata.domain.DummyVariableListener;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 
+import org.jspecify.annotations.NonNull;
+
 @PlanningEntity
 public class TestdataShadowedEntity extends TestdataObject {
 
@@ -67,14 +69,14 @@ public class TestdataShadowedEntity extends TestdataObject {
             extends DummyVariableListener<TestdataShadowedSolution, TestdataShadowedEntity> {
 
         @Override
-        public void afterEntityAdded(ScoreDirector<TestdataShadowedSolution> scoreDirector,
-                TestdataShadowedEntity entity) {
+        public void afterEntityAdded(@NonNull ScoreDirector<TestdataShadowedSolution> scoreDirector,
+                @NonNull TestdataShadowedEntity entity) {
             updateShadow(scoreDirector, entity);
         }
 
         @Override
-        public void afterVariableChanged(ScoreDirector<TestdataShadowedSolution> scoreDirector,
-                TestdataShadowedEntity entity) {
+        public void afterVariableChanged(@NonNull ScoreDirector<TestdataShadowedSolution> scoreDirector,
+                @NonNull TestdataShadowedEntity entity) {
             updateShadow(scoreDirector, entity);
         }
 

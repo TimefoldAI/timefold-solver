@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.api.score.stream.common;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Represents a gap between two {@link Sequence sequences}.
  * For instance, the list [1,2,4,5,6,10] has a break of length 2 between 2 and 4,
@@ -24,16 +26,18 @@ public interface Break<Value_, Difference_ extends Comparable<Difference_>> {
      * Return the end of the sequence before this break. For the
      * break between 6 and 10, this will return 6.
      *
-     * @return never null; the item this break is directly after
+     * @return the item this break is directly after
      */
+    @NonNull
     Value_ getPreviousSequenceEnd();
 
     /**
      * Return the start of the sequence after this break. For the
      * break between 6 and 10, this will return 10.
      *
-     * @return never null; the item this break is directly before
+     * @return the item this break is directly before
      */
+    @NonNull
     Value_ getNextSequenceStart();
 
     /**
@@ -41,8 +45,9 @@ public interface Break<Value_, Difference_ extends Comparable<Difference_>> {
      * between {@link #getNextSequenceStart()} and {@link #getPreviousSequenceEnd()}. For the
      * break between 6 and 10, this will return 4.
      *
-     * @return never null; the length of this break
+     * @return the length of this break
      */
+    @NonNull
     Difference_ getLength();
 
 }

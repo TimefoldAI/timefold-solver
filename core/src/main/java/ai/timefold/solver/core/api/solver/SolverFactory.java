@@ -7,6 +7,9 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * Creates {@link Solver} instances.
  * Most applications only need one SolverFactory.
@@ -30,12 +33,12 @@ public interface SolverFactory<Solution_> {
      * and uses that {@link SolverConfig} to build a {@link SolverFactory}.
      * The XML root element must be {@code <solver>}.
      *
-     * @param solverConfigResource never null, a classpath resource
+     * @param solverConfigResource a classpath resource
      *        as defined by {@link ClassLoader#getResource(String)}
-     * @return never null, subsequent changes to the config have no effect on the returned instance
+     * @return subsequent changes to the config have no effect on the returned instance
      * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
      */
-    static <Solution_> SolverFactory<Solution_> createFromXmlResource(String solverConfigResource) {
+    static <Solution_> @NonNull SolverFactory<Solution_> createFromXmlResource(@NonNull String solverConfigResource) {
         SolverConfig solverConfig = SolverConfig.createFromXmlResource(solverConfigResource);
         return new DefaultSolverFactory<>(solverConfig);
     }
@@ -43,15 +46,15 @@ public interface SolverFactory<Solution_> {
     /**
      * As defined by {@link #createFromXmlResource(String)}.
      *
-     * @param solverConfigResource never null, a classpath resource
+     * @param solverConfigResource na classpath resource
      *        as defined by {@link ClassLoader#getResource(String)}
-     * @param classLoader sometimes null, the {@link ClassLoader} to use for loading all resources and {@link Class}es,
+     * @param classLoader the {@link ClassLoader} to use for loading all resources and {@link Class}es,
      *        null to use the default {@link ClassLoader}
-     * @return never null, subsequent changes to the config have no effect on the returned instance
+     * @return subsequent changes to the config have no effect on the returned instance
      * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
      */
-    static <Solution_> SolverFactory<Solution_> createFromXmlResource(String solverConfigResource,
-            ClassLoader classLoader) {
+    static <Solution_> @NonNull SolverFactory<Solution_> createFromXmlResource(@NonNull String solverConfigResource,
+            @Nullable ClassLoader classLoader) {
         SolverConfig solverConfig = SolverConfig.createFromXmlResource(solverConfigResource, classLoader);
         return new DefaultSolverFactory<>(solverConfig);
     }
@@ -63,11 +66,10 @@ public interface SolverFactory<Solution_> {
      * Warning: this leads to platform dependent code,
      * it's recommend to use {@link #createFromXmlResource(String)} instead.
      *
-     * @param solverConfigFile never null
-     * @return never null, subsequent changes to the config have no effect on the returned instance
+     * @return subsequent changes to the config have no effect on the returned instance
      * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
      */
-    static <Solution_> SolverFactory<Solution_> createFromXmlFile(File solverConfigFile) {
+    static <Solution_> @NonNull SolverFactory<Solution_> createFromXmlFile(@NonNull File solverConfigFile) {
         SolverConfig solverConfig = SolverConfig.createFromXmlFile(solverConfigFile);
         return new DefaultSolverFactory<>(solverConfig);
     }
@@ -75,13 +77,13 @@ public interface SolverFactory<Solution_> {
     /**
      * As defined by {@link #createFromXmlFile(File)}.
      *
-     * @param solverConfigFile never null
-     * @param classLoader sometimes null, the {@link ClassLoader} to use for loading all resources and {@link Class}es,
+     * @param classLoader the {@link ClassLoader} to use for loading all resources and {@link Class}es,
      *        null to use the default {@link ClassLoader}
-     * @return never null, subsequent changes to the config have no effect on the returned instance
+     * @return subsequent changes to the config have no effect on the returned instance
      * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
      */
-    static <Solution_> SolverFactory<Solution_> createFromXmlFile(File solverConfigFile, ClassLoader classLoader) {
+    static <Solution_> @NonNull SolverFactory<Solution_> createFromXmlFile(@NonNull File solverConfigFile,
+            @Nullable ClassLoader classLoader) {
         SolverConfig solverConfig = SolverConfig.createFromXmlFile(solverConfigFile, classLoader);
         return new DefaultSolverFactory<>(solverConfig);
     }
@@ -95,11 +97,10 @@ public interface SolverFactory<Solution_> {
      * If you don't need to manipulate the {@link SolverConfig} programmatically,
      * use {@link #createFromXmlResource(String)} instead.
      *
-     * @param solverConfig never null
-     * @return never null, subsequent changes to the config have no effect on the returned instance
+     * @return subsequent changes to the config have no effect on the returned instance
      * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
      */
-    static <Solution_> SolverFactory<Solution_> create(SolverConfig solverConfig) {
+    static <Solution_> @NonNull SolverFactory<Solution_> create(@NonNull SolverConfig solverConfig) {
         Objects.requireNonNull(solverConfig);
         // Defensive copy of solverConfig, because the DefaultSolverFactory doesn't internalize it yet
         solverConfig = new SolverConfig(solverConfig);
@@ -112,18 +113,16 @@ public interface SolverFactory<Solution_> {
 
     /**
      * Creates a new {@link Solver} instance.
-     *
-     * @return never null
      */
-    default Solver<Solution_> buildSolver() {
+    default @NonNull Solver<Solution_> buildSolver() {
         return this.buildSolver(new SolverConfigOverride<>());
     }
 
     /**
      * As defined by {@link #buildSolver()}.
      *
-     * @param configOverride never null, includes settings that override the default configuration
-     * @return never null
+     * @param configOverride includes settings that override the default configuration
      */
-    Solver<Solution_> buildSolver(SolverConfigOverride<Solution_> configOverride);
+    @NonNull
+    Solver<Solution_> buildSolver(@NonNull SolverConfigOverride<Solution_> configOverride);
 }

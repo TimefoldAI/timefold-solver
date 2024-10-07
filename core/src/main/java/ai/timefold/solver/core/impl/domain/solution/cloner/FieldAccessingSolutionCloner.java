@@ -30,6 +30,8 @@ import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.util.ConcurrentMemoization;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * This class is thread-safe.
  */
@@ -48,7 +50,7 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
     // ************************************************************************
 
     @Override
-    public Solution_ cloneSolution(Solution_ originalSolution) {
+    public @NonNull Solution_ cloneSolution(@NonNull Solution_ originalSolution) {
         Map<Object, Object> originalToCloneMap = new IdentityHashMap<>();
         Queue<Unprocessed> unprocessedQueue = new ArrayDeque<>();
         Solution_ cloneSolution = clone(originalSolution, originalToCloneMap, unprocessedQueue,

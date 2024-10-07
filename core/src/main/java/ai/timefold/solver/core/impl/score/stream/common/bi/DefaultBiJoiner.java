@@ -9,6 +9,8 @@ import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 import ai.timefold.solver.core.impl.score.stream.JoinerType;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractJoiner;
 
+import org.jspecify.annotations.NonNull;
+
 public final class DefaultBiJoiner<A, B> extends AbstractJoiner<B> implements BiJoiner<A, B> {
 
     private static final DefaultBiJoiner NONE = new DefaultBiJoiner(new Function[0], new JoinerType[0], new Function[0]);
@@ -35,7 +37,7 @@ public final class DefaultBiJoiner<A, B> extends AbstractJoiner<B> implements Bi
     }
 
     @Override
-    public DefaultBiJoiner<A, B> and(BiJoiner<A, B> otherJoiner) {
+    public @NonNull DefaultBiJoiner<A, B> and(@NonNull BiJoiner<A, B> otherJoiner) {
         DefaultBiJoiner<A, B> castJoiner = (DefaultBiJoiner<A, B>) otherJoiner;
         int joinerCount = getJoinerCount();
         int castJoinerCount = castJoiner.getJoinerCount();

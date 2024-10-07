@@ -7,6 +7,9 @@ import java.util.function.Function;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.ObjectCalculator;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 abstract sealed class ObjectCalculatorUniCollector<A, Input_, Output_, Mapped_, Calculator_ extends ObjectCalculator<Input_, Output_, Mapped_>>
         implements UniConstraintCollector<A, Calculator_, Output_>
         permits AverageReferenceUniCollector, ConnectedRangesUniConstraintCollector, ConsecutiveSequencesUniConstraintCollector,
@@ -19,7 +22,7 @@ abstract sealed class ObjectCalculatorUniCollector<A, Input_, Output_, Mapped_, 
     }
 
     @Override
-    public BiFunction<Calculator_, A, Runnable> accumulator() {
+    public @NonNull BiFunction<Calculator_, A, Runnable> accumulator() {
         return (calculator, a) -> {
             final var mapped = mapper.apply(a);
             final var saved = calculator.insert(mapped);
@@ -28,7 +31,7 @@ abstract sealed class ObjectCalculatorUniCollector<A, Input_, Output_, Mapped_, 
     }
 
     @Override
-    public Function<Calculator_, Output_> finisher() {
+    public @Nullable Function<Calculator_, Output_> finisher() {
         return ObjectCalculator::result;
     }
 

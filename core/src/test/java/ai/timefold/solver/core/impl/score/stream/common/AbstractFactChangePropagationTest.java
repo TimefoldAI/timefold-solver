@@ -18,6 +18,7 @@ import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShado
 import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedSolution;
 
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 public abstract class AbstractFactChangePropagationTest {
@@ -63,7 +64,7 @@ public abstract class AbstractFactChangePropagationTest {
     public static class ChainedEntityConstraintProvider implements ConstraintProvider {
 
         @Override
-        public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+        public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
             return new Constraint[] {
                     anchorCannotBeNull(constraintFactory)
             };

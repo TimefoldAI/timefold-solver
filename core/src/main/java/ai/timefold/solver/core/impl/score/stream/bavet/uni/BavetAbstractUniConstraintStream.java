@@ -55,6 +55,8 @@ import ai.timefold.solver.core.impl.score.stream.common.uni.InnerUniConstraintSt
 import ai.timefold.solver.core.impl.score.stream.common.uni.UniConstraintBuilderImpl;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
+import org.jspecify.annotations.NonNull;
+
 public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends BavetAbstractConstraintStream<Solution_>
         implements InnerUniConstraintStream<A> {
 
@@ -73,7 +75,7 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     // ************************************************************************
 
     @Override
-    public BavetAbstractUniConstraintStream<Solution_, A> filter(Predicate<A> predicate) {
+    public @NonNull UniConstraintStream<A> filter(@NonNull Predicate<A> predicate) {
         return shareAndAddChild(new BavetFilterUniConstraintStream<>(constraintFactory, this, predicate));
     }
 
@@ -83,8 +85,8 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
 
     @Override
     @SafeVarargs
-    public final <B> BiConstraintStream<A, B> join(UniConstraintStream<B> otherStream,
-            BiJoiner<A, B>... joiners) {
+    public final @NonNull <B> BiConstraintStream<A, B> join(@NonNull UniConstraintStream<B> otherStream,
+            @NonNull BiJoiner<A, B>... joiners) {
         BiJoinerComber<A, B> joinerComber = BiJoinerComber.comb(joiners);
         return join(otherStream, joinerComber);
     }
@@ -109,13 +111,15 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
 
     @SafeVarargs
     @Override
-    public final <B> UniConstraintStream<A> ifExists(UniConstraintStream<B> otherStream, BiJoiner<A, B>... joiners) {
+    public final @NonNull <B> UniConstraintStream<A> ifExists(@NonNull UniConstraintStream<B> otherStream,
+            @NonNull BiJoiner<A, B>... joiners) {
         return ifExistsOrNot(true, otherStream, joiners);
     }
 
     @SafeVarargs
     @Override
-    public final <B> UniConstraintStream<A> ifNotExists(UniConstraintStream<B> otherStream, BiJoiner<A, B>... joiners) {
+    public final @NonNull <B> UniConstraintStream<A> ifNotExists(@NonNull UniConstraintStream<B> otherStream,
+            @NonNull BiJoiner<A, B>... joiners) {
         return ifExistsOrNot(false, otherStream, joiners);
     }
 

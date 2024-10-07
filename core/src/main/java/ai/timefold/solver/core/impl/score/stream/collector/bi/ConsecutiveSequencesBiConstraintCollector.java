@@ -8,6 +8,8 @@ import java.util.function.ToIntFunction;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.impl.score.stream.collector.SequenceCalculator;
 
+import org.jspecify.annotations.NonNull;
+
 final class ConsecutiveSequencesBiConstraintCollector<A, B, Result_>
         extends
         ObjectCalculatorBiCollector<A, B, Result_, SequenceChain<Result_, Integer>, Result_, SequenceCalculator<Result_>> {
@@ -20,7 +22,7 @@ final class ConsecutiveSequencesBiConstraintCollector<A, B, Result_>
     }
 
     @Override
-    public Supplier<SequenceCalculator<Result_>> supplier() {
+    public @NonNull Supplier<SequenceCalculator<Result_>> supplier() {
         return () -> new SequenceCalculator<>(indexMap);
     }
 

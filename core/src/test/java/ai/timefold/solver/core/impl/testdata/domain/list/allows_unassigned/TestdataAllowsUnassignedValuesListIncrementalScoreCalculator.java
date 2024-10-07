@@ -6,48 +6,50 @@ import java.util.List;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 
+import org.jspecify.annotations.NonNull;
+
 public final class TestdataAllowsUnassignedValuesListIncrementalScoreCalculator
         implements IncrementalScoreCalculator<TestdataAllowsUnassignedValuesListSolution, SimpleScore> {
 
     private List<TestdataAllowsUnassignedValuesListEntity> entityList;
 
     @Override
-    public void resetWorkingSolution(TestdataAllowsUnassignedValuesListSolution workingSolution) {
+    public void resetWorkingSolution(@NonNull TestdataAllowsUnassignedValuesListSolution workingSolution) {
         this.entityList = new ArrayList<>(workingSolution.getEntityList());
     }
 
     @Override
-    public void beforeEntityAdded(Object entity) {
+    public void beforeEntityAdded(@NonNull Object entity) {
         // No need to do anything.
     }
 
     @Override
-    public void afterEntityAdded(Object entity) {
+    public void afterEntityAdded(@NonNull Object entity) {
         entityList.add((TestdataAllowsUnassignedValuesListEntity) entity);
     }
 
     @Override
-    public void beforeVariableChanged(Object entity, String variableName) {
+    public void beforeVariableChanged(@NonNull Object entity, @NonNull String variableName) {
         throw new UnsupportedOperationException(); // Will not be called.
     }
 
     @Override
-    public void afterVariableChanged(Object entity, String variableName) {
+    public void afterVariableChanged(@NonNull Object entity, @NonNull String variableName) {
         throw new UnsupportedOperationException(); // Will not be called.
     }
 
     @Override
-    public void beforeEntityRemoved(Object entity) {
+    public void beforeEntityRemoved(@NonNull Object entity) {
         // No need to do anything.
     }
 
     @Override
-    public void afterEntityRemoved(Object entity) {
+    public void afterEntityRemoved(@NonNull Object entity) {
         entityList.remove((TestdataAllowsUnassignedValuesListEntity) entity);
     }
 
     @Override
-    public SimpleScore calculateScore() {
+    public @NonNull SimpleScore calculateScore() {
         int i = 0;
         for (TestdataAllowsUnassignedValuesListEntity entity : entityList) {
             i += entity.getValueList().size();
