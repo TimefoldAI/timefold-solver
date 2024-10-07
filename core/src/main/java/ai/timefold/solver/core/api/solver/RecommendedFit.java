@@ -20,6 +20,7 @@ import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
  *
  * @param <Proposition_> the generic type of the proposition as returned by the proposition function
  * @param <Score_> the generic type of the score
+ * @deprecated Prefer {@link RecommendedAssignment} instead.
  */
 @Deprecated(forRemoval = true, since = "1.15.0")
 public interface RecommendedFit<Proposition_, Score_ extends Score<Score_>>

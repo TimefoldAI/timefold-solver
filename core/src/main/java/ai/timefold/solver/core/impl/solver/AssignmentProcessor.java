@@ -126,8 +126,8 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
     private EntityPlacer<Solution_> buildEntityPlacer() {
         var solver = (DefaultSolver<Solution_>) solverFactory.buildSolver();
         var phaseList = solver.getPhaseList();
-        long constructionHeuristicCount = phaseList.stream()
-                .filter(s -> (s instanceof DefaultConstructionHeuristicPhase))
+        var constructionHeuristicCount = phaseList.stream()
+                .filter(DefaultConstructionHeuristicPhase.class::isInstance)
                 .count();
         if (constructionHeuristicCount != 1) {
             throw new IllegalStateException(
