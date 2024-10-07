@@ -29,7 +29,31 @@ on:
         default: true
         required: true
 jobs:
-  build:
+  test_build_documentation:
+    runs-on: ubuntu-latest
+    env:
+      GIT_CREDENTIALS: ${{ secrets.GIT_CREDENTIALS }}
+    steps:
+      - name: Checkout frontend
+        id: checkout-frontend
+        uses: actions/checkout@v4
+        with:
+          repository: TimefoldAI/frontend
+          token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
+          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
+
+      - name: Set up NodeJs
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Build Documentation
+        run: |
+          sed -i 's/tags:\s*\[v[0-9.]*,\s*v0.8.42]/tags: \[main]/' apps/docs/antora-playbook.yml
+          npm ci
+          npm run build -- --filter docs
+  build_solver:
     env:
       MAVEN_ARGS: "--no-transfer-progress --batch-mode"
       RELEASE_BRANCH_NAME: "__timefold_release_branch__"
@@ -78,7 +102,7 @@ jobs:
       - name: Install Pip and build
         run: |
           python -m pip install --upgrade pip
-          pip install build
+          pip install build          
 
       # We skip tests in dry run, to make the process faster.
       # Technically, this goes against the main reason for doing a dry run; to eliminate potential problems.
