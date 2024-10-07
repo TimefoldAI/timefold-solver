@@ -86,6 +86,18 @@ List<RecommendedAssignment<Employee, HardSoftScore>> recommendations =
 ----
 ====
 
+'''
+
+.icon:eye[] "Score calculation speed" replaced by "Move evaluation speed"
+[%collapsible%open]
+====
+In Timefold Solver's logging, the term "Score calculation speed" has been replaced by "Move evaluation speed".
+This reflects the fact that the solver evaluates moves, and each move can result in multiple score calculations.
+To avoid confusion, we have updated the logging messages to use the new term.
+
+This change is purely cosmetic and does not affect the behavior of the solver, or your code.
+====
+
 
 === Upgrade from 1.12.0 to 1.13.0
 
