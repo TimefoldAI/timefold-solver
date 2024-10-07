@@ -22,7 +22,7 @@ import ai.timefold.solver.core.api.score.stream.common.Sequence;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.api.solver.RecommendedFit;
 import ai.timefold.solver.core.impl.domain.solution.DefaultConstraintWeightOverrides;
-import ai.timefold.solver.core.impl.solver.DefaultRecommendedFit;
+import ai.timefold.solver.core.impl.solver.DefaultRecommendedAssignment;
 import ai.timefold.solver.jackson.api.domain.solution.ConstraintWeightOverridesSerializer;
 import ai.timefold.solver.jackson.api.score.PolymorphicScoreJacksonDeserializer;
 import ai.timefold.solver.jackson.api.score.PolymorphicScoreJacksonSerializer;
@@ -128,7 +128,7 @@ public class TimefoldJacksonModule extends SimpleModule {
         addSerializer(ScoreAnalysis.class, new ScoreAnalysisJacksonSerializer());
         var serializer = new RecommendedFitJacksonSerializer();
         addSerializer(RecommendedFit.class, serializer);
-        addSerializer(DefaultRecommendedFit.class, serializer);
+        addSerializer(DefaultRecommendedAssignment.class, serializer);
 
         // Constraint weights
         addSerializer(ConstraintWeightOverrides.class, new ConstraintWeightOverridesSerializer());

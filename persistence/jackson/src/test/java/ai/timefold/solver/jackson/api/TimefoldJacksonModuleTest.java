@@ -18,7 +18,7 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 import ai.timefold.solver.core.api.solver.RecommendedFit;
-import ai.timefold.solver.core.impl.solver.DefaultRecommendedFit;
+import ai.timefold.solver.core.impl.solver.DefaultRecommendedAssignment;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.jackson.api.domain.solution.AbstractConstraintWeightOverridesDeserializer;
 import ai.timefold.solver.jackson.api.score.analysis.AbstractScoreAnalysisJacksonDeserializer;
@@ -181,7 +181,7 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
 
         var proposition = new Pair<>("A", "1");
         var originalScoreAnalysis = getScoreAnalysis();
-        var originalRecommendedFit = new DefaultRecommendedFit<>(0, proposition, originalScoreAnalysis);
+        var originalRecommendedFit = new DefaultRecommendedAssignment<>(0, proposition, originalScoreAnalysis);
         var fitList = List.of(originalRecommendedFit);
 
         var serialized = objectMapper.writeValueAsString(fitList);

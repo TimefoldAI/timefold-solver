@@ -8,7 +8,6 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
-import ai.timefold.solver.core.api.solver.RecommendedFit;
 import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
 import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhase;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
@@ -19,7 +18,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 public final class FitProcessor<Solution_, In_, Out_, Score_ extends Score<Score_>>
-        implements Function<InnerScoreDirector<Solution_, Score_>, List<RecommendedFit<Out_, Score_>>> {
+        implements Function<InnerScoreDirector<Solution_, Score_>, List<DefaultRecommendedAssignment<Out_, Score_>>> {
 
     private final DefaultSolverFactory<Solution_> solverFactory;
     private final ScoreAnalysis<Score_> originalScoreAnalysis;
@@ -37,7 +36,7 @@ public final class FitProcessor<Solution_, In_, Out_, Score_ extends Score<Score
     }
 
     @Override
-    public List<RecommendedFit<Out_, Score_>> apply(InnerScoreDirector<Solution_, Score_> scoreDirector) {
+    public List<DefaultRecommendedAssignment<Out_, Score_>> apply(InnerScoreDirector<Solution_, Score_> scoreDirector) {
         // The placers needs to be filtered.
         // If anything else than the cloned element is unassigned, we want to keep it unassigned.
         // Otherwise the solution would have to explicitly pin everything other than the cloned element.
@@ -61,14 +60,14 @@ public final class FitProcessor<Solution_, In_, Out_, Score_ extends Score<Score
                         """.formatted(entityPlacer));
             }
             var placement = placementIterator.next();
-            var recommendedFitList = new ArrayList<RecommendedFit<Out_, Score_>>();
+            var recommendedAssignmentList = new ArrayList<DefaultRecommendedAssignment<Out_, Score_>>();
             var moveIndex = 0L;
             for (var move : placement) {
-                recommendedFitList.add(execute(scoreDirector, move, moveIndex, clonedElement, valueResultFunction));
+                recommendedAssignmentList.add(execute(scoreDirector, move, moveIndex, clonedElement, valueResultFunction));
                 moveIndex++;
             }
-            recommendedFitList.sort(null);
-            return recommendedFitList;
+            recommendedAssignmentList.sort(null);
+            return recommendedAssignmentList;
         } finally {
             entityPlacer.stepEnded(stepScope);
             entityPlacer.phaseEnded(phaseScope);
@@ -97,13 +96,13 @@ public final class FitProcessor<Solution_, In_, Out_, Score_ extends Score<Score
         }
     }
 
-    private RecommendedFit<Out_, Score_> execute(InnerScoreDirector<Solution_, Score_> scoreDirector, Move<Solution_> move,
-            long moveIndex, In_ clonedElement, Function<In_, Out_> propositionFunction) {
+    private DefaultRecommendedAssignment<Out_, Score_> execute(InnerScoreDirector<Solution_, Score_> scoreDirector,
+            Move<Solution_> move, long moveIndex, In_ clonedElement, Function<In_, Out_> propositionFunction) {
         var undo = move.doMove(scoreDirector);
         var newScoreAnalysis = scoreDirector.buildScoreAnalysis(fetchPolicy == ScoreAnalysisFetchPolicy.FETCH_ALL);
         var newScoreDifference = newScoreAnalysis.diff(originalScoreAnalysis);
         var result = propositionFunction.apply(clonedElement);
-        var recommendation = new DefaultRecommendedFit<>(moveIndex, result, newScoreDifference);
+        var recommendation = new DefaultRecommendedAssignment<>(moveIndex, result, newScoreDifference);
         undo.doMoveOnly(scoreDirector);
         return recommendation;
     }

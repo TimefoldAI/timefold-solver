@@ -8,6 +8,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.ScoreExplanation;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
+import ai.timefold.solver.core.api.solver.RecommendedAssignment;
 import ai.timefold.solver.core.api.solver.RecommendedFit;
 import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
 import ai.timefold.solver.core.api.solver.SolutionManager;
@@ -75,6 +76,7 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public ScoreExplanation<Solution_, Score_> explain(Solution_ solution, SolutionUpdatePolicy solutionUpdatePolicy) {
         var currentScore = (Score_) scoreDirectorFactory.getSolutionDescriptor().getScore(solution);
@@ -101,6 +103,7 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public ScoreAnalysis<Score_> analyze(Solution_ solution, ScoreAnalysisFetchPolicy fetchPolicy,
             SolutionUpdatePolicy solutionUpdatePolicy) {
@@ -113,12 +116,20 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
         return analysis;
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public <In_, Out_> List<RecommendedAssignment<Out_, Score_>> recommendAssignment(Solution_ solution,
+            In_ evaluatedEntityOrElement, Function<In_, Out_> propositionFunction, ScoreAnalysisFetchPolicy fetchPolicy) {
+        var fitter = new Fitter<Solution_, In_, Out_, Score_>(solverFactory, solution, evaluatedEntityOrElement,
+                propositionFunction, fetchPolicy);
+        return (List) callScoreDirector(solution, SolutionUpdatePolicy.UPDATE_ALL, fitter, true, true);
+    }
+
+    @SuppressWarnings("unchecked")
     @Override
     public <In_, Out_> List<RecommendedFit<Out_, Score_>> recommendFit(Solution_ solution, In_ fittedEntityOrElement,
             Function<In_, Out_> propositionFunction, ScoreAnalysisFetchPolicy fetchPolicy) {
-        var fitter = new Fitter<Solution_, In_, Out_, Score_>(solverFactory, solution, fittedEntityOrElement,
-                propositionFunction, fetchPolicy);
-        return callScoreDirector(solution, SolutionUpdatePolicy.UPDATE_ALL, fitter, true, true);
+        return (List) recommendAssignment(solution, fittedEntityOrElement, propositionFunction, fetchPolicy);
     }
 
 }

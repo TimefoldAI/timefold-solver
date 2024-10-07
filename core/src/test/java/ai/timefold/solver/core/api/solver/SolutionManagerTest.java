@@ -338,7 +338,7 @@ public class SolutionManagerTest {
 
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
-    void recommendFit(SolutionManagerSource SolutionManagerSource) {
+    void recommendAssignment(SolutionManagerSource SolutionManagerSource) {
         int valueSize = 3;
         var solution = TestdataShadowedSolution.generateSolution(valueSize, 3);
         var uninitializedEntity = solution.getEntityList().get(2);
@@ -347,7 +347,7 @@ public class SolutionManagerTest {
 
         var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_SHADOWED);
         assertThat(solutionManager).isNotNull();
-        var recommendationList = solutionManager.recommendFit(solution, uninitializedEntity, TestdataShadowedEntity::getValue);
+        var recommendationList = solutionManager.recommendAssignment(solution, uninitializedEntity, TestdataShadowedEntity::getValue);
 
         // Three values means there need to be three recommendations.
         assertThat(recommendationList).hasSize(valueSize);
@@ -386,7 +386,7 @@ public class SolutionManagerTest {
 
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
-    void recommendFitUninitializedSolution(SolutionManagerSource SolutionManagerSource) {
+    void recommendAssignmentUninitializedSolution(SolutionManagerSource SolutionManagerSource) {
         int valueSize = 3;
         var uninitializedSolution = TestdataShadowedSolution.generateSolution(valueSize, 3);
         uninitializedSolution.getEntityList().forEach(e -> e.setValue(null));
@@ -394,14 +394,14 @@ public class SolutionManagerTest {
 
         var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_SHADOWED);
         assertThat(solutionManager).isNotNull();
-        assertThatThrownBy(() -> solutionManager.recommendFit(uninitializedSolution, uninitializedEntity,
+        assertThatThrownBy(() -> solutionManager.recommendAssignment(uninitializedSolution, uninitializedEntity,
                 TestdataShadowedEntity::getValue))
                 .hasMessageContaining("Solution (Generated Solution 0) has (3) uninitialized elements.");
     }
 
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
-    void recommendFitWithUnassigned(SolutionManagerSource SolutionManagerSource) {
+    void recommendAssignmentWithUnassigned(SolutionManagerSource SolutionManagerSource) {
         int valueSize = 3;
         var solution = TestdataAllowsUnassignedSolution.generateSolution(valueSize, 3);
         var uninitializedEntity = solution.getEntityList().get(2);
@@ -413,7 +413,7 @@ public class SolutionManagerTest {
         var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_UNASSIGNED);
         assertThat(solutionManager).isNotNull();
         var recommendationList =
-                solutionManager.recommendFit(solution, uninitializedEntity, TestdataAllowsUnassignedEntity::getValue);
+                solutionManager.recommendAssignment(solution, uninitializedEntity, TestdataAllowsUnassignedEntity::getValue);
 
         // Three values means there need to be four recommendations, one extra for unassigned.
         assertThat(recommendationList).hasSize(valueSize + 1);
@@ -459,14 +459,14 @@ public class SolutionManagerTest {
 
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
-    void recommendFitUninitializedSolutionWithUnassigned(SolutionManagerSource SolutionManagerSource) {
+    void recommendAssignmentUninitializedSolutionWithUnassigned(SolutionManagerSource SolutionManagerSource) {
         int valueSize = 3;
         var uninitializedSolution = TestdataAllowsUnassignedSolution.generateSolution(valueSize, 3);
         uninitializedSolution.getEntityList().forEach(e -> e.setValue(null));
         var uninitializedEntity = uninitializedSolution.getEntityList().get(2);
         var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_UNASSIGNED);
         assertThat(solutionManager).isNotNull();
-        var recommendationList = solutionManager.recommendFit(uninitializedSolution, uninitializedEntity,
+        var recommendationList = solutionManager.recommendAssignment(uninitializedSolution, uninitializedEntity,
                 TestdataAllowsUnassignedEntity::getValue);
 
         // Three values means there need to be four recommendations, one extra for unassigned.
@@ -475,7 +475,7 @@ public class SolutionManagerTest {
 
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
-    void recommendFitMultivar(SolutionManagerSource SolutionManagerSource) {
+    void recommendAssignmentMultivar(SolutionManagerSource SolutionManagerSource) {
         var solution = new TestdataMultiVarSolution("solution");
         var firstValue = new TestdataValue("firstValue");
         var secondValue = new TestdataValue("secondValue");
@@ -486,7 +486,7 @@ public class SolutionManagerTest {
         solution.setMultiVarEntityList(List.of(uninitializedEntity));
 
         var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_MULTIVAR);
-        var recommendationList = solutionManager.recommendFit(solution, uninitializedEntity,
+        var recommendationList = solutionManager.recommendAssignment(solution, uninitializedEntity,
                 entity -> new Triple<>(entity.getPrimaryValue(), entity.getSecondaryValue(),
                         entity.getTertiaryValueAllowedUnassigned()));
         assertThat(recommendationList).hasSize(8);
@@ -566,7 +566,7 @@ public class SolutionManagerTest {
 
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
-    void recommendFitUninitializedSolutionWithMultivar(SolutionManagerSource SolutionManagerSource) {
+    void recommendAssignmentUninitializedSolutionWithMultivar(SolutionManagerSource SolutionManagerSource) {
         var solution = new TestdataMultiVarSolution("solution");
         var firstValue = new TestdataValue("firstValue");
         var secondValue = new TestdataValue("secondValue");
@@ -578,7 +578,7 @@ public class SolutionManagerTest {
         solution.setMultiVarEntityList(List.of(uninitializedEntity, secondUninitializedEntity));
 
         var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_MULTIVAR);
-        assertThatThrownBy(() -> solutionManager.recommendFit(solution, uninitializedEntity,
+        assertThatThrownBy(() -> solutionManager.recommendAssignment(solution, uninitializedEntity,
                 entity -> new Triple<>(entity.getPrimaryValue(), entity.getSecondaryValue(),
                         entity.getTertiaryValueAllowedUnassigned())))
                 .hasMessageContaining("Solution (solution) has (2) uninitialized elements.");
@@ -590,7 +590,7 @@ public class SolutionManagerTest {
 
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
-    void recommendFitChained(SolutionManagerSource SolutionManagerSource) {
+    void recommendAssignmentChained(SolutionManagerSource SolutionManagerSource) {
         var a0 = new TestdataShadowingChainedAnchor("a0");
         var b0 = new TestdataShadowingChainedAnchor("b0");
         var b1 = new TestdataShadowingChainedEntity("b1", b0);
@@ -604,7 +604,7 @@ public class SolutionManagerTest {
 
         var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_CHAINED);
         var recommendationList =
-                solutionManager.recommendFit(solution, uninitializedEntity, TestdataShadowingChainedEntity::getChainedObject);
+                solutionManager.recommendAssignment(solution, uninitializedEntity, TestdataShadowingChainedEntity::getChainedObject);
         assertThat(recommendationList).hasSize(6);
 
         // First recommendation is to be added to the "a" chain, as that results in the shortest chain.
@@ -658,7 +658,7 @@ public class SolutionManagerTest {
 
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
-    void recommendFitTwoUninitializedEntityWithChained(SolutionManagerSource SolutionManagerSource) {
+    void recommendAssignmentTwoUninitializedEntityWithChained(SolutionManagerSource SolutionManagerSource) {
         var a0 = new TestdataShadowingChainedAnchor("a0");
         var b0 = new TestdataShadowingChainedAnchor("b0");
         var b1 = new TestdataShadowingChainedEntity("b1", b0);
@@ -672,14 +672,14 @@ public class SolutionManagerTest {
         uninitializedSolution.setChainedEntityList(Arrays.asList(b1, c1, c2, uninitializedEntity, uninitializedEntity2));
 
         var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_CHAINED);
-        assertThatThrownBy(() -> solutionManager.recommendFit(uninitializedSolution, uninitializedEntity,
+        assertThatThrownBy(() -> solutionManager.recommendAssignment(uninitializedSolution, uninitializedEntity,
                 TestdataShadowingChainedEntity::getChainedObject))
                 .hasMessageContaining("Solution (solution) has (2) uninitialized elements.");
     }
 
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
-    void recommendFitList(SolutionManagerSource SolutionManagerSource) {
+    void recommendAssignmentList(SolutionManagerSource SolutionManagerSource) {
         var a = new TestdataListEntityWithShadowHistory("a");
         var b0 = new TestdataListValueWithShadowHistory("b0");
         var b = new TestdataListEntityWithShadowHistory("b", b0);
@@ -693,7 +693,7 @@ public class SolutionManagerTest {
 
         var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_LIST);
         var recommendationList =
-                solutionManager.recommendFit(solution, uninitializedValue, v -> new Pair<>(v.getEntity(), v.getIndex()));
+                solutionManager.recommendAssignment(solution, uninitializedValue, v -> new Pair<>(v.getEntity(), v.getIndex()));
         assertThat(recommendationList).hasSize(6);
 
         // First recommendation is to be added to the "a" list variable, as that results in the shortest list.
@@ -749,7 +749,7 @@ public class SolutionManagerTest {
 
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
-    void recommendFitTwoUninitializedEntityWithList(SolutionManagerSource SolutionManagerSource) {
+    void recommendAssignmentTwoUninitializedEntityWithList(SolutionManagerSource SolutionManagerSource) {
         var a = new TestdataListEntityWithShadowHistory("a");
         var b0 = new TestdataListValueWithShadowHistory("b0");
         var b = new TestdataListEntityWithShadowHistory("b", b0);
@@ -764,13 +764,13 @@ public class SolutionManagerTest {
 
         var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_LIST);
         var recommendationList =
-                solutionManager.recommendFit(solution, uninitializedValue, v -> new Pair<>(v.getEntity(), v.getIndex()));
+                solutionManager.recommendAssignment(solution, uninitializedValue, v -> new Pair<>(v.getEntity(), v.getIndex()));
         assertThat(recommendationList).hasSize(7);
     }
 
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
-    void recommendFitListPinned(SolutionManagerSource SolutionManagerSource) {
+    void recommendAssignmentListPinned(SolutionManagerSource SolutionManagerSource) {
         var a = new TestdataPinnedWithIndexListEntity("a");
         var b0 = new TestdataPinnedWithIndexListValue("b0");
         var b = new TestdataPinnedWithIndexListEntity("b", b0);
@@ -787,7 +787,7 @@ public class SolutionManagerTest {
 
         var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_LIST_PINNED);
         var recommendationList =
-                solutionManager.recommendFit(solution, uninitializedValue,
+                solutionManager.recommendAssignment(solution, uninitializedValue,
                         v -> new Pair<>(v.getEntity(), v.getEntity().getValueList().indexOf(v)));
         assertThat(recommendationList).hasSize(3);
 
@@ -832,7 +832,7 @@ public class SolutionManagerTest {
 
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
-    void recommendFitTwoUninitializedEntityWithListPinned(SolutionManagerSource SolutionManagerSource) {
+    void recommendAssignmentTwoUninitializedEntityWithListPinned(SolutionManagerSource SolutionManagerSource) {
         var a = new TestdataPinnedWithIndexListEntity("a");
         var b0 = new TestdataPinnedWithIndexListValue("b0");
         var b = new TestdataPinnedWithIndexListEntity("b", b0);
@@ -850,7 +850,7 @@ public class SolutionManagerTest {
 
         var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_LIST_PINNED);
         var recommendationList =
-                solutionManager.recommendFit(solution, uninitializedValue,
+                solutionManager.recommendAssignment(solution, uninitializedValue,
                         v -> new Pair<>(v.getEntity(), v.getEntity().getValueList().indexOf(v)));
         assertThat(recommendationList).hasSize(4);
     }

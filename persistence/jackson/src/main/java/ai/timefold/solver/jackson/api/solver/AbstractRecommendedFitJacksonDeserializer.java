@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.solver.RecommendedFit;
-import ai.timefold.solver.core.impl.solver.DefaultRecommendedFit;
+import ai.timefold.solver.core.impl.solver.DefaultRecommendedAssignment;
 import ai.timefold.solver.jackson.api.score.analysis.AbstractScoreAnalysisJacksonDeserializer;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -31,7 +31,7 @@ public abstract class AbstractRecommendedFitJacksonDeserializer<Proposition_, Sc
         extends JsonDeserializer<RecommendedFit<Proposition_, Score_>> {
 
     /**
-     * {@link DefaultRecommendedFit} requires ID for purposes of ordering,
+     * {@link DefaultRecommendedAssignment} requires ID for purposes of ordering,
      * to break ties if two instances have the same score.
      * This ID has no other effect on the instances.
      *
@@ -46,7 +46,7 @@ public abstract class AbstractRecommendedFitJacksonDeserializer<Proposition_, Sc
         JsonNode node = p.readValueAsTree();
         Proposition_ proposition = ctxt.readTreeAsValue(node.get("proposition"), getPropositionClass());
         ScoreAnalysis<Score_> diff = ctxt.readTreeAsValue(node.get("scoreDiff"), ScoreAnalysis.class);
-        return new DefaultRecommendedFit<>(ID_COUNTER.getAndIncrement(), proposition, diff);
+        return new DefaultRecommendedAssignment<>(ID_COUNTER.getAndIncrement(), proposition, diff);
     }
 
     /**
