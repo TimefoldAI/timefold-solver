@@ -725,6 +725,7 @@ but do accept infeasible solutions too.
 
 
 [#recommendedFitAPI]
+[#assignmentRecommendationAPI]
 == Responding to adhoc changes
 
 [NOTE]
@@ -737,9 +738,9 @@ However, it is often necessary to respond to adhoc changes too,
 for example when a call center operator needs to arrange an appointment with a customer.
 In such cases, it is not necessary to use the full power of real-time planning.
 Instead, immediate response to the customer and a selection of available time windows are more important.
-This is where _Recommended Fit API_ comes in.
+This is where _Assignment Recommendation API_ comes in.
 
-The Recommended Fit API allows you to quickly respond to adhoc changes,
+The Assignment Recommendation API allows you to quickly respond to adhoc changes,
 while providing a selection of the best available options for fitting the change in the existing schedule.
 It doesn't use the full xref:optimization-algorithms/optimization-algorithms.adoc#localSearch[local search algorithm].
 Instead,
@@ -755,9 +756,10 @@ can be used to optimize the entire solution around this change.
 This would be an example of <<continuousPlanning,continuous planning>>.
 
 [#usingRecommendedFitAPI]
-=== Using the Recommended Fit API
+[#usingAssignmentRecommendationAPI]
+=== Using the Assignment Recommendation API
 
-The Recommended Fit API requires one uninitialized entity to be present in the solution:
+The Assignment Recommendation API requires an entity to be evaluated for assignment:
 
 [source,java,options="nowrap"]
 ----
@@ -766,13 +768,14 @@ Shift unassignedShift = new Shift(...); // A new shift needs to be assigned.
 employeeSchedule.getShifts().add(unassignedShift);
 ----
 
-The `SolutionManager` is then used to retrieve the recommended fit for the uninitialized entity:
+If the entity is unassigned, then it must be the only unassigned entity in the planning solution.
+The `SolutionManager` is then used to retrieve the recommended assignments for this entity:
 
 [source,java,options="nowrap"]
 ----
 SolutionManager<EmployeeSchedule, HardSoftScore> solutionManager = ...;
-List<RecommendedFit<Employee, HardSoftScore>> recommendations =
-    solutionManager.recommendFit(employeeSchedule, unassignedShift, Shift::getEmployee);
+List<RecommendedAssignment<Employee, HardSoftScore>> recommendations =
+    solutionManager.recommendAssignment(employeeSchedule, unassignedShift, Shift::getEmployee);
 ----
 
 Breaking this down, we have:
@@ -781,7 +784,7 @@ Breaking this down, we have:
 - `unassignedShift`, the uninitialized entity, which is part of the planning solution.
 - `Shift::getEmployee`, a function extracting the planning variable from the entity,
 also called a "proposition function".
-- `List<RecommendedFit<Employee, HardSoftScore>>`, the list of recommended employees to assign to the shift,
+- `List<RecommendedAssignment<Employee, HardSoftScore>>`, the list of recommended employees to assign to the shift,
 in the order of decreasing preference.
 Each recommendation contains the employee and the difference in score caused by assigning the employee to the shift.
 This difference has the full explanatory power of xref:constraints-and-score/understanding-the-score.adoc#scoreAnalysis[score analysis].
@@ -793,7 +796,7 @@ represented here by the necessary backend code:
 
 [source,java,options="nowrap"]
 ----
-RecommendedFit<Employee, HardSoftScore> bestRecommendation = recommendations.get(0);
+RecommendedAssignment<Employee, HardSoftScore> bestRecommendation = recommendations.get(0);
 Employee bestEmployee = bestRecommendation.proposition();
 unassignedShift.setEmployee(bestEmployee);
 ----
@@ -802,7 +805,7 @@ If required, <<continuousPlanning,continuous planning>> can be used to optimize 
 
 [NOTE]
 ====
-Recommendation Fit API requires the `SolutionManager` to be configured
+Assignment Recommendation API requires the `SolutionManager` to be configured
 with a xref:optimization-algorithms/optimization-algorithms.adoc#constructionHeuristics[construction heuristic] as the first phase,
 as it uses that construction heuristic to find the best fit.
 If there are multiple construction heuristics phases in the xref:using-timefold-solver/configuration.adoc#solverConfiguration[solver configuration],
@@ -837,16 +840,16 @@ Consider the following example:
 [source,java,options="nowrap"]
 ----
 SolutionManager<EmployeeSchedule, HardSoftScore> solutionManager = ...;
-List<RecommendedFit<Shift, HardSoftScore>> recommendations =
-    solutionManager.recommendFit(employeeSchedule, unassignedShift, shift -> shift);
+List<RecommendedAssignment<Shift, HardSoftScore>> recommendations =
+    solutionManager.recommendAssignment(employeeSchedule, unassignedShift, shift -> shift);
 ----
 
 The proposition function (`shift -> shift`) returns the entire `Shift` entity.
 Because of the behavior described above,
-every `RecommendedFit` in the `recommendations` list will point to the same `unassignedShift`,
+every `RecommendedAssignment` in the `recommendations` list will point to the same `unassignedShift`,
 and its `employee` variable will be `null`.
 This is not what we want,
-because none of the `RecommendedFit` instances give us the `Employee` we need to assign to the shift.
+because none of the `RecommendedAssignment` instances give us the `Employee` we need to assign to the shift.
 
 To avoid this,
 the proposition function should preferably return a value that does not change during the process,

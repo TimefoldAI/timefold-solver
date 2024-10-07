@@ -138,34 +138,32 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
             SolutionUpdatePolicy solutionUpdatePolicy);
 
     /**
-     * As defined by {@link #recommendFit(Object, Object, Function, ScoreAnalysisFetchPolicy)},
+     * As defined by {@link #recommendAssignment(Object, Object, Function, ScoreAnalysisFetchPolicy)},
      * with {@link ScoreAnalysisFetchPolicy#FETCH_ALL}.
      */
-    default <EntityOrElement_, Proposition_> List<RecommendedFit<Proposition_, Score_>> recommendFit(Solution_ solution,
-            EntityOrElement_ fittedEntityOrElement, Function<EntityOrElement_, Proposition_> propositionFunction) {
-        return recommendFit(solution, fittedEntityOrElement, propositionFunction, FETCH_ALL);
+    default <EntityOrElement_, Proposition_> List<RecommendedAssignment<Proposition_, Score_>> recommendAssignment(
+            Solution_ solution, EntityOrElement_ evaluatedEntityOrElement,
+            Function<EntityOrElement_, Proposition_> propositionFunction) {
+        return recommendAssignment(solution, evaluatedEntityOrElement, propositionFunction, FETCH_ALL);
     }
 
     /**
-     * Quickly runs through all possible options of fitting a given entity or element in a given solution,
+     * Quickly runs through all possible options of assigning a given entity or element in a given solution,
      * and returns a list of recommendations sorted by score,
      * with most favorable score first.
-     * Think of this method as a construction heuristic
-     * which shows you all the options to initialize the solution.
-     * The input solution must be fully initialized
-     * except for one entity or element, the one to be fitted.
+     * The input solution must either be fully initialized,
+     * or have a single entity or element unassigned.
      *
      * <p>
      * For problems with only basic planning variables or with chained planning variables,
      * the fitted element is a planning entity of the problem.
-     * Each available planning value will be tested for fit
-     * by setting it to the planning variable in question.
+     * Each available planning value will be tested by setting it to the planning variable in question.
      * For problems with a list variable,
-     * the fitted element may be a shadow entity,
-     * and it will be tested for fit in each position of the planning list variable.
+     * the evaluated element may be a shadow entity,
+     * and it will be tested in each position of the planning list variable.
      *
      * <p>
-     * The score returned by {@link RecommendedFit#scoreAnalysisDiff()}
+     * The score returned by {@link RecommendedAssignment#scoreAnalysisDiff()}
      * is the difference between the score of the solution before and after fitting.
      * Every recommendation will be in a state as if the solution was never changed;
      * if it references entities,
@@ -182,7 +180,7 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * or indirectly by not providing correct data.
      *
      * <p>
-     * When an element is tested for fit,
+     * When an element is tested,
      * a score is calculated over the entire solution with the element in place,
      * also called a placement.
      * The proposition function is also called at that time,
@@ -217,7 +215,7 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * and therefore share the same state.
      * </li>
      * <li>The placement is then cleared again,
-     * both elements have been tested for fit,
+     * both elements have been tested,
      * and solution is returned to its original order.
      * The propositions are then returned to the user,
      * who notices that both P1 and P2 are {@code mondayShift@null}.
@@ -230,22 +228,46 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * this problem would have been avoided.
      * Alternatively, the proposition function could have returned a defensive copy of the Shift.
      *
-     * @param solution never null; must be fully initialized except for one entity or element
-     * @param fittedEntityOrElement never null; must be part of the solution
+     * @param solution never null; for basic variable, must be fully initialized or have a single entity unassigned.
+     *        For list variable, all values must be assigned to some list, with the optional exception of one.
+     * @param evaluatedEntityOrElement never null; must be part of the solution.
+     *        For basic variable, it is a planning entity and may have one or more variables unassigned.
+     *        For list variable, it is a shadow entity and need not be present in any list variable.
      * @param propositionFunction never null
      * @param fetchPolicy never null;
-     *        {@link ScoreAnalysisFetchPolicy#FETCH_ALL} will include more data within {@link RecommendedFit},
+     *        {@link ScoreAnalysisFetchPolicy#FETCH_ALL} will include more data within {@link RecommendedAssignment},
      *        but will also take more time to gather that data.
      * @return never null, sorted from best to worst;
-     *         designed to be JSON-friendly, see {@link RecommendedFit} Javadoc for more.
-     * @param <EntityOrElement_> generic type of the unassigned entity or element
+     *         designed to be JSON-friendly, see {@link RecommendedAssignment} Javadoc for more.
+     * @param <EntityOrElement_> generic type of the evaluated entity or element
      * @param <Proposition_> generic type of the user-provided proposition;
      *        if it is a planning entity, it is recommended
      *        to make a defensive copy inside the proposition function.
      * @see PlanningEntity More information about genuine and shadow planning entities.
      */
+    <EntityOrElement_, Proposition_> List<RecommendedAssignment<Proposition_, Score_>> recommendAssignment(Solution_ solution,
+            EntityOrElement_ evaluatedEntityOrElement, Function<EntityOrElement_, Proposition_> propositionFunction,
+            ScoreAnalysisFetchPolicy fetchPolicy);
+
+    /**
+     * As defined by {@link #recommendAssignment(Object, Object, Function, ScoreAnalysisFetchPolicy)},
+     * with {@link ScoreAnalysisFetchPolicy#FETCH_ALL}.
+     * 
+     * @deprecated Prefer {@link #recommendAssignment(Object, Object, Function, ScoreAnalysisFetchPolicy)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.15.0")
+    default <EntityOrElement_, Proposition_> List<RecommendedFit<Proposition_, Score_>> recommendFit(Solution_ solution,
+            EntityOrElement_ fittedEntityOrElement, Function<EntityOrElement_, Proposition_> propositionFunction) {
+        return recommendFit(solution, fittedEntityOrElement, propositionFunction, FETCH_ALL);
+    }
+
+    /**
+     * As defined by {@link #recommendAssignment(Object, Object, Function, ScoreAnalysisFetchPolicy)}.
+     * 
+     * @deprecated Prefer {@link #recommendAssignment(Object, Object, Function, ScoreAnalysisFetchPolicy)}.
+     */
+    @Deprecated(forRemoval = true, since = "1.15.0")
     <EntityOrElement_, Proposition_> List<RecommendedFit<Proposition_, Score_>> recommendFit(Solution_ solution,
             EntityOrElement_ fittedEntityOrElement, Function<EntityOrElement_, Proposition_> propositionFunction,
             ScoreAnalysisFetchPolicy fetchPolicy);
-
 }

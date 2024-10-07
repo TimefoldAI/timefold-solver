@@ -3,8 +3,6 @@ package ai.timefold.solver.core.api.solver;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.analysis.ConstraintAnalysis;
-import ai.timefold.solver.core.api.score.analysis.MatchAnalysis;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 
 /**
@@ -22,30 +20,10 @@ import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
  *
  * @param <Proposition_> the generic type of the proposition as returned by the proposition function
  * @param <Score_> the generic type of the score
+ * @deprecated Prefer {@link RecommendedAssignment} instead.
  */
-public interface RecommendedFit<Proposition_, Score_ extends Score<Score_>> {
-
-    /**
-     * Returns the proposition as returned by the proposition function.
-     * This is the actual assignment recommended to the user.
-     *
-     * @return null if proposition function required null
-     */
-    Proposition_ proposition();
-
-    /**
-     * Difference between the original score and the score of the solution with the recommendation applied.
-     *
-     * <p>
-     * If {@link SolutionManager#recommendFit(Object, Object, Function, ScoreAnalysisFetchPolicy)} was called with
-     * {@link ScoreAnalysisFetchPolicy#FETCH_ALL},
-     * the analysis will include {@link MatchAnalysis constraint matches}
-     * inside its {@link ConstraintAnalysis constraint analysis};
-     * otherwise it will not.
-     *
-     * @return never null; {@code fittedScoreAnalysis - originalScoreAnalysis} as defined by
-     *         {@link ScoreAnalysis#diff(ScoreAnalysis)}
-     */
-    ScoreAnalysis<Score_> scoreAnalysisDiff();
+@Deprecated(forRemoval = true, since = "1.15.0")
+public interface RecommendedFit<Proposition_, Score_ extends Score<Score_>>
+        extends RecommendedAssignment<Proposition_, Score_> {
 
 }

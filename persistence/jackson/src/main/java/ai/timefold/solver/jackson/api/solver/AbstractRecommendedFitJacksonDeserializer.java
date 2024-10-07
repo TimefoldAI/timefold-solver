@@ -7,26 +7,16 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.solver.RecommendedFit;
 import ai.timefold.solver.core.impl.solver.DefaultRecommendedFit;
-import ai.timefold.solver.jackson.api.score.analysis.AbstractScoreAnalysisJacksonDeserializer;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Extend this to implement {@link RecommendedFit} deserialization specific for your domain.
- * Make sure to also:
- *
- * <ul>
- * <li>extend {@link AbstractScoreAnalysisJacksonDeserializer},</li>
- * <li>provide deserializer for {@link AbstractRecommendedFitJacksonDeserializer#getPropositionClass()}</li>
- * <li>and finally add all of these to the Jackson {@link ObjectMapper}.</li>
- * </ul>
- *
- * @param <Score_>
+ * @deprecated Prefer to use the {@link AbstractRecommendedAssignmentJacksonDeserializer} instead.
  */
+@Deprecated(forRemoval = true, since = "1.15.0")
 public abstract class AbstractRecommendedFitJacksonDeserializer<Proposition_, Score_ extends Score<Score_>>
         extends JsonDeserializer<RecommendedFit<Proposition_, Score_>> {
 

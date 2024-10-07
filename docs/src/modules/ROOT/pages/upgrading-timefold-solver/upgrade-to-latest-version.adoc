@@ -57,6 +57,48 @@ Every upgrade note indicates how likely your code will be affected by that chang
 The upgrade recipe often lists the changes as they apply to Java code.
 We kindly ask Kotlin and Python users to translate the changes accordingly.
 
+
+=== Upgrade from 1.14.0 to 1.15.0
+
+.icon:magic[] _Assignment Recommendation API_ replaces the _Recommended Fit API_
+[%collapsible%open]
+====
+`SolutionManager.recommendFit(...)` has been renamed to `SolutionManager.recommendAssignment(...)`,
+without changing its behavior.
+The original method has been deprecated and will be removed in a future major version.
+
+Before in `*.java`:
+
+[source,java]
+----
+SolutionManager<EmployeeSchedule, HardSoftScore> solutionManager = ...;
+List<RecommendedFit<Employee, HardSoftScore>> recommendations =
+    solutionManager.recommendFit(employeeSchedule, unassignedShift, Shift::getEmployee);
+----
+
+After in `*.java`:
+
+[source,java]
+----
+SolutionManager<EmployeeSchedule, HardSoftScore> solutionManager = ...;
+List<RecommendedAssignment<Employee, HardSoftScore>> recommendations =
+    solutionManager.recommendAssignment(employeeSchedule, unassignedShift, Shift::getEmployee);
+----
+====
+
+'''
+
+.icon:eye[] "Score calculation speed" replaced by "Move evaluation speed"
+[%collapsible%open]
+====
+In Timefold Solver's logging, the term "Score calculation speed" has been replaced by "Move evaluation speed".
+This reflects the fact that the solver evaluates moves, and each move can result in multiple score calculations.
+To avoid confusion, we have updated the logging messages to use the new term.
+
+This change is purely cosmetic and does not affect the behavior of the solver, or your code.
+====
+
+
 === Upgrade from 1.12.0 to 1.13.0
 
 icon:exclamation-triangle[role=red] `@ConstraintConfiguration` deprecated

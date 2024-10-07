@@ -20,9 +20,10 @@ import ai.timefold.solver.core.api.score.stream.common.Break;
 import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.common.Sequence;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
+import ai.timefold.solver.core.api.solver.RecommendedAssignment;
 import ai.timefold.solver.core.api.solver.RecommendedFit;
 import ai.timefold.solver.core.impl.domain.solution.DefaultConstraintWeightOverrides;
-import ai.timefold.solver.core.impl.solver.DefaultRecommendedFit;
+import ai.timefold.solver.core.impl.solver.DefaultRecommendedAssignment;
 import ai.timefold.solver.jackson.api.domain.solution.ConstraintWeightOverridesSerializer;
 import ai.timefold.solver.jackson.api.score.PolymorphicScoreJacksonDeserializer;
 import ai.timefold.solver.jackson.api.score.PolymorphicScoreJacksonSerializer;
@@ -61,9 +62,11 @@ import ai.timefold.solver.jackson.api.score.stream.common.SequenceChainJacksonDe
 import ai.timefold.solver.jackson.api.score.stream.common.SequenceChainJacksonSerializer;
 import ai.timefold.solver.jackson.api.score.stream.common.SequenceJacksonDeserializer;
 import ai.timefold.solver.jackson.api.score.stream.common.SequenceJacksonSerializer;
+import ai.timefold.solver.jackson.api.solver.RecommendedAssignmentJacksonSerializer;
 import ai.timefold.solver.jackson.api.solver.RecommendedFitJacksonSerializer;
 import ai.timefold.solver.jackson.impl.domain.solution.JacksonSolutionFileIO;
 
+import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -126,9 +129,10 @@ public class TimefoldJacksonModule extends SimpleModule {
         addSerializer(ConstraintRef.class, new ConstraintRefJacksonSerializer());
         addDeserializer(ConstraintRef.class, new ConstraintRefJacksonDeserializer());
         addSerializer(ScoreAnalysis.class, new ScoreAnalysisJacksonSerializer());
-        var serializer = new RecommendedFitJacksonSerializer();
-        addSerializer(RecommendedFit.class, serializer);
-        addSerializer(DefaultRecommendedFit.class, serializer);
+        var serializer = (JsonSerializer) new RecommendedAssignmentJacksonSerializer<>();
+        addSerializer(RecommendedAssignment.class, serializer);
+        addSerializer(DefaultRecommendedAssignment.class, serializer);
+        addSerializer(RecommendedFit.class, (JsonSerializer) new RecommendedFitJacksonSerializer<>());
 
         // Constraint weights
         addSerializer(ConstraintWeightOverrides.class, new ConstraintWeightOverridesSerializer());
