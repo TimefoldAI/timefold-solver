@@ -18,11 +18,14 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 import ai.timefold.solver.core.api.solver.RecommendedAssignment;
+import ai.timefold.solver.core.api.solver.RecommendedFit;
 import ai.timefold.solver.core.impl.solver.DefaultRecommendedAssignment;
+import ai.timefold.solver.core.impl.solver.DefaultRecommendedFit;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.jackson.api.domain.solution.AbstractConstraintWeightOverridesDeserializer;
 import ai.timefold.solver.jackson.api.score.analysis.AbstractScoreAnalysisJacksonDeserializer;
 import ai.timefold.solver.jackson.api.solver.AbstractRecommendedAssignmentJacksonDeserializer;
+import ai.timefold.solver.jackson.api.solver.AbstractRecommendedFitJacksonDeserializer;
 
 import org.junit.jupiter.api.Test;
 
@@ -174,6 +177,38 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
     }
 
     @Test
+    void recommendedFit() throws JsonProcessingException {
+        var objectMapper = new ObjectMapper();
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
+        objectMapper.registerModule(TimefoldJacksonModule.createModule());
+
+        var proposition = new Pair<>("A", "1");
+        var originalScoreAnalysis = getScoreAnalysis();
+        var originalRecommendedFit = new DefaultRecommendedFit<>(0, proposition, originalScoreAnalysis);
+        var fitList = List.of(originalRecommendedFit);
+
+        var serialized = objectMapper.writeValueAsString(fitList);
+        assertThat(serialized)
+                .isEqualToIgnoringWhitespace("""
+                        [ {
+                             "proposition" : {
+                               "key" : "A",
+                               "value" : "1"
+                             },
+                             "scoreDiff" : %s
+                           } ]""".formatted(getSerializedScoreAnalysis()));
+
+        objectMapper.registerModule(new CustomJacksonModule());
+        List<RecommendedFit<Pair<String, String>, HardSoftScore>> deserialized =
+                objectMapper.readValue(serialized,
+                        TypeFactory.defaultInstance().constructCollectionType(List.class, RecommendedFit.class));
+        assertThat(deserialized)
+                .hasSize(1)
+                .first()
+                .isEqualTo(originalRecommendedFit);
+    }
+
+    @Test
     void recommendedAssignment() throws JsonProcessingException {
         var objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
@@ -234,6 +269,7 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
         public CustomJacksonModule() {
             super("Timefold Custom");
             addDeserializer(ScoreAnalysis.class, new CustomScoreAnalysisJacksonDeserializer());
+            addDeserializer(RecommendedFit.class, new CustomRecommendedFitJacksonDeserializer());
             addDeserializer(RecommendedAssignment.class, new CustomRecommendedAssignmentJacksonDeserializer());
             addDeserializer(ConstraintWeightOverrides.class, new CustomConstraintWeightOverridesDeserializer());
         }
@@ -271,6 +307,15 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
             return (ConstraintJustification_) DefaultConstraintJustification.of(score, justificationList);
         }
 
+    }
+
+    public static final class CustomRecommendedFitJacksonDeserializer
+            extends AbstractRecommendedFitJacksonDeserializer<Pair<String, String>, HardSoftScore> {
+
+        @Override
+        protected Class<Pair<String, String>> getPropositionClass() {
+            return (Class) Pair.class;
+        }
     }
 
     public static final class CustomRecommendedAssignmentJacksonDeserializer
