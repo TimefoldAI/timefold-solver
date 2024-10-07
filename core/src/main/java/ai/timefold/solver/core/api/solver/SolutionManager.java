@@ -250,7 +250,7 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * As defined by {@link #recommendFit(Object, Object, Function, ScoreAnalysisFetchPolicy)},
      * with {@link ScoreAnalysisFetchPolicy#FETCH_ALL}.
      * 
-     * @deprecated Prefer {@link #recommendAssignment(Solution_, Object, Function, ScoreAnalysisFetchPolicy)}.
+     * @deprecated Prefer {@link #recommendAssignment(Object, Object, Function, ScoreAnalysisFetchPolicy)}.
      */
     @Deprecated(forRemoval = true, since = "1.15.0")
     default <EntityOrElement_, Proposition_> List<RecommendedFit<Proposition_, Score_>> recommendFit(Solution_ solution,
