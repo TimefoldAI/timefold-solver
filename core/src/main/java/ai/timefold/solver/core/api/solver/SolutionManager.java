@@ -355,7 +355,7 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      *        if it is a planning entity, it is recommended
      *        to make a defensive copy inside the proposition function.
      * @see PlanningEntity More information about genuine and shadow planning entities.
-     * @deprecated Prefer {@link #recommendAssignment(Solution_, Object, Function, ScoreAnalysisFetchPolicy)}.
+     * @deprecated Prefer {@link #recommendAssignment(Object, Object, Function, ScoreAnalysisFetchPolicy)}.
      */
     @Deprecated(forRemoval = true, since = "1.15.0")
     <EntityOrElement_, Proposition_> List<RecommendedFit<Proposition_, Score_>> recommendFit(Solution_ solution,

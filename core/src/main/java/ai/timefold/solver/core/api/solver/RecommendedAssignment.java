@@ -37,7 +37,7 @@ public interface RecommendedAssignment<Proposition_, Score_ extends Score<Score_
      * Difference between the original score and the score of the solution with the recommendation applied.
      *
      * <p>
-     * If {@link SolutionManager#recommendFit(Object, Object, Function, ScoreAnalysisFetchPolicy)} was called with
+     * If {@link SolutionManager#recommendAssignment(Object, Object, Function, ScoreAnalysisFetchPolicy)} was called with
      * {@link ScoreAnalysisFetchPolicy#FETCH_ALL},
      * the analysis will include {@link MatchAnalysis constraint matches}
      * inside its {@link ConstraintAnalysis constraint analysis};
