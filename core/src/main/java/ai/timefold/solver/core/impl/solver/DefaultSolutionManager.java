@@ -120,9 +120,9 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
     @Override
     public <In_, Out_> List<RecommendedAssignment<Out_, Score_>> recommendAssignment(Solution_ solution,
             In_ evaluatedEntityOrElement, Function<In_, Out_> propositionFunction, ScoreAnalysisFetchPolicy fetchPolicy) {
-        var fitter = new Fitter<Solution_, In_, Out_, Score_>(solverFactory, solution, evaluatedEntityOrElement,
+        var assigner = new Assigner<Solution_, In_, Out_, Score_>(solverFactory, solution, evaluatedEntityOrElement,
                 propositionFunction, fetchPolicy);
-        return (List) callScoreDirector(solution, SolutionUpdatePolicy.UPDATE_ALL, fitter, true, true);
+        return (List) callScoreDirector(solution, SolutionUpdatePolicy.UPDATE_ALL, assigner, true, true);
     }
 
     @SuppressWarnings("unchecked")

@@ -13,11 +13,17 @@ import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeu
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableDemand;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.chained.ChainedChangeMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListUnassignMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
-public final class FitProcessor<Solution_, In_, Out_, Score_ extends Score<Score_>>
+public final class AssignmentProcessor<Solution_, In_, Out_, Score_ extends Score<Score_>>
         implements Function<InnerScoreDirector<Solution_, Score_>, List<DefaultRecommendedAssignment<Out_, Score_>>> {
 
     private final DefaultSolverFactory<Solution_> solverFactory;
@@ -26,7 +32,7 @@ public final class FitProcessor<Solution_, In_, Out_, Score_ extends Score<Score
     private final Function<In_, Out_> valueResultFunction;
     private final In_ clonedElement;
 
-    public FitProcessor(DefaultSolverFactory<Solution_> solverFactory, Function<In_, Out_> valueResultFunction,
+    public AssignmentProcessor(DefaultSolverFactory<Solution_> solverFactory, Function<In_, Out_> valueResultFunction,
             ScoreAnalysis<Score_> originalScoreAnalysis, In_ clonedElement, ScoreAnalysisFetchPolicy fetchPolicy) {
         this.solverFactory = Objects.requireNonNull(solverFactory);
         this.originalScoreAnalysis = Objects.requireNonNull(originalScoreAnalysis);
@@ -37,6 +43,45 @@ public final class FitProcessor<Solution_, In_, Out_, Score_ extends Score<Score
 
     @Override
     public List<DefaultRecommendedAssignment<Out_, Score_>> apply(InnerScoreDirector<Solution_, Score_> scoreDirector) {
+        // The cloned element may already be assigned.
+        // If it is, we need to unassign it before we can run the construction heuristic.
+        var supplyManager = scoreDirector.getSupplyManager();
+        var solutionDescriptor = solverFactory.getSolutionDescriptor();
+        var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
+        if (listVariableDescriptor != null) {
+            var demand = listVariableDescriptor.getStateDemand();
+            var listVariableStateSupply = supplyManager.demand(demand);
+            var elementLocation = listVariableStateSupply.getLocationInList(clonedElement);
+            if (elementLocation instanceof LocationInList locationInList) { // Unassign the cloned element.
+                var entity = locationInList.entity();
+                var index = locationInList.index();
+                var listUnassignMove = new ListUnassignMove<>(listVariableDescriptor, entity, index);
+                listUnassignMove.doMove(scoreDirector);
+            }
+            supplyManager.cancel(demand);
+        } else {
+            var entityDescriptor = solutionDescriptor.findEntityDescriptorOrFail(clonedElement.getClass());
+            for (var variableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
+                var basicVariableDescriptor = (BasicVariableDescriptor<Solution_>) variableDescriptor;
+                if (basicVariableDescriptor.getValue(clonedElement) == null) {
+                    // The variable is already unassigned.
+                    continue;
+                }
+                // Uninitialize the basic variable.
+                if (basicVariableDescriptor.isChained()) {
+                    var demand = new SingletonInverseVariableDemand<>(basicVariableDescriptor);
+                    var supply = supplyManager.demand(demand);
+                    var move = new ChainedChangeMove<>(basicVariableDescriptor, clonedElement, null, supply);
+                    move.doMove(scoreDirector);
+                    supplyManager.cancel(demand);
+                } else {
+                    var move = new ChangeMove<>(basicVariableDescriptor, clonedElement, null);
+                    move.doMove(scoreDirector);
+                }
+            }
+        }
+        scoreDirector.triggerVariableListeners();
+
         // The placers needs to be filtered.
         // If anything else than the cloned element is unassigned, we want to keep it unassigned.
         // Otherwise the solution would have to explicitly pin everything other than the cloned element.
@@ -83,7 +128,7 @@ public final class FitProcessor<Solution_, In_, Out_, Score_ extends Score<Score
                 .count();
         if (constructionHeuristicCount != 1) {
             throw new IllegalStateException(
-                    "Fit Recommendation API requires the solver config to have exactly one construction heuristic phase, but it has (%s) instead."
+                    "Assignment Recommendation API requires the solver config to have exactly one construction heuristic phase, but it has (%s) instead."
                             .formatted(constructionHeuristicCount));
         }
         var phase = phaseList.get(0);
@@ -91,7 +136,7 @@ public final class FitProcessor<Solution_, In_, Out_, Score_ extends Score<Score
             return constructionHeuristicPhase.getEntityPlacer();
         } else {
             throw new IllegalStateException(
-                    "Fit Recommendation API requires the first solver phase (%s) in the solver config to be a construction heuristic."
+                    "Assignment Recommendation API requires the first solver phase (%s) in the solver config to be a construction heuristic."
                             .formatted(phase));
         }
     }

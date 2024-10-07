@@ -8,7 +8,7 @@ import ai.timefold.solver.core.api.score.analysis.MatchAnalysis;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 
 /**
- * Represents the result of the Recommended Assignment API,
+ * Represents the result of the Assignment Recommendation API,
  * see {@link SolutionManager#recommendFit(Object, Object, Function)}.
  *
  * <p>

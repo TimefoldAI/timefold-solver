@@ -8,7 +8,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
-final class Fitter<Solution_, In_, Out_, Score_ extends Score<Score_>>
+final class Assigner<Solution_, In_, Out_, Score_ extends Score<Score_>>
         implements Function<InnerScoreDirector<Solution_, Score_>, List<DefaultRecommendedAssignment<Out_, Score_>>> {
 
     private final DefaultSolverFactory<Solution_> solverFactory;
@@ -17,7 +17,7 @@ final class Fitter<Solution_, In_, Out_, Score_ extends Score<Score_>>
     private final Function<In_, Out_> propositionFunction;
     private final ScoreAnalysisFetchPolicy fetchPolicy;
 
-    public Fitter(DefaultSolverFactory<Solution_> solverFactory, Solution_ originalSolution, In_ originalElement,
+    public Assigner(DefaultSolverFactory<Solution_> solverFactory, Solution_ originalSolution, In_ originalElement,
             Function<In_, Out_> propositionFunction, ScoreAnalysisFetchPolicy fetchPolicy) {
         this.solverFactory = Objects.requireNonNull(solverFactory);
         this.originalSolution = Objects.requireNonNull(originalSolution);
@@ -35,14 +35,15 @@ final class Fitter<Solution_, In_, Out_, Score_ extends Score<Score_>>
         if (uninitializedCount > 1) {
             throw new IllegalStateException("""
                     Solution (%s) has (%d) uninitialized elements.
-                    Fit Recommendation API requires at most one uninitialized element in the solution."""
+                    Assignment Recommendation API requires at most one uninitialized element in the solution."""
                     .formatted(originalSolution, uninitializedCount));
         }
         var originalScoreAnalysis = scoreDirector.buildScoreAnalysis(fetchPolicy == ScoreAnalysisFetchPolicy.FETCH_ALL,
                 InnerScoreDirector.ScoreAnalysisMode.RECOMMENDATION_API);
         var clonedElement = scoreDirector.lookUpWorkingObject(originalElement);
         var processor =
-                new FitProcessor<>(solverFactory, propositionFunction, originalScoreAnalysis, clonedElement, fetchPolicy);
+                new AssignmentProcessor<>(solverFactory, propositionFunction, originalScoreAnalysis, clonedElement,
+                        fetchPolicy);
         return processor.apply(scoreDirector);
     }
 
