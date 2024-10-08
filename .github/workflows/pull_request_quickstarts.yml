@@ -74,7 +74,7 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest ]
-        java-version: [ 17 ] # Only the first supported LTS; already too many jobs here.
+        java-version: [ 21 ] # Only the latest supported LTS; already too many jobs here.
         # TODO: Add Python 3.10 once employee scheduling and school timetabling support it
         python-version: ['3.11', '3.12']
       fail-fast: false
