@@ -1,20 +1,21 @@
-# This file is temporary.
-# Solver 1.14.0 had a docs bug which prevents the Antora docs from building.
-# Therefore the docs are temporarily built from main, until 1.15.0 is out at which point this file can be deleted.
+# This file is a template for antora.yml.
+# During a release, Maven substitutes the properties and stores result into target/antora-template.yml.
+# That file is then copied to src/modules/antora.yml and committed to Git on the release branch.
+# The timefold.ai website can then be refreshed from the release branch and/or tag.
 name: timefold-solver
-title: Timefold Solver 1.14.0
+title: Timefold Solver 1.15.0
 version: latest
 asciidoc:
   attributes:
-    timefold-solver-version: 1.14.0
-    timefold-solver-python-version: 1.14.0b0
+    timefold-solver-version: 1.15.0
+    timefold-solver-python-version: 1.15.0b0
     java-version: 17
     maven-version: 3.9.2
     python-version: '3.10'
-    quarkus-version: 3.14.4
-    spring-boot-version: 3.3.3
+    quarkus-version: 3.15.1
+    spring-boot-version: 3.3.4
     logback-version: 1.5.8
-    exec-maven-plugin-version: 3.3.1
-    rewrite-maven-plugin-version: 5.40.2
+    exec-maven-plugin-version: 3.4.1
+    rewrite-maven-plugin-version: 5.41.0
 nav:
   - modules/ROOT/nav.adoc
