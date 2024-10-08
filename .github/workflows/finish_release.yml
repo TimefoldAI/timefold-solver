@@ -17,6 +17,16 @@ jobs:
           ref: main
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
 
+      - name: Put back the 999-SNAPSHOT version on the release branch
+        run: |
+          git config user.name "Timefold Release Bot"
+          git config user.email "release@timefold.ai"
+          git checkout $RELEASE_BRANCH_NAME
+          mvn -Dfull versions:set -DnewVersion=999-SNAPSHOT
+          sed -i "s/^timefold_solver_python_version.*=.*/timefold_solver_python_version = '999-dev0'/" setup.py
+          git commit -am "build: move back to 999-SNAPSHOT"
+          git push origin $RELEASE_BRANCH_NAME          
+
       - name: Update release branch
         shell: bash
         run: |

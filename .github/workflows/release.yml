@@ -48,7 +48,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.inputs.sourceBranch }}
 
-      - name: Init release branch
+      - name: Delete release branch (if exists)
         continue-on-error: true
         run: git push -d origin $RELEASE_BRANCH_NAME
 
@@ -78,7 +78,7 @@ jobs:
       - name: Install Pip and build
         run: |
           python -m pip install --upgrade pip
-          pip install build
+          pip install build          
 
       # We skip tests in dry run, to make the process faster.
       # Technically, this goes against the main reason for doing a dry run; to eliminate potential problems.
