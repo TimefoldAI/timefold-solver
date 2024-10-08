@@ -119,12 +119,3 @@ jobs:
       - name: Publish distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         if: ${{ github.event.inputs.dryRun == 'false' }}
-
-      - name: Put back the 999-SNAPSHOT version on the release branch
-        run: |
-          git checkout -B $RELEASE_BRANCH_NAME
-          mvn -Dfull versions:set -DnewVersion=999-SNAPSHOT
-          sed -i "s/^timefold_solver_python_version.*=.*/timefold_solver_python_version = '999-dev0'/" setup.py
-          find . -name 'pom.xml' | xargs git add
-          git commit -am "build: move back to 999-SNAPSHOT"
-          git push origin $RELEASE_BRANCH_NAME
