@@ -259,6 +259,42 @@ jobs:
         env:
           PIP_FIND_LINKS: ${{ github.workspace }}/timefold-solver/dist
         run: tox
+
+  build_documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout frontend
+        id: checkout-frontend
+        uses: actions/checkout@v4
+        with:
+          repository: TimefoldAI/frontend
+          token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
+          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
+
+      - name: Set up NodeJs
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Build Documentation
+        env:
+          GIT_CREDENTIALS: ${{ secrets.GIT_CREDENTIALS }}
+        run: |
+          sed -i 's/tags:\s*\[v[0-9.]*,\s*v0.8.42]/tags: \[main]/' apps/docs/antora-playbook.yml
+          npm ci
+          npm run build -- --filter docs
+
+      - name: Deploy Documentation (Preview Mode)
+        if: ${{ github.ref != 'refs/heads/main' }}
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: ./apps/docs
+          command: pages deploy ./public-serve --project-name=timefold-docs --branch=${{ github.ref }}
+
   sonarcloud:
     needs: approval_required
     name: SonarCloud
