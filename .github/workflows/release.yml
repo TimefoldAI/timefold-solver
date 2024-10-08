@@ -48,7 +48,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.inputs.sourceBranch }}
 
-      - name: Delete existing release branch
+      - name: Delete release branch (if exists)
         continue-on-error: true
         run: git push -d origin $RELEASE_BRANCH_NAME
 

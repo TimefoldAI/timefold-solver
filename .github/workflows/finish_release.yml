@@ -21,7 +21,7 @@ jobs:
         run: |
           git config user.name "Timefold Release Bot"
           git config user.email "release@timefold.ai"
-          git checkout -B $RELEASE_BRANCH_NAME
+          git checkout $RELEASE_BRANCH_NAME
           mvn -Dfull versions:set -DnewVersion=999-SNAPSHOT
           sed -i "s/^timefold_solver_python_version.*=.*/timefold_solver_python_version = '999-dev0'/" setup.py
           git commit -am "build: move back to 999-SNAPSHOT"
