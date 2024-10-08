@@ -18,9 +18,9 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
     protected int lateScoreIndex = -1;
 
     protected Double moveCountLimitPercentage;
-    // max number of inferior solutions that can be accepted
+    // max number of solutions that can be accepted
     protected long lateAcceptanceReconfigurationSize;
-    // current number of accepted inferior solutions
+    // current number of accepted solutions
     protected long currentReconfigurationRationCount = 1;
     // max number of moves evaluated before triggering the reconfiguration
     protected long maxReconfigurationMoveCount;
@@ -60,10 +60,6 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
         maxReconfigurationMoveCount = (long) (phaseScope.getMoveSelectorSize() * moveCountLimitPercentage / 100);
         moveCountTermination = new MoveCountTermination<>(maxReconfigurationMoveCount, true);
         moveCountTermination.phaseStarted(phaseScope);
-        if (maxReconfigurationMoveCount > 0) {
-            logger.info("Late Acceptance reconfiguration move count({}), max inferior elements count({}) ",
-                    maxReconfigurationMoveCount, lateAcceptanceReconfigurationSize);
-        }
     }
 
     private void validate() {
@@ -79,7 +75,7 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
         var moveScore = moveScope.getScore();
         var lateScore = previousScores[lateScoreIndex];
         if (lateScore == null) {
-            logger.info("Move index ({}), score ({}), accepted after reconfiguration ({}).", moveScope.getMoveIndex(),
+            logger.info("Reconfiguration accepted move index ({}), score ({}), move ({}).", moveScope.getMoveIndex(),
                     moveScope.getScore(), moveScope.getMove());
             return true;
         }
@@ -98,20 +94,20 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
         super.stepEnded(stepScope);
         Score stepScore = stepScope.getScore();
-        var lateScore = previousScores[lateScoreIndex];
+        var endingReconfiguration = previousScores[lateScoreIndex] == null;
         previousScores[lateScoreIndex] = stepScope.getScore();
         lateScoreIndex = (lateScoreIndex + 1) % lateAcceptanceSize;
-        if (maxReconfigurationMoveCount > 0) {
+        if (maxReconfigurationMoveCount > 0 && lateAcceptanceReconfigurationSize > 0) {
             // The termination is only updated when a superior solution is found
-            // or when starting a reconfiguration process.
+            // or when ending a reconfiguration process.
             // Otherwise, we continue incrementing the moves until the reconfiguration is triggered.
-            var lateScoreCmp = lateScore != null && stepScore.compareTo(lateScore) > 0;
-            var lastStepScoreCmp = lastAcceptedScore != null && stepScore.compareTo(lastAcceptedScore) > 0;
-            var startingReconfiguration = previousScores[lateScoreIndex] == null;
-            if (startingReconfiguration || lateScoreCmp || lastStepScoreCmp) {
+            var improveBestSolution = lastAcceptedScore != null && stepScore.compareTo(lastAcceptedScore) > 0;
+            if (endingReconfiguration || improveBestSolution) {
                 moveCountTermination.stepEnded(stepScope);
-                if (lastStepScoreCmp) {
-                    // Reset the current number of accepted inferior solutions
+                if (improveBestSolution) {
+                    // Reset the current number of accepted solutions
+                    logger.info("Best solution improvement: current score ({}), new score ({}).",
+                            lastAcceptedScore, stepScope.getScore());
                     currentReconfigurationRationCount = 1;
                 }
             }
@@ -130,7 +126,7 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
 
     @Override
     public boolean needReconfiguration(LocalSearchStepScope<Solution_> stepScope) {
-        return maxReconfigurationMoveCount > 0
+        return maxReconfigurationMoveCount > 0 && lateAcceptanceReconfigurationSize > 0
                 && moveCountTermination.isSolverTerminated(stepScope.getPhaseScope().getSolverScope());
     }
 
@@ -145,7 +141,7 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
         if (currentReconfigurationRationCount > lateAcceptanceReconfigurationSize) {
             // max count reached and starting over again
             currentReconfigurationRationCount = 1;
-            logger.info("Reconfiguration resetting inferior elements count from ({}) to ({}).",
+            logger.info("Reconfiguration resetting: accepted elements count from ({}) to ({}).",
                     lateAcceptanceReconfigurationSize, currentReconfigurationRationCount);
         }
         for (var i = 0; i < currentReconfigurationRationCount; i++) {
@@ -158,8 +154,10 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
         if (lastAcceptedScore == null || currentBestScore.compareTo(lastAcceptedScore) > 0) {
             lastAcceptedScore = currentBestScore;
         }
-        logger.info("Reconfiguration applied to inferior elements count ({}), best current score ({}).",
-                currentReconfigurationRationCount, lastAcceptedScore);
-        currentReconfigurationRationCount++;
+        logger.info("Reconfiguration applied: accepted elements count ({}), move count ({}), best current score ({}).",
+                currentReconfigurationRationCount, maxReconfigurationMoveCount, lastAcceptedScore);
+        if (lateAcceptanceReconfigurationSize > 1) {
+            currentReconfigurationRationCount++;
+        }
     }
 }
