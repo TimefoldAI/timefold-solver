@@ -111,14 +111,16 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
     }
 
     @Override
-    default <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> penalizeLong(Score_ constraintWeight,
-            ToLongBiFunction<A, B> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> penalizeLong(
+            @NonNull Score_ constraintWeight,
+            @NonNull ToLongBiFunction<A, B> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.PENALTY);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> penalizeBigDecimal(Score_ constraintWeight,
-            BiFunction<A, B, BigDecimal> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> penalizeBigDecimal(
+            @NonNull Score_ constraintWeight,
+            @NonNull BiFunction<A, B, BigDecimal> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.PENALTY);
     }
 

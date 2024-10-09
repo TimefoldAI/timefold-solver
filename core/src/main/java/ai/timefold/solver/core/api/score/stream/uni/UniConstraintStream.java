@@ -1084,46 +1084,46 @@ public interface UniConstraintStream<A> extends ConstraintStream {
     // Group by
     // ************************************************************************
 
+    // TODO: Continue here
+
     /**
      * Convert the {@link UniConstraintStream} to a different {@link UniConstraintStream}, containing only a single
      * tuple, the result of applying {@link UniConstraintCollector}.
      *
-     * @param collector never null, the collector to perform the grouping operation with
+     * @param collector the collector to perform the grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
      * @param <ResultContainer_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <Result_> the type of a fact in the destination {@link UniConstraintStream}'s tuple
-     * @return never null
      */
-    <ResultContainer_, Result_> UniConstraintStream<Result_> groupBy(
-            UniConstraintCollector<A, ResultContainer_, Result_> collector);
+    <ResultContainer_, Result_> @NonNull UniConstraintStream<Result_> groupBy(
+            @NonNull UniConstraintCollector<A, ResultContainer_, Result_> collector);
 
     /**
      * Convert the {@link UniConstraintStream} to a {@link BiConstraintStream}, containing only a single tuple,
      * the result of applying two {@link UniConstraintCollector}s.
      *
-     * @param collectorA never null, the collector to perform the first grouping operation with
+     * @param collectorA the collector to perform the first grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
-     * @param collectorB never null, the collector to perform the second grouping operation with
+     * @param collectorB the collector to perform the second grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
      * @param <ResultContainerA_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <ResultA_> the type of the first fact in the destination {@link BiConstraintStream}'s tuple
      * @param <ResultContainerB_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <ResultB_> the type of the second fact in the destination {@link BiConstraintStream}'s tuple
-     * @return never null
      */
-    <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_> BiConstraintStream<ResultA_, ResultB_> groupBy(
-            UniConstraintCollector<A, ResultContainerA_, ResultA_> collectorA,
-            UniConstraintCollector<A, ResultContainerB_, ResultB_> collectorB);
+    <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_> @NonNull BiConstraintStream<ResultA_, ResultB_> groupBy(
+            @NonNull UniConstraintCollector<A, ResultContainerA_, ResultA_> collectorA,
+            @NonNull UniConstraintCollector<A, ResultContainerB_, ResultB_> collectorB);
 
     /**
      * Convert the {@link UniConstraintStream} to a {@link TriConstraintStream}, containing only a single tuple,
      * the result of applying three {@link UniConstraintCollector}s.
      *
-     * @param collectorA never null, the collector to perform the first grouping operation with
+     * @param collectorA the collector to perform the first grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
-     * @param collectorB never null, the collector to perform the second grouping operation with
+     * @param collectorB the collector to perform the second grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
-     * @param collectorC never null, the collector to perform the third grouping operation with
+     * @param collectorC the collector to perform the third grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
      * @param <ResultContainerA_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <ResultA_> the type of the first fact in the destination {@link TriConstraintStream}'s tuple
@@ -1131,25 +1131,24 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @param <ResultB_> the type of the second fact in the destination {@link TriConstraintStream}'s tuple
      * @param <ResultContainerC_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <ResultC_> the type of the third fact in the destination {@link TriConstraintStream}'s tuple
-     * @return never null
      */
     <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_>
-            TriConstraintStream<ResultA_, ResultB_, ResultC_> groupBy(
-                    UniConstraintCollector<A, ResultContainerA_, ResultA_> collectorA,
-                    UniConstraintCollector<A, ResultContainerB_, ResultB_> collectorB,
-                    UniConstraintCollector<A, ResultContainerC_, ResultC_> collectorC);
+            @NonNull TriConstraintStream<ResultA_, ResultB_, ResultC_> groupBy(
+                    @NonNull UniConstraintCollector<A, ResultContainerA_, ResultA_> collectorA,
+                    @NonNull UniConstraintCollector<A, ResultContainerB_, ResultB_> collectorB,
+                    @NonNull UniConstraintCollector<A, ResultContainerC_, ResultC_> collectorC);
 
     /**
      * Convert the {@link UniConstraintStream} to a {@link QuadConstraintStream}, containing only a single tuple,
      * the result of applying four {@link UniConstraintCollector}s.
      *
-     * @param collectorA never null, the collector to perform the first grouping operation with
+     * @param collectorA the collector to perform the first grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
-     * @param collectorB never null, the collector to perform the second grouping operation with
+     * @param collectorB the collector to perform the second grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
-     * @param collectorC never null, the collector to perform the third grouping operation with
+     * @param collectorC the collector to perform the third grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
-     * @param collectorD never null, the collector to perform the fourth grouping operation with
+     * @param collectorD the collector to perform the fourth grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
      * @param <ResultContainerA_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <ResultA_> the type of the first fact in the destination {@link QuadConstraintStream}'s tuple
@@ -1159,26 +1158,24 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @param <ResultC_> the type of the third fact in the destination {@link QuadConstraintStream}'s tuple
      * @param <ResultContainerD_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <ResultD_> the type of the fourth fact in the destination {@link QuadConstraintStream}'s tuple
-     * @return never null
      */
     <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_, ResultContainerD_, ResultD_>
-            QuadConstraintStream<ResultA_, ResultB_, ResultC_, ResultD_> groupBy(
-                    UniConstraintCollector<A, ResultContainerA_, ResultA_> collectorA,
-                    UniConstraintCollector<A, ResultContainerB_, ResultB_> collectorB,
-                    UniConstraintCollector<A, ResultContainerC_, ResultC_> collectorC,
-                    UniConstraintCollector<A, ResultContainerD_, ResultD_> collectorD);
+            @NonNull QuadConstraintStream<ResultA_, ResultB_, ResultC_, ResultD_> groupBy(
+                    @NonNull UniConstraintCollector<A, ResultContainerA_, ResultA_> collectorA,
+                    @NonNull UniConstraintCollector<A, ResultContainerB_, ResultB_> collectorB,
+                    @NonNull UniConstraintCollector<A, ResultContainerC_, ResultC_> collectorC,
+                    @NonNull UniConstraintCollector<A, ResultContainerD_, ResultD_> collectorD);
 
     /**
      * Convert the {@link UniConstraintStream} to a different {@link UniConstraintStream}, containing the set of tuples
      * resulting from applying the group key mapping function on all tuples of the original stream.
      * Neither tuple of the new stream {@link Objects#equals(Object, Object)} any other.
      *
-     * @param groupKeyMapping never null, mapping function to convert each element in the stream to a different element
+     * @param groupKeyMapping mapping function to convert each element in the stream to a different element
      * @param <GroupKey_> the type of a fact in the destination {@link UniConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
-     * @return never null
      */
-    <GroupKey_> UniConstraintStream<GroupKey_> groupBy(Function<A, GroupKey_> groupKeyMapping);
+    <GroupKey_> @NonNull UniConstraintStream<GroupKey_> groupBy(@NonNull Function<A, GroupKey_> groupKeyMapping);
 
     /**
      * Convert the {@link UniConstraintStream} to a {@link BiConstraintStream}, consisting of unique tuples with two
@@ -1188,18 +1185,17 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * The second fact is the return value of a given {@link UniConstraintCollector} applied on all incoming tuples with
      * the same first fact.
      *
-     * @param groupKeyMapping never null, function to convert the fact in the original tuple to a different fact
-     * @param collector never null, the collector to perform the grouping operation with
+     * @param groupKeyMapping function to convert the fact in the original tuple to a different fact
+     * @param collector the collector to perform the grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
      * @param <GroupKey_> the type of the first fact in the destination {@link BiConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
      * @param <ResultContainer_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <Result_> the type of the second fact in the destination {@link BiConstraintStream}'s tuple
-     * @return never null
      */
-    <GroupKey_, ResultContainer_, Result_> BiConstraintStream<GroupKey_, Result_> groupBy(
-            Function<A, GroupKey_> groupKeyMapping,
-            UniConstraintCollector<A, ResultContainer_, Result_> collector);
+    <GroupKey_, ResultContainer_, Result_> @NonNull BiConstraintStream<GroupKey_, Result_> groupBy(
+            @NonNull Function<A, GroupKey_> groupKeyMapping,
+            @NonNull UniConstraintCollector<A, ResultContainer_, Result_> collector);
 
     /**
      * Convert the {@link UniConstraintStream} to a {@link TriConstraintStream}, consisting of unique tuples with three
@@ -1209,10 +1205,10 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * The remaining facts are the return value of the respective {@link UniConstraintCollector} applied on all
      * incoming tuples with the same first fact.
      *
-     * @param groupKeyMapping never null, function to convert the fact in the original tuple to a different fact
-     * @param collectorB never null, the collector to perform the first grouping operation with
+     * @param groupKeyMapping function to convert the fact in the original tuple to a different fact
+     * @param collectorB the collector to perform the first grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
-     * @param collectorC never null, the collector to perform the second grouping operation with
+     * @param collectorC the collector to perform the second grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
      * @param <GroupKey_> the type of the first fact in the destination {@link TriConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
@@ -1220,12 +1216,12 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @param <ResultB_> the type of the second fact in the destination {@link TriConstraintStream}'s tuple
      * @param <ResultContainerC_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <ResultC_> the type of the third fact in the destination {@link TriConstraintStream}'s tuple
-     * @return never null
      */
     <GroupKey_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_>
-            TriConstraintStream<GroupKey_, ResultB_, ResultC_> groupBy(
-                    Function<A, GroupKey_> groupKeyMapping, UniConstraintCollector<A, ResultContainerB_, ResultB_> collectorB,
-                    UniConstraintCollector<A, ResultContainerC_, ResultC_> collectorC);
+            @NonNull TriConstraintStream<GroupKey_, ResultB_, ResultC_> groupBy(
+                    @NonNull Function<A, GroupKey_> groupKeyMapping,
+                    @NonNull UniConstraintCollector<A, ResultContainerB_, ResultB_> collectorB,
+                    @NonNull UniConstraintCollector<A, ResultContainerC_, ResultC_> collectorC);
 
     /**
      * Convert the {@link UniConstraintStream} to a {@link QuadConstraintStream}, consisting of unique tuples with four
@@ -1235,12 +1231,12 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * The remaining facts are the return value of the respective {@link UniConstraintCollector} applied on all
      * incoming tuples with the same first fact.
      *
-     * @param groupKeyMapping never null, function to convert the fact in the original tuple to a different fact
-     * @param collectorB never null, the collector to perform the first grouping operation with
+     * @param groupKeyMapping function to convert the fact in the original tuple to a different fact
+     * @param collectorB the collector to perform the first grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
-     * @param collectorC never null, the collector to perform the second grouping operation with
+     * @param collectorC the collector to perform the second grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
-     * @param collectorD never null, the collector to perform the third grouping operation with
+     * @param collectorD the collector to perform the third grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
      * @param <GroupKey_> the type of the first fact in the destination {@link QuadConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
@@ -1250,13 +1246,13 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @param <ResultC_> the type of the third fact in the destination {@link QuadConstraintStream}'s tuple
      * @param <ResultContainerD_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <ResultD_> the type of the fourth fact in the destination {@link QuadConstraintStream}'s tuple
-     * @return never null
      */
     <GroupKey_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_, ResultContainerD_, ResultD_>
-            QuadConstraintStream<GroupKey_, ResultB_, ResultC_, ResultD_> groupBy(
-                    Function<A, GroupKey_> groupKeyMapping, UniConstraintCollector<A, ResultContainerB_, ResultB_> collectorB,
-                    UniConstraintCollector<A, ResultContainerC_, ResultC_> collectorC,
-                    UniConstraintCollector<A, ResultContainerD_, ResultD_> collectorD);
+            @NonNull QuadConstraintStream<GroupKey_, ResultB_, ResultC_, ResultD_> groupBy(
+                    @NonNull Function<A, GroupKey_> groupKeyMapping,
+                    @NonNull UniConstraintCollector<A, ResultContainerB_, ResultB_> collectorB,
+                    @NonNull UniConstraintCollector<A, ResultContainerC_, ResultC_> collectorC,
+                    @NonNull UniConstraintCollector<A, ResultContainerD_, ResultD_> collectorD);
 
     /**
      * Convert the {@link UniConstraintStream} to a {@link BiConstraintStream}, consisting of unique tuples with two
@@ -1266,16 +1262,15 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * The second fact is the return value of the second group key mapping function, applied on all incoming tuples with
      * the same first fact.
      *
-     * @param groupKeyAMapping never null, function to convert the original tuple into a first fact
-     * @param groupKeyBMapping never null, function to convert the original tuple into a second fact
+     * @param groupKeyAMapping function to convert the original tuple into a first fact
+     * @param groupKeyBMapping function to convert the original tuple into a second fact
      * @param <GroupKeyA_> the type of the first fact in the destination {@link BiConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
      * @param <GroupKeyB_> the type of the second fact in the destination {@link BiConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
-     * @return never null
      */
-    <GroupKeyA_, GroupKeyB_> BiConstraintStream<GroupKeyA_, GroupKeyB_> groupBy(
-            Function<A, GroupKeyA_> groupKeyAMapping, Function<A, GroupKeyB_> groupKeyBMapping);
+    <GroupKeyA_, GroupKeyB_> @NonNull BiConstraintStream<GroupKeyA_, GroupKeyB_> groupBy(
+            @NonNull Function<A, GroupKeyA_> groupKeyAMapping, @NonNull Function<A, GroupKeyB_> groupKeyBMapping);
 
     /**
      * Combines the semantics of {@link #groupBy(Function, Function)} and {@link #groupBy(UniConstraintCollector)}.
@@ -1283,9 +1278,9 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * the third fact is the result of applying {@link UniConstraintCollector#finisher()} on all the tuples of the
      * original {@link UniConstraintStream} that belong to the group.
      *
-     * @param groupKeyAMapping never null, function to convert the original tuple into a first fact
-     * @param groupKeyBMapping never null, function to convert the original tuple into a second fact
-     * @param collector never null, the collector to perform the grouping operation with
+     * @param groupKeyAMapping function to convert the original tuple into a first fact
+     * @param groupKeyBMapping function to convert the original tuple into a second fact
+     * @param collector the collector to perform the grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
      * @param <GroupKeyA_> the type of the first fact in the destination {@link TriConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
@@ -1293,11 +1288,10 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
      * @param <ResultContainer_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <Result_> the type of the third fact in the destination {@link TriConstraintStream}'s tuple
-     * @return never null
      */
-    <GroupKeyA_, GroupKeyB_, ResultContainer_, Result_> TriConstraintStream<GroupKeyA_, GroupKeyB_, Result_> groupBy(
-            Function<A, GroupKeyA_> groupKeyAMapping, Function<A, GroupKeyB_> groupKeyBMapping,
-            UniConstraintCollector<A, ResultContainer_, Result_> collector);
+    <GroupKeyA_, GroupKeyB_, ResultContainer_, Result_> @NonNull TriConstraintStream<GroupKeyA_, GroupKeyB_, Result_> groupBy(
+            @NonNull Function<A, GroupKeyA_> groupKeyAMapping, @NonNull Function<A, GroupKeyB_> groupKeyBMapping,
+            @NonNull UniConstraintCollector<A, ResultContainer_, Result_> collector);
 
     /**
      * Combines the semantics of {@link #groupBy(Function, Function)} and {@link #groupBy(UniConstraintCollector)}.
@@ -1307,11 +1301,11 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * The fourth fact is the result of applying the second {@link UniConstraintCollector#finisher()} on all the tuples
      * of the original {@link UniConstraintStream} that belong to the group
      *
-     * @param groupKeyAMapping never null, function to convert the original tuple into a first fact
-     * @param groupKeyBMapping never null, function to convert the original tuple into a second fact
-     * @param collectorC never null, the collector to perform the first grouping operation with
+     * @param groupKeyAMapping function to convert the original tuple into a first fact
+     * @param groupKeyBMapping function to convert the original tuple into a second fact
+     * @param collectorC the collector to perform the first grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
-     * @param collectorD never null, the collector to perform the second grouping operation with
+     * @param collectorD the collector to perform the second grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
      * @param <GroupKeyA_> the type of the first fact in the destination {@link QuadConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
@@ -1321,13 +1315,12 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @param <ResultC_> the type of the third fact in the destination {@link QuadConstraintStream}'s tuple
      * @param <ResultContainerD_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <ResultD_> the type of the fourth fact in the destination {@link QuadConstraintStream}'s tuple
-     * @return never null
      */
     <GroupKeyA_, GroupKeyB_, ResultContainerC_, ResultC_, ResultContainerD_, ResultD_>
-            QuadConstraintStream<GroupKeyA_, GroupKeyB_, ResultC_, ResultD_> groupBy(
-                    Function<A, GroupKeyA_> groupKeyAMapping, Function<A, GroupKeyB_> groupKeyBMapping,
-                    UniConstraintCollector<A, ResultContainerC_, ResultC_> collectorC,
-                    UniConstraintCollector<A, ResultContainerD_, ResultD_> collectorD);
+            @NonNull QuadConstraintStream<GroupKeyA_, GroupKeyB_, ResultC_, ResultD_> groupBy(
+                    @NonNull Function<A, GroupKeyA_> groupKeyAMapping, @NonNull Function<A, GroupKeyB_> groupKeyBMapping,
+                    @NonNull UniConstraintCollector<A, ResultContainerC_, ResultC_> collectorC,
+                    @NonNull UniConstraintCollector<A, ResultContainerD_, ResultD_> collectorD);
 
     /**
      * Convert the {@link UniConstraintStream} to a {@link TriConstraintStream}, consisting of unique tuples with three
@@ -1339,20 +1332,19 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * The third fact is the return value of the third group key mapping function, applied on all incoming tuples with
      * the same first fact.
      *
-     * @param groupKeyAMapping never null, function to convert the original tuple into a first fact
-     * @param groupKeyBMapping never null, function to convert the original tuple into a second fact
-     * @param groupKeyCMapping never null, function to convert the original tuple into a third fact
+     * @param groupKeyAMapping function to convert the original tuple into a first fact
+     * @param groupKeyBMapping function to convert the original tuple into a second fact
+     * @param groupKeyCMapping function to convert the original tuple into a third fact
      * @param <GroupKeyA_> the type of the first fact in the destination {@link TriConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
      * @param <GroupKeyB_> the type of the second fact in the destination {@link TriConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
      * @param <GroupKeyC_> the type of the third fact in the destination {@link TriConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
-     * @return never null
      */
-    <GroupKeyA_, GroupKeyB_, GroupKeyC_> TriConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_> groupBy(
-            Function<A, GroupKeyA_> groupKeyAMapping, Function<A, GroupKeyB_> groupKeyBMapping,
-            Function<A, GroupKeyC_> groupKeyCMapping);
+    <GroupKeyA_, GroupKeyB_, GroupKeyC_> @NonNull TriConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_> groupBy(
+            @NonNull Function<A, GroupKeyA_> groupKeyAMapping, @NonNull Function<A, GroupKeyB_> groupKeyBMapping,
+            @NonNull Function<A, GroupKeyC_> groupKeyCMapping);
 
     /**
      * Combines the semantics of {@link #groupBy(Function, Function)} and {@link #groupBy(UniConstraintCollector)}.
@@ -1360,10 +1352,10 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * The final fact is the result of applying the first {@link UniConstraintCollector#finisher()} on all the tuples
      * of the original {@link UniConstraintStream} that belong to the group.
      *
-     * @param groupKeyAMapping never null, function to convert the original tuple into a first fact
-     * @param groupKeyBMapping never null, function to convert the original tuple into a second fact
-     * @param groupKeyCMapping never null, function to convert the original tuple into a third fact
-     * @param collectorD never null, the collector to perform the grouping operation with
+     * @param groupKeyAMapping function to convert the original tuple into a first fact
+     * @param groupKeyBMapping function to convert the original tuple into a second fact
+     * @param groupKeyCMapping function to convert the original tuple into a third fact
+     * @param collectorD the collector to perform the grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
      * @param <GroupKeyA_> the type of the first fact in the destination {@link QuadConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
@@ -1373,13 +1365,12 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
      * @param <ResultContainerD_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <ResultD_> the type of the fourth fact in the destination {@link QuadConstraintStream}'s tuple
-     * @return never null
      */
     <GroupKeyA_, GroupKeyB_, GroupKeyC_, ResultContainerD_, ResultD_>
-            QuadConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_, ResultD_> groupBy(
-                    Function<A, GroupKeyA_> groupKeyAMapping, Function<A, GroupKeyB_> groupKeyBMapping,
-                    Function<A, GroupKeyC_> groupKeyCMapping,
-                    UniConstraintCollector<A, ResultContainerD_, ResultD_> collectorD);
+            @NonNull QuadConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_, ResultD_> groupBy(
+                    @NonNull Function<A, GroupKeyA_> groupKeyAMapping, @NonNull Function<A, GroupKeyB_> groupKeyBMapping,
+                    @NonNull Function<A, GroupKeyC_> groupKeyCMapping,
+                    @NonNull UniConstraintCollector<A, ResultContainerD_, ResultD_> collectorD);
 
     /**
      * Convert the {@link UniConstraintStream} to a {@link QuadConstraintStream}, consisting of unique tuples with four
@@ -1395,9 +1386,9 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      *
      * @param groupKeyAMapping * calling {@code map(Person::getAge)} on such stream will produce a stream of {@link Integer}s
      *        * {@code [20, 25, 30]},
-     * @param groupKeyBMapping never null, function to convert the original tuple into a second fact
-     * @param groupKeyCMapping never null, function to convert the original tuple into a third fact
-     * @param groupKeyDMapping never null, function to convert the original tuple into a fourth fact
+     * @param groupKeyBMapping function to convert the original tuple into a second fact
+     * @param groupKeyCMapping function to convert the original tuple into a third fact
+     * @param groupKeyDMapping function to convert the original tuple into a fourth fact
      * @param <GroupKeyA_> the type of the first fact in the destination {@link QuadConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
      * @param <GroupKeyB_> the type of the second fact in the destination {@link QuadConstraintStream}'s tuple;
@@ -1406,12 +1397,11 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
      * @param <GroupKeyD_> the type of the fourth fact in the destination {@link QuadConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
-     * @return never null
      */
     <GroupKeyA_, GroupKeyB_, GroupKeyC_, GroupKeyD_>
-            QuadConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_, GroupKeyD_> groupBy(
-                    Function<A, GroupKeyA_> groupKeyAMapping, Function<A, GroupKeyB_> groupKeyBMapping,
-                    Function<A, GroupKeyC_> groupKeyCMapping, Function<A, GroupKeyD_> groupKeyDMapping);
+            @NonNull QuadConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_, GroupKeyD_> groupBy(
+                    @NonNull Function<A, GroupKeyA_> groupKeyAMapping, @NonNull Function<A, GroupKeyB_> groupKeyBMapping,
+                    @NonNull Function<A, GroupKeyC_> groupKeyCMapping, @NonNull Function<A, GroupKeyD_> groupKeyDMapping);
 
     // ************************************************************************
     // Operations with duplicate tuple possibility
@@ -1457,54 +1447,52 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * Use with caution,
      * as the increased memory allocation rates coming from tuple creation may negatively affect performance.
      *
-     * @param mapping never null, function to convert the original tuple into the new tuple
+     * @param mapping function to convert the original tuple into the new tuple
      * @param <ResultA_> the type of the only fact in the resulting {@link UniConstraintStream}'s tuple
-     * @return never null
      */
-    <ResultA_> UniConstraintStream<ResultA_> map(Function<A, ResultA_> mapping);
+    <ResultA_> @NonNull UniConstraintStream<ResultA_> map(@NonNull Function<A, ResultA_> mapping);
 
     /**
      * As defined by {@link #map(Function)}, only resulting in {@link BiConstraintStream}.
      *
-     * @param mappingA never null, function to convert the original tuple into the first fact of a new tuple
-     * @param mappingB never null, function to convert the original tuple into the second fact of a new tuple
+     * @param mappingA function to convert the original tuple into the first fact of a new tuple
+     * @param mappingB function to convert the original tuple into the second fact of a new tuple
      * @param <ResultA_> the type of the first fact in the resulting {@link BiConstraintStream}'s tuple
      * @param <ResultB_> the type of the first fact in the resulting {@link BiConstraintStream}'s tuple
-     * @return never null
      */
-    <ResultA_, ResultB_> BiConstraintStream<ResultA_, ResultB_> map(Function<A, ResultA_> mappingA,
-            Function<A, ResultB_> mappingB);
+    <ResultA_, ResultB_> @NonNull BiConstraintStream<ResultA_, ResultB_> map(@NonNull Function<A, ResultA_> mappingA,
+            @NonNull Function<A, ResultB_> mappingB);
 
     /**
      * As defined by {@link #map(Function)}, only resulting in {@link TriConstraintStream}.
      *
-     * @param mappingA never null, function to convert the original tuple into the first fact of a new tuple
-     * @param mappingB never null, function to convert the original tuple into the second fact of a new tuple
-     * @param mappingC never null, function to convert the original tuple into the third fact of a new tuple
+     * @param mappingA function to convert the original tuple into the first fact of a new tuple
+     * @param mappingB function to convert the original tuple into the second fact of a new tuple
+     * @param mappingC function to convert the original tuple into the third fact of a new tuple
      * @param <ResultA_> the type of the first fact in the resulting {@link TriConstraintStream}'s tuple
      * @param <ResultB_> the type of the first fact in the resulting {@link TriConstraintStream}'s tuple
      * @param <ResultC_> the type of the third fact in the resulting {@link TriConstraintStream}'s tuple
-     * @return never null
      */
-    <ResultA_, ResultB_, ResultC_> TriConstraintStream<ResultA_, ResultB_, ResultC_> map(Function<A, ResultA_> mappingA,
-            Function<A, ResultB_> mappingB, Function<A, ResultC_> mappingC);
+    <ResultA_, ResultB_, ResultC_> @NonNull TriConstraintStream<ResultA_, ResultB_, ResultC_> map(
+            @NonNull Function<A, ResultA_> mappingA,
+            @NonNull Function<A, ResultB_> mappingB, @NonNull Function<A, ResultC_> mappingC);
 
     /**
      * As defined by {@link #map(Function)}, only resulting in {@link QuadConstraintStream}.
      *
-     * @param mappingA never null, function to convert the original tuple into the first fact of a new tuple
-     * @param mappingB never null, function to convert the original tuple into the second fact of a new tuple
-     * @param mappingC never null, function to convert the original tuple into the third fact of a new tuple
-     * @param mappingD never null, function to convert the original tuple into the fourth fact of a new tuple
+     * @param mappingA function to convert the original tuple into the first fact of a new tuple
+     * @param mappingB function to convert the original tuple into the second fact of a new tuple
+     * @param mappingC function to convert the original tuple into the third fact of a new tuple
+     * @param mappingD function to convert the original tuple into the fourth fact of a new tuple
      * @param <ResultA_> the type of the first fact in the resulting {@link QuadConstraintStream}'s tuple
      * @param <ResultB_> the type of the first fact in the resulting {@link QuadConstraintStream}'s tuple
      * @param <ResultC_> the type of the third fact in the resulting {@link QuadConstraintStream}'s tuple
      * @param <ResultD_> the type of the third fact in the resulting {@link QuadConstraintStream}'s tuple
-     * @return never null
      */
-    <ResultA_, ResultB_, ResultC_, ResultD_> QuadConstraintStream<ResultA_, ResultB_, ResultC_, ResultD_> map(
-            Function<A, ResultA_> mappingA, Function<A, ResultB_> mappingB, Function<A, ResultC_> mappingC,
-            Function<A, ResultD_> mappingD);
+    <ResultA_, ResultB_, ResultC_, ResultD_> @NonNull QuadConstraintStream<ResultA_, ResultB_, ResultC_, ResultD_> map(
+            @NonNull Function<A, ResultA_> mappingA, @NonNull Function<A, ResultB_> mappingB,
+            @NonNull Function<A, ResultC_> mappingC,
+            @NonNull Function<A, ResultD_> mappingD);
 
     /**
      * Takes each tuple and applies a mapping on it, which turns the tuple into a {@link Iterable}.
@@ -1522,15 +1510,14 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * calling {@code flattenLast(Person::getRoles)} on such stream will produce
      * a stream of {@code [USER, ADMIN, USER, ADMIN, AUDITOR]}.
      *
-     * @param mapping never null, function to convert the original tuple into {@link Iterable}.
+     * @param mapping function to convert the original tuple into {@link Iterable}.
      *        For performance, returning an implementation of {@link java.util.Collection} is preferred.
      * @param <ResultA_> the type of facts in the resulting tuples.
      *        It is recommended that this type be deeply immutable.
      *        Not following this recommendation may lead to hard-to-debug hashing issues down the stream,
      *        especially if this value is ever used as a group key.
-     * @return never null
      */
-    <ResultA_> UniConstraintStream<ResultA_> flattenLast(Function<A, Iterable<ResultA_>> mapping);
+    <ResultA_> @NonNull UniConstraintStream<ResultA_> flattenLast(@NonNull Function<A, Iterable<ResultA_>> mapping);
 
     /**
      * Transforms the stream in such a way that all the tuples going through it are distinct.
@@ -1541,9 +1528,8 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * However, operations such as {@link #map(Function)} may create a stream which breaks that promise.
      * By calling this method on such a stream,
      * duplicate copies of the same tuple will be omitted at a performance cost.
-     *
-     * @return never null
      */
+    @NonNull
     UniConstraintStream<A> distinct();
 
     /**
@@ -1557,11 +1543,9 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * and the other stream consists of {@code [C, D, E]},
      * {@code this.concat(other)} will consist of {@code [A, B, C, C, D, E]}.
      * This operation can be thought of as an or between streams.
-     *
-     * @param otherStream never null
-     * @return never null
      */
-    UniConstraintStream<A> concat(UniConstraintStream<A> otherStream);
+    @NonNull
+    UniConstraintStream<A> concat(@NonNull UniConstraintStream<A> otherStream);
 
     /**
      * Returns a new {@link BiConstraintStream} containing all the tuples of both this {@link UniConstraintStream}
@@ -1575,11 +1559,8 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * {@code [(A, null), (B, null), (C, null), (C1, C2), (D1, D2), (E1, E2)]}.
      * <p>
      * This operation can be thought of as an or between streams.
-     *
-     * @param otherStream never null
-     * @return never null
      */
-    default <B> BiConstraintStream<A, B> concat(BiConstraintStream<A, B> otherStream) {
+    default <B> @NonNull BiConstraintStream<A, B> concat(@NonNull BiConstraintStream<A, B> otherStream) {
         return concat(otherStream, uniConstantNull());
     }
 
@@ -1596,11 +1577,10 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * <p>
      * This operation can be thought of as an or between streams.
      *
-     * @param otherStream never null
-     * @param paddingFunctionB never null, function to find the padding for the second fact
-     * @return never null
+     * @param paddingFunctionB function to find the padding for the second fact
      */
-    <B> BiConstraintStream<A, B> concat(BiConstraintStream<A, B> otherStream, Function<A, B> paddingFunctionB);
+    <B> @NonNull BiConstraintStream<A, B> concat(@NonNull BiConstraintStream<A, B> otherStream,
+            @NonNull Function<A, B> paddingFunctionB);
 
     /**
      * Returns a new {@link TriConstraintStream} containing all the tuples of both this {@link UniConstraintStream}
@@ -1614,11 +1594,8 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * {@code [(A, null), (B, null), (C, null), (C1, C2, C3), (D1, D2, D3), (E1, E2, E3)]}.
      * <p>
      * This operation can be thought of as an or between streams.
-     *
-     * @param otherStream never null
-     * @return never null
      */
-    default <B, C> TriConstraintStream<A, B, C> concat(TriConstraintStream<A, B, C> otherStream) {
+    default <B, C> @NonNull TriConstraintStream<A, B, C> concat(@NonNull TriConstraintStream<A, B, C> otherStream) {
         return concat(otherStream, uniConstantNull(), uniConstantNull());
     }
 
@@ -1635,13 +1612,12 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * <p>
      * This operation can be thought of as an or between streams.
      *
-     * @param otherStream never null
-     * @param paddingFunctionB never null, function to find the padding for the second fact
-     * @param paddingFunctionC never null, function to find the padding for the third fact
-     * @return never null
+     * @param paddingFunctionB function to find the padding for the second fact
+     * @param paddingFunctionC function to find the padding for the third fact
      */
-    <B, C> TriConstraintStream<A, B, C> concat(TriConstraintStream<A, B, C> otherStream, Function<A, B> paddingFunctionB,
-            Function<A, C> paddingFunctionC);
+    <B, C> @NonNull TriConstraintStream<A, B, C> concat(@NonNull TriConstraintStream<A, B, C> otherStream,
+            @NonNull Function<A, B> paddingFunctionB,
+            @NonNull Function<A, C> paddingFunctionC);
 
     /**
      * Returns a new {@link QuadConstraintStream} containing all the tuples of both this {@link UniConstraintStream}
@@ -1655,11 +1631,8 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * {@code [(A, null), (B, null), (C, null), (C1, C2, C3, C4), (D1, D2, D3, D4), (E1, E2, E3, E4)]}.
      * <p>
      * This operation can be thought of as an or between streams.
-     *
-     * @param otherStream never null
-     * @return never null
      */
-    default <B, C, D> QuadConstraintStream<A, B, C, D> concat(QuadConstraintStream<A, B, C, D> otherStream) {
+    default <B, C, D> @NonNull QuadConstraintStream<A, B, C, D> concat(@NonNull QuadConstraintStream<A, B, C, D> otherStream) {
         return concat(otherStream, uniConstantNull(), uniConstantNull(), uniConstantNull());
     }
 
@@ -1676,14 +1649,13 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * <p>
      * This operation can be thought of as an or between streams.
      *
-     * @param otherStream never null
-     * @param paddingFunctionB never null, function to find the padding for the second fact
-     * @param paddingFunctionC never null, function to find the padding for the third fact
-     * @param paddingFunctionD never null, function to find the padding for the fourth fact
-     * @return never null
+     * @param paddingFunctionB function to find the padding for the second fact
+     * @param paddingFunctionC function to find the padding for the third fact
+     * @param paddingFunctionD function to find the padding for the fourth fact
      */
-    <B, C, D> QuadConstraintStream<A, B, C, D> concat(QuadConstraintStream<A, B, C, D> otherStream,
-            Function<A, B> paddingFunctionB, Function<A, C> paddingFunctionC, Function<A, D> paddingFunctionD);
+    <B, C, D> @NonNull QuadConstraintStream<A, B, C, D> concat(@NonNull QuadConstraintStream<A, B, C, D> otherStream,
+            @NonNull Function<A, B> paddingFunctionB, @NonNull Function<A, C> paddingFunctionC,
+            @NonNull Function<A, D> paddingFunctionD);
 
     // ************************************************************************
     // expand
@@ -1701,10 +1673,9 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * prefer {@link #expand(Function, Function)} or {@link #expand(Function, Function, Function)}.
      *
      * @param mapping function to produce the new fact from the original tuple
-     * @return never null
      * @param <ResultB_> type of the final fact of the new tuple
      */
-    <ResultB_> BiConstraintStream<A, ResultB_> expand(Function<A, ResultB_> mapping);
+    <ResultB_> @NonNull BiConstraintStream<A, ResultB_> expand(Function<A, ResultB_> mapping);
 
     /**
      * Adds two facts to the end of the tuple, increasing the cardinality of the stream.
@@ -1754,11 +1725,8 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * Adds to the stream all instances of a given class which are not yet present in it.
      * These instances must be present in the solution,
      * which means the class needs to be either a planning entity or a problem fact.
-     *
-     * @param otherClass never null
-     * @return never null
      */
-    default UniConstraintStream<A> complement(Class<A> otherClass) {
+    default @NonNull UniConstraintStream<A> complement(@NonNull Class<A> otherClass) {
         var firstStream = this;
         var secondStream = getConstraintFactory().forEach(otherClass)
                 .ifNotExists(firstStream, Joiners.equal());
@@ -1772,27 +1740,26 @@ public interface UniConstraintStream<A> extends ConstraintStream {
     /**
      * As defined by {@link #penalize(Score, ToIntFunction)}, where the match weight is one (1).
      *
-     * @return never null
      */
-    default <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> penalize(Score_ constraintWeight) {
+    default <Score_ extends Score<Score_>> @NonNull UniConstraintBuilder<A, Score_> penalize(@NonNull Score_ constraintWeight) {
         return penalize(constraintWeight, uniConstantOne());
     }
 
     /**
      * As defined by {@link #penalizeLong(Score, ToLongFunction)}, where the match weight is one (1).
      *
-     * @return never null
      */
-    default <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> penalizeLong(Score_ constraintWeight) {
+    default <Score_ extends Score<Score_>> @NonNull UniConstraintBuilder<A, Score_>
+            penalizeLong(@NonNull Score_ constraintWeight) {
         return penalizeLong(constraintWeight, uniConstantOneLong());
     }
 
     /**
      * As defined by {@link #penalizeBigDecimal(Score, Function)}, where the match weight is one (1).
      *
-     * @return never null
      */
-    default <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> penalizeBigDecimal(Score_ constraintWeight) {
+    default <Score_ extends Score<Score_>> @NonNull UniConstraintBuilder<A, Score_>
+            penalizeBigDecimal(@NonNull Score_ constraintWeight) {
         return penalizeBigDecimal(constraintWeight, uniConstantOneBigDecimal());
     }
 
@@ -1807,24 +1774,22 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * For non-int {@link Score} types use {@link #penalizeLong(Score, ToLongFunction)} or
      * {@link #penalizeBigDecimal(Score, Function)} instead.
      *
-     * @param constraintWeight never null
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
-     * @return never null
+     * @param matchWeigher the result of this function (matchWeight) is multiplied by the constraintWeight
      */
-    <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> penalize(Score_ constraintWeight,
-            ToIntFunction<A> matchWeigher);
+    <Score_ extends Score<Score_>> @NonNull UniConstraintBuilder<A, Score_> penalize(@NonNull Score_ constraintWeight,
+            @NonNull ToIntFunction<A> matchWeigher);
 
     /**
      * As defined by {@link #penalize(Score, ToIntFunction)}, with a penalty of type long.
      */
-    <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> penalizeLong(Score_ constraintWeight,
-            ToLongFunction<A> matchWeigher);
+    <Score_ extends Score<Score_>> @NonNull UniConstraintBuilder<A, Score_> penalizeLong(@NonNull Score_ constraintWeight,
+            @NonNull ToLongFunction<A> matchWeigher);
 
     /**
      * As defined by {@link #penalize(Score, ToIntFunction)}, with a penalty of type {@link BigDecimal}.
      */
-    <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> penalizeBigDecimal(Score_ constraintWeight,
-            Function<A, BigDecimal> matchWeigher);
+    <Score_ extends Score<Score_>> @NonNull UniConstraintBuilder<A, Score_> penalizeBigDecimal(@NonNull Score_ constraintWeight,
+            @NonNull Function<A, BigDecimal> matchWeigher);
 
     /**
      * Negatively impacts the {@link Score},
@@ -1879,10 +1844,8 @@ public interface UniConstraintStream<A> extends ConstraintStream {
 
     /**
      * As defined by {@link #reward(Score, ToIntFunction)}, where the match weight is one (1).
-     *
-     * @return never null
      */
-    default <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> reward(Score_ constraintWeight) {
+    default <Score_ extends Score<Score_>> @NonNull UniConstraintBuilder<A, Score_> reward(@NonNull Score_ constraintWeight) {
         return reward(constraintWeight, uniConstantOne());
     }
 
@@ -1897,24 +1860,24 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * For non-int {@link Score} types use {@link #rewardLong(Score, ToLongFunction)} or
      * {@link #rewardBigDecimal(Score, Function)} instead.
      *
-     * @param constraintWeight never null
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
-     * @return never null
+     * @param matchWeigher the result of this function (matchWeight) is multiplied by the constraintWeight
      */
-    <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> reward(Score_ constraintWeight,
-            ToIntFunction<A> matchWeigher);
+    <Score_ extends Score<Score_>> @NonNull UniConstraintBuilder<A, Score_> reward(@NonNull Score_ constraintWeight,
+            @NonNull ToIntFunction<A> matchWeigher);
 
     /**
      * As defined by {@link #reward(Score, ToIntFunction)}, with a penalty of type long.
      */
-    <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> rewardLong(Score_ constraintWeight,
-            ToLongFunction<A> matchWeigher);
+    @NonNull
+    <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> rewardLong(@NonNull Score_ constraintWeight,
+            @NonNull ToLongFunction<A> matchWeigher);
 
     /**
      * As defined by {@link #reward(Score, ToIntFunction)}, with a penalty of type {@link BigDecimal}.
      */
-    <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> rewardBigDecimal(Score_ constraintWeight,
-            Function<A, BigDecimal> matchWeigher);
+    @NonNull
+    <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> rewardBigDecimal(@NonNull Score_ constraintWeight,
+            @NonNull Function<A, BigDecimal> matchWeigher);
 
     /**
      * Positively impacts the {@link Score},
@@ -1971,11 +1934,8 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * <p>
      * Use {@code penalize(...)} or {@code reward(...)} instead, unless this constraint can both have positive and
      * negative weights.
-     *
-     * @param constraintWeight never null
-     * @return never null
      */
-    default <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> impact(Score_ constraintWeight) {
+    default <Score_ extends Score<Score_>> @NonNull UniConstraintBuilder<A, Score_> impact(@NonNull Score_ constraintWeight) {
         return impact(constraintWeight, uniConstantOne());
     }
 
@@ -1989,24 +1949,22 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * Use {@code penalize(...)} or {@code reward(...)} instead, unless this constraint can both have positive and
      * negative weights.
      *
-     * @param constraintWeight never null
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
-     * @return never null
+     * @param matchWeigher the result of this function (matchWeight) is multiplied by the constraintWeight
      */
-    <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> impact(Score_ constraintWeight,
-            ToIntFunction<A> matchWeigher);
+    <Score_ extends Score<Score_>> @NonNull UniConstraintBuilder<A, Score_> impact(@NonNull Score_ constraintWeight,
+            @NonNull ToIntFunction<A> matchWeigher);
 
     /**
      * As defined by {@link #impact(Score, ToIntFunction)}, with an impact of type long.
      */
-    <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> impactLong(Score_ constraintWeight,
-            ToLongFunction<A> matchWeigher);
+    <Score_ extends Score<Score_>> @NonNull UniConstraintBuilder<A, Score_> impactLong(@NonNull Score_ constraintWeight,
+            @NonNull ToLongFunction<A> matchWeigher);
 
     /**
      * As defined by {@link #impact(Score, ToIntFunction)}, with an impact of type {@link BigDecimal}.
      */
-    <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> impactBigDecimal(Score_ constraintWeight,
-            Function<A, BigDecimal> matchWeigher);
+    <Score_ extends Score<Score_>> @NonNull UniConstraintBuilder<A, Score_> impactBigDecimal(@NonNull Score_ constraintWeight,
+            @NonNull Function<A, BigDecimal> matchWeigher);
 
     /**
      * Positively impacts the {@link Score} by the {@link ConstraintWeight} for each match,

@@ -105,7 +105,7 @@ public interface InnerUniConstraintStream<A> extends UniConstraintStream<A> {
     }
 
     @Override
-    default UniConstraintStream<A> distinct() {
+    default @NonNull UniConstraintStream<A> distinct() {
         if (guaranteesDistinct()) {
             return this;
         } else {
@@ -114,20 +114,22 @@ public interface InnerUniConstraintStream<A> extends UniConstraintStream<A> {
     }
 
     @Override
-    default <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> penalize(Score_ constraintWeight,
-            ToIntFunction<A> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> penalize(@NonNull Score_ constraintWeight,
+            @NonNull ToIntFunction<A> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.PENALTY);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> penalizeLong(Score_ constraintWeight,
-            ToLongFunction<A> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> penalizeLong(
+            @NonNull Score_ constraintWeight,
+            @NonNull ToLongFunction<A> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.PENALTY);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> penalizeBigDecimal(Score_ constraintWeight,
-            Function<A, BigDecimal> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> penalizeBigDecimal(
+            @NonNull Score_ constraintWeight,
+            @NonNull Function<A, BigDecimal> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.PENALTY);
     }
 
@@ -147,20 +149,21 @@ public interface InnerUniConstraintStream<A> extends UniConstraintStream<A> {
     }
 
     @Override
-    default <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> reward(Score_ constraintWeight,
-            ToIntFunction<A> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> reward(@NonNull Score_ constraintWeight,
+            @NonNull ToIntFunction<A> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.REWARD);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> rewardLong(Score_ constraintWeight,
-            ToLongFunction<A> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> rewardLong(@NonNull Score_ constraintWeight,
+            @NonNull ToLongFunction<A> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.REWARD);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> rewardBigDecimal(Score_ constraintWeight,
-            Function<A, BigDecimal> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> rewardBigDecimal(
+            @NonNull Score_ constraintWeight,
+            @NonNull Function<A, BigDecimal> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.REWARD);
     }
 
@@ -180,20 +183,21 @@ public interface InnerUniConstraintStream<A> extends UniConstraintStream<A> {
     }
 
     @Override
-    default <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> impact(Score_ constraintWeight,
-            ToIntFunction<A> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> impact(@NonNull Score_ constraintWeight,
+            @NonNull ToIntFunction<A> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.MIXED);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> impactLong(Score_ constraintWeight,
-            ToLongFunction<A> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> impactLong(@NonNull Score_ constraintWeight,
+            @NonNull ToLongFunction<A> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.MIXED);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> impactBigDecimal(Score_ constraintWeight,
-            Function<A, BigDecimal> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> UniConstraintBuilder<A, Score_> impactBigDecimal(
+            @NonNull Score_ constraintWeight,
+            @NonNull Function<A, BigDecimal> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.MIXED);
     }
 
