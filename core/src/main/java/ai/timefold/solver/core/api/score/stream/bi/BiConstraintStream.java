@@ -1325,14 +1325,15 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
     /**
      * As defined by {@link #penalize(Score, ToIntBiFunction)}, with a penalty of type long.
      */
-    <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> penalizeLong(Score_ constraintWeight,
-            ToLongBiFunction<A, B> matchWeigher);
+    <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> penalizeLong(@NonNull Score_ constraintWeight,
+            @NonNull ToLongBiFunction<A, B> matchWeigher);
 
     /**
      * As defined by {@link #penalize(Score, ToIntBiFunction)}, with a penalty of type {@link BigDecimal}.
      */
-    <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> penalizeBigDecimal(Score_ constraintWeight,
-            BiFunction<A, B, BigDecimal> matchWeigher);
+    <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> penalizeBigDecimal(
+            @NonNull Score_ constraintWeight,
+            @NonNull BiFunction<A, B, BigDecimal> matchWeigher);
 
     /**
      * Negatively impacts the {@link Score},
@@ -1386,7 +1387,7 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
     /**
      * As defined by {@link #reward(Score, ToIntBiFunction)}, where the match weight is one (1).
      */
-    default <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> reward(Score_ constraintWeight) {
+    default <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> reward(@NonNull Score_ constraintWeight) {
         return reward(constraintWeight, biConstantOne());
     }
 
