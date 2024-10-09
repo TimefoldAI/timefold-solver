@@ -75,8 +75,10 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
         var moveScore = moveScope.getScore();
         var lateScore = previousScores[lateScoreIndex];
         if (lateScore == null) {
-            logger.info("Reconfiguration accepted move index ({}), score ({}), move ({}).", moveScope.getMoveIndex(),
-                    moveScope.getScore(), moveScope.getMove());
+            logger.info("Reconfiguration accepted move index ({}), moves evaluated ({}), score ({}), move ({}).",
+                    moveScope.getMoveIndex(),
+                    moveScope.getStepScope().getPhaseScope().getSolverScope().getMoveEvaluationCount(), moveScope.getScore(),
+                    moveScope.getMove());
             return true;
         }
         if (moveScore.compareTo(lateScore) >= 0) {
@@ -154,8 +156,11 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
         if (lastAcceptedScore == null || currentBestScore.compareTo(lastAcceptedScore) > 0) {
             lastAcceptedScore = currentBestScore;
         }
-        logger.info("Reconfiguration applied: accepted elements count ({}), move count ({}), best current score ({}).",
-                currentReconfigurationRationCount, maxReconfigurationMoveCount, lastAcceptedScore);
+        logger.info(
+                "Reconfiguration applied: accepted elements count ({}), max move count ({}), moves evaluated ({}), best current score ({}).",
+                currentReconfigurationRationCount, maxReconfigurationMoveCount,
+                stepScope.getPhaseScope().getSolverScope().getMoveEvaluationCount(),
+                lastAcceptedScore);
         if (lateAcceptanceReconfigurationSize > 1) {
             currentReconfigurationRationCount++;
         }
