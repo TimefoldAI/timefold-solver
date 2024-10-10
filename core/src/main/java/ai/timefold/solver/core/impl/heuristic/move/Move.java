@@ -38,6 +38,19 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.MoveTabuAc
 public interface Move<Solution_> {
 
     /**
+     * Adapts a legacy move to the new {@link ai.timefold.solver.core.api.move.Move} interface.
+     *
+     * @param legacyMove never null; the legacy move to adapt
+     * @return never null; the adapted move
+     */
+    static <Solution_> ai.timefold.solver.core.api.move.Move<Solution_> adapt(Move<Solution_> legacyMove) {
+        if (legacyMove instanceof NoChangeMove) {
+            return ai.timefold.solver.core.api.move.generic.NoChangeMove.getInstance();
+        }
+        return new LegacyMoveAdapter<>(legacyMove);
+    }
+
+    /**
      * Called before a move is evaluated to decide whether the move can be done and evaluated.
      * A Move is not doable if:
      * <ul>

@@ -5,20 +5,22 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.domain.metamodel.BasicVariableMetaModel;
 import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.api.domain.metamodel.ListVariableMetaModel;
-import ai.timefold.solver.core.api.move.MutableSolutionState;
+import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultBasicVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.move.InnerMutableSolutionState;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
-public final class MoveDirector<Solution_> implements MutableSolutionState<Solution_> {
+public final class MoveDirector<Solution_> implements InnerMutableSolutionState<Solution_> {
 
     private final AbstractScoreDirector<Solution_, ?, ?> scoreDirector;
     private final VariableChangeRecordingScoreDirector<Solution_> changeRecordingScoreDirector;
 
-    public MoveDirector(AbstractScoreDirector<Solution_, ?, ?> scoreDirector) {
-        this.scoreDirector = Objects.requireNonNull(scoreDirector);
+    public MoveDirector(InnerScoreDirector<Solution_, ?> scoreDirector) {
+        this.scoreDirector = (AbstractScoreDirector<Solution_, ?, ?>) Objects.requireNonNull(scoreDirector);
         // Doesn't require the index cache, because we maintain the invariant in this class.
         this.changeRecordingScoreDirector = new VariableChangeRecordingScoreDirector<>(scoreDirector, false);
     }
@@ -114,6 +116,11 @@ public final class MoveDirector<Solution_> implements MutableSolutionState<Solut
     private static <Solution_, Entity_, Value_> ListVariableDescriptor<Solution_>
             extractVariableDescriptor(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
         return ((DefaultListVariableMetaModel<Solution_, Entity_, Value_>) variableMetaModel).variableDescriptor();
+    }
+
+    @Override
+    public ScoreDirector<Solution_> getVariableChangeRecordingScoreDirector() {
+        return changeRecordingScoreDirector;
     }
 
 }

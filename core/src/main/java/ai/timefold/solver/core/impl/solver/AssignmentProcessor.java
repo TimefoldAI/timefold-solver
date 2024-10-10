@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.function.Function;
 
+import ai.timefold.solver.core.api.domain.metamodel.LocationInList;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
@@ -16,7 +17,6 @@ import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeur
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableDemand;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
-import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.chained.ChainedChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListUnassignMove;

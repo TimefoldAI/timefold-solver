@@ -2,39 +2,29 @@ package ai.timefold.solver.core.api.move;
 
 import java.util.Collection;
 
+import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractSimplifiedMove;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.MoveTabuAcceptor;
 
 /**
  * The base interface against which to implement moves.
  *
  * <p>
- * Moves are expected to be immutable.
- * (Think records, later value records with Valhalla.)
- * This means they cannot have any mutable state.
- * However, sometimes it will be necessary for a move to compute some state based on its inputs.
- * (For example: if a list change move knows the value to move and the value to move it behind,
- * it needs to compute the entities in whose lists those values sit,
- * and the positions at which they sit. This is the role of the context.)
- * The solver will control the context and if necessary, after the move is undone, can recompute the context
- * to provide the latest state to the toString() methods etc.
- *
+ * A Move represents a change of 1 or more {@link PlanningVariable}s of 1 or more {@link PlanningEntity}s
+ * in the working {@link PlanningSolution}.
  * <p>
- * Simple moves which do not require context can be written against {@link ContextlessMove}.
+ * Usually the move holds a direct reference to each {@link PlanningEntity} of the {@link PlanningSolution}
+ * which it will change when {@link #run(MutableSolutionState)} is called.
+ * <p>
+ * A Move should implement {@link Object#equals(Object)} and {@link Object#hashCode()} for {@link MoveTabuAcceptor}.
+ * It is highly recommended to override {@link #getPlanningEntities()} and {@link #getPlanningValues()},
+ * otherwise the resulting move will throw an exception when used with Tabu search.
  *
  * @param <Solution_>
- * @param <Context_>
  */
-public interface Move<Solution_, Context_> {
-
-    /**
-     * Called by the solver before a move is run.
-     * The result of this call will be passed to all the other methods in the move,
-     * when the solver calls them.
-     *
-     * @param solutionState never null; allows to read values of the variables.
-     * @return may be null, with {@link ContextlessMove}.
-     */
-    Context_ prepareContext(SolutionState<Solution_> solutionState);
+public interface Move<Solution_> {
 
     /**
      * The equivalent to doMove() from the old API.
@@ -44,45 +34,55 @@ public interface Move<Solution_, Context_> {
      *        Remembers those mutative operations and can replay them in reverse order
      *        when the solver needs to undo the move.
      *        We already have this functionality in the old API via the {@link AbstractSimplifiedMove}.
-     * @param context
      */
-    void run(MutableSolutionState<Solution_> mutableSolutionState, Context_ context);
+    void run(MutableSolutionState<Solution_> mutableSolutionState);
+
+    /**
+     * Generally not required.
+     * Move Streams are expected to only generate doable moves.
+     * Exists to support the old Move Selector API.
+     *
+     * @param solutionState never null; exposes all possible read operations on the variables.
+     */
+    default boolean isMoveDoable(SolutionState<Solution_> solutionState) {
+        return true;
+    }
 
     /**
      * Equivalent of the rebase() method from the old API.
      * Used in multi-threaded solving.
      *
      * @param solutionState never null
-     * @param context
      * @return The rebased move.
      */
-    Move<Solution_, Context_> rebase(SolutionState<Solution_> solutionState, Context_ context);
+    Move<Solution_> rebase(SolutionState<Solution_> solutionState);
 
     /**
      * Equivalent of getPlanningEntities() from the old API.
      * Used in tabu search.
      *
-     * @param context
      * @return Entities that should become tabu.
      */
-    Collection<?> getPlanningEntities(Context_ context);
+    default Collection<?> getPlanningEntities() {
+        throw new UnsupportedOperationException("The move (" + this + ") does not support tabu search.");
+    }
 
     /**
      * Equivalent of getPlanningValues() from the old API.
      * Used in tabu search.
      *
-     * @param context
      * @return Values that should become tabu.
      */
-    Collection<?> getPlanningValues(Context_ context);
+    default Collection<?> getPlanningValues() {
+        throw new UnsupportedOperationException("The move (" + this + ") does not support tabu search.");
+    }
 
     /**
      * The solver will make sure to only call this when the move is actually printed out during debug logging.
      * This will eliminate all overhead of toString on the hot path, incl. having to store information for later undo.
      *
-     * @param context
      * @return A description of the move.
      */
-    String toString(Context_ context);
+    String toString();
 
 }
