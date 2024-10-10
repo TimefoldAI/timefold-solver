@@ -43,7 +43,6 @@ public class AcceptorFactory<Solution_> {
                 buildEntityTabuAcceptor(configPolicy),
                 buildValueTabuAcceptor(configPolicy),
                 buildMoveTabuAcceptor(configPolicy),
-                buildUndoMoveTabuAcceptor(configPolicy),
                 buildSimulatedAnnealingAcceptor(configPolicy),
                 buildLateAcceptanceAcceptor(),
                 buildGreatDelugeAcceptor(configPolicy))
@@ -182,32 +181,11 @@ public class AcceptorFactory<Solution_> {
                 && acceptorConfig.getAcceptorTypeList().contains(AcceptorType.MOVE_TABU))
                 || acceptorConfig.getMoveTabuSize() != null || acceptorConfig.getFadingMoveTabuSize() != null) {
             MoveTabuAcceptor<Solution_> acceptor = new MoveTabuAcceptor<>(configPolicy.getLogIndentation());
-            acceptor.setUseUndoMoveAsTabuMove(false);
             if (acceptorConfig.getMoveTabuSize() != null) {
                 acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy<>(acceptorConfig.getMoveTabuSize()));
             }
             if (acceptorConfig.getFadingMoveTabuSize() != null) {
                 acceptor.setFadingTabuSizeStrategy(new FixedTabuSizeStrategy<>(acceptorConfig.getFadingMoveTabuSize()));
-            }
-            if (configPolicy.getEnvironmentMode().isNonIntrusiveFullAsserted()) {
-                acceptor.setAssertTabuHashCodeCorrectness(true);
-            }
-            return Optional.of(acceptor);
-        }
-        return Optional.empty();
-    }
-
-    private Optional<MoveTabuAcceptor<Solution_>> buildUndoMoveTabuAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
-        if ((acceptorConfig.getAcceptorTypeList() != null
-                && acceptorConfig.getAcceptorTypeList().contains(AcceptorType.UNDO_MOVE_TABU))
-                || acceptorConfig.getUndoMoveTabuSize() != null || acceptorConfig.getFadingUndoMoveTabuSize() != null) {
-            MoveTabuAcceptor<Solution_> acceptor = new MoveTabuAcceptor<>(configPolicy.getLogIndentation());
-            acceptor.setUseUndoMoveAsTabuMove(true);
-            if (acceptorConfig.getUndoMoveTabuSize() != null) {
-                acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy<>(acceptorConfig.getUndoMoveTabuSize()));
-            }
-            if (acceptorConfig.getFadingUndoMoveTabuSize() != null) {
-                acceptor.setFadingTabuSizeStrategy(new FixedTabuSizeStrategy<>(acceptorConfig.getFadingUndoMoveTabuSize()));
             }
             if (configPolicy.getEnvironmentMode().isNonIntrusiveFullAsserted()) {
                 acceptor.setAssertTabuHashCodeCorrectness(true);

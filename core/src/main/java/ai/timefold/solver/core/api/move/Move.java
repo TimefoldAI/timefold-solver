@@ -77,6 +77,10 @@ public interface Move<Solution_> {
         throw new UnsupportedOperationException("The move (" + this + ") does not support tabu search.");
     }
 
+    default String getMoveTypeDescription() {
+        return getClass().getSimpleName();
+    }
+
     /**
      * The solver will make sure to only call this when the move is actually printed out during debug logging.
      * This will eliminate all overhead of toString on the hot path, incl. having to store information for later undo.
