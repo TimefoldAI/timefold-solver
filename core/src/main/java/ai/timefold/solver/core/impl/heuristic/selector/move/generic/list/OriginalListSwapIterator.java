@@ -3,14 +3,14 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 import java.util.Collections;
 import java.util.Iterator;
 
+import ai.timefold.solver.core.api.domain.metamodel.LocationInList;
+import ai.timefold.solver.core.api.domain.metamodel.UnassignedLocation;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.heuristic.move.CompositeMove;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
-import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
-import ai.timefold.solver.core.impl.heuristic.selector.list.UnassignedLocation;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 
 /**
@@ -61,22 +61,22 @@ public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterat
         if (leftUnassigned && rightUnassigned) { // No need to swap two unassigned elements.
             return NoChangeMove.getInstance();
         } else if (leftUnassigned) { // Unassign right, put left where right used to be.
-            var rightDestination = (LocationInList) upcomingRight;
+            var rightDestination = (LocationInList<?>) upcomingRight;
             var unassignMove =
                     new ListUnassignMove<>(listVariableDescriptor, rightDestination.entity(), rightDestination.index());
             var assignMove = new ListAssignMove<>(listVariableDescriptor, upcomingLeftValue, rightDestination.entity(),
                     rightDestination.index());
             return CompositeMove.buildMove(unassignMove, assignMove);
         } else if (rightUnassigned) { // Unassign left, put right where left used to be.
-            var leftDestination = (LocationInList) upcomingLeft;
+            var leftDestination = (LocationInList<?>) upcomingLeft;
             var unassignMove =
                     new ListUnassignMove<>(listVariableDescriptor, leftDestination.entity(), leftDestination.index());
             var assignMove = new ListAssignMove<>(listVariableDescriptor, upcomingRightValue, leftDestination.entity(),
                     leftDestination.index());
             return CompositeMove.buildMove(unassignMove, assignMove);
         } else {
-            var leftDestination = (LocationInList) upcomingLeft;
-            var rightDestination = (LocationInList) upcomingRight;
+            var leftDestination = (LocationInList<?>) upcomingLeft;
+            var rightDestination = (LocationInList<?>) upcomingRight;
             return new ListSwapMove<>(listVariableDescriptor, leftDestination.entity(), leftDestination.index(),
                     rightDestination.entity(), rightDestination.index());
         }

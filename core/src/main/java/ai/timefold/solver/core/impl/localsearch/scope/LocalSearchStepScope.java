@@ -14,7 +14,6 @@ public final class LocalSearchStepScope<Solution_> extends AbstractStepScope<Sol
     private double timeGradient = Double.NaN;
     private Move<Solution_> step = null;
     private String stepString = null;
-    private Move<Solution_> undoStep = null;
     private Long selectedMoveCount = null;
     private Long acceptedMoveCount = null;
 
@@ -57,14 +56,6 @@ public final class LocalSearchStepScope<Solution_> extends AbstractStepScope<Sol
 
     public void setStepString(String stepString) {
         this.stepString = stepString;
-    }
-
-    public Move<Solution_> getUndoStep() {
-        return undoStep;
-    }
-
-    public void setUndoStep(Move<Solution_> undoStep) {
-        this.undoStep = undoStep;
     }
 
     public Long getSelectedMoveCount() {

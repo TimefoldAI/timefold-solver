@@ -15,11 +15,10 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.list.ElementLocation;
-import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 
 import org.junit.jupiter.api.Test;
 
@@ -43,12 +42,12 @@ public class MultipleDelegateListTest {
         doAnswer(invocation -> {
             String value = invocation.getArgument(0);
             return switch (value) {
-                case "a" -> new LocationInList("e1", 0);
-                case "b" -> new LocationInList("e1", 1);
-                case "c" -> new LocationInList("e1", 2);
-                case "d" -> new LocationInList("e2", 0);
-                case "e" -> new LocationInList("e2", 1);
-                case "f" -> new LocationInList("e3", 0);
+                case "a" -> ElementLocation.of("e1", 0);
+                case "b" -> ElementLocation.of("e1", 1);
+                case "c" -> ElementLocation.of("e1", 2);
+                case "d" -> ElementLocation.of("e2", 0);
+                case "e" -> ElementLocation.of("e2", 1);
+                case "f" -> ElementLocation.of("e3", 0);
                 default -> ElementLocation.unassigned();
             };
         }).when(listVariableStateSupply).getLocationInList(anyString());

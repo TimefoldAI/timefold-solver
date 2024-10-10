@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.list;
 import java.util.Iterator;
 import java.util.Random;
 
+import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
@@ -60,7 +61,7 @@ final class ElementLocationRandomIterator<Solution_> implements Iterator<Element
         } else if (random < entityBoundary) {
             // Start with the first unpinned value of each entity, or zero if no pinning.
             var entity = entityIterator.next();
-            return new LocationInList(entity, listVariableDescriptor.getFirstUnpinnedIndex(entity));
+            return ElementLocation.of(entity, listVariableDescriptor.getFirstUnpinnedIndex(entity));
         } else { // Value selector already returns only unpinned values.
             if (valueIterator == null) {
                 valueIterator = valueSelector.iterator();
@@ -76,14 +77,15 @@ final class ElementLocationRandomIterator<Solution_> implements Iterator<Element
                 var entity = entityIterator.next();
                 int unpinnedSize = listVariableDescriptor.getUnpinnedSubListSize(entity);
                 if (unpinnedSize == 0) { // Only the last destination remains.
-                    return new LocationInList(entity, listVariableDescriptor.getListSize(entity));
+                    return ElementLocation.of(entity, listVariableDescriptor.getListSize(entity));
                 } else { // +1 to include the destination after the final element in the list.
                     int randomIndex = workingRandom.nextInt(unpinnedSize + 1);
-                    return new LocationInList(entity, listVariableDescriptor.getFirstUnpinnedIndex(entity) + randomIndex);
+                    return ElementLocation.of(entity, listVariableDescriptor.getFirstUnpinnedIndex(entity) + randomIndex);
                 }
             } else { // +1 to include the destination after the final element in the list.
-                var elementLocation = (LocationInList) listVariableStateSupply.getLocationInList(value);
-                return new LocationInList(elementLocation.entity(), elementLocation.index() + 1);
+                var elementLocation = listVariableStateSupply.getLocationInList(value)
+                        .ensureAssigned();
+                return ElementLocation.of(elementLocation.entity(), elementLocation.index() + 1);
             }
         }
     }

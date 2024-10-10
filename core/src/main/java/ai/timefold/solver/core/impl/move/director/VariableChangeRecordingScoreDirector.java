@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.heuristic.move;
+package ai.timefold.solver.core.impl.move.director;
 
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -9,11 +9,12 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
+import ai.timefold.solver.core.impl.heuristic.move.AbstractSimplifiedMove;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorCache;
 
-final class VariableChangeRecordingScoreDirector<Solution_> implements VariableDescriptorAwareScoreDirector<Solution_> {
+public final class VariableChangeRecordingScoreDirector<Solution_> implements VariableDescriptorAwareScoreDirector<Solution_> {
 
     private final AbstractScoreDirector<Solution_, ?, ?> delegate;
     private final List<ChangeAction<Solution_>> variableChanges;
@@ -34,15 +35,25 @@ final class VariableChangeRecordingScoreDirector<Solution_> implements VariableD
      *
      * This map exists to ensure that this is the case.
      */
-    private final Map<Object, Integer> cache = new IdentityHashMap<>();
+    private final Map<Object, Integer> cache;
 
-    VariableChangeRecordingScoreDirector(ScoreDirector<Solution_> delegate) {
+    public VariableChangeRecordingScoreDirector(ScoreDirector<Solution_> delegate) {
+        this(delegate, true);
+    }
+
+    public VariableChangeRecordingScoreDirector(ScoreDirector<Solution_> delegate, boolean requiresIndexCache) {
         this.delegate = (AbstractScoreDirector<Solution_, ?, ?>) delegate;
+        this.cache = requiresIndexCache ? new IdentityHashMap<>() : null;
         this.variableChanges = new ArrayList<>();
     }
 
-    public List<ChangeAction<Solution_>> getVariableChanges() {
-        return variableChanges;
+    public void undoChanges() {
+        for (int i = variableChanges.size() - 1; i >= 0; i--) { // Iterate in reverse.
+            var changeAction = variableChanges.get(i);
+            changeAction.undo(delegate);
+        }
+        delegate.triggerVariableListeners();
+        variableChanges.clear();
     }
 
     // For variable change operations, record the change then call the delegate
@@ -62,9 +73,11 @@ final class VariableChangeRecordingScoreDirector<Solution_> implements VariableD
     public void beforeListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
             int toIndex) {
         // List is fromIndex, fromIndex, since the undo action for afterListVariableChange will clear the affected list
-        cache.put(entity, fromIndex);
+        if (cache != null) {
+            cache.put(entity, fromIndex);
+        }
         variableChanges.add(new ListVariableBeforeChangeAction<>(entity,
-                new ArrayList<>(variableDescriptor.getValue(entity).subList(fromIndex, toIndex)), fromIndex, toIndex,
+                List.copyOf(variableDescriptor.getValue(entity).subList(fromIndex, toIndex)), fromIndex, toIndex,
                 variableDescriptor));
         delegate.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
     }
@@ -72,13 +85,15 @@ final class VariableChangeRecordingScoreDirector<Solution_> implements VariableD
     @Override
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
             int toIndex) {
-        Integer requiredFromIndex = cache.remove(entity);
-        if (requiredFromIndex != fromIndex) {
-            throw new IllegalArgumentException(
-                    """
-                            The fromIndex of afterListVariableChanged (%d) must match the fromIndex of its beforeListVariableChanged counterpart (%d).
-                            Maybe check implementation of your %s."""
-                            .formatted(fromIndex, requiredFromIndex, AbstractSimplifiedMove.class.getSimpleName()));
+        if (cache != null) {
+            Integer requiredFromIndex = cache.remove(entity);
+            if (requiredFromIndex != fromIndex) {
+                throw new IllegalArgumentException(
+                        """
+                                The fromIndex of afterListVariableChanged (%d) must match the fromIndex of its beforeListVariableChanged counterpart (%d).
+                                Maybe check implementation of your %s."""
+                                .formatted(fromIndex, requiredFromIndex, AbstractSimplifiedMove.class.getSimpleName()));
+            }
         }
         variableChanges.add(new ListVariableAfterChangeAction<>(entity, fromIndex, toIndex, variableDescriptor));
         delegate.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
