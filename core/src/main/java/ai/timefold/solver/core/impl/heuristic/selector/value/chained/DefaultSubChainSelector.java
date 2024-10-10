@@ -152,8 +152,10 @@ public class DefaultSubChainSelector<Solution_> extends AbstractSelector<Solutio
     @Override
     public long getSize() {
         long selectionSize = 0L;
-        for (SubChain anchorTrailingChain : anchorTrailingChainList) {
-            selectionSize += calculateSubChainSelectionSize(anchorTrailingChain);
+        if (anchorTrailingChainList != null) {
+            for (SubChain anchorTrailingChain : anchorTrailingChainList) {
+                selectionSize += calculateSubChainSelectionSize(anchorTrailingChain);
+            }
         }
         return selectionSize;
     }

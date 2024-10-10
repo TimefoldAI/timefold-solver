@@ -83,7 +83,7 @@ public abstract class AbstractCachingEntitySelector<Solution_>
 
     @Override
     public long getSize() {
-        return cachedEntityList.size();
+        return cachedEntityList != null ? cachedEntityList.size() : 0;
     }
 
     @Override
