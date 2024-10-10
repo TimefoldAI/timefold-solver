@@ -57,6 +57,39 @@ Every upgrade note indicates how likely your code will be affected by that chang
 The upgrade recipe often lists the changes as they apply to Java code.
 We kindly ask Kotlin and Python users to translate the changes accordingly.
 
+=== Upgrade from 1.15.0 to 1.16.0
+
+.icon:info-circle[role=yellow] Undo tabu no longer supported
+[%collapsible%open]
+====
+Configuring tabu search with an undo tabu is no longer supported.
+Configuration options mentioning the undo tabu are still kept for backwards compatibility,
+but they do not have any effect on the solver's behavior.
+
+Regular tabu search continues to be supported as before without any changes to its behavior.
+
+Before in `*.java`:
+
+[source,xml,options="nowrap"]
+----
+<acceptor>
+  <moveTabuSize>7</moveTabuSize>
+  <undoMoveTabuSize>7</undoMoveTabuSize>
+</acceptor>
+----
+
+After in `*.java`:
+
+[source,xml,options="nowrap"]
+----
+<acceptor>
+  <moveTabuSize>7</moveTabuSize>
+</acceptor>
+----
+====
+
+'''
+
 
 === Upgrade from 1.14.0 to 1.15.0
 
