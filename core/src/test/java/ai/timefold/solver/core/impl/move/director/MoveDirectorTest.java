@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.move.director;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
@@ -85,7 +84,7 @@ class MoveDirectorTest {
 
         var expectedLocation = ElementLocation.of(entity, 1);
         var supplyMock = mock(ListVariableStateSupply.class);
-        when(supplyMock.getLocationInList(eq(expectedValue2)))
+        when(supplyMock.getLocationInList(expectedValue2))
                 .thenReturn(expectedLocation);
         when(mockScoreDirector.getListVariableStateSupply(any()))
                 .thenReturn(supplyMock);

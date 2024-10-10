@@ -55,7 +55,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         implements InnerScoreDirector<Solution_, Score_>, Cloneable {
 
     private static final int CONSTRAINT_MATCH_DISPLAY_LIMIT = 8;
-    protected final transient Logger logger = LoggerFactory.getLogger(getClass());
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final boolean lookUpEnabled;
     private final LookUpManager lookUpManager;

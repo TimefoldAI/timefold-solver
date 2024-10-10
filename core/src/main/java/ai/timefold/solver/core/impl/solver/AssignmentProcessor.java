@@ -55,7 +55,7 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
             var demand = listVariableDescriptor.getStateDemand();
             var listVariableStateSupply = supplyManager.demand(demand);
             var elementLocation = listVariableStateSupply.getLocationInList(clonedElement);
-            if (elementLocation instanceof LocationInList locationInList) { // Unassign the cloned element.
+            if (elementLocation instanceof LocationInList<?> locationInList) { // Unassign the cloned element.
                 var entity = locationInList.entity();
                 var index = locationInList.index();
                 var listUnassignMove = new ListUnassignMove<>(listVariableDescriptor, entity, index);
