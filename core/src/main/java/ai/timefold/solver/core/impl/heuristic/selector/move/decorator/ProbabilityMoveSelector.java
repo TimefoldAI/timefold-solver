@@ -83,7 +83,7 @@ public class ProbabilityMoveSelector<Solution_> extends AbstractMoveSelector<Sol
 
     @Override
     public long getSize() {
-        return cachedMoveMap.size();
+        return cachedMoveMap != null ? cachedMoveMap.size() : 0L;
     }
 
     @Override

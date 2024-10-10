@@ -29,7 +29,8 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
         "greatDelugeWaterLevelIncrementScore",
         "greatDelugeWaterLevelIncrementRatio",
         "stepCountingHillClimbingSize",
-        "stepCountingHillClimbingType"
+        "stepCountingHillClimbingType",
+        "reconfigurationConfig",
 })
 public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAcceptorConfig> {
 
@@ -58,6 +59,7 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
 
     protected Integer stepCountingHillClimbingSize = null;
     protected StepCountingHillClimbingType stepCountingHillClimbingType = null;
+    protected ReconfigurationConfig reconfigurationConfig = null;
 
     public List<AcceptorType> getAcceptorTypeList() {
         return acceptorTypeList;
@@ -227,6 +229,14 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
         this.stepCountingHillClimbingType = stepCountingHillClimbingType;
     }
 
+    public ReconfigurationConfig getReconfigurationConfig() {
+        return reconfigurationConfig;
+    }
+
+    public void setReconfigurationConfig(ReconfigurationConfig reconfigurationConfig) {
+        this.reconfigurationConfig = reconfigurationConfig;
+    }
+
     // ************************************************************************
     // With methods
     // ************************************************************************
@@ -317,6 +327,12 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
         return this;
     }
 
+    public LocalSearchAcceptorConfig
+            withReconfiguration(ReconfigurationConfig reconfigurationConfig) {
+        this.reconfigurationConfig = reconfigurationConfig;
+        return this;
+    }
+
     @Override
     public LocalSearchAcceptorConfig inherit(LocalSearchAcceptorConfig inheritedConfig) {
         if (acceptorTypeList == null) {
@@ -362,6 +378,8 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
                 inheritedConfig.getStepCountingHillClimbingSize());
         stepCountingHillClimbingType = ConfigUtils.inheritOverwritableProperty(stepCountingHillClimbingType,
                 inheritedConfig.getStepCountingHillClimbingType());
+        reconfigurationConfig = ConfigUtils.inheritOverwritableProperty(reconfigurationConfig,
+                inheritedConfig.getReconfigurationConfig());
         return this;
     }
 

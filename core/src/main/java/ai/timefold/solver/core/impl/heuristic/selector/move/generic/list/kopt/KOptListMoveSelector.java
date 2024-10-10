@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 
 import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelector.filterPinnedListPlanningVariableValuesWithIndex;
 
+import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -71,7 +72,7 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
 
     @Override
     public long getSize() {
-        long total = 0;
+        BigInteger totalSize = BigInteger.valueOf(0L);
         long valueSelectorSize = valueSelector.getSize();
         for (int i = minK; i < Math.min(valueSelectorSize, maxK); i++) {
             if (valueSelectorSize > i) { // need more than k nodes in order to perform a k-opt
@@ -85,10 +86,11 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
                 } else {
                     edgeChoices = Long.MAX_VALUE;
                 }
-                total += kOptMoveTypes * edgeChoices;
+                totalSize = totalSize.add(BigInteger.valueOf(kOptMoveTypes).multiply(BigInteger.valueOf(edgeChoices)));
             }
         }
-        return total;
+        var size = totalSize.longValue();
+        return size < 0 ? Long.MAX_VALUE : size;
     }
 
     @Override

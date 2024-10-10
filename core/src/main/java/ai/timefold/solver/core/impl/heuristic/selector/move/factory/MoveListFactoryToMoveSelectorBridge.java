@@ -76,7 +76,7 @@ public class MoveListFactoryToMoveSelectorBridge<Solution_> extends AbstractMove
 
     @Override
     public long getSize() {
-        return cachedMoveList.size();
+        return cachedMoveList != null ? cachedMoveList.size() : 0L;
     }
 
     @Override

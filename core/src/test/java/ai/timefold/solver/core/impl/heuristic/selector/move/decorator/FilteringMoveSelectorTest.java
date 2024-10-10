@@ -23,25 +23,25 @@ class FilteringMoveSelectorTest {
 
     @Test
     void filterCacheTypeSolver() {
-        filter(SelectionCacheType.SOLVER, 1);
+        filter(SelectionCacheType.SOLVER, 1, 3);
     }
 
     @Test
     void filterCacheTypePhase() {
-        filter(SelectionCacheType.PHASE, 2);
+        filter(SelectionCacheType.PHASE, 2, 4);
     }
 
     @Test
     void filterCacheTypeStep() {
-        filter(SelectionCacheType.STEP, 5);
+        filter(SelectionCacheType.STEP, 5, 7);
     }
 
     @Test
     void filterCacheTypeJustInTime() {
-        filter(SelectionCacheType.JUST_IN_TIME, 5);
+        filter(SelectionCacheType.JUST_IN_TIME, 5, 7);
     }
 
-    public void filter(SelectionCacheType cacheType, int timesCalled) {
+    public void filter(SelectionCacheType cacheType, int iteratorTimesCalled, int sizeTimesCalled) {
         MoveSelector childMoveSelector = SelectorTestUtils.mockMoveSelector(DummyMove.class,
                 new DummyMove("a1"), new DummyMove("a2"), new DummyMove("a3"), new DummyMove("a4"));
 
@@ -99,8 +99,8 @@ class FilteringMoveSelectorTest {
         moveSelector.solvingEnded(solverScope);
 
         verifyPhaseLifecycle(childMoveSelector, 1, 2, 5);
-        verify(childMoveSelector, times(timesCalled)).iterator();
-        verify(childMoveSelector, times(timesCalled)).getSize();
+        verify(childMoveSelector, times(iteratorTimesCalled)).iterator();
+        verify(childMoveSelector, times(sizeTimesCalled)).getSize();
     }
 
 }

@@ -106,7 +106,7 @@ public final class FromSolutionEntitySelector<Solution_>
 
     @Override
     public long getSize() {
-        return cachedEntityList.size();
+        return cachedEntityList != null ? cachedEntityList.size() : 0;
     }
 
     @Override
