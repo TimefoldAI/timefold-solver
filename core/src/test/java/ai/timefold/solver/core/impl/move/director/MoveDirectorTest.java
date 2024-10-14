@@ -48,19 +48,19 @@ class MoveDirectorTest {
                 ((DefaultBasicVariableMetaModel<TestdataSolution, TestdataEntity, TestdataValue>) variableMetaModel)
                         .variableDescriptor();
 
-        var mockScoreDirector = (AbstractScoreDirector<TestdataSolution, ?, ?>) mock(AbstractScoreDirector.class);
-        var moveDirector = new MoveDirector<>(mockScoreDirector);
         var originalValue = new TestdataValue("value");
         var entity = new TestdataEntity("A", originalValue);
         var newValue = new TestdataValue("newValue");
-        moveDirector.changeVariable(variableMetaModel, entity, newValue);
 
-        assertThat(entity.getValue()).isEqualTo(newValue);
-        verify(mockScoreDirector).beforeVariableChanged(variableDescriptor, entity);
-        verify(mockScoreDirector).afterVariableChanged(variableDescriptor, entity);
-        reset(mockScoreDirector);
+        var mockScoreDirector = (AbstractScoreDirector<TestdataSolution, ?, ?>) mock(AbstractScoreDirector.class);
+        try (var moveDirector = new MoveDirector<>(mockScoreDirector).undoable()) {
+            moveDirector.changeVariable(variableMetaModel, entity, newValue);
 
-        moveDirector.undo();
+            assertThat(entity.getValue()).isEqualTo(newValue);
+            verify(mockScoreDirector).beforeVariableChanged(variableDescriptor, entity);
+            verify(mockScoreDirector).afterVariableChanged(variableDescriptor, entity);
+            reset(mockScoreDirector);
+        }
         assertThat(entity.getValue()).isEqualTo(originalValue);
         verify(mockScoreDirector).beforeVariableChanged(variableDescriptor, entity);
         verify(mockScoreDirector).afterVariableChanged(variableDescriptor, entity);
@@ -108,29 +108,27 @@ class MoveDirectorTest {
         var entity = TestdataListEntity.createWithValues("A", expectedValue1, expectedValue2, expectedValue3);
 
         var mockScoreDirector = (AbstractScoreDirector<TestdataListSolution, ?, ?>) mock(AbstractScoreDirector.class);
-        var moveDirector = new MoveDirector<>(mockScoreDirector);
-
-        // Swap between second and last position.
-        moveDirector.moveValueInList(variableMetaModel, entity, 1, 2);
-        assertThat(entity.getValueList()).containsExactly(expectedValue1, expectedValue3, expectedValue2);
-        verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entity, 1, 3);
-        verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entity, 1, 3);
-        reset(mockScoreDirector);
-
-        moveDirector.undo();
+        try (var moveDirector = new MoveDirector<>(mockScoreDirector).undoable()) {
+            // Swap between second and last position.
+            moveDirector.moveValueInList(variableMetaModel, entity, 1, 2);
+            assertThat(entity.getValueList()).containsExactly(expectedValue1, expectedValue3, expectedValue2);
+            verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entity, 1, 3);
+            verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entity, 1, 3);
+            reset(mockScoreDirector);
+        }
         assertThat(entity.getValueList()).containsExactly(expectedValue1, expectedValue2, expectedValue3);
         verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entity, 1, 3);
         verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entity, 1, 3);
         reset(mockScoreDirector);
 
         // Do the same in reverse.
-        moveDirector.moveValueInList(variableMetaModel, entity, 2, 1);
-        assertThat(entity.getValueList()).containsExactly(expectedValue1, expectedValue3, expectedValue2);
-        verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entity, 1, 3);
-        verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entity, 1, 3);
-        reset(mockScoreDirector);
-
-        moveDirector.undo();
+        try (var moveDirector = new MoveDirector<>(mockScoreDirector).undoable()) {
+            moveDirector.moveValueInList(variableMetaModel, entity, 2, 1);
+            assertThat(entity.getValueList()).containsExactly(expectedValue1, expectedValue3, expectedValue2);
+            verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entity, 1, 3);
+            verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entity, 1, 3);
+            reset(mockScoreDirector);
+        }
         assertThat(entity.getValueList()).containsExactly(expectedValue1, expectedValue2, expectedValue3);
         verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entity, 1, 3);
         verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entity, 1, 3);
@@ -156,19 +154,18 @@ class MoveDirectorTest {
         var entityB = TestdataListEntity.createWithValues("B", expectedValueB1, expectedValueB2, expectedValueB3);
 
         var mockScoreDirector = (AbstractScoreDirector<TestdataListSolution, ?, ?>) mock(AbstractScoreDirector.class);
-        var moveDirector = new MoveDirector<>(mockScoreDirector);
-
-        // Swap between second and last position.
-        moveDirector.moveValueBetweenLists(variableMetaModel, entityA, 1, entityB, 2);
-        assertThat(entityA.getValueList()).containsExactly(expectedValueA1, expectedValueA3);
-        verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entityA, 1, 2);
-        verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entityA, 1, 1);
-        assertThat(entityB.getValueList()).containsExactly(expectedValueB1, expectedValueB2, expectedValueA2, expectedValueB3);
-        verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entityB, 2, 2);
-        verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entityB, 2, 3);
-        reset(mockScoreDirector);
-
-        moveDirector.undo();
+        try (var moveDirector = new MoveDirector<>(mockScoreDirector).undoable()) {
+            // Swap between second and last position.
+            moveDirector.moveValueBetweenLists(variableMetaModel, entityA, 1, entityB, 2);
+            assertThat(entityA.getValueList()).containsExactly(expectedValueA1, expectedValueA3);
+            verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entityA, 1, 2);
+            verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entityA, 1, 1);
+            assertThat(entityB.getValueList()).containsExactly(expectedValueB1, expectedValueB2, expectedValueA2,
+                    expectedValueB3);
+            verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entityB, 2, 2);
+            verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entityB, 2, 3);
+            reset(mockScoreDirector);
+        }
         assertThat(entityA.getValueList()).containsExactly(expectedValueA1, expectedValueA2, expectedValueA3);
         verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entityB, 2, 3);
         verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entityB, 2, 2);

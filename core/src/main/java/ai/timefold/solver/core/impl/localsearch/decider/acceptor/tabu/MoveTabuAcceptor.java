@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu;
 import java.util.Collection;
 import java.util.Collections;
 
-import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 

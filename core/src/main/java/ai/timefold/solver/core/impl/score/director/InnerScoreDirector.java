@@ -12,6 +12,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.VariableListener;
+import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ConstraintAnalysis;
 import ai.timefold.solver.core.api.score.analysis.MatchAnalysis;
@@ -27,7 +28,7 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
@@ -229,6 +230,8 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @return never null
      */
     SupplyManager getSupplyManager();
+
+    MoveDirector<Solution_> getMoveDirector();
 
     InnerScoreDirector<Solution_, Score_> createChildThreadScoreDirector(ChildThreadType childThreadType);
 

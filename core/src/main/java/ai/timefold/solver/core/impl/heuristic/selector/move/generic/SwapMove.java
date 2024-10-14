@@ -12,7 +12,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -81,10 +81,10 @@ public class SwapMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
-        for (GenuineVariableDescriptor<Solution_> variableDescriptor : variableDescriptorList) {
-            Object oldLeftValue = variableDescriptor.getValue(leftEntity);
-            Object oldRightValue = variableDescriptor.getValue(rightEntity);
+        var innerScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
+        for (var variableDescriptor : variableDescriptorList) {
+            var oldLeftValue = variableDescriptor.getValue(leftEntity);
+            var oldRightValue = variableDescriptor.getValue(rightEntity);
             if (!Objects.equals(oldLeftValue, oldRightValue)) {
                 innerScoreDirector.changeVariableFacade(variableDescriptor, leftEntity, oldRightValue);
                 innerScoreDirector.changeVariableFacade(variableDescriptor, rightEntity, oldLeftValue);

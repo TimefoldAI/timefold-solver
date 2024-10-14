@@ -11,7 +11,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**
  * Moves an element of a {@link PlanningListVariable list variable}. The moved element is identified
@@ -141,25 +141,25 @@ public class ListChangeMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
 
         if (sourceEntity == destinationEntity) {
             int fromIndex = Math.min(sourceIndex, destinationIndex);
             int toIndex = Math.max(sourceIndex, destinationIndex) + 1;
-            innerScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
+            castScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
             Object element = variableDescriptor.removeElement(sourceEntity, sourceIndex);
             variableDescriptor.addElement(destinationEntity, destinationIndex, element);
-            innerScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
+            castScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
             planningValue = element;
         } else {
-            innerScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex + 1);
+            castScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex + 1);
             Object element = variableDescriptor.removeElement(sourceEntity, sourceIndex);
-            innerScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex);
+            castScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex);
 
-            innerScoreDirector.beforeListVariableChanged(variableDescriptor,
+            castScoreDirector.beforeListVariableChanged(variableDescriptor,
                     destinationEntity, destinationIndex, destinationIndex);
             variableDescriptor.addElement(destinationEntity, destinationIndex, element);
-            innerScoreDirector.afterListVariableChanged(variableDescriptor,
+            castScoreDirector.afterListVariableChanged(variableDescriptor,
                     destinationEntity, destinationIndex, destinationIndex + 1);
             planningValue = element;
         }

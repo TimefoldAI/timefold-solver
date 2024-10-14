@@ -7,7 +7,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -50,8 +50,8 @@ public class ChainedChangeMove<Solution_> extends ChangeMove<Solution_> {
 
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
-        Object oldValue = variableDescriptor.getValue(entity);
+        var innerScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
+        var oldValue = variableDescriptor.getValue(entity);
         // Close the old chain
         if (oldTrailingEntity != null) {
             innerScoreDirector.changeVariableFacade(variableDescriptor, oldTrailingEntity, oldValue);

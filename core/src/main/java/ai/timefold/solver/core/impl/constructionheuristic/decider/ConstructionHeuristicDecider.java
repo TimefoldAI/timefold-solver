@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.constructionheuristic.decider;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForager;
@@ -8,9 +9,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.placer.Placement;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicMoveScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
-import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
+import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -89,8 +88,8 @@ public class ConstructionHeuristicDecider<Solution_> {
         var moveIndex = 0;
         var terminatedPrematurely = false;
         for (var move : placement) {
-            var allowedNonDoableMove = move instanceof NoChangeMove<Solution_> || move instanceof ChangeMove<Solution_>;
-            if (!allowedNonDoableMove && !move.isMoveDoable(stepScope.getScoreDirector())) {
+            var allowedNonDoableMove = isAllowedNonDoableMove(move);
+            if (!allowedNonDoableMove && !move.isMoveDoable(stepScope.getMoveDirector())) {
                 // Construction Heuristic should not do non-doable moves, but in some cases, it has to.
                 // Specifically:
                 //      1/ NoChangeMove for list variable; means "try to not assign that value".
@@ -124,6 +123,16 @@ public class ConstructionHeuristicDecider<Solution_> {
         // This move typically comes last, and therefore if the phase terminates early, it will not be attempted.
         if (!terminatedPrematurely) {
             pickMove(stepScope);
+        }
+    }
+
+    private static <Solution_> boolean isAllowedNonDoableMove(Move<Solution_> move) {
+        if (move instanceof LegacyMoveAdapter<Solution_> legacyMove) {
+            var adaptedMove = legacyMove.legacyMove();
+            return adaptedMove instanceof ai.timefold.solver.core.impl.heuristic.move.NoChangeMove<Solution_>
+                    || adaptedMove instanceof ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove<Solution_>;
+        } else {
+            return move instanceof ai.timefold.solver.core.api.move.generic.NoChangeMove<Solution_>;
         }
     }
 

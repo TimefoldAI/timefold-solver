@@ -6,6 +6,7 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.domain.metamodel.LocationInList;
 import ai.timefold.solver.core.api.domain.metamodel.UnassignedLocation;
 import ai.timefold.solver.core.impl.heuristic.move.CompositeMove;
+import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubList;
@@ -25,6 +26,9 @@ public interface CodeAssertable {
     String getCode();
 
     static CodeAssertable convert(Object o) {
+        if (o instanceof LegacyMoveAdapter<?> legacyMoveAdapter) {
+            return convert(legacyMoveAdapter.legacyMove());
+        }
         Objects.requireNonNull(o);
         if (o instanceof CodeAssertable assertable) {
             return assertable;

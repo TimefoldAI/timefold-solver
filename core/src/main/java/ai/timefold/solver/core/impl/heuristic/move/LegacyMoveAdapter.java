@@ -8,16 +8,28 @@ import ai.timefold.solver.core.api.move.SolutionState;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.move.InnerMutableSolutionState;
 
-record LegacyMoveAdapter<Solution_>(
+public record LegacyMoveAdapter<Solution_>(
         ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> legacyMove) implements Move<Solution_> {
 
     @Override
     public void run(MutableSolutionState<Solution_> mutableSolutionState) {
-        legacyMove.doMoveOnly(getScoreDirector(mutableSolutionState));
+        System.out.println("Running legacy move: " + legacyMove);
+        var scoreDirector = getScoreDirector(mutableSolutionState);
+        legacyMove.doMoveOnly(scoreDirector);
     }
 
     private ScoreDirector<Solution_> getScoreDirector(SolutionState<Solution_> mutableSolutionState) {
-        return ((InnerMutableSolutionState<Solution_>) mutableSolutionState).getVariableChangeRecordingScoreDirector();
+        return ((InnerMutableSolutionState<Solution_>) mutableSolutionState).getScoreDirector();
+    }
+
+    @Override
+    public boolean isMoveDoable(SolutionState<Solution_> solutionState) {
+        return legacyMove.isMoveDoable(getScoreDirector(solutionState));
+    }
+
+    @Override
+    public String getMoveTypeDescription() {
+        return legacyMove.getSimpleMoveTypeDescription();
     }
 
     @Override
@@ -35,4 +47,8 @@ record LegacyMoveAdapter<Solution_>(
         return legacyMove.getPlanningValues();
     }
 
+    @Override
+    public String toString() {
+        return legacyMove.toString();
+    }
 }

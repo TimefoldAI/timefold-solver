@@ -5,8 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Iterator;
 
+import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.Placement;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
 
 final class PlacementAssertions {
@@ -16,11 +17,15 @@ final class PlacementAssertions {
         assertThat(iterator).isNotNull();
         for (String valueCode : valueCodes) {
             assertThat(iterator).hasNext();
-            ChangeMove<Solution_> move = (ChangeMove<Solution_>) iterator.next();
+            ChangeMove<Solution_> move = adapt(iterator.next());
             assertCode(entityCode, move.getEntity());
             assertCode(valueCode, move.getToPlanningValue());
         }
         assertThat(iterator).isExhausted();
+    }
+
+    static <Solution_> ChangeMove<Solution_> adapt(Move<Solution_> move) {
+        return (ChangeMove<Solution_>) ((LegacyMoveAdapter<Solution_>) move).legacyMove();
     }
 
     static <Solution_> void assertValuePlacement(Placement<Solution_> placement, String valueCode, String... entityCodes) {
@@ -28,7 +33,7 @@ final class PlacementAssertions {
         assertThat(iterator).isNotNull();
         for (String entityCode : entityCodes) {
             assertThat(iterator).hasNext();
-            ChangeMove<Solution_> move = (ChangeMove<Solution_>) iterator.next();
+            ChangeMove<Solution_> move = adapt(iterator.next());
             assertCode(entityCode, move.getEntity());
             assertCode(valueCode, move.getToPlanningValue());
         }

@@ -7,9 +7,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider;
 import ai.timefold.solver.core.impl.localsearch.event.LocalSearchPhaseLifecycleListener;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
@@ -100,7 +100,7 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
 
     protected void doStep(LocalSearchStepScope<Solution_> stepScope) {
         Move<Solution_> step = stepScope.getStep();
-        step.doMoveOnly(stepScope.getScoreDirector());
+        step.run(stepScope.getMoveDirector());
         predictWorkingStepScore(stepScope, step);
         solver.getBestSolutionRecaller().processWorkingSolutionDuringStep(stepScope);
     }

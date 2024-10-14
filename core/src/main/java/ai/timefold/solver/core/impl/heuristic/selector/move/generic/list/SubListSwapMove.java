@@ -11,7 +11,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubList;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 /**
@@ -93,44 +93,44 @@ public class SubListSwapMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
 
-        Object leftEntity = leftSubList.entity();
-        Object rightEntity = rightSubList.entity();
-        int leftSubListLength = leftSubList.length();
-        int rightSubListLength = rightSubList.length();
-        int leftFromIndex = leftSubList.fromIndex();
-        List<Object> leftList = variableDescriptor.getValue(leftEntity);
-        List<Object> rightList = variableDescriptor.getValue(rightEntity);
-        List<Object> leftSubListView = subList(leftSubList);
-        List<Object> rightSubListView = subList(rightSubList);
+        var leftEntity = leftSubList.entity();
+        var rightEntity = rightSubList.entity();
+        var leftSubListLength = leftSubList.length();
+        var rightSubListLength = rightSubList.length();
+        var leftFromIndex = leftSubList.fromIndex();
+        var leftList = variableDescriptor.getValue(leftEntity);
+        var rightList = variableDescriptor.getValue(rightEntity);
+        var leftSubListView = subList(leftSubList);
+        var rightSubListView = subList(rightSubList);
         leftPlanningValueList = CollectionUtils.copy(leftSubListView, reversing);
         rightPlanningValueList = CollectionUtils.copy(rightSubListView, reversing);
 
         if (leftEntity == rightEntity) {
-            int fromIndex = Math.min(leftFromIndex, rightFromIndex);
-            int toIndex = leftFromIndex > rightFromIndex
+            var fromIndex = Math.min(leftFromIndex, rightFromIndex);
+            var toIndex = leftFromIndex > rightFromIndex
                     ? leftFromIndex + leftSubListLength
                     : rightFromIndex + rightSubListLength;
-            int leftSubListDestinationIndex = rightFromIndex + rightSubListLength - leftSubListLength;
-            innerScoreDirector.beforeListVariableChanged(variableDescriptor, leftEntity, fromIndex, toIndex);
+            var leftSubListDestinationIndex = rightFromIndex + rightSubListLength - leftSubListLength;
+            castScoreDirector.beforeListVariableChanged(variableDescriptor, leftEntity, fromIndex, toIndex);
             rightSubListView.clear();
             subList(leftSubList).clear();
             leftList.addAll(leftFromIndex, rightPlanningValueList);
             rightList.addAll(leftSubListDestinationIndex, leftPlanningValueList);
-            innerScoreDirector.afterListVariableChanged(variableDescriptor, leftEntity, fromIndex, toIndex);
+            castScoreDirector.afterListVariableChanged(variableDescriptor, leftEntity, fromIndex, toIndex);
         } else {
-            innerScoreDirector.beforeListVariableChanged(variableDescriptor,
+            castScoreDirector.beforeListVariableChanged(variableDescriptor,
                     leftEntity, leftFromIndex, leftFromIndex + leftSubListLength);
-            innerScoreDirector.beforeListVariableChanged(variableDescriptor,
+            castScoreDirector.beforeListVariableChanged(variableDescriptor,
                     rightEntity, rightFromIndex, rightFromIndex + rightSubListLength);
             rightSubListView.clear();
             leftSubListView.clear();
             leftList.addAll(leftFromIndex, rightPlanningValueList);
             rightList.addAll(rightFromIndex, leftPlanningValueList);
-            innerScoreDirector.afterListVariableChanged(variableDescriptor,
+            castScoreDirector.afterListVariableChanged(variableDescriptor,
                     leftEntity, leftFromIndex, leftFromIndex + rightSubListLength);
-            innerScoreDirector.afterListVariableChanged(variableDescriptor,
+            castScoreDirector.afterListVariableChanged(variableDescriptor,
                     rightEntity, rightFromIndex, rightFromIndex + leftSubListLength);
         }
     }

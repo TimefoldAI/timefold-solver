@@ -4,6 +4,7 @@ import java.util.Random;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 /**
@@ -47,8 +48,13 @@ public abstract class AbstractStepScope<Solution_> {
     // ************************************************************************
     // Calculated methods
     // ************************************************************************
+
     public <Score_ extends Score<Score_>> InnerScoreDirector<Solution_, Score_> getScoreDirector() {
         return getPhaseScope().getScoreDirector();
+    }
+
+    public MoveDirector<Solution_> getMoveDirector() {
+        return getScoreDirector().getMoveDirector();
     }
 
     public Solution_ getWorkingSolution() {

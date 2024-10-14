@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.move.director;
 
-import java.util.ArrayList;
 import java.util.IdentityHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -44,19 +44,32 @@ public final class VariableChangeRecordingScoreDirector<Solution_> implements Va
     public VariableChangeRecordingScoreDirector(ScoreDirector<Solution_> delegate, boolean requiresIndexCache) {
         this.delegate = (AbstractScoreDirector<Solution_, ?, ?>) delegate;
         this.cache = requiresIndexCache ? new IdentityHashMap<>() : null;
-        this.variableChanges = new ArrayList<>();
+        // Intentional LinkedList; fast clear, no allocations upfront,
+        // will most often only carry a small number of items.
+        this.variableChanges = new LinkedList<>();
+    }
+
+    List<ChangeAction<Solution_>> copyVariableChanges() {
+        return List.copyOf(variableChanges);
     }
 
     public void undoChanges() {
-        for (int i = variableChanges.size() - 1; i >= 0; i--) { // Iterate in reverse.
-            var changeAction = variableChanges.get(i);
+        var changeCount = variableChanges.size();
+        if (changeCount == 0) {
+            return;
+        }
+        System.out.println("Undoing " + changeCount + " changes:" + variableChanges);
+        var listIterator = variableChanges.listIterator(changeCount);
+        while (listIterator.hasPrevious()) { // Iterate in reverse.
+            var changeAction = listIterator.previous();
             changeAction.undo(delegate);
         }
         delegate.triggerVariableListeners();
         variableChanges.clear();
+        if (cache != null) {
+            cache.clear();
+        }
     }
-
-    // For variable change operations, record the change then call the delegate
 
     @Override
     public void beforeVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
@@ -76,8 +89,9 @@ public final class VariableChangeRecordingScoreDirector<Solution_> implements Va
         if (cache != null) {
             cache.put(entity, fromIndex);
         }
+        var list = variableDescriptor.getValue(entity);
         variableChanges.add(new ListVariableBeforeChangeAction<>(entity,
-                List.copyOf(variableDescriptor.getValue(entity).subList(fromIndex, toIndex)), fromIndex, toIndex,
+                List.copyOf(list.subList(fromIndex, toIndex)), fromIndex, toIndex,
                 variableDescriptor));
         delegate.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
     }
@@ -130,6 +144,10 @@ public final class VariableChangeRecordingScoreDirector<Solution_> implements Va
         return delegate.getSolutionDescriptor();
     }
 
+    public AbstractScoreDirector<Solution_, ?, ?> getDelegate() {
+        return delegate;
+    }
+
     @Override
     public Solution_ getWorkingSolution() {
         return delegate.getWorkingSolution();
@@ -157,7 +175,9 @@ public final class VariableChangeRecordingScoreDirector<Solution_> implements Va
 
     @Override
     public void changeVariableFacade(VariableDescriptor<Solution_> variableDescriptor, Object entity, Object newValue) {
-        delegate.changeVariableFacade(variableDescriptor, entity, newValue);
+        beforeVariableChanged(variableDescriptor, entity);
+        variableDescriptor.setValue(entity, newValue);
+        afterVariableChanged(variableDescriptor, entity);
     }
 
 }

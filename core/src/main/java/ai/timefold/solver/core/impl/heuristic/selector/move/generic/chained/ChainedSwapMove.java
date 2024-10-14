@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDesc
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SwapMove;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -52,50 +52,50 @@ public class ChainedSwapMove<Solution_> extends SwapMove<Solution_> {
 
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        for (int i = 0; i < variableDescriptorList.size(); i++) {
+        for (var i = 0; i < variableDescriptorList.size(); i++) {
             GenuineVariableDescriptor<Solution_> variableDescriptor = variableDescriptorList.get(i);
-            Object oldLeftValue = variableDescriptor.getValue(leftEntity);
-            Object oldRightValue = variableDescriptor.getValue(rightEntity);
+            var oldLeftValue = variableDescriptor.getValue(leftEntity);
+            var oldRightValue = variableDescriptor.getValue(rightEntity);
             if (!Objects.equals(oldLeftValue, oldRightValue)) {
-                InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
+                var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
                 boolean isChained = variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
                         && basicVariableDescriptor.isChained();
                 if (!isChained) {
-                    innerScoreDirector.changeVariableFacade(variableDescriptor, leftEntity, oldRightValue);
-                    innerScoreDirector.changeVariableFacade(variableDescriptor, rightEntity, oldLeftValue);
+                    castScoreDirector.changeVariableFacade(variableDescriptor, leftEntity, oldRightValue);
+                    castScoreDirector.changeVariableFacade(variableDescriptor, rightEntity, oldLeftValue);
                 } else {
-                    Object oldLeftTrailingEntity = oldLeftTrailingEntityList.get(i);
-                    Object oldRightTrailingEntity = oldRightTrailingEntityList.get(i);
+                    var oldLeftTrailingEntity = oldLeftTrailingEntityList.get(i);
+                    var oldRightTrailingEntity = oldRightTrailingEntityList.get(i);
                     if (oldRightValue == leftEntity) {
                         // Change the right entity
-                        innerScoreDirector.changeVariableFacade(variableDescriptor, rightEntity, oldLeftValue);
+                        castScoreDirector.changeVariableFacade(variableDescriptor, rightEntity, oldLeftValue);
                         // Change the left entity
-                        innerScoreDirector.changeVariableFacade(variableDescriptor, leftEntity, rightEntity);
+                        castScoreDirector.changeVariableFacade(variableDescriptor, leftEntity, rightEntity);
                         // Reroute the new left chain
                         if (oldRightTrailingEntity != null) {
-                            innerScoreDirector.changeVariableFacade(variableDescriptor, oldRightTrailingEntity, leftEntity);
+                            castScoreDirector.changeVariableFacade(variableDescriptor, oldRightTrailingEntity, leftEntity);
                         }
                     } else if (oldLeftValue == rightEntity) {
                         // Change the right entity
-                        innerScoreDirector.changeVariableFacade(variableDescriptor, leftEntity, oldRightValue);
+                        castScoreDirector.changeVariableFacade(variableDescriptor, leftEntity, oldRightValue);
                         // Change the left entity
-                        innerScoreDirector.changeVariableFacade(variableDescriptor, rightEntity, leftEntity);
+                        castScoreDirector.changeVariableFacade(variableDescriptor, rightEntity, leftEntity);
                         // Reroute the new left chain
                         if (oldLeftTrailingEntity != null) {
-                            innerScoreDirector.changeVariableFacade(variableDescriptor, oldLeftTrailingEntity, rightEntity);
+                            castScoreDirector.changeVariableFacade(variableDescriptor, oldLeftTrailingEntity, rightEntity);
                         }
                     } else {
                         // Change the left entity
-                        innerScoreDirector.changeVariableFacade(variableDescriptor, leftEntity, oldRightValue);
+                        castScoreDirector.changeVariableFacade(variableDescriptor, leftEntity, oldRightValue);
                         // Change the right entity
-                        innerScoreDirector.changeVariableFacade(variableDescriptor, rightEntity, oldLeftValue);
+                        castScoreDirector.changeVariableFacade(variableDescriptor, rightEntity, oldLeftValue);
                         // Reroute the new left chain
                         if (oldRightTrailingEntity != null) {
-                            innerScoreDirector.changeVariableFacade(variableDescriptor, oldRightTrailingEntity, leftEntity);
+                            castScoreDirector.changeVariableFacade(variableDescriptor, oldRightTrailingEntity, leftEntity);
                         }
                         // Reroute the new right chain
                         if (oldLeftTrailingEntity != null) {
-                            innerScoreDirector.changeVariableFacade(variableDescriptor, oldLeftTrailingEntity, rightEntity);
+                            castScoreDirector.changeVariableFacade(variableDescriptor, oldLeftTrailingEntity, rightEntity);
                         }
                     }
                 }

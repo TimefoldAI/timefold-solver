@@ -78,7 +78,7 @@ public class PickedMoveStepScoreDiffStatistic<Solution_> implements SolverStatis
 
         @SuppressWarnings("unchecked")
         private void localSearchStepEnded(LocalSearchStepScope<Solution_> stepScope) {
-            String moveType = stepScope.getStep().getSimpleMoveTypeDescription();
+            String moveType = stepScope.getStep().getMoveTypeDescription();
             Score_ newStepScore = (Score_) stepScope.getScore();
             Score_ stepScoreDiff = newStepScore.subtract(oldStepScore);
             oldStepScore = newStepScore;

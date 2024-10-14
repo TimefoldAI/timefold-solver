@@ -8,6 +8,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.exhaustivesearch.decider.ExhaustiveSearchDecider;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchLayer;
@@ -15,8 +16,8 @@ import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.bounder.ScoreBounder;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchPhaseScope;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchStepScope;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
+import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -168,8 +169,8 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         restoreMoveList.addAll(oldMoveList);
         Collections.reverse(newMoveList);
         restoreMoveList.addAll(newMoveList);
-        InnerScoreDirector<Solution_, ?> scoreDirector = phaseScope.getScoreDirector();
-        restoreMoveList.forEach(restoreMove -> restoreMove.doMoveOnly(scoreDirector));
+        MoveDirector<Solution_> moveDirector = phaseScope.getScoreDirector().getMoveDirector();
+        restoreMoveList.forEach(restoreMove -> restoreMove.run(moveDirector));
         // There is no need to recalculate the score, but we still need to set it
         phaseScope.getSolutionDescriptor().setScore(phaseScope.getWorkingSolution(), stepScope.getStartingStepScore());
         if (assertWorkingSolutionScoreFromScratch) {

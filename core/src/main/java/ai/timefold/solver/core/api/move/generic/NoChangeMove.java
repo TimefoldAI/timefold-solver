@@ -30,6 +30,11 @@ public final class NoChangeMove<Solution_> implements Move<Solution_> {
         // Do nothing.
     }
 
+    @Override
+    public boolean isMoveDoable(SolutionState<Solution_> solutionState) {
+        return false;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public Move<Solution_> rebase(SolutionState<Solution_> solutionState) {

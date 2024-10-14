@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.chained;
 
+import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.chained.SubChainReversingChangeMove.reverseChain;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -12,7 +14,7 @@ import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInv
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.value.chained.SubChain;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 /**
@@ -76,16 +78,16 @@ public class SubChainReversingSwapMove<Solution_> extends AbstractMove<Solution_
 
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        Object leftFirstEntity = leftSubChain.getFirstEntity();
-        Object leftFirstValue = variableDescriptor.getValue(leftFirstEntity);
-        Object leftLastEntity = leftSubChain.getLastEntity();
-        Object rightFirstEntity = rightSubChain.getFirstEntity();
-        Object rightFirstValue = variableDescriptor.getValue(rightFirstEntity);
-        Object rightLastEntity = rightSubChain.getLastEntity();
-        Object leftLastEntityValue = variableDescriptor.getValue(leftLastEntity);
-        Object rightLastEntityValue = variableDescriptor.getValue(rightLastEntity);
+        var leftFirstEntity = leftSubChain.getFirstEntity();
+        var leftFirstValue = variableDescriptor.getValue(leftFirstEntity);
+        var leftLastEntity = leftSubChain.getLastEntity();
+        var rightFirstEntity = rightSubChain.getFirstEntity();
+        var rightFirstValue = variableDescriptor.getValue(rightFirstEntity);
+        var rightLastEntity = rightSubChain.getLastEntity();
+        var leftLastEntityValue = variableDescriptor.getValue(leftLastEntity);
+        var rightLastEntityValue = variableDescriptor.getValue(rightLastEntity);
         // Change the entities
-        InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
+        var innerScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         if (leftLastEntity != rightFirstValue) {
             innerScoreDirector.changeVariableFacade(variableDescriptor, leftLastEntity, rightFirstValue);
         }
@@ -93,8 +95,8 @@ public class SubChainReversingSwapMove<Solution_> extends AbstractMove<Solution_
             innerScoreDirector.changeVariableFacade(variableDescriptor, rightLastEntity, leftFirstValue);
         }
         // Reverse the chains
-        reverseChain(innerScoreDirector, leftLastEntity, leftLastEntityValue, leftFirstEntity);
-        reverseChain(innerScoreDirector, rightLastEntity, rightLastEntityValue, rightFirstEntity);
+        reverseChain(innerScoreDirector, variableDescriptor, leftLastEntity, leftLastEntityValue, leftFirstEntity);
+        reverseChain(innerScoreDirector, variableDescriptor, rightLastEntity, rightLastEntityValue, rightFirstEntity);
         // Reroute the new chains
         if (leftTrailingLastEntity != null) {
             if (leftTrailingLastEntity != rightFirstEntity) {
@@ -109,16 +111,6 @@ public class SubChainReversingSwapMove<Solution_> extends AbstractMove<Solution_
             } else {
                 innerScoreDirector.changeVariableFacade(variableDescriptor, rightLastEntity, leftFirstEntity);
             }
-        }
-    }
-
-    private void reverseChain(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, Object previous,
-            Object toEntity) {
-        while (entity != toEntity) {
-            Object value = variableDescriptor.getValue(previous);
-            scoreDirector.changeVariableFacade(variableDescriptor, previous, entity);
-            entity = previous;
-            previous = value;
         }
     }
 

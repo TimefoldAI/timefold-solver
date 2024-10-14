@@ -6,7 +6,7 @@ import java.util.List;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractUndoMove;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**
  * A K-Opt move that does the list rotation before performing the flips instead of after, allowing
@@ -38,13 +38,13 @@ public final class UndoKOptListMove<Solution_> extends AbstractUndoMove<Solution
 
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        var innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
 
         var combinedList = KOptListMove.computeCombinedList(listVariableDescriptor, originalEntities);
         combinedList.actOnAffectedElements(
                 listVariableDescriptor,
                 originalEntities,
-                (entity, start, end) -> innerScoreDirector.beforeListVariableChanged(listVariableDescriptor, entity,
+                (entity, start, end) -> castScoreDirector.beforeListVariableChanged(listVariableDescriptor, entity,
                         start,
                         end));
 
@@ -60,7 +60,7 @@ public final class UndoKOptListMove<Solution_> extends AbstractUndoMove<Solution
         combinedList.applyChangesFromCopy(combinedListCopy);
         combinedList.actOnAffectedElements(listVariableDescriptor,
                 originalEntities,
-                (entity, start, end) -> innerScoreDirector.afterListVariableChanged(listVariableDescriptor, entity,
+                (entity, start, end) -> castScoreDirector.afterListVariableChanged(listVariableDescriptor, entity,
                         start,
                         end));
     }

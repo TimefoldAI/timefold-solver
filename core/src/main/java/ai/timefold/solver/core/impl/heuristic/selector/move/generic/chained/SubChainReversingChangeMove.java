@@ -7,10 +7,11 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.heuristic.selector.value.chained.SubChain;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -83,38 +84,38 @@ public class SubChainReversingChangeMove<Solution_> extends AbstractMove<Solutio
 
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        Object firstEntity = subChain.getFirstEntity();
-        Object lastEntity = subChain.getLastEntity();
-        Object oldFirstValue = variableDescriptor.getValue(firstEntity);
-        boolean unmovedReverse = toPlanningValue == oldFirstValue;
+        var firstEntity = subChain.getFirstEntity();
+        var lastEntity = subChain.getLastEntity();
+        var oldFirstValue = variableDescriptor.getValue(firstEntity);
+        var unmovedReverse = toPlanningValue == oldFirstValue;
         // Close the old chain
-        InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         if (!unmovedReverse) {
             if (oldTrailingLastEntity != null) {
-                innerScoreDirector.changeVariableFacade(variableDescriptor, oldTrailingLastEntity, oldFirstValue);
+                castScoreDirector.changeVariableFacade(variableDescriptor, oldTrailingLastEntity, oldFirstValue);
             }
         }
-        Object lastEntityValue = variableDescriptor.getValue(lastEntity);
+        var lastEntityValue = variableDescriptor.getValue(lastEntity);
         // Change the entity
-        innerScoreDirector.changeVariableFacade(variableDescriptor, lastEntity, toPlanningValue);
+        castScoreDirector.changeVariableFacade(variableDescriptor, lastEntity, toPlanningValue);
         // Reverse the chain
-        reverseChain(innerScoreDirector, lastEntity, lastEntityValue, firstEntity);
+        reverseChain(castScoreDirector, variableDescriptor, lastEntity, lastEntityValue, firstEntity);
         // Reroute the new chain
         if (!unmovedReverse) {
             if (newTrailingEntity != null) {
-                innerScoreDirector.changeVariableFacade(variableDescriptor, newTrailingEntity, firstEntity);
+                castScoreDirector.changeVariableFacade(variableDescriptor, newTrailingEntity, firstEntity);
             }
         } else {
             if (oldTrailingLastEntity != null) {
-                innerScoreDirector.changeVariableFacade(variableDescriptor, oldTrailingLastEntity, firstEntity);
+                castScoreDirector.changeVariableFacade(variableDescriptor, oldTrailingLastEntity, firstEntity);
             }
         }
     }
 
-    private void reverseChain(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, Object previous,
-            Object toEntity) {
+    static <Solution_> void reverseChain(VariableDescriptorAwareScoreDirector<Solution_> scoreDirector,
+            VariableDescriptor<Solution_> variableDescriptor, Object entity, Object previous, Object toEntity) {
         while (entity != toEntity) {
-            Object value = variableDescriptor.getValue(previous);
+            var value = variableDescriptor.getValue(previous);
             scoreDirector.changeVariableFacade(variableDescriptor, previous, entity);
             entity = previous;
             previous = value;

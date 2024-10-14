@@ -16,7 +16,10 @@ public abstract class AbstractSimplifiedMove<Solution_> implements Move<Solution
 
     @Override
     public final Move<Solution_> doMove(ScoreDirector<Solution_> scoreDirector) {
-        var recordingScoreDirector = new VariableChangeRecordingScoreDirector<>(scoreDirector);
+        var recordingScoreDirector =
+                scoreDirector instanceof VariableChangeRecordingScoreDirector<Solution_> variableChangeRecordingScoreDirector
+                        ? variableChangeRecordingScoreDirector
+                        : new VariableChangeRecordingScoreDirector<>(scoreDirector);
         doMoveOnly(recordingScoreDirector);
         return new RecordedUndoMove<>(this, recordingScoreDirector::undoChanges);
     }

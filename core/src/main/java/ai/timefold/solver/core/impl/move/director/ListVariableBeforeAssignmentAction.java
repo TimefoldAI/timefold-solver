@@ -1,14 +1,20 @@
 package ai.timefold.solver.core.impl.move.director;
 
+import ai.timefold.solver.core.api.move.SolutionState;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 record ListVariableBeforeAssignmentAction<Solution_>(Object element,
         ListVariableDescriptor<Solution_> variableDescriptor) implements ChangeAction<Solution_> {
 
     @Override
-    public void undo(InnerScoreDirector<Solution_, ?> scoreDirector) {
+    public void undo(VariableDescriptorAwareScoreDirector<Solution_> scoreDirector) {
         scoreDirector.afterListVariableElementUnassigned(variableDescriptor, element);
+    }
+
+    @Override
+    public ChangeAction<Solution_> rebase(SolutionState<Solution_> solutionState) {
+        return new ListVariableBeforeAssignmentAction<>(solutionState.rebase(element), variableDescriptor);
     }
 
 }

@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.domain.variable.VariableListener;
+import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.MatchAnalysis;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
@@ -29,7 +30,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescripto
 import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.SolutionTracker;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.exception.UndoScoreCorruptionException;
@@ -76,6 +77,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     // Null when tracking disabled
     private final boolean trackingWorkingSolution;
     private final SolutionTracker<Solution_> solutionTracker;
+    private final MoveDirector<Solution_> moveDirector = new MoveDirector<>(this);
 
     // Null when no list variable
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
@@ -188,6 +190,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         return variableListenerSupport;
     }
 
+    @Override
+    public MoveDirector<Solution_> getMoveDirector() {
+        return moveDirector;
+    }
+
     // ************************************************************************
     // Complex methods
     // ************************************************************************
@@ -244,20 +251,21 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (trackingWorkingSolution) {
             solutionTracker.setBeforeMoveSolution(workingSolution);
         }
-        Move<Solution_> undoMove = move.doMove(this);
-        Score_ score = calculateScore();
-        if (assertMoveScoreFromScratch) {
-            undoMoveText = undoMove.toString();
-            if (trackingWorkingSolution) {
-                solutionTracker.setAfterMoveSolution(workingSolution);
+        try (var undoableMoveDirector = moveDirector.undoable()) {
+            move.run(undoableMoveDirector);
+            Score_ score = calculateScore();
+            if (assertMoveScoreFromScratch) {
+                undoMoveText = "Undo(" + move + ")";
+                if (trackingWorkingSolution) {
+                    solutionTracker.setAfterMoveSolution(workingSolution);
+                }
+                assertWorkingScoreFromScratch(score, move);
             }
-            assertWorkingScoreFromScratch(score, move);
+            if (moveProcessor != null) {
+                moveProcessor.accept(score);
+            }
+            return score;
         }
-        if (moveProcessor != null) {
-            moveProcessor.accept(score);
-        }
-        undoMove.doMoveOnly(this);
-        return score;
     }
 
     @Override

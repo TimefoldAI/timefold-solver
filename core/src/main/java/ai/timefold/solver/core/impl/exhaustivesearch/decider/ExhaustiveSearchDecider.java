@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.exhaustivesearch.decider;
 
+import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.exhaustivesearch.event.ExhaustiveSearchPhaseLifecycleListener;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchLayer;
@@ -7,7 +8,7 @@ import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.bounder.ScoreBounder;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchPhaseScope;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchStepScope;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.ManualEntityMimicRecorder;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
@@ -107,15 +108,16 @@ public final class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearc
         int moveIndex = 0;
         var phaseScope = stepScope.getPhaseScope();
         ExhaustiveSearchLayer moveLayer = phaseScope.getLayerList().get(expandingNode.getDepth() + 1);
-        for (Move<?> move : moveSelector) {
+        for (var move : moveSelector) {
             ExhaustiveSearchNode moveNode = new ExhaustiveSearchNode(moveLayer, expandingNode);
             moveIndex++;
-            moveNode.setMove(move);
+            var adaptedMove = new LegacyMoveAdapter<>(move);
+            moveNode.setMove(adaptedMove);
             // Do not filter out pointless moves, because the original value of the entity(s) is irrelevant.
             // If the original value is null and the variable allows unassigned values,
             // the move to null must be done too.
             doMove(stepScope, moveNode);
-            phaseScope.addMoveEvaluationCount(move, 1);
+            phaseScope.addMoveEvaluationCount(adaptedMove, 1);
             // TODO in the lowest level (and only in that level) QuitEarly can be useful
             // No QuitEarly because lower layers might be promising
             phaseScope.getSolverScope().checkYielding();
@@ -126,15 +128,17 @@ public final class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearc
         stepScope.setSelectedMoveCount((long) moveIndex);
     }
 
+    @SuppressWarnings("unchecked")
     private <Score_ extends Score<Score_>> void doMove(ExhaustiveSearchStepScope<Solution_> stepScope,
             ExhaustiveSearchNode moveNode) {
         InnerScoreDirector<Solution_, Score_> scoreDirector = stepScope.getScoreDirector();
-        // TODO reuse scoreDirector.doAndProcessMove() unless it's an expandableNode
         Move<Solution_> move = moveNode.getMove();
-        Move<Solution_> undoMove = move.doMove(scoreDirector);
-        moveNode.setUndoMove(undoMove);
-        processMove(stepScope, moveNode);
-        undoMove.doMoveOnly(scoreDirector);
+        try (var undoableMoveDirector = scoreDirector.getMoveDirector().undoable()) {
+            move.run(undoableMoveDirector);
+            processMove(stepScope, moveNode);
+            moveNode.setUndoMove(undoableMoveDirector.createUndoMove());
+        }
+        // TODO reuse scoreDirector.doAndProcessMove() unless it's an expandableNode
         var executionPoint = SolverLifecyclePoint.of(stepScope, moveNode.getTreeId());
         if (assertExpectedUndoMoveScore) {
             // In BRUTE_FORCE a stepScore can be null because it was not calculated

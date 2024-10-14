@@ -7,6 +7,7 @@ import java.util.Random;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.metamodel.LocationInList;
+import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
@@ -16,10 +17,11 @@ import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeur
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableDemand;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.chained.ChainedChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListUnassignMove;
+import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
@@ -48,6 +50,7 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
     public List<Recommendation_> apply(InnerScoreDirector<Solution_, Score_> scoreDirector) {
         // The cloned element may already be assigned.
         // If it is, we need to unassign it before we can run the construction heuristic.
+        var moveDirector = scoreDirector.getMoveDirector();
         var supplyManager = scoreDirector.getSupplyManager();
         var solutionDescriptor = solverFactory.getSolutionDescriptor();
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
@@ -58,8 +61,7 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
             if (elementLocation instanceof LocationInList<?> locationInList) { // Unassign the cloned element.
                 var entity = locationInList.entity();
                 var index = locationInList.index();
-                var listUnassignMove = new ListUnassignMove<>(listVariableDescriptor, entity, index);
-                listUnassignMove.doMove(scoreDirector);
+                wrapAndRun(moveDirector, new ListUnassignMove<>(listVariableDescriptor, entity, index));
             }
             supplyManager.cancel(demand);
         } else {
@@ -74,12 +76,10 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
                 if (basicVariableDescriptor.isChained()) {
                     var demand = new SingletonInverseVariableDemand<>(basicVariableDescriptor);
                     var supply = supplyManager.demand(demand);
-                    var move = new ChainedChangeMove<>(basicVariableDescriptor, clonedElement, null, supply);
-                    move.doMove(scoreDirector);
+                    wrapAndRun(moveDirector, new ChainedChangeMove<>(basicVariableDescriptor, clonedElement, null, supply));
                     supplyManager.cancel(demand);
                 } else {
-                    var move = new ChangeMove<>(basicVariableDescriptor, clonedElement, null);
-                    move.doMove(scoreDirector);
+                    wrapAndRun(moveDirector, new ChangeMove<>(basicVariableDescriptor, clonedElement, null));
                 }
             }
         }
@@ -123,6 +123,11 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
         }
     }
 
+    private void wrapAndRun(MoveDirector<Solution_> moveDirector,
+            ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> move) {
+        new LegacyMoveAdapter<>(move).run(moveDirector);
+    }
+
     private EntityPlacer<Solution_> buildEntityPlacer() {
         var solver = (DefaultSolver<Solution_>) solverFactory.buildSolver();
         var phaseList = solver.getPhaseList();
@@ -146,13 +151,13 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
 
     private Recommendation_ execute(InnerScoreDirector<Solution_, Score_> scoreDirector, Move<Solution_> move, long moveIndex,
             In_ clonedElement, Function<In_, Out_> propositionFunction) {
-        var undo = move.doMove(scoreDirector);
-        var newScoreAnalysis = scoreDirector.buildScoreAnalysis(fetchPolicy == ScoreAnalysisFetchPolicy.FETCH_ALL);
-        var newScoreDifference = newScoreAnalysis.diff(originalScoreAnalysis);
-        var result = propositionFunction.apply(clonedElement);
-        var recommendation = recommendationConstructor.apply(moveIndex, result, newScoreDifference);
-        undo.doMoveOnly(scoreDirector);
-        return recommendation;
+        try (var undoableMoveDirector = scoreDirector.getMoveDirector().undoable()) {
+            move.run(undoableMoveDirector);
+            var newScoreAnalysis = scoreDirector.buildScoreAnalysis(fetchPolicy == ScoreAnalysisFetchPolicy.FETCH_ALL);
+            var newScoreDifference = newScoreAnalysis.diff(originalScoreAnalysis);
+            var result = propositionFunction.apply(clonedElement);
+            return recommendationConstructor.apply(moveIndex, result, newScoreDifference);
+        }
     }
 
 }

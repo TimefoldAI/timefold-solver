@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.localsearch.scope;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 
 /**

@@ -10,7 +10,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -106,12 +106,12 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        var innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
 
         var combinedList = computeCombinedList(listVariableDescriptor, originalEntities);
         combinedList.actOnAffectedElements(listVariableDescriptor,
                 originalEntities,
-                (entity, start, end) -> innerScoreDirector.beforeListVariableChanged(listVariableDescriptor, entity,
+                (entity, start, end) -> castScoreDirector.beforeListVariableChanged(listVariableDescriptor, entity,
                         start,
                         end));
 
@@ -129,7 +129,7 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
 
         combinedList.actOnAffectedElements(listVariableDescriptor,
                 originalEntities,
-                (entity, start, end) -> innerScoreDirector.afterListVariableChanged(listVariableDescriptor, entity,
+                (entity, start, end) -> castScoreDirector.afterListVariableChanged(listVariableDescriptor, entity,
                         start,
                         end));
     }
@@ -142,11 +142,11 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
     @Override
     public KOptListMove<Solution_> rebase(ScoreDirector<Solution_> destinationScoreDirector) {
         var rebasedEquivalent2Opts = new ArrayList<FlipSublistAction>(equivalent2Opts.size());
-        var innerScoreDirector = (InnerScoreDirector<?, ?>) destinationScoreDirector;
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<?>) destinationScoreDirector;
         var newEntities = new Object[originalEntities.length];
 
         for (var i = 0; i < newEntities.length; i++) {
-            newEntities[i] = innerScoreDirector.lookUpWorkingObject(originalEntities[i]);
+            newEntities[i] = castScoreDirector.lookUpWorkingObject(originalEntities[i]);
         }
         for (var twoOpt : equivalent2Opts) {
             rebasedEquivalent2Opts.add(twoOpt.rebase());

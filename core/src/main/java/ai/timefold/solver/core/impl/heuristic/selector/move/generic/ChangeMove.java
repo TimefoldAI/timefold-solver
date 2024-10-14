@@ -8,7 +8,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -50,13 +50,13 @@ public class ChangeMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public ChangeMove<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        Object oldValue = variableDescriptor.getValue(entity);
+        var oldValue = variableDescriptor.getValue(entity);
         return new ChangeMove<>(variableDescriptor, entity, oldValue);
     }
 
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
+        var innerScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         innerScoreDirector.changeVariableFacade(variableDescriptor, entity, toPlanningValue);
     }
 

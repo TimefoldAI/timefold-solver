@@ -13,7 +13,7 @@ import ai.timefold.solver.core.impl.domain.variable.anchor.AnchorVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**
  * Also known as a 2-opt move.
@@ -216,40 +216,41 @@ public class TailChainSwapMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         if (!sameAnchor) {
             // Change the left entity
-            innerScoreDirector.changeVariableFacade(variableDescriptor, leftEntity, rightValue);
+            castScoreDirector.changeVariableFacade(variableDescriptor, leftEntity, rightValue);
             // Change the right entity
             if (rightEntity != null) {
-                innerScoreDirector.changeVariableFacade(variableDescriptor, rightEntity, leftValue);
+                castScoreDirector.changeVariableFacade(variableDescriptor, rightEntity, leftValue);
             }
         } else {
             if (!reverseAnchorSide) {
                 // Reverses loop on the side that doesn't include the anchor, because rightValue is earlier than leftEntity
-                innerScoreDirector.changeVariableFacade(variableDescriptor, leftEntity, rightValue);
-                reverseChain(innerScoreDirector, leftValue, leftEntity, rightEntity);
+                castScoreDirector.changeVariableFacade(variableDescriptor, leftEntity, rightValue);
+                reverseChain(castScoreDirector, leftValue, leftEntity, rightEntity);
                 if (leftNextEntity != null) {
-                    innerScoreDirector.changeVariableFacade(variableDescriptor, leftNextEntity, rightEntity);
+                    castScoreDirector.changeVariableFacade(variableDescriptor, leftNextEntity, rightEntity);
                 }
             } else {
                 // Reverses loop on the side that does include the anchor, because rightValue is later than leftEntity
                 // Change the head of the chain
-                reverseChain(innerScoreDirector, leftValue, leftEntity, entityAfterAnchor);
+                reverseChain(castScoreDirector, leftValue, leftEntity, entityAfterAnchor);
                 // Change leftEntity
-                innerScoreDirector.changeVariableFacade(variableDescriptor, leftEntity, rightValue);
+                castScoreDirector.changeVariableFacade(variableDescriptor, leftEntity, rightValue);
                 // Change the tail of the chain
-                reverseChain(innerScoreDirector, lastEntityInChain, leftAnchor, rightEntity);
-                innerScoreDirector.changeVariableFacade(variableDescriptor, leftNextEntity, rightEntity);
+                reverseChain(castScoreDirector, lastEntityInChain, leftAnchor, rightEntity);
+                castScoreDirector.changeVariableFacade(variableDescriptor, leftNextEntity, rightEntity);
             }
         }
     }
 
-    protected void reverseChain(InnerScoreDirector scoreDirector, Object fromValue, Object fromEntity, Object toEntity) {
-        Object entity = fromValue;
-        Object newValue = fromEntity;
+    protected void reverseChain(VariableDescriptorAwareScoreDirector<Solution_> scoreDirector, Object fromValue,
+            Object fromEntity, Object toEntity) {
+        var entity = fromValue;
+        var newValue = fromEntity;
         while (newValue != toEntity) {
-            Object oldValue = variableDescriptor.getValue(entity);
+            var oldValue = variableDescriptor.getValue(entity);
             scoreDirector.changeVariableFacade(variableDescriptor, entity, newValue);
             newValue = entity;
             entity = oldValue;

@@ -81,7 +81,7 @@ public class PickedMoveBestScoreDiffStatistic<Solution_, Score_ extends Score<Sc
         @SuppressWarnings("unchecked")
         private void localSearchStepEnded(LocalSearchStepScope<Solution_> stepScope) {
             if (stepScope.getBestScoreImproved()) {
-                String moveType = stepScope.getStep().getSimpleMoveTypeDescription();
+                String moveType = stepScope.getStep().getMoveTypeDescription();
                 Score_ newBestScore = (Score_) stepScope.getScore();
                 Score_ bestScoreDiff = newBestScore.subtract(oldBestScore);
                 oldBestScore = newBestScore;

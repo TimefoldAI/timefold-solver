@@ -2,8 +2,8 @@ package ai.timefold.solver.core.impl.localsearch.decider.acceptor;
 
 import static org.mockito.Mockito.mock;
 
+import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 

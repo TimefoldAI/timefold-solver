@@ -23,8 +23,6 @@ import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.config.solver.testutil.calculator.TestdataCorruptedDifferentValuesCalculator;
 import ai.timefold.solver.core.config.solver.testutil.calculator.TestdataDifferentValuesCalculator;
-import ai.timefold.solver.core.config.solver.testutil.corruptedmove.factory.TestdataCorruptedEntityUndoMoveFactory;
-import ai.timefold.solver.core.config.solver.testutil.corruptedmove.factory.TestdataCorruptedUndoMoveFactory;
 import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.CorruptedUndoShadowEasyScoreCalculator;
 import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.CorruptedUndoShadowEntity;
 import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.CorruptedUndoShadowSolution;
@@ -97,42 +95,6 @@ class EnvironmentModeTest {
                     NON_INTRUSIVE_FULL_ASSERT,
                     REPRODUCIBLE -> {
                 assertReproducibility(solver1, solver2);
-            }
-        }
-    }
-
-    @ParameterizedTest(name = "{0}")
-    @EnumSource(EnvironmentMode.class)
-    void corruptedCustomMoves(EnvironmentMode environmentMode) {
-        SolverConfig solverConfig = buildSolverConfig(environmentMode);
-        // Intrusive modes should throw exception about corrupted undoMove
-        setSolverConfigCalculatorClass(solverConfig, TestdataDifferentValuesCalculator.class);
-
-        switch (environmentMode) {
-            case TRACKED_FULL_ASSERT -> {
-                setSolverConfigMoveListFactoryClassToCorrupted(
-                        solverConfig,
-                        TestdataCorruptedUndoMoveFactory.class);
-                assertIllegalStateExceptionWhileSolving(solverConfig, "corrupted undoMove",
-                        "Variables that are different between before and undo",
-                        "Actual value (v2) of variable value on TestdataEntity entity (e2) differs from expected (v1)");
-            }
-            case FULL_ASSERT,
-                    FAST_ASSERT -> {
-                setSolverConfigMoveListFactoryClassToCorrupted(
-                        solverConfig,
-                        TestdataCorruptedUndoMoveFactory.class);
-                assertIllegalStateExceptionWhileSolving(solverConfig, "corrupted undoMove");
-            }
-            case NON_INTRUSIVE_FULL_ASSERT -> {
-                setSolverConfigMoveListFactoryClassToCorrupted(
-                        solverConfig,
-                        TestdataCorruptedEntityUndoMoveFactory.class);
-                assertIllegalStateExceptionWhileSolving(solverConfig, "not the uncorruptedScore");
-            }
-            case REPRODUCIBLE,
-                    NON_REPRODUCIBLE -> {
-                // No exception expected
             }
         }
     }

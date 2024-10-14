@@ -13,7 +13,7 @@ import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInv
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.value.chained.SubChain;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 /**
@@ -103,33 +103,33 @@ public class SubChainSwapMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        Object leftFirstEntity = leftSubChain.getFirstEntity();
-        Object leftFirstValue = variableDescriptor.getValue(leftFirstEntity);
-        Object leftLastEntity = leftSubChain.getLastEntity();
-        Object rightFirstEntity = rightSubChain.getFirstEntity();
-        Object rightFirstValue = variableDescriptor.getValue(rightFirstEntity);
-        Object rightLastEntity = rightSubChain.getLastEntity();
+        var leftFirstEntity = leftSubChain.getFirstEntity();
+        var leftFirstValue = variableDescriptor.getValue(leftFirstEntity);
+        var leftLastEntity = leftSubChain.getLastEntity();
+        var rightFirstEntity = rightSubChain.getFirstEntity();
+        var rightFirstValue = variableDescriptor.getValue(rightFirstEntity);
+        var rightLastEntity = rightSubChain.getLastEntity();
         // Change the entities
-        InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         if (leftLastEntity != rightFirstValue) {
-            innerScoreDirector.changeVariableFacade(variableDescriptor, leftFirstEntity, rightFirstValue);
+            castScoreDirector.changeVariableFacade(variableDescriptor, leftFirstEntity, rightFirstValue);
         }
         if (rightLastEntity != leftFirstValue) {
-            innerScoreDirector.changeVariableFacade(variableDescriptor, rightFirstEntity, leftFirstValue);
+            castScoreDirector.changeVariableFacade(variableDescriptor, rightFirstEntity, leftFirstValue);
         }
         // Reroute the new chains
         if (leftTrailingLastEntity != null) {
             if (leftTrailingLastEntity != rightFirstEntity) {
-                innerScoreDirector.changeVariableFacade(variableDescriptor, leftTrailingLastEntity, rightLastEntity);
+                castScoreDirector.changeVariableFacade(variableDescriptor, leftTrailingLastEntity, rightLastEntity);
             } else {
-                innerScoreDirector.changeVariableFacade(variableDescriptor, leftFirstEntity, rightLastEntity);
+                castScoreDirector.changeVariableFacade(variableDescriptor, leftFirstEntity, rightLastEntity);
             }
         }
         if (rightTrailingLastEntity != null) {
             if (rightTrailingLastEntity != leftFirstEntity) {
-                innerScoreDirector.changeVariableFacade(variableDescriptor, rightTrailingLastEntity, leftLastEntity);
+                castScoreDirector.changeVariableFacade(variableDescriptor, rightTrailingLastEntity, leftLastEntity);
             } else {
-                innerScoreDirector.changeVariableFacade(variableDescriptor, rightFirstEntity, leftLastEntity);
+                castScoreDirector.changeVariableFacade(variableDescriptor, rightFirstEntity, leftLastEntity);
             }
         }
     }
