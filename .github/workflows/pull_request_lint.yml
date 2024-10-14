@@ -1,0 +1,17 @@
+name: Pull Request Lint
+
+on:
+  pull_request:
+    types: [opened, edited, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: jef/conventional-commits-pr-action@v1
+        with:
+          token: ${{ github.token }}
