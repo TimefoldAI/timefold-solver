@@ -61,7 +61,7 @@
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>org.openrewrite</groupId>
+      <groupId>org.openrewrite</groupId> <!-- Does not break Java 17 compatibility. -->
       <artifactId>rewrite-java-21</artifactId>
       <scope>runtime</scope>
     </dependency>
