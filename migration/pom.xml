@@ -62,6 +62,11 @@
     </dependency>
     <dependency>
       <groupId>org.openrewrite</groupId>
+      <artifactId>rewrite-java-21</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.openrewrite</groupId>
       <artifactId>rewrite-properties</artifactId>
       <scope>runtime</scope>
     </dependency>
