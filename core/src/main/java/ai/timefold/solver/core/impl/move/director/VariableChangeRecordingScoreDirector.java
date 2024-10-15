@@ -180,4 +180,16 @@ public final class VariableChangeRecordingScoreDirector<Solution_> implements Va
         afterVariableChanged(variableDescriptor, entity);
     }
 
+    public <Entity_> void recordRuinRecreateListAssignment(ListVariableDescriptor<Solution_> variableDescriptor,
+            Object entity, List<Object> values) {
+        for (var element : values) {
+            variableChanges.add(new ListVariableBeforeAssignmentAction<>(element, variableDescriptor));
+        }
+        variableChanges.add(new ListVariableAfterChangeAction<>(entity,
+                variableDescriptor.getFirstUnpinnedIndex(entity), variableDescriptor.getListSize(entity),
+                variableDescriptor));
+        for (var element : values) {
+            variableChanges.add(new ListVariableAfterAssignmentAction<>(element, variableDescriptor));
+        }
+    }
 }
