@@ -65,9 +65,9 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractSimplifiedMov
                     listVariableDescriptor.getFirstUnpinnedIndex(entity),
                     listVariableDescriptor.getListSize(entity));
             for (var position : entry.getValue().descendingSet()) {
-                delegateScoreDirector.beforeListVariableElementUnassigned(listVariableDescriptor, position.ruinedValue());
+                innerScoreDirector.beforeListVariableElementUnassigned(listVariableDescriptor, position.ruinedValue());
                 listVariableDescriptor.removeElement(entity, position.index());
-                delegateScoreDirector.afterListVariableElementUnassigned(listVariableDescriptor, position.ruinedValue());
+                innerScoreDirector.afterListVariableElementUnassigned(listVariableDescriptor, position.ruinedValue());
             }
             delegateScoreDirector.afterListVariableChanged(listVariableDescriptor, entity,
                     listVariableDescriptor.getFirstUnpinnedIndex(entity),
