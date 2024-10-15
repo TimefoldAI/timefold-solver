@@ -26,8 +26,13 @@ public abstract class AbstractSimplifiedMove<Solution_> implements Move<Solution
 
     @Override
     public final void doMoveOnly(ScoreDirector<Solution_> scoreDirector) {
-        doMoveOnGenuineVariables(scoreDirector);
-        scoreDirector.triggerVariableListeners();
+        // LegacyMoveAdapter does not wrap the score director in a VariableChangeRecordingScoreDirector
+        var recordingScoreDirector =
+                scoreDirector instanceof VariableChangeRecordingScoreDirector<Solution_> variableChangeRecordingScoreDirector
+                        ? variableChangeRecordingScoreDirector
+                        : new VariableChangeRecordingScoreDirector<>(scoreDirector);
+        doMoveOnGenuineVariables(recordingScoreDirector);
+        recordingScoreDirector.triggerVariableListeners();
     }
 
     protected abstract void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector);
