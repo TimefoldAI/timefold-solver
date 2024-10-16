@@ -24,6 +24,7 @@ import ai.timefold.solver.core.api.solver.change.ProblemChange;
  * before we finalize the API.
  * Please direct your feedback to
  * <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver Github</a>.
+ * 
  * @param <Solution_>
  */
 public interface SolutionState<Solution_> {

@@ -69,12 +69,6 @@ public class PillarChangeMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     @Override
-    public PillarChangeMove<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        Object oldValue = variableDescriptor.getValue(pillar.get(0));
-        return new PillarChangeMove<>(pillar, variableDescriptor, oldValue);
-    }
-
-    @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         for (var entity : pillar) {

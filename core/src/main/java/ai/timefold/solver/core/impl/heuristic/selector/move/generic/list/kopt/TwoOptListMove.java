@@ -100,17 +100,6 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     @Override
-    protected TwoOptListMove<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        return new TwoOptListMove<>(variableDescriptor,
-                firstEntity,
-                secondEntity,
-                firstEdgeEndpoint,
-                secondEdgeEndpoint,
-                entityFirstUnpinnedIndex,
-                -shift);
-    }
-
-    @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         if (firstEntity == secondEntity) {
             doSublistReversal(scoreDirector);

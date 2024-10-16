@@ -68,11 +68,6 @@ public class SwapMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     @Override
-    public SwapMove<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        return new SwapMove<>(variableDescriptorList, rightEntity, leftEntity);
-    }
-
-    @Override
     public SwapMove<Solution_> rebase(ScoreDirector<Solution_> destinationScoreDirector) {
         return new SwapMove<>(variableDescriptorList,
                 destinationScoreDirector.lookUpWorkingObject(leftEntity),

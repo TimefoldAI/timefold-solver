@@ -90,6 +90,17 @@ After in `*.java`:
 
 '''
 
+.icon:info-circle[role=yellow] Custom undo moves no longer required
+[%collapsible%open]
+====
+Due to underlying improvements to the solver, we can now generate undo moves automatically
+and no longer require the user to provide them.
+If you implemented custom moves,
+your implementations of undo moves will no longer be used and can be removed from your codebase.
+Methods in the `Move` interface that deal with undo moves have been deprecated
+and will be removed in a future major version of Timefold Solver.
+====
+
 
 === Upgrade from 1.14.0 to 1.15.0
 

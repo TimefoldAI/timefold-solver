@@ -45,12 +45,6 @@ public class ChainedSwapMove<Solution_> extends SwapMove<Solution_> {
     // ************************************************************************
 
     @Override
-    public ChainedSwapMove<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        return new ChainedSwapMove<>(variableDescriptorList, rightEntity, leftEntity, oldLeftTrailingEntityList,
-                oldRightTrailingEntityList);
-    }
-
-    @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         for (var i = 0; i < variableDescriptorList.size(); i++) {
             GenuineVariableDescriptor<Solution_> variableDescriptor = variableDescriptorList.get(i);

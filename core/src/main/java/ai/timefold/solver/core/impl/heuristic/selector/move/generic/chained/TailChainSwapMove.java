@@ -189,32 +189,6 @@ public class TailChainSwapMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     @Override
-    public TailChainSwapMove<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        if (!sameAnchor) {
-            return new TailChainSwapMove<>(variableDescriptor,
-                    leftEntity, rightValue, rightAnchor,
-                    rightEntity, leftValue, leftAnchor);
-        } else {
-            if (rightEntity == null) {
-                // TODO Currently unsupported because we fail to create a valid undoMove... even though doMove supports it
-                // https://issues.redhat.com/browse/PLANNER-1250
-                throw new IllegalStateException("Impossible state, because isMoveDoable() should not return true.");
-            }
-            if (!reverseAnchorSide) {
-                return new TailChainSwapMove<>(variableDescriptor,
-                        rightEntity, rightNextEntity, leftAnchor,
-                        leftEntity, rightValue, rightAnchor,
-                        leftNextEntity, leftValue);
-            } else {
-                return new TailChainSwapMove<>(variableDescriptor,
-                        rightEntity, rightNextEntity, leftAnchor,
-                        leftEntity, rightValue, rightAnchor,
-                        leftNextEntity, leftValue, entityAfterAnchor, lastEntityInChain);
-            }
-        }
-    }
-
-    @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         if (!sameAnchor) {

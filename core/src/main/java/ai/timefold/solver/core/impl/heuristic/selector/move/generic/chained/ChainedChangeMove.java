@@ -43,12 +43,6 @@ public class ChainedChangeMove<Solution_> extends ChangeMove<Solution_> {
     }
 
     @Override
-    public ChainedChangeMove<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        Object oldValue = variableDescriptor.getValue(entity);
-        return new ChainedChangeMove<>(variableDescriptor, entity, oldValue, newTrailingEntity, oldTrailingEntity);
-    }
-
-    @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         var innerScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         var oldValue = variableDescriptor.getValue(entity);

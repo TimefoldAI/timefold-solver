@@ -49,12 +49,6 @@ public class ChangeMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     @Override
-    public ChangeMove<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        var oldValue = variableDescriptor.getValue(entity);
-        return new ChangeMove<>(variableDescriptor, entity, oldValue);
-    }
-
-    @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         var innerScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         innerScoreDirector.changeVariableFacade(variableDescriptor, entity, toPlanningValue);

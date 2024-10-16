@@ -7,7 +7,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
@@ -25,13 +24,12 @@ class ListUnassignMoveTest {
         var v3 = new TestdataListValue("3");
         var e1 = new TestdataListEntity("e1", v1, v2, v3);
 
-        var scoreDirector = (InnerScoreDirector<TestdataListSolution, SimpleScore>) mock(AbstractScoreDirector.class);
+        var scoreDirector = (InnerScoreDirector<TestdataListSolution, SimpleScore>) mock(InnerScoreDirector.class);
         var variableDescriptor = TestdataListEntity.buildVariableDescriptorForValueList();
 
         // Unassign last
         var move = new ListUnassignMove<>(variableDescriptor, e1, 2);
-        var undoMove = move.doMove(scoreDirector);
-        assertThat(undoMove).isNotNull();
+        move.doMoveOnly(scoreDirector);
         assertThat(e1.getValueList()).containsExactly(v1, v2);
 
         verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 2, 3);
@@ -54,26 +52,20 @@ class ListUnassignMoveTest {
         var v3 = new TestdataListValue("3");
         var e1 = new TestdataListEntity("e1", v1, v2, v3);
 
-        var scoreDirector = (InnerScoreDirector<TestdataListSolution, SimpleScore>) mock(AbstractScoreDirector.class);
+        var scoreDirector = (InnerScoreDirector<TestdataListSolution, SimpleScore>) mock(InnerScoreDirector.class);
         var variableDescriptor =
                 TestdataListEntity.buildVariableDescriptorForValueList();
 
         var move = new ListUnassignMove<>(variableDescriptor, e1, 2);
-        var undoMove = move.doMove(scoreDirector);
+        move.doMoveOnly(scoreDirector);
         assertThat(e1.getValueList()).hasSize(2);
         verify(scoreDirector).beforeListVariableElementUnassigned(variableDescriptor, v3);
         verify(scoreDirector).afterListVariableElementUnassigned(variableDescriptor, v3);
-
-        undoMove.doMoveOnly(scoreDirector);
-        assertThat(e1.getValueList()).hasSize(3);
-        verify(scoreDirector).beforeListVariableElementAssigned(variableDescriptor, v3);
-        verify(scoreDirector).afterListVariableElementAssigned(variableDescriptor, v3);
     }
 
     @Test
     void rebase() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
-        var variableDescriptor = solutionDescriptor.getListVariableDescriptor();
         var destinationScoreDirector = mockRebasingScoreDirector(solutionDescriptor, new Object[][] {});
         var move = new ListUnassignMove<TestdataSolution>(null, null, 0);
         var rebasedMove = move.rebase(destinationScoreDirector);

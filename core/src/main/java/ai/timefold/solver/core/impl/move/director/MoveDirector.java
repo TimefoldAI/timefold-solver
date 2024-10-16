@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultListVariab
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.move.InnerMutableSolutionState;
-import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 public sealed class MoveDirector<Solution_> implements InnerMutableSolutionState<Solution_>
@@ -85,12 +85,12 @@ public sealed class MoveDirector<Solution_> implements InnerMutableSolutionState
     }
 
     @Override
-    public <Entity_, Value_> ElementLocation getPositionOf(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value) {
-        return getPositionOf((AbstractScoreDirector<Solution_, ?, ?>) scoreDirector, variableMetaModel, value);
+    public <Entity_, Value_> ElementLocation getPositionOf(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Value_ value) {
+        return getPositionOf((InnerScoreDirector<Solution_, ?>) scoreDirector, variableMetaModel, value);
     }
 
-    protected static <Solution_, Entity_, Value_> ElementLocation getPositionOf(
-            AbstractScoreDirector<Solution_, ?, ?> scoreDirector,
+    protected static <Solution_, Entity_, Value_> ElementLocation getPositionOf(InnerScoreDirector<Solution_, ?> scoreDirector,
             ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value) {
         return scoreDirector.getListVariableStateSupply(extractVariableDescriptor(variableMetaModel))
                 .getLocationInList(value);

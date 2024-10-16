@@ -112,22 +112,22 @@ class SwapMoveTest {
 
         a.setValue(v1);
         b.setValue(v1);
-        abMove.doMove(scoreDirector);
+        abMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v1);
         assertThat(b.getValue()).isEqualTo(v1);
 
         a.setValue(v1);
         b.setValue(v2);
-        abMove.doMove(scoreDirector);
+        abMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v2);
         assertThat(b.getValue()).isEqualTo(v1);
 
         a.setValue(v2);
         b.setValue(v3);
-        abMove.doMove(scoreDirector);
+        abMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v3);
         assertThat(b.getValue()).isEqualTo(v2);
-        abMove.doMove(scoreDirector);
+        abMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v2);
         assertThat(b.getValue()).isEqualTo(v3);
 
@@ -136,22 +136,22 @@ class SwapMoveTest {
 
         a.setValue(v2);
         c.setValue(v2);
-        acMove.doMove(scoreDirector);
+        acMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v2);
         assertThat(c.getValue()).isEqualTo(v2);
 
         a.setValue(v3);
         c.setValue(v2);
-        acMove.doMove(scoreDirector);
+        acMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v2);
         assertThat(c.getValue()).isEqualTo(v3);
 
         a.setValue(v3);
         c.setValue(v4);
-        acMove.doMove(scoreDirector);
+        acMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v4);
         assertThat(c.getValue()).isEqualTo(v3);
-        acMove.doMove(scoreDirector);
+        acMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v3);
         assertThat(c.getValue()).isEqualTo(v4);
 
@@ -160,22 +160,22 @@ class SwapMoveTest {
 
         b.setValue(v2);
         c.setValue(v2);
-        bcMove.doMove(scoreDirector);
+        bcMove.doMoveOnly(scoreDirector);
         assertThat(b.getValue()).isEqualTo(v2);
         assertThat(c.getValue()).isEqualTo(v2);
 
         b.setValue(v2);
         c.setValue(v3);
-        bcMove.doMove(scoreDirector);
+        bcMove.doMoveOnly(scoreDirector);
         assertThat(b.getValue()).isEqualTo(v3);
         assertThat(c.getValue()).isEqualTo(v2);
 
         b.setValue(v2);
         c.setValue(v3);
-        bcMove.doMove(scoreDirector);
+        bcMove.doMoveOnly(scoreDirector);
         assertThat(b.getValue()).isEqualTo(v3);
         assertThat(c.getValue()).isEqualTo(v2);
-        bcMove.doMove(scoreDirector);
+        bcMove.doMoveOnly(scoreDirector);
         assertThat(b.getValue()).isEqualTo(v2);
         assertThat(c.getValue()).isEqualTo(v3);
     }

@@ -135,11 +135,6 @@ public class ListChangeMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     @Override
-    public ListChangeMove<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        return new ListChangeMove<>(variableDescriptor, destinationEntity, destinationIndex, sourceEntity, sourceIndex);
-    }
-
-    @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
 

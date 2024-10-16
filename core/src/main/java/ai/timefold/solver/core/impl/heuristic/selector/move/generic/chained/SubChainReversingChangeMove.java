@@ -70,19 +70,6 @@ public class SubChainReversingChangeMove<Solution_> extends AbstractMove<Solutio
     }
 
     @Override
-    public SubChainReversingChangeMove<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        Object oldFirstValue = variableDescriptor.getValue(subChain.getFirstEntity());
-        boolean unmovedReverse = toPlanningValue == oldFirstValue;
-        if (!unmovedReverse) {
-            return new SubChainReversingChangeMove<>(subChain.reverse(), variableDescriptor, oldFirstValue,
-                    newTrailingEntity, oldTrailingLastEntity);
-        } else {
-            return new SubChainReversingChangeMove<>(subChain.reverse(), variableDescriptor, oldFirstValue,
-                    oldTrailingLastEntity, newTrailingEntity);
-        }
-    }
-
-    @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         var firstEntity = subChain.getFirstEntity();
         var lastEntity = subChain.getLastEntity();
