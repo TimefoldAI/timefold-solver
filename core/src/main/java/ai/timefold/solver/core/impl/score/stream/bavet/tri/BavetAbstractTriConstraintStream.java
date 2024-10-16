@@ -55,6 +55,8 @@ import ai.timefold.solver.core.impl.score.stream.common.tri.InnerTriConstraintSt
 import ai.timefold.solver.core.impl.score.stream.common.tri.TriConstraintBuilderImpl;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
+import org.jspecify.annotations.NonNull;
+
 public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> extends BavetAbstractConstraintStream<Solution_>
         implements InnerTriConstraintStream<A, B, C> {
 
@@ -73,7 +75,7 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
     // ************************************************************************
 
     @Override
-    public BavetAbstractTriConstraintStream<Solution_, A, B, C> filter(TriPredicate<A, B, C> predicate) {
+    public @NonNull TriConstraintStream<A, B, C> filter(@NonNull TriPredicate<A, B, C> predicate) {
         return shareAndAddChild(new BavetFilterTriConstraintStream<>(constraintFactory, this, predicate));
     }
 
@@ -83,8 +85,8 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
 
     @Override
     @SafeVarargs
-    public final <D> QuadConstraintStream<A, B, C, D> join(UniConstraintStream<D> otherStream,
-            QuadJoiner<A, B, C, D>... joiners) {
+    public final <D> @NonNull QuadConstraintStream<A, B, C, D> join(@NonNull UniConstraintStream<D> otherStream,
+            QuadJoiner<A, B, C, D> @NonNull... joiners) {
         var other = (BavetAbstractUniConstraintStream<Solution_, D>) otherStream;
         var joinerComber = QuadJoinerComber.comb(joiners);
         var leftBridge = new BavetForeBridgeTriConstraintStream<>(constraintFactory, this);
@@ -104,8 +106,8 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
 
     @SafeVarargs
     @Override
-    public final <D> TriConstraintStream<A, B, C> ifExists(UniConstraintStream<D> otherStream,
-            QuadJoiner<A, B, C, D>... joiners) {
+    public final @NonNull <D> TriConstraintStream<A, B, C> ifExists(@NonNull UniConstraintStream<D> otherStream,
+            @NonNull QuadJoiner<A, B, C, D> @NonNull... joiners) {
         return ifExistsOrNot(true, otherStream, joiners);
     }
 

@@ -36,6 +36,8 @@ import ai.timefold.solver.core.api.score.stream.quad.QuadJoiner;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * A {@link ConstraintStream} that matches three facts.
  *
@@ -57,11 +59,9 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * Important: This is slower and less scalable than {@link BiConstraintStream#join(UniConstraintStream, TriJoiner)}
      * with a proper {@link TriJoiner} predicate (such as {@link Joiners#equal(BiFunction, Function)},
      * because the latter applies hashing and/or indexing, so it doesn't create every combination just to filter it out.
-     *
-     * @param predicate never null
-     * @return never null
      */
-    TriConstraintStream<A, B, C> filter(TriPredicate<A, B, C> predicate);
+    @NonNull
+    TriConstraintStream<A, B, C> filter(@NonNull TriPredicate<A, B, C> predicate);
 
     // ************************************************************************
     // Join
@@ -75,11 +75,10 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * because it doesn't apply hashing and/or indexing on the properties,
      * so it creates and checks every combination of [A, B] and C.
      *
-     * @param otherStream never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every combination of [A, B, C] and D
+     * @return a stream that matches every combination of [A, B, C] and D
      */
-    default <D> QuadConstraintStream<A, B, C, D> join(UniConstraintStream<D> otherStream) {
+    default <D> @NonNull QuadConstraintStream<A, B, C, D> join(@NonNull UniConstraintStream<D> otherStream) {
         return join(otherStream, new QuadJoiner[0]);
     }
 
@@ -92,13 +91,12 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * because it applies hashing and/or indexing on the properties,
      * so it doesn't create nor checks every combination of [A, B, C] and D.
      *
-     * @param otherStream never null
-     * @param joiner never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every combination of [A, B, C] and D for which the {@link QuadJoiner}
+     * @return a stream that matches every combination of [A, B, C] and D for which the {@link QuadJoiner}
      *         is true
      */
-    default <D> QuadConstraintStream<A, B, C, D> join(UniConstraintStream<D> otherStream, QuadJoiner<A, B, C, D> joiner) {
+    default <D> @NonNull QuadConstraintStream<A, B, C, D> join(@NonNull UniConstraintStream<D> otherStream,
+            @NonNull QuadJoiner<A, B, C, D> joiner) {
         return join(otherStream, new QuadJoiner[] { joiner });
     }
 
@@ -106,15 +104,12 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #join(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
-     * @param otherStream never null
-     * @param joiner1 never null
-     * @param joiner2 never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every combination of [A, B, C] and D for which all the
+     * @return a stream that matches every combination of [A, B, C] and D for which all the
      *         {@link QuadJoiner joiners} are true
      */
-    default <D> QuadConstraintStream<A, B, C, D> join(UniConstraintStream<D> otherStream,
-            QuadJoiner<A, B, C, D> joiner1, QuadJoiner<A, B, C, D> joiner2) {
+    default <D> @NonNull QuadConstraintStream<A, B, C, D> join(@NonNull UniConstraintStream<D> otherStream,
+            @NonNull QuadJoiner<A, B, C, D> joiner1, @NonNull QuadJoiner<A, B, C, D> joiner2) {
         return join(otherStream, new QuadJoiner[] { joiner1, joiner2 });
     }
 
@@ -122,16 +117,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #join(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
-     * @param otherStream never null
-     * @param joiner1 never null
-     * @param joiner2 never null
-     * @param joiner3 never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every combination of [A, B, C] and D for which all the
+     * @return a stream that matches every combination of [A, B, C] and D for which all the
      *         {@link QuadJoiner joiners} are true
      */
-    default <D> QuadConstraintStream<A, B, C, D> join(UniConstraintStream<D> otherStream,
-            QuadJoiner<A, B, C, D> joiner1, QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3) {
+    default <D> @NonNull QuadConstraintStream<A, B, C, D> join(@NonNull UniConstraintStream<D> otherStream,
+            @NonNull QuadJoiner<A, B, C, D> joiner1, @NonNull QuadJoiner<A, B, C, D> joiner2,
+            @NonNull QuadJoiner<A, B, C, D> joiner3) {
         return join(otherStream, new QuadJoiner[] { joiner1, joiner2, joiner3 });
     }
 
@@ -139,18 +131,14 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #join(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
-     * @param otherStream never null
-     * @param joiner1 never null
-     * @param joiner2 never null
-     * @param joiner3 never null
-     * @param joiner4 never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every combination of [A, B, C] and D for which all the
+     * @return a stream that matches every combination of [A, B, C] and D for which all the
      *         {@link QuadJoiner joiners} are true
      */
-    default <D> QuadConstraintStream<A, B, C, D> join(UniConstraintStream<D> otherStream,
-            QuadJoiner<A, B, C, D> joiner1, QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3,
-            QuadJoiner<A, B, C, D> joiner4) {
+    default <D> @NonNull QuadConstraintStream<A, B, C, D> join(@NonNull UniConstraintStream<D> otherStream,
+            @NonNull QuadJoiner<A, B, C, D> joiner1, @NonNull QuadJoiner<A, B, C, D> joiner2,
+            @NonNull QuadJoiner<A, B, C, D> joiner3,
+            @NonNull QuadJoiner<A, B, C, D> joiner4) {
         return join(otherStream, new QuadJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
@@ -162,13 +150,12 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * but we can't fix it with a {@link SafeVarargs} annotation because it's an interface method.
      * Therefore, there are overloaded methods with up to 4 {@link QuadJoiner} parameters.
      *
-     * @param otherStream never null
-     * @param joiners never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every combination of [A, B, C] and D for which all the
+     * @return a stream that matches every combination of [A, B, C] and D for which all the
      *         {@link QuadJoiner joiners} are true
      */
-    <D> QuadConstraintStream<A, B, C, D> join(UniConstraintStream<D> otherStream, QuadJoiner<A, B, C, D>... joiners);
+    <D> @NonNull QuadConstraintStream<A, B, C, D> join(@NonNull UniConstraintStream<D> otherStream,
+            @NonNull QuadJoiner<A, B, C, D>... joiners);
 
     /**
      * Create a new {@link QuadConstraintStream} for every combination of [A, B, C] and D.
@@ -185,11 +172,10 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * <p>
      * This method is syntactic sugar for {@link #join(UniConstraintStream)}.
      *
-     * @param otherClass never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every combination of [A, B, C] and D
+     * @return a stream that matches every combination of [A, B, C] and D
      */
-    default <D> QuadConstraintStream<A, B, C, D> join(Class<D> otherClass) {
+    default <D> @NonNull QuadConstraintStream<A, B, C, D> join(@NonNull Class<D> otherClass) {
         return join(otherClass, new QuadJoiner[0]);
     }
 
@@ -211,13 +197,12 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * <p>
      * This method has overloaded methods with multiple {@link QuadJoiner} parameters.
      *
-     * @param otherClass never null
-     * @param joiner never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every combination of [A, B, C] and D for which the {@link QuadJoiner}
+     * @return a stream that matches every combination of [A, B, C] and D for which the {@link QuadJoiner}
      *         is true
      */
-    default <D> QuadConstraintStream<A, B, C, D> join(Class<D> otherClass, QuadJoiner<A, B, C, D> joiner) {
+    default <D> @NonNull QuadConstraintStream<A, B, C, D> join(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> joiner) {
         return join(otherClass, new QuadJoiner[] { joiner });
     }
 
@@ -225,15 +210,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #join(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
-     * @param otherClass never null
-     * @param joiner1 never null
-     * @param joiner2 never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every combination of [A, B, C] and D for which all the
+     * @return a stream that matches every combination of [A, B, C] and D for which all the
      *         {@link QuadJoiner joiners} are true
      */
-    default <D> QuadConstraintStream<A, B, C, D> join(Class<D> otherClass, QuadJoiner<A, B, C, D> joiner1,
-            QuadJoiner<A, B, C, D> joiner2) {
+    default <D> @NonNull QuadConstraintStream<A, B, C, D> join(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> joiner1,
+            @NonNull QuadJoiner<A, B, C, D> joiner2) {
         return join(otherClass, new QuadJoiner[] { joiner1, joiner2 });
     }
 
@@ -241,16 +224,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #join(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
-     * @param otherClass never null
-     * @param joiner1 never null
-     * @param joiner2 never null
-     * @param joiner3 never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every combination of [A, B, C] and D for which all the
+     * @return a stream that matches every combination of [A, B, C] and D for which all the
      *         {@link QuadJoiner joiners} are true
      */
-    default <D> QuadConstraintStream<A, B, C, D> join(Class<D> otherClass, QuadJoiner<A, B, C, D> joiner1,
-            QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3) {
+    default <D> @NonNull QuadConstraintStream<A, B, C, D> join(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> joiner1,
+            @NonNull QuadJoiner<A, B, C, D> joiner2, @NonNull QuadJoiner<A, B, C, D> joiner3) {
         return join(otherClass, new QuadJoiner[] { joiner1, joiner2, joiner3 });
     }
 
@@ -258,17 +238,14 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #join(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
-     * @param otherClass never null
-     * @param joiner1 never null
-     * @param joiner2 never null
-     * @param joiner3 never null
-     * @param joiner4 never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every combination of [A, B, C] and D for which all the
+     * @return a stream that matches every combination of [A, B, C] and D for which all the
      *         {@link QuadJoiner joiners} are true
      */
-    default <D> QuadConstraintStream<A, B, C, D> join(Class<D> otherClass, QuadJoiner<A, B, C, D> joiner1,
-            QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3, QuadJoiner<A, B, C, D> joiner4) {
+    default <D> @NonNull QuadConstraintStream<A, B, C, D> join(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> joiner1,
+            @NonNull QuadJoiner<A, B, C, D> joiner2, @NonNull QuadJoiner<A, B, C, D> joiner3,
+            @NonNull QuadJoiner<A, B, C, D> joiner4) {
         return join(otherClass, new QuadJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
@@ -280,13 +257,12 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * but we can't fix it with a {@link SafeVarargs} annotation because it's an interface method.
      * Therefore, there are overloaded methods with up to 4 {@link QuadJoiner} parameters.
      *
-     * @param otherClass never null
-     * @param joiners never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every combination of [A, B, C] and D for which all the
+     * @return a stream that matches every combination of [A, B, C] and D for which all the
      *         {@link QuadJoiner joiners} are true
      */
-    <D> QuadConstraintStream<A, B, C, D> join(Class<D> otherClass, QuadJoiner<A, B, C, D>... joiners);
+    <D> @NonNull QuadConstraintStream<A, B, C, D> join(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D>... joiners);
 
     // ************************************************************************
     // If (not) exists
@@ -303,13 +279,12 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * a different definition of exists applies.
      * (See {@link ConstraintFactory#from(Class)} Javadoc.)
      *
-     * @param otherClass never null
-     * @param joiner never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
+     * @return a stream that matches every tuple of A, B and C where D exists for which the
      *         {@link QuadJoiner} is true
      */
-    default <D> TriConstraintStream<A, B, C> ifExists(Class<D> otherClass, QuadJoiner<A, B, C, D> joiner) {
+    default <D> @NonNull TriConstraintStream<A, B, C> ifExists(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> joiner) {
         return ifExists(otherClass, new QuadJoiner[] { joiner });
     }
 
@@ -317,15 +292,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #ifExists(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
-     * @param otherClass never null
-     * @param joiner1 never null
-     * @param joiner2 never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
+     * @return a stream that matches every tuple of A, B and C where D exists for which the
      *         {@link QuadJoiner}s are true
      */
-    default <D> TriConstraintStream<A, B, C> ifExists(Class<D> otherClass, QuadJoiner<A, B, C, D> joiner1,
-            QuadJoiner<A, B, C, D> joiner2) {
+    default <D> @NonNull TriConstraintStream<A, B, C> ifExists(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> joiner1,
+            @NonNull QuadJoiner<A, B, C, D> joiner2) {
         return ifExists(otherClass, new QuadJoiner[] { joiner1, joiner2 });
     }
 
@@ -333,16 +306,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #ifExists(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
-     * @param otherClass never null
-     * @param joiner1 never null
-     * @param joiner2 never null
-     * @param joiner3 never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
+     * @return a stream that matches every tuple of A, B and C where D exists for which the
      *         {@link QuadJoiner}s are true
      */
-    default <D> TriConstraintStream<A, B, C> ifExists(Class<D> otherClass, QuadJoiner<A, B, C, D> joiner1,
-            QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3) {
+    default <D> @NonNull TriConstraintStream<A, B, C> ifExists(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> joiner1,
+            @NonNull QuadJoiner<A, B, C, D> joiner2, @NonNull QuadJoiner<A, B, C, D> joiner3) {
         return ifExists(otherClass, new QuadJoiner[] { joiner1, joiner2, joiner3 });
     }
 
@@ -350,17 +320,14 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #ifExists(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
-     * @param otherClass never null
-     * @param joiner1 never null
-     * @param joiner2 never null
-     * @param joiner3 never null
-     * @param joiner4 never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
+     * @return a stream that matches every tuple of A, B and C where D exists for which the
      *         {@link QuadJoiner}s are true
      */
-    default <D> TriConstraintStream<A, B, C> ifExists(Class<D> otherClass, QuadJoiner<A, B, C, D> joiner1,
-            QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3, QuadJoiner<A, B, C, D> joiner4) {
+    default <D> @NonNull TriConstraintStream<A, B, C> ifExists(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> joiner1,
+            @NonNull QuadJoiner<A, B, C, D> joiner2, @NonNull QuadJoiner<A, B, C, D> joiner3,
+            @NonNull QuadJoiner<A, B, C, D> joiner4) {
         return ifExists(otherClass, new QuadJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
@@ -372,13 +339,12 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * but we can't fix it with a {@link SafeVarargs} annotation because it's an interface method.
      * Therefore, there are overloaded methods with up to 4 {@link QuadJoiner} parameters.
      *
-     * @param otherClass never null
-     * @param joiners never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
+     * @return a stream that matches every tuple of A, B and C where D exists for which the
      *         {@link QuadJoiner}s are true
      */
-    <D> TriConstraintStream<A, B, C> ifExists(Class<D> otherClass, QuadJoiner<A, B, C, D>... joiners);
+    <D> @NonNull TriConstraintStream<A, B, C> ifExists(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D>... joiners);
 
     /**
      * Create a new {@link BiConstraintStream} for every tuple of A, B and C where D exists for which the
@@ -386,13 +352,12 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * <p>
      * This method has overloaded methods with multiple {@link QuadJoiner} parameters.
      *
-     * @param otherStream never null
-     * @param joiner never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
+     * @return a stream that matches every tuple of A, B and C where D exists for which the
      *         {@link QuadJoiner} is true
      */
-    default <D> TriConstraintStream<A, B, C> ifExists(UniConstraintStream<D> otherStream, QuadJoiner<A, B, C, D> joiner) {
+    default <D> @NonNull TriConstraintStream<A, B, C> ifExists(@NonNull UniConstraintStream<D> otherStream,
+            @NonNull QuadJoiner<A, B, C, D> joiner) {
         return ifExists(otherStream, new QuadJoiner[] { joiner });
     }
 
@@ -400,15 +365,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #ifExists(UniConstraintStream, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
-     * @param otherStream never null
-     * @param joiner1 never null
-     * @param joiner2 never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
+     * @return a stream that matches every tuple of A, B and C where D exists for which the
      *         {@link QuadJoiner}s are true
      */
-    default <D> TriConstraintStream<A, B, C> ifExists(UniConstraintStream<D> otherStream, QuadJoiner<A, B, C, D> joiner1,
-            QuadJoiner<A, B, C, D> joiner2) {
+    default <D> @NonNull TriConstraintStream<A, B, C> ifExists(@NonNull UniConstraintStream<D> otherStream,
+            @NonNull QuadJoiner<A, B, C, D> joiner1,
+            @NonNull QuadJoiner<A, B, C, D> joiner2) {
         return ifExists(otherStream, new QuadJoiner[] { joiner1, joiner2 });
     }
 
@@ -416,16 +379,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #ifExists(UniConstraintStream, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
-     * @param otherStream never null
-     * @param joiner1 never null
-     * @param joiner2 never null
-     * @param joiner3 never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
+     * @return a stream that matches every tuple of A, B and C where D exists for which the
      *         {@link QuadJoiner}s are true
      */
-    default <D> TriConstraintStream<A, B, C> ifExists(UniConstraintStream<D> otherStream, QuadJoiner<A, B, C, D> joiner1,
-            QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3) {
+    default <D> @NonNull TriConstraintStream<A, B, C> ifExists(@NonNull UniConstraintStream<D> otherStream,
+            @NonNull QuadJoiner<A, B, C, D> joiner1,
+            @NonNull QuadJoiner<A, B, C, D> joiner2, @NonNull QuadJoiner<A, B, C, D> joiner3) {
         return ifExists(otherStream, new QuadJoiner[] { joiner1, joiner2, joiner3 });
     }
 
@@ -433,17 +393,14 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #ifExists(UniConstraintStream, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
-     * @param otherStream never null
-     * @param joiner1 never null
-     * @param joiner2 never null
-     * @param joiner3 never null
-     * @param joiner4 never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
+     * @return a stream that matches every tuple of A, B and C where D exists for which the
      *         {@link QuadJoiner}s are true
      */
-    default <D> TriConstraintStream<A, B, C> ifExists(UniConstraintStream<D> otherStream, QuadJoiner<A, B, C, D> joiner1,
-            QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3, QuadJoiner<A, B, C, D> joiner4) {
+    default <D> @NonNull TriConstraintStream<A, B, C> ifExists(@NonNull UniConstraintStream<D> otherStream,
+            @NonNull QuadJoiner<A, B, C, D> joiner1,
+            @NonNull QuadJoiner<A, B, C, D> joiner2, @NonNull QuadJoiner<A, B, C, D> joiner3,
+            @NonNull QuadJoiner<A, B, C, D> joiner4) {
         return ifExists(otherStream, new QuadJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
@@ -455,13 +412,12 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * but we can't fix it with a {@link SafeVarargs} annotation because it's an interface method.
      * Therefore, there are overloaded methods with up to 4 {@link QuadJoiner} parameters.
      *
-     * @param otherStream never null
-     * @param joiners never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
+     * @return a stream that matches every tuple of A, B and C where D exists for which the
      *         {@link QuadJoiner}s are true
      */
-    <D> TriConstraintStream<A, B, C> ifExists(UniConstraintStream<D> otherStream, QuadJoiner<A, B, C, D>... joiners);
+    <D> @NonNull TriConstraintStream<A, B, C> ifExists(@NonNull UniConstraintStream<D> otherStream,
+            @NonNull QuadJoiner<A, B, C, D>... joiners);
 
     /**
      * Create a new {@link BiConstraintStream} for every tuple of A, B and C where D exists for which the
@@ -1520,7 +1476,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
 
     /**
      * As defined by {@link #penalizeConfigurable(ToIntTriFunction)}, with a penalty of type long.
-     * 
+     *
      * @deprecated Prefer {@link #penalizeLong(Score, ToLongTriFunction)} and {@link ConstraintWeightOverrides}.
      */
     @Deprecated(forRemoval = true, since = "1.13.0")
@@ -1528,7 +1484,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
 
     /**
      * As defined by {@link #penalizeConfigurable(ToIntTriFunction)}, with a penalty of type {@link BigDecimal}.
-     * 
+     *
      * @deprecated Prefer {@link #penalizeBigDecimal(Score, TriFunction)} and {@link ConstraintWeightOverrides}.
      */
     @Deprecated(forRemoval = true, since = "1.13.0")
@@ -1608,7 +1564,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
 
     /**
      * As defined by {@link #rewardConfigurable(ToIntTriFunction)}, with a penalty of type long.
-     * 
+     *
      * @deprecated Prefer {@link #rewardLong(Score, ToLongTriFunction)} and {@link ConstraintWeightOverrides}.
      */
     @Deprecated(forRemoval = true, since = "1.13.0")
@@ -1616,7 +1572,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
 
     /**
      * As defined by {@link #rewardConfigurable(ToIntTriFunction)}, with a penalty of type {@link BigDecimal}.
-     * 
+     *
      * @deprecated Prefer {@link #rewardBigDecimal(Score, TriFunction)} and {@link ConstraintWeightOverrides}.
      */
     @Deprecated(forRemoval = true, since = "1.13.0")
@@ -1697,7 +1653,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
 
     /**
      * As defined by {@link #impactConfigurable(ToIntTriFunction)}, with an impact of type long.
-     * 
+     *
      * @deprecated Prefer {@link #impactLong(Score, ToLongTriFunction)} and {@link ConstraintWeightOverrides}.
      */
     @Deprecated(forRemoval = true, since = "1.13.0")
@@ -1705,7 +1661,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
 
     /**
      * As defined by {@link #impactConfigurable(ToIntTriFunction)}, with an impact of type BigDecimal.
-     * 
+     *
      * @deprecated Prefer {@link #impactBigDecimal(Score, TriFunction)} and {@link ConstraintWeightOverrides}.
      */
     @Deprecated(forRemoval = true, since = "1.13.0")
