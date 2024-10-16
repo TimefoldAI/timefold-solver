@@ -13,12 +13,8 @@ import ai.timefold.solver.core.impl.move.InnerMutableSolutionState;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
-/**
- * Runs moves. For moves that are to be undone later, see {@link #undoable()}.
- * 
- * @param <Solution_>
- */
-public class MoveDirector<Solution_> implements InnerMutableSolutionState<Solution_> {
+public sealed class MoveDirector<Solution_> implements InnerMutableSolutionState<Solution_>
+        permits EphemeralMoveDirector {
 
     protected final VariableDescriptorAwareScoreDirector<Solution_> scoreDirector;
 
@@ -26,7 +22,7 @@ public class MoveDirector<Solution_> implements InnerMutableSolutionState<Soluti
         this.scoreDirector = Objects.requireNonNull(scoreDirector);
     }
 
-    public <Entity_, Value_> void changeVariable(BasicVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+    public final <Entity_, Value_> void changeVariable(BasicVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Entity_ entity, Value_ newValue) {
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
         scoreDirector.beforeVariableChanged(variableDescriptor, entity);
@@ -34,7 +30,8 @@ public class MoveDirector<Solution_> implements InnerMutableSolutionState<Soluti
         scoreDirector.afterVariableChanged(variableDescriptor, entity);
     }
 
-    public <Entity_, Value_> void moveValueBetweenLists(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+    public final <Entity_, Value_> void moveValueBetweenLists(
+            ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Entity_ sourceEntity, int sourceIndex, Entity_ destinationEntity, int destinationIndex) {
         if (sourceEntity == destinationEntity) {
             moveValueInList(variableMetaModel, sourceEntity, sourceIndex, destinationIndex);
@@ -51,7 +48,7 @@ public class MoveDirector<Solution_> implements InnerMutableSolutionState<Soluti
     }
 
     @Override
-    public <Entity_, Value_> void moveValueInList(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+    public final <Entity_, Value_> void moveValueInList(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Entity_ entity, int sourceIndex, int destinationIndex) {
         if (sourceIndex == destinationIndex) {
             return;
@@ -69,38 +66,38 @@ public class MoveDirector<Solution_> implements InnerMutableSolutionState<Soluti
     }
 
     @Override
-    public void updateShadowVariables() {
+    public final void updateShadowVariables() {
         scoreDirector.triggerVariableListeners();
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <Entity_, Value_> Value_ getValue(BasicVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+    public final <Entity_, Value_> Value_ getValue(BasicVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Entity_ entity) {
         return (Value_) extractVariableDescriptor(variableMetaModel).getValue(entity);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <Entity_, Value_> Value_ getValueAtIndex(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+    public final <Entity_, Value_> Value_ getValueAtIndex(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Entity_ entity, int index) {
         return (Value_) extractVariableDescriptor(variableMetaModel).getValue(entity).get(index);
     }
 
     @Override
-    public <Entity_, Value_> ElementLocation getPositionOf(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            Value_ value) {
+    public <Entity_, Value_> ElementLocation getPositionOf(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value) {
         return getPositionOf((AbstractScoreDirector<Solution_, ?, ?>) scoreDirector, variableMetaModel, value);
     }
 
-    protected <Entity_, Value_> ElementLocation getPositionOf(AbstractScoreDirector<Solution_, ?, ?> scoreDirector,
+    protected static <Solution_, Entity_, Value_> ElementLocation getPositionOf(
+            AbstractScoreDirector<Solution_, ?, ?> scoreDirector,
             ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value) {
         return scoreDirector.getListVariableStateSupply(extractVariableDescriptor(variableMetaModel))
                 .getLocationInList(value);
     }
 
     @Override
-    public <T> T rebase(T problemFactOrPlanningEntity) {
+    public final <T> T rebase(T problemFactOrPlanningEntity) {
         return scoreDirector.lookUpWorkingObject(problemFactOrPlanningEntity);
     }
 
@@ -119,12 +116,13 @@ public class MoveDirector<Solution_> implements InnerMutableSolutionState<Soluti
      * 
      * @return never null
      */
-    public UndoableMoveDirector<Solution_> undoable() {
-        return new UndoableMoveDirector<>(scoreDirector);
+    public EphemeralMoveDirector<Solution_> ephemeral() {
+        return new EphemeralMoveDirector<>(scoreDirector);
     }
 
     @Override
     public VariableDescriptorAwareScoreDirector<Solution_> getScoreDirector() {
         return scoreDirector;
     }
+
 }

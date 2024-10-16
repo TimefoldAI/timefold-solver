@@ -53,7 +53,7 @@ class MoveDirectorTest {
         var newValue = new TestdataValue("newValue");
 
         var mockScoreDirector = (AbstractScoreDirector<TestdataSolution, ?, ?>) mock(AbstractScoreDirector.class);
-        try (var moveDirector = new MoveDirector<>(mockScoreDirector).undoable()) {
+        try (var moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral()) {
             moveDirector.changeVariable(variableMetaModel, entity, newValue);
 
             assertThat(entity.getValue()).isEqualTo(newValue);
@@ -108,7 +108,7 @@ class MoveDirectorTest {
         var entity = TestdataListEntity.createWithValues("A", expectedValue1, expectedValue2, expectedValue3);
 
         var mockScoreDirector = (AbstractScoreDirector<TestdataListSolution, ?, ?>) mock(AbstractScoreDirector.class);
-        try (var moveDirector = new MoveDirector<>(mockScoreDirector).undoable()) {
+        try (var moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral()) {
             // Swap between second and last position.
             moveDirector.moveValueInList(variableMetaModel, entity, 1, 2);
             assertThat(entity.getValueList()).containsExactly(expectedValue1, expectedValue3, expectedValue2);
@@ -122,7 +122,7 @@ class MoveDirectorTest {
         reset(mockScoreDirector);
 
         // Do the same in reverse.
-        try (var moveDirector = new MoveDirector<>(mockScoreDirector).undoable()) {
+        try (var moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral()) {
             moveDirector.moveValueInList(variableMetaModel, entity, 2, 1);
             assertThat(entity.getValueList()).containsExactly(expectedValue1, expectedValue3, expectedValue2);
             verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entity, 1, 3);
@@ -154,7 +154,7 @@ class MoveDirectorTest {
         var entityB = TestdataListEntity.createWithValues("B", expectedValueB1, expectedValueB2, expectedValueB3);
 
         var mockScoreDirector = (AbstractScoreDirector<TestdataListSolution, ?, ?>) mock(AbstractScoreDirector.class);
-        try (var moveDirector = new MoveDirector<>(mockScoreDirector).undoable()) {
+        try (var moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral()) {
             // Swap between second and last position.
             moveDirector.moveValueBetweenLists(variableMetaModel, entityA, 1, entityB, 2);
             assertThat(entityA.getValueList()).containsExactly(expectedValueA1, expectedValueA3);

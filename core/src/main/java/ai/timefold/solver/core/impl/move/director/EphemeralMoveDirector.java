@@ -6,14 +6,15 @@ import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**
+ * The only move director that supports undoing moves.
  * Moves are undone when the director is {@link #close() closed}.
  * 
  * @param <Solution_>
  */
-public final class UndoableMoveDirector<Solution_> extends MoveDirector<Solution_>
+public final class EphemeralMoveDirector<Solution_> extends MoveDirector<Solution_>
         implements AutoCloseable {
 
-    UndoableMoveDirector(VariableDescriptorAwareScoreDirector<Solution_> scoreDirector) {
+    EphemeralMoveDirector(VariableDescriptorAwareScoreDirector<Solution_> scoreDirector) {
         // Doesn't require the index cache, because we maintain the invariant in this class.
         super(new VariableChangeRecordingScoreDirector<>(scoreDirector, false));
     }
@@ -34,8 +35,8 @@ public final class UndoableMoveDirector<Solution_> extends MoveDirector<Solution
     }
 
     @Override
-    public UndoableMoveDirector<Solution_> undoable() {
-        throw new IllegalStateException("Impossible state: move director is already undoable.");
+    public EphemeralMoveDirector<Solution_> ephemeral() {
+        throw new IllegalStateException("Impossible state: move director is already ephemeral.");
     }
 
     @Override

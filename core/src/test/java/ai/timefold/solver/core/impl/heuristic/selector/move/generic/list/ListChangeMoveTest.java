@@ -84,10 +84,10 @@ class ListChangeMoveTest {
         return Stream.of(
                 arguments(0, asList("2", "0", "1", "3", "4"), 0, 3),
                 arguments(1, asList("0", "2", "1", "3", "4"), 1, 3),
-                arguments(2, null, -1, -1), // undoable (no-op)
+                arguments(2, null, -1, -1), // ephemeral (no-op)
                 arguments(3, asList("0", "1", "3", "2", "4"), 2, 4),
                 arguments(4, asList("0", "1", "3", "4", "2"), 2, 5),
-                arguments(5, null, -1, -1) // undoable (out of bounds)
+                arguments(5, null, -1, -1) // ephemeral (out of bounds)
         );
     }
 
@@ -102,7 +102,7 @@ class ListChangeMoveTest {
         ListChangeMove<TestdataListSolution> move =
                 new ListChangeMove<>(variableDescriptor, e, sourceIndex, e, destinationIndex);
 
-        // Some destinationIndexes make the move undoable.
+        // Some destinationIndexes make the move ephemeral.
         if (expectedValueList == null) {
             assertThat(move.isMoveDoable(scoreDirector)).isFalse();
             return;
