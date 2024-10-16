@@ -17,7 +17,7 @@ The following examples demonstrate situations where planning solutions need to b
 ** An airplane scheduled to take off has a technical delay.
 ** One of the machines or vehicles break down.
 +
-Unforeseen fact changes benefit from using _backup planning_.
+Unforeseen fact changes benefit from using <<backupPlanning,_backup planning_>>.
 
 * _Cannot assign all entities immediately_
 +
