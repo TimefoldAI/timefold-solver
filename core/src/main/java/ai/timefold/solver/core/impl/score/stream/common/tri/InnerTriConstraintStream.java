@@ -44,7 +44,8 @@ public interface InnerTriConstraintStream<A, B, C> extends TriConstraintStream<A
     boolean guaranteesDistinct();
 
     @Override
-    default <D> QuadConstraintStream<A, B, C, D> join(Class<D> otherClass, QuadJoiner<A, B, C, D>... joiners) {
+    default @NonNull <D> QuadConstraintStream<A, B, C, D> join(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> @NonNull... joiners) {
         if (getRetrievalSemantics() == STANDARD) {
             return join(getConstraintFactory().forEach(otherClass), joiners);
         } else {
@@ -53,7 +54,8 @@ public interface InnerTriConstraintStream<A, B, C> extends TriConstraintStream<A
     }
 
     @Override
-    default <D> TriConstraintStream<A, B, C> ifExists(Class<D> otherClass, QuadJoiner<A, B, C, D>... joiners) {
+    default @NonNull <D> TriConstraintStream<A, B, C> ifExists(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> @NonNull... joiners) {
         if (getRetrievalSemantics() == STANDARD) {
             return ifExists(getConstraintFactory().forEach(otherClass), joiners);
         } else {
