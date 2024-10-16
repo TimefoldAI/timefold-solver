@@ -8,6 +8,8 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.UndoableActionable;
 
+import org.jspecify.annotations.NonNull;
+
 abstract sealed class UndoableActionableTriCollector<A, B, C, Input_, Output_, Calculator_ extends UndoableActionable<Input_, Output_>>
         implements TriConstraintCollector<A, B, C, Calculator_, Output_>
         permits MaxComparableTriCollector, MaxComparatorTriCollector, MaxPropertyTriCollector, MinComparableTriCollector,
@@ -20,7 +22,7 @@ abstract sealed class UndoableActionableTriCollector<A, B, C, Input_, Output_, C
     }
 
     @Override
-    public QuadFunction<Calculator_, A, B, C, Runnable> accumulator() {
+    public @NonNull QuadFunction<Calculator_, A, B, C, Runnable> accumulator() {
         return (calculator, a, b, c) -> {
             final Input_ mapped = mapper.apply(a, b, c);
             return calculator.insert(mapped);
@@ -28,7 +30,7 @@ abstract sealed class UndoableActionableTriCollector<A, B, C, Input_, Output_, C
     }
 
     @Override
-    public Function<Calculator_, Output_> finisher() {
+    public @NonNull Function<Calculator_, Output_> finisher() {
         return UndoableActionable::result;
     }
 

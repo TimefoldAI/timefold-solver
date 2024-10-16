@@ -7,6 +7,8 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.impl.score.stream.collector.MinMaxUndoableActionable;
 
+import org.jspecify.annotations.NonNull;
+
 final class MinPropertyTriCollector<A, B, C, Result_, Property_ extends Comparable<? super Property_>>
         extends UndoableActionableTriCollector<A, B, C, Result_, Result_, MinMaxUndoableActionable<Result_, Property_>> {
     private final Function<? super Result_, ? extends Property_> propertyMapper;
@@ -18,7 +20,7 @@ final class MinPropertyTriCollector<A, B, C, Result_, Property_ extends Comparab
     }
 
     @Override
-    public Supplier<MinMaxUndoableActionable<Result_, Property_>> supplier() {
+    public @NonNull Supplier<MinMaxUndoableActionable<Result_, Property_>> supplier() {
         return () -> MinMaxUndoableActionable.minCalculator(propertyMapper);
     }
 

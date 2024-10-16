@@ -8,6 +8,8 @@ import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * As described by {@link UniConstraintCollector}, only for {@link TriConstraintStream}.
  *
@@ -25,9 +27,8 @@ public interface TriConstraintCollector<A, B, C, ResultContainer_, Result_> {
 
     /**
      * A lambda that creates the result container, one for each group key combination.
-     *
-     * @return never null
      */
+    @NonNull
     Supplier<ResultContainer_> supplier();
 
     /**
@@ -35,15 +36,15 @@ public interface TriConstraintCollector<A, B, C, ResultContainer_, Result_> {
      * accumulates it in the result container
      * and returns an undo operation for that accumulation.
      *
-     * @return never null, the undo operation. This lambda is called when the facts no longer matches.
+     * @return the undo operation. This lambda is called when the facts no longer matches.
      */
+    @NonNull
     QuadFunction<ResultContainer_, A, B, C, Runnable> accumulator();
 
     /**
      * A lambda that converts the result container into the result.
-     *
-     * @return never null
      */
+    @NonNull
     Function<ResultContainer_, Result_> finisher();
 
 }

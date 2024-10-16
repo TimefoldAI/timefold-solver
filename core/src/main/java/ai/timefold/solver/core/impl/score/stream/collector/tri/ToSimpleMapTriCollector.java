@@ -9,6 +9,8 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.impl.score.stream.collector.MapUndoableActionable;
 import ai.timefold.solver.core.impl.util.Pair;
 
+import org.jspecify.annotations.NonNull;
+
 final class ToSimpleMapTriCollector<A, B, C, Key_, Value_, Result_ extends Map<Key_, Value_>>
         extends
         UndoableActionableTriCollector<A, B, C, Pair<Key_, Value_>, Result_, MapUndoableActionable<Key_, Value_, Value_, Result_>> {
@@ -29,7 +31,7 @@ final class ToSimpleMapTriCollector<A, B, C, Key_, Value_, Result_ extends Map<K
     }
 
     @Override
-    public Supplier<MapUndoableActionable<Key_, Value_, Value_, Result_>> supplier() {
+    public @NonNull Supplier<MapUndoableActionable<Key_, Value_, Value_, Result_>> supplier() {
         return () -> MapUndoableActionable.mergeMap(mapSupplier, mergeFunction);
     }
 
