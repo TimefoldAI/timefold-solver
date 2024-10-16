@@ -133,10 +133,10 @@ public final class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearc
             ExhaustiveSearchNode moveNode) {
         InnerScoreDirector<Solution_, Score_> scoreDirector = stepScope.getScoreDirector();
         Move<Solution_> move = moveNode.getMove();
-        try (var undoableMoveDirector = scoreDirector.getMoveDirector().undoable()) {
-            move.run(undoableMoveDirector);
+        try (var ephemeralMoveDirector = scoreDirector.getMoveDirector().ephemeral()) {
+            move.run(ephemeralMoveDirector);
             processMove(stepScope, moveNode);
-            moveNode.setUndoMove(undoableMoveDirector.createUndoMove());
+            moveNode.setUndoMove(ephemeralMoveDirector.createUndoMove());
         }
         // TODO reuse scoreDirector.doAndProcessMove() unless it's an expandableNode
         var executionPoint = SolverLifecyclePoint.of(stepScope, moveNode.getTreeId());
