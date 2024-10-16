@@ -1261,7 +1261,7 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * @param mapping function to produce the new fact from the original tuple
      * @param <ResultC_> type of the final fact of the new tuple
      */
-    <ResultC_> @NonNull TriConstraintStream<A, B, ResultC_> expand(BiFunction<A, B, ResultC_> mapping);
+    <ResultC_> @NonNull TriConstraintStream<A, B, ResultC_> expand(@NonNull BiFunction<A, B, ResultC_> mapping);
 
     /**
      * Adds two facts to the end of the tuple, increasing the cardinality of the stream.
@@ -1277,8 +1277,9 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * @param <ResultC_> type of the third fact of the new tuple
      * @param <ResultD_> type of the final fact of the new tuple
      */
-    <ResultC_, ResultD_> @NonNull QuadConstraintStream<A, B, ResultC_, ResultD_> expand(BiFunction<A, B, ResultC_> mappingC,
-            BiFunction<A, B, ResultD_> mappingD);
+    <ResultC_, ResultD_> @NonNull QuadConstraintStream<A, B, ResultC_, ResultD_> expand(
+            @NonNull BiFunction<A, B, ResultC_> mappingC,
+            @NonNull BiFunction<A, B, ResultD_> mappingD);
 
     // ************************************************************************
     // Penalize/reward

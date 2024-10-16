@@ -376,7 +376,7 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
     }
 
     @Override
-    public <ResultA_> UniConstraintStream<ResultA_> map(@NonNull BiFunction<A, B, ResultA_> mapping) {
+    public <ResultA_> @NonNull UniConstraintStream<ResultA_> map(@NonNull BiFunction<A, B, ResultA_> mapping) {
         var stream = shareAndAddChild(new BavetUniMapBiConstraintStream<>(constraintFactory, this, mapping));
         return constraintFactory.share(new BavetAftBridgeUniConstraintStream<>(constraintFactory, stream),
                 stream::setAftBridge);
@@ -434,8 +434,8 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
 
     @Override
     public <ResultC_, ResultD_> @NonNull QuadConstraintStream<A, B, ResultC_, ResultD_> expand(
-            BiFunction<A, B, ResultC_> mappingC,
-            BiFunction<A, B, ResultD_> mappingD) {
+            @NonNull BiFunction<A, B, ResultC_> mappingC,
+            @NonNull BiFunction<A, B, ResultD_> mappingD) {
         var stream = shareAndAddChild(new BavetQuadMapBiConstraintStream<>(constraintFactory, this,
                 ConstantLambdaUtils.biPickFirst(),
                 ConstantLambdaUtils.biPickSecond(), mappingC, mappingD, true));
