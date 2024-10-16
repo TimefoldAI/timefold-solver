@@ -36,6 +36,8 @@ public abstract class AbstractPhaseScope<Solution_> {
 
     protected int bestSolutionStepIndex;
 
+    protected Long moveSelectorSize = 0L;
+
     /**
      * As defined by #AbstractPhaseScope(SolverScope, int, boolean)
      * with the phaseSendingBestSolutionEvents parameter set to true.
@@ -89,6 +91,14 @@ public abstract class AbstractPhaseScope<Solution_> {
 
     public void setBestSolutionStepIndex(int bestSolutionStepIndex) {
         this.bestSolutionStepIndex = bestSolutionStepIndex;
+    }
+
+    public Long getMoveSelectorSize() {
+        return moveSelectorSize;
+    }
+
+    public void setMoveSelectorSize(Long moveSelectorSize) {
+        this.moveSelectorSize = moveSelectorSize;
     }
 
     public abstract AbstractStepScope<Solution_> getLastCompletedStepScope();

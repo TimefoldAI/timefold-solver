@@ -90,7 +90,7 @@ public abstract class AbstractCachingValueSelector<Solution_>
     }
 
     public long getSize() {
-        return cachedValueList.size();
+        return cachedValueList != null ? cachedValueList.size() : 0L;
     }
 
     @Override

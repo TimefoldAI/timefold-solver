@@ -26,7 +26,7 @@ public interface LocalSearchForager<Solution_> extends LocalSearchPhaseLifecycle
     /**
      * @return true if no further moves should be selected (and evaluated) for this step.
      */
-    boolean isQuitEarly();
+    boolean isQuitEarly(LocalSearchStepScope<Solution_> stepScope);
 
     /**
      * @param stepScope never null

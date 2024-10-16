@@ -1416,6 +1416,28 @@
           <xs:element minOccurs="0" name="stepCountingHillClimbingSize" type="xs:int"/>
                     
           <xs:element minOccurs="0" name="stepCountingHillClimbingType" type="tns:stepCountingHillClimbingType"/>
+                    
+          <xs:element minOccurs="0" name="reconfigurationConfig" type="tns:reconfigurationConfig"/>
+                  
+        </xs:sequence>
+              
+      </xs:extension>
+          
+    </xs:complexContent>
+      
+  </xs:complexType>
+    
+  <xs:complexType name="reconfigurationConfig">
+        
+    <xs:complexContent>
+            
+      <xs:extension base="tns:abstractConfig">
+                
+        <xs:sequence>
+                    
+          <xs:element minOccurs="0" name="moveCountLimitPercentage" type="xs:double"/>
+                    
+          <xs:element minOccurs="0" name="lateAcceptanceReconfigurationSize" type="xs:long"/>
                   
         </xs:sequence>
               
@@ -1436,6 +1458,8 @@
           <xs:element minOccurs="0" name="pickEarlyType" type="tns:localSearchPickEarlyType"/>
                     
           <xs:element minOccurs="0" name="acceptedCountLimit" type="xs:int"/>
+                    
+          <xs:element minOccurs="0" name="selectedCountLimitRatio" type="xs:double"/>
                     
           <xs:element minOccurs="0" name="finalistPodiumType" type="tns:finalistPodiumType"/>
                     

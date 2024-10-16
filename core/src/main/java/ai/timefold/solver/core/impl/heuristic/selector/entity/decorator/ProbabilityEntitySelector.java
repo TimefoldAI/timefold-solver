@@ -91,7 +91,7 @@ public final class ProbabilityEntitySelector<Solution_>
 
     @Override
     public long getSize() {
-        return cachedEntityMap.size();
+        return cachedEntityMap !=  null ? cachedEntityMap.size() : 0;
     }
 
     @Override
