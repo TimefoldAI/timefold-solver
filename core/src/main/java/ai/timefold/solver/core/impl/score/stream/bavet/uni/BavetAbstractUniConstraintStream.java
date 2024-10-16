@@ -424,7 +424,7 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     // ************************************************************************
 
     @Override
-    public <ResultB_> @NonNull BiConstraintStream<A, ResultB_> expand(Function<A, ResultB_> mapping) {
+    public <ResultB_> @NonNull BiConstraintStream<A, ResultB_> expand(@NonNull Function<A, ResultB_> mapping) {
         var stream =
                 shareAndAddChild(
                         new BavetBiMapUniConstraintStream<>(constraintFactory, this,
@@ -433,8 +433,9 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     }
 
     @Override
-    public <ResultB_, ResultC_> TriConstraintStream<A, ResultB_, ResultC_> expand(Function<A, ResultB_> mappingB,
-            Function<A, ResultC_> mappingC) {
+    public @NonNull <ResultB_, ResultC_> TriConstraintStream<A, ResultB_, ResultC_> expand(
+            @NonNull Function<A, ResultB_> mappingB,
+            @NonNull Function<A, ResultC_> mappingC) {
         var stream = shareAndAddChild(
                 new BavetTriMapUniConstraintStream<>(constraintFactory, this, ConstantLambdaUtils.identity(),
                         mappingB, mappingC,
@@ -444,8 +445,9 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     }
 
     @Override
-    public <ResultB_, ResultC_, ResultD_> QuadConstraintStream<A, ResultB_, ResultC_, ResultD_>
-            expand(Function<A, ResultB_> mappingB, Function<A, ResultC_> mappingC, Function<A, ResultD_> mappingD) {
+    public @NonNull <ResultB_, ResultC_, ResultD_> QuadConstraintStream<A, ResultB_, ResultC_, ResultD_>
+            expand(@NonNull Function<A, ResultB_> mappingB, @NonNull Function<A, ResultC_> mappingC,
+                    @NonNull Function<A, ResultD_> mappingD) {
         var stream = shareAndAddChild(
                 new BavetQuadMapUniConstraintStream<>(constraintFactory, this, ConstantLambdaUtils.identity(),
                         mappingB,

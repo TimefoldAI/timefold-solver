@@ -1675,7 +1675,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @param mapping function to produce the new fact from the original tuple
      * @param <ResultB_> type of the final fact of the new tuple
      */
-    <ResultB_> @NonNull BiConstraintStream<A, ResultB_> expand(Function<A, ResultB_> mapping);
+    <ResultB_> @NonNull BiConstraintStream<A, ResultB_> expand(@NonNull Function<A, ResultB_> mapping);
 
     /**
      * Adds two facts to the end of the tuple, increasing the cardinality of the stream.
@@ -1690,12 +1690,11 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      *
      * @param mappingB function to produce the new second fact from the original tuple
      * @param mappingC function to produce the new third fact from the original tuple
-     * @return never null
      * @param <ResultB_> type of the second fact of the new tuple
      * @param <ResultC_> type of the third fact of the new tuple
      */
-    <ResultB_, ResultC_> TriConstraintStream<A, ResultB_, ResultC_> expand(Function<A, ResultB_> mappingB,
-            Function<A, ResultC_> mappingC);
+    <ResultB_, ResultC_> @NonNull TriConstraintStream<A, ResultB_, ResultC_> expand(@NonNull Function<A, ResultB_> mappingB,
+            @NonNull Function<A, ResultC_> mappingC);
 
     /**
      * Adds three facts to the end of the tuple, increasing the cardinality of the stream.
@@ -1709,13 +1708,13 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * @param mappingB function to produce the new second fact from the original tuple
      * @param mappingC function to produce the new third fact from the original tuple
      * @param mappingD function to produce the new final fact from the original tuple
-     * @return never null
      * @param <ResultB_> type of the second fact of the new tuple
      * @param <ResultC_> type of the third fact of the new tuple
      * @param <ResultD_> type of the final fact of the new tuple
      */
-    <ResultB_, ResultC_, ResultD_> QuadConstraintStream<A, ResultB_, ResultC_, ResultD_> expand(Function<A, ResultB_> mappingB,
-            Function<A, ResultC_> mappingC, Function<A, ResultD_> mappingD);
+    <ResultB_, ResultC_, ResultD_> @NonNull QuadConstraintStream<A, ResultB_, ResultC_, ResultD_> expand(
+            @NonNull Function<A, ResultB_> mappingB,
+            @NonNull Function<A, ResultC_> mappingC, @NonNull Function<A, ResultD_> mappingD);
 
     // ************************************************************************
     // complement
