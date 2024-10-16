@@ -10,6 +10,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeur
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
 import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
+import ai.timefold.solver.core.impl.move.generic.NoChangeMove;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -132,7 +133,7 @@ public class ConstructionHeuristicDecider<Solution_> {
             return adaptedMove instanceof ai.timefold.solver.core.impl.heuristic.move.NoChangeMove<Solution_>
                     || adaptedMove instanceof ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove<Solution_>;
         } else {
-            return move instanceof ai.timefold.solver.core.api.move.generic.NoChangeMove<Solution_>;
+            return move instanceof NoChangeMove<Solution_>;
         }
     }
 

@@ -45,11 +45,9 @@ public class MoveDirector<Solution_> implements InnerMutableSolutionState<Soluti
         var element = variableDescriptor.removeElement(sourceEntity, sourceIndex);
         scoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex);
 
-        scoreDirector.beforeListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
-                destinationIndex);
+        scoreDirector.beforeListVariableChanged(variableDescriptor, destinationEntity, destinationIndex, destinationIndex);
         variableDescriptor.addElement(destinationEntity, destinationIndex, element);
         scoreDirector.afterListVariableChanged(variableDescriptor, destinationEntity, destinationIndex, destinationIndex + 1);
-
     }
 
     @Override
@@ -62,13 +60,12 @@ public class MoveDirector<Solution_> implements InnerMutableSolutionState<Soluti
             return;
         }
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
-        var fromIndex = Math.min(sourceIndex, destinationIndex);
-        var toIndex = Math.max(sourceIndex, destinationIndex) + 1;
-        scoreDirector.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
+        var toIndex = destinationIndex + 1;
+        scoreDirector.beforeListVariableChanged(variableDescriptor, entity, sourceIndex, toIndex);
         var variable = variableDescriptor.getValue(entity);
         var value = variable.remove(sourceIndex);
         variable.add(destinationIndex, value);
-        scoreDirector.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
+        scoreDirector.afterListVariableChanged(variableDescriptor, entity, sourceIndex, toIndex);
     }
 
     @Override

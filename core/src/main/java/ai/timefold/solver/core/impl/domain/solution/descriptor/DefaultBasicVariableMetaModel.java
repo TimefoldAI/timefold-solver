@@ -9,11 +9,6 @@ public record DefaultBasicVariableMetaModel<Solution_, Entity_, Value_>(EntityMe
         implements
             BasicVariableMetaModel<Solution_, Entity_, Value_> {
 
-    @Override
-    public boolean allowsUnassigned() {
-        return variableDescriptor.allowsUnassigned();
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     public Class<Value_> type() {
@@ -26,8 +21,18 @@ public record DefaultBasicVariableMetaModel<Solution_, Entity_, Value_>(EntityMe
     }
 
     @Override
+    public boolean allowsUnassigned() {
+        return variableDescriptor.allowsUnassigned();
+    }
+
+    @Override
+    public boolean isChained() {
+        return variableDescriptor.isChained();
+    }
+
+    @Override
     public String toString() {
-        return "Genuine Variable '%s %s.%s' (allowsUnassigned: %b)"
-                .formatted(type(), entity.getClass().getSimpleName(), name(), allowsUnassigned());
+        return "Genuine Variable '%s %s.%s' (allowsUnassigned: %b, isChained: %b)"
+                .formatted(type(), entity.getClass().getSimpleName(), name(), allowsUnassigned(), isChained());
     }
 }

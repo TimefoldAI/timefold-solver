@@ -1,11 +1,8 @@
-package ai.timefold.solver.core.api.domain.metamodel;
-
 /**
- * Uniquely identifies the location of a value in a list variable.
- * Instances can be created by {@link ElementLocation#of(Object, int)}.
- * <p>
- * Within that one list, the index is unique for each value and therefore the instances are comparable.
- * Comparing them between different lists has no meaning.
+ * This package contains classes and interfaces that are used to write moves to explore the neighborhood of a
+ * {@link ai.timefold.solver.core.api.domain.solution.PlanningSolution}.
+ * It will eventually replace the move selector framework.
+ *
  * <p>
  * <strong>This package and all of its contents are part of the Move Streams API,
  * which is under development and is only offered as a preview feature.</strong>
@@ -17,14 +14,5 @@ package ai.timefold.solver.core.api.domain.metamodel;
  * before we finalize the API.
  * Please direct your feedback to
  * <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver Github</a>.
- *
  */
-public sealed interface LocationInList<Entity_>
-        extends ElementLocation, Comparable<LocationInList<Entity_>>
-        permits DefaultLocationInList {
-
-    Entity_ entity();
-
-    int index();
-
-}
+package ai.timefold.solver.core.api.move;
