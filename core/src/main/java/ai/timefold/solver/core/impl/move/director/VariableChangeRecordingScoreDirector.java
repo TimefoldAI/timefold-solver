@@ -58,7 +58,6 @@ public final class VariableChangeRecordingScoreDirector<Solution_> implements Va
         if (changeCount == 0) {
             return;
         }
-        System.out.println("Undoing " + changeCount + " changes:" + variableChanges);
         var listIterator = variableChanges.listIterator(changeCount);
         while (listIterator.hasPrevious()) { // Iterate in reverse.
             var changeAction = listIterator.previous();
@@ -180,8 +179,20 @@ public final class VariableChangeRecordingScoreDirector<Solution_> implements Va
         afterVariableChanged(variableDescriptor, entity);
     }
 
-    public <Entity_> void recordRuinRecreateListAssignment(ListVariableDescriptor<Solution_> variableDescriptor,
-            Object entity, List<Object> values) {
+    /**
+     * Record a list assignment.
+     * Used by moves with nested phases, such as ruin and recreate.
+     * These moves need to record some changes manually,
+     * because they cannot influence what will happen in the nested phases.
+     * Cannot be sent via the before/after events, because we don't want to delegate to the actual score director;
+     * these new changes should only be used for undoing the move(s).
+     *
+     * @param variableDescriptor never null
+     * @param entity never null
+     * @param values never null, may be empty
+     */
+    public void recordListAssignment(ListVariableDescriptor<Solution_> variableDescriptor, Object entity,
+            List<Object> values) {
         for (var element : values) {
             variableChanges.add(new ListVariableBeforeAssignmentAction<>(element, variableDescriptor));
         }

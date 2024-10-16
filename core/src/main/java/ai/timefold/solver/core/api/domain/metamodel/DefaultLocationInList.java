@@ -20,4 +20,8 @@ record DefaultLocationInList<Entity_>(Entity_ entity, int index) implements Loca
         return entity + "[" + index + "]";
     }
 
+    @Override
+    public int compareTo(LocationInList<Entity_> other) {
+        return Integer.compare(index, other.index());
+    }
 }

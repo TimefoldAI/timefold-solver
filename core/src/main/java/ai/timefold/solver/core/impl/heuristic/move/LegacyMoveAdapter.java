@@ -13,7 +13,6 @@ public record LegacyMoveAdapter<Solution_>(
 
     @Override
     public void run(MutableSolutionState<Solution_> mutableSolutionState) {
-        System.out.println("Running legacy move: " + legacyMove);
         var scoreDirector = getScoreDirector(mutableSolutionState);
         legacyMove.doMoveOnly(scoreDirector);
     }

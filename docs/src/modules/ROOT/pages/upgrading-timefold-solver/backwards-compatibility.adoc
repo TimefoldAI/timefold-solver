@@ -30,7 +30,23 @@ Those documented `impl` classes are reliable and safe to use (unless explicitly 
 but we're just not entirely comfortable yet to write their signatures in stone.
 ====
 
-[NOTE]
-====
-The Python Solver is currently in beta and its API is subject to change.
-====
+[#previewFeatures]
+= Preview features
+
+Timefold Solver includes several components which are only available as preview features.
+These are:
+
+- _Move Streams API_ in the `ai.timefold.solver.core.api.move` package and its subpackages,
+as well as the `ai.timefold.solver.core.api.domain.metamodel` package and its subpackages.
+- _Timefold Solver for Python_, which is currently in beta.
+
+These preview features are developed to the same standard as the rest of Timefold Solver.
+However, their APIs are not yet considered stable, pending user feedback.
+Any class, method or field related to these features may change or be removed without prior notice,
+although we will strive to avoid this as much as possible.
+
+We encourage you to try these preview features and give us feedback on your experience with them.
+Please direct your feedback to
+https://github.com/TimefoldAI/timefold-solver/discussions[Timefold Solver Github].
+
+
