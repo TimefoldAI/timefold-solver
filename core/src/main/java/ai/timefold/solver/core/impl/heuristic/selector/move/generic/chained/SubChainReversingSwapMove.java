@@ -70,13 +70,6 @@ public class SubChainReversingSwapMove<Solution_> extends AbstractMove<Solution_
     }
 
     @Override
-    public SubChainReversingSwapMove<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        return new SubChainReversingSwapMove<>(variableDescriptor,
-                rightSubChain.reverse(), leftTrailingLastEntity,
-                leftSubChain.reverse(), rightTrailingLastEntity);
-    }
-
-    @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         var leftFirstEntity = leftSubChain.getFirstEntity();
         var leftFirstValue = variableDescriptor.getValue(leftFirstEntity);

@@ -95,17 +95,6 @@ public class KOptMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     @Override
-    public KOptMove<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        Object[] undoValues = new Object[values.length];
-        undoValues[0] = variableDescriptor.getValue(entity);
-        for (int i = 1; i < values.length; i++) {
-            undoValues[i] = values[values.length - i];
-        }
-        return new KOptMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply,
-                entity, undoValues);
-    }
-
-    @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         var firstValue = variableDescriptor.getValue(entity);

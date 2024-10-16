@@ -8,7 +8,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
@@ -22,7 +22,8 @@ class ListSwapMoveTest {
     private final TestdataListValue v2 = new TestdataListValue("2");
     private final TestdataListValue v3 = new TestdataListValue("3");
 
-    private final InnerScoreDirector<TestdataListSolution, ?> scoreDirector = mock(InnerScoreDirector.class);
+    private final InnerScoreDirector<TestdataListSolution, ?> innerScoreDirector = mock(InnerScoreDirector.class);
+    private final MoveDirector<TestdataListSolution> moveDirector = new MoveDirector<>(innerScoreDirector);
     private final ListVariableDescriptor<TestdataListSolution> variableDescriptor =
             TestdataListEntity.buildVariableDescriptorForValueList();
 
@@ -32,11 +33,11 @@ class ListSwapMoveTest {
         TestdataListEntity e2 = new TestdataListEntity("e2", v3);
 
         // same entity, same index => not doable because the move doesn't change anything
-        assertThat(new ListSwapMove<>(variableDescriptor, e1, 1, e1, 1).isMoveDoable(scoreDirector)).isFalse();
+        assertThat(new ListSwapMove<>(variableDescriptor, e1, 1, e1, 1).isMoveDoable(innerScoreDirector)).isFalse();
         // same entity, different index => doable
-        assertThat(new ListSwapMove<>(variableDescriptor, e1, 0, e1, 1).isMoveDoable(scoreDirector)).isTrue();
+        assertThat(new ListSwapMove<>(variableDescriptor, e1, 0, e1, 1).isMoveDoable(innerScoreDirector)).isTrue();
         // different entity => doable
-        assertThat(new ListSwapMove<>(variableDescriptor, e1, 0, e2, 0).isMoveDoable(scoreDirector)).isTrue();
+        assertThat(new ListSwapMove<>(variableDescriptor, e1, 0, e2, 0).isMoveDoable(innerScoreDirector)).isTrue();
     }
 
     @Test
@@ -44,34 +45,27 @@ class ListSwapMoveTest {
         TestdataListEntity e1 = new TestdataListEntity("e1", v1, v2);
         TestdataListEntity e2 = new TestdataListEntity("e2", v3);
 
-        // Swap Move 1: between two entities
-        ListSwapMove<TestdataListSolution> move1 = new ListSwapMove<>(variableDescriptor, e1, 0, e2, 0);
+        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
+            // Swap Move 1: between two entities
+            ListSwapMove<TestdataListSolution> move1 = new ListSwapMove<>(variableDescriptor, e1, 0, e2, 0);
 
-        Move<TestdataListSolution> undoMove1 = move1.doMove(scoreDirector);
-        assertThat(e1.getValueList()).containsExactly(v3, v2);
-        assertThat(e2.getValueList()).containsExactly(v1);
+            move1.doMoveOnly(ephemeralMoveDirector.getScoreDirector());
+            assertThat(e1.getValueList()).containsExactly(v3, v2);
+            assertThat(e2.getValueList()).containsExactly(v1);
 
-        verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 1);
-        verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 1);
-        verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e2, 0, 1);
-        verify(scoreDirector).afterListVariableChanged(variableDescriptor, e2, 0, 1);
-        verify(scoreDirector).triggerVariableListeners();
-        verifyNoMoreInteractions(scoreDirector);
-
-        // undo
-        undoMove1.doMove(scoreDirector);
-        assertThat(e1.getValueList()).containsExactly(v1, v2);
-        assertThat(e2.getValueList()).containsExactly(v3);
+            verify(innerScoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 1);
+            verify(innerScoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 1);
+            verify(innerScoreDirector).beforeListVariableChanged(variableDescriptor, e2, 0, 1);
+            verify(innerScoreDirector).afterListVariableChanged(variableDescriptor, e2, 0, 1);
+            verify(innerScoreDirector).triggerVariableListeners();
+            verifyNoMoreInteractions(innerScoreDirector);
+        }
 
         // Swap Move 2: same entity
         ListSwapMove<TestdataListSolution> move2 = new ListSwapMove<>(variableDescriptor, e1, 0, e1, 1);
 
-        Move<TestdataListSolution> undoMove2 = move2.doMove(scoreDirector);
+        move2.doMoveOnly(innerScoreDirector);
         assertThat(e1.getValueList()).containsExactly(v2, v1);
-
-        // undo
-        undoMove2.doMove(scoreDirector);
-        assertThat(e1.getValueList()).containsExactly(v1, v2);
     }
 
     @Test
@@ -123,7 +117,7 @@ class ListSwapMoveTest {
 
         ListSwapMove<TestdataListSolution> moveTwoEntities = new ListSwapMove<>(variableDescriptor, e1, 0, e2, 0);
         // Do the move first because that might affect the returned values.
-        moveTwoEntities.doMoveOnGenuineVariables(scoreDirector);
+        moveTwoEntities.doMoveOnGenuineVariables(innerScoreDirector);
         assertThat(moveTwoEntities.getPlanningEntities()).containsExactly(e1, e2);
         assertThat(moveTwoEntities.getPlanningValues()).containsExactlyInAnyOrder(v3, v1);
     }
@@ -134,7 +128,7 @@ class ListSwapMoveTest {
 
         ListSwapMove<TestdataListSolution> moveOneEntity = new ListSwapMove<>(variableDescriptor, e1, 0, e1, 1);
         // Do the move first because that might affect the returned values.
-        moveOneEntity.doMoveOnGenuineVariables(scoreDirector);
+        moveOneEntity.doMoveOnGenuineVariables(innerScoreDirector);
         assertThat(moveOneEntity.getPlanningEntities()).containsExactly(e1);
         assertThat(moveOneEntity.getPlanningValues()).containsExactly(v2, v1);
     }

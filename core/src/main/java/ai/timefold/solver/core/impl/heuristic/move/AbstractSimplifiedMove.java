@@ -11,18 +11,9 @@ import ai.timefold.solver.core.impl.move.director.VariableChangeRecordingScoreDi
  * therefore removing the need to implement the undo move.
  *
  * @param <Solution_>
+ * @deprecated In favor of {@link AbstractMove}, which no longer requires undo moves to be implemented either.
  */
 public abstract class AbstractSimplifiedMove<Solution_> implements Move<Solution_> {
-
-    @Override
-    public final Move<Solution_> doMove(ScoreDirector<Solution_> scoreDirector) {
-        var recordingScoreDirector =
-                scoreDirector instanceof VariableChangeRecordingScoreDirector<Solution_> variableChangeRecordingScoreDirector
-                        ? variableChangeRecordingScoreDirector
-                        : new VariableChangeRecordingScoreDirector<>(scoreDirector);
-        doMoveOnly(recordingScoreDirector);
-        return new RecordedUndoMove<>(this, recordingScoreDirector::undoChanges);
-    }
 
     @Override
     public final void doMoveOnly(ScoreDirector<Solution_> scoreDirector) {

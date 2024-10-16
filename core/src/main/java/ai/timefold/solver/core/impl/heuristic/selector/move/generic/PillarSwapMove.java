@@ -84,11 +84,6 @@ public class PillarSwapMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     @Override
-    public PillarSwapMove<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        return new PillarSwapMove<>(variableDescriptorList, rightPillar, leftPillar);
-    }
-
-    @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         for (GenuineVariableDescriptor<Solution_> variableDescriptor : variableDescriptorList) {

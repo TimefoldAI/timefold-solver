@@ -137,22 +137,22 @@ class PillarSwapMoveTest {
 
         a.setValue(v1);
         b.setValue(v1);
-        abMove.doMove(scoreDirector);
+        abMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v1);
         assertThat(b.getValue()).isEqualTo(v1);
 
         a.setValue(v2);
         b.setValue(v1);
-        abMove.doMove(scoreDirector);
+        abMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v1);
         assertThat(b.getValue()).isEqualTo(v2);
 
         a.setValue(v3);
         b.setValue(v2);
-        abMove.doMove(scoreDirector);
+        abMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v2);
         assertThat(b.getValue()).isEqualTo(v3);
-        abMove.doMove(scoreDirector);
+        abMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v3);
         assertThat(b.getValue()).isEqualTo(v2);
 
@@ -162,11 +162,11 @@ class PillarSwapMoveTest {
         a.setValue(v3);
         b.setValue(v3);
         z.setValue(v2);
-        abzMove.doMove(scoreDirector);
+        abzMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v2);
         assertThat(b.getValue()).isEqualTo(v2);
         assertThat(z.getValue()).isEqualTo(v3);
-        abzMove.doMove(scoreDirector);
+        abzMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v3);
         assertThat(b.getValue()).isEqualTo(v3);
         assertThat(z.getValue()).isEqualTo(v2);
@@ -174,11 +174,11 @@ class PillarSwapMoveTest {
         a.setValue(v3);
         b.setValue(v3);
         z.setValue(v4);
-        abzMove.doMove(scoreDirector);
+        abzMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v4);
         assertThat(b.getValue()).isEqualTo(v4);
         assertThat(z.getValue()).isEqualTo(v3);
-        abzMove.doMove(scoreDirector);
+        abzMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v3);
         assertThat(b.getValue()).isEqualTo(v3);
         assertThat(z.getValue()).isEqualTo(v4);
@@ -190,12 +190,12 @@ class PillarSwapMoveTest {
         b.setValue(v3);
         c.setValue(v3);
         z.setValue(v3);
-        abczMove.doMove(scoreDirector);
+        abczMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v3);
         assertThat(b.getValue()).isEqualTo(v2);
         assertThat(c.getValue()).isEqualTo(v2);
         assertThat(z.getValue()).isEqualTo(v2);
-        abczMove.doMove(scoreDirector);
+        abczMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v2);
         assertThat(b.getValue()).isEqualTo(v3);
         assertThat(c.getValue()).isEqualTo(v3);
@@ -208,12 +208,12 @@ class PillarSwapMoveTest {
         b.setValue(v4);
         c.setValue(v3);
         z.setValue(v3);
-        abczMove2.doMove(scoreDirector);
+        abczMove2.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v3);
         assertThat(b.getValue()).isEqualTo(v3);
         assertThat(c.getValue()).isEqualTo(v4);
         assertThat(z.getValue()).isEqualTo(v4);
-        abczMove2.doMove(scoreDirector);
+        abczMove2.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v4);
         assertThat(b.getValue()).isEqualTo(v4);
         assertThat(c.getValue()).isEqualTo(v3);

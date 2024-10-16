@@ -120,11 +120,6 @@ public class ListSwapMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     @Override
-    public ListSwapMove<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        return new ListSwapMove<>(variableDescriptor, rightEntity, rightIndex, leftEntity, leftIndex);
-    }
-
-    @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         var innerScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         var leftElement = variableDescriptor.getElement(leftEntity, leftIndex);

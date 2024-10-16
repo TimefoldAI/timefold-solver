@@ -33,11 +33,6 @@ public class DummyMove extends AbstractMove<TestdataSolution> implements CodeAss
     }
 
     @Override
-    public DummyMove createUndoMove(ScoreDirector<TestdataSolution> scoreDirector) {
-        return new DummyMove("undo " + code);
-    }
-
-    @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<TestdataSolution> scoreDirector) {
         // do nothing
     }

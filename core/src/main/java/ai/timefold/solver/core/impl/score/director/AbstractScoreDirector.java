@@ -131,6 +131,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         return variableDescriptorCache;
     }
 
+    @Override
     public ListVariableStateSupply<Solution_> getListVariableStateSupply(ListVariableDescriptor<Solution_> variableDescriptor) {
         var originalListVariableDescriptor = getSolutionDescriptor().getListVariableDescriptor();
         if (variableDescriptor != originalListVariableDescriptor) {

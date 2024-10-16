@@ -8,7 +8,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public final class NoChangeMove<Solution_> extends AbstractSimplifiedMove<Solution_> {
+public final class NoChangeMove<Solution_> extends AbstractMove<Solution_> {
 
     public static final NoChangeMove<?> INSTANCE = new NoChangeMove<>();
 

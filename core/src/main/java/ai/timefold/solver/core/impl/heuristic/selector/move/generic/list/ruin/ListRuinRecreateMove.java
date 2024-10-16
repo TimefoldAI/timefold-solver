@@ -12,14 +12,13 @@ import java.util.TreeSet;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
-import ai.timefold.solver.core.impl.heuristic.move.AbstractSimplifiedMove;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhaseBuilder;
 import ai.timefold.solver.core.impl.move.director.VariableChangeRecordingScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
-public final class ListRuinRecreateMove<Solution_> extends AbstractSimplifiedMove<Solution_> {
+public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution_> {
 
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
     private final List<Object> ruinedValueList;
@@ -42,7 +41,8 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractSimplifiedMov
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         entityToNewPositionMap.clear();
-        var entityToOriginalPositionMap = CollectionUtils.<Object, NavigableSet<RuinedLocation>>newIdentityHashMap(affectedEntitySet.size());
+        var entityToOriginalPositionMap =
+                CollectionUtils.<Object, NavigableSet<RuinedLocation>> newIdentityHashMap(affectedEntitySet.size());
         for (var valueToRuin : ruinedValueList) {
             var location = listVariableStateSupply.getLocationInList(valueToRuin)
                     .ensureAssigned();

@@ -9,7 +9,6 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**
@@ -80,28 +79,6 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
 
     KOptDescriptor<?> getDescriptor() {
         return descriptor;
-    }
-
-    @Override
-    protected Move<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        if (equivalent2Opts.isEmpty()) {
-            return this;
-        } else {
-            List<FlipSublistAction> inverse2Opts = new ArrayList<>(equivalent2Opts.size());
-            for (var i = equivalent2Opts.size() - 1; i >= 0; i--) {
-                inverse2Opts.add(equivalent2Opts.get(i).createUndoMove());
-            }
-
-            var combinedList = computeCombinedList(listVariableDescriptor, originalEntities);
-            var originalEndIndices = new int[newEndIndices.length];
-            for (var i = 0; i < originalEndIndices.length - 1; i++) {
-                originalEndIndices[i] = combinedList.offsets[i + 1] - 1;
-            }
-            originalEndIndices[originalEndIndices.length - 1] = combinedList.size() - 1;
-
-            return new UndoKOptListMove<>(this, listVariableDescriptor, inverse2Opts, -postShiftAmount,
-                    originalEndIndices, originalEntities);
-        }
     }
 
     @Override

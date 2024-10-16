@@ -36,6 +36,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveListFact
  * before we finalize the API.
  * Please direct your feedback to
  * <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver Github</a>.
+ * 
  * @param <Solution_>
  */
 public interface Move<Solution_> {

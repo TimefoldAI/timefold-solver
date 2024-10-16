@@ -76,22 +76,6 @@ public class SubListSwapMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     @Override
-    protected AbstractMove<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        if (leftSubList.entity() == rightSubList.entity()) {
-            return new SubListSwapMove<>(variableDescriptor,
-                    new SubList(leftSubList.entity(), leftSubList.fromIndex(), rightSubList.length()),
-                    new SubList(rightSubList.entity(),
-                            rightSubList.fromIndex() - leftSubList.length() + rightSubList.length(),
-                            leftSubList.length()),
-                    reversing);
-        }
-        return new SubListSwapMove<>(variableDescriptor,
-                new SubList(rightSubList.entity(), rightSubList.fromIndex(), leftSubList.length()),
-                new SubList(leftSubList.entity(), leftSubList.fromIndex(), rightSubList.length()),
-                reversing);
-    }
-
-    @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
 

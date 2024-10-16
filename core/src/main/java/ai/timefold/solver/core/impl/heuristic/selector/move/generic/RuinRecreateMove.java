@@ -35,15 +35,6 @@ public final class RuinRecreateMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     @Override
-    protected Move<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        var recordedOldValues = new Object[ruinedEntityList.size()];
-        for (var i = 0; i < ruinedEntityList.size(); i++) {
-            recordedOldValues[i] = genuineVariableDescriptor.getValue(ruinedEntityList.get(i));
-        }
-        return new RuinRecreateUndoMove<>(this, genuineVariableDescriptor, ruinedEntityList, recordedOldValues);
-    }
-
-    @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         recordedNewValues = new Object[ruinedEntityList.size()];
 

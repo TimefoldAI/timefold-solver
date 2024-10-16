@@ -9,14 +9,14 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.AbstractSimplifiedMove;
-import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
+import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorCache;
 
 public final class VariableChangeRecordingScoreDirector<Solution_> implements VariableDescriptorAwareScoreDirector<Solution_> {
 
-    private final AbstractScoreDirector<Solution_, ?, ?> delegate;
+    private final InnerScoreDirector<Solution_, ?> delegate;
     private final List<ChangeAction<Solution_>> variableChanges;
     /*
      * The fromIndex of afterListVariableChanged must match the fromIndex of its beforeListVariableChanged call.
@@ -42,7 +42,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_> implements Va
     }
 
     public VariableChangeRecordingScoreDirector(ScoreDirector<Solution_> delegate, boolean requiresIndexCache) {
-        this.delegate = (AbstractScoreDirector<Solution_, ?, ?>) delegate;
+        this.delegate = (InnerScoreDirector<Solution_, ?>) delegate;
         this.cache = requiresIndexCache ? new IdentityHashMap<>() : null;
         // Intentional LinkedList; fast clear, no allocations upfront,
         // will most often only carry a small number of items.
@@ -105,7 +105,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_> implements Va
                         """
                                 The fromIndex of afterListVariableChanged (%d) must match the fromIndex of its beforeListVariableChanged counterpart (%d).
                                 Maybe check implementation of your %s."""
-                                .formatted(fromIndex, requiredFromIndex, AbstractSimplifiedMove.class.getSimpleName()));
+                                .formatted(fromIndex, requiredFromIndex, AbstractMove.class.getSimpleName()));
             }
         }
         variableChanges.add(new ListVariableAfterChangeAction<>(entity, fromIndex, toIndex, variableDescriptor));
@@ -143,7 +143,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_> implements Va
         return delegate.getSolutionDescriptor();
     }
 
-    public AbstractScoreDirector<Solution_, ?, ?> getDelegate() {
+    public InnerScoreDirector<Solution_, ?> getDelegate() {
         return delegate;
     }
 

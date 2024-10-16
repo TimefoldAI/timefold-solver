@@ -12,7 +12,7 @@ import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultBasicVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
-import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
@@ -31,7 +31,7 @@ class MoveDirectorTest {
         var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class)
                 .<TestdataValue> basicVariable("value");
 
-        var mockScoreDirector = mock(AbstractScoreDirector.class);
+        var mockScoreDirector = mock(InnerScoreDirector.class);
         var moveDirector = new MoveDirector<TestdataSolution>(mockScoreDirector);
         var expectedValue = new TestdataValue("value");
         var actualValue = moveDirector.getValue(variableMetaModel, new TestdataEntity("A", expectedValue));
@@ -52,7 +52,7 @@ class MoveDirectorTest {
         var entity = new TestdataEntity("A", originalValue);
         var newValue = new TestdataValue("newValue");
 
-        var mockScoreDirector = (AbstractScoreDirector<TestdataSolution, ?, ?>) mock(AbstractScoreDirector.class);
+        var mockScoreDirector = (InnerScoreDirector<TestdataSolution, ?>) mock(InnerScoreDirector.class);
         try (var moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral()) {
             moveDirector.changeVariable(variableMetaModel, entity, newValue);
 
@@ -73,7 +73,7 @@ class MoveDirectorTest {
         var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
                 .<TestdataListValue> listVariable("valueList");
 
-        var mockScoreDirector = (AbstractScoreDirector<TestdataListSolution, ?, ?>) mock(AbstractScoreDirector.class);
+        var mockScoreDirector = (InnerScoreDirector<TestdataListSolution, ?>) mock(InnerScoreDirector.class);
         var moveDirector = new MoveDirector<>(mockScoreDirector);
         var expectedValue1 = new TestdataListValue("value1");
         var expectedValue2 = new TestdataListValue("value2");
@@ -107,7 +107,7 @@ class MoveDirectorTest {
         var expectedValue3 = new TestdataListValue("value3");
         var entity = TestdataListEntity.createWithValues("A", expectedValue1, expectedValue2, expectedValue3);
 
-        var mockScoreDirector = (AbstractScoreDirector<TestdataListSolution, ?, ?>) mock(AbstractScoreDirector.class);
+        var mockScoreDirector = (InnerScoreDirector<TestdataListSolution, ?>) mock(InnerScoreDirector.class);
         try (var moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral()) {
             // Swap between second and last position.
             moveDirector.moveValueInList(variableMetaModel, entity, 1, 2);
@@ -153,7 +153,7 @@ class MoveDirectorTest {
         var expectedValueB3 = new TestdataListValue("valueB3");
         var entityB = TestdataListEntity.createWithValues("B", expectedValueB1, expectedValueB2, expectedValueB3);
 
-        var mockScoreDirector = (AbstractScoreDirector<TestdataListSolution, ?, ?>) mock(AbstractScoreDirector.class);
+        var mockScoreDirector = (InnerScoreDirector<TestdataListSolution, ?>) mock(InnerScoreDirector.class);
         try (var moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral()) {
             // Swap between second and last position.
             moveDirector.moveValueBetweenLists(variableMetaModel, entityA, 1, entityB, 2);
@@ -176,7 +176,7 @@ class MoveDirectorTest {
 
     @Test
     void rebase() {
-        var mockScoreDirector = mock(AbstractScoreDirector.class);
+        var mockScoreDirector = mock(InnerScoreDirector.class);
         when(mockScoreDirector.lookUpWorkingObject(any(TestdataValue.class)))
                 .thenAnswer(invocation -> {
                     var value = (TestdataValue) invocation.getArgument(0);
@@ -196,7 +196,7 @@ class MoveDirectorTest {
 
     @Test
     void updateShadowVariables() {
-        var mockScoreDirector = mock(AbstractScoreDirector.class);
+        var mockScoreDirector = mock(InnerScoreDirector.class);
         var moveDirector = new MoveDirector<TestdataSolution>(mockScoreDirector);
 
         moveDirector.updateShadowVariables();
