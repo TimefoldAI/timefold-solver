@@ -9,6 +9,8 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.impl.util.Triple;
 
+import org.jspecify.annotations.NonNull;
+
 final class ComposeThreeTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, ResultHolder3_, Result1_, Result2_, Result3_, Result_>
         implements TriConstraintCollector<A, B, C, Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, Result_> {
     private final TriConstraintCollector<A, B, C, ResultHolder1_, Result1_> first;
@@ -51,7 +53,7 @@ final class ComposeThreeTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Re
     }
 
     @Override
-    public Supplier<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>> supplier() {
+    public @NonNull Supplier<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>> supplier() {
         return () -> {
             ResultHolder1_ a = firstSupplier.get();
             ResultHolder2_ b = secondSupplier.get();
@@ -60,7 +62,7 @@ final class ComposeThreeTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Re
     }
 
     @Override
-    public QuadFunction<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, A, B, C, Runnable> accumulator() {
+    public @NonNull QuadFunction<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, A, B, C, Runnable> accumulator() {
         return (resultHolder, a, b, c) -> composeUndo(firstAccumulator.apply(resultHolder.a(), a, b, c),
                 secondAccumulator.apply(resultHolder.b(), a, b, c),
                 thirdAccumulator.apply(resultHolder.c(), a, b, c));
@@ -75,7 +77,7 @@ final class ComposeThreeTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Re
     }
 
     @Override
-    public Function<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, Result_> finisher() {
+    public @NonNull Function<Triple<ResultHolder1_, ResultHolder2_, ResultHolder3_>, Result_> finisher() {
         return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.a()),
                 secondFinisher.apply(resultHolder.b()),
                 thirdFinisher.apply(resultHolder.c()));

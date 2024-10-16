@@ -6,6 +6,8 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.impl.score.stream.collector.ReferenceAverageCalculator;
 
+import org.jspecify.annotations.NonNull;
+
 final class AverageReferenceTriCollector<A, B, C, Mapped_, Average_>
         extends
         ObjectCalculatorTriCollector<A, B, C, Mapped_, Average_, Mapped_, ReferenceAverageCalculator<Mapped_, Average_>> {
@@ -18,7 +20,7 @@ final class AverageReferenceTriCollector<A, B, C, Mapped_, Average_>
     }
 
     @Override
-    public Supplier<ReferenceAverageCalculator<Mapped_, Average_>> supplier() {
+    public @NonNull Supplier<ReferenceAverageCalculator<Mapped_, Average_>> supplier() {
         return calculatorSupplier;
     }
 

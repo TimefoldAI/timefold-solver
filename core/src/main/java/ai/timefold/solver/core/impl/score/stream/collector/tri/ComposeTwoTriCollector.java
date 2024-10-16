@@ -9,6 +9,8 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.impl.util.Pair;
 
+import org.jspecify.annotations.NonNull;
+
 final class ComposeTwoTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Result1_, Result2_, Result_>
         implements TriConstraintCollector<A, B, C, Pair<ResultHolder1_, ResultHolder2_>, Result_> {
     private final TriConstraintCollector<A, B, C, ResultHolder1_, Result1_> first;
@@ -42,12 +44,12 @@ final class ComposeTwoTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Resu
     }
 
     @Override
-    public Supplier<Pair<ResultHolder1_, ResultHolder2_>> supplier() {
+    public @NonNull Supplier<Pair<ResultHolder1_, ResultHolder2_>> supplier() {
         return () -> new Pair<>(firstSupplier.get(), secondSupplier.get());
     }
 
     @Override
-    public QuadFunction<Pair<ResultHolder1_, ResultHolder2_>, A, B, C, Runnable> accumulator() {
+    public @NonNull QuadFunction<Pair<ResultHolder1_, ResultHolder2_>, A, B, C, Runnable> accumulator() {
         return (resultHolder, a, b, c) -> composeUndo(firstAccumulator.apply(resultHolder.key(), a, b, c),
                 secondAccumulator.apply(resultHolder.value(), a, b, c));
     }
@@ -60,7 +62,7 @@ final class ComposeTwoTriCollector<A, B, C, ResultHolder1_, ResultHolder2_, Resu
     }
 
     @Override
-    public Function<Pair<ResultHolder1_, ResultHolder2_>, Result_> finisher() {
+    public @NonNull Function<Pair<ResultHolder1_, ResultHolder2_>, Result_> finisher() {
         return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.key()),
                 secondFinisher.apply(resultHolder.value()));
     }

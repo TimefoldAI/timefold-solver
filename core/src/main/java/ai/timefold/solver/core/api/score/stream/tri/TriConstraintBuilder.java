@@ -12,6 +12,8 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintBuilder;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Used to build a {@link Constraint} out of a {@link TriConstraintStream}, applying optional configuration.
  * To build the constraint, use one of the terminal operations, such as {@link #asConstraint(String)}.
@@ -28,20 +30,19 @@ public interface TriConstraintBuilder<A, B, C, Score_ extends Score<Score_>> ext
      * Sets a custom function to apply on a constraint match to justify it.
      *
      * @see ConstraintMatch
-     * @param justificationMapping never null
      * @return this
      */
-    <ConstraintJustification_ extends ConstraintJustification> TriConstraintBuilder<A, B, C, Score_> justifyWith(
-            QuadFunction<A, B, C, Score_, ConstraintJustification_> justificationMapping);
+    <ConstraintJustification_ extends ConstraintJustification> @NonNull TriConstraintBuilder<A, B, C, Score_> justifyWith(
+            @NonNull QuadFunction<A, B, C, Score_, ConstraintJustification_> justificationMapping);
 
     /**
      * Sets a custom function to mark any object returned by it as responsible for causing the constraint to match.
      * Each object in the collection returned by this function will become an {@link Indictment}
      * and be available as a key in {@link ScoreExplanation#getIndictmentMap()}.
      *
-     * @param indictedObjectsMapping never null
      * @return this
      */
-    TriConstraintBuilder<A, B, C, Score_> indictWith(TriFunction<A, B, C, Collection<Object>> indictedObjectsMapping);
+    @NonNull
+    TriConstraintBuilder<A, B, C, Score_> indictWith(@NonNull TriFunction<A, B, C, Collection<Object>> indictedObjectsMapping);
 
 }
