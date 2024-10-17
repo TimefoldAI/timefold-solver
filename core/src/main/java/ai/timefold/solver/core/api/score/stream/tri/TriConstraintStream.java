@@ -824,7 +824,6 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @param <ResultContainer_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <Result_> the type of the second fact in the destination {@link BiConstraintStream}'s tuple
      */
-    @NonNull
     <GroupKey_, ResultContainer_, Result_> @NonNull BiConstraintStream<GroupKey_, Result_> groupBy(
             @NonNull TriFunction<A, B, C, GroupKey_> groupKeyMapping,
             @NonNull TriConstraintCollector<A, B, C, ResultContainer_, Result_> collector);
