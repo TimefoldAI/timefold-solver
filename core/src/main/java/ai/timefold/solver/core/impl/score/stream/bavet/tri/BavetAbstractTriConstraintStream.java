@@ -113,8 +113,8 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
 
     @SafeVarargs
     @Override
-    public final <D> TriConstraintStream<A, B, C> ifNotExists(UniConstraintStream<D> otherStream,
-            QuadJoiner<A, B, C, D>... joiners) {
+    public final @NonNull <D> TriConstraintStream<A, B, C> ifNotExists(@NonNull UniConstraintStream<D> otherStream,
+            @NonNull QuadJoiner<A, B, C, D> @NonNull... joiners) {
         return ifExistsOrNot(false, otherStream, joiners);
     }
 
@@ -134,8 +134,8 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
     // ************************************************************************
 
     @Override
-    public <ResultContainer_, Result_> UniConstraintStream<Result_> groupBy(
-            TriConstraintCollector<A, B, C, ResultContainer_, Result_> collector) {
+    public @NonNull <ResultContainer_, Result_> UniConstraintStream<Result_> groupBy(
+            @NonNull TriConstraintCollector<A, B, C, ResultContainer_, Result_> collector) {
         GroupNodeConstructor<UniTuple<Result_>> nodeConstructor =
                 zeroKeysGroupBy(collector, Group0Mapping1CollectorTriNode::new);
         return buildUniGroupBy(nodeConstructor);
@@ -149,9 +149,9 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
     }
 
     @Override
-    public <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_> BiConstraintStream<ResultA_, ResultB_> groupBy(
-            TriConstraintCollector<A, B, C, ResultContainerA_, ResultA_> collectorA,
-            TriConstraintCollector<A, B, C, ResultContainerB_, ResultB_> collectorB) {
+    public @NonNull <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_> BiConstraintStream<ResultA_, ResultB_> groupBy(
+            @NonNull TriConstraintCollector<A, B, C, ResultContainerA_, ResultA_> collectorA,
+            @NonNull TriConstraintCollector<A, B, C, ResultContainerB_, ResultB_> collectorB) {
         GroupNodeConstructor<BiTuple<ResultA_, ResultB_>> nodeConstructor =
                 zeroKeysGroupBy(collectorA, collectorB, Group0Mapping2CollectorTriNode::new);
         return buildBiGroupBy(nodeConstructor);
@@ -164,11 +164,11 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
     }
 
     @Override
-    public <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_>
+    public @NonNull <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_>
             TriConstraintStream<ResultA_, ResultB_, ResultC_>
-            groupBy(TriConstraintCollector<A, B, C, ResultContainerA_, ResultA_> collectorA,
-                    TriConstraintCollector<A, B, C, ResultContainerB_, ResultB_> collectorB,
-                    TriConstraintCollector<A, B, C, ResultContainerC_, ResultC_> collectorC) {
+            groupBy(@NonNull TriConstraintCollector<A, B, C, ResultContainerA_, ResultA_> collectorA,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerB_, ResultB_> collectorB,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerC_, ResultC_> collectorC) {
         GroupNodeConstructor<TriTuple<ResultA_, ResultB_, ResultC_>> nodeConstructor =
                 zeroKeysGroupBy(collectorA, collectorB, collectorC, Group0Mapping3CollectorTriNode::new);
         return buildTriGroupBy(nodeConstructor);
@@ -182,12 +182,12 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
     }
 
     @Override
-    public <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_, ResultContainerD_, ResultD_>
+    public @NonNull <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_, ResultContainerD_, ResultD_>
             QuadConstraintStream<ResultA_, ResultB_, ResultC_, ResultD_>
-            groupBy(TriConstraintCollector<A, B, C, ResultContainerA_, ResultA_> collectorA,
-                    TriConstraintCollector<A, B, C, ResultContainerB_, ResultB_> collectorB,
-                    TriConstraintCollector<A, B, C, ResultContainerC_, ResultC_> collectorC,
-                    TriConstraintCollector<A, B, C, ResultContainerD_, ResultD_> collectorD) {
+            groupBy(@NonNull TriConstraintCollector<A, B, C, ResultContainerA_, ResultA_> collectorA,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerB_, ResultB_> collectorB,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerC_, ResultC_> collectorC,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerD_, ResultD_> collectorD) {
         GroupNodeConstructor<QuadTuple<ResultA_, ResultB_, ResultC_, ResultD_>> nodeConstructor =
                 zeroKeysGroupBy(collectorA, collectorB, collectorC, collectorD, Group0Mapping4CollectorTriNode::new);
         return buildQuadGroupBy(nodeConstructor);
@@ -201,7 +201,8 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
     }
 
     @Override
-    public <GroupKey_> UniConstraintStream<GroupKey_> groupBy(TriFunction<A, B, C, GroupKey_> groupKeyMapping) {
+    public @NonNull <GroupKey_> UniConstraintStream<GroupKey_>
+            groupBy(@NonNull TriFunction<A, B, C, GroupKey_> groupKeyMapping) {
         GroupNodeConstructor<UniTuple<GroupKey_>> nodeConstructor =
                 oneKeyGroupBy(groupKeyMapping, Group1Mapping0CollectorTriNode::new);
         return buildUniGroupBy(nodeConstructor);
@@ -209,82 +210,85 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
 
     @Override
     public <GroupKey_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_>
-            TriConstraintStream<GroupKey_, ResultB_, ResultC_> groupBy(TriFunction<A, B, C, GroupKey_> groupKeyMapping,
-                    TriConstraintCollector<A, B, C, ResultContainerB_, ResultB_> collectorB,
-                    TriConstraintCollector<A, B, C, ResultContainerC_, ResultC_> collectorC) {
+            @NonNull TriConstraintStream<GroupKey_, ResultB_, ResultC_>
+            groupBy(@NonNull TriFunction<A, B, C, GroupKey_> groupKeyMapping,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerB_, ResultB_> collectorB,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerC_, ResultC_> collectorC) {
         GroupNodeConstructor<TriTuple<GroupKey_, ResultB_, ResultC_>> nodeConstructor =
                 oneKeyGroupBy(groupKeyMapping, collectorB, collectorC, Group1Mapping2CollectorTriNode::new);
         return buildTriGroupBy(nodeConstructor);
     }
 
     @Override
-    public <GroupKey_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_, ResultContainerD_, ResultD_>
+    public @NonNull <GroupKey_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_, ResultContainerD_, ResultD_>
             QuadConstraintStream<GroupKey_, ResultB_, ResultC_, ResultD_>
-            groupBy(TriFunction<A, B, C, GroupKey_> groupKeyMapping,
-                    TriConstraintCollector<A, B, C, ResultContainerB_, ResultB_> collectorB,
-                    TriConstraintCollector<A, B, C, ResultContainerC_, ResultC_> collectorC,
-                    TriConstraintCollector<A, B, C, ResultContainerD_, ResultD_> collectorD) {
+            groupBy(@NonNull TriFunction<A, B, C, GroupKey_> groupKeyMapping,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerB_, ResultB_> collectorB,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerC_, ResultC_> collectorC,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerD_, ResultD_> collectorD) {
         GroupNodeConstructor<QuadTuple<GroupKey_, ResultB_, ResultC_, ResultD_>> nodeConstructor =
                 oneKeyGroupBy(groupKeyMapping, collectorB, collectorC, collectorD, Group1Mapping3CollectorTriNode::new);
         return buildQuadGroupBy(nodeConstructor);
     }
 
     @Override
-    public <GroupKey_, ResultContainer_, Result_> BiConstraintStream<GroupKey_, Result_> groupBy(
-            TriFunction<A, B, C, GroupKey_> groupKeyMapping,
-            TriConstraintCollector<A, B, C, ResultContainer_, Result_> collector) {
+    public @NonNull <GroupKey_, ResultContainer_, Result_> BiConstraintStream<GroupKey_, Result_> groupBy(
+            @NonNull TriFunction<A, B, C, GroupKey_> groupKeyMapping,
+            @NonNull TriConstraintCollector<A, B, C, ResultContainer_, Result_> collector) {
         GroupNodeConstructor<BiTuple<GroupKey_, Result_>> nodeConstructor =
                 oneKeyGroupBy(groupKeyMapping, collector, Group1Mapping1CollectorTriNode::new);
         return buildBiGroupBy(nodeConstructor);
     }
 
     @Override
-    public <GroupKeyA_, GroupKeyB_> BiConstraintStream<GroupKeyA_, GroupKeyB_> groupBy(
-            TriFunction<A, B, C, GroupKeyA_> groupKeyAMapping,
-            TriFunction<A, B, C, GroupKeyB_> groupKeyBMapping) {
+    public @NonNull <GroupKeyA_, GroupKeyB_> BiConstraintStream<GroupKeyA_, GroupKeyB_> groupBy(
+            @NonNull TriFunction<A, B, C, GroupKeyA_> groupKeyAMapping,
+            @NonNull TriFunction<A, B, C, GroupKeyB_> groupKeyBMapping) {
         GroupNodeConstructor<BiTuple<GroupKeyA_, GroupKeyB_>> nodeConstructor =
                 twoKeysGroupBy(groupKeyAMapping, groupKeyBMapping, Group2Mapping0CollectorTriNode::new);
         return buildBiGroupBy(nodeConstructor);
     }
 
     @Override
-    public <GroupKeyA_, GroupKeyB_, ResultContainer_, Result_> TriConstraintStream<GroupKeyA_, GroupKeyB_, Result_> groupBy(
-            TriFunction<A, B, C, GroupKeyA_> groupKeyAMapping,
-            TriFunction<A, B, C, GroupKeyB_> groupKeyBMapping,
-            TriConstraintCollector<A, B, C, ResultContainer_, Result_> collector) {
+    public @NonNull <GroupKeyA_, GroupKeyB_, ResultContainer_, Result_> TriConstraintStream<GroupKeyA_, GroupKeyB_, Result_>
+            groupBy(
+                    @NonNull TriFunction<A, B, C, GroupKeyA_> groupKeyAMapping,
+                    @NonNull TriFunction<A, B, C, GroupKeyB_> groupKeyBMapping,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainer_, Result_> collector) {
         GroupNodeConstructor<TriTuple<GroupKeyA_, GroupKeyB_, Result_>> nodeConstructor =
                 twoKeysGroupBy(groupKeyAMapping, groupKeyBMapping, collector, Group2Mapping1CollectorTriNode::new);
         return buildTriGroupBy(nodeConstructor);
     }
 
     @Override
-    public <GroupKeyA_, GroupKeyB_, ResultContainerC_, ResultC_, ResultContainerD_, ResultD_>
+    public @NonNull <GroupKeyA_, GroupKeyB_, ResultContainerC_, ResultC_, ResultContainerD_, ResultD_>
             QuadConstraintStream<GroupKeyA_, GroupKeyB_, ResultC_, ResultD_> groupBy(
-                    TriFunction<A, B, C, GroupKeyA_> groupKeyAMapping,
-                    TriFunction<A, B, C, GroupKeyB_> groupKeyBMapping,
-                    TriConstraintCollector<A, B, C, ResultContainerC_, ResultC_> collectorC,
-                    TriConstraintCollector<A, B, C, ResultContainerD_, ResultD_> collectorD) {
+                    @NonNull TriFunction<A, B, C, GroupKeyA_> groupKeyAMapping,
+                    @NonNull TriFunction<A, B, C, GroupKeyB_> groupKeyBMapping,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerC_, ResultC_> collectorC,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerD_, ResultD_> collectorD) {
         GroupNodeConstructor<QuadTuple<GroupKeyA_, GroupKeyB_, ResultC_, ResultD_>> nodeConstructor =
                 twoKeysGroupBy(groupKeyAMapping, groupKeyBMapping, collectorC, collectorD, Group2Mapping2CollectorTriNode::new);
         return buildQuadGroupBy(nodeConstructor);
     }
 
     @Override
-    public <GroupKeyA_, GroupKeyB_, GroupKeyC_> TriConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_> groupBy(
-            TriFunction<A, B, C, GroupKeyA_> groupKeyAMapping, TriFunction<A, B, C, GroupKeyB_> groupKeyBMapping,
-            TriFunction<A, B, C, GroupKeyC_> groupKeyCMapping) {
+    public @NonNull <GroupKeyA_, GroupKeyB_, GroupKeyC_> TriConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_> groupBy(
+            @NonNull TriFunction<A, B, C, GroupKeyA_> groupKeyAMapping,
+            @NonNull TriFunction<A, B, C, GroupKeyB_> groupKeyBMapping,
+            @NonNull TriFunction<A, B, C, GroupKeyC_> groupKeyCMapping) {
         GroupNodeConstructor<TriTuple<GroupKeyA_, GroupKeyB_, GroupKeyC_>> nodeConstructor =
                 threeKeysGroupBy(groupKeyAMapping, groupKeyBMapping, groupKeyCMapping, Group3Mapping0CollectorTriNode::new);
         return buildTriGroupBy(nodeConstructor);
     }
 
     @Override
-    public <GroupKeyA_, GroupKeyB_, GroupKeyC_, ResultContainerD_, ResultD_>
+    public @NonNull <GroupKeyA_, GroupKeyB_, GroupKeyC_, ResultContainerD_, ResultD_>
             QuadConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_, ResultD_>
-            groupBy(TriFunction<A, B, C, GroupKeyA_> groupKeyAMapping,
-                    TriFunction<A, B, C, GroupKeyB_> groupKeyBMapping,
-                    TriFunction<A, B, C, GroupKeyC_> groupKeyCMapping,
-                    TriConstraintCollector<A, B, C, ResultContainerD_, ResultD_> collectorD) {
+            groupBy(@NonNull TriFunction<A, B, C, GroupKeyA_> groupKeyAMapping,
+                    @NonNull TriFunction<A, B, C, GroupKeyB_> groupKeyBMapping,
+                    @NonNull TriFunction<A, B, C, GroupKeyC_> groupKeyCMapping,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerD_, ResultD_> collectorD) {
         GroupNodeConstructor<QuadTuple<GroupKeyA_, GroupKeyB_, GroupKeyC_, ResultD_>> nodeConstructor =
                 threeKeysGroupBy(groupKeyAMapping, groupKeyBMapping, groupKeyCMapping, collectorD,
                         Group3Mapping1CollectorTriNode::new);
@@ -292,11 +296,12 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
     }
 
     @Override
-    public <GroupKeyA_, GroupKeyB_, GroupKeyC_, GroupKeyD_> QuadConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_, GroupKeyD_>
-            groupBy(TriFunction<A, B, C, GroupKeyA_> groupKeyAMapping,
-                    TriFunction<A, B, C, GroupKeyB_> groupKeyBMapping,
-                    TriFunction<A, B, C, GroupKeyC_> groupKeyCMapping,
-                    TriFunction<A, B, C, GroupKeyD_> groupKeyDMapping) {
+    public @NonNull <GroupKeyA_, GroupKeyB_, GroupKeyC_, GroupKeyD_>
+            QuadConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_, GroupKeyD_>
+            groupBy(@NonNull TriFunction<A, B, C, GroupKeyA_> groupKeyAMapping,
+                    @NonNull TriFunction<A, B, C, GroupKeyB_> groupKeyBMapping,
+                    @NonNull TriFunction<A, B, C, GroupKeyC_> groupKeyCMapping,
+                    @NonNull TriFunction<A, B, C, GroupKeyD_> groupKeyDMapping) {
         GroupNodeConstructor<QuadTuple<GroupKeyA_, GroupKeyB_, GroupKeyC_, GroupKeyD_>> nodeConstructor =
                 fourKeysGroupBy(groupKeyAMapping, groupKeyBMapping, groupKeyCMapping, groupKeyDMapping,
                         Group4Mapping0CollectorTriNode::new);

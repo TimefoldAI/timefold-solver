@@ -428,14 +428,12 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * <p>
      * This method has overloaded methods with multiple {@link QuadJoiner} parameters.
      *
-     * @param otherClass never null
-     * @param joiner never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
+     * @return a stream that matches every tuple of A, B and C where D exists for which the
      *         {@link QuadJoiner} is true
      */
-    default <D> TriConstraintStream<A, B, C> ifExistsIncludingUnassigned(Class<D> otherClass,
-            QuadJoiner<A, B, C, D> joiner) {
+    default <D> @NonNull TriConstraintStream<A, B, C> ifExistsIncludingUnassigned(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> joiner) {
         return ifExistsIncludingUnassigned(otherClass, new QuadJoiner[] { joiner });
     }
 
@@ -443,15 +441,12 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #ifExistsIncludingUnassigned(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
-     * @param otherClass never null
-     * @param joiner1 never null
-     * @param joiner2 never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
+     * @return a stream that matches every tuple of A, B and C where D exists for which the
      *         {@link QuadJoiner}s are true
      */
-    default <D> TriConstraintStream<A, B, C> ifExistsIncludingUnassigned(Class<D> otherClass,
-            QuadJoiner<A, B, C, D> joiner1, QuadJoiner<A, B, C, D> joiner2) {
+    default <D> @NonNull TriConstraintStream<A, B, C> ifExistsIncludingUnassigned(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> joiner1, @NonNull QuadJoiner<A, B, C, D> joiner2) {
         return ifExistsIncludingUnassigned(otherClass, new QuadJoiner[] { joiner1, joiner2 });
     }
 
@@ -459,16 +454,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #ifExistsIncludingUnassigned(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
-     * @param otherClass never null
-     * @param joiner1 never null
-     * @param joiner2 never null
-     * @param joiner3 never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
+     * @return a stream that matches every tuple of A, B and C where D exists for which the
      *         {@link QuadJoiner}s are true
      */
-    default <D> TriConstraintStream<A, B, C> ifExistsIncludingUnassigned(Class<D> otherClass,
-            QuadJoiner<A, B, C, D> joiner1, QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3) {
+    default <D> @NonNull TriConstraintStream<A, B, C> ifExistsIncludingUnassigned(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> joiner1, @NonNull QuadJoiner<A, B, C, D> joiner2,
+            @NonNull QuadJoiner<A, B, C, D> joiner3) {
         return ifExistsIncludingUnassigned(otherClass, new QuadJoiner[] { joiner1, joiner2, joiner3 });
     }
 
@@ -476,18 +468,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #ifExistsIncludingUnassigned(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
-     * @param otherClass never null
-     * @param joiner1 never null
-     * @param joiner2 never null
-     * @param joiner3 never null
-     * @param joiner4 never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
+     * @return a stream that matches every tuple of A, B and C where D exists for which the
      *         {@link QuadJoiner}s are true
      */
-    default <D> TriConstraintStream<A, B, C> ifExistsIncludingUnassigned(Class<D> otherClass,
-            QuadJoiner<A, B, C, D> joiner1, QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3,
-            QuadJoiner<A, B, C, D> joiner4) {
+    default <D> @NonNull TriConstraintStream<A, B, C> ifExistsIncludingUnassigned(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> joiner1, @NonNull QuadJoiner<A, B, C, D> joiner2,
+            @NonNull QuadJoiner<A, B, C, D> joiner3, @NonNull QuadJoiner<A, B, C, D> joiner4) {
         return ifExistsIncludingUnassigned(otherClass, new QuadJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
@@ -499,13 +486,12 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * but we can't fix it with a {@link SafeVarargs} annotation because it's an interface method.
      * Therefore, there are overloaded methods with up to 4 {@link QuadJoiner} parameters.
      *
-     * @param otherClass never null
-     * @param joiners never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D exists for which the
+     * @return a stream that matches every tuple of A, B and C where D exists for which the
      *         {@link QuadJoiner}s are true
      */
-    <D> TriConstraintStream<A, B, C> ifExistsIncludingUnassigned(Class<D> otherClass, QuadJoiner<A, B, C, D>... joiners);
+    <D> @NonNull TriConstraintStream<A, B, C> ifExistsIncludingUnassigned(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D>... joiners);
 
     /**
      * Create a new {@link BiConstraintStream} for every tuple of A, B and C where D does not exist for which the
@@ -518,13 +504,12 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * a different definition of exists applies.
      * (See {@link ConstraintFactory#from(Class)} Javadoc.)
      *
-     * @param otherClass never null
-     * @param joiner never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
+     * @return a stream that matches every tuple of A, B and C where D does not exist for which the
      *         {@link QuadJoiner} is true
      */
-    default <D> TriConstraintStream<A, B, C> ifNotExists(Class<D> otherClass, QuadJoiner<A, B, C, D> joiner) {
+    default <D> @NonNull TriConstraintStream<A, B, C> ifNotExists(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> joiner) {
         return ifNotExists(otherClass, new QuadJoiner[] { joiner });
     }
 
@@ -532,15 +517,12 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #ifNotExists(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
-     * @param otherClass never null
-     * @param joiner1 never null
-     * @param joiner2 never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
+     * @return a stream that matches every tuple of A, B and C where D does not exist for which the
      *         {@link QuadJoiner}s are true
      */
-    default <D> TriConstraintStream<A, B, C> ifNotExists(Class<D> otherClass, QuadJoiner<A, B, C, D> joiner1,
-            QuadJoiner<A, B, C, D> joiner2) {
+    default <D> @NonNull TriConstraintStream<A, B, C> ifNotExists(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> joiner1, @NonNull QuadJoiner<A, B, C, D> joiner2) {
         return ifNotExists(otherClass, new QuadJoiner[] { joiner1, joiner2 });
     }
 
@@ -548,16 +530,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #ifNotExists(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
-     * @param otherClass never null
-     * @param joiner1 never null
-     * @param joiner2 never null
-     * @param joiner3 never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
+     * @return a stream that matches every tuple of A, B and C where D does not exist for which the
      *         {@link QuadJoiner}s are true
      */
-    default <D> TriConstraintStream<A, B, C> ifNotExists(Class<D> otherClass, QuadJoiner<A, B, C, D> joiner1,
-            QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3) {
+    default <D> @NonNull TriConstraintStream<A, B, C> ifNotExists(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> joiner1, @NonNull QuadJoiner<A, B, C, D> joiner2,
+            @NonNull QuadJoiner<A, B, C, D> joiner3) {
         return ifNotExists(otherClass, new QuadJoiner[] { joiner1, joiner2, joiner3 });
     }
 
@@ -565,17 +544,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #ifNotExists(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
-     * @param otherClass never null
-     * @param joiner1 never null
-     * @param joiner2 never null
-     * @param joiner3 never null
-     * @param joiner4 never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
+     * @return a stream that matches every tuple of A, B and C where D does not exist for which the
      *         {@link QuadJoiner}s are true
      */
-    default <D> TriConstraintStream<A, B, C> ifNotExists(Class<D> otherClass, QuadJoiner<A, B, C, D> joiner1,
-            QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3, QuadJoiner<A, B, C, D> joiner4) {
+    default <D> @NonNull TriConstraintStream<A, B, C> ifNotExists(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> joiner1, @NonNull QuadJoiner<A, B, C, D> joiner2,
+            @NonNull QuadJoiner<A, B, C, D> joiner3, @NonNull QuadJoiner<A, B, C, D> joiner4) {
         return ifNotExists(otherClass, new QuadJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
@@ -588,12 +563,11 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * Therefore, there are overloaded methods with up to 4 {@link QuadJoiner} parameters.
      *
      * @param <D> the type of the fourth matched fact
-     * @param otherClass never null
-     * @param joiners never null
-     * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
+     * @return a stream that matches every tuple of A, B and C where D does not exist for which the
      *         {@link QuadJoiner}s are true
      */
-    <D> TriConstraintStream<A, B, C> ifNotExists(Class<D> otherClass, QuadJoiner<A, B, C, D>... joiners);
+    <D> @NonNull TriConstraintStream<A, B, C> ifNotExists(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D>... joiners);
 
     /**
      * Create a new {@link BiConstraintStream} for every tuple of A, B and C where D does not exist for which the
@@ -601,13 +575,12 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * <p>
      * This method has overloaded methods with multiple {@link QuadJoiner} parameters.
      *
-     * @param otherStream never null
-     * @param joiner never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
+     * @return a stream that matches every tuple of A, B and C where D does not exist for which the
      *         {@link QuadJoiner} is true
      */
-    default <D> TriConstraintStream<A, B, C> ifNotExists(UniConstraintStream<D> otherStream, QuadJoiner<A, B, C, D> joiner) {
+    default <D> @NonNull TriConstraintStream<A, B, C> ifNotExists(@NonNull UniConstraintStream<D> otherStream,
+            @NonNull QuadJoiner<A, B, C, D> joiner) {
         return ifNotExists(otherStream, new QuadJoiner[] { joiner });
     }
 
@@ -615,15 +588,12 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #ifNotExists(UniConstraintStream, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
-     * @param otherStream never null
-     * @param joiner1 never null
-     * @param joiner2 never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
+     * @return a stream that matches every tuple of A, B and C where D does not exist for which the
      *         {@link QuadJoiner}s are true
      */
-    default <D> TriConstraintStream<A, B, C> ifNotExists(UniConstraintStream<D> otherStream, QuadJoiner<A, B, C, D> joiner1,
-            QuadJoiner<A, B, C, D> joiner2) {
+    default <D> @NonNull TriConstraintStream<A, B, C> ifNotExists(@NonNull UniConstraintStream<D> otherStream,
+            @NonNull QuadJoiner<A, B, C, D> joiner1, @NonNull QuadJoiner<A, B, C, D> joiner2) {
         return ifNotExists(otherStream, new QuadJoiner[] { joiner1, joiner2 });
     }
 
@@ -631,16 +601,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #ifNotExists(UniConstraintStream, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
-     * @param otherStream never null
-     * @param joiner1 never null
-     * @param joiner2 never null
-     * @param joiner3 never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
+     * @return a stream that matches every tuple of A, B and C where D does not exist for which the
      *         {@link QuadJoiner}s are true
      */
-    default <D> TriConstraintStream<A, B, C> ifNotExists(UniConstraintStream<D> otherStream, QuadJoiner<A, B, C, D> joiner1,
-            QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3) {
+    default <D> @NonNull TriConstraintStream<A, B, C> ifNotExists(@NonNull UniConstraintStream<D> otherStream,
+            @NonNull QuadJoiner<A, B, C, D> joiner1, @NonNull QuadJoiner<A, B, C, D> joiner2,
+            @NonNull QuadJoiner<A, B, C, D> joiner3) {
         return ifNotExists(otherStream, new QuadJoiner[] { joiner1, joiner2, joiner3 });
     }
 
@@ -648,17 +615,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #ifNotExists(UniConstraintStream, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
-     * @param otherStream never null
-     * @param joiner1 never null
-     * @param joiner2 never null
-     * @param joiner3 never null
-     * @param joiner4 never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
+     * @return a stream that matches every tuple of A, B and C where D does not exist for which the
      *         {@link QuadJoiner}s are true
      */
-    default <D> TriConstraintStream<A, B, C> ifNotExists(UniConstraintStream<D> otherStream, QuadJoiner<A, B, C, D> joiner1,
-            QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3, QuadJoiner<A, B, C, D> joiner4) {
+    default <D> @NonNull TriConstraintStream<A, B, C> ifNotExists(@NonNull UniConstraintStream<D> otherStream,
+            @NonNull QuadJoiner<A, B, C, D> joiner1, @NonNull QuadJoiner<A, B, C, D> joiner2,
+            @NonNull QuadJoiner<A, B, C, D> joiner3, @NonNull QuadJoiner<A, B, C, D> joiner4) {
         return ifNotExists(otherStream, new QuadJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
@@ -671,12 +634,11 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * Therefore, there are overloaded methods with up to 4 {@link QuadJoiner} parameters.
      *
      * @param <D> the type of the fourth matched fact
-     * @param otherStream never null
-     * @param joiners never null
-     * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
+     * @return a stream that matches every tuple of A, B and C where D does not exist for which the
      *         {@link QuadJoiner}s are true
      */
-    <D> TriConstraintStream<A, B, C> ifNotExists(UniConstraintStream<D> otherStream, QuadJoiner<A, B, C, D>... joiners);
+    <D> @NonNull TriConstraintStream<A, B, C> ifNotExists(@NonNull UniConstraintStream<D> otherStream,
+            @NonNull QuadJoiner<A, B, C, D>... joiners);
 
     /**
      * Create a new {@link BiConstraintStream} for every tuple of A, B and C where D does not exist for which the
@@ -687,14 +649,12 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * <p>
      * This method has overloaded methods with multiple {@link QuadJoiner} parameters.
      *
-     * @param otherClass never null
-     * @param joiner never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
+     * @return a stream that matches every tuple of A, B and C where D does not exist for which the
      *         {@link QuadJoiner} is true
      */
-    default <D> TriConstraintStream<A, B, C> ifNotExistsIncludingUnassigned(Class<D> otherClass,
-            QuadJoiner<A, B, C, D> joiner) {
+    default <D> @NonNull TriConstraintStream<A, B, C> ifNotExistsIncludingUnassigned(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> joiner) {
         return ifNotExistsIncludingUnassigned(otherClass, new QuadJoiner[] { joiner });
     }
 
@@ -702,15 +662,12 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #ifNotExistsIncludingUnassigned(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
-     * @param otherClass never null
-     * @param joiner1 never null
-     * @param joiner2 never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
+     * @return a stream that matches every tuple of A, B and C where D does not exist for which the
      *         {@link QuadJoiner}s are true
      */
-    default <D> TriConstraintStream<A, B, C> ifNotExistsIncludingUnassigned(Class<D> otherClass,
-            QuadJoiner<A, B, C, D> joiner1, QuadJoiner<A, B, C, D> joiner2) {
+    default <D> @NonNull TriConstraintStream<A, B, C> ifNotExistsIncludingUnassigned(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> joiner1, @NonNull QuadJoiner<A, B, C, D> joiner2) {
         return ifNotExistsIncludingUnassigned(otherClass, new QuadJoiner[] { joiner1, joiner2 });
     }
 
@@ -718,16 +675,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #ifNotExistsIncludingUnassigned(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
-     * @param otherClass never null
-     * @param joiner1 never null
-     * @param joiner2 never null
-     * @param joiner3 never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
+     * @return a stream that matches every tuple of A, B and C where D does not exist for which the
      *         {@link QuadJoiner}s are true
      */
-    default <D> TriConstraintStream<A, B, C> ifNotExistsIncludingUnassigned(Class<D> otherClass,
-            QuadJoiner<A, B, C, D> joiner1, QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3) {
+    default <D> @NonNull TriConstraintStream<A, B, C> ifNotExistsIncludingUnassigned(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> joiner1, @NonNull QuadJoiner<A, B, C, D> joiner2,
+            @NonNull QuadJoiner<A, B, C, D> joiner3) {
         return ifNotExistsIncludingUnassigned(otherClass, new QuadJoiner[] { joiner1, joiner2, joiner3 });
     }
 
@@ -735,18 +689,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #ifNotExistsIncludingUnassigned(Class, QuadJoiner)}.
      * For performance reasons, indexing joiners must be placed before filtering joiners.
      *
-     * @param otherClass never null
-     * @param joiner1 never null
-     * @param joiner2 never null
-     * @param joiner3 never null
-     * @param joiner4 never null
      * @param <D> the type of the fourth matched fact
-     * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
+     * @return a stream that matches every tuple of A, B and C where D does not exist for which the
      *         {@link QuadJoiner}s are true
      */
-    default <D> TriConstraintStream<A, B, C> ifNotExistsIncludingUnassigned(Class<D> otherClass,
-            QuadJoiner<A, B, C, D> joiner1, QuadJoiner<A, B, C, D> joiner2, QuadJoiner<A, B, C, D> joiner3,
-            QuadJoiner<A, B, C, D> joiner4) {
+    default <D> @NonNull TriConstraintStream<A, B, C> ifNotExistsIncludingUnassigned(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> joiner1, @NonNull QuadJoiner<A, B, C, D> joiner2,
+            @NonNull QuadJoiner<A, B, C, D> joiner3, @NonNull QuadJoiner<A, B, C, D> joiner4) {
         return ifNotExistsIncludingUnassigned(otherClass, new QuadJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
@@ -759,13 +708,11 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * Therefore, there are overloaded methods with up to 4 {@link QuadJoiner} parameters.
      *
      * @param <D> the type of the fourth matched fact
-     * @param otherClass never null
-     * @param joiners never null
-     * @return never null, a stream that matches every tuple of A, B and C where D does not exist for which the
+     * @return a stream that matches every tuple of A, B and C where D does not exist for which the
      *         {@link QuadJoiner}s are true
      */
-    <D> TriConstraintStream<A, B, C> ifNotExistsIncludingUnassigned(Class<D> otherClass,
-            QuadJoiner<A, B, C, D>... joiners);
+    <D> @NonNull TriConstraintStream<A, B, C> ifNotExistsIncludingUnassigned(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D>... joiners);
 
     // ************************************************************************
     // Group by
@@ -775,42 +722,40 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * Convert the {@link TriConstraintStream} to a {@link UniConstraintStream}, containing only a single tuple, the
      * result of applying {@link TriConstraintCollector}.
      *
-     * @param collector never null, the collector to perform the grouping operation with
+     * @param collector the collector to perform the grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
      * @param <ResultContainer_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <Result_> the type of a fact in the destination {@link UniConstraintStream}'s tuple
-     * @return never null
      */
-    <ResultContainer_, Result_> UniConstraintStream<Result_> groupBy(
-            TriConstraintCollector<A, B, C, ResultContainer_, Result_> collector);
+    <ResultContainer_, Result_> @NonNull UniConstraintStream<Result_> groupBy(
+            @NonNull TriConstraintCollector<A, B, C, ResultContainer_, Result_> collector);
 
     /**
      * Convert the {@link TriConstraintStream} to a {@link BiConstraintStream}, containing only a single tuple,
      * the result of applying two {@link TriConstraintCollector}s.
      *
-     * @param collectorA never null, the collector to perform the first grouping operation with
+     * @param collectorA the collector to perform the first grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
-     * @param collectorB never null, the collector to perform the second grouping operation with
+     * @param collectorB the collector to perform the second grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
      * @param <ResultContainerA_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <ResultA_> the type of the first fact in the destination {@link BiConstraintStream}'s tuple
      * @param <ResultContainerB_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <ResultB_> the type of the second fact in the destination {@link BiConstraintStream}'s tuple
-     * @return never null
      */
-    <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_> BiConstraintStream<ResultA_, ResultB_> groupBy(
-            TriConstraintCollector<A, B, C, ResultContainerA_, ResultA_> collectorA,
-            TriConstraintCollector<A, B, C, ResultContainerB_, ResultB_> collectorB);
+    <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_> @NonNull BiConstraintStream<ResultA_, ResultB_> groupBy(
+            @NonNull TriConstraintCollector<A, B, C, ResultContainerA_, ResultA_> collectorA,
+            @NonNull TriConstraintCollector<A, B, C, ResultContainerB_, ResultB_> collectorB);
 
     /**
      * Convert the {@link TriConstraintStream} to a {@link TriConstraintStream}, containing only a single tuple,
      * the result of applying three {@link TriConstraintCollector}s.
      *
-     * @param collectorA never null, the collector to perform the first grouping operation with
+     * @param collectorA the collector to perform the first grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
-     * @param collectorB never null, the collector to perform the second grouping operation with
+     * @param collectorB the collector to perform the second grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
-     * @param collectorC never null, the collector to perform the third grouping operation with
+     * @param collectorC the collector to perform the third grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
      * @param <ResultContainerA_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <ResultA_> the type of the first fact in the destination {@link TriConstraintStream}'s tuple
@@ -818,25 +763,24 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @param <ResultB_> the type of the second fact in the destination {@link TriConstraintStream}'s tuple
      * @param <ResultContainerC_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <ResultC_> the type of the third fact in the destination {@link TriConstraintStream}'s tuple
-     * @return never null
      */
     <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_>
-            TriConstraintStream<ResultA_, ResultB_, ResultC_> groupBy(
-                    TriConstraintCollector<A, B, C, ResultContainerA_, ResultA_> collectorA,
-                    TriConstraintCollector<A, B, C, ResultContainerB_, ResultB_> collectorB,
-                    TriConstraintCollector<A, B, C, ResultContainerC_, ResultC_> collectorC);
+            @NonNull TriConstraintStream<ResultA_, ResultB_, ResultC_> groupBy(
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerA_, ResultA_> collectorA,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerB_, ResultB_> collectorB,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerC_, ResultC_> collectorC);
 
     /**
      * Convert the {@link TriConstraintStream} to a {@link QuadConstraintStream}, containing only a single tuple,
      * the result of applying four {@link TriConstraintCollector}s.
      *
-     * @param collectorA never null, the collector to perform the first grouping operation with
+     * @param collectorA the collector to perform the first grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
-     * @param collectorB never null, the collector to perform the second grouping operation with
+     * @param collectorB the collector to perform the second grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
-     * @param collectorC never null, the collector to perform the third grouping operation with
+     * @param collectorC the collector to perform the third grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
-     * @param collectorD never null, the collector to perform the fourth grouping operation with
+     * @param collectorD the collector to perform the fourth grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
      * @param <ResultContainerA_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <ResultA_> the type of the first fact in the destination {@link QuadConstraintStream}'s tuple
@@ -846,26 +790,24 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @param <ResultC_> the type of the third fact in the destination {@link QuadConstraintStream}'s tuple
      * @param <ResultContainerD_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <ResultD_> the type of the fourth fact in the destination {@link QuadConstraintStream}'s tuple
-     * @return never null
      */
     <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_, ResultContainerD_, ResultD_>
-            QuadConstraintStream<ResultA_, ResultB_, ResultC_, ResultD_> groupBy(
-                    TriConstraintCollector<A, B, C, ResultContainerA_, ResultA_> collectorA,
-                    TriConstraintCollector<A, B, C, ResultContainerB_, ResultB_> collectorB,
-                    TriConstraintCollector<A, B, C, ResultContainerC_, ResultC_> collectorC,
-                    TriConstraintCollector<A, B, C, ResultContainerD_, ResultD_> collectorD);
+            @NonNull QuadConstraintStream<ResultA_, ResultB_, ResultC_, ResultD_> groupBy(
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerA_, ResultA_> collectorA,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerB_, ResultB_> collectorB,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerC_, ResultC_> collectorC,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerD_, ResultD_> collectorD);
 
     /**
      * Convert the {@link TriConstraintStream} to a {@link UniConstraintStream}, containing the set of tuples resulting
      * from applying the group key mapping function on all tuples of the original stream.
      * Neither tuple of the new stream {@link Objects#equals(Object, Object)} any other.
      *
-     * @param groupKeyMapping never null, mapping function to convert each element in the stream to a different element
+     * @param groupKeyMapping mapping function to convert each element in the stream to a different element
      * @param <GroupKey_> the type of a fact in the destination {@link UniConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
-     * @return never null
      */
-    <GroupKey_> UniConstraintStream<GroupKey_> groupBy(TriFunction<A, B, C, GroupKey_> groupKeyMapping);
+    <GroupKey_> @NonNull UniConstraintStream<GroupKey_> groupBy(@NonNull TriFunction<A, B, C, GroupKey_> groupKeyMapping);
 
     /**
      * Convert the {@link TriConstraintStream} to a {@link BiConstraintStream}, consisting of unique tuples.
@@ -874,18 +816,18 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * The second fact is the return value of a given {@link TriConstraintCollector} applied on all incoming tuples with
      * the same first fact.
      *
-     * @param groupKeyMapping never null, function to convert the fact in the original tuple to a different fact
-     * @param collector never null, the collector to perform the grouping operation with
+     * @param groupKeyMapping function to convert the fact in the original tuple to a different fact
+     * @param collector the collector to perform the grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
      * @param <GroupKey_> the type of the first fact in the destination {@link BiConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
      * @param <ResultContainer_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <Result_> the type of the second fact in the destination {@link BiConstraintStream}'s tuple
-     * @return never null
      */
-    <GroupKey_, ResultContainer_, Result_> BiConstraintStream<GroupKey_, Result_> groupBy(
-            TriFunction<A, B, C, GroupKey_> groupKeyMapping,
-            TriConstraintCollector<A, B, C, ResultContainer_, Result_> collector);
+    @NonNull
+    <GroupKey_, ResultContainer_, Result_> @NonNull BiConstraintStream<GroupKey_, Result_> groupBy(
+            @NonNull TriFunction<A, B, C, GroupKey_> groupKeyMapping,
+            @NonNull TriConstraintCollector<A, B, C, ResultContainer_, Result_> collector);
 
     /**
      * Convert the {@link TriConstraintStream} to a {@link TriConstraintStream}, consisting of unique tuples with three
@@ -895,10 +837,10 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * The remaining facts are the return value of the respective {@link TriConstraintCollector} applied on all
      * incoming tuples with the same first fact.
      *
-     * @param groupKeyMapping never null, function to convert the fact in the original tuple to a different fact
-     * @param collectorB never null, the collector to perform the first grouping operation with
+     * @param groupKeyMapping function to convert the fact in the original tuple to a different fact
+     * @param collectorB the collector to perform the first grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
-     * @param collectorC never null, the collector to perform the second grouping operation with
+     * @param collectorC the collector to perform the second grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
      * @param <GroupKey_> the type of the first fact in the destination {@link TriConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
@@ -906,13 +848,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @param <ResultB_> the type of the second fact in the destination {@link TriConstraintStream}'s tuple
      * @param <ResultContainerC_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <ResultC_> the type of the third fact in the destination {@link TriConstraintStream}'s tuple
-     * @return never null
      */
+
     <GroupKey_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_>
-            TriConstraintStream<GroupKey_, ResultB_, ResultC_> groupBy(
-                    TriFunction<A, B, C, GroupKey_> groupKeyMapping,
-                    TriConstraintCollector<A, B, C, ResultContainerB_, ResultB_> collectorB,
-                    TriConstraintCollector<A, B, C, ResultContainerC_, ResultC_> collectorC);
+            @NonNull TriConstraintStream<GroupKey_, ResultB_, ResultC_> groupBy(
+                    @NonNull TriFunction<A, B, C, GroupKey_> groupKeyMapping,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerB_, ResultB_> collectorB,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerC_, ResultC_> collectorC);
 
     /**
      * Convert the {@link TriConstraintStream} to a {@link QuadConstraintStream}, consisting of unique tuples with four
@@ -922,12 +864,12 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * The remaining facts are the return value of the respective {@link TriConstraintCollector} applied on all
      * incoming tuples with the same first fact.
      *
-     * @param groupKeyMapping never null, function to convert the fact in the original tuple to a different fact
-     * @param collectorB never null, the collector to perform the first grouping operation with
+     * @param groupKeyMapping function to convert the fact in the original tuple to a different fact
+     * @param collectorB the collector to perform the first grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
-     * @param collectorC never null, the collector to perform the second grouping operation with
+     * @param collectorC the collector to perform the second grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
-     * @param collectorD never null, the collector to perform the third grouping operation with
+     * @param collectorD the collector to perform the third grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
      * @param <GroupKey_> the type of the first fact in the destination {@link QuadConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
@@ -937,14 +879,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @param <ResultC_> the type of the third fact in the destination {@link QuadConstraintStream}'s tuple
      * @param <ResultContainerD_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <ResultD_> the type of the fourth fact in the destination {@link QuadConstraintStream}'s tuple
-     * @return never null
      */
     <GroupKey_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_, ResultContainerD_, ResultD_>
-            QuadConstraintStream<GroupKey_, ResultB_, ResultC_, ResultD_> groupBy(
-                    TriFunction<A, B, C, GroupKey_> groupKeyMapping,
-                    TriConstraintCollector<A, B, C, ResultContainerB_, ResultB_> collectorB,
-                    TriConstraintCollector<A, B, C, ResultContainerC_, ResultC_> collectorC,
-                    TriConstraintCollector<A, B, C, ResultContainerD_, ResultD_> collectorD);
+            @NonNull QuadConstraintStream<GroupKey_, ResultB_, ResultC_, ResultD_> groupBy(
+                    @NonNull TriFunction<A, B, C, GroupKey_> groupKeyMapping,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerB_, ResultB_> collectorB,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerC_, ResultC_> collectorC,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerD_, ResultD_> collectorD);
 
     /**
      * Convert the {@link TriConstraintStream} to a {@link BiConstraintStream}, consisting of unique tuples.
@@ -953,16 +894,16 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * The second fact is the return value of the second group key mapping function, applied on all incoming tuples with
      * the same first fact.
      *
-     * @param groupKeyAMapping never null, function to convert the facts in the original tuple to a new fact
-     * @param groupKeyBMapping never null, function to convert the facts in the original tuple to another new fact
+     * @param groupKeyAMapping function to convert the facts in the original tuple to a new fact
+     * @param groupKeyBMapping function to convert the facts in the original tuple to another new fact
      * @param <GroupKeyA_> the type of the first fact in the destination {@link BiConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
      * @param <GroupKeyB_> the type of the second fact in the destination {@link BiConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
-     * @return never null
      */
-    <GroupKeyA_, GroupKeyB_> BiConstraintStream<GroupKeyA_, GroupKeyB_> groupBy(
-            TriFunction<A, B, C, GroupKeyA_> groupKeyAMapping, TriFunction<A, B, C, GroupKeyB_> groupKeyBMapping);
+    <GroupKeyA_, GroupKeyB_> @NonNull BiConstraintStream<GroupKeyA_, GroupKeyB_> groupBy(
+            @NonNull TriFunction<A, B, C, GroupKeyA_> groupKeyAMapping,
+            @NonNull TriFunction<A, B, C, GroupKeyB_> groupKeyBMapping);
 
     /**
      * Combines the semantics of {@link #groupBy(TriFunction, TriFunction)} and {@link #groupBy(TriConstraintCollector)}.
@@ -970,9 +911,9 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * and the third fact is the result of applying {@link TriConstraintCollector#finisher()} on all the tuples of the
      * original {@link UniConstraintStream} that belong to the group.
      *
-     * @param groupKeyAMapping never null, function to convert the original tuple into a first fact
-     * @param groupKeyBMapping never null, function to convert the original tuple into a second fact
-     * @param collector never null, the collector to perform the grouping operation with
+     * @param groupKeyAMapping function to convert the original tuple into a first fact
+     * @param groupKeyBMapping function to convert the original tuple into a second fact
+     * @param collector the collector to perform the grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
      * @param <GroupKeyA_> the type of the first fact in the destination {@link TriConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
@@ -980,11 +921,11 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
      * @param <ResultContainer_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <Result_> the type of the third fact in the destination {@link TriConstraintStream}'s tuple
-     * @return never null
      */
-    <GroupKeyA_, GroupKeyB_, ResultContainer_, Result_> TriConstraintStream<GroupKeyA_, GroupKeyB_, Result_> groupBy(
-            TriFunction<A, B, C, GroupKeyA_> groupKeyAMapping, TriFunction<A, B, C, GroupKeyB_> groupKeyBMapping,
-            TriConstraintCollector<A, B, C, ResultContainer_, Result_> collector);
+    <GroupKeyA_, GroupKeyB_, ResultContainer_, Result_> @NonNull TriConstraintStream<GroupKeyA_, GroupKeyB_, Result_> groupBy(
+            @NonNull TriFunction<A, B, C, GroupKeyA_> groupKeyAMapping,
+            @NonNull TriFunction<A, B, C, GroupKeyB_> groupKeyBMapping,
+            @NonNull TriConstraintCollector<A, B, C, ResultContainer_, Result_> collector);
 
     /**
      * Combines the semantics of {@link #groupBy(TriFunction, TriFunction)} and {@link #groupBy(TriConstraintCollector)}.
@@ -994,11 +935,11 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * The fourth fact is the result of applying the second {@link TriConstraintCollector#finisher()} on all the tuples
      * of the original {@link TriConstraintStream} that belong to the group
      *
-     * @param groupKeyAMapping never null, function to convert the original tuple into a first fact
-     * @param groupKeyBMapping never null, function to convert the original tuple into a second fact
-     * @param collectorC never null, the collector to perform the first grouping operation with
+     * @param groupKeyAMapping function to convert the original tuple into a first fact
+     * @param groupKeyBMapping function to convert the original tuple into a second fact
+     * @param collectorC the collector to perform the first grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
-     * @param collectorD never null, the collector to perform the second grouping operation with
+     * @param collectorD the collector to perform the second grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
      * @param <GroupKeyA_> the type of the first fact in the destination {@link QuadConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
@@ -1008,13 +949,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * @param <ResultC_> the type of the third fact in the destination {@link QuadConstraintStream}'s tuple
      * @param <ResultContainerD_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <ResultD_> the type of the fourth fact in the destination {@link QuadConstraintStream}'s tuple
-     * @return never null
      */
     <GroupKeyA_, GroupKeyB_, ResultContainerC_, ResultC_, ResultContainerD_, ResultD_>
-            QuadConstraintStream<GroupKeyA_, GroupKeyB_, ResultC_, ResultD_> groupBy(
-                    TriFunction<A, B, C, GroupKeyA_> groupKeyAMapping, TriFunction<A, B, C, GroupKeyB_> groupKeyBMapping,
-                    TriConstraintCollector<A, B, C, ResultContainerC_, ResultC_> collectorC,
-                    TriConstraintCollector<A, B, C, ResultContainerD_, ResultD_> collectorD);
+            @NonNull QuadConstraintStream<GroupKeyA_, GroupKeyB_, ResultC_, ResultD_> groupBy(
+                    @NonNull TriFunction<A, B, C, GroupKeyA_> groupKeyAMapping,
+                    @NonNull TriFunction<A, B, C, GroupKeyB_> groupKeyBMapping,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerC_, ResultC_> collectorC,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerD_, ResultD_> collectorD);
 
     /**
      * Convert the {@link TriConstraintStream} to a {@link TriConstraintStream}, consisting of unique tuples with three
@@ -1026,20 +967,20 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * The third fact is the return value of the third group key mapping function, applied on all incoming tuples with
      * the same first fact.
      *
-     * @param groupKeyAMapping never null, function to convert the original tuple into a first fact
-     * @param groupKeyBMapping never null, function to convert the original tuple into a second fact
-     * @param groupKeyCMapping never null, function to convert the original tuple into a third fact
+     * @param groupKeyAMapping function to convert the original tuple into a first fact
+     * @param groupKeyBMapping function to convert the original tuple into a second fact
+     * @param groupKeyCMapping function to convert the original tuple into a third fact
      * @param <GroupKeyA_> the type of the first fact in the destination {@link TriConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
      * @param <GroupKeyB_> the type of the second fact in the destination {@link TriConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
      * @param <GroupKeyC_> the type of the third fact in the destination {@link TriConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
-     * @return never null
      */
-    <GroupKeyA_, GroupKeyB_, GroupKeyC_> TriConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_> groupBy(
-            TriFunction<A, B, C, GroupKeyA_> groupKeyAMapping, TriFunction<A, B, C, GroupKeyB_> groupKeyBMapping,
-            TriFunction<A, B, C, GroupKeyC_> groupKeyCMapping);
+    <GroupKeyA_, GroupKeyB_, GroupKeyC_> @NonNull TriConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_> groupBy(
+            @NonNull TriFunction<A, B, C, GroupKeyA_> groupKeyAMapping,
+            @NonNull TriFunction<A, B, C, GroupKeyB_> groupKeyBMapping,
+            @NonNull TriFunction<A, B, C, GroupKeyC_> groupKeyCMapping);
 
     /**
      * Combines the semantics of {@link #groupBy(TriFunction, TriFunction)} and {@link #groupBy(TriConstraintCollector)}.
@@ -1047,10 +988,10 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * The final fact is the result of applying the first {@link TriConstraintCollector#finisher()} on all the tuples
      * of the original {@link TriConstraintStream} that belong to the group.
      *
-     * @param groupKeyAMapping never null, function to convert the original tuple into a first fact
-     * @param groupKeyBMapping never null, function to convert the original tuple into a second fact
-     * @param groupKeyCMapping never null, function to convert the original tuple into a third fact
-     * @param collectorD never null, the collector to perform the grouping operation with
+     * @param groupKeyAMapping function to convert the original tuple into a first fact
+     * @param groupKeyBMapping function to convert the original tuple into a second fact
+     * @param groupKeyCMapping function to convert the original tuple into a third fact
+     * @param collectorD the collector to perform the grouping operation with
      *        See {@link ConstraintCollectors} for common operations, such as {@code count()}, {@code sum()} and others.
      * @param <GroupKeyA_> the type of the first fact in the destination {@link QuadConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
@@ -1060,13 +1001,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
      * @param <ResultContainerD_> the mutable accumulation type (often hidden as an implementation detail)
      * @param <ResultD_> the type of the fourth fact in the destination {@link QuadConstraintStream}'s tuple
-     * @return never null
      */
     <GroupKeyA_, GroupKeyB_, GroupKeyC_, ResultContainerD_, ResultD_>
-            QuadConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_, ResultD_> groupBy(
-                    TriFunction<A, B, C, GroupKeyA_> groupKeyAMapping, TriFunction<A, B, C, GroupKeyB_> groupKeyBMapping,
-                    TriFunction<A, B, C, GroupKeyC_> groupKeyCMapping,
-                    TriConstraintCollector<A, B, C, ResultContainerD_, ResultD_> collectorD);
+            @NonNull QuadConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_, ResultD_> groupBy(
+                    @NonNull TriFunction<A, B, C, GroupKeyA_> groupKeyAMapping,
+                    @NonNull TriFunction<A, B, C, GroupKeyB_> groupKeyBMapping,
+                    @NonNull TriFunction<A, B, C, GroupKeyC_> groupKeyCMapping,
+                    @NonNull TriConstraintCollector<A, B, C, ResultContainerD_, ResultD_> collectorD);
 
     /**
      * Convert the {@link TriConstraintStream} to a {@link QuadConstraintStream}, consisting of unique tuples with four
@@ -1080,10 +1021,10 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * The fourth fact is the return value of the fourth group key mapping function, applied on all incoming tuples with
      * the same first fact.
      *
-     * @param groupKeyAMapping never null, function to convert the original tuple into a first fact
-     * @param groupKeyBMapping never null, function to convert the original tuple into a second fact
-     * @param groupKeyCMapping never null, function to convert the original tuple into a third fact
-     * @param groupKeyDMapping never null, function to convert the original tuple into a fourth fact
+     * @param groupKeyAMapping function to convert the original tuple into a first fact
+     * @param groupKeyBMapping function to convert the original tuple into a second fact
+     * @param groupKeyCMapping function to convert the original tuple into a third fact
+     * @param groupKeyDMapping function to convert the original tuple into a fourth fact
      * @param <GroupKeyA_> the type of the first fact in the destination {@link QuadConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
      * @param <GroupKeyB_> the type of the second fact in the destination {@link QuadConstraintStream}'s tuple;
@@ -1092,12 +1033,13 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
      * @param <GroupKeyD_> the type of the fourth fact in the destination {@link QuadConstraintStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
-     * @return never null
      */
     <GroupKeyA_, GroupKeyB_, GroupKeyC_, GroupKeyD_>
-            QuadConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_, GroupKeyD_> groupBy(
-                    TriFunction<A, B, C, GroupKeyA_> groupKeyAMapping, TriFunction<A, B, C, GroupKeyB_> groupKeyBMapping,
-                    TriFunction<A, B, C, GroupKeyC_> groupKeyCMapping, TriFunction<A, B, C, GroupKeyD_> groupKeyDMapping);
+            @NonNull QuadConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_, GroupKeyD_> groupBy(
+                    @NonNull TriFunction<A, B, C, GroupKeyA_> groupKeyAMapping,
+                    @NonNull TriFunction<A, B, C, GroupKeyB_> groupKeyBMapping,
+                    @NonNull TriFunction<A, B, C, GroupKeyC_> groupKeyCMapping,
+                    @NonNull TriFunction<A, B, C, GroupKeyD_> groupKeyDMapping);
 
     // ************************************************************************
     // Operations with duplicate tuple possibility
