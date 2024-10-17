@@ -185,8 +185,6 @@ class SubChainSwapMoveTest {
         var b2 = new TestdataChainedEntity("b2", b1);
         var b3 = new TestdataChainedEntity("b3", b2);
 
-        var variableDescriptor = TestdataChainedEntity
-                .buildVariableDescriptorForChainedObject();
         var inverseVariableSupply = SelectorTestUtils.mockSingletonInverseVariableSupply(
                 new TestdataChainedEntity[] { a1, a2, a3, a4, a5, b1, b2, b3 });
 
