@@ -16,7 +16,6 @@ import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveListFactoryConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
@@ -27,7 +26,6 @@ import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.Corrup
 import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.CorruptedUndoShadowEntity;
 import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.CorruptedUndoShadowSolution;
 import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.CorruptedUndoShadowValue;
-import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveListFactory;
 import ai.timefold.solver.core.impl.phase.custom.CustomPhaseCommand;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
@@ -277,23 +275,6 @@ class EnvironmentModeTest {
             Class<? extends EasyScoreCalculator> easyScoreCalculatorClass) {
         solverConfig.setScoreDirectorFactoryConfig(new ScoreDirectorFactoryConfig()
                 .withEasyScoreCalculatorClass(easyScoreCalculatorClass));
-    }
-
-    private void setSolverConfigMoveListFactoryClassToCorrupted(SolverConfig solverConfig,
-            Class<? extends MoveListFactory<TestdataSolution>> move) {
-        MoveListFactoryConfig moveListFactoryConfig = new MoveListFactoryConfig();
-        moveListFactoryConfig.setMoveListFactoryClass(move);
-
-        CustomPhaseConfig initializerPhaseConfig = new CustomPhaseConfig()
-                .withCustomPhaseCommandClassList(Collections.singletonList(TestdataFirstValueInitializer.class));
-
-        LocalSearchPhaseConfig localSearchPhaseConfig = new LocalSearchPhaseConfig();
-        localSearchPhaseConfig.setMoveSelectorConfig(moveListFactoryConfig);
-        localSearchPhaseConfig
-                .setTerminationConfig(
-                        new TerminationConfig().withStepCountLimit(NUMBER_OF_TERMINATION_STEP_COUNT_LIMIT));
-
-        solverConfig.withPhases(initializerPhaseConfig, localSearchPhaseConfig);
     }
 
     public static class TestdataFirstValueInitializer implements CustomPhaseCommand<TestdataSolution> {

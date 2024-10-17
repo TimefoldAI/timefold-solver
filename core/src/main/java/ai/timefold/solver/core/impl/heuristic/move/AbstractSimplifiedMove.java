@@ -13,6 +13,7 @@ import ai.timefold.solver.core.impl.move.director.VariableChangeRecordingScoreDi
  * @param <Solution_>
  * @deprecated In favor of {@link AbstractMove}, which no longer requires undo moves to be implemented either.
  */
+@Deprecated(forRemoval = true, since = "1.16.0")
 public abstract class AbstractSimplifiedMove<Solution_> implements Move<Solution_> {
 
     @Override

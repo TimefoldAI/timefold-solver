@@ -109,11 +109,6 @@ class ChainedChangeMoveTest {
 
     @Test
     void sameChainWithItself() {
-        var variableDescriptor = TestdataChainedEntity
-                .buildVariableDescriptorForChainedObject();
-        var scoreDirector =
-                PlannerTestUtils.mockScoreDirector(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
-
         var a0 = new TestdataChainedAnchor("a0");
         var a1 = new TestdataChainedEntity("a1", a0);
         var a2 = new TestdataChainedEntity("a2", a1);
@@ -123,18 +118,12 @@ class ChainedChangeMoveTest {
         var inverseVariableSupply = SelectorTestUtils.mockSingletonInverseVariableSupply(
                 new TestdataChainedEntity[] { a1, a2, a3, a4 });
 
-        var move =
-                new ChainedChangeMove<TestdataChainedSolution>(variableDescriptor, a2, a2, inverseVariableSupply);
-        assertThat(move.isMoveDoable(scoreDirector)).isFalse();
+        var move = new ChainedChangeMove<>(variableDescriptor, a2, a2, inverseVariableSupply);
+        assertThat(move.isMoveDoable(innerScoreDirector)).isFalse();
     }
 
     @Test
     void sameChainWithSamePlanningValue() {
-        var variableDescriptor = TestdataChainedEntity
-                .buildVariableDescriptorForChainedObject();
-        var scoreDirector =
-                PlannerTestUtils.mockScoreDirector(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
-
         var a0 = new TestdataChainedAnchor("a0");
         var a1 = new TestdataChainedEntity("a1", a0);
         var a2 = new TestdataChainedEntity("a2", a1);
@@ -144,16 +133,12 @@ class ChainedChangeMoveTest {
         var inverseVariableSupply = SelectorTestUtils.mockSingletonInverseVariableSupply(
                 new TestdataChainedEntity[] { a1, a2, a3, a4 });
 
-        var move =
-                new ChainedChangeMove<TestdataChainedSolution>(variableDescriptor, a2, a1, inverseVariableSupply);
-        assertThat(move.isMoveDoable(scoreDirector)).isFalse();
+        var move = new ChainedChangeMove<>(variableDescriptor, a2, a1, inverseVariableSupply);
+        assertThat(move.isMoveDoable(innerScoreDirector)).isFalse();
     }
 
     @Test
     void rebase() {
-        var variableDescriptor = TestdataChainedEntity
-                .buildVariableDescriptorForChainedObject();
-
         var a0 = new TestdataChainedAnchor("a0");
         var a1 = new TestdataChainedEntity("a1", a0);
         var a2 = new TestdataChainedEntity("a2", a1);
