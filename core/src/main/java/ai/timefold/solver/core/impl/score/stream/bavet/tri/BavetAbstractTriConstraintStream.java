@@ -313,7 +313,7 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
     // ************************************************************************
 
     @Override
-    public TriConstraintStream<A, B, C> distinct() {
+    public @NonNull TriConstraintStream<A, B, C> distinct() {
         if (guaranteesDistinct()) {
             return this;
         } else {
@@ -324,8 +324,9 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
     }
 
     @Override
-    public TriConstraintStream<A, B, C> concat(UniConstraintStream<A> otherStream, Function<A, B> paddingFunctionB,
-            Function<A, C> paddingFunctionC) {
+    public @NonNull TriConstraintStream<A, B, C> concat(@NonNull UniConstraintStream<A> otherStream,
+            @NonNull Function<A, B> paddingFunctionB,
+            @NonNull Function<A, C> paddingFunctionC) {
         var other = (BavetAbstractUniConstraintStream<Solution_, A>) otherStream;
         var leftBridge = new BavetForeBridgeTriConstraintStream<>(constraintFactory, this);
         var rightBridge = new BavetForeBridgeUniConstraintStream<>(constraintFactory, other);
@@ -339,7 +340,8 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
     }
 
     @Override
-    public TriConstraintStream<A, B, C> concat(BiConstraintStream<A, B> otherStream, BiFunction<A, B, C> paddingFunction) {
+    public @NonNull TriConstraintStream<A, B, C> concat(@NonNull BiConstraintStream<A, B> otherStream,
+            @NonNull BiFunction<A, B, C> paddingFunction) {
         var other = (BavetAbstractBiConstraintStream<Solution_, A, B>) otherStream;
         var leftBridge = new BavetForeBridgeTriConstraintStream<>(constraintFactory, this);
         var rightBridge = new BavetForeBridgeBiConstraintStream<>(constraintFactory, other);
@@ -352,7 +354,7 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
     }
 
     @Override
-    public TriConstraintStream<A, B, C> concat(TriConstraintStream<A, B, C> otherStream) {
+    public @NonNull TriConstraintStream<A, B, C> concat(@NonNull TriConstraintStream<A, B, C> otherStream) {
         var other = (BavetAbstractTriConstraintStream<Solution_, A, B, C>) otherStream;
         var leftBridge = new BavetForeBridgeTriConstraintStream<>(constraintFactory, this);
         var rightBridge = new BavetForeBridgeTriConstraintStream<>(constraintFactory, other);
@@ -365,8 +367,8 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
     }
 
     @Override
-    public <D> QuadConstraintStream<A, B, C, D> concat(QuadConstraintStream<A, B, C, D> otherStream,
-            TriFunction<A, B, C, D> paddingFunction) {
+    public @NonNull <D> QuadConstraintStream<A, B, C, D> concat(@NonNull QuadConstraintStream<A, B, C, D> otherStream,
+            @NonNull TriFunction<A, B, C, D> paddingFunction) {
         var other = (BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>) otherStream;
         var leftBridge = new BavetForeBridgeTriConstraintStream<>(constraintFactory, this);
         var rightBridge = new BavetForeBridgeQuadConstraintStream<>(constraintFactory, other);
@@ -380,23 +382,24 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
     }
 
     @Override
-    public <ResultA_> UniConstraintStream<ResultA_> map(TriFunction<A, B, C, ResultA_> mapping) {
+    public @NonNull <ResultA_> UniConstraintStream<ResultA_> map(@NonNull TriFunction<A, B, C, ResultA_> mapping) {
         var stream = shareAndAddChild(new BavetUniMapTriConstraintStream<>(constraintFactory, this, mapping));
         return constraintFactory.share(new BavetAftBridgeUniConstraintStream<>(constraintFactory, stream),
                 stream::setAftBridge);
     }
 
     @Override
-    public <ResultA_, ResultB_> BiConstraintStream<ResultA_, ResultB_> map(TriFunction<A, B, C, ResultA_> mappingA,
-            TriFunction<A, B, C, ResultB_> mappingB) {
+    public @NonNull <ResultA_, ResultB_> BiConstraintStream<ResultA_, ResultB_> map(
+            @NonNull TriFunction<A, B, C, ResultA_> mappingA,
+            @NonNull TriFunction<A, B, C, ResultB_> mappingB) {
         var stream = shareAndAddChild(new BavetBiMapTriConstraintStream<>(constraintFactory, this, mappingA, mappingB));
         return constraintFactory.share(new BavetAftBridgeBiConstraintStream<>(constraintFactory, stream), stream::setAftBridge);
     }
 
     @Override
-    public <ResultA_, ResultB_, ResultC_> TriConstraintStream<ResultA_, ResultB_, ResultC_> map(
-            TriFunction<A, B, C, ResultA_> mappingA, TriFunction<A, B, C, ResultB_> mappingB,
-            TriFunction<A, B, C, ResultC_> mappingC) {
+    public @NonNull <ResultA_, ResultB_, ResultC_> TriConstraintStream<ResultA_, ResultB_, ResultC_> map(
+            @NonNull TriFunction<A, B, C, ResultA_> mappingA, @NonNull TriFunction<A, B, C, ResultB_> mappingB,
+            @NonNull TriFunction<A, B, C, ResultC_> mappingC) {
         var stream = shareAndAddChild(
                 new BavetTriMapTriConstraintStream<>(constraintFactory, this, mappingA, mappingB, mappingC));
         return constraintFactory.share(new BavetAftBridgeTriConstraintStream<>(constraintFactory, stream),
@@ -404,9 +407,9 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
     }
 
     @Override
-    public <ResultA_, ResultB_, ResultC_, ResultD_> QuadConstraintStream<ResultA_, ResultB_, ResultC_, ResultD_> map(
-            TriFunction<A, B, C, ResultA_> mappingA, TriFunction<A, B, C, ResultB_> mappingB,
-            TriFunction<A, B, C, ResultC_> mappingC, TriFunction<A, B, C, ResultD_> mappingD) {
+    public <ResultA_, ResultB_, ResultC_, ResultD_> @NonNull QuadConstraintStream<ResultA_, ResultB_, ResultC_, ResultD_> map(
+            @NonNull TriFunction<A, B, C, ResultA_> mappingA, @NonNull TriFunction<A, B, C, ResultB_> mappingB,
+            @NonNull TriFunction<A, B, C, ResultC_> mappingC, @NonNull TriFunction<A, B, C, ResultD_> mappingD) {
         var stream = shareAndAddChild(new BavetQuadMapTriConstraintStream<>(constraintFactory, this, mappingA, mappingB,
                 mappingC, mappingD, false));
         return constraintFactory.share(new BavetAftBridgeQuadConstraintStream<>(constraintFactory, stream),
@@ -414,7 +417,8 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
     }
 
     @Override
-    public <ResultC_> TriConstraintStream<A, B, ResultC_> flattenLast(Function<C, Iterable<ResultC_>> mapping) {
+    public @NonNull <ResultC_> TriConstraintStream<A, B, ResultC_>
+            flattenLast(@NonNull Function<C, Iterable<ResultC_>> mapping) {
         var stream = shareAndAddChild(new BavetFlattenLastTriConstraintStream<>(constraintFactory, this, mapping));
         return constraintFactory.share(new BavetAftBridgeTriConstraintStream<>(constraintFactory, stream),
                 stream::setAftBridge);
@@ -425,7 +429,7 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
     // ************************************************************************
 
     @Override
-    public <ResultD_> QuadConstraintStream<A, B, C, ResultD_> expand(TriFunction<A, B, C, ResultD_> mapping) {
+    public @NonNull <ResultD_> QuadConstraintStream<A, B, C, ResultD_> expand(@NonNull TriFunction<A, B, C, ResultD_> mapping) {
         var stream = shareAndAddChild(new BavetQuadMapTriConstraintStream<>(constraintFactory, this,
                 ConstantLambdaUtils.triPickFirst(),
                 ConstantLambdaUtils.triPickSecond(),

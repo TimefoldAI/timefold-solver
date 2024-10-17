@@ -1048,55 +1048,51 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
     /**
      * As defined by {@link UniConstraintStream#map(Function)}.
      *
-     * @param mapping never null, function to convert the original tuple into the new tuple
+     * @param mapping function to convert the original tuple into the new tuple
      * @param <ResultA_> the type of the only fact in the resulting {@link UniConstraintStream}'s tuple
-     * @return never null
      */
-    <ResultA_> UniConstraintStream<ResultA_> map(TriFunction<A, B, C, ResultA_> mapping);
+    <ResultA_> @NonNull UniConstraintStream<ResultA_> map(@NonNull TriFunction<A, B, C, ResultA_> mapping);
 
     /**
      * As defined by {@link #map(TriFunction)}, only resulting in {@link BiConstraintStream}.
      *
-     * @param mappingA never null, function to convert the original tuple into the first fact of a new tuple
-     * @param mappingB never null, function to convert the original tuple into the second fact of a new tuple
+     * @param mappingA function to convert the original tuple into the first fact of a new tuple
+     * @param mappingB function to convert the original tuple into the second fact of a new tuple
      * @param <ResultA_> the type of the first fact in the resulting {@link BiConstraintStream}'s tuple
      * @param <ResultB_> the type of the first fact in the resulting {@link BiConstraintStream}'s tuple
-     * @return never null
      */
-    <ResultA_, ResultB_> BiConstraintStream<ResultA_, ResultB_> map(TriFunction<A, B, C, ResultA_> mappingA,
-            TriFunction<A, B, C, ResultB_> mappingB);
+    <ResultA_, ResultB_> @NonNull BiConstraintStream<ResultA_, ResultB_> map(@NonNull TriFunction<A, B, C, ResultA_> mappingA,
+            @NonNull TriFunction<A, B, C, ResultB_> mappingB);
 
     /**
      * As defined by {@link #map(TriFunction)}, only resulting in {@link TriConstraintStream}.
      *
-     * @param mappingA never null, function to convert the original tuple into the first fact of a new tuple
-     * @param mappingB never null, function to convert the original tuple into the second fact of a new tuple
-     * @param mappingC never null, function to convert the original tuple into the third fact of a new tuple
+     * @param mappingA function to convert the original tuple into the first fact of a new tuple
+     * @param mappingB function to convert the original tuple into the second fact of a new tuple
+     * @param mappingC function to convert the original tuple into the third fact of a new tuple
      * @param <ResultA_> the type of the first fact in the resulting {@link TriConstraintStream}'s tuple
      * @param <ResultB_> the type of the first fact in the resulting {@link TriConstraintStream}'s tuple
      * @param <ResultC_> the type of the third fact in the resulting {@link TriConstraintStream}'s tuple
-     * @return never null
      */
-    <ResultA_, ResultB_, ResultC_> TriConstraintStream<ResultA_, ResultB_, ResultC_> map(
-            TriFunction<A, B, C, ResultA_> mappingA, TriFunction<A, B, C, ResultB_> mappingB,
-            TriFunction<A, B, C, ResultC_> mappingC);
+    <ResultA_, ResultB_, ResultC_> @NonNull TriConstraintStream<ResultA_, ResultB_, ResultC_> map(
+            @NonNull TriFunction<A, B, C, ResultA_> mappingA, @NonNull TriFunction<A, B, C, ResultB_> mappingB,
+            @NonNull TriFunction<A, B, C, ResultC_> mappingC);
 
     /**
      * As defined by {@link #map(TriFunction)}, only resulting in {@link QuadConstraintStream}.
      *
-     * @param mappingA never null, function to convert the original tuple into the first fact of a new tuple
-     * @param mappingB never null, function to convert the original tuple into the second fact of a new tuple
-     * @param mappingC never null, function to convert the original tuple into the third fact of a new tuple
-     * @param mappingD never null, function to convert the original tuple into the fourth fact of a new tuple
+     * @param mappingA function to convert the original tuple into the first fact of a new tuple
+     * @param mappingB function to convert the original tuple into the second fact of a new tuple
+     * @param mappingC function to convert the original tuple into the third fact of a new tuple
+     * @param mappingD function to convert the original tuple into the fourth fact of a new tuple
      * @param <ResultA_> the type of the first fact in the resulting {@link QuadConstraintStream}'s tuple
      * @param <ResultB_> the type of the first fact in the resulting {@link QuadConstraintStream}'s tuple
      * @param <ResultC_> the type of the third fact in the resulting {@link QuadConstraintStream}'s tuple
      * @param <ResultD_> the type of the third fact in the resulting {@link QuadConstraintStream}'s tuple
-     * @return never null
      */
-    <ResultA_, ResultB_, ResultC_, ResultD_> QuadConstraintStream<ResultA_, ResultB_, ResultC_, ResultD_> map(
-            TriFunction<A, B, C, ResultA_> mappingA, TriFunction<A, B, C, ResultB_> mappingB,
-            TriFunction<A, B, C, ResultC_> mappingC, TriFunction<A, B, C, ResultD_> mappingD);
+    <ResultA_, ResultB_, ResultC_, ResultD_> @NonNull QuadConstraintStream<ResultA_, ResultB_, ResultC_, ResultD_> map(
+            @NonNull TriFunction<A, B, C, ResultA_> mappingA, @NonNull TriFunction<A, B, C, ResultB_> mappingB,
+            @NonNull TriFunction<A, B, C, ResultC_> mappingC, @NonNull TriFunction<A, B, C, ResultD_> mappingD);
 
     /**
      * As defined by {@link BiConstraintStream#flattenLast(Function)}.
@@ -1105,11 +1101,10 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      *        It is recommended that this type be deeply immutable.
      *        Not following this recommendation may lead to hard-to-debug hashing issues down the stream,
      *        especially if this value is ever used as a group key.
-     * @param mapping never null, function to convert the last fact in the original tuple into {@link Iterable}.
+     * @param mapping function to convert the last fact in the original tuple into {@link Iterable}.
      *        For performance, returning an implementation of {@link java.util.Collection} is preferred.
-     * @return never null
      */
-    <ResultC_> TriConstraintStream<A, B, ResultC_> flattenLast(Function<C, Iterable<ResultC_>> mapping);
+    <ResultC_> @NonNull TriConstraintStream<A, B, ResultC_> flattenLast(@NonNull Function<C, Iterable<ResultC_>> mapping);
 
     /**
      * Removes duplicate tuples from the stream, according to the tuple's facts
@@ -1122,9 +1117,8 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * However, operations such as {@link #map(TriFunction)} may create a stream which breaks that promise.
      * By calling this method on such a stream,
      * duplicate copies of the same tuple will be omitted at a performance cost.
-     *
-     * @return never null
      */
+    @NonNull
     TriConstraintStream<A, B, C> distinct();
 
     /**
@@ -1139,11 +1133,8 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * {@code [(A1, A2, A3), (B1, B2, B3), (C1, C2, C3), (C, null), (D, null), (E, null)]}.
      * <p>
      * This operation can be thought of as an or between streams.
-     *
-     * @param otherStream never null
-     * @return never null
      */
-    default TriConstraintStream<A, B, C> concat(UniConstraintStream<A> otherStream) {
+    default @NonNull TriConstraintStream<A, B, C> concat(@NonNull UniConstraintStream<A> otherStream) {
         return concat(otherStream, uniConstantNull(), uniConstantNull());
     }
 
@@ -1160,13 +1151,12 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * <p>
      * This operation can be thought of as an or between streams.
      *
-     * @param otherStream never null
-     * @param paddingFunctionB never null, function to find the padding for the second fact
-     * @param paddingFunctionC never null, function to find the padding for the third fact
-     * @return never null
+     * @param paddingFunctionB function to find the padding for the second fact
+     * @param paddingFunctionC function to find the padding for the third fact
      */
-    TriConstraintStream<A, B, C> concat(UniConstraintStream<A> otherStream, Function<A, B> paddingFunctionB,
-            Function<A, C> paddingFunctionC);
+    @NonNull
+    TriConstraintStream<A, B, C> concat(@NonNull UniConstraintStream<A> otherStream, @NonNull Function<A, B> paddingFunctionB,
+            @NonNull Function<A, C> paddingFunctionC);
 
     /**
      * Returns a new {@link TriConstraintStream} containing all the tuples of both this {@link TriConstraintStream}
@@ -1180,11 +1170,8 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * {@code [(A1, A2, A3), (B1, B2, B3), (C1, C2, C3), (C1, C2, null), (D1, D2, null), (E1, E2, null)]}.
      * <p>
      * This operation can be thought of as an or between streams.
-     *
-     * @param otherStream never null
-     * @return never null
      */
-    default TriConstraintStream<A, B, C> concat(BiConstraintStream<A, B> otherStream) {
+    default @NonNull TriConstraintStream<A, B, C> concat(@NonNull BiConstraintStream<A, B> otherStream) {
         return concat(otherStream, biConstantNull());
     }
 
@@ -1201,11 +1188,11 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * <p>
      * This operation can be thought of as an or between streams.
      *
-     * @param otherStream never null
-     * @param paddingFunctionC never null, function to find the padding for the third fact
-     * @return never null
+     * @param paddingFunctionC function to find the padding for the third fact
      */
-    TriConstraintStream<A, B, C> concat(BiConstraintStream<A, B> otherStream, BiFunction<A, B, C> paddingFunctionC);
+    @NonNull
+    TriConstraintStream<A, B, C> concat(@NonNull BiConstraintStream<A, B> otherStream,
+            @NonNull BiFunction<A, B, C> paddingFunctionC);
 
     /**
      * Returns a new {@link TriConstraintStream} containing all the tuples of both this {@link TriConstraintStream} and the
@@ -1220,10 +1207,9 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * <p>
      * This operation can be thought of as an or between streams.
      *
-     * @param otherStream never null
-     * @return never null
      */
-    TriConstraintStream<A, B, C> concat(TriConstraintStream<A, B, C> otherStream);
+    @NonNull
+    TriConstraintStream<A, B, C> concat(@NonNull TriConstraintStream<A, B, C> otherStream);
 
     /**
      * Returns a new {@link QuadConstraintStream} containing all the tuples of both this {@link TriConstraintStream}
@@ -1237,11 +1223,8 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * {@code [(A1, A2, A3, null), (B1, B2, B3, null), (C1, C2, C3, null), (C1, C2, C3, C4), (D1, D2, D3, D4), (E1, E2, E3, E4)]}.
      * <p>
      * This operation can be thought of as an or between streams.
-     *
-     * @param otherStream never null
-     * @return never null
      */
-    default <D> QuadConstraintStream<A, B, C, D> concat(QuadConstraintStream<A, B, C, D> otherStream) {
+    default <D> @NonNull QuadConstraintStream<A, B, C, D> concat(@NonNull QuadConstraintStream<A, B, C, D> otherStream) {
         return concat(otherStream, triConstantNull());
     }
 
@@ -1259,12 +1242,10 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * <p>
      * This operation can be thought of as an or between streams.
      *
-     * @param otherStream never null
-     * @param paddingFunction never null, function to find the padding for the fourth fact
-     * @return never null
+     * @param paddingFunction function to find the padding for the fourth fact
      */
-    <D> QuadConstraintStream<A, B, C, D> concat(QuadConstraintStream<A, B, C, D> otherStream,
-            TriFunction<A, B, C, D> paddingFunction);
+    <D> @NonNull QuadConstraintStream<A, B, C, D> concat(@NonNull QuadConstraintStream<A, B, C, D> otherStream,
+            @NonNull TriFunction<A, B, C, D> paddingFunction);
 
     // ************************************************************************
     // expand
@@ -1280,10 +1261,9 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * coming from tuple creation.
      *
      * @param mapping function to produce the new fact from the original tuple
-     * @return never null
      * @param <ResultD_> type of the final fact of the new tuple
      */
-    <ResultD_> QuadConstraintStream<A, B, C, ResultD_> expand(TriFunction<A, B, C, ResultD_> mapping);
+    <ResultD_> @NonNull QuadConstraintStream<A, B, C, ResultD_> expand(@NonNull TriFunction<A, B, C, ResultD_> mapping);
 
     // ************************************************************************
     // complement
@@ -1293,7 +1273,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * As defined by {@link #complement(Class, Function, Function)},
      * where the padding function pads with null.
      */
-    default TriConstraintStream<A, B, C> complement(Class<A> otherClass) {
+    default @NonNull TriConstraintStream<A, B, C> complement(@NonNull Class<A> otherClass) {
         return complement(otherClass, uniConstantNull(), uniConstantNull());
     }
 
@@ -1308,13 +1288,11 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * The rest of the tuple will be padded with the results of the padding functions,
      * applied on the new instance.
      *
-     * @param otherClass never null
-     * @param paddingFunctionB never null, function to find the padding for the second fact
-     * @param paddingFunctionC never null, function to find the padding for the third fact
-     * @return never null
+     * @param paddingFunctionB function to find the padding for the second fact
+     * @param paddingFunctionC function to find the padding for the third fact
      */
-    default TriConstraintStream<A, B, C> complement(Class<A> otherClass, Function<A, B> paddingFunctionB,
-            Function<A, C> paddingFunctionC) {
+    default @NonNull TriConstraintStream<A, B, C> complement(@NonNull Class<A> otherClass,
+            @NonNull Function<A, B> paddingFunctionB, @NonNull Function<A, C> paddingFunctionC) {
         var firstStream = this;
         var remapped = firstStream.map(ConstantLambdaUtils.triPickFirst());
         var secondStream = getConstraintFactory().forEach(otherClass)
@@ -1328,28 +1306,27 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
 
     /**
      * As defined by {@link #penalize(Score, ToIntTriFunction)}, where the match weight is one (1).
-     *
-     * @return never null
      */
-    default <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> penalize(Score_ constraintWeight) {
+    default <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_>
+            penalize(@NonNull Score_ constraintWeight) {
         return penalize(constraintWeight, triConstantOne());
     }
 
     /**
      * As defined by {@link #penalizeLong(Score, ToLongTriFunction)}, where the match weight is one (1).
      *
-     * @return never null
      */
-    default <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> penalizeLong(Score_ constraintWeight) {
+    default <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_>
+            penalizeLong(@NonNull Score_ constraintWeight) {
         return penalizeLong(constraintWeight, triConstantOneLong());
     }
 
     /**
      * As defined by {@link #penalizeBigDecimal(Score, TriFunction)}, where the match weight is one (1).
      *
-     * @return never null
      */
-    default <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> penalizeBigDecimal(Score_ constraintWeight) {
+    default <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_>
+            penalizeBigDecimal(@NonNull Score_ constraintWeight) {
         return penalizeBigDecimal(constraintWeight, triConstantOneBigDecimal());
     }
 
@@ -1364,24 +1341,22 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * For non-int {@link Score} types use {@link #penalizeLong(Score, ToLongTriFunction)} or
      * {@link #penalizeBigDecimal(Score, TriFunction)} instead.
      *
-     * @param constraintWeight never null
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
-     * @return never null
+     * @param matchWeigher the result of this function (matchWeight) is multiplied by the constraintWeight
      */
-    <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> penalize(Score_ constraintWeight,
-            ToIntTriFunction<A, B, C> matchWeigher);
+    <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_> penalize(@NonNull Score_ constraintWeight,
+            @NonNull ToIntTriFunction<A, B, C> matchWeigher);
 
     /**
      * As defined by {@link #penalize(Score, ToIntTriFunction)}, with a penalty of type long.
      */
-    <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> penalizeLong(Score_ constraintWeight,
-            ToLongTriFunction<A, B, C> matchWeigher);
+    <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_> penalizeLong(@NonNull Score_ constraintWeight,
+            @NonNull ToLongTriFunction<A, B, C> matchWeigher);
 
     /**
      * As defined by {@link #penalize(Score, ToIntTriFunction)}, with a penalty of type {@link BigDecimal}.
      */
-    <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> penalizeBigDecimal(Score_ constraintWeight,
-            TriFunction<A, B, C, BigDecimal> matchWeigher);
+    <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_> penalizeBigDecimal(
+            @NonNull Score_ constraintWeight, @NonNull TriFunction<A, B, C, BigDecimal> matchWeigher);
 
     /**
      * Negatively impacts the {@link Score},
@@ -1434,10 +1409,9 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
 
     /**
      * As defined by {@link #reward(Score, ToIntTriFunction)}, where the match weight is one (1).
-     *
-     * @return never null
      */
-    default <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> reward(Score_ constraintWeight) {
+    default <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_>
+            reward(@NonNull Score_ constraintWeight) {
         return reward(constraintWeight, triConstantOne());
     }
 
@@ -1452,24 +1426,22 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * For non-int {@link Score} types use {@link #rewardLong(Score, ToLongTriFunction)} or
      * {@link #rewardBigDecimal(Score, TriFunction)} instead.
      *
-     * @param constraintWeight never null
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
-     * @return never null
+     * @param matchWeigher the result of this function (matchWeight) is multiplied by the constraintWeight
      */
-    <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> reward(Score_ constraintWeight,
-            ToIntTriFunction<A, B, C> matchWeigher);
+    <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_> reward(@NonNull Score_ constraintWeight,
+            @NonNull ToIntTriFunction<A, B, C> matchWeigher);
 
     /**
      * As defined by {@link #reward(Score, ToIntTriFunction)}, with a penalty of type long.
      */
-    <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> rewardLong(Score_ constraintWeight,
-            ToLongTriFunction<A, B, C> matchWeigher);
+    <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_> rewardLong(@NonNull Score_ constraintWeight,
+            @NonNull ToLongTriFunction<A, B, C> matchWeigher);
 
     /**
      * As defined by {@link #reward(Score, ToIntTriFunction)}, with a penalty of type {@link BigDecimal}.
      */
-    <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> rewardBigDecimal(Score_ constraintWeight,
-            TriFunction<A, B, C, BigDecimal> matchWeigher);
+    <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_> rewardBigDecimal(
+            @NonNull Score_ constraintWeight, @NonNull TriFunction<A, B, C, BigDecimal> matchWeigher);
 
     /**
      * Positively impacts the {@link Score},
@@ -1526,11 +1498,9 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * <p>
      * Use {@code penalize(...)} or {@code reward(...)} instead, unless this constraint can both have positive and
      * negative weights.
-     *
-     * @param constraintWeight never null
-     * @return never null
      */
-    default <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> impact(Score_ constraintWeight) {
+    default <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_>
+            impact(@NonNull Score_ constraintWeight) {
         return impact(constraintWeight, triConstantOne());
     }
 
@@ -1544,24 +1514,22 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * Use {@code penalize(...)} or {@code reward(...)} instead, unless this constraint can both have positive and
      * negative weights.
      *
-     * @param constraintWeight never null
-     * @param matchWeigher never null, the result of this function (matchWeight) is multiplied by the constraintWeight
-     * @return never null
+     * @param matchWeigher the result of this function (matchWeight) is multiplied by the constraintWeight
      */
-    <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> impact(Score_ constraintWeight,
-            ToIntTriFunction<A, B, C> matchWeigher);
+    <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_> impact(@NonNull Score_ constraintWeight,
+            @NonNull ToIntTriFunction<A, B, C> matchWeigher);
 
     /**
      * As defined by {@link #impact(Score, ToIntTriFunction)}, with an impact of type long.
      */
-    <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> impactLong(Score_ constraintWeight,
-            ToLongTriFunction<A, B, C> matchWeigher);
+    <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_> impactLong(@NonNull Score_ constraintWeight,
+            @NonNull ToLongTriFunction<A, B, C> matchWeigher);
 
     /**
      * As defined by {@link #impact(Score, ToIntTriFunction)}, with an impact of type {@link BigDecimal}.
      */
-    <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> impactBigDecimal(Score_ constraintWeight,
-            TriFunction<A, B, C, BigDecimal> matchWeigher);
+    <Score_ extends Score<Score_>> @NonNull TriConstraintBuilder<A, B, C, Score_> impactBigDecimal(
+            @NonNull Score_ constraintWeight, @NonNull TriFunction<A, B, C, BigDecimal> matchWeigher);
 
     /**
      * Positively impacts the {@link Score} by the {@link ConstraintWeight} for each match,
