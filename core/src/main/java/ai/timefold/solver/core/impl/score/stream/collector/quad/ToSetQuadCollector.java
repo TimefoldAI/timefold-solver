@@ -6,6 +6,8 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.impl.score.stream.collector.SetUndoableActionable;
 
+import org.jspecify.annotations.NonNull;
+
 final class ToSetQuadCollector<A, B, C, D, Mapped_>
         extends UndoableActionableQuadCollector<A, B, C, D, Mapped_, Set<Mapped_>, SetUndoableActionable<Mapped_>> {
     ToSetQuadCollector(QuadFunction<? super A, ? super B, ? super C, ? super D, ? extends Mapped_> mapper) {
@@ -13,7 +15,7 @@ final class ToSetQuadCollector<A, B, C, D, Mapped_>
     }
 
     @Override
-    public Supplier<SetUndoableActionable<Mapped_>> supplier() {
+    public @NonNull Supplier<SetUndoableActionable<Mapped_>> supplier() {
         return SetUndoableActionable::new;
     }
 }

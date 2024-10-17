@@ -10,6 +10,8 @@ import ai.timefold.solver.core.api.score.stream.quad.QuadJoiner;
 import ai.timefold.solver.core.impl.score.stream.JoinerType;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractJoiner;
 
+import org.jspecify.annotations.NonNull;
+
 public final class DefaultQuadJoiner<A, B, C, D> extends AbstractJoiner<D> implements QuadJoiner<A, B, C, D> {
 
     private static final DefaultQuadJoiner NONE =
@@ -37,7 +39,7 @@ public final class DefaultQuadJoiner<A, B, C, D> extends AbstractJoiner<D> imple
     }
 
     @Override
-    public DefaultQuadJoiner<A, B, C, D> and(QuadJoiner<A, B, C, D> otherJoiner) {
+    public @NonNull DefaultQuadJoiner<A, B, C, D> and(@NonNull QuadJoiner<A, B, C, D> otherJoiner) {
         DefaultQuadJoiner<A, B, C, D> castJoiner = (DefaultQuadJoiner<A, B, C, D>) otherJoiner;
         int joinerCount = getJoinerCount();
         int castJoinerCount = castJoiner.getJoinerCount();

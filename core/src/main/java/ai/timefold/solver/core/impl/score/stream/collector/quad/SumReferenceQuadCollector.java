@@ -7,6 +7,8 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.impl.score.stream.collector.ReferenceSumCalculator;
 
+import org.jspecify.annotations.NonNull;
+
 final class SumReferenceQuadCollector<A, B, C, D, Result_>
         extends ObjectCalculatorQuadCollector<A, B, C, D, Result_, Result_, Result_, ReferenceSumCalculator<Result_>> {
     private final Result_ zero;
@@ -24,7 +26,7 @@ final class SumReferenceQuadCollector<A, B, C, D, Result_>
     }
 
     @Override
-    public Supplier<ReferenceSumCalculator<Result_>> supplier() {
+    public @NonNull Supplier<ReferenceSumCalculator<Result_>> supplier() {
         return () -> new ReferenceSumCalculator<>(zero, adder, subtractor);
     }
 
