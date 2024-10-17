@@ -8,6 +8,8 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.impl.score.stream.collector.CustomCollectionUndoableActionable;
 
+import org.jspecify.annotations.NonNull;
+
 final class ToCollectionQuadCollector<A, B, C, D, Mapped_, Result_ extends Collection<Mapped_>>
         extends
         UndoableActionableQuadCollector<A, B, C, D, Mapped_, Result_, CustomCollectionUndoableActionable<Mapped_, Result_>> {
@@ -20,7 +22,7 @@ final class ToCollectionQuadCollector<A, B, C, D, Mapped_, Result_ extends Colle
     }
 
     @Override
-    public Supplier<CustomCollectionUndoableActionable<Mapped_, Result_>> supplier() {
+    public @NonNull Supplier<CustomCollectionUndoableActionable<Mapped_, Result_>> supplier() {
         return () -> new CustomCollectionUndoableActionable<>(collectionFunction);
     }
 

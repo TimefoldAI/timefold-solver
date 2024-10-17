@@ -9,6 +9,8 @@ import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.impl.util.Pair;
 
+import org.jspecify.annotations.NonNull;
+
 final class ComposeTwoQuadCollector<A, B, C, D, ResultHolder1_, ResultHolder2_, Result1_, Result2_, Result_>
         implements QuadConstraintCollector<A, B, C, D, Pair<ResultHolder1_, ResultHolder2_>, Result_> {
     private final QuadConstraintCollector<A, B, C, D, ResultHolder1_, Result1_> first;
@@ -42,12 +44,12 @@ final class ComposeTwoQuadCollector<A, B, C, D, ResultHolder1_, ResultHolder2_, 
     }
 
     @Override
-    public Supplier<Pair<ResultHolder1_, ResultHolder2_>> supplier() {
+    public @NonNull Supplier<Pair<ResultHolder1_, ResultHolder2_>> supplier() {
         return () -> new Pair<>(firstSupplier.get(), secondSupplier.get());
     }
 
     @Override
-    public PentaFunction<Pair<ResultHolder1_, ResultHolder2_>, A, B, C, D, Runnable> accumulator() {
+    public @NonNull PentaFunction<Pair<ResultHolder1_, ResultHolder2_>, A, B, C, D, Runnable> accumulator() {
         return (resultHolder, a, b, c, d) -> composeUndo(firstAccumulator.apply(resultHolder.key(), a, b, c, d),
                 secondAccumulator.apply(resultHolder.value(), a, b, c, d));
     }
@@ -60,7 +62,7 @@ final class ComposeTwoQuadCollector<A, B, C, D, ResultHolder1_, ResultHolder2_, 
     }
 
     @Override
-    public Function<Pair<ResultHolder1_, ResultHolder2_>, Result_> finisher() {
+    public @NonNull Function<Pair<ResultHolder1_, ResultHolder2_>, Result_> finisher() {
         return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.key()),
                 secondFinisher.apply(resultHolder.value()));
     }

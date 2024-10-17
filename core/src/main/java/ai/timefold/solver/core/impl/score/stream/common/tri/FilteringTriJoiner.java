@@ -5,6 +5,8 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.api.score.stream.tri.TriJoiner;
 
+import org.jspecify.annotations.NonNull;
+
 public final class FilteringTriJoiner<A, B, C> implements TriJoiner<A, B, C> {
 
     private final TriPredicate<A, B, C> filter;
@@ -14,7 +16,7 @@ public final class FilteringTriJoiner<A, B, C> implements TriJoiner<A, B, C> {
     }
 
     @Override
-    public FilteringTriJoiner<A, B, C> and(TriJoiner<A, B, C> otherJoiner) {
+    public @NonNull FilteringTriJoiner<A, B, C> and(@NonNull TriJoiner<A, B, C> otherJoiner) {
         FilteringTriJoiner<A, B, C> castJoiner = (FilteringTriJoiner<A, B, C>) otherJoiner;
         return new FilteringTriJoiner<>(filter.and(castJoiner.getFilter()));
     }

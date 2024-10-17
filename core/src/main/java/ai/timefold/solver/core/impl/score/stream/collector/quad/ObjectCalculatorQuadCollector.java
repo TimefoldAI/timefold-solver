@@ -8,6 +8,8 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.ObjectCalculator;
 
+import org.jspecify.annotations.NonNull;
+
 abstract sealed class ObjectCalculatorQuadCollector<A, B, C, D, Input_, Output_, Mapped_, Calculator_ extends ObjectCalculator<Input_, Output_, Mapped_>>
         implements QuadConstraintCollector<A, B, C, D, Calculator_, Output_>
         permits AverageReferenceQuadCollector, ConnectedRangesQuadConstraintCollector,
@@ -21,7 +23,7 @@ abstract sealed class ObjectCalculatorQuadCollector<A, B, C, D, Input_, Output_,
     }
 
     @Override
-    public PentaFunction<Calculator_, A, B, C, D, Runnable> accumulator() {
+    public @NonNull PentaFunction<Calculator_, A, B, C, D, Runnable> accumulator() {
         return (calculator, a, b, c, d) -> {
             final var mapped = mapper.apply(a, b, c, d);
             final var saved = calculator.insert(mapped);
@@ -30,7 +32,7 @@ abstract sealed class ObjectCalculatorQuadCollector<A, B, C, D, Input_, Output_,
     }
 
     @Override
-    public Function<Calculator_, Output_> finisher() {
+    public @NonNull Function<Calculator_, Output_> finisher() {
         return ObjectCalculator::result;
     }
 

@@ -11,6 +11,8 @@ import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintBuilder;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintBuilder;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
 
+import org.jspecify.annotations.NonNull;
+
 public final class QuadConstraintBuilderImpl<A, B, C, D, Score_ extends Score<Score_>>
         extends AbstractConstraintBuilder<Score_>
         implements QuadConstraintBuilder<A, B, C, D, Score_> {
@@ -29,8 +31,9 @@ public final class QuadConstraintBuilderImpl<A, B, C, D, Score_ extends Score<Sc
     }
 
     @Override
-    public <ConstraintJustification_ extends ConstraintJustification> QuadConstraintBuilder<A, B, C, D, Score_> justifyWith(
-            PentaFunction<A, B, C, D, Score_, ConstraintJustification_> justificationMapping) {
+    public @NonNull <ConstraintJustification_ extends ConstraintJustification> QuadConstraintBuilder<A, B, C, D, Score_>
+            justifyWith(
+                    @NonNull PentaFunction<A, B, C, D, Score_, ConstraintJustification_> justificationMapping) {
         if (this.justificationMapping != null) {
             throw new IllegalStateException("""
                     Justification mapping already set (%s).
@@ -48,8 +51,8 @@ public final class QuadConstraintBuilderImpl<A, B, C, D, Score_ extends Score<Sc
     }
 
     @Override
-    public QuadConstraintBuilder<A, B, C, D, Score_>
-            indictWith(QuadFunction<A, B, C, D, Collection<Object>> indictedObjectsMapping) {
+    public @NonNull QuadConstraintBuilder<A, B, C, D, Score_>
+            indictWith(@NonNull QuadFunction<A, B, C, D, Collection<Object>> indictedObjectsMapping) {
         if (this.indictedObjectsMapping != null) {
             throw new IllegalStateException("""
                     Indicted objects' mapping already set (%s).

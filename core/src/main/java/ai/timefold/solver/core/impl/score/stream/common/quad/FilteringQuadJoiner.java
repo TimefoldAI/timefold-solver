@@ -5,6 +5,8 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.api.score.stream.quad.QuadJoiner;
 
+import org.jspecify.annotations.NonNull;
+
 public final class FilteringQuadJoiner<A, B, C, D> implements QuadJoiner<A, B, C, D> {
 
     private final QuadPredicate<A, B, C, D> filter;
@@ -14,7 +16,7 @@ public final class FilteringQuadJoiner<A, B, C, D> implements QuadJoiner<A, B, C
     }
 
     @Override
-    public FilteringQuadJoiner<A, B, C, D> and(QuadJoiner<A, B, C, D> otherJoiner) {
+    public @NonNull FilteringQuadJoiner<A, B, C, D> and(@NonNull QuadJoiner<A, B, C, D> otherJoiner) {
         FilteringQuadJoiner<A, B, C, D> castJoiner = (FilteringQuadJoiner<A, B, C, D>) otherJoiner;
         return new FilteringQuadJoiner<>(filter.and(castJoiner.getFilter()));
     }

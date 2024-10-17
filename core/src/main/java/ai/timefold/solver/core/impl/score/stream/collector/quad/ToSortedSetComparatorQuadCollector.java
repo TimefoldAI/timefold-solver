@@ -8,6 +8,8 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.impl.score.stream.collector.SortedSetUndoableActionable;
 
+import org.jspecify.annotations.NonNull;
+
 final class ToSortedSetComparatorQuadCollector<A, B, C, D, Mapped_>
         extends UndoableActionableQuadCollector<A, B, C, D, Mapped_, SortedSet<Mapped_>, SortedSetUndoableActionable<Mapped_>> {
     private final Comparator<? super Mapped_> comparator;
@@ -19,7 +21,7 @@ final class ToSortedSetComparatorQuadCollector<A, B, C, D, Mapped_>
     }
 
     @Override
-    public Supplier<SortedSetUndoableActionable<Mapped_>> supplier() {
+    public @NonNull Supplier<SortedSetUndoableActionable<Mapped_>> supplier() {
         return () -> SortedSetUndoableActionable.orderBy(comparator);
     }
 

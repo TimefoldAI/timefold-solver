@@ -9,6 +9,8 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.impl.util.Quadruple;
 
+import org.jspecify.annotations.NonNull;
+
 final class ComposeFourQuadCollector<A, B, C, D, ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_, Result1_, Result2_, Result3_, Result4_, Result_>
         implements
         QuadConstraintCollector<A, B, C, D, Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result_> {
@@ -61,7 +63,7 @@ final class ComposeFourQuadCollector<A, B, C, D, ResultHolder1_, ResultHolder2_,
     }
 
     @Override
-    public Supplier<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>> supplier() {
+    public @NonNull Supplier<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>> supplier() {
         return () -> {
             ResultHolder1_ a = firstSupplier.get();
             ResultHolder2_ b = secondSupplier.get();
@@ -71,7 +73,8 @@ final class ComposeFourQuadCollector<A, B, C, D, ResultHolder1_, ResultHolder2_,
     }
 
     @Override
-    public PentaFunction<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, A, B, C, D, Runnable>
+    public @NonNull
+            PentaFunction<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, A, B, C, D, Runnable>
             accumulator() {
         return (resultHolder, a, b, c, d) -> composeUndo(firstAccumulator.apply(resultHolder.a(), a, b, c, d),
                 secondAccumulator.apply(resultHolder.b(), a, b, c, d),
@@ -90,7 +93,7 @@ final class ComposeFourQuadCollector<A, B, C, D, ResultHolder1_, ResultHolder2_,
     }
 
     @Override
-    public Function<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result_> finisher() {
+    public @NonNull Function<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result_> finisher() {
         return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.a()),
                 secondFinisher.apply(resultHolder.b()),
                 thirdFinisher.apply(resultHolder.c()),

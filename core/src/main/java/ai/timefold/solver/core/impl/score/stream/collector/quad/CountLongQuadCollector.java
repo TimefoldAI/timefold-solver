@@ -7,6 +7,8 @@ import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.LongCounter;
 
+import org.jspecify.annotations.NonNull;
+
 final class CountLongQuadCollector<A, B, C, D> implements QuadConstraintCollector<A, B, C, D, LongCounter, Long> {
     private final static CountLongQuadCollector<?, ?, ?, ?> INSTANCE = new CountLongQuadCollector<>();
 
@@ -19,12 +21,12 @@ final class CountLongQuadCollector<A, B, C, D> implements QuadConstraintCollecto
     }
 
     @Override
-    public Supplier<LongCounter> supplier() {
+    public @NonNull Supplier<LongCounter> supplier() {
         return LongCounter::new;
     }
 
     @Override
-    public PentaFunction<LongCounter, A, B, C, D, Runnable> accumulator() {
+    public @NonNull PentaFunction<LongCounter, A, B, C, D, Runnable> accumulator() {
         return (counter, a, b, c, d) -> {
             counter.increment();
             return counter::decrement;
@@ -32,7 +34,7 @@ final class CountLongQuadCollector<A, B, C, D> implements QuadConstraintCollecto
     }
 
     @Override
-    public Function<LongCounter, Long> finisher() {
+    public @NonNull Function<LongCounter, Long> finisher() {
         return LongCounter::result;
     }
 }
