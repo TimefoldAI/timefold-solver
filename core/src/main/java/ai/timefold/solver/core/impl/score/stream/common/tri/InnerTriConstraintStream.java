@@ -65,8 +65,8 @@ public interface InnerTriConstraintStream<A, B, C> extends TriConstraintStream<A
     }
 
     @Override
-    default <D> TriConstraintStream<A, B, C> ifExistsIncludingUnassigned(Class<D> otherClass,
-            QuadJoiner<A, B, C, D>... joiners) {
+    default @NonNull <D> TriConstraintStream<A, B, C> ifExistsIncludingUnassigned(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> @NonNull... joiners) {
         if (getRetrievalSemantics() == STANDARD) {
             return ifExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
         } else {
@@ -75,7 +75,8 @@ public interface InnerTriConstraintStream<A, B, C> extends TriConstraintStream<A
     }
 
     @Override
-    default <D> TriConstraintStream<A, B, C> ifNotExists(Class<D> otherClass, QuadJoiner<A, B, C, D>... joiners) {
+    default @NonNull <D> TriConstraintStream<A, B, C> ifNotExists(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> @NonNull... joiners) {
         if (getRetrievalSemantics() == STANDARD) {
             return ifNotExists(getConstraintFactory().forEach(otherClass), joiners);
         } else {
@@ -85,8 +86,8 @@ public interface InnerTriConstraintStream<A, B, C> extends TriConstraintStream<A
     }
 
     @Override
-    default <D> TriConstraintStream<A, B, C> ifNotExistsIncludingUnassigned(Class<D> otherClass,
-            QuadJoiner<A, B, C, D>... joiners) {
+    default @NonNull <D> TriConstraintStream<A, B, C> ifNotExistsIncludingUnassigned(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> @NonNull... joiners) {
         if (getRetrievalSemantics() == STANDARD) {
             return ifNotExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
         } else {
