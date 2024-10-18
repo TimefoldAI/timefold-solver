@@ -7,7 +7,8 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDesc
 public record DefaultBasicVariableMetaModel<Solution_, Entity_, Value_>(EntityMetaModel<Solution_, Entity_> entity,
         BasicVariableDescriptor<Solution_> variableDescriptor)
         implements
-            BasicVariableMetaModel<Solution_, Entity_, Value_> {
+            BasicVariableMetaModel<Solution_, Entity_, Value_>,
+            InnerVariableMetaModel<Solution_> {
 
     @SuppressWarnings("unchecked")
     @Override
