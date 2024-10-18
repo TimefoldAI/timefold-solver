@@ -7,7 +7,8 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDes
 public record DefaultShadowVariableMetaModel<Solution_, Entity_, Value_>(EntityMetaModel<Solution_, Entity_> entity,
         ShadowVariableDescriptor<Solution_> variableDescriptor)
         implements
-            ShadowVariableMetaModel<Solution_, Entity_, Value_> {
+            ShadowVariableMetaModel<Solution_, Entity_, Value_>,
+            InnerVariableMetaModel<Solution_> {
 
     @SuppressWarnings("unchecked")
     @Override
