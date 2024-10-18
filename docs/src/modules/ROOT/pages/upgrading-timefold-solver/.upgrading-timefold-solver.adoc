@@ -7,3 +7,4 @@
 include::overview.adoc[leveloffset=+1]
 include::upgrade-to-latest-version.adoc[leveloffset=+1]
 include::upgrade-from-optaplanner.adoc[leveloffset=+1]
+include::backwards-compatibility.adoc[leveloffset=+1]
