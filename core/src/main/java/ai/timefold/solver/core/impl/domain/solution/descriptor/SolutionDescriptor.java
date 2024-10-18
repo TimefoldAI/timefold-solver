@@ -36,7 +36,7 @@ import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfigurationProvider;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.metamodel.SolutionMetaModel;
+import ai.timefold.solver.core.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityProperty;
@@ -189,7 +189,7 @@ public class SolutionDescriptor<Solution_> {
     private final ConcurrentMap<Class<?>, EntityDescriptor<Solution_>> lowestEntityDescriptorMap = new ConcurrentHashMap<>();
     private final ConcurrentMap<Class<?>, MemberAccessor> planningIdMemberAccessorMap = new ConcurrentHashMap<>();
 
-    private SolutionMetaModel<Solution_> solutionMetaModel;
+    private PlanningSolutionMetaModel<Solution_> planningSolutionMetaModel;
     private SolutionCloner<Solution_> solutionCloner;
     private boolean assertModelForCloning = false;
 
@@ -746,21 +746,21 @@ public class SolutionDescriptor<Solution_> {
     // Model methods
     // ************************************************************************
 
-    public SolutionMetaModel<Solution_> getMetaModel() {
-        if (solutionMetaModel == null) {
-            var metaModel = new DefaultSolutionMetaModel<>(this);
+    public PlanningSolutionMetaModel<Solution_> getMetaModel() {
+        if (planningSolutionMetaModel == null) {
+            var metaModel = new DefaultPlanningSolutionMetaModel<>(this);
             for (var entityDescriptor : getEntityDescriptors()) {
-                var entityMetaModel = new DefaultEntityMetaModel<>(metaModel, entityDescriptor);
+                var entityMetaModel = new DefaultPlanningEntityMetaModel<>(metaModel, entityDescriptor);
                 for (var variableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
                     if (variableDescriptor.isListVariable()) {
                         var listVariableDescriptor = (ListVariableDescriptor<Solution_>) variableDescriptor;
-                        var listVariableMetaModel = new DefaultListVariableMetaModel<>(entityMetaModel,
+                        var listVariableMetaModel = new DefaultPlanningListVariableMetaModel<>(entityMetaModel,
                                 listVariableDescriptor);
                         entityMetaModel.addVariable(listVariableMetaModel);
                     } else {
                         var basicVariableDescriptor = (BasicVariableDescriptor<Solution_>) variableDescriptor;
                         var basicVariableMetaModel =
-                                new DefaultBasicVariableMetaModel<>(entityMetaModel, basicVariableDescriptor);
+                                new DefaultPlanningVariableMetaModel<>(entityMetaModel, basicVariableDescriptor);
                         entityMetaModel.addVariable(basicVariableMetaModel);
                     }
                 }
@@ -771,9 +771,9 @@ public class SolutionDescriptor<Solution_> {
                 }
                 metaModel.addEntity(entityMetaModel);
             }
-            this.solutionMetaModel = metaModel;
+            this.planningSolutionMetaModel = metaModel;
         }
-        return solutionMetaModel;
+        return planningSolutionMetaModel;
     }
 
     /**

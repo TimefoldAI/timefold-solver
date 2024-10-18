@@ -1,13 +1,14 @@
 package ai.timefold.solver.core.impl.domain.solution.descriptor;
 
-import ai.timefold.solver.core.api.domain.metamodel.EntityMetaModel;
-import ai.timefold.solver.core.api.domain.metamodel.ListVariableMetaModel;
+import ai.timefold.solver.core.api.domain.metamodel.PlanningEntityMetaModel;
+import ai.timefold.solver.core.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 
-public record DefaultListVariableMetaModel<Solution_, Entity_, Value_>(EntityMetaModel<Solution_, Entity_> entity,
+public record DefaultPlanningListVariableMetaModel<Solution_, Entity_, Value_>(
+        PlanningEntityMetaModel<Solution_, Entity_> entity,
         ListVariableDescriptor<Solution_> variableDescriptor)
         implements
-            ListVariableMetaModel<Solution_, Entity_, Value_>,
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_>,
             InnerVariableMetaModel<Solution_> {
 
     @SuppressWarnings("unchecked")

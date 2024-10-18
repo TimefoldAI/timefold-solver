@@ -24,14 +24,14 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
  * @param <Solution_> The solution type.
  * @param <Entity_> The entity type.
  */
-public interface EntityMetaModel<Solution_, Entity_> {
+public interface PlanningEntityMetaModel<Solution_, Entity_> {
 
     /**
      * Describes the {@link PlanningSolution} that owns this entity.
      *
      * @return never null, the solution meta-model.
      */
-    SolutionMetaModel<Solution_> solution();
+    PlanningSolutionMetaModel<Solution_> solution();
 
     /**
      * Returns the most specific class of the entity.
@@ -80,8 +80,8 @@ public interface EntityMetaModel<Solution_, Entity_> {
      * but only succeeds if the variable is a {@link PlanningVariable basic planning variable}.
      */
     @SuppressWarnings("unchecked")
-    default <Value_> BasicVariableMetaModel<Solution_, Entity_, Value_> basicVariable(String variableName) {
-        return (BasicVariableMetaModel<Solution_, Entity_, Value_>) variable(variableName);
+    default <Value_> PlanningVariableMetaModel<Solution_, Entity_, Value_> basicVariable(String variableName) {
+        return (PlanningVariableMetaModel<Solution_, Entity_, Value_>) variable(variableName);
     }
 
     /**
@@ -89,8 +89,8 @@ public interface EntityMetaModel<Solution_, Entity_> {
      * but only succeeds if the variable is a {@link PlanningListVariable planning list variable}.
      */
     @SuppressWarnings("unchecked")
-    default <Value_> ListVariableMetaModel<Solution_, Entity_, Value_> listVariable(String variableName) {
-        return (ListVariableMetaModel<Solution_, Entity_, Value_>) variable(variableName);
+    default <Value_> PlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariable(String variableName) {
+        return (PlanningListVariableMetaModel<Solution_, Entity_, Value_>) variable(variableName);
     }
 
     /**

@@ -2,9 +2,9 @@ package ai.timefold.solver.core.api.move;
 
 import ai.timefold.solver.core.api.domain.lookup.LookUpStrategyType;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
-import ai.timefold.solver.core.api.domain.metamodel.BasicVariableMetaModel;
 import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
-import ai.timefold.solver.core.api.domain.metamodel.ListVariableMetaModel;
+import ai.timefold.solver.core.api.domain.metamodel.PlanningListVariableMetaModel;
+import ai.timefold.solver.core.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
@@ -38,7 +38,7 @@ public interface SolutionState<Solution_> {
      * @param <Entity_>
      * @param <Value_>
      */
-    <Entity_, Value_> Value_ getValue(BasicVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity);
+    <Entity_, Value_> Value_ getValue(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity);
 
     /**
      * Reads the value of a @{@link PlanningListVariable list planning variable} of a given entity at a specific index.
@@ -52,7 +52,7 @@ public interface SolutionState<Solution_> {
      * @param <Entity_>
      * @param <Value_>
      */
-    <Entity_, Value_> Value_ getValueAtIndex(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+    <Entity_, Value_> Value_ getValueAtIndex(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Entity_ entity, int index);
 
     /**
@@ -64,7 +64,7 @@ public interface SolutionState<Solution_> {
      * @param <Entity_>
      * @param <Value_>
      */
-    <Entity_, Value_> ElementLocation getPositionOf(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+    <Entity_, Value_> ElementLocation getPositionOf(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Value_ value);
 
     /**

@@ -2,11 +2,11 @@ package ai.timefold.solver.core.impl.move.director;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.domain.metamodel.BasicVariableMetaModel;
 import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
-import ai.timefold.solver.core.api.domain.metamodel.ListVariableMetaModel;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultBasicVariableMetaModel;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultListVariableMetaModel;
+import ai.timefold.solver.core.api.domain.metamodel.PlanningListVariableMetaModel;
+import ai.timefold.solver.core.api.domain.metamodel.PlanningVariableMetaModel;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.move.InnerMutableSolutionState;
@@ -22,7 +22,7 @@ public sealed class MoveDirector<Solution_> implements InnerMutableSolutionState
         this.scoreDirector = Objects.requireNonNull(scoreDirector);
     }
 
-    public final <Entity_, Value_> void changeVariable(BasicVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+    public final <Entity_, Value_> void changeVariable(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Entity_ entity, Value_ newValue) {
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
         scoreDirector.beforeVariableChanged(variableDescriptor, entity);
@@ -31,7 +31,7 @@ public sealed class MoveDirector<Solution_> implements InnerMutableSolutionState
     }
 
     public final <Entity_, Value_> void moveValueBetweenLists(
-            ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Entity_ sourceEntity, int sourceIndex, Entity_ destinationEntity, int destinationIndex) {
         if (sourceEntity == destinationEntity) {
             moveValueInList(variableMetaModel, sourceEntity, sourceIndex, destinationIndex);
@@ -48,7 +48,8 @@ public sealed class MoveDirector<Solution_> implements InnerMutableSolutionState
     }
 
     @Override
-    public final <Entity_, Value_> void moveValueInList(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+    public final <Entity_, Value_> void moveValueInList(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Entity_ entity, int sourceIndex, int destinationIndex) {
         if (sourceIndex == destinationIndex) {
             return;
@@ -72,26 +73,28 @@ public sealed class MoveDirector<Solution_> implements InnerMutableSolutionState
 
     @SuppressWarnings("unchecked")
     @Override
-    public final <Entity_, Value_> Value_ getValue(BasicVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+    public final <Entity_, Value_> Value_ getValue(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Entity_ entity) {
         return (Value_) extractVariableDescriptor(variableMetaModel).getValue(entity);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public final <Entity_, Value_> Value_ getValueAtIndex(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+    public final <Entity_, Value_> Value_ getValueAtIndex(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Entity_ entity, int index) {
         return (Value_) extractVariableDescriptor(variableMetaModel).getValue(entity).get(index);
     }
 
     @Override
-    public <Entity_, Value_> ElementLocation getPositionOf(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+    public <Entity_, Value_> ElementLocation getPositionOf(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Value_ value) {
         return getPositionOf((InnerScoreDirector<Solution_, ?>) scoreDirector, variableMetaModel, value);
     }
 
     protected static <Solution_, Entity_, Value_> ElementLocation getPositionOf(InnerScoreDirector<Solution_, ?> scoreDirector,
-            ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value) {
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value) {
         return scoreDirector.getListVariableStateSupply(extractVariableDescriptor(variableMetaModel))
                 .getLocationInList(value);
     }
@@ -102,13 +105,13 @@ public sealed class MoveDirector<Solution_> implements InnerMutableSolutionState
     }
 
     private static <Solution_, Entity_, Value_> BasicVariableDescriptor<Solution_>
-            extractVariableDescriptor(BasicVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
-        return ((DefaultBasicVariableMetaModel<Solution_, Entity_, Value_>) variableMetaModel).variableDescriptor();
+            extractVariableDescriptor(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
+        return ((DefaultPlanningVariableMetaModel<Solution_, Entity_, Value_>) variableMetaModel).variableDescriptor();
     }
 
     private static <Solution_, Entity_, Value_> ListVariableDescriptor<Solution_>
-            extractVariableDescriptor(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
-        return ((DefaultListVariableMetaModel<Solution_, Entity_, Value_>) variableMetaModel).variableDescriptor();
+            extractVariableDescriptor(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
+        return ((DefaultPlanningListVariableMetaModel<Solution_, Entity_, Value_>) variableMetaModel).variableDescriptor();
     }
 
     /**

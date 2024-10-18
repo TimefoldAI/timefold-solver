@@ -3,7 +3,8 @@ package ai.timefold.solver.core.api.domain.metamodel;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
 /**
- * A {@link VariableMetaModel} that represents a @{@link PlanningVariable list planning variable}.
+ * A {@link VariableMetaModel} that represents a @{@link PlanningVariable basic planning variable}.
+ *
  * <p>
  * <strong>This package and all of its contents are part of the Move Streams API,
  * which is under development and is only offered as a preview feature.</strong>
@@ -20,12 +21,12 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
  * @param <Entity_> the entity type
  * @param <Value_> the value type
  */
-public non-sealed interface ListVariableMetaModel<Solution_, Entity_, Value_>
+public non-sealed interface PlanningVariableMetaModel<Solution_, Entity_, Value_>
         extends VariableMetaModel<Solution_, Entity_, Value_> {
 
     @Override
     default boolean isList() {
-        return true;
+        return false;
     }
 
     @Override
@@ -34,10 +35,17 @@ public non-sealed interface ListVariableMetaModel<Solution_, Entity_, Value_>
     }
 
     /**
-     * Returns whether the planning variable allows values not to be assigned to any entity's list variable.
+     * Returns whether the planning variable allows null values.
      *
-     * @return {@code true} if the planning variable allows unassigned values, {@code false} otherwise.
+     * @return {@code true} if the planning variable allows null values, {@code false} otherwise.
      */
-    boolean allowsUnassignedValues();
+    boolean allowsUnassigned();
+
+    /**
+     * Returns whether the planning variable is chained.
+     *
+     * @return {@code true} if the planning variable is chained, {@code false} otherwise.
+     */
+    boolean isChained();
 
 }
