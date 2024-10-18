@@ -22,7 +22,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
  *
  * @param <Solution_> the type of the solution
  */
-public interface SolutionMetaModel<Solution_> {
+public interface PlanningSolutionMetaModel<Solution_> {
 
     /**
      * Returns the class of the solution.
@@ -36,16 +36,16 @@ public interface SolutionMetaModel<Solution_> {
      * 
      * @return never null
      */
-    List<EntityMetaModel<Solution_, ?>> entities();
+    List<PlanningEntityMetaModel<Solution_, ?>> entities();
 
     /**
      * Returns the meta-models of genuine @{@link PlanningEntity planning entities} known to the solution.
      *
      * @return never null
      */
-    default List<EntityMetaModel<Solution_, ?>> genuineEntities() {
+    default List<PlanningEntityMetaModel<Solution_, ?>> genuineEntities() {
         return entities().stream()
-                .filter(EntityMetaModel::isGenuine)
+                .filter(PlanningEntityMetaModel::isGenuine)
                 .toList();
     }
 
@@ -57,10 +57,10 @@ public interface SolutionMetaModel<Solution_> {
      * @throws IllegalArgumentException if the entity class is not known to the solution
      */
     @SuppressWarnings("unchecked")
-    default <Entity_> EntityMetaModel<Solution_, Entity_> entity(Class<Entity_> entityClass) {
+    default <Entity_> PlanningEntityMetaModel<Solution_, Entity_> entity(Class<Entity_> entityClass) {
         for (var entityMetaModel : entities()) {
             if (entityMetaModel.type().equals(entityClass)) {
-                return (EntityMetaModel<Solution_, Entity_>) entityMetaModel;
+                return (PlanningEntityMetaModel<Solution_, Entity_>) entityMetaModel;
             }
         }
         throw new IllegalArgumentException(

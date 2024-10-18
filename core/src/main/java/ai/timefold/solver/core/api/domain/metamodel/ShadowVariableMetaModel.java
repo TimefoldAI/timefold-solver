@@ -4,7 +4,7 @@ package ai.timefold.solver.core.api.domain.metamodel;
  * A {@link VariableMetaModel} that represents a shadow planning variable.
  * A shadow variable isn't directly modified by the solver, or the user;
  * its value is derived from genuine variables
- * (see {@link BasicVariableMetaModel} and {@link ListVariableMetaModel}).
+ * (see {@link PlanningVariableMetaModel} and {@link PlanningListVariableMetaModel}).
  * <p>
  * <strong>This package and all of its contents are part of the Move Streams API,
  * which is under development and is only offered as a preview feature.</strong>

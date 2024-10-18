@@ -9,8 +9,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultBasicVariableMetaModel;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultListVariableMetaModel;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
@@ -45,7 +45,7 @@ class MoveDirectorTest {
         var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class)
                 .<TestdataValue> basicVariable("value");
         var variableDescriptor =
-                ((DefaultBasicVariableMetaModel<TestdataSolution, TestdataEntity, TestdataValue>) variableMetaModel)
+                ((DefaultPlanningVariableMetaModel<TestdataSolution, TestdataEntity, TestdataValue>) variableMetaModel)
                         .variableDescriptor();
 
         var originalValue = new TestdataValue("value");
@@ -99,7 +99,7 @@ class MoveDirectorTest {
         var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
                 .<TestdataListValue> listVariable("valueList");
         var variableDescriptor =
-                ((DefaultListVariableMetaModel<TestdataListSolution, TestdataListEntity, TestdataListValue>) variableMetaModel)
+                ((DefaultPlanningListVariableMetaModel<TestdataListSolution, TestdataListEntity, TestdataListValue>) variableMetaModel)
                         .variableDescriptor();
 
         var expectedValue1 = new TestdataListValue("value1");
@@ -141,7 +141,7 @@ class MoveDirectorTest {
         var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
                 .<TestdataListValue> listVariable("valueList");
         var variableDescriptor =
-                ((DefaultListVariableMetaModel<TestdataListSolution, TestdataListEntity, TestdataListValue>) variableMetaModel)
+                ((DefaultPlanningListVariableMetaModel<TestdataListSolution, TestdataListEntity, TestdataListValue>) variableMetaModel)
                         .variableDescriptor();
 
         var expectedValueA1 = new TestdataListValue("valueA1");

@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.api.move;
 
-import ai.timefold.solver.core.api.domain.metamodel.BasicVariableMetaModel;
-import ai.timefold.solver.core.api.domain.metamodel.ListVariableMetaModel;
+import ai.timefold.solver.core.api.domain.metamodel.PlanningListVariableMetaModel;
+import ai.timefold.solver.core.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
@@ -35,7 +35,8 @@ public interface MutableSolutionState<Solution_> extends SolutionState<Solution_
      * @param <Entity_>
      * @param <Value_>
      */
-    <Entity_, Value_> void changeVariable(BasicVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity,
+    <Entity_, Value_> void changeVariable(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Entity_ entity,
             Value_ newValue);
 
     /**
@@ -51,7 +52,7 @@ public interface MutableSolutionState<Solution_> extends SolutionState<Solution_
      * @param <Entity_>
      * @param <Value_>
      */
-    <Entity_, Value_> void moveValueBetweenLists(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+    <Entity_, Value_> void moveValueBetweenLists(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Entity_ sourceEntity, int sourceIndex, Entity_ destinationEntity, int destinationIndex);
 
     /**
@@ -66,7 +67,8 @@ public interface MutableSolutionState<Solution_> extends SolutionState<Solution_
      * @param <Entity_>
      * @param <Value_>
      */
-    <Entity_, Value_> void moveValueInList(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity,
+    <Entity_, Value_> void moveValueInList(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Entity_ entity,
             int sourceIndex, int destinationIndex);
 
     /**

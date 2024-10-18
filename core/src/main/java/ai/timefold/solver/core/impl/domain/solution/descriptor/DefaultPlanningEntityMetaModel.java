@@ -5,32 +5,33 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.domain.metamodel.EntityMetaModel;
-import ai.timefold.solver.core.api.domain.metamodel.SolutionMetaModel;
+import ai.timefold.solver.core.api.domain.metamodel.PlanningEntityMetaModel;
+import ai.timefold.solver.core.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 
-public final class DefaultEntityMetaModel<Solution_, Entity_>
-        implements EntityMetaModel<Solution_, Entity_> {
+public final class DefaultPlanningEntityMetaModel<Solution_, Entity_>
+        implements PlanningEntityMetaModel<Solution_, Entity_> {
 
     private final EntityDescriptor<Solution_> entityDescriptor;
-    private final SolutionMetaModel<Solution_> solution;
+    private final PlanningSolutionMetaModel<Solution_> solution;
     private final Class<Entity_> type;
     private final List<VariableMetaModel<Solution_, Entity_, ?>> variables = new ArrayList<>();
 
     @SuppressWarnings("unchecked")
-    DefaultEntityMetaModel(SolutionMetaModel<Solution_> solution, EntityDescriptor<Solution_> entityDescriptor) {
+    DefaultPlanningEntityMetaModel(PlanningSolutionMetaModel<Solution_> solution,
+            EntityDescriptor<Solution_> entityDescriptor) {
         this.solution = Objects.requireNonNull(solution);
         this.entityDescriptor = Objects.requireNonNull(entityDescriptor);
         this.type = (Class<Entity_>) entityDescriptor.getEntityClass();
     }
 
-    public EntityDescriptor<Solution_> getEntityDescriptor() {
+    public EntityDescriptor<Solution_> entityDescriptor() {
         return entityDescriptor;
     }
 
     @Override
-    public SolutionMetaModel<Solution_> solution() {
+    public PlanningSolutionMetaModel<Solution_> solution() {
         return solution;
     }
 

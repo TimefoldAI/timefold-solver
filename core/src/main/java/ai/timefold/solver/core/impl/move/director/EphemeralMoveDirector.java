@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.move.director;
 
 import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
-import ai.timefold.solver.core.api.domain.metamodel.ListVariableMetaModel;
+import ai.timefold.solver.core.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
@@ -24,7 +24,8 @@ public final class EphemeralMoveDirector<Solution_> extends MoveDirector<Solutio
     }
 
     @Override
-    public <Entity_, Value_> ElementLocation getPositionOf(ListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+    public <Entity_, Value_> ElementLocation getPositionOf(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Value_ value) {
         return getPositionOf(getVariableChangeRecordingScoreDirector().getDelegate(), variableMetaModel, value);
 

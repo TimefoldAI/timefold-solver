@@ -23,14 +23,14 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
  * @param <Value_>
  */
 public sealed interface VariableMetaModel<Solution_, Entity_, Value_>
-        permits BasicVariableMetaModel, ListVariableMetaModel, ShadowVariableMetaModel {
+        permits PlanningVariableMetaModel, PlanningListVariableMetaModel, ShadowVariableMetaModel {
 
     /**
      * Describes the entity that owns this variable.
      *
      * @return never null
      */
-    EntityMetaModel<Solution_, Entity_> entity();
+    PlanningEntityMetaModel<Solution_, Entity_> entity();
 
     /**
      * Describes the type of the value that this variable can hold.
@@ -48,8 +48,8 @@ public sealed interface VariableMetaModel<Solution_, Entity_, Value_>
 
     /**
      * Whether this variable is a @{@link PlanningListVariable} or a {@link PlanningVariable}.
-     * If list, this is guaranteed to extend {@link ListVariableMetaModel}.
-     * Otherwise it is guaranteed to extend either {@link BasicVariableMetaModel} or {@link ShadowVariableMetaModel}.
+     * If list, this is guaranteed to extend {@link PlanningListVariableMetaModel}.
+     * Otherwise it is guaranteed to extend either {@link PlanningVariableMetaModel} or {@link ShadowVariableMetaModel}.
      *
      * @return true if this variable is a genuine @{@link PlanningListVariable}, false otherwise
      */
@@ -57,7 +57,8 @@ public sealed interface VariableMetaModel<Solution_, Entity_, Value_>
 
     /**
      * Whether this variable is a genuine variable.
-     * If genuine, this is guaranteed to extend either {@link BasicVariableMetaModel} or {@link ListVariableMetaModel}.
+     * If genuine, this is guaranteed to extend either {@link PlanningVariableMetaModel} or
+     * {@link PlanningListVariableMetaModel}.
      * Otherwise it is guaranteed to extend {@link ShadowVariableMetaModel}.
      *
      * @return true if this variable is genuine, false otherwise
