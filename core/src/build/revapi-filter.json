@@ -8,6 +8,8 @@
           "class ai\\.timefold\\.solver\\.core\\.config.*"
         ],
         "exclude": [
+          "class ai\\.timefold\\.solver\\.core\\.api\\.move.*",
+          "class ai\\.timefold\\.solver\\.core\\.api\\.domain\\.metamodel.*",
           "method .* ai\\.timefold\\.solver\\.core\\.config.*::(?!(set|get)).*",
           "parameter .* ai\\.timefold\\.solver\\.core\\.config.*::(?!(set|get)).*"
         ]

@@ -142,29 +142,6 @@ The `TRACKED_FULL_ASSERT` mode turns on all the <<environmentModeFullAssert, `FU
 and additionally tracks changes to the working solution.
 This allows the solver to report exactly what variables were corrupted and what variable listener events are missing.
 
-Consider the following incorrectly implemented move:
-
-```java
-    @Override
-    public Move<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        return this;
-    }
-
-    @Override
-    protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        scoreDirector.beforeVariableChanged(entity, "value");
-        entity.setValue(newValue);
-        scoreDirector.afterVariableChanged(entity, "value");
-    }
-```
-
-When it is evaluated by the solver, an exception will be thrown with the following in its message:
-
-```
-Variables that are different between before and undo:
-  - Actual value (newValue) of variable value on EntityClass entity (entity) differs from expected (oldValue)
-```
-
 In particular, the solver will recalculate all shadow variables from scratch on the solution after the undo and then report:
 
 - Genuine and shadow variables that are different between "before" and "undo".
@@ -211,7 +188,7 @@ The `FAST_ASSERT` mode turns on most assertions (such as assert that an undoMove
 to fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
 
 This mode is <<environmentModeReproducible,reproducible>>.
-It is also intrusive because it calls the method `calculateScore()` more frequently than a non assert mode.
+It is also intrusive because it calls the method `calculateScore()` more frequently than a non-assert mode.
 
 The `FAST_ASSERT` mode is slow.
 

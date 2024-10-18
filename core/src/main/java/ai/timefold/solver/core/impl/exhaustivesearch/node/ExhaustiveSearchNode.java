@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.impl.exhaustivesearch.node;
 
+import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.bounder.ScoreBounder;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 
 public class ExhaustiveSearchNode {
 

@@ -10,6 +10,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingS
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveIteratorFactory;
 
 public class QueuedEntityPlacer<Solution_> extends AbstractEntityPlacer<Solution_> implements EntityPlacer<Solution_> {
 
@@ -62,7 +63,7 @@ public class QueuedEntityPlacer<Solution_> extends AbstractEntityPlacer<Solution
                 MoveSelector<Solution_> moveSelector = moveSelectorIterator.next();
                 moveIterator = moveSelector.iterator();
             }
-            return new Placement<>(moveIterator);
+            return new Placement<>(MoveIteratorFactory.adaptIterator(moveIterator));
         }
 
     }

@@ -2,12 +2,12 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
 import java.util.Iterator;
 
+import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.list.ElementLocation;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 
 /**

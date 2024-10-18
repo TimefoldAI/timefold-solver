@@ -7,6 +7,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.FilteringMoveSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveIteratorFactory;
 
 public class PooledEntityPlacer<Solution_> extends AbstractEntityPlacer<Solution_> implements EntityPlacer<Solution_> {
 
@@ -38,7 +39,7 @@ public class PooledEntityPlacer<Solution_> extends AbstractEntityPlacer<Solution
             if (!moveIterator.hasNext()) {
                 return noUpcomingSelection();
             }
-            return new Placement<>(moveIterator);
+            return new Placement<>(MoveIteratorFactory.adaptIterator(moveIterator));
         }
 
     }

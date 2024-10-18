@@ -19,7 +19,7 @@ import ai.timefold.solver.core.impl.util.CollectionUtils;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @see Move
  */
-public final class CompositeMove<Solution_> implements Move<Solution_> {
+public final class CompositeMove<Solution_> extends AbstractMove<Solution_> {
 
     /**
      * @param moves never null, sometimes empty. Do not modify this argument afterwards or the CompositeMove corrupts.
@@ -71,29 +71,7 @@ public final class CompositeMove<Solution_> implements Move<Solution_> {
     }
 
     @Override
-    public Move<Solution_> doMove(ScoreDirector<Solution_> scoreDirector) {
-        Move<Solution_>[] undoMoves = new Move[moves.length];
-        int doableCount = 0;
-        for (Move<Solution_> move : moves) {
-            if (!move.isMoveDoable(scoreDirector)) {
-                continue;
-            }
-            // Calls scoreDirector.triggerVariableListeners() between moves
-            // because a later move can depend on the shadow variables changed by an earlier move
-            Move<Solution_> undoMove = move.doMove(scoreDirector);
-            // Undo in reverse order and each undoMove is created after previous moves have been done
-            undoMoves[moves.length - 1 - doableCount] = undoMove;
-            doableCount++;
-        }
-        if (doableCount < undoMoves.length) {
-            undoMoves = Arrays.copyOfRange(undoMoves, undoMoves.length - doableCount, undoMoves.length);
-        }
-        // No need to call scoreDirector.triggerVariableListeners() because Move.doMove() already does it for every move.
-        return CompositeMove.buildMove(undoMoves);
-    }
-
-    @Override
-    public void doMoveOnly(ScoreDirector<Solution_> scoreDirector) {
+    protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         for (Move<Solution_> move : moves) {
             if (!move.isMoveDoable(scoreDirector)) {
                 continue;

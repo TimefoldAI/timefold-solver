@@ -12,7 +12,7 @@ import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescr
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 /**
@@ -84,22 +84,17 @@ public class PillarSwapMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     @Override
-    public PillarSwapMove<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        return new PillarSwapMove<>(variableDescriptorList, rightPillar, leftPillar);
-    }
-
-    @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         for (GenuineVariableDescriptor<Solution_> variableDescriptor : variableDescriptorList) {
             Object oldLeftValue = variableDescriptor.getValue(leftPillar.get(0));
             Object oldRightValue = variableDescriptor.getValue(rightPillar.get(0));
             if (!Objects.equals(oldLeftValue, oldRightValue)) {
                 for (Object leftEntity : leftPillar) {
-                    innerScoreDirector.changeVariableFacade(variableDescriptor, leftEntity, oldRightValue);
+                    castScoreDirector.changeVariableFacade(variableDescriptor, leftEntity, oldRightValue);
                 }
                 for (Object rightEntity : rightPillar) {
-                    innerScoreDirector.changeVariableFacade(variableDescriptor, rightEntity, oldLeftValue);
+                    castScoreDirector.changeVariableFacade(variableDescriptor, rightEntity, oldLeftValue);
                 }
             }
         }

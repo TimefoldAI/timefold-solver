@@ -11,6 +11,7 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchPickEarlyType;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.heuristic.move.DummyMove;
+import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.finalist.HighestScoreFinalistPodium;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
@@ -230,7 +231,8 @@ class AcceptedLocalSearchForagerTest {
 
     public static LocalSearchMoveScope<TestdataSolution> createMoveScope(LocalSearchStepScope<TestdataSolution> stepScope,
             SimpleScore score, boolean accepted) {
-        LocalSearchMoveScope<TestdataSolution> moveScope = new LocalSearchMoveScope<>(stepScope, 0, new DummyMove());
+        LocalSearchMoveScope<TestdataSolution> moveScope =
+                new LocalSearchMoveScope<>(stepScope, 0, new LegacyMoveAdapter<>(new DummyMove()));
         moveScope.setScore(score);
         moveScope.setAccepted(accepted);
         return moveScope;

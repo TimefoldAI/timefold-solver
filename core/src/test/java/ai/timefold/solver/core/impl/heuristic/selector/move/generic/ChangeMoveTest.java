@@ -67,15 +67,15 @@ class ChangeMoveTest {
 
         ChangeMove<TestdataEntityProvidingSolution> aMove = new ChangeMove<>(variableDescriptor, a, v2);
         a.setValue(v1);
-        aMove.doMove(scoreDirector);
+        aMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v2);
 
         a.setValue(v2);
-        aMove.doMove(scoreDirector);
+        aMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v2);
 
         a.setValue(v3);
-        aMove.doMove(scoreDirector);
+        aMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v2);
     }
 

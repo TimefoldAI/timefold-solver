@@ -357,18 +357,10 @@ To avoid hard coding the tabu size, configure a tabu ratio, relative to the numb
       <moveTabuSize>7</moveTabuSize>
     </acceptor>
 ----
-* __Undo move tabu __makes the undo move of recent steps tabu.
-+
-[source,xml,options="nowrap"]
-----
-    <acceptor>
-      <undoMoveTabuSize>7</undoMoveTabuSize>
-    </acceptor>
-----
 
 [IMPORTANT]
 ====
-When using move tabu and undo move tabu with xref:optimization-algorithms/overview.adoc#customMoves[custom moves],
+When using move tabu with xref:optimization-algorithms/overview.adoc#customMoves[custom moves],
 make sure that the planning entities do not include planning variables in their `hashCode` methods.
 Failure to do so results in runtime exceptions being thrown due to the `hashCode` not being constant,
 as the entities have their values changed by the local search algorithm.

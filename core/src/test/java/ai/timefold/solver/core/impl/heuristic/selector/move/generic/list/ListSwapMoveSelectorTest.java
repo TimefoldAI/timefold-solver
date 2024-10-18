@@ -58,15 +58,15 @@ class ListSwapMoveSelectorTest {
         // - C [3]
 
         assertAllCodesOfMoveSelector(moveSelector,
-                "No change", // undoable
+                "No change", // ephemeral
                 "v3 {C[0]} <-> v1 {A[1]}",
                 "v3 {C[0]} <-> v2 {A[0]}",
                 "v1 {A[1]} <-> v3 {C[0]}", // redundant
-                "No change", // undoable
+                "No change", // ephemeral
                 "v1 {A[1]} <-> v2 {A[0]}",
                 "v2 {A[0]} <-> v3 {C[0]}", // redundant
                 "v2 {A[0]} <-> v1 {A[1]}", // redundant
-                "No change" // undoable
+                "No change" // ephemeral
         );
     }
 
@@ -103,10 +103,10 @@ class ListSwapMoveSelectorTest {
         // - C [3]
 
         assertAllCodesOfMoveSelectorWithoutSize(moveSelector,
-                "No change", // undoable
+                "No change", // ephemeral
                 "v3 {C[0]} <-> v1 {A[1]}",
                 "v1 {A[1]} <-> v3 {C[0]}", // redundant
-                "No change" // undoable
+                "No change" // ephemeral
         );
     }
 

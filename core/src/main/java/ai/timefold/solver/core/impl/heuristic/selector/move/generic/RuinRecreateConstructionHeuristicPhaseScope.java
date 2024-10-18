@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 
+import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 final class RuinRecreateConstructionHeuristicPhaseScope<Solution_> extends ConstructionHeuristicPhaseScope<Solution_> {
@@ -16,7 +16,7 @@ final class RuinRecreateConstructionHeuristicPhaseScope<Solution_> extends Const
     }
 
     @Override
-    public void addMoveEvaluationCount(Move<?> move, long count) {
+    public void addMoveEvaluationCount(Move<Solution_> move, long count) {
         // Nested phase does not count moves.
     }
 

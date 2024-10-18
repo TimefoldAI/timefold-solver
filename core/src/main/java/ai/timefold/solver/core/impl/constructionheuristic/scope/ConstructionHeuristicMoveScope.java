@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.constructionheuristic.scope;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.impl.phase.scope.AbstractMoveScope;
 
 /**
@@ -9,8 +9,8 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractMoveScope;
  */
 public final class ConstructionHeuristicMoveScope<Solution_> extends AbstractMoveScope<Solution_> {
 
-    public ConstructionHeuristicMoveScope(ConstructionHeuristicStepScope<Solution_> stepScope,
-            int moveIndex, Move<Solution_> move) {
+    public ConstructionHeuristicMoveScope(ConstructionHeuristicStepScope<Solution_> stepScope, int moveIndex,
+            Move<Solution_> move) {
         super(stepScope, moveIndex, move);
     }
 

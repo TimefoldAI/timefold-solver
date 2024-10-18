@@ -15,8 +15,9 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+import ai.timefold.solver.core.api.move.Move;
+import ai.timefold.solver.core.api.move.MutableSolutionState;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchPhaseConfig;
@@ -27,8 +28,8 @@ import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchLayer;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchPhaseScope;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchStepScope;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
+import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
@@ -49,6 +50,7 @@ import io.micrometer.core.instrument.Metrics;
 
 class DefaultExhaustiveSearchPhaseTest {
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
     void restoreWorkingSolution() {
         ExhaustiveSearchPhaseScope<TestdataSolution> phaseScope = mock(ExhaustiveSearchPhaseScope.class);
@@ -59,6 +61,7 @@ class DefaultExhaustiveSearchPhaseTest {
         var workingSolution = new TestdataSolution();
         when(phaseScope.getWorkingSolution()).thenReturn(workingSolution);
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector = mock(InnerScoreDirector.class);
+        when(scoreDirector.getMoveDirector()).thenReturn(mock(MoveDirector.class));
         when(phaseScope.getScoreDirector()).thenReturn((InnerScoreDirector) scoreDirector);
 
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
@@ -69,27 +72,13 @@ class DefaultExhaustiveSearchPhaseTest {
         var layer2 = new ExhaustiveSearchLayer(2, mock(Object.class));
         var layer3 = new ExhaustiveSearchLayer(3, mock(Object.class));
         var layer4 = new ExhaustiveSearchLayer(4, mock(Object.class));
-        var node0 = new ExhaustiveSearchNode(layer0, null);
-        node0.setMove(mock(Move.class));
-        node0.setUndoMove(mock(Move.class));
-        var node1 = new ExhaustiveSearchNode(layer1, node0);
-        node1.setMove(mock(Move.class));
-        node1.setUndoMove(mock(Move.class));
-        var node2A = new ExhaustiveSearchNode(layer2, node1);
-        node2A.setMove(mock(Move.class));
-        node2A.setUndoMove(mock(Move.class));
-        var node3A = new ExhaustiveSearchNode(layer3, node2A); // oldNode
-        node3A.setMove(mock(Move.class));
-        node3A.setUndoMove(mock(Move.class));
-        var node2B = new ExhaustiveSearchNode(layer2, node1);
-        node2B.setMove(mock(Move.class));
-        node2B.setUndoMove(mock(Move.class));
-        var node3B = new ExhaustiveSearchNode(layer3, node2B);
-        node3B.setMove(mock(Move.class));
-        node3B.setUndoMove(mock(Move.class));
-        var node4B = new ExhaustiveSearchNode(layer4, node3B); // newNode
-        node4B.setMove(mock(Move.class));
-        node4B.setUndoMove(mock(Move.class));
+        var node0 = createNode(layer0, null);
+        var node1 = createNode(layer1, node0);
+        var node2A = createNode(layer2, node1);
+        var node3A = createNode(layer3, node2A); // oldNode
+        var node2B = createNode(layer2, node1);
+        var node3B = createNode(layer3, node2B);
+        var node4B = createNode(layer4, node3B); // newNode
         node4B.setScore(SimpleScore.ofUninitialized(-96, 7));
         when(lastCompletedStepScope.getExpandingNode()).thenReturn(node3A);
         when(stepScope.getExpandingNode()).thenReturn(node4B);
@@ -98,22 +87,27 @@ class DefaultExhaustiveSearchPhaseTest {
                 mock(EntitySelector.class), mock(ExhaustiveSearchDecider.class)).build();
         phase.restoreWorkingSolution(stepScope);
 
-        verify(node0.getMove(), times(0)).doMove(any(ScoreDirector.class));
-        verify(node0.getUndoMove(), times(0)).doMoveOnly(any(ScoreDirector.class));
-        verify(node1.getMove(), times(0)).doMove(any(ScoreDirector.class));
-        verify(node1.getUndoMove(), times(0)).doMoveOnly(any(ScoreDirector.class));
-        verify(node2A.getMove(), times(0)).doMove(any(ScoreDirector.class));
-        verify(node2A.getUndoMove(), times(1)).doMoveOnly(scoreDirector);
-        verify(node3A.getMove(), times(0)).doMove(any(ScoreDirector.class));
-        verify(node3A.getUndoMove(), times(1)).doMoveOnly(scoreDirector);
-        verify(node2B.getMove(), times(1)).doMoveOnly(scoreDirector);
-        verify(node2B.getUndoMove(), times(0)).doMoveOnly(any(ScoreDirector.class));
-        verify(node3B.getMove(), times(1)).doMoveOnly(scoreDirector);
-        verify(node3B.getUndoMove(), times(0)).doMoveOnly(any(ScoreDirector.class));
-        verify(node4B.getMove(), times(1)).doMoveOnly(scoreDirector);
-        verify(node4B.getUndoMove(), times(0)).doMoveOnly(any(ScoreDirector.class));
-        // TODO FIXME
-        // verify(workingSolution).setScore(newScore);
+        verify(node0.getMove(), times(0)).run(any(MutableSolutionState.class));
+        verify(node0.getUndoMove(), times(0)).run(any(MutableSolutionState.class));
+        verify(node1.getMove(), times(0)).run(any(MutableSolutionState.class));
+        verify(node1.getUndoMove(), times(0)).run(any(MutableSolutionState.class));
+        verify(node2A.getMove(), times(0)).run(any(MutableSolutionState.class));
+        verify(node2A.getUndoMove(), times(1)).run(any(MutableSolutionState.class));
+        verify(node3A.getMove(), times(0)).run(any(MutableSolutionState.class));
+        verify(node3A.getUndoMove(), times(1)).run(any(MutableSolutionState.class));
+        verify(node2B.getMove(), times(1)).run(any(MutableSolutionState.class));
+        verify(node2B.getUndoMove(), times(0)).run(any(MutableSolutionState.class));
+        verify(node3B.getMove(), times(1)).run(any(MutableSolutionState.class));
+        verify(node3B.getUndoMove(), times(0)).run(any(MutableSolutionState.class));
+        verify(node4B.getMove(), times(1)).run(any(MutableSolutionState.class));
+        verify(node4B.getUndoMove(), times(0)).run(any(MutableSolutionState.class));
+    }
+
+    ExhaustiveSearchNode createNode(ExhaustiveSearchLayer layer, ExhaustiveSearchNode parentNode) {
+        var node = new ExhaustiveSearchNode(layer, parentNode);
+        node.setMove(mock(Move.class));
+        node.setUndoMove(mock(Move.class));
+        return node;
     }
 
     @Test

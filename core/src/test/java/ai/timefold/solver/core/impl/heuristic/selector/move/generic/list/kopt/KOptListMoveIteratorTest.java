@@ -18,10 +18,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 
 import org.junit.jupiter.api.Test;
@@ -145,7 +145,7 @@ public class KOptListMoveIteratorTest {
 
             for (int i = 0; i < entityList.size(); i++) {
                 when(mocks.listVariableStateSupply.getLocationInList(entityList.get(i)))
-                        .thenReturn(new LocationInList(entity, i));
+                        .thenReturn(ElementLocation.of(entity, i));
                 when(mocks.listVariableStateSupply.getInverseSingleton(entityList.get(i))).thenReturn(entity);
                 when(mocks.listVariableStateSupply.getIndex(entityList.get(i))).thenReturn(i);
                 when(mocks.listVariableStateSupply.getSourceVariableDescriptor()).thenReturn(mocks.listVariableDescriptor);
@@ -250,7 +250,7 @@ public class KOptListMoveIteratorTest {
 
             for (int i = 0; i < entityList.size(); i++) {
                 when(mocks.listVariableStateSupply.getLocationInList(entityList.get(i)))
-                        .thenReturn(new LocationInList(entity, i));
+                        .thenReturn(ElementLocation.of(entity, i));
                 when(mocks.listVariableStateSupply.getInverseSingleton(entityList.get(i))).thenReturn(entity);
                 when(mocks.listVariableStateSupply.getIndex(entityList.get(i))).thenReturn(i);
                 when(mocks.listVariableStateSupply.getSourceVariableDescriptor()).thenReturn(mocks.listVariableDescriptor);

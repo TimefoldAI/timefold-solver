@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -12,9 +13,8 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
-import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhaseBuilder;
-import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
+import ai.timefold.solver.core.impl.move.director.VariableChangeRecordingScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
@@ -25,7 +25,6 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
     private final Set<Object> affectedEntitySet;
     private final RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder;
     private final SolverScope<Solution_> solverScope;
-    private final Map<Object, NavigableSet<RuinedLocation>> entityToOriginalPositionMap;
     private final Map<Object, NavigableSet<RuinedLocation>> entityToNewPositionMap;
 
     public ListRuinRecreateMove(ListVariableStateSupply<Solution_> listVariableStateSupply,
@@ -36,41 +35,39 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
         this.solverScope = solverScope;
         this.ruinedValueList = ruinedValueList;
         this.affectedEntitySet = affectedEntitySet;
-        this.entityToOriginalPositionMap = CollectionUtils.newIdentityHashMap(affectedEntitySet.size());
         this.entityToNewPositionMap = CollectionUtils.newIdentityHashMap(affectedEntitySet.size());
-    }
-
-    @Override
-    protected Move<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        return new ListRuinRecreateUndoMove<>(this, listVariableStateSupply.getSourceVariableDescriptor(),
-                entityToNewPositionMap, entityToOriginalPositionMap);
     }
 
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         entityToNewPositionMap.clear();
-        entityToOriginalPositionMap.clear();
-
-        var innerScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
-        for (var value : ruinedValueList) {
-            var location = (LocationInList) listVariableStateSupply.getLocationInList(value);
+        var entityToOriginalPositionMap =
+                CollectionUtils.<Object, NavigableSet<RuinedLocation>> newIdentityHashMap(affectedEntitySet.size());
+        for (var valueToRuin : ruinedValueList) {
+            var location = listVariableStateSupply.getLocationInList(valueToRuin)
+                    .ensureAssigned();
             entityToOriginalPositionMap.computeIfAbsent(location.entity(),
-                    ignored -> new TreeSet<>()).add(new RuinedLocation(value, location.index()));
+                    ignored -> new TreeSet<>()).add(new RuinedLocation(valueToRuin, location.index()));
         }
 
         var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
+        var recordingScoreDirector = (VariableChangeRecordingScoreDirector<Solution_>) scoreDirector;
+        var nonRecordingScoreDirector = recordingScoreDirector.getDelegate();
         for (var entry : entityToOriginalPositionMap.entrySet()) {
             var entity = entry.getKey();
+            var originalPositionSet = entry.getValue();
 
-            innerScoreDirector.beforeListVariableChanged(listVariableDescriptor, entity,
+            // Only record before(), so we can restore the state.
+            // The after() is sent straight to the real score director.
+            recordingScoreDirector.beforeListVariableChanged(listVariableDescriptor, entity,
                     listVariableDescriptor.getFirstUnpinnedIndex(entity),
                     listVariableDescriptor.getListSize(entity));
-            for (var position : entry.getValue().descendingSet()) {
-                innerScoreDirector.beforeListVariableElementUnassigned(listVariableDescriptor, position.ruinedValue());
+            for (var position : originalPositionSet.descendingSet()) {
+                recordingScoreDirector.beforeListVariableElementUnassigned(listVariableDescriptor, position.ruinedValue());
                 listVariableDescriptor.removeElement(entity, position.index());
-                innerScoreDirector.afterListVariableElementUnassigned(listVariableDescriptor, position.ruinedValue());
+                recordingScoreDirector.afterListVariableElementUnassigned(listVariableDescriptor, position.ruinedValue());
             }
-            innerScoreDirector.afterListVariableChanged(listVariableDescriptor, entity,
+            nonRecordingScoreDirector.afterListVariableChanged(listVariableDescriptor, entity,
                     listVariableDescriptor.getFirstUnpinnedIndex(entity),
                     listVariableDescriptor.getListSize(entity));
         }
@@ -84,11 +81,23 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
         constructionHeuristicPhase.solvingEnded(solverScope);
         scoreDirector.triggerVariableListeners();
 
+        var entityToInsertedValuesMap = CollectionUtils.<Object, List<Object>> newIdentityHashMap(0);
+        for (var entity : entityToOriginalPositionMap.keySet()) {
+            entityToInsertedValuesMap.put(entity, new ArrayList<>());
+        }
+
         for (var ruinedValue : ruinedValueList) {
-            var location = (LocationInList) listVariableStateSupply.getLocationInList(ruinedValue);
+            var location = listVariableStateSupply.getLocationInList(ruinedValue)
+                    .ensureAssigned();
             entityToNewPositionMap.computeIfAbsent(location.entity(), ignored -> new TreeSet<>())
                     .add(new RuinedLocation(ruinedValue, location.index()));
+            entityToInsertedValuesMap.computeIfAbsent(location.entity(), ignored -> new ArrayList<>()).add(ruinedValue);
         }
+
+        for (var entry : entityToInsertedValuesMap.entrySet()) {
+            recordingScoreDirector.recordListAssignment(listVariableDescriptor, entry.getKey(), entry.getValue());
+        }
+
     }
 
     @Override
@@ -108,8 +117,8 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
 
     @Override
     public Move<Solution_> rebase(ScoreDirector<Solution_> destinationScoreDirector) {
-        var rebasedRuinedValueList = rebaseList(ruinedValueList, destinationScoreDirector);
-        var rebasedAffectedEntitySet = rebaseSet(affectedEntitySet, destinationScoreDirector);
+        var rebasedRuinedValueList = AbstractMove.rebaseList(ruinedValueList, destinationScoreDirector);
+        var rebasedAffectedEntitySet = AbstractMove.rebaseSet(affectedEntitySet, destinationScoreDirector);
         return new ListRuinRecreateMove<>(listVariableStateSupply, constructionHeuristicPhaseBuilder, solverScope,
                 rebasedRuinedValueList, rebasedAffectedEntitySet);
     }

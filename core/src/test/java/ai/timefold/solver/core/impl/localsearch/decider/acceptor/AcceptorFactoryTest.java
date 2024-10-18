@@ -36,7 +36,7 @@ class AcceptorFactoryTest {
                 .withFadingEntityTabuSize(1)
                 .withMoveTabuSize(1)
                 .withFadingMoveTabuSize(1)
-                .withUndoMoveTabuSize(1)
+                .withUndoMoveTabuSize(1) // Has no effect anymore.
                 .withValueTabuSize(1)
                 .withFadingValueTabuSize(1)
                 .withLateAcceptanceSize(10)
@@ -53,21 +53,11 @@ class AcceptorFactoryTest {
         Acceptor<Solution_> acceptor = acceptorFactory.buildAcceptor(heuristicConfigPolicy);
         assertThat(acceptor).isExactlyInstanceOf(CompositeAcceptor.class);
         CompositeAcceptor<Solution_> compositeAcceptor = (CompositeAcceptor<Solution_>) acceptor;
-        assertThat(compositeAcceptor.acceptorList).hasSize(AcceptorType.values().length);
-        assertAcceptorTypeAtPosition(compositeAcceptor, 0, HillClimbingAcceptor.class);
-        assertAcceptorTypeAtPosition(compositeAcceptor, 1, StepCountingHillClimbingAcceptor.class);
-        assertAcceptorTypeAtPosition(compositeAcceptor, 2, EntityTabuAcceptor.class);
-        assertAcceptorTypeAtPosition(compositeAcceptor, 3, ValueTabuAcceptor.class);
-        assertAcceptorTypeAtPosition(compositeAcceptor, 4, MoveTabuAcceptor.class);
-        assertAcceptorTypeAtPosition(compositeAcceptor, 5, MoveTabuAcceptor.class);
-        assertAcceptorTypeAtPosition(compositeAcceptor, 6, SimulatedAnnealingAcceptor.class);
-        assertAcceptorTypeAtPosition(compositeAcceptor, 7, LateAcceptanceAcceptor.class);
-        assertAcceptorTypeAtPosition(compositeAcceptor, 8, GreatDelugeAcceptor.class);
-    }
-
-    private <Solution_, Acceptor_ extends Acceptor<Solution_>> void assertAcceptorTypeAtPosition(
-            CompositeAcceptor<Solution_> compositeAcceptor, int position, Class<Acceptor_> expectedAcceptorType) {
-        assertThat(compositeAcceptor.acceptorList.get(position)).isExactlyInstanceOf(expectedAcceptorType);
+        assertThat(compositeAcceptor.acceptorList)
+                .map(a -> (Class) a.getClass())
+                .containsExactly(HillClimbingAcceptor.class, StepCountingHillClimbingAcceptor.class, EntityTabuAcceptor.class,
+                        ValueTabuAcceptor.class, MoveTabuAcceptor.class, SimulatedAnnealingAcceptor.class,
+                        LateAcceptanceAcceptor.class, GreatDelugeAcceptor.class);
     }
 
     @Test

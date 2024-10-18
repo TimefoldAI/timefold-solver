@@ -13,7 +13,7 @@ import ai.timefold.solver.core.impl.domain.variable.anchor.AnchorVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -95,30 +95,18 @@ public class KOptMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     @Override
-    public KOptMove<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        Object[] undoValues = new Object[values.length];
-        undoValues[0] = variableDescriptor.getValue(entity);
-        for (int i = 1; i < values.length; i++) {
-            undoValues[i] = values[values.length - i];
-        }
-        return new KOptMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply,
-                entity, undoValues);
-    }
-
-    @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
-        Object firstValue = variableDescriptor.getValue(entity);
-        Object formerEntity = entity;
-        for (int i = 0; i < values.length; i++) {
-            Object value = values[i];
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
+        var firstValue = variableDescriptor.getValue(entity);
+        var formerEntity = entity;
+        for (Object value : values) {
             if (formerEntity != null) {
-                innerScoreDirector.changeVariableFacade(variableDescriptor, formerEntity, value);
+                castScoreDirector.changeVariableFacade(variableDescriptor, formerEntity, value);
             }
             formerEntity = inverseVariableSupply.getInverseSingleton(value);
         }
         if (formerEntity != null) {
-            innerScoreDirector.changeVariableFacade(variableDescriptor, formerEntity, firstValue);
+            castScoreDirector.changeVariableFacade(variableDescriptor, formerEntity, firstValue);
         }
     }
 

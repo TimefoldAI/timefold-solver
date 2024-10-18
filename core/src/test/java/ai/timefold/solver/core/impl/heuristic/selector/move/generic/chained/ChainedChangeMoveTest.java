@@ -11,6 +11,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
+import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedAnchor;
 import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity;
@@ -18,169 +19,137 @@ import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolut
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class ChainedChangeMoveTest {
 
+    private final GenuineVariableDescriptor<TestdataChainedSolution> variableDescriptor = TestdataChainedEntity
+            .buildVariableDescriptorForChainedObject();
+    private final InnerScoreDirector<TestdataChainedSolution, SimpleScore> innerScoreDirector =
+            PlannerTestUtils.mockScoreDirector(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
+
     @Test
     void noTrailing() {
-        GenuineVariableDescriptor<TestdataChainedSolution> variableDescriptor = TestdataChainedEntity
-                .buildVariableDescriptorForChainedObject();
-        InnerScoreDirector<TestdataChainedSolution, SimpleScore> scoreDirector =
-                PlannerTestUtils.mockScoreDirector(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
+        var a0 = new TestdataChainedAnchor("a0");
+        var a1 = new TestdataChainedEntity("a1", a0);
+        var a2 = new TestdataChainedEntity("a2", a1);
+        var a3 = new TestdataChainedEntity("a3", a2);
 
-        TestdataChainedAnchor a0 = new TestdataChainedAnchor("a0");
-        TestdataChainedEntity a1 = new TestdataChainedEntity("a1", a0);
-        TestdataChainedEntity a2 = new TestdataChainedEntity("a2", a1);
-        TestdataChainedEntity a3 = new TestdataChainedEntity("a3", a2);
+        var b0 = new TestdataChainedAnchor("b0");
+        var b1 = new TestdataChainedEntity("b1", b0);
 
-        TestdataChainedAnchor b0 = new TestdataChainedAnchor("b0");
-        TestdataChainedEntity b1 = new TestdataChainedEntity("b1", b0);
-
-        SingletonInverseVariableSupply inverseVariableSupply = SelectorTestUtils.mockSingletonInverseVariableSupply(
+        var inverseVariableSupply = SelectorTestUtils.mockSingletonInverseVariableSupply(
                 new TestdataChainedEntity[] { a1, a2, a3, b1 });
 
-        ChainedChangeMove<TestdataChainedSolution> move =
-                new ChainedChangeMove<>(variableDescriptor, a3, b1, inverseVariableSupply);
-        assertThat(move.isMoveDoable(scoreDirector)).isTrue();
-        ChainedChangeMove<TestdataChainedSolution> undoMove = move.createUndoMove(scoreDirector);
-        move.doMove(scoreDirector);
+        try (var ephemeralMoveDirector = new MoveDirector<>(innerScoreDirector).ephemeral()) {
+            var scoreDirector = Mockito.spy(ephemeralMoveDirector.getScoreDirector());
+            var move = new ChainedChangeMove<>(variableDescriptor, a3, b1, inverseVariableSupply);
+            assertThat(move.isMoveDoable(scoreDirector)).isTrue();
+            move.doMoveOnly(scoreDirector);
 
-        SelectorTestUtils.assertChain(a0, a1, a2);
-        SelectorTestUtils.assertChain(b0, b1, a3);
+            SelectorTestUtils.assertChain(a0, a1, a2);
+            SelectorTestUtils.assertChain(b0, b1, a3);
 
-        verify(scoreDirector).changeVariableFacade(variableDescriptor, a3, b1);
-
-        undoMove.doMove(scoreDirector);
-        SelectorTestUtils.assertChain(a0, a1, a2, a3);
-        SelectorTestUtils.assertChain(b0, b1);
+            verify(scoreDirector).changeVariableFacade(variableDescriptor, a3, b1);
+        }
     }
 
     @Test
     void oldAndNewTrailing() {
-        GenuineVariableDescriptor<TestdataChainedSolution> variableDescriptor = TestdataChainedEntity
-                .buildVariableDescriptorForChainedObject();
-        InnerScoreDirector<TestdataChainedSolution, SimpleScore> scoreDirector =
-                PlannerTestUtils.mockScoreDirector(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
+        var a0 = new TestdataChainedAnchor("a0");
+        var a1 = new TestdataChainedEntity("a1", a0);
+        var a2 = new TestdataChainedEntity("a2", a1);
+        var a3 = new TestdataChainedEntity("a3", a2);
 
-        TestdataChainedAnchor a0 = new TestdataChainedAnchor("a0");
-        TestdataChainedEntity a1 = new TestdataChainedEntity("a1", a0);
-        TestdataChainedEntity a2 = new TestdataChainedEntity("a2", a1);
-        TestdataChainedEntity a3 = new TestdataChainedEntity("a3", a2);
+        var b0 = new TestdataChainedAnchor("b0");
+        var b1 = new TestdataChainedEntity("b1", b0);
 
-        TestdataChainedAnchor b0 = new TestdataChainedAnchor("b0");
-        TestdataChainedEntity b1 = new TestdataChainedEntity("b1", b0);
-
-        SingletonInverseVariableSupply inverseVariableSupply = SelectorTestUtils.mockSingletonInverseVariableSupply(
+        var inverseVariableSupply = SelectorTestUtils.mockSingletonInverseVariableSupply(
                 new TestdataChainedEntity[] { a1, a2, a3, b1 });
 
-        ChainedChangeMove<TestdataChainedSolution> move =
-                new ChainedChangeMove<>(variableDescriptor, a2, b0, inverseVariableSupply);
-        assertThat(move.isMoveDoable(scoreDirector)).isTrue();
-        ChainedChangeMove<TestdataChainedSolution> undoMove = move.createUndoMove(scoreDirector);
-        move.doMove(scoreDirector);
+        try (var ephemeralMoveDirector = new MoveDirector<>(innerScoreDirector).ephemeral()) {
+            var scoreDirector = Mockito.spy(ephemeralMoveDirector.getScoreDirector());
+            var move = new ChainedChangeMove<>(variableDescriptor, a2, b0, inverseVariableSupply);
+            assertThat(move.isMoveDoable(scoreDirector)).isTrue();
+            move.doMoveOnly(scoreDirector);
 
-        SelectorTestUtils.assertChain(a0, a1, a3);
-        SelectorTestUtils.assertChain(b0, a2, b1);
+            SelectorTestUtils.assertChain(a0, a1, a3);
+            SelectorTestUtils.assertChain(b0, a2, b1);
 
-        verify(scoreDirector).changeVariableFacade(variableDescriptor, a2, b0);
-        verify(scoreDirector).changeVariableFacade(variableDescriptor, a3, a1);
-        verify(scoreDirector).changeVariableFacade(variableDescriptor, b1, a2);
-
-        undoMove.doMove(scoreDirector);
-        SelectorTestUtils.assertChain(a0, a1, a2, a3);
-        SelectorTestUtils.assertChain(b0, b1);
+            verify(scoreDirector).changeVariableFacade(variableDescriptor, a2, b0);
+            verify(scoreDirector).changeVariableFacade(variableDescriptor, a3, a1);
+            verify(scoreDirector).changeVariableFacade(variableDescriptor, b1, a2);
+        }
     }
 
     @Test
     void sameChainWithOneBetween() {
-        GenuineVariableDescriptor<TestdataChainedSolution> variableDescriptor = TestdataChainedEntity
-                .buildVariableDescriptorForChainedObject();
-        InnerScoreDirector<TestdataChainedSolution, SimpleScore> scoreDirector =
-                PlannerTestUtils.mockScoreDirector(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
+        var a0 = new TestdataChainedAnchor("a0");
+        var a1 = new TestdataChainedEntity("a1", a0);
+        var a2 = new TestdataChainedEntity("a2", a1);
+        var a3 = new TestdataChainedEntity("a3", a2);
+        var a4 = new TestdataChainedEntity("a4", a3);
 
-        TestdataChainedAnchor a0 = new TestdataChainedAnchor("a0");
-        TestdataChainedEntity a1 = new TestdataChainedEntity("a1", a0);
-        TestdataChainedEntity a2 = new TestdataChainedEntity("a2", a1);
-        TestdataChainedEntity a3 = new TestdataChainedEntity("a3", a2);
-        TestdataChainedEntity a4 = new TestdataChainedEntity("a4", a3);
-
-        SingletonInverseVariableSupply inverseVariableSupply = SelectorTestUtils.mockSingletonInverseVariableSupply(
+        var inverseVariableSupply = SelectorTestUtils.mockSingletonInverseVariableSupply(
                 new TestdataChainedEntity[] { a1, a2, a3, a4 });
 
-        ChainedChangeMove<TestdataChainedSolution> move =
-                new ChainedChangeMove<>(variableDescriptor, a2, a3, inverseVariableSupply);
-        assertThat(move.isMoveDoable(scoreDirector)).isTrue();
-        ChainedChangeMove<TestdataChainedSolution> undoMove = move.createUndoMove(scoreDirector);
-        move.doMove(scoreDirector);
+        try (var ephemeralMoveDirector = new MoveDirector<>(innerScoreDirector).ephemeral()) {
+            var scoreDirector = Mockito.spy(ephemeralMoveDirector.getScoreDirector());
+            var move = new ChainedChangeMove<>(variableDescriptor, a2, a3, inverseVariableSupply);
+            assertThat(move.isMoveDoable(scoreDirector)).isTrue();
+            move.doMoveOnly(scoreDirector);
 
-        SelectorTestUtils.assertChain(a0, a1, a3, a2, a4);
+            SelectorTestUtils.assertChain(a0, a1, a3, a2, a4);
 
-        verify(scoreDirector).changeVariableFacade(variableDescriptor, a2, a3);
-        verify(scoreDirector).changeVariableFacade(variableDescriptor, a3, a1);
-        verify(scoreDirector).changeVariableFacade(variableDescriptor, a4, a2);
-
-        undoMove.doMove(scoreDirector);
-        SelectorTestUtils.assertChain(a0, a1, a2, a3, a4);
+            verify(scoreDirector).changeVariableFacade(variableDescriptor, a2, a3);
+            verify(scoreDirector).changeVariableFacade(variableDescriptor, a3, a1);
+            verify(scoreDirector).changeVariableFacade(variableDescriptor, a4, a2);
+        }
     }
 
     @Test
     void sameChainWithItself() {
-        GenuineVariableDescriptor<TestdataChainedSolution> variableDescriptor = TestdataChainedEntity
-                .buildVariableDescriptorForChainedObject();
-        InnerScoreDirector<TestdataChainedSolution, SimpleScore> scoreDirector =
-                PlannerTestUtils.mockScoreDirector(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
+        var a0 = new TestdataChainedAnchor("a0");
+        var a1 = new TestdataChainedEntity("a1", a0);
+        var a2 = new TestdataChainedEntity("a2", a1);
+        var a3 = new TestdataChainedEntity("a3", a2);
+        var a4 = new TestdataChainedEntity("a4", a3);
 
-        TestdataChainedAnchor a0 = new TestdataChainedAnchor("a0");
-        TestdataChainedEntity a1 = new TestdataChainedEntity("a1", a0);
-        TestdataChainedEntity a2 = new TestdataChainedEntity("a2", a1);
-        TestdataChainedEntity a3 = new TestdataChainedEntity("a3", a2);
-        TestdataChainedEntity a4 = new TestdataChainedEntity("a4", a3);
-
-        SingletonInverseVariableSupply inverseVariableSupply = SelectorTestUtils.mockSingletonInverseVariableSupply(
+        var inverseVariableSupply = SelectorTestUtils.mockSingletonInverseVariableSupply(
                 new TestdataChainedEntity[] { a1, a2, a3, a4 });
 
-        ChainedChangeMove<TestdataChainedSolution> move =
-                new ChainedChangeMove<>(variableDescriptor, a2, a2, inverseVariableSupply);
-        assertThat(move.isMoveDoable(scoreDirector)).isFalse();
+        var move = new ChainedChangeMove<>(variableDescriptor, a2, a2, inverseVariableSupply);
+        assertThat(move.isMoveDoable(innerScoreDirector)).isFalse();
     }
 
     @Test
     void sameChainWithSamePlanningValue() {
-        GenuineVariableDescriptor<TestdataChainedSolution> variableDescriptor = TestdataChainedEntity
-                .buildVariableDescriptorForChainedObject();
-        InnerScoreDirector<TestdataChainedSolution, SimpleScore> scoreDirector =
-                PlannerTestUtils.mockScoreDirector(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
+        var a0 = new TestdataChainedAnchor("a0");
+        var a1 = new TestdataChainedEntity("a1", a0);
+        var a2 = new TestdataChainedEntity("a2", a1);
+        var a3 = new TestdataChainedEntity("a3", a2);
+        var a4 = new TestdataChainedEntity("a4", a3);
 
-        TestdataChainedAnchor a0 = new TestdataChainedAnchor("a0");
-        TestdataChainedEntity a1 = new TestdataChainedEntity("a1", a0);
-        TestdataChainedEntity a2 = new TestdataChainedEntity("a2", a1);
-        TestdataChainedEntity a3 = new TestdataChainedEntity("a3", a2);
-        TestdataChainedEntity a4 = new TestdataChainedEntity("a4", a3);
-
-        SingletonInverseVariableSupply inverseVariableSupply = SelectorTestUtils.mockSingletonInverseVariableSupply(
+        var inverseVariableSupply = SelectorTestUtils.mockSingletonInverseVariableSupply(
                 new TestdataChainedEntity[] { a1, a2, a3, a4 });
 
-        ChainedChangeMove<TestdataChainedSolution> move =
-                new ChainedChangeMove<>(variableDescriptor, a2, a1, inverseVariableSupply);
-        assertThat(move.isMoveDoable(scoreDirector)).isFalse();
+        var move = new ChainedChangeMove<>(variableDescriptor, a2, a1, inverseVariableSupply);
+        assertThat(move.isMoveDoable(innerScoreDirector)).isFalse();
     }
 
     @Test
     void rebase() {
-        GenuineVariableDescriptor<TestdataChainedSolution> variableDescriptor = TestdataChainedEntity
-                .buildVariableDescriptorForChainedObject();
+        var a0 = new TestdataChainedAnchor("a0");
+        var a1 = new TestdataChainedEntity("a1", a0);
+        var a2 = new TestdataChainedEntity("a2", a1);
+        var b0 = new TestdataChainedAnchor("b0");
+        var c1 = new TestdataChainedEntity("c1", null);
 
-        TestdataChainedAnchor a0 = new TestdataChainedAnchor("a0");
-        TestdataChainedEntity a1 = new TestdataChainedEntity("a1", a0);
-        TestdataChainedEntity a2 = new TestdataChainedEntity("a2", a1);
-        TestdataChainedAnchor b0 = new TestdataChainedAnchor("b0");
-        TestdataChainedEntity c1 = new TestdataChainedEntity("c1", null);
-
-        TestdataChainedAnchor destinationA0 = new TestdataChainedAnchor("a0");
-        TestdataChainedEntity destinationA1 = new TestdataChainedEntity("a1", destinationA0);
-        TestdataChainedEntity destinationA2 = new TestdataChainedEntity("a2", destinationA1);
-        TestdataChainedAnchor destinationB0 = new TestdataChainedAnchor("b0");
-        TestdataChainedEntity destinationC1 = new TestdataChainedEntity("c1", null);
+        var destinationA0 = new TestdataChainedAnchor("a0");
+        var destinationA1 = new TestdataChainedEntity("a1", destinationA0);
+        var destinationA2 = new TestdataChainedEntity("a2", destinationA1);
+        var destinationB0 = new TestdataChainedAnchor("b0");
+        var destinationC1 = new TestdataChainedEntity("c1", null);
 
         ScoreDirector<TestdataChainedSolution> destinationScoreDirector = mockRebasingScoreDirector(
                 variableDescriptor.getEntityDescriptor().getSolutionDescriptor(), new Object[][] {
@@ -190,7 +159,7 @@ class ChainedChangeMoveTest {
                         { b0, destinationB0 },
                         { c1, destinationC1 },
                 });
-        SingletonInverseVariableSupply inverseVariableSupply = mock(SingletonInverseVariableSupply.class);
+        var inverseVariableSupply = mock(SingletonInverseVariableSupply.class);
 
         assertSameProperties(destinationA1, null,
                 new ChainedChangeMove<>(variableDescriptor, a1, null, inverseVariableSupply).rebase(destinationScoreDirector));

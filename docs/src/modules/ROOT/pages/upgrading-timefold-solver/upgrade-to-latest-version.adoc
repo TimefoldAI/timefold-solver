@@ -57,6 +57,50 @@ Every upgrade note indicates how likely your code will be affected by that chang
 The upgrade recipe often lists the changes as they apply to Java code.
 We kindly ask Kotlin and Python users to translate the changes accordingly.
 
+=== Upgrade from 1.15.0 to 1.16.0
+
+.icon:info-circle[role=yellow] Undo tabu no longer supported
+[%collapsible%open]
+====
+Configuring tabu search with an undo tabu is no longer supported.
+Configuration options mentioning the undo tabu are still kept for backwards compatibility,
+but they do not have any effect on the solver's behavior.
+
+Regular tabu search continues to be supported as before without any changes to its behavior.
+
+Before in `*.java`:
+
+[source,xml,options="nowrap"]
+----
+<acceptor>
+  <moveTabuSize>7</moveTabuSize>
+  <undoMoveTabuSize>7</undoMoveTabuSize>
+</acceptor>
+----
+
+After in `*.java`:
+
+[source,xml,options="nowrap"]
+----
+<acceptor>
+  <moveTabuSize>7</moveTabuSize>
+</acceptor>
+----
+====
+
+'''
+
+.icon:info-circle[role=yellow] Custom undo moves no longer required
+[%collapsible%open]
+====
+Due to underlying improvements to the solver, we can now generate undo moves automatically
+and no longer require the user to provide them.
+If you implemented custom moves,
+your implementations of undo moves will no longer be used and can be removed from your codebase.
+Methods in the `Move` interface that deal with undo moves have been deprecated
+and will be removed in a future major version of Timefold Solver.
+====
+
 
 === Upgrade from 1.14.0 to 1.15.0
 

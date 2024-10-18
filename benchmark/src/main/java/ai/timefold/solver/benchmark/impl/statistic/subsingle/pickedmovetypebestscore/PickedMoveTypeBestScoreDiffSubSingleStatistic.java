@@ -31,7 +31,7 @@ public class PickedMoveTypeBestScoreDiffSubSingleStatistic<Solution_>
     public void open(StatisticRegistry<Solution_> registry, Tags runTag) {
         registry.addListener(SolverMetric.PICKED_MOVE_TYPE_BEST_SCORE_DIFF, (timeMillisSpent, stepScope) -> {
             if (stepScope instanceof LocalSearchStepScope) {
-                String moveType = ((LocalSearchStepScope<Solution_>) stepScope).getStep().getSimpleMoveTypeDescription();
+                String moveType = ((LocalSearchStepScope<Solution_>) stepScope).getStep().getMoveTypeDescription();
                 registry.extractScoreFromMeters(SolverMetric.PICKED_MOVE_TYPE_BEST_SCORE_DIFF,
                         runTag.and(Tag.of("move.type", moveType)),
                         score -> pointList.add(new PickedMoveTypeBestScoreDiffStatisticPoint(

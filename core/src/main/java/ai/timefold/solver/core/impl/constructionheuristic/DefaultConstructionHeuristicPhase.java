@@ -103,7 +103,7 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
 
     private void doStep(ConstructionHeuristicStepScope<Solution_> stepScope) {
         var step = stepScope.getStep();
-        step.doMoveOnly(stepScope.getScoreDirector());
+        step.run(stepScope.getMoveDirector());
         predictWorkingStepScore(stepScope, step);
         if (!isNested()) {
             processWorkingSolutionDuringStep(stepScope);

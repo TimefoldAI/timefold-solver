@@ -84,13 +84,13 @@ class PillarChangeMoveTest {
 
         a.setValue(v3);
         b.setValue(v3);
-        abMove.doMove(scoreDirector);
+        abMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v2);
         assertThat(b.getValue()).isEqualTo(v2);
 
         a.setValue(v2);
         b.setValue(v2);
-        abMove.doMove(scoreDirector);
+        abMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v2);
         assertThat(b.getValue()).isEqualTo(v2);
 
@@ -100,7 +100,7 @@ class PillarChangeMoveTest {
         a.setValue(v2);
         b.setValue(v2);
         c.setValue(v2);
-        abcMove.doMove(scoreDirector);
+        abcMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v2);
         assertThat(b.getValue()).isEqualTo(v2);
         assertThat(c.getValue()).isEqualTo(v2);
@@ -108,7 +108,7 @@ class PillarChangeMoveTest {
         a.setValue(v3);
         b.setValue(v3);
         c.setValue(v3);
-        abcMove.doMove(scoreDirector);
+        abcMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v2);
         assertThat(b.getValue()).isEqualTo(v2);
         assertThat(c.getValue()).isEqualTo(v2);

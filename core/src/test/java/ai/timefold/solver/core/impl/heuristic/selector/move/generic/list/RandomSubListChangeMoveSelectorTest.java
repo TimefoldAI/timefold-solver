@@ -18,8 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import ai.timefold.solver.core.impl.heuristic.selector.list.ElementLocation;
-import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
+import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.impl.heuristic.selector.list.RandomSubListSelector;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
@@ -62,7 +61,7 @@ class RandomSubListChangeMoveSelectorTest {
                         mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v1),
                         minimumSubListSize,
                         maximumSubListSize),
-                mockNeverEndingDestinationSelector(destinationSize, new LocationInList(b, 0)),
+                mockNeverEndingDestinationSelector(destinationSize, ElementLocation.of(b, 0)),
                 false);
 
         var random = new TestRandom(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -1);
@@ -122,11 +121,11 @@ class RandomSubListChangeMoveSelectorTest {
                         minimumSubListSize,
                         maximumSubListSize),
                 mockNeverEndingDestinationSelector(destinationSize,
-                        new LocationInList(a, 0),
-                        new LocationInList(a, 1),
-                        new LocationInList(a, 2),
-                        new LocationInList(b, 0),
-                        new LocationInList(b, 1),
+                        ElementLocation.of(a, 0),
+                        ElementLocation.of(a, 1),
+                        ElementLocation.of(a, 2),
+                        ElementLocation.of(b, 0),
+                        ElementLocation.of(b, 1),
                         ElementLocation.unassigned()),
                 false);
 
@@ -197,7 +196,7 @@ class RandomSubListChangeMoveSelectorTest {
                         mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v1),
                         minimumSubListSize,
                         maximumSubListSize),
-                mockNeverEndingDestinationSelector(destinationSize, new LocationInList(b, 0)),
+                mockNeverEndingDestinationSelector(destinationSize, ElementLocation.of(b, 0)),
                 true);
 
         // Each row is consumed by 1 createUpcomingSelection() call.
@@ -257,7 +256,7 @@ class RandomSubListChangeMoveSelectorTest {
                         mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v1),
                         minimumSubListSize,
                         maximumSubListSize),
-                mockNeverEndingDestinationSelector(destinationSize, new LocationInList(b, 0)),
+                mockNeverEndingDestinationSelector(destinationSize, ElementLocation.of(b, 0)),
                 false);
 
         var random = new TestRandom(0, 1, 2, 3, 4, -1);
@@ -328,7 +327,7 @@ class RandomSubListChangeMoveSelectorTest {
                         mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v4, v1),
                         minimumSubListSize,
                         maximumSubListSize),
-                mockNeverEndingDestinationSelector(destinationSize, new LocationInList(b, 0)),
+                mockNeverEndingDestinationSelector(destinationSize, ElementLocation.of(b, 0)),
                 false);
 
         var random = new TestRandom(0, 1, -1);
@@ -422,7 +421,7 @@ class RandomSubListChangeMoveSelectorTest {
                         mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v1),
                         minimumSubListSize,
                         maximumSubListSize),
-                mockNeverEndingDestinationSelector(destinationSize, new LocationInList(b, 0)),
+                mockNeverEndingDestinationSelector(destinationSize, ElementLocation.of(b, 0)),
                 false);
 
         var random = new TestRandom(0);
