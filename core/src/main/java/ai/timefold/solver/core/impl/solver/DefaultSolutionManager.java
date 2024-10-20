@@ -9,7 +9,12 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.ScoreExplanation;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.solver.RecommendedAssignment;
-import ai.timefold.solver.core.api.solver.*;
+import ai.timefold.solver.core.api.solver.RecommendedFit;
+import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
+import ai.timefold.solver.core.api.solver.SolutionManager;
+import ai.timefold.solver.core.api.solver.SolutionUpdatePolicy;
+import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.score.DefaultScoreExplanation;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -116,8 +121,9 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
     }
 
     @Override
-    public <In_, Out_> List<RecommendedAssignment<Out_, Score_>> recommendAssignment(Solution_ solution,
-            In_ evaluatedEntityOrElement, Function<In_, Out_> propositionFunction, ScoreAnalysisFetchPolicy fetchPolicy) {
+    public @NonNull <In_, Out_> List<RecommendedAssignment<Out_, Score_>> recommendAssignment(@NonNull Solution_ solution,
+            @NonNull In_ evaluatedEntityOrElement, @NonNull Function<In_, Out_> propositionFunction,
+            @NonNull ScoreAnalysisFetchPolicy fetchPolicy) {
         var assigner = new Assigner<Solution_, Score_, RecommendedAssignment<Out_, Score_>, In_, Out_>(solverFactory,
                 propositionFunction, DefaultRecommendedAssignment::new, fetchPolicy, solution, evaluatedEntityOrElement);
         return callScoreDirector(solution, SolutionUpdatePolicy.UPDATE_ALL, assigner, true, true);

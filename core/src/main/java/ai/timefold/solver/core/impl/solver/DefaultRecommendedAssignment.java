@@ -4,8 +4,11 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.solver.RecommendedAssignment;
 
-public record DefaultRecommendedAssignment<Proposition_, Score_ extends Score<Score_>>(long index, Proposition_ proposition,
-        ScoreAnalysis<Score_> scoreAnalysisDiff)
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+public record DefaultRecommendedAssignment<Proposition_, Score_ extends Score<Score_>>(long index,
+        @Nullable Proposition_ proposition, @NonNull ScoreAnalysis<Score_> scoreAnalysisDiff)
         implements
             RecommendedAssignment<Proposition_, Score_>,
             Comparable<DefaultRecommendedAssignment<Proposition_, Score_>> {

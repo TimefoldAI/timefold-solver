@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.solver;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.solver.RecommendedFit;
+
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -11,7 +12,7 @@ import org.jspecify.annotations.Nullable;
  */
 @Deprecated(forRemoval = true, since = "1.15.0")
 public record DefaultRecommendedFit<Proposition_, Score_ extends Score<Score_>>(long index, @Nullable Proposition_ proposition,
-                                                                                @NonNull ScoreAnalysis<Score_> scoreAnalysisDiff)
+        @NonNull ScoreAnalysis<Score_> scoreAnalysisDiff)
         implements
             RecommendedFit<Proposition_, Score_>,
             Comparable<DefaultRecommendedFit<Proposition_, Score_>> {

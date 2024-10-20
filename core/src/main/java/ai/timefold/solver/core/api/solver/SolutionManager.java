@@ -140,9 +140,9 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * As defined by {@link #recommendAssignment(Object, Object, Function, ScoreAnalysisFetchPolicy)},
      * with {@link ScoreAnalysisFetchPolicy#FETCH_ALL}.
      */
-    default <EntityOrElement_, Proposition_> List<RecommendedAssignment<Proposition_, Score_>> recommendAssignment(
-            Solution_ solution, EntityOrElement_ evaluatedEntityOrElement,
-            Function<EntityOrElement_, Proposition_> propositionFunction) {
+    default <EntityOrElement_, Proposition_> @NonNull List<RecommendedAssignment<Proposition_, Score_>> recommendAssignment(
+            @NonNull Solution_ solution, EntityOrElement_ evaluatedEntityOrElement,
+            @NonNull Function<EntityOrElement_, @NonNull Proposition_> propositionFunction) {
         return recommendAssignment(solution, evaluatedEntityOrElement, propositionFunction, FETCH_ALL);
     }
 
@@ -222,31 +222,30 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * and the original state of the solution was for Shift to be unassigned.
      * </li>
      * </ol>
-     *
+     * <p>
      * If instead the proposition function returned Ann and Bob directly, the immutable planning variables,
      * this problem would have been avoided.
      * Alternatively, the proposition function could have returned a defensive copy of the Shift.
      *
-     * @param solution never null; for basic variable, must be fully initialized or have a single entity unassigned.
+     * @param solution for basic variable, must be fully initialized or have a single entity unassigned.
      *        For list variable, all values must be assigned to some list, with the optional exception of one.
-     * @param evaluatedEntityOrElement never null; must be part of the solution.
+     * @param evaluatedEntityOrElement must be part of the solution.
      *        For basic variable, it is a planning entity and may have one or more variables unassigned.
      *        For list variable, it is a shadow entity and need not be present in any list variable.
-     * @param propositionFunction never null
-     * @param fetchPolicy never null;
      *        {@link ScoreAnalysisFetchPolicy#FETCH_ALL} will include more data within {@link RecommendedAssignment},
      *        but will also take more time to gather that data.
-     * @return never null, sorted from best to worst;
-     *         designed to be JSON-friendly, see {@link RecommendedAssignment} Javadoc for more.
      * @param <EntityOrElement_> generic type of the evaluated entity or element
      * @param <Proposition_> generic type of the user-provided proposition;
      *        if it is a planning entity, it is recommended
      *        to make a defensive copy inside the proposition function.
+     * @return sorted from best to worst;
+     *         designed to be JSON-friendly, see {@link RecommendedAssignment} Javadoc for more.
      * @see PlanningEntity More information about genuine and shadow planning entities.
      */
-    <EntityOrElement_, Proposition_> List<RecommendedAssignment<Proposition_, Score_>> recommendAssignment(Solution_ solution,
-            EntityOrElement_ evaluatedEntityOrElement, Function<EntityOrElement_, Proposition_> propositionFunction,
-            ScoreAnalysisFetchPolicy fetchPolicy);
+    <EntityOrElement_, Proposition_> @NonNull List<RecommendedAssignment<Proposition_, Score_>> recommendAssignment(
+            @NonNull Solution_ solution, @NonNull EntityOrElement_ evaluatedEntityOrElement,
+            @NonNull Function<EntityOrElement_, Proposition_> propositionFunction,
+            @NonNull ScoreAnalysisFetchPolicy fetchPolicy);
 
     /**
      * As defined by {@link #recommendAssignment(Object, Object, Function, ScoreAnalysisFetchPolicy)},
