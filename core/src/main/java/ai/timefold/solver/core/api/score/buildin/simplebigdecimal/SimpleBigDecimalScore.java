@@ -18,8 +18,8 @@ import org.jspecify.annotations.NonNull;
  */
 public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore> {
 
-    public static final SimpleBigDecimalScore ZERO = new SimpleBigDecimalScore(0, BigDecimal.ZERO);
-    public static final SimpleBigDecimalScore ONE = new SimpleBigDecimalScore(0, BigDecimal.ONE);
+    public static final @NonNull SimpleBigDecimalScore ZERO = new SimpleBigDecimalScore(0, BigDecimal.ZERO);
+    public static final @NonNull SimpleBigDecimalScore ONE = new SimpleBigDecimalScore(0, BigDecimal.ONE);
 
     public static @NonNull SimpleBigDecimalScore parseScore(@NonNull String scoreString) {
         String[] scoreTokens = ScoreUtil.parseScoreTokens(SimpleBigDecimalScore.class, scoreString, "");
@@ -28,16 +28,14 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
         return ofUninitialized(initScore, score);
     }
 
-    // TODO: param score nonnull?
-    public static @NonNull SimpleBigDecimalScore ofUninitialized(int initScore, BigDecimal score) {
+    public static @NonNull SimpleBigDecimalScore ofUninitialized(int initScore, @NonNull BigDecimal score) {
         if (initScore == 0) {
             return of(score);
         }
         return new SimpleBigDecimalScore(initScore, score);
     }
 
-    // TODO: params score nonnull?
-    public static @NonNull SimpleBigDecimalScore of(BigDecimal score) {
+    public static @NonNull SimpleBigDecimalScore of(@NonNull BigDecimal score) {
         if (score.signum() == 0) {
             return ZERO;
         } else if (score.equals(BigDecimal.ONE)) {
@@ -52,7 +50,7 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
     // ************************************************************************
 
     private final int initScore;
-    private final BigDecimal score;
+    private final @NonNull BigDecimal score;
 
     /**
      * Private default constructor for default marshalling/unmarshalling of unknown frameworks that use reflection.
@@ -60,12 +58,11 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
      * timefold-solver-jpa, timefold-solver-jackson, timefold-solver-jaxb, ...
      */
     @SuppressWarnings("unused")
-    // TODO null or default val?
     private SimpleBigDecimalScore() {
-        this(Integer.MIN_VALUE, null);
+        this(Integer.MIN_VALUE, BigDecimal.ZERO);
     }
 
-    private SimpleBigDecimalScore(int initScore, BigDecimal score) {
+    private SimpleBigDecimalScore(int initScore, @NonNull BigDecimal score) {
         this.initScore = initScore;
         this.score = score;
     }
@@ -82,8 +79,7 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
      *
      * @return higher is better, usually negative, 0 if no constraints are broken/fulfilled
      */
-    // TODO return nonnull?
-    public BigDecimal score() {
+    public @NonNull BigDecimal score() {
         return score;
     }
 
@@ -93,7 +89,7 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
      * @deprecated Use {@link #score()} instead.
      */
     @Deprecated(forRemoval = true)
-    public BigDecimal getScore() {
+    public @NonNull BigDecimal getScore() {
         return score;
     }
 
@@ -171,7 +167,7 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
     }
 
     @Override
-    public Number @NonNull [] toLevelNumbers() {
+    public @NonNull Number @NonNull [] toLevelNumbers() {
         return new Number[] { score };
     }
 
@@ -190,7 +186,7 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
     }
 
     @Override
-    public int compareTo(SimpleBigDecimalScore other) {
+    public int compareTo(@NonNull SimpleBigDecimalScore other) {
         if (initScore != other.initScore()) {
             return Integer.compare(initScore, other.initScore());
         } else {

@@ -7,7 +7,7 @@ import org.jspecify.annotations.NonNull;
 public class TestdataPinningFilter implements PinningFilter<TestdataPinnedSolution, TestdataPinnedEntity> {
 
     @Override
-    public boolean accept(TestdataPinnedSolution solution, @NonNull TestdataPinnedEntity entity) {
+    public boolean accept(@NonNull TestdataPinnedSolution solution, @NonNull TestdataPinnedEntity entity) {
         return entity.isLocked();
     }
 

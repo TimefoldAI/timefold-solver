@@ -112,8 +112,7 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
      */
     @SuppressWarnings("unused")
     private BendableLongScore() {
-        // TODO
-        this(Integer.MIN_VALUE, null, null);
+        this(Integer.MIN_VALUE, new long[] {}, new long[] {});
     }
 
     /**
@@ -405,7 +404,7 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
     }
 
     @Override
-    public int compareTo(BendableLongScore other) {
+    public int compareTo(@NonNull BendableLongScore other) {
         validateCompatible(other);
         if (initScore != other.initScore()) {
             return Integer.compare(initScore, other.initScore());

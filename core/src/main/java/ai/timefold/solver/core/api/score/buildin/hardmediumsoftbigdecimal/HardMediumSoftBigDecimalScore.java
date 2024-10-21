@@ -26,20 +26,22 @@ import org.jspecify.annotations.NonNull;
  */
 public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoftBigDecimalScore> {
 
-    public static final HardMediumSoftBigDecimalScore ZERO = new HardMediumSoftBigDecimalScore(0, BigDecimal.ZERO,
+    public static final @NonNull HardMediumSoftBigDecimalScore ZERO = new HardMediumSoftBigDecimalScore(0, BigDecimal.ZERO,
             BigDecimal.ZERO, BigDecimal.ZERO);
-    public static final HardMediumSoftBigDecimalScore ONE_HARD = new HardMediumSoftBigDecimalScore(0, BigDecimal.ONE,
+    public static final @NonNull HardMediumSoftBigDecimalScore ONE_HARD = new HardMediumSoftBigDecimalScore(0, BigDecimal.ONE,
             BigDecimal.ZERO, BigDecimal.ZERO);
-    private static final HardMediumSoftBigDecimalScore MINUS_ONE_HARD =
+    private static final @NonNull HardMediumSoftBigDecimalScore MINUS_ONE_HARD =
             new HardMediumSoftBigDecimalScore(0, BigDecimal.ONE.negate(),
                     BigDecimal.ZERO, BigDecimal.ZERO);
-    public static final HardMediumSoftBigDecimalScore ONE_MEDIUM = new HardMediumSoftBigDecimalScore(0, BigDecimal.ZERO,
-            BigDecimal.ONE, BigDecimal.ZERO);
-    private static final HardMediumSoftBigDecimalScore MINUS_ONE_MEDIUM = new HardMediumSoftBigDecimalScore(0, BigDecimal.ZERO,
-            BigDecimal.ONE.negate(), BigDecimal.ZERO);
-    public static final HardMediumSoftBigDecimalScore ONE_SOFT = new HardMediumSoftBigDecimalScore(0, BigDecimal.ZERO,
+    public static final @NonNull HardMediumSoftBigDecimalScore ONE_MEDIUM =
+            new HardMediumSoftBigDecimalScore(0, BigDecimal.ZERO,
+                    BigDecimal.ONE, BigDecimal.ZERO);
+    private static final @NonNull HardMediumSoftBigDecimalScore MINUS_ONE_MEDIUM =
+            new HardMediumSoftBigDecimalScore(0, BigDecimal.ZERO,
+                    BigDecimal.ONE.negate(), BigDecimal.ZERO);
+    public static final @NonNull HardMediumSoftBigDecimalScore ONE_SOFT = new HardMediumSoftBigDecimalScore(0, BigDecimal.ZERO,
             BigDecimal.ZERO, BigDecimal.ONE);
-    private static final HardMediumSoftBigDecimalScore MINUS_ONE_SOFT =
+    private static final @NonNull HardMediumSoftBigDecimalScore MINUS_ONE_SOFT =
             new HardMediumSoftBigDecimalScore(0, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ONE.negate());
 
     public static @NonNull HardMediumSoftBigDecimalScore parseScore(@NonNull String scoreString) {
@@ -55,18 +57,17 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
         return ofUninitialized(initScore, hardScore, mediumScore, softScore);
     }
 
-    public static @NonNull HardMediumSoftBigDecimalScore ofUninitialized(int initScore, BigDecimal hardScore,
-            BigDecimal mediumScore,
-            BigDecimal softScore) {
+    public static @NonNull HardMediumSoftBigDecimalScore ofUninitialized(int initScore, @NonNull BigDecimal hardScore,
+            @NonNull BigDecimal mediumScore,
+            @NonNull BigDecimal softScore) {
         if (initScore == 0) {
             return of(hardScore, mediumScore, softScore);
         }
         return new HardMediumSoftBigDecimalScore(initScore, hardScore, mediumScore, softScore);
     }
 
-    // TODO: params nonnull?
-    public static @NonNull HardMediumSoftBigDecimalScore of(BigDecimal hardScore, BigDecimal mediumScore,
-            BigDecimal softScore) {
+    public static @NonNull HardMediumSoftBigDecimalScore of(@NonNull BigDecimal hardScore, @NonNull BigDecimal mediumScore,
+            @NonNull BigDecimal softScore) {
         if (Objects.equals(hardScore, BigDecimal.ONE.negate()) && mediumScore.signum() == 0 && softScore.signum() == 0) {
             return MINUS_ONE_HARD;
         } else if (hardScore.signum() == 0) {
@@ -89,7 +90,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
         return new HardMediumSoftBigDecimalScore(0, hardScore, mediumScore, softScore);
     }
 
-    public static @NonNull HardMediumSoftBigDecimalScore ofHard(BigDecimal hardScore) {
+    public static @NonNull HardMediumSoftBigDecimalScore ofHard(@NonNull BigDecimal hardScore) {
         if (Objects.equals(hardScore, BigDecimal.ONE.negate())) {
             return MINUS_ONE_HARD;
         } else if (hardScore.signum() == 0) {
@@ -100,7 +101,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
         return new HardMediumSoftBigDecimalScore(0, hardScore, BigDecimal.ZERO, BigDecimal.ZERO);
     }
 
-    public static @NonNull HardMediumSoftBigDecimalScore ofMedium(BigDecimal mediumScore) {
+    public static @NonNull HardMediumSoftBigDecimalScore ofMedium(@NonNull BigDecimal mediumScore) {
         if (Objects.equals(mediumScore, BigDecimal.ONE.negate())) {
             return MINUS_ONE_MEDIUM;
         } else if (mediumScore.signum() == 0) {
@@ -111,7 +112,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
         return new HardMediumSoftBigDecimalScore(0, BigDecimal.ZERO, mediumScore, BigDecimal.ZERO);
     }
 
-    public static @NonNull HardMediumSoftBigDecimalScore ofSoft(BigDecimal softScore) {
+    public static @NonNull HardMediumSoftBigDecimalScore ofSoft(@NonNull BigDecimal softScore) {
         if (Objects.equals(softScore, BigDecimal.ONE.negate())) {
             return MINUS_ONE_SOFT;
         } else if (softScore.signum() == 0) {
@@ -127,9 +128,9 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
     // ************************************************************************
 
     private final int initScore;
-    private final BigDecimal hardScore;
-    private final BigDecimal mediumScore;
-    private final BigDecimal softScore;
+    private final @NonNull BigDecimal hardScore;
+    private final @NonNull BigDecimal mediumScore;
+    private final @NonNull BigDecimal softScore;
 
     /**
      * Private default constructor for default marshalling/unmarshalling of unknown frameworks that use reflection.
@@ -137,12 +138,12 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
      * timefold-solver-jpa, timefold-solver-jackson, timefold-solver-jaxb, ...
      */
     @SuppressWarnings("unused")
-    // TODO: params default or null?
     private HardMediumSoftBigDecimalScore() {
-        this(Integer.MIN_VALUE, null, null, null);
+        this(Integer.MIN_VALUE, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
     }
 
-    private HardMediumSoftBigDecimalScore(int initScore, BigDecimal hardScore, BigDecimal mediumScore, BigDecimal softScore) {
+    private HardMediumSoftBigDecimalScore(int initScore, @NonNull BigDecimal hardScore, @NonNull BigDecimal mediumScore,
+            @NonNull BigDecimal softScore) {
         this.initScore = initScore;
         this.hardScore = hardScore;
         this.mediumScore = mediumScore;
@@ -161,8 +162,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
      *
      * @return higher is better, usually negative, 0 if no hard constraints are broken/fulfilled
      */
-    // TODO: nonnull?
-    public BigDecimal hardScore() {
+    public @NonNull BigDecimal hardScore() {
         return hardScore;
     }
 
@@ -172,7 +172,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
      * @deprecated Use {@link #hardScore()} instead.
      */
     @Deprecated(forRemoval = true)
-    public BigDecimal getHardScore() {
+    public @NonNull BigDecimal getHardScore() {
         return hardScore;
     }
 
@@ -185,7 +185,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
      *
      * @return higher is better, usually negative, 0 if no medium constraints are broken/fulfilled
      */
-    public BigDecimal mediumScore() {
+    public @NonNull BigDecimal mediumScore() {
         return mediumScore;
     }
 
@@ -195,7 +195,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
      * @deprecated Use {@link #mediumScore()} instead.
      */
     @Deprecated(forRemoval = true)
-    public BigDecimal getMediumScore() {
+    public @NonNull BigDecimal getMediumScore() {
         return mediumScore;
     }
 
@@ -208,7 +208,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
      *
      * @return higher is better, usually negative, 0 if no soft constraints are broken/fulfilled
      */
-    public BigDecimal softScore() {
+    public @NonNull BigDecimal softScore() {
         return softScore;
     }
 
@@ -218,7 +218,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
      * @deprecated Use {@link #softScore()} instead.
      */
     @Deprecated(forRemoval = true)
-    public BigDecimal getSoftScore() {
+    public @NonNull BigDecimal getSoftScore() {
         return softScore;
     }
 
@@ -307,7 +307,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
     }
 
     @Override
-    public Number @NonNull [] toLevelNumbers() {
+    public @NonNull Number @NonNull [] toLevelNumbers() {
         return new Number[] { hardScore, mediumScore, softScore };
     }
 
@@ -329,7 +329,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
     }
 
     @Override
-    public int compareTo(HardMediumSoftBigDecimalScore other) {
+    public int compareTo(@NonNull HardMediumSoftBigDecimalScore other) {
         if (initScore != other.initScore()) {
             return Integer.compare(initScore, other.initScore());
         }

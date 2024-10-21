@@ -8,7 +8,7 @@ public class TestdataAllowsUnassignedPinningFilter
         implements PinningFilter<TestdataPinnedAllowsUnassignedSolution, TestdataPinnedAllowsUnassignedEntity> {
 
     @Override
-    public boolean accept(TestdataPinnedAllowsUnassignedSolution solution,
+    public boolean accept(@NonNull TestdataPinnedAllowsUnassignedSolution solution,
             @NonNull TestdataPinnedAllowsUnassignedEntity entity) {
         return entity.isLocked();
     }

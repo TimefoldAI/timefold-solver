@@ -23,9 +23,12 @@ import org.jspecify.annotations.NonNull;
  */
 public final class HardSoftBigDecimalScore implements Score<HardSoftBigDecimalScore> {
 
-    public static final HardSoftBigDecimalScore ZERO = new HardSoftBigDecimalScore(0, BigDecimal.ZERO, BigDecimal.ZERO);
-    public static final HardSoftBigDecimalScore ONE_HARD = new HardSoftBigDecimalScore(0, BigDecimal.ONE, BigDecimal.ZERO);
-    public static final HardSoftBigDecimalScore ONE_SOFT = new HardSoftBigDecimalScore(0, BigDecimal.ZERO, BigDecimal.ONE);
+    public static final @NonNull HardSoftBigDecimalScore ZERO =
+            new HardSoftBigDecimalScore(0, BigDecimal.ZERO, BigDecimal.ZERO);
+    public static final @NonNull HardSoftBigDecimalScore ONE_HARD =
+            new HardSoftBigDecimalScore(0, BigDecimal.ONE, BigDecimal.ZERO);
+    public static final @NonNull HardSoftBigDecimalScore ONE_SOFT =
+            new HardSoftBigDecimalScore(0, BigDecimal.ZERO, BigDecimal.ONE);
 
     public static @NonNull HardSoftBigDecimalScore parseScore(@NonNull String scoreString) {
         String[] scoreTokens = ScoreUtil.parseScoreTokens(HardSoftBigDecimalScore.class, scoreString, HARD_LABEL, SOFT_LABEL);
@@ -35,8 +38,8 @@ public final class HardSoftBigDecimalScore implements Score<HardSoftBigDecimalSc
         return ofUninitialized(initScore, hardScore, softScore);
     }
 
-    // TODO: params nonnull?
-    public static @NonNull HardSoftBigDecimalScore ofUninitialized(int initScore, BigDecimal hardScore, BigDecimal softScore) {
+    public static @NonNull HardSoftBigDecimalScore ofUninitialized(int initScore, @NonNull BigDecimal hardScore,
+            @NonNull BigDecimal softScore) {
         if (initScore == 0) {
             return of(hardScore, softScore);
         }
@@ -85,8 +88,8 @@ public final class HardSoftBigDecimalScore implements Score<HardSoftBigDecimalSc
     // ************************************************************************
 
     private final int initScore;
-    private final BigDecimal hardScore;
-    private final BigDecimal softScore;
+    private final @NonNull BigDecimal hardScore;
+    private final @NonNull BigDecimal softScore;
 
     /**
      * Private default constructor for default marshalling/unmarshalling of unknown frameworks that use reflection.
@@ -94,12 +97,11 @@ public final class HardSoftBigDecimalScore implements Score<HardSoftBigDecimalSc
      * timefold-solver-jpa, timefold-solver-jackson, timefold-solver-jaxb, ...
      */
     @SuppressWarnings("unused")
-    // TODO default instead of null?
     private HardSoftBigDecimalScore() {
-        this(Integer.MIN_VALUE, null, null);
+        this(Integer.MIN_VALUE, BigDecimal.ZERO, BigDecimal.ZERO);
     }
 
-    private HardSoftBigDecimalScore(int initScore, BigDecimal hardScore, BigDecimal softScore) {
+    private HardSoftBigDecimalScore(int initScore, @NonNull BigDecimal hardScore, @NonNull BigDecimal softScore) {
         this.initScore = initScore;
         this.hardScore = hardScore;
         this.softScore = softScore;
@@ -117,8 +119,7 @@ public final class HardSoftBigDecimalScore implements Score<HardSoftBigDecimalSc
      *
      * @return higher is better, usually negative, 0 if no hard constraints are broken/fulfilled
      */
-    // TODO: nonnull result?
-    public BigDecimal hardScore() {
+    public @NonNull BigDecimal hardScore() {
         return hardScore;
     }
 
@@ -128,7 +129,7 @@ public final class HardSoftBigDecimalScore implements Score<HardSoftBigDecimalSc
      * @deprecated Use {@link #hardScore()} instead.
      */
     @Deprecated(forRemoval = true)
-    public BigDecimal getHardScore() {
+    public @NonNull BigDecimal getHardScore() {
         return hardScore;
     }
 
@@ -141,8 +142,7 @@ public final class HardSoftBigDecimalScore implements Score<HardSoftBigDecimalSc
      *
      * @return higher is better, usually negative, 0 if no soft constraints are broken/fulfilled
      */
-    // TODO nonnull result?
-    public BigDecimal softScore() {
+    public @NonNull BigDecimal softScore() {
         return softScore;
     }
 
@@ -152,7 +152,7 @@ public final class HardSoftBigDecimalScore implements Score<HardSoftBigDecimalSc
      * @deprecated Use {@link #softScore()} instead.
      */
     @Deprecated(forRemoval = true)
-    public BigDecimal getSoftScore() {
+    public @NonNull BigDecimal getSoftScore() {
         return softScore;
     }
 
@@ -255,7 +255,7 @@ public final class HardSoftBigDecimalScore implements Score<HardSoftBigDecimalSc
     }
 
     @Override
-    public int compareTo(HardSoftBigDecimalScore other) {
+    public int compareTo(@NonNull HardSoftBigDecimalScore other) {
         if (initScore != other.initScore()) {
             return Integer.compare(initScore, other.initScore());
         }

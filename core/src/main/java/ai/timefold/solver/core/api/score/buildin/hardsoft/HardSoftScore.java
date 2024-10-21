@@ -24,11 +24,11 @@ import org.jspecify.annotations.NonNull;
  */
 public final class HardSoftScore implements Score<HardSoftScore> {
 
-    public static final HardSoftScore ZERO = new HardSoftScore(0, 0, 0);
-    public static final HardSoftScore ONE_HARD = new HardSoftScore(0, 1, 0);
-    public static final HardSoftScore ONE_SOFT = new HardSoftScore(0, 0, 1);
-    private static final HardSoftScore MINUS_ONE_SOFT = new HardSoftScore(0, 0, -1);
-    private static final HardSoftScore MINUS_ONE_HARD = new HardSoftScore(0, -1, 0);
+    public static final @NonNull HardSoftScore ZERO = new HardSoftScore(0, 0, 0);
+    public static final @NonNull HardSoftScore ONE_HARD = new HardSoftScore(0, 1, 0);
+    public static final @NonNull HardSoftScore ONE_SOFT = new HardSoftScore(0, 0, 1);
+    private static final @NonNull HardSoftScore MINUS_ONE_SOFT = new HardSoftScore(0, 0, -1);
+    private static final @NonNull HardSoftScore MINUS_ONE_HARD = new HardSoftScore(0, -1, 0);
 
     public static @NonNull HardSoftScore parseScore(@NonNull String scoreString) {
         String[] scoreTokens = parseScoreTokens(HardSoftScore.class, scoreString, HARD_LABEL, SOFT_LABEL);
@@ -250,7 +250,7 @@ public final class HardSoftScore implements Score<HardSoftScore> {
     }
 
     @Override
-    public int compareTo(HardSoftScore other) {
+    public int compareTo(@NonNull HardSoftScore other) {
         if (initScore != other.initScore()) {
             return Integer.compare(initScore, other.initScore());
         } else if (hardScore != other.hardScore()) {

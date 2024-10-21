@@ -8,7 +8,7 @@ public class TestdataChainedEntityPinningFilter
         implements PinningFilter<TestdataPinnedChainedSolution, TestdataPinnedChainedEntity> {
 
     @Override
-    public boolean accept(TestdataPinnedChainedSolution scoreDirector, @NonNull TestdataPinnedChainedEntity entity) {
+    public boolean accept(@NonNull TestdataPinnedChainedSolution scoreDirector, @NonNull TestdataPinnedChainedEntity entity) {
         return entity.isPinned();
     }
 

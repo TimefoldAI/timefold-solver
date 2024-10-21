@@ -46,7 +46,6 @@ public @interface PlanningEntity {
      *
      * @return {@link NullPinningFilter} when it is null (workaround for annotation limitation)
      */
-    // TODO feels like this could be annotated with @NonNull
     Class<? extends PinningFilter> pinningFilter() default NullPinningFilter.class;
 
     /** Workaround for annotation limitation in {@link #pinningFilter()} ()}. */
@@ -68,7 +67,6 @@ public @interface PlanningEntity {
      * @return {@link NullDifficultyComparator} when it is null (workaround for annotation limitation)
      * @see #difficultyWeightFactoryClass()
      */
-    // TODO feels like this could be annotated with @NonNull
     Class<? extends Comparator> difficultyComparatorClass() default NullDifficultyComparator.class;
 
     /** Workaround for annotation limitation in {@link #difficultyComparatorClass()}. */
@@ -83,7 +81,6 @@ public @interface PlanningEntity {
      * @return {@link NullDifficultyWeightFactory} when it is null (workaround for annotation limitation)
      * @see #difficultyComparatorClass()
      */
-    // TODO feels like this could be annotated with @NonNull
     Class<? extends SelectionSorterWeightFactory> difficultyWeightFactoryClass() default NullDifficultyWeightFactory.class;
 
     /** Workaround for annotation limitation in {@link #difficultyWeightFactoryClass()}. */

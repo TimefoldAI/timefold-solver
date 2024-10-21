@@ -8,7 +8,7 @@ public class TestdataExtendedPinningFilter
         implements PinningFilter<TestdataExtendedPinnedSolution, TestdataExtendedPinnedEntity> {
 
     @Override
-    public boolean accept(TestdataExtendedPinnedSolution solution, @NonNull TestdataExtendedPinnedEntity entity) {
+    public boolean accept(@NonNull TestdataExtendedPinnedSolution solution, @NonNull TestdataExtendedPinnedEntity entity) {
         return entity.isClosed();
     }
 

@@ -24,13 +24,13 @@ import org.jspecify.annotations.NonNull;
  */
 public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
 
-    public static final HardMediumSoftScore ZERO = new HardMediumSoftScore(0, 0, 0, 0);
-    public static final HardMediumSoftScore ONE_HARD = new HardMediumSoftScore(0, 1, 0, 0);
-    private static final HardMediumSoftScore MINUS_ONE_HARD = new HardMediumSoftScore(0, -1, 0, 0);
-    public static final HardMediumSoftScore ONE_MEDIUM = new HardMediumSoftScore(0, 0, 1, 0);
-    private static final HardMediumSoftScore MINUS_ONE_MEDIUM = new HardMediumSoftScore(0, 0, -1, 0);
-    public static final HardMediumSoftScore ONE_SOFT = new HardMediumSoftScore(0, 0, 0, 1);
-    private static final HardMediumSoftScore MINUS_ONE_SOFT = new HardMediumSoftScore(0, 0, 0, -1);
+    public static final @NonNull HardMediumSoftScore ZERO = new HardMediumSoftScore(0, 0, 0, 0);
+    public static final @NonNull HardMediumSoftScore ONE_HARD = new HardMediumSoftScore(0, 1, 0, 0);
+    private static final @NonNull HardMediumSoftScore MINUS_ONE_HARD = new HardMediumSoftScore(0, -1, 0, 0);
+    public static final @NonNull HardMediumSoftScore ONE_MEDIUM = new HardMediumSoftScore(0, 0, 1, 0);
+    private static final @NonNull HardMediumSoftScore MINUS_ONE_MEDIUM = new HardMediumSoftScore(0, 0, -1, 0);
+    public static final @NonNull HardMediumSoftScore ONE_SOFT = new HardMediumSoftScore(0, 0, 0, 1);
+    private static final @NonNull HardMediumSoftScore MINUS_ONE_SOFT = new HardMediumSoftScore(0, 0, 0, -1);
 
     public static @NonNull HardMediumSoftScore parseScore(@NonNull String scoreString) {
         String[] scoreTokens = ScoreUtil.parseScoreTokens(HardMediumSoftScore.class, scoreString,
@@ -293,7 +293,7 @@ public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
     }
 
     @Override
-    public int compareTo(HardMediumSoftScore other) {
+    public int compareTo(@NonNull HardMediumSoftScore other) {
         if (initScore != other.initScore()) {
             return Integer.compare(initScore, other.initScore());
         } else if (hardScore != other.hardScore()) {

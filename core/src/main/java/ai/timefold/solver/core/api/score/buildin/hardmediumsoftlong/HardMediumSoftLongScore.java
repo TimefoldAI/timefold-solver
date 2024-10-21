@@ -24,13 +24,13 @@ import org.jspecify.annotations.NonNull;
  */
 public final class HardMediumSoftLongScore implements Score<HardMediumSoftLongScore> {
 
-    public static final HardMediumSoftLongScore ZERO = new HardMediumSoftLongScore(0, 0L, 0L, 0L);
-    public static final HardMediumSoftLongScore ONE_HARD = new HardMediumSoftLongScore(0, 1L, 0L, 0L);
-    private static final HardMediumSoftLongScore MINUS_ONE_HARD = new HardMediumSoftLongScore(0, -1L, 0L, 0L);
-    public static final HardMediumSoftLongScore ONE_MEDIUM = new HardMediumSoftLongScore(0, 0L, 1L, 0L);
-    private static final HardMediumSoftLongScore MINUS_ONE_MEDIUM = new HardMediumSoftLongScore(0, 0L, -1L, 0L);
-    public static final HardMediumSoftLongScore ONE_SOFT = new HardMediumSoftLongScore(0, 0L, 0L, 1L);
-    private static final HardMediumSoftLongScore MINUS_ONE_SOFT = new HardMediumSoftLongScore(0, 0L, 0L, -1L);
+    public static final @NonNull HardMediumSoftLongScore ZERO = new HardMediumSoftLongScore(0, 0L, 0L, 0L);
+    public static final @NonNull HardMediumSoftLongScore ONE_HARD = new HardMediumSoftLongScore(0, 1L, 0L, 0L);
+    private static final @NonNull HardMediumSoftLongScore MINUS_ONE_HARD = new HardMediumSoftLongScore(0, -1L, 0L, 0L);
+    public static final @NonNull HardMediumSoftLongScore ONE_MEDIUM = new HardMediumSoftLongScore(0, 0L, 1L, 0L);
+    private static final @NonNull HardMediumSoftLongScore MINUS_ONE_MEDIUM = new HardMediumSoftLongScore(0, 0L, -1L, 0L);
+    public static final @NonNull HardMediumSoftLongScore ONE_SOFT = new HardMediumSoftLongScore(0, 0L, 0L, 1L);
+    private static final @NonNull HardMediumSoftLongScore MINUS_ONE_SOFT = new HardMediumSoftLongScore(0, 0L, 0L, -1L);
 
     public static @NonNull HardMediumSoftLongScore parseScore(@NonNull String scoreString) {
         String[] scoreTokens = ScoreUtil.parseScoreTokens(HardMediumSoftLongScore.class, scoreString,
@@ -300,7 +300,7 @@ public final class HardMediumSoftLongScore implements Score<HardMediumSoftLongSc
     }
 
     @Override
-    public int compareTo(HardMediumSoftLongScore other) {
+    public int compareTo(@NonNull HardMediumSoftLongScore other) {
         if (initScore != other.initScore()) {
             return Integer.compare(initScore, other.initScore());
         } else if (hardScore != other.hardScore()) {

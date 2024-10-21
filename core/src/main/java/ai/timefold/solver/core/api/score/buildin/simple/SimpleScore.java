@@ -170,7 +170,7 @@ public final class SimpleScore implements Score<SimpleScore> {
     }
 
     @Override
-    public int compareTo(SimpleScore other) {
+    public int compareTo(@NonNull SimpleScore other) {
         if (initScore != other.initScore()) {
             return Integer.compare(initScore, other.initScore());
         } else {

@@ -173,7 +173,7 @@ public final class SimpleLongScore implements Score<SimpleLongScore> {
     }
 
     @Override
-    public int compareTo(SimpleLongScore other) {
+    public int compareTo(@NonNull SimpleLongScore other) {
         if (initScore != other.initScore()) {
             return Integer.compare(initScore, other.initScore());
         } else {
