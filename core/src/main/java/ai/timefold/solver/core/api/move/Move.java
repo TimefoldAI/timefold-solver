@@ -117,14 +117,15 @@ public interface Move<Solution_> {
 
     /**
      * Describes the move type for statistical purposes.
-     * For example "ChangeMove(Process.computer)".
+     * For example, a move which changes a variable "computer" on a class "Process" could be described as
+     * "ChangeMove(Process.computer)".
      * <p>
      * The format is not formalized.
      * Never parse the {@link String} returned by this method.
      *
      * @return never null
      */
-    default String getMoveTypeDescription() {
+    default String describe() {
         return getClass().getSimpleName();
     }
 

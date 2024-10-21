@@ -60,7 +60,7 @@ public record LegacyMoveAdapter<Solution_>(
     }
 
     @Override
-    public String getMoveTypeDescription() {
+    public String describe() {
         return legacyMove.getSimpleMoveTypeDescription();
     }
 

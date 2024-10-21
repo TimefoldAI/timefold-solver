@@ -152,7 +152,7 @@ public abstract class AbstractPhaseScope<Solution_> {
 
     public void addMoveEvaluationCountPerType(Move<Solution_> move, long count) {
         if (solverScope.isMetricEnabled(SolverMetric.MOVE_COUNT_PER_TYPE)) {
-            solverScope.addMoveEvaluationCountPerType(move.getMoveTypeDescription(), count);
+            solverScope.addMoveEvaluationCountPerType(move.describe(), count);
         }
     }
 
