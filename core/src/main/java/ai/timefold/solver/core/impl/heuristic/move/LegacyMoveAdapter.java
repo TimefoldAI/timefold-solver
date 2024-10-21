@@ -70,12 +70,12 @@ public record LegacyMoveAdapter<Solution_>(
     }
 
     @Override
-    public Collection<?> getPlanningEntities() {
+    public Collection<?> extractPlanningEntities() {
         return legacyMove.getPlanningEntities();
     }
 
     @Override
-    public Collection<?> getPlanningValues() {
+    public Collection<?> extractPlanningValues() {
         return legacyMove.getPlanningValues();
     }
 

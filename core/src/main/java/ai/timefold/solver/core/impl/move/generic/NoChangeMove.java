@@ -37,12 +37,12 @@ public final class NoChangeMove<Solution_> implements Move<Solution_> {
     }
 
     @Override
-    public Collection<?> getPlanningEntities() {
+    public Collection<?> extractPlanningEntities() {
         return Collections.emptyList();
     }
 
     @Override
-    public Collection<?> getPlanningValues() {
+    public Collection<?> extractPlanningValues() {
         return Collections.emptyList();
     }
 

@@ -21,7 +21,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
  * On that change it will also notify the {@link ScoreDirector} accordingly.
  * <p>
  * For tabu search, a Move should implement {@link Object#equals(Object)} and {@link Object#hashCode()},
- * {@link #getPlanningEntities()} and {@link #getPlanningValues()}.
+ * {@link #extractPlanningEntities()} and {@link #extractPlanningValues()}.
  * <p>
  * <strong>This package and all of its contents are part of the Move Streams API,
  * which is under development and is only offered as a preview feature.</strong>
@@ -52,7 +52,7 @@ public interface Move<Solution_> {
     /**
      * Rebases a move from an origin {@link ScoreDirector} to another destination {@link ScoreDirector}
      * which is usually on another {@link Thread}.
-     * It is necessary for multi-threaded solving to function.
+     * It is necessary for multithreaded solving to function.
      * <p>
      * The new move returned by this method translates the entities and problem facts
      * to the destination {@link PlanningSolution} of the destination {@link ScoreDirector},
@@ -84,35 +84,34 @@ public interface Move<Solution_> {
     Move<Solution_> rebase(SolutionState<Solution_> solutionState);
 
     /**
-     * Returns all planning entities that are being changed by this move.
+     * Returns all planning entities that this move is changing.
      * Required for entity tabu.
      * <p>
      * This method is only called after {@link #execute(MutableSolutionState)}, which might affect the return values.
      * <p>
      * Duplicate entries in the returned {@link Collection} are best avoided.
      * The returned {@link Collection} is recommended to be in a stable order.
-     * For example: use {@link List} or {@link LinkedHashSet}, but not {@link HashSet}.
+     * For example, use {@link List} or {@link LinkedHashSet}, but not {@link HashSet}.
      *
      * @return never null
      */
-    // TODO extract?
-    default Collection<?> getPlanningEntities() {
+    default Collection<?> extractPlanningEntities() {
         throw new UnsupportedOperationException("The move (" + this + ") does not support tabu search.");
     }
 
     /**
-     * Returns all planning values that entities are being assigned to by this move.
+     * Returns all planning values that this move is assigning to entity variables.
      * Required for value tabu.
      * <p>
      * This method is only called after {@link #execute(MutableSolutionState)}, which might affect the return values.
      * <p>
      * Duplicate entries in the returned {@link Collection} are best avoided.
      * The returned {@link Collection} is recommended to be in a stable order.
-     * For example: use {@link List} or {@link LinkedHashSet}, but not {@link HashSet}.
+     * For example, use {@link List} or {@link LinkedHashSet}, but not {@link HashSet}.
      *
      * @return never null
      */
-    default Collection<?> getPlanningValues() {
+    default Collection<?> extractPlanningValues() {
         throw new UnsupportedOperationException("The move (" + this + ") does not support tabu search.");
     }
 

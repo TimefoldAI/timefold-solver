@@ -254,7 +254,7 @@ class TailChainSwapMoveTest {
     }
 
     @Test
-    void getPlanningEntitiesWithRightEntityNull() {
+    void extractPlanningEntitiesWithRightEntityNull() {
         var a0 = new TestdataChainedAnchor("a0");
         var a1 = new TestdataChainedEntity("a1", null);
 

@@ -164,7 +164,7 @@ public interface Move<Solution_> {
      */
     default Collection<? extends Object> getPlanningEntities() {
         throw new UnsupportedOperationException(
-                "Move class (%s) doesn't implement the getPlanningEntities() method, so Entity Tabu Search is impossible."
+                "Move class (%s) doesn't implement the extractPlanningEntities() method, so Entity Tabu Search is impossible."
                         .formatted(getClass()));
     }
 
@@ -182,7 +182,7 @@ public interface Move<Solution_> {
      */
     default Collection<? extends Object> getPlanningValues() {
         throw new UnsupportedOperationException(
-                "Move class (%s) doesn't implement the getPlanningEntities() method, so Value Tabu Search is impossible."
+                "Move class (%s) doesn't implement the extractPlanningEntities() method, so Value Tabu Search is impossible."
                         .formatted(getClass()));
     }
 }
