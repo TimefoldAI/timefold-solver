@@ -20,7 +20,7 @@
     <!-- ************************************************************************ -->
     <!-- Dependencies -->
     <!-- ************************************************************************ -->
-    <version.ch.qos.logback>1.5.10</version.ch.qos.logback>
+    <version.ch.qos.logback>1.5.11</version.ch.qos.logback>
     <version.org.apache.logging.log4j>2.24.1</version.org.apache.logging.log4j>
     <version.ow2.asm>9.7.1</version.ow2.asm>
     <version.io.quarkus>3.15.1</version.io.quarkus>
