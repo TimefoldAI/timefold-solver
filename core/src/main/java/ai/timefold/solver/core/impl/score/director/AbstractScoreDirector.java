@@ -253,7 +253,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             solutionTracker.setBeforeMoveSolution(workingSolution);
         }
         try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
-            move.run(ephemeralMoveDirector);
+            move.execute(ephemeralMoveDirector);
             Score_ score = calculateScore();
             if (assertMoveScoreFromScratch) {
                 undoMoveText = "Undo(" + move + ")";

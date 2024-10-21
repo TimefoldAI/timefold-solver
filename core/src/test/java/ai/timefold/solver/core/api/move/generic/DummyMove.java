@@ -30,7 +30,7 @@ public final class DummyMove implements Move<TestdataSolution>, CodeAssertable {
     // ************************************************************************
 
     @Override
-    public void run(MutableSolutionState<TestdataSolution> mutableSolutionState) {
+    public void execute(MutableSolutionState<TestdataSolution> mutableSolutionState) {
         // do nothing
     }
 

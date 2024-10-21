@@ -29,7 +29,7 @@ class MoveDirectorTest {
         var solutionMetaModel = TestdataSolution.buildSolutionDescriptor()
                 .getMetaModel();
         var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class)
-                .<TestdataValue> basicVariable("value");
+                .<TestdataValue> planningVariable("value");
 
         var mockScoreDirector = mock(InnerScoreDirector.class);
         var moveDirector = new MoveDirector<TestdataSolution>(mockScoreDirector);
@@ -43,7 +43,7 @@ class MoveDirectorTest {
         var solutionMetaModel = TestdataSolution.buildSolutionDescriptor()
                 .getMetaModel();
         var variableMetaModel = solutionMetaModel.entity(TestdataEntity.class)
-                .<TestdataValue> basicVariable("value");
+                .<TestdataValue> planningVariable("value");
         var variableDescriptor =
                 ((DefaultPlanningVariableMetaModel<TestdataSolution, TestdataEntity, TestdataValue>) variableMetaModel)
                         .variableDescriptor();
@@ -71,7 +71,7 @@ class MoveDirectorTest {
         var solutionMetaModel = TestdataListSolution.buildSolutionDescriptor()
                 .getMetaModel();
         var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
-                .<TestdataListValue> listVariable("valueList");
+                .<TestdataListValue> planningListVariable("valueList");
 
         var mockScoreDirector = (InnerScoreDirector<TestdataListSolution, ?>) mock(InnerScoreDirector.class);
         var moveDirector = new MoveDirector<>(mockScoreDirector);
@@ -97,7 +97,7 @@ class MoveDirectorTest {
         var solutionMetaModel = TestdataListSolution.buildSolutionDescriptor()
                 .getMetaModel();
         var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
-                .<TestdataListValue> listVariable("valueList");
+                .<TestdataListValue> planningListVariable("valueList");
         var variableDescriptor =
                 ((DefaultPlanningListVariableMetaModel<TestdataListSolution, TestdataListEntity, TestdataListValue>) variableMetaModel)
                         .variableDescriptor();
@@ -139,7 +139,7 @@ class MoveDirectorTest {
         var solutionMetaModel = TestdataListSolution.buildSolutionDescriptor()
                 .getMetaModel();
         var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
-                .<TestdataListValue> listVariable("valueList");
+                .<TestdataListValue> planningListVariable("valueList");
         var variableDescriptor =
                 ((DefaultPlanningListVariableMetaModel<TestdataListSolution, TestdataListEntity, TestdataListValue>) variableMetaModel)
                         .variableDescriptor();

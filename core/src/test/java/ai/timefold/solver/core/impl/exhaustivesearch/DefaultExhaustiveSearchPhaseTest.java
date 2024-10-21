@@ -87,20 +87,20 @@ class DefaultExhaustiveSearchPhaseTest {
                 mock(EntitySelector.class), mock(ExhaustiveSearchDecider.class)).build();
         phase.restoreWorkingSolution(stepScope);
 
-        verify(node0.getMove(), times(0)).run(any(MutableSolutionState.class));
-        verify(node0.getUndoMove(), times(0)).run(any(MutableSolutionState.class));
-        verify(node1.getMove(), times(0)).run(any(MutableSolutionState.class));
-        verify(node1.getUndoMove(), times(0)).run(any(MutableSolutionState.class));
-        verify(node2A.getMove(), times(0)).run(any(MutableSolutionState.class));
-        verify(node2A.getUndoMove(), times(1)).run(any(MutableSolutionState.class));
-        verify(node3A.getMove(), times(0)).run(any(MutableSolutionState.class));
-        verify(node3A.getUndoMove(), times(1)).run(any(MutableSolutionState.class));
-        verify(node2B.getMove(), times(1)).run(any(MutableSolutionState.class));
-        verify(node2B.getUndoMove(), times(0)).run(any(MutableSolutionState.class));
-        verify(node3B.getMove(), times(1)).run(any(MutableSolutionState.class));
-        verify(node3B.getUndoMove(), times(0)).run(any(MutableSolutionState.class));
-        verify(node4B.getMove(), times(1)).run(any(MutableSolutionState.class));
-        verify(node4B.getUndoMove(), times(0)).run(any(MutableSolutionState.class));
+        verify(node0.getMove(), times(0)).execute(any(MutableSolutionState.class));
+        verify(node0.getUndoMove(), times(0)).execute(any(MutableSolutionState.class));
+        verify(node1.getMove(), times(0)).execute(any(MutableSolutionState.class));
+        verify(node1.getUndoMove(), times(0)).execute(any(MutableSolutionState.class));
+        verify(node2A.getMove(), times(0)).execute(any(MutableSolutionState.class));
+        verify(node2A.getUndoMove(), times(1)).execute(any(MutableSolutionState.class));
+        verify(node3A.getMove(), times(0)).execute(any(MutableSolutionState.class));
+        verify(node3A.getUndoMove(), times(1)).execute(any(MutableSolutionState.class));
+        verify(node2B.getMove(), times(1)).execute(any(MutableSolutionState.class));
+        verify(node2B.getUndoMove(), times(0)).execute(any(MutableSolutionState.class));
+        verify(node3B.getMove(), times(1)).execute(any(MutableSolutionState.class));
+        verify(node3B.getUndoMove(), times(0)).execute(any(MutableSolutionState.class));
+        verify(node4B.getMove(), times(1)).execute(any(MutableSolutionState.class));
+        verify(node4B.getUndoMove(), times(0)).execute(any(MutableSolutionState.class));
     }
 
     ExhaustiveSearchNode createNode(ExhaustiveSearchLayer layer, ExhaustiveSearchNode parentNode) {

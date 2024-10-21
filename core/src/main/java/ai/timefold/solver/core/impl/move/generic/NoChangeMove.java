@@ -26,7 +26,7 @@ public final class NoChangeMove<Solution_> implements Move<Solution_> {
     }
 
     @Override
-    public void run(MutableSolutionState<Solution_> mutableSolutionState) {
+    public void execute(MutableSolutionState<Solution_> mutableSolutionState) {
         // Do nothing.
     }
 

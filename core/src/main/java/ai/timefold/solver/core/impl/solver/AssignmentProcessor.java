@@ -61,7 +61,7 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
             if (elementLocation instanceof LocationInList<?> locationInList) { // Unassign the cloned element.
                 var entity = locationInList.entity();
                 var index = locationInList.index();
-                wrapAndRun(moveDirector, new ListUnassignMove<>(listVariableDescriptor, entity, index));
+                wrapAndExecute(moveDirector, new ListUnassignMove<>(listVariableDescriptor, entity, index));
             }
             supplyManager.cancel(demand);
         } else {
@@ -76,10 +76,10 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
                 if (basicVariableDescriptor.isChained()) {
                     var demand = new SingletonInverseVariableDemand<>(basicVariableDescriptor);
                     var supply = supplyManager.demand(demand);
-                    wrapAndRun(moveDirector, new ChainedChangeMove<>(basicVariableDescriptor, clonedElement, null, supply));
+                    wrapAndExecute(moveDirector, new ChainedChangeMove<>(basicVariableDescriptor, clonedElement, null, supply));
                     supplyManager.cancel(demand);
                 } else {
-                    wrapAndRun(moveDirector, new ChangeMove<>(basicVariableDescriptor, clonedElement, null));
+                    wrapAndExecute(moveDirector, new ChangeMove<>(basicVariableDescriptor, clonedElement, null));
                 }
             }
         }
@@ -123,9 +123,9 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
         }
     }
 
-    private void wrapAndRun(MoveDirector<Solution_> moveDirector,
+    private void wrapAndExecute(MoveDirector<Solution_> moveDirector,
             ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> move) {
-        new LegacyMoveAdapter<>(move).run(moveDirector);
+        new LegacyMoveAdapter<>(move).execute(moveDirector);
     }
 
     private EntityPlacer<Solution_> buildEntityPlacer() {
@@ -152,7 +152,7 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
     private Recommendation_ execute(InnerScoreDirector<Solution_, Score_> scoreDirector, Move<Solution_> move, long moveIndex,
             In_ clonedElement, Function<In_, Out_> propositionFunction) {
         try (var ephemeralMoveDirector = scoreDirector.getMoveDirector().ephemeral()) {
-            move.run(ephemeralMoveDirector);
+            move.execute(ephemeralMoveDirector);
             var newScoreAnalysis = scoreDirector.buildScoreAnalysis(fetchPolicy == ScoreAnalysisFetchPolicy.FETCH_ALL);
             var newScoreDifference = newScoreAnalysis.diff(originalScoreAnalysis);
             var result = propositionFunction.apply(clonedElement);

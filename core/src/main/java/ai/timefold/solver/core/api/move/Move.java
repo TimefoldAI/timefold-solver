@@ -17,7 +17,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
  * in the working {@link PlanningSolution}.
  * <p>
  * Usually the move holds a direct reference to each {@link PlanningEntity} of the {@link PlanningSolution}
- * which it will change when {@link #run(MutableSolutionState)} is called.
+ * which it will change when {@link #execute(MutableSolutionState)} is called.
  * On that change it will also notify the {@link ScoreDirector} accordingly.
  * <p>
  * For tabu search, a Move should implement {@link Object#equals(Object)} and {@link Object#hashCode()},
@@ -47,7 +47,7 @@ public interface Move<Solution_> {
      *        when the solver needs to undo the move.
      *        Do not store this parameter in a field.
      */
-    void run(MutableSolutionState<Solution_> mutableSolutionState);
+    void execute(MutableSolutionState<Solution_> mutableSolutionState);
 
     /**
      * Rebases a move from an origin {@link ScoreDirector} to another destination {@link ScoreDirector}
@@ -87,7 +87,7 @@ public interface Move<Solution_> {
      * Returns all planning entities that are being changed by this move.
      * Required for entity tabu.
      * <p>
-     * This method is only called after {@link #run(MutableSolutionState)}, which might affect the return values.
+     * This method is only called after {@link #execute(MutableSolutionState)}, which might affect the return values.
      * <p>
      * Duplicate entries in the returned {@link Collection} are best avoided.
      * The returned {@link Collection} is recommended to be in a stable order.
@@ -95,6 +95,7 @@ public interface Move<Solution_> {
      *
      * @return never null
      */
+    // TODO extract?
     default Collection<?> getPlanningEntities() {
         throw new UnsupportedOperationException("The move (" + this + ") does not support tabu search.");
     }
@@ -103,7 +104,7 @@ public interface Move<Solution_> {
      * Returns all planning values that entities are being assigned to by this move.
      * Required for value tabu.
      * <p>
-     * This method is only called after {@link #run(MutableSolutionState)}, which might affect the return values.
+     * This method is only called after {@link #execute(MutableSolutionState)}, which might affect the return values.
      * <p>
      * Duplicate entries in the returned {@link Collection} are best avoided.
      * The returned {@link Collection} is recommended to be in a stable order.

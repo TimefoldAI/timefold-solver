@@ -46,7 +46,7 @@ public record LegacyMoveAdapter<Solution_>(
     }
 
     @Override
-    public void run(MutableSolutionState<Solution_> mutableSolutionState) {
+    public void execute(MutableSolutionState<Solution_> mutableSolutionState) {
         var scoreDirector = getScoreDirector(mutableSolutionState);
         legacyMove.doMoveOnly(scoreDirector);
     }

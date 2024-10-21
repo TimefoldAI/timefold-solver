@@ -59,7 +59,7 @@ public interface PlanningEntityMetaModel<Solution_, Entity_> {
     }
 
     /**
-     * Returns a variable meta-model for a variable with the given name.
+     * Returns a {@link VariableMetaModel} for a variable with the given name.
      *
      * @return never null
      * @throws IllegalArgumentException if the variable does not exist on the entity
@@ -80,7 +80,7 @@ public interface PlanningEntityMetaModel<Solution_, Entity_> {
      * but only succeeds if the variable is a {@link PlanningVariable basic planning variable}.
      */
     @SuppressWarnings("unchecked")
-    default <Value_> PlanningVariableMetaModel<Solution_, Entity_, Value_> basicVariable(String variableName) {
+    default <Value_> PlanningVariableMetaModel<Solution_, Entity_, Value_> planningVariable(String variableName) {
         return (PlanningVariableMetaModel<Solution_, Entity_, Value_>) variable(variableName);
     }
 
@@ -89,7 +89,7 @@ public interface PlanningEntityMetaModel<Solution_, Entity_> {
      * but only succeeds if the variable is a {@link PlanningListVariable planning list variable}.
      */
     @SuppressWarnings("unchecked")
-    default <Value_> PlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariable(String variableName) {
+    default <Value_> PlanningListVariableMetaModel<Solution_, Entity_, Value_> planningListVariable(String variableName) {
         return (PlanningListVariableMetaModel<Solution_, Entity_, Value_>) variable(variableName);
     }
 

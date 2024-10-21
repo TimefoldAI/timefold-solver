@@ -134,7 +134,7 @@ public final class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearc
         InnerScoreDirector<Solution_, Score_> scoreDirector = stepScope.getScoreDirector();
         Move<Solution_> move = moveNode.getMove();
         try (var ephemeralMoveDirector = scoreDirector.getMoveDirector().ephemeral()) {
-            move.run(ephemeralMoveDirector);
+            move.execute(ephemeralMoveDirector);
             processMove(stepScope, moveNode);
             moveNode.setUndoMove(ephemeralMoveDirector.createUndoMove());
         }
