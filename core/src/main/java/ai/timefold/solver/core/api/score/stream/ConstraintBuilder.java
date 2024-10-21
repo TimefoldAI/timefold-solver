@@ -38,7 +38,9 @@ public interface ConstraintBuilder {
      * @param constraintName shows up in {@link ConstraintMatchTotal} during score justification
      * @param constraintGroup only allows alphanumeric characters, "-" and "_"
      */
-    @NonNull Constraint asConstraintDescribed(@NonNull String constraintName, @NonNull String constraintDescription, @NonNull String constraintGroup);
+    @NonNull
+    Constraint asConstraintDescribed(@NonNull String constraintName, @NonNull String constraintDescription,
+            @NonNull String constraintGroup);
 
     /**
      * Builds a {@link Constraint} from the constraint stream.

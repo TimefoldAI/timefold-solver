@@ -13,6 +13,7 @@ import org.jspecify.annotations.NonNull;
  */
 public interface QuadJoiner<A, B, C, D> {
 
-    @NonNull QuadJoiner<A, B, C, D> and(@NonNull QuadJoiner<A, B, C, D> otherJoiner);
+    @NonNull
+    QuadJoiner<A, B, C, D> and(@NonNull QuadJoiner<A, B, C, D> otherJoiner);
 
 }
