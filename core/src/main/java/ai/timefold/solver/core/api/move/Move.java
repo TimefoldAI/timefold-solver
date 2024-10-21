@@ -11,9 +11,6 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactProperty;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.api.solver.Solver;
-import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveListFactory;
 
 /**
  * A Move represents a change of 1 or more {@link PlanningVariable}s of 1 or more {@link PlanningEntity}s
@@ -48,33 +45,9 @@ public interface Move<Solution_> {
      * @param mutableSolutionState never null; exposes all possible mutative operations on the variables.
      *        Remembers those mutative operations and can replay them in reverse order
      *        when the solver needs to undo the move.
+     *        Do not store this parameter in a field.
      */
     void run(MutableSolutionState<Solution_> mutableSolutionState);
-
-    /**
-     * Called before a move is evaluated to decide whether the move can be done and evaluated.
-     * Generally not required.
-     * Move Streams are expected to only generate doable moves.
-     * Exists to support compatibility with the old Move Selector API.
-     * <p>
-     * A Move is not doable if:
-     * <ul>
-     * <li>Either doing it would change nothing in the {@link PlanningSolution}.</li>
-     * <li>Either it's simply not possible to do (for example due to built-in hard constraints).</li>
-     * </ul>
-     * <p>
-     * It is recommended to keep this method implementation simple: do not use it in an attempt to satisfy normal
-     * hard and soft constraints.
-     * <p>
-     * Although you could also filter out non-doable moves in for example the {@link MoveSelector}
-     * or {@link MoveListFactory}, this is not needed as the {@link Solver} will do it for you.
-     *
-     * @param solutionState never null; exposes all possible read operations on the variables.
-     * @return true if the move achieves a change in the solution and the move is possible to do on the solution.
-     */
-    default boolean isMoveDoable(SolutionState<Solution_> solutionState) {
-        return true;
-    }
 
     /**
      * Rebases a move from an origin {@link ScoreDirector} to another destination {@link ScoreDirector}
@@ -105,6 +78,7 @@ public interface Move<Solution_> {
      * This method is thread-safe.
      *
      * @param solutionState never null; exposes all possible read operations on the variables.
+     *        Do not store this parameter in a field.
      * @return never null, a new move that does the same change as this move on another solution instance
      */
     Move<Solution_> rebase(SolutionState<Solution_> solutionState);

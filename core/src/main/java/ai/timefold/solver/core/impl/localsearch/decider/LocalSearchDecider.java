@@ -10,6 +10,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForag
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -113,7 +114,9 @@ public class LocalSearchDecider<Solution_> {
     @SuppressWarnings("unchecked")
     protected <Score_ extends Score<Score_>> void doMove(LocalSearchMoveScope<Solution_> moveScope) {
         InnerScoreDirector<Solution_, Score_> scoreDirector = moveScope.getScoreDirector();
-        if (!moveScope.getMove().isMoveDoable(scoreDirector.getMoveDirector())) {
+        MoveDirector<Solution_> moveDirector = moveScope.getStepScope().getMoveDirector();
+        Move<Solution_> move = moveScope.getMove();
+        if (!LegacyMoveAdapter.isDoable(moveDirector, move)) {
             throw new IllegalStateException("Impossible state: Local search move selector (" + moveSelector
                     + ") provided a non-doable move (" + moveScope.getMove() + ").");
         }
