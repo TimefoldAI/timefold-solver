@@ -6,7 +6,7 @@ import java.util.Collections;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.api.move.MutableSolutionState;
-import ai.timefold.solver.core.api.move.SolutionState;
+import ai.timefold.solver.core.api.move.Rebaser;
 
 /**
  * Makes no changes.
@@ -32,7 +32,7 @@ public final class NoChangeMove<Solution_> implements Move<Solution_> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Move<Solution_> rebase(SolutionState<Solution_> solutionState) {
+    public Move<Solution_> rebase(Rebaser rebaser) {
         return (Move<Solution_>) INSTANCE;
     }
 

@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.move.director;
 
-import ai.timefold.solver.core.api.move.SolutionState;
+import ai.timefold.solver.core.api.move.Rebaser;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
@@ -15,8 +15,8 @@ record VariableChangeAction<Solution_, Entity_, Value_>(Entity_ entity, Value_ o
     }
 
     @Override
-    public ChangeAction<Solution_> rebase(SolutionState<Solution_> solutionState) {
-        return new VariableChangeAction<>(solutionState.rebase(entity), solutionState.rebase(oldValue), variableDescriptor);
+    public ChangeAction<Solution_> rebase(Rebaser rebaser) {
+        return new VariableChangeAction<>(rebaser.rebase(entity), rebaser.rebase(oldValue), variableDescriptor);
     }
 
 }

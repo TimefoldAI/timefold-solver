@@ -5,7 +5,7 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.api.move.MutableSolutionState;
-import ai.timefold.solver.core.api.move.SolutionState;
+import ai.timefold.solver.core.api.move.Rebaser;
 import ai.timefold.solver.core.impl.move.InnerMutableSolutionState;
 
 final class RecordedUndoMove<Solution_> implements Move<Solution_> {
@@ -25,9 +25,9 @@ final class RecordedUndoMove<Solution_> implements Move<Solution_> {
     }
 
     @Override
-    public Move<Solution_> rebase(SolutionState<Solution_> solutionState) {
+    public Move<Solution_> rebase(Rebaser rebaser) {
         return new RecordedUndoMove<>(variableChangeActionList.stream()
-                .map(changeAction -> changeAction.rebase(solutionState))
+                .map(changeAction -> changeAction.rebase(rebaser))
                 .toList());
     }
 

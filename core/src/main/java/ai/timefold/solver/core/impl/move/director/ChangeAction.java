@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.move.director;
 
-import ai.timefold.solver.core.api.move.SolutionState;
+import ai.timefold.solver.core.api.move.Rebaser;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 sealed interface ChangeAction<Solution_>
@@ -10,6 +10,6 @@ sealed interface ChangeAction<Solution_>
 
     void undo(VariableDescriptorAwareScoreDirector<Solution_> scoreDirector);
 
-    ChangeAction<Solution_> rebase(SolutionState<Solution_> solutionState);
+    ChangeAction<Solution_> rebase(Rebaser rebaser);
 
 }

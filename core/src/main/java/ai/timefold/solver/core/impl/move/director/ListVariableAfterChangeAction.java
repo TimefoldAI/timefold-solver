@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.move.director;
 
 import java.util.List;
 
-import ai.timefold.solver.core.api.move.SolutionState;
+import ai.timefold.solver.core.api.move.Rebaser;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
@@ -18,8 +18,8 @@ record ListVariableAfterChangeAction<Solution_, Entity_, Value_>(Entity_ entity,
     }
 
     @Override
-    public ChangeAction<Solution_> rebase(SolutionState<Solution_> solutionState) {
-        return new ListVariableAfterChangeAction<>(solutionState.rebase(entity), fromIndex, toIndex, variableDescriptor);
+    public ChangeAction<Solution_> rebase(Rebaser rebaser) {
+        return new ListVariableAfterChangeAction<>(rebaser.rebase(entity), fromIndex, toIndex, variableDescriptor);
     }
 
 }

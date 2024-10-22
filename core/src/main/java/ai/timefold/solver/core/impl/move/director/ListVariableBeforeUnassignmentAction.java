@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.move.director;
 
-import ai.timefold.solver.core.api.move.SolutionState;
+import ai.timefold.solver.core.api.move.Rebaser;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
@@ -13,8 +13,8 @@ record ListVariableBeforeUnassignmentAction<Solution_>(Object element,
     }
 
     @Override
-    public ChangeAction<Solution_> rebase(SolutionState<Solution_> solutionState) {
-        return new ListVariableBeforeUnassignmentAction<>(solutionState.rebase(element), variableDescriptor);
+    public ChangeAction<Solution_> rebase(Rebaser rebaser) {
+        return new ListVariableBeforeUnassignmentAction<>(rebaser.rebase(element), variableDescriptor);
     }
 
 }

@@ -65,7 +65,7 @@ public interface Move<Solution_> {
      * as the original {@link PlanningSolution} to begin with.
      * <p>
      * An implementation of this method typically iterates through every entity and fact instance in this move,
-     * translates each one to the destination {@link ScoreDirector} with {@link SolutionState#rebase(Object)}
+     * translates each one to the destination {@link ScoreDirector} with {@link Rebaser#rebase(Object)}
      * and creates a new move instance of the same move type, using those translated instances.
      * <p>
      * The destination {@link PlanningSolution} can be in a different state than the original {@link PlanningSolution}.
@@ -77,11 +77,10 @@ public interface Move<Solution_> {
      * <p>
      * This method is thread-safe.
      *
-     * @param solutionState never null; exposes all possible read operations on the variables.
-     *        Do not store this parameter in a field.
+     * @param rebaser never null; do not store this parameter in a field
      * @return never null, a new move that does the same change as this move on another solution instance
      */
-    Move<Solution_> rebase(SolutionState<Solution_> solutionState);
+    Move<Solution_> rebase(Rebaser rebaser);
 
     /**
      * Returns all planning entities that this move is changing.

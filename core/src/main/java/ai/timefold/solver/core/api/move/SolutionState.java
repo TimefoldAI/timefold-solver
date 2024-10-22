@@ -1,15 +1,10 @@
 package ai.timefold.solver.core.api.move;
 
-import ai.timefold.solver.core.api.domain.lookup.LookUpStrategyType;
-import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.api.domain.metamodel.PlanningVariableMetaModel;
-import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.api.solver.change.ProblemChange;
 
 /**
  * Allows read-only access to the state of the solution that is being operated on by the {@link Move}
@@ -66,23 +61,5 @@ public interface SolutionState<Solution_> {
      */
     <Entity_, Value_> ElementLocation getPositionOf(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Value_ value);
-
-    /**
-     * Translates an entity or fact instance (often from another {@link Thread})
-     * to another {@link ScoreDirector}'s internal working instance.
-     * Useful for move rebasing and in a {@link ProblemChange} and for multi-threaded solving.
-     * <p>
-     * Matching is determined by the {@link LookUpStrategyType} on {@link PlanningSolution}.
-     * Matching uses a {@link PlanningId} by default.
-     *
-     * @param problemFactOrPlanningEntity never null
-     * @return null if externalObject is null
-     * @throws IllegalArgumentException if there is no working object for the fact or entity,
-     *         if it cannot be looked up,
-     *         or if its class is not supported.
-     * @throws IllegalStateException if it cannot be looked up
-     * @param <T>
-     */
-    <T> T rebase(T problemFactOrPlanningEntity);
 
 }

@@ -5,6 +5,7 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.api.domain.metamodel.PlanningVariableMetaModel;
+import ai.timefold.solver.core.api.move.Rebaser;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
@@ -13,7 +14,8 @@ import ai.timefold.solver.core.impl.move.InnerMutableSolutionState;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
-public sealed class MoveDirector<Solution_> implements InnerMutableSolutionState<Solution_>
+public sealed class MoveDirector<Solution_>
+        implements InnerMutableSolutionState<Solution_>, Rebaser
         permits EphemeralMoveDirector {
 
     protected final VariableDescriptorAwareScoreDirector<Solution_> scoreDirector;
