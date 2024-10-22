@@ -67,7 +67,6 @@ public @interface PlanningSolution {
      *
      * @return {@link NullSolutionCloner} when it is null (workaround for annotation limitation)
      */
-    // TODO: return @NonNull?
     Class<? extends SolutionCloner> solutionCloner() default NullSolutionCloner.class;
 
     /** Workaround for annotation limitation in {@link #solutionCloner()}. */

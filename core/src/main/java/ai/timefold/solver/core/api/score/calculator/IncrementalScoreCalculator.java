@@ -46,23 +46,22 @@ public interface IncrementalScoreCalculator<Solution_, Score_ extends Score<Scor
      */
     void afterVariableChanged(@NonNull Object entity, @NonNull String variableName);
 
-    // TODO: should these params be @NonNull?
-    default void beforeListVariableElementAssigned(String variableName, Object element) {
+    default void beforeListVariableElementAssigned(@NonNull String variableName, @NonNull Object element) {
     }
 
-    default void afterListVariableElementAssigned(String variableName, Object element) {
+    default void afterListVariableElementAssigned(@NonNull String variableName, @NonNull Object element) {
     }
 
-    default void beforeListVariableElementUnassigned(String variableName, Object element) {
+    default void beforeListVariableElementUnassigned(@NonNull String variableName, @NonNull Object element) {
     }
 
-    default void afterListVariableElementUnassigned(String variableName, Object element) {
+    default void afterListVariableElementUnassigned(@NonNull String variableName, @NonNull Object element) {
     }
 
-    default void beforeListVariableChanged(Object entity, String variableName, int fromIndex, int toIndex) {
+    default void beforeListVariableChanged(@NonNull Object entity, @NonNull String variableName, int fromIndex, int toIndex) {
     }
 
-    default void afterListVariableChanged(Object entity, String variableName, int fromIndex, int toIndex) {
+    default void afterListVariableChanged(@NonNull Object entity, @NonNull String variableName, int fromIndex, int toIndex) {
     }
 
     /**
