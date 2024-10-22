@@ -1,0 +1,15 @@
+= FAQ
+:doctype: book
+:icons: font
+
+== How is Timefold Solver Licensed?
+
+Timefold Solver Community Edition is _open source_ software,
+released under http://www.apache.org/licenses/LICENSE-2.0.html[the Apache License 2.0].
+This license is very liberal and allows reuse for commercial purposes.
+Read http://www.apache.org/foundation/licence-FAQ.html#WhatDoesItMEAN[the layman's explanation].
+
+Timefold Solver Enterprise Edition is a commercial product
+that offers xref:enterprise-edition/enterprise-edition.adoc#enterpriseEditionFeatures[additional features]
+to scale out to very large datasets.
+To find out more, see xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition section] of this documentation.

@@ -1,0 +1,30 @@
+[#introduction]
+:page-aliases: ../index.adoc
+:doctype: book
+:sectnums:
+:icons: font
+
+[#whatIsTimefold]
+= What is Timefold Solver?
+
+Every organization faces planning problems: providing products or services with a limited set of _constrained_ resources (employees, assets, time, and money).
+Timefold Solver’s xref:planning-ai-concepts.adoc[PlanningAI] optimizes these problems to do more business with fewer resources using Constraint Satisfaction Programming.
+
+> Want to dive right into it? Follow our xref:quickstart/overview.adoc[Quickstart Example] to tackle your first planning problem in minutes.
+
+https://timefold.ai[Timefold Solver] is a lightweight, embeddable constraint satisfaction engine which optimizes planning problems.
+Example usecases include:
+
+.Timefold Solver's use cases include vehicle routing, employee scheduling, rostering, bin packing, and equipment scheduling.
+image::introduction/useCaseOverview.png[align="center"]
+
+Timefold Solver is 100% pure Java^TM^ and runs on Java {java-version} or higher.
+It xref:integration/integration.adoc#integration[integrates very easily] with other Java^TM^, Python, and other technologies.
+Timefold Solver works on any Java Virtual Machine and is compatible with the major JVM languages and all major platforms.
+It also supports Kotlin and Python.
+
+:!sectnums:
+== Next
+
+* Follow the xref:quickstart/overview.adoc[Quickstart Example] to tackle your first planning problem.
+* Learn about some important concepts used in the realm of xref:planning-ai-concepts.adoc[PlanningAI].
