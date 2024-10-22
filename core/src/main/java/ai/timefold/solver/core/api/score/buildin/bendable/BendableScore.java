@@ -111,9 +111,8 @@ public final class BendableScore implements IBendableScore<BendableScore> {
      * timefold-solver-jpa, timefold-solver-jackson, timefold-solver-jaxb, ...
      */
     @SuppressWarnings("unused")
-    // TODO: suppress warnings here or use empty array? Also in related classes (bendable)
     private BendableScore() {
-        this(Integer.MIN_VALUE, null, null);
+        this(Integer.MIN_VALUE, new int[] {}, new int[] {});
     }
 
     /**
