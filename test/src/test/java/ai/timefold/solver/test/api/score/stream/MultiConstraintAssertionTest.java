@@ -80,7 +80,7 @@ class MultiConstraintAssertionTest {
     private static final class TestdataAllowsUnassignedListConstraintProvider implements ConstraintProvider {
 
         @Override
-        public Constraint @NonNull [] Constraints(@NonNull ConstraintFactory constraintFactory) {
+        public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
             return new Constraint[] {
                     penalizeEveryAssignedValue(constraintFactory),
                     penalizeEveryValue(constraintFactory)
@@ -132,7 +132,7 @@ class MultiConstraintAssertionTest {
     private static final class TestdataDisallowsUnassignedListConstraintProvider implements ConstraintProvider {
 
         @Override
-        public Constraint @NonNull [] Constraints(@NonNull ConstraintFactory constraintFactory) {
+        public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
             return new Constraint[] {
                     penalizeEveryAssignedValue(constraintFactory),
                     penalizeEveryValue(constraintFactory)
@@ -185,7 +185,7 @@ class MultiConstraintAssertionTest {
             implements ConstraintProvider {
 
         @Override
-        public Constraint @NonNull [] Constraints(@NonNull ConstraintFactory constraintFactory) {
+        public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
             return new Constraint[] {
                     penalizeEveryAssignedValue(constraintFactory),
                     penalizeEveryValue(constraintFactory)

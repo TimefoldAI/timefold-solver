@@ -12,7 +12,7 @@ import org.jspecify.annotations.NonNull;
 public class TestdataQuarkusConstraintProvider implements ConstraintProvider {
 
     @Override
-    public Constraint @NonNull [] Constraints(@NonNull ConstraintFactory factory) {
+    public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory factory) {
         return new Constraint[] {
                 factory.forEach(TestdataQuarkusEntity.class)
                         .join(TestdataQuarkusEntity.class, Joiners.equal(TestdataQuarkusEntity::getValue))

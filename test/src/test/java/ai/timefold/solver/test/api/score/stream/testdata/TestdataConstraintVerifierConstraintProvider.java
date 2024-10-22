@@ -12,7 +12,7 @@ import org.jspecify.annotations.NonNull;
 
 public final class TestdataConstraintVerifierConstraintProvider implements ConstraintProvider {
     @Override
-    public Constraint @NonNull [] Constraints(@NonNull ConstraintFactory constraintFactory) {
+    public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
         return new Constraint[] {
                 penalizeEveryEntity(constraintFactory),
                 rewardEveryEntity(constraintFactory),

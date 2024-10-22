@@ -14,7 +14,7 @@ public class PrivateNoArgsConstructorConstraintProvider implements ConstraintPro
     }
 
     @Override
-    public Constraint @NonNull [] Constraints(@NonNull ConstraintFactory constraintFactory) {
+    public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
         return new Constraint[] {
                 constraintFactory.forEachUniquePair(PrivateNoArgsConstructorEntity.class,
                         Joiners.equal(p -> p.value))

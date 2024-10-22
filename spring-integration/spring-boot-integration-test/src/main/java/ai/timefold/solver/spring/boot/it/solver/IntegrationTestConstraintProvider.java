@@ -10,7 +10,7 @@ import org.jspecify.annotations.NonNull;
 
 public class IntegrationTestConstraintProvider implements ConstraintProvider {
     @Override
-    public Constraint @NonNull [] Constraints(@NonNull ConstraintFactory constraintFactory) {
+    public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
         return new Constraint[] {
                 constraintFactory.forEach(IntegrationTestEntity.class)
                         .filter(entity -> !entity.getId().equals(entity.getValue().id()))

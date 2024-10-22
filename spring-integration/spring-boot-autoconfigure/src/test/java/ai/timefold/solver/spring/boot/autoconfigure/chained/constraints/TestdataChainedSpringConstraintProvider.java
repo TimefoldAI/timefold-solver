@@ -13,7 +13,7 @@ import org.jspecify.annotations.NonNull;
 public class TestdataChainedSpringConstraintProvider implements ConstraintProvider {
 
     @Override
-    public Constraint @NonNull [] Constraints(@NonNull ConstraintFactory factory) {
+    public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory factory) {
         return new Constraint[] {
                 factory.forEach(TestdataChainedSpringAnchor.class)
                         .ifNotExists(TestdataChainedSpringEntity.class,

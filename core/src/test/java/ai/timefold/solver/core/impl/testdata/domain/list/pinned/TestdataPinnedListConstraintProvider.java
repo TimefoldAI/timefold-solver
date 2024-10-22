@@ -9,7 +9,7 @@ import org.jspecify.annotations.NonNull;
 
 public final class TestdataPinnedListConstraintProvider implements ConstraintProvider {
     @Override
-    public Constraint @NonNull [] Constraints(@NonNull ConstraintFactory constraintFactory) {
+    public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
         return new Constraint[] {
                 onlyConstraint(constraintFactory)
         };

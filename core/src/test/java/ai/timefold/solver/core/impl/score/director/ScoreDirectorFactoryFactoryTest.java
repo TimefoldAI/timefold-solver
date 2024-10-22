@@ -186,7 +186,7 @@ class ScoreDirectorFactoryFactoryTest {
 
     public static class TestdataConstraintProvider implements ConstraintProvider {
         @Override
-        public Constraint @NonNull [] Constraints(@NonNull ConstraintFactory constraintFactory) {
+        public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
             return new Constraint[0];
         }
     }

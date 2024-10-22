@@ -13,7 +13,7 @@ import org.jspecify.annotations.NonNull;
 public class TestdataChainedQuarkusConstraintProvider implements ConstraintProvider {
 
     @Override
-    public Constraint @NonNull [] Constraints(@NonNull ConstraintFactory factory) {
+    public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory factory) {
         return new Constraint[] {
                 factory.forEach(TestdataChainedQuarkusAnchor.class)
                         .ifNotExists(TestdataChainedQuarkusEntity.class,
