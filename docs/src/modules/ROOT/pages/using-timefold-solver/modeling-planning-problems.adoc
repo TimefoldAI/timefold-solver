@@ -488,10 +488,13 @@ Use xref:constraints-and-score/score-calculation.adoc#constraintStreamsForEach[f
 Timefold Solver will automatically add the value `null` to the value range.
 There is no need to add `null` in a collection provided by a ``ValueRangeProvider``.
 
-[NOTE]
+[IMPORTANT]
 ====
 Using a planning variable with unassigned values implies
 that your score calculation is responsible for punishing (or even rewarding) variables with a `null` value.
+
+Failure to penalize unassigned variables can cause a solution with *all* variables unassigned to be the best solution.
+See the xref:responding-to-change/responding-to-change.adoc#overconstrainedPlanningWithNullValues[overconstrained planning with `null` variable values] section in the docs for more infomation.
 ====
 
 [WARNING]
@@ -1676,12 +1679,15 @@ customers: Annotated[list[Customer], PlanningListVariable(allows_unassigned_valu
 ----
 ====
 
-[NOTE]
+[IMPORTANT]
 ====
 Constraint Streams filter out unassigned planning values by default.
 Use xref:constraints-and-score/score-calculation.adoc#constraintStreamsForEach[forEachIncludingUnassigned()] to avoid such unwanted behaviour.
 Using a planning list variable with unassigned values implies
 that your score calculation is responsible for punishing (or even rewarding) these unassigned values.
+
+Failure to penalize unassigned values can cause a solution with *all* values unassigned to be the best solution.
+See the xref:responding-to-change/responding-to-change.adoc#overconstrainedPlanningWithNullValues[overconstrained planning with `null` variable values] section in the docs for more infomation.
 ====
 
 xref:responding-to-change/responding-to-change.adoc[Repeated planning]

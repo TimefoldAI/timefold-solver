@@ -93,7 +93,34 @@ To implement this:
 . Add a score level (usually a medium level between the hard and soft level) by switching xref:constraints-and-score/overview.adoc#scoreType[`Score` type].
 . Make the planning variable xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariableAllowingUnassigned[allow unassigned values].
 . Add a score constraint on the new level (usually a medium constraint) to penalize the number of unassigned entities (or a weighted sum of them).
+Use xref:constraints-and-score/score-calculation.adoc#constraintStreamsForEach[`forEachIncludingUnassigned`] and check if the xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariable[planning variable] or xref:using-timefold-solver/modeling-planning-problems.adoc#bidirectionalVariable[inverse relation shadow variable] is `null`:
 
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    private Constraint penalizeUnassignedVisits(ConstraintFactory factory) {
+        return factory.forEachIncludingUnassigned(Visit.class)
+                .filter(visit -> visit.getVehicle() == null)
+                .penalize(HardMediumSoftScore.ONE_MEDIUM)
+                .asConstraint("Unassigned Visit");
+    }
+----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+def penalize_unassigned_visits(factory: ConstraintFactory) -> Constraint:
+    return (factory.for_each_including_unassigned(Visit)
+                   .filter(lambda visit: visit.vehicle is None)
+                   .penalize(HardMediumSoftScore.ONE_MEDIUM)
+                   .as_constraint("Unassigned Visit")
+    )
+----
+====
 
 [#overconstrainedPlanningWithVirtualValues]
 === Overconstrained planning with virtual values
