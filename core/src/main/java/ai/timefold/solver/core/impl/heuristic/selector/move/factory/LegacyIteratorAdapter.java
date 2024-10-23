@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.factory;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.api.move.Move;
+import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
 
 final class LegacyIteratorAdapter<Solution_> implements Iterator<Move<Solution_>> {
 
@@ -19,6 +20,6 @@ final class LegacyIteratorAdapter<Solution_> implements Iterator<Move<Solution_>
 
     @Override
     public Move<Solution_> next() {
-        return new ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter<>(moveIterator.next());
+        return new LegacyMoveAdapter<>(moveIterator.next());
     }
 }
