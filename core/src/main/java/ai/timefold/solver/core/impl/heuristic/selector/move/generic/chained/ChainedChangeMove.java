@@ -44,17 +44,17 @@ public class ChainedChangeMove<Solution_> extends ChangeMove<Solution_> {
 
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        var innerScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         var oldValue = variableDescriptor.getValue(entity);
         // Close the old chain
         if (oldTrailingEntity != null) {
-            innerScoreDirector.changeVariableFacade(variableDescriptor, oldTrailingEntity, oldValue);
+            castScoreDirector.changeVariableFacade(variableDescriptor, oldTrailingEntity, oldValue);
         }
         // Change the entity
-        innerScoreDirector.changeVariableFacade(variableDescriptor, entity, toPlanningValue);
+        castScoreDirector.changeVariableFacade(variableDescriptor, entity, toPlanningValue);
         // Reroute the new chain
         if (newTrailingEntity != null) {
-            innerScoreDirector.changeVariableFacade(variableDescriptor, newTrailingEntity, entity);
+            castScoreDirector.changeVariableFacade(variableDescriptor, newTrailingEntity, entity);
         }
     }
 

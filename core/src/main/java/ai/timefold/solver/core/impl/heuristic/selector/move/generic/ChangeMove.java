@@ -50,8 +50,8 @@ public class ChangeMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        var innerScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
-        innerScoreDirector.changeVariableFacade(variableDescriptor, entity, toPlanningValue);
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
+        castScoreDirector.changeVariableFacade(variableDescriptor, entity, toPlanningValue);
     }
 
     @Override

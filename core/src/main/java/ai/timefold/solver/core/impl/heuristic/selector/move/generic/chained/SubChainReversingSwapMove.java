@@ -80,29 +80,29 @@ public class SubChainReversingSwapMove<Solution_> extends AbstractMove<Solution_
         var leftLastEntityValue = variableDescriptor.getValue(leftLastEntity);
         var rightLastEntityValue = variableDescriptor.getValue(rightLastEntity);
         // Change the entities
-        var innerScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         if (leftLastEntity != rightFirstValue) {
-            innerScoreDirector.changeVariableFacade(variableDescriptor, leftLastEntity, rightFirstValue);
+            castScoreDirector.changeVariableFacade(variableDescriptor, leftLastEntity, rightFirstValue);
         }
         if (rightLastEntity != leftFirstValue) {
-            innerScoreDirector.changeVariableFacade(variableDescriptor, rightLastEntity, leftFirstValue);
+            castScoreDirector.changeVariableFacade(variableDescriptor, rightLastEntity, leftFirstValue);
         }
         // Reverse the chains
-        reverseChain(innerScoreDirector, variableDescriptor, leftLastEntity, leftLastEntityValue, leftFirstEntity);
-        reverseChain(innerScoreDirector, variableDescriptor, rightLastEntity, rightLastEntityValue, rightFirstEntity);
+        reverseChain(castScoreDirector, variableDescriptor, leftLastEntity, leftLastEntityValue, leftFirstEntity);
+        reverseChain(castScoreDirector, variableDescriptor, rightLastEntity, rightLastEntityValue, rightFirstEntity);
         // Reroute the new chains
         if (leftTrailingLastEntity != null) {
             if (leftTrailingLastEntity != rightFirstEntity) {
-                innerScoreDirector.changeVariableFacade(variableDescriptor, leftTrailingLastEntity, rightFirstEntity);
+                castScoreDirector.changeVariableFacade(variableDescriptor, leftTrailingLastEntity, rightFirstEntity);
             } else {
-                innerScoreDirector.changeVariableFacade(variableDescriptor, leftLastEntity, rightFirstEntity);
+                castScoreDirector.changeVariableFacade(variableDescriptor, leftLastEntity, rightFirstEntity);
             }
         }
         if (rightTrailingLastEntity != null) {
             if (rightTrailingLastEntity != leftFirstEntity) {
-                innerScoreDirector.changeVariableFacade(variableDescriptor, rightTrailingLastEntity, leftFirstEntity);
+                castScoreDirector.changeVariableFacade(variableDescriptor, rightTrailingLastEntity, leftFirstEntity);
             } else {
-                innerScoreDirector.changeVariableFacade(variableDescriptor, rightLastEntity, leftFirstEntity);
+                castScoreDirector.changeVariableFacade(variableDescriptor, rightLastEntity, leftFirstEntity);
             }
         }
     }

@@ -47,7 +47,8 @@ public final class DefaultPlanningEntityMetaModel<Solution_, Entity_>
 
     void addVariable(VariableMetaModel<Solution_, Entity_, ?> variable) {
         if (variable.entity() != this) {
-            throw new IllegalArgumentException("The variable (" + variable + ") is not part of this entity (" + this + ").");
+            throw new IllegalArgumentException("The variable (%s) is not part of this entity (%s)."
+                    .formatted(variable.name(), type.getSimpleName()));
         }
         variables.add(variable);
     }

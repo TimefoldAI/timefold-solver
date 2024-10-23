@@ -19,7 +19,6 @@ public abstract class AbstractMove<Solution_> implements Move<Solution_> {
 
     @Override
     public final void doMoveOnly(ScoreDirector<Solution_> scoreDirector) {
-        // LegacyMoveAdapter does not wrap the score director in a VariableChangeRecordingScoreDirector
         var recordingScoreDirector =
                 scoreDirector instanceof VariableChangeRecordingScoreDirector<Solution_> variableChangeRecordingScoreDirector
                         ? variableChangeRecordingScoreDirector

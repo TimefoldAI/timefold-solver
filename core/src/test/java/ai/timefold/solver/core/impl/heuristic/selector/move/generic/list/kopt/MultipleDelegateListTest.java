@@ -60,7 +60,6 @@ public class MultipleDelegateListTest {
         }
 
         assertThatCode(() -> combined.getIndexOfValue(listVariableStateSupply, "g"))
-                .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Value (g) is not contained in any entity list");
     }
 

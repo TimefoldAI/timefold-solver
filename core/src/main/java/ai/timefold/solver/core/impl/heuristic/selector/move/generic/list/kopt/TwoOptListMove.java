@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
@@ -68,10 +67,10 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
             if (firstEdgeEndpoint == 0) {
                 shift = -secondEdgeEndpoint;
             } else if (secondEdgeEndpoint < firstEdgeEndpoint) {
-                int listSize = variableDescriptor.getListSize(firstEntity);
-                int flippedSectionSize = listSize - firstEdgeEndpoint + secondEdgeEndpoint;
-                int firstElementIndexInFlipped = listSize - firstEdgeEndpoint;
-                int firstElementMirroredIndex = flippedSectionSize - firstElementIndexInFlipped;
+                var listSize = variableDescriptor.getListSize(firstEntity);
+                var flippedSectionSize = listSize - firstEdgeEndpoint + secondEdgeEndpoint;
+                var firstElementIndexInFlipped = listSize - firstEdgeEndpoint;
+                var firstElementMirroredIndex = flippedSectionSize - firstElementIndexInFlipped;
                 shift = -(firstEdgeEndpoint + firstElementMirroredIndex - 1);
             } else {
                 shift = 0;
@@ -109,23 +108,23 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     private void doTailSwap(ScoreDirector<Solution_> scoreDirector) {
-        var innerScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         var firstListVariable = variableDescriptor.getValue(firstEntity);
         var secondListVariable = variableDescriptor.getValue(secondEntity);
         var firstOriginalSize = firstListVariable.size();
         var secondOriginalSize = secondListVariable.size();
 
-        innerScoreDirector.beforeListVariableChanged(variableDescriptor, firstEntity,
+        castScoreDirector.beforeListVariableChanged(variableDescriptor, firstEntity,
                 firstEdgeEndpoint,
                 firstOriginalSize);
-        innerScoreDirector.beforeListVariableChanged(variableDescriptor, secondEntity,
+        castScoreDirector.beforeListVariableChanged(variableDescriptor, secondEntity,
                 secondEdgeEndpoint,
                 secondOriginalSize);
 
         var firstListVariableTail = firstListVariable.subList(firstEdgeEndpoint, firstOriginalSize);
         var secondListVariableTail = secondListVariable.subList(secondEdgeEndpoint, secondOriginalSize);
 
-        int tailSizeDifference = secondListVariableTail.size() - firstListVariableTail.size();
+        var tailSizeDifference = secondListVariableTail.size() - firstListVariableTail.size();
 
         var firstListVariableTailCopy = new ArrayList<>(firstListVariableTail);
         firstListVariableTail.clear();
@@ -133,25 +132,25 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
         secondListVariableTail.clear();
         secondListVariable.addAll(firstListVariableTailCopy);
 
-        innerScoreDirector.afterListVariableChanged(variableDescriptor, firstEntity,
+        castScoreDirector.afterListVariableChanged(variableDescriptor, firstEntity,
                 firstEdgeEndpoint,
                 firstOriginalSize + tailSizeDifference);
-        innerScoreDirector.afterListVariableChanged(variableDescriptor, secondEntity,
+        castScoreDirector.afterListVariableChanged(variableDescriptor, secondEntity,
                 secondEdgeEndpoint,
                 secondOriginalSize - tailSizeDifference);
     }
 
     private void doSublistReversal(ScoreDirector<Solution_> scoreDirector) {
-        var innerScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         var listVariable = variableDescriptor.getValue(firstEntity);
 
         if (firstEdgeEndpoint < secondEdgeEndpoint) {
             if (firstEdgeEndpoint > 0) {
-                innerScoreDirector.beforeListVariableChanged(variableDescriptor, firstEntity,
+                castScoreDirector.beforeListVariableChanged(variableDescriptor, firstEntity,
                         firstEdgeEndpoint,
                         secondEdgeEndpoint);
             } else {
-                innerScoreDirector.beforeListVariableChanged(variableDescriptor, firstEntity,
+                castScoreDirector.beforeListVariableChanged(variableDescriptor, firstEntity,
                         entityFirstUnpinnedIndex,
                         listVariable.size());
             }
@@ -177,16 +176,16 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
             }
 
             if (firstEdgeEndpoint > 0) {
-                innerScoreDirector.afterListVariableChanged(variableDescriptor, firstEntity,
+                castScoreDirector.afterListVariableChanged(variableDescriptor, firstEntity,
                         firstEdgeEndpoint,
                         secondEdgeEndpoint);
             } else {
-                innerScoreDirector.afterListVariableChanged(variableDescriptor, firstEntity,
+                castScoreDirector.afterListVariableChanged(variableDescriptor, firstEntity,
                         entityFirstUnpinnedIndex,
                         listVariable.size());
             }
         } else {
-            innerScoreDirector.beforeListVariableChanged(variableDescriptor, firstEntity,
+            castScoreDirector.beforeListVariableChanged(variableDescriptor, firstEntity,
                     entityFirstUnpinnedIndex,
                     listVariable.size());
 
@@ -209,7 +208,7 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
                             shift);
                 }
             }
-            innerScoreDirector.afterListVariableChanged(variableDescriptor, firstEntity,
+            castScoreDirector.afterListVariableChanged(variableDescriptor, firstEntity,
                     entityFirstUnpinnedIndex,
                     listVariable.size());
         }
@@ -222,7 +221,7 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
                 // A shift will rotate the entire list, changing the visiting order
                 return true;
             }
-            int chainLength = Math.abs(secondEdgeEndpoint - firstEdgeEndpoint);
+            var chainLength = Math.abs(secondEdgeEndpoint - firstEdgeEndpoint);
 
             // The chain flipped by a K-Opt only changes if there are at least 2 values
             // in the chain
@@ -260,20 +259,20 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
     @Override
     public Collection<?> getPlanningValues() {
         if (firstEntity == secondEntity) {
-            List<Object> listVariable = variableDescriptor.getValue(firstEntity);
+            var listVariable = variableDescriptor.getValue(firstEntity);
             if (firstEdgeEndpoint < secondEdgeEndpoint) {
                 return new ArrayList<>(listVariable.subList(firstEdgeEndpoint, secondEdgeEndpoint));
             } else {
-                List<Object> firstHalfReversedPath = listVariable.subList(firstEdgeEndpoint, listVariable.size());
-                List<Object> secondHalfReversedPath = listVariable.subList(entityFirstUnpinnedIndex, secondEdgeEndpoint);
+                var firstHalfReversedPath = listVariable.subList(firstEdgeEndpoint, listVariable.size());
+                var secondHalfReversedPath = listVariable.subList(entityFirstUnpinnedIndex, secondEdgeEndpoint);
                 return CollectionUtils.concat(firstHalfReversedPath, secondHalfReversedPath);
             }
         } else {
-            List<Object> firstListVariable = variableDescriptor.getValue(firstEntity);
-            List<Object> secondListVariable = variableDescriptor.getValue(secondEntity);
-            List<Object> firstListVariableTail = firstListVariable.subList(firstEdgeEndpoint, firstListVariable.size());
-            List<Object> secondListVariableTail = secondListVariable.subList(secondEdgeEndpoint, secondListVariable.size());
-            List<Object> out = new ArrayList<>(firstListVariableTail.size() + secondListVariableTail.size());
+            var firstListVariable = variableDescriptor.getValue(firstEntity);
+            var secondListVariable = variableDescriptor.getValue(secondEntity);
+            var firstListVariableTail = firstListVariable.subList(firstEdgeEndpoint, firstListVariable.size());
+            var secondListVariableTail = secondListVariable.subList(secondEdgeEndpoint, secondListVariable.size());
+            var out = new ArrayList<>(firstListVariableTail.size() + secondListVariableTail.size());
             out.addAll(firstListVariableTail);
             out.addAll(secondListVariableTail);
             return out;

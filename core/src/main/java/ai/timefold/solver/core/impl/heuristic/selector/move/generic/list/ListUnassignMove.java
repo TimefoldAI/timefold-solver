@@ -56,15 +56,15 @@ public class ListUnassignMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        var innerScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         var listVariable = variableDescriptor.getValue(sourceEntity);
         var element = getMovedValue();
         // Remove an element from sourceEntity's list variable (at sourceIndex).
-        innerScoreDirector.beforeListVariableElementUnassigned(variableDescriptor, element);
-        innerScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex + 1);
+        castScoreDirector.beforeListVariableElementUnassigned(variableDescriptor, element);
+        castScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex + 1);
         movedValue = listVariable.remove(sourceIndex);
-        innerScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex);
-        innerScoreDirector.afterListVariableElementUnassigned(variableDescriptor, element);
+        castScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex);
+        castScoreDirector.afterListVariableElementUnassigned(variableDescriptor, element);
     }
 
     @Override

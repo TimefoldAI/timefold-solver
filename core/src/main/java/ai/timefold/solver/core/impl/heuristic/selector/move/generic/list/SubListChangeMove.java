@@ -89,7 +89,7 @@ public class SubListChangeMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        var innerScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
 
         var sourceList = variableDescriptor.getValue(sourceEntity);
         var subList = sourceList.subList(sourceIndex, sourceIndex + length);
@@ -98,18 +98,18 @@ public class SubListChangeMove<Solution_> extends AbstractMove<Solution_> {
         if (sourceEntity == destinationEntity) {
             var fromIndex = Math.min(sourceIndex, destinationIndex);
             var toIndex = Math.max(sourceIndex, destinationIndex) + length;
-            innerScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
+            castScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
             subList.clear();
             variableDescriptor.getValue(destinationEntity).addAll(destinationIndex, planningValues);
-            innerScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
+            castScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
         } else {
-            innerScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex + length);
+            castScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex + length);
             subList.clear();
-            innerScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex);
-            innerScoreDirector.beforeListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
+            castScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex);
+            castScoreDirector.beforeListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
                     destinationIndex);
             variableDescriptor.getValue(destinationEntity).addAll(destinationIndex, planningValues);
-            innerScoreDirector.afterListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
+            castScoreDirector.afterListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
                     destinationIndex + length);
         }
     }

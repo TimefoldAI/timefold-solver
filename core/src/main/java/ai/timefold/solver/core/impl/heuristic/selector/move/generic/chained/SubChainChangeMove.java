@@ -74,15 +74,15 @@ public class SubChainChangeMove<Solution_> extends AbstractMove<Solution_> {
         var lastEntity = subChain.getLastEntity();
         var oldFirstValue = variableDescriptor.getValue(firstEntity);
         // Close the old chain
-        var innerScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         if (oldTrailingLastEntity != null) {
-            innerScoreDirector.changeVariableFacade(variableDescriptor, oldTrailingLastEntity, oldFirstValue);
+            castScoreDirector.changeVariableFacade(variableDescriptor, oldTrailingLastEntity, oldFirstValue);
         }
         // Change the entity
-        innerScoreDirector.changeVariableFacade(variableDescriptor, firstEntity, toPlanningValue);
+        castScoreDirector.changeVariableFacade(variableDescriptor, firstEntity, toPlanningValue);
         // Reroute the new chain
         if (newTrailingEntity != null) {
-            innerScoreDirector.changeVariableFacade(variableDescriptor, newTrailingEntity, lastEntity);
+            castScoreDirector.changeVariableFacade(variableDescriptor, newTrailingEntity, lastEntity);
         }
     }
 

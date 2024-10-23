@@ -62,19 +62,19 @@ public class SubListUnassignMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        var innerScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
 
         var sourceList = variableDescriptor.getValue(sourceEntity);
         var subList = sourceList.subList(sourceIndex, getToIndex());
         planningValues = List.copyOf(subList);
 
         for (var element : subList) {
-            innerScoreDirector.beforeListVariableElementUnassigned(variableDescriptor, element);
-            innerScoreDirector.afterListVariableElementUnassigned(variableDescriptor, element);
+            castScoreDirector.beforeListVariableElementUnassigned(variableDescriptor, element);
+            castScoreDirector.afterListVariableElementUnassigned(variableDescriptor, element);
         }
-        innerScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, getToIndex());
+        castScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, getToIndex());
         subList.clear();
-        innerScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex);
+        castScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex);
     }
 
     @Override

@@ -64,7 +64,7 @@ public interface PlanningSolutionMetaModel<Solution_> {
             }
         }
         throw new IllegalArgumentException(
-                "The type (" + entityClass + ") does not exist in the entities (" + entities() + ").");
+                "The type (%s) does not exist in the entities (%s).".formatted(entityClass, entities()));
     }
 
 }

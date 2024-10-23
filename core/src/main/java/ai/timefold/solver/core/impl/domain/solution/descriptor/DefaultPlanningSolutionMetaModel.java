@@ -35,8 +35,8 @@ public final class DefaultPlanningSolutionMetaModel<Solution_> implements Planni
 
     void addEntity(PlanningEntityMetaModel<Solution_, ?> planningEntityMetaModel) {
         if (planningEntityMetaModel.solution() != this) {
-            throw new IllegalArgumentException("The entityMetaModel (" + planningEntityMetaModel
-                    + ") must be created by this solutionMetaModel (" + this + ").");
+            throw new IllegalArgumentException("The entityMetaModel (%s) must be created by this solutionMetaModel (%s)."
+                    .formatted(planningEntityMetaModel, this));
         }
         entities.add(planningEntityMetaModel);
     }

@@ -381,8 +381,8 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
                 .ensureAssigned();
         var endElementLocation = listVariableStateSupply.getLocationInList(to)
                 .ensureAssigned();
-        int startEntityIndex = entityToEntityIndex.get(startElementLocation.entity());
-        int endEntityIndex = entityToEntityIndex.get(endElementLocation.entity());
+        var startEntityIndex = entityToEntityIndex.get(startElementLocation.entity());
+        var endEntityIndex = entityToEntityIndex.get(endElementLocation.entity());
         var offsets = entityOrderInfo.offsets();
         var startIndex = offsets[startEntityIndex] + startElementLocation.index();
         var endIndex = offsets[endEntityIndex] + endElementLocation.index();

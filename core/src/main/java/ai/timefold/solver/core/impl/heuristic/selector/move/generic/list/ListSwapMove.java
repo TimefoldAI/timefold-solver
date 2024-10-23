@@ -121,24 +121,24 @@ public class ListSwapMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        var innerScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         var leftElement = variableDescriptor.getElement(leftEntity, leftIndex);
         var rightElement = variableDescriptor.getElement(rightEntity, rightIndex);
 
         if (leftEntity == rightEntity) {
             var fromIndex = Math.min(leftIndex, rightIndex);
             var toIndex = Math.max(leftIndex, rightIndex) + 1;
-            innerScoreDirector.beforeListVariableChanged(variableDescriptor, leftEntity, fromIndex, toIndex);
+            castScoreDirector.beforeListVariableChanged(variableDescriptor, leftEntity, fromIndex, toIndex);
             variableDescriptor.setElement(leftEntity, leftIndex, rightElement);
             variableDescriptor.setElement(rightEntity, rightIndex, leftElement);
-            innerScoreDirector.afterListVariableChanged(variableDescriptor, leftEntity, fromIndex, toIndex);
+            castScoreDirector.afterListVariableChanged(variableDescriptor, leftEntity, fromIndex, toIndex);
         } else {
-            innerScoreDirector.beforeListVariableChanged(variableDescriptor, leftEntity, leftIndex, leftIndex + 1);
-            innerScoreDirector.beforeListVariableChanged(variableDescriptor, rightEntity, rightIndex, rightIndex + 1);
+            castScoreDirector.beforeListVariableChanged(variableDescriptor, leftEntity, leftIndex, leftIndex + 1);
+            castScoreDirector.beforeListVariableChanged(variableDescriptor, rightEntity, rightIndex, rightIndex + 1);
             variableDescriptor.setElement(leftEntity, leftIndex, rightElement);
             variableDescriptor.setElement(rightEntity, rightIndex, leftElement);
-            innerScoreDirector.afterListVariableChanged(variableDescriptor, leftEntity, leftIndex, leftIndex + 1);
-            innerScoreDirector.afterListVariableChanged(variableDescriptor, rightEntity, rightIndex, rightIndex + 1);
+            castScoreDirector.afterListVariableChanged(variableDescriptor, leftEntity, leftIndex, leftIndex + 1);
+            castScoreDirector.afterListVariableChanged(variableDescriptor, rightEntity, rightIndex, rightIndex + 1);
         }
     }
 

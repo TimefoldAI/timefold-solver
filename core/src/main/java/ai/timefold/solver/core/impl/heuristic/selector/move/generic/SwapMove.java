@@ -76,13 +76,13 @@ public class SwapMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        var innerScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         for (var variableDescriptor : variableDescriptorList) {
             var oldLeftValue = variableDescriptor.getValue(leftEntity);
             var oldRightValue = variableDescriptor.getValue(rightEntity);
             if (!Objects.equals(oldLeftValue, oldRightValue)) {
-                innerScoreDirector.changeVariableFacade(variableDescriptor, leftEntity, oldRightValue);
-                innerScoreDirector.changeVariableFacade(variableDescriptor, rightEntity, oldLeftValue);
+                castScoreDirector.changeVariableFacade(variableDescriptor, leftEntity, oldRightValue);
+                castScoreDirector.changeVariableFacade(variableDescriptor, rightEntity, oldLeftValue);
             }
         }
     }

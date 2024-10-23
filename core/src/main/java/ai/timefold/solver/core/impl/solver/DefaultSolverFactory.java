@@ -104,9 +104,9 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                     metricsRequiringConstraintMatchSet);
         }
 
-        var innerScoreDirector = scoreDirectorFactory.buildScoreDirector(true, constraintMatchEnabled);
-        solverScope.setScoreDirector(innerScoreDirector);
-        solverScope.setProblemChangeDirector(new DefaultProblemChangeDirector<>(innerScoreDirector));
+        var castScoreDirector = scoreDirectorFactory.buildScoreDirector(true, constraintMatchEnabled);
+        solverScope.setScoreDirector(castScoreDirector);
+        solverScope.setProblemChangeDirector(new DefaultProblemChangeDirector<>(castScoreDirector));
 
         var moveThreadCount = resolveMoveThreadCount(true);
         var bestSolutionRecaller = BestSolutionRecallerFactory.create().<Solution_> buildBestSolutionRecaller(environmentMode);

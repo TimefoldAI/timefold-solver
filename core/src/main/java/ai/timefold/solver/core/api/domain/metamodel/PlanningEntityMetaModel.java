@@ -72,7 +72,7 @@ public interface PlanningEntityMetaModel<Solution_, Entity_> {
             }
         }
         throw new IllegalArgumentException(
-                "The variableName (" + variableName + ") does not exist in the variables (" + variables() + ").");
+                "The variableName (%s) does not exist in the variables (%s).".formatted(variableName, variables()));
     }
 
     /**

@@ -1841,7 +1841,7 @@ because we only generate moves for which that is the case.
 A move that is currently not doable can become doable when the working solution changes in a later step,
 otherwise we probably shouldn't have created it in the first place.
 
-Each move has an __undo move__: a move (normally of the same type) which does the exact opposite.
+Each move has an __undo move__: a move which does the exact opposite.
 The users do not need to implement this move, as the solver is smart enough to know what to undo based on the move that was done.
 
 A solver phase might do and undo the same `Move` more than once.
