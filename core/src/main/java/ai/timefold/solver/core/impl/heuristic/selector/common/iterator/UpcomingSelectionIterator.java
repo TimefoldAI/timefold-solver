@@ -76,7 +76,7 @@ public abstract class UpcomingSelectionIterator<S> extends SelectionIterator<S> 
             ListVariableDescriptor<?> listVariableDescriptor) {
         while (destinationIterator.hasNext()) {
             var destination = destinationIterator.next();
-            if (destination instanceof LocationInList<?> locationInList) {
+            if (destination instanceof LocationInList locationInList) {
                 var isPinned = listVariableDescriptor.isElementPinned(null, locationInList.entity(), locationInList.index());
                 if (!isPinned) {
                     return destination;

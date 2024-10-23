@@ -15,7 +15,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
         implements ListVariableStateSupply<Solution_> {
 
     private final ListVariableDescriptor<Solution_> sourceVariableDescriptor;
-    private Map<Object, LocationInList<?>> elementLocationMap;
+    private Map<Object, LocationInList> elementLocationMap;
     private int unassignedCount;
 
     public ExternalizedListVariableStateSupply(ListVariableDescriptor<Solution_> sourceVariableDescriptor) {

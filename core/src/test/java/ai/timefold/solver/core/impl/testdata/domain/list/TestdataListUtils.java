@@ -117,7 +117,7 @@ public final class TestdataListUtils {
     }
 
     public static DestinationSelector<TestdataPinnedWithIndexListSolution> mockPinnedNeverEndingDestinationSelector(
-            LocationInList<?>... locationsInList) {
+            LocationInList... locationsInList) {
         return mockNeverEndingDestinationSelector(locationsInList.length, locationsInList);
     }
 

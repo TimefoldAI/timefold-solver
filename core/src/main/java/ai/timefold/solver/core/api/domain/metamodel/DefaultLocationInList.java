@@ -1,11 +1,12 @@
 package ai.timefold.solver.core.api.domain.metamodel;
 
 import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
  * Points to a list variable position specified by an entity and an index.
  */
-record DefaultLocationInList<Entity_>(Entity_ entity, int index) implements LocationInList<Entity_> {
+record DefaultLocationInList(Object entity, int index) implements LocationInList {
 
     public DefaultLocationInList {
         Objects.requireNonNull(entity);
@@ -16,12 +17,17 @@ record DefaultLocationInList<Entity_>(Entity_ entity, int index) implements Loca
     }
 
     @Override
+    public LocationInList ensureAssigned(Supplier<String> messageSupplier) {
+        return this;
+    }
+
+    @Override
     public String toString() {
         return entity + "[" + index + "]";
     }
 
     @Override
-    public int compareTo(LocationInList<Entity_> other) {
+    public int compareTo(LocationInList other) {
         return Integer.compare(index, other.index());
     }
 }

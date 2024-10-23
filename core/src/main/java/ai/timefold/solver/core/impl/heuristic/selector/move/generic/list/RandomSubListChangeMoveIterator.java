@@ -42,7 +42,7 @@ class RandomSubListChangeMoveIterator<Solution_> extends UpcomingSelectionIterat
         var destination = findUnpinnedDestination(destinationIterator, listVariableDescriptor);
         if (destination == null) {
             return noUpcomingSelection();
-        } else if (destination instanceof LocationInList<?> destinationElement) {
+        } else if (destination instanceof LocationInList destinationElement) {
             var reversing = selectReversingMoveToo && workingRandom.nextBoolean();
             return new SubListChangeMove<>(listVariableDescriptor, subList, destinationElement.entity(),
                     destinationElement.index(), reversing);

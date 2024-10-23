@@ -59,15 +59,15 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
             return null;
         }
         var upcomingSource = listVariableStateSupply.getLocationInList(upcomingLeftValue);
-        if (upcomingSource instanceof LocationInList<?> sourceElement) {
-            if (upcomingDestination instanceof LocationInList<?> destinationElement) {
+        if (upcomingSource instanceof LocationInList sourceElement) {
+            if (upcomingDestination instanceof LocationInList destinationElement) {
                 return new ListChangeMove<>(listVariableDescriptor, sourceElement.entity(), sourceElement.index(),
                         destinationElement.entity(), destinationElement.index());
             } else {
                 return new ListUnassignMove<>(listVariableDescriptor, sourceElement.entity(), sourceElement.index());
             }
         } else {
-            if (upcomingDestination instanceof LocationInList<?> destinationElement) {
+            if (upcomingDestination instanceof LocationInList destinationElement) {
                 return new ListAssignMove<>(listVariableDescriptor, upcomingLeftValue, destinationElement.entity(),
                         destinationElement.index());
             } else {

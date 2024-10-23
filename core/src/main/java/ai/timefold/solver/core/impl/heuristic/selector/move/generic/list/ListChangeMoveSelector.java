@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.domain.metamodel.LocationInList;
 import ai.timefold.solver.core.api.domain.metamodel.UnassignedLocation;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -65,7 +64,7 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
                     if (elementLocation instanceof UnassignedLocation) {
                         return true;
                     }
-                    var elementDestination = (LocationInList<?>) elementLocation;
+                    var elementDestination = elementLocation.ensureAssigned();
                     var entity = elementDestination.entity();
                     return !listVariableDescriptor.isElementPinned(scoreDirector.getWorkingSolution(), entity,
                             elementDestination.index());

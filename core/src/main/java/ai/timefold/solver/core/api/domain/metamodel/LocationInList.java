@@ -19,11 +19,11 @@ package ai.timefold.solver.core.api.domain.metamodel;
  * <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver Github</a>.
  *
  */
-public sealed interface LocationInList<Entity_>
-        extends ElementLocation, Comparable<LocationInList<Entity_>>
+public sealed interface LocationInList
+        extends ElementLocation, Comparable<LocationInList>
         permits DefaultLocationInList {
 
-    Entity_ entity();
+    <Entity_> Entity_ entity();
 
     int index();
 

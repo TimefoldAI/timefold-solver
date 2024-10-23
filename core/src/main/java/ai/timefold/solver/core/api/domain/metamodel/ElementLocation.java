@@ -35,8 +35,8 @@ public sealed interface ElementLocation permits LocationInList, UnassignedLocati
      * @param index 0 or higher
      * @return never null
      */
-    static <Entity_> LocationInList<Entity_> of(Entity_ entity, int index) {
-        return new DefaultLocationInList<>(entity, index);
+    static LocationInList of(Object entity, int index) {
+        return new DefaultLocationInList(entity, index);
     }
 
     /**
@@ -55,7 +55,7 @@ public sealed interface ElementLocation permits LocationInList, UnassignedLocati
      * @return never null
      * @throws IllegalStateException if this location is unassigned
      */
-    default <Entity_> LocationInList<Entity_> ensureAssigned() {
+    default LocationInList ensureAssigned() {
         return ensureAssigned(() -> "Unexpected unassigned location.");
     }
 
@@ -66,13 +66,6 @@ public sealed interface ElementLocation permits LocationInList, UnassignedLocati
      * @return never null
      * @throws IllegalStateException if this location is unassigned
      */
-    @SuppressWarnings("unchecked")
-    default <Entity_> LocationInList<Entity_> ensureAssigned(Supplier<String> messageSupplier) {
-        if (this instanceof LocationInList<?> locationInList) {
-            return (LocationInList<Entity_>) locationInList;
-        } else {
-            throw new IllegalStateException(messageSupplier.get());
-        }
-    }
+    LocationInList ensureAssigned(Supplier<String> messageSupplier);
 
 }
