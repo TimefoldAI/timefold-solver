@@ -12,6 +12,8 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.definition.AbstractBendableScoreDefinition;
 
+import org.jspecify.annotations.NonNull;
+
 public abstract class AbstractConstraint<Solution_, Constraint_ extends AbstractConstraint<Solution_, Constraint_, ConstraintFactory_>, ConstraintFactory_ extends InnerConstraintFactory<Solution_, Constraint_>>
         implements Constraint {
 
@@ -154,12 +156,12 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
     }
 
     @Override
-    public String getDescription() {
+    public @NonNull String getDescription() {
         return description;
     }
 
     @Override
-    public String getConstraintGroup() {
+    public @NonNull String getConstraintGroup() {
         return constraintGroup;
     }
 

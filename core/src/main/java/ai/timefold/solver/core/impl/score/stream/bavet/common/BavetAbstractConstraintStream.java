@@ -14,6 +14,8 @@ import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStream
 import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
 
+import org.jspecify.annotations.NonNull;
+
 public abstract class BavetAbstractConstraintStream<Solution_> extends AbstractConstraintStream<Solution_> {
 
     protected final BavetConstraintFactory<Solution_> constraintFactory;
@@ -125,7 +127,7 @@ public abstract class BavetAbstractConstraintStream<Solution_> extends AbstractC
     // ************************************************************************
 
     @Override
-    public BavetConstraintFactory<Solution_> getConstraintFactory() {
+    public @NonNull BavetConstraintFactory<Solution_> getConstraintFactory() {
         return constraintFactory;
     }
 

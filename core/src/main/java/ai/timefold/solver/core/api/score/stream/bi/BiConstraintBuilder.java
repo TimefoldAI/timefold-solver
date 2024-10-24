@@ -12,6 +12,8 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintBuilder;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Used to build a {@link Constraint} out of a {@link BiConstraintStream}, applying optional configuration.
  * To build the constraint, use one of the terminal operations, such as {@link #asConstraint(String)}.
@@ -29,20 +31,20 @@ public interface BiConstraintBuilder<A, B, Score_ extends Score<Score_>> extends
      * Sets a custom function to apply on a constraint match to justify it.
      *
      * @see ConstraintMatch
-     * @param justificationMapping never null
      * @return this
      */
+    @NonNull
     <ConstraintJustification_ extends ConstraintJustification> BiConstraintBuilder<A, B, Score_> justifyWith(
-            TriFunction<A, B, Score_, ConstraintJustification_> justificationMapping);
+            @NonNull TriFunction<A, B, Score_, ConstraintJustification_> justificationMapping);
 
     /**
      * Sets a custom function to mark any object returned by it as responsible for causing the constraint to match.
      * Each object in the collection returned by this function will become an {@link Indictment}
      * and be available as a key in {@link ScoreExplanation#getIndictmentMap()}.
      *
-     * @param indictedObjectsMapping never null
      * @return this
      */
-    BiConstraintBuilder<A, B, Score_> indictWith(BiFunction<A, B, Collection<Object>> indictedObjectsMapping);
+    @NonNull
+    BiConstraintBuilder<A, B, Score_> indictWith(@NonNull BiFunction<A, B, Collection<Object>> indictedObjectsMapping);
 
 }

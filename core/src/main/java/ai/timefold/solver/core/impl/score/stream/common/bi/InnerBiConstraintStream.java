@@ -21,6 +21,8 @@ import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
+import org.jspecify.annotations.NonNull;
+
 public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> {
 
     static <A, B> TriFunction<A, B, Score<?>, DefaultConstraintJustification> createDefaultJustificationMapping() {
@@ -42,7 +44,7 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
     boolean guaranteesDistinct();
 
     @Override
-    default <C> TriConstraintStream<A, B, C> join(Class<C> otherClass, TriJoiner<A, B, C>... joiners) {
+    default <C> @NonNull TriConstraintStream<A, B, C> join(@NonNull Class<C> otherClass, TriJoiner<A, B, C>... joiners) {
         if (getRetrievalSemantics() == STANDARD) {
             return join(getConstraintFactory().forEach(otherClass), joiners);
         } else {
@@ -51,7 +53,8 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
     }
 
     @Override
-    default <C> BiConstraintStream<A, B> ifExists(Class<C> otherClass, TriJoiner<A, B, C>... joiners) {
+    default @NonNull <C> BiConstraintStream<A, B> ifExists(@NonNull Class<C> otherClass,
+            TriJoiner<A, B, C> @NonNull... joiners) {
         if (getRetrievalSemantics() == STANDARD) {
             return ifExists(getConstraintFactory().forEach(otherClass), joiners);
         } else {
@@ -61,7 +64,8 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
     }
 
     @Override
-    default <C> BiConstraintStream<A, B> ifExistsIncludingUnassigned(Class<C> otherClass, TriJoiner<A, B, C>... joiners) {
+    default @NonNull <C> BiConstraintStream<A, B> ifExistsIncludingUnassigned(@NonNull Class<C> otherClass,
+            @NonNull TriJoiner<A, B, C> @NonNull... joiners) {
         if (getRetrievalSemantics() == STANDARD) {
             return ifExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
         } else {
@@ -70,7 +74,8 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
     }
 
     @Override
-    default <C> BiConstraintStream<A, B> ifNotExists(Class<C> otherClass, TriJoiner<A, B, C>... joiners) {
+    default <C> @NonNull BiConstraintStream<A, B> ifNotExists(@NonNull Class<C> otherClass,
+            @NonNull TriJoiner<A, B, C>... joiners) {
         if (getRetrievalSemantics() == STANDARD) {
             return ifNotExists(getConstraintFactory().forEach(otherClass), joiners);
         } else {
@@ -80,7 +85,8 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
     }
 
     @Override
-    default <C> BiConstraintStream<A, B> ifNotExistsIncludingUnassigned(Class<C> otherClass, TriJoiner<A, B, C>... joiners) {
+    default <C> @NonNull BiConstraintStream<A, B> ifNotExistsIncludingUnassigned(@NonNull Class<C> otherClass,
+            @NonNull TriJoiner<A, B, C>... joiners) {
         if (getRetrievalSemantics() == STANDARD) {
             return ifNotExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
         } else {
@@ -89,7 +95,7 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
     }
 
     @Override
-    default BiConstraintStream<A, B> distinct() {
+    default @NonNull BiConstraintStream<A, B> distinct() {
         if (guaranteesDistinct()) {
             return this;
         } else {
@@ -99,20 +105,22 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
     }
 
     @Override
-    default <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> penalize(Score_ constraintWeight,
-            ToIntBiFunction<A, B> matchWeigher) {
+    default <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> penalize(@NonNull Score_ constraintWeight,
+            @NonNull ToIntBiFunction<A, B> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.PENALTY);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> penalizeLong(Score_ constraintWeight,
-            ToLongBiFunction<A, B> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> penalizeLong(
+            @NonNull Score_ constraintWeight,
+            @NonNull ToLongBiFunction<A, B> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.PENALTY);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> penalizeBigDecimal(Score_ constraintWeight,
-            BiFunction<A, B, BigDecimal> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> penalizeBigDecimal(
+            @NonNull Score_ constraintWeight,
+            @NonNull BiFunction<A, B, BigDecimal> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.PENALTY);
     }
 
@@ -132,20 +140,22 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
     }
 
     @Override
-    default <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> reward(Score_ constraintWeight,
-            ToIntBiFunction<A, B> matchWeigher) {
+    default <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> reward(@NonNull Score_ constraintWeight,
+            @NonNull ToIntBiFunction<A, B> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.REWARD);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> rewardLong(Score_ constraintWeight,
-            ToLongBiFunction<A, B> matchWeigher) {
+    default <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> rewardLong(
+            @NonNull Score_ constraintWeight,
+            @NonNull ToLongBiFunction<A, B> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.REWARD);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> rewardBigDecimal(Score_ constraintWeight,
-            BiFunction<A, B, BigDecimal> matchWeigher) {
+    default <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> rewardBigDecimal(
+            @NonNull Score_ constraintWeight,
+            @NonNull BiFunction<A, B, BigDecimal> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.REWARD);
     }
 
@@ -165,20 +175,22 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
     }
 
     @Override
-    default <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> impact(Score_ constraintWeight,
-            ToIntBiFunction<A, B> matchWeigher) {
+    default <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> impact(@NonNull Score_ constraintWeight,
+            @NonNull ToIntBiFunction<A, B> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.MIXED);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> impactLong(Score_ constraintWeight,
-            ToLongBiFunction<A, B> matchWeigher) {
+    default <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> impactLong(
+            @NonNull Score_ constraintWeight,
+            @NonNull ToLongBiFunction<A, B> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.MIXED);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> BiConstraintBuilder<A, B, Score_> impactBigDecimal(Score_ constraintWeight,
-            BiFunction<A, B, BigDecimal> matchWeigher) {
+    default <Score_ extends Score<Score_>> @NonNull BiConstraintBuilder<A, B, Score_> impactBigDecimal(
+            @NonNull Score_ constraintWeight,
+            @NonNull BiFunction<A, B, BigDecimal> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.MIXED);
     }
 
@@ -210,61 +222,64 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
             ScoreImpactType scoreImpactType);
 
     @Override
-    default Constraint penalize(String constraintName, Score<?> constraintWeight) {
+    default @NonNull Constraint penalize(@NonNull String constraintName, @NonNull Score<?> constraintWeight) {
         return penalize((Score) constraintWeight)
                 .asConstraint(constraintName);
     }
 
     @Override
-    default Constraint penalize(String constraintPackage, String constraintName, Score<?> constraintWeight) {
+    default @NonNull Constraint penalize(@NonNull String constraintPackage, @NonNull String constraintName,
+            @NonNull Score<?> constraintWeight) {
         return penalize((Score) constraintWeight)
                 .asConstraint(constraintPackage, constraintName);
     }
 
     @Override
-    default Constraint penalizeConfigurable(String constraintName) {
+    default @NonNull Constraint penalizeConfigurable(@NonNull String constraintName) {
         return penalizeConfigurable()
                 .asConstraint(constraintName);
     }
 
     @Override
-    default Constraint penalizeConfigurable(String constraintPackage, String constraintName) {
+    default @NonNull Constraint penalizeConfigurable(@NonNull String constraintPackage, @NonNull String constraintName) {
         return penalizeConfigurable()
                 .asConstraint(constraintPackage, constraintName);
     }
 
     @Override
-    default Constraint reward(String constraintName, Score<?> constraintWeight) {
+    default @NonNull Constraint reward(@NonNull String constraintName, @NonNull Score<?> constraintWeight) {
         return reward((Score) constraintWeight)
                 .asConstraint(constraintName);
     }
 
     @Override
-    default Constraint reward(String constraintPackage, String constraintName, Score<?> constraintWeight) {
+    default @NonNull Constraint reward(@NonNull String constraintPackage, @NonNull String constraintName,
+            @NonNull Score<?> constraintWeight) {
         return reward((Score) constraintWeight)
                 .asConstraint(constraintPackage, constraintName);
     }
 
     @Override
-    default Constraint rewardConfigurable(String constraintName) {
+    default @NonNull Constraint rewardConfigurable(@NonNull String constraintName) {
         return rewardConfigurable()
                 .asConstraint(constraintName);
     }
 
     @Override
-    default Constraint rewardConfigurable(String constraintPackage, String constraintName) {
+    default @NonNull Constraint rewardConfigurable(@NonNull String constraintPackage, @NonNull String constraintName) {
         return penalizeConfigurable()
                 .asConstraint(constraintPackage, constraintName);
     }
 
     @Override
-    default Constraint impact(String constraintName, Score<?> constraintWeight) {
+    default @NonNull Constraint impact(@NonNull String constraintName, @NonNull Score<?> constraintWeight) {
         return impact((Score) constraintWeight)
                 .asConstraint(constraintName);
     }
 
     @Override
-    default Constraint impact(String constraintPackage, String constraintName, Score<?> constraintWeight) {
+    default @NonNull Constraint impact(@NonNull String constraintPackage, @NonNull String constraintName,
+            @NonNull Score<?> constraintWeight) {
         return impact((Score) constraintWeight)
                 .asConstraint(constraintPackage, constraintName);
     }

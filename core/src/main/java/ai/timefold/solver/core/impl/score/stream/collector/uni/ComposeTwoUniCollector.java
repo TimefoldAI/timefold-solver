@@ -8,6 +8,9 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.util.Pair;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 final class ComposeTwoUniCollector<A, ResultHolder1_, ResultHolder2_, Result1_, Result2_, Result_>
         implements UniConstraintCollector<A, Pair<ResultHolder1_, ResultHolder2_>, Result_> {
     private final UniConstraintCollector<A, ResultHolder1_, Result1_> first;
@@ -41,12 +44,12 @@ final class ComposeTwoUniCollector<A, ResultHolder1_, ResultHolder2_, Result1_, 
     }
 
     @Override
-    public Supplier<Pair<ResultHolder1_, ResultHolder2_>> supplier() {
+    public @NonNull Supplier<Pair<ResultHolder1_, ResultHolder2_>> supplier() {
         return () -> new Pair<>(firstSupplier.get(), secondSupplier.get());
     }
 
     @Override
-    public BiFunction<Pair<ResultHolder1_, ResultHolder2_>, A, Runnable> accumulator() {
+    public @NonNull BiFunction<Pair<ResultHolder1_, ResultHolder2_>, A, Runnable> accumulator() {
         return (resultHolder, a) -> composeUndo(firstAccumulator.apply(resultHolder.key(), a),
                 secondAccumulator.apply(resultHolder.value(), a));
     }
@@ -59,7 +62,7 @@ final class ComposeTwoUniCollector<A, ResultHolder1_, ResultHolder2_, Result1_, 
     }
 
     @Override
-    public Function<Pair<ResultHolder1_, ResultHolder2_>, Result_> finisher() {
+    public @Nullable Function<Pair<ResultHolder1_, ResultHolder2_>, Result_> finisher() {
         return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.key()),
                 secondFinisher.apply(resultHolder.value()));
     }

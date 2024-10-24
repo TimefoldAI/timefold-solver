@@ -33,6 +33,7 @@ import ai.timefold.solver.quarkus.testdata.gizmo.DummyVariableListener;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -118,7 +119,7 @@ class TimefoldProcessorGeneratedGizmoSupplierTest {
     public static class DummyEasyScoreCalculator
             implements EasyScoreCalculator<TestdataSolution, SimpleScore> {
         @Override
-        public SimpleScore calculateScore(TestdataSolution testdataSolution) {
+        public @NonNull SimpleScore calculateScore(@NonNull TestdataSolution testdataSolution) {
             return null;
         }
     }
@@ -126,49 +127,49 @@ class TimefoldProcessorGeneratedGizmoSupplierTest {
     public static class DummyIncrementalScoreCalculator
             implements IncrementalScoreCalculator<TestdataSolution, SimpleScore> {
         @Override
-        public void resetWorkingSolution(TestdataSolution workingSolution) {
+        public void resetWorkingSolution(@NonNull TestdataSolution workingSolution) {
 
         }
 
         @Override
-        public void beforeEntityAdded(Object entity) {
+        public void beforeEntityAdded(@NonNull Object entity) {
 
         }
 
         @Override
-        public void afterEntityAdded(Object entity) {
+        public void afterEntityAdded(@NonNull Object entity) {
 
         }
 
         @Override
-        public void beforeVariableChanged(Object entity, String variableName) {
+        public void beforeVariableChanged(@NonNull Object entity, @NonNull String variableName) {
 
         }
 
         @Override
-        public void afterVariableChanged(Object entity, String variableName) {
+        public void afterVariableChanged(@NonNull Object entity, @NonNull String variableName) {
 
         }
 
         @Override
-        public void beforeEntityRemoved(Object entity) {
+        public void beforeEntityRemoved(@NonNull Object entity) {
 
         }
 
         @Override
-        public void afterEntityRemoved(Object entity) {
+        public void afterEntityRemoved(@NonNull Object entity) {
 
         }
 
         @Override
-        public SimpleScore calculateScore() {
+        public @NonNull SimpleScore calculateScore() {
             return null;
         }
     }
 
     public static class DummyConstraintProvider implements ConstraintProvider {
         @Override
-        public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+        public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
             return new Constraint[0];
         }
     }

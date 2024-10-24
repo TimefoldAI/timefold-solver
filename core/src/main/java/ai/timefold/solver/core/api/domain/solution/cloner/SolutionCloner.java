@@ -2,6 +2,8 @@ package ai.timefold.solver.core.api.domain.solution.cloner;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Clones a {@link PlanningSolution} during planning.
  * Used to remember the state of a good {@link PlanningSolution} so it can be recalled at a later time
@@ -34,9 +36,10 @@ public interface SolutionCloner<Solution_> {
      * <p>
      * This method is thread-safe.
      *
-     * @param original never null, the original {@link PlanningSolution}
-     * @return never null, the cloned {@link PlanningSolution}
+     * @param original the original {@link PlanningSolution}
+     * @return the cloned {@link PlanningSolution}
      */
-    Solution_ cloneSolution(Solution_ original);
+    @NonNull
+    Solution_ cloneSolution(@NonNull Solution_ original);
 
 }

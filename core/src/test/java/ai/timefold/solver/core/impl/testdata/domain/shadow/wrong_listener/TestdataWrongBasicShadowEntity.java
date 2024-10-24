@@ -9,6 +9,8 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
+import org.jspecify.annotations.NonNull;
+
 @PlanningEntity
 public class TestdataWrongBasicShadowEntity {
 
@@ -34,32 +36,36 @@ public class TestdataWrongBasicShadowEntity {
     public static class MyListVariableListener implements ListVariableListener<TestdataSolution, TestdataEntity, Object> {
 
         @Override
-        public void beforeEntityAdded(ScoreDirector<TestdataSolution> scoreDirector, TestdataEntity entity) {
+        public void beforeEntityAdded(@NonNull ScoreDirector<TestdataSolution> scoreDirector, @NonNull TestdataEntity entity) {
         }
 
         @Override
-        public void afterEntityAdded(ScoreDirector<TestdataSolution> scoreDirector, TestdataEntity entity) {
+        public void afterEntityAdded(@NonNull ScoreDirector<TestdataSolution> scoreDirector, @NonNull TestdataEntity entity) {
         }
 
         @Override
-        public void beforeEntityRemoved(ScoreDirector<TestdataSolution> scoreDirector, TestdataEntity entity) {
+        public void beforeEntityRemoved(@NonNull ScoreDirector<TestdataSolution> scoreDirector,
+                @NonNull TestdataEntity entity) {
         }
 
         @Override
-        public void afterEntityRemoved(ScoreDirector<TestdataSolution> scoreDirector, TestdataEntity entity) {
+        public void afterEntityRemoved(@NonNull ScoreDirector<TestdataSolution> scoreDirector, @NonNull TestdataEntity entity) {
         }
 
         @Override
-        public void afterListVariableElementUnassigned(ScoreDirector<TestdataSolution> scoreDirector, Object o) {
+        public void afterListVariableElementUnassigned(@NonNull ScoreDirector<TestdataSolution> scoreDirector,
+                @NonNull Object o) {
         }
 
         @Override
-        public void beforeListVariableChanged(ScoreDirector<TestdataSolution> scoreDirector, TestdataEntity entity,
+        public void beforeListVariableChanged(@NonNull ScoreDirector<TestdataSolution> scoreDirector,
+                @NonNull TestdataEntity entity,
                 int fromIndex, int toIndex) {
         }
 
         @Override
-        public void afterListVariableChanged(ScoreDirector<TestdataSolution> scoreDirector, TestdataEntity entity,
+        public void afterListVariableChanged(@NonNull ScoreDirector<TestdataSolution> scoreDirector,
+                @NonNull TestdataEntity entity,
                 int fromIndex, int toIndex) {
         }
     }

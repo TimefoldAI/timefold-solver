@@ -9,6 +9,9 @@ import ai.timefold.solver.core.api.score.ScoreExplanation;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * Allows a {@link IncrementalScoreCalculator} to report {@link ConstraintMatchTotal}s
  * for explaining a score (= which score constraints match for how much)
@@ -26,10 +29,10 @@ public interface ConstraintMatchAwareIncrementalScoreCalculator<Solution_, Score
      * Every implementation should call {@link #resetWorkingSolution}
      * and only handle the constraintMatchEnabled parameter specifically (or ignore it).
      *
-     * @param workingSolution never null, to pass to {@link #resetWorkingSolution}.
+     * @param workingSolution to pass to {@link #resetWorkingSolution}.
      * @param constraintMatchEnabled true if {@link #getConstraintMatchTotals()} or {@link #getIndictmentMap()} might be called.
      */
-    void resetWorkingSolution(Solution_ workingSolution, boolean constraintMatchEnabled);
+    void resetWorkingSolution(@NonNull Solution_ workingSolution, boolean constraintMatchEnabled);
 
     /**
      * @return never null;
@@ -37,6 +40,7 @@ public interface ConstraintMatchAwareIncrementalScoreCalculator<Solution_, Score
      *         it should still be present with a {@link ConstraintMatchTotal#getConstraintMatchSet()} size of 0.
      * @throws IllegalStateException if {@link #resetWorkingSolution}'s constraintMatchEnabled parameter was false
      */
+    @NonNull
     Collection<ConstraintMatchTotal<Score_>> getConstraintMatchTotals();
 
     /**
@@ -44,6 +48,7 @@ public interface ConstraintMatchAwareIncrementalScoreCalculator<Solution_, Score
      * @throws IllegalStateException if {@link #resetWorkingSolution}'s constraintMatchEnabled parameter was false
      * @see ScoreExplanation#getIndictmentMap()
      */
+    @Nullable
     Map<Object, Indictment<Score_>> getIndictmentMap();
 
 }

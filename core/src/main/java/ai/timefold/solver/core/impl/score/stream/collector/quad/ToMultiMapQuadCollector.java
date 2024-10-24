@@ -10,6 +10,8 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.impl.score.stream.collector.MapUndoableActionable;
 import ai.timefold.solver.core.impl.util.Pair;
 
+import org.jspecify.annotations.NonNull;
+
 final class ToMultiMapQuadCollector<A, B, C, D, Key_, Value_, Set_ extends Set<Value_>, Result_ extends Map<Key_, Set_>>
         extends
         UndoableActionableQuadCollector<A, B, C, D, Pair<Key_, Value_>, Result_, MapUndoableActionable<Key_, Value_, Set_, Result_>> {
@@ -30,7 +32,7 @@ final class ToMultiMapQuadCollector<A, B, C, D, Key_, Value_, Set_ extends Set<V
     }
 
     @Override
-    public Supplier<MapUndoableActionable<Key_, Value_, Set_, Result_>> supplier() {
+    public @NonNull Supplier<MapUndoableActionable<Key_, Value_, Set_, Result_>> supplier() {
         return () -> MapUndoableActionable.multiMap(mapSupplier, setFunction);
     }
 

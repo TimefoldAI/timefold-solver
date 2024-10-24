@@ -12,6 +12,8 @@ import ai.timefold.jpyinterpreter.types.numeric.PythonInteger;
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeFactory;
 
+import org.jspecify.annotations.NonNull;
+
 @SuppressWarnings("unused")
 public class PythonValueRangeFactory {
     private PythonValueRangeFactory() {
@@ -48,7 +50,7 @@ public class PythonValueRangeFactory {
         }
 
         @Override
-        public Iterator<To_> createOriginalIterator() {
+        public @NonNull Iterator<To_> createOriginalIterator() {
             return new IteratorMapper<>(sourceValueRange.createOriginalIterator(), valueConvertor);
         }
 
@@ -63,7 +65,7 @@ public class PythonValueRangeFactory {
         }
 
         @Override
-        public Iterator<To_> createRandomIterator(Random random) {
+        public @NonNull Iterator<To_> createRandomIterator(@NonNull Random random) {
             return new IteratorMapper<>(sourceValueRange.createRandomIterator(random), valueConvertor);
         }
     }

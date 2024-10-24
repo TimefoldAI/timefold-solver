@@ -4,6 +4,8 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Represents a function that accepts three arguments and returns no result.
  * This is the three-arity specialization of {@link Consumer}.
@@ -30,7 +32,7 @@ public interface TriConsumer<A, B, C> {
      */
     void accept(A a, B b, C c);
 
-    default TriConsumer<A, B, C> andThen(TriConsumer<? super A, ? super B, ? super C> after) {
+    default @NonNull TriConsumer<A, B, C> andThen(@NonNull TriConsumer<? super A, ? super B, ? super C> after) {
         Objects.requireNonNull(after);
         return (a, b, c) -> {
             accept(a, b, c);

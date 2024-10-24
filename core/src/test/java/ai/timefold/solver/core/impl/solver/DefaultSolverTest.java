@@ -91,6 +91,8 @@ import ai.timefold.solver.core.impl.testutil.TestMeterRegistry;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -487,7 +489,7 @@ class DefaultSolverTest {
             implements EasyScoreCalculator<TestdataHardSoftScoreSolution, HardSoftScore> {
 
         @Override
-        public HardSoftScore calculateScore(TestdataHardSoftScoreSolution testdataSolution) {
+        public @NonNull HardSoftScore calculateScore(@NonNull TestdataHardSoftScoreSolution testdataSolution) {
             var count = testdataSolution.getEntityList()
                     .stream()
                     .filter(e -> e.getValue() != null)
@@ -700,7 +702,7 @@ class DefaultSolverTest {
     public static class ErrorThrowingEasyScoreCalculator implements EasyScoreCalculator<TestdataSolution, SimpleScore> {
 
         @Override
-        public SimpleScore calculateScore(TestdataSolution testdataSolution) {
+        public @NonNull SimpleScore calculateScore(@NonNull TestdataSolution testdataSolution) {
             throw new IllegalStateException("Thrown exception in constraint provider");
         }
     }
@@ -1249,7 +1251,7 @@ class DefaultSolverTest {
             implements EasyScoreCalculator<Object, SimpleScore> {
 
         @Override
-        public SimpleScore calculateScore(Object solution) {
+        public @NonNull SimpleScore calculateScore(@NonNull Object solution) {
             return new MaximizeUnusedEntitiesEasyScoreCalculator().calculateScore(solution).negate();
         }
     }
@@ -1258,7 +1260,7 @@ class DefaultSolverTest {
             implements EasyScoreCalculator<TestdataAllowsUnassignedValuesListSolution, SimpleScore> {
 
         @Override
-        public SimpleScore calculateScore(TestdataAllowsUnassignedValuesListSolution solution) {
+        public @NonNull SimpleScore calculateScore(@NonNull TestdataAllowsUnassignedValuesListSolution solution) {
             var i = 0;
             for (var entity : solution.getEntityList()) {
                 i += entity.getValueList().size();
@@ -1271,7 +1273,7 @@ class DefaultSolverTest {
             implements EasyScoreCalculator<Object, SimpleScore> {
 
         @Override
-        public SimpleScore calculateScore(Object solution) {
+        public @NonNull SimpleScore calculateScore(@NonNull Object solution) {
             if (solution instanceof TestdataPinnedListSolution testdataPinnedListSolution) {
                 var unusedEntities = 0;
                 for (var entity : testdataPinnedListSolution.getEntityList()) {
@@ -1305,7 +1307,7 @@ class DefaultSolverTest {
     public static class CorruptedEasyScoreCalculator implements EasyScoreCalculator<TestdataSolution, SimpleScore> {
 
         @Override
-        public SimpleScore calculateScore(TestdataSolution testdataSolution) {
+        public @NonNull SimpleScore calculateScore(@NonNull TestdataSolution testdataSolution) {
             var random = (int) (Math.random() * 1000);
             return SimpleScore.of(random);
         }
@@ -1315,58 +1317,58 @@ class DefaultSolverTest {
             implements ConstraintMatchAwareIncrementalScoreCalculator<TestdataSolution, SimpleScore> {
 
         @Override
-        public void resetWorkingSolution(TestdataSolution workingSolution, boolean constraintMatchEnabled) {
+        public void resetWorkingSolution(@NonNull TestdataSolution workingSolution, boolean constraintMatchEnabled) {
 
         }
 
         @Override
-        public Collection<ConstraintMatchTotal<SimpleScore>> getConstraintMatchTotals() {
+        public @NonNull Collection<ConstraintMatchTotal<SimpleScore>> getConstraintMatchTotals() {
             return Collections.singletonList(new DefaultConstraintMatchTotal<>(ConstraintRef.of("a", "b"), SimpleScore.of(1)));
         }
 
         @Override
-        public Map<Object, Indictment<SimpleScore>> getIndictmentMap() {
+        public @Nullable Map<Object, Indictment<SimpleScore>> getIndictmentMap() {
             return Collections.singletonMap(new TestdataEntity("e1"),
                     new DefaultIndictment<>(new TestdataEntity("e1"), SimpleScore.ONE));
         }
 
         @Override
-        public void resetWorkingSolution(TestdataSolution workingSolution) {
+        public void resetWorkingSolution(@NonNull TestdataSolution workingSolution) {
 
         }
 
         @Override
-        public void beforeEntityAdded(Object entity) {
+        public void beforeEntityAdded(@NonNull Object entity) {
 
         }
 
         @Override
-        public void afterEntityAdded(Object entity) {
+        public void afterEntityAdded(@NonNull Object entity) {
 
         }
 
         @Override
-        public void beforeVariableChanged(Object entity, String variableName) {
+        public void beforeVariableChanged(@NonNull Object entity, @NonNull String variableName) {
 
         }
 
         @Override
-        public void afterVariableChanged(Object entity, String variableName) {
+        public void afterVariableChanged(@NonNull Object entity, @NonNull String variableName) {
 
         }
 
         @Override
-        public void beforeEntityRemoved(Object entity) {
+        public void beforeEntityRemoved(@NonNull Object entity) {
 
         }
 
         @Override
-        public void afterEntityRemoved(Object entity) {
+        public void afterEntityRemoved(@NonNull Object entity) {
 
         }
 
         @Override
-        public SimpleScore calculateScore() {
+        public @NonNull SimpleScore calculateScore() {
             var random = (int) (Math.random() * 1000);
             return SimpleScore.of(random);
         }

@@ -31,6 +31,7 @@ import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.Testd
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListValue;
 import ai.timefold.solver.core.impl.testutil.TestMeterRegistry;
 
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -43,7 +44,7 @@ class ListRuinRecreateMoveSelectorTest {
     public static final class TestdataListConstraintProvider implements ConstraintProvider {
 
         @Override
-        public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+        public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
             return new Constraint[] {
                     constraintFactory.forEach(TestdataListValue.class)
                             .penalize(SimpleScore.ONE, value -> Math.abs(
@@ -108,7 +109,7 @@ class ListRuinRecreateMoveSelectorTest {
             implements ConstraintProvider {
 
         @Override
-        public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+        public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
             return new Constraint[] {
                     constraintFactory.forEach(TestdataAllowsUnassignedValuesListEntity.class)
                             .penalize(SimpleScore.ONE, entity -> entity.getValueList().size() * entity.getValueList().size())

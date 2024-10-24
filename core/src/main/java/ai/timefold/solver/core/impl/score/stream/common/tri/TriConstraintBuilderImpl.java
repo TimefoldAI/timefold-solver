@@ -11,6 +11,8 @@ import ai.timefold.solver.core.api.score.stream.tri.TriConstraintBuilder;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintBuilder;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
 
+import org.jspecify.annotations.NonNull;
+
 public final class TriConstraintBuilderImpl<A, B, C, Score_ extends Score<Score_>>
         extends AbstractConstraintBuilder<Score_>
         implements TriConstraintBuilder<A, B, C, Score_> {
@@ -29,8 +31,9 @@ public final class TriConstraintBuilderImpl<A, B, C, Score_ extends Score<Score_
     }
 
     @Override
-    public <ConstraintJustification_ extends ConstraintJustification> TriConstraintBuilder<A, B, C, Score_> justifyWith(
-            QuadFunction<A, B, C, Score_, ConstraintJustification_> justificationMapping) {
+    public @NonNull <ConstraintJustification_ extends ConstraintJustification> TriConstraintBuilder<A, B, C, Score_>
+            justifyWith(
+                    @NonNull QuadFunction<A, B, C, Score_, ConstraintJustification_> justificationMapping) {
         if (this.justificationMapping != null) {
             throw new IllegalStateException("""
                     Justification mapping already set (%s).
@@ -48,7 +51,8 @@ public final class TriConstraintBuilderImpl<A, B, C, Score_ extends Score<Score_
     }
 
     @Override
-    public TriConstraintBuilder<A, B, C, Score_> indictWith(TriFunction<A, B, C, Collection<Object>> indictedObjectsMapping) {
+    public @NonNull TriConstraintBuilder<A, B, C, Score_>
+            indictWith(@NonNull TriFunction<A, B, C, Collection<Object>> indictedObjectsMapping) {
         if (this.indictedObjectsMapping != null) {
             throw new IllegalStateException("""
                     Indicted objects' mapping already set (%s).

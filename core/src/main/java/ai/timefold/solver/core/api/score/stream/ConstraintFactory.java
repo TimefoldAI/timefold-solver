@@ -14,6 +14,8 @@ import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * The factory to create every {@link ConstraintStream} (for example with {@link #forEach(Class)})
  * which ends in a {@link Constraint} returned by {@link ConstraintProvider#defineConstraints(ConstraintFactory)}.
@@ -21,10 +23,10 @@ import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 public interface ConstraintFactory {
 
     /**
-     * @return never null
      * @deprecated Do not rely on any constraint package in user code.
      */
     @Deprecated(forRemoval = true, since = "1.13.0")
+    @NonNull
     String getDefaultConstraintPackage();
 
     // ************************************************************************
@@ -59,19 +61,17 @@ public interface ConstraintFactory {
      * Adding the field is strongly recommended.</li>
      * </ul>
      *
-     * @param sourceClass never null
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
-     * @return never null
      */
-    <A> UniConstraintStream<A> forEach(Class<A> sourceClass);
+    <A> @NonNull UniConstraintStream<A> forEach(@NonNull Class<A> sourceClass);
 
     /**
      * As defined by {@link #forEachIncludingUnassigned(Class)}.
-     * 
+     *
      * @deprecated Use {@link #forEachIncludingUnassigned(Class)} instead.
      */
     @Deprecated(forRemoval = true, since = "1.8.0")
-    default <A> UniConstraintStream<A> forEachIncludingNullVars(Class<A> sourceClass) {
+    default <A> @NonNull UniConstraintStream<A> forEachIncludingNullVars(@NonNull Class<A> sourceClass) {
         return forEachIncludingUnassigned(sourceClass);
     }
 
@@ -82,11 +82,9 @@ public interface ConstraintFactory {
      * or shadow entities not assigned to any applicable list variable
      * (for {@link PlanningListVariable#allowsUnassignedValues()}).
      *
-     * @param sourceClass never null
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
-     * @return never null
      */
-    <A> UniConstraintStream<A> forEachIncludingUnassigned(Class<A> sourceClass);
+    <A> @NonNull UniConstraintStream<A> forEachIncludingUnassigned(@NonNull Class<A> sourceClass);
 
     /**
      * Create a new {@link BiConstraintStream} for every unique combination of A and another A with a higher {@link PlanningId}.
@@ -99,11 +97,10 @@ public interface ConstraintFactory {
      * This method is syntactic sugar for {@link UniConstraintStream#join(Class)}.
      * It automatically adds a {@link Joiners#lessThan(Function) lessThan} joiner on the {@link PlanningId} of A.
      *
-     * @param sourceClass never null
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      * @return a stream that matches every unique combination of A and another A
      */
-    default <A> BiConstraintStream<A, A> forEachUniquePair(Class<A> sourceClass) {
+    default <A> @NonNull BiConstraintStream<A, A> forEachUniquePair(@NonNull Class<A> sourceClass) {
         return forEachUniquePair(sourceClass, new BiJoiner[0]);
     }
 
@@ -121,60 +118,50 @@ public interface ConstraintFactory {
      * <p>
      * This method has overloaded methods with multiple {@link BiJoiner} parameters.
      *
-     * @param sourceClass never null
-     * @param joiner never null
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      * @return a stream that matches every unique combination of A and another A for which the {@link BiJoiner} is true
      */
-    default <A> BiConstraintStream<A, A> forEachUniquePair(Class<A> sourceClass, BiJoiner<A, A> joiner) {
+    default <A> @NonNull BiConstraintStream<A, A> forEachUniquePair(@NonNull Class<A> sourceClass,
+            @NonNull BiJoiner<A, A> joiner) {
         return forEachUniquePair(sourceClass, new BiJoiner[] { joiner });
     }
 
     /**
      * As defined by {@link #forEachUniquePair(Class, BiJoiner)}.
      *
-     * @param sourceClass never null
-     * @param joiner1 never null
-     * @param joiner2 never null
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      * @return a stream that matches every unique combination of A and another A for which all the
      *         {@link BiJoiner joiners} are true
      */
-    default <A> BiConstraintStream<A, A> forEachUniquePair(Class<A> sourceClass, BiJoiner<A, A> joiner1,
-            BiJoiner<A, A> joiner2) {
+    default <A> @NonNull BiConstraintStream<A, A> forEachUniquePair(@NonNull Class<A> sourceClass,
+            @NonNull BiJoiner<A, A> joiner1,
+            @NonNull BiJoiner<A, A> joiner2) {
         return forEachUniquePair(sourceClass, new BiJoiner[] { joiner1, joiner2 });
     }
 
     /**
      * As defined by {@link #forEachUniquePair(Class, BiJoiner)}.
      *
-     * @param sourceClass never null
-     * @param joiner1 never null
-     * @param joiner2 never null
-     * @param joiner3 never null
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      * @return a stream that matches every unique combination of A and another A for which all the
      *         {@link BiJoiner joiners} are true
      */
-    default <A> BiConstraintStream<A, A> forEachUniquePair(Class<A> sourceClass, BiJoiner<A, A> joiner1, BiJoiner<A, A> joiner2,
-            BiJoiner<A, A> joiner3) {
+    default <A> @NonNull BiConstraintStream<A, A> forEachUniquePair(@NonNull Class<A> sourceClass,
+            @NonNull BiJoiner<A, A> joiner1, @NonNull BiJoiner<A, A> joiner2,
+            @NonNull BiJoiner<A, A> joiner3) {
         return forEachUniquePair(sourceClass, new BiJoiner[] { joiner1, joiner2, joiner3 });
     }
 
     /**
      * As defined by {@link #forEachUniquePair(Class, BiJoiner)}.
      *
-     * @param sourceClass never null
-     * @param joiner1 never null
-     * @param joiner2 never null
-     * @param joiner3 never null
-     * @param joiner4 never null
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      * @return a stream that matches every unique combination of A and another A for which all the
      *         {@link BiJoiner joiners} are true
      */
-    default <A> BiConstraintStream<A, A> forEachUniquePair(Class<A> sourceClass, BiJoiner<A, A> joiner1, BiJoiner<A, A> joiner2,
-            BiJoiner<A, A> joiner3, BiJoiner<A, A> joiner4) {
+    default <A> @NonNull BiConstraintStream<A, A> forEachUniquePair(@NonNull Class<A> sourceClass,
+            @NonNull BiJoiner<A, A> joiner1, @NonNull BiJoiner<A, A> joiner2,
+            @NonNull BiJoiner<A, A> joiner3, @NonNull BiJoiner<A, A> joiner4) {
         return forEachUniquePair(sourceClass, new BiJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
@@ -185,13 +172,11 @@ public interface ConstraintFactory {
      * but we can't fix it with a {@link SafeVarargs} annotation because it's an interface method.
      * Therefore, there are overloaded methods with up to 4 {@link BiJoiner} parameters.
      *
-     * @param sourceClass never null
-     * @param joiners never null
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      * @return a stream that matches every unique combination of A and another A for which all the
      *         {@link BiJoiner joiners} are true
      */
-    <A> BiConstraintStream<A, A> forEachUniquePair(Class<A> sourceClass, BiJoiner<A, A>... joiners);
+    <A> @NonNull BiConstraintStream<A, A> forEachUniquePair(@NonNull Class<A> sourceClass, @NonNull BiJoiner<A, A>... joiners);
 
     // ************************************************************************
     // from* (deprecated)
@@ -227,15 +212,13 @@ public interface ConstraintFactory {
      * for which each genuine {@link PlanningVariable} (of the fromClass or a superclass thereof) is initialized.
      * This filtering will NOT automatically apply to genuine planning variables of subclass planning entities of the fromClass.
      *
+     * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      * @deprecated This method is deprecated in favor of {@link #forEach(Class)},
      *             which exhibits the same behavior for planning variables
      *             which both allow and don't allow unassigned values.
-     * @param fromClass never null
-     * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
-     * @return never null
      */
     @Deprecated(forRemoval = true)
-    <A> UniConstraintStream<A> from(Class<A> fromClass);
+    <A> @NonNull UniConstraintStream<A> from(@NonNull Class<A> fromClass);
 
     /**
      * This method is deprecated.
@@ -249,13 +232,12 @@ public interface ConstraintFactory {
      * As defined by {@link #from(Class)},
      * but without any filtering of uninitialized {@link PlanningEntity planning entities}.
      *
-     * @deprecated Prefer {@link #forEachIncludingUnassigned(Class)}.
-     * @param fromClass never null
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
-     * @return never null
+     * @deprecated Prefer {@link #forEachIncludingUnassigned(Class)}.
      */
     @Deprecated(forRemoval = true)
-    <A> UniConstraintStream<A> fromUnfiltered(Class<A> fromClass);
+    @NonNull
+    <A> UniConstraintStream<A> fromUnfiltered(@NonNull Class<A> fromClass);
 
     /**
      * This method is deprecated.
@@ -277,12 +259,11 @@ public interface ConstraintFactory {
      * @deprecated Prefer {@link #forEachUniquePair(Class)},
      *             which exhibits the same behavior for planning variables
      *             which both allow and don't allow unassigned values.
-     * @param fromClass never null
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      * @return a stream that matches every unique combination of A and another A
      */
     @Deprecated(forRemoval = true)
-    default <A> BiConstraintStream<A, A> fromUniquePair(Class<A> fromClass) {
+    default <A> @NonNull BiConstraintStream<A, A> fromUniquePair(@NonNull Class<A> fromClass) {
         return fromUniquePair(fromClass, new BiJoiner[0]);
     }
 
@@ -309,13 +290,11 @@ public interface ConstraintFactory {
      * @deprecated Prefer {@link #forEachUniquePair(Class, BiJoiner)},
      *             which exhibits the same behavior for planning variables
      *             which both allow and don't allow unassigned values.
-     * @param fromClass never null
-     * @param joiner never null
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      * @return a stream that matches every unique combination of A and another A for which the {@link BiJoiner} is true
      */
     @Deprecated(forRemoval = true)
-    default <A> BiConstraintStream<A, A> fromUniquePair(Class<A> fromClass, BiJoiner<A, A> joiner) {
+    default <A> @NonNull BiConstraintStream<A, A> fromUniquePair(@NonNull Class<A> fromClass, @NonNull BiJoiner<A, A> joiner) {
         return fromUniquePair(fromClass, new BiJoiner[] { joiner });
     }
 
@@ -331,15 +310,13 @@ public interface ConstraintFactory {
      * @deprecated Prefer {@link #forEachUniquePair(Class, BiJoiner, BiJoiner)},
      *             which exhibits the same behavior for planning variables
      *             which both allow and don't allow unassigned values.
-     * @param fromClass never null
-     * @param joiner1 never null
-     * @param joiner2 never null
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      * @return a stream that matches every unique combination of A and another A for which all the
      *         {@link BiJoiner joiners} are true
      */
     @Deprecated(forRemoval = true)
-    default <A> BiConstraintStream<A, A> fromUniquePair(Class<A> fromClass, BiJoiner<A, A> joiner1, BiJoiner<A, A> joiner2) {
+    default <A> @NonNull BiConstraintStream<A, A> fromUniquePair(@NonNull Class<A> fromClass, @NonNull BiJoiner<A, A> joiner1,
+            @NonNull BiJoiner<A, A> joiner2) {
         return fromUniquePair(fromClass, new BiJoiner[] { joiner1, joiner2 });
     }
 
@@ -355,17 +332,14 @@ public interface ConstraintFactory {
      * @deprecated Prefer {@link #forEachUniquePair(Class, BiJoiner, BiJoiner, BiJoiner)},
      *             which exhibits the same behavior for planning variables
      *             which both allow and don't allow unassigned values.
-     * @param fromClass never null
-     * @param joiner1 never null
-     * @param joiner2 never null
-     * @param joiner3 never null
+     *
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      * @return a stream that matches every unique combination of A and another A for which all the
      *         {@link BiJoiner joiners} are true
      */
     @Deprecated(forRemoval = true)
-    default <A> BiConstraintStream<A, A> fromUniquePair(Class<A> fromClass, BiJoiner<A, A> joiner1, BiJoiner<A, A> joiner2,
-            BiJoiner<A, A> joiner3) {
+    default <A> @NonNull BiConstraintStream<A, A> fromUniquePair(@NonNull Class<A> fromClass, @NonNull BiJoiner<A, A> joiner1,
+            @NonNull BiJoiner<A, A> joiner2, @NonNull BiJoiner<A, A> joiner3) {
         return fromUniquePair(fromClass, new BiJoiner[] { joiner1, joiner2, joiner3 });
     }
 
@@ -378,21 +352,17 @@ public interface ConstraintFactory {
      * <p>
      * As defined by {@link #fromUniquePair(Class, BiJoiner)}.
      *
-     * @deprecated Prefer {@link #forEachUniquePair(Class, BiJoiner, BiJoiner, BiJoiner, BiJoiner)},
-     *             which exhibits the same behavior for planning variables
-     *             which both allow and don't allow unassigned values.
-     * @param fromClass never null
-     * @param joiner1 never null
-     * @param joiner2 never null
-     * @param joiner3 never null
-     * @param joiner4 never null
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      * @return a stream that matches every unique combination of A and another A for which all the
      *         {@link BiJoiner joiners} are true
+     * @deprecated Prefer {@link #forEachUniquePair(Class, BiJoiner, BiJoiner, BiJoiner, BiJoiner)},
+     *             which exhibits the same behavior for planning variables
+     *             which both allow and don't allow unassigned values.
      */
     @Deprecated(forRemoval = true)
-    default <A> BiConstraintStream<A, A> fromUniquePair(Class<A> fromClass, BiJoiner<A, A> joiner1, BiJoiner<A, A> joiner2,
-            BiJoiner<A, A> joiner3, BiJoiner<A, A> joiner4) {
+    default @NonNull <A> BiConstraintStream<A, A> fromUniquePair(@NonNull Class<A> fromClass,
+            @NonNull BiJoiner<A, A> joiner1, @NonNull BiJoiner<A, A> joiner2,
+            @NonNull BiJoiner<A, A> joiner3, @NonNull BiJoiner<A, A> joiner4) {
         return fromUniquePair(fromClass, new BiJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
@@ -409,16 +379,15 @@ public interface ConstraintFactory {
      * but we can't fix it with a {@link SafeVarargs} annotation because it's an interface method.
      * Therefore, there are overloaded methods with up to 4 {@link BiJoiner} parameters.
      *
-     * @deprecated Prefer {@link #forEachUniquePair(Class, BiJoiner...)},
-     *             which exhibits the same behavior for planning variables
-     *             which both allow and don't allow unassigned values.
-     * @param fromClass never null
-     * @param joiners never null
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      * @return a stream that matches every unique combination of A and another A for which all the
      *         {@link BiJoiner joiners} are true
+     * @deprecated Prefer {@link #forEachUniquePair(Class, BiJoiner...)},
+     *             which exhibits the same behavior for planning variables
+     *             which both allow and don't allow unassigned values.
      */
     @Deprecated(forRemoval = true)
-    <A> BiConstraintStream<A, A> fromUniquePair(Class<A> fromClass, BiJoiner<A, A>... joiners);
+    @NonNull
+    <A> BiConstraintStream<A, A> fromUniquePair(@NonNull Class<A> fromClass, @NonNull BiJoiner<A, A>... joiners);
 
 }

@@ -10,6 +10,8 @@ import ai.timefold.solver.core.api.score.stream.tri.TriJoiner;
 import ai.timefold.solver.core.impl.score.stream.JoinerType;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractJoiner;
 
+import org.jspecify.annotations.NonNull;
+
 public final class DefaultTriJoiner<A, B, C> extends AbstractJoiner<C> implements TriJoiner<A, B, C> {
 
     private static final DefaultTriJoiner NONE =
@@ -37,7 +39,7 @@ public final class DefaultTriJoiner<A, B, C> extends AbstractJoiner<C> implement
     }
 
     @Override
-    public DefaultTriJoiner<A, B, C> and(TriJoiner<A, B, C> otherJoiner) {
+    public @NonNull DefaultTriJoiner<A, B, C> and(@NonNull TriJoiner<A, B, C> otherJoiner) {
         DefaultTriJoiner<A, B, C> castJoiner = (DefaultTriJoiner<A, B, C>) otherJoiner;
         int joinerCount = getJoinerCount();
         int castJoinerCount = castJoiner.getJoinerCount();

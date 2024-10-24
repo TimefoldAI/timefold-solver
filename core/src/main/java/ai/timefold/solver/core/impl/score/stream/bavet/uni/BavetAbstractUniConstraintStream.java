@@ -55,6 +55,8 @@ import ai.timefold.solver.core.impl.score.stream.common.uni.InnerUniConstraintSt
 import ai.timefold.solver.core.impl.score.stream.common.uni.UniConstraintBuilderImpl;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
+import org.jspecify.annotations.NonNull;
+
 public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends BavetAbstractConstraintStream<Solution_>
         implements InnerUniConstraintStream<A> {
 
@@ -73,7 +75,7 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     // ************************************************************************
 
     @Override
-    public BavetAbstractUniConstraintStream<Solution_, A> filter(Predicate<A> predicate) {
+    public @NonNull UniConstraintStream<A> filter(@NonNull Predicate<A> predicate) {
         return shareAndAddChild(new BavetFilterUniConstraintStream<>(constraintFactory, this, predicate));
     }
 
@@ -83,8 +85,8 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
 
     @Override
     @SafeVarargs
-    public final <B> BiConstraintStream<A, B> join(UniConstraintStream<B> otherStream,
-            BiJoiner<A, B>... joiners) {
+    public final @NonNull <B> BiConstraintStream<A, B> join(@NonNull UniConstraintStream<B> otherStream,
+            @NonNull BiJoiner<A, B>... joiners) {
         BiJoinerComber<A, B> joinerComber = BiJoinerComber.comb(joiners);
         return join(otherStream, joinerComber);
     }
@@ -109,13 +111,15 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
 
     @SafeVarargs
     @Override
-    public final <B> UniConstraintStream<A> ifExists(UniConstraintStream<B> otherStream, BiJoiner<A, B>... joiners) {
+    public final @NonNull <B> UniConstraintStream<A> ifExists(@NonNull UniConstraintStream<B> otherStream,
+            @NonNull BiJoiner<A, B>... joiners) {
         return ifExistsOrNot(true, otherStream, joiners);
     }
 
     @SafeVarargs
     @Override
-    public final <B> UniConstraintStream<A> ifNotExists(UniConstraintStream<B> otherStream, BiJoiner<A, B>... joiners) {
+    public final @NonNull <B> UniConstraintStream<A> ifNotExists(@NonNull UniConstraintStream<B> otherStream,
+            @NonNull BiJoiner<A, B>... joiners) {
         return ifExistsOrNot(false, otherStream, joiners);
     }
 
@@ -135,8 +139,8 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     // ************************************************************************
 
     @Override
-    public <ResultContainer_, Result_> UniConstraintStream<Result_> groupBy(
-            UniConstraintCollector<A, ResultContainer_, Result_> collector) {
+    public @NonNull <ResultContainer_, Result_> UniConstraintStream<Result_> groupBy(
+            @NonNull UniConstraintCollector<A, ResultContainer_, Result_> collector) {
         GroupNodeConstructor<UniTuple<Result_>> nodeConstructor =
                 zeroKeysGroupBy(collector, Group0Mapping1CollectorUniNode::new);
         return buildUniGroupBy(nodeConstructor);
@@ -149,9 +153,9 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     }
 
     @Override
-    public <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_> BiConstraintStream<ResultA_, ResultB_> groupBy(
-            UniConstraintCollector<A, ResultContainerA_, ResultA_> collectorA,
-            UniConstraintCollector<A, ResultContainerB_, ResultB_> collectorB) {
+    public @NonNull <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_> BiConstraintStream<ResultA_, ResultB_> groupBy(
+            @NonNull UniConstraintCollector<A, ResultContainerA_, ResultA_> collectorA,
+            @NonNull UniConstraintCollector<A, ResultContainerB_, ResultB_> collectorB) {
         GroupNodeConstructor<BiTuple<ResultA_, ResultB_>> nodeConstructor =
                 zeroKeysGroupBy(collectorA, collectorB, Group0Mapping2CollectorUniNode::new);
         return buildBiGroupBy(nodeConstructor);
@@ -164,11 +168,11 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     }
 
     @Override
-    public <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_>
+    public @NonNull <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_>
             TriConstraintStream<ResultA_, ResultB_, ResultC_>
-            groupBy(UniConstraintCollector<A, ResultContainerA_, ResultA_> collectorA,
-                    UniConstraintCollector<A, ResultContainerB_, ResultB_> collectorB,
-                    UniConstraintCollector<A, ResultContainerC_, ResultC_> collectorC) {
+            groupBy(@NonNull UniConstraintCollector<A, ResultContainerA_, ResultA_> collectorA,
+                    @NonNull UniConstraintCollector<A, ResultContainerB_, ResultB_> collectorB,
+                    @NonNull UniConstraintCollector<A, ResultContainerC_, ResultC_> collectorC) {
         GroupNodeConstructor<TriTuple<ResultA_, ResultB_, ResultC_>> nodeConstructor =
                 zeroKeysGroupBy(collectorA, collectorB, collectorC, Group0Mapping3CollectorUniNode::new);
         return buildTriGroupBy(nodeConstructor);
@@ -182,12 +186,12 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     }
 
     @Override
-    public <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_, ResultContainerD_, ResultD_>
+    public @NonNull <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_, ResultContainerD_, ResultD_>
             QuadConstraintStream<ResultA_, ResultB_, ResultC_, ResultD_>
-            groupBy(UniConstraintCollector<A, ResultContainerA_, ResultA_> collectorA,
-                    UniConstraintCollector<A, ResultContainerB_, ResultB_> collectorB,
-                    UniConstraintCollector<A, ResultContainerC_, ResultC_> collectorC,
-                    UniConstraintCollector<A, ResultContainerD_, ResultD_> collectorD) {
+            groupBy(@NonNull UniConstraintCollector<A, ResultContainerA_, ResultA_> collectorA,
+                    @NonNull UniConstraintCollector<A, ResultContainerB_, ResultB_> collectorB,
+                    @NonNull UniConstraintCollector<A, ResultContainerC_, ResultC_> collectorC,
+                    @NonNull UniConstraintCollector<A, ResultContainerD_, ResultD_> collectorD) {
         GroupNodeConstructor<QuadTuple<ResultA_, ResultB_, ResultC_, ResultD_>> nodeConstructor =
                 zeroKeysGroupBy(collectorA, collectorB, collectorC, collectorD, Group0Mapping4CollectorUniNode::new);
         return buildQuadGroupBy(nodeConstructor);
@@ -201,86 +205,87 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     }
 
     @Override
-    public <GroupKey_> UniConstraintStream<GroupKey_> groupBy(Function<A, GroupKey_> groupKeyMapping) {
+    public @NonNull <GroupKey_> UniConstraintStream<GroupKey_> groupBy(@NonNull Function<A, GroupKey_> groupKeyMapping) {
         GroupNodeConstructor<UniTuple<GroupKey_>> nodeConstructor =
                 oneKeyGroupBy(groupKeyMapping, Group1Mapping0CollectorUniNode::new);
         return buildUniGroupBy(nodeConstructor);
     }
 
     @Override
-    public <GroupKey_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_>
-            TriConstraintStream<GroupKey_, ResultB_, ResultC_> groupBy(Function<A, GroupKey_> groupKeyMapping,
-                    UniConstraintCollector<A, ResultContainerB_, ResultB_> collectorB,
-                    UniConstraintCollector<A, ResultContainerC_, ResultC_> collectorC) {
+    public @NonNull <GroupKey_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_>
+            TriConstraintStream<GroupKey_, ResultB_, ResultC_> groupBy(@NonNull Function<A, GroupKey_> groupKeyMapping,
+                    @NonNull UniConstraintCollector<A, ResultContainerB_, ResultB_> collectorB,
+                    @NonNull UniConstraintCollector<A, ResultContainerC_, ResultC_> collectorC) {
         GroupNodeConstructor<TriTuple<GroupKey_, ResultB_, ResultC_>> nodeConstructor =
                 oneKeyGroupBy(groupKeyMapping, collectorB, collectorC, Group1Mapping2CollectorUniNode::new);
         return buildTriGroupBy(nodeConstructor);
     }
 
     @Override
-    public <GroupKey_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_, ResultContainerD_, ResultD_>
+    public @NonNull <GroupKey_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_, ResultContainerD_, ResultD_>
             QuadConstraintStream<GroupKey_, ResultB_, ResultC_, ResultD_>
-            groupBy(Function<A, GroupKey_> groupKeyMapping,
-                    UniConstraintCollector<A, ResultContainerB_, ResultB_> collectorB,
-                    UniConstraintCollector<A, ResultContainerC_, ResultC_> collectorC,
-                    UniConstraintCollector<A, ResultContainerD_, ResultD_> collectorD) {
+            groupBy(@NonNull Function<A, GroupKey_> groupKeyMapping,
+                    @NonNull UniConstraintCollector<A, ResultContainerB_, ResultB_> collectorB,
+                    @NonNull UniConstraintCollector<A, ResultContainerC_, ResultC_> collectorC,
+                    @NonNull UniConstraintCollector<A, ResultContainerD_, ResultD_> collectorD) {
         GroupNodeConstructor<QuadTuple<GroupKey_, ResultB_, ResultC_, ResultD_>> nodeConstructor =
                 oneKeyGroupBy(groupKeyMapping, collectorB, collectorC, collectorD, Group1Mapping3CollectorUniNode::new);
         return buildQuadGroupBy(nodeConstructor);
     }
 
     @Override
-    public <GroupKey_, ResultContainer_, Result_> BiConstraintStream<GroupKey_, Result_> groupBy(
-            Function<A, GroupKey_> groupKeyMapping,
-            UniConstraintCollector<A, ResultContainer_, Result_> collector) {
+    public <GroupKey_, ResultContainer_, Result_> @NonNull BiConstraintStream<GroupKey_, Result_> groupBy(
+            @NonNull Function<A, GroupKey_> groupKeyMapping,
+            @NonNull UniConstraintCollector<A, ResultContainer_, Result_> collector) {
         GroupNodeConstructor<BiTuple<GroupKey_, Result_>> nodeConstructor =
                 oneKeyGroupBy(groupKeyMapping, collector, Group1Mapping1CollectorUniNode::new);
         return buildBiGroupBy(nodeConstructor);
     }
 
     @Override
-    public <GroupKeyA_, GroupKeyB_> BiConstraintStream<GroupKeyA_, GroupKeyB_> groupBy(
-            Function<A, GroupKeyA_> groupKeyAMapping, Function<A, GroupKeyB_> groupKeyBMapping) {
+    public @NonNull <GroupKeyA_, GroupKeyB_> BiConstraintStream<GroupKeyA_, GroupKeyB_> groupBy(
+            @NonNull Function<A, GroupKeyA_> groupKeyAMapping, @NonNull Function<A, GroupKeyB_> groupKeyBMapping) {
         GroupNodeConstructor<BiTuple<GroupKeyA_, GroupKeyB_>> nodeConstructor =
                 twoKeysGroupBy(groupKeyAMapping, groupKeyBMapping, Group2Mapping0CollectorUniNode::new);
         return buildBiGroupBy(nodeConstructor);
     }
 
     @Override
-    public <GroupKeyA_, GroupKeyB_, ResultContainer_, Result_> TriConstraintStream<GroupKeyA_, GroupKeyB_, Result_> groupBy(
-            Function<A, GroupKeyA_> groupKeyAMapping, Function<A, GroupKeyB_> groupKeyBMapping,
-            UniConstraintCollector<A, ResultContainer_, Result_> collector) {
+    public @NonNull <GroupKeyA_, GroupKeyB_, ResultContainer_, Result_> TriConstraintStream<GroupKeyA_, GroupKeyB_, Result_>
+            groupBy(
+                    @NonNull Function<A, GroupKeyA_> groupKeyAMapping, @NonNull Function<A, GroupKeyB_> groupKeyBMapping,
+                    @NonNull UniConstraintCollector<A, ResultContainer_, Result_> collector) {
         GroupNodeConstructor<TriTuple<GroupKeyA_, GroupKeyB_, Result_>> nodeConstructor =
                 twoKeysGroupBy(groupKeyAMapping, groupKeyBMapping, collector, Group2Mapping1CollectorUniNode::new);
         return buildTriGroupBy(nodeConstructor);
     }
 
     @Override
-    public <GroupKeyA_, GroupKeyB_, ResultContainerC_, ResultC_, ResultContainerD_, ResultD_>
+    public @NonNull <GroupKeyA_, GroupKeyB_, ResultContainerC_, ResultC_, ResultContainerD_, ResultD_>
             QuadConstraintStream<GroupKeyA_, GroupKeyB_, ResultC_, ResultD_> groupBy(
-                    Function<A, GroupKeyA_> groupKeyAMapping, Function<A, GroupKeyB_> groupKeyBMapping,
-                    UniConstraintCollector<A, ResultContainerC_, ResultC_> collectorC,
-                    UniConstraintCollector<A, ResultContainerD_, ResultD_> collectorD) {
+                    @NonNull Function<A, GroupKeyA_> groupKeyAMapping, @NonNull Function<A, GroupKeyB_> groupKeyBMapping,
+                    @NonNull UniConstraintCollector<A, ResultContainerC_, ResultC_> collectorC,
+                    @NonNull UniConstraintCollector<A, ResultContainerD_, ResultD_> collectorD) {
         GroupNodeConstructor<QuadTuple<GroupKeyA_, GroupKeyB_, ResultC_, ResultD_>> nodeConstructor =
                 twoKeysGroupBy(groupKeyAMapping, groupKeyBMapping, collectorC, collectorD, Group2Mapping2CollectorUniNode::new);
         return buildQuadGroupBy(nodeConstructor);
     }
 
     @Override
-    public <GroupKeyA_, GroupKeyB_, GroupKeyC_> TriConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_> groupBy(
-            Function<A, GroupKeyA_> groupKeyAMapping, Function<A, GroupKeyB_> groupKeyBMapping,
-            Function<A, GroupKeyC_> groupKeyCMapping) {
+    public @NonNull <GroupKeyA_, GroupKeyB_, GroupKeyC_> TriConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_> groupBy(
+            @NonNull Function<A, GroupKeyA_> groupKeyAMapping, @NonNull Function<A, GroupKeyB_> groupKeyBMapping,
+            @NonNull Function<A, GroupKeyC_> groupKeyCMapping) {
         GroupNodeConstructor<TriTuple<GroupKeyA_, GroupKeyB_, GroupKeyC_>> nodeConstructor =
                 threeKeysGroupBy(groupKeyAMapping, groupKeyBMapping, groupKeyCMapping, Group3Mapping0CollectorUniNode::new);
         return buildTriGroupBy(nodeConstructor);
     }
 
     @Override
-    public <GroupKeyA_, GroupKeyB_, GroupKeyC_, ResultContainerD_, ResultD_>
+    public @NonNull <GroupKeyA_, GroupKeyB_, GroupKeyC_, ResultContainerD_, ResultD_>
             QuadConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_, ResultD_>
-            groupBy(Function<A, GroupKeyA_> groupKeyAMapping, Function<A, GroupKeyB_> groupKeyBMapping,
-                    Function<A, GroupKeyC_> groupKeyCMapping,
-                    UniConstraintCollector<A, ResultContainerD_, ResultD_> collectorD) {
+            groupBy(@NonNull Function<A, GroupKeyA_> groupKeyAMapping, @NonNull Function<A, GroupKeyB_> groupKeyBMapping,
+                    @NonNull Function<A, GroupKeyC_> groupKeyCMapping,
+                    @NonNull UniConstraintCollector<A, ResultContainerD_, ResultD_> collectorD) {
         GroupNodeConstructor<QuadTuple<GroupKeyA_, GroupKeyB_, GroupKeyC_, ResultD_>> nodeConstructor =
                 threeKeysGroupBy(groupKeyAMapping, groupKeyBMapping,
                         groupKeyCMapping, collectorD, Group3Mapping1CollectorUniNode::new);
@@ -288,9 +293,10 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     }
 
     @Override
-    public <GroupKeyA_, GroupKeyB_, GroupKeyC_, GroupKeyD_> QuadConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_, GroupKeyD_>
-            groupBy(Function<A, GroupKeyA_> groupKeyAMapping, Function<A, GroupKeyB_> groupKeyBMapping,
-                    Function<A, GroupKeyC_> groupKeyCMapping, Function<A, GroupKeyD_> groupKeyDMapping) {
+    public @NonNull <GroupKeyA_, GroupKeyB_, GroupKeyC_, GroupKeyD_>
+            QuadConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_, GroupKeyD_>
+            groupBy(@NonNull Function<A, GroupKeyA_> groupKeyAMapping, @NonNull Function<A, GroupKeyB_> groupKeyBMapping,
+                    @NonNull Function<A, GroupKeyC_> groupKeyCMapping, @NonNull Function<A, GroupKeyD_> groupKeyDMapping) {
         GroupNodeConstructor<QuadTuple<GroupKeyA_, GroupKeyB_, GroupKeyC_, GroupKeyD_>> nodeConstructor =
                 fourKeysGroupBy(groupKeyAMapping, groupKeyBMapping, groupKeyCMapping, groupKeyDMapping,
                         Group4Mapping0CollectorUniNode::new);
@@ -302,7 +308,7 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     // ************************************************************************
 
     @Override
-    public UniConstraintStream<A> distinct() {
+    public @NonNull UniConstraintStream<A> distinct() {
         if (guaranteesDistinct()) {
             return this;
         } else {
@@ -311,7 +317,7 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     }
 
     @Override
-    public UniConstraintStream<A> concat(UniConstraintStream<A> otherStream) {
+    public @NonNull UniConstraintStream<A> concat(@NonNull UniConstraintStream<A> otherStream) {
         var other = (BavetAbstractUniConstraintStream<Solution_, A>) otherStream;
         var leftBridge = new BavetForeBridgeUniConstraintStream<>(constraintFactory, this);
         var rightBridge = new BavetForeBridgeUniConstraintStream<>(constraintFactory, other);
@@ -324,7 +330,8 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     }
 
     @Override
-    public <B> BiConstraintStream<A, B> concat(BiConstraintStream<A, B> otherStream, Function<A, B> paddingFunction) {
+    public @NonNull <B> BiConstraintStream<A, B> concat(@NonNull BiConstraintStream<A, B> otherStream,
+            @NonNull Function<A, B> paddingFunction) {
         var other = (BavetAbstractBiConstraintStream<Solution_, A, B>) otherStream;
         var leftBridge = new BavetForeBridgeUniConstraintStream<>(constraintFactory, this);
         var rightBridge = new BavetForeBridgeBiConstraintStream<>(constraintFactory, other);
@@ -337,8 +344,9 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     }
 
     @Override
-    public <B, C> TriConstraintStream<A, B, C> concat(TriConstraintStream<A, B, C> otherStream, Function<A, B> paddingFunctionB,
-            Function<A, C> paddingFunctionC) {
+    public @NonNull <B, C> TriConstraintStream<A, B, C> concat(@NonNull TriConstraintStream<A, B, C> otherStream,
+            @NonNull Function<A, B> paddingFunctionB,
+            @NonNull Function<A, C> paddingFunctionC) {
         var other = (BavetAbstractTriConstraintStream<Solution_, A, B, C>) otherStream;
         var leftBridge = new BavetForeBridgeUniConstraintStream<>(constraintFactory, this);
         var rightBridge = new BavetForeBridgeTriConstraintStream<>(constraintFactory, other);
@@ -352,8 +360,9 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     }
 
     @Override
-    public <B, C, D> QuadConstraintStream<A, B, C, D> concat(QuadConstraintStream<A, B, C, D> otherStream,
-            Function<A, B> paddingFunctionB, Function<A, C> paddingFunctionC, Function<A, D> paddingFunctionD) {
+    public @NonNull <B, C, D> QuadConstraintStream<A, B, C, D> concat(@NonNull QuadConstraintStream<A, B, C, D> otherStream,
+            @NonNull Function<A, B> paddingFunctionB, @NonNull Function<A, C> paddingFunctionC,
+            @NonNull Function<A, D> paddingFunctionD) {
         var other = (BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>) otherStream;
         var leftBridge = new BavetForeBridgeUniConstraintStream<>(constraintFactory, this);
         var rightBridge = new BavetForeBridgeQuadConstraintStream<>(constraintFactory, other);
@@ -368,23 +377,24 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     }
 
     @Override
-    public <ResultA_> UniConstraintStream<ResultA_> map(Function<A, ResultA_> mapping) {
+    public @NonNull <ResultA_> UniConstraintStream<ResultA_> map(@NonNull Function<A, ResultA_> mapping) {
         var stream = shareAndAddChild(new BavetUniMapUniConstraintStream<>(constraintFactory, this, mapping));
         return constraintFactory.share(new BavetAftBridgeUniConstraintStream<>(constraintFactory, stream),
                 stream::setAftBridge);
     }
 
     @Override
-    public <ResultA_, ResultB_> BiConstraintStream<ResultA_, ResultB_> map(Function<A, ResultA_> mappingA,
-            Function<A, ResultB_> mappingB) {
+    public @NonNull <ResultA_, ResultB_> BiConstraintStream<ResultA_, ResultB_> map(@NonNull Function<A, ResultA_> mappingA,
+            @NonNull Function<A, ResultB_> mappingB) {
         var stream =
                 shareAndAddChild(new BavetBiMapUniConstraintStream<>(constraintFactory, this, mappingA, mappingB, false));
         return constraintFactory.share(new BavetAftBridgeBiConstraintStream<>(constraintFactory, stream), stream::setAftBridge);
     }
 
     @Override
-    public <ResultA_, ResultB_, ResultC_> TriConstraintStream<ResultA_, ResultB_, ResultC_> map(Function<A, ResultA_> mappingA,
-            Function<A, ResultB_> mappingB, Function<A, ResultC_> mappingC) {
+    public @NonNull <ResultA_, ResultB_, ResultC_> TriConstraintStream<ResultA_, ResultB_, ResultC_> map(
+            @NonNull Function<A, ResultA_> mappingA,
+            @NonNull Function<A, ResultB_> mappingB, @NonNull Function<A, ResultC_> mappingC) {
         var stream = shareAndAddChild(
                 new BavetTriMapUniConstraintStream<>(constraintFactory, this, mappingA, mappingB, mappingC, false));
         return constraintFactory.share(new BavetAftBridgeTriConstraintStream<>(constraintFactory, stream),
@@ -392,9 +402,10 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     }
 
     @Override
-    public <ResultA_, ResultB_, ResultC_, ResultD_> QuadConstraintStream<ResultA_, ResultB_, ResultC_, ResultD_> map(
-            Function<A, ResultA_> mappingA, Function<A, ResultB_> mappingB, Function<A, ResultC_> mappingC,
-            Function<A, ResultD_> mappingD) {
+    public @NonNull <ResultA_, ResultB_, ResultC_, ResultD_> QuadConstraintStream<ResultA_, ResultB_, ResultC_, ResultD_> map(
+            @NonNull Function<A, ResultA_> mappingA, @NonNull Function<A, ResultB_> mappingB,
+            @NonNull Function<A, ResultC_> mappingC,
+            @NonNull Function<A, ResultD_> mappingD) {
         var stream = shareAndAddChild(new BavetQuadMapUniConstraintStream<>(constraintFactory, this, mappingA, mappingB,
                 mappingC, mappingD, false));
         return constraintFactory.share(new BavetAftBridgeQuadConstraintStream<>(constraintFactory, stream),
@@ -402,7 +413,7 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     }
 
     @Override
-    public <ResultA_> UniConstraintStream<ResultA_> flattenLast(Function<A, Iterable<ResultA_>> mapping) {
+    public @NonNull <ResultA_> UniConstraintStream<ResultA_> flattenLast(@NonNull Function<A, Iterable<ResultA_>> mapping) {
         var stream = shareAndAddChild(new BavetFlattenLastUniConstraintStream<>(constraintFactory, this, mapping));
         return constraintFactory.share(new BavetAftBridgeUniConstraintStream<>(constraintFactory, stream),
                 stream::setAftBridge);
@@ -413,7 +424,7 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     // ************************************************************************
 
     @Override
-    public <ResultB_> BiConstraintStream<A, ResultB_> expand(Function<A, ResultB_> mapping) {
+    public <ResultB_> @NonNull BiConstraintStream<A, ResultB_> expand(@NonNull Function<A, ResultB_> mapping) {
         var stream =
                 shareAndAddChild(
                         new BavetBiMapUniConstraintStream<>(constraintFactory, this,
@@ -422,8 +433,9 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     }
 
     @Override
-    public <ResultB_, ResultC_> TriConstraintStream<A, ResultB_, ResultC_> expand(Function<A, ResultB_> mappingB,
-            Function<A, ResultC_> mappingC) {
+    public @NonNull <ResultB_, ResultC_> TriConstraintStream<A, ResultB_, ResultC_> expand(
+            @NonNull Function<A, ResultB_> mappingB,
+            @NonNull Function<A, ResultC_> mappingC) {
         var stream = shareAndAddChild(
                 new BavetTriMapUniConstraintStream<>(constraintFactory, this, ConstantLambdaUtils.identity(),
                         mappingB, mappingC,
@@ -433,8 +445,9 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     }
 
     @Override
-    public <ResultB_, ResultC_, ResultD_> QuadConstraintStream<A, ResultB_, ResultC_, ResultD_>
-            expand(Function<A, ResultB_> mappingB, Function<A, ResultC_> mappingC, Function<A, ResultD_> mappingD) {
+    public @NonNull <ResultB_, ResultC_, ResultD_> QuadConstraintStream<A, ResultB_, ResultC_, ResultD_>
+            expand(@NonNull Function<A, ResultB_> mappingB, @NonNull Function<A, ResultC_> mappingC,
+                    @NonNull Function<A, ResultD_> mappingD) {
         var stream = shareAndAddChild(
                 new BavetQuadMapUniConstraintStream<>(constraintFactory, this, ConstantLambdaUtils.identity(),
                         mappingB,

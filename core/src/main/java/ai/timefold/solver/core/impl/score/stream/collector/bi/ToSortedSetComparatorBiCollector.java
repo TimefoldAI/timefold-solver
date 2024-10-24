@@ -8,6 +8,8 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.collector.SortedSetUndoableActionable;
 
+import org.jspecify.annotations.NonNull;
+
 final class ToSortedSetComparatorBiCollector<A, B, Mapped_>
         extends UndoableActionableBiCollector<A, B, Mapped_, SortedSet<Mapped_>, SortedSetUndoableActionable<Mapped_>> {
     private final Comparator<? super Mapped_> comparator;
@@ -19,7 +21,7 @@ final class ToSortedSetComparatorBiCollector<A, B, Mapped_>
     }
 
     @Override
-    public Supplier<SortedSetUndoableActionable<Mapped_>> supplier() {
+    public @NonNull Supplier<SortedSetUndoableActionable<Mapped_>> supplier() {
         return () -> SortedSetUndoableActionable.orderBy(comparator);
     }
 

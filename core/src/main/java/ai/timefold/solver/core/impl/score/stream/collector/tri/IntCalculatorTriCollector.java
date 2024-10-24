@@ -8,6 +8,8 @@ import ai.timefold.solver.core.api.function.ToIntTriFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.IntCalculator;
 
+import org.jspecify.annotations.NonNull;
+
 abstract sealed class IntCalculatorTriCollector<A, B, C, Output_, Calculator_ extends IntCalculator<Output_>>
         implements TriConstraintCollector<A, B, C, Calculator_, Output_> permits AverageIntTriCollector, SumIntTriCollector {
     private final ToIntTriFunction<? super A, ? super B, ? super C> mapper;
@@ -17,7 +19,7 @@ abstract sealed class IntCalculatorTriCollector<A, B, C, Output_, Calculator_ ex
     }
 
     @Override
-    public QuadFunction<Calculator_, A, B, C, Runnable> accumulator() {
+    public @NonNull QuadFunction<Calculator_, A, B, C, Runnable> accumulator() {
         return (calculator, a, b, c) -> {
             final int mapped = mapper.applyAsInt(a, b, c);
             calculator.insert(mapped);
@@ -26,7 +28,7 @@ abstract sealed class IntCalculatorTriCollector<A, B, C, Output_, Calculator_ ex
     }
 
     @Override
-    public Function<Calculator_, Output_> finisher() {
+    public @NonNull Function<Calculator_, Output_> finisher() {
         return IntCalculator::result;
     }
 

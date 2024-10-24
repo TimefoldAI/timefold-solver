@@ -9,6 +9,8 @@ import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
+import org.jspecify.annotations.NonNull;
+
 final class ConditionalTriCollector<A, B, C, ResultContainer_, Result_>
         implements TriConstraintCollector<A, B, C, ResultContainer_, Result_> {
     private final TriPredicate<A, B, C> predicate;
@@ -23,12 +25,12 @@ final class ConditionalTriCollector<A, B, C, ResultContainer_, Result_>
     }
 
     @Override
-    public Supplier<ResultContainer_> supplier() {
+    public @NonNull Supplier<ResultContainer_> supplier() {
         return delegate.supplier();
     }
 
     @Override
-    public QuadFunction<ResultContainer_, A, B, C, Runnable> accumulator() {
+    public @NonNull QuadFunction<ResultContainer_, A, B, C, Runnable> accumulator() {
         return (resultContainer, a, b, c) -> {
             if (predicate.test(a, b, c)) {
                 return innerAccumulator.apply(resultContainer, a, b, c);
@@ -39,7 +41,7 @@ final class ConditionalTriCollector<A, B, C, ResultContainer_, Result_>
     }
 
     @Override
-    public Function<ResultContainer_, Result_> finisher() {
+    public @NonNull Function<ResultContainer_, Result_> finisher() {
         return delegate.finisher();
     }
 

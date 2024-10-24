@@ -42,6 +42,8 @@ import ai.timefold.solver.core.impl.solver.termination.BasicPlumbingTermination;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 import ai.timefold.solver.core.impl.solver.termination.TerminationFactory;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +78,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     }
 
     @Override
-    public Solver<Solution_> buildSolver(SolverConfigOverride<Solution_> configOverride) {
+    public @NonNull Solver<Solution_> buildSolver(@NonNull SolverConfigOverride<Solution_> configOverride) {
         Objects.requireNonNull(configOverride, "Invalid configOverride (null) given to SolverFactory.");
         var isDaemon = Objects.requireNonNullElse(solverConfig.getDaemon(), false);
 
@@ -129,7 +131,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 moveThreadCount == null ? SolverConfig.MOVE_THREAD_COUNT_NONE : Integer.toString(moveThreadCount));
     }
 
-    public Integer resolveMoveThreadCount(boolean enforceMaximum) {
+    public @Nullable Integer resolveMoveThreadCount(boolean enforceMaximum) {
         var maybeCount =
                 new MoveThreadCountResolver().resolveMoveThreadCount(solverConfig.getMoveThreadCount(), enforceMaximum);
         if (maybeCount.isPresent()) {

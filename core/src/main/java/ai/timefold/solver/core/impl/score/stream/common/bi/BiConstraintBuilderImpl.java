@@ -11,6 +11,8 @@ import ai.timefold.solver.core.api.score.stream.bi.BiConstraintBuilder;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintBuilder;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
 
+import org.jspecify.annotations.NonNull;
+
 public final class BiConstraintBuilderImpl<A, B, Score_ extends Score<Score_>>
         extends AbstractConstraintBuilder<Score_>
         implements BiConstraintBuilder<A, B, Score_> {
@@ -29,8 +31,8 @@ public final class BiConstraintBuilderImpl<A, B, Score_ extends Score<Score_>>
     }
 
     @Override
-    public <ConstraintJustification_ extends ConstraintJustification> BiConstraintBuilder<A, B, Score_> justifyWith(
-            TriFunction<A, B, Score_, ConstraintJustification_> justificationMapping) {
+    public <ConstraintJustification_ extends ConstraintJustification> @NonNull BiConstraintBuilder<A, B, Score_> justifyWith(
+            @NonNull TriFunction<A, B, Score_, ConstraintJustification_> justificationMapping) {
         if (this.justificationMapping != null) {
             throw new IllegalStateException("""
                     Justification mapping already set (%s).
@@ -48,7 +50,8 @@ public final class BiConstraintBuilderImpl<A, B, Score_ extends Score<Score_>>
     }
 
     @Override
-    public BiConstraintBuilder<A, B, Score_> indictWith(BiFunction<A, B, Collection<Object>> indictedObjectsMapping) {
+    public @NonNull BiConstraintBuilder<A, B, Score_>
+            indictWith(@NonNull BiFunction<A, B, Collection<Object>> indictedObjectsMapping) {
         if (this.indictedObjectsMapping != null) {
             throw new IllegalStateException("""
                     Indicted objects' mapping already set (%s).

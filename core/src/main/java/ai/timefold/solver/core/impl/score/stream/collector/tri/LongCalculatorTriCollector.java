@@ -8,6 +8,8 @@ import ai.timefold.solver.core.api.function.ToLongTriFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.LongCalculator;
 
+import org.jspecify.annotations.NonNull;
+
 abstract sealed class LongCalculatorTriCollector<A, B, C, Output_, Calculator_ extends LongCalculator<Output_>>
         implements TriConstraintCollector<A, B, C, Calculator_, Output_> permits AverageLongTriCollector, SumLongTriCollector {
     private final ToLongTriFunction<? super A, ? super B, ? super C> mapper;
@@ -17,7 +19,7 @@ abstract sealed class LongCalculatorTriCollector<A, B, C, Output_, Calculator_ e
     }
 
     @Override
-    public QuadFunction<Calculator_, A, B, C, Runnable> accumulator() {
+    public @NonNull QuadFunction<Calculator_, A, B, C, Runnable> accumulator() {
         return (calculator, a, b, c) -> {
             final long mapped = mapper.applyAsLong(a, b, c);
             calculator.insert(mapped);
@@ -26,7 +28,7 @@ abstract sealed class LongCalculatorTriCollector<A, B, C, Output_, Calculator_ e
     }
 
     @Override
-    public Function<Calculator_, Output_> finisher() {
+    public @NonNull Function<Calculator_, Output_> finisher() {
         return LongCalculator::result;
     }
 

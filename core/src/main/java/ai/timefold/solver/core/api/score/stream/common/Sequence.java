@@ -2,6 +2,9 @@ package ai.timefold.solver.core.api.score.stream.common;
 
 import java.util.Collection;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * Represents a series of consecutive values.
  * For instance, the list [1,2,4,5,6,10] has three sequences: [1,2], [4,5,6], and [10].
@@ -12,13 +15,15 @@ import java.util.Collection;
 public interface Sequence<Value_, Difference_ extends Comparable<Difference_>> {
 
     /**
-     * @return never null; the first item in the sequence.
+     * @return the first item in the sequence.
      */
+    @NonNull
     Value_ getFirstItem();
 
     /**
-     * @return never null; the last item in the sequence.
+     * @return the last item in the sequence.
      */
+    @NonNull
     Value_ getLastItem();
 
     /**
@@ -34,16 +39,19 @@ public interface Sequence<Value_, Difference_ extends Comparable<Difference_>> {
     /**
      * @return If this is not the first sequence, the break before it. Otherwise, null.
      */
+    @Nullable
     Break<Value_, Difference_> getPreviousBreak();
 
     /**
      * @return If this is not the last sequence, the break after it. Otherwise, null.
      */
+    @Nullable
     Break<Value_, Difference_> getNextBreak();
 
     /**
-     * @return never null; items in this sequence
+     * @return items in this sequence
      */
+    @NonNull
     Collection<Value_> getItems();
 
     /**
@@ -52,7 +60,8 @@ public interface Sequence<Value_, Difference_ extends Comparable<Difference_>> {
     int getCount();
 
     /**
-     * @return never null; the difference between the last item and first item in this sequence
+     * @return the difference between the last item and first item in this sequence
      */
+    @NonNull
     Difference_ getLength();
 }

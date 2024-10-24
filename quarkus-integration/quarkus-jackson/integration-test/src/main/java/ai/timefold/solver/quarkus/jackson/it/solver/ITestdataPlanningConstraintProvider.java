@@ -7,10 +7,12 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.quarkus.jackson.it.domain.ITestdataPlanningEntity;
 
+import org.jspecify.annotations.NonNull;
+
 public class ITestdataPlanningConstraintProvider implements ConstraintProvider {
 
     @Override
-    public Constraint[] defineConstraints(ConstraintFactory factory) {
+    public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory factory) {
         return new Constraint[] {
                 factory.forEach(ITestdataPlanningEntity.class)
                         .join(ITestdataPlanningEntity.class, Joiners.equal(ITestdataPlanningEntity::getValue))

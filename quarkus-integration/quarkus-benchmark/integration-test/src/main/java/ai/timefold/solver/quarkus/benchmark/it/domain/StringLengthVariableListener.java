@@ -3,30 +3,32 @@ package ai.timefold.solver.quarkus.benchmark.it.domain;
 import ai.timefold.solver.core.api.domain.variable.VariableListener;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 
+import org.jspecify.annotations.NonNull;
+
 public class StringLengthVariableListener
         implements VariableListener<TestdataStringLengthShadowSolution, TestdataListValueShadowEntity> {
 
     @Override
-    public void beforeEntityAdded(ScoreDirector<TestdataStringLengthShadowSolution> scoreDirector,
-            TestdataListValueShadowEntity entity) {
+    public void beforeEntityAdded(@NonNull ScoreDirector<TestdataStringLengthShadowSolution> scoreDirector,
+            @NonNull TestdataListValueShadowEntity entity) {
         /* Nothing to do */
     }
 
     @Override
-    public void afterEntityAdded(ScoreDirector<TestdataStringLengthShadowSolution> scoreDirector,
-            TestdataListValueShadowEntity entity) {
+    public void afterEntityAdded(@NonNull ScoreDirector<TestdataStringLengthShadowSolution> scoreDirector,
+            @NonNull TestdataListValueShadowEntity entity) {
         /* Nothing to do */
     }
 
     @Override
-    public void beforeVariableChanged(ScoreDirector<TestdataStringLengthShadowSolution> scoreDirector,
-            TestdataListValueShadowEntity entity) {
+    public void beforeVariableChanged(@NonNull ScoreDirector<TestdataStringLengthShadowSolution> scoreDirector,
+            @NonNull TestdataListValueShadowEntity entity) {
         /* Nothing to do */
     }
 
     @Override
-    public void afterVariableChanged(ScoreDirector<TestdataStringLengthShadowSolution> scoreDirector,
-            TestdataListValueShadowEntity entity) {
+    public void afterVariableChanged(@NonNull ScoreDirector<TestdataStringLengthShadowSolution> scoreDirector,
+            @NonNull TestdataListValueShadowEntity entity) {
         int oldLength = (entity.getLength() != null) ? entity.getLength() : 0;
         int newLength =
                 entity.getEntity() != null
@@ -41,14 +43,14 @@ public class StringLengthVariableListener
     }
 
     @Override
-    public void beforeEntityRemoved(ScoreDirector<TestdataStringLengthShadowSolution> scoreDirector,
-            TestdataListValueShadowEntity entity) {
+    public void beforeEntityRemoved(@NonNull ScoreDirector<TestdataStringLengthShadowSolution> scoreDirector,
+            @NonNull TestdataListValueShadowEntity entity) {
         /* Nothing to do */
     }
 
     @Override
-    public void afterEntityRemoved(ScoreDirector<TestdataStringLengthShadowSolution> scoreDirector,
-            TestdataListValueShadowEntity entity) {
+    public void afterEntityRemoved(@NonNull ScoreDirector<TestdataStringLengthShadowSolution> scoreDirector,
+            @NonNull TestdataListValueShadowEntity entity) {
         /* Nothing to do */
     }
 

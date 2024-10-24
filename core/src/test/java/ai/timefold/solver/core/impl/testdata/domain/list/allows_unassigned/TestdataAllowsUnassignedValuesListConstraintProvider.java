@@ -5,9 +5,11 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 
+import org.jspecify.annotations.NonNull;
+
 public final class TestdataAllowsUnassignedValuesListConstraintProvider implements ConstraintProvider {
     @Override
-    public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+    public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
         return new Constraint[] {
                 entityConstraint(constraintFactory),
                 valueConstraint(constraintFactory)

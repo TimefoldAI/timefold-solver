@@ -20,6 +20,9 @@ import ai.timefold.solver.core.impl.score.DefaultScoreExplanation;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
@@ -43,7 +46,7 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
     }
 
     @Override
-    public Score_ update(Solution_ solution, SolutionUpdatePolicy solutionUpdatePolicy) {
+    public @Nullable Score_ update(@NonNull Solution_ solution, @NonNull SolutionUpdatePolicy solutionUpdatePolicy) {
         if (solutionUpdatePolicy == SolutionUpdatePolicy.NO_UPDATE) {
             throw new IllegalArgumentException("Can not call " + this.getClass().getSimpleName()
                     + ".update() with this solutionUpdatePolicy (" + solutionUpdatePolicy + ").");
@@ -78,7 +81,8 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
 
     @SuppressWarnings("unchecked")
     @Override
-    public ScoreExplanation<Solution_, Score_> explain(Solution_ solution, SolutionUpdatePolicy solutionUpdatePolicy) {
+    public @NonNull ScoreExplanation<Solution_, Score_> explain(@NonNull Solution_ solution,
+            @NonNull SolutionUpdatePolicy solutionUpdatePolicy) {
         var currentScore = (Score_) scoreDirectorFactory.getSolutionDescriptor().getScore(solution);
         var explanation = callScoreDirector(solution, solutionUpdatePolicy, DefaultScoreExplanation::new, true, false);
         assertFreshScore(solution, currentScore, explanation.getScore(), solutionUpdatePolicy);
@@ -105,8 +109,8 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
 
     @SuppressWarnings("unchecked")
     @Override
-    public ScoreAnalysis<Score_> analyze(Solution_ solution, ScoreAnalysisFetchPolicy fetchPolicy,
-            SolutionUpdatePolicy solutionUpdatePolicy) {
+    public @NonNull ScoreAnalysis<Score_> analyze(@NonNull Solution_ solution, @NonNull ScoreAnalysisFetchPolicy fetchPolicy,
+            @NonNull SolutionUpdatePolicy solutionUpdatePolicy) {
         Objects.requireNonNull(fetchPolicy, "fetchPolicy");
         var currentScore = (Score_) scoreDirectorFactory.getSolutionDescriptor().getScore(solution);
         var analysis = callScoreDirector(solution, solutionUpdatePolicy,
@@ -117,8 +121,9 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
     }
 
     @Override
-    public <In_, Out_> List<RecommendedAssignment<Out_, Score_>> recommendAssignment(Solution_ solution,
-            In_ evaluatedEntityOrElement, Function<In_, Out_> propositionFunction, ScoreAnalysisFetchPolicy fetchPolicy) {
+    public @NonNull <In_, Out_> List<RecommendedAssignment<Out_, Score_>> recommendAssignment(@NonNull Solution_ solution,
+            @NonNull In_ evaluatedEntityOrElement, @NonNull Function<In_, Out_> propositionFunction,
+            @NonNull ScoreAnalysisFetchPolicy fetchPolicy) {
         var assigner = new Assigner<Solution_, Score_, RecommendedAssignment<Out_, Score_>, In_, Out_>(solverFactory,
                 propositionFunction, DefaultRecommendedAssignment::new, fetchPolicy, solution, evaluatedEntityOrElement);
         return callScoreDirector(solution, SolutionUpdatePolicy.UPDATE_ALL, assigner, true, true);

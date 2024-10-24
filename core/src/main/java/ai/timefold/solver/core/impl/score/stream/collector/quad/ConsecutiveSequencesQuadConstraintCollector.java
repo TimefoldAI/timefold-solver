@@ -8,6 +8,8 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.impl.score.stream.collector.SequenceCalculator;
 
+import org.jspecify.annotations.NonNull;
+
 final class ConsecutiveSequencesQuadConstraintCollector<A, B, C, D, Result_>
         extends
         ObjectCalculatorQuadCollector<A, B, C, D, Result_, SequenceChain<Result_, Integer>, Result_, SequenceCalculator<Result_>> {
@@ -21,7 +23,7 @@ final class ConsecutiveSequencesQuadConstraintCollector<A, B, C, D, Result_>
     }
 
     @Override
-    public Supplier<SequenceCalculator<Result_>> supplier() {
+    public @NonNull Supplier<SequenceCalculator<Result_>> supplier() {
         return () -> new SequenceCalculator<>(indexMap);
     }
 

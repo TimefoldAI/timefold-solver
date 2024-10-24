@@ -11,6 +11,8 @@ import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.LoadBalanceImpl;
 
+import org.jspecify.annotations.NonNull;
+
 final class LoadBalanceTriCollector<A, B, C, Balanced_>
         implements TriConstraintCollector<A, B, C, LoadBalanceImpl<Balanced_>, LoadBalance<Balanced_>> {
 
@@ -27,12 +29,12 @@ final class LoadBalanceTriCollector<A, B, C, Balanced_>
     }
 
     @Override
-    public Supplier<LoadBalanceImpl<Balanced_>> supplier() {
+    public @NonNull Supplier<LoadBalanceImpl<Balanced_>> supplier() {
         return LoadBalanceImpl::new;
     }
 
     @Override
-    public QuadFunction<LoadBalanceImpl<Balanced_>, A, B, C, Runnable> accumulator() {
+    public @NonNull QuadFunction<LoadBalanceImpl<Balanced_>, A, B, C, Runnable> accumulator() {
         return (balanceStatistics, a, b, c) -> {
             var balanced = balancedItemFunction.apply(a, b, c);
             var initialLoad = initialLoadFunction.applyAsLong(a, b, c);
@@ -42,7 +44,7 @@ final class LoadBalanceTriCollector<A, B, C, Balanced_>
     }
 
     @Override
-    public Function<LoadBalanceImpl<Balanced_>, LoadBalance<Balanced_>> finisher() {
+    public @NonNull Function<LoadBalanceImpl<Balanced_>, LoadBalance<Balanced_>> finisher() {
         return balanceStatistics -> balanceStatistics;
     }
 

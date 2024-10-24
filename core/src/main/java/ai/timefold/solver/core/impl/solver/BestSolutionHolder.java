@@ -16,6 +16,8 @@ import java.util.function.BooleanSupplier;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 
+import org.jspecify.annotations.NonNull;
+
 final class BestSolutionHolder<Solution_> {
 
     private final Lock problemChangesLock = new ReentrantLock();
@@ -83,6 +85,7 @@ final class BestSolutionHolder<Solution_> {
      * @return CompletableFuture that will be completed after the best solution containing this change is passed to
      *         a user-defined Consumer.
      */
+    @NonNull
     CompletableFuture<Void> addProblemChange(Solver<Solution_> solver, ProblemChange<Solution_> problemChange) {
         problemChangesLock.lock();
         try {

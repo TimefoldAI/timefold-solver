@@ -7,10 +7,12 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringEntity;
 
+import org.jspecify.annotations.NonNull;
+
 public class TestdataSpringConstraintProvider implements ConstraintProvider {
 
     @Override
-    public Constraint[] defineConstraints(ConstraintFactory factory) {
+    public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory factory) {
         return new Constraint[] {
                 factory.forEach(TestdataSpringEntity.class)
                         .join(TestdataSpringEntity.class, Joiners.equal(TestdataSpringEntity::getValue))

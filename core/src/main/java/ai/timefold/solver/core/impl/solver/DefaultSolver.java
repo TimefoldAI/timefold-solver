@@ -27,6 +27,8 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.BasicPlumbingTermination;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
+import org.jspecify.annotations.NonNull;
+
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.LongTaskTimer;
 import io.micrometer.core.instrument.Metrics;
@@ -128,12 +130,12 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
     }
 
     @Override
-    public boolean addProblemFactChange(ProblemFactChange<Solution_> problemFactChange) {
+    public boolean addProblemFactChange(@NonNull ProblemFactChange<Solution_> problemFactChange) {
         return basicPlumbingTermination.addProblemChange(ProblemChangeAdapter.create(problemFactChange));
     }
 
     @Override
-    public boolean addProblemFactChanges(List<ProblemFactChange<Solution_>> problemFactChangeList) {
+    public boolean addProblemFactChanges(@NonNull List<ProblemFactChange<Solution_>> problemFactChangeList) {
         Objects.requireNonNull(problemFactChangeList,
                 () -> "The list of problem fact changes (" + problemFactChangeList + ") cannot be null.");
         List<ProblemChangeAdapter<Solution_>> problemChangeAdapterList = problemFactChangeList.stream()
@@ -143,12 +145,12 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
     }
 
     @Override
-    public void addProblemChange(ProblemChange<Solution_> problemChange) {
+    public void addProblemChange(@NonNull ProblemChange<Solution_> problemChange) {
         basicPlumbingTermination.addProblemChange(ProblemChangeAdapter.create(problemChange));
     }
 
     @Override
-    public void addProblemChanges(List<ProblemChange<Solution_>> problemChangeList) {
+    public void addProblemChanges(@NonNull List<ProblemChange<Solution_>> problemChangeList) {
         Objects.requireNonNull(problemChangeList,
                 () -> "The list of problem changes (" + problemChangeList + ") cannot be null.");
         problemChangeList.forEach(this::addProblemChange);
@@ -176,7 +178,9 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
     // ************************************************************************
 
     @Override
-    public final Solution_ solve(Solution_ problem) {
+    public final @NonNull Solution_ solve(@NonNull Solution_ problem) {
+        // TODO: I suppose @NonNull does not guarantee the solution really is not null
+        //  does it make sense to keep this check + the exception?
         if (problem == null) {
             throw new IllegalArgumentException("The problem (" + problem + ") must not be null.");
         }

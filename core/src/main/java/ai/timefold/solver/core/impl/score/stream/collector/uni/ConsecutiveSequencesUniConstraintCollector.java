@@ -8,6 +8,8 @@ import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 import ai.timefold.solver.core.impl.score.stream.collector.SequenceCalculator;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
+import org.jspecify.annotations.NonNull;
+
 final class ConsecutiveSequencesUniConstraintCollector<A>
         extends ObjectCalculatorUniCollector<A, A, SequenceChain<A, Integer>, A, SequenceCalculator<A>> {
 
@@ -19,7 +21,7 @@ final class ConsecutiveSequencesUniConstraintCollector<A>
     }
 
     @Override
-    public Supplier<SequenceCalculator<A>> supplier() {
+    public @NonNull Supplier<SequenceCalculator<A>> supplier() {
         return () -> new SequenceCalculator<>(indexMap);
     }
 

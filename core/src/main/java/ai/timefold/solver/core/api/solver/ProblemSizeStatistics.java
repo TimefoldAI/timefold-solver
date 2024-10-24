@@ -6,6 +6,8 @@ import java.util.Locale;
 
 import ai.timefold.solver.core.impl.util.MathUtils;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * The statistics of a given problem submitted to a {@link Solver}.
  *
@@ -65,12 +67,9 @@ public record ProblemSizeStatistics(long entityCount,
      * we cannot expect them to be in the locale that the test expects them to be in.
      * This method exists to allow for an override.
      *
-     * @param number never null
-     * @param decimalFormat never null
-     * @param locale never null
      * @return the given decimalFormat with the given locale
      */
-    private static String format(double number, DecimalFormat decimalFormat, Locale locale) {
+    private static @NonNull String format(double number, @NonNull DecimalFormat decimalFormat, @NonNull Locale locale) {
         if (locale.equals(FORMATTER_LOCALE)) {
             return decimalFormat.format(number);
         }

@@ -13,6 +13,8 @@ import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Tracks variable listener events for a given {@link ai.timefold.solver.core.api.domain.variable.PlanningListVariable}.
  */
@@ -34,43 +36,45 @@ public class ListVariableTracker<Solution_>
     }
 
     @Override
-    public void resetWorkingSolution(ScoreDirector<Solution_> scoreDirector) {
+    public void resetWorkingSolution(@NonNull ScoreDirector<Solution_> scoreDirector) {
         beforeVariableChangedEntityList.clear();
         afterVariableChangedEntityList.clear();
     }
 
     @Override
-    public void beforeEntityAdded(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public void beforeEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
 
     }
 
     @Override
-    public void afterEntityAdded(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public void afterEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
 
     }
 
     @Override
-    public void beforeEntityRemoved(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public void beforeEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
 
     }
 
     @Override
-    public void afterEntityRemoved(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public void afterEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
 
     }
 
     @Override
-    public void afterListVariableElementUnassigned(ScoreDirector<Solution_> scoreDirector, Object element) {
+    public void afterListVariableElementUnassigned(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object element) {
 
     }
 
     @Override
-    public void beforeListVariableChanged(ScoreDirector<Solution_> scoreDirector, Object entity, int fromIndex, int toIndex) {
+    public void beforeListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity,
+            int fromIndex, int toIndex) {
         beforeVariableChangedEntityList.add(entity);
     }
 
     @Override
-    public void afterListVariableChanged(ScoreDirector<Solution_> scoreDirector, Object entity, int fromIndex, int toIndex) {
+    public void afterListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity, int fromIndex,
+            int toIndex) {
         afterVariableChangedEntityList.add(entity);
     }
 

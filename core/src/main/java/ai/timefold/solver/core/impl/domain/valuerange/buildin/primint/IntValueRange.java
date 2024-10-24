@@ -8,6 +8,8 @@ import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRang
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 
+import org.jspecify.annotations.NonNull;
+
 public final class IntValueRange extends AbstractCountableValueRange<Integer> {
 
     private final int from;
@@ -72,7 +74,7 @@ public final class IntValueRange extends AbstractCountableValueRange<Integer> {
     }
 
     @Override
-    public Iterator<Integer> createOriginalIterator() {
+    public @NonNull Iterator<Integer> createOriginalIterator() {
         return new OriginalIntValueRangeIterator();
     }
 
@@ -98,7 +100,7 @@ public final class IntValueRange extends AbstractCountableValueRange<Integer> {
     }
 
     @Override
-    public Iterator<Integer> createRandomIterator(Random workingRandom) {
+    public @NonNull Iterator<Integer> createRandomIterator(@NonNull Random workingRandom) {
         return new RandomIntValueRangeIterator(workingRandom);
     }
 

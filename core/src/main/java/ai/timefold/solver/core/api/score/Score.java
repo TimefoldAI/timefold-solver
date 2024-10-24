@@ -8,6 +8,8 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
 import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * A Score is result of the score function (AKA fitness function) on a single possible solution.
  *
@@ -59,6 +61,7 @@ public interface Score<Score_ extends Score<Score_>>
      * @param newInitScore always negative (except in statistical calculations), 0 if all planning variables are initialized
      * @return equals score except that {@link #initScore()} is set to {@code newInitScore}
      */
+    @NonNull
     Score_ withInitScore(int newInitScore);
 
     /**
@@ -67,7 +70,8 @@ public interface Score<Score_ extends Score<Score_>>
      * @param addend value to be added to this Score
      * @return this + addend
      */
-    Score_ add(Score_ addend);
+    @NonNull
+    Score_ add(@NonNull Score_ addend);
 
     /**
      * Returns a Score whose value is (this - subtrahend).
@@ -75,7 +79,8 @@ public interface Score<Score_ extends Score<Score_>>
      * @param subtrahend value to be subtracted from this Score
      * @return this - subtrahend, rounded as necessary
      */
-    Score_ subtract(Score_ subtrahend);
+    @NonNull
+    Score_ subtract(@NonNull Score_ subtrahend);
 
     /**
      * Returns a Score whose value is (this * multiplicand).
@@ -87,6 +92,7 @@ public interface Score<Score_ extends Score<Score_>>
      * @param multiplicand value to be multiplied by this Score.
      * @return this * multiplicand
      */
+    @NonNull
     Score_ multiply(double multiplicand);
 
     /**
@@ -99,6 +105,7 @@ public interface Score<Score_ extends Score<Score_>>
      * @param divisor value by which this Score is to be divided
      * @return this / divisor
      */
+    @NonNull
     Score_ divide(double divisor);
 
     /**
@@ -111,6 +118,7 @@ public interface Score<Score_ extends Score<Score_>>
      * @param exponent value by which this Score is to be powered
      * @return this ^ exponent
      */
+    @NonNull
     Score_ power(double exponent);
 
     /**
@@ -118,7 +126,7 @@ public interface Score<Score_ extends Score<Score_>>
      *
      * @return - this
      */
-    default Score_ negate() {
+    default @NonNull Score_ negate() {
         Score_ zero = zero();
         Score_ current = (Score_) this;
         if (zero.equals(current)) {
@@ -129,16 +137,14 @@ public interface Score<Score_ extends Score<Score_>>
 
     /**
      * Returns a Score whose value is the absolute value of the score, i.e. |this|.
-     *
-     * @return never null
      */
+    @NonNull
     Score_ abs();
 
     /**
      * Returns a Score, all levels of which are zero.
-     *
-     * @return never null
      */
+    @NonNull
     Score_ zero();
 
     /**
@@ -161,16 +167,14 @@ public interface Score<Score_ extends Score<Score_>>
      * The level numbers do not contain the {@link #initScore()}.
      * For example: {@code -3init/-0hard/-7soft} also returns {@code new int{-0, -7}}
      *
-     * @return never null
      */
-    Number[] toLevelNumbers();
+    @NonNull
+    Number @NonNull [] toLevelNumbers();
 
     /**
      * As defined by {@link #toLevelNumbers()}, only returns double[] instead of Number[].
-     *
-     * @return never null
      */
-    default double[] toLevelDoubles() {
+    default double @NonNull [] toLevelDoubles() {
         Number[] levelNumbers = toLevelNumbers();
         double[] levelDoubles = new double[levelNumbers.length];
         for (int i = 0; i < levelNumbers.length; i++) {
@@ -205,9 +209,8 @@ public interface Score<Score_ extends Score<Score_>>
      * <p>
      * Do not use this format to persist information as text, use {@link Object#toString()} instead,
      * so it can be parsed reliably.
-     *
-     * @return never null
      */
+    @NonNull
     String toShortString();
 
 }

@@ -7,6 +7,8 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 
+import org.jspecify.annotations.NonNull;
+
 final class AndThenQuadCollector<A, B, C, D, ResultContainer_, Intermediate_, Result_>
         implements QuadConstraintCollector<A, B, C, D, ResultContainer_, Result_> {
 
@@ -20,17 +22,17 @@ final class AndThenQuadCollector<A, B, C, D, ResultContainer_, Intermediate_, Re
     }
 
     @Override
-    public Supplier<ResultContainer_> supplier() {
+    public @NonNull Supplier<ResultContainer_> supplier() {
         return delegate.supplier();
     }
 
     @Override
-    public PentaFunction<ResultContainer_, A, B, C, D, Runnable> accumulator() {
+    public @NonNull PentaFunction<ResultContainer_, A, B, C, D, Runnable> accumulator() {
         return delegate.accumulator();
     }
 
     @Override
-    public Function<ResultContainer_, Result_> finisher() {
+    public @NonNull Function<ResultContainer_, Result_> finisher() {
         var finisher = delegate.finisher();
         return container -> mappingFunction.apply(finisher.apply(container));
     }

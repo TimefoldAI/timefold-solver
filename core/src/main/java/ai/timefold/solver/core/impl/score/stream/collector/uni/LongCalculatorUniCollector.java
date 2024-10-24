@@ -8,6 +8,9 @@ import java.util.function.ToLongFunction;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.LongCalculator;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 abstract sealed class LongCalculatorUniCollector<A, Output_, Calculator_ extends LongCalculator<Output_>>
         implements UniConstraintCollector<A, Calculator_, Output_> permits AverageLongUniCollector, SumLongUniCollector {
     private final ToLongFunction<? super A> mapper;
@@ -17,7 +20,7 @@ abstract sealed class LongCalculatorUniCollector<A, Output_, Calculator_ extends
     }
 
     @Override
-    public BiFunction<Calculator_, A, Runnable> accumulator() {
+    public @NonNull BiFunction<Calculator_, A, Runnable> accumulator() {
         return (calculator, a) -> {
             final long mapped = mapper.applyAsLong(a);
             calculator.insert(mapped);
@@ -26,7 +29,7 @@ abstract sealed class LongCalculatorUniCollector<A, Output_, Calculator_ extends
     }
 
     @Override
-    public Function<Calculator_, Output_> finisher() {
+    public @Nullable Function<Calculator_, Output_> finisher() {
         return LongCalculator::result;
     }
 

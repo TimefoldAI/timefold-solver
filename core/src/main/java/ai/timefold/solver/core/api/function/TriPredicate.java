@@ -3,6 +3,8 @@ package ai.timefold.solver.core.api.function;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Represents a predicate (boolean-valued function) of three arguments.
  * This is the three-arity specialization of {@link Predicate}.
@@ -47,7 +49,7 @@ public interface TriPredicate<A, B, C> {
      *         AND of this predicate and the {@code other} predicate
      * @throws NullPointerException if other is null
      */
-    default TriPredicate<A, B, C> and(TriPredicate<? super A, ? super B, ? super C> other) {
+    default @NonNull TriPredicate<A, B, C> and(@NonNull TriPredicate<? super A, ? super B, ? super C> other) {
         Objects.requireNonNull(other);
         return (A a, B b, C c) -> test(a, b, c) && other.test(a, b, c);
     }
@@ -79,7 +81,7 @@ public interface TriPredicate<A, B, C> {
      *         OR of this predicate and the {@code other} predicate
      * @throws NullPointerException if other is null
      */
-    default TriPredicate<A, B, C> or(TriPredicate<? super A, ? super B, ? super C> other) {
+    default @NonNull TriPredicate<A, B, C> or(@NonNull TriPredicate<? super A, ? super B, ? super C> other) {
         Objects.requireNonNull(other);
         return (A a, B b, C c) -> test(a, b, c) || other.test(a, b, c);
     }

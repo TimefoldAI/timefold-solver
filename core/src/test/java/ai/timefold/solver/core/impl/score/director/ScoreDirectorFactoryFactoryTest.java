@@ -19,6 +19,7 @@ import ai.timefold.solver.core.impl.score.director.incremental.IncrementalScoreD
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 class ScoreDirectorFactoryFactoryTest {
@@ -122,7 +123,7 @@ class ScoreDirectorFactoryFactoryTest {
         }
 
         @Override
-        public SimpleScore calculateScore(TestdataSolution testdataSolution) {
+        public @NonNull SimpleScore calculateScore(@NonNull TestdataSolution testdataSolution) {
             return SimpleScore.ZERO;
         }
     }
@@ -150,42 +151,42 @@ class ScoreDirectorFactoryFactoryTest {
         }
 
         @Override
-        public void resetWorkingSolution(TestdataSolution workingSolution) {
+        public void resetWorkingSolution(@NonNull TestdataSolution workingSolution) {
         }
 
         @Override
-        public void beforeEntityAdded(Object entity) {
+        public void beforeEntityAdded(@NonNull Object entity) {
         }
 
         @Override
-        public void afterEntityAdded(Object entity) {
+        public void afterEntityAdded(@NonNull Object entity) {
         }
 
         @Override
-        public void beforeVariableChanged(Object entity, String variableName) {
+        public void beforeVariableChanged(@NonNull Object entity, @NonNull String variableName) {
         }
 
         @Override
-        public void afterVariableChanged(Object entity, String variableName) {
+        public void afterVariableChanged(@NonNull Object entity, @NonNull String variableName) {
         }
 
         @Override
-        public void beforeEntityRemoved(Object entity) {
+        public void beforeEntityRemoved(@NonNull Object entity) {
         }
 
         @Override
-        public void afterEntityRemoved(Object entity) {
+        public void afterEntityRemoved(@NonNull Object entity) {
         }
 
         @Override
-        public SimpleScore calculateScore() {
+        public @NonNull SimpleScore calculateScore() {
             return SimpleScore.ZERO;
         }
     }
 
     public static class TestdataConstraintProvider implements ConstraintProvider {
         @Override
-        public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+        public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
             return new Constraint[0];
         }
     }

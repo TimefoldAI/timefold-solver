@@ -13,6 +13,9 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 record DefaultConstraintMetaModel(
         Map<ConstraintRef, Constraint> constraintPerRefMap,
         Map<String, List<Constraint>> constraintPerGroupMap) implements ConstraintMetaModel {
@@ -36,22 +39,22 @@ record DefaultConstraintMetaModel(
     }
 
     @Override
-    public Constraint getConstraint(ConstraintRef constraintRef) {
+    public @Nullable Constraint getConstraint(@NonNull ConstraintRef constraintRef) {
         return constraintPerRefMap.get(constraintRef);
     }
 
     @Override
-    public Collection<Constraint> getConstraintsPerGroup(String constraintGroup) {
+    public @NonNull Collection<Constraint> getConstraintsPerGroup(@NonNull String constraintGroup) {
         return constraintPerGroupMap.getOrDefault(constraintGroup, Collections.emptyList());
     }
 
     @Override
-    public Set<String> getConstraintGroups() {
+    public @NonNull Set<String> getConstraintGroups() {
         return constraintPerGroupMap.keySet();
     }
 
     @Override
-    public Collection<Constraint> getConstraints() {
+    public @NonNull Collection<Constraint> getConstraints() {
         return constraintPerRefMap.values();
     }
 

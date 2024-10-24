@@ -11,6 +11,8 @@ import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.LoadBalanceImpl;
 
+import org.jspecify.annotations.NonNull;
+
 final class LoadBalanceQuadCollector<A, B, C, D, Balanced_>
         implements QuadConstraintCollector<A, B, C, D, LoadBalanceImpl<Balanced_>, LoadBalance<Balanced_>> {
 
@@ -26,12 +28,12 @@ final class LoadBalanceQuadCollector<A, B, C, D, Balanced_>
     }
 
     @Override
-    public Supplier<LoadBalanceImpl<Balanced_>> supplier() {
+    public @NonNull Supplier<LoadBalanceImpl<Balanced_>> supplier() {
         return LoadBalanceImpl::new;
     }
 
     @Override
-    public PentaFunction<LoadBalanceImpl<Balanced_>, A, B, C, D, Runnable> accumulator() {
+    public @NonNull PentaFunction<LoadBalanceImpl<Balanced_>, A, B, C, D, Runnable> accumulator() {
         return (balanceStatistics, a, b, c, d) -> {
             var balanced = balancedItemFunction.apply(a, b, c, d);
             var initialLoad = initialLoadFunction.applyAsLong(a, b, c, d);
@@ -41,7 +43,7 @@ final class LoadBalanceQuadCollector<A, B, C, D, Balanced_>
     }
 
     @Override
-    public Function<LoadBalanceImpl<Balanced_>, LoadBalance<Balanced_>> finisher() {
+    public @NonNull Function<LoadBalanceImpl<Balanced_>, LoadBalance<Balanced_>> finisher() {
         return balanceStatistics -> balanceStatistics;
     }
 

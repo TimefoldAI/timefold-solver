@@ -57,6 +57,29 @@
           "oldValue": "{\"terminationClass\", \"terminationCompositionStyle\", \"spentLimit\", \"millisecondsSpentLimit\", \"secondsSpentLimit\", \"minutesSpentLimit\", \"hoursSpentLimit\", \"daysSpentLimit\", \"unimprovedSpentLimit\", \"unimprovedMillisecondsSpentLimit\", \"unimprovedSecondsSpentLimit\", \"unimprovedMinutesSpentLimit\", \"unimprovedHoursSpentLimit\", \"unimprovedDaysSpentLimit\", \"unimprovedScoreDifferenceThreshold\", \"bestScoreLimit\", \"bestScoreFeasible\", \"stepCountLimit\", \"unimprovedStepCountLimit\", \"scoreCalculationCountLimit\", \"terminationConfigList\"}",
           "newValue": "{\"terminationClass\", \"terminationCompositionStyle\", \"spentLimit\", \"millisecondsSpentLimit\", \"secondsSpentLimit\", \"minutesSpentLimit\", \"hoursSpentLimit\", \"daysSpentLimit\", \"unimprovedSpentLimit\", \"unimprovedMillisecondsSpentLimit\", \"unimprovedSecondsSpentLimit\", \"unimprovedMinutesSpentLimit\", \"unimprovedHoursSpentLimit\", \"unimprovedDaysSpentLimit\", \"unimprovedScoreDifferenceThreshold\", \"bestScoreLimit\", \"bestScoreFeasible\", \"stepCountLimit\", \"unimprovedStepCountLimit\", \"scoreCalculationCountLimit\", \"moveCountLimit\", \"terminationConfigList\"}",
           "justification": "Add new termination configuration"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.parameterTypeParameterChanged",
+          "old": "parameter <Temporal_ extends java.time.temporal.Temporal & java.lang.Comparable<? super Temporal_>> ai.timefold.solver.core.api.domain.valuerange.CountableValueRange<Temporal_> ai.timefold.solver.core.api.domain.valuerange.ValueRangeFactory::createTemporalValueRange(===Temporal_===, Temporal_, long, java.time.temporal.TemporalUnit)",
+          "new": "parameter <Temporal_ extends java.time.temporal.Temporal & java.lang.Comparable<? super Temporal_>> ai.timefold.solver.core.api.domain.valuerange.CountableValueRange<Temporal_> ai.timefold.solver.core.api.domain.valuerange.ValueRangeFactory::createTemporalValueRange(===Temporal_===, Temporal_, long, java.time.temporal.TemporalUnit)",
+          "parameterIndex": "0",
+          "justification": "False positive after addition of @NonNull annotation"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.parameterTypeParameterChanged",
+          "old": "parameter <Temporal_ extends java.time.temporal.Temporal & java.lang.Comparable<? super Temporal_>> ai.timefold.solver.core.api.domain.valuerange.CountableValueRange<Temporal_> ai.timefold.solver.core.api.domain.valuerange.ValueRangeFactory::createTemporalValueRange(Temporal_, ===Temporal_===, long, java.time.temporal.TemporalUnit)",
+          "new": "parameter <Temporal_ extends java.time.temporal.Temporal & java.lang.Comparable<? super Temporal_>> ai.timefold.solver.core.api.domain.valuerange.CountableValueRange<Temporal_> ai.timefold.solver.core.api.domain.valuerange.ValueRangeFactory::createTemporalValueRange(Temporal_, ===Temporal_===, long, java.time.temporal.TemporalUnit)",
+          "parameterIndex": "1",
+          "justification": "False positive after addition of @NonNull annotation"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.returnTypeTypeParametersChanged",
+          "old": "method Score_ ai.timefold.solver.core.api.score.constraint.ConstraintMatch<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::getScore()",
+          "new": "method Score_ ai.timefold.solver.core.api.score.constraint.ConstraintMatch<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::getScore()",
+          "justification": "False positive after addition of @NonNull annotation"
         }
       ]
     }

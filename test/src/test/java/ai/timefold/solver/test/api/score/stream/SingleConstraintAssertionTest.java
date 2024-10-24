@@ -28,6 +28,7 @@ import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerif
 import ai.timefold.solver.test.api.score.stream.testdata.justification.TestFirstJustification;
 import ai.timefold.solver.test.api.score.stream.testdata.justification.TestSecondJustification;
 
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 class SingleConstraintAssertionTest {
@@ -481,7 +482,7 @@ class SingleConstraintAssertionTest {
     private static final class TestdataAllowsUnassignedListConstraintProvider implements ConstraintProvider {
 
         @Override
-        public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+        public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
             return new Constraint[] {
                     penalizeEveryAssignedValue(constraintFactory),
                     penalizeEveryValue(constraintFactory)
@@ -529,7 +530,7 @@ class SingleConstraintAssertionTest {
     private static final class TestdataDisallowsUnassignedListConstraintProvider implements ConstraintProvider {
 
         @Override
-        public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+        public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
             return new Constraint[] {
                     penalizeEveryAssignedValue(constraintFactory),
                     penalizeEveryValue(constraintFactory)
@@ -578,7 +579,7 @@ class SingleConstraintAssertionTest {
             implements ConstraintProvider {
 
         @Override
-        public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+        public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
             return new Constraint[] {
                     penalizeEveryAssignedValue(constraintFactory),
                     penalizeEveryValue(constraintFactory)

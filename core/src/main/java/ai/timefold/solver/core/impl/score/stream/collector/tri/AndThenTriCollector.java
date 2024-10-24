@@ -7,6 +7,8 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 
+import org.jspecify.annotations.NonNull;
+
 final class AndThenTriCollector<A, B, C, ResultContainer_, Intermediate_, Result_>
         implements TriConstraintCollector<A, B, C, ResultContainer_, Result_> {
 
@@ -20,17 +22,17 @@ final class AndThenTriCollector<A, B, C, ResultContainer_, Intermediate_, Result
     }
 
     @Override
-    public Supplier<ResultContainer_> supplier() {
+    public @NonNull Supplier<ResultContainer_> supplier() {
         return delegate.supplier();
     }
 
     @Override
-    public QuadFunction<ResultContainer_, A, B, C, Runnable> accumulator() {
+    public @NonNull QuadFunction<ResultContainer_, A, B, C, Runnable> accumulator() {
         return delegate.accumulator();
     }
 
     @Override
-    public Function<ResultContainer_, Result_> finisher() {
+    public @NonNull Function<ResultContainer_, Result_> finisher() {
         var finisher = delegate.finisher();
         return container -> mappingFunction.apply(finisher.apply(container));
     }

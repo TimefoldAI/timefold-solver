@@ -6,6 +6,8 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.collector.ListUndoableActionable;
 
+import org.jspecify.annotations.NonNull;
+
 final class ToListBiCollector<A, B, Mapped_>
         extends UndoableActionableBiCollector<A, B, Mapped_, List<Mapped_>, ListUndoableActionable<Mapped_>> {
     ToListBiCollector(BiFunction<? super A, ? super B, ? extends Mapped_> mapper) {
@@ -13,7 +15,7 @@ final class ToListBiCollector<A, B, Mapped_>
     }
 
     @Override
-    public Supplier<ListUndoableActionable<Mapped_>> supplier() {
+    public @NonNull Supplier<ListUndoableActionable<Mapped_>> supplier() {
         return ListUndoableActionable::new;
     }
 }

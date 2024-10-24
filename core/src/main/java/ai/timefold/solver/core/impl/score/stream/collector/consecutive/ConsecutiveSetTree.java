@@ -14,6 +14,9 @@ import ai.timefold.solver.core.api.score.stream.common.Break;
 import ai.timefold.solver.core.api.score.stream.common.Sequence;
 import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * A {@code ConsecutiveSetTree} determines what values are consecutive.
  * A sequence <i>x<sub>1</sub>,&nbsp;x<sub>2</sub>,&nbsp;x<sub>3</sub>,&nbsp;...,&nbsp;x<sub>n</sub></i>
@@ -53,17 +56,17 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
     }
 
     @Override
-    public Collection<Sequence<Value_, Difference_>> getConsecutiveSequences() {
+    public @NonNull Collection<Sequence<Value_, Difference_>> getConsecutiveSequences() {
         return Collections.unmodifiableCollection(startItemToSequence.values());
     }
 
     @Override
-    public Collection<Break<Value_, Difference_>> getBreaks() {
+    public @NonNull Collection<Break<Value_, Difference_>> getBreaks() {
         return Collections.unmodifiableCollection(startItemToPreviousBreak.values());
     }
 
     @Override
-    public Sequence<Value_, Difference_> getFirstSequence() {
+    public @Nullable Sequence<Value_, Difference_> getFirstSequence() {
         if (startItemToSequence.isEmpty()) {
             return null;
         }
@@ -71,7 +74,7 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
     }
 
     @Override
-    public Sequence<Value_, Difference_> getLastSequence() {
+    public @Nullable Sequence<Value_, Difference_> getLastSequence() {
         if (startItemToSequence.isEmpty()) {
             return null;
         }
@@ -79,7 +82,7 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
     }
 
     @Override
-    public Break<Value_, Difference_> getFirstBreak() {
+    public @Nullable Break<Value_, Difference_> getFirstBreak() {
         if (startItemToSequence.size() <= 1) {
             return null;
         }
@@ -87,7 +90,7 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
     }
 
     @Override
-    public Break<Value_, Difference_> getLastBreak() {
+    public @Nullable Break<Value_, Difference_> getLastBreak() {
         if (startItemToSequence.size() <= 1) {
             return null;
         }

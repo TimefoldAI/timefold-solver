@@ -5,6 +5,8 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.score.ScoreUtil;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * This {@link Score} is based on 1 level of int constraints.
  * <p>
@@ -18,21 +20,21 @@ public final class SimpleScore implements Score<SimpleScore> {
     public static final SimpleScore ONE = new SimpleScore(0, 1);
     private static final SimpleScore MINUS_ONE = new SimpleScore(0, -1);
 
-    public static SimpleScore parseScore(String scoreString) {
+    public static @NonNull SimpleScore parseScore(@NonNull String scoreString) {
         String[] scoreTokens = ScoreUtil.parseScoreTokens(SimpleScore.class, scoreString, "");
         int initScore = ScoreUtil.parseInitScore(SimpleScore.class, scoreString, scoreTokens[0]);
         int score = ScoreUtil.parseLevelAsInt(SimpleScore.class, scoreString, scoreTokens[1]);
         return ofUninitialized(initScore, score);
     }
 
-    public static SimpleScore ofUninitialized(int initScore, int score) {
+    public static @NonNull SimpleScore ofUninitialized(int initScore, int score) {
         if (initScore == 0) {
             return of(score);
         }
         return new SimpleScore(initScore, score);
     }
 
-    public static SimpleScore of(int score) {
+    public static @NonNull SimpleScore of(int score) {
         return switch (score) {
             case -1 -> MINUS_ONE;
             case 0 -> ZERO;
@@ -94,52 +96,52 @@ public final class SimpleScore implements Score<SimpleScore> {
     // ************************************************************************
 
     @Override
-    public SimpleScore withInitScore(int newInitScore) {
+    public @NonNull SimpleScore withInitScore(int newInitScore) {
         return ofUninitialized(newInitScore, score);
     }
 
     @Override
-    public SimpleScore add(SimpleScore addend) {
+    public @NonNull SimpleScore add(@NonNull SimpleScore addend) {
         return ofUninitialized(
                 initScore + addend.initScore(),
                 score + addend.score());
     }
 
     @Override
-    public SimpleScore subtract(SimpleScore subtrahend) {
+    public @NonNull SimpleScore subtract(@NonNull SimpleScore subtrahend) {
         return ofUninitialized(
                 initScore - subtrahend.initScore(),
                 score - subtrahend.score());
     }
 
     @Override
-    public SimpleScore multiply(double multiplicand) {
+    public @NonNull SimpleScore multiply(double multiplicand) {
         return ofUninitialized(
                 (int) Math.floor(initScore * multiplicand),
                 (int) Math.floor(score * multiplicand));
     }
 
     @Override
-    public SimpleScore divide(double divisor) {
+    public @NonNull SimpleScore divide(double divisor) {
         return ofUninitialized(
                 (int) Math.floor(initScore / divisor),
                 (int) Math.floor(score / divisor));
     }
 
     @Override
-    public SimpleScore power(double exponent) {
+    public @NonNull SimpleScore power(double exponent) {
         return ofUninitialized(
                 (int) Math.floor(Math.pow(initScore, exponent)),
                 (int) Math.floor(Math.pow(score, exponent)));
     }
 
     @Override
-    public SimpleScore abs() {
+    public @NonNull SimpleScore abs() {
         return ofUninitialized(Math.abs(initScore), Math.abs(score));
     }
 
     @Override
-    public SimpleScore zero() {
+    public @NonNull SimpleScore zero() {
         return ZERO;
     }
 
@@ -149,7 +151,7 @@ public final class SimpleScore implements Score<SimpleScore> {
     }
 
     @Override
-    public Number[] toLevelNumbers() {
+    public Number @NonNull [] toLevelNumbers() {
         return new Number[] { score };
     }
 
@@ -168,7 +170,7 @@ public final class SimpleScore implements Score<SimpleScore> {
     }
 
     @Override
-    public int compareTo(SimpleScore other) {
+    public int compareTo(@NonNull SimpleScore other) {
         if (initScore != other.initScore()) {
             return Integer.compare(initScore, other.initScore());
         } else {
@@ -177,7 +179,7 @@ public final class SimpleScore implements Score<SimpleScore> {
     }
 
     @Override
-    public String toShortString() {
+    public @NonNull String toShortString() {
         return ScoreUtil.buildShortString(this, n -> n.intValue() != 0, "");
     }
 

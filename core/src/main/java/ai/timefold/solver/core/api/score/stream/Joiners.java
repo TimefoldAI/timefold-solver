@@ -26,6 +26,8 @@ import ai.timefold.solver.core.impl.score.stream.common.tri.DefaultTriJoiner;
 import ai.timefold.solver.core.impl.score.stream.common.tri.FilteringTriJoiner;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Creates an {@link BiJoiner}, {@link TriJoiner}, ... instance
  * for use in {@link UniConstraintStream#join(Class, BiJoiner)}, ...
@@ -43,9 +45,8 @@ public final class Joiners {
      * As defined by {@link #equal(Function)} with {@link Function#identity()} as the argument.
      *
      * @param <A> the type of both objects
-     * @return never null
      */
-    public static <A> BiJoiner<A, A> equal() {
+    public static <A> @NonNull BiJoiner<A, A> equal() {
         return equal(ConstantLambdaUtils.identity());
     }
 
@@ -55,9 +56,8 @@ public final class Joiners {
      * @param <A> the type of both objects
      * @param <Property_> the type of the property to compare
      * @param mapping mapping function to apply to both A and B
-     * @return never null
      */
-    public static <A, Property_> BiJoiner<A, A> equal(Function<A, Property_> mapping) {
+    public static <A, Property_> @NonNull BiJoiner<A, A> equal(Function<A, Property_> mapping) {
         return equal(mapping, mapping);
     }
 
@@ -73,9 +73,8 @@ public final class Joiners {
      * @param <Property_> the type of the property to compare
      * @param leftMapping mapping function to apply to A
      * @param rightMapping mapping function to apply to B
-     * @return never null
      */
-    public static <A, B, Property_> BiJoiner<A, B> equal(Function<A, Property_> leftMapping,
+    public static <A, B, Property_> @NonNull BiJoiner<A, B> equal(Function<A, Property_> leftMapping,
             Function<B, Property_> rightMapping) {
         return new DefaultBiJoiner<>(leftMapping, JoinerType.EQUAL, rightMapping);
     }
@@ -86,9 +85,9 @@ public final class Joiners {
      * @param mapping mapping function to apply
      * @param <A> the type of both objects
      * @param <Property_> the type of the property to compare
-     * @return never null
      */
-    public static <A, Property_ extends Comparable<Property_>> BiJoiner<A, A> lessThan(Function<A, Property_> mapping) {
+    public static <A, Property_ extends Comparable<Property_>> @NonNull BiJoiner<A, A>
+            lessThan(Function<A, Property_> mapping) {
         return lessThan(mapping, mapping);
     }
 
@@ -105,9 +104,8 @@ public final class Joiners {
      * @param <A> the type of object on the left
      * @param <B> the type of object on the right
      * @param <Property_> the type of the property to compare
-     * @return never null
      */
-    public static <A, B, Property_ extends Comparable<Property_>> BiJoiner<A, B> lessThan(
+    public static <A, B, Property_ extends Comparable<Property_>> @NonNull BiJoiner<A, B> lessThan(
             Function<A, Property_> leftMapping, Function<B, Property_> rightMapping) {
         return new DefaultBiJoiner<>(leftMapping, JoinerType.LESS_THAN, rightMapping);
     }
@@ -118,9 +116,8 @@ public final class Joiners {
      * @param mapping mapping function to apply
      * @param <A> the type of both objects
      * @param <Property_> the type of the property to compare
-     * @return never null
      */
-    public static <A, Property_ extends Comparable<Property_>> BiJoiner<A, A> lessThanOrEqual(
+    public static <A, Property_ extends Comparable<Property_>> @NonNull BiJoiner<A, A> lessThanOrEqual(
             Function<A, Property_> mapping) {
         return lessThanOrEqual(mapping, mapping);
     }
@@ -139,9 +136,8 @@ public final class Joiners {
      * @param <A> the type of object on the left
      * @param <B> the type of object on the right
      * @param <Property_> the type of the property to compare
-     * @return never null
      */
-    public static <A, B, Property_ extends Comparable<Property_>> BiJoiner<A, B> lessThanOrEqual(
+    public static <A, B, Property_ extends Comparable<Property_>> @NonNull BiJoiner<A, B> lessThanOrEqual(
             Function<A, Property_> leftMapping, Function<B, Property_> rightMapping) {
         return new DefaultBiJoiner<>(leftMapping, JoinerType.LESS_THAN_OR_EQUAL, rightMapping);
     }
@@ -152,9 +148,8 @@ public final class Joiners {
      * @param mapping mapping function to apply
      * @param <A> the type of both objects
      * @param <Property_> the type of the property to compare
-     * @return never null
      */
-    public static <A, Property_ extends Comparable<Property_>> BiJoiner<A, A> greaterThan(
+    public static <A, Property_ extends Comparable<Property_>> @NonNull BiJoiner<A, A> greaterThan(
             Function<A, Property_> mapping) {
         return greaterThan(mapping, mapping);
     }
@@ -172,9 +167,8 @@ public final class Joiners {
      * @param <A> the type of object on the left
      * @param <B> the type of object on the right
      * @param <Property_> the type of the property to compare
-     * @return never null
      */
-    public static <A, B, Property_ extends Comparable<Property_>> BiJoiner<A, B> greaterThan(
+    public static <A, B, Property_ extends Comparable<Property_>> @NonNull BiJoiner<A, B> greaterThan(
             Function<A, Property_> leftMapping, Function<B, Property_> rightMapping) {
         return new DefaultBiJoiner<>(leftMapping, JoinerType.GREATER_THAN, rightMapping);
     }
@@ -185,9 +179,8 @@ public final class Joiners {
      * @param mapping mapping function to apply
      * @param <A> the type of both objects
      * @param <Property_> the type of the property to compare
-     * @return never null
      */
-    public static <A, Property_ extends Comparable<Property_>> BiJoiner<A, A> greaterThanOrEqual(
+    public static <A, Property_ extends Comparable<Property_>> @NonNull BiJoiner<A, A> greaterThanOrEqual(
             Function<A, Property_> mapping) {
         return greaterThanOrEqual(mapping, mapping);
     }
@@ -206,9 +199,8 @@ public final class Joiners {
      * @param <A> the type of object on the left
      * @param <B> the type of object on the right
      * @param <Property_> the type of the property to compare
-     * @return never null
      */
-    public static <A, B, Property_ extends Comparable<Property_>> BiJoiner<A, B> greaterThanOrEqual(
+    public static <A, B, Property_ extends Comparable<Property_>> @NonNull BiJoiner<A, B> greaterThanOrEqual(
             Function<A, Property_> leftMapping, Function<B, Property_> rightMapping) {
         return new DefaultBiJoiner<>(leftMapping, JoinerType.GREATER_THAN_OR_EQUAL, rightMapping);
     }
@@ -220,12 +212,11 @@ public final class Joiners {
      * with filter being {@code age == 20},
      * this joiner will produce pairs {@code (Ann, Ann), (Ann, Eric), (Eric, Ann), (Eric, Eric)}.
      *
-     * @param filter never null, filter to apply
+     * @param filter filter to apply
      * @param <A> type of the first fact in the tuple
      * @param <B> type of the second fact in the tuple
-     * @return never null
      */
-    public static <A, B> BiJoiner<A, B> filtering(BiPredicate<A, B> filter) {
+    public static <A, B> @NonNull BiJoiner<A, B> filtering(@NonNull BiPredicate<A, B> filter) {
         return new FilteringBiJoiner<>(filter);
     }
 
@@ -243,9 +234,8 @@ public final class Joiners {
      * @param endMapping maps the argument to the end point of its interval (exclusive)
      * @param <A> the type of both the first and second argument
      * @param <Property_> the type used to define the interval, comparable
-     * @return never null
      */
-    public static <A, Property_ extends Comparable<Property_>> BiJoiner<A, A> overlapping(
+    public static <A, Property_ extends Comparable<Property_>> @NonNull BiJoiner<A, A> overlapping(
             Function<A, Property_> startMapping, Function<A, Property_> endMapping) {
         return overlapping(startMapping, endMapping, startMapping, endMapping);
     }
@@ -260,9 +250,8 @@ public final class Joiners {
      * @param <A> the type of the first argument
      * @param <B> the type of the second argument
      * @param <Property_> the type used to define the interval, comparable
-     * @return never null
      */
-    public static <A, B, Property_ extends Comparable<Property_>> BiJoiner<A, B> overlapping(
+    public static <A, B, Property_ extends Comparable<Property_>> @NonNull BiJoiner<A, B> overlapping(
             Function<A, Property_> leftStartMapping, Function<A, Property_> leftEndMapping,
             Function<B, Property_> rightStartMapping, Function<B, Property_> rightEndMapping) {
         return Joiners.lessThan(leftStartMapping, rightEndMapping)
@@ -282,9 +271,8 @@ public final class Joiners {
      * @param <Property_> the type of the property to compare
      * @param leftMapping mapping function to apply to (A,B)
      * @param rightMapping mapping function to apply to C
-     * @return never null
      */
-    public static <A, B, C, Property_> TriJoiner<A, B, C> equal(BiFunction<A, B, Property_> leftMapping,
+    public static <A, B, C, Property_> @NonNull TriJoiner<A, B, C> equal(BiFunction<A, B, Property_> leftMapping,
             Function<C, Property_> rightMapping) {
         return new DefaultTriJoiner<>(leftMapping, JoinerType.EQUAL, rightMapping);
     }
@@ -298,9 +286,8 @@ public final class Joiners {
      * @param <B> the type of the second object on the left
      * @param <C> the type of object on the right
      * @param <Property_> the type of the property to compare
-     * @return never null
      */
-    public static <A, B, C, Property_ extends Comparable<Property_>> TriJoiner<A, B, C> lessThan(
+    public static <A, B, C, Property_ extends Comparable<Property_>> @NonNull TriJoiner<A, B, C> lessThan(
             BiFunction<A, B, Property_> leftMapping, Function<C, Property_> rightMapping) {
         return new DefaultTriJoiner<>(leftMapping, JoinerType.LESS_THAN, rightMapping);
     }
@@ -314,9 +301,8 @@ public final class Joiners {
      * @param <B> the type of the second object on the left
      * @param <C> the type of object on the right
      * @param <Property_> the type of the property to compare
-     * @return never null
      */
-    public static <A, B, C, Property_ extends Comparable<Property_>> TriJoiner<A, B, C> lessThanOrEqual(
+    public static <A, B, C, Property_ extends Comparable<Property_>> @NonNull TriJoiner<A, B, C> lessThanOrEqual(
             BiFunction<A, B, Property_> leftMapping, Function<C, Property_> rightMapping) {
         return new DefaultTriJoiner<>(leftMapping, JoinerType.LESS_THAN_OR_EQUAL, rightMapping);
     }
@@ -330,9 +316,8 @@ public final class Joiners {
      * @param <B> the type of the second object on the left
      * @param <C> the type of object on the right
      * @param <Property_> the type of the property to compare
-     * @return never null
      */
-    public static <A, B, C, Property_ extends Comparable<Property_>> TriJoiner<A, B, C> greaterThan(
+    public static <A, B, C, Property_ extends Comparable<Property_>> @NonNull TriJoiner<A, B, C> greaterThan(
             BiFunction<A, B, Property_> leftMapping, Function<C, Property_> rightMapping) {
         return new DefaultTriJoiner<>(leftMapping, JoinerType.GREATER_THAN, rightMapping);
     }
@@ -346,9 +331,8 @@ public final class Joiners {
      * @param <B> the type of the second object on the left
      * @param <C> the type of object on the right
      * @param <Property_> the type of the property to compare
-     * @return never null
      */
-    public static <A, B, C, Property_ extends Comparable<Property_>> TriJoiner<A, B, C> greaterThanOrEqual(
+    public static <A, B, C, Property_ extends Comparable<Property_>> @NonNull TriJoiner<A, B, C> greaterThanOrEqual(
             BiFunction<A, B, Property_> leftMapping, Function<C, Property_> rightMapping) {
         return new DefaultTriJoiner<>(leftMapping, JoinerType.GREATER_THAN_OR_EQUAL, rightMapping);
     }
@@ -356,13 +340,12 @@ public final class Joiners {
     /**
      * As defined by {@link #filtering(BiPredicate)}.
      *
-     * @param filter never null, filter to apply
+     * @param filter filter to apply
      * @param <A> type of the first fact in the tuple
      * @param <B> type of the second fact in the tuple
      * @param <C> type of the third fact in the tuple
-     * @return never null
      */
-    public static <A, B, C> TriJoiner<A, B, C> filtering(TriPredicate<A, B, C> filter) {
+    public static <A, B, C> @NonNull TriJoiner<A, B, C> filtering(@NonNull TriPredicate<A, B, C> filter) {
         return new FilteringTriJoiner<>(filter);
     }
 
@@ -377,9 +360,8 @@ public final class Joiners {
      * @param <B> the type of the second argument
      * @param <C> the type of the third argument
      * @param <Property_> the type used to define the interval, comparable
-     * @return never null
      */
-    public static <A, B, C, Property_ extends Comparable<Property_>> TriJoiner<A, B, C> overlapping(
+    public static <A, B, C, Property_ extends Comparable<Property_>> @NonNull TriJoiner<A, B, C> overlapping(
             BiFunction<A, B, Property_> leftStartMapping, BiFunction<A, B, Property_> leftEndMapping,
             Function<C, Property_> rightStartMapping, Function<C, Property_> rightEndMapping) {
         return Joiners.lessThan(leftStartMapping, rightEndMapping)
@@ -400,9 +382,8 @@ public final class Joiners {
      * @param <Property_> the type of the property to compare
      * @param leftMapping mapping function to apply to (A, B, C)
      * @param rightMapping mapping function to apply to D
-     * @return never null
      */
-    public static <A, B, C, D, Property_> QuadJoiner<A, B, C, D> equal(
+    public static <A, B, C, D, Property_> @NonNull QuadJoiner<A, B, C, D> equal(
             TriFunction<A, B, C, Property_> leftMapping, Function<D, Property_> rightMapping) {
         return new DefaultQuadJoiner<>(leftMapping, JoinerType.EQUAL, rightMapping);
     }
@@ -417,9 +398,8 @@ public final class Joiners {
      * @param <C> the type of the third object on the left
      * @param <D> the type of object on the right
      * @param <Property_> the type of the property to compare
-     * @return never null
      */
-    public static <A, B, C, D, Property_ extends Comparable<Property_>> QuadJoiner<A, B, C, D> lessThan(
+    public static <A, B, C, D, Property_ extends Comparable<Property_>> @NonNull QuadJoiner<A, B, C, D> lessThan(
             TriFunction<A, B, C, Property_> leftMapping, Function<D, Property_> rightMapping) {
         return new DefaultQuadJoiner<>(leftMapping, JoinerType.LESS_THAN, rightMapping);
     }
@@ -434,9 +414,8 @@ public final class Joiners {
      * @param <C> the type of the third object on the left
      * @param <D> the type of object on the right
      * @param <Property_> the type of the property to compare
-     * @return never null
      */
-    public static <A, B, C, D, Property_ extends Comparable<Property_>> QuadJoiner<A, B, C, D> lessThanOrEqual(
+    public static <A, B, C, D, Property_ extends Comparable<Property_>> @NonNull QuadJoiner<A, B, C, D> lessThanOrEqual(
             TriFunction<A, B, C, Property_> leftMapping, Function<D, Property_> rightMapping) {
         return new DefaultQuadJoiner<>(leftMapping, JoinerType.LESS_THAN_OR_EQUAL, rightMapping);
     }
@@ -451,9 +430,8 @@ public final class Joiners {
      * @param <C> the type of the third object on the left
      * @param <D> the type of object on the right
      * @param <Property_> the type of the property to compare
-     * @return never null
      */
-    public static <A, B, C, D, Property_ extends Comparable<Property_>> QuadJoiner<A, B, C, D> greaterThan(
+    public static <A, B, C, D, Property_ extends Comparable<Property_>> @NonNull QuadJoiner<A, B, C, D> greaterThan(
             TriFunction<A, B, C, Property_> leftMapping, Function<D, Property_> rightMapping) {
         return new DefaultQuadJoiner<>(leftMapping, JoinerType.GREATER_THAN, rightMapping);
     }
@@ -468,9 +446,8 @@ public final class Joiners {
      * @param <C> the type of the third object on the left
      * @param <D> the type of object on the right
      * @param <Property_> the type of the property to compare
-     * @return never null
      */
-    public static <A, B, C, D, Property_ extends Comparable<Property_>> QuadJoiner<A, B, C, D> greaterThanOrEqual(
+    public static <A, B, C, D, Property_ extends Comparable<Property_>> @NonNull QuadJoiner<A, B, C, D> greaterThanOrEqual(
             TriFunction<A, B, C, Property_> leftMapping, Function<D, Property_> rightMapping) {
         return new DefaultQuadJoiner<>(leftMapping, JoinerType.GREATER_THAN_OR_EQUAL, rightMapping);
     }
@@ -478,14 +455,13 @@ public final class Joiners {
     /**
      * As defined by {@link #filtering(BiPredicate)}.
      *
-     * @param filter never null, filter to apply
+     * @param filter filter to apply
      * @param <A> type of the first fact in the tuple
      * @param <B> type of the second fact in the tuple
      * @param <C> type of the third fact in the tuple
      * @param <D> type of the fourth fact in the tuple
-     * @return never null
      */
-    public static <A, B, C, D> QuadJoiner<A, B, C, D> filtering(QuadPredicate<A, B, C, D> filter) {
+    public static <A, B, C, D> @NonNull QuadJoiner<A, B, C, D> filtering(@NonNull QuadPredicate<A, B, C, D> filter) {
         return new FilteringQuadJoiner<>(filter);
     }
 
@@ -501,9 +477,8 @@ public final class Joiners {
      * @param <C> the type of the third argument
      * @param <D> the type of the fourth argument
      * @param <Property_> the type used to define the interval, comparable
-     * @return never null
      */
-    public static <A, B, C, D, Property_ extends Comparable<Property_>> QuadJoiner<A, B, C, D> overlapping(
+    public static <A, B, C, D, Property_ extends Comparable<Property_>> @NonNull QuadJoiner<A, B, C, D> overlapping(
             TriFunction<A, B, C, Property_> leftStartMapping, TriFunction<A, B, C, Property_> leftEndMapping,
             Function<D, Property_> rightStartMapping, Function<D, Property_> rightEndMapping) {
         return Joiners.lessThan(leftStartMapping, rightEndMapping)
@@ -525,9 +500,8 @@ public final class Joiners {
      * @param <Property_> the type of the property to compare
      * @param leftMapping mapping function to apply to (A,B,C,D)
      * @param rightMapping mapping function to apply to E
-     * @return never null
      */
-    public static <A, B, C, D, E, Property_> PentaJoiner<A, B, C, D, E> equal(
+    public static <A, B, C, D, E, Property_> @NonNull PentaJoiner<A, B, C, D, E> equal(
             QuadFunction<A, B, C, D, Property_> leftMapping, Function<E, Property_> rightMapping) {
         return new DefaultPentaJoiner<>(leftMapping, JoinerType.EQUAL, rightMapping);
     }
@@ -543,9 +517,8 @@ public final class Joiners {
      * @param <D> the type of the fourth object on the left
      * @param <E> the type of object on the right
      * @param <Property_> the type of the property to compare
-     * @return never null
      */
-    public static <A, B, C, D, E, Property_ extends Comparable<Property_>> PentaJoiner<A, B, C, D, E> lessThan(
+    public static <A, B, C, D, E, Property_ extends Comparable<Property_>> @NonNull PentaJoiner<A, B, C, D, E> lessThan(
             QuadFunction<A, B, C, D, Property_> leftMapping, Function<E, Property_> rightMapping) {
         return new DefaultPentaJoiner<>(leftMapping, JoinerType.LESS_THAN, rightMapping);
     }
@@ -561,9 +534,8 @@ public final class Joiners {
      * @param <D> the type of the fourth object on the left
      * @param <E> the type of object on the right
      * @param <Property_> the type of the property to compare
-     * @return never null
      */
-    public static <A, B, C, D, E, Property_ extends Comparable<Property_>> PentaJoiner<A, B, C, D, E> lessThanOrEqual(
+    public static <A, B, C, D, E, Property_ extends Comparable<Property_>> @NonNull PentaJoiner<A, B, C, D, E> lessThanOrEqual(
             QuadFunction<A, B, C, D, Property_> leftMapping, Function<E, Property_> rightMapping) {
         return new DefaultPentaJoiner<>(leftMapping, JoinerType.LESS_THAN_OR_EQUAL, rightMapping);
     }
@@ -579,9 +551,8 @@ public final class Joiners {
      * @param <D> the type of the fourth object on the left
      * @param <E> the type of object on the right
      * @param <Property_> the type of the property to compare
-     * @return never null
      */
-    public static <A, B, C, D, E, Property_ extends Comparable<Property_>> PentaJoiner<A, B, C, D, E> greaterThan(
+    public static <A, B, C, D, E, Property_ extends Comparable<Property_>> @NonNull PentaJoiner<A, B, C, D, E> greaterThan(
             QuadFunction<A, B, C, D, Property_> leftMapping, Function<E, Property_> rightMapping) {
         return new DefaultPentaJoiner<>(leftMapping, JoinerType.GREATER_THAN, rightMapping);
     }
@@ -597,25 +568,24 @@ public final class Joiners {
      * @param <D> the type of the fourth object on the left
      * @param <E> the type of object on the right
      * @param <Property_> the type of the property to compare
-     * @return never null
      */
-    public static <A, B, C, D, E, Property_ extends Comparable<Property_>> PentaJoiner<A, B, C, D, E> greaterThanOrEqual(
-            QuadFunction<A, B, C, D, Property_> leftMapping, Function<E, Property_> rightMapping) {
+    public static <A, B, C, D, E, Property_ extends Comparable<Property_>> @NonNull PentaJoiner<A, B, C, D, E>
+            greaterThanOrEqual(
+                    QuadFunction<A, B, C, D, Property_> leftMapping, Function<E, Property_> rightMapping) {
         return new DefaultPentaJoiner<>(leftMapping, JoinerType.GREATER_THAN_OR_EQUAL, rightMapping);
     }
 
     /**
      * As defined by {@link #filtering(BiPredicate)}.
      *
-     * @param filter never null, filter to apply
+     * @param filter filter to apply
      * @param <A> the type of the first object on the left
      * @param <B> the type of the second object on the left
      * @param <C> the type of the third object on the left
      * @param <D> the type of the fourth object on the left
      * @param <E> the type of object on the right
-     * @return never null
      */
-    public static <A, B, C, D, E> PentaJoiner<A, B, C, D, E> filtering(PentaPredicate<A, B, C, D, E> filter) {
+    public static <A, B, C, D, E> @NonNull PentaJoiner<A, B, C, D, E> filtering(@NonNull PentaPredicate<A, B, C, D, E> filter) {
         return new FilteringPentaJoiner<>(filter);
     }
 
@@ -632,9 +602,8 @@ public final class Joiners {
      * @param <D> the type of the fourth argument
      * @param <E> the type of the fifth argument
      * @param <Property_> the type used to define the interval, comparable
-     * @return never null
      */
-    public static <A, B, C, D, E, Property_ extends Comparable<Property_>> PentaJoiner<A, B, C, D, E> overlapping(
+    public static <A, B, C, D, E, Property_ extends Comparable<Property_>> @NonNull PentaJoiner<A, B, C, D, E> overlapping(
             QuadFunction<A, B, C, D, Property_> leftStartMapping, QuadFunction<A, B, C, D, Property_> leftEndMapping,
             Function<E, Property_> rightStartMapping, Function<E, Property_> rightEndMapping) {
         return Joiners.lessThan(leftStartMapping, rightEndMapping)

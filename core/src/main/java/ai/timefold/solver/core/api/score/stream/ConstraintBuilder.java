@@ -4,6 +4,8 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 
+import org.jspecify.annotations.NonNull;
+
 public interface ConstraintBuilder {
 
     /**
@@ -11,10 +13,9 @@ public interface ConstraintBuilder {
      * The {@link ConstraintRef#packageName() constraint package} defaults to the package of the {@link PlanningSolution} class.
      * The constraint will be placed in the {@link Constraint#DEFAULT_CONSTRAINT_GROUP default constraint group}.
      *
-     * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
-     * @return never null
+     * @param constraintName shows up in {@link ConstraintMatchTotal} during score justification
      */
-    default Constraint asConstraint(String constraintName) {
+    default @NonNull Constraint asConstraint(@NonNull String constraintName) {
         return asConstraintDescribed(constraintName, "");
     }
 
@@ -23,11 +24,10 @@ public interface ConstraintBuilder {
      * The {@link ConstraintRef#packageName() constraint package} defaults to the package of the {@link PlanningSolution} class.
      * The constraint will be placed in the {@link Constraint#DEFAULT_CONSTRAINT_GROUP default constraint group}.
      *
-     * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
-     * @param constraintDescription never null
-     * @return never null
+     * @param constraintName shows up in {@link ConstraintMatchTotal} during score justification
      */
-    default Constraint asConstraintDescribed(String constraintName, String constraintDescription) {
+    @NonNull
+    default Constraint asConstraintDescribed(@NonNull String constraintName, @NonNull String constraintDescription) {
         return asConstraintDescribed(constraintName, constraintDescription, Constraint.DEFAULT_CONSTRAINT_GROUP);
     }
 
@@ -35,12 +35,12 @@ public interface ConstraintBuilder {
      * Builds a {@link Constraint} from the constraint stream.
      * The {@link ConstraintRef#packageName() constraint package} defaults to the package of the {@link PlanningSolution} class.
      *
-     * @param constraintName never null, shows up in {@link ConstraintMatchTotal} during score justification
-     * @param constraintDescription never null
-     * @param constraintGroup never null, only allows alphanumeric characters, "-" and "_"
-     * @return never null
+     * @param constraintName shows up in {@link ConstraintMatchTotal} during score justification
+     * @param constraintGroup only allows alphanumeric characters, "-" and "_"
      */
-    Constraint asConstraintDescribed(String constraintName, String constraintDescription, String constraintGroup);
+    @NonNull
+    Constraint asConstraintDescribed(@NonNull String constraintName, @NonNull String constraintDescription,
+            @NonNull String constraintGroup);
 
     /**
      * Builds a {@link Constraint} from the constraint stream.

@@ -3,6 +3,8 @@ package ai.timefold.solver.core.api.score.stream.quad;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Created with {@link Joiners}.
  * Used by {@link TriConstraintStream#join(Class, QuadJoiner)}, ...
@@ -11,6 +13,7 @@ import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
  */
 public interface QuadJoiner<A, B, C, D> {
 
-    QuadJoiner<A, B, C, D> and(QuadJoiner<A, B, C, D> otherJoiner);
+    @NonNull
+    QuadJoiner<A, B, C, D> and(@NonNull QuadJoiner<A, B, C, D> otherJoiner);
 
 }

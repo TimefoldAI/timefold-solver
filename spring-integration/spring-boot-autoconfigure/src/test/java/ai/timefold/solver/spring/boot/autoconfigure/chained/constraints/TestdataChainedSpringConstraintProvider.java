@@ -8,10 +8,12 @@ import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.spring.boot.autoconfigure.chained.domain.TestdataChainedSpringAnchor;
 import ai.timefold.solver.spring.boot.autoconfigure.chained.domain.TestdataChainedSpringEntity;
 
+import org.jspecify.annotations.NonNull;
+
 public class TestdataChainedSpringConstraintProvider implements ConstraintProvider {
 
     @Override
-    public Constraint[] defineConstraints(ConstraintFactory factory) {
+    public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory factory) {
         return new Constraint[] {
                 factory.forEach(TestdataChainedSpringAnchor.class)
                         .ifNotExists(TestdataChainedSpringEntity.class,

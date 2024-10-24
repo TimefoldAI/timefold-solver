@@ -7,6 +7,8 @@ import java.util.function.ToLongFunction;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Calculates the unfairness measure for a particular input.
  * It is the result
@@ -23,8 +25,8 @@ public interface LoadBalance<Balanced_> {
      * For use in justifications, create a defensive copy of the map;
      * the map itself is mutable and will be mutated by the constraint collector.
      *
-     * @return never null
      */
+    @NonNull
     Map<Balanced_, Long> loads();
 
     /**
@@ -36,8 +38,9 @@ public interface LoadBalance<Balanced_> {
      * Comparing unfairness between solutions of different input problems is not helpful.
      * Only compare unfairness measures of solutions which have the same set of balanced items as input.
      *
-     * @return never null, never negative, six decimal places
+     * @return never negative, six decimal places
      */
+    @NonNull
     BigDecimal unfairness();
 
 }

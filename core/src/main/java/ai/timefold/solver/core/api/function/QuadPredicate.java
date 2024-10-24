@@ -3,6 +3,8 @@ package ai.timefold.solver.core.api.function;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Represents a predicate (boolean-valued function) of four arguments.
  * This is the four-arity specialization of {@link Predicate}.
@@ -49,7 +51,7 @@ public interface QuadPredicate<A, B, C, D> {
      *         AND of this predicate and the {@code other} predicate
      * @throws NullPointerException if other is null
      */
-    default QuadPredicate<A, B, C, D> and(QuadPredicate<? super A, ? super B, ? super C, ? super D> other) {
+    default @NonNull QuadPredicate<A, B, C, D> and(@NonNull QuadPredicate<? super A, ? super B, ? super C, ? super D> other) {
         Objects.requireNonNull(other);
         return (A a, B b, C c, D d) -> test(a, b, c, d) && other.test(a, b, c, d);
     }
@@ -81,7 +83,7 @@ public interface QuadPredicate<A, B, C, D> {
      *         OR of this predicate and the {@code other} predicate
      * @throws NullPointerException if other is null
      */
-    default QuadPredicate<A, B, C, D> or(QuadPredicate<? super A, ? super B, ? super C, ? super D> other) {
+    default @NonNull QuadPredicate<A, B, C, D> or(@NonNull QuadPredicate<? super A, ? super B, ? super C, ? super D> other) {
         Objects.requireNonNull(other);
         return (A a, B b, C c, D d) -> test(a, b, c, d) || other.test(a, b, c, d);
     }

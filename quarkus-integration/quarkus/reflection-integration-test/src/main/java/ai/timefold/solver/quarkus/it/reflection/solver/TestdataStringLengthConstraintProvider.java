@@ -7,10 +7,12 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.quarkus.it.reflection.domain.TestdataReflectionEntity;
 
+import org.jspecify.annotations.NonNull;
+
 public class TestdataStringLengthConstraintProvider implements ConstraintProvider {
 
     @Override
-    public Constraint[] defineConstraints(ConstraintFactory factory) {
+    public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory factory) {
         return new Constraint[] {
                 factory.forEach(TestdataReflectionEntity.class)
                         .join(TestdataReflectionEntity.class, Joiners.equal(TestdataReflectionEntity::getMethodValue))

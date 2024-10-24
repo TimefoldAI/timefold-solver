@@ -5,9 +5,11 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 
+import org.jspecify.annotations.NonNull;
+
 public class TestdataEasyScoreCalculator implements EasyScoreCalculator<TestdataSolution, SimpleScore> {
     @Override
-    public SimpleScore calculateScore(TestdataSolution solution) {
+    public @NonNull SimpleScore calculateScore(@NonNull TestdataSolution solution) {
         int score = 0;
         for (TestdataEntity left : solution.getEntityList()) {
             TestdataValue value = left.getValue();

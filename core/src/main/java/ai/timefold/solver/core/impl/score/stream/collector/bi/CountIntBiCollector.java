@@ -7,6 +7,8 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.IntCounter;
 
+import org.jspecify.annotations.NonNull;
+
 final class CountIntBiCollector<A, B> implements BiConstraintCollector<A, B, IntCounter, Integer> {
     private final static CountIntBiCollector<?, ?> INSTANCE = new CountIntBiCollector<>();
 
@@ -19,12 +21,12 @@ final class CountIntBiCollector<A, B> implements BiConstraintCollector<A, B, Int
     }
 
     @Override
-    public Supplier<IntCounter> supplier() {
+    public @NonNull Supplier<IntCounter> supplier() {
         return IntCounter::new;
     }
 
     @Override
-    public TriFunction<IntCounter, A, B, Runnable> accumulator() {
+    public @NonNull TriFunction<IntCounter, A, B, Runnable> accumulator() {
         return (counter, a, b) -> {
             counter.increment();
             return counter::decrement;
@@ -32,7 +34,7 @@ final class CountIntBiCollector<A, B> implements BiConstraintCollector<A, B, Int
     }
 
     @Override
-    public Function<IntCounter, Integer> finisher() {
+    public @NonNull Function<IntCounter, Integer> finisher() {
         return IntCounter::result;
     }
 }

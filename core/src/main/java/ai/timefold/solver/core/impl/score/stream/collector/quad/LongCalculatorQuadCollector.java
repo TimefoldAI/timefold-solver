@@ -8,6 +8,8 @@ import ai.timefold.solver.core.api.function.ToLongQuadFunction;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.LongCalculator;
 
+import org.jspecify.annotations.NonNull;
+
 abstract sealed class LongCalculatorQuadCollector<A, B, C, D, Output_, Calculator_ extends LongCalculator<Output_>>
         implements QuadConstraintCollector<A, B, C, D, Calculator_, Output_>
         permits AverageLongQuadCollector, SumLongQuadCollector {
@@ -18,7 +20,7 @@ abstract sealed class LongCalculatorQuadCollector<A, B, C, D, Output_, Calculato
     }
 
     @Override
-    public PentaFunction<Calculator_, A, B, C, D, Runnable> accumulator() {
+    public @NonNull PentaFunction<Calculator_, A, B, C, D, Runnable> accumulator() {
         return (calculator, a, b, c, d) -> {
             final long mapped = mapper.applyAsLong(a, b, c, d);
             calculator.insert(mapped);
@@ -27,7 +29,7 @@ abstract sealed class LongCalculatorQuadCollector<A, B, C, D, Output_, Calculato
     }
 
     @Override
-    public Function<Calculator_, Output_> finisher() {
+    public @NonNull Function<Calculator_, Output_> finisher() {
         return LongCalculator::result;
     }
 

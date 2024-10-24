@@ -8,10 +8,12 @@ import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.quarkus.testdata.chained.domain.TestdataChainedQuarkusAnchor;
 import ai.timefold.solver.quarkus.testdata.chained.domain.TestdataChainedQuarkusEntity;
 
+import org.jspecify.annotations.NonNull;
+
 public class TestdataChainedQuarkusConstraintProvider implements ConstraintProvider {
 
     @Override
-    public Constraint[] defineConstraints(ConstraintFactory factory) {
+    public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory factory) {
         return new Constraint[] {
                 factory.forEach(TestdataChainedQuarkusAnchor.class)
                         .ifNotExists(TestdataChainedQuarkusEntity.class,

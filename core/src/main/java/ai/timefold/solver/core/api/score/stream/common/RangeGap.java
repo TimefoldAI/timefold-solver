@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.api.score.stream.common;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * A {@link RangeGap} is a gap between two consecutive {@link ConnectedRange}s.
  * For instance, the list [(1,3),(2,4),(3,5),(7,8)] has a grap of length 2 between 5 and 7.
@@ -12,16 +14,18 @@ public interface RangeGap<Point_ extends Comparable<Point_>, Difference_ extends
      * Return the end of the {@link ConnectedRange} before this gap.
      * For the gap between 6 and 10, this will return 6.
      *
-     * @return never null, the item this gap is directly after
+     * @return the item this gap is directly after
      */
+    @NonNull
     Point_ getPreviousRangeEnd();
 
     /**
      * Return the start of the {@link ConnectedRange} after this gap.
      * For the gap between 6 and 10, this will return 10.
      *
-     * @return never null, the item this gap is directly before
+     * @return the item this gap is directly before
      */
+    @NonNull
     Point_ getNextRangeStart();
 
     /**
@@ -29,7 +33,8 @@ public interface RangeGap<Point_ extends Comparable<Point_>, Difference_ extends
      * between {@link #getNextRangeStart()} and {@link #getPreviousRangeEnd()}.
      * For the gap between 6 and 10, this will return 4.
      *
-     * @return never null, the length of this break
+     * @return the length of this break
      */
+    @NonNull
     Difference_ getLength();
 }

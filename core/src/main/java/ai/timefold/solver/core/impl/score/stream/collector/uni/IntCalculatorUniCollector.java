@@ -8,6 +8,9 @@ import java.util.function.ToIntFunction;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.IntCalculator;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 abstract sealed class IntCalculatorUniCollector<A, Output_, Calculator_ extends IntCalculator<Output_>>
         implements UniConstraintCollector<A, Calculator_, Output_> permits AverageIntUniCollector, SumIntUniCollector {
     private final ToIntFunction<? super A> mapper;
@@ -17,7 +20,7 @@ abstract sealed class IntCalculatorUniCollector<A, Output_, Calculator_ extends 
     }
 
     @Override
-    public BiFunction<Calculator_, A, Runnable> accumulator() {
+    public @NonNull BiFunction<Calculator_, A, Runnable> accumulator() {
         return (calculator, a) -> {
             final int mapped = mapper.applyAsInt(a);
             calculator.insert(mapped);
@@ -26,7 +29,7 @@ abstract sealed class IntCalculatorUniCollector<A, Output_, Calculator_ extends 
     }
 
     @Override
-    public Function<Calculator_, Output_> finisher() {
+    public @Nullable Function<Calculator_, Output_> finisher() {
         return IntCalculator::result;
     }
 

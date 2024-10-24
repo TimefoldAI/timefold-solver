@@ -21,6 +21,8 @@ import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
+import org.jspecify.annotations.NonNull;
+
 public interface InnerTriConstraintStream<A, B, C> extends TriConstraintStream<A, B, C> {
 
     static <A, B, C> QuadFunction<A, B, C, Score<?>, DefaultConstraintJustification> createDefaultJustificationMapping() {
@@ -42,7 +44,8 @@ public interface InnerTriConstraintStream<A, B, C> extends TriConstraintStream<A
     boolean guaranteesDistinct();
 
     @Override
-    default <D> QuadConstraintStream<A, B, C, D> join(Class<D> otherClass, QuadJoiner<A, B, C, D>... joiners) {
+    default @NonNull <D> QuadConstraintStream<A, B, C, D> join(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> @NonNull... joiners) {
         if (getRetrievalSemantics() == STANDARD) {
             return join(getConstraintFactory().forEach(otherClass), joiners);
         } else {
@@ -51,7 +54,8 @@ public interface InnerTriConstraintStream<A, B, C> extends TriConstraintStream<A
     }
 
     @Override
-    default <D> TriConstraintStream<A, B, C> ifExists(Class<D> otherClass, QuadJoiner<A, B, C, D>... joiners) {
+    default @NonNull <D> TriConstraintStream<A, B, C> ifExists(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> @NonNull... joiners) {
         if (getRetrievalSemantics() == STANDARD) {
             return ifExists(getConstraintFactory().forEach(otherClass), joiners);
         } else {
@@ -61,8 +65,8 @@ public interface InnerTriConstraintStream<A, B, C> extends TriConstraintStream<A
     }
 
     @Override
-    default <D> TriConstraintStream<A, B, C> ifExistsIncludingUnassigned(Class<D> otherClass,
-            QuadJoiner<A, B, C, D>... joiners) {
+    default @NonNull <D> TriConstraintStream<A, B, C> ifExistsIncludingUnassigned(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> @NonNull... joiners) {
         if (getRetrievalSemantics() == STANDARD) {
             return ifExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
         } else {
@@ -71,7 +75,8 @@ public interface InnerTriConstraintStream<A, B, C> extends TriConstraintStream<A
     }
 
     @Override
-    default <D> TriConstraintStream<A, B, C> ifNotExists(Class<D> otherClass, QuadJoiner<A, B, C, D>... joiners) {
+    default @NonNull <D> TriConstraintStream<A, B, C> ifNotExists(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> @NonNull... joiners) {
         if (getRetrievalSemantics() == STANDARD) {
             return ifNotExists(getConstraintFactory().forEach(otherClass), joiners);
         } else {
@@ -81,8 +86,8 @@ public interface InnerTriConstraintStream<A, B, C> extends TriConstraintStream<A
     }
 
     @Override
-    default <D> TriConstraintStream<A, B, C> ifNotExistsIncludingUnassigned(Class<D> otherClass,
-            QuadJoiner<A, B, C, D>... joiners) {
+    default @NonNull <D> TriConstraintStream<A, B, C> ifNotExistsIncludingUnassigned(@NonNull Class<D> otherClass,
+            @NonNull QuadJoiner<A, B, C, D> @NonNull... joiners) {
         if (getRetrievalSemantics() == STANDARD) {
             return ifNotExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
         } else {
@@ -91,7 +96,7 @@ public interface InnerTriConstraintStream<A, B, C> extends TriConstraintStream<A
     }
 
     @Override
-    default TriConstraintStream<A, B, C> distinct() {
+    default @NonNull TriConstraintStream<A, B, C> distinct() {
         if (guaranteesDistinct()) {
             return this;
         } else {
@@ -102,20 +107,23 @@ public interface InnerTriConstraintStream<A, B, C> extends TriConstraintStream<A
     }
 
     @Override
-    default <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> penalize(Score_ constraintWeight,
-            ToIntTriFunction<A, B, C> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> penalize(
+            @NonNull Score_ constraintWeight,
+            @NonNull ToIntTriFunction<A, B, C> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.PENALTY);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> penalizeLong(Score_ constraintWeight,
-            ToLongTriFunction<A, B, C> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> penalizeLong(
+            @NonNull Score_ constraintWeight,
+            @NonNull ToLongTriFunction<A, B, C> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.PENALTY);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> penalizeBigDecimal(Score_ constraintWeight,
-            TriFunction<A, B, C, BigDecimal> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> penalizeBigDecimal(
+            @NonNull Score_ constraintWeight,
+            @NonNull TriFunction<A, B, C, BigDecimal> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.PENALTY);
     }
 
@@ -135,20 +143,23 @@ public interface InnerTriConstraintStream<A, B, C> extends TriConstraintStream<A
     }
 
     @Override
-    default <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> reward(Score_ constraintWeight,
-            ToIntTriFunction<A, B, C> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> reward(
+            @NonNull Score_ constraintWeight,
+            @NonNull ToIntTriFunction<A, B, C> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.REWARD);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> rewardLong(Score_ constraintWeight,
-            ToLongTriFunction<A, B, C> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> rewardLong(
+            @NonNull Score_ constraintWeight,
+            @NonNull ToLongTriFunction<A, B, C> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.REWARD);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> rewardBigDecimal(Score_ constraintWeight,
-            TriFunction<A, B, C, BigDecimal> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> rewardBigDecimal(
+            @NonNull Score_ constraintWeight,
+            @NonNull TriFunction<A, B, C, BigDecimal> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.REWARD);
     }
 
@@ -168,20 +179,23 @@ public interface InnerTriConstraintStream<A, B, C> extends TriConstraintStream<A
     }
 
     @Override
-    default <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> impact(Score_ constraintWeight,
-            ToIntTriFunction<A, B, C> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> impact(
+            @NonNull Score_ constraintWeight,
+            @NonNull ToIntTriFunction<A, B, C> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.MIXED);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> impactLong(Score_ constraintWeight,
-            ToLongTriFunction<A, B, C> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> impactLong(
+            @NonNull Score_ constraintWeight,
+            @NonNull ToLongTriFunction<A, B, C> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.MIXED);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> impactBigDecimal(Score_ constraintWeight,
-            TriFunction<A, B, C, BigDecimal> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> TriConstraintBuilder<A, B, C, Score_> impactBigDecimal(
+            @NonNull Score_ constraintWeight,
+            @NonNull TriFunction<A, B, C, BigDecimal> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.MIXED);
     }
 
@@ -213,61 +227,64 @@ public interface InnerTriConstraintStream<A, B, C> extends TriConstraintStream<A
             ScoreImpactType scoreImpactType);
 
     @Override
-    default Constraint penalize(String constraintName, Score<?> constraintWeight) {
+    default @NonNull Constraint penalize(@NonNull String constraintName, @NonNull Score<?> constraintWeight) {
         return penalize((Score) constraintWeight)
                 .asConstraint(constraintName);
     }
 
     @Override
-    default Constraint penalize(String constraintPackage, String constraintName, Score<?> constraintWeight) {
+    default @NonNull Constraint penalize(@NonNull String constraintPackage, @NonNull String constraintName,
+            @NonNull Score<?> constraintWeight) {
         return penalize((Score) constraintWeight)
                 .asConstraint(constraintPackage, constraintName);
     }
 
     @Override
-    default Constraint penalizeConfigurable(String constraintName) {
+    default @NonNull Constraint penalizeConfigurable(@NonNull String constraintName) {
         return penalizeConfigurable()
                 .asConstraint(constraintName);
     }
 
     @Override
-    default Constraint penalizeConfigurable(String constraintPackage, String constraintName) {
+    default @NonNull Constraint penalizeConfigurable(@NonNull String constraintPackage, @NonNull String constraintName) {
         return penalizeConfigurable()
                 .asConstraint(constraintPackage, constraintName);
     }
 
     @Override
-    default Constraint reward(String constraintName, Score<?> constraintWeight) {
+    default @NonNull Constraint reward(@NonNull String constraintName, @NonNull Score<?> constraintWeight) {
         return reward((Score) constraintWeight)
                 .asConstraint(constraintName);
     }
 
     @Override
-    default Constraint reward(String constraintPackage, String constraintName, Score<?> constraintWeight) {
+    default @NonNull Constraint reward(@NonNull String constraintPackage, @NonNull String constraintName,
+            @NonNull Score<?> constraintWeight) {
         return reward((Score) constraintWeight)
                 .asConstraint(constraintPackage, constraintName);
     }
 
     @Override
-    default Constraint rewardConfigurable(String constraintName) {
+    default @NonNull Constraint rewardConfigurable(@NonNull String constraintName) {
         return rewardConfigurable()
                 .asConstraint(constraintName);
     }
 
     @Override
-    default Constraint rewardConfigurable(String constraintPackage, String constraintName) {
+    default @NonNull Constraint rewardConfigurable(@NonNull String constraintPackage, @NonNull String constraintName) {
         return penalizeConfigurable()
                 .asConstraint(constraintPackage, constraintName);
     }
 
     @Override
-    default Constraint impact(String constraintName, Score<?> constraintWeight) {
+    default @NonNull Constraint impact(@NonNull String constraintName, @NonNull Score<?> constraintWeight) {
         return impact((Score) constraintWeight)
                 .asConstraint(constraintName);
     }
 
     @Override
-    default Constraint impact(String constraintPackage, String constraintName, Score<?> constraintWeight) {
+    default @NonNull Constraint impact(@NonNull String constraintPackage, @NonNull String constraintName,
+            @NonNull Score<?> constraintWeight) {
         return impact((Score) constraintWeight)
                 .asConstraint(constraintPackage, constraintName);
     }

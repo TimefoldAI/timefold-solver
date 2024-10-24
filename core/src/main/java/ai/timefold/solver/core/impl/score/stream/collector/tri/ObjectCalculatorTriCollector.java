@@ -8,6 +8,8 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.ObjectCalculator;
 
+import org.jspecify.annotations.NonNull;
+
 abstract sealed class ObjectCalculatorTriCollector<A, B, C, Input_, Output_, Mapped_, Calculator_ extends ObjectCalculator<Input_, Output_, Mapped_>>
         implements TriConstraintCollector<A, B, C, Calculator_, Output_>
         permits AverageReferenceTriCollector, ConnectedRangesTriConstraintCollector, ConsecutiveSequencesTriConstraintCollector,
@@ -19,7 +21,7 @@ abstract sealed class ObjectCalculatorTriCollector<A, B, C, Input_, Output_, Map
     }
 
     @Override
-    public QuadFunction<Calculator_, A, B, C, Runnable> accumulator() {
+    public @NonNull QuadFunction<Calculator_, A, B, C, Runnable> accumulator() {
         return (calculator, a, b, c) -> {
             final var mapped = mapper.apply(a, b, c);
             final var saved = calculator.insert(mapped);
@@ -28,7 +30,7 @@ abstract sealed class ObjectCalculatorTriCollector<A, B, C, Input_, Output_, Map
     }
 
     @Override
-    public Function<Calculator_, Output_> finisher() {
+    public @NonNull Function<Calculator_, Output_> finisher() {
         return ObjectCalculator::result;
     }
 

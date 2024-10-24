@@ -7,6 +7,8 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.impl.score.stream.collector.IntCounter;
 
+import org.jspecify.annotations.NonNull;
+
 final class CountIntTriCollector<A, B, C> implements TriConstraintCollector<A, B, C, IntCounter, Integer> {
     private final static CountIntTriCollector<?, ?, ?> INSTANCE = new CountIntTriCollector<>();
 
@@ -19,12 +21,12 @@ final class CountIntTriCollector<A, B, C> implements TriConstraintCollector<A, B
     }
 
     @Override
-    public Supplier<IntCounter> supplier() {
+    public @NonNull Supplier<IntCounter> supplier() {
         return IntCounter::new;
     }
 
     @Override
-    public QuadFunction<IntCounter, A, B, C, Runnable> accumulator() {
+    public @NonNull QuadFunction<IntCounter, A, B, C, Runnable> accumulator() {
         return (counter, a, b, c) -> {
             counter.increment();
             return counter::decrement;
@@ -32,7 +34,7 @@ final class CountIntTriCollector<A, B, C> implements TriConstraintCollector<A, B
     }
 
     @Override
-    public Function<IntCounter, Integer> finisher() {
+    public @NonNull Function<IntCounter, Integer> finisher() {
         return IntCounter::result;
     }
 }

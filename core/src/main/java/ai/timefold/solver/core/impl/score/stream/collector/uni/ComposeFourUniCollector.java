@@ -9,6 +9,9 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.impl.util.Quadruple;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 final class ComposeFourUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_, Result1_, Result2_, Result3_, Result4_, Result_>
         implements
         UniConstraintCollector<A, Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result_> {
@@ -61,7 +64,7 @@ final class ComposeFourUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHol
     }
 
     @Override
-    public Supplier<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>> supplier() {
+    public @NonNull Supplier<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>> supplier() {
         return () -> {
             ResultHolder1_ a = firstSupplier.get();
             ResultHolder2_ b = secondSupplier.get();
@@ -71,7 +74,8 @@ final class ComposeFourUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHol
     }
 
     @Override
-    public BiFunction<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, A, Runnable> accumulator() {
+    public @NonNull BiFunction<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, A, Runnable>
+            accumulator() {
         return (resultHolder, a) -> composeUndo(firstAccumulator.apply(resultHolder.a(), a),
                 secondAccumulator.apply(resultHolder.b(), a),
                 thirdAccumulator.apply(resultHolder.c(), a),
@@ -89,7 +93,7 @@ final class ComposeFourUniCollector<A, ResultHolder1_, ResultHolder2_, ResultHol
     }
 
     @Override
-    public Function<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result_> finisher() {
+    public @Nullable Function<Quadruple<ResultHolder1_, ResultHolder2_, ResultHolder3_, ResultHolder4_>, Result_> finisher() {
         return resultHolder -> composeFunction.apply(firstFinisher.apply(resultHolder.a()),
                 secondFinisher.apply(resultHolder.b()),
                 thirdFinisher.apply(resultHolder.c()),

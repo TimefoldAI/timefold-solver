@@ -8,6 +8,8 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
+import org.jspecify.annotations.NonNull;
+
 public class IndexVariableListener<Solution_> implements ListVariableListener<Solution_, Object, Object>, IndexVariableSupply {
 
     protected final IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor;
@@ -23,22 +25,22 @@ public class IndexVariableListener<Solution_> implements ListVariableListener<So
     }
 
     @Override
-    public void beforeEntityAdded(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public void beforeEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         // Do nothing
     }
 
     @Override
-    public void afterEntityAdded(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public void afterEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         updateIndexes((InnerScoreDirector<Solution_, ?>) scoreDirector, entity, 0, NEVER_QUIT_EARLY);
     }
 
     @Override
-    public void beforeEntityRemoved(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public void beforeEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         // Do nothing
     }
 
     @Override
-    public void afterEntityRemoved(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    public void afterEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
         List<Object> listVariable = sourceVariableDescriptor.getValue(entity);
         for (Object element : listVariable) {
@@ -49,7 +51,7 @@ public class IndexVariableListener<Solution_> implements ListVariableListener<So
     }
 
     @Override
-    public void afterListVariableElementUnassigned(ScoreDirector<Solution_> scoreDirector, Object element) {
+    public void afterListVariableElementUnassigned(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object element) {
         InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
         innerScoreDirector.beforeVariableChanged(shadowVariableDescriptor, element);
         shadowVariableDescriptor.setValue(element, null);
@@ -57,12 +59,14 @@ public class IndexVariableListener<Solution_> implements ListVariableListener<So
     }
 
     @Override
-    public void beforeListVariableChanged(ScoreDirector<Solution_> scoreDirector, Object entity, int fromIndex, int toIndex) {
+    public void beforeListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity,
+            int fromIndex, int toIndex) {
         // Do nothing
     }
 
     @Override
-    public void afterListVariableChanged(ScoreDirector<Solution_> scoreDirector, Object entity, int fromIndex, int toIndex) {
+    public void afterListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity, int fromIndex,
+            int toIndex) {
         InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
         updateIndexes(innerScoreDirector, entity, fromIndex, toIndex);
     }

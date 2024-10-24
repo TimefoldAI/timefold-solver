@@ -6,6 +6,8 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.impl.score.stream.collector.ListUndoableActionable;
 
+import org.jspecify.annotations.NonNull;
+
 final class ToListTriCollector<A, B, C, Mapped_>
         extends UndoableActionableTriCollector<A, B, C, Mapped_, List<Mapped_>, ListUndoableActionable<Mapped_>> {
     ToListTriCollector(TriFunction<? super A, ? super B, ? super C, ? extends Mapped_> mapper) {
@@ -13,7 +15,7 @@ final class ToListTriCollector<A, B, C, Mapped_>
     }
 
     @Override
-    public Supplier<ListUndoableActionable<Mapped_>> supplier() {
+    public @NonNull Supplier<ListUndoableActionable<Mapped_>> supplier() {
         return ListUndoableActionable::new;
     }
 }
