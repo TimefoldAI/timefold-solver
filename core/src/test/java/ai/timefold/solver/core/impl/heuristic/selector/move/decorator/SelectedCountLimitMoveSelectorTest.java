@@ -73,7 +73,7 @@ class SelectedCountLimitMoveSelectorTest {
 
         verifyPhaseLifecycle(childMoveSelector, 1, 2, 5);
         verify(childMoveSelector, times(5)).iterator();
-        verify(childMoveSelector, times(5)).getSize();
+        verify(childMoveSelector, times(7)).getSize();
     }
 
     @Test
@@ -131,7 +131,7 @@ class SelectedCountLimitMoveSelectorTest {
 
         verifyPhaseLifecycle(childMoveSelector, 1, 2, 5);
         verify(childMoveSelector, times(5)).iterator();
-        verify(childMoveSelector, times(5)).getSize();
+        verify(childMoveSelector, times(7)).getSize();
     }
 
 }

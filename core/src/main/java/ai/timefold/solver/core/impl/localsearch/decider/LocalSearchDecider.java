@@ -96,7 +96,7 @@ public class LocalSearchDecider<Solution_> {
             LocalSearchMoveScope<Solution_> moveScope = new LocalSearchMoveScope<>(stepScope, moveIndex, move);
             moveIndex++;
             doMove(moveScope);
-            if (forager.isQuitEarly()) {
+            if (forager.isQuitEarly(stepScope) || acceptor.needReconfiguration(stepScope)) {
                 break;
             }
             stepScope.getPhaseScope().getSolverScope().checkYielding();
@@ -138,6 +138,9 @@ public class LocalSearchDecider<Solution_> {
                 stepScope.setStepString(step.toString());
             }
             stepScope.setScore(pickedMoveScope.getScore());
+        }
+        if (acceptor.needReconfiguration(stepScope)) {
+            acceptor.applyReconfiguration(stepScope);
         }
     }
 
