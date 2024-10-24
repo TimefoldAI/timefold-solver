@@ -3,6 +3,8 @@ package ai.timefold.solver.core.api.domain.metamodel;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Describes a variable in the domain model.
  * See extending interfaces for more specific types of variables.
@@ -30,6 +32,7 @@ public sealed interface VariableMetaModel<Solution_, Entity_, Value_>
      *
      * @return never null
      */
+    @NonNull
     PlanningEntityMetaModel<Solution_, Entity_> entity();
 
     /**
@@ -37,6 +40,7 @@ public sealed interface VariableMetaModel<Solution_, Entity_, Value_>
      *
      * @return never null
      */
+    @NonNull
     Class<Value_> type();
 
     /**
@@ -44,6 +48,7 @@ public sealed interface VariableMetaModel<Solution_, Entity_, Value_>
      *
      * @return never null
      */
+    @NonNull
     String name();
 
     /**

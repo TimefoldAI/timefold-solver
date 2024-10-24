@@ -4,12 +4,14 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * A supertype for {@link LocationInList} and {@link UnassignedLocation}.
  * <p>
  * {@link PlanningListVariable#allowsUnassignedValues()} allows for a value to not be part of any entity's list.
  * This introduces null into user code, and makes it harder to reason about the code.
- * Therefore we introduce {@link UnassignedLocation} to represent this null value,
+ * Therefore, we introduce {@link UnassignedLocation} to represent this null value,
  * and user code must explicitly decide how to handle this case.
  * This prevents accidental use of {@link UnassignedLocation} in places where {@link LocationInList} is expected,
  * catching this error as early as possible.
@@ -31,11 +33,11 @@ public sealed interface ElementLocation permits LocationInList, UnassignedLocati
      * Create a new instance of {@link LocationInList}.
      * User code should never need to call this method.
      *
-     * @param entity never null
+     * @param entity Entity whose {@link PlanningListVariable} contains the value.
      * @param index 0 or higher
      * @return never null
      */
-    static LocationInList of(Object entity, int index) {
+    static @NonNull LocationInList of(@NonNull Object entity, int index) {
         return new DefaultLocationInList(entity, index);
     }
 
@@ -45,27 +47,28 @@ public sealed interface ElementLocation permits LocationInList, UnassignedLocati
      *
      * @return never null
      */
-    static UnassignedLocation unassigned() {
+    static @NonNull UnassignedLocation unassigned() {
         return DefaultUnassignedLocation.INSTANCE;
     }
 
     /**
      * Returns {@link LocationInList} if this location is assigned, otherwise throws an exception.
      *
-     * @return never null
-     * @throws IllegalStateException if this location is unassigned
+     * @return Location of the value in an entity's {@link PlanningListVariable}.
+     * @throws IllegalStateException If this location is unassigned.
      */
-    default LocationInList ensureAssigned() {
+    default @NonNull LocationInList ensureAssigned() {
         return ensureAssigned(() -> "Unexpected unassigned location.");
     }
 
     /**
      * Returns {@link LocationInList} if this location is assigned, otherwise throws an exception.
      *
-     * @param messageSupplier never null, the message to give the exception
-     * @return never null
-     * @throws IllegalStateException if this location is unassigned
+     * @param messageSupplier The message to give the exception.
+     * @return Location of the value in an entity's {@link PlanningListVariable}.
+     * @throws IllegalStateException If this location is unassigned.
      */
-    LocationInList ensureAssigned(Supplier<String> messageSupplier);
+    @NonNull
+    LocationInList ensureAssigned(@NonNull Supplier<String> messageSupplier);
 
 }

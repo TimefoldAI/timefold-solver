@@ -8,6 +8,8 @@ import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.api.move.MutableSolutionView;
 import ai.timefold.solver.core.api.move.Rebaser;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Makes no changes.
  *
@@ -26,28 +28,28 @@ public final class NoChangeMove<Solution_> implements Move<Solution_> {
     }
 
     @Override
-    public void execute(MutableSolutionView<Solution_> solutionView) {
+    public void execute(@NonNull MutableSolutionView<Solution_> solutionView) {
         // Do nothing.
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Move<Solution_> rebase(Rebaser rebaser) {
+    public @NonNull Move<Solution_> rebase(@NonNull Rebaser rebaser) {
         return (Move<Solution_>) INSTANCE;
     }
 
     @Override
-    public Collection<?> extractPlanningEntities() {
+    public @NonNull Collection<?> extractPlanningEntities() {
         return Collections.emptyList();
     }
 
     @Override
-    public Collection<?> extractPlanningValues() {
+    public @NonNull Collection<?> extractPlanningValues() {
         return Collections.emptyList();
     }
 
     @Override
-    public String toString() {
+    public @NonNull String toString() {
         return "No change";
     }
 }

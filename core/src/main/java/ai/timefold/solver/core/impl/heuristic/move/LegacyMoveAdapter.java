@@ -11,6 +11,8 @@ import ai.timefold.solver.core.impl.move.InnerMutableSolutionView;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.move.generic.NoChangeMove;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Adapts {@link ai.timefold.solver.core.impl.heuristic.move.Move} a legacy move)
  * to {@link Move a new move}.
@@ -47,7 +49,7 @@ public record LegacyMoveAdapter<Solution_>(
     }
 
     @Override
-    public void execute(MutableSolutionView<Solution_> solutionView) {
+    public void execute(@NonNull MutableSolutionView<Solution_> solutionView) {
         var scoreDirector = getScoreDirector(solutionView);
         legacyMove.doMoveOnly(scoreDirector);
     }
@@ -65,27 +67,27 @@ public record LegacyMoveAdapter<Solution_>(
     }
 
     @Override
-    public String describe() {
+    public @NonNull String describe() {
         return legacyMove.getSimpleMoveTypeDescription();
     }
 
     @Override
-    public Move<Solution_> rebase(Rebaser rebaser) {
+    public @NonNull Move<Solution_> rebase(@NonNull Rebaser rebaser) {
         return new LegacyMoveAdapter<>(legacyMove.rebase(getScoreDirector(rebaser)));
     }
 
     @Override
-    public Collection<?> extractPlanningEntities() {
+    public @NonNull Collection<?> extractPlanningEntities() {
         return legacyMove.getPlanningEntities();
     }
 
     @Override
-    public Collection<?> extractPlanningValues() {
+    public @NonNull Collection<?> extractPlanningValues() {
         return legacyMove.getPlanningValues();
     }
 
     @Override
-    public String toString() {
+    public @NonNull String toString() {
         return legacyMove.toString();
     }
 }

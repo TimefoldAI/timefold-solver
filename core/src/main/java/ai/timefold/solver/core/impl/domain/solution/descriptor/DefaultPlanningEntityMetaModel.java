@@ -10,6 +10,8 @@ import ai.timefold.solver.core.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 
+import org.jspecify.annotations.NonNull;
+
 public final class DefaultPlanningEntityMetaModel<Solution_, Entity_>
         implements PlanningEntityMetaModel<Solution_, Entity_> {
 
@@ -31,17 +33,17 @@ public final class DefaultPlanningEntityMetaModel<Solution_, Entity_>
     }
 
     @Override
-    public PlanningSolutionMetaModel<Solution_> solution() {
+    public @NonNull PlanningSolutionMetaModel<Solution_> solution() {
         return solution;
     }
 
     @Override
-    public Class<Entity_> type() {
+    public @NonNull Class<Entity_> type() {
         return type;
     }
 
     @Override
-    public List<VariableMetaModel<Solution_, Entity_, ?>> variables() {
+    public @NonNull List<VariableMetaModel<Solution_, Entity_, ?>> variables() {
         return Collections.unmodifiableList(variables);
     }
 

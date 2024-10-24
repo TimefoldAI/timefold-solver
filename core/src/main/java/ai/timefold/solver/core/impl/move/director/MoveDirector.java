@@ -14,6 +14,8 @@ import ai.timefold.solver.core.impl.move.InnerMutableSolutionView;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
+import org.jspecify.annotations.NonNull;
+
 public sealed class MoveDirector<Solution_>
         implements InnerMutableSolutionView<Solution_>, Rebaser
         permits EphemeralMoveDirector {
@@ -24,8 +26,9 @@ public sealed class MoveDirector<Solution_>
         this.scoreDirector = Objects.requireNonNull(scoreDirector);
     }
 
-    public final <Entity_, Value_> void changeVariable(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            Entity_ entity, Value_ newValue) {
+    public final <Entity_, Value_> void changeVariable(
+            @NonNull PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            @NonNull Entity_ entity, Value_ newValue) {
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
         scoreDirector.beforeVariableChanged(variableDescriptor, entity);
         variableDescriptor.setValue(entity, newValue);
@@ -33,8 +36,8 @@ public sealed class MoveDirector<Solution_>
     }
 
     public final <Entity_, Value_> void moveValueBetweenLists(
-            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            Entity_ sourceEntity, int sourceIndex, Entity_ destinationEntity, int destinationIndex) {
+            @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            @NonNull Entity_ sourceEntity, int sourceIndex, @NonNull Entity_ destinationEntity, int destinationIndex) {
         if (sourceEntity == destinationEntity) {
             moveValueInList(variableMetaModel, sourceEntity, sourceIndex, destinationIndex);
             return;
@@ -51,8 +54,8 @@ public sealed class MoveDirector<Solution_>
 
     @Override
     public final <Entity_, Value_> void moveValueInList(
-            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            Entity_ entity, int sourceIndex, int destinationIndex) {
+            @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            @NonNull Entity_ entity, int sourceIndex, int destinationIndex) {
         if (sourceIndex == destinationIndex) {
             return;
         } else if (sourceIndex > destinationIndex) { // Always start from the lower index.
@@ -75,23 +78,24 @@ public sealed class MoveDirector<Solution_>
 
     @SuppressWarnings("unchecked")
     @Override
-    public final <Entity_, Value_> Value_ getValue(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            Entity_ entity) {
+    public final <Entity_, Value_> Value_ getValue(
+            @NonNull PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            @NonNull Entity_ entity) {
         return (Value_) extractVariableDescriptor(variableMetaModel).getValue(entity);
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public final <Entity_, Value_> Value_ getValueAtIndex(
-            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            Entity_ entity, int index) {
+            @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            @NonNull Entity_ entity, int index) {
         return (Value_) extractVariableDescriptor(variableMetaModel).getValue(entity).get(index);
     }
 
     @Override
-    public <Entity_, Value_> ElementLocation getPositionOf(
-            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            Value_ value) {
+    public <Entity_, Value_> @NonNull ElementLocation getPositionOf(
+            @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            @NonNull Value_ value) {
         return getPositionOf((InnerScoreDirector<Solution_, ?>) scoreDirector, variableMetaModel, value);
     }
 
@@ -102,7 +106,7 @@ public sealed class MoveDirector<Solution_>
     }
 
     @Override
-    public final <T> T rebase(T problemFactOrPlanningEntity) {
+    public final <T> T rebase(@NonNull T problemFactOrPlanningEntity) {
         return scoreDirector.lookUpWorkingObject(problemFactOrPlanningEntity);
     }
 

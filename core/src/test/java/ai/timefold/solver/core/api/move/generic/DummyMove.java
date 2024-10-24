@@ -9,6 +9,8 @@ import ai.timefold.solver.core.api.move.Rebaser;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.util.CodeAssertable;
 
+import org.jspecify.annotations.NonNull;
+
 public final class DummyMove implements Move<TestdataSolution>, CodeAssertable {
 
     private String code;
@@ -30,27 +32,27 @@ public final class DummyMove implements Move<TestdataSolution>, CodeAssertable {
     // ************************************************************************
 
     @Override
-    public void execute(MutableSolutionView<TestdataSolution> solutionView) {
+    public void execute(@NonNull MutableSolutionView<TestdataSolution> solutionView) {
         // do nothing
     }
 
     @Override
-    public Move<TestdataSolution> rebase(Rebaser rebaser) {
+    public @NonNull Move<TestdataSolution> rebase(@NonNull Rebaser rebaser) {
         return null;
     }
 
     @Override
-    public Collection<? extends TestdataSolution> extractPlanningEntities() {
+    public @NonNull Collection<? extends TestdataSolution> extractPlanningEntities() {
         return Collections.emptyList();
     }
 
     @Override
-    public Collection<? extends TestdataSolution> extractPlanningValues() {
+    public @NonNull Collection<? extends TestdataSolution> extractPlanningValues() {
         return Collections.emptyList();
     }
 
     @Override
-    public String toString() {
+    public @NonNull String toString() {
         return code;
     }
 

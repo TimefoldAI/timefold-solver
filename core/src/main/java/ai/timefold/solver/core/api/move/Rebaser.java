@@ -6,6 +6,9 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * Allows to transfer an entity or fact instance (often from another {@link Thread})
  * to another {@link ScoreDirector}'s internal working instance.
@@ -31,7 +34,7 @@ public interface Rebaser {
      * Matching is determined by the {@link LookUpStrategyType} on {@link PlanningSolution}.
      * Matching uses a {@link PlanningId} by default.
      *
-     * @param problemFactOrPlanningEntity never null
+     * @param problemFactOrPlanningEntity The fact or entity to rebase.
      * @return null if externalObject is null
      * @throws IllegalArgumentException if there is no working object for the fact or entity,
      *         if it cannot be looked up,
@@ -39,6 +42,6 @@ public interface Rebaser {
      * @throws IllegalStateException if it cannot be looked up
      * @param <T>
      */
-    <T> T rebase(T problemFactOrPlanningEntity);
+    <T> @Nullable T rebase(@NonNull T problemFactOrPlanningEntity);
 
 }

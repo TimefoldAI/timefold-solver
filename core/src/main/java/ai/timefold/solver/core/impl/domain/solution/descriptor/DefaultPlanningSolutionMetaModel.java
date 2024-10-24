@@ -8,6 +8,8 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.api.domain.metamodel.PlanningSolutionMetaModel;
 
+import org.jspecify.annotations.NonNull;
+
 public final class DefaultPlanningSolutionMetaModel<Solution_> implements PlanningSolutionMetaModel<Solution_> {
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
@@ -24,12 +26,12 @@ public final class DefaultPlanningSolutionMetaModel<Solution_> implements Planni
     }
 
     @Override
-    public Class<Solution_> type() {
+    public @NonNull Class<Solution_> type() {
         return type;
     }
 
     @Override
-    public List<PlanningEntityMetaModel<Solution_, ?>> entities() {
+    public @NonNull List<PlanningEntityMetaModel<Solution_, ?>> entities() {
         return Collections.unmodifiableList(entities);
     }
 

@@ -5,6 +5,8 @@ import ai.timefold.solver.core.api.domain.metamodel.PlanningListVariableMetaMode
 import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * The only move director that supports undoing moves.
  * Moves are undone when the director is {@link #close() closed}.
@@ -24,9 +26,9 @@ public final class EphemeralMoveDirector<Solution_> extends MoveDirector<Solutio
     }
 
     @Override
-    public <Entity_, Value_> ElementLocation getPositionOf(
-            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            Value_ value) {
+    public <Entity_, Value_> @NonNull ElementLocation getPositionOf(
+            @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            @NonNull Value_ value) {
         return getPositionOf(getVariableChangeRecordingScoreDirector().getDelegate(), variableMetaModel, value);
 
     }

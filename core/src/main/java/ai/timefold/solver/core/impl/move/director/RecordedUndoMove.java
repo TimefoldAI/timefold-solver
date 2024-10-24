@@ -8,6 +8,8 @@ import ai.timefold.solver.core.api.move.MutableSolutionView;
 import ai.timefold.solver.core.api.move.Rebaser;
 import ai.timefold.solver.core.impl.move.InnerMutableSolutionView;
 
+import org.jspecify.annotations.NonNull;
+
 final class RecordedUndoMove<Solution_> implements Move<Solution_> {
 
     private final List<ChangeAction<Solution_>> variableChangeActionList;
@@ -17,7 +19,7 @@ final class RecordedUndoMove<Solution_> implements Move<Solution_> {
     }
 
     @Override
-    public void execute(MutableSolutionView<Solution_> solutionView) {
+    public void execute(@NonNull MutableSolutionView<Solution_> solutionView) {
         var scoreDirector = ((InnerMutableSolutionView<Solution_>) solutionView).getScoreDirector();
         for (var changeAction : variableChangeActionList) {
             changeAction.undo(scoreDirector);
@@ -25,7 +27,7 @@ final class RecordedUndoMove<Solution_> implements Move<Solution_> {
     }
 
     @Override
-    public Move<Solution_> rebase(Rebaser rebaser) {
+    public @NonNull Move<Solution_> rebase(@NonNull Rebaser rebaser) {
         return new RecordedUndoMove<>(variableChangeActionList.stream()
                 .map(changeAction -> changeAction.rebase(rebaser))
                 .toList());

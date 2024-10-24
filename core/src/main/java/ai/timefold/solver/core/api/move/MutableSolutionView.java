@@ -7,6 +7,9 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * Contains all reading and mutating methods available to a {@link Move}
  * in order to change the state of a {@link PlanningSolution planning solution}.
@@ -29,47 +32,38 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
     /**
      * Reads the value of a @{@link PlanningVariable basic planning variable} of a given entity.
      * 
-     * @param variableMetaModel never null
-     * @param entity never null
+     * @param variableMetaModel Describes the variable to be changed.
+     * @param entity The entity whose variable value is to be changed.
      * @param newValue maybe null, if unassigning the variable
-     * @param <Entity_>
-     * @param <Value_>
      */
-    <Entity_, Value_> void changeVariable(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            Entity_ entity,
-            Value_ newValue);
+    <Entity_, Value_> void changeVariable(@NonNull PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            @NonNull Entity_ entity, @Nullable Value_ newValue);
 
     /**
-     * TODO should check if pinned?
      * Moves a value from one entity's {@link PlanningListVariable planning list variable} to another.
-     * 
-     * @param variableMetaModel never null
-     * @param sourceEntity never null
+     *
+     * @param variableMetaModel Describes the variable to be changed.
+     * @param sourceEntity The first entity whose variable value is to be changed.
      * @param sourceIndex >= 0
-     * @param destinationEntity never null
+     * @param destinationEntity The second entity whose variable value is to be changed.
      * @param destinationIndex >= 0
      * @throws IndexOutOfBoundsException if the index is out of bounds
-     * @param <Entity_>
-     * @param <Value_>
      */
-    <Entity_, Value_> void moveValueBetweenLists(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            Entity_ sourceEntity, int sourceIndex, Entity_ destinationEntity, int destinationIndex);
+    <Entity_, Value_> void moveValueBetweenLists(
+            @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            @NonNull Entity_ sourceEntity, int sourceIndex, @NonNull Entity_ destinationEntity, int destinationIndex);
 
     /**
-     * TODO should check if pinned?
      * Moves a value within one entity's {@link PlanningListVariable planning list variable}.
      *
-     * @param variableMetaModel never null
-     * @param entity never null
+     * @param variableMetaModel Describes the variable to be changed.
+     * @param entity The entity whose variable value is to be changed.
      * @param sourceIndex >= 0
      * @param destinationIndex >= 0
      * @throws IndexOutOfBoundsException if the index is out of bounds
-     * @param <Entity_>
-     * @param <Value_>
      */
-    <Entity_, Value_> void moveValueInList(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            Entity_ entity,
-            int sourceIndex, int destinationIndex);
+    <Entity_, Value_> void moveValueInList(@NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            @NonNull Entity_ entity, int sourceIndex, int destinationIndex);
 
     /**
      * Tells the underlying {@link ScoreDirector}

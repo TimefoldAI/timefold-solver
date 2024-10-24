@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.api.domain.metamodel;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Uniquely identifies the location of a value in a list variable.
  * Instances can be created by {@link ElementLocation#of(Object, int)}.
@@ -23,7 +25,7 @@ public sealed interface LocationInList
         extends ElementLocation, Comparable<LocationInList>
         permits DefaultLocationInList {
 
-    <Entity_> Entity_ entity();
+    <Entity_> @NonNull Entity_ entity();
 
     int index();
 

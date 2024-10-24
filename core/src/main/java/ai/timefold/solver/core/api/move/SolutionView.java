@@ -6,6 +6,9 @@ import ai.timefold.solver.core.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * Allows read-only access to the state of the solution that is being operated on by the {@link Move}.
  * <p>
@@ -27,39 +30,35 @@ public interface SolutionView<Solution_> {
     /**
      * Reads the value of a @{@link PlanningVariable basic planning variable} of a given entity.
      * 
-     * @param variableMetaModel never null
-     * @param entity never null
-     * @return maybe null; the value of the variable on the entity
-     * @param <Entity_>
-     * @param <Value_>
+     * @param variableMetaModel Describes the variable whose value is to be read.
+     * @param entity The entity whose variable is to be read.
+     * @return The value of the variable on the entity.
      */
-    <Entity_, Value_> Value_ getValue(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity);
+    <Entity_, Value_> @Nullable Value_
+            getValue(@NonNull PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, @NonNull Entity_ entity);
 
     /**
      * Reads the value of a @{@link PlanningListVariable list planning variable} of a given entity at a specific index.
-     * 
-     * @param variableMetaModel never null
-     * @param entity never null
+     *
+     * @param variableMetaModel Describes the variable whose value is to be read.
+     * @param entity The entity whose variable is to be read.
      * @param index >= 0
      * @return maybe null; the value of the variable on the entity at the index
      * @throws NullPointerException if the value of the list variable is null
      * @throws IndexOutOfBoundsException if the index is out of bounds
-     * @param <Entity_>
-     * @param <Value_>
      */
-    <Entity_, Value_> Value_ getValueAtIndex(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            Entity_ entity, int index);
+    <Entity_, Value_> @Nullable Value_ getValueAtIndex(
+            @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, @NonNull Entity_ entity,
+            int index);
 
     /**
      * Locates a given value in any @{@link PlanningListVariable list planning variable}.
-     * 
-     * @param variableMetaModel never null
-     * @param value never null
+     *
+     * @param variableMetaModel Describes the variable whose value is to be read.
+     * @param value The value to locate.
      * @return never null; the location of the value in the variable
-     * @param <Entity_>
-     * @param <Value_>
      */
-    <Entity_, Value_> ElementLocation getPositionOf(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            Value_ value);
+    <Entity_, Value_> @NonNull ElementLocation getPositionOf(
+            @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, @NonNull Value_ value);
 
 }

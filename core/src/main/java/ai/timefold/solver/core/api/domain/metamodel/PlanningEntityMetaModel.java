@@ -6,6 +6,8 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Represents the meta-model of an entity.
  * Gives access to the entity's variable meta-models.
@@ -31,28 +33,31 @@ public interface PlanningEntityMetaModel<Solution_, Entity_> {
      *
      * @return never null, the solution meta-model.
      */
+    @NonNull
     PlanningSolutionMetaModel<Solution_> solution();
 
     /**
      * Returns the most specific class of the entity.
      *
-     * @return never null, the entity type.
+     * @return The entity type.
      */
+    @NonNull
     Class<Entity_> type();
 
     /**
-     * Returns the variables owned by the entity, both genuine and shadow.
+     * Returns the variables declared by the entity, both genuine and shadow.
      *
-     * @return never null
+     * @return Variables declared by the entity.
      */
+    @NonNull
     List<VariableMetaModel<Solution_, Entity_, ?>> variables();
 
     /**
-     * Returns the genuine variables owned by the entity.
+     * Returns the genuine variables declared by the entity.
      *
-     * @return never null
+     * @return Genuine variables declared by the entity.
      */
-    default List<VariableMetaModel<Solution_, Entity_, ?>> genuineVariables() {
+    default @NonNull List<VariableMetaModel<Solution_, Entity_, ?>> genuineVariables() {
         return variables().stream()
                 .filter(VariableMetaModel::isGenuine)
                 .toList();
@@ -61,11 +66,11 @@ public interface PlanningEntityMetaModel<Solution_, Entity_> {
     /**
      * Returns a {@link VariableMetaModel} for a variable with the given name.
      *
-     * @return never null
+     * @return A variable declared by the entity.
      * @throws IllegalArgumentException if the variable does not exist on the entity
      */
     @SuppressWarnings("unchecked")
-    default <Value_> VariableMetaModel<Solution_, Entity_, Value_> variable(String variableName) {
+    default <Value_> @NonNull VariableMetaModel<Solution_, Entity_, Value_> variable(@NonNull String variableName) {
         for (var variableMetaModel : variables()) {
             if (variableMetaModel.name().equals(variableName)) {
                 return (VariableMetaModel<Solution_, Entity_, Value_>) variableMetaModel;
@@ -80,7 +85,8 @@ public interface PlanningEntityMetaModel<Solution_, Entity_> {
      * but only succeeds if the variable is a {@link PlanningVariable basic planning variable}.
      */
     @SuppressWarnings("unchecked")
-    default <Value_> PlanningVariableMetaModel<Solution_, Entity_, Value_> planningVariable(String variableName) {
+    default <Value_> @NonNull PlanningVariableMetaModel<Solution_, Entity_, Value_>
+            planningVariable(@NonNull String variableName) {
         return (PlanningVariableMetaModel<Solution_, Entity_, Value_>) variable(variableName);
     }
 
@@ -89,14 +95,15 @@ public interface PlanningEntityMetaModel<Solution_, Entity_> {
      * but only succeeds if the variable is a {@link PlanningListVariable planning list variable}.
      */
     @SuppressWarnings("unchecked")
-    default <Value_> PlanningListVariableMetaModel<Solution_, Entity_, Value_> planningListVariable(String variableName) {
+    default <Value_> @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_>
+            planningListVariable(@NonNull String variableName) {
         return (PlanningListVariableMetaModel<Solution_, Entity_, Value_>) variable(variableName);
     }
 
     /**
-     * Returns whether the entity has any genuine variables.
+     * Returns whether the entity declares any genuine variables.
      *
-     * @return true if the entity has any genuine variables, false otherwise.
+     * @return true if the entity declares any genuine variables, false otherwise.
      */
     default boolean isGenuine() {
         for (var variableMetaModel : variables()) {

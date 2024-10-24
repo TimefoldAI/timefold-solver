@@ -12,6 +12,8 @@ import ai.timefold.solver.core.api.domain.solution.ProblemFactProperty;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * A Move represents a change of 1 or more {@link PlanningVariable}s of 1 or more {@link PlanningEntity}s
  * in the working {@link PlanningSolution}.
@@ -42,12 +44,12 @@ public interface Move<Solution_> {
      * Runs the move and optionally records the changes done,
      * so that they can be undone later.
      *
-     * @param solutionView never null; exposes all possible mutative operations on the variables.
+     * @param solutionView Exposes all possible mutative operations on the variables.
      *        Remembers those mutative operations and can replay them in reverse order
      *        when the solver needs to undo the move.
      *        Do not store this parameter in a field.
      */
-    void execute(MutableSolutionView<Solution_> solutionView);
+    void execute(@NonNull MutableSolutionView<Solution_> solutionView);
 
     /**
      * Rebases a move from an origin {@link ScoreDirector} to another destination {@link ScoreDirector}
@@ -77,10 +79,11 @@ public interface Move<Solution_> {
      * <p>
      * This method is thread-safe.
      *
-     * @param rebaser never null; do not store this parameter in a field
-     * @return never null, a new move that does the same change as this move on another solution instance
+     * @param rebaser Do not store this parameter in a field
+     * @return New move that does the same change as this move on another solution instance
      */
-    Move<Solution_> rebase(Rebaser rebaser);
+    @NonNull
+    Move<Solution_> rebase(@NonNull Rebaser rebaser);
 
     /**
      * Returns all planning entities that this move is changing.
@@ -92,9 +95,9 @@ public interface Move<Solution_> {
      * The returned {@link Collection} is recommended to be in a stable order.
      * For example, use {@link List} or {@link LinkedHashSet}, but not {@link HashSet}.
      *
-     * @return never null
+     * @return Each entity only once.
      */
-    default Collection<?> extractPlanningEntities() {
+    default @NonNull Collection<?> extractPlanningEntities() {
         throw new UnsupportedOperationException("The move (" + this + ") does not support tabu search.");
     }
 
@@ -108,9 +111,9 @@ public interface Move<Solution_> {
      * The returned {@link Collection} is recommended to be in a stable order.
      * For example, use {@link List} or {@link LinkedHashSet}, but not {@link HashSet}.
      *
-     * @return never null
+     * @return Each value only once.
      */
-    default Collection<?> extractPlanningValues() {
+    default @NonNull Collection<?> extractPlanningValues() {
         throw new UnsupportedOperationException("The move (" + this + ") does not support tabu search.");
     }
 
@@ -122,9 +125,9 @@ public interface Move<Solution_> {
      * The format is not formalized.
      * Never parse the {@link String} returned by this method.
      *
-     * @return never null
+     * @return Non-empty {@link String} that describes the move type.
      */
-    default String describe() {
+    default @NonNull String describe() {
         return getClass().getSimpleName();
     }
 
@@ -133,6 +136,7 @@ public interface Move<Solution_> {
      *
      * @return A description of the move, ideally including the state of the planning entities being changed.
      */
+    @NonNull
     String toString();
 
 }
