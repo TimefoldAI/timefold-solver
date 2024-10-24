@@ -79,7 +79,7 @@ There are 2 editions of Timefold Solver:
 
 === Licensing and Usage
 
-Unlike the ASL-licensed Community Edition in this repo,
+Unlike the Apache-2.0 licensed Community Edition in this repo,
 the Enterprise Edition is not open source.
 If you wish to use the Enterprise Edition in a production environment,
 please https://timefold.ai/company/contact/[contact Timefold] to obtain the appropriate license.
