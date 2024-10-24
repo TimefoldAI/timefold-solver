@@ -44,20 +44,16 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull Constrai
 
     public ConstraintAnalysis {
         Objects.requireNonNull(constraintRef);
-        if (weight == null) { // TODO: clarify - why illegal arg exception vs NPE from requireNonNull?
-            /*
-             * Only possible in ConstraintMatchAwareIncrementalScoreCalculator and/or tests.
-             * Easy doesn't support constraint analysis at all.
-             * CS always provides constraint weights.
-             */
-            throw new IllegalArgumentException("""
-                    The constraint weight must be non-null.
-                    Maybe use a non-deprecated %s constructor in your %s implementation?
-                    """
-                    .stripTrailing()
-                    .formatted(DefaultConstraintMatchTotal.class.getSimpleName(),
-                            ConstraintMatchAwareIncrementalScoreCalculator.class.getSimpleName()));
-        }
+        /*
+         * Null only possible in ConstraintMatchAwareIncrementalScoreCalculator and/or tests.
+         * Easy doesn't support constraint analysis at all.
+         * CS always provides constraint weights.
+         */
+        Objects.requireNonNull(weight, () -> """
+                The constraint weight must be non-null.
+                Maybe use a non-deprecated %s constructor in your %s implementation?"""
+                .formatted(DefaultConstraintMatchTotal.class.getSimpleName(),
+                        ConstraintMatchAwareIncrementalScoreCalculator.class.getSimpleName()));
         Objects.requireNonNull(score);
     }
 

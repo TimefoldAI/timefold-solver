@@ -1,6 +1,8 @@
 name: Quickstarts Workflow
 
 on:
+  push:
+    branches: [main]
   pull_request:
     branches: [main, '*.x']
     types:

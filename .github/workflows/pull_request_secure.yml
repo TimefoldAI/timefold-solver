@@ -5,6 +5,8 @@
 name: Secured Workflow
 
 on:
+  push:
+    branches: [main]
   # There are two differences to "pull_request" here:
   # - The workflow will receive secrets, even in PRs from forks.
   # - The workflow will be executed automatically, without requiring a manual approval.
