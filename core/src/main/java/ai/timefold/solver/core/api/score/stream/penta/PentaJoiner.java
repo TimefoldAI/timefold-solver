@@ -2,6 +2,7 @@ package ai.timefold.solver.core.api.score.stream.penta;
 
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Created with {@link Joiners}.
@@ -11,6 +12,7 @@ import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream;
  */
 public interface PentaJoiner<A, B, C, D, E> {
 
-    PentaJoiner<A, B, C, D, E> and(PentaJoiner<A, B, C, D, E> otherJoiner);
+    @NonNull
+    PentaJoiner<A, B, C, D, E> and(@NonNull PentaJoiner<A, B, C, D, E> otherJoiner);
 
 }

@@ -42,7 +42,8 @@ public interface InnerQuadConstraintStream<A, B, C, D> extends QuadConstraintStr
     boolean guaranteesDistinct();
 
     @Override
-    default <E> QuadConstraintStream<A, B, C, D> ifExists(Class<E> otherClass, PentaJoiner<A, B, C, D, E>... joiners) {
+    default @NonNull <E> QuadConstraintStream<A, B, C, D> ifExists(@NonNull Class<E> otherClass,
+            @NonNull PentaJoiner<A, B, C, D, E> @NonNull... joiners) {
         if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
             return ifExists(getConstraintFactory().forEach(otherClass), joiners);
         } else {
@@ -52,8 +53,8 @@ public interface InnerQuadConstraintStream<A, B, C, D> extends QuadConstraintStr
     }
 
     @Override
-    default <E> QuadConstraintStream<A, B, C, D> ifExistsIncludingUnassigned(Class<E> otherClass,
-            PentaJoiner<A, B, C, D, E>... joiners) {
+    default @NonNull <E> QuadConstraintStream<A, B, C, D> ifExistsIncludingUnassigned(@NonNull Class<E> otherClass,
+            @NonNull PentaJoiner<A, B, C, D, E> @NonNull... joiners) {
         if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
             return ifExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
         } else {
@@ -62,7 +63,8 @@ public interface InnerQuadConstraintStream<A, B, C, D> extends QuadConstraintStr
     }
 
     @Override
-    default <E> QuadConstraintStream<A, B, C, D> ifNotExists(Class<E> otherClass, PentaJoiner<A, B, C, D, E>... joiners) {
+    default @NonNull <E> QuadConstraintStream<A, B, C, D> ifNotExists(@NonNull Class<E> otherClass,
+            @NonNull PentaJoiner<A, B, C, D, E> @NonNull... joiners) {
         if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
             return ifNotExists(getConstraintFactory().forEach(otherClass), joiners);
         } else {
@@ -72,8 +74,8 @@ public interface InnerQuadConstraintStream<A, B, C, D> extends QuadConstraintStr
     }
 
     @Override
-    default <E> QuadConstraintStream<A, B, C, D> ifNotExistsIncludingUnassigned(Class<E> otherClass,
-            PentaJoiner<A, B, C, D, E>... joiners) {
+    default @NonNull <E> QuadConstraintStream<A, B, C, D> ifNotExistsIncludingUnassigned(@NonNull Class<E> otherClass,
+            @NonNull PentaJoiner<A, B, C, D, E> @NonNull... joiners) {
         if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
             return ifNotExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
         } else {
@@ -82,7 +84,7 @@ public interface InnerQuadConstraintStream<A, B, C, D> extends QuadConstraintStr
     }
 
     @Override
-    default QuadConstraintStream<A, B, C, D> distinct() {
+    default @NonNull QuadConstraintStream<A, B, C, D> distinct() {
         if (guaranteesDistinct()) {
             return this;
         } else {
@@ -94,20 +96,23 @@ public interface InnerQuadConstraintStream<A, B, C, D> extends QuadConstraintStr
     }
 
     @Override
-    default <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> penalize(Score_ constraintWeight,
-            ToIntQuadFunction<A, B, C, D> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> penalize(
+            @NonNull Score_ constraintWeight,
+            @NonNull ToIntQuadFunction<A, B, C, D> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.PENALTY);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> penalizeLong(Score_ constraintWeight,
-            ToLongQuadFunction<A, B, C, D> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> penalizeLong(
+            @NonNull Score_ constraintWeight,
+            @NonNull ToLongQuadFunction<A, B, C, D> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.PENALTY);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> penalizeBigDecimal(Score_ constraintWeight,
-            QuadFunction<A, B, C, D, BigDecimal> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> penalizeBigDecimal(
+            @NonNull Score_ constraintWeight,
+            @NonNull QuadFunction<A, B, C, D, BigDecimal> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.PENALTY);
     }
 
@@ -128,20 +133,23 @@ public interface InnerQuadConstraintStream<A, B, C, D> extends QuadConstraintStr
     }
 
     @Override
-    default <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> reward(Score_ constraintWeight,
-            ToIntQuadFunction<A, B, C, D> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> reward(
+            @NonNull Score_ constraintWeight,
+            @NonNull ToIntQuadFunction<A, B, C, D> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.REWARD);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> rewardLong(Score_ constraintWeight,
-            ToLongQuadFunction<A, B, C, D> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> rewardLong(
+            @NonNull Score_ constraintWeight,
+            @NonNull ToLongQuadFunction<A, B, C, D> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.REWARD);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> rewardBigDecimal(Score_ constraintWeight,
-            QuadFunction<A, B, C, D, BigDecimal> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> rewardBigDecimal(
+            @NonNull Score_ constraintWeight,
+            @NonNull QuadFunction<A, B, C, D, BigDecimal> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.REWARD);
     }
 
@@ -162,20 +170,23 @@ public interface InnerQuadConstraintStream<A, B, C, D> extends QuadConstraintStr
     }
 
     @Override
-    default <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> impact(Score_ constraintWeight,
-            ToIntQuadFunction<A, B, C, D> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> impact(
+            @NonNull Score_ constraintWeight,
+            @NonNull ToIntQuadFunction<A, B, C, D> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.MIXED);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> impactLong(Score_ constraintWeight,
-            ToLongQuadFunction<A, B, C, D> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> impactLong(
+            @NonNull Score_ constraintWeight,
+            @NonNull ToLongQuadFunction<A, B, C, D> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.MIXED);
     }
 
     @Override
-    default <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> impactBigDecimal(Score_ constraintWeight,
-            QuadFunction<A, B, C, D, BigDecimal> matchWeigher) {
+    default @NonNull <Score_ extends Score<Score_>> QuadConstraintBuilder<A, B, C, D, Score_> impactBigDecimal(
+            @NonNull Score_ constraintWeight,
+            @NonNull QuadFunction<A, B, C, D, BigDecimal> matchWeigher) {
         return innerImpact(constraintWeight, matchWeigher, ScoreImpactType.MIXED);
     }
 
