@@ -48,6 +48,8 @@ import ai.timefold.solver.core.impl.score.stream.common.penta.PentaJoinerComber;
 import ai.timefold.solver.core.impl.score.stream.common.quad.InnerQuadConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.quad.QuadConstraintBuilderImpl;
 
+import org.jspecify.annotations.NonNull;
+
 public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
         extends BavetAbstractConstraintStream<Solution_>
         implements InnerQuadConstraintStream<A, B, C, D> {
@@ -67,7 +69,8 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     // ************************************************************************
 
     @Override
-    public BavetAbstractQuadConstraintStream<Solution_, A, B, C, D> filter(QuadPredicate<A, B, C, D> predicate) {
+    public @NonNull BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
+            filter(@NonNull QuadPredicate<A, B, C, D> predicate) {
         return shareAndAddChild(new BavetFilterQuadConstraintStream<>(constraintFactory, this, predicate));
     }
 
@@ -77,15 +80,15 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
 
     @SafeVarargs
     @Override
-    public final <E> QuadConstraintStream<A, B, C, D> ifExists(UniConstraintStream<E> otherStream,
+    public final <E> @NonNull QuadConstraintStream<A, B, C, D> ifExists(@NonNull UniConstraintStream<E> otherStream,
             PentaJoiner<A, B, C, D, E>... joiners) {
         return ifExistsOrNot(true, otherStream, joiners);
     }
 
     @SafeVarargs
     @Override
-    public final <E> QuadConstraintStream<A, B, C, D> ifNotExists(UniConstraintStream<E> otherStream,
-            PentaJoiner<A, B, C, D, E>... joiners) {
+    public final @NonNull <E> QuadConstraintStream<A, B, C, D> ifNotExists(@NonNull UniConstraintStream<E> otherStream,
+            @NonNull PentaJoiner<A, B, C, D, E> @NonNull... joiners) {
         return ifExistsOrNot(false, otherStream, joiners);
     }
 
@@ -105,8 +108,8 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     // ************************************************************************
 
     @Override
-    public <ResultContainer_, Result_> UniConstraintStream<Result_> groupBy(
-            QuadConstraintCollector<A, B, C, D, ResultContainer_, Result_> collector) {
+    public @NonNull <ResultContainer_, Result_> UniConstraintStream<Result_> groupBy(
+            @NonNull QuadConstraintCollector<A, B, C, D, ResultContainer_, Result_> collector) {
         GroupNodeConstructor<UniTuple<Result_>> nodeConstructor =
                 GroupNodeConstructor.zeroKeysGroupBy(collector, Group0Mapping1CollectorQuadNode::new);
         return buildUniGroupBy(nodeConstructor);
@@ -119,9 +122,9 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     }
 
     @Override
-    public <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_> BiConstraintStream<ResultA_, ResultB_> groupBy(
-            QuadConstraintCollector<A, B, C, D, ResultContainerA_, ResultA_> collectorA,
-            QuadConstraintCollector<A, B, C, D, ResultContainerB_, ResultB_> collectorB) {
+    public @NonNull <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_> BiConstraintStream<ResultA_, ResultB_> groupBy(
+            @NonNull QuadConstraintCollector<A, B, C, D, ResultContainerA_, ResultA_> collectorA,
+            @NonNull QuadConstraintCollector<A, B, C, D, ResultContainerB_, ResultB_> collectorB) {
         GroupNodeConstructor<BiTuple<ResultA_, ResultB_>> nodeConstructor =
                 GroupNodeConstructor.zeroKeysGroupBy(collectorA, collectorB, Group0Mapping2CollectorQuadNode::new);
         return buildBiGroupBy(nodeConstructor);
@@ -134,11 +137,11 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     }
 
     @Override
-    public <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_>
+    public @NonNull <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_>
             TriConstraintStream<ResultA_, ResultB_, ResultC_>
-            groupBy(QuadConstraintCollector<A, B, C, D, ResultContainerA_, ResultA_> collectorA,
-                    QuadConstraintCollector<A, B, C, D, ResultContainerB_, ResultB_> collectorB,
-                    QuadConstraintCollector<A, B, C, D, ResultContainerC_, ResultC_> collectorC) {
+            groupBy(@NonNull QuadConstraintCollector<A, B, C, D, ResultContainerA_, ResultA_> collectorA,
+                    @NonNull QuadConstraintCollector<A, B, C, D, ResultContainerB_, ResultB_> collectorB,
+                    @NonNull QuadConstraintCollector<A, B, C, D, ResultContainerC_, ResultC_> collectorC) {
         GroupNodeConstructor<TriTuple<ResultA_, ResultB_, ResultC_>> nodeConstructor =
                 GroupNodeConstructor.zeroKeysGroupBy(collectorA, collectorB, collectorC, Group0Mapping3CollectorQuadNode::new);
         return buildTriGroupBy(nodeConstructor);
@@ -152,12 +155,12 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     }
 
     @Override
-    public <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_, ResultContainerD_, ResultD_>
+    public @NonNull <ResultContainerA_, ResultA_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_, ResultContainerD_, ResultD_>
             QuadConstraintStream<ResultA_, ResultB_, ResultC_, ResultD_>
-            groupBy(QuadConstraintCollector<A, B, C, D, ResultContainerA_, ResultA_> collectorA,
-                    QuadConstraintCollector<A, B, C, D, ResultContainerB_, ResultB_> collectorB,
-                    QuadConstraintCollector<A, B, C, D, ResultContainerC_, ResultC_> collectorC,
-                    QuadConstraintCollector<A, B, C, D, ResultContainerD_, ResultD_> collectorD) {
+            groupBy(@NonNull QuadConstraintCollector<A, B, C, D, ResultContainerA_, ResultA_> collectorA,
+                    @NonNull QuadConstraintCollector<A, B, C, D, ResultContainerB_, ResultB_> collectorB,
+                    @NonNull QuadConstraintCollector<A, B, C, D, ResultContainerC_, ResultC_> collectorC,
+                    @NonNull QuadConstraintCollector<A, B, C, D, ResultContainerD_, ResultD_> collectorD) {
         GroupNodeConstructor<QuadTuple<ResultA_, ResultB_, ResultC_, ResultD_>> nodeConstructor =
                 GroupNodeConstructor.zeroKeysGroupBy(collectorA, collectorB, collectorC, collectorD,
                         Group0Mapping4CollectorQuadNode::new);
@@ -172,17 +175,19 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     }
 
     @Override
-    public <GroupKey_> UniConstraintStream<GroupKey_> groupBy(QuadFunction<A, B, C, D, GroupKey_> groupKeyMapping) {
+    public @NonNull <GroupKey_> UniConstraintStream<GroupKey_>
+            groupBy(@NonNull QuadFunction<A, B, C, D, GroupKey_> groupKeyMapping) {
         GroupNodeConstructor<UniTuple<GroupKey_>> nodeConstructor =
                 GroupNodeConstructor.oneKeyGroupBy(groupKeyMapping, Group1Mapping0CollectorQuadNode::new);
         return buildUniGroupBy(nodeConstructor);
     }
 
     @Override
-    public <GroupKey_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_>
-            TriConstraintStream<GroupKey_, ResultB_, ResultC_> groupBy(QuadFunction<A, B, C, D, GroupKey_> groupKeyMapping,
-                    QuadConstraintCollector<A, B, C, D, ResultContainerB_, ResultB_> collectorB,
-                    QuadConstraintCollector<A, B, C, D, ResultContainerC_, ResultC_> collectorC) {
+    public @NonNull <GroupKey_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_>
+            TriConstraintStream<GroupKey_, ResultB_, ResultC_>
+            groupBy(@NonNull QuadFunction<A, B, C, D, GroupKey_> groupKeyMapping,
+                    @NonNull QuadConstraintCollector<A, B, C, D, ResultContainerB_, ResultB_> collectorB,
+                    @NonNull QuadConstraintCollector<A, B, C, D, ResultContainerC_, ResultC_> collectorC) {
         GroupNodeConstructor<TriTuple<GroupKey_, ResultB_, ResultC_>> nodeConstructor =
                 GroupNodeConstructor.oneKeyGroupBy(groupKeyMapping, collectorB, collectorC,
                         Group1Mapping2CollectorQuadNode::new);
@@ -190,12 +195,12 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     }
 
     @Override
-    public <GroupKey_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_, ResultContainerD_, ResultD_>
+    public @NonNull <GroupKey_, ResultContainerB_, ResultB_, ResultContainerC_, ResultC_, ResultContainerD_, ResultD_>
             QuadConstraintStream<GroupKey_, ResultB_, ResultC_, ResultD_>
-            groupBy(QuadFunction<A, B, C, D, GroupKey_> groupKeyMapping,
-                    QuadConstraintCollector<A, B, C, D, ResultContainerB_, ResultB_> collectorB,
-                    QuadConstraintCollector<A, B, C, D, ResultContainerC_, ResultC_> collectorC,
-                    QuadConstraintCollector<A, B, C, D, ResultContainerD_, ResultD_> collectorD) {
+            groupBy(@NonNull QuadFunction<A, B, C, D, GroupKey_> groupKeyMapping,
+                    @NonNull QuadConstraintCollector<A, B, C, D, ResultContainerB_, ResultB_> collectorB,
+                    @NonNull QuadConstraintCollector<A, B, C, D, ResultContainerC_, ResultC_> collectorC,
+                    @NonNull QuadConstraintCollector<A, B, C, D, ResultContainerD_, ResultD_> collectorD) {
         GroupNodeConstructor<QuadTuple<GroupKey_, ResultB_, ResultC_, ResultD_>> nodeConstructor =
                 GroupNodeConstructor.oneKeyGroupBy(groupKeyMapping, collectorB, collectorC, collectorD,
                         Group1Mapping3CollectorQuadNode::new);
@@ -203,28 +208,29 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     }
 
     @Override
-    public <GroupKey_, ResultContainer_, Result_> BiConstraintStream<GroupKey_, Result_> groupBy(
-            QuadFunction<A, B, C, D, GroupKey_> groupKeyMapping,
-            QuadConstraintCollector<A, B, C, D, ResultContainer_, Result_> collector) {
+    public @NonNull <GroupKey_, ResultContainer_, Result_> BiConstraintStream<GroupKey_, Result_> groupBy(
+            @NonNull QuadFunction<A, B, C, D, GroupKey_> groupKeyMapping,
+            @NonNull QuadConstraintCollector<A, B, C, D, ResultContainer_, Result_> collector) {
         GroupNodeConstructor<BiTuple<GroupKey_, Result_>> nodeConstructor =
                 GroupNodeConstructor.oneKeyGroupBy(groupKeyMapping, collector, Group1Mapping1CollectorQuadNode::new);
         return buildBiGroupBy(nodeConstructor);
     }
 
     @Override
-    public <GroupKeyA_, GroupKeyB_> BiConstraintStream<GroupKeyA_, GroupKeyB_> groupBy(
-            QuadFunction<A, B, C, D, GroupKeyA_> groupKeyAMapping,
-            QuadFunction<A, B, C, D, GroupKeyB_> groupKeyBMapping) {
+    public @NonNull <GroupKeyA_, GroupKeyB_> BiConstraintStream<GroupKeyA_, GroupKeyB_> groupBy(
+            @NonNull QuadFunction<A, B, C, D, GroupKeyA_> groupKeyAMapping,
+            @NonNull QuadFunction<A, B, C, D, GroupKeyB_> groupKeyBMapping) {
         GroupNodeConstructor<BiTuple<GroupKeyA_, GroupKeyB_>> nodeConstructor =
                 GroupNodeConstructor.twoKeysGroupBy(groupKeyAMapping, groupKeyBMapping, Group2Mapping0CollectorQuadNode::new);
         return buildBiGroupBy(nodeConstructor);
     }
 
     @Override
-    public <GroupKeyA_, GroupKeyB_, ResultContainer_, Result_> TriConstraintStream<GroupKeyA_, GroupKeyB_, Result_> groupBy(
-            QuadFunction<A, B, C, D, GroupKeyA_> groupKeyAMapping,
-            QuadFunction<A, B, C, D, GroupKeyB_> groupKeyBMapping,
-            QuadConstraintCollector<A, B, C, D, ResultContainer_, Result_> collector) {
+    public @NonNull <GroupKeyA_, GroupKeyB_, ResultContainer_, Result_> TriConstraintStream<GroupKeyA_, GroupKeyB_, Result_>
+            groupBy(
+                    @NonNull QuadFunction<A, B, C, D, GroupKeyA_> groupKeyAMapping,
+                    @NonNull QuadFunction<A, B, C, D, GroupKeyB_> groupKeyBMapping,
+                    @NonNull QuadConstraintCollector<A, B, C, D, ResultContainer_, Result_> collector) {
         GroupNodeConstructor<TriTuple<GroupKeyA_, GroupKeyB_, Result_>> nodeConstructor =
                 GroupNodeConstructor.twoKeysGroupBy(groupKeyAMapping, groupKeyBMapping, collector,
                         Group2Mapping1CollectorQuadNode::new);
@@ -232,12 +238,12 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     }
 
     @Override
-    public <GroupKeyA_, GroupKeyB_, ResultContainerC_, ResultC_, ResultContainerD_, ResultD_>
+    public @NonNull <GroupKeyA_, GroupKeyB_, ResultContainerC_, ResultC_, ResultContainerD_, ResultD_>
             QuadConstraintStream<GroupKeyA_, GroupKeyB_, ResultC_, ResultD_> groupBy(
-                    QuadFunction<A, B, C, D, GroupKeyA_> groupKeyAMapping,
-                    QuadFunction<A, B, C, D, GroupKeyB_> groupKeyBMapping,
-                    QuadConstraintCollector<A, B, C, D, ResultContainerC_, ResultC_> collectorC,
-                    QuadConstraintCollector<A, B, C, D, ResultContainerD_, ResultD_> collectorD) {
+                    @NonNull QuadFunction<A, B, C, D, GroupKeyA_> groupKeyAMapping,
+                    @NonNull QuadFunction<A, B, C, D, GroupKeyB_> groupKeyBMapping,
+                    @NonNull QuadConstraintCollector<A, B, C, D, ResultContainerC_, ResultC_> collectorC,
+                    @NonNull QuadConstraintCollector<A, B, C, D, ResultContainerD_, ResultD_> collectorD) {
         GroupNodeConstructor<QuadTuple<GroupKeyA_, GroupKeyB_, ResultC_, ResultD_>> nodeConstructor =
                 GroupNodeConstructor.twoKeysGroupBy(groupKeyAMapping, groupKeyBMapping, collectorC, collectorD,
                         Group2Mapping2CollectorQuadNode::new);
@@ -245,9 +251,10 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     }
 
     @Override
-    public <GroupKeyA_, GroupKeyB_, GroupKeyC_> TriConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_> groupBy(
-            QuadFunction<A, B, C, D, GroupKeyA_> groupKeyAMapping, QuadFunction<A, B, C, D, GroupKeyB_> groupKeyBMapping,
-            QuadFunction<A, B, C, D, GroupKeyC_> groupKeyCMapping) {
+    public @NonNull <GroupKeyA_, GroupKeyB_, GroupKeyC_> TriConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_> groupBy(
+            @NonNull QuadFunction<A, B, C, D, GroupKeyA_> groupKeyAMapping,
+            @NonNull QuadFunction<A, B, C, D, GroupKeyB_> groupKeyBMapping,
+            @NonNull QuadFunction<A, B, C, D, GroupKeyC_> groupKeyCMapping) {
         GroupNodeConstructor<TriTuple<GroupKeyA_, GroupKeyB_, GroupKeyC_>> nodeConstructor =
                 GroupNodeConstructor.threeKeysGroupBy(groupKeyAMapping, groupKeyBMapping, groupKeyCMapping,
                         Group3Mapping0CollectorQuadNode::new);
@@ -255,12 +262,12 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     }
 
     @Override
-    public <GroupKeyA_, GroupKeyB_, GroupKeyC_, ResultContainerD_, ResultD_>
+    public @NonNull <GroupKeyA_, GroupKeyB_, GroupKeyC_, ResultContainerD_, ResultD_>
             QuadConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_, ResultD_>
-            groupBy(QuadFunction<A, B, C, D, GroupKeyA_> groupKeyAMapping,
-                    QuadFunction<A, B, C, D, GroupKeyB_> groupKeyBMapping,
-                    QuadFunction<A, B, C, D, GroupKeyC_> groupKeyCMapping,
-                    QuadConstraintCollector<A, B, C, D, ResultContainerD_, ResultD_> collectorD) {
+            groupBy(@NonNull QuadFunction<A, B, C, D, GroupKeyA_> groupKeyAMapping,
+                    @NonNull QuadFunction<A, B, C, D, GroupKeyB_> groupKeyBMapping,
+                    @NonNull QuadFunction<A, B, C, D, GroupKeyC_> groupKeyCMapping,
+                    @NonNull QuadConstraintCollector<A, B, C, D, ResultContainerD_, ResultD_> collectorD) {
         GroupNodeConstructor<QuadTuple<GroupKeyA_, GroupKeyB_, GroupKeyC_, ResultD_>> nodeConstructor =
                 GroupNodeConstructor.threeKeysGroupBy(groupKeyAMapping, groupKeyBMapping, groupKeyCMapping, collectorD,
                         Group3Mapping1CollectorQuadNode::new);
@@ -268,11 +275,12 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     }
 
     @Override
-    public <GroupKeyA_, GroupKeyB_, GroupKeyC_, GroupKeyD_> QuadConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_, GroupKeyD_>
-            groupBy(QuadFunction<A, B, C, D, GroupKeyA_> groupKeyAMapping,
-                    QuadFunction<A, B, C, D, GroupKeyB_> groupKeyBMapping,
-                    QuadFunction<A, B, C, D, GroupKeyC_> groupKeyCMapping,
-                    QuadFunction<A, B, C, D, GroupKeyD_> groupKeyDMapping) {
+    public @NonNull <GroupKeyA_, GroupKeyB_, GroupKeyC_, GroupKeyD_>
+            QuadConstraintStream<GroupKeyA_, GroupKeyB_, GroupKeyC_, GroupKeyD_>
+            groupBy(@NonNull QuadFunction<A, B, C, D, GroupKeyA_> groupKeyAMapping,
+                    @NonNull QuadFunction<A, B, C, D, GroupKeyB_> groupKeyBMapping,
+                    @NonNull QuadFunction<A, B, C, D, GroupKeyC_> groupKeyCMapping,
+                    @NonNull QuadFunction<A, B, C, D, GroupKeyD_> groupKeyDMapping) {
         GroupNodeConstructor<QuadTuple<GroupKeyA_, GroupKeyB_, GroupKeyC_, GroupKeyD_>> nodeConstructor =
                 GroupNodeConstructor.fourKeysGroupBy(groupKeyAMapping, groupKeyBMapping, groupKeyCMapping, groupKeyDMapping,
                         Group4Mapping0CollectorQuadNode::new);
@@ -284,8 +292,9 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     // ************************************************************************
 
     @Override
-    public QuadConstraintStream<A, B, C, D> concat(UniConstraintStream<A> otherStream, Function<A, B> paddingFunctionB,
-            Function<A, C> paddingFunctionC, Function<A, D> paddingFunctionD) {
+    public @NonNull QuadConstraintStream<A, B, C, D> concat(@NonNull UniConstraintStream<A> otherStream,
+            @NonNull Function<A, B> paddingFunctionB,
+            @NonNull Function<A, C> paddingFunctionC, @NonNull Function<A, D> paddingFunctionD) {
         var other = (BavetAbstractUniConstraintStream<Solution_, A>) otherStream;
         var leftBridge = new BavetForeBridgeQuadConstraintStream<>(constraintFactory, this);
         var rightBridge = new BavetForeBridgeUniConstraintStream<>(constraintFactory, other);
@@ -300,8 +309,9 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     }
 
     @Override
-    public QuadConstraintStream<A, B, C, D> concat(BiConstraintStream<A, B> otherStream, BiFunction<A, B, C> paddingFunctionC,
-            BiFunction<A, B, D> paddingFunctionD) {
+    public @NonNull QuadConstraintStream<A, B, C, D> concat(@NonNull BiConstraintStream<A, B> otherStream,
+            @NonNull BiFunction<A, B, C> paddingFunctionC,
+            @NonNull BiFunction<A, B, D> paddingFunctionD) {
         var other = (BavetAbstractBiConstraintStream<Solution_, A, B>) otherStream;
         var leftBridge = new BavetForeBridgeQuadConstraintStream<>(constraintFactory, this);
         var rightBridge = new BavetForeBridgeBiConstraintStream<>(constraintFactory, other);
@@ -315,8 +325,8 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     }
 
     @Override
-    public QuadConstraintStream<A, B, C, D> concat(TriConstraintStream<A, B, C> otherStream,
-            TriFunction<A, B, C, D> paddingFunction) {
+    public @NonNull QuadConstraintStream<A, B, C, D> concat(@NonNull TriConstraintStream<A, B, C> otherStream,
+            @NonNull TriFunction<A, B, C, D> paddingFunction) {
         var other = (BavetAbstractTriConstraintStream<Solution_, A, B, C>) otherStream;
         var leftBridge = new BavetForeBridgeQuadConstraintStream<>(constraintFactory, this);
         var rightBridge = new BavetForeBridgeTriConstraintStream<>(constraintFactory, other);
@@ -330,7 +340,7 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     }
 
     @Override
-    public QuadConstraintStream<A, B, C, D> concat(QuadConstraintStream<A, B, C, D> otherStream) {
+    public @NonNull QuadConstraintStream<A, B, C, D> concat(@NonNull QuadConstraintStream<A, B, C, D> otherStream) {
         var other = (BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>) otherStream;
         var leftBridge = new BavetForeBridgeQuadConstraintStream<>(constraintFactory, this);
         var rightBridge = new BavetForeBridgeQuadConstraintStream<>(constraintFactory, other);
@@ -343,23 +353,24 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     }
 
     @Override
-    public <ResultA_> UniConstraintStream<ResultA_> map(QuadFunction<A, B, C, D, ResultA_> mapping) {
+    public @NonNull <ResultA_> UniConstraintStream<ResultA_> map(@NonNull QuadFunction<A, B, C, D, ResultA_> mapping) {
         var stream = shareAndAddChild(new BavetUniMapQuadConstraintStream<>(constraintFactory, this, mapping));
         return constraintFactory.share(new BavetAftBridgeUniConstraintStream<>(constraintFactory, stream),
                 stream::setAftBridge);
     }
 
     @Override
-    public <ResultA_, ResultB_> BiConstraintStream<ResultA_, ResultB_> map(QuadFunction<A, B, C, D, ResultA_> mappingA,
-            QuadFunction<A, B, C, D, ResultB_> mappingB) {
+    public @NonNull <ResultA_, ResultB_> BiConstraintStream<ResultA_, ResultB_> map(
+            @NonNull QuadFunction<A, B, C, D, ResultA_> mappingA,
+            @NonNull QuadFunction<A, B, C, D, ResultB_> mappingB) {
         var stream = shareAndAddChild(new BavetBiMapQuadConstraintStream<>(constraintFactory, this, mappingA, mappingB));
         return constraintFactory.share(new BavetAftBridgeBiConstraintStream<>(constraintFactory, stream), stream::setAftBridge);
     }
 
     @Override
-    public <ResultA_, ResultB_, ResultC_> TriConstraintStream<ResultA_, ResultB_, ResultC_> map(
-            QuadFunction<A, B, C, D, ResultA_> mappingA, QuadFunction<A, B, C, D, ResultB_> mappingB,
-            QuadFunction<A, B, C, D, ResultC_> mappingC) {
+    public @NonNull <ResultA_, ResultB_, ResultC_> TriConstraintStream<ResultA_, ResultB_, ResultC_> map(
+            @NonNull QuadFunction<A, B, C, D, ResultA_> mappingA, @NonNull QuadFunction<A, B, C, D, ResultB_> mappingB,
+            @NonNull QuadFunction<A, B, C, D, ResultC_> mappingC) {
         var stream = shareAndAddChild(
                 new BavetTriMapQuadConstraintStream<>(constraintFactory, this, mappingA, mappingB, mappingC));
         return constraintFactory.share(new BavetAftBridgeTriConstraintStream<>(constraintFactory, stream),
@@ -367,9 +378,9 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     }
 
     @Override
-    public <ResultA_, ResultB_, ResultC_, ResultD_> QuadConstraintStream<ResultA_, ResultB_, ResultC_, ResultD_> map(
-            QuadFunction<A, B, C, D, ResultA_> mappingA, QuadFunction<A, B, C, D, ResultB_> mappingB,
-            QuadFunction<A, B, C, D, ResultC_> mappingC, QuadFunction<A, B, C, D, ResultD_> mappingD) {
+    public @NonNull <ResultA_, ResultB_, ResultC_, ResultD_> QuadConstraintStream<ResultA_, ResultB_, ResultC_, ResultD_> map(
+            @NonNull QuadFunction<A, B, C, D, ResultA_> mappingA, @NonNull QuadFunction<A, B, C, D, ResultB_> mappingB,
+            @NonNull QuadFunction<A, B, C, D, ResultC_> mappingC, @NonNull QuadFunction<A, B, C, D, ResultD_> mappingD) {
         var stream = shareAndAddChild(
                 new BavetQuadMapQuadConstraintStream<>(constraintFactory, this, mappingA, mappingB, mappingC, mappingD));
         return constraintFactory.share(new BavetAftBridgeQuadConstraintStream<>(constraintFactory, stream),
@@ -377,7 +388,8 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
     }
 
     @Override
-    public <ResultD_> QuadConstraintStream<A, B, C, ResultD_> flattenLast(Function<D, Iterable<ResultD_>> mapping) {
+    public @NonNull <ResultD_> QuadConstraintStream<A, B, C, ResultD_>
+            flattenLast(@NonNull Function<D, Iterable<ResultD_>> mapping) {
         var stream = shareAndAddChild(new BavetFlattenLastQuadConstraintStream<>(constraintFactory, this, mapping));
         return constraintFactory.share(new BavetAftBridgeQuadConstraintStream<>(constraintFactory, stream),
                 stream::setAftBridge);
