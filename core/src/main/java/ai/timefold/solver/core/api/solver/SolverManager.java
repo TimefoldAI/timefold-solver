@@ -265,13 +265,11 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
     default @NonNull SolverJob<Solution_, ProblemId_> solveAndListen(@NonNull ProblemId_ problemId,
             @NonNull Function<? super ProblemId_, ? extends Solution_> problemFinder,
             @NonNull Consumer<? super Solution_> bestSolutionConsumer) {
-        SolverJobBuilder<Solution_, ProblemId_> builder = solveBuilder()
+        return solveBuilder()
                 .withProblemId(problemId)
-                .withProblemFinder(problemFinder);
-        if (bestSolutionConsumer != null) { // TODO - never null
-            builder.withBestSolutionConsumer(bestSolutionConsumer);
-        }
-        return builder.run();
+                .withProblemFinder(problemFinder)
+                .withBestSolutionConsumer(bestSolutionConsumer)
+                .run();
     }
 
     /**

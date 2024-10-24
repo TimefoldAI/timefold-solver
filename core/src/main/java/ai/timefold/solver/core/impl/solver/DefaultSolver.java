@@ -179,17 +179,11 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
 
     @Override
     public final @NonNull Solution_ solve(@NonNull Solution_ problem) {
-        // TODO: I suppose @NonNull does not guarantee the solution really is not null
-        //  does it make sense to keep this check + the exception?
-        if (problem == null) {
-            throw new IllegalArgumentException("The problem (" + problem + ") must not be null.");
-        }
-
         // No tags for these metrics; they are global
         LongTaskTimer solveLengthTimer = Metrics.more().longTaskTimer(SolverMetric.SOLVE_DURATION.getMeterId());
         Counter errorCounter = Metrics.counter(SolverMetric.ERROR_COUNT.getMeterId());
 
-        solverScope.setBestSolution(problem);
+        solverScope.setBestSolution(Objects.requireNonNull(problem, "The problem must not be null."));
         solverScope.setSolver(this);
         outerSolvingStarted(solverScope);
         boolean restartSolver = true;

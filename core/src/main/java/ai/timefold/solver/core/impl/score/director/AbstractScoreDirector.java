@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.score.director;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -15,6 +16,7 @@ import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.domain.variable.VariableListener;
 import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.analysis.ConstraintAnalysis;
 import ai.timefold.solver.core.api.score.analysis.MatchAnalysis;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
@@ -726,27 +728,27 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         var missingSet = new LinkedHashSet<MatchAnalysis<Score_>>();
 
         uncorruptedAnalysis.constraintMap().forEach((constraintRef, uncorruptedConstraintAnalysis) -> {
-            var corruptedConstraintAnalysis = corruptedAnalysis.constraintMap()
-                    .get(constraintRef);
-            // TODO: matches() is Nullable
-            if (corruptedConstraintAnalysis == null || corruptedConstraintAnalysis.matches().isEmpty()) {
-                missingSet.addAll(uncorruptedConstraintAnalysis.matches());
-                return;
+            var uncorruptedConstraintMatches = emptyMatchAnalysisIfNull(uncorruptedConstraintAnalysis);
+            var corruptedConstraintMatches = emptyMatchAnalysisIfNull(corruptedAnalysis.constraintMap()
+                    .get(constraintRef));
+            if (corruptedConstraintMatches.isEmpty()) {
+                missingSet.addAll(uncorruptedConstraintMatches);
+            } else {
+                updateExcessAndMissingConstraintMatches(uncorruptedConstraintMatches, corruptedConstraintMatches, excessSet,
+                        missingSet);
             }
-            updateExcessAndMissingConstraintMatches(uncorruptedConstraintAnalysis.matches(),
-                    corruptedConstraintAnalysis.matches(), excessSet, missingSet);
         });
 
         corruptedAnalysis.constraintMap().forEach((constraintRef, corruptedConstraintAnalysis) -> {
-            var uncorruptedConstraintAnalysis = uncorruptedAnalysis.constraintMap()
-                    .get(constraintRef);
-            // TODO: matches() is Nullable
-            if (uncorruptedConstraintAnalysis == null || uncorruptedConstraintAnalysis.matches().isEmpty()) {
-                excessSet.addAll(corruptedConstraintAnalysis.matches());
-                return;
+            var corruptedConstraintMatches = emptyMatchAnalysisIfNull(corruptedConstraintAnalysis);
+            var uncorruptedConstraintMatches = emptyMatchAnalysisIfNull(uncorruptedAnalysis.constraintMap()
+                    .get(constraintRef));
+            if (uncorruptedConstraintMatches.isEmpty()) {
+                excessSet.addAll(corruptedConstraintMatches);
+            } else {
+                updateExcessAndMissingConstraintMatches(uncorruptedConstraintMatches, corruptedConstraintMatches, excessSet,
+                        missingSet);
             }
-            updateExcessAndMissingConstraintMatches(uncorruptedConstraintAnalysis.matches(),
-                    corruptedConstraintAnalysis.matches(), excessSet, missingSet);
         });
 
         var analysis = new StringBuilder();
@@ -779,6 +781,14 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             }
         }
         return analysis.toString();
+    }
+
+    private static <Score_ extends Score<Score_>> List<MatchAnalysis<Score_>>
+            emptyMatchAnalysisIfNull(ConstraintAnalysis<Score_> constraintAnalysis) {
+        if (constraintAnalysis == null) {
+            return Collections.emptyList();
+        }
+        return Objects.requireNonNullElse(constraintAnalysis.matches(), Collections.emptyList());
     }
 
     private void appendAnalysis(StringBuilder analysis, String workingLabel, String suffix,
