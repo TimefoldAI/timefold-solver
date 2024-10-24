@@ -23,7 +23,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.MoveTabuAc
  * in the working {@link PlanningSolution}.
  * <p>
  * Usually the move holds a direct reference to each {@link PlanningEntity} of the {@link PlanningSolution}
- * which it will change when {@link #doMove(ScoreDirector)} is called.
+ * which it will change when {@link #doMoveOnly(ScoreDirector)} is called.
  * On that change it should also notify the {@link ScoreDirector} accordingly.
  * <p>
  * A Move should implement {@link Object#equals(Object)} and {@link Object#hashCode()} for {@link MoveTabuAcceptor}.
@@ -71,17 +71,30 @@ public interface Move<Solution_> {
      *
      * @param scoreDirector never null, the {@link ScoreDirector} that needs to get notified of the changes
      * @return an undoMove which does the exact opposite of this move
+     * @deprecated Prefer {@link #doMoveOnly(ScoreDirector)} instead, undo moves no longer have any effect.
      */
-    Move<Solution_> doMove(ScoreDirector<Solution_> scoreDirector);
+    @Deprecated(forRemoval = true, since = "1.16.0")
+    default Move<Solution_> doMove(ScoreDirector<Solution_> scoreDirector) {
+        throw new UnsupportedOperationException("Operation requires an undo move, which is no longer supported.");
+    }
 
     /**
-     * As defined by {@link #doMove(ScoreDirector)}, but does not return an undo move.
+     * Does the move (which indirectly affects the {@link ScoreDirector#getWorkingSolution()}).
+     * When the {@link PlanningSolution working solution} is modified,
+     * the {@link ScoreDirector} must be correctly notified
+     * (through {@link ScoreDirector#beforeVariableChanged(Object, String)} and
+     * {@link ScoreDirector#afterVariableChanged(Object, String)}),
+     * otherwise later calculated {@link Score}s will be corrupted,
+     * or the move may not be correctly undone.
+     * <p>
+     * This method must end with calling {@link ScoreDirector#triggerVariableListeners()}
+     * to ensure all shadow variables are updated.
      *
      * @param scoreDirector never null, the {@link ScoreDirector} that needs to get notified of the changes
      */
     default void doMoveOnly(ScoreDirector<Solution_> scoreDirector) {
         // For backwards compatibility, this method is default and calls doMove(...).
-        // Normally, the relationship is inversed, as implemented in AbstractMove.
+        // Normally, the relationship is inverted, as implemented in AbstractMove.
         doMove(scoreDirector);
     }
 
@@ -141,7 +154,7 @@ public interface Move<Solution_> {
      * Returns all planning entities that are being changed by this move.
      * Required for {@link AcceptorType#ENTITY_TABU}.
      * <p>
-     * This method is only called after {@link #doMove(ScoreDirector)} (which might affect the return values).
+     * This method is only called after {@link #doMoveOnly(ScoreDirector)} (which might affect the return values).
      * <p>
      * Duplicate entries in the returned {@link Collection} are best avoided.
      * The returned {@link Collection} is recommended to be in a stable order.
@@ -151,7 +164,7 @@ public interface Move<Solution_> {
      */
     default Collection<? extends Object> getPlanningEntities() {
         throw new UnsupportedOperationException(
-                "Move class (%s) doesn't implement the getPlanningEntities() method, so Entity Tabu Search is impossible."
+                "Move class (%s) doesn't implement the extractPlanningEntities() method, so Entity Tabu Search is impossible."
                         .formatted(getClass()));
     }
 
@@ -159,7 +172,7 @@ public interface Move<Solution_> {
      * Returns all planning values that entities are being assigned to by this move.
      * Required for {@link AcceptorType#VALUE_TABU}.
      * <p>
-     * This method is only called after {@link #doMove(ScoreDirector)} (which might affect the return values).
+     * This method is only called after {@link #doMoveOnly(ScoreDirector)} (which might affect the return values).
      * <p>
      * Duplicate entries in the returned {@link Collection} are best avoided.
      * The returned {@link Collection} is recommended to be in a stable order.
@@ -169,7 +182,7 @@ public interface Move<Solution_> {
      */
     default Collection<? extends Object> getPlanningValues() {
         throw new UnsupportedOperationException(
-                "Move class (%s) doesn't implement the getPlanningEntities() method, so Value Tabu Search is impossible."
+                "Move class (%s) doesn't implement the extractPlanningEntities() method, so Value Tabu Search is impossible."
                         .formatted(getClass()));
     }
 }

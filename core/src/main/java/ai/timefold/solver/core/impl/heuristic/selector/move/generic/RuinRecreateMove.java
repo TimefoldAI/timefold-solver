@@ -35,25 +35,16 @@ public final class RuinRecreateMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     @Override
-    protected Move<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        var recordedOldValues = new Object[ruinedEntityList.size()];
-        for (var i = 0; i < ruinedEntityList.size(); i++) {
-            recordedOldValues[i] = genuineVariableDescriptor.getValue(ruinedEntityList.get(i));
-        }
-        return new RuinRecreateUndoMove<>(this, genuineVariableDescriptor, ruinedEntityList, recordedOldValues);
-    }
-
-    @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         recordedNewValues = new Object[ruinedEntityList.size()];
 
-        var innerScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         for (var ruinedEntity : ruinedEntityList) {
-            innerScoreDirector.beforeVariableChanged(genuineVariableDescriptor, ruinedEntity);
+            castScoreDirector.beforeVariableChanged(genuineVariableDescriptor, ruinedEntity);
             genuineVariableDescriptor.setValue(ruinedEntity, null);
-            innerScoreDirector.afterVariableChanged(genuineVariableDescriptor, ruinedEntity);
+            castScoreDirector.afterVariableChanged(genuineVariableDescriptor, ruinedEntity);
         }
-        innerScoreDirector.triggerVariableListeners();
+        castScoreDirector.triggerVariableListeners();
 
         var constructionHeuristicPhase = constructionHeuristicPhaseBuilder.withElementsToRecreate(ruinedEntityList)
                 .build();
@@ -61,7 +52,7 @@ public final class RuinRecreateMove<Solution_> extends AbstractMove<Solution_> {
         constructionHeuristicPhase.solvingStarted(solverScope);
         constructionHeuristicPhase.solve(solverScope);
         constructionHeuristicPhase.solvingEnded(solverScope);
-        innerScoreDirector.triggerVariableListeners();
+        castScoreDirector.triggerVariableListeners();
 
         for (var i = 0; i < ruinedEntityList.size(); i++) {
             recordedNewValues[i] = genuineVariableDescriptor.getValue(ruinedEntityList.get(i));

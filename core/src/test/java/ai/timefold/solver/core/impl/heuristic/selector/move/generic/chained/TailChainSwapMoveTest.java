@@ -14,8 +14,8 @@ import ai.timefold.solver.core.impl.domain.variable.anchor.AnchorVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableDemand;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
+import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedAnchor;
 import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity;
@@ -26,202 +26,174 @@ import org.junit.jupiter.api.Test;
 
 class TailChainSwapMoveTest {
 
+    private final GenuineVariableDescriptor<TestdataChainedSolution> variableDescriptor = TestdataChainedEntity
+            .buildVariableDescriptorForChainedObject();
+    private final SolutionDescriptor<TestdataChainedSolution> solutionDescriptor = variableDescriptor.getEntityDescriptor()
+            .getSolutionDescriptor();
+    private final InnerScoreDirector<TestdataChainedSolution, SimpleScore> innerScoreDirector =
+            PlannerTestUtils.mockScoreDirector(solutionDescriptor);
+
     @Test
     void isMoveDoable() {
-        GenuineVariableDescriptor<TestdataChainedSolution> variableDescriptor = TestdataChainedEntity
-                .buildVariableDescriptorForChainedObject();
-        SolutionDescriptor<TestdataChainedSolution> solutionDescriptor = variableDescriptor.getEntityDescriptor()
-                .getSolutionDescriptor();
-        InnerScoreDirector<TestdataChainedSolution, SimpleScore> scoreDirector =
-                PlannerTestUtils.mockScoreDirector(solutionDescriptor);
+        var a0 = new TestdataChainedAnchor("a0");
+        var a1 = new TestdataChainedEntity("a1", a0);
+        var a2 = new TestdataChainedEntity("a2", a1);
+        var a3 = new TestdataChainedEntity("a3", a2);
 
-        TestdataChainedAnchor a0 = new TestdataChainedAnchor("a0");
-        TestdataChainedEntity a1 = new TestdataChainedEntity("a1", a0);
-        TestdataChainedEntity a2 = new TestdataChainedEntity("a2", a1);
-        TestdataChainedEntity a3 = new TestdataChainedEntity("a3", a2);
+        var b0 = new TestdataChainedAnchor("b0");
+        var b1 = new TestdataChainedEntity("b1", b0);
 
-        TestdataChainedAnchor b0 = new TestdataChainedAnchor("b0");
-        TestdataChainedEntity b1 = new TestdataChainedEntity("b1", b0);
-
-        TestdataChainedSolution solution = new TestdataChainedSolution("solution");
+        var solution = new TestdataChainedSolution("solution");
         solution.setChainedAnchorList(Arrays.asList(a0, b0));
         solution.setChainedEntityList(Arrays.asList(a1, a2, a3, b1));
 
-        scoreDirector.setWorkingSolution(solution);
-        SingletonInverseVariableSupply inverseVariableSupply = scoreDirector.getSupplyManager()
+        innerScoreDirector.setWorkingSolution(solution);
+        var inverseVariableSupply = innerScoreDirector.getSupplyManager()
                 .demand(new SingletonInverseVariableDemand<>(variableDescriptor));
-        AnchorVariableSupply anchorVariableSupply = scoreDirector.getSupplyManager()
+        var anchorVariableSupply = innerScoreDirector.getSupplyManager()
                 .demand(new AnchorVariableDemand<>(variableDescriptor));
 
         assertThat(new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a2, b0)
-                .isMoveDoable(scoreDirector)).isTrue();
+                .isMoveDoable(innerScoreDirector)).isTrue();
         assertThat(new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, b1, a1)
-                .isMoveDoable(scoreDirector)).isTrue();
+                .isMoveDoable(innerScoreDirector)).isTrue();
         assertThat(new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a1, a2)
-                .isMoveDoable(scoreDirector)).isTrue();
+                .isMoveDoable(innerScoreDirector)).isTrue();
         assertThat(new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a3, a0)
-                .isMoveDoable(scoreDirector)).isTrue();
+                .isMoveDoable(innerScoreDirector)).isTrue();
         assertThat(new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a1, a1)
-                .isMoveDoable(scoreDirector)).isFalse();
+                .isMoveDoable(innerScoreDirector)).isFalse();
         assertThat(new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a2, a0)
-                .isMoveDoable(scoreDirector)).isFalse();
+                .isMoveDoable(innerScoreDirector)).isFalse();
     }
 
     @Test
     void doMove() {
-        GenuineVariableDescriptor<TestdataChainedSolution> variableDescriptor = TestdataChainedEntity
-                .buildVariableDescriptorForChainedObject();
-        SolutionDescriptor<TestdataChainedSolution> solutionDescriptor = variableDescriptor.getEntityDescriptor()
-                .getSolutionDescriptor();
-        InnerScoreDirector<TestdataChainedSolution, SimpleScore> scoreDirector =
-                PlannerTestUtils.mockScoreDirector(solutionDescriptor);
+        var a0 = new TestdataChainedAnchor("a0");
+        var a1 = new TestdataChainedEntity("a1", a0);
+        var a2 = new TestdataChainedEntity("a2", a1);
+        var a3 = new TestdataChainedEntity("a3", a2);
 
-        TestdataChainedAnchor a0 = new TestdataChainedAnchor("a0");
-        TestdataChainedEntity a1 = new TestdataChainedEntity("a1", a0);
-        TestdataChainedEntity a2 = new TestdataChainedEntity("a2", a1);
-        TestdataChainedEntity a3 = new TestdataChainedEntity("a3", a2);
+        var b0 = new TestdataChainedAnchor("b0");
+        var b1 = new TestdataChainedEntity("b1", b0);
 
-        TestdataChainedAnchor b0 = new TestdataChainedAnchor("b0");
-        TestdataChainedEntity b1 = new TestdataChainedEntity("b1", b0);
-
-        TestdataChainedSolution solution = new TestdataChainedSolution("solution");
+        var solution = new TestdataChainedSolution("solution");
         solution.setChainedAnchorList(Arrays.asList(a0, b0));
         solution.setChainedEntityList(Arrays.asList(a1, a2, a3, b1));
 
-        scoreDirector.setWorkingSolution(solution);
-        SingletonInverseVariableSupply inverseVariableSupply = scoreDirector.getSupplyManager()
+        innerScoreDirector.setWorkingSolution(solution);
+        var inverseVariableSupply = innerScoreDirector.getSupplyManager()
                 .demand(new SingletonInverseVariableDemand<>(variableDescriptor));
-        AnchorVariableSupply anchorVariableSupply = scoreDirector.getSupplyManager()
+        var anchorVariableSupply = innerScoreDirector.getSupplyManager()
                 .demand(new AnchorVariableDemand<>(variableDescriptor));
 
         SelectorTestUtils.assertChain(a0, a1, a2, a3);
         SelectorTestUtils.assertChain(b0, b1);
 
-        TailChainSwapMove<TestdataChainedSolution> move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply,
-                anchorVariableSupply, a2, b0);
-        TailChainSwapMove<TestdataChainedSolution> undoMove = move.createUndoMove(scoreDirector);
-        move.doMove(scoreDirector);
-        SelectorTestUtils.assertChain(a0, a1, b1);
-        SelectorTestUtils.assertChain(b0, a2, a3);
+        var moveDirector = new MoveDirector<>(innerScoreDirector);
+        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
+            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
+            var move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply,
+                    anchorVariableSupply, a2, b0);
+            move.doMoveOnly(scoreDirector);
+            SelectorTestUtils.assertChain(a0, a1, b1);
+            SelectorTestUtils.assertChain(b0, a2, a3);
+        }
 
-        undoMove.doMove(scoreDirector);
-        SelectorTestUtils.assertChain(a0, a1, a2, a3);
-        SelectorTestUtils.assertChain(b0, b1);
-
-        // To tail value
-        move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a2, b1);
-        undoMove = move.createUndoMove(scoreDirector);
-        move.doMove(scoreDirector);
-        SelectorTestUtils.assertChain(a0, a1);
-        SelectorTestUtils.assertChain(b0, b1, a2, a3);
-
-        undoMove.doMove(scoreDirector);
-        SelectorTestUtils.assertChain(a0, a1, a2, a3);
-        SelectorTestUtils.assertChain(b0, b1);
+        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
+            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
+            // To tail value
+            var move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a2, b1);
+            move.doMoveOnly(scoreDirector);
+            SelectorTestUtils.assertChain(a0, a1);
+            SelectorTestUtils.assertChain(b0, b1, a2, a3);
+        }
     }
 
     @Test
     void doMoveInSameChain() {
-        GenuineVariableDescriptor<TestdataChainedSolution> variableDescriptor = TestdataChainedEntity
-                .buildVariableDescriptorForChainedObject();
-        SolutionDescriptor<TestdataChainedSolution> solutionDescriptor = variableDescriptor.getEntityDescriptor()
-                .getSolutionDescriptor();
-        InnerScoreDirector<TestdataChainedSolution, SimpleScore> scoreDirector =
-                PlannerTestUtils.mockScoreDirector(solutionDescriptor);
+        var a0 = new TestdataChainedAnchor("a0");
+        var a1 = new TestdataChainedEntity("a1", a0);
+        var a2 = new TestdataChainedEntity("a2", a1);
+        var a3 = new TestdataChainedEntity("a3", a2);
+        var a4 = new TestdataChainedEntity("a4", a3);
+        var a5 = new TestdataChainedEntity("a5", a4);
+        var a6 = new TestdataChainedEntity("a6", a5);
+        var a7 = new TestdataChainedEntity("a7", a6);
 
-        TestdataChainedAnchor a0 = new TestdataChainedAnchor("a0");
-        TestdataChainedEntity a1 = new TestdataChainedEntity("a1", a0);
-        TestdataChainedEntity a2 = new TestdataChainedEntity("a2", a1);
-        TestdataChainedEntity a3 = new TestdataChainedEntity("a3", a2);
-        TestdataChainedEntity a4 = new TestdataChainedEntity("a4", a3);
-        TestdataChainedEntity a5 = new TestdataChainedEntity("a5", a4);
-        TestdataChainedEntity a6 = new TestdataChainedEntity("a6", a5);
-        TestdataChainedEntity a7 = new TestdataChainedEntity("a7", a6);
-
-        TestdataChainedSolution solution = new TestdataChainedSolution("solution");
+        var solution = new TestdataChainedSolution("solution");
         solution.setChainedAnchorList(Arrays.asList(a0));
         solution.setChainedEntityList(Arrays.asList(a1, a2, a3, a4, a5, a6, a7));
 
-        scoreDirector.setWorkingSolution(solution);
-        SingletonInverseVariableSupply inverseVariableSupply = scoreDirector.getSupplyManager()
+        innerScoreDirector.setWorkingSolution(solution);
+        var inverseVariableSupply = innerScoreDirector.getSupplyManager()
                 .demand(new SingletonInverseVariableDemand<>(variableDescriptor));
-        AnchorVariableSupply anchorVariableSupply = scoreDirector.getSupplyManager()
+        var anchorVariableSupply = innerScoreDirector.getSupplyManager()
                 .demand(new AnchorVariableDemand<>(variableDescriptor));
         SelectorTestUtils.assertChain(a0, a1, a2, a3, a4, a5, a6, a7);
 
-        TailChainSwapMove<TestdataChainedSolution> move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply,
-                anchorVariableSupply, a4, a1);
-        TailChainSwapMove<TestdataChainedSolution> undoMove = move.createUndoMove(scoreDirector);
-        move.doMove(scoreDirector);
-        SelectorTestUtils.assertChain(a0, a1, a4, a3, a2, a5, a6, a7);
-        undoMove.doMove(scoreDirector);
-        SelectorTestUtils.assertChain(a0, a1, a2, a3, a4, a5, a6, a7);
+        var moveDirector = new MoveDirector<>(innerScoreDirector);
+        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
+            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
+            var move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply,
+                    anchorVariableSupply, a4, a1);
+            move.doMoveOnly(scoreDirector);
+            SelectorTestUtils.assertChain(a0, a1, a4, a3, a2, a5, a6, a7);
+        }
 
-        move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a3, a1);
-        undoMove = move.createUndoMove(scoreDirector);
-        move.doMove(scoreDirector);
-        SelectorTestUtils.assertChain(a0, a1, a3, a2, a4, a5, a6, a7);
-        undoMove.doMove(scoreDirector);
-        SelectorTestUtils.assertChain(a0, a1, a2, a3, a4, a5, a6, a7);
+        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
+            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
+            var move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a3, a1);
+            move.doMoveOnly(scoreDirector);
+            SelectorTestUtils.assertChain(a0, a1, a3, a2, a4, a5, a6, a7);
+        }
 
-        move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a7, a1);
-        undoMove = move.createUndoMove(scoreDirector);
-        move.doMove(scoreDirector);
-        SelectorTestUtils.assertChain(a0, a1, a7, a6, a5, a4, a3, a2);
-        undoMove.doMove(scoreDirector);
-        SelectorTestUtils.assertChain(a0, a1, a2, a3, a4, a5, a6, a7);
+        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
+            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
+            var move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a7, a1);
+            move.doMoveOnly(scoreDirector);
+            SelectorTestUtils.assertChain(a0, a1, a7, a6, a5, a4, a3, a2);
+        }
 
-        move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a1, a4);
-        undoMove = move.createUndoMove(scoreDirector);
-        move.doMove(scoreDirector);
-        SelectorTestUtils.assertChain(a0, a7, a6, a5, a2, a3, a4, a1);
-        undoMove.doMove(scoreDirector);
-        SelectorTestUtils.assertChain(a0, a1, a2, a3, a4, a5, a6, a7);
+        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
+            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
+            var move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a1, a4);
+            move.doMoveOnly(scoreDirector);
+            SelectorTestUtils.assertChain(a0, a7, a6, a5, a2, a3, a4, a1);
+        }
 
-        move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a3, a4);
-        undoMove = move.createUndoMove(scoreDirector);
-        move.doMove(scoreDirector);
-        SelectorTestUtils.assertChain(a0, a7, a6, a5, a4, a3, a2, a1);
-        undoMove.doMove(scoreDirector);
-        SelectorTestUtils.assertChain(a0, a1, a2, a3, a4, a5, a6, a7);
+        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
+            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
+            var move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a3, a4);
+            move.doMoveOnly(scoreDirector);
+            SelectorTestUtils.assertChain(a0, a7, a6, a5, a4, a3, a2, a1);
+        }
 
-        move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a2, a6);
-        undoMove = move.createUndoMove(scoreDirector);
-        move.doMove(scoreDirector);
-        SelectorTestUtils.assertChain(a0, a7, a3, a4, a5, a6, a2, a1);
-        undoMove.doMove(scoreDirector);
-        SelectorTestUtils.assertChain(a0, a1, a2, a3, a4, a5, a6, a7);
-
-        // TODO Currently unsupported because we fail to create a valid undoMove... even though doMove supports it
-        //        // To tail value
-        //        move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a3, a7);
-        //        undoMove = move.createUndoMove(scoreDirector);
-        //        move.doMove(scoreDirector);
-        //        SelectorTestUtils.assertChain(a0, a4, a5, a6, a7, a3, a2, a1);
-        //        undoMove.doMove(scoreDirector);
-        //        SelectorTestUtils.assertChain(a0, a1, a2, a3, a4, a5, a6, a7);
+        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
+            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
+            var move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a2, a6);
+            move.doMoveOnly(scoreDirector);
+            SelectorTestUtils.assertChain(a0, a7, a3, a4, a5, a6, a2, a1);
+        }
     }
 
     @Test
     void rebase() {
-        GenuineVariableDescriptor<TestdataChainedSolution> variableDescriptor = TestdataChainedEntity
-                .buildVariableDescriptorForChainedObject();
+        var a0 = new TestdataChainedAnchor("a0");
+        var a1 = new TestdataChainedEntity("a1", a0);
+        var a2 = new TestdataChainedEntity("a2", a1);
+        var a3 = new TestdataChainedEntity("a3", a2);
+        var b0 = new TestdataChainedAnchor("b0");
+        var c0 = new TestdataChainedAnchor("c0");
+        var c1 = new TestdataChainedEntity("c1", c0);
 
-        TestdataChainedAnchor a0 = new TestdataChainedAnchor("a0");
-        TestdataChainedEntity a1 = new TestdataChainedEntity("a1", a0);
-        TestdataChainedEntity a2 = new TestdataChainedEntity("a2", a1);
-        TestdataChainedEntity a3 = new TestdataChainedEntity("a3", a2);
-        TestdataChainedAnchor b0 = new TestdataChainedAnchor("b0");
-        TestdataChainedAnchor c0 = new TestdataChainedAnchor("c0");
-        TestdataChainedEntity c1 = new TestdataChainedEntity("c1", c0);
-
-        TestdataChainedAnchor destinationA0 = new TestdataChainedAnchor("a0");
-        TestdataChainedEntity destinationA1 = new TestdataChainedEntity("a1", destinationA0);
-        TestdataChainedEntity destinationA2 = new TestdataChainedEntity("a2", destinationA1);
-        TestdataChainedEntity destinationA3 = new TestdataChainedEntity("a3", destinationA2);
-        TestdataChainedAnchor destinationB0 = new TestdataChainedAnchor("b0");
-        TestdataChainedAnchor destinationC0 = new TestdataChainedAnchor("c0");
-        TestdataChainedEntity destinationC1 = new TestdataChainedEntity("c1", destinationC0);
+        var destinationA0 = new TestdataChainedAnchor("a0");
+        var destinationA1 = new TestdataChainedEntity("a1", destinationA0);
+        var destinationA2 = new TestdataChainedEntity("a2", destinationA1);
+        var destinationA3 = new TestdataChainedEntity("a3", destinationA2);
+        var destinationB0 = new TestdataChainedAnchor("b0");
+        var destinationC0 = new TestdataChainedAnchor("c0");
+        var destinationC1 = new TestdataChainedEntity("c1", destinationC0);
 
         ScoreDirector<TestdataChainedSolution> destinationScoreDirector = mockRebasingScoreDirector(
                 variableDescriptor.getEntityDescriptor().getSolutionDescriptor(), new Object[][] {
@@ -233,8 +205,8 @@ class TailChainSwapMoveTest {
                         { c0, destinationC0 },
                         { c1, destinationC1 },
                 });
-        SingletonInverseVariableSupply inverseVariableSupply = mock(SingletonInverseVariableSupply.class);
-        AnchorVariableSupply anchorVariableSupply = mock(AnchorVariableSupply.class);
+        var inverseVariableSupply = mock(SingletonInverseVariableSupply.class);
+        var anchorVariableSupply = mock(AnchorVariableSupply.class);
 
         assertSameProperties(destinationA1, destinationC1,
                 new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a1, c1)
@@ -251,29 +223,22 @@ class TailChainSwapMoveTest {
 
     @Test
     void toStringTest() {
-        GenuineVariableDescriptor<TestdataChainedSolution> variableDescriptor = TestdataChainedEntity
-                .buildVariableDescriptorForChainedObject();
-        SolutionDescriptor<TestdataChainedSolution> solutionDescriptor = variableDescriptor.getEntityDescriptor()
-                .getSolutionDescriptor();
-        InnerScoreDirector<TestdataChainedSolution, SimpleScore> scoreDirector =
-                PlannerTestUtils.mockScoreDirector(solutionDescriptor);
+        var a0 = new TestdataChainedAnchor("a0");
+        var a1 = new TestdataChainedEntity("a1", a0);
+        var a2 = new TestdataChainedEntity("a2", a1);
+        var a3 = new TestdataChainedEntity("a3", a2);
 
-        TestdataChainedAnchor a0 = new TestdataChainedAnchor("a0");
-        TestdataChainedEntity a1 = new TestdataChainedEntity("a1", a0);
-        TestdataChainedEntity a2 = new TestdataChainedEntity("a2", a1);
-        TestdataChainedEntity a3 = new TestdataChainedEntity("a3", a2);
+        var b0 = new TestdataChainedAnchor("b0");
+        var b1 = new TestdataChainedEntity("b1", b0);
 
-        TestdataChainedAnchor b0 = new TestdataChainedAnchor("b0");
-        TestdataChainedEntity b1 = new TestdataChainedEntity("b1", b0);
-
-        TestdataChainedSolution solution = new TestdataChainedSolution("solution");
+        var solution = new TestdataChainedSolution("solution");
         solution.setChainedAnchorList(Arrays.asList(a0, b0));
         solution.setChainedEntityList(Arrays.asList(a1, a2, a3, b1));
 
-        scoreDirector.setWorkingSolution(solution);
-        SingletonInverseVariableSupply inverseVariableSupply = scoreDirector.getSupplyManager()
+        innerScoreDirector.setWorkingSolution(solution);
+        var inverseVariableSupply = innerScoreDirector.getSupplyManager()
                 .demand(new SingletonInverseVariableDemand<>(variableDescriptor));
-        AnchorVariableSupply anchorVariableSupply = scoreDirector.getSupplyManager()
+        var anchorVariableSupply = innerScoreDirector.getSupplyManager()
                 .demand(new AnchorVariableDemand<>(variableDescriptor));
 
         assertThat(new TailChainSwapMove<>(variableDescriptor,
@@ -289,37 +254,28 @@ class TailChainSwapMoveTest {
     }
 
     @Test
-    void getPlanningEntitiesWithRightEntityNull() {
-        GenuineVariableDescriptor<TestdataChainedSolution> variableDescriptor = TestdataChainedEntity
-                .buildVariableDescriptorForChainedObject();
-        SolutionDescriptor<TestdataChainedSolution> solutionDescriptor = variableDescriptor.getEntityDescriptor()
-                .getSolutionDescriptor();
-        InnerScoreDirector<TestdataChainedSolution, SimpleScore> scoreDirector =
-                PlannerTestUtils.mockScoreDirector(solutionDescriptor);
-        TestdataChainedAnchor a0 = new TestdataChainedAnchor("a0");
-        TestdataChainedEntity a1 = new TestdataChainedEntity("a1", null);
+    void extractPlanningEntitiesWithRightEntityNull() {
+        var a0 = new TestdataChainedAnchor("a0");
+        var a1 = new TestdataChainedEntity("a1", null);
 
-        TestdataChainedAnchor b0 = new TestdataChainedAnchor("b0");
-        TestdataChainedEntity b1 = new TestdataChainedEntity("b1", null);
+        var b0 = new TestdataChainedAnchor("b0");
+        var b1 = new TestdataChainedEntity("b1", null);
 
-        TestdataChainedSolution solution = new TestdataChainedSolution("solution");
+        var solution = new TestdataChainedSolution("solution");
         solution.setChainedAnchorList(Arrays.asList(a0, b0));
         solution.setChainedEntityList(Arrays.asList(a1, b1));
 
-        scoreDirector.setWorkingSolution(solution);
-        SingletonInverseVariableSupply inverseVariableSupply = scoreDirector.getSupplyManager()
+        innerScoreDirector.setWorkingSolution(solution);
+        var inverseVariableSupply = innerScoreDirector.getSupplyManager()
                 .demand(new SingletonInverseVariableDemand<>(variableDescriptor));
-        AnchorVariableSupply anchorVariableSupply = scoreDirector.getSupplyManager()
+        var anchorVariableSupply = innerScoreDirector.getSupplyManager()
                 .demand(new AnchorVariableDemand<>(variableDescriptor));
 
-        TailChainSwapMove<TestdataChainedSolution> move = new TailChainSwapMove<>(variableDescriptor,
+        var move = new TailChainSwapMove<>(variableDescriptor,
                 inverseVariableSupply, anchorVariableSupply, a1, b0);
         assertThat(move.getPlanningEntities()).doesNotContainNull();
 
-        move.doMoveOnGenuineVariables(scoreDirector);
+        move.doMoveOnGenuineVariables(innerScoreDirector);
         assertThat(move.getPlanningEntities()).doesNotContainNull();
-
-        Move<TestdataChainedSolution> undoMove = move.createUndoMove(scoreDirector);
-        assertThat(undoMove.getPlanningEntities()).doesNotContainNull();
     }
 }

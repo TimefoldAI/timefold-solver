@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.move;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.move.director.VariableChangeRecordingScoreDirector;
 
 /**
  * This is an alternative to {@link AbstractMove},
@@ -10,20 +11,19 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
  * therefore removing the need to implement the undo move.
  *
  * @param <Solution_>
+ * @deprecated In favor of {@link AbstractMove}, which no longer requires undo moves to be implemented either.
  */
+@Deprecated(forRemoval = true, since = "1.16.0")
 public abstract class AbstractSimplifiedMove<Solution_> implements Move<Solution_> {
 
     @Override
-    public final Move<Solution_> doMove(ScoreDirector<Solution_> scoreDirector) {
-        var recordingScoreDirector = new VariableChangeRecordingScoreDirector<>(scoreDirector);
-        doMoveOnly(recordingScoreDirector);
-        return new RecordedUndoMove<>(this, recordingScoreDirector.getVariableChanges());
-    }
-
-    @Override
     public final void doMoveOnly(ScoreDirector<Solution_> scoreDirector) {
-        doMoveOnGenuineVariables(scoreDirector);
-        scoreDirector.triggerVariableListeners();
+        var recordingScoreDirector =
+                scoreDirector instanceof VariableChangeRecordingScoreDirector<Solution_> variableChangeRecordingScoreDirector
+                        ? variableChangeRecordingScoreDirector
+                        : new VariableChangeRecordingScoreDirector<>(scoreDirector);
+        doMoveOnGenuineVariables(recordingScoreDirector);
+        recordingScoreDirector.triggerVariableListeners();
     }
 
     protected abstract void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector);

@@ -46,7 +46,15 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
     protected Double fadingValueTabuRatio = null;
     protected Integer moveTabuSize = null;
     protected Integer fadingMoveTabuSize = null;
+    /**
+     * @deprecated Deprecated, no longer has any effect.
+     */
+    @Deprecated(forRemoval = true, since = "1.16.0")
     protected Integer undoMoveTabuSize = null;
+    /**
+     * @deprecated Deprecated, no longer has any effect.
+     */
+    @Deprecated(forRemoval = true, since = "1.16.0")
     protected Integer fadingUndoMoveTabuSize = null;
 
     protected String simulatedAnnealingStartingTemperature = null;
@@ -163,18 +171,34 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
         this.fadingMoveTabuSize = fadingMoveTabuSize;
     }
 
+    /**
+     * @deprecated Deprecated, no longer has any effect.
+     */
+    @Deprecated(forRemoval = true, since = "1.16.0")
     public Integer getUndoMoveTabuSize() {
         return undoMoveTabuSize;
     }
 
+    /**
+     * @deprecated Deprecated, no longer has any effect.
+     */
+    @Deprecated(forRemoval = true, since = "1.16.0")
     public void setUndoMoveTabuSize(Integer undoMoveTabuSize) {
         this.undoMoveTabuSize = undoMoveTabuSize;
     }
 
+    /**
+     * @deprecated Deprecated, no longer has any effect.
+     */
+    @Deprecated(forRemoval = true, since = "1.16.0")
     public Integer getFadingUndoMoveTabuSize() {
         return fadingUndoMoveTabuSize;
     }
 
+    /**
+     * @deprecated Deprecated, no longer has any effect.
+     */
+    @Deprecated(forRemoval = true, since = "1.16.0")
     public void setFadingUndoMoveTabuSize(Integer fadingUndoMoveTabuSize) {
         this.fadingUndoMoveTabuSize = fadingUndoMoveTabuSize;
     }
@@ -286,11 +310,19 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
         return this;
     }
 
+    /**
+     * @deprecated Deprecated, no longer has any effect.
+     */
+    @Deprecated(forRemoval = true, since = "1.16.0")
     public LocalSearchAcceptorConfig withUndoMoveTabuSize(Integer undoMoveTabuSize) {
         this.undoMoveTabuSize = undoMoveTabuSize;
         return this;
     }
 
+    /**
+     * @deprecated Deprecated, no longer has any effect.
+     */
+    @Deprecated(forRemoval = true, since = "1.16.0")
     public LocalSearchAcceptorConfig withFadingUndoMoveTabuSize(Integer fadingUndoMoveTabuSize) {
         this.fadingUndoMoveTabuSize = fadingUndoMoveTabuSize;
         return this;

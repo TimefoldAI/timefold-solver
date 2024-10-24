@@ -8,9 +8,8 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.impl.heuristic.selector.list.ElementLocation;
-import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListValue;
@@ -68,7 +67,7 @@ class ExternalizedListVariableStateSupplyTest {
 
             assertSoftly(softly -> {
                 softly.assertThat(supply.getUnassignedCount()).isEqualTo(2);
-                softly.assertThat(supply.getLocationInList(v1)).isEqualTo(new LocationInList(e1, 0));
+                softly.assertThat(supply.getLocationInList(v1)).isEqualTo(ElementLocation.of(e1, 0));
                 softly.assertThat(supply.getLocationInList(v2)).isEqualTo(ElementLocation.unassigned());
                 softly.assertThat(supply.getLocationInList(v3)).isEqualTo(ElementLocation.unassigned());
             });

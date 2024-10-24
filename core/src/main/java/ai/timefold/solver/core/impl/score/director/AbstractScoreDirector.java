@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.domain.variable.VariableListener;
+import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.MatchAnalysis;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
@@ -23,12 +24,13 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.lookup.LookUpManager;
 import ai.timefold.solver.core.impl.domain.solution.ConstraintWeightSupplier;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.SolutionTracker;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.exception.UndoScoreCorruptionException;
@@ -54,7 +56,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         implements InnerScoreDirector<Solution_, Score_>, Cloneable {
 
     private static final int CONSTRAINT_MATCH_DISPLAY_LIMIT = 8;
-    protected final transient Logger logger = LoggerFactory.getLogger(getClass());
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final boolean lookUpEnabled;
     private final LookUpManager lookUpManager;
@@ -75,6 +77,10 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     // Null when tracking disabled
     private final boolean trackingWorkingSolution;
     private final SolutionTracker<Solution_> solutionTracker;
+    private final MoveDirector<Solution_> moveDirector = new MoveDirector<>(this);
+
+    // Null when no list variable
+    private final ListVariableStateSupply<Solution_> listVariableStateSupply;
 
     protected AbstractScoreDirector(Factory_ scoreDirectorFactory, boolean lookUpEnabled,
             boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
@@ -97,6 +103,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             this.solutionTracker = null;
             this.trackingWorkingSolution = false;
         }
+        var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
+        if (listVariableDescriptor == null) {
+            this.listVariableStateSupply = null;
+        } else {
+            this.listVariableStateSupply = getSupplyManager().demand(listVariableDescriptor.getStateDemand());
+        }
     }
 
     @Override
@@ -117,6 +129,17 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public VariableDescriptorCache<Solution_> getVariableDescriptorCache() {
         return variableDescriptorCache;
+    }
+
+    @Override
+    public ListVariableStateSupply<Solution_> getListVariableStateSupply(ListVariableDescriptor<Solution_> variableDescriptor) {
+        var originalListVariableDescriptor = getSolutionDescriptor().getListVariableDescriptor();
+        if (variableDescriptor != originalListVariableDescriptor) {
+            throw new IllegalStateException(
+                    "The variableDescriptor (%s) is not the same as the solution's variableDescriptor (%s)."
+                            .formatted(variableDescriptor, originalListVariableDescriptor));
+        }
+        return Objects.requireNonNull(listVariableStateSupply);
     }
 
     @Override
@@ -166,6 +189,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public SupplyManager getSupplyManager() {
         return variableListenerSupport;
+    }
+
+    @Override
+    public MoveDirector<Solution_> getMoveDirector() {
+        return moveDirector;
     }
 
     // ************************************************************************
@@ -224,20 +252,21 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (trackingWorkingSolution) {
             solutionTracker.setBeforeMoveSolution(workingSolution);
         }
-        Move<Solution_> undoMove = move.doMove(this);
-        Score_ score = calculateScore();
-        if (assertMoveScoreFromScratch) {
-            undoMoveText = undoMove.toString();
-            if (trackingWorkingSolution) {
-                solutionTracker.setAfterMoveSolution(workingSolution);
+        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
+            move.execute(ephemeralMoveDirector);
+            Score_ score = calculateScore();
+            if (assertMoveScoreFromScratch) {
+                undoMoveText = "Undo(" + move + ")";
+                if (trackingWorkingSolution) {
+                    solutionTracker.setAfterMoveSolution(workingSolution);
+                }
+                assertWorkingScoreFromScratch(score, move);
             }
-            assertWorkingScoreFromScratch(score, move);
+            if (moveProcessor != null) {
+                moveProcessor.accept(score);
+            }
+            return score;
         }
-        if (moveProcessor != null) {
-            moveProcessor.accept(score);
-        }
-        undoMove.doMoveOnly(this);
-        return score;
     }
 
     @Override
@@ -330,6 +359,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         workingInitScore = 0;
         if (lookUpEnabled) {
             lookUpManager.reset();
+        }
+        if (listVariableStateSupply != null) {
+            getSupplyManager().cancel(listVariableStateSupply.getSourceVariableDescriptor().getStateDemand());
         }
         variableListenerSupport.close();
     }

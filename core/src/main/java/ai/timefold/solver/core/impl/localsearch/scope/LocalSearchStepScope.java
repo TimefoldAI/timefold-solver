@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.localsearch.scope;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 
 /**
@@ -14,7 +14,6 @@ public final class LocalSearchStepScope<Solution_> extends AbstractStepScope<Sol
     private double timeGradient = Double.NaN;
     private Move<Solution_> step = null;
     private String stepString = null;
-    private Move<Solution_> undoStep = null;
     private Long selectedMoveCount = null;
     private Long acceptedMoveCount = null;
 
@@ -57,14 +56,6 @@ public final class LocalSearchStepScope<Solution_> extends AbstractStepScope<Sol
 
     public void setStepString(String stepString) {
         this.stepString = stepString;
-    }
-
-    public Move<Solution_> getUndoStep() {
-        return undoStep;
-    }
-
-    public void setUndoStep(Move<Solution_> undoStep) {
-        this.undoStep = undoStep;
     }
 
     public Long getSelectedMoveCount() {

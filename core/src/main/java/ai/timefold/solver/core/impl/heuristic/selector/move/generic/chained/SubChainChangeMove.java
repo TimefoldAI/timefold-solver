@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.heuristic.selector.value.chained.SubChain;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -69,26 +69,20 @@ public class SubChainChangeMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     @Override
-    public SubChainChangeMove<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        Object oldFirstValue = variableDescriptor.getValue(subChain.getFirstEntity());
-        return new SubChainChangeMove<>(subChain, variableDescriptor, oldFirstValue, newTrailingEntity, oldTrailingLastEntity);
-    }
-
-    @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        Object firstEntity = subChain.getFirstEntity();
-        Object lastEntity = subChain.getLastEntity();
-        Object oldFirstValue = variableDescriptor.getValue(firstEntity);
+        var firstEntity = subChain.getFirstEntity();
+        var lastEntity = subChain.getLastEntity();
+        var oldFirstValue = variableDescriptor.getValue(firstEntity);
         // Close the old chain
-        InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
         if (oldTrailingLastEntity != null) {
-            innerScoreDirector.changeVariableFacade(variableDescriptor, oldTrailingLastEntity, oldFirstValue);
+            castScoreDirector.changeVariableFacade(variableDescriptor, oldTrailingLastEntity, oldFirstValue);
         }
         // Change the entity
-        innerScoreDirector.changeVariableFacade(variableDescriptor, firstEntity, toPlanningValue);
+        castScoreDirector.changeVariableFacade(variableDescriptor, firstEntity, toPlanningValue);
         // Reroute the new chain
         if (newTrailingEntity != null) {
-            innerScoreDirector.changeVariableFacade(variableDescriptor, newTrailingEntity, lastEntity);
+            castScoreDirector.changeVariableFacade(variableDescriptor, newTrailingEntity, lastEntity);
         }
     }
 

@@ -1841,21 +1841,8 @@ because we only generate moves for which that is the case.
 A move that is currently not doable can become doable when the working solution changes in a later step,
 otherwise we probably shouldn't have created it in the first place.
 
-Each move has an __undo move__: a move (normally of the same type) which does the exact opposite.
-In the cloud balancing example the undo move of `L1 {X -> Y}` is the move `L1 {Y -> X}`.
-The undo move of a move is created when the `Move` is being done on the current solution,
-before the genuine variables change:
-
-[source,java,options="nowrap"]
-----
-    @Override
-    public TimeslotChangeMove createUndoMove(ScoreDirector<Timetable> scoreDirector) {
-        return new TimeslotChangeMove(lesson, lesson.getTimeslot());
-    }
-----
-
-Notice that if `L1` would have already been moved to `Y`, the undo move would create the move `L1 {Y -> Y}`,
-instead of the move `L1 {Y -> X}`.
+Each move has an __undo move__: a move which does the exact opposite.
+The users do not need to implement this move, as the solver is smart enough to know what to undo based on the move that was done.
 
 A solver phase might do and undo the same `Move` more than once.
 In fact, many solver phases will iteratively do and undo a number of moves to evaluate them,

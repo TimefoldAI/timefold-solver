@@ -4,7 +4,6 @@ import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.
 import static ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt.KOptUtils.getMultiEntitySuccessorFunction;
 import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.mockRebasingScoreDirector;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -53,12 +52,6 @@ class KOptListMoveTest {
     private final TestdataListValue destinationV4 = new TestdataListValue("4");
     private final TestdataListValue destinationV5 = new TestdataListValue("5");
     private final TestdataListValue destinationV6 = new TestdataListValue("6");
-    private final TestdataListValue destinationV7 = new TestdataListValue("7");
-    private final TestdataListValue destinationV8 = new TestdataListValue("8");
-    private final TestdataListValue destinationV9 = new TestdataListValue("9");
-    private final TestdataListValue destinationV10 = new TestdataListValue("10");
-    private final TestdataListValue destinationV11 = new TestdataListValue("11");
-    private final TestdataListValue destinationV12 = new TestdataListValue("12");
 
     // TODO: It appears the multi-entity approach does not like kopt-affected-elements;
     // (in particular, I found index variable corruption causing a NPE due to incorrect after
@@ -86,14 +79,8 @@ class KOptListMoveTest {
                         v4, v6));
 
         assertThat(kOptListMove.isMoveDoable(scoreDirector)).isTrue();
-        var undoMove = kOptListMove.doMove(scoreDirector);
+        kOptListMove.doMoveOnly(scoreDirector);
         assertThat(e1.getValueList()).containsExactly(v1, v2, v5, v6, v4, v3);
-        verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 6);
-        verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 6);
-
-        reset(scoreDirector);
-        undoMove.doMoveOnly(scoreDirector);
-        assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v4, v5, v6);
         verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 6);
         verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 6);
     }
@@ -125,14 +112,8 @@ class KOptListMoveTest {
                         v5, v7));
 
         assertThat(kOptListMove.isMoveDoable(scoreDirector)).isTrue();
-        var undoMove = kOptListMove.doMove(scoreDirector);
+        kOptListMove.doMoveOnly(scoreDirector);
         assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v6, v7, v5, v4);
-        verify(scoreDirector).beforeListVariableChanged(variableDescriptorSpy, e1, 1, 7);
-        verify(scoreDirector).afterListVariableChanged(variableDescriptorSpy, e1, 1, 7);
-
-        reset(scoreDirector);
-        undoMove.doMoveOnly(scoreDirector);
-        assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v4, v5, v6, v7);
         verify(scoreDirector).beforeListVariableChanged(variableDescriptorSpy, e1, 1, 7);
         verify(scoreDirector).afterListVariableChanged(variableDescriptorSpy, e1, 1, 7);
     }
@@ -175,16 +156,9 @@ class KOptListMoveTest {
 
         var rebasedMove = kOptListMove.rebase(destinationScoreDirector);
         assertThat(rebasedMove.isMoveDoable(destinationScoreDirector)).isTrue();
-        var undoMove = rebasedMove.doMove(destinationScoreDirector);
+        rebasedMove.doMoveOnly(destinationScoreDirector);
         assertThat(destinationE1.getValueList()).containsExactly(destinationV1, destinationV2, destinationV5, destinationV6,
                 destinationV4, destinationV3);
-        verify(destinationScoreDirector).beforeListVariableChanged(variableDescriptor, destinationE1, 0, 6);
-        verify(destinationScoreDirector).afterListVariableChanged(variableDescriptor, destinationE1, 0, 6);
-
-        reset(destinationScoreDirector);
-        undoMove.doMoveOnly(destinationScoreDirector);
-        assertThat(destinationE1.getValueList()).containsExactly(destinationV1, destinationV2, destinationV3, destinationV4,
-                destinationV5, destinationV6);
         verify(destinationScoreDirector).beforeListVariableChanged(variableDescriptor, destinationE1, 0, 6);
         verify(destinationScoreDirector).afterListVariableChanged(variableDescriptor, destinationE1, 0, 6);
     }
@@ -233,22 +207,13 @@ class KOptListMoveTest {
         var rebasedMove = kOptListMove.rebase(destinationScoreDirector);
 
         assertThat(rebasedMove.isMoveDoable(destinationScoreDirector)).isTrue();
-        var undoMove = rebasedMove.doMove(destinationScoreDirector);
+        rebasedMove.doMoveOnly(destinationScoreDirector);
         assertThat(destinationE1.getValueList()).containsExactly(destinationV1, destinationV5);
         assertThat(destinationE2.getValueList()).containsExactly(destinationV2, destinationV6, destinationV4, destinationV3);
         verify(destinationScoreDirector).beforeListVariableChanged(variableDescriptor, destinationE1, 0, 4);
         verify(destinationScoreDirector).beforeListVariableChanged(variableDescriptor, destinationE2, 0, 2);
         verify(destinationScoreDirector).afterListVariableChanged(variableDescriptor, destinationE1, 0, 2);
         verify(destinationScoreDirector).afterListVariableChanged(variableDescriptor, destinationE2, 0, 4);
-
-        reset(destinationScoreDirector);
-        undoMove.doMoveOnly(destinationScoreDirector);
-        assertThat(destinationE1.getValueList()).containsExactly(destinationV1, destinationV2, destinationV3, destinationV6);
-        assertThat(destinationE2.getValueList()).containsExactly(destinationV4, destinationV5);
-        verify(destinationScoreDirector).beforeListVariableChanged(variableDescriptor, destinationE1, 0, 2);
-        verify(destinationScoreDirector).beforeListVariableChanged(variableDescriptor, destinationE2, 0, 4);
-        verify(destinationScoreDirector).afterListVariableChanged(variableDescriptor, destinationE1, 0, 4);
-        verify(destinationScoreDirector).afterListVariableChanged(variableDescriptor, destinationE2, 0, 2);
     }
 
     @Test
@@ -268,30 +233,13 @@ class KOptListMoveTest {
                         v3, v7));
 
         assertThat(kOptListMove.isMoveDoable(scoreDirector)).isTrue();
-        var undoMove = kOptListMove.doMove(scoreDirector);
+        kOptListMove.doMoveOnly(scoreDirector);
         assertThat(e1.getValueList()).containsExactly(v1, v2, v6, v5, v4);
         assertThat(e2.getValueList()).containsExactly(v3, v7, v8);
-        //verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 2, 4);
-        //verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e2, 0, 2);
-        //verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 2, 5);
-        //verify(scoreDirector).afterListVariableChanged(variableDescriptor, e2, 0, 1);
         verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 4);
         verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e2, 0, 4);
         verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 5);
         verify(scoreDirector).afterListVariableChanged(variableDescriptor, e2, 0, 3);
-
-        reset(scoreDirector);
-        undoMove.doMoveOnly(scoreDirector);
-        assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v4);
-        assertThat(e2.getValueList()).containsExactly(v5, v6, v7, v8);
-        //verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 2, 5);
-        //verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e2, 0, 1);
-        //verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 2, 4);
-        //verify(scoreDirector).afterListVariableChanged(variableDescriptor, e2, 0, 2);
-        verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 5);
-        verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e2, 0, 3);
-        verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 4);
-        verify(scoreDirector).afterListVariableChanged(variableDescriptor, e2, 0, 4);
     }
 
     @Test
@@ -313,22 +261,13 @@ class KOptListMoveTest {
                         v4, v6));
 
         assertThat(kOptListMove.isMoveDoable(scoreDirector)).isTrue();
-        var undoMove = kOptListMove.doMove(scoreDirector);
+        kOptListMove.doMoveOnly(scoreDirector);
         assertThat(e1.getValueList()).containsExactly(v1, v5);
         assertThat(e2.getValueList()).containsExactly(v2, v6, v4, v3);
         verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 4);
         verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e2, 0, 2);
         verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 2);
         verify(scoreDirector).afterListVariableChanged(variableDescriptor, e2, 0, 4);
-
-        reset(scoreDirector);
-        undoMove.doMoveOnly(scoreDirector);
-        assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v6);
-        assertThat(e2.getValueList()).containsExactly(v4, v5);
-        verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 2);
-        verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e2, 0, 4);
-        verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 4);
-        verify(scoreDirector).afterListVariableChanged(variableDescriptor, e2, 0, 2);
     }
 
     @Test
@@ -360,22 +299,13 @@ class KOptListMoveTest {
                         v4, v7));
 
         assertThat(kOptListMove.isMoveDoable(scoreDirector)).isTrue();
-        var undoMove = kOptListMove.doMove(scoreDirector);
+        kOptListMove.doMoveOnly(scoreDirector);
         assertThat(e1.getValueList()).containsExactly(v1, v2, v5);
         assertThat(e2.getValueList()).containsExactly(v3, v7, v4, v6);
         verify(scoreDirector).beforeListVariableChanged(variableDescriptorSpy, e1, 1, 5);
         verify(scoreDirector).beforeListVariableChanged(variableDescriptorSpy, e2, 0, 2);
         verify(scoreDirector).afterListVariableChanged(variableDescriptorSpy, e1, 1, 3);
         verify(scoreDirector).afterListVariableChanged(variableDescriptorSpy, e2, 0, 4);
-
-        reset(scoreDirector);
-        undoMove.doMoveOnly(scoreDirector);
-        assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v6, v7);
-        assertThat(e2.getValueList()).containsExactly(v4, v5);
-        verify(scoreDirector).beforeListVariableChanged(variableDescriptorSpy, e1, 1, 3);
-        verify(scoreDirector).beforeListVariableChanged(variableDescriptorSpy, e2, 0, 4);
-        verify(scoreDirector).afterListVariableChanged(variableDescriptorSpy, e1, 1, 5);
-        verify(scoreDirector).afterListVariableChanged(variableDescriptorSpy, e2, 0, 2);
     }
 
     @Test
@@ -400,34 +330,10 @@ class KOptListMoveTest {
                         v10, v8));
 
         assertThat(kOptListMove.isMoveDoable(scoreDirector)).isTrue();
-        var undoMove = kOptListMove.doMove(scoreDirector);
+        kOptListMove.doMoveOnly(scoreDirector);
         assertThat(e1.getValueList()).containsExactly(v1, v2, v9, v8);
         assertThat(e2.getValueList()).containsExactly(v10, v11, v3, v4);
         assertThat(e3.getValueList()).containsExactly(v5, v6, v7, v12);
-        //verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 2, 4);
-        //verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e2, 0, 4);
-        //verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e3, 0, 3);
-        //verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 2, 4);
-        //verify(scoreDirector).afterListVariableChanged(variableDescriptor, e2, 0, 4);
-        //verify(scoreDirector).afterListVariableChanged(variableDescriptor, e3, 0, 3);
-        verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 4);
-        verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e2, 0, 4);
-        verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e3, 0, 4);
-        verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 4);
-        verify(scoreDirector).afterListVariableChanged(variableDescriptor, e2, 0, 4);
-        verify(scoreDirector).afterListVariableChanged(variableDescriptor, e3, 0, 4);
-
-        reset(scoreDirector);
-        undoMove.doMoveOnly(scoreDirector);
-        assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v4);
-        assertThat(e2.getValueList()).containsExactly(v5, v6, v7, v8);
-        assertThat(e3.getValueList()).containsExactly(v9, v10, v11, v12);
-        //verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 2, 4);
-        //verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e2, 0, 4);
-        //verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e3, 0, 3);
-        //verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 2, 4);
-        //verify(scoreDirector).afterListVariableChanged(variableDescriptor, e2, 0, 4);
-        //verify(scoreDirector).afterListVariableChanged(variableDescriptor, e3, 0, 3);
         verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 4);
         verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e2, 0, 4);
         verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e3, 0, 4);
@@ -454,14 +360,8 @@ class KOptListMoveTest {
                         v8, v10));
 
         assertThat(kOptListMove.isMoveDoable(scoreDirector)).isTrue();
-        var undoMove = kOptListMove.doMove(scoreDirector);
+        kOptListMove.doMoveOnly(scoreDirector);
         assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v9, v10, v8, v7, v6, v5, v4);
-        verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 10);
-        verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 10);
-
-        reset(scoreDirector);
-        undoMove.doMoveOnly(scoreDirector);
-        assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10);
         verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 10);
         verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 10);
     }
@@ -488,21 +388,9 @@ class KOptListMoveTest {
                         v5, v1));
 
         assertThat(kOptListMove.isMoveDoable(scoreDirector)).isTrue();
-        var undoMove = kOptListMove.doMove(scoreDirector);
+        kOptListMove.doMoveOnly(scoreDirector);
 
         assertThat(e1.getValueList()).containsExactly(v1, v5, v4, v2, v3, v7, v6, v8);
-
-        //verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 1, 7);
-        //verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 1, 7);
-        verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 8);
-        verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 8);
-
-        reset(scoreDirector);
-        undoMove.doMoveOnly(scoreDirector);
-
-        assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v4, v5, v6, v7, v8);
-        //verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 1, 7);
-        //verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 1, 7);
         verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 8);
         verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 8);
     }
@@ -528,16 +416,9 @@ class KOptListMoveTest {
                         v9, v12));
 
         assertThat(kOptListMove.isMoveDoable(scoreDirector)).isTrue();
-        var undoMove = kOptListMove.doMove(scoreDirector);
+        kOptListMove.doMoveOnly(scoreDirector);
 
         assertThat(e1.getValueList()).containsExactly(v1, v3, v4, v5, v10, v11, v12, v9, v8, v7, v6, v2);
-        verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 12);
-        verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 12);
-
-        reset(scoreDirector);
-        undoMove.doMoveOnly(scoreDirector);
-
-        assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12);
         verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 12);
         verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 12);
     }
@@ -565,28 +446,9 @@ class KOptListMoveTest {
                         v12, v3));
 
         assertThat(kOptListMove.isMoveDoable(scoreDirector)).isTrue();
-        var undoMove = kOptListMove.doMove(scoreDirector);
+        kOptListMove.doMoveOnly(scoreDirector);
 
         assertThat(e1.getValueList()).containsExactly(v1, v2, v5, v4, v3, v12, v11, v10, v6, v7, v8, v9);
-        //verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 5, 12);
-        //verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 0);
-        //verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 2, 5);
-        //verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 5, 12);
-        //verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 0);
-        //verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 2, 5);
-        verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 12);
-        verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 12);
-
-        reset(scoreDirector);
-        undoMove.doMoveOnly(scoreDirector);
-
-        assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12);
-        //verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 5, 12);
-        //verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 0);
-        //verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 2, 5);
-        //verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 5, 12);
-        //verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 0);
-        //verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 2, 5);
         verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 12);
         verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 12);
     }
@@ -612,16 +474,9 @@ class KOptListMoveTest {
                         v7, v2));
 
         assertThat(kOptListMove.isMoveDoable(scoreDirector)).isTrue();
-        var undoMove = kOptListMove.doMove(scoreDirector);
+        kOptListMove.doMoveOnly(scoreDirector);
 
         assertThat(e1.getValueList()).containsExactly(v1, v2, v7, v8, v5, v6, v3, v4);
-        verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 8);
-        verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 8);
-
-        reset(scoreDirector);
-        undoMove.doMoveOnly(scoreDirector);
-
-        assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v4, v5, v6, v7, v8);
         verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 8);
         verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 8);
     }
@@ -647,17 +502,9 @@ class KOptListMoveTest {
                         v9, v2));
 
         assertThat(kOptListMove.isMoveDoable(scoreDirector)).isTrue();
-        var undoMove = kOptListMove.doMove(scoreDirector);
+        kOptListMove.doMoveOnly(scoreDirector);
 
         assertThat(e1.getValueList()).containsExactly(v1, v2, v9, v10, v11, v12, v6, v7, v8, v3, v4, v5);
-
-        verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 12);
-        verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 12);
-
-        reset(scoreDirector);
-        undoMove.doMoveOnly(scoreDirector);
-
-        assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12);
 
         verify(scoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 12);
         verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 12);
@@ -685,8 +532,6 @@ class KOptListMoveTest {
                         v5, v1));
         // this move create 1 cycle (v1 -> v5 -> v4 -> v2 -> v3 -> v7 -> v6 -> v8 -> v1 -> ...)
         assertThat(kOptListMove.isMoveDoable(scoreDirector)).isTrue();
-
-        e1 = TestdataListEntity.createWithValues("e1", v1, v2, v3, v4, v8, v7, v5, v6);
 
         kOptListMove = fromRemovedAndAddedEdges(scoreDirector, variableDescriptor,
                 List.of(

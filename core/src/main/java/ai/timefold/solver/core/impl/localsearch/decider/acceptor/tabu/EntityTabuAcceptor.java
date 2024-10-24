@@ -17,12 +17,12 @@ public class EntityTabuAcceptor<Solution_> extends AbstractTabuAcceptor<Solution
 
     @Override
     protected Collection<? extends Object> findTabu(LocalSearchMoveScope<Solution_> moveScope) {
-        return moveScope.getMove().getPlanningEntities();
+        return moveScope.getMove().extractPlanningEntities();
     }
 
     @Override
     protected Collection<? extends Object> findNewTabu(LocalSearchStepScope<Solution_> stepScope) {
-        return stepScope.getStep().getPlanningEntities();
+        return stepScope.getStep().extractPlanningEntities();
     }
 
 }

@@ -6,8 +6,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 
+import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.size.FixedTabuSizeStrategy;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
@@ -245,7 +245,7 @@ class EntityTabuAcceptorTest {
     private static <Solution_> LocalSearchMoveScope<Solution_> buildMoveScope(
             LocalSearchStepScope<Solution_> stepScope, int score, TestdataEntity... entities) {
         var move = mock(Move.class);
-        when(move.getPlanningEntities()).thenReturn(Arrays.asList(entities));
+        when(move.extractPlanningEntities()).thenReturn(Arrays.asList(entities));
         var moveScope = new LocalSearchMoveScope<Solution_>(stepScope, 0, move);
         moveScope.setScore(SimpleScore.of(score));
         return moveScope;

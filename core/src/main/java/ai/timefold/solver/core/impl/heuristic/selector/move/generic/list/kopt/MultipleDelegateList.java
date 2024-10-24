@@ -14,7 +14,6 @@ import java.util.stream.Stream;
 import ai.timefold.solver.core.api.function.TriConsumer;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.list.LocationInList;
 
 /**
  * A list that delegates get and set operations to multiple delegates.
@@ -69,19 +68,18 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
     }
 
     public int getIndexOfValue(ListVariableStateSupply<?> listVariableStateSupply, Object value) {
-        var elementLocation = listVariableStateSupply.getLocationInList(value);
-        if (elementLocation instanceof LocationInList elementLocationInList) {
-            var entity = elementLocationInList.entity();
-            var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
-            for (var i = 0; i < delegateEntities.length; i++) {
-                if (delegateEntities[i] == entity) {
-                    var firstUnpinnedIndex = listVariableDescriptor.getFirstUnpinnedIndex(delegateEntities[i]);
-                    return offsets[i] + (elementLocationInList.index() - firstUnpinnedIndex);
-                }
+        var elementLocationInList = listVariableStateSupply.getLocationInList(value)
+                .ensureAssigned(() -> "Value (" + value + ") is not contained in any entity list");
+        var entity = elementLocationInList.entity();
+        var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
+        for (var i = 0; i < delegateEntities.length; i++) {
+            if (delegateEntities[i] == entity) {
+                var firstUnpinnedIndex = listVariableDescriptor.getFirstUnpinnedIndex(delegateEntities[i]);
+                return offsets[i] + (elementLocationInList.index() - firstUnpinnedIndex);
             }
         }
-        // Unassigned or not found.
-        throw new IllegalArgumentException("Value (" + value + ") is not contained in any entity list");
+        throw new IllegalArgumentException("Impossible state: value (%s) not found"
+                .formatted(value));
     }
 
     public void actOnAffectedElements(ListVariableDescriptor<?> listVariableDescriptor, Object[] originalEntities,

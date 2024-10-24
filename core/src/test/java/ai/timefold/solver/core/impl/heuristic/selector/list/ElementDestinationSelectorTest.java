@@ -191,7 +191,7 @@ class ElementDestinationSelectorTest {
         selector.phaseStarted(new LocalSearchPhaseScope<>(solverScope, 0));
 
         assertCodesOfNeverEndingIterator(selector.iterator(),
-                "UnassignedLocation[]",
+                "UnassignedLocation",
                 "A[1]",
                 "B[0]",
                 "C[1]",

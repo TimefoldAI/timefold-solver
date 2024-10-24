@@ -8,7 +8,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
@@ -53,7 +52,7 @@ class SubListChangeMoveTest {
 
         SubListChangeMove<TestdataListSolution> move = new SubListChangeMove<>(variableDescriptor, e1, 1, 2, e2, 0, false);
 
-        Move<TestdataListSolution> undoMove = move.doMove(scoreDirector);
+        move.doMoveOnly(scoreDirector);
 
         assertThat(e1.getValueList()).containsExactly(v1, v4);
         assertThat(e2.getValueList()).containsExactly(v2, v3, v5);
@@ -64,11 +63,6 @@ class SubListChangeMoveTest {
         verify(scoreDirector).afterListVariableChanged(variableDescriptor, e2, 0, 2);
         verify(scoreDirector).triggerVariableListeners();
         verifyNoMoreInteractions(scoreDirector);
-
-        undoMove.doMove(scoreDirector);
-
-        assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v4);
-        assertThat(e2.getValueList()).containsExactly(v5);
     }
 
     @Test
@@ -78,7 +72,7 @@ class SubListChangeMoveTest {
 
         SubListChangeMove<TestdataListSolution> move = new SubListChangeMove<>(variableDescriptor, e1, 0, 3, e2, 1, true);
 
-        Move<TestdataListSolution> undoMove = move.doMove(scoreDirector);
+        move.doMoveOnly(scoreDirector);
 
         assertThat(e1.getValueList()).containsExactly(v4);
         assertThat(e2.getValueList()).containsExactly(v5, v3, v2, v1);
@@ -89,11 +83,6 @@ class SubListChangeMoveTest {
         verify(scoreDirector).afterListVariableChanged(variableDescriptor, e2, 1, 4);
         verify(scoreDirector).triggerVariableListeners();
         verifyNoMoreInteractions(scoreDirector);
-
-        undoMove.doMove(scoreDirector);
-
-        assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v4);
-        assertThat(e2.getValueList()).containsExactly(v5);
     }
 
     @Test
@@ -103,7 +92,7 @@ class SubListChangeMoveTest {
         SubListChangeMove<TestdataListSolution> move =
                 new SubListChangeMove<>(variableDescriptor, e1, 3, 2, e1, 0, false);
 
-        Move<TestdataListSolution> undoMove = move.doMove(scoreDirector);
+        move.doMoveOnly(scoreDirector);
 
         assertThat(e1.getValueList()).containsExactly(v4, v5, v1, v2, v3, v6);
 
@@ -116,10 +105,6 @@ class SubListChangeMoveTest {
         // verify(scoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 2);
         verify(scoreDirector).triggerVariableListeners();
         verifyNoMoreInteractions(scoreDirector);
-
-        undoMove.doMove(scoreDirector);
-
-        assertThat(e1.getValueList()).containsExactly(v1, v2, v3, v4, v5, v6);
     }
 
     @Test

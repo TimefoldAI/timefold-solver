@@ -13,7 +13,6 @@ import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
@@ -59,7 +58,7 @@ class ListChangeMoveTest {
 
         ListChangeMove<TestdataListSolution> move = new ListChangeMove<>(variableDescriptor, e1, 1, e2, 1);
 
-        Move<TestdataListSolution> undoMove = move.doMove(scoreDirector);
+        move.doMoveOnly(scoreDirector);
 
         assertThat(e1.getValueList()).containsExactly(v1);
         assertThat(e2.getValueList()).containsExactly(v3, v2);
@@ -70,11 +69,6 @@ class ListChangeMoveTest {
         verify(scoreDirector).afterListVariableChanged(variableDescriptor, e2, 1, 2);
         verify(scoreDirector).triggerVariableListeners();
         verifyNoMoreInteractions(scoreDirector);
-
-        undoMove.doMove(scoreDirector);
-
-        assertThat(e1.getValueList()).containsExactly(v1, v2);
-        assertThat(e2.getValueList()).containsExactly(v3);
     }
 
     static Stream<Arguments> doAndUndoMoveOnTheSameEntity() {
@@ -84,10 +78,10 @@ class ListChangeMoveTest {
         return Stream.of(
                 arguments(0, asList("2", "0", "1", "3", "4"), 0, 3),
                 arguments(1, asList("0", "2", "1", "3", "4"), 1, 3),
-                arguments(2, null, -1, -1), // undoable (no-op)
+                arguments(2, null, -1, -1), // ephemeral (no-op)
                 arguments(3, asList("0", "1", "3", "2", "4"), 2, 4),
                 arguments(4, asList("0", "1", "3", "4", "2"), 2, 5),
-                arguments(5, null, -1, -1) // undoable (out of bounds)
+                arguments(5, null, -1, -1) // ephemeral (out of bounds)
         );
     }
 
@@ -102,7 +96,7 @@ class ListChangeMoveTest {
         ListChangeMove<TestdataListSolution> move =
                 new ListChangeMove<>(variableDescriptor, e, sourceIndex, e, destinationIndex);
 
-        // Some destinationIndexes make the move undoable.
+        // Some destinationIndexes make the move ephemeral.
         if (expectedValueList == null) {
             assertThat(move.isMoveDoable(scoreDirector)).isFalse();
             return;
@@ -111,7 +105,7 @@ class ListChangeMoveTest {
         // Otherwise, the move is doable...
         assertThat(move.isMoveDoable(scoreDirector)).isTrue();
         // ...and when it's done...
-        Move<TestdataListSolution> undoMove = move.doMove(scoreDirector);
+        move.doMoveOnly(scoreDirector);
         // ...V2 ends up at the destinationIndex
         assertThat(e.getValueList().indexOf(v2)).isEqualTo(destinationIndex);
         assertThat(variableDescriptor.getElement(e, destinationIndex)).isEqualTo(v2);
@@ -122,15 +116,6 @@ class ListChangeMoveTest {
         verify(scoreDirector).afterListVariableChanged(variableDescriptor, e, fromIndex, toIndex);
         verify(scoreDirector).triggerVariableListeners();
         verifyNoMoreInteractions(scoreDirector);
-
-        // Making an undo move...
-        Move<TestdataListSolution> undoUndoMove = undoMove.doMove(scoreDirector);
-        // ...produces the original move...
-        assertThat(undoUndoMove).isEqualTo(move);
-        // ...and returns everything to the original state.
-        assertThat(e.getValueList().indexOf(v2)).isEqualTo(sourceIndex);
-        assertThat(variableDescriptor.getElement(e, sourceIndex)).isEqualTo(v2);
-        assertThat(e.getValueList()).containsExactly(v0, v1, v2, v3, v4);
     }
 
     @Test

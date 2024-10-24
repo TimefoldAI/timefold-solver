@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -11,7 +10,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubList;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 /**
@@ -89,34 +88,28 @@ public class SubListChangeMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     @Override
-    protected AbstractMove<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        return new SubListChangeMove<>(variableDescriptor, destinationEntity, destinationIndex, length, sourceEntity,
-                sourceIndex, reversing);
-    }
-
-    @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
 
-        List<Object> sourceList = variableDescriptor.getValue(sourceEntity);
-        List<Object> subList = sourceList.subList(sourceIndex, sourceIndex + length);
+        var sourceList = variableDescriptor.getValue(sourceEntity);
+        var subList = sourceList.subList(sourceIndex, sourceIndex + length);
         planningValues = CollectionUtils.copy(subList, reversing);
 
         if (sourceEntity == destinationEntity) {
-            int fromIndex = Math.min(sourceIndex, destinationIndex);
-            int toIndex = Math.max(sourceIndex, destinationIndex) + length;
-            innerScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
+            var fromIndex = Math.min(sourceIndex, destinationIndex);
+            var toIndex = Math.max(sourceIndex, destinationIndex) + length;
+            castScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
             subList.clear();
             variableDescriptor.getValue(destinationEntity).addAll(destinationIndex, planningValues);
-            innerScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
+            castScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
         } else {
-            innerScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex + length);
+            castScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex + length);
             subList.clear();
-            innerScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex);
-            innerScoreDirector.beforeListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
+            castScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex);
+            castScoreDirector.beforeListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
                     destinationIndex);
             variableDescriptor.getValue(destinationEntity).addAll(destinationIndex, planningValues);
-            innerScoreDirector.afterListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
+            castScoreDirector.afterListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
                     destinationIndex + length);
         }
     }

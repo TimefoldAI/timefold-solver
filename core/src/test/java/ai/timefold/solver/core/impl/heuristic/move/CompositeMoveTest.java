@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.heuristic.move;
 
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertAllCodesOfArray;
 import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.mockRebasingScoreDirector;
 import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.mockScoreDirector;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,39 +26,6 @@ import org.junit.jupiter.api.Test;
 class CompositeMoveTest {
 
     @Test
-    void createUndoMove() {
-        var scoreDirector = PlannerTestUtils.mockScoreDirector(TestdataSolution.buildSolutionDescriptor());
-        var a = new DummyMove("a");
-        var b = new DummyMove("b");
-        var c = new DummyMove("c");
-        var move = new CompositeMove<>(a, b, c);
-        var undoMove = (CompositeMove<TestdataSolution>) move.doMove(scoreDirector);
-        assertAllCodesOfArray(move.getMoves(), "a", "b", "c");
-        assertAllCodesOfArray(undoMove.getMoves(), "undo c", "undo b", "undo a");
-    }
-
-    @Test
-    void createUndoMoveWithNonDoableMove() {
-        var scoreDirector = PlannerTestUtils.mockScoreDirector(TestdataSolution.buildSolutionDescriptor());
-
-        var a = new DummyMove("a");
-        var b = (DummyMove) new NotDoableDummyMove("b");
-        var c = new DummyMove("c");
-        var move = new CompositeMove<>(a, b, c);
-        var undoMove = (CompositeMove<TestdataSolution>) move.doMove(scoreDirector);
-        assertAllCodesOfArray(move.getMoves(), "a", "b", "c");
-        assertAllCodesOfArray(undoMove.getMoves(), "undo c", "undo a");
-
-        a = new NotDoableDummyMove("a");
-        b = new DummyMove("b");
-        c = new NotDoableDummyMove("c");
-        move = new CompositeMove<>(a, b, c);
-        var undoMove2 = move.doMove(scoreDirector);
-        assertAllCodesOfArray(move.getMoves(), "a", "b", "c");
-        assertThat(undoMove2).isInstanceOf(DummyMove.class); // The only doable move, Composite was stripped.
-    }
-
-    @Test
     void doMove() {
         var scoreDirector = PlannerTestUtils.mockScoreDirector(TestdataSolution.buildSolutionDescriptor());
         var a = mock(DummyMove.class);
@@ -69,10 +35,10 @@ class CompositeMoveTest {
         var c = mock(DummyMove.class);
         when(c.isMoveDoable(any())).thenReturn(true);
         var move = new CompositeMove<>(a, b, c);
-        move.doMove(scoreDirector);
-        verify(a, times(1)).doMove(scoreDirector);
-        verify(b, times(1)).doMove(scoreDirector);
-        verify(c, times(1)).doMove(scoreDirector);
+        move.doMoveOnly(scoreDirector);
+        verify(a, times(1)).doMoveOnly(any());
+        verify(b, times(1)).doMoveOnly(any());
+        verify(c, times(1)).doMoveOnly(any());
     }
 
     @Test
@@ -214,15 +180,10 @@ class CompositeMoveTest {
         assertThat(e2.getValue()).isSameAs(v2);
 
         var scoreDirector = mockScoreDirector(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
-        var undoMove = move.doMove(scoreDirector);
+        move.doMoveOnly(scoreDirector);
 
         assertThat(e1.getValue()).isSameAs(v3);
         assertThat(e2.getValue()).isSameAs(v1);
-
-        undoMove.doMove(scoreDirector);
-
-        assertThat(e1.getValue()).isSameAs(v1);
-        assertThat(e2.getValue()).isSameAs(v2);
     }
 
 }

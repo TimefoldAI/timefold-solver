@@ -1,14 +1,16 @@
 package ai.timefold.solver.core.impl.localsearch.decider;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -92,8 +94,9 @@ public class LocalSearchDecider<Solution_> {
         InnerScoreDirector<Solution_, ?> scoreDirector = stepScope.getScoreDirector();
         scoreDirector.setAllChangesWillBeUndoneBeforeStepEnds(true);
         int moveIndex = 0;
-        for (Move<Solution_> move : moveSelector) {
-            LocalSearchMoveScope<Solution_> moveScope = new LocalSearchMoveScope<>(stepScope, moveIndex, move);
+        for (var move : moveSelector) {
+            var adaptedMove = new LegacyMoveAdapter<>(move);
+            LocalSearchMoveScope<Solution_> moveScope = new LocalSearchMoveScope<>(stepScope, moveIndex, adaptedMove);
             moveIndex++;
             doMove(moveScope);
             if (forager.isQuitEarly()) {
@@ -108,9 +111,12 @@ public class LocalSearchDecider<Solution_> {
         pickMove(stepScope);
     }
 
+    @SuppressWarnings("unchecked")
     protected <Score_ extends Score<Score_>> void doMove(LocalSearchMoveScope<Solution_> moveScope) {
         InnerScoreDirector<Solution_, Score_> scoreDirector = moveScope.getScoreDirector();
-        if (!moveScope.getMove().isMoveDoable(scoreDirector)) {
+        MoveDirector<Solution_> moveDirector = moveScope.getStepScope().getMoveDirector();
+        Move<Solution_> move = moveScope.getMove();
+        if (!LegacyMoveAdapter.isDoable(moveDirector, move)) {
             throw new IllegalStateException("Impossible state: Local search move selector (" + moveSelector
                     + ") provided a non-doable move (" + moveScope.getMove() + ").");
         }

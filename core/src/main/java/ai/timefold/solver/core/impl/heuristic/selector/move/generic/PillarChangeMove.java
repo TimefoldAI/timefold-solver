@@ -12,7 +12,7 @@ import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescr
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**
  * This {@link Move} is not cacheable.
@@ -69,16 +69,10 @@ public class PillarChangeMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     @Override
-    public PillarChangeMove<Solution_> createUndoMove(ScoreDirector<Solution_> scoreDirector) {
-        Object oldValue = variableDescriptor.getValue(pillar.get(0));
-        return new PillarChangeMove<>(pillar, variableDescriptor, oldValue);
-    }
-
-    @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
-        InnerScoreDirector<Solution_, ?> innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
-        for (Object entity : pillar) {
-            innerScoreDirector.changeVariableFacade(variableDescriptor, entity, toPlanningValue);
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
+        for (var entity : pillar) {
+            castScoreDirector.changeVariableFacade(variableDescriptor, entity, toPlanningValue);
         }
     }
 

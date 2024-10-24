@@ -18,6 +18,11 @@ import ai.timefold.solver.core.impl.heuristic.move.Move;
  */
 public interface MoveIteratorFactory<Solution_, Move_ extends Move<Solution_>> {
 
+    static <Solution_> Iterator<ai.timefold.solver.core.api.move.Move<Solution_>>
+            adaptIterator(Iterator<Move<Solution_>> moveIterator) {
+        return new LegacyIteratorAdapter<>(moveIterator);
+    }
+
     /**
      * Called when the phase (for example Local Search) starts.
      *
