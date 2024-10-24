@@ -7,7 +7,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
 /**
- * Allows read-only access to the state of the solution that is being operated on by the {@link Move}
+ * Allows read-only access to the state of the solution that is being operated on by the {@link Move}.
  * <p>
  * <strong>This package and all of its contents are part of the Move Streams API,
  * which is under development and is only offered as a preview feature.</strong>
@@ -22,7 +22,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
  * 
  * @param <Solution_>
  */
-public interface SolutionState<Solution_> {
+public interface SolutionView<Solution_> {
 
     /**
      * Reads the value of a @{@link PlanningVariable basic planning variable} of a given entity.

@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.move.Move;
-import ai.timefold.solver.core.api.move.MutableSolutionState;
+import ai.timefold.solver.core.api.move.MutableSolutionView;
 import ai.timefold.solver.core.api.move.Rebaser;
-import ai.timefold.solver.core.impl.move.InnerMutableSolutionState;
+import ai.timefold.solver.core.impl.move.InnerMutableSolutionView;
 
 final class RecordedUndoMove<Solution_> implements Move<Solution_> {
 
@@ -17,8 +17,8 @@ final class RecordedUndoMove<Solution_> implements Move<Solution_> {
     }
 
     @Override
-    public void execute(MutableSolutionState<Solution_> mutableSolutionState) {
-        var scoreDirector = ((InnerMutableSolutionState<Solution_>) mutableSolutionState).getScoreDirector();
+    public void execute(MutableSolutionView<Solution_> solutionView) {
+        var scoreDirector = ((InnerMutableSolutionView<Solution_>) solutionView).getScoreDirector();
         for (var changeAction : variableChangeActionList) {
             changeAction.undo(scoreDirector);
         }

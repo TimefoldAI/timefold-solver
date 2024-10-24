@@ -17,7 +17,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
  * in the working {@link PlanningSolution}.
  * <p>
  * Usually the move holds a direct reference to each {@link PlanningEntity} of the {@link PlanningSolution}
- * which it will change when {@link #execute(MutableSolutionState)} is called.
+ * which it will change when {@link #execute(MutableSolutionView)} is called.
  * On that change it will also notify the {@link ScoreDirector} accordingly.
  * <p>
  * For tabu search, a Move should implement {@link Object#equals(Object)} and {@link Object#hashCode()},
@@ -42,12 +42,12 @@ public interface Move<Solution_> {
      * Runs the move and optionally records the changes done,
      * so that they can be undone later.
      *
-     * @param mutableSolutionState never null; exposes all possible mutative operations on the variables.
+     * @param solutionView never null; exposes all possible mutative operations on the variables.
      *        Remembers those mutative operations and can replay them in reverse order
      *        when the solver needs to undo the move.
      *        Do not store this parameter in a field.
      */
-    void execute(MutableSolutionState<Solution_> mutableSolutionState);
+    void execute(MutableSolutionView<Solution_> solutionView);
 
     /**
      * Rebases a move from an origin {@link ScoreDirector} to another destination {@link ScoreDirector}
@@ -86,7 +86,7 @@ public interface Move<Solution_> {
      * Returns all planning entities that this move is changing.
      * Required for entity tabu.
      * <p>
-     * This method is only called after {@link #execute(MutableSolutionState)}, which might affect the return values.
+     * This method is only called after {@link #execute(MutableSolutionView)}, which might affect the return values.
      * <p>
      * Duplicate entries in the returned {@link Collection} are best avoided.
      * The returned {@link Collection} is recommended to be in a stable order.
@@ -102,7 +102,7 @@ public interface Move<Solution_> {
      * Returns all planning values that this move is assigning to entity variables.
      * Required for value tabu.
      * <p>
-     * This method is only called after {@link #execute(MutableSolutionState)}, which might affect the return values.
+     * This method is only called after {@link #execute(MutableSolutionView)}, which might affect the return values.
      * <p>
      * Duplicate entries in the returned {@link Collection} are best avoided.
      * The returned {@link Collection} is recommended to be in a stable order.

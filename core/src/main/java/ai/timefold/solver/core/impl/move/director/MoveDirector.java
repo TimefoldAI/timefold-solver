@@ -10,12 +10,12 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningLi
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.move.InnerMutableSolutionState;
+import ai.timefold.solver.core.impl.move.InnerMutableSolutionView;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 public sealed class MoveDirector<Solution_>
-        implements InnerMutableSolutionState<Solution_>, Rebaser
+        implements InnerMutableSolutionView<Solution_>, Rebaser
         permits EphemeralMoveDirector {
 
     protected final VariableDescriptorAwareScoreDirector<Solution_> scoreDirector;

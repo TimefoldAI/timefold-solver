@@ -5,7 +5,7 @@ import java.util.Collections;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.move.Move;
-import ai.timefold.solver.core.api.move.MutableSolutionState;
+import ai.timefold.solver.core.api.move.MutableSolutionView;
 import ai.timefold.solver.core.api.move.Rebaser;
 
 /**
@@ -26,7 +26,7 @@ public final class NoChangeMove<Solution_> implements Move<Solution_> {
     }
 
     @Override
-    public void execute(MutableSolutionState<Solution_> mutableSolutionState) {
+    public void execute(MutableSolutionView<Solution_> solutionView) {
         // Do nothing.
     }
 

@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import ai.timefold.solver.core.api.move.Move;
-import ai.timefold.solver.core.api.move.MutableSolutionState;
+import ai.timefold.solver.core.api.move.MutableSolutionView;
 import ai.timefold.solver.core.api.move.Rebaser;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.util.CodeAssertable;
@@ -30,7 +30,7 @@ public final class DummyMove implements Move<TestdataSolution>, CodeAssertable {
     // ************************************************************************
 
     @Override
-    public void execute(MutableSolutionState<TestdataSolution> mutableSolutionState) {
+    public void execute(MutableSolutionView<TestdataSolution> solutionView) {
         // do nothing
     }
 

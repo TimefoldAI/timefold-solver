@@ -3,11 +3,11 @@ package ai.timefold.solver.core.impl.heuristic.move;
 import java.util.Collection;
 
 import ai.timefold.solver.core.api.move.Move;
-import ai.timefold.solver.core.api.move.MutableSolutionState;
+import ai.timefold.solver.core.api.move.MutableSolutionView;
 import ai.timefold.solver.core.api.move.Rebaser;
-import ai.timefold.solver.core.api.move.SolutionState;
+import ai.timefold.solver.core.api.move.SolutionView;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.impl.move.InnerMutableSolutionState;
+import ai.timefold.solver.core.impl.move.InnerMutableSolutionView;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.move.generic.NoChangeMove;
 
@@ -47,21 +47,21 @@ public record LegacyMoveAdapter<Solution_>(
     }
 
     @Override
-    public void execute(MutableSolutionState<Solution_> mutableSolutionState) {
-        var scoreDirector = getScoreDirector(mutableSolutionState);
+    public void execute(MutableSolutionView<Solution_> solutionView) {
+        var scoreDirector = getScoreDirector(solutionView);
         legacyMove.doMoveOnly(scoreDirector);
     }
 
-    private ScoreDirector<Solution_> getScoreDirector(SolutionState<Solution_> mutableSolutionState) {
-        return ((InnerMutableSolutionState<Solution_>) mutableSolutionState).getScoreDirector();
+    private ScoreDirector<Solution_> getScoreDirector(SolutionView<Solution_> solutionView) {
+        return ((InnerMutableSolutionView<Solution_>) solutionView).getScoreDirector();
     }
 
     private ScoreDirector<Solution_> getScoreDirector(Rebaser rebaser) {
-        return ((InnerMutableSolutionState<Solution_>) rebaser).getScoreDirector();
+        return ((InnerMutableSolutionView<Solution_>) rebaser).getScoreDirector();
     }
 
-    public boolean isMoveDoable(SolutionState<Solution_> solutionState) {
-        return legacyMove.isMoveDoable(getScoreDirector(solutionState));
+    public boolean isMoveDoable(SolutionView<Solution_> solutionView) {
+        return legacyMove.isMoveDoable(getScoreDirector(solutionView));
     }
 
     @Override

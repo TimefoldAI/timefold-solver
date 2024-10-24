@@ -24,7 +24,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
  * 
  * @param <Solution_>
  */
-public interface MutableSolutionState<Solution_> extends SolutionState<Solution_> {
+public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> {
 
     /**
      * Reads the value of a @{@link PlanningVariable basic planning variable} of a given entity.
