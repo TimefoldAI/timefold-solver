@@ -5,6 +5,8 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.function.PentaPredicate;
 import ai.timefold.solver.core.api.score.stream.penta.PentaJoiner;
 
+import org.jspecify.annotations.NonNull;
+
 public final class FilteringPentaJoiner<A, B, C, D, E> implements PentaJoiner<A, B, C, D, E> {
 
     private final PentaPredicate<A, B, C, D, E> filter;
@@ -14,7 +16,7 @@ public final class FilteringPentaJoiner<A, B, C, D, E> implements PentaJoiner<A,
     }
 
     @Override
-    public FilteringPentaJoiner<A, B, C, D, E> and(PentaJoiner<A, B, C, D, E> otherJoiner) {
+    public @NonNull FilteringPentaJoiner<A, B, C, D, E> and(@NonNull PentaJoiner<A, B, C, D, E> otherJoiner) {
         FilteringPentaJoiner<A, B, C, D, E> castJoiner = (FilteringPentaJoiner<A, B, C, D, E>) otherJoiner;
         return new FilteringPentaJoiner<>(filter.and(castJoiner.getFilter()));
     }
