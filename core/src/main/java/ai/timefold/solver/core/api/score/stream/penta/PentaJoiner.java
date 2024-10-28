@@ -2,6 +2,7 @@ package ai.timefold.solver.core.api.score.stream.penta;
 
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream;
+
 import org.jspecify.annotations.NonNull;
 
 /**
