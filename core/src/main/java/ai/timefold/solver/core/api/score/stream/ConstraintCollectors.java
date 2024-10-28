@@ -132,7 +132,7 @@ public final class ConstraintCollectors {
     /**
      * As defined by {@link #countDistinct(Function)}, with {@link Function#identity()} as the argument.
      */
-    public static <A> UniConstraintCollector<A, ?, Integer> countDistinct() {
+    public static <A> @NonNull UniConstraintCollector<A, ?, Integer> countDistinct() {
         return countDistinct(ConstantLambdaUtils.identity());
     }
 
@@ -219,23 +219,25 @@ public final class ConstraintCollectors {
      * The default result of the collector (e.g. when never called) is {@code 0}.
      *
      * @param <A> type of the matched fact
-     * @return never null
      */
-    public static <A> UniConstraintCollector<A, ?, Integer> sum(ToIntFunction<? super A> groupValueMapping) {
+    public static <A> @NonNull UniConstraintCollector<A, ?, Integer> sum(@NonNull ToIntFunction<? super A> groupValueMapping) {
         return InnerUniConstraintCollectors.sum(groupValueMapping);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A> UniConstraintCollector<A, ?, Long> sumLong(ToLongFunction<? super A> groupValueMapping) {
+    public static <A> @NonNull UniConstraintCollector<A, ?, Long>
+            sumLong(@NonNull ToLongFunction<? super A> groupValueMapping) {
         return InnerUniConstraintCollectors.sum(groupValueMapping);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A, Result> UniConstraintCollector<A, ?, Result> sum(Function<? super A, Result> groupValueMapping,
+    // TODO: nullability of further params (suppose all are @NonNull)
+    public static <A, Result> @NonNull UniConstraintCollector<A, ?, Result> sum(
+            @NonNull Function<? super A, Result> groupValueMapping,
             Result zero, BinaryOperator<Result> adder, BinaryOperator<Result> subtractor) {
         return InnerUniConstraintCollectors.sum(groupValueMapping, zero, adder, subtractor);
     }
@@ -243,55 +245,57 @@ public final class ConstraintCollectors {
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A> UniConstraintCollector<A, ?, BigDecimal> sumBigDecimal(
-            Function<? super A, BigDecimal> groupValueMapping) {
+    public static <A> @NonNull UniConstraintCollector<A, ?, BigDecimal> sumBigDecimal(
+            @NonNull Function<? super A, BigDecimal> groupValueMapping) {
         return sum(groupValueMapping, BigDecimal.ZERO, BigDecimal::add, BigDecimal::subtract);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A> UniConstraintCollector<A, ?, BigInteger> sumBigInteger(
-            Function<? super A, BigInteger> groupValueMapping) {
+    public static <A> @NonNull UniConstraintCollector<A, ?, BigInteger> sumBigInteger(
+            @NonNull Function<? super A, BigInteger> groupValueMapping) {
         return sum(groupValueMapping, BigInteger.ZERO, BigInteger::add, BigInteger::subtract);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A> UniConstraintCollector<A, ?, Duration> sumDuration(
-            Function<? super A, Duration> groupValueMapping) {
+    public static <A> @NonNull UniConstraintCollector<A, ?, Duration> sumDuration(
+            @NonNull Function<? super A, Duration> groupValueMapping) {
         return sum(groupValueMapping, Duration.ZERO, Duration::plus, Duration::minus);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A> UniConstraintCollector<A, ?, Period> sumPeriod(Function<? super A, Period> groupValueMapping) {
+    public static <A> @NonNull UniConstraintCollector<A, ?, Period>
+            sumPeriod(@NonNull Function<? super A, Period> groupValueMapping) {
         return sum(groupValueMapping, Period.ZERO, Period::plus, Period::minus);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A, B> BiConstraintCollector<A, B, ?, Integer> sum(
-            ToIntBiFunction<? super A, ? super B> groupValueMapping) {
+    public static <A, B> @NonNull BiConstraintCollector<A, B, ?, Integer> sum(
+            @NonNull ToIntBiFunction<? super A, ? super B> groupValueMapping) {
         return InnerBiConstraintCollectors.sum(groupValueMapping);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A, B> BiConstraintCollector<A, B, ?, Long> sumLong(
-            ToLongBiFunction<? super A, ? super B> groupValueMapping) {
+    public static <A, B> @NonNull BiConstraintCollector<A, B, ?, Long> sumLong(
+            @NonNull ToLongBiFunction<? super A, ? super B> groupValueMapping) {
         return InnerBiConstraintCollectors.sum(groupValueMapping);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A, B, Result> BiConstraintCollector<A, B, ?, Result> sum(
-            BiFunction<? super A, ? super B, Result> groupValueMapping, Result zero, BinaryOperator<Result> adder,
+    // TODO: nullability of further params (suppose all are @NonNull)
+    public static <A, B, Result> @NonNull BiConstraintCollector<A, B, ?, Result> sum(
+            @NonNull BiFunction<? super A, ? super B, Result> groupValueMapping, Result zero, BinaryOperator<Result> adder,
             BinaryOperator<Result> subtractor) {
         return InnerBiConstraintCollectors.sum(groupValueMapping, zero, adder, subtractor);
     }
@@ -299,56 +303,58 @@ public final class ConstraintCollectors {
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A, B> BiConstraintCollector<A, B, ?, BigDecimal> sumBigDecimal(
-            BiFunction<? super A, ? super B, BigDecimal> groupValueMapping) {
+    public static <A, B> @NonNull BiConstraintCollector<A, B, ?, BigDecimal> sumBigDecimal(
+            @NonNull BiFunction<? super A, ? super B, BigDecimal> groupValueMapping) {
         return sum(groupValueMapping, BigDecimal.ZERO, BigDecimal::add, BigDecimal::subtract);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A, B> BiConstraintCollector<A, B, ?, BigInteger> sumBigInteger(
-            BiFunction<? super A, ? super B, BigInteger> groupValueMapping) {
+    public static <A, B> @NonNull BiConstraintCollector<A, B, ?, BigInteger> sumBigInteger(
+            @NonNull BiFunction<? super A, ? super B, BigInteger> groupValueMapping) {
         return sum(groupValueMapping, BigInteger.ZERO, BigInteger::add, BigInteger::subtract);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A, B> BiConstraintCollector<A, B, ?, Duration> sumDuration(
-            BiFunction<? super A, ? super B, Duration> groupValueMapping) {
+    public static <A, B> @NonNull BiConstraintCollector<A, B, ?, Duration> sumDuration(
+            @NonNull BiFunction<? super A, ? super B, Duration> groupValueMapping) {
         return sum(groupValueMapping, Duration.ZERO, Duration::plus, Duration::minus);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A, B> BiConstraintCollector<A, B, ?, Period> sumPeriod(
-            BiFunction<? super A, ? super B, Period> groupValueMapping) {
+    public static <A, B> @NonNull BiConstraintCollector<A, B, ?, Period> sumPeriod(
+            @NonNull BiFunction<? super A, ? super B, Period> groupValueMapping) {
         return sum(groupValueMapping, Period.ZERO, Period::plus, Period::minus);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A, B, C> TriConstraintCollector<A, B, C, ?, Integer> sum(
-            ToIntTriFunction<? super A, ? super B, ? super C> groupValueMapping) {
+    public static <A, B, C> @NonNull TriConstraintCollector<A, B, C, ?, Integer> sum(
+            @NonNull ToIntTriFunction<? super A, ? super B, ? super C> groupValueMapping) {
         return InnerTriConstraintCollectors.sum(groupValueMapping);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A, B, C> TriConstraintCollector<A, B, C, ?, Long> sumLong(
-            ToLongTriFunction<? super A, ? super B, ? super C> groupValueMapping) {
+    public static <A, B, C> @NonNull TriConstraintCollector<A, B, C, ?, Long> sumLong(
+            @NonNull ToLongTriFunction<? super A, ? super B, ? super C> groupValueMapping) {
         return InnerTriConstraintCollectors.sum(groupValueMapping);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A, B, C, Result> TriConstraintCollector<A, B, C, ?, Result> sum(
-            TriFunction<? super A, ? super B, ? super C, Result> groupValueMapping, Result zero,
+
+    // TODO: nullability of further params (suppose all are @NonNull)
+    public static <A, B, C, Result> @NonNull TriConstraintCollector<A, B, C, ?, Result> sum(
+            @NonNull TriFunction<? super A, ? super B, ? super C, Result> groupValueMapping, Result zero,
             BinaryOperator<Result> adder, BinaryOperator<Result> subtractor) {
         return InnerTriConstraintCollectors.sum(groupValueMapping, zero, adder, subtractor);
     }
@@ -356,56 +362,57 @@ public final class ConstraintCollectors {
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A, B, C> TriConstraintCollector<A, B, C, ?, BigDecimal> sumBigDecimal(
-            TriFunction<? super A, ? super B, ? super C, BigDecimal> groupValueMapping) {
+    public static <A, B, C> @NonNull TriConstraintCollector<A, B, C, ?, BigDecimal> sumBigDecimal(
+            @NonNull TriFunction<? super A, ? super B, ? super C, BigDecimal> groupValueMapping) {
         return sum(groupValueMapping, BigDecimal.ZERO, BigDecimal::add, BigDecimal::subtract);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A, B, C> TriConstraintCollector<A, B, C, ?, BigInteger> sumBigInteger(
-            TriFunction<? super A, ? super B, ? super C, BigInteger> groupValueMapping) {
+    public static <A, B, C> @NonNull TriConstraintCollector<A, B, C, ?, BigInteger> sumBigInteger(
+            @NonNull TriFunction<? super A, ? super B, ? super C, BigInteger> groupValueMapping) {
         return sum(groupValueMapping, BigInteger.ZERO, BigInteger::add, BigInteger::subtract);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A, B, C> TriConstraintCollector<A, B, C, ?, Duration> sumDuration(
-            TriFunction<? super A, ? super B, ? super C, Duration> groupValueMapping) {
+    public static <A, B, C> @NonNull TriConstraintCollector<A, B, C, ?, Duration> sumDuration(
+            @NonNull TriFunction<? super A, ? super B, ? super C, Duration> groupValueMapping) {
         return sum(groupValueMapping, Duration.ZERO, Duration::plus, Duration::minus);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A, B, C> TriConstraintCollector<A, B, C, ?, Period> sumPeriod(
-            TriFunction<? super A, ? super B, ? super C, Period> groupValueMapping) {
+    public static <A, B, C> @NonNull TriConstraintCollector<A, B, C, ?, Period> sumPeriod(
+            @NonNull TriFunction<? super A, ? super B, ? super C, Period> groupValueMapping) {
         return sum(groupValueMapping, Period.ZERO, Period::plus, Period::minus);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Integer> sum(
-            ToIntQuadFunction<? super A, ? super B, ? super C, ? super D> groupValueMapping) {
+    public static <A, B, C, D> @NonNull QuadConstraintCollector<A, B, C, D, ?, Integer> sum(
+            @NonNull ToIntQuadFunction<? super A, ? super B, ? super C, ? super D> groupValueMapping) {
         return InnerQuadConstraintCollectors.sum(groupValueMapping);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Long> sumLong(
-            ToLongQuadFunction<? super A, ? super B, ? super C, ? super D> groupValueMapping) {
+    public static <A, B, C, D> @NonNull QuadConstraintCollector<A, B, C, D, ?, Long> sumLong(
+            @NonNull ToLongQuadFunction<? super A, ? super B, ? super C, ? super D> groupValueMapping) {
         return InnerQuadConstraintCollectors.sum(groupValueMapping);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A, B, C, D, Result> QuadConstraintCollector<A, B, C, D, ?, Result> sum(
-            QuadFunction<? super A, ? super B, ? super C, ? super D, Result> groupValueMapping, Result zero,
+    // TODO: nullability of further params (suppose all are @NonNull)
+    public static <A, B, C, D, Result> @NonNull QuadConstraintCollector<A, B, C, D, ?, Result> sum(
+            @NonNull QuadFunction<? super A, ? super B, ? super C, ? super D, Result> groupValueMapping, Result zero,
             BinaryOperator<Result> adder, BinaryOperator<Result> subtractor) {
         return InnerQuadConstraintCollectors.sum(groupValueMapping, zero, adder, subtractor);
     }
@@ -413,32 +420,32 @@ public final class ConstraintCollectors {
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, BigDecimal> sumBigDecimal(
-            QuadFunction<? super A, ? super B, ? super C, ? super D, BigDecimal> groupValueMapping) {
+    public static <A, B, C, D> @NonNull QuadConstraintCollector<A, B, C, D, ?, BigDecimal> sumBigDecimal(
+            @NonNull QuadFunction<? super A, ? super B, ? super C, ? super D, BigDecimal> groupValueMapping) {
         return sum(groupValueMapping, BigDecimal.ZERO, BigDecimal::add, BigDecimal::subtract);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, BigInteger> sumBigInteger(
-            QuadFunction<? super A, ? super B, ? super C, ? super D, BigInteger> groupValueMapping) {
+    public static <A, B, C, D> @NonNull QuadConstraintCollector<A, B, C, D, ?, BigInteger> sumBigInteger(
+            @NonNull QuadFunction<? super A, ? super B, ? super C, ? super D, BigInteger> groupValueMapping) {
         return sum(groupValueMapping, BigInteger.ZERO, BigInteger::add, BigInteger::subtract);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Duration> sumDuration(
-            QuadFunction<? super A, ? super B, ? super C, ? super D, Duration> groupValueMapping) {
+    public static <A, B, C, D> @NonNull QuadConstraintCollector<A, B, C, D, ?, Duration> sumDuration(
+            @NonNull QuadFunction<? super A, ? super B, ? super C, ? super D, Duration> groupValueMapping) {
         return sum(groupValueMapping, Duration.ZERO, Duration::plus, Duration::minus);
     }
 
     /**
      * As defined by {@link #sum(ToIntFunction)}.
      */
-    public static <A, B, C, D> QuadConstraintCollector<A, B, C, D, ?, Period> sumPeriod(
-            QuadFunction<? super A, ? super B, ? super C, ? super D, Period> groupValueMapping) {
+    public static <A, B, C, D> @NonNull QuadConstraintCollector<A, B, C, D, ?, Period> sumPeriod(
+            @NonNull QuadFunction<? super A, ? super B, ? super C, ? super D, Period> groupValueMapping) {
         return sum(groupValueMapping, Period.ZERO, Period::plus, Period::minus);
     }
 
@@ -464,9 +471,8 @@ public final class ConstraintCollectors {
      * The default result of the collector (e.g. when never called) is {@code null}.
      *
      * @param <A> type of the matched fact
-     * @return never null
      */
-    public static <A extends Comparable<A>> UniConstraintCollector<A, ?, A> min() {
+    public static <A extends Comparable<A>> @NonNull UniConstraintCollector<A, ?, A> min() {
         return InnerUniConstraintCollectors.min(ConstantLambdaUtils.identity());
     }
 
@@ -486,11 +492,10 @@ public final class ConstraintCollectors {
      *
      * @param <A> type of the matched fact
      * @param <Mapped> type of the result
-     * @param groupValueMapping never null, maps facts from the matched type to the result type
-     * @return never null
+     * @param groupValueMapping maps facts from the matched type to the result type
      */
-    public static <A, Mapped extends Comparable<? super Mapped>> UniConstraintCollector<A, ?, Mapped> min(
-            Function<A, Mapped> groupValueMapping) {
+    public static <A, Mapped extends Comparable<? super Mapped>> @NonNull UniConstraintCollector<A, ?, Mapped> min(
+            @NonNull Function<A, Mapped> groupValueMapping) {
         return InnerUniConstraintCollectors.min(groupValueMapping);
     }
 
@@ -513,12 +518,12 @@ public final class ConstraintCollectors {
      * @param <A> type of the matched fact
      * @param <Mapped> type of the result
      * @param <Comparable_> type of the comparable property
-     * @param groupValueMapping never null, maps facts from the matched type to the result type
-     * @param comparableFunction never null, maps facts from the matched type to the comparable property
-     * @return never null
+     * @param groupValueMapping maps facts from the matched type to the result type
+     * @param comparableFunction maps facts from the matched type to the comparable property
      */
-    public static <A, Mapped, Comparable_ extends Comparable<? super Comparable_>> UniConstraintCollector<A, ?, Mapped> min(
-            Function<A, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
+    public static <A, Mapped, Comparable_ extends Comparable<? super Comparable_>> @NonNull UniConstraintCollector<A, ?, Mapped>
+            min(@NonNull Function<A, Mapped> groupValueMapping,
+                    @NonNull Function<Mapped, Comparable_> comparableFunction) {
         return InnerUniConstraintCollectors.min(groupValueMapping, comparableFunction);
     }
 
@@ -548,16 +553,18 @@ public final class ConstraintCollectors {
     /**
      * As defined by {@link #min(Function)}.
      */
-    public static <A, B, Mapped extends Comparable<? super Mapped>> BiConstraintCollector<A, B, ?, Mapped> min(
-            BiFunction<A, B, Mapped> groupValueMapping) {
+    public static <A, B, Mapped extends Comparable<? super Mapped>> @NonNull BiConstraintCollector<A, B, ?, Mapped> min(
+            @NonNull BiFunction<A, B, Mapped> groupValueMapping) {
         return InnerBiConstraintCollectors.min(groupValueMapping);
     }
 
     /**
      * As defined by {@link #min(Function, Function)}.
      */
-    public static <A, B, Mapped, Comparable_ extends Comparable<? super Comparable_>> BiConstraintCollector<A, B, ?, Mapped>
-            min(BiFunction<A, B, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
+    public static <A, B, Mapped, Comparable_ extends Comparable<? super Comparable_>>
+            @NonNull BiConstraintCollector<A, B, ?, Mapped>
+            min(@NonNull BiFunction<A, B, Mapped> groupValueMapping,
+                    @NonNull Function<Mapped, Comparable_> comparableFunction) {
         return InnerBiConstraintCollectors.min(groupValueMapping, comparableFunction);
     }
 
@@ -576,8 +583,8 @@ public final class ConstraintCollectors {
     /**
      * As defined by {@link #min(Function)}.
      */
-    public static <A, B, C, Mapped extends Comparable<? super Mapped>> TriConstraintCollector<A, B, C, ?, Mapped> min(
-            TriFunction<A, B, C, Mapped> groupValueMapping) {
+    public static <A, B, C, Mapped extends Comparable<? super Mapped>> @NonNull TriConstraintCollector<A, B, C, ?, Mapped> min(
+            @NonNull TriFunction<A, B, C, Mapped> groupValueMapping) {
         return InnerTriConstraintCollectors.min(groupValueMapping);
     }
 
@@ -585,8 +592,9 @@ public final class ConstraintCollectors {
      * As defined by {@link #min(Function, Function)}.
      */
     public static <A, B, C, Mapped, Comparable_ extends Comparable<? super Comparable_>>
-            TriConstraintCollector<A, B, C, ?, Mapped>
-            min(TriFunction<A, B, C, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
+            @NonNull TriConstraintCollector<A, B, C, ?, Mapped>
+            min(@NonNull TriFunction<A, B, C, Mapped> groupValueMapping,
+                    @NonNull Function<Mapped, Comparable_> comparableFunction) {
         return InnerTriConstraintCollectors.min(groupValueMapping, comparableFunction);
     }
 
@@ -605,8 +613,9 @@ public final class ConstraintCollectors {
     /**
      * As defined by {@link #min(Function)}.
      */
-    public static <A, B, C, D, Mapped extends Comparable<? super Mapped>> QuadConstraintCollector<A, B, C, D, ?, Mapped> min(
-            QuadFunction<A, B, C, D, Mapped> groupValueMapping) {
+    public static <A, B, C, D, Mapped extends Comparable<? super Mapped>>
+            @NonNull QuadConstraintCollector<A, B, C, D, ?, Mapped> min(
+                    @NonNull QuadFunction<A, B, C, D, Mapped> groupValueMapping) {
         return InnerQuadConstraintCollectors.min(groupValueMapping);
     }
 
@@ -614,8 +623,9 @@ public final class ConstraintCollectors {
      * As defined by {@link #min(Function, Function)}.
      */
     public static <A, B, C, D, Mapped, Comparable_ extends Comparable<? super Comparable_>>
-            QuadConstraintCollector<A, B, C, D, ?, Mapped>
-            min(QuadFunction<A, B, C, D, Mapped> groupValueMapping, Function<Mapped, Comparable_> comparableFunction) {
+            @NonNull QuadConstraintCollector<A, B, C, D, ?, Mapped>
+            min(@NonNull QuadFunction<A, B, C, D, Mapped> groupValueMapping,
+                    @NonNull Function<Mapped, Comparable_> comparableFunction) {
         return InnerQuadConstraintCollectors.min(groupValueMapping, comparableFunction);
     }
 
