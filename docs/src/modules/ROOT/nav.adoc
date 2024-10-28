@@ -1,11 +1,11 @@
 * xref:introduction.adoc[leveloffset=+1]
+* xref:planning-ai-concepts.adoc[leveloffset=+1]
 * Getting Started
 ** xref:quickstart/overview.adoc[leveloffset=+1]
 ** xref:quickstart/hello-world/hello-world-quickstart.adoc[leveloffset=+1]
 ** xref:quickstart/quarkus/quarkus-quickstart.adoc[leveloffset=+1]
 ** xref:quickstart/spring-boot/spring-boot-quickstart.adoc[leveloffset=+1]
 ** xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc[leveloffset=+1]
-* xref:planning-ai-concepts.adoc[leveloffset=+1]
 * Using Timefold Solver
 ** xref:using-timefold-solver/overview.adoc[leveloffset=+1]
 ** xref:using-timefold-solver/configuration.adoc[leveloffset=+1]

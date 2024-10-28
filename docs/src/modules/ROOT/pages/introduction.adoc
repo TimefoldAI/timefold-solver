@@ -5,7 +5,7 @@
 :icons: font
 
 [#whatIsTimefold]
-= What is Timefold Solver?
+= Introduction
 
 Every organization faces planning problems: providing products or services with a limited set of _constrained_ resources (employees, assets, time, and money).
 Timefold Solver’s xref:planning-ai-concepts.adoc[PlanningAI] optimizes these problems to do more business with fewer resources using Constraint Satisfaction Programming.
