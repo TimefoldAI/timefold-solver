@@ -24,6 +24,9 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner
 import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 @XmlType(propOrder = {
         "exhaustiveSearchType",
         "nodeExplorationType",
@@ -67,51 +70,51 @@ public class ExhaustiveSearchPhaseConfig extends PhaseConfig<ExhaustiveSearchPha
     })
     protected MoveSelectorConfig moveSelectorConfig = null;
 
-    public ExhaustiveSearchType getExhaustiveSearchType() {
+    public @Nullable ExhaustiveSearchType getExhaustiveSearchType() {
         return exhaustiveSearchType;
     }
 
-    public void setExhaustiveSearchType(ExhaustiveSearchType exhaustiveSearchType) {
+    public void setExhaustiveSearchType(@Nullable ExhaustiveSearchType exhaustiveSearchType) {
         this.exhaustiveSearchType = exhaustiveSearchType;
     }
 
-    public NodeExplorationType getNodeExplorationType() {
+    public @Nullable NodeExplorationType getNodeExplorationType() {
         return nodeExplorationType;
     }
 
-    public void setNodeExplorationType(NodeExplorationType nodeExplorationType) {
+    public void setNodeExplorationType(@Nullable NodeExplorationType nodeExplorationType) {
         this.nodeExplorationType = nodeExplorationType;
     }
 
-    public EntitySorterManner getEntitySorterManner() {
+    public @Nullable EntitySorterManner getEntitySorterManner() {
         return entitySorterManner;
     }
 
-    public void setEntitySorterManner(EntitySorterManner entitySorterManner) {
+    public void setEntitySorterManner(@Nullable EntitySorterManner entitySorterManner) {
         this.entitySorterManner = entitySorterManner;
     }
 
-    public ValueSorterManner getValueSorterManner() {
+    public @Nullable ValueSorterManner getValueSorterManner() {
         return valueSorterManner;
     }
 
-    public void setValueSorterManner(ValueSorterManner valueSorterManner) {
+    public void setValueSorterManner(@Nullable ValueSorterManner valueSorterManner) {
         this.valueSorterManner = valueSorterManner;
     }
 
-    public EntitySelectorConfig getEntitySelectorConfig() {
+    public @Nullable EntitySelectorConfig getEntitySelectorConfig() {
         return entitySelectorConfig;
     }
 
-    public void setEntitySelectorConfig(EntitySelectorConfig entitySelectorConfig) {
+    public void setEntitySelectorConfig(@Nullable EntitySelectorConfig entitySelectorConfig) {
         this.entitySelectorConfig = entitySelectorConfig;
     }
 
-    public MoveSelectorConfig getMoveSelectorConfig() {
+    public @Nullable MoveSelectorConfig getMoveSelectorConfig() {
         return moveSelectorConfig;
     }
 
-    public void setMoveSelectorConfig(MoveSelectorConfig moveSelectorConfig) {
+    public void setMoveSelectorConfig(@Nullable MoveSelectorConfig moveSelectorConfig) {
         this.moveSelectorConfig = moveSelectorConfig;
     }
 
@@ -119,38 +122,38 @@ public class ExhaustiveSearchPhaseConfig extends PhaseConfig<ExhaustiveSearchPha
     // With methods
     // ************************************************************************
 
-    public ExhaustiveSearchPhaseConfig withExhaustiveSearchType(ExhaustiveSearchType exhaustiveSearchType) {
+    public @NonNull ExhaustiveSearchPhaseConfig withExhaustiveSearchType(@NonNull ExhaustiveSearchType exhaustiveSearchType) {
         this.setExhaustiveSearchType(exhaustiveSearchType);
         return this;
     }
 
-    public ExhaustiveSearchPhaseConfig withNodeExplorationType(NodeExplorationType nodeExplorationType) {
+    public @NonNull ExhaustiveSearchPhaseConfig withNodeExplorationType(@NonNull NodeExplorationType nodeExplorationType) {
         this.setNodeExplorationType(nodeExplorationType);
         return this;
     }
 
-    public ExhaustiveSearchPhaseConfig withEntitySorterManner(EntitySorterManner entitySorterManner) {
+    public @NonNull ExhaustiveSearchPhaseConfig withEntitySorterManner(@NonNull EntitySorterManner entitySorterManner) {
         this.setEntitySorterManner(entitySorterManner);
         return this;
     }
 
-    public ExhaustiveSearchPhaseConfig withValueSorterManner(ValueSorterManner valueSorterManner) {
+    public @NonNull ExhaustiveSearchPhaseConfig withValueSorterManner(@NonNull ValueSorterManner valueSorterManner) {
         this.setValueSorterManner(valueSorterManner);
         return this;
     }
 
-    public ExhaustiveSearchPhaseConfig withEntitySelectorConfig(EntitySelectorConfig entitySelectorConfig) {
+    public @NonNull ExhaustiveSearchPhaseConfig withEntitySelectorConfig(@NonNull EntitySelectorConfig entitySelectorConfig) {
         this.setEntitySelectorConfig(entitySelectorConfig);
         return this;
     }
 
-    public ExhaustiveSearchPhaseConfig withMoveSelectorConfig(MoveSelectorConfig moveSelectorConfig) {
+    public @NonNull ExhaustiveSearchPhaseConfig withMoveSelectorConfig(@NonNull MoveSelectorConfig moveSelectorConfig) {
         this.setMoveSelectorConfig(moveSelectorConfig);
         return this;
     }
 
     @Override
-    public ExhaustiveSearchPhaseConfig inherit(ExhaustiveSearchPhaseConfig inheritedConfig) {
+    public @NonNull ExhaustiveSearchPhaseConfig inherit(@NonNull ExhaustiveSearchPhaseConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         exhaustiveSearchType = ConfigUtils.inheritOverwritableProperty(exhaustiveSearchType,
                 inheritedConfig.getExhaustiveSearchType());
@@ -166,12 +169,12 @@ public class ExhaustiveSearchPhaseConfig extends PhaseConfig<ExhaustiveSearchPha
     }
 
     @Override
-    public ExhaustiveSearchPhaseConfig copyConfig() {
+    public @NonNull ExhaustiveSearchPhaseConfig copyConfig() {
         return new ExhaustiveSearchPhaseConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         if (getTerminationConfig() != null) {
             getTerminationConfig().visitReferencedClasses(classVisitor);
         }

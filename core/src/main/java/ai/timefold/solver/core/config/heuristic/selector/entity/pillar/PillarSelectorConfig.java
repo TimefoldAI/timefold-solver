@@ -9,6 +9,8 @@ import ai.timefold.solver.core.config.heuristic.selector.SelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "entitySelectorConfig",
         "minimumSubPillarSize",
@@ -66,7 +68,7 @@ public class PillarSelectorConfig extends SelectorConfig<PillarSelectorConfig> {
     }
 
     @Override
-    public PillarSelectorConfig inherit(PillarSelectorConfig inheritedConfig) {
+    public @NonNull PillarSelectorConfig inherit(@NonNull PillarSelectorConfig inheritedConfig) {
         entitySelectorConfig = ConfigUtils.inheritConfig(entitySelectorConfig, inheritedConfig.getEntitySelectorConfig());
         minimumSubPillarSize = ConfigUtils.inheritOverwritableProperty(minimumSubPillarSize,
                 inheritedConfig.getMinimumSubPillarSize());
@@ -76,12 +78,12 @@ public class PillarSelectorConfig extends SelectorConfig<PillarSelectorConfig> {
     }
 
     @Override
-    public PillarSelectorConfig copyConfig() {
+    public @NonNull PillarSelectorConfig copyConfig() {
         return new PillarSelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         if (entitySelectorConfig != null) {
             entitySelectorConfig.visitReferencedClasses(classVisitor);
         }

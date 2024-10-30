@@ -35,6 +35,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * General superclass for {@link ChangeMoveSelectorConfig}, etc.
  */
@@ -241,7 +243,7 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
     }
 
     @Override
-    public Config_ inherit(Config_ inheritedConfig) {
+    public @NonNull Config_ inherit(@NonNull Config_ inheritedConfig) {
         inheritCommon(inheritedConfig);
         return (Config_) this;
     }

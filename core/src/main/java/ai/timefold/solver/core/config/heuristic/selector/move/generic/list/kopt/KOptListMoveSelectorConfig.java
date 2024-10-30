@@ -13,6 +13,8 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConf
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "minimumK",
         "maximumK",
@@ -95,7 +97,7 @@ public class KOptListMoveSelectorConfig
     // ************************************************************************
 
     @Override
-    public KOptListMoveSelectorConfig inherit(KOptListMoveSelectorConfig inheritedConfig) {
+    public @NonNull KOptListMoveSelectorConfig inherit(@NonNull KOptListMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         this.minimumK = ConfigUtils.inheritOverwritableProperty(minimumK, inheritedConfig.minimumK);
         this.maximumK = ConfigUtils.inheritOverwritableProperty(maximumK, inheritedConfig.maximumK);
@@ -105,12 +107,12 @@ public class KOptListMoveSelectorConfig
     }
 
     @Override
-    public KOptListMoveSelectorConfig copyConfig() {
+    public @NonNull KOptListMoveSelectorConfig copyConfig() {
         return new KOptListMoveSelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         visitCommonReferencedClasses(classVisitor);
 
         if (originSelectorConfig != null) {

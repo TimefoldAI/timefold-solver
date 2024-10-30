@@ -16,6 +16,8 @@ import ai.timefold.solver.core.config.heuristic.selector.move.NearbyUtil;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "entitySelectorConfig",
         "secondaryEntitySelectorConfig",
@@ -84,7 +86,7 @@ public class SwapMoveSelectorConfig
     // ************************************************************************
 
     @Override
-    public SwapMoveSelectorConfig inherit(SwapMoveSelectorConfig inheritedConfig) {
+    public @NonNull SwapMoveSelectorConfig inherit(@NonNull SwapMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         entitySelectorConfig = ConfigUtils.inheritConfig(entitySelectorConfig, inheritedConfig.getEntitySelectorConfig());
         secondaryEntitySelectorConfig = ConfigUtils.inheritConfig(secondaryEntitySelectorConfig,
@@ -95,12 +97,12 @@ public class SwapMoveSelectorConfig
     }
 
     @Override
-    public SwapMoveSelectorConfig copyConfig() {
+    public @NonNull SwapMoveSelectorConfig copyConfig() {
         return new SwapMoveSelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         visitCommonReferencedClasses(classVisitor);
         if (entitySelectorConfig != null) {
             entitySelectorConfig.visitReferencedClasses(classVisitor);

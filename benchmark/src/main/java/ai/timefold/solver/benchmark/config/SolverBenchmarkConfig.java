@@ -9,6 +9,8 @@ import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "name",
         "solverConfig",
@@ -88,7 +90,7 @@ public class SolverBenchmarkConfig extends AbstractConfig<SolverBenchmarkConfig>
     }
 
     @Override
-    public SolverBenchmarkConfig inherit(SolverBenchmarkConfig inheritedConfig) {
+    public @NonNull SolverBenchmarkConfig inherit(@NonNull SolverBenchmarkConfig inheritedConfig) {
         solverConfig = ConfigUtils.inheritConfig(solverConfig, inheritedConfig.getSolverConfig());
         problemBenchmarksConfig = ConfigUtils.inheritConfig(problemBenchmarksConfig,
                 inheritedConfig.getProblemBenchmarksConfig());
@@ -97,12 +99,12 @@ public class SolverBenchmarkConfig extends AbstractConfig<SolverBenchmarkConfig>
     }
 
     @Override
-    public SolverBenchmarkConfig copyConfig() {
+    public @NonNull SolverBenchmarkConfig copyConfig() {
         return new SolverBenchmarkConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         if (solverConfig != null) {
             solverConfig.visitReferencedClasses(classVisitor);
         }

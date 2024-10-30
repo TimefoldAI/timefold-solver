@@ -36,6 +36,9 @@ import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 public class ConfigUtils {
 
     private static final AlphabeticMemberComparator alphabeticMemberComparator = new AlphabeticMemberComparator();
@@ -58,7 +61,8 @@ public class ConfigUtils {
      * @param <T> the new instance type
      * @return new instance of clazz
      */
-    public static <T> T newInstance(Object configBean, String propertyName, Class<T> clazz) {
+    // TODO: propertyName, clazz
+    public static <T> @NonNull T newInstance(@Nullable Object configBean, String propertyName, Class<T> clazz) {
         return newInstance(() -> (configBean == null ? "?" : configBean.getClass().getSimpleName()), propertyName, clazz);
     }
 
@@ -74,7 +78,7 @@ public class ConfigUtils {
      * @param <T> the new instance type
      * @return new instance of clazz
      */
-    public static <T> T newInstance(Supplier<String> ownerDescriptor, String propertyName, Class<T> clazz) {
+    public static <T> @NonNull T newInstance(Supplier<String> ownerDescriptor, String propertyName, Class<T> clazz) {
         try {
             return clazz.getDeclaredConstructor().newInstance();
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
@@ -87,8 +91,9 @@ public class ConfigUtils {
         }
     }
 
-    public static void applyCustomProperties(Object bean, String beanClassPropertyName,
-            Map<String, String> customProperties, String customPropertiesPropertyName) {
+    // TODO: param customPropertiesPropertyName
+    public static void applyCustomProperties(@NonNull Object bean, @NonNull String beanClassPropertyName,
+            @Nullable Map<@NonNull String, @NonNull String> customProperties, String customPropertiesPropertyName) {
         if (customProperties == null) {
             return;
         }
@@ -230,7 +235,7 @@ public class ConfigUtils {
         }
     }
 
-    public static <T> T mergeProperty(T a, T b) {
+    public static <T> @Nullable T mergeProperty(@Nullable T a, @Nullable T b) {
         return Objects.equals(a, b) ? a : null;
     }
 
@@ -254,7 +259,7 @@ public class ConfigUtils {
      * @param <T> the type of property {@code a} and {@code b}
      * @return sometimes null
      */
-    public static <T> T meldProperty(T a, T b) {
+    public static <T> @Nullable T meldProperty(@Nullable T a, @Nullable T b) {
         if (a == null && b == null) {
             return null;
         }

@@ -10,6 +10,8 @@ import ai.timefold.solver.core.config.heuristic.selector.list.SubListSelectorCon
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "minimumSubListSize",
         "maximumSubListSize",
@@ -123,7 +125,7 @@ public class SubListChangeMoveSelectorConfig extends MoveSelectorConfig<SubListC
     // ************************************************************************
 
     @Override
-    public SubListChangeMoveSelectorConfig inherit(SubListChangeMoveSelectorConfig inheritedConfig) {
+    public @NonNull SubListChangeMoveSelectorConfig inherit(@NonNull SubListChangeMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         this.minimumSubListSize =
                 ConfigUtils.inheritOverwritableProperty(minimumSubListSize, inheritedConfig.minimumSubListSize);
@@ -139,12 +141,12 @@ public class SubListChangeMoveSelectorConfig extends MoveSelectorConfig<SubListC
     }
 
     @Override
-    public SubListChangeMoveSelectorConfig copyConfig() {
+    public @NonNull SubListChangeMoveSelectorConfig copyConfig() {
         return new SubListChangeMoveSelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         visitCommonReferencedClasses(classVisitor);
         if (subListSelectorConfig != null) {
             subListSelectorConfig.visitReferencedClasses(classVisitor);

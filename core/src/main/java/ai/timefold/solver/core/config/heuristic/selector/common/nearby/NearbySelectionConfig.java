@@ -18,6 +18,8 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConf
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "originEntitySelectorConfig",
         "originSubListSelectorConfig",
@@ -298,7 +300,7 @@ public class NearbySelectionConfig extends SelectorConfig<NearbySelectionConfig>
     }
 
     @Override
-    public NearbySelectionConfig inherit(NearbySelectionConfig inheritedConfig) {
+    public @NonNull NearbySelectionConfig inherit(@NonNull NearbySelectionConfig inheritedConfig) {
         originEntitySelectorConfig = ConfigUtils.inheritConfig(originEntitySelectorConfig,
                 inheritedConfig.getOriginEntitySelectorConfig());
         originSubListSelectorConfig = ConfigUtils.inheritConfig(originSubListSelectorConfig,
@@ -330,12 +332,12 @@ public class NearbySelectionConfig extends SelectorConfig<NearbySelectionConfig>
     }
 
     @Override
-    public NearbySelectionConfig copyConfig() {
+    public @NonNull NearbySelectionConfig copyConfig() {
         return new NearbySelectionConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         if (originEntitySelectorConfig != null) {
             originEntitySelectorConfig.visitReferencedClasses(classVisitor);
         }

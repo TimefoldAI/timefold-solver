@@ -14,6 +14,8 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConf
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Also known as a 2-opt move selector config.
  */
@@ -68,7 +70,7 @@ public class TailChainSwapMoveSelectorConfig
     }
 
     @Override
-    public TailChainSwapMoveSelectorConfig inherit(TailChainSwapMoveSelectorConfig inheritedConfig) {
+    public @NonNull TailChainSwapMoveSelectorConfig inherit(@NonNull TailChainSwapMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         entitySelectorConfig = ConfigUtils.inheritConfig(entitySelectorConfig, inheritedConfig.getEntitySelectorConfig());
         valueSelectorConfig = ConfigUtils.inheritConfig(valueSelectorConfig, inheritedConfig.getValueSelectorConfig());
@@ -76,12 +78,12 @@ public class TailChainSwapMoveSelectorConfig
     }
 
     @Override
-    public TailChainSwapMoveSelectorConfig copyConfig() {
+    public @NonNull TailChainSwapMoveSelectorConfig copyConfig() {
         return new TailChainSwapMoveSelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         visitCommonReferencedClasses(classVisitor);
         if (entitySelectorConfig != null) {
             entitySelectorConfig.visitReferencedClasses(classVisitor);

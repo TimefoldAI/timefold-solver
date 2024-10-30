@@ -10,6 +10,8 @@ import ai.timefold.solver.core.config.heuristic.selector.entity.pillar.PillarSel
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "subPillarType",
         "subPillarSequenceComparatorClass",
@@ -67,7 +69,7 @@ public abstract class AbstractPillarMoveSelectorConfig<Config_ extends AbstractP
     }
 
     @Override
-    public Config_ inherit(Config_ inheritedConfig) {
+    public @NonNull Config_ inherit(@NonNull Config_ inheritedConfig) {
         super.inherit(inheritedConfig);
         subPillarType = ConfigUtils.inheritOverwritableProperty(subPillarType, inheritedConfig.getSubPillarType());
         subPillarSequenceComparatorClass = ConfigUtils.inheritOverwritableProperty(subPillarSequenceComparatorClass,

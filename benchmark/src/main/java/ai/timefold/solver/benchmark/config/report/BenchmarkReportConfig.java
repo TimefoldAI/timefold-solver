@@ -14,6 +14,8 @@ import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbLocaleAdapter;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "locale",
         "solverRankingType",
@@ -100,7 +102,7 @@ public class BenchmarkReportConfig extends AbstractConfig<BenchmarkReportConfig>
     }
 
     @Override
-    public BenchmarkReportConfig inherit(BenchmarkReportConfig inheritedConfig) {
+    public @NonNull BenchmarkReportConfig inherit(@NonNull BenchmarkReportConfig inheritedConfig) {
         locale = ConfigUtils.inheritOverwritableProperty(locale, inheritedConfig.getLocale());
         solverRankingType = ConfigUtils.inheritOverwritableProperty(solverRankingType,
                 inheritedConfig.getSolverRankingType());
@@ -112,12 +114,12 @@ public class BenchmarkReportConfig extends AbstractConfig<BenchmarkReportConfig>
     }
 
     @Override
-    public BenchmarkReportConfig copyConfig() {
+    public @NonNull BenchmarkReportConfig copyConfig() {
         return new BenchmarkReportConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         classVisitor.accept(solverRankingComparatorClass);
         classVisitor.accept(solverRankingWeightFactoryClass);
     }

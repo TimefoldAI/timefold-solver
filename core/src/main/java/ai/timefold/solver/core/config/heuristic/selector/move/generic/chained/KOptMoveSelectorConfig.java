@@ -10,6 +10,8 @@ import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * THIS CLASS IS EXPERIMENTAL AND UNSUPPORTED.
  * Backward compatibility is not guaranteed.
@@ -66,7 +68,7 @@ public class KOptMoveSelectorConfig extends MoveSelectorConfig<KOptMoveSelectorC
     }
 
     @Override
-    public KOptMoveSelectorConfig inherit(KOptMoveSelectorConfig inheritedConfig) {
+    public @NonNull KOptMoveSelectorConfig inherit(@NonNull KOptMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         entitySelectorConfig = ConfigUtils.inheritConfig(entitySelectorConfig, inheritedConfig.getEntitySelectorConfig());
         valueSelectorConfig = ConfigUtils.inheritConfig(valueSelectorConfig, inheritedConfig.getValueSelectorConfig());
@@ -74,12 +76,12 @@ public class KOptMoveSelectorConfig extends MoveSelectorConfig<KOptMoveSelectorC
     }
 
     @Override
-    public KOptMoveSelectorConfig copyConfig() {
+    public @NonNull KOptMoveSelectorConfig copyConfig() {
         return new KOptMoveSelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         visitCommonReferencedClasses(classVisitor);
         if (entitySelectorConfig != null) {
             entitySelectorConfig.visitReferencedClasses(classVisitor);

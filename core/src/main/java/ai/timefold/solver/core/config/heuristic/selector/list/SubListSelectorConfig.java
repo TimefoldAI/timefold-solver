@@ -11,6 +11,8 @@ import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySel
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "id",
         "mimicSelectorRef",
@@ -130,7 +132,7 @@ public class SubListSelectorConfig extends SelectorConfig<SubListSelectorConfig>
     // ************************************************************************
 
     @Override
-    public SubListSelectorConfig inherit(SubListSelectorConfig inheritedConfig) {
+    public @NonNull SubListSelectorConfig inherit(@NonNull SubListSelectorConfig inheritedConfig) {
         id = ConfigUtils.inheritOverwritableProperty(id, inheritedConfig.id);
         mimicSelectorRef = ConfigUtils.inheritOverwritableProperty(mimicSelectorRef, inheritedConfig.mimicSelectorRef);
         valueSelectorConfig = ConfigUtils.inheritConfig(valueSelectorConfig, inheritedConfig.valueSelectorConfig);
@@ -141,12 +143,12 @@ public class SubListSelectorConfig extends SelectorConfig<SubListSelectorConfig>
     }
 
     @Override
-    public SubListSelectorConfig copyConfig() {
+    public @NonNull SubListSelectorConfig copyConfig() {
         return new SubListSelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         if (valueSelectorConfig != null) {
             valueSelectorConfig.visitReferencedClasses(classVisitor);
         }

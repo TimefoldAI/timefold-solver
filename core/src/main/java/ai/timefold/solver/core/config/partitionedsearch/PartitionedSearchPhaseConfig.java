@@ -21,6 +21,8 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter;
 import ai.timefold.solver.core.impl.partitionedsearch.partitioner.SolutionPartitioner;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "solutionPartitionerClass",
         "solutionPartitionerCustomProperties",
@@ -145,7 +147,7 @@ public class PartitionedSearchPhaseConfig extends PhaseConfig<PartitionedSearchP
     }
 
     @Override
-    public PartitionedSearchPhaseConfig inherit(PartitionedSearchPhaseConfig inheritedConfig) {
+    public @NonNull PartitionedSearchPhaseConfig inherit(@NonNull PartitionedSearchPhaseConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         solutionPartitionerClass = ConfigUtils.inheritOverwritableProperty(solutionPartitionerClass,
                 inheritedConfig.getSolutionPartitionerClass());
@@ -159,12 +161,12 @@ public class PartitionedSearchPhaseConfig extends PhaseConfig<PartitionedSearchP
     }
 
     @Override
-    public PartitionedSearchPhaseConfig copyConfig() {
+    public @NonNull PartitionedSearchPhaseConfig copyConfig() {
         return new PartitionedSearchPhaseConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         if (getTerminationConfig() != null) {
             getTerminationConfig().visitReferencedClasses(classVisitor);
         }

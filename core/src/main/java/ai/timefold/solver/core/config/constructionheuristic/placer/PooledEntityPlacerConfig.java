@@ -20,6 +20,9 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.Su
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 @XmlType(propOrder = {
         "moveSelectorConfig"
 })
@@ -45,11 +48,11 @@ public class PooledEntityPlacerConfig extends EntityPlacerConfig<PooledEntityPla
     })
     private MoveSelectorConfig moveSelectorConfig = null;
 
-    public MoveSelectorConfig getMoveSelectorConfig() {
+    public @Nullable MoveSelectorConfig getMoveSelectorConfig() {
         return moveSelectorConfig;
     }
 
-    public void setMoveSelectorConfig(MoveSelectorConfig moveSelectorConfig) {
+    public void setMoveSelectorConfig(@Nullable MoveSelectorConfig moveSelectorConfig) {
         this.moveSelectorConfig = moveSelectorConfig;
     }
 
@@ -57,25 +60,25 @@ public class PooledEntityPlacerConfig extends EntityPlacerConfig<PooledEntityPla
     // With methods
     // ************************************************************************
 
-    public PooledEntityPlacerConfig withMoveSelectorConfig(MoveSelectorConfig moveSelectorConfig) {
+    public @NonNull PooledEntityPlacerConfig withMoveSelectorConfig(@NonNull MoveSelectorConfig moveSelectorConfig) {
         this.setMoveSelectorConfig(moveSelectorConfig);
         return this;
     }
 
     @Override
-    public PooledEntityPlacerConfig inherit(PooledEntityPlacerConfig inheritedConfig) {
+    public @NonNull PooledEntityPlacerConfig inherit(@NonNull PooledEntityPlacerConfig inheritedConfig) {
         setMoveSelectorConfig(ConfigUtils.inheritOverwritableProperty(getMoveSelectorConfig(),
                 inheritedConfig.getMoveSelectorConfig()));
         return this;
     }
 
     @Override
-    public PooledEntityPlacerConfig copyConfig() {
+    public @NonNull PooledEntityPlacerConfig copyConfig() {
         return new PooledEntityPlacerConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         if (moveSelectorConfig != null) {
             moveSelectorConfig.visitReferencedClasses(classVisitor);
         }

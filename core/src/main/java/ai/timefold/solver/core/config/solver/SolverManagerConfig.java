@@ -8,6 +8,7 @@ import jakarta.xml.bind.annotation.XmlType;
 import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,7 +107,7 @@ public class SolverManagerConfig extends AbstractConfig<SolverManagerConfig> {
     }
 
     @Override
-    public SolverManagerConfig inherit(SolverManagerConfig inheritedConfig) {
+    public @NonNull SolverManagerConfig inherit(@NonNull SolverManagerConfig inheritedConfig) {
         parallelSolverCount = ConfigUtils.inheritOverwritableProperty(parallelSolverCount,
                 inheritedConfig.getParallelSolverCount());
         threadFactoryClass = ConfigUtils.inheritOverwritableProperty(threadFactoryClass,
@@ -115,12 +116,12 @@ public class SolverManagerConfig extends AbstractConfig<SolverManagerConfig> {
     }
 
     @Override
-    public SolverManagerConfig copyConfig() {
+    public @NonNull SolverManagerConfig copyConfig() {
         return new SolverManagerConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         classVisitor.accept(threadFactoryClass);
     }
 

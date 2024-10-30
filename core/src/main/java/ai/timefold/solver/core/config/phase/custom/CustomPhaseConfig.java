@@ -17,6 +17,8 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter;
 import ai.timefold.solver.core.impl.phase.custom.CustomPhaseCommand;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "customPhaseCommandClassList",
         "customProperties",
@@ -102,7 +104,7 @@ public class CustomPhaseConfig extends PhaseConfig<CustomPhaseConfig> {
     }
 
     @Override
-    public CustomPhaseConfig inherit(CustomPhaseConfig inheritedConfig) {
+    public @NonNull CustomPhaseConfig inherit(@NonNull CustomPhaseConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         customPhaseCommandClassList = ConfigUtils.inheritMergeableListProperty(
                 customPhaseCommandClassList, inheritedConfig.getCustomPhaseCommandClassList());
@@ -114,12 +116,12 @@ public class CustomPhaseConfig extends PhaseConfig<CustomPhaseConfig> {
     }
 
     @Override
-    public CustomPhaseConfig copyConfig() {
+    public @NonNull CustomPhaseConfig copyConfig() {
         return new CustomPhaseConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         if (getTerminationConfig() != null) {
             getTerminationConfig().visitReferencedClasses(classVisitor);
         }

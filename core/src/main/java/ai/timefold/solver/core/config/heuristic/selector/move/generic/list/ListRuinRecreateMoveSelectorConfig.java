@@ -7,6 +7,8 @@ import jakarta.xml.bind.annotation.XmlType;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "minimumRuinedCount",
         "maximumRuinedCount",
@@ -93,12 +95,12 @@ public class ListRuinRecreateMoveSelectorConfig extends MoveSelectorConfig<ListR
     }
 
     @Override
-    public ListRuinRecreateMoveSelectorConfig copyConfig() {
+    public @NonNull ListRuinRecreateMoveSelectorConfig copyConfig() {
         return new ListRuinRecreateMoveSelectorConfig().inherit(this);
     }
 
     @Override
-    public ListRuinRecreateMoveSelectorConfig inherit(ListRuinRecreateMoveSelectorConfig inheritedConfig) {
+    public @NonNull ListRuinRecreateMoveSelectorConfig inherit(@NonNull ListRuinRecreateMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         minimumRuinedCount =
                 ConfigUtils.inheritOverwritableProperty(minimumRuinedCount, inheritedConfig.getMinimumRuinedCount());
@@ -112,7 +114,7 @@ public class ListRuinRecreateMoveSelectorConfig extends MoveSelectorConfig<ListR
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         // No referenced classes.
     }
 

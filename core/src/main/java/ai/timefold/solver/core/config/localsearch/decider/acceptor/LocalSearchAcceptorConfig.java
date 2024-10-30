@@ -10,6 +10,8 @@ import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.config.localsearch.decider.acceptor.stepcountinghillclimbing.StepCountingHillClimbingType;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "acceptorTypeList",
         "entityTabuSize",
@@ -350,7 +352,7 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
     }
 
     @Override
-    public LocalSearchAcceptorConfig inherit(LocalSearchAcceptorConfig inheritedConfig) {
+    public @NonNull LocalSearchAcceptorConfig inherit(@NonNull LocalSearchAcceptorConfig inheritedConfig) {
         if (acceptorTypeList == null) {
             acceptorTypeList = inheritedConfig.getAcceptorTypeList();
         } else {
@@ -398,12 +400,12 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
     }
 
     @Override
-    public LocalSearchAcceptorConfig copyConfig() {
+    public @NonNull LocalSearchAcceptorConfig copyConfig() {
         return new LocalSearchAcceptorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         // No referenced classes
     }
 

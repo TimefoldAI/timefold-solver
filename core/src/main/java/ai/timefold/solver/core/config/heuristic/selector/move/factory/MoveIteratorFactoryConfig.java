@@ -11,6 +11,8 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveIteratorFactory;
 import ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "moveIteratorFactoryClass",
         "moveIteratorFactoryCustomProperties"
@@ -57,7 +59,7 @@ public class MoveIteratorFactoryConfig extends MoveSelectorConfig<MoveIteratorFa
     }
 
     @Override
-    public MoveIteratorFactoryConfig inherit(MoveIteratorFactoryConfig inheritedConfig) {
+    public @NonNull MoveIteratorFactoryConfig inherit(@NonNull MoveIteratorFactoryConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         moveIteratorFactoryClass = ConfigUtils.inheritOverwritableProperty(
                 moveIteratorFactoryClass, inheritedConfig.getMoveIteratorFactoryClass());
@@ -67,12 +69,12 @@ public class MoveIteratorFactoryConfig extends MoveSelectorConfig<MoveIteratorFa
     }
 
     @Override
-    public MoveIteratorFactoryConfig copyConfig() {
+    public @NonNull MoveIteratorFactoryConfig copyConfig() {
         return new MoveIteratorFactoryConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         visitCommonReferencedClasses(classVisitor);
         classVisitor.accept(moveIteratorFactoryClass);
     }

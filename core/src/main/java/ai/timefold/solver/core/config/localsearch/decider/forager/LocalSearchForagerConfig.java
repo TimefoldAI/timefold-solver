@@ -7,6 +7,8 @@ import jakarta.xml.bind.annotation.XmlType;
 import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "pickEarlyType",
         "acceptedCountLimit",
@@ -77,7 +79,7 @@ public class LocalSearchForagerConfig extends AbstractConfig<LocalSearchForagerC
     }
 
     @Override
-    public LocalSearchForagerConfig inherit(LocalSearchForagerConfig inheritedConfig) {
+    public @NonNull LocalSearchForagerConfig inherit(@NonNull LocalSearchForagerConfig inheritedConfig) {
         pickEarlyType = ConfigUtils.inheritOverwritableProperty(pickEarlyType,
                 inheritedConfig.getPickEarlyType());
         acceptedCountLimit = ConfigUtils.inheritOverwritableProperty(acceptedCountLimit,
@@ -90,12 +92,12 @@ public class LocalSearchForagerConfig extends AbstractConfig<LocalSearchForagerC
     }
 
     @Override
-    public LocalSearchForagerConfig copyConfig() {
+    public @NonNull LocalSearchForagerConfig copyConfig() {
         return new LocalSearchForagerConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         // No referenced classes
     }
 

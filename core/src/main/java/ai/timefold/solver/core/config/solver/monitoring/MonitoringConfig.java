@@ -9,6 +9,8 @@ import jakarta.xml.bind.annotation.XmlType;
 import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "solverMetricList",
 })
@@ -37,18 +39,18 @@ public class MonitoringConfig extends AbstractConfig<MonitoringConfig> {
     }
 
     @Override
-    public MonitoringConfig inherit(MonitoringConfig inheritedConfig) {
+    public @NonNull MonitoringConfig inherit(@NonNull MonitoringConfig inheritedConfig) {
         solverMetricList = ConfigUtils.inheritMergeableListProperty(solverMetricList, inheritedConfig.solverMetricList);
         return this;
     }
 
     @Override
-    public MonitoringConfig copyConfig() {
+    public @NonNull MonitoringConfig copyConfig() {
         return new MonitoringConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         // No referenced classes currently
         // If we add custom metrics here, then this should
         // register the custom metrics

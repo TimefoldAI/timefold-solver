@@ -9,6 +9,8 @@ import ai.timefold.solver.core.config.heuristic.selector.SelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "valueSelectorConfig",
         "minimumSubChainSize",
@@ -69,7 +71,7 @@ public class SubChainSelectorConfig extends SelectorConfig<SubChainSelectorConfi
     }
 
     @Override
-    public SubChainSelectorConfig inherit(SubChainSelectorConfig inheritedConfig) {
+    public @NonNull SubChainSelectorConfig inherit(@NonNull SubChainSelectorConfig inheritedConfig) {
         valueSelectorConfig = ConfigUtils.inheritConfig(valueSelectorConfig, inheritedConfig.getValueSelectorConfig());
         minimumSubChainSize = ConfigUtils.inheritOverwritableProperty(minimumSubChainSize,
                 inheritedConfig.getMinimumSubChainSize());
@@ -79,12 +81,12 @@ public class SubChainSelectorConfig extends SelectorConfig<SubChainSelectorConfi
     }
 
     @Override
-    public SubChainSelectorConfig copyConfig() {
+    public @NonNull SubChainSelectorConfig copyConfig() {
         return new SubChainSelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         if (valueSelectorConfig != null) {
             valueSelectorConfig.visitReferencedClasses(classVisitor);
         }

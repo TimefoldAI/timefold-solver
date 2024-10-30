@@ -20,6 +20,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "id",
         "mimicSelectorRef",
@@ -274,7 +276,7 @@ public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
     // ************************************************************************
 
     @Override
-    public EntitySelectorConfig inherit(EntitySelectorConfig inheritedConfig) {
+    public @NonNull EntitySelectorConfig inherit(@NonNull EntitySelectorConfig inheritedConfig) {
         id = ConfigUtils.inheritOverwritableProperty(id, inheritedConfig.getId());
         mimicSelectorRef = ConfigUtils.inheritOverwritableProperty(mimicSelectorRef,
                 inheritedConfig.getMimicSelectorRef());
@@ -303,12 +305,12 @@ public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
     }
 
     @Override
-    public EntitySelectorConfig copyConfig() {
+    public @NonNull EntitySelectorConfig copyConfig() {
         return new EntitySelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         classVisitor.accept(entityClass);
         if (nearbySelectionConfig != null) {
             nearbySelectionConfig.visitReferencedClasses(classVisitor);

@@ -51,6 +51,8 @@ import ai.timefold.solver.core.impl.io.jaxb.TimefoldXmlSerializationException;
 import ai.timefold.solver.core.impl.phase.PhaseFactory;
 import ai.timefold.solver.core.impl.solver.random.RandomFactory;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * To read it from XML, use {@link #createFromXmlResource(String)}.
  * To build a {@link SolverFactory} with it, use {@link SolverFactory#create(SolverConfig)}.
@@ -655,7 +657,7 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
      * @param inheritedConfig never null
      */
     @Override
-    public SolverConfig inherit(SolverConfig inheritedConfig) {
+    public @NonNull SolverConfig inherit(@NonNull SolverConfig inheritedConfig) {
         classLoader = ConfigUtils.inheritOverwritableProperty(classLoader, inheritedConfig.getClassLoader());
         environmentMode = ConfigUtils.inheritOverwritableProperty(environmentMode, inheritedConfig.getEnvironmentMode());
         daemon = ConfigUtils.inheritOverwritableProperty(daemon, inheritedConfig.getDaemon());
@@ -689,12 +691,12 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
     }
 
     @Override
-    public SolverConfig copyConfig() {
+    public @NonNull SolverConfig copyConfig() {
         return new SolverConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         classVisitor.accept(randomFactoryClass);
         classVisitor.accept(threadFactoryClass);
         classVisitor.accept(solutionClass);

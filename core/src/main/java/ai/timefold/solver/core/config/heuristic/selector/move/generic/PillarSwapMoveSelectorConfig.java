@@ -10,6 +10,8 @@ import jakarta.xml.bind.annotation.XmlType;
 import ai.timefold.solver.core.config.heuristic.selector.entity.pillar.PillarSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "secondaryPillarSelectorConfig",
         "variableNameIncludeList"
@@ -61,7 +63,7 @@ public class PillarSwapMoveSelectorConfig extends AbstractPillarMoveSelectorConf
     }
 
     @Override
-    public PillarSwapMoveSelectorConfig inherit(PillarSwapMoveSelectorConfig inheritedConfig) {
+    public @NonNull PillarSwapMoveSelectorConfig inherit(@NonNull PillarSwapMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         secondaryPillarSelectorConfig = ConfigUtils.inheritConfig(secondaryPillarSelectorConfig,
                 inheritedConfig.getSecondaryPillarSelectorConfig());
@@ -71,12 +73,12 @@ public class PillarSwapMoveSelectorConfig extends AbstractPillarMoveSelectorConf
     }
 
     @Override
-    public PillarSwapMoveSelectorConfig copyConfig() {
+    public @NonNull PillarSwapMoveSelectorConfig copyConfig() {
         return new PillarSwapMoveSelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         visitCommonReferencedClasses(classVisitor);
         if (secondaryPillarSelectorConfig != null) {
             secondaryPillarSelectorConfig.visitReferencedClasses(classVisitor);

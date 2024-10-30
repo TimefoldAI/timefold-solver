@@ -27,6 +27,8 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubLi
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "moveSelectorConfigList",
         "ignoreEmptyChildIterators"
@@ -142,7 +144,7 @@ public class CartesianProductMoveSelectorConfig extends MoveSelectorConfig<Carte
     }
 
     @Override
-    public CartesianProductMoveSelectorConfig inherit(CartesianProductMoveSelectorConfig inheritedConfig) {
+    public @NonNull CartesianProductMoveSelectorConfig inherit(@NonNull CartesianProductMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         moveSelectorConfigList =
                 ConfigUtils.inheritMergeableListConfig(moveSelectorConfigList, inheritedConfig.getMoveSelectorList());
@@ -152,12 +154,12 @@ public class CartesianProductMoveSelectorConfig extends MoveSelectorConfig<Carte
     }
 
     @Override
-    public CartesianProductMoveSelectorConfig copyConfig() {
+    public @NonNull CartesianProductMoveSelectorConfig copyConfig() {
         return new CartesianProductMoveSelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         visitCommonReferencedClasses(classVisitor);
         if (moveSelectorConfigList != null) {
             moveSelectorConfigList.forEach(ms -> ms.visitReferencedClasses(classVisitor));

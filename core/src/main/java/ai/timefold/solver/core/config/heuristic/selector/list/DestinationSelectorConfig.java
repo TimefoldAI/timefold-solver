@@ -11,6 +11,8 @@ import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorCo
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "entitySelectorConfig",
         "valueSelectorConfig",
@@ -82,7 +84,7 @@ public class DestinationSelectorConfig extends SelectorConfig<DestinationSelecto
     // ************************************************************************
 
     @Override
-    public DestinationSelectorConfig inherit(DestinationSelectorConfig inheritedConfig) {
+    public @NonNull DestinationSelectorConfig inherit(@NonNull DestinationSelectorConfig inheritedConfig) {
         entitySelectorConfig = ConfigUtils.inheritConfig(entitySelectorConfig, inheritedConfig.getEntitySelectorConfig());
         valueSelectorConfig = ConfigUtils.inheritConfig(valueSelectorConfig, inheritedConfig.getValueSelectorConfig());
         nearbySelectionConfig = ConfigUtils.inheritConfig(nearbySelectionConfig, inheritedConfig.getNearbySelectionConfig());
@@ -90,12 +92,12 @@ public class DestinationSelectorConfig extends SelectorConfig<DestinationSelecto
     }
 
     @Override
-    public DestinationSelectorConfig copyConfig() {
+    public @NonNull DestinationSelectorConfig copyConfig() {
         return new DestinationSelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         if (entitySelectorConfig != null) {
             entitySelectorConfig.visitReferencedClasses(classVisitor);
         }

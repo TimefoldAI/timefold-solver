@@ -32,6 +32,8 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "moveSelectorConfigList",
         "selectorProbabilityWeightFactoryClass"
@@ -151,7 +153,7 @@ public class UnionMoveSelectorConfig
     }
 
     @Override
-    public UnionMoveSelectorConfig inherit(UnionMoveSelectorConfig inheritedConfig) {
+    public @NonNull UnionMoveSelectorConfig inherit(@NonNull UnionMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         moveSelectorConfigList =
                 ConfigUtils.inheritMergeableListConfig(moveSelectorConfigList, inheritedConfig.getMoveSelectorList());
@@ -161,12 +163,12 @@ public class UnionMoveSelectorConfig
     }
 
     @Override
-    public UnionMoveSelectorConfig copyConfig() {
+    public @NonNull UnionMoveSelectorConfig copyConfig() {
         return new UnionMoveSelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         visitCommonReferencedClasses(classVisitor);
         if (moveSelectorConfigList != null) {
             moveSelectorConfigList.forEach(ms -> ms.visitReferencedClasses(classVisitor));

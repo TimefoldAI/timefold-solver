@@ -14,6 +14,8 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbDurationAdapter;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "terminationClass",
         "terminationCompositionStyle",
@@ -502,7 +504,7 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
     }
 
     @Override
-    public TerminationConfig inherit(TerminationConfig inheritedConfig) {
+    public @NonNull TerminationConfig inherit(@NonNull TerminationConfig inheritedConfig) {
         if (!timeSpentLimitIsSet()) {
             inheritTimeSpentLimit(inheritedConfig);
         }
@@ -533,12 +535,12 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
     }
 
     @Override
-    public TerminationConfig copyConfig() {
+    public @NonNull TerminationConfig copyConfig() {
         return new TerminationConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         classVisitor.accept(terminationClass);
         if (terminationConfigList != null) {
             terminationConfigList.forEach(tc -> tc.visitReferencedClasses(classVisitor));

@@ -8,6 +8,8 @@ import jakarta.xml.bind.annotation.XmlType;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "valueSelectorConfig"
 })
@@ -36,19 +38,19 @@ public class PillarChangeMoveSelectorConfig extends AbstractPillarMoveSelectorCo
     }
 
     @Override
-    public PillarChangeMoveSelectorConfig inherit(PillarChangeMoveSelectorConfig inheritedConfig) {
+    public @NonNull PillarChangeMoveSelectorConfig inherit(@NonNull PillarChangeMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         valueSelectorConfig = ConfigUtils.inheritConfig(valueSelectorConfig, inheritedConfig.getValueSelectorConfig());
         return this;
     }
 
     @Override
-    public PillarChangeMoveSelectorConfig copyConfig() {
+    public @NonNull PillarChangeMoveSelectorConfig copyConfig() {
         return new PillarChangeMoveSelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         visitCommonReferencedClasses(classVisitor);
         if (valueSelectorConfig != null) {
             valueSelectorConfig.visitReferencedClasses(classVisitor);

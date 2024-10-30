@@ -25,6 +25,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.ShufflingM
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.SortingMoveSelector;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 class MoveSelectorFactoryTest {
@@ -254,12 +255,12 @@ class MoveSelectorFactoryTest {
     static class DummyMoveSelectorConfig extends MoveSelectorConfig<DummyMoveSelectorConfig> {
 
         @Override
-        public DummyMoveSelectorConfig copyConfig() {
+        public @NonNull DummyMoveSelectorConfig copyConfig() {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+        public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
             throw new UnsupportedOperationException();
         }
 

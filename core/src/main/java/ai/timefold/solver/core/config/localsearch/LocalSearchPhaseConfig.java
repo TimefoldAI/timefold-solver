@@ -29,6 +29,8 @@ import ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchFor
 import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "localSearchType",
         "moveSelectorConfig",
@@ -137,7 +139,7 @@ public class LocalSearchPhaseConfig extends PhaseConfig<LocalSearchPhaseConfig> 
     }
 
     @Override
-    public LocalSearchPhaseConfig inherit(LocalSearchPhaseConfig inheritedConfig) {
+    public @NonNull LocalSearchPhaseConfig inherit(@NonNull LocalSearchPhaseConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         localSearchType = ConfigUtils.inheritOverwritableProperty(localSearchType,
                 inheritedConfig.getLocalSearchType());
@@ -149,12 +151,12 @@ public class LocalSearchPhaseConfig extends PhaseConfig<LocalSearchPhaseConfig> 
     }
 
     @Override
-    public LocalSearchPhaseConfig copyConfig() {
+    public @NonNull LocalSearchPhaseConfig copyConfig() {
         return new LocalSearchPhaseConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         if (getTerminationConfig() != null) {
             getTerminationConfig().visitReferencedClasses(classVisitor);
         }

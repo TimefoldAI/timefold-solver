@@ -15,6 +15,8 @@ import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "solutionFileIOClass",
         "writeOutputSolutionEnabled",
@@ -173,7 +175,7 @@ public class ProblemBenchmarksConfig extends AbstractConfig<ProblemBenchmarksCon
     }
 
     @Override
-    public ProblemBenchmarksConfig inherit(ProblemBenchmarksConfig inheritedConfig) {
+    public @NonNull ProblemBenchmarksConfig inherit(@NonNull ProblemBenchmarksConfig inheritedConfig) {
         solutionFileIOClass = ConfigUtils.inheritOverwritableProperty(solutionFileIOClass,
                 inheritedConfig.getSolutionFileIOClass());
         writeOutputSolutionEnabled = ConfigUtils.inheritOverwritableProperty(writeOutputSolutionEnabled,
@@ -190,12 +192,12 @@ public class ProblemBenchmarksConfig extends AbstractConfig<ProblemBenchmarksCon
     }
 
     @Override
-    public ProblemBenchmarksConfig copyConfig() {
+    public @NonNull ProblemBenchmarksConfig copyConfig() {
         return new ProblemBenchmarksConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         classVisitor.accept(solutionFileIOClass);
     }
 

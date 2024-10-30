@@ -17,6 +17,8 @@ import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlType(propOrder = {
         "easyScoreCalculatorClass",
         "easyScoreCalculatorCustomProperties",
@@ -250,7 +252,7 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     }
 
     @Override
-    public ScoreDirectorFactoryConfig inherit(ScoreDirectorFactoryConfig inheritedConfig) {
+    public @NonNull ScoreDirectorFactoryConfig inherit(@NonNull ScoreDirectorFactoryConfig inheritedConfig) {
         easyScoreCalculatorClass = ConfigUtils.inheritOverwritableProperty(
                 easyScoreCalculatorClass, inheritedConfig.getEasyScoreCalculatorClass());
         easyScoreCalculatorCustomProperties = ConfigUtils.inheritMergeableMapProperty(
@@ -277,12 +279,12 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     }
 
     @Override
-    public ScoreDirectorFactoryConfig copyConfig() {
+    public @NonNull ScoreDirectorFactoryConfig copyConfig() {
         return new ScoreDirectorFactoryConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         classVisitor.accept(easyScoreCalculatorClass);
         classVisitor.accept(constraintProviderClass);
         classVisitor.accept(incrementalScoreCalculatorClass);

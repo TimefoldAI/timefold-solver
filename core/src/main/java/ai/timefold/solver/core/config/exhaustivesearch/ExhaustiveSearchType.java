@@ -5,12 +5,14 @@ import jakarta.xml.bind.annotation.XmlEnum;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlEnum
 public enum ExhaustiveSearchType {
     BRUTE_FORCE,
     BRANCH_AND_BOUND;
 
-    public EntitySorterManner getDefaultEntitySorterManner() {
+    public @NonNull EntitySorterManner getDefaultEntitySorterManner() {
         switch (this) {
             case BRUTE_FORCE:
                 return EntitySorterManner.NONE;
@@ -22,7 +24,7 @@ public enum ExhaustiveSearchType {
         }
     }
 
-    public ValueSorterManner getDefaultValueSorterManner() {
+    public @NonNull ValueSorterManner getDefaultValueSorterManner() {
         switch (this) {
             case BRUTE_FORCE:
                 return ValueSorterManner.NONE;
