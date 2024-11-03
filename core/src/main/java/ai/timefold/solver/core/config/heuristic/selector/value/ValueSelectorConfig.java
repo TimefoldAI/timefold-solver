@@ -21,6 +21,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
         "id",
@@ -71,134 +72,135 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
     public ValueSelectorConfig() {
     }
 
-    public ValueSelectorConfig(String variableName) {
+    // TODO: @NonNull ok here?
+    public ValueSelectorConfig(@NonNull String variableName) {
         this.variableName = variableName;
     }
 
-    public ValueSelectorConfig(ValueSelectorConfig inheritedConfig) {
+    public ValueSelectorConfig(@Nullable ValueSelectorConfig inheritedConfig) {
         if (inheritedConfig != null) {
             inherit(inheritedConfig);
         }
     }
 
-    public String getId() {
+    public @Nullable String getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(@Nullable String id) {
         this.id = id;
     }
 
-    public String getMimicSelectorRef() {
+    public @Nullable String getMimicSelectorRef() {
         return mimicSelectorRef;
     }
 
-    public void setMimicSelectorRef(String mimicSelectorRef) {
+    public void setMimicSelectorRef(@Nullable String mimicSelectorRef) {
         this.mimicSelectorRef = mimicSelectorRef;
     }
 
-    public Class<?> getDowncastEntityClass() {
+    public @Nullable Class<?> getDowncastEntityClass() {
         return downcastEntityClass;
     }
 
-    public void setDowncastEntityClass(Class<?> downcastEntityClass) {
+    public void setDowncastEntityClass(@Nullable Class<?> downcastEntityClass) {
         this.downcastEntityClass = downcastEntityClass;
     }
 
-    public String getVariableName() {
+    public @Nullable String getVariableName() {
         return variableName;
     }
 
-    public void setVariableName(String variableName) {
+    public void setVariableName(@Nullable String variableName) {
         this.variableName = variableName;
     }
 
-    public SelectionCacheType getCacheType() {
+    public @Nullable SelectionCacheType getCacheType() {
         return cacheType;
     }
 
-    public void setCacheType(SelectionCacheType cacheType) {
+    public void setCacheType(@Nullable SelectionCacheType cacheType) {
         this.cacheType = cacheType;
     }
 
-    public SelectionOrder getSelectionOrder() {
+    public @Nullable SelectionOrder getSelectionOrder() {
         return selectionOrder;
     }
 
-    public void setSelectionOrder(SelectionOrder selectionOrder) {
+    public void setSelectionOrder(@Nullable SelectionOrder selectionOrder) {
         this.selectionOrder = selectionOrder;
     }
 
-    public NearbySelectionConfig getNearbySelectionConfig() {
+    public @Nullable NearbySelectionConfig getNearbySelectionConfig() {
         return nearbySelectionConfig;
     }
 
-    public void setNearbySelectionConfig(NearbySelectionConfig nearbySelectionConfig) {
+    public void setNearbySelectionConfig(@Nullable NearbySelectionConfig nearbySelectionConfig) {
         this.nearbySelectionConfig = nearbySelectionConfig;
     }
 
-    public Class<? extends SelectionFilter> getFilterClass() {
+    public @Nullable Class<? extends SelectionFilter> getFilterClass() {
         return filterClass;
     }
 
-    public void setFilterClass(Class<? extends SelectionFilter> filterClass) {
+    public void setFilterClass(@Nullable Class<? extends SelectionFilter> filterClass) {
         this.filterClass = filterClass;
     }
 
-    public ValueSorterManner getSorterManner() {
+    public @Nullable ValueSorterManner getSorterManner() {
         return sorterManner;
     }
 
-    public void setSorterManner(ValueSorterManner sorterManner) {
+    public void setSorterManner(@Nullable ValueSorterManner sorterManner) {
         this.sorterManner = sorterManner;
     }
 
-    public Class<? extends Comparator> getSorterComparatorClass() {
+    public @Nullable Class<? extends Comparator> getSorterComparatorClass() {
         return sorterComparatorClass;
     }
 
-    public void setSorterComparatorClass(Class<? extends Comparator> sorterComparatorClass) {
+    public void setSorterComparatorClass(@Nullable Class<? extends Comparator> sorterComparatorClass) {
         this.sorterComparatorClass = sorterComparatorClass;
     }
 
-    public Class<? extends SelectionSorterWeightFactory> getSorterWeightFactoryClass() {
+    public @Nullable Class<? extends SelectionSorterWeightFactory> getSorterWeightFactoryClass() {
         return sorterWeightFactoryClass;
     }
 
-    public void setSorterWeightFactoryClass(Class<? extends SelectionSorterWeightFactory> sorterWeightFactoryClass) {
+    public void setSorterWeightFactoryClass(@Nullable Class<? extends SelectionSorterWeightFactory> sorterWeightFactoryClass) {
         this.sorterWeightFactoryClass = sorterWeightFactoryClass;
     }
 
-    public SelectionSorterOrder getSorterOrder() {
+    public @Nullable SelectionSorterOrder getSorterOrder() {
         return sorterOrder;
     }
 
-    public void setSorterOrder(SelectionSorterOrder sorterOrder) {
+    public void setSorterOrder(@Nullable SelectionSorterOrder sorterOrder) {
         this.sorterOrder = sorterOrder;
     }
 
-    public Class<? extends SelectionSorter> getSorterClass() {
+    public @Nullable Class<? extends SelectionSorter> getSorterClass() {
         return sorterClass;
     }
 
-    public void setSorterClass(Class<? extends SelectionSorter> sorterClass) {
+    public void setSorterClass(@Nullable Class<? extends SelectionSorter> sorterClass) {
         this.sorterClass = sorterClass;
     }
 
-    public Class<? extends SelectionProbabilityWeightFactory> getProbabilityWeightFactoryClass() {
+    public @Nullable Class<? extends SelectionProbabilityWeightFactory> getProbabilityWeightFactoryClass() {
         return probabilityWeightFactoryClass;
     }
 
     public void setProbabilityWeightFactoryClass(
-            Class<? extends SelectionProbabilityWeightFactory> probabilityWeightFactoryClass) {
+            @Nullable Class<? extends SelectionProbabilityWeightFactory> probabilityWeightFactoryClass) {
         this.probabilityWeightFactoryClass = probabilityWeightFactoryClass;
     }
 
-    public Long getSelectedCountLimit() {
+    public @Nullable Long getSelectedCountLimit() {
         return selectedCountLimit;
     }
 
-    public void setSelectedCountLimit(Long selectedCountLimit) {
+    public void setSelectedCountLimit(@Nullable Long selectedCountLimit) {
         this.selectedCountLimit = selectedCountLimit;
     }
 
@@ -206,78 +208,79 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
     // With methods
     // ************************************************************************
 
-    public ValueSelectorConfig withId(String id) {
+    public @NonNull ValueSelectorConfig withId(@NonNull String id) {
         this.setId(id);
         return this;
     }
 
-    public ValueSelectorConfig withMimicSelectorRef(String mimicSelectorRef) {
+    public @NonNull ValueSelectorConfig withMimicSelectorRef(@NonNull String mimicSelectorRef) {
         this.setMimicSelectorRef(mimicSelectorRef);
         return this;
     }
 
-    public ValueSelectorConfig withDowncastEntityClass(Class<?> entityClass) {
+    public @NonNull ValueSelectorConfig withDowncastEntityClass(@NonNull Class<?> entityClass) {
         this.setDowncastEntityClass(entityClass);
         return this;
     }
 
-    public ValueSelectorConfig withVariableName(String variableName) {
+    public @NonNull ValueSelectorConfig withVariableName(@NonNull String variableName) {
         this.setVariableName(variableName);
         return this;
     }
 
-    public ValueSelectorConfig withCacheType(SelectionCacheType cacheType) {
+    public @NonNull ValueSelectorConfig withCacheType(@NonNull SelectionCacheType cacheType) {
         this.setCacheType(cacheType);
         return this;
     }
 
-    public ValueSelectorConfig withSelectionOrder(SelectionOrder selectionOrder) {
+    public @NonNull ValueSelectorConfig withSelectionOrder(@NonNull SelectionOrder selectionOrder) {
         this.setSelectionOrder(selectionOrder);
         return this;
     }
 
-    public ValueSelectorConfig withNearbySelectionConfig(NearbySelectionConfig nearbySelectionConfig) {
+    public @NonNull ValueSelectorConfig withNearbySelectionConfig(@NonNull NearbySelectionConfig nearbySelectionConfig) {
         this.setNearbySelectionConfig(nearbySelectionConfig);
         return this;
     }
 
-    public ValueSelectorConfig withFilterClass(Class<? extends SelectionFilter> filterClass) {
+    public @NonNull ValueSelectorConfig withFilterClass(@NonNull Class<? extends SelectionFilter> filterClass) {
         this.setFilterClass(filterClass);
         return this;
     }
 
-    public ValueSelectorConfig withSorterManner(ValueSorterManner sorterManner) {
+    public @NonNull ValueSelectorConfig withSorterManner(@NonNull ValueSorterManner sorterManner) {
         this.setSorterManner(sorterManner);
         return this;
     }
 
-    public ValueSelectorConfig withSorterComparatorClass(Class<? extends Comparator> comparatorClass) {
+    public @NonNull ValueSelectorConfig withSorterComparatorClass(@NonNull Class<? extends Comparator> comparatorClass) {
         this.setSorterComparatorClass(comparatorClass);
         return this;
     }
 
-    public ValueSelectorConfig withSorterWeightFactoryClass(Class<? extends SelectionSorterWeightFactory> weightFactoryClass) {
+    public @NonNull ValueSelectorConfig
+            withSorterWeightFactoryClass(@NonNull Class<? extends SelectionSorterWeightFactory> weightFactoryClass) {
         this.setSorterWeightFactoryClass(weightFactoryClass);
         return this;
     }
 
-    public ValueSelectorConfig withSorterOrder(SelectionSorterOrder sorterOrder) {
+    public @NonNull ValueSelectorConfig withSorterOrder(@NonNull SelectionSorterOrder sorterOrder) {
         this.setSorterOrder(sorterOrder);
         return this;
     }
 
-    public ValueSelectorConfig withSorterClass(Class<? extends SelectionSorter> sorterClass) {
+    public @NonNull ValueSelectorConfig withSorterClass(@NonNull Class<? extends SelectionSorter> sorterClass) {
         this.setSorterClass(sorterClass);
         return this;
     }
 
-    public ValueSelectorConfig
-            withProbabilityWeightFactoryClass(Class<? extends SelectionProbabilityWeightFactory> factoryClass) {
+    public @NonNull ValueSelectorConfig
+            withProbabilityWeightFactoryClass(@NonNull Class<? extends SelectionProbabilityWeightFactory> factoryClass) {
         this.setProbabilityWeightFactoryClass(factoryClass);
         return this;
     }
 
-    public ValueSelectorConfig withSelectedCountLimit(long selectedCountLimit) {
+    public @NonNull ValueSelectorConfig withSelectedCountLimit(long selectedCountLimit) {
         this.setSelectedCountLimit(selectedCountLimit);
         return this;
     }
@@ -338,7 +341,8 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
         return getClass().getSimpleName() + "(" + variableName + ")";
     }
 
-    public static <Solution_> boolean hasSorter(ValueSorterManner valueSorterManner,
+    // TODO: variableDescriptor @NonNull?
+    public static <Solution_> boolean hasSorter(@NonNull ValueSorterManner valueSorterManner,
             GenuineVariableDescriptor<Solution_> variableDescriptor) {
         switch (valueSorterManner) {
             case NONE:
@@ -356,8 +360,8 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
         }
     }
 
-    public static <Solution_> SelectionSorter<Solution_, Object> determineSorter(ValueSorterManner valueSorterManner,
-            GenuineVariableDescriptor<Solution_> variableDescriptor) {
+    public static <Solution_> @NonNull SelectionSorter<Solution_, Object> determineSorter(
+            @NonNull ValueSorterManner valueSorterManner, @NonNull GenuineVariableDescriptor<Solution_> variableDescriptor) {
         SelectionSorter<Solution_, Object> sorter;
         switch (valueSorterManner) {
             case NONE:

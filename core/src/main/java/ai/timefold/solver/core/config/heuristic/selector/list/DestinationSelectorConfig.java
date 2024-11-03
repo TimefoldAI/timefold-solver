@@ -12,6 +12,7 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConf
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
         "entitySelectorConfig",
@@ -30,33 +31,33 @@ public class DestinationSelectorConfig extends SelectorConfig<DestinationSelecto
     public DestinationSelectorConfig() {
     }
 
-    public DestinationSelectorConfig(DestinationSelectorConfig inheritedConfig) {
+    public DestinationSelectorConfig(@Nullable DestinationSelectorConfig inheritedConfig) {
         if (inheritedConfig != null) {
             inherit(inheritedConfig);
         }
     }
 
-    public EntitySelectorConfig getEntitySelectorConfig() {
+    public @Nullable EntitySelectorConfig getEntitySelectorConfig() {
         return entitySelectorConfig;
     }
 
-    public void setEntitySelectorConfig(EntitySelectorConfig entitySelectorConfig) {
+    public void setEntitySelectorConfig(@Nullable EntitySelectorConfig entitySelectorConfig) {
         this.entitySelectorConfig = entitySelectorConfig;
     }
 
-    public ValueSelectorConfig getValueSelectorConfig() {
+    public @Nullable ValueSelectorConfig getValueSelectorConfig() {
         return valueSelectorConfig;
     }
 
-    public void setValueSelectorConfig(ValueSelectorConfig valueSelectorConfig) {
+    public void setValueSelectorConfig(@Nullable ValueSelectorConfig valueSelectorConfig) {
         this.valueSelectorConfig = valueSelectorConfig;
     }
 
-    public NearbySelectionConfig getNearbySelectionConfig() {
+    public @Nullable NearbySelectionConfig getNearbySelectionConfig() {
         return nearbySelectionConfig;
     }
 
-    public void setNearbySelectionConfig(NearbySelectionConfig nearbySelectionConfig) {
+    public void setNearbySelectionConfig(@Nullable NearbySelectionConfig nearbySelectionConfig) {
         this.nearbySelectionConfig = nearbySelectionConfig;
     }
 
@@ -64,17 +65,17 @@ public class DestinationSelectorConfig extends SelectorConfig<DestinationSelecto
     // With methods
     // ************************************************************************
 
-    public DestinationSelectorConfig withEntitySelectorConfig(EntitySelectorConfig entitySelectorConfig) {
+    public @NonNull DestinationSelectorConfig withEntitySelectorConfig(@NonNull EntitySelectorConfig entitySelectorConfig) {
         this.setEntitySelectorConfig(entitySelectorConfig);
         return this;
     }
 
-    public DestinationSelectorConfig withValueSelectorConfig(ValueSelectorConfig valueSelectorConfig) {
+    public @NonNull DestinationSelectorConfig withValueSelectorConfig(@NonNull ValueSelectorConfig valueSelectorConfig) {
         this.setValueSelectorConfig(valueSelectorConfig);
         return this;
     }
 
-    public DestinationSelectorConfig withNearbySelectionConfig(NearbySelectionConfig nearbySelectionConfig) {
+    public @NonNull DestinationSelectorConfig withNearbySelectionConfig(@NonNull NearbySelectionConfig nearbySelectionConfig) {
         this.setNearbySelectionConfig(nearbySelectionConfig);
         return this;
     }

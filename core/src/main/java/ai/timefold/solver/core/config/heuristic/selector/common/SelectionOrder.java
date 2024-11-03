@@ -1,8 +1,13 @@
 package ai.timefold.solver.core.config.heuristic.selector.common;
 
+import java.util.Objects;
+
 import jakarta.xml.bind.annotation.XmlEnum;
 
 import ai.timefold.solver.core.config.heuristic.selector.SelectorConfig;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Defines in which order the elements or a selector are selected.
@@ -47,23 +52,15 @@ public enum SelectionOrder {
      */
     PROBABILISTIC;
 
-    /**
-     * @param selectionOrder sometimes null
-     * @param inheritedSelectionOrder never null
-     * @return never null
-     */
-    public static SelectionOrder resolve(SelectionOrder selectionOrder, SelectionOrder inheritedSelectionOrder) {
+    public static @NonNull SelectionOrder resolve(@Nullable SelectionOrder selectionOrder,
+            @NonNull SelectionOrder inheritedSelectionOrder) {
         if (selectionOrder == null || selectionOrder == INHERIT) {
-            if (inheritedSelectionOrder == null) {
-                throw new IllegalArgumentException("The inheritedSelectionOrder (" + inheritedSelectionOrder
-                        + ") cannot be null.");
-            }
-            return inheritedSelectionOrder;
+            return Objects.requireNonNull(inheritedSelectionOrder, "The inheritedSelectionOrder cannot be null.");
         }
         return selectionOrder;
     }
 
-    public static SelectionOrder fromRandomSelectionBoolean(boolean randomSelection) {
+    public static @NonNull SelectionOrder fromRandomSelectionBoolean(boolean randomSelection) {
         return randomSelection ? RANDOM : ORIGINAL;
     }
 

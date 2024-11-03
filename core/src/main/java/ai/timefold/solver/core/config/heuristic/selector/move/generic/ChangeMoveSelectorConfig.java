@@ -91,7 +91,7 @@ public class ChangeMoveSelectorConfig
     }
 
     @Override
-    public ChangeMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
+    public @NonNull ChangeMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
             Random random) {
         return NearbyUtil.enable(this, distanceMeter, random);
     }

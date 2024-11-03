@@ -125,7 +125,7 @@ public class KOptListMoveSelectorConfig
     }
 
     @Override
-    public KOptListMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
+    public @NonNull KOptListMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
             Random random) {
         return NearbyUtil.enable(this, distanceMeter, random);
     }

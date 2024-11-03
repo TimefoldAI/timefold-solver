@@ -10,6 +10,7 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConf
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
         "valueSelectorConfig",
@@ -24,30 +25,27 @@ public class SubChainSelectorConfig extends SelectorConfig<SubChainSelectorConfi
     protected Integer minimumSubChainSize = null;
     protected Integer maximumSubChainSize = null;
 
-    public ValueSelectorConfig getValueSelectorConfig() {
+    public @Nullable ValueSelectorConfig getValueSelectorConfig() {
         return valueSelectorConfig;
     }
 
-    public void setValueSelectorConfig(ValueSelectorConfig valueSelectorConfig) {
+    public void setValueSelectorConfig(@Nullable ValueSelectorConfig valueSelectorConfig) {
         this.valueSelectorConfig = valueSelectorConfig;
     }
 
-    /**
-     * @return sometimes null
-     */
-    public Integer getMinimumSubChainSize() {
+    public @Nullable Integer getMinimumSubChainSize() {
         return minimumSubChainSize;
     }
 
-    public void setMinimumSubChainSize(Integer minimumSubChainSize) {
+    public void setMinimumSubChainSize(@Nullable Integer minimumSubChainSize) {
         this.minimumSubChainSize = minimumSubChainSize;
     }
 
-    public Integer getMaximumSubChainSize() {
+    public @Nullable Integer getMaximumSubChainSize() {
         return maximumSubChainSize;
     }
 
-    public void setMaximumSubChainSize(Integer maximumSubChainSize) {
+    public void setMaximumSubChainSize(@Nullable Integer maximumSubChainSize) {
         this.maximumSubChainSize = maximumSubChainSize;
     }
 
@@ -55,17 +53,17 @@ public class SubChainSelectorConfig extends SelectorConfig<SubChainSelectorConfi
     // With methods
     // ************************************************************************
 
-    public SubChainSelectorConfig withValueSelectorConfig(ValueSelectorConfig valueSelectorConfig) {
+    public @NonNull SubChainSelectorConfig withValueSelectorConfig(@NonNull ValueSelectorConfig valueSelectorConfig) {
         this.setValueSelectorConfig(valueSelectorConfig);
         return this;
     }
 
-    public SubChainSelectorConfig withMinimumSubChainSize(Integer minimumSubChainSize) {
+    public @NonNull SubChainSelectorConfig withMinimumSubChainSize(@NonNull Integer minimumSubChainSize) {
         this.setMinimumSubChainSize(minimumSubChainSize);
         return this;
     }
 
-    public SubChainSelectorConfig withMaximumSubChainSize(Integer maximumSubChainSize) {
+    public @NonNull SubChainSelectorConfig withMaximumSubChainSize(@NonNull Integer maximumSubChainSize) {
         this.setMaximumSubChainSize(maximumSubChainSize);
         return this;
     }

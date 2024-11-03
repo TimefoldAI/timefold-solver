@@ -12,6 +12,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveIterator
 import ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
         "moveIteratorFactoryClass",
@@ -26,19 +27,19 @@ public class MoveIteratorFactoryConfig extends MoveSelectorConfig<MoveIteratorFa
     @XmlJavaTypeAdapter(JaxbCustomPropertiesAdapter.class)
     protected Map<String, String> moveIteratorFactoryCustomProperties = null;
 
-    public Class<? extends MoveIteratorFactory> getMoveIteratorFactoryClass() {
+    public @Nullable Class<? extends MoveIteratorFactory> getMoveIteratorFactoryClass() {
         return moveIteratorFactoryClass;
     }
 
-    public void setMoveIteratorFactoryClass(Class<? extends MoveIteratorFactory> moveIteratorFactoryClass) {
+    public void setMoveIteratorFactoryClass(@Nullable Class<? extends MoveIteratorFactory> moveIteratorFactoryClass) {
         this.moveIteratorFactoryClass = moveIteratorFactoryClass;
     }
 
-    public Map<String, String> getMoveIteratorFactoryCustomProperties() {
+    public @Nullable Map<String, String> getMoveIteratorFactoryCustomProperties() {
         return moveIteratorFactoryCustomProperties;
     }
 
-    public void setMoveIteratorFactoryCustomProperties(Map<String, String> moveIteratorFactoryCustomProperties) {
+    public void setMoveIteratorFactoryCustomProperties(@Nullable Map<String, String> moveIteratorFactoryCustomProperties) {
         this.moveIteratorFactoryCustomProperties = moveIteratorFactoryCustomProperties;
     }
 
@@ -46,14 +47,14 @@ public class MoveIteratorFactoryConfig extends MoveSelectorConfig<MoveIteratorFa
     // With methods
     // ************************************************************************
 
-    public MoveIteratorFactoryConfig
-            withMoveIteratorFactoryClass(Class<? extends MoveIteratorFactory> moveIteratorFactoryClass) {
+    public @NonNull MoveIteratorFactoryConfig
+            withMoveIteratorFactoryClass(@NonNull Class<? extends MoveIteratorFactory> moveIteratorFactoryClass) {
         this.setMoveIteratorFactoryClass(moveIteratorFactoryClass);
         return this;
     }
 
-    public MoveIteratorFactoryConfig
-            withMoveIteratorFactoryCustomProperties(Map<String, String> moveIteratorFactoryCustomProperties) {
+    public @NonNull MoveIteratorFactoryConfig
+            withMoveIteratorFactoryCustomProperties(@NonNull Map<String, String> moveIteratorFactoryCustomProperties) {
         this.setMoveIteratorFactoryCustomProperties(moveIteratorFactoryCustomProperties);
         return this;
     }

@@ -36,6 +36,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * General superclass for {@link ChangeMoveSelectorConfig}, etc.
@@ -95,84 +96,84 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public SelectionCacheType getCacheType() {
+    public @Nullable SelectionCacheType getCacheType() {
         return cacheType;
     }
 
-    public void setCacheType(SelectionCacheType cacheType) {
+    public void setCacheType(@Nullable SelectionCacheType cacheType) {
         this.cacheType = cacheType;
     }
 
-    public SelectionOrder getSelectionOrder() {
+    public @Nullable SelectionOrder getSelectionOrder() {
         return selectionOrder;
     }
 
-    public void setSelectionOrder(SelectionOrder selectionOrder) {
+    public void setSelectionOrder(@Nullable SelectionOrder selectionOrder) {
         this.selectionOrder = selectionOrder;
     }
 
-    public Class<? extends SelectionFilter> getFilterClass() {
+    public @Nullable Class<? extends SelectionFilter> getFilterClass() {
         return filterClass;
     }
 
-    public void setFilterClass(Class<? extends SelectionFilter> filterClass) {
+    public void setFilterClass(@Nullable Class<? extends SelectionFilter> filterClass) {
         this.filterClass = filterClass;
     }
 
-    public Class<? extends Comparator> getSorterComparatorClass() {
+    public @Nullable Class<? extends Comparator> getSorterComparatorClass() {
         return sorterComparatorClass;
     }
 
-    public void setSorterComparatorClass(Class<? extends Comparator> sorterComparatorClass) {
+    public void setSorterComparatorClass(@Nullable Class<? extends Comparator> sorterComparatorClass) {
         this.sorterComparatorClass = sorterComparatorClass;
     }
 
-    public Class<? extends SelectionSorterWeightFactory> getSorterWeightFactoryClass() {
+    public @Nullable Class<? extends SelectionSorterWeightFactory> getSorterWeightFactoryClass() {
         return sorterWeightFactoryClass;
     }
 
-    public void setSorterWeightFactoryClass(Class<? extends SelectionSorterWeightFactory> sorterWeightFactoryClass) {
+    public void setSorterWeightFactoryClass(@Nullable Class<? extends SelectionSorterWeightFactory> sorterWeightFactoryClass) {
         this.sorterWeightFactoryClass = sorterWeightFactoryClass;
     }
 
-    public SelectionSorterOrder getSorterOrder() {
+    public @Nullable SelectionSorterOrder getSorterOrder() {
         return sorterOrder;
     }
 
-    public void setSorterOrder(SelectionSorterOrder sorterOrder) {
+    public void setSorterOrder(@Nullable SelectionSorterOrder sorterOrder) {
         this.sorterOrder = sorterOrder;
     }
 
-    public Class<? extends SelectionSorter> getSorterClass() {
+    public @Nullable Class<? extends SelectionSorter> getSorterClass() {
         return sorterClass;
     }
 
-    public void setSorterClass(Class<? extends SelectionSorter> sorterClass) {
+    public void setSorterClass(@Nullable Class<? extends SelectionSorter> sorterClass) {
         this.sorterClass = sorterClass;
     }
 
-    public Class<? extends SelectionProbabilityWeightFactory> getProbabilityWeightFactoryClass() {
+    public @Nullable Class<? extends SelectionProbabilityWeightFactory> getProbabilityWeightFactoryClass() {
         return probabilityWeightFactoryClass;
     }
 
     public void setProbabilityWeightFactoryClass(
-            Class<? extends SelectionProbabilityWeightFactory> probabilityWeightFactoryClass) {
+            @Nullable Class<? extends SelectionProbabilityWeightFactory> probabilityWeightFactoryClass) {
         this.probabilityWeightFactoryClass = probabilityWeightFactoryClass;
     }
 
-    public Long getSelectedCountLimit() {
+    public @Nullable Long getSelectedCountLimit() {
         return selectedCountLimit;
     }
 
-    public void setSelectedCountLimit(Long selectedCountLimit) {
+    public void setSelectedCountLimit(@Nullable Long selectedCountLimit) {
         this.selectedCountLimit = selectedCountLimit;
     }
 
-    public Double getFixedProbabilityWeight() {
+    public @Nullable Double getFixedProbabilityWeight() {
         return fixedProbabilityWeight;
     }
 
-    public void setFixedProbabilityWeight(Double fixedProbabilityWeight) {
+    public void setFixedProbabilityWeight(@Nullable Double fixedProbabilityWeight) {
         this.fixedProbabilityWeight = fixedProbabilityWeight;
     }
 
@@ -180,54 +181,54 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
     // With methods
     // ************************************************************************
 
-    public Config_ withCacheType(SelectionCacheType cacheType) {
+    public @NonNull Config_ withCacheType(@NonNull SelectionCacheType cacheType) {
         this.cacheType = cacheType;
         return (Config_) this;
     }
 
-    public Config_ withSelectionOrder(SelectionOrder selectionOrder) {
+    public @NonNull Config_ withSelectionOrder(@NonNull SelectionOrder selectionOrder) {
         this.selectionOrder = selectionOrder;
         return (Config_) this;
     }
 
-    public Config_ withFilterClass(Class<? extends SelectionFilter> filterClass) {
+    public @NonNull Config_ withFilterClass(@NonNull Class<? extends SelectionFilter> filterClass) {
         this.filterClass = filterClass;
         return (Config_) this;
     }
 
-    public Config_ withSorterComparatorClass(Class<? extends Comparator> sorterComparatorClass) {
+    public @NonNull Config_ withSorterComparatorClass(@NonNull Class<? extends Comparator> sorterComparatorClass) {
         this.sorterComparatorClass = sorterComparatorClass;
         return (Config_) this;
     }
 
-    public Config_ withSorterWeightFactoryClass(
-            Class<? extends SelectionSorterWeightFactory> sorterWeightFactoryClass) {
+    public @NonNull Config_ withSorterWeightFactoryClass(
+            @NonNull Class<? extends SelectionSorterWeightFactory> sorterWeightFactoryClass) {
         this.sorterWeightFactoryClass = sorterWeightFactoryClass;
         return (Config_) this;
     }
 
-    public Config_ withSorterOrder(SelectionSorterOrder sorterOrder) {
+    public @NonNull Config_ withSorterOrder(@NonNull SelectionSorterOrder sorterOrder) {
         this.sorterOrder = sorterOrder;
         return (Config_) this;
     }
 
-    public Config_ withSorterClass(Class<? extends SelectionSorter> sorterClass) {
+    public @NonNull Config_ withSorterClass(@NonNull Class<? extends SelectionSorter> sorterClass) {
         this.sorterClass = sorterClass;
         return (Config_) this;
     }
 
-    public Config_ withProbabilityWeightFactoryClass(
-            Class<? extends SelectionProbabilityWeightFactory> probabilityWeightFactoryClass) {
+    public @NonNull Config_ withProbabilityWeightFactoryClass(
+            @NonNull Class<? extends SelectionProbabilityWeightFactory> probabilityWeightFactoryClass) {
         this.probabilityWeightFactoryClass = probabilityWeightFactoryClass;
         return (Config_) this;
     }
 
-    public Config_ withSelectedCountLimit(Long selectedCountLimit) {
+    public @NonNull Config_ withSelectedCountLimit(@NonNull Long selectedCountLimit) {
         this.selectedCountLimit = selectedCountLimit;
         return (Config_) this;
     }
 
-    public Config_ withFixedProbabilityWeight(Double fixedProbabilityWeight) {
+    public @NonNull Config_ withFixedProbabilityWeight(@NonNull Double fixedProbabilityWeight) {
         this.fixedProbabilityWeight = fixedProbabilityWeight;
         return (Config_) this;
     }
@@ -236,9 +237,8 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
      * Gather a list of all descendant {@link MoveSelectorConfig}s
      * except for {@link UnionMoveSelectorConfig} and {@link CartesianProductMoveSelectorConfig}.
      *
-     * @param leafMoveSelectorConfigList not null
      */
-    public void extractLeafMoveSelectorConfigsIntoList(List<MoveSelectorConfig> leafMoveSelectorConfigList) {
+    public void extractLeafMoveSelectorConfigsIntoList(@NonNull List<MoveSelectorConfig> leafMoveSelectorConfigList) {
         leafMoveSelectorConfigList.add(this);
     }
 
@@ -250,14 +250,12 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
 
     /**
      * Does not inherit subclass properties because this class and {@code foldedConfig} can be of a different type.
-     *
-     * @param foldedConfig never null
      */
-    public void inheritFolded(MoveSelectorConfig<?> foldedConfig) {
+    public void inheritFolded(@NonNull MoveSelectorConfig<?> foldedConfig) {
         inheritCommon(foldedConfig);
     }
 
-    protected void visitCommonReferencedClasses(Consumer<Class<?>> classVisitor) {
+    protected void visitCommonReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         classVisitor.accept(filterClass);
         classVisitor.accept(sorterComparatorClass);
         classVisitor.accept(sorterWeightFactoryClass);

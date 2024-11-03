@@ -5,6 +5,9 @@ import java.util.Objects;
 
 import jakarta.xml.bind.annotation.XmlType;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 @XmlType(propOrder = {
         "subPillarEnabled",
         "minimumSubPillarSize",
@@ -43,23 +46,23 @@ public final class SubPillarConfigPolicy {
         this.entityComparator = null;
     }
 
-    public static SubPillarConfigPolicy withoutSubpillars() {
+    public static @NonNull SubPillarConfigPolicy withoutSubpillars() {
         return new SubPillarConfigPolicy();
     }
 
-    public static SubPillarConfigPolicy withSubpillars(int minSize, int maxSize) {
+    public static @NonNull SubPillarConfigPolicy withSubpillars(int minSize, int maxSize) {
         return new SubPillarConfigPolicy(minSize, maxSize);
     }
 
-    public static SubPillarConfigPolicy withSubpillarsUnlimited() {
+    public static @NonNull SubPillarConfigPolicy withSubpillarsUnlimited() {
         return withSubpillars(1, Integer.MAX_VALUE);
     }
 
-    public static SubPillarConfigPolicy sequential(int minSize, int maxSize, Comparator<?> entityComparator) {
+    public static @NonNull SubPillarConfigPolicy sequential(int minSize, int maxSize, @NonNull Comparator<?> entityComparator) {
         return new SubPillarConfigPolicy(minSize, maxSize, entityComparator);
     }
 
-    public static SubPillarConfigPolicy sequentialUnlimited(Comparator<?> entityComparator) {
+    public static @NonNull SubPillarConfigPolicy sequentialUnlimited(@NonNull Comparator<?> entityComparator) {
         return sequential(1, Integer.MAX_VALUE, entityComparator);
     }
 
@@ -95,7 +98,7 @@ public final class SubPillarConfigPolicy {
     /**
      * @return Not null if the subpillars are to be treated as sequential. Always null if {@link #subPillarEnabled} is false.
      */
-    public Comparator<?> getEntityComparator() {
+    public @Nullable Comparator<?> getEntityComparator() {
         return entityComparator;
     }
 

@@ -15,6 +15,7 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Also known as a 2-opt move selector config.
@@ -39,19 +40,19 @@ public class TailChainSwapMoveSelectorConfig
     @XmlElement(name = "valueSelector")
     private ValueSelectorConfig valueSelectorConfig = null;
 
-    public EntitySelectorConfig getEntitySelectorConfig() {
+    public @Nullable EntitySelectorConfig getEntitySelectorConfig() {
         return entitySelectorConfig;
     }
 
-    public void setEntitySelectorConfig(EntitySelectorConfig entitySelectorConfig) {
+    public void setEntitySelectorConfig(@Nullable EntitySelectorConfig entitySelectorConfig) {
         this.entitySelectorConfig = entitySelectorConfig;
     }
 
-    public ValueSelectorConfig getValueSelectorConfig() {
+    public @Nullable ValueSelectorConfig getValueSelectorConfig() {
         return valueSelectorConfig;
     }
 
-    public void setValueSelectorConfig(ValueSelectorConfig valueSelectorConfig) {
+    public void setValueSelectorConfig(@Nullable ValueSelectorConfig valueSelectorConfig) {
         this.valueSelectorConfig = valueSelectorConfig;
     }
 
@@ -59,12 +60,13 @@ public class TailChainSwapMoveSelectorConfig
     // With methods
     // ************************************************************************
 
-    public TailChainSwapMoveSelectorConfig withEntitySelectorConfig(EntitySelectorConfig entitySelectorConfig) {
+    public @NonNull TailChainSwapMoveSelectorConfig
+            withEntitySelectorConfig(@NonNull EntitySelectorConfig entitySelectorConfig) {
         this.entitySelectorConfig = entitySelectorConfig;
         return this;
     }
 
-    public TailChainSwapMoveSelectorConfig withValueSelectorConfig(ValueSelectorConfig valueSelectorConfig) {
+    public @NonNull TailChainSwapMoveSelectorConfig withValueSelectorConfig(@NonNull ValueSelectorConfig valueSelectorConfig) {
         this.valueSelectorConfig = valueSelectorConfig;
         return this;
     }
@@ -94,7 +96,8 @@ public class TailChainSwapMoveSelectorConfig
     }
 
     @Override
-    public TailChainSwapMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
+    public @NonNull TailChainSwapMoveSelectorConfig enableNearbySelection(
+            Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
             Random random) {
         return NearbyUtil.enable(this, distanceMeter, random);
     }

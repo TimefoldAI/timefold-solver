@@ -10,6 +10,7 @@ import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorCo
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
         "entitySelectorConfig",
@@ -24,27 +25,27 @@ public class PillarSelectorConfig extends SelectorConfig<PillarSelectorConfig> {
     protected Integer minimumSubPillarSize = null;
     protected Integer maximumSubPillarSize = null;
 
-    public EntitySelectorConfig getEntitySelectorConfig() {
+    public @Nullable EntitySelectorConfig getEntitySelectorConfig() {
         return entitySelectorConfig;
     }
 
-    public void setEntitySelectorConfig(EntitySelectorConfig entitySelectorConfig) {
+    public void setEntitySelectorConfig(@Nullable EntitySelectorConfig entitySelectorConfig) {
         this.entitySelectorConfig = entitySelectorConfig;
     }
 
-    public Integer getMinimumSubPillarSize() {
+    public @Nullable Integer getMinimumSubPillarSize() {
         return minimumSubPillarSize;
     }
 
-    public void setMinimumSubPillarSize(Integer minimumSubPillarSize) {
+    public void setMinimumSubPillarSize(@Nullable Integer minimumSubPillarSize) {
         this.minimumSubPillarSize = minimumSubPillarSize;
     }
 
-    public Integer getMaximumSubPillarSize() {
+    public @Nullable Integer getMaximumSubPillarSize() {
         return maximumSubPillarSize;
     }
 
-    public void setMaximumSubPillarSize(Integer maximumSubPillarSize) {
+    public void setMaximumSubPillarSize(@Nullable Integer maximumSubPillarSize) {
         this.maximumSubPillarSize = maximumSubPillarSize;
     }
 
@@ -52,17 +53,17 @@ public class PillarSelectorConfig extends SelectorConfig<PillarSelectorConfig> {
     // With methods
     // ************************************************************************
 
-    public PillarSelectorConfig withEntitySelectorConfig(EntitySelectorConfig entitySelectorConfig) {
+    public @NonNull PillarSelectorConfig withEntitySelectorConfig(@NonNull EntitySelectorConfig entitySelectorConfig) {
         this.setEntitySelectorConfig(entitySelectorConfig);
         return this;
     }
 
-    public PillarSelectorConfig withMinimumSubPillarSize(Integer minimumSubPillarSize) {
+    public @NonNull PillarSelectorConfig withMinimumSubPillarSize(@NonNull Integer minimumSubPillarSize) {
         this.setMinimumSubPillarSize(minimumSubPillarSize);
         return this;
     }
 
-    public PillarSelectorConfig withMaximumSubPillarSize(Integer maximumSubPillarSize) {
+    public @NonNull PillarSelectorConfig withMaximumSubPillarSize(@NonNull Integer maximumSubPillarSize) {
         this.setMaximumSubPillarSize(maximumSubPillarSize);
         return this;
     }

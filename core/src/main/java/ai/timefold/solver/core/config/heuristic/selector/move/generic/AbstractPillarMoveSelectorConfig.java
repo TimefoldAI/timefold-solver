@@ -79,7 +79,7 @@ public abstract class AbstractPillarMoveSelectorConfig<Config_ extends AbstractP
     }
 
     @Override
-    protected void visitCommonReferencedClasses(Consumer<Class<?>> classVisitor) {
+    protected void visitCommonReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         super.visitCommonReferencedClasses(classVisitor);
         classVisitor.accept(subPillarSequenceComparatorClass);
         if (pillarSelectorConfig != null) {

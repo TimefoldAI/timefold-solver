@@ -4,6 +4,9 @@ import jakarta.xml.bind.annotation.XmlEnum;
 
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * @see SelectionSorter
  */
@@ -19,7 +22,7 @@ public enum SelectionSorterOrder {
      */
     DESCENDING;
 
-    public static SelectionSorterOrder resolve(SelectionSorterOrder sorterOrder) {
+    public static @NonNull SelectionSorterOrder resolve(@Nullable SelectionSorterOrder sorterOrder) {
         if (sorterOrder == null) {
             return ASCENDING;
         }

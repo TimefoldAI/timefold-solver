@@ -12,6 +12,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveListFact
 import ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
         "moveListFactoryClass",
@@ -26,19 +27,19 @@ public class MoveListFactoryConfig extends MoveSelectorConfig<MoveListFactoryCon
     @XmlJavaTypeAdapter(JaxbCustomPropertiesAdapter.class)
     protected Map<String, String> moveListFactoryCustomProperties = null;
 
-    public Class<? extends MoveListFactory> getMoveListFactoryClass() {
+    public @Nullable Class<? extends MoveListFactory> getMoveListFactoryClass() {
         return moveListFactoryClass;
     }
 
-    public void setMoveListFactoryClass(Class<? extends MoveListFactory> moveListFactoryClass) {
+    public void setMoveListFactoryClass(@Nullable Class<? extends MoveListFactory> moveListFactoryClass) {
         this.moveListFactoryClass = moveListFactoryClass;
     }
 
-    public Map<String, String> getMoveListFactoryCustomProperties() {
+    public @Nullable Map<String, String> getMoveListFactoryCustomProperties() {
         return moveListFactoryCustomProperties;
     }
 
-    public void setMoveListFactoryCustomProperties(Map<String, String> moveListFactoryCustomProperties) {
+    public void setMoveListFactoryCustomProperties(@Nullable Map<String, String> moveListFactoryCustomProperties) {
         this.moveListFactoryCustomProperties = moveListFactoryCustomProperties;
     }
 
@@ -46,12 +47,14 @@ public class MoveListFactoryConfig extends MoveSelectorConfig<MoveListFactoryCon
     // With methods
     // ************************************************************************
 
-    public MoveListFactoryConfig withMoveListFactoryClass(Class<? extends MoveListFactory> moveListFactoryClass) {
+    public @NonNull MoveListFactoryConfig
+            withMoveListFactoryClass(@NonNull Class<? extends MoveListFactory> moveListFactoryClass) {
         this.setMoveListFactoryClass(moveListFactoryClass);
         return this;
     }
 
-    public MoveListFactoryConfig withMoveListFactoryCustomProperties(Map<String, String> moveListFactoryCustomProperties) {
+    public @NonNull MoveListFactoryConfig
+            withMoveListFactoryCustomProperties(@NonNull Map<String, String> moveListFactoryCustomProperties) {
         this.setMoveListFactoryCustomProperties(moveListFactoryCustomProperties);
         return this;
     }

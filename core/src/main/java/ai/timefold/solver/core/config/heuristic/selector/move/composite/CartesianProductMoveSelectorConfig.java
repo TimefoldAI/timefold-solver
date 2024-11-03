@@ -28,6 +28,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
         "moveSelectorConfigList",
@@ -75,7 +76,7 @@ public class CartesianProductMoveSelectorConfig extends MoveSelectorConfig<Carte
     public CartesianProductMoveSelectorConfig() {
     }
 
-    public CartesianProductMoveSelectorConfig(List<MoveSelectorConfig> moveSelectorConfigList) {
+    public CartesianProductMoveSelectorConfig(@NonNull List<MoveSelectorConfig> moveSelectorConfigList) {
         this.moveSelectorConfigList = moveSelectorConfigList;
     }
 
@@ -97,19 +98,19 @@ public class CartesianProductMoveSelectorConfig extends MoveSelectorConfig<Carte
         setMoveSelectorList(moveSelectorConfigList);
     }
 
-    public List<MoveSelectorConfig> getMoveSelectorList() {
+    public @Nullable List<MoveSelectorConfig> getMoveSelectorList() {
         return moveSelectorConfigList;
     }
 
-    public void setMoveSelectorList(List<MoveSelectorConfig> moveSelectorConfigList) {
+    public void setMoveSelectorList(@Nullable List<MoveSelectorConfig> moveSelectorConfigList) {
         this.moveSelectorConfigList = moveSelectorConfigList;
     }
 
-    public Boolean getIgnoreEmptyChildIterators() {
+    public @Nullable Boolean getIgnoreEmptyChildIterators() {
         return ignoreEmptyChildIterators;
     }
 
-    public void setIgnoreEmptyChildIterators(Boolean ignoreEmptyChildIterators) {
+    public void setIgnoreEmptyChildIterators(@Nullable Boolean ignoreEmptyChildIterators) {
         this.ignoreEmptyChildIterators = ignoreEmptyChildIterators;
     }
 
@@ -117,17 +118,19 @@ public class CartesianProductMoveSelectorConfig extends MoveSelectorConfig<Carte
     // With methods
     // ************************************************************************
 
-    public CartesianProductMoveSelectorConfig withMoveSelectorList(List<MoveSelectorConfig> moveSelectorConfigList) {
+    public @NonNull CartesianProductMoveSelectorConfig
+            withMoveSelectorList(@NonNull List<MoveSelectorConfig> moveSelectorConfigList) {
         this.moveSelectorConfigList = moveSelectorConfigList;
         return this;
     }
 
-    public CartesianProductMoveSelectorConfig withMoveSelectors(MoveSelectorConfig... moveSelectorConfigs) {
+    public @NonNull CartesianProductMoveSelectorConfig withMoveSelectors(@NonNull MoveSelectorConfig... moveSelectorConfigs) {
         this.moveSelectorConfigList = Arrays.asList(moveSelectorConfigs);
         return this;
     }
 
-    public CartesianProductMoveSelectorConfig withIgnoreEmptyChildIterators(Boolean ignoreEmptyChildIterators) {
+    public @NonNull CartesianProductMoveSelectorConfig
+            withIgnoreEmptyChildIterators(@NonNull Boolean ignoreEmptyChildIterators) {
         this.ignoreEmptyChildIterators = ignoreEmptyChildIterators;
         return this;
     }
@@ -137,7 +140,7 @@ public class CartesianProductMoveSelectorConfig extends MoveSelectorConfig<Carte
     // ************************************************************************
 
     @Override
-    public void extractLeafMoveSelectorConfigsIntoList(List<MoveSelectorConfig> leafMoveSelectorConfigList) {
+    public void extractLeafMoveSelectorConfigsIntoList(@NonNull List<MoveSelectorConfig> leafMoveSelectorConfigList) {
         for (MoveSelectorConfig moveSelectorConfig : moveSelectorConfigList) {
             moveSelectorConfig.extractLeafMoveSelectorConfigsIntoList(leafMoveSelectorConfigList);
         }
