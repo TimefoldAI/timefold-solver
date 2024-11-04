@@ -44,7 +44,7 @@
     <!-- Plugins -->
     <!-- ************************************************************************ -->
     <version.antrun.plugin>3.1.0</version.antrun.plugin>
-    <version.asciidoctor.plugin>3.0.0</version.asciidoctor.plugin>
+    <version.asciidoctor.plugin>3.1.0</version.asciidoctor.plugin>
     <version.assembly.plugin>3.7.1</version.assembly.plugin>
     <version.compiler.plugin>3.13.0</version.compiler.plugin>
     <version.dependency.plugin>3.8.1</version.dependency.plugin>
