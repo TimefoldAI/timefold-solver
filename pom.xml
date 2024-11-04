@@ -27,7 +27,7 @@
   </licenses>
 
   <properties>
-    <version.javadoc.plugin>3.10.1</version.javadoc.plugin>
+    <version.javadoc.plugin>3.11.1</version.javadoc.plugin>
     <version.rewrite.plugin>5.43.4</version.rewrite.plugin>
     <version.source.plugin>3.3.1</version.source.plugin>
     <version.resources.plugin>3.3.1</version.resources.plugin>
