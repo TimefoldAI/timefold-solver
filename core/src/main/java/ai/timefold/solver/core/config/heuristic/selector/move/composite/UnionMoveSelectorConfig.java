@@ -178,8 +178,9 @@ public class UnionMoveSelectorConfig
     }
 
     @Override
-    public @NonNull UnionMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
-            Random random) {
+    public @NonNull UnionMoveSelectorConfig enableNearbySelection(
+            @NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
+            @NonNull Random random) {
         UnionMoveSelectorConfig nearbyConfig = copyConfig();
         var updatedMoveSelectorList = new LinkedList<MoveSelectorConfig>();
         for (var selectorConfig : moveSelectorConfigList) {

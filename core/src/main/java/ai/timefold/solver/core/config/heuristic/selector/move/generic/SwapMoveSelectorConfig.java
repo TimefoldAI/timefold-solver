@@ -17,6 +17,7 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
         "entitySelectorConfig",
@@ -38,27 +39,27 @@ public class SwapMoveSelectorConfig
     @XmlElement(name = "variableNameInclude")
     private List<String> variableNameIncludeList = null;
 
-    public EntitySelectorConfig getEntitySelectorConfig() {
+    public @Nullable EntitySelectorConfig getEntitySelectorConfig() {
         return entitySelectorConfig;
     }
 
-    public void setEntitySelectorConfig(EntitySelectorConfig entitySelectorConfig) {
+    public void setEntitySelectorConfig(@Nullable EntitySelectorConfig entitySelectorConfig) {
         this.entitySelectorConfig = entitySelectorConfig;
     }
 
-    public EntitySelectorConfig getSecondaryEntitySelectorConfig() {
+    public @Nullable EntitySelectorConfig getSecondaryEntitySelectorConfig() {
         return secondaryEntitySelectorConfig;
     }
 
-    public void setSecondaryEntitySelectorConfig(EntitySelectorConfig secondaryEntitySelectorConfig) {
+    public void setSecondaryEntitySelectorConfig(@Nullable EntitySelectorConfig secondaryEntitySelectorConfig) {
         this.secondaryEntitySelectorConfig = secondaryEntitySelectorConfig;
     }
 
-    public List<String> getVariableNameIncludeList() {
+    public @Nullable List<String> getVariableNameIncludeList() {
         return variableNameIncludeList;
     }
 
-    public void setVariableNameIncludeList(List<String> variableNameIncludeList) {
+    public void setVariableNameIncludeList(@Nullable List<String> variableNameIncludeList) {
         this.variableNameIncludeList = variableNameIncludeList;
     }
 
@@ -66,17 +67,18 @@ public class SwapMoveSelectorConfig
     // With methods
     // ************************************************************************
 
-    public SwapMoveSelectorConfig withEntitySelectorConfig(EntitySelectorConfig entitySelectorConfig) {
+    public @NonNull SwapMoveSelectorConfig withEntitySelectorConfig(@NonNull EntitySelectorConfig entitySelectorConfig) {
         this.setEntitySelectorConfig(entitySelectorConfig);
         return this;
     }
 
-    public SwapMoveSelectorConfig withSecondaryEntitySelectorConfig(EntitySelectorConfig secondaryEntitySelectorConfig) {
+    public @NonNull SwapMoveSelectorConfig
+            withSecondaryEntitySelectorConfig(@NonNull EntitySelectorConfig secondaryEntitySelectorConfig) {
         this.setSecondaryEntitySelectorConfig(secondaryEntitySelectorConfig);
         return this;
     }
 
-    public SwapMoveSelectorConfig withVariableNameIncludes(String... variableNameIncludes) {
+    public @NonNull SwapMoveSelectorConfig withVariableNameIncludes(@NonNull String... variableNameIncludes) {
         this.setVariableNameIncludeList(Arrays.asList(variableNameIncludes));
         return this;
     }
@@ -113,8 +115,9 @@ public class SwapMoveSelectorConfig
     }
 
     @Override
-    public @NonNull SwapMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
-            Random random) {
+    public @NonNull SwapMoveSelectorConfig enableNearbySelection(
+            @NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
+            @NonNull Random random) {
         return NearbyUtil.enable(this, distanceMeter, random);
     }
 

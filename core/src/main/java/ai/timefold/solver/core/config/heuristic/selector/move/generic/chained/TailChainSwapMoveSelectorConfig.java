@@ -97,8 +97,8 @@ public class TailChainSwapMoveSelectorConfig
 
     @Override
     public @NonNull TailChainSwapMoveSelectorConfig enableNearbySelection(
-            Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
-            Random random) {
+            @NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
+            @NonNull Random random) {
         return NearbyUtil.enable(this, distanceMeter, random);
     }
 

@@ -11,6 +11,7 @@ import ai.timefold.solver.core.config.heuristic.selector.entity.pillar.PillarSel
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
         "secondaryPillarSelectorConfig",
@@ -27,19 +28,19 @@ public class PillarSwapMoveSelectorConfig extends AbstractPillarMoveSelectorConf
     @XmlElement(name = "variableNameInclude")
     private List<String> variableNameIncludeList = null;
 
-    public PillarSelectorConfig getSecondaryPillarSelectorConfig() {
+    public @Nullable PillarSelectorConfig getSecondaryPillarSelectorConfig() {
         return secondaryPillarSelectorConfig;
     }
 
-    public void setSecondaryPillarSelectorConfig(PillarSelectorConfig secondaryPillarSelectorConfig) {
+    public void setSecondaryPillarSelectorConfig(@Nullable PillarSelectorConfig secondaryPillarSelectorConfig) {
         this.secondaryPillarSelectorConfig = secondaryPillarSelectorConfig;
     }
 
-    public List<String> getVariableNameIncludeList() {
+    public @Nullable List<String> getVariableNameIncludeList() {
         return variableNameIncludeList;
     }
 
-    public void setVariableNameIncludeList(List<String> variableNameIncludeList) {
+    public void setVariableNameIncludeList(@Nullable List<String> variableNameIncludeList) {
         this.variableNameIncludeList = variableNameIncludeList;
     }
 
@@ -47,17 +48,18 @@ public class PillarSwapMoveSelectorConfig extends AbstractPillarMoveSelectorConf
     // With methods
     // ************************************************************************
 
-    public PillarSwapMoveSelectorConfig withSecondaryPillarSelectorConfig(PillarSelectorConfig pillarSelectorConfig) {
+    public @NonNull PillarSwapMoveSelectorConfig
+            withSecondaryPillarSelectorConfig(@NonNull PillarSelectorConfig pillarSelectorConfig) {
         this.setSecondaryPillarSelectorConfig(pillarSelectorConfig);
         return this;
     }
 
-    public PillarSwapMoveSelectorConfig withVariableNameIncludeList(List<String> variableNameIncludeList) {
+    public @NonNull PillarSwapMoveSelectorConfig withVariableNameIncludeList(@NonNull List<String> variableNameIncludeList) {
         this.setVariableNameIncludeList(variableNameIncludeList);
         return this;
     }
 
-    public PillarSwapMoveSelectorConfig withVariableNameIncludes(String... variableNameIncludes) {
+    public @NonNull PillarSwapMoveSelectorConfig withVariableNameIncludes(@NonNull String... variableNameIncludes) {
         this.setVariableNameIncludeList(List.of(variableNameIncludes));
         return this;
     }

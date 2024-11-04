@@ -10,6 +10,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
         "minimumSubListSize",
@@ -76,27 +77,27 @@ public class SubListSwapMoveSelectorConfig extends MoveSelectorConfig<SubListSwa
         this.maximumSubListSize = maximumSubListSize;
     }
 
-    public Boolean getSelectReversingMoveToo() {
+    public @Nullable Boolean getSelectReversingMoveToo() {
         return selectReversingMoveToo;
     }
 
-    public void setSelectReversingMoveToo(Boolean selectReversingMoveToo) {
+    public void setSelectReversingMoveToo(@Nullable Boolean selectReversingMoveToo) {
         this.selectReversingMoveToo = selectReversingMoveToo;
     }
 
-    public SubListSelectorConfig getSubListSelectorConfig() {
+    public @Nullable SubListSelectorConfig getSubListSelectorConfig() {
         return subListSelectorConfig;
     }
 
-    public void setSubListSelectorConfig(SubListSelectorConfig subListSelectorConfig) {
+    public void setSubListSelectorConfig(@Nullable SubListSelectorConfig subListSelectorConfig) {
         this.subListSelectorConfig = subListSelectorConfig;
     }
 
-    public SubListSelectorConfig getSecondarySubListSelectorConfig() {
+    public @Nullable SubListSelectorConfig getSecondarySubListSelectorConfig() {
         return secondarySubListSelectorConfig;
     }
 
-    public void setSecondarySubListSelectorConfig(SubListSelectorConfig secondarySubListSelectorConfig) {
+    public void setSecondarySubListSelectorConfig(@Nullable SubListSelectorConfig secondarySubListSelectorConfig) {
         this.secondarySubListSelectorConfig = secondarySubListSelectorConfig;
     }
 
@@ -104,18 +105,19 @@ public class SubListSwapMoveSelectorConfig extends MoveSelectorConfig<SubListSwa
     // With methods
     // ************************************************************************
 
-    public SubListSwapMoveSelectorConfig withSelectReversingMoveToo(Boolean selectReversingMoveToo) {
+    public @NonNull SubListSwapMoveSelectorConfig withSelectReversingMoveToo(@NonNull Boolean selectReversingMoveToo) {
         this.setSelectReversingMoveToo(selectReversingMoveToo);
         return this;
     }
 
-    public SubListSwapMoveSelectorConfig withSubListSelectorConfig(SubListSelectorConfig subListSelectorConfig) {
+    public @NonNull SubListSwapMoveSelectorConfig
+            withSubListSelectorConfig(@NonNull SubListSelectorConfig subListSelectorConfig) {
         this.setSubListSelectorConfig(subListSelectorConfig);
         return this;
     }
 
-    public SubListSwapMoveSelectorConfig
-            withSecondarySubListSelectorConfig(SubListSelectorConfig secondarySubListSelectorConfig) {
+    public @NonNull SubListSwapMoveSelectorConfig
+            withSecondarySubListSelectorConfig(@NonNull SubListSelectorConfig secondarySubListSelectorConfig) {
         this.setSecondarySubListSelectorConfig(secondarySubListSelectorConfig);
         return this;
     }

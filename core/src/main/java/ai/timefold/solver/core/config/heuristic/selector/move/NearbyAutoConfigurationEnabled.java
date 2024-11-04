@@ -15,7 +15,6 @@ public interface NearbyAutoConfigurationEnabled<Config_ extends MoveSelectorConf
      * @return new instance with the Nearby Selection settings properly configured
      */
     @NonNull
-    // TODO: distanceMeter and random @NonNull?
-    Config_ enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, Random random);
+    Config_ enableNearbySelection(@NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter, @NonNull Random random);
 
 }

@@ -8,6 +8,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
         "minimumRuinedCount",
@@ -33,54 +34,54 @@ public class RuinRecreateMoveSelectorConfig extends MoveSelectorConfig<RuinRecre
     // Getters/Setters
     // **************************
 
-    public Integer getMinimumRuinedCount() {
+    public @Nullable Integer getMinimumRuinedCount() {
         return minimumRuinedCount;
     }
 
-    public void setMinimumRuinedCount(Integer minimumRuinedCount) {
+    public void setMinimumRuinedCount(@Nullable Integer minimumRuinedCount) {
         this.minimumRuinedCount = minimumRuinedCount;
     }
 
-    public RuinRecreateMoveSelectorConfig withMinimumRuinedCount(Integer minimumRuinedCount) {
+    public @NonNull RuinRecreateMoveSelectorConfig withMinimumRuinedCount(@NonNull Integer minimumRuinedCount) {
         this.minimumRuinedCount = minimumRuinedCount;
         return this;
     }
 
-    public Integer getMaximumRuinedCount() {
+    public @Nullable Integer getMaximumRuinedCount() {
         return maximumRuinedCount;
     }
 
-    public void setMaximumRuinedCount(Integer maximumRuinedCount) {
+    public void setMaximumRuinedCount(@Nullable Integer maximumRuinedCount) {
         this.maximumRuinedCount = maximumRuinedCount;
     }
 
-    public RuinRecreateMoveSelectorConfig withMaximumRuinedCount(Integer maximumRuinedCount) {
+    public @NonNull RuinRecreateMoveSelectorConfig withMaximumRuinedCount(@NonNull Integer maximumRuinedCount) {
         this.maximumRuinedCount = maximumRuinedCount;
         return this;
     }
 
-    public Double getMinimumRuinedPercentage() {
+    public @Nullable Double getMinimumRuinedPercentage() {
         return minimumRuinedPercentage;
     }
 
-    public void setMinimumRuinedPercentage(Double minimumRuinedPercentage) {
+    public void setMinimumRuinedPercentage(@Nullable Double minimumRuinedPercentage) {
         this.minimumRuinedPercentage = minimumRuinedPercentage;
     }
 
-    public RuinRecreateMoveSelectorConfig withMinimumRuinedPercentage(Double minimumRuinedPercentage) {
+    public @NonNull RuinRecreateMoveSelectorConfig withMinimumRuinedPercentage(@NonNull Double minimumRuinedPercentage) {
         this.minimumRuinedPercentage = minimumRuinedPercentage;
         return this;
     }
 
-    public Double getMaximumRuinedPercentage() {
+    public @Nullable Double getMaximumRuinedPercentage() {
         return maximumRuinedPercentage;
     }
 
-    public void setMaximumRuinedPercentage(Double maximumRuinedPercentage) {
+    public void setMaximumRuinedPercentage(@Nullable Double maximumRuinedPercentage) {
         this.maximumRuinedPercentage = maximumRuinedPercentage;
     }
 
-    public RuinRecreateMoveSelectorConfig withMaximumRuinedPercentage(Double maximumRuinedPercentage) {
+    public @NonNull RuinRecreateMoveSelectorConfig withMaximumRuinedPercentage(@NonNull Double maximumRuinedPercentage) {
         this.maximumRuinedPercentage = maximumRuinedPercentage;
         return this;
     }
