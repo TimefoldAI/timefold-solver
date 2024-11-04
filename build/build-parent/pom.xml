@@ -23,7 +23,7 @@
     <version.ch.qos.logback>1.5.12</version.ch.qos.logback>
     <version.org.apache.logging.log4j>2.24.1</version.org.apache.logging.log4j>
     <version.ow2.asm>9.7.1</version.ow2.asm>
-    <version.io.quarkus>3.15.1</version.io.quarkus>
+    <version.io.quarkus>3.16.1</version.io.quarkus>
     <version.org.apache.commons.compress>1.26.1</version.org.apache.commons.compress>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
     <version.org.apache.commons.text>1.11.0</version.org.apache.commons.text>
