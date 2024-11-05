@@ -238,7 +238,8 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
      * except for {@link UnionMoveSelectorConfig} and {@link CartesianProductMoveSelectorConfig}.
      *
      */
-    public void extractLeafMoveSelectorConfigsIntoList(@NonNull List<MoveSelectorConfig> leafMoveSelectorConfigList) {
+    // TODO: list elements @NonNull?
+    public void extractLeafMoveSelectorConfigsIntoList(@NonNull List<@NonNull MoveSelectorConfig> leafMoveSelectorConfigList) {
         leafMoveSelectorConfigList.add(this);
     }
 

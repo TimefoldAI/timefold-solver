@@ -22,6 +22,8 @@ import ai.timefold.solver.core.impl.statistic.SolverScopeStatistic;
 import ai.timefold.solver.core.impl.statistic.SolverStatistic;
 import ai.timefold.solver.core.impl.statistic.StatelessSolverStatistic;
 
+import org.jspecify.annotations.NonNull;
+
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
 
@@ -90,12 +92,15 @@ public enum SolverMetric {
         this.isConstraintMatchBased = isConstraintMatchBased;
     }
 
-    public String getMeterId() {
+    public @NonNull String getMeterId() {
         return meterId;
     }
 
-    public static void registerScoreMetrics(SolverMetric metric, Tags tags, ScoreDefinition<?> scoreDefinition,
-            Map<Tags, List<AtomicReference<Number>>> tagToScoreLevels, Score<?> score) {
+    public static void registerScoreMetrics(@NonNull SolverMetric metric, @NonNull Tags tags,
+            // TODO: @NonNull Map<@NonNull Tags, @NonNull List<@NonNull AtomicReference<@NonNull Number>>> tagToScoreLevels?
+            @NonNull ScoreDefinition<?> scoreDefinition,
+            @NonNull Map<@NonNull Tags, List<AtomicReference<Number>>> tagToScoreLevels,
+            @NonNull Score<?> score) {
         Number[] levelValues = score.toLevelNumbers();
         if (tagToScoreLevels.containsKey(tags)) {
             List<AtomicReference<Number>> scoreLevels = tagToScoreLevels.get(tags);
@@ -126,12 +131,13 @@ public enum SolverMetric {
     }
 
     @SuppressWarnings("unchecked")
-    public void register(Solver<?> solver) {
+    // TODO: clarify @NonNull ok here
+    public void register(@NonNull Solver<?> solver) {
         registerFunction.register(solver);
     }
 
     @SuppressWarnings("unchecked")
-    public void unregister(Solver<?> solver) {
+    public void unregister(@NonNull Solver<?> solver) {
         registerFunction.unregister(solver);
     }
 }

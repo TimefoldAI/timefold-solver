@@ -86,7 +86,8 @@ public class QueuedEntityPlacerConfig extends EntityPlacerConfig<QueuedEntityPla
         return this;
     }
 
-    public @NonNull QueuedEntityPlacerConfig withMoveSelectorConfigs(@NonNull MoveSelectorConfig... moveSelectorConfigs) {
+    public @NonNull QueuedEntityPlacerConfig
+            withMoveSelectorConfigs(@NonNull MoveSelectorConfig @NonNull... moveSelectorConfigs) {
         return this.withMoveSelectorConfigList(Arrays.asList(moveSelectorConfigs));
     }
 

@@ -18,6 +18,7 @@ import ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter;
 import ai.timefold.solver.core.impl.phase.custom.CustomPhaseCommand;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
         "customPhaseCommandClassList",
@@ -43,27 +44,28 @@ public class CustomPhaseConfig extends PhaseConfig<CustomPhaseConfig> {
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public List<Class<? extends CustomPhaseCommand>> getCustomPhaseCommandClassList() {
+    public @Nullable List<Class<? extends CustomPhaseCommand>> getCustomPhaseCommandClassList() {
         return customPhaseCommandClassList;
     }
 
-    public void setCustomPhaseCommandClassList(List<Class<? extends CustomPhaseCommand>> customPhaseCommandClassList) {
+    public void setCustomPhaseCommandClassList(
+            @Nullable List<Class<? extends CustomPhaseCommand>> customPhaseCommandClassList) {
         this.customPhaseCommandClassList = customPhaseCommandClassList;
     }
 
-    public Map<String, String> getCustomProperties() {
+    public @Nullable Map<@NonNull String, @NonNull String> getCustomProperties() {
         return customProperties;
     }
 
-    public void setCustomProperties(Map<String, String> customProperties) {
+    public void setCustomProperties(@Nullable Map<@NonNull String, @NonNull String> customProperties) {
         this.customProperties = customProperties;
     }
 
-    public List<CustomPhaseCommand> getCustomPhaseCommandList() {
+    public @Nullable List<@NonNull CustomPhaseCommand> getCustomPhaseCommandList() {
         return customPhaseCommandList;
     }
 
-    public void setCustomPhaseCommandList(List<CustomPhaseCommand> customPhaseCommandList) {
+    public void setCustomPhaseCommandList(@Nullable List<@NonNull CustomPhaseCommand> customPhaseCommandList) {
         this.customPhaseCommandList = customPhaseCommandList;
     }
 
@@ -71,18 +73,19 @@ public class CustomPhaseConfig extends PhaseConfig<CustomPhaseConfig> {
     // With methods
     // ************************************************************************
 
-    public CustomPhaseConfig withCustomPhaseCommandClassList(
-            List<Class<? extends CustomPhaseCommand>> customPhaseCommandClassList) {
+    public @NonNull CustomPhaseConfig withCustomPhaseCommandClassList(
+            @NonNull List<@NonNull Class<? extends CustomPhaseCommand>> customPhaseCommandClassList) {
         this.customPhaseCommandClassList = customPhaseCommandClassList;
         return this;
     }
 
-    public CustomPhaseConfig withCustomProperties(Map<String, String> customProperties) {
+    public @NonNull CustomPhaseConfig withCustomProperties(@NonNull Map<@NonNull String, @NonNull String> customProperties) {
         this.customProperties = customProperties;
         return this;
     }
 
-    public CustomPhaseConfig withCustomPhaseCommandList(List<CustomPhaseCommand> customPhaseCommandList) {
+    public @NonNull CustomPhaseConfig
+            withCustomPhaseCommandList(@NonNull List<@NonNull CustomPhaseCommand> customPhaseCommandList) {
         boolean hasNullCommand = Objects.requireNonNullElse(customPhaseCommandList, Collections.emptyList())
                 .stream().anyMatch(Objects::isNull);
         if (hasNullCommand) {
@@ -93,7 +96,8 @@ public class CustomPhaseConfig extends PhaseConfig<CustomPhaseConfig> {
         return this;
     }
 
-    public <Solution_> CustomPhaseConfig withCustomPhaseCommands(CustomPhaseCommand<Solution_>... customPhaseCommands) {
+    public <Solution_> @NonNull CustomPhaseConfig
+            withCustomPhaseCommands(@NonNull CustomPhaseCommand<Solution_> @NonNull... customPhaseCommands) {
         boolean hasNullCommand = Arrays.stream(customPhaseCommands).anyMatch(Objects::isNull);
         if (hasNullCommand) {
             throw new IllegalArgumentException(

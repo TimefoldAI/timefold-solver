@@ -30,6 +30,7 @@ import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
         "localSearchType",
@@ -82,35 +83,35 @@ public class LocalSearchPhaseConfig extends PhaseConfig<LocalSearchPhaseConfig> 
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public LocalSearchType getLocalSearchType() {
+    public @Nullable LocalSearchType getLocalSearchType() {
         return localSearchType;
     }
 
-    public void setLocalSearchType(LocalSearchType localSearchType) {
+    public void setLocalSearchType(@Nullable LocalSearchType localSearchType) {
         this.localSearchType = localSearchType;
     }
 
-    public MoveSelectorConfig getMoveSelectorConfig() {
+    public @Nullable MoveSelectorConfig getMoveSelectorConfig() {
         return moveSelectorConfig;
     }
 
-    public void setMoveSelectorConfig(MoveSelectorConfig moveSelectorConfig) {
+    public void setMoveSelectorConfig(@Nullable MoveSelectorConfig moveSelectorConfig) {
         this.moveSelectorConfig = moveSelectorConfig;
     }
 
-    public LocalSearchAcceptorConfig getAcceptorConfig() {
+    public @Nullable LocalSearchAcceptorConfig getAcceptorConfig() {
         return acceptorConfig;
     }
 
-    public void setAcceptorConfig(LocalSearchAcceptorConfig acceptorConfig) {
+    public void setAcceptorConfig(@Nullable LocalSearchAcceptorConfig acceptorConfig) {
         this.acceptorConfig = acceptorConfig;
     }
 
-    public LocalSearchForagerConfig getForagerConfig() {
+    public @Nullable LocalSearchForagerConfig getForagerConfig() {
         return foragerConfig;
     }
 
-    public void setForagerConfig(LocalSearchForagerConfig foragerConfig) {
+    public void setForagerConfig(@Nullable LocalSearchForagerConfig foragerConfig) {
         this.foragerConfig = foragerConfig;
     }
 
@@ -118,22 +119,22 @@ public class LocalSearchPhaseConfig extends PhaseConfig<LocalSearchPhaseConfig> 
     // With methods
     // ************************************************************************
 
-    public LocalSearchPhaseConfig withLocalSearchType(LocalSearchType localSearchType) {
+    public @NonNull LocalSearchPhaseConfig withLocalSearchType(@NonNull LocalSearchType localSearchType) {
         this.localSearchType = localSearchType;
         return this;
     }
 
-    public LocalSearchPhaseConfig withMoveSelectorConfig(MoveSelectorConfig moveSelectorConfig) {
+    public @NonNull LocalSearchPhaseConfig withMoveSelectorConfig(@NonNull MoveSelectorConfig moveSelectorConfig) {
         this.moveSelectorConfig = moveSelectorConfig;
         return this;
     }
 
-    public LocalSearchPhaseConfig withAcceptorConfig(LocalSearchAcceptorConfig acceptorConfig) {
+    public @NonNull LocalSearchPhaseConfig withAcceptorConfig(@NonNull LocalSearchAcceptorConfig acceptorConfig) {
         this.acceptorConfig = acceptorConfig;
         return this;
     }
 
-    public LocalSearchPhaseConfig withForagerConfig(LocalSearchForagerConfig foragerConfig) {
+    public @NonNull LocalSearchPhaseConfig withForagerConfig(@NonNull LocalSearchForagerConfig foragerConfig) {
         this.foragerConfig = foragerConfig;
         return this;
     }

@@ -55,11 +55,11 @@ public class SwapMoveSelectorConfig
         this.secondaryEntitySelectorConfig = secondaryEntitySelectorConfig;
     }
 
-    public @Nullable List<String> getVariableNameIncludeList() {
+    public @Nullable List<@NonNull String> getVariableNameIncludeList() {
         return variableNameIncludeList;
     }
 
-    public void setVariableNameIncludeList(@Nullable List<String> variableNameIncludeList) {
+    public void setVariableNameIncludeList(@Nullable List<@NonNull String> variableNameIncludeList) {
         this.variableNameIncludeList = variableNameIncludeList;
     }
 
@@ -78,7 +78,7 @@ public class SwapMoveSelectorConfig
         return this;
     }
 
-    public @NonNull SwapMoveSelectorConfig withVariableNameIncludes(@NonNull String... variableNameIncludes) {
+    public @NonNull SwapMoveSelectorConfig withVariableNameIncludes(@NonNull String @NonNull... variableNameIncludes) {
         this.setVariableNameIncludeList(Arrays.asList(variableNameIncludes));
         return this;
     }

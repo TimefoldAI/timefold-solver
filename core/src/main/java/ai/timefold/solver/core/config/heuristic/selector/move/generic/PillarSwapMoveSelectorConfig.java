@@ -36,11 +36,11 @@ public class PillarSwapMoveSelectorConfig extends AbstractPillarMoveSelectorConf
         this.secondaryPillarSelectorConfig = secondaryPillarSelectorConfig;
     }
 
-    public @Nullable List<String> getVariableNameIncludeList() {
+    public @Nullable List<@NonNull String> getVariableNameIncludeList() {
         return variableNameIncludeList;
     }
 
-    public void setVariableNameIncludeList(@Nullable List<String> variableNameIncludeList) {
+    public void setVariableNameIncludeList(@Nullable List<@NonNull String> variableNameIncludeList) {
         this.variableNameIncludeList = variableNameIncludeList;
     }
 
@@ -54,12 +54,13 @@ public class PillarSwapMoveSelectorConfig extends AbstractPillarMoveSelectorConf
         return this;
     }
 
-    public @NonNull PillarSwapMoveSelectorConfig withVariableNameIncludeList(@NonNull List<String> variableNameIncludeList) {
+    public @NonNull PillarSwapMoveSelectorConfig
+            withVariableNameIncludeList(@NonNull List<@NonNull String> variableNameIncludeList) {
         this.setVariableNameIncludeList(variableNameIncludeList);
         return this;
     }
 
-    public @NonNull PillarSwapMoveSelectorConfig withVariableNameIncludes(@NonNull String... variableNameIncludes) {
+    public @NonNull PillarSwapMoveSelectorConfig withVariableNameIncludes(@NonNull String @NonNull... variableNameIncludes) {
         this.setVariableNameIncludeList(List.of(variableNameIncludes));
         return this;
     }

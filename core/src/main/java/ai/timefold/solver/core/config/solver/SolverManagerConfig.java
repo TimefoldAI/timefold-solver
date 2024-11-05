@@ -9,6 +9,7 @@ import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,19 +37,19 @@ public class SolverManagerConfig extends AbstractConfig<SolverManagerConfig> {
     public SolverManagerConfig() {
     }
 
-    public String getParallelSolverCount() {
+    public @Nullable String getParallelSolverCount() {
         return parallelSolverCount;
     }
 
-    public void setParallelSolverCount(String parallelSolverCount) {
+    public void setParallelSolverCount(@Nullable String parallelSolverCount) {
         this.parallelSolverCount = parallelSolverCount;
     }
 
-    public Class<? extends ThreadFactory> getThreadFactoryClass() {
+    public @Nullable Class<? extends ThreadFactory> getThreadFactoryClass() {
         return threadFactoryClass;
     }
 
-    public void setThreadFactoryClass(Class<? extends ThreadFactory> threadFactoryClass) {
+    public void setThreadFactoryClass(@Nullable Class<? extends ThreadFactory> threadFactoryClass) {
         this.threadFactoryClass = threadFactoryClass;
     }
 
@@ -56,12 +57,12 @@ public class SolverManagerConfig extends AbstractConfig<SolverManagerConfig> {
     // With methods
     // ************************************************************************
 
-    public SolverManagerConfig withParallelSolverCount(String parallelSolverCount) {
+    public @NonNull SolverManagerConfig withParallelSolverCount(@NonNull String parallelSolverCount) {
         this.parallelSolverCount = parallelSolverCount;
         return this;
     }
 
-    public SolverManagerConfig withThreadFactoryClass(Class<? extends ThreadFactory> threadFactoryClass) {
+    public @NonNull SolverManagerConfig withThreadFactoryClass(@NonNull Class<? extends ThreadFactory> threadFactoryClass) {
         this.threadFactoryClass = threadFactoryClass;
         return this;
     }
@@ -70,7 +71,7 @@ public class SolverManagerConfig extends AbstractConfig<SolverManagerConfig> {
     // Builder methods
     // ************************************************************************
 
-    public Integer resolveParallelSolverCount() {
+    public @NonNull Integer resolveParallelSolverCount() {
         int availableProcessorCount = getAvailableProcessors();
         Integer resolvedParallelSolverCount;
         if (parallelSolverCount == null || parallelSolverCount.equals(PARALLEL_SOLVER_COUNT_AUTO)) {

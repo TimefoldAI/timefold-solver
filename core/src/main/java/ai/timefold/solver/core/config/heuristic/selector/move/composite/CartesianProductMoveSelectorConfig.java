@@ -76,7 +76,7 @@ public class CartesianProductMoveSelectorConfig extends MoveSelectorConfig<Carte
     public CartesianProductMoveSelectorConfig() {
     }
 
-    public CartesianProductMoveSelectorConfig(@NonNull List<MoveSelectorConfig> moveSelectorConfigList) {
+    public CartesianProductMoveSelectorConfig(@NonNull List<@NonNull MoveSelectorConfig> moveSelectorConfigList) {
         this.moveSelectorConfigList = moveSelectorConfigList;
     }
 
@@ -98,11 +98,11 @@ public class CartesianProductMoveSelectorConfig extends MoveSelectorConfig<Carte
         setMoveSelectorList(moveSelectorConfigList);
     }
 
-    public @Nullable List<MoveSelectorConfig> getMoveSelectorList() {
+    public @Nullable List<@NonNull MoveSelectorConfig> getMoveSelectorList() {
         return moveSelectorConfigList;
     }
 
-    public void setMoveSelectorList(@Nullable List<MoveSelectorConfig> moveSelectorConfigList) {
+    public void setMoveSelectorList(@Nullable List<@NonNull MoveSelectorConfig> moveSelectorConfigList) {
         this.moveSelectorConfigList = moveSelectorConfigList;
     }
 
@@ -119,12 +119,13 @@ public class CartesianProductMoveSelectorConfig extends MoveSelectorConfig<Carte
     // ************************************************************************
 
     public @NonNull CartesianProductMoveSelectorConfig
-            withMoveSelectorList(@NonNull List<MoveSelectorConfig> moveSelectorConfigList) {
+            withMoveSelectorList(@NonNull List<@NonNull MoveSelectorConfig> moveSelectorConfigList) {
         this.moveSelectorConfigList = moveSelectorConfigList;
         return this;
     }
 
-    public @NonNull CartesianProductMoveSelectorConfig withMoveSelectors(@NonNull MoveSelectorConfig... moveSelectorConfigs) {
+    public @NonNull CartesianProductMoveSelectorConfig
+            withMoveSelectors(@NonNull MoveSelectorConfig @NonNull... moveSelectorConfigs) {
         this.moveSelectorConfigList = Arrays.asList(moveSelectorConfigs);
         return this;
     }
@@ -140,7 +141,7 @@ public class CartesianProductMoveSelectorConfig extends MoveSelectorConfig<Carte
     // ************************************************************************
 
     @Override
-    public void extractLeafMoveSelectorConfigsIntoList(@NonNull List<MoveSelectorConfig> leafMoveSelectorConfigList) {
+    public void extractLeafMoveSelectorConfigsIntoList(@NonNull List<@NonNull MoveSelectorConfig> leafMoveSelectorConfigList) {
         for (MoveSelectorConfig moveSelectorConfig : moveSelectorConfigList) {
             moveSelectorConfig.extractLeafMoveSelectorConfigsIntoList(leafMoveSelectorConfigList);
         }

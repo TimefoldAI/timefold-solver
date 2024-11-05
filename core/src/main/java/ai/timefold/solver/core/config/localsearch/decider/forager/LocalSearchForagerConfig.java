@@ -8,6 +8,7 @@ import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
         "pickEarlyType",
@@ -22,35 +23,35 @@ public class LocalSearchForagerConfig extends AbstractConfig<LocalSearchForagerC
     protected FinalistPodiumType finalistPodiumType = null;
     protected Boolean breakTieRandomly = null;
 
-    public LocalSearchPickEarlyType getPickEarlyType() {
+    public @Nullable LocalSearchPickEarlyType getPickEarlyType() {
         return pickEarlyType;
     }
 
-    public void setPickEarlyType(LocalSearchPickEarlyType pickEarlyType) {
+    public void setPickEarlyType(@Nullable LocalSearchPickEarlyType pickEarlyType) {
         this.pickEarlyType = pickEarlyType;
     }
 
-    public Integer getAcceptedCountLimit() {
+    public @Nullable Integer getAcceptedCountLimit() {
         return acceptedCountLimit;
     }
 
-    public void setAcceptedCountLimit(Integer acceptedCountLimit) {
+    public void setAcceptedCountLimit(@Nullable Integer acceptedCountLimit) {
         this.acceptedCountLimit = acceptedCountLimit;
     }
 
-    public FinalistPodiumType getFinalistPodiumType() {
+    public @Nullable FinalistPodiumType getFinalistPodiumType() {
         return finalistPodiumType;
     }
 
-    public void setFinalistPodiumType(FinalistPodiumType finalistPodiumType) {
+    public void setFinalistPodiumType(@Nullable FinalistPodiumType finalistPodiumType) {
         this.finalistPodiumType = finalistPodiumType;
     }
 
-    public Boolean getBreakTieRandomly() {
+    public @Nullable Boolean getBreakTieRandomly() {
         return breakTieRandomly;
     }
 
-    public void setBreakTieRandomly(Boolean breakTieRandomly) {
+    public void setBreakTieRandomly(@Nullable Boolean breakTieRandomly) {
         this.breakTieRandomly = breakTieRandomly;
     }
 
@@ -58,22 +59,22 @@ public class LocalSearchForagerConfig extends AbstractConfig<LocalSearchForagerC
     // With methods
     // ************************************************************************
 
-    public LocalSearchForagerConfig withPickEarlyType(LocalSearchPickEarlyType pickEarlyType) {
+    public @NonNull LocalSearchForagerConfig withPickEarlyType(@NonNull LocalSearchPickEarlyType pickEarlyType) {
         this.pickEarlyType = pickEarlyType;
         return this;
     }
 
-    public LocalSearchForagerConfig withAcceptedCountLimit(int acceptedCountLimit) {
+    public @NonNull LocalSearchForagerConfig withAcceptedCountLimit(int acceptedCountLimit) {
         this.acceptedCountLimit = acceptedCountLimit;
         return this;
     }
 
-    public LocalSearchForagerConfig withFinalistPodiumType(FinalistPodiumType finalistPodiumType) {
+    public @NonNull LocalSearchForagerConfig withFinalistPodiumType(@NonNull FinalistPodiumType finalistPodiumType) {
         this.finalistPodiumType = finalistPodiumType;
         return this;
     }
 
-    public LocalSearchForagerConfig withBreakTieRandomly(boolean breakTieRandomly) {
+    public @NonNull LocalSearchForagerConfig withBreakTieRandomly(boolean breakTieRandomly) {
         this.breakTieRandomly = breakTieRandomly;
         return this;
     }
