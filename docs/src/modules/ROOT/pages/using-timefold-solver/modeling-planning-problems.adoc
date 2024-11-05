@@ -850,10 +850,10 @@ Python::
 ----
 class VehicleUpdatingVariableListener(VariableListener):
     def after_entity_added(self, score_director: ScoreDirector, customer):
-        update_vehicle(score_director, customer)
+        self.update_vehicle(score_director, customer)
 
     def after_variable_changed(self, score_director: ScoreDirector, customer):
-        update_vehicle(score_director, customer)
+        self.update_vehicle(score_director, customer)
 
     ...
 
