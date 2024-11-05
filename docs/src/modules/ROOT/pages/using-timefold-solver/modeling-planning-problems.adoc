@@ -850,14 +850,14 @@ Python::
 ----
 class VehicleUpdatingVariableListener(VariableListener):
     def after_entity_added(self, score_director: ScoreDirector, customer):
-        update_vehicle(score_director, customer)
+        self.update_vehicle(score_director, customer)
 
     def after_variable_changed(self, score_director: ScoreDirector, customer):
-        update_vehicle(score_director, customer)
+        self.update_vehicle(score_director, customer)
 
     ...
 
-    def update_vehicle(self, score_director: ScoreDirector, source_customer) {
+    def update_vehicle(self, score_director: ScoreDirector, source_customer):
         previous_standstill = source_customer.previous_standstill
         vehicle = previous_standstill.vehicle if previous_standstill is not None else None
         shadow_customer = source_customer
