@@ -356,11 +356,11 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
         this.solutionClass = solutionClass;
     }
 
-    public @Nullable List<@NonNull Class<?>> getEntityClassList() {
+    public @Nullable List<Class<?>> getEntityClassList() {
         return entityClassList;
     }
 
-    public void setEntityClassList(@Nullable List<@NonNull Class<?>> entityClassList) {
+    public void setEntityClassList(@Nullable List<Class<?>> entityClassList) {
         this.entityClassList = entityClassList;
     }
 
@@ -477,12 +477,12 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
         return this;
     }
 
-    public @NonNull SolverConfig withEntityClassList(@NonNull List<@NonNull Class<?>> entityClassList) {
+    public @NonNull SolverConfig withEntityClassList(@NonNull List<Class<?>> entityClassList) {
         this.entityClassList = entityClassList;
         return this;
     }
 
-    public @NonNull SolverConfig withEntityClasses(@NonNull Class<?> @NonNull... entityClasses) {
+    public @NonNull SolverConfig withEntityClasses(@NonNull Class<?>... entityClasses) {
         this.entityClassList = Arrays.asList(entityClasses);
         return this;
     }
@@ -580,7 +580,7 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
         return this;
     }
 
-    public @NonNull SolverConfig withPhases(@NonNull PhaseConfig @NonNull... phaseConfigs) {
+    public @NonNull SolverConfig withPhases(@NonNull PhaseConfig... phaseConfigs) {
         this.phaseConfigList = Arrays.asList(phaseConfigs);
         return this;
     }

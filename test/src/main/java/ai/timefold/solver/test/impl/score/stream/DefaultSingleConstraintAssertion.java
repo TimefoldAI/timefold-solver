@@ -26,6 +26,9 @@ import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.test.api.score.stream.SingleConstraintAssertion;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Score<Score_>>
         implements SingleConstraintAssertion {
 
@@ -57,71 +60,74 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
     }
 
     @Override
-    public SingleConstraintAssertion justifiesWith(String message, ConstraintJustification... justifications) {
+    public @NonNull SingleConstraintAssertion justifiesWith(String message,
+            @NonNull ConstraintJustification @NonNull... justifications) {
         assertJustification(message, false, justifications);
         return this;
     }
 
     @Override
-    public SingleConstraintAssertion indictsWith(String message, Object... indictments) {
+    public @NonNull SingleConstraintAssertion indictsWith(@Nullable String message, @NonNull Object @NonNull... indictments) {
         assertIndictments(message, false, indictments);
         return this;
     }
 
     @Override
-    public SingleConstraintAssertion justifiesWithExactly(String message, ConstraintJustification... justifications) {
+    public @NonNull SingleConstraintAssertion justifiesWithExactly(@Nullable String message,
+            @NonNull ConstraintJustification @NonNull... justifications) {
         assertJustification(message, true, justifications);
         return this;
     }
 
     @Override
-    public SingleConstraintAssertion indictsWithExactly(String message, Object... indictments) {
+    public @NonNull SingleConstraintAssertion indictsWithExactly(@Nullable String message,
+            @NonNull Object @NonNull... indictments) {
         assertIndictments(message, true, indictments);
         return this;
     }
 
     @Override
-    public void penalizesBy(String message, int matchWeightTotal) {
+    public void penalizesBy(@Nullable String message, int matchWeightTotal) {
         validateMatchWeighTotal(matchWeightTotal);
         assertImpact(ScoreImpactType.PENALTY, matchWeightTotal, message);
     }
 
     @Override
-    public void penalizesBy(String message, long matchWeightTotal) {
+    public void penalizesBy(@Nullable String message, long matchWeightTotal) {
         validateMatchWeighTotal(matchWeightTotal);
         assertImpact(ScoreImpactType.PENALTY, matchWeightTotal, message);
     }
 
     @Override
-    public void penalizesBy(String message, BigDecimal matchWeightTotal) {
+    public void penalizesBy(@Nullable String message, @NonNull BigDecimal matchWeightTotal) {
         validateMatchWeighTotal(matchWeightTotal);
         assertImpact(ScoreImpactType.PENALTY, matchWeightTotal, message);
     }
 
     @Override
-    public void penalizes(String message, long times) {
+    public void penalizes(@Nullable String message, long times) {
         assertMatchCount(ScoreImpactType.PENALTY, times, message);
     }
 
     @Override
-    public void penalizes(String message) {
+    public void penalizes(@Nullable String message) {
         assertMatch(ScoreImpactType.PENALTY, message);
     }
 
     @Override
-    public void rewardsWith(String message, int matchWeightTotal) {
+    public void rewardsWith(@Nullable String message, int matchWeightTotal) {
         validateMatchWeighTotal(matchWeightTotal);
         assertImpact(ScoreImpactType.REWARD, matchWeightTotal, message);
     }
 
     @Override
-    public void rewardsWith(String message, long matchWeightTotal) {
+    public void rewardsWith(@Nullable String message, long matchWeightTotal) {
         validateMatchWeighTotal(matchWeightTotal);
         assertImpact(ScoreImpactType.REWARD, matchWeightTotal, message);
     }
 
     @Override
-    public void rewardsWith(String message, BigDecimal matchWeightTotal) {
+    public void rewardsWith(@Nullable String message, @NonNull BigDecimal matchWeightTotal) {
         validateMatchWeighTotal(matchWeightTotal);
         assertImpact(ScoreImpactType.REWARD, matchWeightTotal, message);
     }
@@ -133,7 +139,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
     }
 
     @Override
-    public void rewards(String message, long times) {
+    public void rewards(@Nullable String message, long times) {
         assertMatchCount(ScoreImpactType.REWARD, times, message);
     }
 
@@ -143,7 +149,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
     }
 
     @Override
-    public void penalizesByMoreThan(String message, int matchWeightTotal) {
+    public void penalizesByMoreThan(@Nullable String message, int matchWeightTotal) {
         validateMatchWeighTotal(matchWeightTotal);
         assertMoreThanImpact(ScoreImpactType.PENALTY, matchWeightTotal, message);
     }
@@ -155,65 +161,65 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
     }
 
     @Override
-    public void penalizesByMoreThan(String message, BigDecimal matchWeightTotal) {
+    public void penalizesByMoreThan(@Nullable String message, @NonNull BigDecimal matchWeightTotal) {
         validateMatchWeighTotal(matchWeightTotal);
         assertMoreThanImpact(ScoreImpactType.PENALTY, matchWeightTotal, message);
     }
 
     @Override
-    public void penalizesMoreThan(String message, long times) {
+    public void penalizesMoreThan(@Nullable String message, long times) {
         assertMoreThanMatchCount(ScoreImpactType.PENALTY, times, message);
     }
 
     @Override
-    public void rewardsWithMoreThan(String message, int matchWeightTotal) {
+    public void rewardsWithMoreThan(@Nullable String message, int matchWeightTotal) {
         validateMatchWeighTotal(matchWeightTotal);
         assertMoreThanImpact(ScoreImpactType.REWARD, matchWeightTotal, message);
     }
 
     @Override
-    public void rewardsWithMoreThan(String message, long matchWeightTotal) {
+    public void rewardsWithMoreThan(@Nullable String message, long matchWeightTotal) {
         validateMatchWeighTotal(matchWeightTotal);
         assertMoreThanImpact(ScoreImpactType.REWARD, matchWeightTotal, message);
     }
 
     @Override
-    public void rewardsWithMoreThan(String message, BigDecimal matchWeightTotal) {
+    public void rewardsWithMoreThan(@Nullable String message, @NonNull BigDecimal matchWeightTotal) {
         validateMatchWeighTotal(matchWeightTotal);
         assertMoreThanImpact(ScoreImpactType.REWARD, matchWeightTotal, message);
     }
 
     @Override
-    public void rewardsMoreThan(String message, long times) {
+    public void rewardsMoreThan(@Nullable String message, long times) {
         assertMoreThanMatchCount(ScoreImpactType.REWARD, times, message);
     }
 
     @Override
-    public void penalizesByLessThan(String message, int matchWeightTotal) {
+    public void penalizesByLessThan(@Nullable String message, int matchWeightTotal) {
         validateLessThanMatchWeighTotal(matchWeightTotal);
         assertLessThanImpact(ScoreImpactType.PENALTY, matchWeightTotal, message);
     }
 
     @Override
-    public void penalizesByLessThan(String message, long matchWeightTotal) {
+    public void penalizesByLessThan(@Nullable String message, long matchWeightTotal) {
         validateLessThanMatchWeighTotal(matchWeightTotal);
         assertLessThanImpact(ScoreImpactType.PENALTY, matchWeightTotal, message);
     }
 
     @Override
-    public void penalizesByLessThan(String message, BigDecimal matchWeightTotal) {
+    public void penalizesByLessThan(@Nullable String message, @NonNull BigDecimal matchWeightTotal) {
         validateLessThanMatchWeighTotal(matchWeightTotal);
         assertLessThanImpact(ScoreImpactType.PENALTY, matchWeightTotal, message);
     }
 
     @Override
-    public void penalizesLessThan(String message, long times) {
+    public void penalizesLessThan(@Nullable String message, long times) {
         validateLessThanMatchCount(times);
         assertLessThanMatchCount(ScoreImpactType.PENALTY, times, message);
     }
 
     @Override
-    public void rewardsWithLessThan(String message, int matchWeightTotal) {
+    public void rewardsWithLessThan(@Nullable String message, int matchWeightTotal) {
         validateLessThanMatchWeighTotal(matchWeightTotal);
         assertLessThanImpact(ScoreImpactType.REWARD, matchWeightTotal, message);
     }
@@ -225,7 +231,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
     }
 
     @Override
-    public void rewardsWithLessThan(String message, BigDecimal matchWeightTotal) {
+    public void rewardsWithLessThan(@Nullable String message, @NonNull BigDecimal matchWeightTotal) {
         validateLessThanMatchWeighTotal(matchWeightTotal);
         assertLessThanImpact(ScoreImpactType.REWARD, matchWeightTotal, message);
     }

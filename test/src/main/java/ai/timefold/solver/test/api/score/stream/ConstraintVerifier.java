@@ -16,6 +16,8 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.test.impl.score.stream.DefaultConstraintVerifier;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Implementations must be thread-safe, in order to enable parallel test execution.
  *
@@ -27,16 +29,16 @@ public interface ConstraintVerifier<ConstraintProvider_ extends ConstraintProvid
     /**
      * Entry point to the API.
      *
-     * @param constraintProvider never null, {@link PlanningEntity} used by the {@link PlanningSolution}
-     * @param planningSolutionClass never null, {@link PlanningSolution}-annotated class associated with the constraints
-     * @param entityClasses never null, at least one, {@link PlanningEntity} types used by the {@link PlanningSolution}
+     * @param constraintProvider {@link PlanningEntity} used by the {@link PlanningSolution}
+     * @param planningSolutionClass {@link PlanningSolution}-annotated class associated with the constraints
+     * @param entityClasses at least one, {@link PlanningEntity} types used by the {@link PlanningSolution}
      * @param <ConstraintProvider_> type of the {@link ConstraintProvider}
      * @param <Solution_> type of the {@link PlanningSolution}-annotated class
-     * @return never null
      */
-    static <ConstraintProvider_ extends ConstraintProvider, Solution_> ConstraintVerifier<ConstraintProvider_, Solution_> build(
-            ConstraintProvider_ constraintProvider,
-            Class<Solution_> planningSolutionClass, Class<?>... entityClasses) {
+    static <ConstraintProvider_ extends ConstraintProvider, Solution_>
+            @NonNull ConstraintVerifier<ConstraintProvider_, Solution_> build(
+                    @NonNull ConstraintProvider_ constraintProvider,
+                    @NonNull Class<Solution_> planningSolutionClass, @NonNull Class<?> @NonNull... entityClasses) {
         requireNonNull(constraintProvider);
         SolutionDescriptor<Solution_> solutionDescriptor = SolutionDescriptor
                 .buildSolutionDescriptor(requireNonNull(planningSolutionClass), entityClasses);
@@ -47,14 +49,14 @@ public interface ConstraintVerifier<ConstraintProvider_ extends ConstraintProvid
      * Uses a {@link SolverConfig} to build a {@link ConstraintVerifier}.
      * Alternative to {@link #build(ConstraintProvider, Class, Class[])}.
      *
-     * @param solverConfig never null, must have a {@link PlanningSolution} class, {@link PlanningEntity} classes
+     * @param solverConfig must have a {@link PlanningSolution} class, {@link PlanningEntity} classes
      *        and a {@link ConstraintProvider} configured.
      * @param <ConstraintProvider_> type of the {@link ConstraintProvider}
      * @param <Solution_> type of the {@link PlanningSolution}-annotated class
-     * @return never null
      */
-    static <ConstraintProvider_ extends ConstraintProvider, Solution_> ConstraintVerifier<ConstraintProvider_, Solution_>
-            create(SolverConfig solverConfig) {
+    static <ConstraintProvider_ extends ConstraintProvider, Solution_>
+            @NonNull ConstraintVerifier<ConstraintProvider_, Solution_>
+            create(@NonNull SolverConfig solverConfig) {
         requireNonNull(solverConfig);
         SolutionDescriptor<Solution_> solutionDescriptor = SolutionDescriptor
                 .buildSolutionDescriptor(requireNonNull((Class<Solution_>) solverConfig.getSolutionClass()),
@@ -78,26 +80,23 @@ public interface ConstraintVerifier<ConstraintProvider_ extends ConstraintProvid
      * All subsequent calls to {@link #verifyThat(BiFunction)} and {@link #verifyThat()}
      * use the given {@link ConstraintStreamImplType}.
      *
-     * @param constraintStreamImplType never null
      * @return this
      */
+    @NonNull
     ConstraintVerifier<ConstraintProvider_, Solution_> withConstraintStreamImplType(
-            ConstraintStreamImplType constraintStreamImplType);
+            @NonNull ConstraintStreamImplType constraintStreamImplType);
 
     /**
      * Creates a constraint verifier for a given {@link Constraint} of the {@link ConstraintProvider}.
-     *
-     * @param constraintFunction never null
-     * @return never null
      */
+    @NonNull
     SingleConstraintVerification<Solution_> verifyThat(
-            BiFunction<ConstraintProvider_, ConstraintFactory, Constraint> constraintFunction);
+            @NonNull BiFunction<ConstraintProvider_, ConstraintFactory, Constraint> constraintFunction);
 
     /**
      * Creates a constraint verifier for all constraints of the {@link ConstraintProvider}.
-     *
-     * @return never null
      */
+    @NonNull
     MultiConstraintVerification<Solution_> verifyThat();
 
 }
