@@ -19,6 +19,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ConstraintAnalysis;
 import ai.timefold.solver.core.api.score.analysis.MatchAnalysis;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.change.ProblemChangeDirector;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -721,8 +722,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                     .formatted(constraintMatchEnabledPreference, uncorruptedScoreDirector.isConstraintMatchEnabled());
         }
 
-        var corruptedAnalysis = buildScoreAnalysis(true, ScoreAnalysisMode.SCORE_CORRUPTION);
-        var uncorruptedAnalysis = uncorruptedScoreDirector.buildScoreAnalysis(true, ScoreAnalysisMode.SCORE_CORRUPTION);
+        var corruptedAnalysis = buildScoreAnalysis(ScoreAnalysisFetchPolicy.FETCH_ALL, ScoreAnalysisMode.SCORE_CORRUPTION);
+        var uncorruptedAnalysis = uncorruptedScoreDirector.buildScoreAnalysis(ScoreAnalysisFetchPolicy.FETCH_ALL,
+                ScoreAnalysisMode.SCORE_CORRUPTION);
 
         var excessSet = new LinkedHashSet<MatchAnalysis<Score_>>();
         var missingSet = new LinkedHashSet<MatchAnalysis<Score_>>();

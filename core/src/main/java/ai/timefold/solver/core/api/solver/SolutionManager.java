@@ -126,7 +126,7 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * This is a faster, JSON-friendly version of {@link #explain(Object)}.
      *
      * @param solution must be fully initialized otherwise an exception is thrown
-     * @param fetchPolicy if unsure, pick {@link ScoreAnalysisFetchPolicy#FETCH_ALL}
+     * @param fetchPolicy if unsure, pick {@link ScoreAnalysisFetchPolicy#FETCH_MATCH_COUNT}
      * @param solutionUpdatePolicy if unsure, pick {@link SolutionUpdatePolicy#UPDATE_ALL}
      * @throws IllegalStateException when constraint matching is disabled or not supported by the underlying score
      *         calculator, such as {@link EasyScoreCalculator}.

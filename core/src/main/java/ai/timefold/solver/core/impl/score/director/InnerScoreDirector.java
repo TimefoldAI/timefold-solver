@@ -1,6 +1,8 @@
 package ai.timefold.solver.core.impl.score.director;
 
-import java.util.ArrayList;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -24,6 +26,7 @@ import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
+import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -34,7 +37,6 @@ import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
-import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -44,34 +46,43 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
         extends VariableDescriptorAwareScoreDirector<Solution_>, AutoCloseable {
 
     static <Score_ extends Score<Score_>> ConstraintAnalysis<Score_> getConstraintAnalysis(
-            ConstraintMatchTotal<Score_> constraintMatchTotal, boolean analyzeConstraintMatches) {
-        Score_ zero = constraintMatchTotal.getScore().zero();
-        if (analyzeConstraintMatches) {
-            // Marge all constraint matches with the same justification.
-            Map<ConstraintJustification, List<ConstraintMatch<Score_>>> deduplicatedConstraintMatchMap =
-                    CollectionUtils.newLinkedHashMap(constraintMatchTotal.getConstraintMatchCount());
-            for (var constraintMatch : constraintMatchTotal.getConstraintMatchSet()) {
-                var constraintJustification = constraintMatch.getJustification();
-                var constraintMatchList = deduplicatedConstraintMatchMap.computeIfAbsent(constraintJustification,
-                        k -> new ArrayList<>(1));
-                constraintMatchList.add(constraintMatch);
+            ConstraintMatchTotal<Score_> constraintMatchTotal, ScoreAnalysisFetchPolicy scoreAnalysisFetchPolicy) {
+        return switch (scoreAnalysisFetchPolicy) {
+            case FETCH_ALL -> {
+                var deduplicatedConstraintMatchMap = groupMatchesWithSameJustification(constraintMatchTotal);
+                var matchAnalyses = sumMatchesWithSameJustification(constraintMatchTotal, deduplicatedConstraintMatchMap);
+                yield new ConstraintAnalysis<>(constraintMatchTotal.getConstraintRef(),
+                        constraintMatchTotal.getConstraintWeight(), constraintMatchTotal.getScore(), matchAnalyses);
             }
-            // Sum scores for each duplicate justification; this is the total score for the match.
-            var matchAnalyses = deduplicatedConstraintMatchMap.entrySet().stream()
-                    .map(entry -> {
-                        var score = entry.getValue().stream()
-                                .map(ConstraintMatch::getScore)
-                                .reduce(zero, Score::add);
-                        return new MatchAnalysis<>(constraintMatchTotal.getConstraintRef(), score, entry.getKey());
-                    })
-                    .toList();
-            return new ConstraintAnalysis<>(constraintMatchTotal.getConstraintRef(), constraintMatchTotal.getConstraintWeight(),
-                    constraintMatchTotal.getScore(),
-                    matchAnalyses);
-        } else {
-            return new ConstraintAnalysis<>(constraintMatchTotal.getConstraintRef(), constraintMatchTotal.getConstraintWeight(),
-                    constraintMatchTotal.getScore(), null);
-        }
+            case FETCH_MATCH_COUNT -> new ConstraintAnalysis<>(constraintMatchTotal.getConstraintRef(),
+                    constraintMatchTotal.getConstraintWeight(), constraintMatchTotal.getScore(), null,
+                    constraintMatchTotal.getConstraintMatchCount());
+            case FETCH_SHALLOW ->
+                new ConstraintAnalysis<>(constraintMatchTotal.getConstraintRef(), constraintMatchTotal.getConstraintWeight(),
+                        constraintMatchTotal.getScore(), null);
+        };
+    }
+
+    private static <Score_ extends Score<Score_>> Map<ConstraintJustification, List<ConstraintMatch<Score_>>>
+            groupMatchesWithSameJustification(ConstraintMatchTotal<Score_> constraintMatchTotal) {
+        return constraintMatchTotal.getConstraintMatchSet()
+                .stream()
+                .collect(groupingBy(
+                        ConstraintMatch::getJustification,
+                        toList()));
+    }
+
+    private static <Score_ extends Score<Score_>> List<MatchAnalysis<Score_>>
+            sumMatchesWithSameJustification(ConstraintMatchTotal<Score_> constraintMatchTotal,
+                    Map<ConstraintJustification, List<ConstraintMatch<Score_>>> deduplicatedConstraintMatchMap) {
+        return deduplicatedConstraintMatchMap.entrySet().stream()
+                .map(entry -> {
+                    var score = entry.getValue().stream()
+                            .map(ConstraintMatch::getScore)
+                            .reduce(constraintMatchTotal.getScore().zero(), Score::add);
+                    return new MatchAnalysis<>(constraintMatchTotal.getConstraintRef(), score, entry.getKey());
+                })
+                .toList();
     }
 
     /**
@@ -327,25 +338,25 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      */
     void forceTriggerVariableListeners();
 
-    default ScoreAnalysis<Score_> buildScoreAnalysis(boolean analyzeConstraintMatches) {
-        return buildScoreAnalysis(analyzeConstraintMatches, ScoreAnalysisMode.DEFAULT);
+    default ScoreAnalysis<Score_> buildScoreAnalysis(ScoreAnalysisFetchPolicy scoreAnalysisFetchPolicy) {
+        return buildScoreAnalysis(scoreAnalysisFetchPolicy, ScoreAnalysisMode.DEFAULT);
     }
 
     /**
      *
-     * @param analyzeConstraintMatches True if the result's {@link ConstraintAnalysis} should have its {@link MatchAnalysis}
-     *        populated.
+     * @param scoreAnalysisFetchPolicy never null
      * @param mode Allows to tweak the behavior of this method.
      * @return never null
      */
-    default ScoreAnalysis<Score_> buildScoreAnalysis(boolean analyzeConstraintMatches, ScoreAnalysisMode mode) {
+    default ScoreAnalysis<Score_> buildScoreAnalysis(ScoreAnalysisFetchPolicy scoreAnalysisFetchPolicy,
+            ScoreAnalysisMode mode) {
         var score = calculateScore();
         if (Objects.requireNonNull(mode) == ScoreAnalysisMode.RECOMMENDATION_API) {
             score = score.withInitScore(0);
         }
         var constraintAnalysisMap = new TreeMap<ConstraintRef, ConstraintAnalysis<Score_>>();
         for (var constraintMatchTotal : getConstraintMatchTotalMap().values()) {
-            var constraintAnalysis = getConstraintAnalysis(constraintMatchTotal, analyzeConstraintMatches);
+            var constraintAnalysis = getConstraintAnalysis(constraintMatchTotal, scoreAnalysisFetchPolicy);
             constraintAnalysisMap.put(constraintMatchTotal.getConstraintRef(), constraintAnalysis);
         }
         return new ScoreAnalysis<>(score, constraintAnalysisMap);

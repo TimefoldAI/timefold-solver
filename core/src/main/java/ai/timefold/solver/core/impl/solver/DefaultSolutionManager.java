@@ -114,7 +114,7 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
         Objects.requireNonNull(fetchPolicy, "fetchPolicy");
         var currentScore = (Score_) scoreDirectorFactory.getSolutionDescriptor().getScore(solution);
         var analysis = callScoreDirector(solution, solutionUpdatePolicy,
-                scoreDirector -> scoreDirector.buildScoreAnalysis(fetchPolicy == ScoreAnalysisFetchPolicy.FETCH_ALL), true,
+                scoreDirector -> scoreDirector.buildScoreAnalysis(fetchPolicy), true,
                 false);
         assertFreshScore(solution, currentScore, analysis.score(), solutionUpdatePolicy);
         return analysis;

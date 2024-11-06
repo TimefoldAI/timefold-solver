@@ -41,8 +41,8 @@ final class Assigner<Solution_, Score_ extends Score<Score_>, Recommendation_, I
                     Assignment Recommendation API requires at most one uninitialized element in the solution."""
                     .formatted(originalSolution, uninitializedCount));
         }
-        var originalScoreAnalysis = scoreDirector.buildScoreAnalysis(fetchPolicy == ScoreAnalysisFetchPolicy.FETCH_ALL,
-                InnerScoreDirector.ScoreAnalysisMode.RECOMMENDATION_API);
+        var originalScoreAnalysis =
+                scoreDirector.buildScoreAnalysis(fetchPolicy, InnerScoreDirector.ScoreAnalysisMode.RECOMMENDATION_API);
         var clonedElement = scoreDirector.lookUpWorkingObject(originalElement);
         var processor = new AssignmentProcessor<>(solverFactory, propositionFunction, recommendationConstructor, fetchPolicy,
                 clonedElement, originalScoreAnalysis);

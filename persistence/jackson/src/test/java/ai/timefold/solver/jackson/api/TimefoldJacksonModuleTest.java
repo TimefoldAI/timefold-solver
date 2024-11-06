@@ -77,7 +77,7 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
         var constraintAnalysis1 =
                 new ConstraintAnalysis<>(constraintRef1, HardSoftScore.ofSoft(1), HardSoftScore.ofSoft(2), null);
         var constraintAnalysis2 =
-                new ConstraintAnalysis<>(constraintRef2, HardSoftScore.ofHard(1), HardSoftScore.ofHard(1), null);
+                new ConstraintAnalysis<>(constraintRef2, HardSoftScore.ofHard(1), HardSoftScore.ofHard(1), null, 2);
         var originalScoreAnalysis = new ScoreAnalysis<>(HardSoftScore.of(1, 2),
                 Map.of(constraintRef1, constraintAnalysis1,
                         constraintRef2, constraintAnalysis2));
@@ -92,7 +92,8 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
                              "package" : "packageA",
                              "name" : "constraint2",
                              "weight" : "1hard/0soft",
-                             "score" : "1hard/0soft"
+                             "score" : "1hard/0soft",
+                             "matchCount" : 2
                            }, {
                              "package" : "packageB",
                              "name" : "constraint1",
@@ -154,24 +155,27 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
                     "weight" : "1hard/0soft",
                     "score" : "2hard/0soft",
                     "matches" : [ {
-                      "score" : "1hard/0soft",
-                      "justification" : [ "A", "B" ]
-                    }, {
-                      "score" : "1hard/0soft",
-                      "justification" : [ "B", "C", "D" ]
-                    } ]
+                            "score" : "1hard/0soft",
+                            "justification" : [ "A", "B" ]
+                        }, {
+                            "score" : "1hard/0soft",
+                            "justification" : [ "B", "C", "D" ]
+                        }
+                     ],
+                    "matchCount" : 2
                   }, {
                     "package" : "package2",
                     "name" : "constraint2",
                     "weight" : "0hard/1soft",
                     "score" : "0hard/4soft",
                     "matches" : [ {
-                      "score" : "0hard/1soft",
-                      "justification" : [ "D" ]
-                    }, {
-                      "score" : "0hard/3soft",
-                      "justification" : [ "A", "C" ]
-                    } ]
+                            "score" : "0hard/1soft",
+                            "justification" : [ "D" ]
+                        }, {
+                            "score" : "0hard/3soft",
+                            "justification" : [ "A", "C" ]
+                    } ],
+                    "matchCount" : 2
                   } ]
                 }""";
     }
