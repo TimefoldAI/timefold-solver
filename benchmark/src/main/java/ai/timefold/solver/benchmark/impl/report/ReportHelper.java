@@ -1,5 +1,7 @@
 package ai.timefold.solver.benchmark.impl.report;
 
+import org.jspecify.annotations.NonNull;
+
 public class ReportHelper {
 
     /**
@@ -8,10 +10,8 @@ public class ReportHelper {
      * This escape function guarantees that 2 distinct strings will result into 2 distinct escape strings
      * (presuming that both have been escaped by this method).
      *
-     * @param rawHtmlId never null
-     * @return never null
      */
-    public static String escapeHtmlId(String rawHtmlId) {
+    public static @NonNull String escapeHtmlId(@NonNull String rawHtmlId) {
         // Uses unicode numbers to escape, see http://unicode-table.com
         // Uses '-' as the escape character
         return rawHtmlId

@@ -10,6 +10,7 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
         "name",
@@ -33,35 +34,35 @@ public class SolverBenchmarkConfig extends AbstractConfig<SolverBenchmarkConfig>
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public String getName() {
+    public @Nullable String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(@Nullable String name) {
         this.name = name;
     }
 
-    public SolverConfig getSolverConfig() {
+    public @Nullable SolverConfig getSolverConfig() {
         return solverConfig;
     }
 
-    public void setSolverConfig(SolverConfig solverConfig) {
+    public void setSolverConfig(@Nullable SolverConfig solverConfig) {
         this.solverConfig = solverConfig;
     }
 
-    public ProblemBenchmarksConfig getProblemBenchmarksConfig() {
+    public @Nullable ProblemBenchmarksConfig getProblemBenchmarksConfig() {
         return problemBenchmarksConfig;
     }
 
-    public void setProblemBenchmarksConfig(ProblemBenchmarksConfig problemBenchmarksConfig) {
+    public void setProblemBenchmarksConfig(@Nullable ProblemBenchmarksConfig problemBenchmarksConfig) {
         this.problemBenchmarksConfig = problemBenchmarksConfig;
     }
 
-    public Integer getSubSingleCount() {
+    public @Nullable Integer getSubSingleCount() {
         return subSingleCount;
     }
 
-    public void setSubSingleCount(Integer subSingleCount) {
+    public void setSubSingleCount(@Nullable Integer subSingleCount) {
         this.subSingleCount = subSingleCount;
     }
 
@@ -69,22 +70,23 @@ public class SolverBenchmarkConfig extends AbstractConfig<SolverBenchmarkConfig>
     // With methods
     // ************************************************************************
 
-    public SolverBenchmarkConfig withName(String name) {
+    public @NonNull SolverBenchmarkConfig withName(@NonNull String name) {
         this.setName(name);
         return this;
     }
 
-    public SolverBenchmarkConfig withSolverConfig(SolverConfig solverConfig) {
+    public @NonNull SolverBenchmarkConfig withSolverConfig(@NonNull SolverConfig solverConfig) {
         this.setSolverConfig(solverConfig);
         return this;
     }
 
-    public SolverBenchmarkConfig withProblemBenchmarksConfig(ProblemBenchmarksConfig problemBenchmarksConfig) {
+    public @NonNull SolverBenchmarkConfig
+            withProblemBenchmarksConfig(@NonNull ProblemBenchmarksConfig problemBenchmarksConfig) {
         this.setProblemBenchmarksConfig(problemBenchmarksConfig);
         return this;
     }
 
-    public SolverBenchmarkConfig withSubSingleCount(Integer subSingleCount) {
+    public @NonNull SolverBenchmarkConfig withSubSingleCount(@NonNull Integer subSingleCount) {
         this.setSubSingleCount(subSingleCount);
         return this;
     }

@@ -15,6 +15,7 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbLocaleAdapter;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
         "locale",
@@ -33,45 +34,45 @@ public class BenchmarkReportConfig extends AbstractConfig<BenchmarkReportConfig>
     public BenchmarkReportConfig() {
     }
 
-    public BenchmarkReportConfig(BenchmarkReportConfig inheritedConfig) {
+    public BenchmarkReportConfig(@NonNull BenchmarkReportConfig inheritedConfig) {
         inherit(inheritedConfig);
     }
 
-    public Locale getLocale() {
+    public @Nullable Locale getLocale() {
         return locale;
     }
 
-    public void setLocale(Locale locale) {
+    public void setLocale(@Nullable Locale locale) {
         this.locale = locale;
     }
 
-    public SolverRankingType getSolverRankingType() {
+    public @Nullable SolverRankingType getSolverRankingType() {
         return solverRankingType;
     }
 
-    public void setSolverRankingType(SolverRankingType solverRankingType) {
+    public void setSolverRankingType(@Nullable SolverRankingType solverRankingType) {
         this.solverRankingType = solverRankingType;
     }
 
-    public Class<? extends Comparator<SolverBenchmarkResult>> getSolverRankingComparatorClass() {
+    public @Nullable Class<? extends Comparator<SolverBenchmarkResult>> getSolverRankingComparatorClass() {
         return solverRankingComparatorClass;
     }
 
     public void setSolverRankingComparatorClass(
-            Class<? extends Comparator<SolverBenchmarkResult>> solverRankingComparatorClass) {
+            @Nullable Class<? extends Comparator<SolverBenchmarkResult>> solverRankingComparatorClass) {
         this.solverRankingComparatorClass = solverRankingComparatorClass;
     }
 
-    public Class<? extends SolverRankingWeightFactory> getSolverRankingWeightFactoryClass() {
+    public @Nullable Class<? extends SolverRankingWeightFactory> getSolverRankingWeightFactoryClass() {
         return solverRankingWeightFactoryClass;
     }
 
     public void setSolverRankingWeightFactoryClass(
-            Class<? extends SolverRankingWeightFactory> solverRankingWeightFactoryClass) {
+            @Nullable Class<? extends SolverRankingWeightFactory> solverRankingWeightFactoryClass) {
         this.solverRankingWeightFactoryClass = solverRankingWeightFactoryClass;
     }
 
-    public Locale determineLocale() {
+    public @Nullable Locale determineLocale() {
         return getLocale() == null ? Locale.getDefault() : getLocale();
     }
 
@@ -79,24 +80,24 @@ public class BenchmarkReportConfig extends AbstractConfig<BenchmarkReportConfig>
     // With methods
     // ************************************************************************
 
-    public BenchmarkReportConfig withLocale(Locale locale) {
+    public @NonNull BenchmarkReportConfig withLocale(@NonNull Locale locale) {
         this.setLocale(locale);
         return this;
     }
 
-    public BenchmarkReportConfig withSolverRankingType(SolverRankingType solverRankingType) {
+    public @NonNull BenchmarkReportConfig withSolverRankingType(@NonNull SolverRankingType solverRankingType) {
         this.setSolverRankingType(solverRankingType);
         return this;
     }
 
-    public BenchmarkReportConfig withSolverRankingComparatorClass(
-            Class<? extends Comparator<SolverBenchmarkResult>> solverRankingComparatorClass) {
+    public @NonNull BenchmarkReportConfig withSolverRankingComparatorClass(
+            @NonNull Class<? extends Comparator<SolverBenchmarkResult>> solverRankingComparatorClass) {
         this.setSolverRankingComparatorClass(solverRankingComparatorClass);
         return this;
     }
 
-    public BenchmarkReportConfig withSolverRankingWeightFactoryClass(
-            Class<? extends SolverRankingWeightFactory> solverRankingWeightFactoryClass) {
+    public @NonNull BenchmarkReportConfig withSolverRankingWeightFactoryClass(
+            @NonNull Class<? extends SolverRankingWeightFactory> solverRankingWeightFactoryClass) {
         this.setSolverRankingWeightFactoryClass(solverRankingWeightFactoryClass);
         return this;
     }

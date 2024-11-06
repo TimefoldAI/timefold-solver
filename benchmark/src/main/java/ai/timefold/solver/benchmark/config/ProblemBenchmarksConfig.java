@@ -16,6 +16,7 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
         "solutionFileIOClass",
@@ -46,51 +47,51 @@ public class ProblemBenchmarksConfig extends AbstractConfig<ProblemBenchmarksCon
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public Class<? extends SolutionFileIO<?>> getSolutionFileIOClass() {
+    public @Nullable Class<? extends SolutionFileIO<?>> getSolutionFileIOClass() {
         return solutionFileIOClass;
     }
 
-    public void setSolutionFileIOClass(Class<? extends SolutionFileIO<?>> solutionFileIOClass) {
+    public void setSolutionFileIOClass(@Nullable Class<? extends SolutionFileIO<?>> solutionFileIOClass) {
         this.solutionFileIOClass = solutionFileIOClass;
     }
 
-    public Boolean getWriteOutputSolutionEnabled() {
+    public @Nullable Boolean getWriteOutputSolutionEnabled() {
         return writeOutputSolutionEnabled;
     }
 
-    public void setWriteOutputSolutionEnabled(Boolean writeOutputSolutionEnabled) {
+    public void setWriteOutputSolutionEnabled(@Nullable Boolean writeOutputSolutionEnabled) {
         this.writeOutputSolutionEnabled = writeOutputSolutionEnabled;
     }
 
-    public List<File> getInputSolutionFileList() {
+    public @Nullable List<@NonNull File> getInputSolutionFileList() {
         return inputSolutionFileList;
     }
 
-    public void setInputSolutionFileList(List<File> inputSolutionFileList) {
+    public void setInputSolutionFileList(@Nullable List<@NonNull File> inputSolutionFileList) {
         this.inputSolutionFileList = inputSolutionFileList;
     }
 
-    public Boolean getProblemStatisticEnabled() {
+    public @Nullable Boolean getProblemStatisticEnabled() {
         return problemStatisticEnabled;
     }
 
-    public void setProblemStatisticEnabled(Boolean problemStatisticEnabled) {
+    public void setProblemStatisticEnabled(@Nullable Boolean problemStatisticEnabled) {
         this.problemStatisticEnabled = problemStatisticEnabled;
     }
 
-    public List<ProblemStatisticType> getProblemStatisticTypeList() {
+    public @Nullable List<@NonNull ProblemStatisticType> getProblemStatisticTypeList() {
         return problemStatisticTypeList;
     }
 
-    public void setProblemStatisticTypeList(List<ProblemStatisticType> problemStatisticTypeList) {
+    public void setProblemStatisticTypeList(@Nullable List<@NonNull ProblemStatisticType> problemStatisticTypeList) {
         this.problemStatisticTypeList = problemStatisticTypeList;
     }
 
-    public List<SingleStatisticType> getSingleStatisticTypeList() {
+    public @Nullable List<@NonNull SingleStatisticType> getSingleStatisticTypeList() {
         return singleStatisticTypeList;
     }
 
-    public void setSingleStatisticTypeList(List<SingleStatisticType> singleStatisticTypeList) {
+    public void setSingleStatisticTypeList(@Nullable List<@NonNull SingleStatisticType> singleStatisticTypeList) {
         this.singleStatisticTypeList = singleStatisticTypeList;
     }
 
@@ -98,47 +99,52 @@ public class ProblemBenchmarksConfig extends AbstractConfig<ProblemBenchmarksCon
     // With methods
     // ************************************************************************
 
-    public ProblemBenchmarksConfig withSolutionFileIOClass(Class<? extends SolutionFileIO<?>> solutionFileIOClass) {
+    public @NonNull ProblemBenchmarksConfig
+            withSolutionFileIOClass(@NonNull Class<? extends SolutionFileIO<?>> solutionFileIOClass) {
         this.setSolutionFileIOClass(solutionFileIOClass);
         return this;
     }
 
-    public ProblemBenchmarksConfig withWriteOutputSolutionEnabled(Boolean writeOutputSolutionEnabled) {
+    public @NonNull ProblemBenchmarksConfig withWriteOutputSolutionEnabled(@NonNull Boolean writeOutputSolutionEnabled) {
         this.setWriteOutputSolutionEnabled(writeOutputSolutionEnabled);
         return this;
     }
 
-    public ProblemBenchmarksConfig withInputSolutionFileList(List<File> inputSolutionFileList) {
+    public @NonNull ProblemBenchmarksConfig withInputSolutionFileList(@NonNull List<@NonNull File> inputSolutionFileList) {
         this.setInputSolutionFileList(inputSolutionFileList);
         return this;
     }
 
-    public ProblemBenchmarksConfig withInputSolutionFiles(File... inputSolutionFiles) {
+    public @NonNull ProblemBenchmarksConfig withInputSolutionFiles(@NonNull File... inputSolutionFiles) {
         this.setInputSolutionFileList(List.of(inputSolutionFiles));
         return this;
     }
 
-    public ProblemBenchmarksConfig withProblemStatisticsEnabled(Boolean problemStatisticEnabled) {
+    public @NonNull ProblemBenchmarksConfig withProblemStatisticsEnabled(@NonNull Boolean problemStatisticEnabled) {
         this.setProblemStatisticEnabled(problemStatisticEnabled);
         return this;
     }
 
-    public ProblemBenchmarksConfig withProblemStatisticTypeList(List<ProblemStatisticType> problemStatisticTypeList) {
+    public @NonNull ProblemBenchmarksConfig
+            withProblemStatisticTypeList(@NonNull List<@NonNull ProblemStatisticType> problemStatisticTypeList) {
         this.setProblemStatisticTypeList(problemStatisticTypeList);
         return this;
     }
 
-    public ProblemBenchmarksConfig withProblemStatisticTypes(ProblemStatisticType... problemStatisticTypes) {
+    public @NonNull ProblemBenchmarksConfig
+            withProblemStatisticTypes(@NonNull ProblemStatisticType... problemStatisticTypes) {
         this.setProblemStatisticTypeList(List.of(problemStatisticTypes));
         return this;
     }
 
-    public ProblemBenchmarksConfig withSingleStatisticTypeList(List<SingleStatisticType> singleStatisticTypeList) {
+    public @NonNull ProblemBenchmarksConfig
+            withSingleStatisticTypeList(@NonNull List<@NonNull SingleStatisticType> singleStatisticTypeList) {
         this.setSingleStatisticTypeList(singleStatisticTypeList);
         return this;
     }
 
-    public ProblemBenchmarksConfig withSingleStatisticTypes(SingleStatisticType... singleStatisticTypes) {
+    public @NonNull ProblemBenchmarksConfig
+            withSingleStatisticTypes(@NonNull SingleStatisticType... singleStatisticTypes) {
         this.setSingleStatisticTypeList(List.of(singleStatisticTypes));
         return this;
     }
@@ -150,10 +156,8 @@ public class ProblemBenchmarksConfig extends AbstractConfig<ProblemBenchmarksCon
     /**
      * Return the problem statistic type list, or a list containing default metrics if problemStatisticEnabled
      * is not false. If problemStatisticEnabled is false, an empty list is returned.
-     *
-     * @return never null
      */
-    public List<ProblemStatisticType> determineProblemStatisticTypeList() {
+    public @NonNull List<@NonNull ProblemStatisticType> determineProblemStatisticTypeList() {
         if (problemStatisticEnabled != null && !problemStatisticEnabled) {
             return Collections.emptyList();
         }
@@ -167,10 +171,8 @@ public class ProblemBenchmarksConfig extends AbstractConfig<ProblemBenchmarksCon
 
     /**
      * Return the single statistic type list, or an empty list if it is null
-     *
-     * @return never null
      */
-    public List<SingleStatisticType> determineSingleStatisticTypeList() {
+    public @NonNull List<@NonNull SingleStatisticType> determineSingleStatisticTypeList() {
         return Objects.requireNonNullElse(singleStatisticTypeList, Collections.emptyList());
     }
 
