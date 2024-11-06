@@ -329,9 +329,8 @@ public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
         return getClass().getSimpleName() + "(" + entityClass + ")";
     }
 
-    // TODO: entityDescriptor @NonNull?
     public static <Solution_> boolean hasSorter(@NonNull EntitySorterManner entitySorterManner,
-            EntityDescriptor<Solution_> entityDescriptor) {
+            @NonNull EntityDescriptor<Solution_> entityDescriptor) {
         switch (entitySorterManner) {
             case NONE:
                 return false;

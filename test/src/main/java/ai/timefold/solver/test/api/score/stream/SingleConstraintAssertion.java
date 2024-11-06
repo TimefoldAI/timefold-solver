@@ -18,7 +18,6 @@ public interface SingleConstraintAssertion {
      * @param message description of the scenario being asserted
      * @throws AssertionError when the expected penalty is not observed
      */
-    // TODO: justifications @NonNull correct
     @NonNull
     SingleConstraintAssertion justifiesWith(@Nullable String message,
             @NonNull ConstraintJustification @NonNull... justifications);

@@ -341,9 +341,8 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
         return getClass().getSimpleName() + "(" + variableName + ")";
     }
 
-    // TODO: variableDescriptor @NonNull?
     public static <Solution_> boolean hasSorter(@NonNull ValueSorterManner valueSorterManner,
-            GenuineVariableDescriptor<Solution_> variableDescriptor) {
+            @NonNull GenuineVariableDescriptor<Solution_> variableDescriptor) {
         switch (valueSorterManner) {
             case NONE:
                 return false;

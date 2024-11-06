@@ -246,7 +246,6 @@ public class NearbySelectionConfig extends SelectorConfig<NearbySelectionConfig>
     // Builder methods
     // ************************************************************************
 
-    // TODO clarify if @NonNull is ok for both params
     public void validateNearby(@NonNull SelectionCacheType resolvedCacheType, @NonNull SelectionOrder resolvedSelectionOrder) {
         long originSelectorCount = Stream.of(originEntitySelectorConfig, originSubListSelectorConfig, originValueSelectorConfig)
                 .filter(Objects::nonNull)
