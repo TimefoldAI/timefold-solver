@@ -193,8 +193,7 @@ public abstract class PlannerBenchmarkFactory {
      *        null to use the default {@link ClassLoader}
      */
     public static @NonNull PlannerBenchmarkFactory createFromFreemarkerXmlResource(@NonNull String templateResource,
-            @Nullable Object model,
-            @Nullable ClassLoader classLoader) {
+            @Nullable Object model, @Nullable ClassLoader classLoader) {
         PlannerBenchmarkConfig benchmarkConfig = PlannerBenchmarkConfig.createFromFreemarkerXmlResource(templateResource, model,
                 classLoader);
         return new DefaultPlannerBenchmarkFactory(benchmarkConfig);
@@ -241,8 +240,7 @@ public abstract class PlannerBenchmarkFactory {
      *        null to use the default {@link ClassLoader}
      */
     public static @NonNull PlannerBenchmarkFactory createFromFreemarkerXmlFile(@NonNull File templateFile,
-            @Nullable Object model,
-            @Nullable ClassLoader classLoader) {
+            @Nullable Object model, @Nullable ClassLoader classLoader) {
         PlannerBenchmarkConfig benchmarkConfig = PlannerBenchmarkConfig.createFromFreemarkerXmlFile(templateFile, model,
                 classLoader);
         return new DefaultPlannerBenchmarkFactory(benchmarkConfig);

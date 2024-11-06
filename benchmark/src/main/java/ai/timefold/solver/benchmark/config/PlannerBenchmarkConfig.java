@@ -254,8 +254,7 @@ public class PlannerBenchmarkConfig {
      *        null to use the default {@link ClassLoader}
      */
     public static @NonNull PlannerBenchmarkConfig createFromFreemarkerXmlResource(@NonNull String templateResource,
-            @Nullable Object model,
-            @Nullable ClassLoader classLoader) {
+            @Nullable Object model, @Nullable ClassLoader classLoader) {
         ClassLoader actualClassLoader = classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader();
         try (InputStream templateIn = actualClassLoader.getResourceAsStream(templateResource)) {
             if (templateIn == null) {
@@ -517,59 +516,59 @@ public class PlannerBenchmarkConfig {
         this.parallelBenchmarkCount = parallelBenchmarkCount;
     }
 
-    public @NonNull Long getWarmUpMillisecondsSpentLimit() {
+    public @Nullable Long getWarmUpMillisecondsSpentLimit() {
         return warmUpMillisecondsSpentLimit;
     }
 
-    public void setWarmUpMillisecondsSpentLimit(@NonNull Long warmUpMillisecondsSpentLimit) {
+    public void setWarmUpMillisecondsSpentLimit(@Nullable Long warmUpMillisecondsSpentLimit) {
         this.warmUpMillisecondsSpentLimit = warmUpMillisecondsSpentLimit;
     }
 
-    public @NonNull Long getWarmUpSecondsSpentLimit() {
+    public @Nullable Long getWarmUpSecondsSpentLimit() {
         return warmUpSecondsSpentLimit;
     }
 
-    public void setWarmUpSecondsSpentLimit(@NonNull Long warmUpSecondsSpentLimit) {
+    public void setWarmUpSecondsSpentLimit(@Nullable Long warmUpSecondsSpentLimit) {
         this.warmUpSecondsSpentLimit = warmUpSecondsSpentLimit;
     }
 
-    public @NonNull Long getWarmUpMinutesSpentLimit() {
+    public @Nullable Long getWarmUpMinutesSpentLimit() {
         return warmUpMinutesSpentLimit;
     }
 
-    public void setWarmUpMinutesSpentLimit(@NonNull Long warmUpMinutesSpentLimit) {
+    public void setWarmUpMinutesSpentLimit(@Nullable Long warmUpMinutesSpentLimit) {
         this.warmUpMinutesSpentLimit = warmUpMinutesSpentLimit;
     }
 
-    public @NonNull Long getWarmUpHoursSpentLimit() {
+    public @Nullable Long getWarmUpHoursSpentLimit() {
         return warmUpHoursSpentLimit;
     }
 
-    public void setWarmUpHoursSpentLimit(@NonNull Long warmUpHoursSpentLimit) {
+    public void setWarmUpHoursSpentLimit(@Nullable Long warmUpHoursSpentLimit) {
         this.warmUpHoursSpentLimit = warmUpHoursSpentLimit;
     }
 
-    public @NonNull Long getWarmUpDaysSpentLimit() {
+    public @Nullable Long getWarmUpDaysSpentLimit() {
         return warmUpDaysSpentLimit;
     }
 
-    public void setWarmUpDaysSpentLimit(@NonNull Long warmUpDaysSpentLimit) {
+    public void setWarmUpDaysSpentLimit(@Nullable Long warmUpDaysSpentLimit) {
         this.warmUpDaysSpentLimit = warmUpDaysSpentLimit;
     }
 
-    public @NonNull BenchmarkReportConfig getBenchmarkReportConfig() {
+    public @Nullable BenchmarkReportConfig getBenchmarkReportConfig() {
         return benchmarkReportConfig;
     }
 
-    public void setBenchmarkReportConfig(@NonNull BenchmarkReportConfig benchmarkReportConfig) {
+    public void setBenchmarkReportConfig(@Nullable BenchmarkReportConfig benchmarkReportConfig) {
         this.benchmarkReportConfig = benchmarkReportConfig;
     }
 
-    public @NonNull SolverBenchmarkConfig getInheritedSolverBenchmarkConfig() {
+    public @Nullable SolverBenchmarkConfig getInheritedSolverBenchmarkConfig() {
         return inheritedSolverBenchmarkConfig;
     }
 
-    public void setInheritedSolverBenchmarkConfig(@NonNull SolverBenchmarkConfig inheritedSolverBenchmarkConfig) {
+    public void setInheritedSolverBenchmarkConfig(@Nullable SolverBenchmarkConfig inheritedSolverBenchmarkConfig) {
         this.inheritedSolverBenchmarkConfig = inheritedSolverBenchmarkConfig;
     }
 
