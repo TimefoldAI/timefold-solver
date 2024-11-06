@@ -31,7 +31,7 @@ but we're just not entirely comfortable yet to write their signatures in stone.
 ====
 
 [#previewFeatures]
-= Preview features
+== Preview features
 
 Timefold Solver includes several components which are only available as preview features.
 These are:
@@ -48,5 +48,3 @@ although we will strive to avoid this as much as possible.
 We encourage you to try these preview features and give us feedback on your experience with them.
 Please direct your feedback to
 https://github.com/TimefoldAI/timefold-solver/discussions[Timefold Solver Github].
-
-
