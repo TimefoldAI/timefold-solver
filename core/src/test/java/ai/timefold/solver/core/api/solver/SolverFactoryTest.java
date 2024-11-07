@@ -9,22 +9,19 @@ import static org.mockito.Mockito.verify;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
@@ -50,7 +47,7 @@ class SolverFactoryTest {
     void createFromXmlResource() {
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.createFromXmlResource(
                 "ai/timefold/solver/core/api/solver/testdataSolverConfig.xml");
-        Solver<TestdataSolution> solver = solverFactory.buildSolver();
+        var solver = solverFactory.buildSolver();
         assertThat(solver).isNotNull();
     }
 
@@ -59,20 +56,20 @@ class SolverFactoryTest {
     void createFromXmlResource_noGenericsForBackwardsCompatibility() {
         SolverFactory solverFactory = SolverFactory.createFromXmlResource(
                 "ai/timefold/solver/core/api/solver/testdataSolverConfig.xml");
-        Solver solver = solverFactory.buildSolver();
+        var solver = solverFactory.buildSolver();
         assertThat(solver).isNotNull();
     }
 
     @Test
     void createFromNonExistingXmlResource_failsShowingResource() {
-        final String xmlSolverConfigResource = "ai/timefold/solver/core/api/solver/nonExistingSolverConfig.xml";
+        final var xmlSolverConfigResource = "ai/timefold/solver/core/api/solver/nonExistingSolverConfig.xml";
         assertThatIllegalArgumentException().isThrownBy(() -> SolverFactory.createFromXmlResource(xmlSolverConfigResource))
                 .withMessageContaining(xmlSolverConfigResource);
     }
 
     @Test
     void createFromNonExistingXmlFile_failsShowingPath() {
-        final File xmlSolverConfigFile = new File(solverTestDir, "nonExistingSolverConfig.xml");
+        final var xmlSolverConfigFile = new File(solverTestDir, "nonExistingSolverConfig.xml");
         assertThatIllegalArgumentException().isThrownBy(() -> SolverFactory.createFromXmlFile(xmlSolverConfigFile))
                 .withMessageContaining(xmlSolverConfigFile.toString());
     }
@@ -83,19 +80,19 @@ class SolverFactoryTest {
         ClassLoader classLoader = new DivertingClassLoader(getClass().getClassLoader());
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.createFromXmlResource(
                 "divertThroughClassLoader/ai/timefold/solver/core/api/solver/classloaderTestdataSolverConfig.xml", classLoader);
-        Solver<TestdataSolution> solver = solverFactory.buildSolver();
+        var solver = solverFactory.buildSolver();
         assertThat(solver).isNotNull();
     }
 
     @Test
     void createFromXmlFile() throws IOException {
-        File file = new File(solverTestDir, "testdataSolverConfig.xml");
-        try (InputStream in = getClass().getClassLoader().getResourceAsStream(
+        var file = new File(solverTestDir, "testdataSolverConfig.xml");
+        try (var in = getClass().getClassLoader().getResourceAsStream(
                 "ai/timefold/solver/core/api/solver/testdataSolverConfig.xml")) {
             Files.copy(in, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.createFromXmlFile(file);
-        Solver<TestdataSolution> solver = solverFactory.buildSolver();
+        var solver = solverFactory.buildSolver();
         assertThat(solver).isNotNull();
     }
 
@@ -103,19 +100,19 @@ class SolverFactoryTest {
     void createFromXmlFile_classLoader() throws IOException {
         // Mocking loadClass doesn't work well enough, because the className still differs from class.getName()
         ClassLoader classLoader = new DivertingClassLoader(getClass().getClassLoader());
-        File file = new File(solverTestDir, "classloaderTestdataSolverConfig.xml");
-        try (InputStream in = getClass().getClassLoader().getResourceAsStream(
+        var file = new File(solverTestDir, "classloaderTestdataSolverConfig.xml");
+        try (var in = getClass().getClassLoader().getResourceAsStream(
                 "ai/timefold/solver/core/api/solver/classloaderTestdataSolverConfig.xml")) {
             Files.copy(in, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.createFromXmlFile(file, classLoader);
-        Solver<TestdataSolution> solver = solverFactory.buildSolver();
+        var solver = solverFactory.buildSolver();
         assertThat(solver).isNotNull();
     }
 
     @Test
     void createFromInvalidXmlResource_failsShowingBothResourceAndReason() {
-        final String invalidXmlSolverConfigResource = "ai/timefold/solver/core/api/solver/invalidSolverConfig.xml";
+        final var invalidXmlSolverConfigResource = "ai/timefold/solver/core/api/solver/invalidSolverConfig.xml";
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> SolverFactory.createFromXmlResource(invalidXmlSolverConfigResource))
                 .withMessageContaining(invalidXmlSolverConfigResource)
@@ -124,9 +121,9 @@ class SolverFactoryTest {
 
     @Test
     void createFromInvalidXmlFile_failsShowingBothPathAndReason() throws IOException {
-        final String invalidXmlSolverConfigResource = "ai/timefold/solver/core/api/solver/invalidSolverConfig.xml";
-        File file = new File(solverTestDir, "invalidSolverConfig.xml");
-        try (InputStream in = getClass().getClassLoader().getResourceAsStream(invalidXmlSolverConfigResource)) {
+        final var invalidXmlSolverConfigResource = "ai/timefold/solver/core/api/solver/invalidSolverConfig.xml";
+        var file = new File(solverTestDir, "invalidSolverConfig.xml");
+        try (var in = getClass().getClassLoader().getResourceAsStream(invalidXmlSolverConfigResource)) {
             Files.copy(in, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
         assertThatIllegalArgumentException()
@@ -137,40 +134,38 @@ class SolverFactoryTest {
 
     @Test
     void create() {
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
-        Solver<TestdataSolution> solver = solverFactory.buildSolver();
+        var solver = solverFactory.buildSolver();
         assertThat(solver).isNotNull();
     }
 
     @Test
     void createAndOverrideSettings() {
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
         SolverConfigOverride<TestdataSolution> configOverride = mock(SolverConfigOverride.class);
-        TerminationConfig terminationConfig = new TerminationConfig();
+        var terminationConfig = new TerminationConfig();
         terminationConfig.withSpentLimit(Duration.ofSeconds(60));
         doReturn(terminationConfig).when(configOverride).getTerminationConfig();
-        Solver<TestdataSolution> solver = solverFactory.buildSolver(configOverride);
+        var solver = solverFactory.buildSolver(configOverride);
         assertThat(solver).isNotNull();
         verify(configOverride, atLeast(1)).getTerminationConfig();
     }
 
     @Test
     void getScoreDirectorFactory() {
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
-        DefaultSolverFactory<TestdataSolution> solverFactory =
-                (DefaultSolverFactory<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig);
-        InnerScoreDirectorFactory<TestdataSolution, SimpleScore> scoreDirectorFactory =
-                solverFactory.getScoreDirectorFactory();
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        var solverFactory = (DefaultSolverFactory<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig);
+        var scoreDirectorFactory = solverFactory.getScoreDirectorFactory();
         assertThat(scoreDirectorFactory).isNotNull();
 
-        TestdataSolution solution = new TestdataSolution("s1");
+        var solution = new TestdataSolution("s1");
         solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2"), new TestdataEntity("e3")));
         solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
-        try (InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
             scoreDirector.setWorkingSolution(solution);
-            SimpleScore score = scoreDirector.calculateScore();
+            var score = scoreDirector.calculateScore();
             assertThat(score).isNotNull();
         }
     }
@@ -178,7 +173,7 @@ class SolverFactoryTest {
     @Test
     void localSearchAfterUnterminatedLocalSearch() {
         // Create a solver config that has two local searches, the second one unreachable.
-        SolverConfig solverConfig = new SolverConfig()
+        var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
                 .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class)
@@ -186,7 +181,7 @@ class SolverFactoryTest {
                         new LocalSearchPhaseConfig(),
                         new LocalSearchPhaseConfig());
 
-        DefaultSolverFactory<TestdataSolution> solverFactory =
+        var solverFactory =
                 (DefaultSolverFactory<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig);
         Assertions.assertThatThrownBy(() -> solverFactory.buildSolver())
                 .hasMessageContaining("unreachable phase");
@@ -195,10 +190,10 @@ class SolverFactoryTest {
     @Test
     void validateInitializationPhases() {
         // Default configuration
-        SolverConfig solverConfig = PlannerTestUtils
+        var solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
-        DefaultSolver<TestdataSolution> solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
+        var solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
         assertThat(solver.getPhaseList().get(0).triggersFirstInitializedSolutionEvent()).isTrue();
         assertThat(solver.getPhaseList().get(1).triggersFirstInitializedSolutionEvent()).isFalse();
 

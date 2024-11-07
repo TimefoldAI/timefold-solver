@@ -153,7 +153,7 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
             In_ clonedElement, Function<In_, Out_> propositionFunction) {
         try (var ephemeralMoveDirector = scoreDirector.getMoveDirector().ephemeral()) {
             move.execute(ephemeralMoveDirector);
-            var newScoreAnalysis = scoreDirector.buildScoreAnalysis(fetchPolicy == ScoreAnalysisFetchPolicy.FETCH_ALL);
+            var newScoreAnalysis = scoreDirector.buildScoreAnalysis(fetchPolicy);
             var newScoreDifference = newScoreAnalysis.diff(originalScoreAnalysis);
             var result = propositionFunction.apply(clonedElement);
             return recommendationConstructor.apply(moveIndex, result, newScoreDifference);

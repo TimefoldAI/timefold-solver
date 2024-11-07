@@ -12,6 +12,7 @@ import java.util.List;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
@@ -75,7 +76,8 @@ class PillarChangeMoveTest {
         ScoreDirectorFactory<TestdataEntityProvidingSolution> scoreDirectorFactory =
                 new EasyScoreDirectorFactory<>(TestdataEntityProvidingSolution.buildSolutionDescriptor(),
                         solution -> SimpleScore.ZERO);
-        ScoreDirector<TestdataEntityProvidingSolution> scoreDirector = scoreDirectorFactory.buildScoreDirector();
+        ScoreDirector<TestdataEntityProvidingSolution> scoreDirector =
+                scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED);
         GenuineVariableDescriptor<TestdataEntityProvidingSolution> variableDescriptor = TestdataEntityProvidingEntity
                 .buildVariableDescriptorForValue();
 

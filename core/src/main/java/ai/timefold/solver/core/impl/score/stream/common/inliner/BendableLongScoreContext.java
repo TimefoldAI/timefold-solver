@@ -31,7 +31,7 @@ final class BendableLongScoreContext extends ScoreContext<BendableLongScore, Ben
         parent.softScores[scoreLevel] += softImpact;
         UndoScoreImpacter undoScoreImpact = () -> parent.softScores[scoreLevel] -= softImpact;
         ;
-        if (!constraintMatchEnabled) {
+        if (!constraintMatchPolicy.isEnabled()) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact,
@@ -44,7 +44,7 @@ final class BendableLongScoreContext extends ScoreContext<BendableLongScore, Ben
         long hardImpact = scoreLevelWeight * matchWeight;
         parent.hardScores[scoreLevel] += hardImpact;
         UndoScoreImpacter undoScoreImpact = () -> parent.hardScores[scoreLevel] -= hardImpact;
-        if (!constraintMatchEnabled) {
+        if (!constraintMatchPolicy.isEnabled()) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact,
@@ -74,7 +74,7 @@ final class BendableLongScoreContext extends ScoreContext<BendableLongScore, Ben
                 parent.softScores[softScoreLevel] -= softImpacts[softScoreLevel];
             }
         };
-        if (!constraintMatchEnabled) {
+        if (!constraintMatchPolicy.isEnabled()) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact, BendableLongScore.of(hardImpacts, softImpacts),

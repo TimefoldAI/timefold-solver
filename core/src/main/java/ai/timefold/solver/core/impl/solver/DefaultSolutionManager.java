@@ -17,6 +17,7 @@ import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.score.DefaultScoreExplanation;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
 
@@ -52,19 +53,19 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
                     + ".update() with this solutionUpdatePolicy (" + solutionUpdatePolicy + ").");
         }
         return callScoreDirector(solution, solutionUpdatePolicy,
-                s -> s.getSolutionDescriptor().getScore(s.getWorkingSolution()), false, false);
+                s -> s.getSolutionDescriptor().getScore(s.getWorkingSolution()), ConstraintMatchPolicy.DISABLED, false);
     }
 
     private <Result_> Result_ callScoreDirector(Solution_ solution,
             SolutionUpdatePolicy solutionUpdatePolicy, Function<InnerScoreDirector<Solution_, Score_>, Result_> function,
-            boolean enableConstraintMatch, boolean cloneSolution) {
+            ConstraintMatchPolicy constraintMatchPolicy, boolean cloneSolution) {
         var isShadowVariableUpdateEnabled = solutionUpdatePolicy.isShadowVariableUpdateEnabled();
         var nonNullSolution = Objects.requireNonNull(solution);
-        try (var scoreDirector = getScoreDirectorFactory().buildScoreDirector(cloneSolution, enableConstraintMatch,
+        try (var scoreDirector = getScoreDirectorFactory().buildScoreDirector(cloneSolution, constraintMatchPolicy,
                 !isShadowVariableUpdateEnabled)) {
             nonNullSolution = cloneSolution ? scoreDirector.cloneSolution(nonNullSolution) : nonNullSolution;
             scoreDirector.setWorkingSolution(nonNullSolution);
-            if (enableConstraintMatch && !scoreDirector.isConstraintMatchEnabled()) {
+            if (constraintMatchPolicy.isEnabled() && !scoreDirector.getConstraintMatchPolicy().isEnabled()) {
                 throw new IllegalStateException("""
                         Requested constraint matching but score director doesn't support it.
                         Maybe use Constraint Streams instead of Easy or Incremental score calculator?""");
@@ -84,7 +85,8 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
     public @NonNull ScoreExplanation<Solution_, Score_> explain(@NonNull Solution_ solution,
             @NonNull SolutionUpdatePolicy solutionUpdatePolicy) {
         var currentScore = (Score_) scoreDirectorFactory.getSolutionDescriptor().getScore(solution);
-        var explanation = callScoreDirector(solution, solutionUpdatePolicy, DefaultScoreExplanation::new, true, false);
+        var explanation = callScoreDirector(solution, solutionUpdatePolicy, DefaultScoreExplanation::new,
+                ConstraintMatchPolicy.ENABLED, false);
         assertFreshScore(solution, currentScore, explanation.getScore(), solutionUpdatePolicy);
         return explanation;
     }
@@ -114,7 +116,7 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
         Objects.requireNonNull(fetchPolicy, "fetchPolicy");
         var currentScore = (Score_) scoreDirectorFactory.getSolutionDescriptor().getScore(solution);
         var analysis = callScoreDirector(solution, solutionUpdatePolicy,
-                scoreDirector -> scoreDirector.buildScoreAnalysis(fetchPolicy == ScoreAnalysisFetchPolicy.FETCH_ALL), true,
+                scoreDirector -> scoreDirector.buildScoreAnalysis(fetchPolicy), ConstraintMatchPolicy.match(fetchPolicy),
                 false);
         assertFreshScore(solution, currentScore, analysis.score(), solutionUpdatePolicy);
         return analysis;
@@ -126,7 +128,8 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
             @NonNull ScoreAnalysisFetchPolicy fetchPolicy) {
         var assigner = new Assigner<Solution_, Score_, RecommendedAssignment<Out_, Score_>, In_, Out_>(solverFactory,
                 propositionFunction, DefaultRecommendedAssignment::new, fetchPolicy, solution, evaluatedEntityOrElement);
-        return callScoreDirector(solution, SolutionUpdatePolicy.UPDATE_ALL, assigner, true, true);
+        return callScoreDirector(solution, SolutionUpdatePolicy.UPDATE_ALL, assigner, ConstraintMatchPolicy.match(fetchPolicy),
+                true);
     }
 
     @Override
@@ -134,7 +137,8 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
             Function<In_, Out_> propositionFunction, ScoreAnalysisFetchPolicy fetchPolicy) {
         var assigner = new Assigner<Solution_, Score_, RecommendedFit<Out_, Score_>, In_, Out_>(solverFactory,
                 propositionFunction, DefaultRecommendedFit::new, fetchPolicy, solution, fittedEntityOrElement);
-        return callScoreDirector(solution, SolutionUpdatePolicy.UPDATE_ALL, assigner, true, true);
+        return callScoreDirector(solution, SolutionUpdatePolicy.UPDATE_ALL, assigner, ConstraintMatchPolicy.match(fetchPolicy),
+                true);
     }
 
 }

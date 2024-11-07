@@ -101,6 +101,27 @@ Methods in the `Move` interface that deal with undo moves have been deprecated
 and will be removed in a future major version of Timefold Solver.
 ====
 
+'''
+
+.icon:info-circle[role=yellow] `ConstraintAnalysis.matchCount()` no longer throws an exception
+[%collapsible%open]
+====
+Previously in xref:constraints-and-score/understanding-the-score.adoc[score analysis],
+when there were no matches for a constraint,
+`ConstraintAnalysis.matchCount()` would throw an exception instead of returning a number.
+The behavior has been changed to depend on selected `ScoreAnalysisFetchPolicy`:
+
+- With `FETCH_ALL`, constraint match analysis will be performed, constraint matches will be available,
+and the method will return their precise count.
+- With `FETCH_MATCH_COUNT`, constraint match analysis will still be performed
+and the method will return the precise count of constraint matches.
+The constraint matches themselves will not be available.
+This is useful for situations
+where the score analysis with a full list of matches can be expected to be too large to transmit over the wire.
+- With `FETCH_SHALLOW`, constraint match analysis will not run, constraint matches will not be available
+and the method will return `-1`.
+
+====
 
 === Upgrade from 1.14.0 to 1.15.0
 

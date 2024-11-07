@@ -2098,7 +2098,7 @@ public abstract class AbstractQuadConstraintStreamTest
 
     private <Score_ extends Score<Score_>, Solution_, Entity_, Value_> void assertDefaultJustifications(
             InnerScoreDirector<Solution_, Score_> scoreDirector, List<Entity_> entityList, List<Value_> valueList) {
-        if (!implSupport.isConstreamMatchEnabled())
+        if (!implSupport.constraintMatchPolicy().isJustificationEnabled())
             return;
 
         assertThat(scoreDirector.getIndictmentMap())
@@ -2437,7 +2437,7 @@ public abstract class AbstractQuadConstraintStreamTest
 
     private <Score_ extends Score<Score_>, Solution_, Entity_, Value_> void assertCustomJustifications(
             InnerScoreDirector<Solution_, Score_> scoreDirector, List<Entity_> entityList, List<Value_> valueList) {
-        if (!implSupport.isConstreamMatchEnabled())
+        if (!implSupport.constraintMatchPolicy().isJustificationEnabled())
             return;
 
         assertThat(scoreDirector.getIndictmentMap())

@@ -41,6 +41,9 @@ public final class ScoreAnalysisJacksonSerializer<Score_ extends Score<Score_>> 
                 });
                 constraintAnalysisMap.put("matches", matchAnalysis);
             }
+            if (constraintAnalysis.matchCount() != -1) {
+                constraintAnalysisMap.put("matchCount", constraintAnalysis.matchCount());
+            }
             result.add(constraintAnalysisMap);
         });
         gen.writeObjectField("constraints", result);

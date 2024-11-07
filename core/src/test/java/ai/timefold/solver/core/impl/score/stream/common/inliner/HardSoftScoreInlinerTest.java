@@ -8,6 +8,7 @@ import java.util.Map;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.testdata.domain.score.TestdataHardSoftScoreSolution;
 
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,7 @@ class HardSoftScoreInlinerTest extends AbstractScoreInlinerTest<TestdataHardSoft
 
     @Test
     void defaultScore() {
-        var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchEnabled);
+        var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchPolicy);
         assertThat(scoreInliner.extractScore(0)).isEqualTo(HardSoftScore.ZERO);
     }
 
@@ -96,7 +97,7 @@ class HardSoftScoreInlinerTest extends AbstractScoreInlinerTest<TestdataHardSoft
 
     @Override
     protected AbstractScoreInliner<HardSoftScore> buildScoreInliner(Map<Constraint, HardSoftScore> constraintWeightMap,
-            boolean constraintMatchEnabled) {
-        return new HardSoftScoreInliner(constraintWeightMap, constraintMatchEnabled);
+            ConstraintMatchPolicy constraintMatchPolicy) {
+        return new HardSoftScoreInliner(constraintWeightMap, constraintMatchPolicy);
     }
 }

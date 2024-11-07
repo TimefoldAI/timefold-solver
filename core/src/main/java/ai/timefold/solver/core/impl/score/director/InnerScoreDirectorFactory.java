@@ -5,6 +5,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
 
@@ -26,59 +27,31 @@ public interface InnerScoreDirectorFactory<Solution_, Score_ extends Score<Score
     ScoreDefinition<Score_> getScoreDefinition();
 
     @Override
-    InnerScoreDirector<Solution_, Score_> buildScoreDirector();
-
-    /**
-     * Like {@link #buildScoreDirector()}, but optionally disables {@link ConstraintMatch} tracking and look up
-     * for more performance (presuming the {@link ScoreDirector} implementation actually supports it to begin with).
-     *
-     * @param lookUpEnabled true if a {@link ScoreDirector} implementation should track all working objects
-     *        for {@link ScoreDirector#lookUpWorkingObject(Object)}
-     * @param constraintMatchEnabledPreference false if a {@link ScoreDirector} implementation
-     *        should not do {@link ConstraintMatch} tracking even if it supports it.
-     * @return never null
-     * @see InnerScoreDirector#isConstraintMatchEnabled()
-     * @see InnerScoreDirector#getConstraintMatchTotalMap()
-     */
     default InnerScoreDirector<Solution_, Score_> buildScoreDirector(boolean lookUpEnabled,
-            boolean constraintMatchEnabledPreference) {
-        return buildScoreDirector(lookUpEnabled, constraintMatchEnabledPreference, true);
+            ConstraintMatchPolicy constraintMatchPolicy) {
+        return buildScoreDirector(lookUpEnabled, constraintMatchPolicy, true);
     }
 
-    /**
-     * Like {@link #buildScoreDirector()}, but optionally disables {@link ConstraintMatch} tracking and look up
-     * for more performance (presuming the {@link ScoreDirector} implementation actually supports it to begin with).
-     *
-     * @param lookUpEnabled true if a {@link ScoreDirector} implementation should track all working objects
-     *        for {@link ScoreDirector#lookUpWorkingObject(Object)}
-     * @param constraintMatchEnabledPreference false if a {@link ScoreDirector} implementation
-     *        should not do {@link ConstraintMatch} tracking even if it supports it.
-     * @param expectShadowVariablesInCorrectState true, unless you have an exceptional reason.
-     *        See {@link InnerScoreDirector#expectShadowVariablesInCorrectState()} for details.
-     * @return never null
-     * @see InnerScoreDirector#isConstraintMatchEnabled()
-     * @see InnerScoreDirector#getConstraintMatchTotalMap()
-     */
-    InnerScoreDirector<Solution_, Score_> buildScoreDirector(boolean lookUpEnabled, boolean constraintMatchEnabledPreference,
+    @Override
+    InnerScoreDirector<Solution_, Score_> buildScoreDirector(boolean lookUpEnabled, ConstraintMatchPolicy constraintMatchPolicy,
             boolean expectShadowVariablesInCorrectState);
 
     /**
-     * Like {@link #buildScoreDirector(boolean, boolean)}, but makes the score director a derived one.
+     * Like {@link #buildScoreDirector(boolean, ConstraintMatchPolicy)}, but makes the score director a derived one.
      * Derived score directors may make choices which the main score director can not make, such as reducing logging.
      * Derived score directors are typically used for multithreaded solving, testing and assert modes.
      *
      * @param lookUpEnabled true if a {@link ScoreDirector} implementation should track all working objects
      *        for {@link ScoreDirector#lookUpWorkingObject(Object)}
-     * @param constraintMatchEnabledPreference false if a {@link ScoreDirector} implementation
-     *        should not do {@link ConstraintMatch} tracking even if it supports it.
+     * @param constraintMatchPolicy how should the {@link ScoreDirector} implementation do {@link ConstraintMatch}, if at all.
      * @return never null
-     * @see InnerScoreDirector#isConstraintMatchEnabled()
+     * @see InnerScoreDirector#getConstraintMatchPolicy()
      * @see InnerScoreDirector#getConstraintMatchTotalMap()
      */
     default InnerScoreDirector<Solution_, Score_> buildDerivedScoreDirector(boolean lookUpEnabled,
-            boolean constraintMatchEnabledPreference) {
+            ConstraintMatchPolicy constraintMatchPolicy) {
         // Most score directors don't need derived status; CS will override this.
-        return buildScoreDirector(lookUpEnabled, constraintMatchEnabledPreference, true);
+        return buildScoreDirector(lookUpEnabled, constraintMatchPolicy);
     }
 
     /**

@@ -100,6 +100,7 @@ public interface ScoreExplanation<Solution_, Score_ extends Score<Score_>> {
      * Explains the {@link Score} of {@link #getScore()} for all constraints
      * justified with a given {@link ConstraintJustification} type.
      * Otherwise, as defined by {@link #getJustificationList()}.
+     * May be empty, if the score explanation ran with justification support disabled.
      *
      * @return all constraint matches associated with the given justification class
      * @see #getIndictmentMap()

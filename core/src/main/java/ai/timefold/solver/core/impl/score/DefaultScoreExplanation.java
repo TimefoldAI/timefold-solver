@@ -4,6 +4,7 @@ import static java.util.Comparator.comparing;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -62,10 +63,18 @@ public final class DefaultScoreExplanation<Solution_, Score_ extends Score<Score
                     constraintMatchSet.stream()
                             .sorted(constraintMatchComparator)
                             .limit(constraintMatchLimit)
-                            .forEach(constraintMatch -> scoreExplanation.append("""
-                                                %s: justified with (%s)
-                                    """.formatted(constraintMatch.getScore().toShortString(),
-                                    constraintMatch.getJustification())));
+                            .forEach(constraintMatch -> {
+                                if (constraintMatch.getJustification() == null) {
+                                    scoreExplanation.append("""
+                                                       %s: unjustified
+                                            """.formatted(constraintMatch.getScore().toShortString()));
+                                } else {
+                                    scoreExplanation.append("""
+                                                        %s: justified with (%s)
+                                            """.formatted(constraintMatch.getScore().toShortString(),
+                                            constraintMatch.getJustification()));
+                                }
+                            });
                     if (constraintMatchSet.size() > constraintMatchLimit) {
                         scoreExplanation.append("""
                                             ...
@@ -131,10 +140,13 @@ public final class DefaultScoreExplanation<Solution_, Score_ extends Score<Score
         for (ConstraintMatchTotal<Score_> constraintMatchTotal : constraintMatchTotalMap.values()) {
             for (ConstraintMatch<Score_> constraintMatch : constraintMatchTotal.getConstraintMatchSet()) {
                 ConstraintJustification justification = constraintMatch.getJustification();
-                workingConstraintJustificationList.add(justification);
+                if (justification != null) {
+                    workingConstraintJustificationList.add(justification);
+                }
             }
         }
-        this.constraintJustificationList = workingConstraintJustificationList;
+        this.constraintJustificationList =
+                workingConstraintJustificationList.isEmpty() ? Collections.emptyList() : workingConstraintJustificationList;
         this.indictmentMap = indictmentMap;
     }
 

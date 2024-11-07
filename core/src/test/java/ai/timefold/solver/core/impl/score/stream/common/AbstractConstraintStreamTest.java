@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.fail;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -64,19 +63,19 @@ public abstract class AbstractConstraintStreamTest {
     protected <Solution_> void assertScore(InnerScoreDirector<Solution_, SimpleScore> scoreDirector,
             AssertableMatch... assertableMatches) {
         scoreDirector.triggerVariableListeners();
-        SimpleScore score = scoreDirector.calculateScore();
-        int scoreTotal = Arrays.stream(assertableMatches)
+        var score = scoreDirector.calculateScore();
+        var scoreTotal = Arrays.stream(assertableMatches)
                 .mapToInt(assertableMatch -> assertableMatch.score)
                 .sum();
-        if (implSupport.isConstreamMatchEnabled()) {
-            for (AssertableMatch assertableMatch : assertableMatches) {
-                String constraintPackage = assertableMatch.constraintPackage == null
+        if (implSupport.constraintMatchPolicy().isJustificationEnabled()) {
+            for (var assertableMatch : assertableMatches) {
+                var constraintPackage = assertableMatch.constraintPackage == null
                         ? scoreDirector.getSolutionDescriptor().getSolutionClass().getPackage().getName()
                         : assertableMatch.constraintPackage;
-                Map<String, ConstraintMatchTotal<SimpleScore>> constraintMatchTotals =
+                var constraintMatchTotals =
                         scoreDirector.getConstraintMatchTotalMap();
-                String constraintId = ConstraintRef.composeConstraintId(constraintPackage, assertableMatch.constraintName);
-                ConstraintMatchTotal<SimpleScore> constraintMatchTotal = constraintMatchTotals.get(constraintId);
+                var constraintId = ConstraintRef.composeConstraintId(constraintPackage, assertableMatch.constraintName);
+                var constraintMatchTotal = constraintMatchTotals.get(constraintId);
                 if (constraintMatchTotal == null) {
                     throw new IllegalStateException("Requested constraint matches for unknown constraint (" +
                             constraintId + ").");
@@ -87,10 +86,9 @@ public abstract class AbstractConstraintStreamTest {
                             + constraintMatchTotal.getConstraintMatchSet() + ").");
                 }
             }
-            Map<String, ConstraintMatchTotal<SimpleScore>> constraintMatchTotalMap =
-                    scoreDirector.getConstraintMatchTotalMap();
-            for (ConstraintMatchTotal<SimpleScore> constraintMatchTotal : constraintMatchTotalMap.values()) {
-                for (ConstraintMatch<SimpleScore> constraintMatch : constraintMatchTotal.getConstraintMatchSet()) {
+            var constraintMatchTotalMap = scoreDirector.getConstraintMatchTotalMap();
+            for (var constraintMatchTotal : constraintMatchTotalMap.values()) {
+                for (var constraintMatch : constraintMatchTotal.getConstraintMatchSet()) {
                     if (Arrays.stream(assertableMatches)
                             .filter(assertableMatch -> assertableMatch.constraintName
                                     .equals(constraintMatch.getConstraintRef().constraintName()))
@@ -100,6 +98,13 @@ public abstract class AbstractConstraintStreamTest {
                     }
                 }
             }
+        } else if (implSupport.constraintMatchPolicy().isEnabled()) {
+            var matchCount = scoreDirector.getConstraintMatchTotalMap().values().stream()
+                    .mapToInt(ConstraintMatchTotal::getConstraintMatchCount)
+                    .sum();
+            assertThat(assertableMatches)
+                    .as("The expected number of constraint matches is different from actual.")
+                    .hasSize(matchCount);
         }
         assertThat(score.score()).isEqualTo(scoreTotal);
     }
@@ -157,9 +162,9 @@ public abstract class AbstractConstraintStreamTest {
             if (!constraintName.equals(constraintMatch.getConstraintRef().constraintName())) {
                 return false;
             }
-            ConstraintJustification justification = constraintMatch.getJustification();
+            var justification = constraintMatch.getJustification();
             if (justification instanceof DefaultConstraintJustification constraintJustification) {
-                List<?> actualJustificationList = constraintJustification.getFacts();
+                var actualJustificationList = constraintJustification.getFacts();
                 if (actualJustificationList.size() != justificationList.size()) {
                     return false;
                 }

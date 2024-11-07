@@ -9,6 +9,7 @@ import java.util.Map;
 import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.testdata.domain.score.TestdataBendableBigDecimalScoreSolution;
 
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,7 @@ class BendableBigDecimalScoreInlinerTest
 
     @Test
     void defaultScore() {
-        var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchEnabled);
+        var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchPolicy);
         assertThat(scoreInliner.extractScore(0)).isEqualTo(buildScore(0, 0, 0));
     }
 
@@ -117,8 +118,9 @@ class BendableBigDecimalScoreInlinerTest
 
     @Override
     protected AbstractScoreInliner<BendableBigDecimalScore>
-            buildScoreInliner(Map<Constraint, BendableBigDecimalScore> constraintWeightMap, boolean constraintMatchEnabled) {
-        return new BendableBigDecimalScoreInliner(constraintWeightMap, constraintMatchEnabled, 1, 2);
+            buildScoreInliner(Map<Constraint, BendableBigDecimalScore> constraintWeightMap,
+                    ConstraintMatchPolicy constraintMatchPolicy) {
+        return new BendableBigDecimalScoreInliner(constraintWeightMap, constraintMatchPolicy, 1, 2);
     }
 
     private BendableBigDecimalScore buildScore(long hard, long soft1, long soft2) {

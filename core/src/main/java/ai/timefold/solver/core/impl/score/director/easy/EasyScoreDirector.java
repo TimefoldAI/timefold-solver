@@ -10,6 +10,7 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 
 /**
@@ -28,9 +29,9 @@ public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
     private final EasyScoreCalculator<Solution_, Score_> easyScoreCalculator;
 
     public EasyScoreDirector(EasyScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
-            boolean lookUpEnabled, boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState,
+            boolean lookUpEnabled, boolean expectShadowVariablesInCorrectState,
             EasyScoreCalculator<Solution_, Score_> easyScoreCalculator) {
-        super(scoreDirectorFactory, lookUpEnabled, constraintMatchEnabledPreference, expectShadowVariablesInCorrectState);
+        super(scoreDirectorFactory, lookUpEnabled, ConstraintMatchPolicy.DISABLED, expectShadowVariablesInCorrectState);
         this.easyScoreCalculator = easyScoreCalculator;
     }
 
@@ -61,16 +62,6 @@ public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
         }
         setCalculatedScore(score);
         return score;
-    }
-
-    /**
-     * Always false, {@link ConstraintMatchTotal}s are not supported by this {@link ScoreDirector} implementation.
-     *
-     * @return false
-     */
-    @Override
-    public boolean isConstraintMatchEnabled() {
-        return false;
     }
 
     /**

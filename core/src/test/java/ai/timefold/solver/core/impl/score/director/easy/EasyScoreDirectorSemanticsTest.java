@@ -10,6 +10,7 @@ import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorSemanticsTest;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
@@ -70,7 +71,8 @@ final class EasyScoreDirectorSemanticsTest extends AbstractScoreDirectorSemantic
         config.setEasyScoreCalculatorCustomProperties(customProperties);
 
         EasyScoreDirector<TestdataSolution, ?> scoreDirector =
-                (EasyScoreDirector<TestdataSolution, ?>) buildTestdataScoreDirectoryFactory(config).buildScoreDirector();
+                (EasyScoreDirector<TestdataSolution, ?>) buildTestdataScoreDirectoryFactory(config)
+                        .buildScoreDirector(false, ConstraintMatchPolicy.DISABLED);
         TestCustomPropertiesEasyScoreCalculator scoreCalculator =
                 (TestCustomPropertiesEasyScoreCalculator) scoreDirector
                         .getEasyScoreCalculator();

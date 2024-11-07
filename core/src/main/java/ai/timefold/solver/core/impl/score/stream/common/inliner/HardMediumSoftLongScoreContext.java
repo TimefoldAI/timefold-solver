@@ -15,7 +15,7 @@ final class HardMediumSoftLongScoreContext extends ScoreContext<HardMediumSoftLo
         long softImpact = constraintWeight.softScore() * matchWeight;
         parent.softScore += softImpact;
         UndoScoreImpacter undoScoreImpact = () -> parent.softScore -= softImpact;
-        if (!constraintMatchEnabled) {
+        if (!constraintMatchPolicy.isEnabled()) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact, HardMediumSoftLongScore.ofSoft(softImpact), constraintMatchSupplier);
@@ -26,7 +26,7 @@ final class HardMediumSoftLongScoreContext extends ScoreContext<HardMediumSoftLo
         long mediumImpact = constraintWeight.mediumScore() * matchWeight;
         parent.mediumScore += mediumImpact;
         UndoScoreImpacter undoScoreImpact = () -> parent.mediumScore -= mediumImpact;
-        if (!constraintMatchEnabled) {
+        if (!constraintMatchPolicy.isEnabled()) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact, HardMediumSoftLongScore.ofMedium(mediumImpact),
@@ -38,7 +38,7 @@ final class HardMediumSoftLongScoreContext extends ScoreContext<HardMediumSoftLo
         long hardImpact = constraintWeight.hardScore() * matchWeight;
         parent.hardScore += hardImpact;
         UndoScoreImpacter undoScoreImpact = () -> parent.hardScore -= hardImpact;
-        if (!constraintMatchEnabled) {
+        if (!constraintMatchPolicy.isEnabled()) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact, HardMediumSoftLongScore.ofHard(hardImpact), constraintMatchSupplier);
@@ -57,7 +57,7 @@ final class HardMediumSoftLongScoreContext extends ScoreContext<HardMediumSoftLo
             parent.mediumScore -= mediumImpact;
             parent.softScore -= softImpact;
         };
-        if (!constraintMatchEnabled) {
+        if (!constraintMatchPolicy.isEnabled()) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact, HardMediumSoftLongScore.of(hardImpact, mediumImpact, softImpact),

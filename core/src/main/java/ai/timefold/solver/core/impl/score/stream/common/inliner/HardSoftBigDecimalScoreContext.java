@@ -17,7 +17,7 @@ final class HardSoftBigDecimalScoreContext extends ScoreContext<HardSoftBigDecim
         BigDecimal softImpact = constraintWeight.softScore().multiply(matchWeight);
         parent.softScore = parent.softScore.add(softImpact);
         UndoScoreImpacter undoScoreImpact = () -> parent.softScore = parent.softScore.subtract(softImpact);
-        if (!constraintMatchEnabled) {
+        if (!constraintMatchPolicy.isEnabled()) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact, HardSoftBigDecimalScore.ofSoft(softImpact), constraintMatchSupplier);
@@ -28,7 +28,7 @@ final class HardSoftBigDecimalScoreContext extends ScoreContext<HardSoftBigDecim
         BigDecimal hardImpact = constraintWeight.hardScore().multiply(matchWeight);
         parent.hardScore = parent.hardScore.add(hardImpact);
         UndoScoreImpacter undoScoreImpact = () -> parent.hardScore = parent.hardScore.subtract(hardImpact);
-        if (!constraintMatchEnabled) {
+        if (!constraintMatchPolicy.isEnabled()) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact, HardSoftBigDecimalScore.ofHard(hardImpact), constraintMatchSupplier);
@@ -44,7 +44,7 @@ final class HardSoftBigDecimalScoreContext extends ScoreContext<HardSoftBigDecim
             parent.hardScore = parent.hardScore.subtract(hardImpact);
             parent.softScore = parent.softScore.subtract(softImpact);
         };
-        if (!constraintMatchEnabled) {
+        if (!constraintMatchPolicy.isEnabled()) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact, HardSoftBigDecimalScore.of(hardImpact, softImpact),

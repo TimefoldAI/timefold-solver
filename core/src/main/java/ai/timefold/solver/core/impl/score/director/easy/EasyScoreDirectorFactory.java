@@ -6,6 +6,7 @@ import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 
@@ -47,11 +48,9 @@ public final class EasyScoreDirectorFactory<Solution_, Score_ extends Score<Scor
     // ************************************************************************
 
     @Override
-    public EasyScoreDirector<Solution_, Score_> buildScoreDirector(
-            boolean lookUpEnabled, boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
-        return new EasyScoreDirector<>(this, lookUpEnabled, constraintMatchEnabledPreference,
-                expectShadowVariablesInCorrectState,
-                easyScoreCalculator);
+    public EasyScoreDirector<Solution_, Score_> buildScoreDirector(boolean lookUpEnabled,
+            ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState) {
+        return new EasyScoreDirector<>(this, lookUpEnabled, expectShadowVariablesInCorrectState, easyScoreCalculator);
     }
 
 }

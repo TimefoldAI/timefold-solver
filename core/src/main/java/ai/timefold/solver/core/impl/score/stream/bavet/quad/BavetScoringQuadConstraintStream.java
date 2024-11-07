@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.quad;
 
+import static ai.timefold.solver.core.impl.score.stream.bavet.common.BavetScoringConstraintStream.impactWithConstraintMatchNoJustifications;
+
 import java.math.BigDecimal;
 
 import ai.timefold.solver.core.api.function.PentaFunction;
@@ -7,6 +9,7 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.ToIntQuadFunction;
 import ai.timefold.solver.core.api.function.ToLongQuadFunction;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraint;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetScoringConstraintStream;
@@ -70,12 +73,20 @@ final class BavetScoringQuadConstraintStream<Solution_, A, B, C, D>
     @Override
     public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
         assertEmptyChildStreamList();
-        var constraintMatchEnabled = buildHelper.getScoreInliner().isConstraintMatchEnabled();
-        var scoreImpacter = constraintMatchEnabled ? buildScoreImpacterWithConstraintMatch() : buildScoreImpacter();
+        var scoreImpacter = buildScoreImpacter(buildHelper.getScoreInliner().getConstraintMatchPolicy());
         var weightedScoreImpacter = buildHelper.getScoreInliner().buildWeightedScoreImpacter(constraint);
         var scorer = new QuadScorer<>(weightedScoreImpacter, scoreImpacter,
                 buildHelper.reserveTupleStoreIndex(parent.getTupleSource()));
         buildHelper.putInsertUpdateRetract(this, scorer);
+    }
+
+    private PentaFunction<WeightedScoreImpacter<?, ?>, A, B, C, D, UndoScoreImpacter>
+            buildScoreImpacter(ConstraintMatchPolicy constraintMatchPolicy) {
+        return switch (constraintMatchPolicy) {
+            case DISABLED -> buildScoreImpacter();
+            case ENABLED -> buildScoreImpacterWithConstraintMatch();
+            case ENABLED_WITHOUT_JUSTIFICATIONS -> buildScoreImpacterWithConstraintMatchNoJustifications();
+        };
     }
 
     private PentaFunction<WeightedScoreImpacter<?, ?>, A, B, C, D, UndoScoreImpacter> buildScoreImpacter() {
@@ -142,6 +153,28 @@ final class BavetScoringQuadConstraintStream<Solution_, A, B, C, D>
         var constraintMatchSupplier = ConstraintMatchSupplier.<A, B, C, D, Score_> of(constraint.getJustificationMapping(),
                 constraint.getIndictedObjectsMapping(), a, b, c, d);
         return impacter.impactScore(matchWeight, constraintMatchSupplier);
+    }
+
+    private PentaFunction<WeightedScoreImpacter<?, ?>, A, B, C, D, UndoScoreImpacter>
+            buildScoreImpacterWithConstraintMatchNoJustifications() {
+        if (intMatchWeigher != null) {
+            return (impacter, a, b, c, d) -> {
+                int matchWeight = intMatchWeigher.applyAsInt(a, b, c, d);
+                return impactWithConstraintMatchNoJustifications(impacter, matchWeight);
+            };
+        } else if (longMatchWeigher != null) {
+            return (impacter, a, b, c, d) -> {
+                long matchWeight = longMatchWeigher.applyAsLong(a, b, c, d);
+                return impactWithConstraintMatchNoJustifications(impacter, matchWeight);
+            };
+        } else if (bigDecimalMatchWeigher != null) {
+            return (impacter, a, b, c, d) -> {
+                BigDecimal matchWeight = bigDecimalMatchWeigher.apply(a, b, c, d);
+                return impactWithConstraintMatchNoJustifications(impacter, matchWeight);
+            };
+        } else {
+            throw new IllegalStateException("Impossible state: neither of the supported match weighers provided.");
+        }
     }
 
     // ************************************************************************

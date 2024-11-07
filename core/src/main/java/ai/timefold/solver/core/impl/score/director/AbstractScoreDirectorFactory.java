@@ -6,6 +6,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
 
@@ -93,15 +94,10 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
     // ************************************************************************
 
     @Override
-    public InnerScoreDirector<Solution_, Score_> buildScoreDirector() {
-        return buildScoreDirector(true, true);
-    }
-
-    @Override
     public void assertScoreFromScratch(Solution_ solution) {
         // Get the score before uncorruptedScoreDirector.calculateScore() modifies it
         Score_ score = getSolutionDescriptor().getScore(solution);
-        try (var uncorruptedScoreDirector = buildDerivedScoreDirector(false, true)) {
+        try (var uncorruptedScoreDirector = buildDerivedScoreDirector(false, ConstraintMatchPolicy.ENABLED)) {
             uncorruptedScoreDirector.setWorkingSolution(solution);
             Score_ uncorruptedScore = uncorruptedScoreDirector.calculateScore();
             if (!score.equals(uncorruptedScore)) {

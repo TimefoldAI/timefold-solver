@@ -16,6 +16,8 @@ import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * If possible, prefer using {@link SolutionManager#analyze(Object)} instead.
  *
@@ -71,22 +73,22 @@ public final class DefaultConstraintMatchTotal<Score_ extends Score<Score_>> imp
     }
 
     @Override
-    public ConstraintRef getConstraintRef() {
+    public @NonNull ConstraintRef getConstraintRef() {
         return constraintRef;
     }
 
     @Override
-    public Score_ getConstraintWeight() {
+    public @NonNull Score_ getConstraintWeight() {
         return constraintWeight;
     }
 
     @Override
-    public Set<ConstraintMatch<Score_>> getConstraintMatchSet() {
+    public @NonNull Set<ConstraintMatch<Score_>> getConstraintMatchSet() {
         return constraintMatchSet;
     }
 
     @Override
-    public Score_ getScore() {
+    public @NonNull Score_ getScore() {
         return score;
     }
 

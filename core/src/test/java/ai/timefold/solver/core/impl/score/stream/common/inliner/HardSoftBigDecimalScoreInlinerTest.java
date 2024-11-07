@@ -9,6 +9,7 @@ import java.util.Map;
 import ai.timefold.solver.core.api.score.buildin.hardsoftbigdecimal.HardSoftBigDecimalScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.testdata.domain.score.TestdataHardSoftBigDecimalScoreSolution;
 
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,7 @@ class HardSoftBigDecimalScoreInlinerTest
 
     @Test
     void defaultScore() {
-        var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchEnabled);
+        var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchPolicy);
         assertThat(scoreInliner.extractScore(0)).isEqualTo(HardSoftBigDecimalScore.ZERO);
     }
 
@@ -98,7 +99,8 @@ class HardSoftBigDecimalScoreInlinerTest
 
     @Override
     protected AbstractScoreInliner<HardSoftBigDecimalScore>
-            buildScoreInliner(Map<Constraint, HardSoftBigDecimalScore> constraintWeightMap, boolean constraintMatchEnabled) {
-        return new HardSoftBigDecimalScoreInliner(constraintWeightMap, constraintMatchEnabled);
+            buildScoreInliner(Map<Constraint, HardSoftBigDecimalScore> constraintWeightMap,
+                    ConstraintMatchPolicy constraintMatchPolicy) {
+        return new HardSoftBigDecimalScoreInliner(constraintWeightMap, constraintMatchPolicy);
     }
 }

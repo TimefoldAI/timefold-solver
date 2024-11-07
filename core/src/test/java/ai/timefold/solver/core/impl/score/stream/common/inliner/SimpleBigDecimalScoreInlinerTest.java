@@ -9,6 +9,7 @@ import java.util.Map;
 import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.testdata.domain.score.TestdataSimpleBigDecimalScoreSolution;
 
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,7 @@ class SimpleBigDecimalScoreInlinerTest
 
     @Test
     void defaultScore() {
-        var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchEnabled);
+        var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchPolicy);
         assertThat(scoreInliner.extractScore(0)).isEqualTo(SimpleBigDecimalScore.ZERO);
     }
 
@@ -52,7 +53,8 @@ class SimpleBigDecimalScoreInlinerTest
 
     @Override
     protected AbstractScoreInliner<SimpleBigDecimalScore>
-            buildScoreInliner(Map<Constraint, SimpleBigDecimalScore> constraintWeightMap, boolean constraintMatchEnabled) {
-        return new SimpleBigDecimalScoreInliner(constraintWeightMap, constraintMatchEnabled);
+            buildScoreInliner(Map<Constraint, SimpleBigDecimalScore> constraintWeightMap,
+                    ConstraintMatchPolicy constraintMatchPolicy) {
+        return new SimpleBigDecimalScoreInliner(constraintWeightMap, constraintMatchPolicy);
     }
 }

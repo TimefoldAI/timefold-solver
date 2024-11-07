@@ -2974,7 +2974,7 @@ public abstract class AbstractUniConstraintStreamTest
 
     private <Score_ extends Score<Score_>, Solution_, Entity_> void assertDefaultJustifications(
             InnerScoreDirector<Solution_, Score_> scoreDirector, List<Entity_> entityList) {
-        if (!implSupport.isConstreamMatchEnabled())
+        if (!implSupport.constraintMatchPolicy().isJustificationEnabled())
             return;
 
         assertThat(scoreDirector.getIndictmentMap())
@@ -3275,7 +3275,7 @@ public abstract class AbstractUniConstraintStreamTest
 
     private <Score_ extends Score<Score_>, Solution_, Entity_> void assertCustomJustifications(
             InnerScoreDirector<Solution_, Score_> scoreDirector, List<Entity_> entityList) {
-        if (!implSupport.isConstreamMatchEnabled())
+        if (!implSupport.constraintMatchPolicy().isJustificationEnabled())
             return;
 
         assertThat(scoreDirector.getIndictmentMap())

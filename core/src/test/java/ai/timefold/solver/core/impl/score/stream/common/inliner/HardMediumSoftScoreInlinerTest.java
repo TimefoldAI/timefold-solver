@@ -8,6 +8,7 @@ import java.util.Map;
 import ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.testdata.domain.score.TestdataHardMediumSoftScoreSolution;
 
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,7 @@ class HardMediumSoftScoreInlinerTest
 
     @Test
     void defaultScore() {
-        var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchEnabled);
+        var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchPolicy);
         assertThat(scoreInliner.extractScore(0)).isEqualTo(HardMediumSoftScore.ZERO);
     }
 
@@ -120,7 +121,8 @@ class HardMediumSoftScoreInlinerTest
 
     @Override
     protected AbstractScoreInliner<HardMediumSoftScore>
-            buildScoreInliner(Map<Constraint, HardMediumSoftScore> constraintWeightMap, boolean constraintMatchEnabled) {
-        return new HardMediumSoftScoreInliner(constraintWeightMap, constraintMatchEnabled);
+            buildScoreInliner(Map<Constraint, HardMediumSoftScore> constraintWeightMap,
+                    ConstraintMatchPolicy constraintMatchPolicy) {
+        return new HardMediumSoftScoreInliner(constraintWeightMap, constraintMatchPolicy);
     }
 }

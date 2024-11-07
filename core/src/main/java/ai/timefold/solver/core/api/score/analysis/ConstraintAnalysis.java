@@ -31,15 +31,16 @@ import org.jspecify.annotations.Nullable;
  *        non-empty if constraint has matches.
  *        This is a {@link List} to simplify access to individual elements,
  *        but it contains no duplicates just like {@link HashSet} wouldn't.
+ * @param matchCount -1 if analysis not available,
+ *        0 if constraint has no matches,
+ *        positive if constraint has matches.
  */
 public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull ConstraintRef constraintRef, @NonNull Score_ weight,
-        @NonNull Score_ score, @Nullable List<MatchAnalysis<Score_>> matches) {
+        @NonNull Score_ score, @Nullable List<MatchAnalysis<Score_>> matches, int matchCount) {
 
-    static <Score_ extends Score<Score_>> @NonNull ConstraintAnalysis<Score_> of(
-            @NonNull ConstraintRef constraintRef,
-            @NonNull Score_ constraintWeight,
-            @NonNull Score_ score) {
-        return new ConstraintAnalysis<>(constraintRef, constraintWeight, score, null);
+    public ConstraintAnalysis(@NonNull ConstraintRef constraintRef, @NonNull Score_ weight, @NonNull Score_ score,
+            @Nullable List<MatchAnalysis<Score_>> matches) {
+        this(constraintRef, weight, score, matches, matches == null ? -1 : matches.size());
     }
 
     public ConstraintAnalysis {
@@ -55,26 +56,14 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull Constrai
                 .formatted(DefaultConstraintMatchTotal.class.getSimpleName(),
                         ConstraintMatchAwareIncrementalScoreCalculator.class.getSimpleName()));
         Objects.requireNonNull(score);
-    }
-
-    /**
-     * Return the match count of the constraint.
-     *
-     * @throws IllegalStateException if the {@link ConstraintAnalysis#matches()} is null
-     */
-    public int matchCount() {
-        if (matches == null) {
-            throw new IllegalArgumentException("""
-                    The constraint matches must be non-null.
-                    Maybe use ScoreAnalysisFetchPolicy.FETCH_ALL to request the score analysis
-                    """);
+        if (matches != null && matchCount != matches.size()) {
+            throw new IllegalArgumentException("The match count must be equal to the size of the matches list.");
         }
-        return matches.size();
     }
 
     ConstraintAnalysis<Score_> negate() {
         if (matches == null) {
-            return ConstraintAnalysis.of(constraintRef, weight.negate(), score.negate());
+            return new ConstraintAnalysis<>(constraintRef, weight.negate(), score.negate(), null, matchCount);
         } else {
             var negatedMatchAnalyses = matches.stream()
                     .map(MatchAnalysis::negate)
@@ -102,14 +91,22 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull Constrai
         var otherMatchAnalyses = otherConstraintAnalysis.matches();
         if ((matchAnalyses == null && otherMatchAnalyses != null) || (matchAnalyses != null && otherMatchAnalyses == null)) {
             throw new IllegalStateException(
-                    "Impossible state: Only one of the score analyses (%s, %s) provided match analyses for a constraint (%s)."
+                    "Impossible state: One of the score analyses (%s, %s) provided no match analysis for a constraint (%s)."
                             .formatted(constraintAnalysis, otherConstraintAnalysis, constraintRef));
         }
         // Compute the diff.
         var constraintWeightDifference = constraintAnalysis.weight().subtract(otherConstraintAnalysis.weight());
         var scoreDifference = constraintAnalysis.score().subtract(otherConstraintAnalysis.score());
         if (matchAnalyses == null) {
-            return ConstraintAnalysis.of(constraintRef, constraintWeightDifference, scoreDifference);
+            var leftCount = constraintAnalysis.matchCount();
+            var rightCount = otherConstraintAnalysis.matchCount();
+            if ((leftCount == -1 && rightCount != -1) || (leftCount != -1 && rightCount == -1)) {
+                throw new IllegalStateException(
+                        "Impossible state: One of the score analyses (%s, %s) provided no match count for a constraint (%s)."
+                                .formatted(constraintAnalysis, otherConstraintAnalysis, constraintRef));
+            }
+            return new ConstraintAnalysis<>(constraintRef, constraintWeightDifference, scoreDifference, null,
+                    leftCount - rightCount);
         }
         var matchAnalysisMap = mapMatchesToJustifications(matchAnalyses);
         var otherMatchAnalysisMap = mapMatchesToJustifications(otherMatchAnalyses);

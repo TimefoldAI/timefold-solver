@@ -155,7 +155,7 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
                 || solverScope.isMetricEnabled(SolverMetric.CONSTRAINT_MATCH_TOTAL_BEST_SCORE)) {
             InnerScoreDirector<Solution_, ?> scoreDirector = stepScope.getScoreDirector();
             ScoreDefinition<?> scoreDefinition = solverScope.getScoreDefinition();
-            if (scoreDirector.isConstraintMatchEnabled()) {
+            if (scoreDirector.getConstraintMatchPolicy().isEnabled()) {
                 for (ConstraintMatchTotal<?> constraintMatchTotal : scoreDirector.getConstraintMatchTotalMap()
                         .values()) {
                     Tags tags = solverScope.getMonitoringTags().and(

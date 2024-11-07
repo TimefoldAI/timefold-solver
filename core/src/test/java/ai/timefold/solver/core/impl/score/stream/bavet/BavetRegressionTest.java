@@ -6,6 +6,7 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamTest;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
@@ -16,8 +17,8 @@ import org.junit.jupiter.api.TestTemplate;
 
 final class BavetRegressionTest extends AbstractConstraintStreamTest {
 
-    protected BavetRegressionTest(boolean constraintMatchEnabled) {
-        super(new BavetConstraintStreamImplSupport(constraintMatchEnabled));
+    protected BavetRegressionTest(ConstraintMatchPolicy constraintMatchPolicy) {
+        super(new BavetConstraintStreamImplSupport(constraintMatchPolicy));
     }
 
     /**

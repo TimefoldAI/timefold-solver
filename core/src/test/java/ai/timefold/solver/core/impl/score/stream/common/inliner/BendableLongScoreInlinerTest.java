@@ -8,6 +8,7 @@ import java.util.Map;
 import ai.timefold.solver.core.api.score.buildin.bendablelong.BendableLongScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.testdata.domain.score.TestdataBendableLongScoreSolution;
 
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,7 @@ class BendableLongScoreInlinerTest extends AbstractScoreInlinerTest<TestdataBend
 
     @Test
     void defaultScore() {
-        var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchEnabled);
+        var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchPolicy);
         assertThat(scoreInliner.extractScore(0)).isEqualTo(buildScore(0, 0, 0));
     }
 
@@ -119,8 +120,8 @@ class BendableLongScoreInlinerTest extends AbstractScoreInlinerTest<TestdataBend
 
     @Override
     protected AbstractScoreInliner<BendableLongScore> buildScoreInliner(Map<Constraint, BendableLongScore> constraintWeightMap,
-            boolean constraintMatchEnabled) {
-        return new BendableLongScoreInliner(constraintWeightMap, constraintMatchEnabled, 1, 2);
+            ConstraintMatchPolicy constraintMatchPolicy) {
+        return new BendableLongScoreInliner(constraintWeightMap, constraintMatchPolicy, 1, 2);
     }
 
     private BendableLongScore buildScore(long hard, long soft1, long soft2) {

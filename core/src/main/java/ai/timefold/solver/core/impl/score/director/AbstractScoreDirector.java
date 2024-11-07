@@ -19,6 +19,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ConstraintAnalysis;
 import ai.timefold.solver.core.api.score.analysis.MatchAnalysis;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.change.ProblemChangeDirector;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -34,6 +35,7 @@ import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.S
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.exception.UndoScoreCorruptionException;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
@@ -62,11 +64,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     private final boolean lookUpEnabled;
     private final LookUpManager lookUpManager;
+    protected final ConstraintMatchPolicy constraintMatchPolicy;
     private final boolean expectShadowVariablesInCorrectState;
     protected final Factory_ scoreDirectorFactory;
     private final VariableDescriptorCache<Solution_> variableDescriptorCache;
     protected final VariableListenerSupport<Solution_> variableListenerSupport;
-    protected final boolean constraintMatchEnabledPreference;
 
     private long workingEntityListRevision = 0L;
     private int workingGenuineEntityCount = 0;
@@ -85,18 +87,18 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
 
     protected AbstractScoreDirector(Factory_ scoreDirectorFactory, boolean lookUpEnabled,
-            boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
+            ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState) {
         var solutionDescriptor = scoreDirectorFactory.getSolutionDescriptor();
         this.lookUpEnabled = lookUpEnabled;
         this.lookUpManager = lookUpEnabled
                 ? new LookUpManager(solutionDescriptor.getLookUpStrategyResolver())
                 : null;
+        this.constraintMatchPolicy = constraintMatchPolicy;
         this.expectShadowVariablesInCorrectState = expectShadowVariablesInCorrectState;
         this.scoreDirectorFactory = scoreDirectorFactory;
         this.variableDescriptorCache = new VariableDescriptorCache<>(solutionDescriptor);
         this.variableListenerSupport = VariableListenerSupport.create(this);
         this.variableListenerSupport.linkVariableListeners();
-        this.constraintMatchEnabledPreference = constraintMatchEnabledPreference;
         if (scoreDirectorFactory.isTrackingWorkingSolution()) {
             this.solutionTracker = new SolutionTracker<>(getSolutionDescriptor(),
                     getSupplyManager());
@@ -111,6 +113,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         } else {
             this.listVariableStateSupply = getSupplyManager().demand(listVariableDescriptor.getStateDemand());
         }
+    }
+
+    @Override
+    public final ConstraintMatchPolicy getConstraintMatchPolicy() {
+        return constraintMatchPolicy;
     }
 
     @Override
@@ -338,16 +345,14 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     public InnerScoreDirector<Solution_, Score_> createChildThreadScoreDirector(ChildThreadType childThreadType) {
         if (childThreadType == ChildThreadType.PART_THREAD) {
             var childThreadScoreDirector = (AbstractScoreDirector<Solution_, Score_, Factory_>) scoreDirectorFactory
-                    .buildDerivedScoreDirector(lookUpEnabled, constraintMatchEnabledPreference);
+                    .buildDerivedScoreDirector(lookUpEnabled, constraintMatchPolicy);
             // ScoreCalculationCountTermination takes into account previous phases
             // but the calculationCount of partitions is maxed, not summed.
             childThreadScoreDirector.calculationCount = calculationCount;
             return childThreadScoreDirector;
         } else if (childThreadType == ChildThreadType.MOVE_THREAD) {
-            // TODO The move thread must use constraintMatchEnabledPreference in FULL_ASSERT,
-            // but it doesn't have to for Indictment Local Search, in which case it is a performance loss
             var childThreadScoreDirector = (AbstractScoreDirector<Solution_, Score_, Factory_>) scoreDirectorFactory
-                    .buildDerivedScoreDirector(true, constraintMatchEnabledPreference);
+                    .buildDerivedScoreDirector(true, constraintMatchPolicy);
             childThreadScoreDirector.setWorkingSolution(cloneWorkingSolution());
             return childThreadScoreDirector;
         } else {
@@ -620,7 +625,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (assertionScoreDirectorFactory == null) {
             assertionScoreDirectorFactory = scoreDirectorFactory;
         }
-        try (var uncorruptedScoreDirector = assertionScoreDirectorFactory.buildDerivedScoreDirector(false, true)) {
+        try (var uncorruptedScoreDirector =
+                assertionScoreDirectorFactory.buildDerivedScoreDirector(false, ConstraintMatchPolicy.ENABLED)) {
             uncorruptedScoreDirector.setWorkingSolution(workingSolution);
             Score_ uncorruptedScore = uncorruptedScoreDirector.calculateScore();
             if (!score.equals(uncorruptedScore)) {
@@ -713,16 +719,18 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
      */
     protected String buildScoreCorruptionAnalysis(InnerScoreDirector<Solution_, Score_> uncorruptedScoreDirector,
             boolean predicted) {
-        if (!isConstraintMatchEnabled() || !uncorruptedScoreDirector.isConstraintMatchEnabled()) {
+        if (!getConstraintMatchPolicy().isEnabled() || !uncorruptedScoreDirector.getConstraintMatchPolicy().isEnabled()) {
             return """
-                    Score corruption analysis could not be generated because either corrupted constraintMatchEnabled (%s) \
-                    or uncorrupted constraintMatchEnabled (%s) is disabled.
+                    Score corruption analysis could not be generated because either corrupted constraintMatchPolicy (%s) \
+                    or uncorrupted constraintMatchPolicy (%s) is %s.
                       Check your score constraints manually."""
-                    .formatted(constraintMatchEnabledPreference, uncorruptedScoreDirector.isConstraintMatchEnabled());
+                    .formatted(constraintMatchPolicy, uncorruptedScoreDirector.getConstraintMatchPolicy(),
+                            ConstraintMatchPolicy.DISABLED);
         }
 
-        var corruptedAnalysis = buildScoreAnalysis(true, ScoreAnalysisMode.SCORE_CORRUPTION);
-        var uncorruptedAnalysis = uncorruptedScoreDirector.buildScoreAnalysis(true, ScoreAnalysisMode.SCORE_CORRUPTION);
+        var corruptedAnalysis = buildScoreAnalysis(ScoreAnalysisFetchPolicy.FETCH_ALL, ScoreAnalysisMode.SCORE_CORRUPTION);
+        var uncorruptedAnalysis = uncorruptedScoreDirector.buildScoreAnalysis(ScoreAnalysisFetchPolicy.FETCH_ALL,
+                ScoreAnalysisMode.SCORE_CORRUPTION);
 
         var excessSet = new LinkedHashSet<MatchAnalysis<Score_>>();
         var missingSet = new LinkedHashSet<MatchAnalysis<Score_>>();

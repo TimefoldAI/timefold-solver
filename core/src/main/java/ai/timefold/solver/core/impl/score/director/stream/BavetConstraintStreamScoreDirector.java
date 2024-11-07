@@ -11,6 +11,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSession;
 
@@ -29,14 +30,14 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     private BavetConstraintSession<Score_> session;
 
     public BavetConstraintStreamScoreDirector(BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
-            boolean lookUpEnabled, boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
-        this(scoreDirectorFactory, lookUpEnabled, constraintMatchEnabledPreference, expectShadowVariablesInCorrectState, false);
+            boolean lookUpEnabled, ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState) {
+        this(scoreDirectorFactory, lookUpEnabled, constraintMatchPolicy, expectShadowVariablesInCorrectState, false);
     }
 
     public BavetConstraintStreamScoreDirector(BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
-            boolean lookUpEnabled, boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState,
+            boolean lookUpEnabled, ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState,
             boolean derived) {
-        super(scoreDirectorFactory, lookUpEnabled, constraintMatchEnabledPreference, expectShadowVariablesInCorrectState);
+        super(scoreDirectorFactory, lookUpEnabled, constraintMatchPolicy, expectShadowVariablesInCorrectState);
         this.derived = derived;
     }
 
@@ -46,7 +47,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
 
     @Override
     public void setWorkingSolution(Solution_ workingSolution) {
-        session = scoreDirectorFactory.newSession(workingSolution, constraintMatchEnabledPreference, derived);
+        session = scoreDirectorFactory.newSession(workingSolution, constraintMatchPolicy, derived);
         getSolutionDescriptor().visitAll(workingSolution, session::insert);
         super.setWorkingSolution(workingSolution);
     }
@@ -60,13 +61,10 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     }
 
     @Override
-    public boolean isConstraintMatchEnabled() {
-        return constraintMatchEnabledPreference;
-    }
-
-    @Override
     public Map<String, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
-        if (workingSolution == null) {
+        if (!constraintMatchPolicy.isEnabled()) {
+            throw new IllegalStateException("When constraint matching is disabled, this method should not be called.");
+        } else if (workingSolution == null) {
             throw new IllegalStateException(
                     "The method setWorkingSolution() must be called before the method getConstraintMatchTotalMap().");
         }
@@ -75,7 +73,10 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
 
     @Override
     public Map<Object, Indictment<Score_>> getIndictmentMap() {
-        if (workingSolution == null) {
+        if (!constraintMatchPolicy.isJustificationEnabled()) {
+            throw new IllegalStateException(
+                    "When constraint matching with justifications is disabled, this method should not be called.");
+        } else if (workingSolution == null) {
             throw new IllegalStateException(
                     "The method setWorkingSolution() must be called before the method getIndictmentMap().");
         }

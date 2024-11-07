@@ -10,6 +10,7 @@ import java.util.Collections;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,7 @@ class EasyScoreDirectorFactoryTest {
         EasyScoreDirectorFactory<TestdataSolution, SimpleScore> directorFactory = new EasyScoreDirectorFactory<>(
                 solutionDescriptor, scoreCalculator);
 
-        try (var director = directorFactory.buildScoreDirector(false, false)) {
+        try (var director = directorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
             TestdataSolution solution = new TestdataSolution();
             solution.setValueList(Collections.emptyList());
             solution.setEntityList(Collections.emptyList());

@@ -15,6 +15,7 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.incremental.IncrementalScoreDirector;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
@@ -36,7 +37,8 @@ class ScoreDirectorFactoryFactoryTest {
 
         ScoreDirectorFactory<TestdataSolution> scoreDirectorFactory = buildTestdataScoreDirectoryFactory(config);
         IncrementalScoreDirector<TestdataSolution, ?> scoreDirector =
-                (IncrementalScoreDirector<TestdataSolution, ?>) scoreDirectorFactory.buildScoreDirector();
+                (IncrementalScoreDirector<TestdataSolution, ?>) scoreDirectorFactory.buildScoreDirector(false,
+                        ConstraintMatchPolicy.DISABLED);
         TestCustomPropertiesIncrementalScoreCalculator scoreCalculator =
                 (TestCustomPropertiesIncrementalScoreCalculator) scoreDirector
                         .getIncrementalScoreCalculator();
@@ -59,7 +61,8 @@ class ScoreDirectorFactoryFactoryTest {
         ScoreDirectorFactory<TestdataSolution> assertionScoreDirectorFactory =
                 scoreDirectorFactory.getAssertionScoreDirectorFactory();
         IncrementalScoreDirector<TestdataSolution, ?> assertionScoreDirector =
-                (IncrementalScoreDirector<TestdataSolution, ?>) assertionScoreDirectorFactory.buildScoreDirector();
+                (IncrementalScoreDirector<TestdataSolution, ?>) assertionScoreDirectorFactory.buildScoreDirector(false,
+                        ConstraintMatchPolicy.DISABLED);
         IncrementalScoreCalculator<TestdataSolution, ?> assertionScoreCalculator =
                 assertionScoreDirector.getIncrementalScoreCalculator();
 
