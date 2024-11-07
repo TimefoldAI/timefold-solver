@@ -66,7 +66,7 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
                 !isShadowVariableUpdateEnabled)) {
             nonNullSolution = cloneSolution ? scoreDirector.cloneSolution(nonNullSolution) : nonNullSolution;
             scoreDirector.setWorkingSolution(nonNullSolution);
-            if (enableConstraintMatch && !scoreDirector.isConstraintMatchEnabled()) {
+            if (enableConstraintMatch && !scoreDirector.getConstraintMatchPolicy().isEnabled()) {
                 throw new IllegalStateException("""
                         Requested constraint matching but score director doesn't support it.
                         Maybe use Constraint Streams instead of Easy or Incremental score calculator?""");

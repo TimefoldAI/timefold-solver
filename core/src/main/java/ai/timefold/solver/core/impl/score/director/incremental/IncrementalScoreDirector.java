@@ -56,7 +56,7 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
         super.setWorkingSolution(workingSolution);
         if (incrementalScoreCalculator instanceof ConstraintMatchAwareIncrementalScoreCalculator) {
             ((ConstraintMatchAwareIncrementalScoreCalculator<Solution_, ?>) incrementalScoreCalculator)
-                    .resetWorkingSolution(workingSolution, isConstraintMatchEnabled());
+                    .resetWorkingSolution(workingSolution, getConstraintMatchPolicy().isEnabled());
         } else {
             incrementalScoreCalculator.resetWorkingSolution(workingSolution);
         }
@@ -84,14 +84,18 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public boolean isConstraintMatchEnabled() {
-        return constraintMatchPolicy.isEnabled()
-                && incrementalScoreCalculator instanceof ConstraintMatchAwareIncrementalScoreCalculator;
+    public ConstraintMatchPolicy getConstraintMatchPolicy() {
+        if (!constraintMatchPolicy.isEnabled()) {
+            return ConstraintMatchPolicy.DISABLED;
+        }
+        return incrementalScoreCalculator instanceof ConstraintMatchAwareIncrementalScoreCalculator
+                ? constraintMatchPolicy
+                : ConstraintMatchPolicy.DISABLED;
     }
 
     @Override
     public Map<String, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
-        if (!isConstraintMatchEnabled()) {
+        if (!getConstraintMatchPolicy().isEnabled()) {
             throw new IllegalStateException("When constraint matching (" + constraintMatchPolicy
                     + ") is disabled in the constructor, this method should not be called.");
         }
@@ -104,8 +108,8 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public Map<Object, Indictment<Score_>> getIndictmentMap() {
-        if (!isConstraintMatchEnabled()) {
-            throw new IllegalStateException("When constraint matching (" + constraintMatchPolicy
+        if (!getConstraintMatchPolicy().isJustificationEnabled()) {
+            throw new IllegalStateException("When constraint matching with justifications (" + constraintMatchPolicy
                     + ") is disabled in the constructor, this method should not be called.");
         }
         Map<Object, Indictment<Score_>> incrementalIndictmentMap =

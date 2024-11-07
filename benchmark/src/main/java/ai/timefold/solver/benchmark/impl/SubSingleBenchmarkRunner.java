@@ -128,7 +128,8 @@ public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBe
             subSingleBenchmarkResult.setMoveEvaluationCount(solverScope.getMoveEvaluationCount());
 
             SolutionManager<Solution_, ?> solutionManager = SolutionManager.create(solverFactory);
-            boolean isConstraintMatchEnabled = solver.getSolverScope().getScoreDirector().isConstraintMatchEnabled();
+            boolean isConstraintMatchEnabled = solver.getSolverScope().getScoreDirector().getConstraintMatchPolicy()
+                    .isEnabled();
             if (isConstraintMatchEnabled) { // Easy calculator fails otherwise.
                 ScoreExplanation<Solution_, ?> scoreExplanation =
                         solutionManager.explain(solution, SolutionUpdatePolicy.NO_UPDATE);

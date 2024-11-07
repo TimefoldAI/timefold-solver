@@ -35,6 +35,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
@@ -101,9 +102,12 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     Score_ calculateScore();
 
     /**
-     * @return true if {@link #getConstraintMatchTotalMap()} and {@link #getIndictmentMap} can be called
+     * @return {@link ConstraintMatchPolicy#ENABLED} if {@link #getConstraintMatchTotalMap()} and {@link #getIndictmentMap()}
+     *         can be called.
+     *         {@link ConstraintMatchPolicy#ENABLED_WITHOUT_JUSTIFICATIONS} if only the former can be called.
+     *         {@link ConstraintMatchPolicy#DISABLED} if neither can be called.
      */
-    boolean isConstraintMatchEnabled();
+    ConstraintMatchPolicy getConstraintMatchPolicy();
 
     /**
      * Explains the {@link Score} of {@link #calculateScore()} by splitting it up per {@link Constraint}.
@@ -117,7 +121,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      *         (to create one, use {@link ConstraintRef#composeConstraintId(String, String)}).
      *         If a constraint is present in the problem but resulted in no matches,
      *         it will still be in the map with a {@link ConstraintMatchTotal#getConstraintMatchSet()} size of 0.
-     * @throws IllegalStateException if {@link #isConstraintMatchEnabled()} returns false
+     * @throws IllegalStateException if {@link #getConstraintMatchPolicy()} returns {@link ConstraintMatchPolicy#DISABLED}.
      * @see #getIndictmentMap()
      */
     Map<String, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap();
@@ -136,7 +140,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      *
      * @return never null, the key is a {@link ProblemFactCollectionProperty problem fact} or a
      *         {@link PlanningEntity planning entity}
-     * @throws IllegalStateException if {@link #isConstraintMatchEnabled()} returns false
+     * @throws IllegalStateException unless {@link #getConstraintMatchPolicy()} returns {@link ConstraintMatchPolicy#ENABLED}.
      * @see #getConstraintMatchTotalMap()
      */
     Map<Object, Indictment<Score_>> getIndictmentMap();

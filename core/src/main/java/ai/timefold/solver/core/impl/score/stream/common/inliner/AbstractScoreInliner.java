@@ -175,8 +175,8 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
         indictmentMap = null;
     }
 
-    public boolean isConstraintMatchEnabled() {
-        return constraintMatchPolicy.isEnabled();
+    public ConstraintMatchPolicy getConstraintMatchPolicy() {
+        return constraintMatchPolicy;
     }
 
     public final Map<String, ConstraintMatchTotal<Score_>> getConstraintIdToConstraintMatchTotalMap() {

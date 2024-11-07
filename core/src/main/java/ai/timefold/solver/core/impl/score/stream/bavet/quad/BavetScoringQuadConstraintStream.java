@@ -70,7 +70,7 @@ final class BavetScoringQuadConstraintStream<Solution_, A, B, C, D>
     @Override
     public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
         assertEmptyChildStreamList();
-        var constraintMatchEnabled = buildHelper.getScoreInliner().isConstraintMatchEnabled();
+        var constraintMatchEnabled = buildHelper.getScoreInliner().getConstraintMatchPolicy().isEnabled();
         var scoreImpacter = constraintMatchEnabled ? buildScoreImpacterWithConstraintMatch() : buildScoreImpacter();
         var weightedScoreImpacter = buildHelper.getScoreInliner().buildWeightedScoreImpacter(constraint);
         var scorer = new QuadScorer<>(weightedScoreImpacter, scoreImpacter,

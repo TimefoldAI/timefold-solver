@@ -105,7 +105,7 @@ class IncrementalScoreDirectorTest {
         try (var director = new IncrementalScoreDirector<>(mockIncrementalScoreDirectorFactory(), false,
                 ConstraintMatchPolicy.ENABLED, true,
                 mockIncrementalScoreCalculator(false))) {
-            assertThat(director.isConstraintMatchEnabled()).isFalse();
+            assertThat(director.getConstraintMatchPolicy()).isEqualTo(ConstraintMatchPolicy.DISABLED);
         }
     }
 

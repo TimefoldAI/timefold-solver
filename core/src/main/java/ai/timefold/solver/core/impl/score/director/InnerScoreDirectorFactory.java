@@ -37,7 +37,7 @@ public interface InnerScoreDirectorFactory<Solution_, Score_ extends Score<Score
      *        for {@link ScoreDirector#lookUpWorkingObject(Object)}
      * @param constraintMatchPolicy how should the {@link ScoreDirector} track {@link ConstraintMatch}es
      * @return never null
-     * @see InnerScoreDirector#isConstraintMatchEnabled()
+     * @see InnerScoreDirector#getConstraintMatchPolicy()
      * @see InnerScoreDirector#getConstraintMatchTotalMap()
      */
     default InnerScoreDirector<Solution_, Score_> buildScoreDirector(boolean lookUpEnabled,
@@ -55,7 +55,7 @@ public interface InnerScoreDirectorFactory<Solution_, Score_ extends Score<Score
      * @param expectShadowVariablesInCorrectState true, unless you have an exceptional reason.
      *        See {@link InnerScoreDirector#expectShadowVariablesInCorrectState()} for details.
      * @return never null
-     * @see InnerScoreDirector#isConstraintMatchEnabled()
+     * @see InnerScoreDirector#getConstraintMatchPolicy()
      * @see InnerScoreDirector#getConstraintMatchTotalMap()
      */
     InnerScoreDirector<Solution_, Score_> buildScoreDirector(boolean lookUpEnabled, ConstraintMatchPolicy constraintMatchPolicy,
@@ -70,7 +70,7 @@ public interface InnerScoreDirectorFactory<Solution_, Score_ extends Score<Score
      *        for {@link ScoreDirector#lookUpWorkingObject(Object)}
      * @param constraintMatchPolicy how should the {@link ScoreDirector} implementation do {@link ConstraintMatch}, if at all.
      * @return never null
-     * @see InnerScoreDirector#isConstraintMatchEnabled()
+     * @see InnerScoreDirector#getConstraintMatchPolicy()
      * @see InnerScoreDirector#getConstraintMatchTotalMap()
      */
     default InnerScoreDirector<Solution_, Score_> buildDerivedScoreDirector(boolean lookUpEnabled,

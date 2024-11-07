@@ -70,8 +70,8 @@ public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @return false
      */
     @Override
-    public boolean isConstraintMatchEnabled() {
-        return false;
+    public ConstraintMatchPolicy getConstraintMatchPolicy() {
+        return ConstraintMatchPolicy.DISABLED;
     }
 
     /**

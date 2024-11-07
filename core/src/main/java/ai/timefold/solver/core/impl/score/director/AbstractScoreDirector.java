@@ -714,12 +714,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
      */
     protected String buildScoreCorruptionAnalysis(InnerScoreDirector<Solution_, Score_> uncorruptedScoreDirector,
             boolean predicted) {
-        if (!isConstraintMatchEnabled() || !uncorruptedScoreDirector.isConstraintMatchEnabled()) {
+        if (!getConstraintMatchPolicy().isEnabled() || !uncorruptedScoreDirector.getConstraintMatchPolicy().isEnabled()) {
             return """
                     Score corruption analysis could not be generated because either corrupted constraintMatchPolicy (%s) \
                     or uncorrupted constraintMatchPolicy (%s) is %s.
                       Check your score constraints manually."""
-                    .formatted(constraintMatchPolicy, uncorruptedScoreDirector.isConstraintMatchEnabled(),
+                    .formatted(constraintMatchPolicy, uncorruptedScoreDirector.getConstraintMatchPolicy(),
                             ConstraintMatchPolicy.DISABLED);
         }
 

@@ -61,8 +61,8 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     }
 
     @Override
-    public boolean isConstraintMatchEnabled() {
-        return constraintMatchPolicy.isEnabled();
+    public ConstraintMatchPolicy getConstraintMatchPolicy() {
+        return constraintMatchPolicy;
     }
 
     @Override
@@ -70,6 +70,8 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
         if (workingSolution == null) {
             throw new IllegalStateException(
                     "The method setWorkingSolution() must be called before the method getConstraintMatchTotalMap().");
+        } else if (!constraintMatchPolicy.isEnabled()) {
+            throw new IllegalStateException("When constraint matching is disabled, this method should not be called.");
         }
         return session.getConstraintMatchTotalMap();
     }
@@ -79,6 +81,9 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
         if (workingSolution == null) {
             throw new IllegalStateException(
                     "The method setWorkingSolution() must be called before the method getIndictmentMap().");
+        } else if (!constraintMatchPolicy.isJustificationEnabled()) {
+            throw new IllegalStateException(
+                    "When constraint matching with justifications is disabled, this method should not be called.");
         }
         return session.getIndictmentMap();
     }

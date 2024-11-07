@@ -69,7 +69,7 @@ final class BavetScoringUniConstraintStream<Solution_, A>
     @Override
     public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
         assertEmptyChildStreamList();
-        var constraintMatchEnabled = buildHelper.getScoreInliner().isConstraintMatchEnabled();
+        var constraintMatchEnabled = buildHelper.getScoreInliner().getConstraintMatchPolicy().isEnabled();
         var scoreImpacter = constraintMatchEnabled ? buildScoreImpacterWithConstraintMatch() : buildScoreImpacter();
         var weightedScoreImpacter = buildHelper.getScoreInliner().buildWeightedScoreImpacter(constraint);
         var scorer = new UniScorer<>(weightedScoreImpacter, scoreImpacter,

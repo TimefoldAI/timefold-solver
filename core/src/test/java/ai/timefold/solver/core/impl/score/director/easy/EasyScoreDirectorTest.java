@@ -25,7 +25,7 @@ class EasyScoreDirectorTest {
     void constraintMatchTotalsUnsupported() {
         EasyScoreDirector<Object, ?> director =
                 new EasyScoreDirector<>(mockEasyScoreDirectorFactory(), false, ConstraintMatchPolicy.ENABLED, true, null);
-        assertThat(director.isConstraintMatchEnabled()).isFalse();
+        assertThat(director.getConstraintMatchPolicy()).isEqualTo(ConstraintMatchPolicy.DISABLED);
         assertThatIllegalStateException()
                 .isThrownBy(director::getConstraintMatchTotalMap)
                 .withMessageContaining("not supported");
