@@ -72,7 +72,6 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
     public ValueSelectorConfig() {
     }
 
-    // TODO: @NonNull ok here?
     public ValueSelectorConfig(@NonNull String variableName) {
         this.variableName = variableName;
     }

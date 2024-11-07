@@ -386,8 +386,7 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         return this;
     }
 
-    // TODO @NonNull ok here?
-    public void overwriteSpentLimit(@NonNull Duration spentLimit) {
+    public void overwriteSpentLimit(@Nullable Duration spentLimit) {
         setSpentLimit(spentLimit);
         setMillisecondsSpentLimit(null);
         setSecondsSpentLimit(null);
@@ -437,8 +436,7 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         }
     }
 
-    // TODO @NonNull ok here?
-    public void overwriteUnimprovedSpentLimit(@NonNull Duration unimprovedSpentLimit) {
+    public void overwriteUnimprovedSpentLimit(@Nullable Duration unimprovedSpentLimit) {
         setUnimprovedSpentLimit(unimprovedSpentLimit);
         setUnimprovedMillisecondsSpentLimit(null);
         setUnimprovedSecondsSpentLimit(null);

@@ -14,7 +14,6 @@ public interface MultiConstraintAssertion {
      * @param score total score calculated for the given set of facts
      * @throws AssertionError when the expected score does not match the calculated score
      */
-    // TODO: @NonNull score sensible?
     default void scores(@NonNull Score<?> score) {
         scores(score, null);
     }
@@ -26,7 +25,6 @@ public interface MultiConstraintAssertion {
      * @param message description of the scenario being asserted
      * @throws AssertionError when the expected score does not match the calculated score
      */
-    // TODO: @NonNull score sensible?
     void scores(@NonNull Score<?> score, @Nullable String message);
 
 }

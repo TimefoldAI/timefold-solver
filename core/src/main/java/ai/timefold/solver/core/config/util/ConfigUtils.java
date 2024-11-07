@@ -61,8 +61,8 @@ public class ConfigUtils {
      * @param <T> the new instance type
      * @return new instance of clazz
      */
-    // TODO: propertyName, clazz
-    public static <T> @NonNull T newInstance(@Nullable Object configBean, String propertyName, Class<T> clazz) {
+    public static <T> @NonNull T newInstance(@Nullable Object configBean, @NonNull String propertyName,
+            @NonNull Class<T> clazz) {
         return newInstance(() -> (configBean == null ? "?" : configBean.getClass().getSimpleName()), propertyName, clazz);
     }
 
@@ -91,9 +91,8 @@ public class ConfigUtils {
         }
     }
 
-    // TODO: param customPropertiesPropertyName
     public static void applyCustomProperties(@NonNull Object bean, @NonNull String beanClassPropertyName,
-            @Nullable Map<@NonNull String, @NonNull String> customProperties, String customPropertiesPropertyName) {
+            @Nullable Map<@NonNull String, @NonNull String> customProperties, @NonNull String customPropertiesPropertyName) {
         if (customProperties == null) {
             return;
         }
@@ -304,8 +303,8 @@ public class ConfigUtils {
         return (dividend / divisor) + correction;
     }
 
-    // TODO what to make of magicValues?
-    public static int resolvePoolSize(String propertyName, @NonNull String value, String... magicValues) {
+    public static int resolvePoolSize(@NonNull String propertyName, @NonNull String value,
+            @NonNull String @NonNull... magicValues) {
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException ex) {
@@ -392,10 +391,9 @@ public class ConfigUtils {
         return memberStream.distinct().sorted(alphabeticMemberComparator).collect(Collectors.toList());
     }
 
-    // TODO
     @SafeVarargs
-    public static Class<? extends Annotation> extractAnnotationClass(Member member,
-            Class<? extends Annotation>... annotationClasses) {
+    public static Class<? extends Annotation> extractAnnotationClass(@NonNull Member member,
+            @NonNull Class<? extends Annotation>... annotationClasses) {
         Class<? extends Annotation> annotationClass = null;
         for (var detectedAnnotationClass : annotationClasses) {
             if (((AnnotatedElement) member).isAnnotationPresent(detectedAnnotationClass)) {
@@ -412,9 +410,9 @@ public class ConfigUtils {
         return annotationClass;
     }
 
-    // TODO
-    public static Class<?> extractGenericTypeParameterOrFail(String parentClassConcept, Class<?> parentClass, Class<?> type,
-            Type genericType, Class<? extends Annotation> annotationClass, String memberName) {
+    public static Class<?> extractGenericTypeParameterOrFail(@NonNull String parentClassConcept, @NonNull Class<?> parentClass,
+            @NonNull Class<?> type, @NonNull Type genericType, @Nullable Class<? extends Annotation> annotationClass,
+            @NonNull String memberName) {
         return extractGenericTypeParameter(parentClassConcept, parentClass, type, genericType, annotationClass, memberName)
                 .orElseThrow(() -> new IllegalArgumentException("""
                         The %s (%s) has a %s member (%s) with a member type (%s) which has no generic parameters.
@@ -425,9 +423,9 @@ public class ConfigUtils {
                                 memberName, type, memberName, type.getSimpleName())));
     }
 
-    // TODO
-    public static Optional<Class<?>> extractGenericTypeParameter(String parentClassConcept, Class<?> parentClass, Class<?> type,
-            Type genericType, Class<? extends Annotation> annotationClass, String memberName) {
+    public static Optional<Class<?>> extractGenericTypeParameter(@NonNull String parentClassConcept,
+            @NonNull Class<?> parentClass, @NonNull Class<?> type, @NonNull Type genericType,
+            @Nullable Class<? extends Annotation> annotationClass, @NonNull String memberName) {
         if (!(genericType instanceof ParameterizedType parameterizedType)) {
             return Optional.empty();
         }

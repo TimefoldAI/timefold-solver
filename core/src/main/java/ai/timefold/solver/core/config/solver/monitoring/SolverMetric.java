@@ -97,9 +97,8 @@ public enum SolverMetric {
     }
 
     public static void registerScoreMetrics(@NonNull SolverMetric metric, @NonNull Tags tags,
-            // TODO: @NonNull Map<@NonNull Tags, @NonNull List<@NonNull AtomicReference<@NonNull Number>>> tagToScoreLevels?
             @NonNull ScoreDefinition<?> scoreDefinition,
-            @NonNull Map<@NonNull Tags, List<AtomicReference<Number>>> tagToScoreLevels,
+            @NonNull Map<@NonNull Tags, @NonNull List<@NonNull AtomicReference<@NonNull Number>>> tagToScoreLevels,
             @NonNull Score<?> score) {
         Number[] levelValues = score.toLevelNumbers();
         if (tagToScoreLevels.containsKey(tags)) {
