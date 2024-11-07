@@ -12,6 +12,7 @@ import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Retrievable from {@link ConstraintMatchTotal#getConstraintMatchSet()}
@@ -85,10 +86,16 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
         this(new ConstraintRef(constraintPackage, constraintName, constraintId), justification, indictedObjectList, score);
     }
 
-    public ConstraintMatch(@NonNull ConstraintRef constraintRef, @NonNull ConstraintJustification justification,
+    /**
+     * @param constraintRef unique identifier of the constraint
+     * @param justification only null if justifications are disabled
+     * @param indictedObjectList never null, empty if justifications are disabled
+     * @param score penalty or reward associated with the constraint match
+     */
+    public ConstraintMatch(@NonNull ConstraintRef constraintRef, @Nullable ConstraintJustification justification,
             @NonNull Collection<Object> indictedObjectList, @NonNull Score_ score) {
         this.constraintRef = requireNonNull(constraintRef);
-        this.justification = requireNonNull(justification);
+        this.justification = justification;
         this.indictedObjectList =
                 requireNonNull(indictedObjectList) instanceof List<Object> list ? list : List.copyOf(indictedObjectList);
         this.score = requireNonNull(score);
@@ -160,9 +167,10 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
      * (eg. [A, B] for a bi stream), unless a custom justification mapping was provided,
      * in which case it returns the return value of that function.</li>
      * <li>For incremental score calculation, it returns what the calculator is implemented to return.</li>
+     * <li>It may return null, if justification support was disabled altogether.</li>
      * </ul>
      */
-    public <Justification_ extends ConstraintJustification> @NonNull Justification_ getJustification() {
+    public <Justification_ extends ConstraintJustification> @Nullable Justification_ getJustification() {
         return (Justification_) justification;
     }
 
@@ -175,6 +183,7 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
      * (eg. [A, B] for a bi stream), unless a custom indictment mapping was provided,
      * in which case it returns the return value of that function.</li>
      * <li>For incremental score calculation, it returns what the calculator is implemented to return.</li>
+     * <li>It may return an empty list, if justification support was disabled altogether.</li>
      * </ul>
      *
      * @return may be empty or contain null
@@ -201,6 +210,10 @@ public final class ConstraintMatch<Score_ extends Score<Score_>> implements Comp
             return constraintRef.compareTo(other.constraintRef);
         } else if (!score.equals(other.score)) {
             return score.compareTo(other.score);
+        } else if (justification == null) {
+            return other.justification == null ? 0 : -1;
+        } else if (other.justification == null) {
+            return 1;
         } else if (justification instanceof Comparable comparable) {
             return comparable.compareTo(other.justification);
         }

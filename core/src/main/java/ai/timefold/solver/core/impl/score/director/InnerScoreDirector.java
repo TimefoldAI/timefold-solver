@@ -50,7 +50,12 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
             ConstraintMatchTotal<Score_> constraintMatchTotal, ScoreAnalysisFetchPolicy scoreAnalysisFetchPolicy) {
         return switch (scoreAnalysisFetchPolicy) {
             case FETCH_ALL -> {
-                var deduplicatedConstraintMatchMap = groupMatchesWithSameJustification(constraintMatchTotal);
+                // Justification can not be null here, because they are enabled by FETCH_ALL.
+                var deduplicatedConstraintMatchMap = constraintMatchTotal.getConstraintMatchSet()
+                        .stream()
+                        .collect(groupingBy(
+                                c -> (ConstraintJustification) c.getJustification(),
+                                toList()));
                 var matchAnalyses = sumMatchesWithSameJustification(constraintMatchTotal, deduplicatedConstraintMatchMap);
                 yield new ConstraintAnalysis<>(constraintMatchTotal.getConstraintRef(),
                         constraintMatchTotal.getConstraintWeight(), constraintMatchTotal.getScore(), matchAnalyses);
@@ -62,15 +67,6 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
                 new ConstraintAnalysis<>(constraintMatchTotal.getConstraintRef(), constraintMatchTotal.getConstraintWeight(),
                         constraintMatchTotal.getScore(), null);
         };
-    }
-
-    private static <Score_ extends Score<Score_>> Map<ConstraintJustification, List<ConstraintMatch<Score_>>>
-            groupMatchesWithSameJustification(ConstraintMatchTotal<Score_> constraintMatchTotal) {
-        return constraintMatchTotal.getConstraintMatchSet()
-                .stream()
-                .collect(groupingBy(
-                        ConstraintMatch::getJustification,
-                        toList()));
     }
 
     private static <Score_ extends Score<Score_>> List<MatchAnalysis<Score_>>

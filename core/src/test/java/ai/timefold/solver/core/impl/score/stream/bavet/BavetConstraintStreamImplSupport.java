@@ -11,7 +11,8 @@ import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamS
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamImplSupport;
 
 public record BavetConstraintStreamImplSupport(ConstraintMatchPolicy constraintMatchPolicy)
-        implements ConstraintStreamImplSupport {
+        implements
+            ConstraintStreamImplSupport {
 
     @Override
     public <Score_ extends Score<Score_>, Solution_> InnerScoreDirector<Solution_, Score_> buildScoreDirector(

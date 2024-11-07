@@ -68,7 +68,7 @@ public abstract class AbstractConstraintStreamTest {
         int scoreTotal = Arrays.stream(assertableMatches)
                 .mapToInt(assertableMatch -> assertableMatch.score)
                 .sum();
-        if (implSupport.constraintMatchPolicy().isEnabled()) {
+        if (implSupport.constraintMatchPolicy().isJustificationEnabled()) {
             for (AssertableMatch assertableMatch : assertableMatches) {
                 String constraintPackage = assertableMatch.constraintPackage == null
                         ? scoreDirector.getSolutionDescriptor().getSolutionClass().getPackage().getName()

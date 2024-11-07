@@ -11,6 +11,8 @@ import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
+import org.jspecify.annotations.NonNull;
+
 public final class DefaultIndictment<Score_ extends Score<Score_>> implements Indictment<Score_> {
 
     private final Object indictedObject;
@@ -24,17 +26,17 @@ public final class DefaultIndictment<Score_ extends Score<Score_>> implements In
     }
 
     @Override
-    public <IndictedObject_> IndictedObject_ getIndictedObject() {
+    public <IndictedObject_> @NonNull IndictedObject_ getIndictedObject() {
         return (IndictedObject_) indictedObject;
     }
 
     @Override
-    public Set<ConstraintMatch<Score_>> getConstraintMatchSet() {
+    public @NonNull Set<ConstraintMatch<Score_>> getConstraintMatchSet() {
         return constraintMatchSet;
     }
 
     @Override
-    public List<ConstraintJustification> getJustificationList() {
+    public @NonNull List<ConstraintJustification> getJustificationList() {
         if (constraintJustificationList == null) {
             constraintJustificationList = buildConstraintJustificationList();
         }
@@ -61,7 +63,7 @@ public final class DefaultIndictment<Score_ extends Score<Score_>> implements In
     }
 
     @Override
-    public Score_ getScore() {
+    public @NonNull Score_ getScore() {
         return score;
     }
 

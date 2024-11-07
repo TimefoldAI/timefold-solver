@@ -15,7 +15,6 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
-import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 
 /**
  * Allows creating {@link ConstraintMatch} instances lazily if and only if they are required by the end user.
@@ -33,10 +32,15 @@ import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 public interface ConstraintMatchSupplier<Score_ extends Score<Score_>>
         extends BiFunction<Constraint, Score_, ConstraintMatch<Score_>> {
 
+    /**
+     * 
+     * @return the constraint match returned by the supplier will have its justification set to null.
+     *         This is useful when the justifications are disabled, to save memory.
+     * @param <Score_>
+     */
     static <Score_ extends Score<Score_>> ConstraintMatchSupplier<Score_> empty() {
-        return (constraint, impact) -> new ConstraintMatch<>(constraint.getConstraintRef(),
-                DefaultConstraintJustification.of(impact),
-                Collections.emptyList(), impact);
+        return (constraint, impact) -> new ConstraintMatch<>(constraint.getConstraintRef(), null, Collections.emptyList(),
+                impact);
     }
 
     static <A, Score_ extends Score<Score_>> ConstraintMatchSupplier<Score_> of(

@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.bi;
 
+import static ai.timefold.solver.core.impl.score.stream.bavet.common.BavetScoringConstraintStream.impactWithConstraintMatchNoJustifications;
+
 import java.math.BigDecimal;
 import java.util.function.BiFunction;
 import java.util.function.ToIntBiFunction;
@@ -7,6 +9,7 @@ import java.util.function.ToLongBiFunction;
 
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraint;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetScoringConstraintStream;
@@ -69,12 +72,20 @@ final class BavetScoringBiConstraintStream<Solution_, A, B>
     @Override
     public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
         assertEmptyChildStreamList();
-        var constraintMatchEnabled = buildHelper.getScoreInliner().getConstraintMatchPolicy().isEnabled();
-        var scoreImpacter = constraintMatchEnabled ? buildScoreImpacterWithConstraintMatch() : buildScoreImpacter();
+        var scoreImpacter = buildScoreImpacter(buildHelper.getScoreInliner().getConstraintMatchPolicy());
         var weightedScoreImpacter = buildHelper.getScoreInliner().buildWeightedScoreImpacter(constraint);
         var scorer = new BiScorer<>(weightedScoreImpacter, scoreImpacter,
                 buildHelper.reserveTupleStoreIndex(parent.getTupleSource()));
         buildHelper.putInsertUpdateRetract(this, scorer);
+    }
+
+    private TriFunction<WeightedScoreImpacter<?, ?>, A, B, UndoScoreImpacter>
+            buildScoreImpacter(ConstraintMatchPolicy constraintMatchPolicy) {
+        return switch (constraintMatchPolicy) {
+            case DISABLED -> buildScoreImpacter();
+            case ENABLED -> buildScoreImpacterWithConstraintMatch();
+            case ENABLED_WITHOUT_JUSTIFICATIONS -> buildScoreImpacterWithConstraintMatchNoJustifications();
+        };
     }
 
     private TriFunction<WeightedScoreImpacter<?, ?>, A, B, UndoScoreImpacter> buildScoreImpacter() {
@@ -141,6 +152,28 @@ final class BavetScoringBiConstraintStream<Solution_, A, B>
         var constraintMatchSupplier = ConstraintMatchSupplier.<A, B, Score_> of(constraint.getJustificationMapping(),
                 constraint.getIndictedObjectsMapping(), a, b);
         return impacter.impactScore(matchWeight, constraintMatchSupplier);
+    }
+
+    private TriFunction<WeightedScoreImpacter<?, ?>, A, B, UndoScoreImpacter>
+            buildScoreImpacterWithConstraintMatchNoJustifications() {
+        if (intMatchWeigher != null) {
+            return (impacter, a, b) -> {
+                int matchWeight = intMatchWeigher.applyAsInt(a, b);
+                return impactWithConstraintMatchNoJustifications(impacter, matchWeight);
+            };
+        } else if (longMatchWeigher != null) {
+            return (impacter, a, b) -> {
+                long matchWeight = longMatchWeigher.applyAsLong(a, b);
+                return impactWithConstraintMatchNoJustifications(impacter, matchWeight);
+            };
+        } else if (bigDecimalMatchWeigher != null) {
+            return (impacter, a, b) -> {
+                BigDecimal matchWeight = bigDecimalMatchWeigher.apply(a, b);
+                return impactWithConstraintMatchNoJustifications(impacter, matchWeight);
+            };
+        } else {
+            throw new IllegalStateException("Impossible state: neither of the supported match weighers provided.");
+        }
     }
 
     // ************************************************************************
