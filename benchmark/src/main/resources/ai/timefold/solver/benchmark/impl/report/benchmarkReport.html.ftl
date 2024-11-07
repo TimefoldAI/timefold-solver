@@ -6,20 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>${benchmarkReport.plannerBenchmarkResult.name} Planner benchmark report</title>
 
-    <link href="website/webjars/timefold/img/timefold-favicon.svg" rel="icon" type="image/svg+xml">
-    <link href="website/webjars/timefold/img/timefold-favicon.svg" rel="mask-icon" color="#000000">
+    <link href="website/img/timefold-favicon.svg" rel="icon" type="image/svg+xml">
+    <link href="website/img/timefold-favicon.svg" rel="mask-icon" color="#000000">
 
     <link href="website/css/app.css" rel="stylesheet"/>
-    <link href="website/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link href="website/webjars/timefold/css/timefold-webui.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="website/css/timefold-webui.css" rel="stylesheet" />
     <link href="website/css/prettify.css" rel="stylesheet"/>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" /> <#-- Too large for a webjar. -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet" />
 
     <script src="https://buttons.github.io/buttons.js"></script>
     <script src="website/js/app.js"></script> <#-- Contains functions called by chart.js; must go first. -->
-    <script src="website/webjars/jquery/jquery.min.js"></script>
-    <script src="website/webjars/bootstrap/js/bootstrap.bundle.min.js"></script> <#-- Includes Popper for dropdowns. -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script> <#-- Includes Popper for dropdowns. -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.3/dist/chart.umd.min.js"></script>
     <script src="https://unpkg.com/@sgratzl/chartjs-chart-boxplot@4.2.0"></script>
     <script src="website/js/chartjs-plugin-watermark.js"></script>
     <script src="website/js/prettify.js"></script>
@@ -92,7 +92,7 @@
         <div class="container">
             <div class="text-white">
                 <a href="#" class="navbar-brand">
-                    <img src="website/webjars/timefold/img/timefold-logo-horizontal-negative.svg" alt="Timefold Logo (horizontal, negative)">
+                    <img src="website/img/timefold-logo-horizontal-negative.svg" alt="Timefold Logo (horizontal, negative)">
                 </a>
                 <br />
                 Benchmark Report

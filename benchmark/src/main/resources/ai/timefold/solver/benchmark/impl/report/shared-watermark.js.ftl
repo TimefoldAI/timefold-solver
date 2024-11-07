@@ -1,5 +1,5 @@
 watermark: {
-    image: "website/webjars/timefold/img/timefold-logo-stacked-positive.svg",
+    image: "website/img/timefold-logo-stacked-positive.svg",
     x: 15,
     y: 15,
     width: 48,
