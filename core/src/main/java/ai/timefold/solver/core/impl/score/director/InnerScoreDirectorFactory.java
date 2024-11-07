@@ -27,37 +27,12 @@ public interface InnerScoreDirectorFactory<Solution_, Score_ extends Score<Score
     ScoreDefinition<Score_> getScoreDefinition();
 
     @Override
-    InnerScoreDirector<Solution_, Score_> buildScoreDirector();
-
-    /**
-     * Like {@link #buildScoreDirector()}, but optionally enables {@link ConstraintMatch} tracking and look up
-     * where possible and necessary.
-     *
-     * @param lookUpEnabled true if a {@link ScoreDirector} implementation should track all working objects
-     *        for {@link ScoreDirector#lookUpWorkingObject(Object)}
-     * @param constraintMatchPolicy how should the {@link ScoreDirector} track {@link ConstraintMatch}es
-     * @return never null
-     * @see InnerScoreDirector#getConstraintMatchPolicy()
-     * @see InnerScoreDirector#getConstraintMatchTotalMap()
-     */
     default InnerScoreDirector<Solution_, Score_> buildScoreDirector(boolean lookUpEnabled,
             ConstraintMatchPolicy constraintMatchPolicy) {
         return buildScoreDirector(lookUpEnabled, constraintMatchPolicy, true);
     }
 
-    /**
-     * Like {@link #buildScoreDirector()}, but optionally enables {@link ConstraintMatch} tracking and look up
-     * where possible and necessary.
-     *
-     * @param lookUpEnabled true if a {@link ScoreDirector} implementation should track all working objects
-     *        for {@link ScoreDirector#lookUpWorkingObject(Object)}
-     * @param constraintMatchPolicy how should the {@link ScoreDirector} implementation do {@link ConstraintMatch}, if at all.
-     * @param expectShadowVariablesInCorrectState true, unless you have an exceptional reason.
-     *        See {@link InnerScoreDirector#expectShadowVariablesInCorrectState()} for details.
-     * @return never null
-     * @see InnerScoreDirector#getConstraintMatchPolicy()
-     * @see InnerScoreDirector#getConstraintMatchTotalMap()
-     */
+    @Override
     InnerScoreDirector<Solution_, Score_> buildScoreDirector(boolean lookUpEnabled, ConstraintMatchPolicy constraintMatchPolicy,
             boolean expectShadowVariablesInCorrectState);
 
@@ -76,7 +51,7 @@ public interface InnerScoreDirectorFactory<Solution_, Score_ extends Score<Score
     default InnerScoreDirector<Solution_, Score_> buildDerivedScoreDirector(boolean lookUpEnabled,
             ConstraintMatchPolicy constraintMatchPolicy) {
         // Most score directors don't need derived status; CS will override this.
-        return buildScoreDirector(lookUpEnabled, constraintMatchPolicy, true);
+        return buildScoreDirector(lookUpEnabled, constraintMatchPolicy);
     }
 
     /**

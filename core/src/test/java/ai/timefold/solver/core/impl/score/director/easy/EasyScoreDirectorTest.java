@@ -22,7 +22,7 @@ class EasyScoreDirectorTest {
                 (solution_) -> SimpleScore.of(0));
         scoreDirectorFactory
                 .setInitializingScoreTrend(InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_DOWN, 1));
-        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED, true)) {
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
             var solution = new TestdataCorruptedShadowedSolution("s1");
             var v1 = new TestdataValue("v1");
             var v2 = new TestdataValue("v2");

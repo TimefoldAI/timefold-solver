@@ -14,7 +14,7 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
  * All classes used as constraint justifications must implement this interface.
  *
  * <p>
- * Implementing classes ("implementations") may decide to implement {@link Comparable}
+ * Implementations may decide to implement {@link Comparable}
  * to preserve order of instances when displayed in user interfaces, logs etc.
  * This is entirely optional.
  *

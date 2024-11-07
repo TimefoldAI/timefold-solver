@@ -31,8 +31,9 @@ import org.jspecify.annotations.Nullable;
  *        non-empty if constraint has matches.
  *        This is a {@link List} to simplify access to individual elements,
  *        but it contains no duplicates just like {@link HashSet} wouldn't.
- * @param matchCount -1 if {@link #matches()} is null, 0 if {@link #matches()} is empty,
- *        and {@link #matches() matches() size} otherwise.
+ * @param matchCount -1 if analysis not available,
+ *        0 if constraint has no matches,
+ *        positive if constraint has matches.
  */
 public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull ConstraintRef constraintRef, @NonNull Score_ weight,
         @NonNull Score_ score, @Nullable List<MatchAnalysis<Score_>> matches, int matchCount) {

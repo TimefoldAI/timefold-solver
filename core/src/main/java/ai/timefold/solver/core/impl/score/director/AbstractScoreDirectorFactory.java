@@ -94,11 +94,6 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
     // ************************************************************************
 
     @Override
-    public InnerScoreDirector<Solution_, Score_> buildScoreDirector() {
-        return buildScoreDirector(false, ConstraintMatchPolicy.DISABLED);
-    }
-
-    @Override
     public void assertScoreFromScratch(Solution_ solution) {
         // Get the score before uncorruptedScoreDirector.calculateScore() modifies it
         Score_ score = getSolutionDescriptor().getScore(solution);
