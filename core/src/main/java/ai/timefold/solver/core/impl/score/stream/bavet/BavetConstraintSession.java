@@ -6,6 +6,7 @@ import java.util.Map;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.PropagationQueue;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.AbstractForEachUniNode;
@@ -13,7 +14,8 @@ import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInl
 
 /**
  * The type is public to make it easier for Bavet-specific minimal bug reproducers to be created.
- * Instances should be created through {@link BavetConstraintStreamScoreDirectorFactory#newSession(Object, boolean, boolean)}.
+ * Instances should be created through
+ * {@link BavetConstraintStreamScoreDirectorFactory#newSession(Object, ConstraintMatchPolicy, boolean)}.
  *
  * @see PropagationQueue Description of the tuple propagation mechanism.
  * @param <Score_>
