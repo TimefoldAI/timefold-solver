@@ -10,9 +10,8 @@ public enum ConstraintMatchPolicy {
 
     public static ConstraintMatchPolicy match(ScoreAnalysisFetchPolicy scoreAnalysisFetchPolicy) {
         return switch (scoreAnalysisFetchPolicy) {
+            case FETCH_MATCH_COUNT, FETCH_SHALLOW -> ENABLED_WITHOUT_JUSTIFICATIONS;
             case FETCH_ALL -> ENABLED;
-            case FETCH_MATCH_COUNT -> ENABLED_WITHOUT_JUSTIFICATIONS;
-            case FETCH_SHALLOW -> DISABLED;
         };
     }
 

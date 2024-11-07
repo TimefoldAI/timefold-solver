@@ -62,23 +62,23 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
 
     @Override
     public Map<String, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
-        if (workingSolution == null) {
+        if (!constraintMatchPolicy.isEnabled()) {
+            throw new IllegalStateException("When constraint matching is disabled, this method should not be called.");
+        } else if (workingSolution == null) {
             throw new IllegalStateException(
                     "The method setWorkingSolution() must be called before the method getConstraintMatchTotalMap().");
-        } else if (!constraintMatchPolicy.isEnabled()) {
-            throw new IllegalStateException("When constraint matching is disabled, this method should not be called.");
         }
         return session.getConstraintMatchTotalMap();
     }
 
     @Override
     public Map<Object, Indictment<Score_>> getIndictmentMap() {
-        if (workingSolution == null) {
-            throw new IllegalStateException(
-                    "The method setWorkingSolution() must be called before the method getIndictmentMap().");
-        } else if (!constraintMatchPolicy.isJustificationEnabled()) {
+        if (!constraintMatchPolicy.isJustificationEnabled()) {
             throw new IllegalStateException(
                     "When constraint matching with justifications is disabled, this method should not be called.");
+        } else if (workingSolution == null) {
+            throw new IllegalStateException(
+                    "The method setWorkingSolution() must be called before the method getIndictmentMap().");
         }
         return session.getIndictmentMap();
     }
