@@ -23,6 +23,7 @@ import ai.timefold.solver.core.impl.statistic.SolverStatistic;
 import ai.timefold.solver.core.impl.statistic.StatelessSolverStatistic;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
@@ -96,10 +97,9 @@ public enum SolverMetric {
         return meterId;
     }
 
-    public static void registerScoreMetrics(@NonNull SolverMetric metric, @NonNull Tags tags,
-            @NonNull ScoreDefinition<?> scoreDefinition,
-            @NonNull Map<@NonNull Tags, @NonNull List<@NonNull AtomicReference<@NonNull Number>>> tagToScoreLevels,
-            @NonNull Score<?> score) {
+    @NullMarked
+    public static void registerScoreMetrics(SolverMetric metric, Tags tags, ScoreDefinition<?> scoreDefinition,
+            Map<Tags, List<AtomicReference<Number>>> tagToScoreLevels, Score<?> score) {
         Number[] levelValues = score.toLevelNumbers();
         if (tagToScoreLevels.containsKey(tags)) {
             List<AtomicReference<Number>> scoreLevels = tagToScoreLevels.get(tags);
