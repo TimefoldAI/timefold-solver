@@ -30,6 +30,9 @@ import ai.timefold.solver.benchmark.impl.report.BenchmarkReport;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.io.jaxb.TimefoldXmlSerializationException;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -64,19 +67,12 @@ public class PlannerBenchmarkConfig {
     // Static creation methods: SolverConfig
     // ************************************************************************
 
-    /**
-     * @param solverConfig never null
-     */
-    public static PlannerBenchmarkConfig createFromSolverConfig(SolverConfig solverConfig) {
+    public static @NonNull PlannerBenchmarkConfig createFromSolverConfig(@NonNull SolverConfig solverConfig) {
         return createFromSolverConfig(solverConfig, new File("local/benchmarkReport"));
     }
 
-    /**
-     * @param solverConfig never null
-     * @param benchmarkDirectory never null
-     */
-    public static PlannerBenchmarkConfig createFromSolverConfig(SolverConfig solverConfig,
-            File benchmarkDirectory) {
+    public static @NonNull PlannerBenchmarkConfig createFromSolverConfig(@NonNull SolverConfig solverConfig,
+            @NonNull File benchmarkDirectory) {
         PlannerBenchmarkConfig plannerBenchmarkConfig = new PlannerBenchmarkConfig();
         plannerBenchmarkConfig.setBenchmarkDirectory(benchmarkDirectory);
         SolverBenchmarkConfig solverBenchmarkConfig = new SolverBenchmarkConfig();
@@ -94,24 +90,23 @@ public class PlannerBenchmarkConfig {
     /**
      * Reads an XML benchmark configuration from the classpath.
      *
-     * @param benchmarkConfigResource never null, a classpath resource
+     * @param benchmarkConfigResource a classpath resource
      *        as defined by {@link ClassLoader#getResource(String)}
-     * @return never null
      */
-    public static PlannerBenchmarkConfig createFromXmlResource(String benchmarkConfigResource) {
+    public static @NonNull PlannerBenchmarkConfig createFromXmlResource(@NonNull String benchmarkConfigResource) {
         return createFromXmlResource(benchmarkConfigResource, null);
     }
 
     /**
      * As defined by {@link #createFromXmlResource(String)}.
      *
-     * @param benchmarkConfigResource never null, a classpath resource
+     * @param benchmarkConfigResource a classpath resource
      *        as defined by {@link ClassLoader#getResource(String)}
-     * @param classLoader sometimes null, the {@link ClassLoader} to use for loading all resources and {@link Class}es,
+     * @param classLoader the {@link ClassLoader} to use for loading all resources and {@link Class}es,
      *        null to use the default {@link ClassLoader}
-     * @return never null
      */
-    public static PlannerBenchmarkConfig createFromXmlResource(String benchmarkConfigResource, ClassLoader classLoader) {
+    public static @NonNull PlannerBenchmarkConfig createFromXmlResource(@NonNull String benchmarkConfigResource,
+            @Nullable ClassLoader classLoader) {
         ClassLoader actualClassLoader = classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader();
         try (InputStream in = actualClassLoader.getResourceAsStream(benchmarkConfigResource)) {
             if (in == null) {
@@ -139,23 +134,19 @@ public class PlannerBenchmarkConfig {
      * <p>
      * Warning: this leads to platform dependent code,
      * it's recommend to use {@link #createFromXmlResource(String)} instead.
-     *
-     * @param benchmarkConfigFile never null
-     * @return never null
      */
-    public static PlannerBenchmarkConfig createFromXmlFile(File benchmarkConfigFile) {
+    public static @NonNull PlannerBenchmarkConfig createFromXmlFile(@NonNull File benchmarkConfigFile) {
         return createFromXmlFile(benchmarkConfigFile, null);
     }
 
     /**
      * As defined by {@link #createFromXmlFile(File)}.
      *
-     * @param benchmarkConfigFile never null
-     * @param classLoader sometimes null, the {@link ClassLoader} to use for loading all resources and {@link Class}es,
+     * @param classLoader the {@link ClassLoader} to use for loading all resources and {@link Class}es,
      *        null to use the default {@link ClassLoader}
-     * @return never null
      */
-    public static PlannerBenchmarkConfig createFromXmlFile(File benchmarkConfigFile, ClassLoader classLoader) {
+    public static @NonNull PlannerBenchmarkConfig createFromXmlFile(@NonNull File benchmarkConfigFile,
+            @Nullable ClassLoader classLoader) {
         try (InputStream in = new FileInputStream(benchmarkConfigFile)) {
             return createFromXmlInputStream(in, classLoader);
         } catch (TimefoldXmlSerializationException e) {
@@ -168,20 +159,19 @@ public class PlannerBenchmarkConfig {
     }
 
     /**
-     * @param in never null, gets closed
-     * @return never null
+     * @param in gets closed
      */
-    public static PlannerBenchmarkConfig createFromXmlInputStream(InputStream in) {
+    public static @NonNull PlannerBenchmarkConfig createFromXmlInputStream(@NonNull InputStream in) {
         return createFromXmlInputStream(in, null);
     }
 
     /**
-     * @param in never null, gets closed
-     * @param classLoader sometimes null, the {@link ClassLoader} to use for loading all resources and {@link Class}es,
+     * @param in gets closed
+     * @param classLoader the {@link ClassLoader} to use for loading all resources and {@link Class}es,
      *        null to use the default {@link ClassLoader}
-     * @return never null
      */
-    public static PlannerBenchmarkConfig createFromXmlInputStream(InputStream in, ClassLoader classLoader) {
+    public static @NonNull PlannerBenchmarkConfig createFromXmlInputStream(@NonNull InputStream in,
+            @Nullable ClassLoader classLoader) {
         try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
             return createFromXmlReader(reader, classLoader);
         } catch (UnsupportedEncodingException e) {
@@ -192,20 +182,19 @@ public class PlannerBenchmarkConfig {
     }
 
     /**
-     * @param reader never null, gets closed
-     * @return never null
+     * @param reader gets closed
      */
-    public static PlannerBenchmarkConfig createFromXmlReader(Reader reader) {
+    public static @NonNull PlannerBenchmarkConfig createFromXmlReader(@NonNull Reader reader) {
         return createFromXmlReader(reader, null);
     }
 
     /**
-     * @param reader never null, gets closed
-     * @param classLoader sometimes null, the {@link ClassLoader} to use for loading all resources and {@link Class}es,
+     * @param reader gets closed
+     * @param classLoader the {@link ClassLoader} to use for loading all resources and {@link Class}es,
      *        null to use the default {@link ClassLoader}
-     * @return never null
      */
-    public static PlannerBenchmarkConfig createFromXmlReader(Reader reader, ClassLoader classLoader) {
+    public static @NonNull PlannerBenchmarkConfig createFromXmlReader(@NonNull Reader reader,
+            @Nullable ClassLoader classLoader) {
         PlannerBenchmarkConfigIO xmlIO = new PlannerBenchmarkConfigIO();
         Object benchmarkConfigObject = xmlIO.read(reader);
         if (!(benchmarkConfigObject instanceof PlannerBenchmarkConfig)) {
@@ -229,47 +218,43 @@ public class PlannerBenchmarkConfig {
     /**
      * Reads a Freemarker XML benchmark configuration from the classpath.
      *
-     * @param templateResource never null, a classpath resource as defined by {@link ClassLoader#getResource(String)}
-     * @return never null
+     * @param templateResource a classpath resource as defined by {@link ClassLoader#getResource(String)}
      */
-    public static PlannerBenchmarkConfig createFromFreemarkerXmlResource(String templateResource) {
+    public static @NonNull PlannerBenchmarkConfig createFromFreemarkerXmlResource(@NonNull String templateResource) {
         return createFromFreemarkerXmlResource(templateResource, null);
     }
 
     /**
      * As defined by {@link #createFromFreemarkerXmlResource(String)}.
      *
-     * @param templateResource never null, a classpath resource as defined by {@link ClassLoader#getResource(String)}
-     * @param classLoader sometimes null, the {@link ClassLoader} to use for loading all resources and {@link Class}es,
+     * @param templateResource a classpath resource as defined by {@link ClassLoader#getResource(String)}
+     * @param classLoader the {@link ClassLoader} to use for loading all resources and {@link Class}es,
      *        null to use the default {@link ClassLoader}
-     * @return never null
      */
-    public static PlannerBenchmarkConfig createFromFreemarkerXmlResource(String templateResource, ClassLoader classLoader) {
+    public static @NonNull PlannerBenchmarkConfig createFromFreemarkerXmlResource(@NonNull String templateResource,
+            @Nullable ClassLoader classLoader) {
         return createFromFreemarkerXmlResource(templateResource, null, classLoader);
     }
 
     /**
      * As defined by {@link #createFromFreemarkerXmlResource(String)}.
      *
-     * @param templateResource never null, a classpath resource as defined by {@link ClassLoader#getResource(String)}
-     * @param model sometimes null
-     * @return never null
+     * @param templateResource a classpath resource as defined by {@link ClassLoader#getResource(String)}
      */
-    public static PlannerBenchmarkConfig createFromFreemarkerXmlResource(String templateResource, Object model) {
+    public static @NonNull PlannerBenchmarkConfig createFromFreemarkerXmlResource(@NonNull String templateResource,
+            @Nullable Object model) {
         return createFromFreemarkerXmlResource(templateResource, model, null);
     }
 
     /**
      * As defined by {@link #createFromFreemarkerXmlResource(String)}.
      *
-     * @param templateResource never null, a classpath resource as defined by {@link ClassLoader#getResource(String)}
-     * @param model sometimes null
-     * @param classLoader sometimes null, the {@link ClassLoader} to use for loading all resources and {@link Class}es,
+     * @param templateResource a classpath resource as defined by {@link ClassLoader#getResource(String)}
+     * @param classLoader the {@link ClassLoader} to use for loading all resources and {@link Class}es,
      *        null to use the default {@link ClassLoader}
-     * @return never null
      */
-    public static PlannerBenchmarkConfig createFromFreemarkerXmlResource(String templateResource, Object model,
-            ClassLoader classLoader) {
+    public static @NonNull PlannerBenchmarkConfig createFromFreemarkerXmlResource(@NonNull String templateResource,
+            @Nullable Object model, @Nullable ClassLoader classLoader) {
         ClassLoader actualClassLoader = classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader();
         try (InputStream templateIn = actualClassLoader.getResourceAsStream(templateResource)) {
             if (templateIn == null) {
@@ -293,47 +278,38 @@ public class PlannerBenchmarkConfig {
      * <p>
      * Warning: this leads to platform dependent code,
      * it's recommend to use {@link #createFromFreemarkerXmlResource(String)} instead.
-     *
-     * @param templateFile never null
-     * @return never null
      */
-    public static PlannerBenchmarkConfig createFromFreemarkerXmlFile(File templateFile) {
+    public static @NonNull PlannerBenchmarkConfig createFromFreemarkerXmlFile(@NonNull File templateFile) {
         return createFromFreemarkerXmlFile(templateFile, null);
     }
 
     /**
      * As defined by {@link #createFromFreemarkerXmlFile(File)}.
      *
-     * @param templateFile never null
-     * @param classLoader sometimes null, the {@link ClassLoader} to use for loading all resources and {@link Class}es,
+     * @param classLoader the {@link ClassLoader} to use for loading all resources and {@link Class}es,
      *        null to use the default {@link ClassLoader}
-     * @return never null
      */
-    public static PlannerBenchmarkConfig createFromFreemarkerXmlFile(File templateFile, ClassLoader classLoader) {
+    public static @NonNull PlannerBenchmarkConfig createFromFreemarkerXmlFile(@NonNull File templateFile,
+            @Nullable ClassLoader classLoader) {
         return createFromFreemarkerXmlFile(templateFile, null, classLoader);
     }
 
     /**
      * As defined by {@link #createFromFreemarkerXmlFile(File)}.
-     *
-     * @param templateFile never null
-     * @param model sometimes null
-     * @return never null
      */
-    public static PlannerBenchmarkConfig createFromFreemarkerXmlFile(File templateFile, Object model) {
+    public static @NonNull PlannerBenchmarkConfig createFromFreemarkerXmlFile(@NonNull File templateFile,
+            @Nullable Object model) {
         return createFromFreemarkerXmlFile(templateFile, model, null);
     }
 
     /**
      * As defined by {@link #createFromFreemarkerXmlFile(File)}.
      *
-     * @param templateFile never null
-     * @param model sometimes null
-     * @param classLoader sometimes null, the {@link ClassLoader} to use for loading all resources and {@link Class}es,
+     * @param classLoader the {@link ClassLoader} to use for loading all resources and {@link Class}es,
      *        null to use the default {@link ClassLoader}
-     * @return never null
      */
-    public static PlannerBenchmarkConfig createFromFreemarkerXmlFile(File templateFile, Object model, ClassLoader classLoader) {
+    public static @NonNull PlannerBenchmarkConfig createFromFreemarkerXmlFile(@NonNull File templateFile,
+            @Nullable Object model, @Nullable ClassLoader classLoader) {
         try (FileInputStream templateIn = new FileInputStream(templateFile)) {
             return createFromFreemarkerXmlInputStream(templateIn, model, classLoader);
         } catch (FileNotFoundException e) {
@@ -344,47 +320,43 @@ public class PlannerBenchmarkConfig {
     }
 
     /**
-     * @param templateIn never null, gets closed
-     * @return never null
+     * @param templateIn gets closed
      */
-    public static PlannerBenchmarkConfig createFromFreemarkerXmlInputStream(InputStream templateIn) {
+    public static @NonNull PlannerBenchmarkConfig createFromFreemarkerXmlInputStream(@NonNull InputStream templateIn) {
         return createFromFreemarkerXmlInputStream(templateIn, null);
     }
 
     /**
      * As defined by {@link #createFromFreemarkerXmlInputStream(InputStream)}.
      *
-     * @param templateIn never null, gets closed
-     * @param classLoader sometimes null, the {@link ClassLoader} to use for loading all resources and {@link Class}es,
+     * @param templateIn gets closed
+     * @param classLoader the {@link ClassLoader} to use for loading all resources and {@link Class}es,
      *        null to use the default {@link ClassLoader}
-     * @return never null
      */
-    public static PlannerBenchmarkConfig createFromFreemarkerXmlInputStream(InputStream templateIn, ClassLoader classLoader) {
+    public static @NonNull PlannerBenchmarkConfig createFromFreemarkerXmlInputStream(@NonNull InputStream templateIn,
+            @Nullable ClassLoader classLoader) {
         return createFromFreemarkerXmlInputStream(templateIn, null, classLoader);
     }
 
     /**
      * As defined by {@link #createFromFreemarkerXmlInputStream(InputStream)}.
      *
-     * @param templateIn never null, gets closed
-     * @param model sometimes null
-     * @return never null
+     * @param templateIn gets closed
      */
-    public static PlannerBenchmarkConfig createFromFreemarkerXmlInputStream(InputStream templateIn, Object model) {
+    public static @NonNull PlannerBenchmarkConfig createFromFreemarkerXmlInputStream(@NonNull InputStream templateIn,
+            @Nullable Object model) {
         return createFromFreemarkerXmlInputStream(templateIn, model, null);
     }
 
     /**
      * As defined by {@link #createFromFreemarkerXmlInputStream(InputStream)}.
      *
-     * @param templateIn never null, gets closed
-     * @param model sometimes null
-     * @param classLoader sometimes null, the {@link ClassLoader} to use for loading all resources and {@link Class}es,
+     * @param templateIn gets closed
+     * @param classLoader the {@link ClassLoader} to use for loading all resources and {@link Class}es,
      *        null to use the default {@link ClassLoader}
-     * @return never null
      */
-    public static PlannerBenchmarkConfig createFromFreemarkerXmlInputStream(InputStream templateIn, Object model,
-            ClassLoader classLoader) {
+    public static @NonNull PlannerBenchmarkConfig createFromFreemarkerXmlInputStream(@NonNull InputStream templateIn,
+            @Nullable Object model, @Nullable ClassLoader classLoader) {
         try (Reader reader = new InputStreamReader(templateIn, StandardCharsets.UTF_8)) {
             return createFromFreemarkerXmlReader(reader, model, classLoader);
         } catch (UnsupportedEncodingException e) {
@@ -395,47 +367,43 @@ public class PlannerBenchmarkConfig {
     }
 
     /**
-     * @param templateReader never null, gets closed
-     * @return never null
+     * @param templateReader gets closed
      */
-    public static PlannerBenchmarkConfig createFromFreemarkerXmlReader(Reader templateReader) {
+    public static @NonNull PlannerBenchmarkConfig createFromFreemarkerXmlReader(@NonNull Reader templateReader) {
         return createFromFreemarkerXmlReader(templateReader, null);
     }
 
     /**
      * As defined by {@link #createFromFreemarkerXmlReader(Reader)}.
      *
-     * @param templateReader never null, gets closed
-     * @param classLoader sometimes null, the {@link ClassLoader} to use for loading all resources and {@link Class}es,
+     * @param templateReader gets closed
+     * @param classLoader the {@link ClassLoader} to use for loading all resources and {@link Class}es,
      *        null to use the default {@link ClassLoader}
-     * @return never null
      */
-    public static PlannerBenchmarkConfig createFromFreemarkerXmlReader(Reader templateReader, ClassLoader classLoader) {
+    public static @NonNull PlannerBenchmarkConfig createFromFreemarkerXmlReader(@NonNull Reader templateReader,
+            @Nullable ClassLoader classLoader) {
         return createFromFreemarkerXmlReader(templateReader, null, classLoader);
     }
 
     /**
      * As defined by {@link #createFromFreemarkerXmlReader(Reader)}.
      *
-     * @param templateReader never null, gets closed
-     * @param model sometimes null
-     * @return never null
+     * @param templateReader gets closed
      */
-    public static PlannerBenchmarkConfig createFromFreemarkerXmlReader(Reader templateReader, Object model) {
+    public static @NonNull PlannerBenchmarkConfig createFromFreemarkerXmlReader(@NonNull Reader templateReader,
+            @Nullable Object model) {
         return createFromFreemarkerXmlReader(templateReader, model, null);
     }
 
     /**
      * As defined by {@link #createFromFreemarkerXmlReader(Reader)}.
      *
-     * @param templateReader never null, gets closed
-     * @param model sometimes null
-     * @param classLoader sometimes null, the {@link ClassLoader} to use for loading all resources and {@link Class}es,
+     * @param templateReader gets closed
+     * @param classLoader the {@link ClassLoader} to use for loading all resources and {@link Class}es,
      *        null to use the default {@link ClassLoader}
-     * @return never null
      */
-    public static PlannerBenchmarkConfig createFromFreemarkerXmlReader(Reader templateReader, Object model,
-            ClassLoader classLoader) {
+    public static @NonNull PlannerBenchmarkConfig createFromFreemarkerXmlReader(@NonNull Reader templateReader,
+            @Nullable Object model, @Nullable ClassLoader classLoader) {
         Configuration freemarkerConfiguration = BenchmarkReport.createFreeMarkerConfiguration();
         freemarkerConfiguration.setNumberFormat("computer");
         freemarkerConfiguration.setDateFormat("yyyy-mm-dd");
@@ -497,42 +465,39 @@ public class PlannerBenchmarkConfig {
     public PlannerBenchmarkConfig() {
     }
 
-    /**
-     * @param classLoader sometimes null
-     */
-    public PlannerBenchmarkConfig(ClassLoader classLoader) {
+    public PlannerBenchmarkConfig(@Nullable ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
 
-    public ClassLoader getClassLoader() {
+    public @Nullable ClassLoader getClassLoader() {
         return classLoader;
     }
 
-    public void setClassLoader(ClassLoader classLoader) {
+    public void setClassLoader(@Nullable ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
 
-    public String getName() {
+    public @Nullable String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(@Nullable String name) {
         this.name = name;
     }
 
-    public File getBenchmarkDirectory() {
+    public @Nullable File getBenchmarkDirectory() {
         return benchmarkDirectory;
     }
 
-    public void setBenchmarkDirectory(File benchmarkDirectory) {
+    public void setBenchmarkDirectory(@Nullable File benchmarkDirectory) {
         this.benchmarkDirectory = benchmarkDirectory;
     }
 
-    public Class<? extends ThreadFactory> getThreadFactoryClass() {
+    public @Nullable Class<? extends ThreadFactory> getThreadFactoryClass() {
         return threadFactoryClass;
     }
 
-    public void setThreadFactoryClass(Class<? extends ThreadFactory> threadFactoryClass) {
+    public void setThreadFactoryClass(@Nullable Class<? extends ThreadFactory> threadFactoryClass) {
         this.threadFactoryClass = threadFactoryClass;
     }
 
@@ -543,83 +508,84 @@ public class PlannerBenchmarkConfig {
      *
      * @return null, a number or {@value #PARALLEL_BENCHMARK_COUNT_AUTO}.
      */
-    public String getParallelBenchmarkCount() {
+    public @Nullable String getParallelBenchmarkCount() {
         return parallelBenchmarkCount;
     }
 
-    public void setParallelBenchmarkCount(String parallelBenchmarkCount) {
+    public void setParallelBenchmarkCount(@Nullable String parallelBenchmarkCount) {
         this.parallelBenchmarkCount = parallelBenchmarkCount;
     }
 
-    public Long getWarmUpMillisecondsSpentLimit() {
+    public @Nullable Long getWarmUpMillisecondsSpentLimit() {
         return warmUpMillisecondsSpentLimit;
     }
 
-    public void setWarmUpMillisecondsSpentLimit(Long warmUpMillisecondsSpentLimit) {
+    public void setWarmUpMillisecondsSpentLimit(@Nullable Long warmUpMillisecondsSpentLimit) {
         this.warmUpMillisecondsSpentLimit = warmUpMillisecondsSpentLimit;
     }
 
-    public Long getWarmUpSecondsSpentLimit() {
+    public @Nullable Long getWarmUpSecondsSpentLimit() {
         return warmUpSecondsSpentLimit;
     }
 
-    public void setWarmUpSecondsSpentLimit(Long warmUpSecondsSpentLimit) {
+    public void setWarmUpSecondsSpentLimit(@Nullable Long warmUpSecondsSpentLimit) {
         this.warmUpSecondsSpentLimit = warmUpSecondsSpentLimit;
     }
 
-    public Long getWarmUpMinutesSpentLimit() {
+    public @Nullable Long getWarmUpMinutesSpentLimit() {
         return warmUpMinutesSpentLimit;
     }
 
-    public void setWarmUpMinutesSpentLimit(Long warmUpMinutesSpentLimit) {
+    public void setWarmUpMinutesSpentLimit(@Nullable Long warmUpMinutesSpentLimit) {
         this.warmUpMinutesSpentLimit = warmUpMinutesSpentLimit;
     }
 
-    public Long getWarmUpHoursSpentLimit() {
+    public @Nullable Long getWarmUpHoursSpentLimit() {
         return warmUpHoursSpentLimit;
     }
 
-    public void setWarmUpHoursSpentLimit(Long warmUpHoursSpentLimit) {
+    public void setWarmUpHoursSpentLimit(@Nullable Long warmUpHoursSpentLimit) {
         this.warmUpHoursSpentLimit = warmUpHoursSpentLimit;
     }
 
-    public Long getWarmUpDaysSpentLimit() {
+    public @Nullable Long getWarmUpDaysSpentLimit() {
         return warmUpDaysSpentLimit;
     }
 
-    public void setWarmUpDaysSpentLimit(Long warmUpDaysSpentLimit) {
+    public void setWarmUpDaysSpentLimit(@Nullable Long warmUpDaysSpentLimit) {
         this.warmUpDaysSpentLimit = warmUpDaysSpentLimit;
     }
 
-    public BenchmarkReportConfig getBenchmarkReportConfig() {
+    public @Nullable BenchmarkReportConfig getBenchmarkReportConfig() {
         return benchmarkReportConfig;
     }
 
-    public void setBenchmarkReportConfig(BenchmarkReportConfig benchmarkReportConfig) {
+    public void setBenchmarkReportConfig(@Nullable BenchmarkReportConfig benchmarkReportConfig) {
         this.benchmarkReportConfig = benchmarkReportConfig;
     }
 
-    public SolverBenchmarkConfig getInheritedSolverBenchmarkConfig() {
+    public @Nullable SolverBenchmarkConfig getInheritedSolverBenchmarkConfig() {
         return inheritedSolverBenchmarkConfig;
     }
 
-    public void setInheritedSolverBenchmarkConfig(SolverBenchmarkConfig inheritedSolverBenchmarkConfig) {
+    public void setInheritedSolverBenchmarkConfig(@Nullable SolverBenchmarkConfig inheritedSolverBenchmarkConfig) {
         this.inheritedSolverBenchmarkConfig = inheritedSolverBenchmarkConfig;
     }
 
-    public List<SolverBenchmarkBluePrintConfig> getSolverBenchmarkBluePrintConfigList() {
+    public @Nullable List<@NonNull SolverBenchmarkBluePrintConfig> getSolverBenchmarkBluePrintConfigList() {
         return solverBenchmarkBluePrintConfigList;
     }
 
-    public void setSolverBenchmarkBluePrintConfigList(List<SolverBenchmarkBluePrintConfig> solverBenchmarkBluePrintConfigList) {
+    public void setSolverBenchmarkBluePrintConfigList(
+            @Nullable List<@NonNull SolverBenchmarkBluePrintConfig> solverBenchmarkBluePrintConfigList) {
         this.solverBenchmarkBluePrintConfigList = solverBenchmarkBluePrintConfigList;
     }
 
-    public List<SolverBenchmarkConfig> getSolverBenchmarkConfigList() {
+    public @Nullable List<@NonNull SolverBenchmarkConfig> getSolverBenchmarkConfigList() {
         return solverBenchmarkConfigList;
     }
 
-    public void setSolverBenchmarkConfigList(List<SolverBenchmarkConfig> solverBenchmarkConfigList) {
+    public void setSolverBenchmarkConfigList(@Nullable List<@NonNull SolverBenchmarkConfig> solverBenchmarkConfigList) {
         this.solverBenchmarkConfigList = solverBenchmarkConfigList;
     }
 
@@ -627,84 +593,87 @@ public class PlannerBenchmarkConfig {
     // With methods
     // ************************************************************************
 
-    public PlannerBenchmarkConfig withClassLoader(ClassLoader classLoader) {
+    public @NonNull PlannerBenchmarkConfig withClassLoader(@NonNull ClassLoader classLoader) {
         this.setClassLoader(classLoader);
         return this;
     }
 
-    public PlannerBenchmarkConfig withName(String name) {
+    public @NonNull PlannerBenchmarkConfig withName(@NonNull String name) {
         this.setName(name);
         return this;
     }
 
-    public PlannerBenchmarkConfig withBenchmarkDirectory(File benchmarkDirectory) {
+    public @NonNull PlannerBenchmarkConfig withBenchmarkDirectory(@NonNull File benchmarkDirectory) {
         this.setBenchmarkDirectory(benchmarkDirectory);
         return this;
     }
 
-    public PlannerBenchmarkConfig withThreadFactoryClass(Class<? extends ThreadFactory> threadFactoryClass) {
+    public @NonNull PlannerBenchmarkConfig withThreadFactoryClass(@NonNull Class<? extends ThreadFactory> threadFactoryClass) {
         this.setThreadFactoryClass(threadFactoryClass);
         return this;
     }
 
-    public PlannerBenchmarkConfig withParallelBenchmarkCount(String parallelBenchmarkCount) {
+    public @NonNull PlannerBenchmarkConfig withParallelBenchmarkCount(@NonNull String parallelBenchmarkCount) {
         this.setParallelBenchmarkCount(parallelBenchmarkCount);
         return this;
     }
 
-    public PlannerBenchmarkConfig withWarmUpMillisecondsSpentLimit(Long warmUpMillisecondsSpentLimit) {
+    public @NonNull PlannerBenchmarkConfig withWarmUpMillisecondsSpentLimit(@NonNull Long warmUpMillisecondsSpentLimit) {
         this.setWarmUpMillisecondsSpentLimit(warmUpMillisecondsSpentLimit);
         return this;
     }
 
-    public PlannerBenchmarkConfig withWarmUpSecondsSpentLimit(Long warmUpSecondsSpentLimit) {
+    public @NonNull PlannerBenchmarkConfig withWarmUpSecondsSpentLimit(@NonNull Long warmUpSecondsSpentLimit) {
         this.setWarmUpSecondsSpentLimit(warmUpSecondsSpentLimit);
         return this;
     }
 
-    public PlannerBenchmarkConfig withWarmUpMinutesSpentLimit(Long warmUpMinutesSpentLimit) {
+    public @NonNull PlannerBenchmarkConfig withWarmUpMinutesSpentLimit(@NonNull Long warmUpMinutesSpentLimit) {
         this.setWarmUpMinutesSpentLimit(warmUpMinutesSpentLimit);
         return this;
     }
 
-    public PlannerBenchmarkConfig withWarmUpHoursSpentLimit(Long warmUpHoursSpentLimit) {
+    public @NonNull PlannerBenchmarkConfig withWarmUpHoursSpentLimit(@NonNull Long warmUpHoursSpentLimit) {
         this.setWarmUpHoursSpentLimit(warmUpHoursSpentLimit);
         return this;
     }
 
-    public PlannerBenchmarkConfig withWarmUpDaysSpentLimit(Long warmUpDaysSpentLimit) {
+    public @NonNull PlannerBenchmarkConfig withWarmUpDaysSpentLimit(@NonNull Long warmUpDaysSpentLimit) {
         this.setWarmUpDaysSpentLimit(warmUpDaysSpentLimit);
         return this;
     }
 
-    public PlannerBenchmarkConfig withBenchmarkReportConfig(BenchmarkReportConfig benchmarkReportConfig) {
+    public @NonNull PlannerBenchmarkConfig withBenchmarkReportConfig(@NonNull BenchmarkReportConfig benchmarkReportConfig) {
         this.setBenchmarkReportConfig(benchmarkReportConfig);
         return this;
     }
 
-    public PlannerBenchmarkConfig withInheritedSolverBenchmarkConfig(SolverBenchmarkConfig inheritedSolverBenchmarkConfig) {
+    public @NonNull PlannerBenchmarkConfig
+            withInheritedSolverBenchmarkConfig(@NonNull SolverBenchmarkConfig inheritedSolverBenchmarkConfig) {
         this.setInheritedSolverBenchmarkConfig(inheritedSolverBenchmarkConfig);
         return this;
     }
 
-    public PlannerBenchmarkConfig withSolverBenchmarkBluePrintConfigList(
-            List<SolverBenchmarkBluePrintConfig> solverBenchmarkBluePrintConfigList) {
+    public @NonNull PlannerBenchmarkConfig withSolverBenchmarkBluePrintConfigList(
+            @NonNull List<@NonNull SolverBenchmarkBluePrintConfig> solverBenchmarkBluePrintConfigList) {
         this.setSolverBenchmarkBluePrintConfigList(solverBenchmarkBluePrintConfigList);
         return this;
     }
 
-    public PlannerBenchmarkConfig withSolverBenchmarkBluePrintConfigs(
-            SolverBenchmarkBluePrintConfig... solverBenchmarkBluePrintConfigs) {
+    public @NonNull PlannerBenchmarkConfig withSolverBenchmarkBluePrintConfigs(
+            @NonNull SolverBenchmarkBluePrintConfig... solverBenchmarkBluePrintConfigs) {
         this.setSolverBenchmarkBluePrintConfigList(List.of(solverBenchmarkBluePrintConfigs));
         return this;
     }
 
-    public PlannerBenchmarkConfig withSolverBenchmarkConfigList(List<SolverBenchmarkConfig> solverBenchmarkConfigList) {
+    public @NonNull PlannerBenchmarkConfig
+            withSolverBenchmarkConfigList(@NonNull List<@NonNull SolverBenchmarkConfig> solverBenchmarkConfigList) {
         this.setSolverBenchmarkConfigList(solverBenchmarkConfigList);
         return this;
     }
 
-    public PlannerBenchmarkConfig withSolverBenchmarkConfigs(SolverBenchmarkConfig... solverBenchmarkConfigs) {
+    public @NonNull PlannerBenchmarkConfig
+            withSolverBenchmarkConfigs(@NonNull SolverBenchmarkConfig... solverBenchmarkConfigs) {
         this.setSolverBenchmarkConfigList(List.of(solverBenchmarkConfigs));
         return this;
     }

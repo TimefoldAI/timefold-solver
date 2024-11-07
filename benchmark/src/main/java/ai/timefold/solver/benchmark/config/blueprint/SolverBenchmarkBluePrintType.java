@@ -13,6 +13,9 @@ import ai.timefold.solver.core.config.localsearch.LocalSearchType;
 import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 @XmlEnum
 public enum SolverBenchmarkBluePrintType {
     /*
@@ -32,7 +35,7 @@ public enum SolverBenchmarkBluePrintType {
      */
     EVERY_CONSTRUCTION_HEURISTIC_TYPE_WITH_EVERY_LOCAL_SEARCH_TYPE;
 
-    protected List<SolverBenchmarkConfig> buildSolverBenchmarkConfigList() {
+    protected @NonNull List<SolverBenchmarkConfig> buildSolverBenchmarkConfigList() {
         switch (this) {
             case CONSTRUCTION_HEURISTIC_WITH_AND_WITHOUT_LOCAL_SEARCH:
                 return buildConstructionHeuristicWithAndWithoutLocalSearch();
@@ -86,8 +89,9 @@ public enum SolverBenchmarkBluePrintType {
         return solverBenchmarkConfigList;
     }
 
-    protected SolverBenchmarkConfig buildSolverBenchmarkConfig(ConstructionHeuristicType constructionHeuristicType,
-            boolean localSearchEnabled, LocalSearchType localSearchType) {
+    protected @NonNull SolverBenchmarkConfig buildSolverBenchmarkConfig(
+            @Nullable ConstructionHeuristicType constructionHeuristicType,
+            boolean localSearchEnabled, @Nullable LocalSearchType localSearchType) {
         SolverBenchmarkConfig solverBenchmarkConfig = new SolverBenchmarkConfig();
         String constructionHeuristicName = constructionHeuristicType == null
                 ? "Construction Heuristic"

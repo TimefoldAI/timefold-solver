@@ -5,6 +5,8 @@ import jakarta.xml.bind.annotation.XmlEnum;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlEnum
 public enum ConstructionHeuristicType {
     /**
@@ -54,7 +56,7 @@ public enum ConstructionHeuristicType {
      */
     ALLOCATE_FROM_POOL;
 
-    public EntitySorterManner getDefaultEntitySorterManner() {
+    public @NonNull EntitySorterManner getDefaultEntitySorterManner() {
         switch (this) {
             case FIRST_FIT:
             case WEAKEST_FIT:
@@ -74,7 +76,7 @@ public enum ConstructionHeuristicType {
         }
     }
 
-    public ValueSorterManner getDefaultValueSorterManner() {
+    public @NonNull ValueSorterManner getDefaultValueSorterManner() {
         switch (this) {
             case FIRST_FIT:
             case FIRST_FIT_DECREASING:
@@ -99,7 +101,7 @@ public enum ConstructionHeuristicType {
      * @return {@link ConstructionHeuristicType#values()} without duplicates (abstract types that end up behaving as one of the
      *         other types).
      */
-    public static ConstructionHeuristicType[] getBluePrintTypes() {
+    public static @NonNull ConstructionHeuristicType @NonNull [] getBluePrintTypes() {
         return new ConstructionHeuristicType[] {
                 FIRST_FIT,
                 FIRST_FIT_DECREASING,

@@ -7,6 +7,9 @@ import jakarta.xml.bind.annotation.XmlType;
 import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 @XmlType(propOrder = {
         "pickEarlyType"
 })
@@ -14,11 +17,11 @@ public class ConstructionHeuristicForagerConfig extends AbstractConfig<Construct
 
     private ConstructionHeuristicPickEarlyType pickEarlyType = null;
 
-    public ConstructionHeuristicPickEarlyType getPickEarlyType() {
+    public @Nullable ConstructionHeuristicPickEarlyType getPickEarlyType() {
         return pickEarlyType;
     }
 
-    public void setPickEarlyType(ConstructionHeuristicPickEarlyType pickEarlyType) {
+    public void setPickEarlyType(@Nullable ConstructionHeuristicPickEarlyType pickEarlyType) {
         this.pickEarlyType = pickEarlyType;
     }
 
@@ -26,24 +29,25 @@ public class ConstructionHeuristicForagerConfig extends AbstractConfig<Construct
     // With methods
     // ************************************************************************
 
-    public ConstructionHeuristicForagerConfig withPickEarlyType(ConstructionHeuristicPickEarlyType pickEarlyType) {
+    public @NonNull ConstructionHeuristicForagerConfig
+            withPickEarlyType(@NonNull ConstructionHeuristicPickEarlyType pickEarlyType) {
         this.setPickEarlyType(pickEarlyType);
         return this;
     }
 
     @Override
-    public ConstructionHeuristicForagerConfig inherit(ConstructionHeuristicForagerConfig inheritedConfig) {
+    public @NonNull ConstructionHeuristicForagerConfig inherit(@NonNull ConstructionHeuristicForagerConfig inheritedConfig) {
         pickEarlyType = ConfigUtils.inheritOverwritableProperty(pickEarlyType, inheritedConfig.getPickEarlyType());
         return this;
     }
 
     @Override
-    public ConstructionHeuristicForagerConfig copyConfig() {
+    public @NonNull ConstructionHeuristicForagerConfig copyConfig() {
         return new ConstructionHeuristicForagerConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         // No referenced classes
     }
 

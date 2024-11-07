@@ -27,6 +27,9 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubLi
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 @XmlType(propOrder = {
         "moveSelectorConfigList",
         "ignoreEmptyChildIterators"
@@ -73,7 +76,7 @@ public class CartesianProductMoveSelectorConfig extends MoveSelectorConfig<Carte
     public CartesianProductMoveSelectorConfig() {
     }
 
-    public CartesianProductMoveSelectorConfig(List<MoveSelectorConfig> moveSelectorConfigList) {
+    public CartesianProductMoveSelectorConfig(@NonNull List<@NonNull MoveSelectorConfig> moveSelectorConfigList) {
         this.moveSelectorConfigList = moveSelectorConfigList;
     }
 
@@ -95,19 +98,19 @@ public class CartesianProductMoveSelectorConfig extends MoveSelectorConfig<Carte
         setMoveSelectorList(moveSelectorConfigList);
     }
 
-    public List<MoveSelectorConfig> getMoveSelectorList() {
+    public @Nullable List<@NonNull MoveSelectorConfig> getMoveSelectorList() {
         return moveSelectorConfigList;
     }
 
-    public void setMoveSelectorList(List<MoveSelectorConfig> moveSelectorConfigList) {
+    public void setMoveSelectorList(@Nullable List<@NonNull MoveSelectorConfig> moveSelectorConfigList) {
         this.moveSelectorConfigList = moveSelectorConfigList;
     }
 
-    public Boolean getIgnoreEmptyChildIterators() {
+    public @Nullable Boolean getIgnoreEmptyChildIterators() {
         return ignoreEmptyChildIterators;
     }
 
-    public void setIgnoreEmptyChildIterators(Boolean ignoreEmptyChildIterators) {
+    public void setIgnoreEmptyChildIterators(@Nullable Boolean ignoreEmptyChildIterators) {
         this.ignoreEmptyChildIterators = ignoreEmptyChildIterators;
     }
 
@@ -115,17 +118,20 @@ public class CartesianProductMoveSelectorConfig extends MoveSelectorConfig<Carte
     // With methods
     // ************************************************************************
 
-    public CartesianProductMoveSelectorConfig withMoveSelectorList(List<MoveSelectorConfig> moveSelectorConfigList) {
+    public @NonNull CartesianProductMoveSelectorConfig
+            withMoveSelectorList(@NonNull List<@NonNull MoveSelectorConfig> moveSelectorConfigList) {
         this.moveSelectorConfigList = moveSelectorConfigList;
         return this;
     }
 
-    public CartesianProductMoveSelectorConfig withMoveSelectors(MoveSelectorConfig... moveSelectorConfigs) {
+    public @NonNull CartesianProductMoveSelectorConfig
+            withMoveSelectors(@NonNull MoveSelectorConfig @NonNull... moveSelectorConfigs) {
         this.moveSelectorConfigList = Arrays.asList(moveSelectorConfigs);
         return this;
     }
 
-    public CartesianProductMoveSelectorConfig withIgnoreEmptyChildIterators(Boolean ignoreEmptyChildIterators) {
+    public @NonNull CartesianProductMoveSelectorConfig
+            withIgnoreEmptyChildIterators(@NonNull Boolean ignoreEmptyChildIterators) {
         this.ignoreEmptyChildIterators = ignoreEmptyChildIterators;
         return this;
     }
@@ -135,14 +141,14 @@ public class CartesianProductMoveSelectorConfig extends MoveSelectorConfig<Carte
     // ************************************************************************
 
     @Override
-    public void extractLeafMoveSelectorConfigsIntoList(List<MoveSelectorConfig> leafMoveSelectorConfigList) {
+    public void extractLeafMoveSelectorConfigsIntoList(@NonNull List<@NonNull MoveSelectorConfig> leafMoveSelectorConfigList) {
         for (MoveSelectorConfig moveSelectorConfig : moveSelectorConfigList) {
             moveSelectorConfig.extractLeafMoveSelectorConfigsIntoList(leafMoveSelectorConfigList);
         }
     }
 
     @Override
-    public CartesianProductMoveSelectorConfig inherit(CartesianProductMoveSelectorConfig inheritedConfig) {
+    public @NonNull CartesianProductMoveSelectorConfig inherit(@NonNull CartesianProductMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         moveSelectorConfigList =
                 ConfigUtils.inheritMergeableListConfig(moveSelectorConfigList, inheritedConfig.getMoveSelectorList());
@@ -152,12 +158,12 @@ public class CartesianProductMoveSelectorConfig extends MoveSelectorConfig<Carte
     }
 
     @Override
-    public CartesianProductMoveSelectorConfig copyConfig() {
+    public @NonNull CartesianProductMoveSelectorConfig copyConfig() {
         return new CartesianProductMoveSelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         visitCommonReferencedClasses(classVisitor);
         if (moveSelectorConfigList != null) {
             moveSelectorConfigList.forEach(ms -> ms.visitReferencedClasses(classVisitor));

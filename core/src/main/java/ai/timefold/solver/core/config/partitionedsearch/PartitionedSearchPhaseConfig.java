@@ -21,6 +21,9 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter;
 import ai.timefold.solver.core.impl.partitionedsearch.partitioner.SolutionPartitioner;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 @XmlType(propOrder = {
         "solutionPartitionerClass",
         "solutionPartitionerCustomProperties",
@@ -57,19 +60,19 @@ public class PartitionedSearchPhaseConfig extends PhaseConfig<PartitionedSearchP
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public Class<? extends SolutionPartitioner<?>> getSolutionPartitionerClass() {
+    public @Nullable Class<? extends SolutionPartitioner<?>> getSolutionPartitionerClass() {
         return solutionPartitionerClass;
     }
 
-    public void setSolutionPartitionerClass(Class<? extends SolutionPartitioner<?>> solutionPartitionerClass) {
+    public void setSolutionPartitionerClass(@Nullable Class<? extends SolutionPartitioner<?>> solutionPartitionerClass) {
         this.solutionPartitionerClass = solutionPartitionerClass;
     }
 
-    public Map<String, String> getSolutionPartitionerCustomProperties() {
+    public @Nullable Map<String, String> getSolutionPartitionerCustomProperties() {
         return solutionPartitionerCustomProperties;
     }
 
-    public void setSolutionPartitionerCustomProperties(Map<String, String> solutionPartitionerCustomProperties) {
+    public void setSolutionPartitionerCustomProperties(@Nullable Map<String, String> solutionPartitionerCustomProperties) {
         this.solutionPartitionerCustomProperties = solutionPartitionerCustomProperties;
     }
 
@@ -97,19 +100,19 @@ public class PartitionedSearchPhaseConfig extends PhaseConfig<PartitionedSearchP
      *
      * @return null, a number, {@value #ACTIVE_THREAD_COUNT_AUTO} or {@value #ACTIVE_THREAD_COUNT_UNLIMITED}.
      */
-    public String getRunnablePartThreadLimit() {
+    public @Nullable String getRunnablePartThreadLimit() {
         return runnablePartThreadLimit;
     }
 
-    public void setRunnablePartThreadLimit(String runnablePartThreadLimit) {
+    public void setRunnablePartThreadLimit(@Nullable String runnablePartThreadLimit) {
         this.runnablePartThreadLimit = runnablePartThreadLimit;
     }
 
-    public List<PhaseConfig> getPhaseConfigList() {
+    public @Nullable List<@NonNull PhaseConfig> getPhaseConfigList() {
         return phaseConfigList;
     }
 
-    public void setPhaseConfigList(List<PhaseConfig> phaseConfigList) {
+    public void setPhaseConfigList(@Nullable List<@NonNull PhaseConfig> phaseConfigList) {
         this.phaseConfigList = phaseConfigList;
     }
 
@@ -117,35 +120,35 @@ public class PartitionedSearchPhaseConfig extends PhaseConfig<PartitionedSearchP
     // With methods
     // ************************************************************************
 
-    public PartitionedSearchPhaseConfig withSolutionPartitionerClass(
-            Class<? extends SolutionPartitioner<?>> solutionPartitionerClass) {
+    public @NonNull PartitionedSearchPhaseConfig withSolutionPartitionerClass(
+            @NonNull Class<? extends SolutionPartitioner<?>> solutionPartitionerClass) {
         this.setSolutionPartitionerClass(solutionPartitionerClass);
         return this;
     }
 
-    public PartitionedSearchPhaseConfig withSolutionPartitionerCustomProperties(
-            Map<String, String> solutionPartitionerCustomProperties) {
+    public @NonNull PartitionedSearchPhaseConfig withSolutionPartitionerCustomProperties(
+            @NonNull Map<String, String> solutionPartitionerCustomProperties) {
         this.setSolutionPartitionerCustomProperties(solutionPartitionerCustomProperties);
         return this;
     }
 
-    public PartitionedSearchPhaseConfig withRunnablePartThreadLimit(String runnablePartThreadLimit) {
+    public @NonNull PartitionedSearchPhaseConfig withRunnablePartThreadLimit(@NonNull String runnablePartThreadLimit) {
         this.setRunnablePartThreadLimit(runnablePartThreadLimit);
         return this;
     }
 
-    public PartitionedSearchPhaseConfig withPhaseConfigList(List<PhaseConfig> phaseConfigList) {
+    public @NonNull PartitionedSearchPhaseConfig withPhaseConfigList(@NonNull List<@NonNull PhaseConfig> phaseConfigList) {
         this.setPhaseConfigList(phaseConfigList);
         return this;
     }
 
-    public PartitionedSearchPhaseConfig withPhaseConfigs(PhaseConfig... phaseConfigs) {
+    public @NonNull PartitionedSearchPhaseConfig withPhaseConfigs(@NonNull PhaseConfig @NonNull... phaseConfigs) {
         this.setPhaseConfigList(List.of(phaseConfigs));
         return this;
     }
 
     @Override
-    public PartitionedSearchPhaseConfig inherit(PartitionedSearchPhaseConfig inheritedConfig) {
+    public @NonNull PartitionedSearchPhaseConfig inherit(@NonNull PartitionedSearchPhaseConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         solutionPartitionerClass = ConfigUtils.inheritOverwritableProperty(solutionPartitionerClass,
                 inheritedConfig.getSolutionPartitionerClass());
@@ -159,12 +162,12 @@ public class PartitionedSearchPhaseConfig extends PhaseConfig<PartitionedSearchP
     }
 
     @Override
-    public PartitionedSearchPhaseConfig copyConfig() {
+    public @NonNull PartitionedSearchPhaseConfig copyConfig() {
         return new PartitionedSearchPhaseConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         if (getTerminationConfig() != null) {
             getTerminationConfig().visitReferencedClasses(classVisitor);
         }

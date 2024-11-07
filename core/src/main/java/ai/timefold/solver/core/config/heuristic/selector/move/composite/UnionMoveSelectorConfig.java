@@ -32,6 +32,9 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 @XmlType(propOrder = {
         "moveSelectorConfigList",
         "selectorProbabilityWeightFactoryClass"
@@ -80,7 +83,7 @@ public class UnionMoveSelectorConfig
     public UnionMoveSelectorConfig() {
     }
 
-    public UnionMoveSelectorConfig(List<MoveSelectorConfig> moveSelectorConfigList) {
+    public UnionMoveSelectorConfig(@NonNull List<@NonNull MoveSelectorConfig> moveSelectorConfigList) {
         this.moveSelectorConfigList = moveSelectorConfigList;
     }
 
@@ -102,20 +105,20 @@ public class UnionMoveSelectorConfig
         setMoveSelectorList(moveSelectorConfigList);
     }
 
-    public List<MoveSelectorConfig> getMoveSelectorList() {
+    public @Nullable List<@NonNull MoveSelectorConfig> getMoveSelectorList() {
         return moveSelectorConfigList;
     }
 
-    public void setMoveSelectorList(List<MoveSelectorConfig> moveSelectorConfigList) {
+    public void setMoveSelectorList(@Nullable List<@NonNull MoveSelectorConfig> moveSelectorConfigList) {
         this.moveSelectorConfigList = moveSelectorConfigList;
     }
 
-    public Class<? extends SelectionProbabilityWeightFactory> getSelectorProbabilityWeightFactoryClass() {
+    public @Nullable Class<? extends SelectionProbabilityWeightFactory> getSelectorProbabilityWeightFactoryClass() {
         return selectorProbabilityWeightFactoryClass;
     }
 
     public void setSelectorProbabilityWeightFactoryClass(
-            Class<? extends SelectionProbabilityWeightFactory> selectorProbabilityWeightFactoryClass) {
+            @Nullable Class<? extends SelectionProbabilityWeightFactory> selectorProbabilityWeightFactoryClass) {
         this.selectorProbabilityWeightFactoryClass = selectorProbabilityWeightFactoryClass;
     }
 
@@ -123,18 +126,19 @@ public class UnionMoveSelectorConfig
     // With methods
     // ************************************************************************
 
-    public UnionMoveSelectorConfig withMoveSelectorList(List<MoveSelectorConfig> moveSelectorConfigList) {
+    public @NonNull UnionMoveSelectorConfig
+            withMoveSelectorList(@NonNull List<@NonNull MoveSelectorConfig> moveSelectorConfigList) {
         this.moveSelectorConfigList = moveSelectorConfigList;
         return this;
     }
 
-    public UnionMoveSelectorConfig withMoveSelectors(MoveSelectorConfig... moveSelectorConfigs) {
+    public @NonNull UnionMoveSelectorConfig withMoveSelectors(@NonNull MoveSelectorConfig @NonNull... moveSelectorConfigs) {
         this.moveSelectorConfigList = Arrays.asList(moveSelectorConfigs);
         return this;
     }
 
-    public UnionMoveSelectorConfig withSelectorProbabilityWeightFactoryClass(
-            Class<? extends SelectionProbabilityWeightFactory> selectorProbabilityWeightFactoryClass) {
+    public @NonNull UnionMoveSelectorConfig withSelectorProbabilityWeightFactoryClass(
+            @NonNull Class<? extends SelectionProbabilityWeightFactory> selectorProbabilityWeightFactoryClass) {
         this.selectorProbabilityWeightFactoryClass = selectorProbabilityWeightFactoryClass;
         return this;
     }
@@ -144,14 +148,14 @@ public class UnionMoveSelectorConfig
     // ************************************************************************
 
     @Override
-    public void extractLeafMoveSelectorConfigsIntoList(List<MoveSelectorConfig> leafMoveSelectorConfigList) {
+    public void extractLeafMoveSelectorConfigsIntoList(@NonNull List<@NonNull MoveSelectorConfig> leafMoveSelectorConfigList) {
         for (MoveSelectorConfig moveSelectorConfig : moveSelectorConfigList) {
             moveSelectorConfig.extractLeafMoveSelectorConfigsIntoList(leafMoveSelectorConfigList);
         }
     }
 
     @Override
-    public UnionMoveSelectorConfig inherit(UnionMoveSelectorConfig inheritedConfig) {
+    public @NonNull UnionMoveSelectorConfig inherit(@NonNull UnionMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         moveSelectorConfigList =
                 ConfigUtils.inheritMergeableListConfig(moveSelectorConfigList, inheritedConfig.getMoveSelectorList());
@@ -161,12 +165,12 @@ public class UnionMoveSelectorConfig
     }
 
     @Override
-    public UnionMoveSelectorConfig copyConfig() {
+    public @NonNull UnionMoveSelectorConfig copyConfig() {
         return new UnionMoveSelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         visitCommonReferencedClasses(classVisitor);
         if (moveSelectorConfigList != null) {
             moveSelectorConfigList.forEach(ms -> ms.visitReferencedClasses(classVisitor));
@@ -175,8 +179,9 @@ public class UnionMoveSelectorConfig
     }
 
     @Override
-    public UnionMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
-            Random random) {
+    public @NonNull UnionMoveSelectorConfig enableNearbySelection(
+            @NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
+            @NonNull Random random) {
         UnionMoveSelectorConfig nearbyConfig = copyConfig();
         var updatedMoveSelectorList = new LinkedList<MoveSelectorConfig>();
         for (var selectorConfig : moveSelectorConfigList) {

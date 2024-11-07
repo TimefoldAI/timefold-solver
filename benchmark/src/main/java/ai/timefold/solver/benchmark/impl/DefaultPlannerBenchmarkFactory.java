@@ -23,6 +23,7 @@ import ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResult;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.solver.thread.DefaultSolverThreadFactory;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,13 +52,13 @@ public class DefaultPlannerBenchmarkFactory extends PlannerBenchmarkFactory {
      * @return never null
      */
     @Override
-    public PlannerBenchmark buildPlannerBenchmark() {
+    public @NonNull PlannerBenchmark buildPlannerBenchmark() {
         return buildPlannerBenchmark(new Object[0]);
     }
 
     @Override
     @SafeVarargs
-    public final <Solution_> PlannerBenchmark buildPlannerBenchmark(Solution_... problems) {
+    public final @NonNull <Solution_> PlannerBenchmark buildPlannerBenchmark(@NonNull Solution_ @NonNull... problems) {
         validate();
         generateSolverBenchmarkConfigNames();
         List<SolverBenchmarkConfig> effectiveSolverBenchmarkConfigList = buildEffectiveSolverBenchmarkConfigList();

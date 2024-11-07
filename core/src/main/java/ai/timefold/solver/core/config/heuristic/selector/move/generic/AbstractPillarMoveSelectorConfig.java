@@ -10,6 +10,9 @@ import ai.timefold.solver.core.config.heuristic.selector.entity.pillar.PillarSel
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 @XmlType(propOrder = {
         "subPillarType",
         "subPillarSequenceComparatorClass",
@@ -23,27 +26,28 @@ public abstract class AbstractPillarMoveSelectorConfig<Config_ extends AbstractP
     @XmlElement(name = "pillarSelector")
     protected PillarSelectorConfig pillarSelectorConfig = null;
 
-    public SubPillarType getSubPillarType() {
+    public @Nullable SubPillarType getSubPillarType() {
         return subPillarType;
     }
 
-    public void setSubPillarType(final SubPillarType subPillarType) {
+    public void setSubPillarType(final @Nullable SubPillarType subPillarType) {
         this.subPillarType = subPillarType;
     }
 
-    public Class<? extends Comparator> getSubPillarSequenceComparatorClass() {
+    public @Nullable Class<? extends Comparator> getSubPillarSequenceComparatorClass() {
         return subPillarSequenceComparatorClass;
     }
 
-    public void setSubPillarSequenceComparatorClass(final Class<? extends Comparator> subPillarSequenceComparatorClass) {
+    public void
+            setSubPillarSequenceComparatorClass(final @Nullable Class<? extends Comparator> subPillarSequenceComparatorClass) {
         this.subPillarSequenceComparatorClass = subPillarSequenceComparatorClass;
     }
 
-    public PillarSelectorConfig getPillarSelectorConfig() {
+    public @Nullable PillarSelectorConfig getPillarSelectorConfig() {
         return pillarSelectorConfig;
     }
 
-    public void setPillarSelectorConfig(PillarSelectorConfig pillarSelectorConfig) {
+    public void setPillarSelectorConfig(@Nullable PillarSelectorConfig pillarSelectorConfig) {
         this.pillarSelectorConfig = pillarSelectorConfig;
     }
 
@@ -51,23 +55,24 @@ public abstract class AbstractPillarMoveSelectorConfig<Config_ extends AbstractP
     // With methods
     // ************************************************************************
 
-    public Config_ withSubPillarType(SubPillarType subPillarType) {
+    public @NonNull Config_ withSubPillarType(@NonNull SubPillarType subPillarType) {
         this.setSubPillarType(subPillarType);
         return (Config_) this;
     }
 
-    public Config_ withSubPillarSequenceComparatorClass(Class<? extends Comparator> subPillarSequenceComparatorClass) {
+    public @NonNull Config_
+            withSubPillarSequenceComparatorClass(@NonNull Class<? extends Comparator> subPillarSequenceComparatorClass) {
         this.setSubPillarSequenceComparatorClass(subPillarSequenceComparatorClass);
         return (Config_) this;
     }
 
-    public Config_ withPillarSelectorConfig(PillarSelectorConfig pillarSelectorConfig) {
+    public @NonNull Config_ withPillarSelectorConfig(@NonNull PillarSelectorConfig pillarSelectorConfig) {
         this.setPillarSelectorConfig(pillarSelectorConfig);
         return (Config_) this;
     }
 
     @Override
-    public Config_ inherit(Config_ inheritedConfig) {
+    public @NonNull Config_ inherit(@NonNull Config_ inheritedConfig) {
         super.inherit(inheritedConfig);
         subPillarType = ConfigUtils.inheritOverwritableProperty(subPillarType, inheritedConfig.getSubPillarType());
         subPillarSequenceComparatorClass = ConfigUtils.inheritOverwritableProperty(subPillarSequenceComparatorClass,
@@ -77,7 +82,7 @@ public abstract class AbstractPillarMoveSelectorConfig<Config_ extends AbstractP
     }
 
     @Override
-    protected void visitCommonReferencedClasses(Consumer<Class<?>> classVisitor) {
+    protected void visitCommonReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         super.visitCommonReferencedClasses(classVisitor);
         classVisitor.accept(subPillarSequenceComparatorClass);
         if (pillarSelectorConfig != null) {

@@ -11,6 +11,9 @@ import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySel
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 @XmlType(propOrder = {
         "id",
         "mimicSelectorRef",
@@ -37,57 +40,57 @@ public class SubListSelectorConfig extends SelectorConfig<SubListSelectorConfig>
     public SubListSelectorConfig() {
     }
 
-    public SubListSelectorConfig(SubListSelectorConfig inheritedConfig) {
+    public SubListSelectorConfig(@Nullable SubListSelectorConfig inheritedConfig) {
         if (inheritedConfig != null) {
             inherit(inheritedConfig);
         }
     }
 
-    public String getId() {
+    public @Nullable String getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(@Nullable String id) {
         this.id = id;
     }
 
-    public String getMimicSelectorRef() {
+    public @Nullable String getMimicSelectorRef() {
         return mimicSelectorRef;
     }
 
-    public void setMimicSelectorRef(String mimicSelectorRef) {
+    public void setMimicSelectorRef(@Nullable String mimicSelectorRef) {
         this.mimicSelectorRef = mimicSelectorRef;
     }
 
-    public ValueSelectorConfig getValueSelectorConfig() {
+    public @Nullable ValueSelectorConfig getValueSelectorConfig() {
         return valueSelectorConfig;
     }
 
-    public void setValueSelectorConfig(ValueSelectorConfig valueSelectorConfig) {
+    public void setValueSelectorConfig(@Nullable ValueSelectorConfig valueSelectorConfig) {
         this.valueSelectorConfig = valueSelectorConfig;
     }
 
-    public NearbySelectionConfig getNearbySelectionConfig() {
+    public @Nullable NearbySelectionConfig getNearbySelectionConfig() {
         return nearbySelectionConfig;
     }
 
-    public void setNearbySelectionConfig(NearbySelectionConfig nearbySelectionConfig) {
+    public void setNearbySelectionConfig(@Nullable NearbySelectionConfig nearbySelectionConfig) {
         this.nearbySelectionConfig = nearbySelectionConfig;
     }
 
-    public Integer getMinimumSubListSize() {
+    public @Nullable Integer getMinimumSubListSize() {
         return minimumSubListSize;
     }
 
-    public void setMinimumSubListSize(Integer minimumSubListSize) {
+    public void setMinimumSubListSize(@Nullable Integer minimumSubListSize) {
         this.minimumSubListSize = minimumSubListSize;
     }
 
-    public Integer getMaximumSubListSize() {
+    public @Nullable Integer getMaximumSubListSize() {
         return maximumSubListSize;
     }
 
-    public void setMaximumSubListSize(Integer maximumSubListSize) {
+    public void setMaximumSubListSize(@Nullable Integer maximumSubListSize) {
         this.maximumSubListSize = maximumSubListSize;
     }
 
@@ -95,32 +98,32 @@ public class SubListSelectorConfig extends SelectorConfig<SubListSelectorConfig>
     // With methods
     // ************************************************************************
 
-    public SubListSelectorConfig withId(String id) {
+    public @NonNull SubListSelectorConfig withId(@NonNull String id) {
         this.setId(id);
         return this;
     }
 
-    public SubListSelectorConfig withMimicSelectorRef(String mimicSelectorRef) {
+    public @NonNull SubListSelectorConfig withMimicSelectorRef(@NonNull String mimicSelectorRef) {
         this.setMimicSelectorRef(mimicSelectorRef);
         return this;
     }
 
-    public SubListSelectorConfig withValueSelectorConfig(ValueSelectorConfig valueSelectorConfig) {
+    public @NonNull SubListSelectorConfig withValueSelectorConfig(@NonNull ValueSelectorConfig valueSelectorConfig) {
         this.setValueSelectorConfig(valueSelectorConfig);
         return this;
     }
 
-    public SubListSelectorConfig withNearbySelectionConfig(NearbySelectionConfig nearbySelectionConfig) {
+    public @NonNull SubListSelectorConfig withNearbySelectionConfig(@NonNull NearbySelectionConfig nearbySelectionConfig) {
         this.setNearbySelectionConfig(nearbySelectionConfig);
         return this;
     }
 
-    public SubListSelectorConfig withMinimumSubListSize(Integer minimumSubListSize) {
+    public @NonNull SubListSelectorConfig withMinimumSubListSize(@NonNull Integer minimumSubListSize) {
         this.setMinimumSubListSize(minimumSubListSize);
         return this;
     }
 
-    public SubListSelectorConfig withMaximumSubListSize(Integer maximumSubListSize) {
+    public @NonNull SubListSelectorConfig withMaximumSubListSize(@NonNull Integer maximumSubListSize) {
         this.setMaximumSubListSize(maximumSubListSize);
         return this;
     }
@@ -130,7 +133,7 @@ public class SubListSelectorConfig extends SelectorConfig<SubListSelectorConfig>
     // ************************************************************************
 
     @Override
-    public SubListSelectorConfig inherit(SubListSelectorConfig inheritedConfig) {
+    public @NonNull SubListSelectorConfig inherit(@NonNull SubListSelectorConfig inheritedConfig) {
         id = ConfigUtils.inheritOverwritableProperty(id, inheritedConfig.id);
         mimicSelectorRef = ConfigUtils.inheritOverwritableProperty(mimicSelectorRef, inheritedConfig.mimicSelectorRef);
         valueSelectorConfig = ConfigUtils.inheritConfig(valueSelectorConfig, inheritedConfig.valueSelectorConfig);
@@ -141,12 +144,12 @@ public class SubListSelectorConfig extends SelectorConfig<SubListSelectorConfig>
     }
 
     @Override
-    public SubListSelectorConfig copyConfig() {
+    public @NonNull SubListSelectorConfig copyConfig() {
         return new SubListSelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         if (valueSelectorConfig != null) {
             valueSelectorConfig.visitReferencedClasses(classVisitor);
         }

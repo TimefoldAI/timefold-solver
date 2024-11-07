@@ -51,6 +51,9 @@ import ai.timefold.solver.core.impl.io.jaxb.TimefoldXmlSerializationException;
 import ai.timefold.solver.core.impl.phase.PhaseFactory;
 import ai.timefold.solver.core.impl.solver.random.RandomFactory;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * To read it from XML, use {@link #createFromXmlResource(String)}.
  * To build a {@link SolverFactory} with it, use {@link SolverFactory#create(SolverConfig)}.
@@ -83,24 +86,22 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
     /**
      * Reads an XML solver configuration from the classpath.
      *
-     * @param solverConfigResource never null, a classpath resource
-     *        as defined by {@link ClassLoader#getResource(String)}
-     * @return never null
+     * @param solverConfigResource a classpath resource as defined by {@link ClassLoader#getResource(String)}
      */
-    public static SolverConfig createFromXmlResource(String solverConfigResource) {
+    public static @NonNull SolverConfig createFromXmlResource(@NonNull String solverConfigResource) {
         return createFromXmlResource(solverConfigResource, null);
     }
 
     /**
      * As defined by {@link #createFromXmlResource(String)}.
      *
-     * @param solverConfigResource never null, a classpath resource
+     * @param solverConfigResource a classpath resource
      *        as defined by {@link ClassLoader#getResource(String)}
-     * @param classLoader sometimes null, the {@link ClassLoader} to use for loading all resources and {@link Class}es,
+     * @param classLoader the {@link ClassLoader} to use for loading all resources and {@link Class}es,
      *        null to use the default {@link ClassLoader}
-     * @return never null
      */
-    public static SolverConfig createFromXmlResource(String solverConfigResource, ClassLoader classLoader) {
+    public static @NonNull SolverConfig createFromXmlResource(@NonNull String solverConfigResource,
+            @Nullable ClassLoader classLoader) {
         ClassLoader actualClassLoader = classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader();
         try (InputStream in = actualClassLoader.getResourceAsStream(solverConfigResource)) {
             if (in == null) {
@@ -128,22 +129,18 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
      * Warning: this leads to platform dependent code,
      * it's recommend to use {@link #createFromXmlResource(String)} instead.
      *
-     * @param solverConfigFile never null
-     * @return never null
      */
-    public static SolverConfig createFromXmlFile(File solverConfigFile) {
+    public static @NonNull SolverConfig createFromXmlFile(@NonNull File solverConfigFile) {
         return createFromXmlFile(solverConfigFile, null);
     }
 
     /**
      * As defined by {@link #createFromXmlFile(File)}.
      *
-     * @param solverConfigFile never null
-     * @param classLoader sometimes null, the {@link ClassLoader} to use for loading all resources and {@link Class}es,
+     * @param classLoader the {@link ClassLoader} to use for loading all resources and {@link Class}es,
      *        null to use the default {@link ClassLoader}
-     * @return never null
      */
-    public static SolverConfig createFromXmlFile(File solverConfigFile, ClassLoader classLoader) {
+    public static @NonNull SolverConfig createFromXmlFile(@NonNull File solverConfigFile, @Nullable ClassLoader classLoader) {
         try (InputStream in = new FileInputStream(solverConfigFile)) {
             return createFromXmlInputStream(in, classLoader);
         } catch (TimefoldXmlSerializationException e) {
@@ -156,22 +153,20 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
     }
 
     /**
-     * @param in never null, gets closed
-     * @return never null
+     * @param in gets closed
      */
-    public static SolverConfig createFromXmlInputStream(InputStream in) {
+    public static @NonNull SolverConfig createFromXmlInputStream(@NonNull InputStream in) {
         return createFromXmlInputStream(in, null);
     }
 
     /**
      * As defined by {@link #createFromXmlInputStream(InputStream)}.
      *
-     * @param in never null, gets closed
-     * @param classLoader sometimes null, the {@link ClassLoader} to use for loading all resources and {@link Class}es,
+     * @param in gets closed
+     * @param classLoader the {@link ClassLoader} to use for loading all resources and {@link Class}es,
      *        null to use the default {@link ClassLoader}
-     * @return never null
      */
-    public static SolverConfig createFromXmlInputStream(InputStream in, ClassLoader classLoader) {
+    public static @NonNull SolverConfig createFromXmlInputStream(@NonNull InputStream in, @Nullable ClassLoader classLoader) {
         try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
             return createFromXmlReader(reader, classLoader);
         } catch (UnsupportedEncodingException e) {
@@ -182,22 +177,20 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
     }
 
     /**
-     * @param reader never null, gets closed
-     * @return never null
+     * @param reader gets closed
      */
-    public static SolverConfig createFromXmlReader(Reader reader) {
+    public static @NonNull SolverConfig createFromXmlReader(@NonNull Reader reader) {
         return createFromXmlReader(reader, null);
     }
 
     /**
      * As defined by {@link #createFromXmlReader(Reader)}.
      *
-     * @param reader never null, gets closed
-     * @param classLoader sometimes null, the {@link ClassLoader} to use for loading all resources and {@link Class}es,
+     * @param reader gets closed
+     * @param classLoader the {@link ClassLoader} to use for loading all resources and {@link Class}es,
      *        null to use the default {@link ClassLoader}
-     * @return never null
      */
-    public static SolverConfig createFromXmlReader(Reader reader, ClassLoader classLoader) {
+    public static @NonNull SolverConfig createFromXmlReader(@NonNull Reader reader, @Nullable ClassLoader classLoader) {
         SolverConfigIO solverConfigIO = new SolverConfigIO();
         SolverConfig solverConfig = solverConfigIO.read(reader);
         solverConfig.setClassLoader(classLoader);
@@ -268,10 +261,7 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
     public SolverConfig() {
     }
 
-    /**
-     * @param classLoader sometimes null
-     */
-    public SolverConfig(ClassLoader classLoader) {
+    public SolverConfig(@Nullable ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
 
@@ -281,161 +271,160 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
      * by building a separate {@link SolverFactory} with {@link SolverFactory#create(SolverConfig)}
      * and a separate {@link Solver} per request to avoid race conditions.
      *
-     * @param inheritedConfig never null
      */
-    public SolverConfig(SolverConfig inheritedConfig) {
+    public SolverConfig(@NonNull SolverConfig inheritedConfig) {
         inherit(inheritedConfig);
     }
 
-    public ClassLoader getClassLoader() {
+    public @Nullable ClassLoader getClassLoader() {
         return classLoader;
     }
 
-    public void setClassLoader(ClassLoader classLoader) {
+    public void setClassLoader(@Nullable ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
 
-    public EnvironmentMode getEnvironmentMode() {
+    public @Nullable EnvironmentMode getEnvironmentMode() {
         return environmentMode;
     }
 
-    public void setEnvironmentMode(EnvironmentMode environmentMode) {
+    public void setEnvironmentMode(@Nullable EnvironmentMode environmentMode) {
         this.environmentMode = environmentMode;
     }
 
-    public Boolean getDaemon() {
+    public @Nullable Boolean getDaemon() {
         return daemon;
     }
 
-    public void setDaemon(Boolean daemon) {
+    public void setDaemon(@Nullable Boolean daemon) {
         this.daemon = daemon;
     }
 
-    public RandomType getRandomType() {
+    public @Nullable RandomType getRandomType() {
         return randomType;
     }
 
-    public void setRandomType(RandomType randomType) {
+    public void setRandomType(@Nullable RandomType randomType) {
         this.randomType = randomType;
     }
 
-    public Long getRandomSeed() {
+    public @Nullable Long getRandomSeed() {
         return randomSeed;
     }
 
-    public void setRandomSeed(Long randomSeed) {
+    public void setRandomSeed(@Nullable Long randomSeed) {
         this.randomSeed = randomSeed;
     }
 
-    public Class<? extends RandomFactory> getRandomFactoryClass() {
+    public @Nullable Class<? extends RandomFactory> getRandomFactoryClass() {
         return randomFactoryClass;
     }
 
-    public void setRandomFactoryClass(Class<? extends RandomFactory> randomFactoryClass) {
+    public void setRandomFactoryClass(@Nullable Class<? extends RandomFactory> randomFactoryClass) {
         this.randomFactoryClass = randomFactoryClass;
     }
 
-    public String getMoveThreadCount() {
+    public @Nullable String getMoveThreadCount() {
         return moveThreadCount;
     }
 
-    public void setMoveThreadCount(String moveThreadCount) {
+    public void setMoveThreadCount(@Nullable String moveThreadCount) {
         this.moveThreadCount = moveThreadCount;
     }
 
-    public Integer getMoveThreadBufferSize() {
+    public @Nullable Integer getMoveThreadBufferSize() {
         return moveThreadBufferSize;
     }
 
-    public void setMoveThreadBufferSize(Integer moveThreadBufferSize) {
+    public void setMoveThreadBufferSize(@Nullable Integer moveThreadBufferSize) {
         this.moveThreadBufferSize = moveThreadBufferSize;
     }
 
-    public Class<? extends ThreadFactory> getThreadFactoryClass() {
+    public @Nullable Class<? extends ThreadFactory> getThreadFactoryClass() {
         return threadFactoryClass;
     }
 
-    public void setThreadFactoryClass(Class<? extends ThreadFactory> threadFactoryClass) {
+    public void setThreadFactoryClass(@Nullable Class<? extends ThreadFactory> threadFactoryClass) {
         this.threadFactoryClass = threadFactoryClass;
     }
 
-    public Class<?> getSolutionClass() {
+    public @Nullable Class<?> getSolutionClass() {
         return solutionClass;
     }
 
-    public void setSolutionClass(Class<?> solutionClass) {
+    public void setSolutionClass(@Nullable Class<?> solutionClass) {
         this.solutionClass = solutionClass;
     }
 
-    public List<Class<?>> getEntityClassList() {
+    public @Nullable List<Class<?>> getEntityClassList() {
         return entityClassList;
     }
 
-    public void setEntityClassList(List<Class<?>> entityClassList) {
+    public void setEntityClassList(@Nullable List<Class<?>> entityClassList) {
         this.entityClassList = entityClassList;
     }
 
-    public DomainAccessType getDomainAccessType() {
+    public @Nullable DomainAccessType getDomainAccessType() {
         return domainAccessType;
     }
 
-    public void setDomainAccessType(DomainAccessType domainAccessType) {
+    public void setDomainAccessType(@Nullable DomainAccessType domainAccessType) {
         this.domainAccessType = domainAccessType;
     }
 
-    public Map<String, MemberAccessor> getGizmoMemberAccessorMap() {
+    public @Nullable Map<@NonNull String, @NonNull MemberAccessor> getGizmoMemberAccessorMap() {
         return gizmoMemberAccessorMap;
     }
 
-    public void setGizmoMemberAccessorMap(Map<String, MemberAccessor> gizmoMemberAccessorMap) {
+    public void setGizmoMemberAccessorMap(@Nullable Map<@NonNull String, @NonNull MemberAccessor> gizmoMemberAccessorMap) {
         this.gizmoMemberAccessorMap = gizmoMemberAccessorMap;
     }
 
-    public Map<String, SolutionCloner> getGizmoSolutionClonerMap() {
+    public @Nullable Map<@NonNull String, @NonNull SolutionCloner> getGizmoSolutionClonerMap() {
         return gizmoSolutionClonerMap;
     }
 
-    public void setGizmoSolutionClonerMap(Map<String, SolutionCloner> gizmoSolutionClonerMap) {
+    public void setGizmoSolutionClonerMap(@Nullable Map<@NonNull String, @NonNull SolutionCloner> gizmoSolutionClonerMap) {
         this.gizmoSolutionClonerMap = gizmoSolutionClonerMap;
     }
 
-    public ScoreDirectorFactoryConfig getScoreDirectorFactoryConfig() {
+    public @Nullable ScoreDirectorFactoryConfig getScoreDirectorFactoryConfig() {
         return scoreDirectorFactoryConfig;
     }
 
-    public void setScoreDirectorFactoryConfig(ScoreDirectorFactoryConfig scoreDirectorFactoryConfig) {
+    public void setScoreDirectorFactoryConfig(@Nullable ScoreDirectorFactoryConfig scoreDirectorFactoryConfig) {
         this.scoreDirectorFactoryConfig = scoreDirectorFactoryConfig;
     }
 
-    public TerminationConfig getTerminationConfig() {
+    public @Nullable TerminationConfig getTerminationConfig() {
         return terminationConfig;
     }
 
-    public void setTerminationConfig(TerminationConfig terminationConfig) {
+    public void setTerminationConfig(@Nullable TerminationConfig terminationConfig) {
         this.terminationConfig = terminationConfig;
     }
 
-    public Class<? extends NearbyDistanceMeter<?, ?>> getNearbyDistanceMeterClass() {
+    public @Nullable Class<? extends NearbyDistanceMeter<?, ?>> getNearbyDistanceMeterClass() {
         return nearbyDistanceMeterClass;
     }
 
-    public void setNearbyDistanceMeterClass(Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass) {
+    public void setNearbyDistanceMeterClass(@Nullable Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass) {
         this.nearbyDistanceMeterClass = nearbyDistanceMeterClass;
     }
 
-    public List<PhaseConfig> getPhaseConfigList() {
+    public @Nullable List<@NonNull PhaseConfig> getPhaseConfigList() {
         return phaseConfigList;
     }
 
-    public void setPhaseConfigList(List<PhaseConfig> phaseConfigList) {
+    public void setPhaseConfigList(@Nullable List<@NonNull PhaseConfig> phaseConfigList) {
         this.phaseConfigList = phaseConfigList;
     }
 
-    public MonitoringConfig getMonitoringConfig() {
+    public @Nullable MonitoringConfig getMonitoringConfig() {
         return monitoringConfig;
     }
 
-    public void setMonitoringConfig(MonitoringConfig monitoringConfig) {
+    public void setMonitoringConfig(@Nullable MonitoringConfig monitoringConfig) {
         this.monitoringConfig = monitoringConfig;
     }
 
@@ -443,93 +432,93 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
     // With methods
     // ************************************************************************
 
-    public SolverConfig withEnvironmentMode(EnvironmentMode environmentMode) {
+    public @NonNull SolverConfig withEnvironmentMode(@NonNull EnvironmentMode environmentMode) {
         this.environmentMode = environmentMode;
         return this;
     }
 
-    public SolverConfig withDaemon(Boolean daemon) {
+    public @NonNull SolverConfig withDaemon(@NonNull Boolean daemon) {
         this.daemon = daemon;
         return this;
     }
 
-    public SolverConfig withRandomType(RandomType randomType) {
+    public @NonNull SolverConfig withRandomType(@NonNull RandomType randomType) {
         this.randomType = randomType;
         return this;
     }
 
-    public SolverConfig withRandomSeed(Long randomSeed) {
+    public @NonNull SolverConfig withRandomSeed(@NonNull Long randomSeed) {
         this.randomSeed = randomSeed;
         return this;
     }
 
-    public SolverConfig withRandomFactoryClass(Class<? extends RandomFactory> randomFactoryClass) {
+    public @NonNull SolverConfig withRandomFactoryClass(@NonNull Class<? extends RandomFactory> randomFactoryClass) {
         this.randomFactoryClass = randomFactoryClass;
         return this;
     }
 
-    public SolverConfig withMoveThreadCount(String moveThreadCount) {
+    public @NonNull SolverConfig withMoveThreadCount(@NonNull String moveThreadCount) {
         this.moveThreadCount = moveThreadCount;
         return this;
     }
 
-    public SolverConfig withMoveThreadBufferSize(Integer moveThreadBufferSize) {
+    public @NonNull SolverConfig withMoveThreadBufferSize(@NonNull Integer moveThreadBufferSize) {
         this.moveThreadBufferSize = moveThreadBufferSize;
         return this;
     }
 
-    public SolverConfig withThreadFactoryClass(Class<? extends ThreadFactory> threadFactoryClass) {
+    public @NonNull SolverConfig withThreadFactoryClass(@NonNull Class<? extends ThreadFactory> threadFactoryClass) {
         this.threadFactoryClass = threadFactoryClass;
         return this;
     }
 
-    public SolverConfig withSolutionClass(Class<?> solutionClass) {
+    public @NonNull SolverConfig withSolutionClass(@NonNull Class<?> solutionClass) {
         this.solutionClass = solutionClass;
         return this;
     }
 
-    public SolverConfig withEntityClassList(List<Class<?>> entityClassList) {
+    public @NonNull SolverConfig withEntityClassList(@NonNull List<Class<?>> entityClassList) {
         this.entityClassList = entityClassList;
         return this;
     }
 
-    public SolverConfig withEntityClasses(Class<?>... entityClasses) {
+    public @NonNull SolverConfig withEntityClasses(@NonNull Class<?>... entityClasses) {
         this.entityClassList = Arrays.asList(entityClasses);
         return this;
     }
 
-    public SolverConfig withDomainAccessType(DomainAccessType domainAccessType) {
+    public @NonNull SolverConfig withDomainAccessType(@NonNull DomainAccessType domainAccessType) {
         this.domainAccessType = domainAccessType;
         return this;
     }
 
-    public SolverConfig withGizmoMemberAccessorMap(Map<String, MemberAccessor> memberAccessorMap) {
+    public @NonNull SolverConfig
+            withGizmoMemberAccessorMap(@NonNull Map<@NonNull String, @NonNull MemberAccessor> memberAccessorMap) {
         this.gizmoMemberAccessorMap = memberAccessorMap;
         return this;
     }
 
-    public SolverConfig withGizmoSolutionClonerMap(Map<String, SolutionCloner> solutionClonerMap) {
+    public @NonNull SolverConfig
+            withGizmoSolutionClonerMap(@NonNull Map<@NonNull String, @NonNull SolutionCloner> solutionClonerMap) {
         this.gizmoSolutionClonerMap = solutionClonerMap;
         return this;
     }
 
-    public SolverConfig withScoreDirectorFactory(ScoreDirectorFactoryConfig scoreDirectorFactoryConfig) {
+    public @NonNull SolverConfig withScoreDirectorFactory(@NonNull ScoreDirectorFactoryConfig scoreDirectorFactoryConfig) {
         this.scoreDirectorFactoryConfig = scoreDirectorFactoryConfig;
         return this;
     }
 
-    public SolverConfig withClassLoader(ClassLoader classLoader) {
+    public @NonNull SolverConfig withClassLoader(@NonNull ClassLoader classLoader) {
         this.setClassLoader(classLoader);
         return this;
     }
 
     /**
      * As defined by {@link ScoreDirectorFactoryConfig#withEasyScoreCalculatorClass(Class)}, but returns this.
-     *
-     * @param easyScoreCalculatorClass sometimes null
-     * @return this, never null
      */
-    public SolverConfig withEasyScoreCalculatorClass(Class<? extends EasyScoreCalculator> easyScoreCalculatorClass) {
+    public @NonNull SolverConfig withEasyScoreCalculatorClass(
+            @NonNull Class<? extends EasyScoreCalculator> easyScoreCalculatorClass) {
         if (scoreDirectorFactoryConfig == null) {
             scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
         }
@@ -539,11 +528,9 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
 
     /**
      * As defined by {@link ScoreDirectorFactoryConfig#withConstraintProviderClass(Class)}, but returns this.
-     *
-     * @param constraintProviderClass sometimes null
-     * @return this, never null
      */
-    public SolverConfig withConstraintProviderClass(Class<? extends ConstraintProvider> constraintProviderClass) {
+    public @NonNull SolverConfig withConstraintProviderClass(
+            @NonNull Class<? extends ConstraintProvider> constraintProviderClass) {
         if (scoreDirectorFactoryConfig == null) {
             scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
         }
@@ -551,7 +538,7 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
         return this;
     }
 
-    public SolverConfig withConstraintStreamImplType(ConstraintStreamImplType constraintStreamImplType) {
+    public @NonNull SolverConfig withConstraintStreamImplType(@NonNull ConstraintStreamImplType constraintStreamImplType) {
         if (scoreDirectorFactoryConfig == null) {
             scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
         }
@@ -559,18 +546,15 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
         return this;
     }
 
-    public SolverConfig withTerminationConfig(TerminationConfig terminationConfig) {
+    public @NonNull SolverConfig withTerminationConfig(@NonNull TerminationConfig terminationConfig) {
         this.terminationConfig = terminationConfig;
         return this;
     }
 
     /**
      * As defined by {@link TerminationConfig#withSpentLimit(Duration)}, but returns this.
-     *
-     * @param spentLimit sometimes null
-     * @return this, never null
      */
-    public SolverConfig withTerminationSpentLimit(Duration spentLimit) {
+    public @NonNull SolverConfig withTerminationSpentLimit(@NonNull Duration spentLimit) {
         if (terminationConfig == null) {
             terminationConfig = new TerminationConfig();
         }
@@ -578,22 +562,23 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
         return this;
     }
 
-    public SolverConfig withNearbyDistanceMeterClass(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeterClass) {
+    public @NonNull SolverConfig
+            withNearbyDistanceMeterClass(@NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeterClass) {
         this.nearbyDistanceMeterClass = distanceMeterClass;
         return this;
     }
 
-    public SolverConfig withPhaseList(List<PhaseConfig> phaseConfigList) {
+    public @NonNull SolverConfig withPhaseList(@NonNull List<@NonNull PhaseConfig> phaseConfigList) {
         this.phaseConfigList = phaseConfigList;
         return this;
     }
 
-    public SolverConfig withPhases(PhaseConfig... phaseConfigs) {
+    public @NonNull SolverConfig withPhases(@NonNull PhaseConfig... phaseConfigs) {
         this.phaseConfigList = Arrays.asList(phaseConfigs);
         return this;
     }
 
-    public SolverConfig withMonitoringConfig(MonitoringConfig monitoringConfig) {
+    public @NonNull SolverConfig withMonitoringConfig(@NonNull MonitoringConfig monitoringConfig) {
         this.monitoringConfig = monitoringConfig;
         return this;
     }
@@ -620,15 +605,15 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
         }
     }
 
-    public EnvironmentMode determineEnvironmentMode() {
+    public @NonNull EnvironmentMode determineEnvironmentMode() {
         return Objects.requireNonNullElse(environmentMode, EnvironmentMode.REPRODUCIBLE);
     }
 
-    public DomainAccessType determineDomainAccessType() {
+    public @NonNull DomainAccessType determineDomainAccessType() {
         return Objects.requireNonNullElse(domainAccessType, DomainAccessType.REFLECTION);
     }
 
-    public MonitoringConfig determineMetricConfig() {
+    public @NonNull MonitoringConfig determineMetricConfig() {
         return Objects.requireNonNullElse(monitoringConfig,
                 new MonitoringConfig().withSolverMetricList(Arrays.asList(SolverMetric.SOLVE_DURATION, SolverMetric.ERROR_COUNT,
                         SolverMetric.SCORE_CALCULATION_COUNT, SolverMetric.MOVE_EVALUATION_COUNT,
@@ -651,11 +636,9 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
     /**
      * Do not use this method, it is an internal method.
      * Use {@link #SolverConfig(SolverConfig)} instead.
-     *
-     * @param inheritedConfig never null
      */
     @Override
-    public SolverConfig inherit(SolverConfig inheritedConfig) {
+    public @NonNull SolverConfig inherit(@NonNull SolverConfig inheritedConfig) {
         classLoader = ConfigUtils.inheritOverwritableProperty(classLoader, inheritedConfig.getClassLoader());
         environmentMode = ConfigUtils.inheritOverwritableProperty(environmentMode, inheritedConfig.getEnvironmentMode());
         daemon = ConfigUtils.inheritOverwritableProperty(daemon, inheritedConfig.getDaemon());
@@ -689,12 +672,12 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
     }
 
     @Override
-    public SolverConfig copyConfig() {
+    public @NonNull SolverConfig copyConfig() {
         return new SolverConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         classVisitor.accept(randomFactoryClass);
         classVisitor.accept(threadFactoryClass);
         classVisitor.accept(solutionClass);

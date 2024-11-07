@@ -9,6 +9,9 @@ import ai.timefold.solver.core.config.heuristic.selector.SelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 @XmlType(propOrder = {
         "valueSelectorConfig",
         "minimumSubChainSize",
@@ -22,30 +25,27 @@ public class SubChainSelectorConfig extends SelectorConfig<SubChainSelectorConfi
     protected Integer minimumSubChainSize = null;
     protected Integer maximumSubChainSize = null;
 
-    public ValueSelectorConfig getValueSelectorConfig() {
+    public @Nullable ValueSelectorConfig getValueSelectorConfig() {
         return valueSelectorConfig;
     }
 
-    public void setValueSelectorConfig(ValueSelectorConfig valueSelectorConfig) {
+    public void setValueSelectorConfig(@Nullable ValueSelectorConfig valueSelectorConfig) {
         this.valueSelectorConfig = valueSelectorConfig;
     }
 
-    /**
-     * @return sometimes null
-     */
-    public Integer getMinimumSubChainSize() {
+    public @Nullable Integer getMinimumSubChainSize() {
         return minimumSubChainSize;
     }
 
-    public void setMinimumSubChainSize(Integer minimumSubChainSize) {
+    public void setMinimumSubChainSize(@Nullable Integer minimumSubChainSize) {
         this.minimumSubChainSize = minimumSubChainSize;
     }
 
-    public Integer getMaximumSubChainSize() {
+    public @Nullable Integer getMaximumSubChainSize() {
         return maximumSubChainSize;
     }
 
-    public void setMaximumSubChainSize(Integer maximumSubChainSize) {
+    public void setMaximumSubChainSize(@Nullable Integer maximumSubChainSize) {
         this.maximumSubChainSize = maximumSubChainSize;
     }
 
@@ -53,23 +53,23 @@ public class SubChainSelectorConfig extends SelectorConfig<SubChainSelectorConfi
     // With methods
     // ************************************************************************
 
-    public SubChainSelectorConfig withValueSelectorConfig(ValueSelectorConfig valueSelectorConfig) {
+    public @NonNull SubChainSelectorConfig withValueSelectorConfig(@NonNull ValueSelectorConfig valueSelectorConfig) {
         this.setValueSelectorConfig(valueSelectorConfig);
         return this;
     }
 
-    public SubChainSelectorConfig withMinimumSubChainSize(Integer minimumSubChainSize) {
+    public @NonNull SubChainSelectorConfig withMinimumSubChainSize(@NonNull Integer minimumSubChainSize) {
         this.setMinimumSubChainSize(minimumSubChainSize);
         return this;
     }
 
-    public SubChainSelectorConfig withMaximumSubChainSize(Integer maximumSubChainSize) {
+    public @NonNull SubChainSelectorConfig withMaximumSubChainSize(@NonNull Integer maximumSubChainSize) {
         this.setMaximumSubChainSize(maximumSubChainSize);
         return this;
     }
 
     @Override
-    public SubChainSelectorConfig inherit(SubChainSelectorConfig inheritedConfig) {
+    public @NonNull SubChainSelectorConfig inherit(@NonNull SubChainSelectorConfig inheritedConfig) {
         valueSelectorConfig = ConfigUtils.inheritConfig(valueSelectorConfig, inheritedConfig.getValueSelectorConfig());
         minimumSubChainSize = ConfigUtils.inheritOverwritableProperty(minimumSubChainSize,
                 inheritedConfig.getMinimumSubChainSize());
@@ -79,12 +79,12 @@ public class SubChainSelectorConfig extends SelectorConfig<SubChainSelectorConfi
     }
 
     @Override
-    public SubChainSelectorConfig copyConfig() {
+    public @NonNull SubChainSelectorConfig copyConfig() {
         return new SubChainSelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         if (valueSelectorConfig != null) {
             valueSelectorConfig.visitReferencedClasses(classVisitor);
         }

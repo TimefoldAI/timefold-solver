@@ -14,6 +14,9 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConf
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 @XmlType(propOrder = {
         "valueSelectorConfig",
         "destinationSelectorConfig"
@@ -30,19 +33,19 @@ public class ListChangeMoveSelectorConfig
     @XmlElement(name = "destinationSelector")
     private DestinationSelectorConfig destinationSelectorConfig = null;
 
-    public ValueSelectorConfig getValueSelectorConfig() {
+    public @Nullable ValueSelectorConfig getValueSelectorConfig() {
         return valueSelectorConfig;
     }
 
-    public void setValueSelectorConfig(ValueSelectorConfig valueSelectorConfig) {
+    public void setValueSelectorConfig(@Nullable ValueSelectorConfig valueSelectorConfig) {
         this.valueSelectorConfig = valueSelectorConfig;
     }
 
-    public DestinationSelectorConfig getDestinationSelectorConfig() {
+    public @Nullable DestinationSelectorConfig getDestinationSelectorConfig() {
         return destinationSelectorConfig;
     }
 
-    public void setDestinationSelectorConfig(DestinationSelectorConfig destinationSelectorConfig) {
+    public void setDestinationSelectorConfig(@Nullable DestinationSelectorConfig destinationSelectorConfig) {
         this.destinationSelectorConfig = destinationSelectorConfig;
     }
 
@@ -50,12 +53,13 @@ public class ListChangeMoveSelectorConfig
     // With methods
     // ************************************************************************
 
-    public ListChangeMoveSelectorConfig withValueSelectorConfig(ValueSelectorConfig valueSelectorConfig) {
+    public @NonNull ListChangeMoveSelectorConfig withValueSelectorConfig(@NonNull ValueSelectorConfig valueSelectorConfig) {
         this.setValueSelectorConfig(valueSelectorConfig);
         return this;
     }
 
-    public ListChangeMoveSelectorConfig withDestinationSelectorConfig(DestinationSelectorConfig destinationSelectorConfig) {
+    public @NonNull ListChangeMoveSelectorConfig
+            withDestinationSelectorConfig(@NonNull DestinationSelectorConfig destinationSelectorConfig) {
         this.setDestinationSelectorConfig(destinationSelectorConfig);
         return this;
     }
@@ -65,7 +69,7 @@ public class ListChangeMoveSelectorConfig
     // ************************************************************************
 
     @Override
-    public ListChangeMoveSelectorConfig inherit(ListChangeMoveSelectorConfig inheritedConfig) {
+    public @NonNull ListChangeMoveSelectorConfig inherit(@NonNull ListChangeMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         valueSelectorConfig = ConfigUtils.inheritConfig(valueSelectorConfig, inheritedConfig.getValueSelectorConfig());
         destinationSelectorConfig =
@@ -74,12 +78,12 @@ public class ListChangeMoveSelectorConfig
     }
 
     @Override
-    public ListChangeMoveSelectorConfig copyConfig() {
+    public @NonNull ListChangeMoveSelectorConfig copyConfig() {
         return new ListChangeMoveSelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         visitCommonReferencedClasses(classVisitor);
         if (valueSelectorConfig != null) {
             valueSelectorConfig.visitReferencedClasses(classVisitor);
@@ -90,8 +94,9 @@ public class ListChangeMoveSelectorConfig
     }
 
     @Override
-    public ListChangeMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
-            Random random) {
+    public @NonNull ListChangeMoveSelectorConfig enableNearbySelection(
+            @NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
+            @NonNull Random random) {
         return NearbyUtil.enable(this, distanceMeter, random);
     }
 

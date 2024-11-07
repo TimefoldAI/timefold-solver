@@ -1,21 +1,22 @@
 package ai.timefold.solver.test.api.score.stream;
 
+import org.jspecify.annotations.NonNull;
+
 public interface MultiConstraintVerification<Solution_> {
 
     /**
      * As defined by {@link SingleConstraintVerification#given(Object...)}.
      *
-     * @param facts never null, at least one
-     * @return never null
+     * @param facts at least one
      */
-    MultiConstraintAssertion given(Object... facts);
+    // TODO @NonNull Object correct here?
+    @NonNull
+    MultiConstraintAssertion given(@NonNull Object @NonNull... facts);
 
     /**
      * As defined by {@link SingleConstraintVerification#givenSolution(Object)}.
-     *
-     * @param solution never null
-     * @return never null
      */
-    MultiConstraintAssertion givenSolution(Solution_ solution);
+    @NonNull
+    MultiConstraintAssertion givenSolution(@NonNull Solution_ solution);
 
 }

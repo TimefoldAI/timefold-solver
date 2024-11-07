@@ -6,6 +6,9 @@ import jakarta.xml.bind.annotation.XmlType;
 
 import ai.timefold.solver.benchmark.config.SolverBenchmarkConfig;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 @XmlType(propOrder = {
         "solverBenchmarkBluePrintType"
 })
@@ -13,11 +16,11 @@ public class SolverBenchmarkBluePrintConfig {
 
     protected SolverBenchmarkBluePrintType solverBenchmarkBluePrintType = null;
 
-    public SolverBenchmarkBluePrintType getSolverBenchmarkBluePrintType() {
+    public @Nullable SolverBenchmarkBluePrintType getSolverBenchmarkBluePrintType() {
         return solverBenchmarkBluePrintType;
     }
 
-    public void setSolverBenchmarkBluePrintType(SolverBenchmarkBluePrintType solverBenchmarkBluePrintType) {
+    public void setSolverBenchmarkBluePrintType(@Nullable SolverBenchmarkBluePrintType solverBenchmarkBluePrintType) {
         this.solverBenchmarkBluePrintType = solverBenchmarkBluePrintType;
     }
 
@@ -25,7 +28,7 @@ public class SolverBenchmarkBluePrintConfig {
     // Builder methods
     // ************************************************************************
 
-    public List<SolverBenchmarkConfig> buildSolverBenchmarkConfigList() {
+    public @NonNull List<SolverBenchmarkConfig> buildSolverBenchmarkConfigList() {
         validate();
         return solverBenchmarkBluePrintType.buildSolverBenchmarkConfigList();
     }
@@ -42,8 +45,8 @@ public class SolverBenchmarkBluePrintConfig {
     // With methods
     // ************************************************************************
 
-    public SolverBenchmarkBluePrintConfig withSolverBenchmarkBluePrintType(
-            SolverBenchmarkBluePrintType solverBenchmarkBluePrintType) {
+    public @NonNull SolverBenchmarkBluePrintConfig withSolverBenchmarkBluePrintType(
+            @NonNull SolverBenchmarkBluePrintType solverBenchmarkBluePrintType) {
         this.solverBenchmarkBluePrintType = solverBenchmarkBluePrintType;
         return this;
     }

@@ -18,6 +18,9 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConf
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 @XmlType(propOrder = {
         "originEntitySelectorConfig",
         "originSubListSelectorConfig",
@@ -57,107 +60,108 @@ public class NearbySelectionConfig extends SelectorConfig<NearbySelectionConfig>
     protected Double betaDistributionAlpha = null;
     protected Double betaDistributionBeta = null;
 
-    public EntitySelectorConfig getOriginEntitySelectorConfig() {
+    public @Nullable EntitySelectorConfig getOriginEntitySelectorConfig() {
         return originEntitySelectorConfig;
     }
 
-    public void setOriginEntitySelectorConfig(EntitySelectorConfig originEntitySelectorConfig) {
+    public void setOriginEntitySelectorConfig(@Nullable EntitySelectorConfig originEntitySelectorConfig) {
         this.originEntitySelectorConfig = originEntitySelectorConfig;
     }
 
-    public SubListSelectorConfig getOriginSubListSelectorConfig() {
+    public @Nullable SubListSelectorConfig getOriginSubListSelectorConfig() {
         return originSubListSelectorConfig;
     }
 
-    public void setOriginSubListSelectorConfig(SubListSelectorConfig originSubListSelectorConfig) {
+    public void setOriginSubListSelectorConfig(@Nullable SubListSelectorConfig originSubListSelectorConfig) {
         this.originSubListSelectorConfig = originSubListSelectorConfig;
     }
 
-    public ValueSelectorConfig getOriginValueSelectorConfig() {
+    public @Nullable ValueSelectorConfig getOriginValueSelectorConfig() {
         return originValueSelectorConfig;
     }
 
-    public void setOriginValueSelectorConfig(ValueSelectorConfig originValueSelectorConfig) {
+    public void setOriginValueSelectorConfig(@Nullable ValueSelectorConfig originValueSelectorConfig) {
         this.originValueSelectorConfig = originValueSelectorConfig;
     }
 
-    public Class<? extends NearbyDistanceMeter> getNearbyDistanceMeterClass() {
+    public @Nullable Class<? extends NearbyDistanceMeter> getNearbyDistanceMeterClass() {
         return nearbyDistanceMeterClass;
     }
 
-    public void setNearbyDistanceMeterClass(Class<? extends NearbyDistanceMeter> nearbyDistanceMeterClass) {
+    public void setNearbyDistanceMeterClass(@Nullable Class<? extends NearbyDistanceMeter> nearbyDistanceMeterClass) {
         this.nearbyDistanceMeterClass = nearbyDistanceMeterClass;
     }
 
-    public NearbySelectionDistributionType getNearbySelectionDistributionType() {
+    public @Nullable NearbySelectionDistributionType getNearbySelectionDistributionType() {
         return nearbySelectionDistributionType;
     }
 
-    public void setNearbySelectionDistributionType(NearbySelectionDistributionType nearbySelectionDistributionType) {
+    public void setNearbySelectionDistributionType(@Nullable NearbySelectionDistributionType nearbySelectionDistributionType) {
         this.nearbySelectionDistributionType = nearbySelectionDistributionType;
     }
 
-    public Integer getBlockDistributionSizeMinimum() {
+    public @Nullable Integer getBlockDistributionSizeMinimum() {
         return blockDistributionSizeMinimum;
     }
 
-    public void setBlockDistributionSizeMinimum(Integer blockDistributionSizeMinimum) {
+    public void setBlockDistributionSizeMinimum(@Nullable Integer blockDistributionSizeMinimum) {
         this.blockDistributionSizeMinimum = blockDistributionSizeMinimum;
     }
 
-    public Integer getBlockDistributionSizeMaximum() {
+    public @Nullable Integer getBlockDistributionSizeMaximum() {
         return blockDistributionSizeMaximum;
     }
 
-    public void setBlockDistributionSizeMaximum(Integer blockDistributionSizeMaximum) {
+    public void setBlockDistributionSizeMaximum(@Nullable Integer blockDistributionSizeMaximum) {
         this.blockDistributionSizeMaximum = blockDistributionSizeMaximum;
     }
 
-    public Double getBlockDistributionSizeRatio() {
+    public @Nullable Double getBlockDistributionSizeRatio() {
         return blockDistributionSizeRatio;
     }
 
-    public void setBlockDistributionSizeRatio(Double blockDistributionSizeRatio) {
+    public void setBlockDistributionSizeRatio(@Nullable Double blockDistributionSizeRatio) {
         this.blockDistributionSizeRatio = blockDistributionSizeRatio;
     }
 
-    public Double getBlockDistributionUniformDistributionProbability() {
+    public @Nullable Double getBlockDistributionUniformDistributionProbability() {
         return blockDistributionUniformDistributionProbability;
     }
 
-    public void setBlockDistributionUniformDistributionProbability(Double blockDistributionUniformDistributionProbability) {
+    public void setBlockDistributionUniformDistributionProbability(
+            @Nullable Double blockDistributionUniformDistributionProbability) {
         this.blockDistributionUniformDistributionProbability = blockDistributionUniformDistributionProbability;
     }
 
-    public Integer getLinearDistributionSizeMaximum() {
+    public @Nullable Integer getLinearDistributionSizeMaximum() {
         return linearDistributionSizeMaximum;
     }
 
-    public void setLinearDistributionSizeMaximum(Integer linearDistributionSizeMaximum) {
+    public void setLinearDistributionSizeMaximum(@Nullable Integer linearDistributionSizeMaximum) {
         this.linearDistributionSizeMaximum = linearDistributionSizeMaximum;
     }
 
-    public Integer getParabolicDistributionSizeMaximum() {
+    public @Nullable Integer getParabolicDistributionSizeMaximum() {
         return parabolicDistributionSizeMaximum;
     }
 
-    public void setParabolicDistributionSizeMaximum(Integer parabolicDistributionSizeMaximum) {
+    public void setParabolicDistributionSizeMaximum(@Nullable Integer parabolicDistributionSizeMaximum) {
         this.parabolicDistributionSizeMaximum = parabolicDistributionSizeMaximum;
     }
 
-    public Double getBetaDistributionAlpha() {
+    public @Nullable Double getBetaDistributionAlpha() {
         return betaDistributionAlpha;
     }
 
-    public void setBetaDistributionAlpha(Double betaDistributionAlpha) {
+    public void setBetaDistributionAlpha(@Nullable Double betaDistributionAlpha) {
         this.betaDistributionAlpha = betaDistributionAlpha;
     }
 
-    public Double getBetaDistributionBeta() {
+    public @Nullable Double getBetaDistributionBeta() {
         return betaDistributionBeta;
     }
 
-    public void setBetaDistributionBeta(Double betaDistributionBeta) {
+    public void setBetaDistributionBeta(@Nullable Double betaDistributionBeta) {
         this.betaDistributionBeta = betaDistributionBeta;
     }
 
@@ -165,69 +169,75 @@ public class NearbySelectionConfig extends SelectorConfig<NearbySelectionConfig>
     // With methods
     // ************************************************************************
 
-    public NearbySelectionConfig withOriginEntitySelectorConfig(EntitySelectorConfig originEntitySelectorConfig) {
+    public @NonNull NearbySelectionConfig
+            withOriginEntitySelectorConfig(@NonNull EntitySelectorConfig originEntitySelectorConfig) {
         this.setOriginEntitySelectorConfig(originEntitySelectorConfig);
         return this;
     }
 
-    public NearbySelectionConfig withOriginSubListSelectorConfig(SubListSelectorConfig originSubListSelectorConfig) {
+    public @NonNull NearbySelectionConfig
+            withOriginSubListSelectorConfig(@NonNull SubListSelectorConfig originSubListSelectorConfig) {
         this.setOriginSubListSelectorConfig(originSubListSelectorConfig);
         return this;
     }
 
-    public NearbySelectionConfig withOriginValueSelectorConfig(ValueSelectorConfig originValueSelectorConfig) {
+    public @NonNull NearbySelectionConfig
+            withOriginValueSelectorConfig(@NonNull ValueSelectorConfig originValueSelectorConfig) {
         this.setOriginValueSelectorConfig(originValueSelectorConfig);
         return this;
     }
 
-    public NearbySelectionConfig withNearbyDistanceMeterClass(Class<? extends NearbyDistanceMeter> nearbyDistanceMeterClass) {
+    public @NonNull NearbySelectionConfig
+            withNearbyDistanceMeterClass(@NonNull Class<? extends NearbyDistanceMeter> nearbyDistanceMeterClass) {
         this.setNearbyDistanceMeterClass(nearbyDistanceMeterClass);
         return this;
     }
 
-    public NearbySelectionConfig
-            withNearbySelectionDistributionType(NearbySelectionDistributionType nearbySelectionDistributionType) {
+    public @NonNull NearbySelectionConfig
+            withNearbySelectionDistributionType(@NonNull NearbySelectionDistributionType nearbySelectionDistributionType) {
         this.setNearbySelectionDistributionType(nearbySelectionDistributionType);
         return this;
     }
 
-    public NearbySelectionConfig withBlockDistributionSizeMinimum(Integer blockDistributionSizeMinimum) {
+    public @NonNull NearbySelectionConfig withBlockDistributionSizeMinimum(@NonNull Integer blockDistributionSizeMinimum) {
         this.setBlockDistributionSizeMinimum(blockDistributionSizeMinimum);
         return this;
     }
 
-    public NearbySelectionConfig withBlockDistributionSizeMaximum(Integer blockDistributionSizeMaximum) {
+    public @NonNull NearbySelectionConfig withBlockDistributionSizeMaximum(@NonNull Integer blockDistributionSizeMaximum) {
         this.setBlockDistributionSizeMaximum(blockDistributionSizeMaximum);
         return this;
     }
 
-    public NearbySelectionConfig withBlockDistributionSizeRatio(Double blockDistributionSizeRatio) {
+    public @NonNull NearbySelectionConfig withBlockDistributionSizeRatio(@NonNull Double blockDistributionSizeRatio) {
         this.setBlockDistributionSizeRatio(blockDistributionSizeRatio);
         return this;
     }
 
-    public NearbySelectionConfig
-            withBlockDistributionUniformDistributionProbability(Double blockDistributionUniformDistributionProbability) {
+    public @NonNull NearbySelectionConfig
+            withBlockDistributionUniformDistributionProbability(
+                    @NonNull Double blockDistributionUniformDistributionProbability) {
         this.setBlockDistributionUniformDistributionProbability(blockDistributionUniformDistributionProbability);
         return this;
     }
 
-    public NearbySelectionConfig withLinearDistributionSizeMaximum(Integer linearDistributionSizeMaximum) {
+    public @NonNull NearbySelectionConfig withLinearDistributionSizeMaximum(@NonNull Integer linearDistributionSizeMaximum) {
         this.setLinearDistributionSizeMaximum(linearDistributionSizeMaximum);
         return this;
     }
 
-    public NearbySelectionConfig withParabolicDistributionSizeMaximum(Integer parabolicDistributionSizeMaximum) {
+    public @NonNull NearbySelectionConfig
+            withParabolicDistributionSizeMaximum(@NonNull Integer parabolicDistributionSizeMaximum) {
         this.setParabolicDistributionSizeMaximum(parabolicDistributionSizeMaximum);
         return this;
     }
 
-    public NearbySelectionConfig withBetaDistributionAlpha(Double betaDistributionAlpha) {
+    public @NonNull NearbySelectionConfig withBetaDistributionAlpha(@NonNull Double betaDistributionAlpha) {
         this.setBetaDistributionAlpha(betaDistributionAlpha);
         return this;
     }
 
-    public NearbySelectionConfig withBetaDistributionBeta(Double betaDistributionBeta) {
+    public @NonNull NearbySelectionConfig withBetaDistributionBeta(@NonNull Double betaDistributionBeta) {
         this.setBetaDistributionBeta(betaDistributionBeta);
         return this;
     }
@@ -236,7 +246,7 @@ public class NearbySelectionConfig extends SelectorConfig<NearbySelectionConfig>
     // Builder methods
     // ************************************************************************
 
-    public void validateNearby(SelectionCacheType resolvedCacheType, SelectionOrder resolvedSelectionOrder) {
+    public void validateNearby(@NonNull SelectionCacheType resolvedCacheType, @NonNull SelectionOrder resolvedSelectionOrder) {
         long originSelectorCount = Stream.of(originEntitySelectorConfig, originSubListSelectorConfig, originValueSelectorConfig)
                 .filter(Objects::nonNull)
                 .count();
@@ -298,7 +308,7 @@ public class NearbySelectionConfig extends SelectorConfig<NearbySelectionConfig>
     }
 
     @Override
-    public NearbySelectionConfig inherit(NearbySelectionConfig inheritedConfig) {
+    public @NonNull NearbySelectionConfig inherit(@NonNull NearbySelectionConfig inheritedConfig) {
         originEntitySelectorConfig = ConfigUtils.inheritConfig(originEntitySelectorConfig,
                 inheritedConfig.getOriginEntitySelectorConfig());
         originSubListSelectorConfig = ConfigUtils.inheritConfig(originSubListSelectorConfig,
@@ -330,12 +340,12 @@ public class NearbySelectionConfig extends SelectorConfig<NearbySelectionConfig>
     }
 
     @Override
-    public NearbySelectionConfig copyConfig() {
+    public @NonNull NearbySelectionConfig copyConfig() {
         return new NearbySelectionConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         if (originEntitySelectorConfig != null) {
             originEntitySelectorConfig.visitReferencedClasses(classVisitor);
         }

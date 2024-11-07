@@ -11,6 +11,8 @@ import ai.timefold.solver.core.impl.exhaustivesearch.node.comparator.OptimisticB
 import ai.timefold.solver.core.impl.exhaustivesearch.node.comparator.OriginalOrderNodeComparator;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.comparator.ScoreFirstNodeComparator;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlEnum
 public enum NodeExplorationType {
     ORIGINAL_ORDER,
@@ -19,7 +21,7 @@ public enum NodeExplorationType {
     SCORE_FIRST,
     OPTIMISTIC_BOUND_FIRST;
 
-    public Comparator<ExhaustiveSearchNode> buildNodeComparator(boolean scoreBounderEnabled) {
+    public @NonNull Comparator<ExhaustiveSearchNode> buildNodeComparator(boolean scoreBounderEnabled) {
         switch (this) {
             case ORIGINAL_ORDER:
                 return new OriginalOrderNodeComparator();

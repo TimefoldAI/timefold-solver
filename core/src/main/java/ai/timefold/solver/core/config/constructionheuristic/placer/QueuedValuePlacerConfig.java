@@ -21,6 +21,9 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.Ta
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 @XmlType(propOrder = {
         "entityClass",
         "valueSelectorConfig",
@@ -53,27 +56,27 @@ public class QueuedValuePlacerConfig extends EntityPlacerConfig<QueuedValuePlace
     })
     private MoveSelectorConfig moveSelectorConfig = null;
 
-    public Class<?> getEntityClass() {
+    public @Nullable Class<?> getEntityClass() {
         return entityClass;
     }
 
-    public void setEntityClass(Class<?> entityClass) {
+    public void setEntityClass(@Nullable Class<?> entityClass) {
         this.entityClass = entityClass;
     }
 
-    public ValueSelectorConfig getValueSelectorConfig() {
+    public @Nullable ValueSelectorConfig getValueSelectorConfig() {
         return valueSelectorConfig;
     }
 
-    public void setValueSelectorConfig(ValueSelectorConfig valueSelectorConfig) {
+    public void setValueSelectorConfig(@Nullable ValueSelectorConfig valueSelectorConfig) {
         this.valueSelectorConfig = valueSelectorConfig;
     }
 
-    public MoveSelectorConfig getMoveSelectorConfig() {
+    public @Nullable MoveSelectorConfig getMoveSelectorConfig() {
         return moveSelectorConfig;
     }
 
-    public void setMoveSelectorConfig(MoveSelectorConfig moveSelectorConfig) {
+    public void setMoveSelectorConfig(@Nullable MoveSelectorConfig moveSelectorConfig) {
         this.moveSelectorConfig = moveSelectorConfig;
     }
 
@@ -81,17 +84,17 @@ public class QueuedValuePlacerConfig extends EntityPlacerConfig<QueuedValuePlace
     // With methods
     // ************************************************************************
 
-    public QueuedValuePlacerConfig withEntityClass(Class<?> entityClass) {
+    public @NonNull QueuedValuePlacerConfig withEntityClass(@NonNull Class<?> entityClass) {
         this.setEntityClass(entityClass);
         return this;
     }
 
-    public QueuedValuePlacerConfig withValueSelectorConfig(ValueSelectorConfig valueSelectorConfig) {
+    public @NonNull QueuedValuePlacerConfig withValueSelectorConfig(@NonNull ValueSelectorConfig valueSelectorConfig) {
         this.setValueSelectorConfig(valueSelectorConfig);
         return this;
     }
 
-    public QueuedValuePlacerConfig withMoveSelectorConfig(MoveSelectorConfig moveSelectorConfig) {
+    public @NonNull QueuedValuePlacerConfig withMoveSelectorConfig(@NonNull MoveSelectorConfig moveSelectorConfig) {
         this.setMoveSelectorConfig(moveSelectorConfig);
         return this;
     }
@@ -101,7 +104,7 @@ public class QueuedValuePlacerConfig extends EntityPlacerConfig<QueuedValuePlace
     // ************************************************************************
 
     @Override
-    public QueuedValuePlacerConfig inherit(QueuedValuePlacerConfig inheritedConfig) {
+    public @NonNull QueuedValuePlacerConfig inherit(@NonNull QueuedValuePlacerConfig inheritedConfig) {
         entityClass = ConfigUtils.inheritOverwritableProperty(entityClass, inheritedConfig.getEntityClass());
         valueSelectorConfig = ConfigUtils.inheritConfig(valueSelectorConfig, inheritedConfig.getValueSelectorConfig());
         setMoveSelectorConfig(
@@ -110,12 +113,12 @@ public class QueuedValuePlacerConfig extends EntityPlacerConfig<QueuedValuePlace
     }
 
     @Override
-    public QueuedValuePlacerConfig copyConfig() {
+    public @NonNull QueuedValuePlacerConfig copyConfig() {
         return new QueuedValuePlacerConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         classVisitor.accept(entityClass);
         if (valueSelectorConfig != null) {
             valueSelectorConfig.visitReferencedClasses(classVisitor);

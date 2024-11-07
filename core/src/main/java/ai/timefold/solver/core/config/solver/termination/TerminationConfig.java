@@ -14,6 +14,9 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbDurationAdapter;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 @XmlType(propOrder = {
         "terminationClass",
         "terminationCompositionStyle",
@@ -94,171 +97,171 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         this.terminationClass = terminationClass;
     }
 
-    public TerminationCompositionStyle getTerminationCompositionStyle() {
+    public @Nullable TerminationCompositionStyle getTerminationCompositionStyle() {
         return terminationCompositionStyle;
     }
 
-    public void setTerminationCompositionStyle(TerminationCompositionStyle terminationCompositionStyle) {
+    public void setTerminationCompositionStyle(@Nullable TerminationCompositionStyle terminationCompositionStyle) {
         this.terminationCompositionStyle = terminationCompositionStyle;
     }
 
-    public Duration getSpentLimit() {
+    public @Nullable Duration getSpentLimit() {
         return spentLimit;
     }
 
-    public void setSpentLimit(Duration spentLimit) {
+    public void setSpentLimit(@Nullable Duration spentLimit) {
         this.spentLimit = spentLimit;
     }
 
-    public Long getMillisecondsSpentLimit() {
+    public @Nullable Long getMillisecondsSpentLimit() {
         return millisecondsSpentLimit;
     }
 
-    public void setMillisecondsSpentLimit(Long millisecondsSpentLimit) {
+    public void setMillisecondsSpentLimit(@Nullable Long millisecondsSpentLimit) {
         this.millisecondsSpentLimit = millisecondsSpentLimit;
     }
 
-    public Long getSecondsSpentLimit() {
+    public @Nullable Long getSecondsSpentLimit() {
         return secondsSpentLimit;
     }
 
-    public void setSecondsSpentLimit(Long secondsSpentLimit) {
+    public void setSecondsSpentLimit(@Nullable Long secondsSpentLimit) {
         this.secondsSpentLimit = secondsSpentLimit;
     }
 
-    public Long getMinutesSpentLimit() {
+    public @Nullable Long getMinutesSpentLimit() {
         return minutesSpentLimit;
     }
 
-    public void setMinutesSpentLimit(Long minutesSpentLimit) {
+    public void setMinutesSpentLimit(@Nullable Long minutesSpentLimit) {
         this.minutesSpentLimit = minutesSpentLimit;
     }
 
-    public Long getHoursSpentLimit() {
+    public @Nullable Long getHoursSpentLimit() {
         return hoursSpentLimit;
     }
 
-    public void setHoursSpentLimit(Long hoursSpentLimit) {
+    public void setHoursSpentLimit(@Nullable Long hoursSpentLimit) {
         this.hoursSpentLimit = hoursSpentLimit;
     }
 
-    public Long getDaysSpentLimit() {
+    public @Nullable Long getDaysSpentLimit() {
         return daysSpentLimit;
     }
 
-    public void setDaysSpentLimit(Long daysSpentLimit) {
+    public void setDaysSpentLimit(@Nullable Long daysSpentLimit) {
         this.daysSpentLimit = daysSpentLimit;
     }
 
-    public Duration getUnimprovedSpentLimit() {
+    public @Nullable Duration getUnimprovedSpentLimit() {
         return unimprovedSpentLimit;
     }
 
-    public void setUnimprovedSpentLimit(Duration unimprovedSpentLimit) {
+    public void setUnimprovedSpentLimit(@Nullable Duration unimprovedSpentLimit) {
         this.unimprovedSpentLimit = unimprovedSpentLimit;
     }
 
-    public Long getUnimprovedMillisecondsSpentLimit() {
+    public @Nullable Long getUnimprovedMillisecondsSpentLimit() {
         return unimprovedMillisecondsSpentLimit;
     }
 
-    public void setUnimprovedMillisecondsSpentLimit(Long unimprovedMillisecondsSpentLimit) {
+    public void setUnimprovedMillisecondsSpentLimit(@Nullable Long unimprovedMillisecondsSpentLimit) {
         this.unimprovedMillisecondsSpentLimit = unimprovedMillisecondsSpentLimit;
     }
 
-    public Long getUnimprovedSecondsSpentLimit() {
+    public @Nullable Long getUnimprovedSecondsSpentLimit() {
         return unimprovedSecondsSpentLimit;
     }
 
-    public void setUnimprovedSecondsSpentLimit(Long unimprovedSecondsSpentLimit) {
+    public void setUnimprovedSecondsSpentLimit(@Nullable Long unimprovedSecondsSpentLimit) {
         this.unimprovedSecondsSpentLimit = unimprovedSecondsSpentLimit;
     }
 
-    public Long getUnimprovedMinutesSpentLimit() {
+    public @Nullable Long getUnimprovedMinutesSpentLimit() {
         return unimprovedMinutesSpentLimit;
     }
 
-    public void setUnimprovedMinutesSpentLimit(Long unimprovedMinutesSpentLimit) {
+    public void setUnimprovedMinutesSpentLimit(@Nullable Long unimprovedMinutesSpentLimit) {
         this.unimprovedMinutesSpentLimit = unimprovedMinutesSpentLimit;
     }
 
-    public Long getUnimprovedHoursSpentLimit() {
+    public @Nullable Long getUnimprovedHoursSpentLimit() {
         return unimprovedHoursSpentLimit;
     }
 
-    public void setUnimprovedHoursSpentLimit(Long unimprovedHoursSpentLimit) {
+    public void setUnimprovedHoursSpentLimit(@Nullable Long unimprovedHoursSpentLimit) {
         this.unimprovedHoursSpentLimit = unimprovedHoursSpentLimit;
     }
 
-    public Long getUnimprovedDaysSpentLimit() {
+    public @Nullable Long getUnimprovedDaysSpentLimit() {
         return unimprovedDaysSpentLimit;
     }
 
-    public void setUnimprovedDaysSpentLimit(Long unimprovedDaysSpentLimit) {
+    public void setUnimprovedDaysSpentLimit(@Nullable Long unimprovedDaysSpentLimit) {
         this.unimprovedDaysSpentLimit = unimprovedDaysSpentLimit;
     }
 
-    public String getUnimprovedScoreDifferenceThreshold() {
+    public @Nullable String getUnimprovedScoreDifferenceThreshold() {
         return unimprovedScoreDifferenceThreshold;
     }
 
-    public void setUnimprovedScoreDifferenceThreshold(String unimprovedScoreDifferenceThreshold) {
+    public void setUnimprovedScoreDifferenceThreshold(@Nullable String unimprovedScoreDifferenceThreshold) {
         this.unimprovedScoreDifferenceThreshold = unimprovedScoreDifferenceThreshold;
     }
 
-    public String getBestScoreLimit() {
+    public @Nullable String getBestScoreLimit() {
         return bestScoreLimit;
     }
 
-    public void setBestScoreLimit(String bestScoreLimit) {
+    public void setBestScoreLimit(@Nullable String bestScoreLimit) {
         this.bestScoreLimit = bestScoreLimit;
     }
 
-    public Boolean getBestScoreFeasible() {
+    public @Nullable Boolean getBestScoreFeasible() {
         return bestScoreFeasible;
     }
 
-    public void setBestScoreFeasible(Boolean bestScoreFeasible) {
+    public void setBestScoreFeasible(@Nullable Boolean bestScoreFeasible) {
         this.bestScoreFeasible = bestScoreFeasible;
     }
 
-    public Integer getStepCountLimit() {
+    public @Nullable Integer getStepCountLimit() {
         return stepCountLimit;
     }
 
-    public void setStepCountLimit(Integer stepCountLimit) {
+    public void setStepCountLimit(@Nullable Integer stepCountLimit) {
         this.stepCountLimit = stepCountLimit;
     }
 
-    public Integer getUnimprovedStepCountLimit() {
+    public @Nullable Integer getUnimprovedStepCountLimit() {
         return unimprovedStepCountLimit;
     }
 
-    public void setUnimprovedStepCountLimit(Integer unimprovedStepCountLimit) {
+    public void setUnimprovedStepCountLimit(@Nullable Integer unimprovedStepCountLimit) {
         this.unimprovedStepCountLimit = unimprovedStepCountLimit;
     }
 
-    public Long getScoreCalculationCountLimit() {
+    public @Nullable Long getScoreCalculationCountLimit() {
         return scoreCalculationCountLimit;
     }
 
-    public void setScoreCalculationCountLimit(Long scoreCalculationCountLimit) {
+    public void setScoreCalculationCountLimit(@Nullable Long scoreCalculationCountLimit) {
         this.scoreCalculationCountLimit = scoreCalculationCountLimit;
     }
 
-    public Long getMoveCountLimit() {
+    public @Nullable Long getMoveCountLimit() {
         return moveCountLimit;
     }
 
-    public void setMoveCountLimit(Long moveCountLimit) {
+    public void setMoveCountLimit(@Nullable Long moveCountLimit) {
         this.moveCountLimit = moveCountLimit;
     }
 
-    public List<TerminationConfig> getTerminationConfigList() {
+    public @Nullable List<@NonNull TerminationConfig> getTerminationConfigList() {
         return terminationConfigList;
     }
 
-    public void setTerminationConfigList(List<TerminationConfig> terminationConfigList) {
+    public void setTerminationConfigList(@Nullable List<@NonNull TerminationConfig> terminationConfigList) {
         this.terminationConfigList = terminationConfigList;
     }
 
@@ -275,112 +278,115 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         return this;
     }
 
-    public TerminationConfig withTerminationCompositionStyle(TerminationCompositionStyle terminationCompositionStyle) {
+    public @NonNull TerminationConfig
+            withTerminationCompositionStyle(@NonNull TerminationCompositionStyle terminationCompositionStyle) {
         this.terminationCompositionStyle = terminationCompositionStyle;
         return this;
     }
 
-    public TerminationConfig withSpentLimit(Duration spentLimit) {
+    public @NonNull TerminationConfig withSpentLimit(@NonNull Duration spentLimit) {
         this.spentLimit = spentLimit;
         return this;
     }
 
-    public TerminationConfig withMillisecondsSpentLimit(Long millisecondsSpentLimit) {
+    public @NonNull TerminationConfig withMillisecondsSpentLimit(@NonNull Long millisecondsSpentLimit) {
         this.millisecondsSpentLimit = millisecondsSpentLimit;
         return this;
     }
 
-    public TerminationConfig withSecondsSpentLimit(Long secondsSpentLimit) {
+    public @NonNull TerminationConfig withSecondsSpentLimit(@NonNull Long secondsSpentLimit) {
         this.secondsSpentLimit = secondsSpentLimit;
         return this;
     }
 
-    public TerminationConfig withMinutesSpentLimit(Long minutesSpentLimit) {
+    public @NonNull TerminationConfig withMinutesSpentLimit(@NonNull Long minutesSpentLimit) {
         this.minutesSpentLimit = minutesSpentLimit;
         return this;
     }
 
-    public TerminationConfig withHoursSpentLimit(Long hoursSpentLimit) {
+    public @NonNull TerminationConfig withHoursSpentLimit(@NonNull Long hoursSpentLimit) {
         this.hoursSpentLimit = hoursSpentLimit;
         return this;
     }
 
-    public TerminationConfig withDaysSpentLimit(Long daysSpentLimit) {
+    public @NonNull TerminationConfig withDaysSpentLimit(@NonNull Long daysSpentLimit) {
         this.daysSpentLimit = daysSpentLimit;
         return this;
     }
 
-    public TerminationConfig withUnimprovedSpentLimit(Duration unimprovedSpentLimit) {
+    public @NonNull TerminationConfig withUnimprovedSpentLimit(@NonNull Duration unimprovedSpentLimit) {
         this.unimprovedSpentLimit = unimprovedSpentLimit;
         return this;
     }
 
-    public TerminationConfig withUnimprovedMillisecondsSpentLimit(Long unimprovedMillisecondsSpentLimit) {
+    public @NonNull TerminationConfig withUnimprovedMillisecondsSpentLimit(@NonNull Long unimprovedMillisecondsSpentLimit) {
         this.unimprovedMillisecondsSpentLimit = unimprovedMillisecondsSpentLimit;
         return this;
     }
 
-    public TerminationConfig withUnimprovedSecondsSpentLimit(Long unimprovedSecondsSpentLimit) {
+    public @NonNull TerminationConfig withUnimprovedSecondsSpentLimit(@NonNull Long unimprovedSecondsSpentLimit) {
         this.unimprovedSecondsSpentLimit = unimprovedSecondsSpentLimit;
         return this;
     }
 
-    public TerminationConfig withUnimprovedMinutesSpentLimit(Long unimprovedMinutesSpentLimit) {
+    public @NonNull TerminationConfig withUnimprovedMinutesSpentLimit(@NonNull Long unimprovedMinutesSpentLimit) {
         this.unimprovedMinutesSpentLimit = unimprovedMinutesSpentLimit;
         return this;
     }
 
-    public TerminationConfig withUnimprovedHoursSpentLimit(Long unimprovedHoursSpentLimit) {
+    public @NonNull TerminationConfig withUnimprovedHoursSpentLimit(@NonNull Long unimprovedHoursSpentLimit) {
         this.unimprovedHoursSpentLimit = unimprovedHoursSpentLimit;
         return this;
     }
 
-    public TerminationConfig withUnimprovedDaysSpentLimit(Long unimprovedDaysSpentLimit) {
+    public @NonNull TerminationConfig withUnimprovedDaysSpentLimit(@NonNull Long unimprovedDaysSpentLimit) {
         this.unimprovedDaysSpentLimit = unimprovedDaysSpentLimit;
         return this;
     }
 
-    public TerminationConfig withUnimprovedScoreDifferenceThreshold(String unimprovedScoreDifferenceThreshold) {
+    public @NonNull TerminationConfig
+            withUnimprovedScoreDifferenceThreshold(@NonNull String unimprovedScoreDifferenceThreshold) {
         this.unimprovedScoreDifferenceThreshold = unimprovedScoreDifferenceThreshold;
         return this;
     }
 
-    public TerminationConfig withBestScoreLimit(String bestScoreLimit) {
+    public @NonNull TerminationConfig withBestScoreLimit(@NonNull String bestScoreLimit) {
         this.bestScoreLimit = bestScoreLimit;
         return this;
     }
 
-    public TerminationConfig withBestScoreFeasible(Boolean bestScoreFeasible) {
+    public @NonNull TerminationConfig withBestScoreFeasible(@NonNull Boolean bestScoreFeasible) {
         this.bestScoreFeasible = bestScoreFeasible;
         return this;
     }
 
-    public TerminationConfig withStepCountLimit(Integer stepCountLimit) {
+    public @NonNull TerminationConfig withStepCountLimit(@NonNull Integer stepCountLimit) {
         this.stepCountLimit = stepCountLimit;
         return this;
     }
 
-    public TerminationConfig withUnimprovedStepCountLimit(Integer unimprovedStepCountLimit) {
+    public @NonNull TerminationConfig withUnimprovedStepCountLimit(@NonNull Integer unimprovedStepCountLimit) {
         this.unimprovedStepCountLimit = unimprovedStepCountLimit;
         return this;
     }
 
-    public TerminationConfig withScoreCalculationCountLimit(Long scoreCalculationCountLimit) {
+    public @NonNull TerminationConfig withScoreCalculationCountLimit(@NonNull Long scoreCalculationCountLimit) {
         this.scoreCalculationCountLimit = scoreCalculationCountLimit;
         return this;
     }
 
-    public TerminationConfig withMoveCountLimit(Long moveCountLimit) {
+    public @NonNull TerminationConfig withMoveCountLimit(@NonNull Long moveCountLimit) {
         this.moveCountLimit = moveCountLimit;
         return this;
     }
 
-    public TerminationConfig withTerminationConfigList(List<TerminationConfig> terminationConfigList) {
+    public @NonNull TerminationConfig
+            withTerminationConfigList(@NonNull List<@NonNull TerminationConfig> terminationConfigList) {
         this.terminationConfigList = terminationConfigList;
         return this;
     }
 
-    public void overwriteSpentLimit(Duration spentLimit) {
+    public void overwriteSpentLimit(@Nullable Duration spentLimit) {
         setSpentLimit(spentLimit);
         setMillisecondsSpentLimit(null);
         setSecondsSpentLimit(null);
@@ -389,7 +395,7 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         setDaysSpentLimit(null);
     }
 
-    public Long calculateTimeMillisSpentLimit() {
+    public @Nullable Long calculateTimeMillisSpentLimit() {
         if (millisecondsSpentLimit == null && secondsSpentLimit == null
                 && minutesSpentLimit == null && hoursSpentLimit == null && daysSpentLimit == null) {
             if (spentLimit != null) {
@@ -430,7 +436,7 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         }
     }
 
-    public void overwriteUnimprovedSpentLimit(Duration unimprovedSpentLimit) {
+    public void overwriteUnimprovedSpentLimit(@Nullable Duration unimprovedSpentLimit) {
         setUnimprovedSpentLimit(unimprovedSpentLimit);
         setUnimprovedMillisecondsSpentLimit(null);
         setUnimprovedSecondsSpentLimit(null);
@@ -439,7 +445,7 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         setUnimprovedDaysSpentLimit(null);
     }
 
-    public Long calculateUnimprovedTimeMillisSpentLimit() {
+    public @Nullable Long calculateUnimprovedTimeMillisSpentLimit() {
         if (unimprovedMillisecondsSpentLimit == null && unimprovedSecondsSpentLimit == null
                 && unimprovedMinutesSpentLimit == null && unimprovedHoursSpentLimit == null) {
             if (unimprovedSpentLimit != null) {
@@ -502,7 +508,7 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
     }
 
     @Override
-    public TerminationConfig inherit(TerminationConfig inheritedConfig) {
+    public @NonNull TerminationConfig inherit(@NonNull TerminationConfig inheritedConfig) {
         if (!timeSpentLimitIsSet()) {
             inheritTimeSpentLimit(inheritedConfig);
         }
@@ -533,12 +539,12 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
     }
 
     @Override
-    public TerminationConfig copyConfig() {
+    public @NonNull TerminationConfig copyConfig() {
         return new TerminationConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         classVisitor.accept(terminationClass);
         if (terminationConfigList != null) {
             terminationConfigList.forEach(tc -> tc.visitReferencedClasses(classVisitor));

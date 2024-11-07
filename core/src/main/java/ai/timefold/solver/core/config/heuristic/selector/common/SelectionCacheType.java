@@ -2,6 +2,9 @@ package ai.timefold.solver.core.config.heuristic.selector.common;
 
 import jakarta.xml.bind.annotation.XmlEnum;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * There is no INHERIT by design because 2 sequential caches provides no benefit, only memory overhead.
  */
@@ -25,7 +28,8 @@ public enum SelectionCacheType {
      */
     SOLVER;
 
-    public static SelectionCacheType resolve(SelectionCacheType cacheType, SelectionCacheType minimumCacheType) {
+    public static SelectionCacheType resolve(@Nullable SelectionCacheType cacheType,
+            @NonNull SelectionCacheType minimumCacheType) {
         if (cacheType == null) {
             return JUST_IN_TIME;
         }
@@ -53,7 +57,7 @@ public enum SelectionCacheType {
         return !isCached();
     }
 
-    public static SelectionCacheType max(SelectionCacheType a, SelectionCacheType b) {
+    public static @NonNull SelectionCacheType max(@NonNull SelectionCacheType a, @NonNull SelectionCacheType b) {
         if (a.compareTo(b) >= 0) {
             return a;
         } else {
