@@ -18,7 +18,7 @@ final class HardMediumSoftBigDecimalScoreContext
         BigDecimal softImpact = constraintWeight.softScore().multiply(matchWeight);
         parent.softScore = parent.softScore.add(softImpact);
         UndoScoreImpacter undoScoreImpact = () -> parent.softScore = parent.softScore.subtract(softImpact);
-        if (!constraintMatchEnabled) {
+        if (!constraintMatchPolicy.isEnabled()) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact, HardMediumSoftBigDecimalScore.ofSoft(softImpact),
@@ -30,7 +30,7 @@ final class HardMediumSoftBigDecimalScoreContext
         BigDecimal mediumImpact = constraintWeight.mediumScore().multiply(matchWeight);
         parent.mediumScore = parent.mediumScore.add(mediumImpact);
         UndoScoreImpacter undoScoreImpact = () -> parent.mediumScore = parent.mediumScore.subtract(mediumImpact);
-        if (!constraintMatchEnabled) {
+        if (!constraintMatchPolicy.isEnabled()) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact, HardMediumSoftBigDecimalScore.ofMedium(mediumImpact),
@@ -42,7 +42,7 @@ final class HardMediumSoftBigDecimalScoreContext
         BigDecimal hardImpact = constraintWeight.hardScore().multiply(matchWeight);
         parent.hardScore = parent.hardScore.add(hardImpact);
         UndoScoreImpacter undoScoreImpact = () -> parent.hardScore = parent.hardScore.subtract(hardImpact);
-        if (!constraintMatchEnabled) {
+        if (!constraintMatchPolicy.isEnabled()) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact, HardMediumSoftBigDecimalScore.ofHard(hardImpact),
@@ -62,7 +62,7 @@ final class HardMediumSoftBigDecimalScoreContext
             parent.mediumScore = parent.mediumScore.subtract(mediumImpact);
             parent.softScore = parent.softScore.subtract(softImpact);
         };
-        if (!constraintMatchEnabled) {
+        if (!constraintMatchPolicy.isEnabled()) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact,

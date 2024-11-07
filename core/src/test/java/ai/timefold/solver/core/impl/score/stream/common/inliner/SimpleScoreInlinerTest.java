@@ -8,6 +8,7 @@ import java.util.Map;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,7 @@ class SimpleScoreInlinerTest extends AbstractScoreInlinerTest<TestdataSolution, 
 
     @Test
     void defaultScore() {
-        var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchEnabled);
+        var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchPolicy);
         assertThat(scoreInliner.extractScore(0)).isEqualTo(SimpleScore.ZERO);
     }
 
@@ -50,8 +51,8 @@ class SimpleScoreInlinerTest extends AbstractScoreInlinerTest<TestdataSolution, 
 
     @Override
     protected AbstractScoreInliner<SimpleScore> buildScoreInliner(Map<Constraint, SimpleScore> constraintWeightMap,
-            boolean constraintMatchEnabled) {
-        return new SimpleScoreInliner(constraintWeightMap, constraintMatchEnabled);
+            ConstraintMatchPolicy constraintMatchPolicy) {
+        return new SimpleScoreInliner(constraintWeightMap, constraintMatchPolicy);
     }
 
 }

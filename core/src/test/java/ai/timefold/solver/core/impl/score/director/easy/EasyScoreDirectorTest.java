@@ -11,6 +11,7 @@ import java.util.Arrays;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.config.score.trend.InitializingScoreTrendLevel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.corrupted.TestdataCorruptedShadowedEntity;
@@ -23,7 +24,7 @@ class EasyScoreDirectorTest {
     @Test
     void constraintMatchTotalsUnsupported() {
         EasyScoreDirector<Object, ?> director =
-                new EasyScoreDirector<>(mockEasyScoreDirectorFactory(), false, true, true, null);
+                new EasyScoreDirector<>(mockEasyScoreDirectorFactory(), false, ConstraintMatchPolicy.ENABLED, true, null);
         assertThat(director.isConstraintMatchEnabled()).isFalse();
         assertThatIllegalStateException()
                 .isThrownBy(director::getConstraintMatchTotalMap)
@@ -45,7 +46,7 @@ class EasyScoreDirectorTest {
         scoreDirectorFactory.setInitializingScoreTrend(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_DOWN, 1));
         EasyScoreDirector<TestdataCorruptedShadowedSolution, SimpleScore> scoreDirector =
-                scoreDirectorFactory.buildScoreDirector(false, false, true);
+                scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED, true);
 
         TestdataCorruptedShadowedSolution solution = new TestdataCorruptedShadowedSolution("s1");
         TestdataValue v1 = new TestdataValue("v1");

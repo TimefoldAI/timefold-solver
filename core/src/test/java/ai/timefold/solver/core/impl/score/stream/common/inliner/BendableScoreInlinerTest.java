@@ -8,6 +8,7 @@ import java.util.Map;
 import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.testdata.domain.score.TestdataBendableScoreSolution;
 
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,7 @@ class BendableScoreInlinerTest extends AbstractScoreInlinerTest<TestdataBendable
 
     @Test
     void defaultScore() {
-        var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchEnabled);
+        var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchPolicy);
         assertThat(scoreInliner.extractScore(0)).isEqualTo(buildScore(0, 0, 0));
     }
 
@@ -119,8 +120,8 @@ class BendableScoreInlinerTest extends AbstractScoreInlinerTest<TestdataBendable
 
     @Override
     protected AbstractScoreInliner<BendableScore> buildScoreInliner(Map<Constraint, BendableScore> constraintWeightMap,
-            boolean constraintMatchEnabled) {
-        return new BendableScoreInliner(constraintWeightMap, constraintMatchEnabled, 1, 2);
+            ConstraintMatchPolicy constraintMatchPolicy) {
+        return new BendableScoreInliner(constraintWeightMap, constraintMatchPolicy, 1, 2);
     }
 
     private BendableScore buildScore(int hard, int soft1, int soft2) {

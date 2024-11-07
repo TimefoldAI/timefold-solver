@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
 import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -17,7 +18,7 @@ import org.junit.jupiter.api.extension.TestTemplateInvocationContextProvider;
 /**
  * This extension helps implement parameterized {@link ConstraintStream} tests. It provides invocation contexts
  * representing the cartesian product of {true, false} ⨯ {BAVET} for a test matrix with
- * {@code constraintMatchEnabled} and {@link ConstraintStreamImplType} axes.
+ * {@link ConstraintMatchPolicy} and {@link ConstraintStreamImplType} axes.
  * <p>
  * Each invocation context includes two additional extensions being {@link ParameterResolver parameter resolvers} that
  * populate the test class constructor with the test data. Since each CS test class has dozens of test methods
@@ -33,21 +34,23 @@ public class ConstraintStreamTestExtension implements TestTemplateInvocationCont
 
     @Override
     public Stream<TestTemplateInvocationContext> provideTestTemplateInvocationContexts(ExtensionContext context) {
-        return Stream.of(true, false)
+        return Stream
+                .of(ConstraintMatchPolicy.ENABLED, ConstraintMatchPolicy.ENABLED_WITHOUT_JUSTIFICATIONS,
+                        ConstraintMatchPolicy.DISABLED)
                 .map(ConstraintStreamTestExtension::invocationContext);
     }
 
-    private static TestTemplateInvocationContext invocationContext(Boolean constraintMatchEnabled) {
+    private static TestTemplateInvocationContext invocationContext(ConstraintMatchPolicy constraintMatchPolicy) {
         return new TestTemplateInvocationContext() {
 
             @Override
             public String getDisplayName(int invocationIndex) {
-                return "constraintMatchEnabled=" + constraintMatchEnabled;
+                return "constraintMatchPolicy=" + constraintMatchPolicy;
             }
 
             @Override
             public List<Extension> getAdditionalExtensions() {
-                return List.of(parameterResolver(boolean.class, constraintMatchEnabled));
+                return List.of(parameterResolver(ConstraintMatchPolicy.class, constraintMatchPolicy));
             }
         };
     }

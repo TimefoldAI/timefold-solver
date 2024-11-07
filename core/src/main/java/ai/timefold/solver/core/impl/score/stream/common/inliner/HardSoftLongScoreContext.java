@@ -15,7 +15,7 @@ final class HardSoftLongScoreContext extends ScoreContext<HardSoftLongScore, Har
         long softImpact = constraintWeight.softScore() * matchWeight;
         parent.softScore += softImpact;
         UndoScoreImpacter undoScoreImpact = () -> parent.softScore -= softImpact;
-        if (!constraintMatchEnabled) {
+        if (!constraintMatchPolicy.isEnabled()) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact, HardSoftLongScore.ofSoft(softImpact), constraintMatchSupplier);
@@ -26,7 +26,7 @@ final class HardSoftLongScoreContext extends ScoreContext<HardSoftLongScore, Har
         long hardImpact = constraintWeight.hardScore() * matchWeight;
         parent.hardScore += hardImpact;
         UndoScoreImpacter undoScoreImpact = () -> parent.hardScore -= hardImpact;
-        if (!constraintMatchEnabled) {
+        if (!constraintMatchPolicy.isEnabled()) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact, HardSoftLongScore.ofHard(hardImpact), constraintMatchSupplier);
@@ -42,7 +42,7 @@ final class HardSoftLongScoreContext extends ScoreContext<HardSoftLongScore, Har
             parent.hardScore -= hardImpact;
             parent.softScore -= softImpact;
         };
-        if (!constraintMatchEnabled) {
+        if (!constraintMatchPolicy.isEnabled()) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact, HardSoftLongScore.of(hardImpact, softImpact),

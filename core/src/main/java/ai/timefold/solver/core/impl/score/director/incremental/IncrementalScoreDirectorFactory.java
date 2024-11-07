@@ -9,6 +9,7 @@ import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 
@@ -55,9 +56,8 @@ public final class IncrementalScoreDirectorFactory<Solution_, Score_ extends Sco
 
     @Override
     public IncrementalScoreDirector<Solution_, Score_> buildScoreDirector(boolean lookUpEnabled,
-            boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
-        return new IncrementalScoreDirector<>(this,
-                lookUpEnabled, constraintMatchEnabledPreference, expectShadowVariablesInCorrectState,
+            ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState) {
+        return new IncrementalScoreDirector<>(this, lookUpEnabled, constraintMatchPolicy, expectShadowVariablesInCorrectState,
                 incrementalScoreCalculatorSupplier.get());
     }
 

@@ -14,6 +14,7 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSession;
@@ -69,26 +70,25 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
 
     @Override
     public BavetConstraintStreamScoreDirector<Solution_, Score_> buildScoreDirector(boolean lookUpEnabled,
-            boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState) {
-        return new BavetConstraintStreamScoreDirector<>(this, lookUpEnabled, constraintMatchEnabledPreference,
+            ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState) {
+        return new BavetConstraintStreamScoreDirector<>(this, lookUpEnabled, constraintMatchPolicy,
                 expectShadowVariablesInCorrectState);
     }
 
     @Override
     public InnerScoreDirector<Solution_, Score_> buildDerivedScoreDirector(boolean lookUpEnabled,
-            boolean constraintMatchEnabledPreference) {
-        return new BavetConstraintStreamScoreDirector<>(this, lookUpEnabled, constraintMatchEnabledPreference,
-                true, true);
+            ConstraintMatchPolicy constraintMatchPolicy) {
+        return new BavetConstraintStreamScoreDirector<>(this, lookUpEnabled, constraintMatchPolicy, true, true);
     }
 
-    public BavetConstraintSession<Score_> newSession(Solution_ workingSolution, boolean constraintMatchEnabled,
+    public BavetConstraintSession<Score_> newSession(Solution_ workingSolution, ConstraintMatchPolicy constraintMatchPolicy,
             boolean scoreDirectorDerived) {
-        return constraintSessionFactory.buildSession(workingSolution, constraintMatchEnabled, scoreDirectorDerived);
+        return constraintSessionFactory.buildSession(workingSolution, constraintMatchPolicy, scoreDirectorDerived);
     }
 
     @Override
     public AbstractScoreInliner<Score_> fireAndForget(Object... facts) {
-        var session = newSession(null, true, true);
+        var session = newSession(null, ConstraintMatchPolicy.ENABLED, true);
         Arrays.stream(facts).forEach(session::insert);
         session.calculateScore(0);
         return session.getScoreInliner();

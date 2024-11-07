@@ -5,6 +5,7 @@ import java.util.Map;
 
 import ai.timefold.solver.core.api.score.buildin.hardsoftbigdecimal.HardSoftBigDecimalScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 final class HardSoftBigDecimalScoreInliner extends AbstractScoreInliner<HardSoftBigDecimalScore> {
@@ -13,8 +14,8 @@ final class HardSoftBigDecimalScoreInliner extends AbstractScoreInliner<HardSoft
     BigDecimal softScore = BigDecimal.ZERO;
 
     HardSoftBigDecimalScoreInliner(Map<Constraint, HardSoftBigDecimalScore> constraintWeightMap,
-            boolean constraintMatchEnabled) {
-        super(constraintWeightMap, constraintMatchEnabled);
+            ConstraintMatchPolicy constraintMatchPolicy) {
+        super(constraintWeightMap, constraintMatchPolicy);
     }
 
     @Override

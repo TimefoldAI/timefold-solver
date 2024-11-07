@@ -4,6 +4,7 @@ import java.util.Map;
 
 import ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 final class HardMediumSoftScoreInliner extends AbstractScoreInliner<HardMediumSoftScore> {
@@ -12,8 +13,9 @@ final class HardMediumSoftScoreInliner extends AbstractScoreInliner<HardMediumSo
     int mediumScore;
     int softScore;
 
-    HardMediumSoftScoreInliner(Map<Constraint, HardMediumSoftScore> constraintWeightMap, boolean constraintMatchEnabled) {
-        super(constraintWeightMap, constraintMatchEnabled);
+    HardMediumSoftScoreInliner(Map<Constraint, HardMediumSoftScore> constraintWeightMap,
+            ConstraintMatchPolicy constraintMatchPolicy) {
+        super(constraintWeightMap, constraintMatchPolicy);
     }
 
     @Override

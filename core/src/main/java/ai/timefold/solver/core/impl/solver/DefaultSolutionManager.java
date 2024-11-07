@@ -17,6 +17,7 @@ import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.score.DefaultScoreExplanation;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
 
@@ -60,7 +61,8 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
             boolean enableConstraintMatch, boolean cloneSolution) {
         var isShadowVariableUpdateEnabled = solutionUpdatePolicy.isShadowVariableUpdateEnabled();
         var nonNullSolution = Objects.requireNonNull(solution);
-        try (var scoreDirector = getScoreDirectorFactory().buildScoreDirector(cloneSolution, enableConstraintMatch,
+        try (var scoreDirector = getScoreDirectorFactory().buildScoreDirector(cloneSolution,
+                enableConstraintMatch ? ConstraintMatchPolicy.ENABLED : ConstraintMatchPolicy.DISABLED,
                 !isShadowVariableUpdateEnabled)) {
             nonNullSolution = cloneSolution ? scoreDirector.cloneSolution(nonNullSolution) : nonNullSolution;
             scoreDirector.setWorkingSolution(nonNullSolution);

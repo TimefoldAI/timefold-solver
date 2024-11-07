@@ -17,6 +17,7 @@ import ai.timefold.solver.core.api.score.calculator.ConstraintMatchAwareIncremen
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.buildin.SimpleScoreDefinition;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedAnchor;
 import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedSolution;
@@ -55,7 +56,8 @@ class IncrementalScoreDirectorTest {
                 mock(IncrementalScoreCalculator.class);
         when(incrementalScoreCalculator.calculateScore()).thenReturn(SimpleScore.of(100));
         try (var scoreDirector =
-                new IncrementalScoreDirector<>(scoreDirectorFactory, false, false, true, incrementalScoreCalculator)) {
+                new IncrementalScoreDirector<>(scoreDirectorFactory, false, ConstraintMatchPolicy.DISABLED, true,
+                        incrementalScoreCalculator)) {
             scoreDirector.setWorkingSolution(solution);
             reset(incrementalScoreCalculator);
 
@@ -78,18 +80,20 @@ class IncrementalScoreDirectorTest {
 
     @Test
     void illegalStateExceptionThrownWhenConstraintMatchNotEnabled() {
-        try (var director = new IncrementalScoreDirector<>(mockIncrementalScoreDirectorFactory(), false, false, true,
+        try (var director = new IncrementalScoreDirector<>(mockIncrementalScoreDirectorFactory(), false,
+                ConstraintMatchPolicy.DISABLED, true,
                 mockIncrementalScoreCalculator(false))) {
             director.setWorkingSolution(new Object());
             assertThatIllegalStateException()
                     .isThrownBy(director::getConstraintMatchTotalMap)
-                    .withMessageContaining("constraintMatchEnabled");
+                    .withMessageContaining(ConstraintMatchPolicy.DISABLED.name());
         }
     }
 
     @Test
     void constraintMatchTotalsNeverNull() {
-        try (var director = new IncrementalScoreDirector<>(mockIncrementalScoreDirectorFactory(), false, true, true,
+        try (var director = new IncrementalScoreDirector<>(mockIncrementalScoreDirectorFactory(), false,
+                ConstraintMatchPolicy.ENABLED, true,
                 mockIncrementalScoreCalculator(true))) {
             director.setWorkingSolution(new Object());
             assertThat(director.getConstraintMatchTotalMap()).isNotNull();
@@ -98,7 +102,8 @@ class IncrementalScoreDirectorTest {
 
     @Test
     void constraintMatchIsNotEnabledWhenScoreCalculatorNotConstraintMatchAware() {
-        try (var director = new IncrementalScoreDirector<>(mockIncrementalScoreDirectorFactory(), false, true, true,
+        try (var director = new IncrementalScoreDirector<>(mockIncrementalScoreDirectorFactory(), false,
+                ConstraintMatchPolicy.ENABLED, true,
                 mockIncrementalScoreCalculator(false))) {
             assertThat(director.isConstraintMatchEnabled()).isFalse();
         }

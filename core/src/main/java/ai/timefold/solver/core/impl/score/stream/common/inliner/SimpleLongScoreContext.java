@@ -14,7 +14,7 @@ final class SimpleLongScoreContext extends ScoreContext<SimpleLongScore, SimpleL
         long impact = constraintWeight.score() * matchWeight;
         parent.score += impact;
         UndoScoreImpacter undoScoreImpact = () -> parent.score -= impact;
-        if (!constraintMatchEnabled) {
+        if (!constraintMatchPolicy.isEnabled()) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact, SimpleLongScore.of(impact), constraintMatchSupplier);

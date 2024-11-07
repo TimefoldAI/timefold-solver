@@ -17,7 +17,7 @@ final class SimpleBigDecimalScoreContext extends ScoreContext<SimpleBigDecimalSc
         BigDecimal impact = constraintWeight.score().multiply(matchWeight);
         parent.score = parent.score.add(impact);
         UndoScoreImpacter undoScoreImpact = () -> parent.score = parent.score.subtract(impact);
-        if (!constraintMatchEnabled) {
+        if (!constraintMatchPolicy.isEnabled()) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact, SimpleBigDecimalScore.of(impact), constraintMatchSupplier);

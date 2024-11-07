@@ -18,6 +18,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 
@@ -36,9 +37,9 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
     private final IncrementalScoreCalculator<Solution_, Score_> incrementalScoreCalculator;
 
     public IncrementalScoreDirector(IncrementalScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
-            boolean lookUpEnabled, boolean constraintMatchEnabledPreference, boolean expectShadowVariablesInCorrectState,
+            boolean lookUpEnabled, ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState,
             IncrementalScoreCalculator<Solution_, Score_> incrementalScoreCalculator) {
-        super(scoreDirectorFactory, lookUpEnabled, constraintMatchEnabledPreference, expectShadowVariablesInCorrectState);
+        super(scoreDirectorFactory, lookUpEnabled, constraintMatchPolicy, expectShadowVariablesInCorrectState);
         this.incrementalScoreCalculator = incrementalScoreCalculator;
     }
 
@@ -55,7 +56,7 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
         super.setWorkingSolution(workingSolution);
         if (incrementalScoreCalculator instanceof ConstraintMatchAwareIncrementalScoreCalculator) {
             ((ConstraintMatchAwareIncrementalScoreCalculator<Solution_, ?>) incrementalScoreCalculator)
-                    .resetWorkingSolution(workingSolution, constraintMatchEnabledPreference);
+                    .resetWorkingSolution(workingSolution, isConstraintMatchEnabled());
         } else {
             incrementalScoreCalculator.resetWorkingSolution(workingSolution);
         }
@@ -84,14 +85,14 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public boolean isConstraintMatchEnabled() {
-        return constraintMatchEnabledPreference
+        return constraintMatchPolicy.isEnabled()
                 && incrementalScoreCalculator instanceof ConstraintMatchAwareIncrementalScoreCalculator;
     }
 
     @Override
     public Map<String, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
         if (!isConstraintMatchEnabled()) {
-            throw new IllegalStateException("When constraintMatchEnabled (" + isConstraintMatchEnabled()
+            throw new IllegalStateException("When constraint matching (" + constraintMatchPolicy
                     + ") is disabled in the constructor, this method should not be called.");
         }
         // Notice that we don't trigger the variable listeners
@@ -104,7 +105,7 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public Map<Object, Indictment<Score_>> getIndictmentMap() {
         if (!isConstraintMatchEnabled()) {
-            throw new IllegalStateException("When constraintMatchEnabled (" + isConstraintMatchEnabled()
+            throw new IllegalStateException("When constraint matching (" + constraintMatchPolicy
                     + ") is disabled in the constructor, this method should not be called.");
         }
         Map<Object, Indictment<Score_>> incrementalIndictmentMap =

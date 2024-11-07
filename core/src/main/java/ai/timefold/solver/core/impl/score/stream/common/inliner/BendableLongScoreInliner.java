@@ -5,6 +5,7 @@ import java.util.Map;
 
 import ai.timefold.solver.core.api.score.buildin.bendablelong.BendableLongScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 public final class BendableLongScoreInliner extends AbstractScoreInliner<BendableLongScore> {
@@ -12,9 +13,10 @@ public final class BendableLongScoreInliner extends AbstractScoreInliner<Bendabl
     final long[] hardScores;
     final long[] softScores;
 
-    BendableLongScoreInliner(Map<Constraint, BendableLongScore> constraintWeightMap, boolean constraintMatchEnabled,
+    BendableLongScoreInliner(Map<Constraint, BendableLongScore> constraintWeightMap,
+            ConstraintMatchPolicy constraintMatchPolicy,
             int hardLevelsSize, int softLevelsSize) {
-        super(constraintWeightMap, constraintMatchEnabled);
+        super(constraintWeightMap, constraintMatchPolicy);
         hardScores = new long[hardLevelsSize];
         softScores = new long[softLevelsSize];
     }

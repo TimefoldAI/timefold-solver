@@ -6,6 +6,7 @@ import java.util.Map;
 
 import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 final class BendableBigDecimalScoreInliner extends AbstractScoreInliner<BendableBigDecimalScore> {
@@ -13,9 +14,9 @@ final class BendableBigDecimalScoreInliner extends AbstractScoreInliner<Bendable
     final BigDecimal[] hardScores;
     final BigDecimal[] softScores;
 
-    BendableBigDecimalScoreInliner(Map<Constraint, BendableBigDecimalScore> constraintWeightMap, boolean constraintMatchEnabled,
-            int hardLevelsSize, int softLevelsSize) {
-        super(constraintWeightMap, constraintMatchEnabled);
+    BendableBigDecimalScoreInliner(Map<Constraint, BendableBigDecimalScore> constraintWeightMap,
+            ConstraintMatchPolicy constraintMatchPolicy, int hardLevelsSize, int softLevelsSize) {
+        super(constraintWeightMap, constraintMatchPolicy);
         hardScores = new BigDecimal[hardLevelsSize];
         Arrays.fill(hardScores, BigDecimal.ZERO);
         softScores = new BigDecimal[softLevelsSize];

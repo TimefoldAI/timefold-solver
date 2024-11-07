@@ -33,7 +33,7 @@ final class BendableBigDecimalScoreContext extends ScoreContext<BendableBigDecim
         parent.softScores[scoreLevel] = parent.softScores[scoreLevel].add(softImpact);
         UndoScoreImpacter undoScoreImpact =
                 () -> parent.softScores[scoreLevel] = parent.softScores[scoreLevel].subtract(softImpact);
-        if (!constraintMatchEnabled) {
+        if (!constraintMatchPolicy.isEnabled()) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact,
@@ -47,7 +47,7 @@ final class BendableBigDecimalScoreContext extends ScoreContext<BendableBigDecim
         parent.hardScores[scoreLevel] = parent.hardScores[scoreLevel].add(hardImpact);
         UndoScoreImpacter undoScoreImpact =
                 () -> parent.hardScores[scoreLevel] = parent.hardScores[scoreLevel].subtract(hardImpact);
-        if (!constraintMatchEnabled) {
+        if (!constraintMatchPolicy.isEnabled()) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact,
@@ -77,7 +77,7 @@ final class BendableBigDecimalScoreContext extends ScoreContext<BendableBigDecim
                 parent.softScores[softScoreLevel] = parent.softScores[softScoreLevel].subtract(softImpacts[softScoreLevel]);
             }
         };
-        if (!constraintMatchEnabled) {
+        if (!constraintMatchPolicy.isEnabled()) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact, BendableBigDecimalScore.of(hardImpacts, softImpacts),

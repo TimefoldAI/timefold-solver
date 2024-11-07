@@ -13,7 +13,7 @@ final class SimpleScoreContext extends ScoreContext<SimpleScore, SimpleScoreInli
         int impact = constraintWeight.score() * matchWeight;
         parent.score += impact;
         UndoScoreImpacter undoScoreImpact = () -> parent.score -= impact;
-        if (!constraintMatchEnabled) {
+        if (!constraintMatchPolicy.isEnabled()) {
             return undoScoreImpact;
         }
         return impactWithConstraintMatch(undoScoreImpact, SimpleScore.of(impact), constraintMatchSupplier);

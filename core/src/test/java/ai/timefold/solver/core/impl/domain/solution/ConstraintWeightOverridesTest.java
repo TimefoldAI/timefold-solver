@@ -10,6 +10,7 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.testdata.domain.constraintweightoverrides.TestdataConstraintWeightOverridesConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.constraintweightoverrides.TestdataConstraintWeightOverridesSolution;
@@ -80,7 +81,7 @@ class ConstraintWeightOverridesTest {
                 new ScoreDirectorFactoryConfig()
                         .withConstraintProviderClass(TestdataConstraintWeightOverridesConstraintProvider.class),
                 EnvironmentMode.REPRODUCIBLE)
-                .buildScoreDirector(false, false)) {
+                .buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
             // Default weights
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.triggerVariableListeners();

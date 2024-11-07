@@ -14,6 +14,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractIfExistsNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractJoinNode;
@@ -53,7 +54,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
     // ************************************************************************
 
     @SuppressWarnings("unchecked")
-    public BavetConstraintSession<Score_> buildSession(Solution_ workingSolution, boolean constraintMatchEnabled,
+    public BavetConstraintSession<Score_> buildSession(Solution_ workingSolution, ConstraintMatchPolicy constraintMatchPolicy,
             boolean scoreDirectorDerived) {
         var constraintWeightSupplier = solutionDescriptor.getConstraintWeightSupplier();
         var constraints = constraintMetaModel.getConstraints();
@@ -108,7 +109,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
             }
         }
 
-        var scoreInliner = AbstractScoreInliner.buildScoreInliner(scoreDefinition, constraintWeightMap, constraintMatchEnabled);
+        var scoreInliner = AbstractScoreInliner.buildScoreInliner(scoreDefinition, constraintWeightMap, constraintMatchPolicy);
         if (constraintStreamSet.isEmpty()) {
             LOGGER.warn("No constraints enabled for solution ({}).", workingSolution);
             return new BavetConstraintSession<>(scoreInliner);

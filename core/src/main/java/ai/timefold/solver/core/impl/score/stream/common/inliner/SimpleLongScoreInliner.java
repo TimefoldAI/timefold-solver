@@ -4,14 +4,15 @@ import java.util.Map;
 
 import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
 final class SimpleLongScoreInliner extends AbstractScoreInliner<SimpleLongScore> {
 
     long score;
 
-    SimpleLongScoreInliner(Map<Constraint, SimpleLongScore> constraintWeightMap, boolean constraintMatchEnabled) {
-        super(constraintWeightMap, constraintMatchEnabled);
+    SimpleLongScoreInliner(Map<Constraint, SimpleLongScore> constraintWeightMap, ConstraintMatchPolicy constraintMatchPolicy) {
+        super(constraintWeightMap, constraintMatchPolicy);
     }
 
     @Override

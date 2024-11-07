@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.Joiners;
+import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractAdvancedGroupByConstraintStreamTest;
 import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishEntity;
@@ -32,8 +33,8 @@ import org.junit.jupiter.api.TestTemplate;
 
 final class BavetAdvancedGroupByConstraintStreamTest extends AbstractAdvancedGroupByConstraintStreamTest {
 
-    public BavetAdvancedGroupByConstraintStreamTest(boolean constraintMatchEnabled) {
-        super(new BavetConstraintStreamImplSupport(constraintMatchEnabled));
+    public BavetAdvancedGroupByConstraintStreamTest(ConstraintMatchPolicy constraintMatchPolicy) {
+        super(new BavetConstraintStreamImplSupport(constraintMatchPolicy));
     }
 
     @TestTemplate
