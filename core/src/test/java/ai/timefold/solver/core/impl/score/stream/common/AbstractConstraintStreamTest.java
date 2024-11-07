@@ -102,9 +102,9 @@ public abstract class AbstractConstraintStreamTest {
             var matchCount = scoreDirector.getConstraintMatchTotalMap().values().stream()
                     .mapToInt(ConstraintMatchTotal::getConstraintMatchCount)
                     .sum();
-            assertThat(assertableMatches.length)
+            assertThat(assertableMatches)
                     .as("The expected number of constraint matches is different from actual.")
-                    .isEqualTo(matchCount);
+                    .hasSize(matchCount);
         }
         assertThat(score.score()).isEqualTo(scoreTotal);
     }
