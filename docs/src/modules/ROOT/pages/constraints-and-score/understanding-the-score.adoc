@@ -108,6 +108,15 @@ Using score analysis, you can find out:
 * Which constraints are broken, and how many times.
 * Which planning entities and problem facts are responsible for breaking which constraints.
 
+[NOTE]
+====
+For performance reasons and especially with large datasets that you'll later need to serialize,
+you may choose to use `ScoreAnalysis` without justifications,
+while still maintaining the count of constraint matches.
+In that case, use `ScoreAnalysisFetchPolicy.FETCH_MATCH_COUNT` instead of
+the default `ScoreAnalysisFetchPolicy.FETCH_ALL` when calling `SolutionManager.analyze(...)`.
+====
+
 It is also possible to print the score summary:
 
 [tabs]
@@ -213,7 +222,6 @@ Each match is accompanied by the score difference it caused, and a justification
 Typically, the scoring engine creates justification objects automatically
 by using the results of xref:constraints-and-score/score-calculation.adoc#constraintStreamsCustomizingJustificationsAndIndictments[Constraint Streams' `justifyWith(...)` call].
 
-
 [#scoreAnalysisDiff]
 === Identifying changes between two solutions
 
@@ -303,6 +311,12 @@ This is because we have no way of knowing which `Score` or `ConstraintJustificat
 However, deserialization is easy to implement yourself by extending `AbstractScoreAnalysisJacksonDeserializer`
 and registering it with Jackson's `ObjectMapper`.
 ====
+
+With large datasets,
+you may choose to use `ScoreAnalysis` without justifications,
+while still maintaining the count of constraint matches.
+In that case, use `ScoreAnalysisFetchPolicy.FETCH_MATCH_COUNT` instead of
+the default `ScoreAnalysisFetchPolicy.FETCH_ALL` when calling `SolutionManager.analyze(...)`.
 
 
 [#indictmentHeatMap]

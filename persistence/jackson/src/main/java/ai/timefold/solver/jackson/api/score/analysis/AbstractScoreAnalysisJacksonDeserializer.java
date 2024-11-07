@@ -48,6 +48,11 @@ public abstract class AbstractScoreAnalysisJacksonDeserializer<Score_ extends Sc
                 for (var matchNode : constraintNode.get("matches")) {
                     var matchScore = parseScore(matchNode.get("score").asText());
                     var justificationNode = matchNode.get("justification");
+                    if (justificationNode == null) {
+                        // Not allowed; if matches are present, they must have justifications.
+                        throw new IllegalStateException("The match justification of constraint (%s)'s match is missing."
+                                .formatted(constraintRef));
+                    }
                     var justificationString = justificationNode.toString();
                     if (getConstraintJustificationClass(constraintRef) == null) { // String-based fallback.
                         var parsedJustification = parseConstraintJustification(constraintRef, justificationString, matchScore);
