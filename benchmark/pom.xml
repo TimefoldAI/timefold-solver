@@ -100,23 +100,8 @@
     </dependency>
     <!-- Webjars -->
     <dependency>
-      <groupId>org.webjars</groupId>
-      <artifactId>webjars-locator</artifactId>
-    </dependency>
-    <dependency>
       <groupId>ai.timefold.solver</groupId>
       <artifactId>timefold-solver-webui</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.webjars</groupId>
-      <artifactId>bootstrap</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.webjars</groupId>
-      <artifactId>jquery</artifactId>
-      <scope>runtime</scope>
     </dependency>
     <!-- Testing -->
     <dependency>
@@ -243,11 +228,8 @@
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
         <configuration>
-          <ignoredUsedUndeclaredDependencies>
-            <dependency>org.webjars:*:jar</dependency>
-          </ignoredUsedUndeclaredDependencies>
           <ignoredUnusedDeclaredDependencies>
-            <dependency>org.webjars:*:jar</dependency>
+            <dependency>ai.timefold.solver:timefold-solver-webui:jar</dependency>
           </ignoredUnusedDeclaredDependencies>
         </configuration>
       </plugin>
