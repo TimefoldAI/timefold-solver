@@ -4,6 +4,8 @@ import java.util.Arrays;
 
 import jakarta.xml.bind.annotation.XmlEnum;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlEnum
 public enum LocalSearchType {
     HILL_CLIMBING,
@@ -16,7 +18,7 @@ public enum LocalSearchType {
     /**
      * @return {@link #values()} without duplicates (abstract types that end up behaving as one of the other types).
      */
-    public static LocalSearchType[] getBluePrintTypes() {
+    public static @NonNull LocalSearchType @NonNull [] getBluePrintTypes() {
         return Arrays.stream(values())
                 // Workaround for https://issues.redhat.com/browse/PLANNER-1294
                 .filter(localSearchType -> localSearchType != SIMULATED_ANNEALING)

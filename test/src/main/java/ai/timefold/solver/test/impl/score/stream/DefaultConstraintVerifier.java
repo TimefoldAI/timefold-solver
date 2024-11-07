@@ -13,6 +13,8 @@ import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 
+import org.jspecify.annotations.NonNull;
+
 public final class DefaultConstraintVerifier<ConstraintProvider_ extends ConstraintProvider, Solution_, Score_ extends Score<Score_>>
         implements ConstraintVerifier<ConstraintProvider_, Solution_> {
 
@@ -42,8 +44,8 @@ public final class DefaultConstraintVerifier<ConstraintProvider_ extends Constra
     }
 
     @Override
-    public ConstraintVerifier<ConstraintProvider_, Solution_> withConstraintStreamImplType(
-            ConstraintStreamImplType constraintStreamImplType) {
+    public @NonNull ConstraintVerifier<ConstraintProvider_, Solution_> withConstraintStreamImplType(
+            @NonNull ConstraintStreamImplType constraintStreamImplType) {
         requireNonNull(constraintStreamImplType);
         this.constraintStreamImplTypeRef.set(constraintStreamImplType);
         this.configuredConstraintVerifierRef.set(null);
@@ -55,8 +57,8 @@ public final class DefaultConstraintVerifier<ConstraintProvider_ extends Constra
     // ************************************************************************
 
     @Override
-    public DefaultSingleConstraintVerification<Solution_, Score_> verifyThat(
-            BiFunction<ConstraintProvider_, ConstraintFactory, Constraint> constraintFunction) {
+    public @NonNull DefaultSingleConstraintVerification<Solution_, Score_> verifyThat(
+            @NonNull BiFunction<ConstraintProvider_, ConstraintFactory, Constraint> constraintFunction) {
         return getOrCreateConfiguredConstraintVerifier().verifyThat(constraintFunction);
     }
 
@@ -71,7 +73,7 @@ public final class DefaultConstraintVerifier<ConstraintProvider_ extends Constra
     }
 
     @Override
-    public DefaultMultiConstraintVerification<Solution_, Score_> verifyThat() {
+    public @NonNull DefaultMultiConstraintVerification<Solution_, Score_> verifyThat() {
         return getOrCreateConfiguredConstraintVerifier().verifyThat();
     }
 

@@ -29,6 +29,9 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner
 import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 @XmlType(propOrder = {
         "constructionHeuristicType",
         "entitySorterManner",
@@ -83,51 +86,51 @@ public class ConstructionHeuristicPhaseConfig extends PhaseConfig<ConstructionHe
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public ConstructionHeuristicType getConstructionHeuristicType() {
+    public @Nullable ConstructionHeuristicType getConstructionHeuristicType() {
         return constructionHeuristicType;
     }
 
-    public void setConstructionHeuristicType(ConstructionHeuristicType constructionHeuristicType) {
+    public void setConstructionHeuristicType(@Nullable ConstructionHeuristicType constructionHeuristicType) {
         this.constructionHeuristicType = constructionHeuristicType;
     }
 
-    public EntitySorterManner getEntitySorterManner() {
+    public @Nullable EntitySorterManner getEntitySorterManner() {
         return entitySorterManner;
     }
 
-    public void setEntitySorterManner(EntitySorterManner entitySorterManner) {
+    public void setEntitySorterManner(@Nullable EntitySorterManner entitySorterManner) {
         this.entitySorterManner = entitySorterManner;
     }
 
-    public ValueSorterManner getValueSorterManner() {
+    public @Nullable ValueSorterManner getValueSorterManner() {
         return valueSorterManner;
     }
 
-    public void setValueSorterManner(ValueSorterManner valueSorterManner) {
+    public void setValueSorterManner(@Nullable ValueSorterManner valueSorterManner) {
         this.valueSorterManner = valueSorterManner;
     }
 
-    public EntityPlacerConfig getEntityPlacerConfig() {
+    public @Nullable EntityPlacerConfig getEntityPlacerConfig() {
         return entityPlacerConfig;
     }
 
-    public void setEntityPlacerConfig(EntityPlacerConfig entityPlacerConfig) {
+    public void setEntityPlacerConfig(@Nullable EntityPlacerConfig entityPlacerConfig) {
         this.entityPlacerConfig = entityPlacerConfig;
     }
 
-    public List<MoveSelectorConfig> getMoveSelectorConfigList() {
+    public @Nullable List<@NonNull MoveSelectorConfig> getMoveSelectorConfigList() {
         return moveSelectorConfigList;
     }
 
-    public void setMoveSelectorConfigList(List<MoveSelectorConfig> moveSelectorConfigList) {
+    public void setMoveSelectorConfigList(@Nullable List<@NonNull MoveSelectorConfig> moveSelectorConfigList) {
         this.moveSelectorConfigList = moveSelectorConfigList;
     }
 
-    public ConstructionHeuristicForagerConfig getForagerConfig() {
+    public @Nullable ConstructionHeuristicForagerConfig getForagerConfig() {
         return foragerConfig;
     }
 
-    public void setForagerConfig(ConstructionHeuristicForagerConfig foragerConfig) {
+    public void setForagerConfig(@Nullable ConstructionHeuristicForagerConfig foragerConfig) {
         this.foragerConfig = foragerConfig;
     }
 
@@ -135,39 +138,41 @@ public class ConstructionHeuristicPhaseConfig extends PhaseConfig<ConstructionHe
     // With methods
     // ************************************************************************
 
-    public ConstructionHeuristicPhaseConfig withConstructionHeuristicType(
+    public @NonNull ConstructionHeuristicPhaseConfig withConstructionHeuristicType(
             ConstructionHeuristicType constructionHeuristicType) {
         this.constructionHeuristicType = constructionHeuristicType;
         return this;
     }
 
-    public ConstructionHeuristicPhaseConfig withEntitySorterManner(EntitySorterManner entitySorterManner) {
+    public @NonNull ConstructionHeuristicPhaseConfig withEntitySorterManner(@NonNull EntitySorterManner entitySorterManner) {
         this.entitySorterManner = entitySorterManner;
         return this;
     }
 
-    public ConstructionHeuristicPhaseConfig withValueSorterManner(ValueSorterManner valueSorterManner) {
+    public @NonNull ConstructionHeuristicPhaseConfig withValueSorterManner(@NonNull ValueSorterManner valueSorterManner) {
         this.valueSorterManner = valueSorterManner;
         return this;
     }
 
-    public ConstructionHeuristicPhaseConfig withEntityPlacerConfig(EntityPlacerConfig<?> entityPlacerConfig) {
+    public @NonNull ConstructionHeuristicPhaseConfig withEntityPlacerConfig(@NonNull EntityPlacerConfig<?> entityPlacerConfig) {
         this.entityPlacerConfig = entityPlacerConfig;
         return this;
     }
 
-    public ConstructionHeuristicPhaseConfig withMoveSelectorConfigList(List<MoveSelectorConfig> moveSelectorConfigList) {
+    public @NonNull ConstructionHeuristicPhaseConfig
+            withMoveSelectorConfigList(@NonNull List<@NonNull MoveSelectorConfig> moveSelectorConfigList) {
         this.moveSelectorConfigList = moveSelectorConfigList;
         return this;
     }
 
-    public ConstructionHeuristicPhaseConfig withForagerConfig(ConstructionHeuristicForagerConfig foragerConfig) {
+    public @NonNull ConstructionHeuristicPhaseConfig
+            withForagerConfig(@NonNull ConstructionHeuristicForagerConfig foragerConfig) {
         this.foragerConfig = foragerConfig;
         return this;
     }
 
     @Override
-    public ConstructionHeuristicPhaseConfig inherit(ConstructionHeuristicPhaseConfig inheritedConfig) {
+    public @NonNull ConstructionHeuristicPhaseConfig inherit(@NonNull ConstructionHeuristicPhaseConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         constructionHeuristicType = ConfigUtils.inheritOverwritableProperty(constructionHeuristicType,
                 inheritedConfig.getConstructionHeuristicType());
@@ -184,12 +189,12 @@ public class ConstructionHeuristicPhaseConfig extends PhaseConfig<ConstructionHe
     }
 
     @Override
-    public ConstructionHeuristicPhaseConfig copyConfig() {
+    public @NonNull ConstructionHeuristicPhaseConfig copyConfig() {
         return new ConstructionHeuristicPhaseConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         if (getTerminationConfig() != null) {
             getTerminationConfig().visitReferencedClasses(classVisitor);
         }

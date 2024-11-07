@@ -10,6 +10,8 @@ import ai.timefold.solver.core.api.score.stream.penta.PentaJoiner;
 import ai.timefold.solver.core.impl.score.stream.JoinerType;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractJoiner;
 
+import org.jspecify.annotations.NonNull;
+
 public final class DefaultPentaJoiner<A, B, C, D, E> extends AbstractJoiner<E> implements PentaJoiner<A, B, C, D, E> {
 
     private static final DefaultPentaJoiner NONE =
@@ -36,7 +38,7 @@ public final class DefaultPentaJoiner<A, B, C, D, E> extends AbstractJoiner<E> i
     }
 
     @Override
-    public DefaultPentaJoiner<A, B, C, D, E> and(PentaJoiner<A, B, C, D, E> otherJoiner) {
+    public @NonNull DefaultPentaJoiner<A, B, C, D, E> and(@NonNull PentaJoiner<A, B, C, D, E> otherJoiner) {
         DefaultPentaJoiner<A, B, C, D, E> castJoiner = (DefaultPentaJoiner<A, B, C, D, E>) otherJoiner;
         int joinerCount = getJoinerCount();
         int castJoinerCount = castJoiner.getJoinerCount();

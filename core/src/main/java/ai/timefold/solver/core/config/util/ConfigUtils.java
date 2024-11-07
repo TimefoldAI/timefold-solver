@@ -36,6 +36,9 @@ import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 public class ConfigUtils {
 
     private static final AlphabeticMemberComparator alphabeticMemberComparator = new AlphabeticMemberComparator();
@@ -58,7 +61,8 @@ public class ConfigUtils {
      * @param <T> the new instance type
      * @return new instance of clazz
      */
-    public static <T> T newInstance(Object configBean, String propertyName, Class<T> clazz) {
+    public static <T> @NonNull T newInstance(@Nullable Object configBean, @NonNull String propertyName,
+            @NonNull Class<T> clazz) {
         return newInstance(() -> (configBean == null ? "?" : configBean.getClass().getSimpleName()), propertyName, clazz);
     }
 
@@ -74,7 +78,7 @@ public class ConfigUtils {
      * @param <T> the new instance type
      * @return new instance of clazz
      */
-    public static <T> T newInstance(Supplier<String> ownerDescriptor, String propertyName, Class<T> clazz) {
+    public static <T> @NonNull T newInstance(Supplier<String> ownerDescriptor, String propertyName, Class<T> clazz) {
         try {
             return clazz.getDeclaredConstructor().newInstance();
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
@@ -87,8 +91,8 @@ public class ConfigUtils {
         }
     }
 
-    public static void applyCustomProperties(Object bean, String beanClassPropertyName,
-            Map<String, String> customProperties, String customPropertiesPropertyName) {
+    public static void applyCustomProperties(@NonNull Object bean, @NonNull String beanClassPropertyName,
+            @Nullable Map<@NonNull String, @NonNull String> customProperties, @NonNull String customPropertiesPropertyName) {
         if (customProperties == null) {
             return;
         }
@@ -152,7 +156,8 @@ public class ConfigUtils {
         });
     }
 
-    public static <Config_ extends AbstractConfig<Config_>> Config_ inheritConfig(Config_ original, Config_ inherited) {
+    public static <Config_ extends AbstractConfig<Config_>> @Nullable Config_ inheritConfig(@Nullable Config_ original,
+            @Nullable Config_ inherited) {
         if (inherited != null) {
             if (original == null) {
                 original = inherited.copyConfig();
@@ -163,8 +168,8 @@ public class ConfigUtils {
         return original;
     }
 
-    public static <Config_ extends AbstractConfig<Config_>> List<Config_> inheritMergeableListConfig(
-            List<Config_> originalList, List<Config_> inheritedList) {
+    public static <Config_ extends AbstractConfig<Config_>> @Nullable List<Config_> inheritMergeableListConfig(
+            @Nullable List<Config_> originalList, @Nullable List<Config_> inheritedList) {
         if (inheritedList != null) {
             List<Config_> mergedList = new ArrayList<>(inheritedList.size()
                     + (originalList == null ? 0 : originalList.size()));
@@ -181,7 +186,7 @@ public class ConfigUtils {
         return originalList;
     }
 
-    public static <T> T inheritOverwritableProperty(T original, T inherited) {
+    public static <T> @Nullable T inheritOverwritableProperty(@Nullable T original, @Nullable T inherited) {
         if (original != null) {
             // Original overwrites inherited
             return original;
@@ -190,7 +195,8 @@ public class ConfigUtils {
         }
     }
 
-    public static <T> List<T> inheritMergeableListProperty(List<T> originalList, List<T> inheritedList) {
+    public static <T> @Nullable List<T> inheritMergeableListProperty(@Nullable List<T> originalList,
+            @Nullable List<T> inheritedList) {
         if (inheritedList == null) {
             return originalList;
         } else if (originalList == null) {
@@ -204,7 +210,8 @@ public class ConfigUtils {
         }
     }
 
-    public static <T> List<T> inheritUniqueMergeableListProperty(List<T> originalList, List<T> inheritedList) {
+    public static <T> @Nullable List<T> inheritUniqueMergeableListProperty(@Nullable List<T> originalList,
+            @Nullable List<T> inheritedList) {
         if (inheritedList == null) {
             return originalList;
         } else if (originalList == null) {
@@ -218,7 +225,8 @@ public class ConfigUtils {
         }
     }
 
-    public static <K, T> Map<K, T> inheritMergeableMapProperty(Map<K, T> originalMap, Map<K, T> inheritedMap) {
+    public static <K, T> @Nullable Map<K, T> inheritMergeableMapProperty(@Nullable Map<K, T> originalMap,
+            @Nullable Map<K, T> inheritedMap) {
         if (inheritedMap == null) {
             return originalMap;
         } else if (originalMap == null) {
@@ -230,7 +238,7 @@ public class ConfigUtils {
         }
     }
 
-    public static <T> T mergeProperty(T a, T b) {
+    public static <T> @Nullable T mergeProperty(@Nullable T a, @Nullable T b) {
         return Objects.equals(a, b) ? a : null;
     }
 
@@ -254,7 +262,7 @@ public class ConfigUtils {
      * @param <T> the type of property {@code a} and {@code b}
      * @return sometimes null
      */
-    public static <T> T meldProperty(T a, T b) {
+    public static <T> @Nullable T meldProperty(@Nullable T a, @Nullable T b) {
         if (a == null && b == null) {
             return null;
         }
@@ -267,7 +275,7 @@ public class ConfigUtils {
         return mergeProperty(a, b);
     }
 
-    public static boolean isEmptyCollection(Collection<?> collection) {
+    public static boolean isEmptyCollection(@Nullable Collection<?> collection) {
         return collection == null || collection.isEmpty();
     }
 
@@ -295,7 +303,8 @@ public class ConfigUtils {
         return (dividend / divisor) + correction;
     }
 
-    public static int resolvePoolSize(String propertyName, String value, String... magicValues) {
+    public static int resolvePoolSize(@NonNull String propertyName, @NonNull String value,
+            @NonNull String @NonNull... magicValues) {
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException ex) {
@@ -308,7 +317,7 @@ public class ConfigUtils {
     // Member and annotation methods
     // ************************************************************************
 
-    public static List<Class<?>> getAllParents(Class<?> bottomClass) {
+    public static @NonNull List<@NonNull Class<?>> getAllParents(@Nullable Class<?> bottomClass) {
         if (bottomClass == null || bottomClass == Object.class) {
             return Collections.emptyList();
         }
@@ -321,8 +330,8 @@ public class ConfigUtils {
         return lineageClassList;
     }
 
-    public static List<Class<?>> getAllAnnotatedLineageClasses(Class<?> bottomClass,
-            Class<? extends Annotation> annotation) {
+    public static @NonNull List<@NonNull Class<?>> getAllAnnotatedLineageClasses(@Nullable Class<?> bottomClass,
+            @NonNull Class<? extends Annotation> annotation) {
         if (bottomClass == null || !bottomClass.isAnnotationPresent(annotation)) {
             return Collections.emptyList();
         }
@@ -337,10 +346,9 @@ public class ConfigUtils {
     }
 
     /**
-     * @param baseClass never null
-     * @return never null, sorted by type (fields before methods), then by {@link AlphabeticMemberComparator}.
+     * @return sorted by type (fields before methods), then by {@link AlphabeticMemberComparator}.
      */
-    public static List<Member> getDeclaredMembers(Class<?> baseClass) {
+    public static @NonNull List<Member> getDeclaredMembers(@NonNull Class<?> baseClass) {
         var fieldStream = Stream.of(baseClass.getDeclaredFields())
                 // A synthetic field is a field generated by the compiler that
                 // does not exist in the source code. It is used mainly in
@@ -360,11 +368,10 @@ public class ConfigUtils {
     }
 
     /**
-     * @param baseClass never null
-     * @param annotationClass never null
-     * @return never null, sorted by type (fields before methods), then by {@link AlphabeticMemberComparator}.
+     * @return sorted by type (fields before methods), then by {@link AlphabeticMemberComparator}.
      */
-    public static List<Member> getAllMembers(Class<?> baseClass, Class<? extends Annotation> annotationClass) {
+    public static @NonNull List<Member> getAllMembers(@NonNull Class<?> baseClass,
+            @NonNull Class<? extends Annotation> annotationClass) {
         var clazz = baseClass;
         Stream<Member> memberStream = Stream.empty();
         while (clazz != null) {
@@ -385,8 +392,8 @@ public class ConfigUtils {
     }
 
     @SafeVarargs
-    public static Class<? extends Annotation> extractAnnotationClass(Member member,
-            Class<? extends Annotation>... annotationClasses) {
+    public static Class<? extends Annotation> extractAnnotationClass(@NonNull Member member,
+            @NonNull Class<? extends Annotation>... annotationClasses) {
         Class<? extends Annotation> annotationClass = null;
         for (var detectedAnnotationClass : annotationClasses) {
             if (((AnnotatedElement) member).isAnnotationPresent(detectedAnnotationClass)) {
@@ -403,8 +410,9 @@ public class ConfigUtils {
         return annotationClass;
     }
 
-    public static Class<?> extractGenericTypeParameterOrFail(String parentClassConcept, Class<?> parentClass, Class<?> type,
-            Type genericType, Class<? extends Annotation> annotationClass, String memberName) {
+    public static Class<?> extractGenericTypeParameterOrFail(@NonNull String parentClassConcept, @NonNull Class<?> parentClass,
+            @NonNull Class<?> type, @NonNull Type genericType, @Nullable Class<? extends Annotation> annotationClass,
+            @NonNull String memberName) {
         return extractGenericTypeParameter(parentClassConcept, parentClass, type, genericType, annotationClass, memberName)
                 .orElseThrow(() -> new IllegalArgumentException("""
                         The %s (%s) has a %s member (%s) with a member type (%s) which has no generic parameters.
@@ -415,8 +423,9 @@ public class ConfigUtils {
                                 memberName, type, memberName, type.getSimpleName())));
     }
 
-    public static Optional<Class<?>> extractGenericTypeParameter(String parentClassConcept, Class<?> parentClass, Class<?> type,
-            Type genericType, Class<? extends Annotation> annotationClass, String memberName) {
+    public static Optional<Class<?>> extractGenericTypeParameter(@NonNull String parentClassConcept,
+            @NonNull Class<?> parentClass, @NonNull Class<?> type, @NonNull Type genericType,
+            @Nullable Class<? extends Annotation> annotationClass, @NonNull String memberName) {
         if (!(genericType instanceof ParameterizedType parameterizedType)) {
             return Optional.empty();
         }
@@ -470,14 +479,11 @@ public class ConfigUtils {
      * This method is heavy, and it is effectively a computed constant.
      * It is recommended that its results are cached at call sites.
      *
-     * @param clazz never null
-     * @param memberAccessorFactory never null
-     * @param domainAccessType never null
      * @return null if no accessor found
      * @param <C> the class type
      */
-    public static <C> MemberAccessor findPlanningIdMemberAccessor(Class<C> clazz,
-            MemberAccessorFactory memberAccessorFactory, DomainAccessType domainAccessType) {
+    public static <C> @Nullable MemberAccessor findPlanningIdMemberAccessor(@NonNull Class<C> clazz,
+            @NonNull MemberAccessorFactory memberAccessorFactory, @NonNull DomainAccessType domainAccessType) {
         var member = getSingleMember(clazz, PlanningId.class);
         if (member == null) {
             return null;
@@ -546,7 +552,7 @@ public class ConfigUtils {
         return filteredMemberList;
     }
 
-    public static String abbreviate(List<String> list, int limit) {
+    public static @NonNull String abbreviate(@Nullable List<@Nullable String> list, int limit) {
         var abbreviation = "";
         if (list != null) {
             abbreviation = list.stream().limit(limit).collect(Collectors.joining(", "));
@@ -557,7 +563,7 @@ public class ConfigUtils {
         return abbreviation;
     }
 
-    public static String abbreviate(List<String> list) {
+    public static @NonNull String abbreviate(@Nullable List<@Nullable String> list) {
         return abbreviate(list, 3);
     }
 

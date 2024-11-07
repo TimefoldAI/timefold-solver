@@ -11,6 +11,8 @@ import ai.timefold.solver.benchmark.impl.statistic.subsingle.constraintmatchtota
 import ai.timefold.solver.benchmark.impl.statistic.subsingle.pickedmovetypebestscore.PickedMoveTypeBestScoreDiffSubSingleStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.subsingle.pickedmovetypestepscore.PickedMoveTypeStepScoreDiffSubSingleStatistic;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlEnum
 public enum SingleStatisticType implements StatisticType {
     CONSTRAINT_MATCH_TOTAL_BEST_SCORE,
@@ -18,7 +20,8 @@ public enum SingleStatisticType implements StatisticType {
     PICKED_MOVE_TYPE_BEST_SCORE_DIFF,
     PICKED_MOVE_TYPE_STEP_SCORE_DIFF;
 
-    public PureSubSingleStatistic buildPureSubSingleStatistic(SubSingleBenchmarkResult subSingleBenchmarkResult) {
+    public @NonNull PureSubSingleStatistic
+            buildPureSubSingleStatistic(@NonNull SubSingleBenchmarkResult subSingleBenchmarkResult) {
         switch (this) {
             case CONSTRAINT_MATCH_TOTAL_BEST_SCORE:
                 return new ConstraintMatchTotalBestScoreSubSingleStatistic(subSingleBenchmarkResult);
@@ -33,7 +36,7 @@ public enum SingleStatisticType implements StatisticType {
         }
     }
 
-    public String getAnchorId() {
+    public @NonNull String getAnchorId() {
         return ReportHelper.escapeHtmlId(name());
     }
 

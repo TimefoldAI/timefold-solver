@@ -16,6 +16,8 @@ import ai.timefold.solver.benchmark.impl.statistic.moveevaluationspeed.MoveEvalu
 import ai.timefold.solver.benchmark.impl.statistic.scorecalculationspeed.ScoreCalculationSpeedProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.stepscore.StepScoreProblemStatistic;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlEnum
 public enum ProblemStatisticType implements StatisticType {
     BEST_SCORE,
@@ -27,7 +29,7 @@ public enum ProblemStatisticType implements StatisticType {
     MOVE_COUNT_PER_TYPE,
     MEMORY_USE;
 
-    public ProblemStatistic buildProblemStatistic(ProblemBenchmarkResult problemBenchmarkResult) {
+    public @NonNull ProblemStatistic buildProblemStatistic(@NonNull ProblemBenchmarkResult problemBenchmarkResult) {
         switch (this) {
             case BEST_SCORE:
                 return new BestScoreProblemStatistic(problemBenchmarkResult);
@@ -55,7 +57,7 @@ public enum ProblemStatisticType implements StatisticType {
                 || this == STEP_SCORE;
     }
 
-    public static List<ProblemStatisticType> defaultList() {
+    public static @NonNull List<@NonNull ProblemStatisticType> defaultList() {
         return List.of(ProblemStatisticType.BEST_SCORE);
     }
 

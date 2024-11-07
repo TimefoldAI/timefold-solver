@@ -99,7 +99,7 @@ public class MockProblemChangeDirector implements ProblemChangeDirector {
     /**
      * Defines what {@link #lookUpWorkingObjectOrFail(Object)} returns.
      */
-    public LookUpMockBuilder whenLookingUp(Object forObject) {
+    public @NonNull LookUpMockBuilder whenLookingUp(Object forObject) {
         return new LookUpMockBuilder(forObject);
     }
 

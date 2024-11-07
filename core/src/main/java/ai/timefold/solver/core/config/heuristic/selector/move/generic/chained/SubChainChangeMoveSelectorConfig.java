@@ -10,6 +10,9 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConf
 import ai.timefold.solver.core.config.heuristic.selector.value.chained.SubChainSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 @XmlType(propOrder = {
         "entityClass",
         "subChainSelectorConfig",
@@ -28,35 +31,35 @@ public class SubChainChangeMoveSelectorConfig extends MoveSelectorConfig<SubChai
 
     private Boolean selectReversingMoveToo = null;
 
-    public Class<?> getEntityClass() {
+    public @Nullable Class<?> getEntityClass() {
         return entityClass;
     }
 
-    public void setEntityClass(Class<?> entityClass) {
+    public void setEntityClass(@Nullable Class<?> entityClass) {
         this.entityClass = entityClass;
     }
 
-    public SubChainSelectorConfig getSubChainSelectorConfig() {
+    public @Nullable SubChainSelectorConfig getSubChainSelectorConfig() {
         return subChainSelectorConfig;
     }
 
-    public void setSubChainSelectorConfig(SubChainSelectorConfig subChainSelectorConfig) {
+    public void setSubChainSelectorConfig(@Nullable SubChainSelectorConfig subChainSelectorConfig) {
         this.subChainSelectorConfig = subChainSelectorConfig;
     }
 
-    public ValueSelectorConfig getValueSelectorConfig() {
+    public @Nullable ValueSelectorConfig getValueSelectorConfig() {
         return valueSelectorConfig;
     }
 
-    public void setValueSelectorConfig(ValueSelectorConfig valueSelectorConfig) {
+    public void setValueSelectorConfig(@Nullable ValueSelectorConfig valueSelectorConfig) {
         this.valueSelectorConfig = valueSelectorConfig;
     }
 
-    public Boolean getSelectReversingMoveToo() {
+    public @Nullable Boolean getSelectReversingMoveToo() {
         return selectReversingMoveToo;
     }
 
-    public void setSelectReversingMoveToo(Boolean selectReversingMoveToo) {
+    public void setSelectReversingMoveToo(@Nullable Boolean selectReversingMoveToo) {
         this.selectReversingMoveToo = selectReversingMoveToo;
     }
 
@@ -64,28 +67,29 @@ public class SubChainChangeMoveSelectorConfig extends MoveSelectorConfig<SubChai
     // With methods
     // ************************************************************************
 
-    public SubChainChangeMoveSelectorConfig withEntityClass(Class<?> entityClass) {
+    public @NonNull SubChainChangeMoveSelectorConfig withEntityClass(@NonNull Class<?> entityClass) {
         this.setEntityClass(entityClass);
         return this;
     }
 
-    public SubChainChangeMoveSelectorConfig withSubChainSelectorConfig(SubChainSelectorConfig subChainSelectorConfig) {
+    public @NonNull SubChainChangeMoveSelectorConfig
+            withSubChainSelectorConfig(@NonNull SubChainSelectorConfig subChainSelectorConfig) {
         this.setSubChainSelectorConfig(subChainSelectorConfig);
         return this;
     }
 
-    public SubChainChangeMoveSelectorConfig withValueSelectorConfig(ValueSelectorConfig valueSelectorConfig) {
+    public @NonNull SubChainChangeMoveSelectorConfig withValueSelectorConfig(@NonNull ValueSelectorConfig valueSelectorConfig) {
         this.setValueSelectorConfig(valueSelectorConfig);
         return this;
     }
 
-    public SubChainChangeMoveSelectorConfig withSelectReversingMoveToo(Boolean selectReversingMoveToo) {
+    public @NonNull SubChainChangeMoveSelectorConfig withSelectReversingMoveToo(@NonNull Boolean selectReversingMoveToo) {
         this.setSelectReversingMoveToo(selectReversingMoveToo);
         return this;
     }
 
     @Override
-    public SubChainChangeMoveSelectorConfig inherit(SubChainChangeMoveSelectorConfig inheritedConfig) {
+    public @NonNull SubChainChangeMoveSelectorConfig inherit(@NonNull SubChainChangeMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         entityClass = ConfigUtils.inheritOverwritableProperty(entityClass, inheritedConfig.getEntityClass());
         subChainSelectorConfig = ConfigUtils.inheritConfig(subChainSelectorConfig, inheritedConfig.getSubChainSelectorConfig());
@@ -96,12 +100,12 @@ public class SubChainChangeMoveSelectorConfig extends MoveSelectorConfig<SubChai
     }
 
     @Override
-    public SubChainChangeMoveSelectorConfig copyConfig() {
+    public @NonNull SubChainChangeMoveSelectorConfig copyConfig() {
         return new SubChainChangeMoveSelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         visitCommonReferencedClasses(classVisitor);
         classVisitor.accept(entityClass);
         if (subChainSelectorConfig != null) {

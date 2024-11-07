@@ -5,6 +5,9 @@ import java.util.function.Consumer;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 /**
  * A config class is a user-friendly, validating configuration class that maps XML input.
  * It builds the runtime impl classes (which are optimized for scalability and performance instead).
@@ -25,26 +28,25 @@ public abstract class AbstractConfig<Config_ extends AbstractConfig<Config_>> {
      * After the inheritance, if a property on this {@link AbstractConfig} composition is replaced,
      * it should not affect the inherited composition instance.
      *
-     * @param inheritedConfig never null
      * @return this
      */
-    public abstract Config_ inherit(Config_ inheritedConfig);
+    public abstract @NonNull Config_ inherit(@NonNull Config_ inheritedConfig);
 
     /**
      * Typically implemented by constructing a new instance and calling {@link #inherit(AbstractConfig)} on it.
      *
      * @return new instance
      */
-    public abstract Config_ copyConfig();
+    public abstract @NonNull Config_ copyConfig();
 
     /**
      * Call the class visitor on each (possibly null) Class instance provided to this config by the user
      * (including those provided in child configs).
      * Required to create the bean factory in Quarkus.
      *
-     * @param classVisitor The visitor of classes, never null. Can accept null instances of Class.
+     * @param classVisitor The visitor of classes. Can accept null instances of Class.
      */
-    public abstract void visitReferencedClasses(Consumer<Class<?>> classVisitor);
+    public abstract void visitReferencedClasses(@NonNull Consumer<@Nullable Class<?>> classVisitor);
 
     @Override
     public String toString() {

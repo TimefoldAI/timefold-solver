@@ -6,27 +6,30 @@ import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 public interface SingleConstraintAssertion {
 
     /**
      * As defined by {@link #justifiesWith(ConstraintJustification...)}.
      *
      * @param justifications the expected justification.
-     * @param message sometimes null, description of the scenario being asserted
-     * @return never null
+     * @param message description of the scenario being asserted
      * @throws AssertionError when the expected penalty is not observed
      */
-    SingleConstraintAssertion justifiesWith(String message, ConstraintJustification... justifications);
+    @NonNull
+    SingleConstraintAssertion justifiesWith(@Nullable String message,
+            @NonNull ConstraintJustification @NonNull... justifications);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts, results in a given
      * {@link ConstraintJustification}.
      *
      * @param justifications the expected justifications.
-     * @return never null
      * @throws AssertionError when the expected penalty is not observed
      */
-    default SingleConstraintAssertion justifiesWith(ConstraintJustification... justifications) {
+    default @NonNull SingleConstraintAssertion justifiesWith(@NonNull ConstraintJustification @NonNull... justifications) {
         return justifiesWith(null, justifications);
     }
 
@@ -34,21 +37,22 @@ public interface SingleConstraintAssertion {
      * As defined by {@link #justifiesWithExactly(ConstraintJustification...)}.
      *
      * @param justifications the expected justification.
-     * @param message sometimes null, description of the scenario being asserted
-     * @return never null
+     * @param message description of the scenario being asserted
      * @throws AssertionError when the expected penalty is not observed
      */
-    SingleConstraintAssertion justifiesWithExactly(String message, ConstraintJustification... justifications);
+    @NonNull
+    SingleConstraintAssertion justifiesWithExactly(@Nullable String message,
+            @NonNull ConstraintJustification @NonNull... justifications);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts, results in a given
      * {@link ConstraintJustification} and nothing else.
      *
      * @param justifications the expected justifications.
-     * @return never null
      * @throws AssertionError when the expected penalty is not observed
      */
-    default SingleConstraintAssertion justifiesWithExactly(ConstraintJustification... justifications) {
+    default @NonNull SingleConstraintAssertion
+            justifiesWithExactly(@NonNull ConstraintJustification @NonNull... justifications) {
         return justifiesWithExactly(null, justifications);
     }
 
@@ -56,44 +60,42 @@ public interface SingleConstraintAssertion {
      * Asserts that the {@link Constraint} being tested, given a set of facts, results in the given indictments.
      *
      * @param indictments the expected indictments.
-     * @return never null
      * @throws AssertionError when the expected penalty is not observed
      */
-    default SingleConstraintAssertion indictsWith(Object... indictments) {
+    default @NonNull SingleConstraintAssertion indictsWith(@NonNull Object @NonNull... indictments) {
         return indictsWith(null, indictments);
     }
 
     /**
      * As defined by {@link #indictsWith(Object...)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param indictments the expected indictments.
-     * @return never null
      * @throws AssertionError when the expected penalty is not observed
      */
-    SingleConstraintAssertion indictsWith(String message, Object... indictments);
+    @NonNull
+    SingleConstraintAssertion indictsWith(@Nullable String message, @NonNull Object @NonNull... indictments);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts, results in the given indictments and
      * nothing else.
      *
      * @param indictments the expected indictments.
-     * @return never null
      * @throws AssertionError when the expected penalty is not observed
      */
-    default SingleConstraintAssertion indictsWithExactly(Object... indictments) {
+    default @NonNull SingleConstraintAssertion indictsWithExactly(@NonNull Object @NonNull... indictments) {
         return indictsWithExactly(null, indictments);
     }
 
     /**
      * As defined by {@link #indictsWithExactly(Object...)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param indictments the expected indictments.
-     * @return never null
      * @throws AssertionError when the expected penalty is not observed
      */
-    SingleConstraintAssertion indictsWithExactly(String message, Object... indictments);
+    @NonNull
+    SingleConstraintAssertion indictsWithExactly(@Nullable String message, @NonNull Object @NonNull... indictments);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts, results in a specific penalty.
@@ -127,11 +129,11 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #penalizesBy(int)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
      */
-    void penalizesBy(String message, int matchWeightTotal);
+    void penalizesBy(@Nullable String message, int matchWeightTotal);
 
     /**
      * As defined by {@link #penalizesBy(int)}.
@@ -160,11 +162,11 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #penalizesBy(long)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
      */
-    void penalizesBy(String message, long matchWeightTotal);
+    void penalizesBy(@Nullable String message, long matchWeightTotal);
 
     /**
      * As defined by {@link #penalizesBy(long)}.
@@ -172,7 +174,7 @@ public interface SingleConstraintAssertion {
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
      */
-    default void penalizesBy(BigDecimal matchWeightTotal) {
+    default void penalizesBy(@NonNull BigDecimal matchWeightTotal) {
         penalizesBy(null, matchWeightTotal);
     }
 
@@ -193,11 +195,11 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #penalizesBy(BigDecimal)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
      */
-    void penalizesBy(String message, BigDecimal matchWeightTotal);
+    void penalizesBy(@Nullable String message, @NonNull BigDecimal matchWeightTotal);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts, results in a given number of penalties.
@@ -229,11 +231,11 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #penalizes(long)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param times at least 0, expected number of times that the constraint will penalize
      * @throws AssertionError when the expected penalty is not observed
      */
-    void penalizes(String message, long times);
+    void penalizes(@Nullable String message, long times);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts, results in any number of penalties.
@@ -251,10 +253,10 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #penalizes()}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @throws AssertionError when there are no penalties
      */
-    void penalizes(String message);
+    void penalizes(@Nullable String message);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts, results in a specific reward.
@@ -289,11 +291,11 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #rewardsWith(int)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
      */
-    void rewardsWith(String message, int matchWeightTotal);
+    void rewardsWith(@Nullable String message, int matchWeightTotal);
 
     /**
      * As defined by {@link #rewardsWith(int)}.
@@ -322,11 +324,11 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #rewardsWith(long)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
      */
-    void rewardsWith(String message, long matchWeightTotal);
+    void rewardsWith(@Nullable String message, long matchWeightTotal);
 
     /**
      * As defined by {@link #rewardsWith(int)}.
@@ -334,7 +336,7 @@ public interface SingleConstraintAssertion {
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
      */
-    default void rewardsWith(BigDecimal matchWeightTotal) {
+    default void rewardsWith(@NonNull BigDecimal matchWeightTotal) {
         rewardsWith(null, matchWeightTotal);
     }
 
@@ -355,11 +357,11 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #rewardsWith(BigDecimal)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
      */
-    void rewardsWith(String message, BigDecimal matchWeightTotal);
+    void rewardsWith(@Nullable String message, @NonNull BigDecimal matchWeightTotal);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts, results in a given number of rewards.
@@ -391,11 +393,11 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #rewards(long)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param times at least 0, expected number of times that the constraint will reward
      * @throws AssertionError when the expected reward is not observed
      */
-    void rewards(String message, long times);
+    void rewards(@Nullable String message, long times);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts, results in any number of rewards.
@@ -413,10 +415,10 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #rewards()}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @throws AssertionError when there are no rewards
      */
-    void rewards(String message);
+    void rewards(@Nullable String message);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts,
@@ -440,11 +442,11 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #penalizesByMoreThan(int)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
      */
-    void penalizesByMoreThan(String message, int matchWeightTotal);
+    void penalizesByMoreThan(@Nullable String message, int matchWeightTotal);
 
     /**
      * As defined by {@link #penalizesByMoreThan(int)}.
@@ -459,11 +461,11 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #penalizesByMoreThan(long)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
      */
-    void penalizesByMoreThan(String message, long matchWeightTotal);
+    void penalizesByMoreThan(@Nullable String message, long matchWeightTotal);
 
     /**
      * As defined by {@link #penalizesByMoreThan(long)}.
@@ -471,18 +473,18 @@ public interface SingleConstraintAssertion {
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
      */
-    default void penalizesByMoreThan(BigDecimal matchWeightTotal) {
+    default void penalizesByMoreThan(@NonNull BigDecimal matchWeightTotal) {
         penalizesByMoreThan(null, matchWeightTotal);
     }
 
     /**
      * As defined by {@link #penalizesByMoreThan(BigDecimal)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
      */
-    void penalizesByMoreThan(String message, BigDecimal matchWeightTotal);
+    void penalizesByMoreThan(@Nullable String message, @NonNull BigDecimal matchWeightTotal);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts,
@@ -503,11 +505,11 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #penalizesMoreThan(long)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param times at least 0, expected number of times that the constraint will penalize
      * @throws AssertionError when the expected penalty is not observed
      */
-    void penalizesMoreThan(String message, long times);
+    void penalizesMoreThan(@Nullable String message, long times);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts,
@@ -530,11 +532,11 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #rewardsWithMoreThan(int)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
      */
-    void rewardsWithMoreThan(String message, int matchWeightTotal);
+    void rewardsWithMoreThan(@Nullable String message, int matchWeightTotal);
 
     /**
      * As defined by {@link #rewardsWithMoreThan(int)}.
@@ -549,11 +551,11 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #rewardsWithMoreThan(long)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
      */
-    void rewardsWithMoreThan(String message, long matchWeightTotal);
+    void rewardsWithMoreThan(@Nullable String message, long matchWeightTotal);
 
     /**
      * As defined by {@link #rewardsWithMoreThan(int)}.
@@ -561,18 +563,18 @@ public interface SingleConstraintAssertion {
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
      */
-    default void rewardsWithMoreThan(BigDecimal matchWeightTotal) {
+    default void rewardsWithMoreThan(@NonNull BigDecimal matchWeightTotal) {
         rewardsWithMoreThan(null, matchWeightTotal);
     }
 
     /**
      * As defined by {@link #rewardsWithMoreThan(BigDecimal)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param matchWeightTotal at least 0, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
      */
-    void rewardsWithMoreThan(String message, BigDecimal matchWeightTotal);
+    void rewardsWithMoreThan(@Nullable String message, @NonNull BigDecimal matchWeightTotal);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts,
@@ -593,11 +595,11 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #rewardsMoreThan(long)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param times at least 0, expected number of times that the constraint will reward
      * @throws AssertionError when the expected reward is not observed
      */
-    void rewardsMoreThan(String message, long times);
+    void rewardsMoreThan(@Nullable String message, long times);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts,
@@ -621,11 +623,11 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #penalizesByLessThan(int)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param matchWeightTotal at least 1, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
      */
-    void penalizesByLessThan(String message, int matchWeightTotal);
+    void penalizesByLessThan(@Nullable String message, int matchWeightTotal);
 
     /**
      * As defined by {@link #penalizesByLessThan(int)}.
@@ -640,11 +642,11 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #penalizesByLessThan(long)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param matchWeightTotal at least 1, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
      */
-    void penalizesByLessThan(String message, long matchWeightTotal);
+    void penalizesByLessThan(@Nullable String message, long matchWeightTotal);
 
     /**
      * As defined by {@link #penalizesByLessThan(long)}.
@@ -652,18 +654,18 @@ public interface SingleConstraintAssertion {
      * @param matchWeightTotal at least 1, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
      */
-    default void penalizesByLessThan(BigDecimal matchWeightTotal) {
+    default void penalizesByLessThan(@NonNull BigDecimal matchWeightTotal) {
         penalizesByLessThan(null, matchWeightTotal);
     }
 
     /**
      * As defined by {@link #penalizesByLessThan(BigDecimal)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param matchWeightTotal at least 1, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected penalty is not observed
      */
-    void penalizesByLessThan(String message, BigDecimal matchWeightTotal);
+    void penalizesByLessThan(@Nullable String message, @NonNull BigDecimal matchWeightTotal);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts,
@@ -684,11 +686,11 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #penalizesLessThan(long)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param times at least 1, expected number of times that the constraint will penalize
      * @throws AssertionError when the expected penalty is not observed
      */
-    void penalizesLessThan(String message, long times);
+    void penalizesLessThan(@Nullable String message, long times);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts,
@@ -711,11 +713,11 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #rewardsWithLessThan(int)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param matchWeightTotal at least 1, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
      */
-    void rewardsWithLessThan(String message, int matchWeightTotal);
+    void rewardsWithLessThan(@Nullable String message, int matchWeightTotal);
 
     /**
      * As defined by {@link #rewardsWithLessThan(int)}.
@@ -730,11 +732,11 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #rewardsWithLessThan(long)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param matchWeightTotal at least 1, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
      */
-    void rewardsWithLessThan(String message, long matchWeightTotal);
+    void rewardsWithLessThan(@Nullable String message, long matchWeightTotal);
 
     /**
      * As defined by {@link #rewardsWithLessThan(int)}.
@@ -742,18 +744,18 @@ public interface SingleConstraintAssertion {
      * @param matchWeightTotal at least 1, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
      */
-    default void rewardsWithLessThan(BigDecimal matchWeightTotal) {
+    default void rewardsWithLessThan(@NonNull BigDecimal matchWeightTotal) {
         rewardsWithLessThan(null, matchWeightTotal);
     }
 
     /**
      * As defined by {@link #rewardsWithLessThan(BigDecimal)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param matchWeightTotal at least 1, expected sum of match weights of matches of the constraint.
      * @throws AssertionError when the expected reward is not observed
      */
-    void rewardsWithLessThan(String message, BigDecimal matchWeightTotal);
+    void rewardsWithLessThan(@Nullable String message, @NonNull BigDecimal matchWeightTotal);
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts,
@@ -774,10 +776,10 @@ public interface SingleConstraintAssertion {
     /**
      * As defined by {@link #rewardsLessThan(long)}.
      *
-     * @param message sometimes null, description of the scenario being asserted
+     * @param message description of the scenario being asserted
      * @param times at least 1, expected number of times that the constraint will reward
      * @throws AssertionError when the expected reward is not observed
      */
-    void rewardsLessThan(String message, long times);
+    void rewardsLessThan(@Nullable String message, long times);
 
 }

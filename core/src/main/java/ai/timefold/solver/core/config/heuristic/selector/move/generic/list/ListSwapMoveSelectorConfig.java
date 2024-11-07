@@ -13,6 +13,9 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConf
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 @XmlType(propOrder = {
         "valueSelectorConfig",
         "secondaryValueSelectorConfig"
@@ -28,19 +31,19 @@ public class ListSwapMoveSelectorConfig
     @XmlElement(name = "secondaryValueSelector")
     private ValueSelectorConfig secondaryValueSelectorConfig = null;
 
-    public ValueSelectorConfig getValueSelectorConfig() {
+    public @Nullable ValueSelectorConfig getValueSelectorConfig() {
         return valueSelectorConfig;
     }
 
-    public void setValueSelectorConfig(ValueSelectorConfig valueSelectorConfig) {
+    public void setValueSelectorConfig(@Nullable ValueSelectorConfig valueSelectorConfig) {
         this.valueSelectorConfig = valueSelectorConfig;
     }
 
-    public ValueSelectorConfig getSecondaryValueSelectorConfig() {
+    public @Nullable ValueSelectorConfig getSecondaryValueSelectorConfig() {
         return secondaryValueSelectorConfig;
     }
 
-    public void setSecondaryValueSelectorConfig(ValueSelectorConfig secondaryValueSelectorConfig) {
+    public void setSecondaryValueSelectorConfig(@Nullable ValueSelectorConfig secondaryValueSelectorConfig) {
         this.secondaryValueSelectorConfig = secondaryValueSelectorConfig;
     }
 
@@ -48,12 +51,13 @@ public class ListSwapMoveSelectorConfig
     // With methods
     // ************************************************************************
 
-    public ListSwapMoveSelectorConfig withValueSelectorConfig(ValueSelectorConfig valueSelectorConfig) {
+    public @NonNull ListSwapMoveSelectorConfig withValueSelectorConfig(@NonNull ValueSelectorConfig valueSelectorConfig) {
         this.setValueSelectorConfig(valueSelectorConfig);
         return this;
     }
 
-    public ListSwapMoveSelectorConfig withSecondaryValueSelectorConfig(ValueSelectorConfig secondaryValueSelectorConfig) {
+    public @NonNull ListSwapMoveSelectorConfig
+            withSecondaryValueSelectorConfig(@NonNull ValueSelectorConfig secondaryValueSelectorConfig) {
         this.setSecondaryValueSelectorConfig(secondaryValueSelectorConfig);
         return this;
     }
@@ -63,7 +67,7 @@ public class ListSwapMoveSelectorConfig
     // ************************************************************************
 
     @Override
-    public ListSwapMoveSelectorConfig inherit(ListSwapMoveSelectorConfig inheritedConfig) {
+    public @NonNull ListSwapMoveSelectorConfig inherit(@NonNull ListSwapMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         valueSelectorConfig = ConfigUtils.inheritConfig(valueSelectorConfig, inheritedConfig.getValueSelectorConfig());
         secondaryValueSelectorConfig = ConfigUtils.inheritConfig(secondaryValueSelectorConfig,
@@ -72,12 +76,12 @@ public class ListSwapMoveSelectorConfig
     }
 
     @Override
-    public ListSwapMoveSelectorConfig copyConfig() {
+    public @NonNull ListSwapMoveSelectorConfig copyConfig() {
         return new ListSwapMoveSelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         visitCommonReferencedClasses(classVisitor);
         if (valueSelectorConfig != null) {
             valueSelectorConfig.visitReferencedClasses(classVisitor);
@@ -88,8 +92,9 @@ public class ListSwapMoveSelectorConfig
     }
 
     @Override
-    public ListSwapMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
-            Random random) {
+    public @NonNull ListSwapMoveSelectorConfig enableNearbySelection(
+            @NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
+            @NonNull Random random) {
         return NearbyUtil.enable(this, distanceMeter, random);
     }
 

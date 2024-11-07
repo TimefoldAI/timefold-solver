@@ -10,6 +10,9 @@ import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.config.localsearch.decider.acceptor.stepcountinghillclimbing.StepCountingHillClimbingType;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 @XmlType(propOrder = {
         "acceptorTypeList",
         "entityTabuSize",
@@ -67,51 +70,51 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
     protected Integer stepCountingHillClimbingSize = null;
     protected StepCountingHillClimbingType stepCountingHillClimbingType = null;
 
-    public List<AcceptorType> getAcceptorTypeList() {
+    public @Nullable List<AcceptorType> getAcceptorTypeList() {
         return acceptorTypeList;
     }
 
-    public void setAcceptorTypeList(List<AcceptorType> acceptorTypeList) {
+    public void setAcceptorTypeList(@Nullable List<AcceptorType> acceptorTypeList) {
         this.acceptorTypeList = acceptorTypeList;
     }
 
-    public Integer getEntityTabuSize() {
+    public @Nullable Integer getEntityTabuSize() {
         return entityTabuSize;
     }
 
-    public void setEntityTabuSize(Integer entityTabuSize) {
+    public void setEntityTabuSize(@Nullable Integer entityTabuSize) {
         this.entityTabuSize = entityTabuSize;
     }
 
-    public Double getEntityTabuRatio() {
+    public @Nullable Double getEntityTabuRatio() {
         return entityTabuRatio;
     }
 
-    public void setEntityTabuRatio(Double entityTabuRatio) {
+    public void setEntityTabuRatio(@Nullable Double entityTabuRatio) {
         this.entityTabuRatio = entityTabuRatio;
     }
 
-    public Integer getFadingEntityTabuSize() {
+    public @Nullable Integer getFadingEntityTabuSize() {
         return fadingEntityTabuSize;
     }
 
-    public void setFadingEntityTabuSize(Integer fadingEntityTabuSize) {
+    public void setFadingEntityTabuSize(@Nullable Integer fadingEntityTabuSize) {
         this.fadingEntityTabuSize = fadingEntityTabuSize;
     }
 
-    public Double getFadingEntityTabuRatio() {
+    public @Nullable Double getFadingEntityTabuRatio() {
         return fadingEntityTabuRatio;
     }
 
-    public void setFadingEntityTabuRatio(Double fadingEntityTabuRatio) {
+    public void setFadingEntityTabuRatio(@Nullable Double fadingEntityTabuRatio) {
         this.fadingEntityTabuRatio = fadingEntityTabuRatio;
     }
 
-    public Integer getValueTabuSize() {
+    public @Nullable Integer getValueTabuSize() {
         return valueTabuSize;
     }
 
-    public void setValueTabuSize(Integer valueTabuSize) {
+    public void setValueTabuSize(@Nullable Integer valueTabuSize) {
         this.valueTabuSize = valueTabuSize;
     }
 
@@ -131,11 +134,11 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
         this.valueTabuRatio = valueTabuRatio;
     }
 
-    public Integer getFadingValueTabuSize() {
+    public @Nullable Integer getFadingValueTabuSize() {
         return fadingValueTabuSize;
     }
 
-    public void setFadingValueTabuSize(Integer fadingValueTabuSize) {
+    public void setFadingValueTabuSize(@Nullable Integer fadingValueTabuSize) {
         this.fadingValueTabuSize = fadingValueTabuSize;
     }
 
@@ -155,19 +158,19 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
         this.fadingValueTabuRatio = fadingValueTabuRatio;
     }
 
-    public Integer getMoveTabuSize() {
+    public @Nullable Integer getMoveTabuSize() {
         return moveTabuSize;
     }
 
-    public void setMoveTabuSize(Integer moveTabuSize) {
+    public void setMoveTabuSize(@Nullable Integer moveTabuSize) {
         this.moveTabuSize = moveTabuSize;
     }
 
-    public Integer getFadingMoveTabuSize() {
+    public @Nullable Integer getFadingMoveTabuSize() {
         return fadingMoveTabuSize;
     }
 
-    public void setFadingMoveTabuSize(Integer fadingMoveTabuSize) {
+    public void setFadingMoveTabuSize(@Nullable Integer fadingMoveTabuSize) {
         this.fadingMoveTabuSize = fadingMoveTabuSize;
     }
 
@@ -203,51 +206,51 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
         this.fadingUndoMoveTabuSize = fadingUndoMoveTabuSize;
     }
 
-    public String getSimulatedAnnealingStartingTemperature() {
+    public @Nullable String getSimulatedAnnealingStartingTemperature() {
         return simulatedAnnealingStartingTemperature;
     }
 
-    public void setSimulatedAnnealingStartingTemperature(String simulatedAnnealingStartingTemperature) {
+    public void setSimulatedAnnealingStartingTemperature(@Nullable String simulatedAnnealingStartingTemperature) {
         this.simulatedAnnealingStartingTemperature = simulatedAnnealingStartingTemperature;
     }
 
-    public Integer getLateAcceptanceSize() {
+    public @Nullable Integer getLateAcceptanceSize() {
         return lateAcceptanceSize;
     }
 
-    public void setLateAcceptanceSize(Integer lateAcceptanceSize) {
+    public void setLateAcceptanceSize(@Nullable Integer lateAcceptanceSize) {
         this.lateAcceptanceSize = lateAcceptanceSize;
     }
 
-    public String getGreatDelugeWaterLevelIncrementScore() {
+    public @Nullable String getGreatDelugeWaterLevelIncrementScore() {
         return greatDelugeWaterLevelIncrementScore;
     }
 
-    public void setGreatDelugeWaterLevelIncrementScore(String greatDelugeWaterLevelIncrementScore) {
+    public void setGreatDelugeWaterLevelIncrementScore(@Nullable String greatDelugeWaterLevelIncrementScore) {
         this.greatDelugeWaterLevelIncrementScore = greatDelugeWaterLevelIncrementScore;
     }
 
-    public Double getGreatDelugeWaterLevelIncrementRatio() {
+    public @Nullable Double getGreatDelugeWaterLevelIncrementRatio() {
         return greatDelugeWaterLevelIncrementRatio;
     }
 
-    public void setGreatDelugeWaterLevelIncrementRatio(Double greatDelugeWaterLevelIncrementRatio) {
+    public void setGreatDelugeWaterLevelIncrementRatio(@Nullable Double greatDelugeWaterLevelIncrementRatio) {
         this.greatDelugeWaterLevelIncrementRatio = greatDelugeWaterLevelIncrementRatio;
     }
 
-    public Integer getStepCountingHillClimbingSize() {
+    public @Nullable Integer getStepCountingHillClimbingSize() {
         return stepCountingHillClimbingSize;
     }
 
-    public void setStepCountingHillClimbingSize(Integer stepCountingHillClimbingSize) {
+    public void setStepCountingHillClimbingSize(@Nullable Integer stepCountingHillClimbingSize) {
         this.stepCountingHillClimbingSize = stepCountingHillClimbingSize;
     }
 
-    public StepCountingHillClimbingType getStepCountingHillClimbingType() {
+    public @Nullable StepCountingHillClimbingType getStepCountingHillClimbingType() {
         return stepCountingHillClimbingType;
     }
 
-    public void setStepCountingHillClimbingType(StepCountingHillClimbingType stepCountingHillClimbingType) {
+    public void setStepCountingHillClimbingType(@Nullable StepCountingHillClimbingType stepCountingHillClimbingType) {
         this.stepCountingHillClimbingType = stepCountingHillClimbingType;
     }
 
@@ -255,57 +258,57 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
     // With methods
     // ************************************************************************
 
-    public LocalSearchAcceptorConfig withAcceptorTypeList(List<AcceptorType> acceptorTypeList) {
+    public @NonNull LocalSearchAcceptorConfig withAcceptorTypeList(@NonNull List<AcceptorType> acceptorTypeList) {
         this.acceptorTypeList = acceptorTypeList;
         return this;
     }
 
-    public LocalSearchAcceptorConfig withEntityTabuSize(Integer entityTabuSize) {
+    public @NonNull LocalSearchAcceptorConfig withEntityTabuSize(@NonNull Integer entityTabuSize) {
         this.entityTabuSize = entityTabuSize;
         return this;
     }
 
-    public LocalSearchAcceptorConfig withEntityTabuRatio(Double entityTabuRatio) {
+    public @NonNull LocalSearchAcceptorConfig withEntityTabuRatio(@NonNull Double entityTabuRatio) {
         this.entityTabuRatio = entityTabuRatio;
         return this;
     }
 
-    public LocalSearchAcceptorConfig withFadingEntityTabuSize(Integer fadingEntityTabuSize) {
+    public @NonNull LocalSearchAcceptorConfig withFadingEntityTabuSize(@NonNull Integer fadingEntityTabuSize) {
         this.fadingEntityTabuSize = fadingEntityTabuSize;
         return this;
     }
 
-    public LocalSearchAcceptorConfig withFadingEntityTabuRatio(Double fadingEntityTabuRatio) {
+    public @NonNull LocalSearchAcceptorConfig withFadingEntityTabuRatio(@NonNull Double fadingEntityTabuRatio) {
         this.fadingEntityTabuRatio = fadingEntityTabuRatio;
         return this;
     }
 
-    public LocalSearchAcceptorConfig withValueTabuSize(Integer valueTabuSize) {
+    public @NonNull LocalSearchAcceptorConfig withValueTabuSize(@NonNull Integer valueTabuSize) {
         this.valueTabuSize = valueTabuSize;
         return this;
     }
 
-    public LocalSearchAcceptorConfig withValueTabuRatio(Double valueTabuRatio) {
+    public @NonNull LocalSearchAcceptorConfig withValueTabuRatio(@NonNull Double valueTabuRatio) {
         this.valueTabuRatio = valueTabuRatio;
         return this;
     }
 
-    public LocalSearchAcceptorConfig withFadingValueTabuSize(Integer fadingValueTabuSize) {
+    public @NonNull LocalSearchAcceptorConfig withFadingValueTabuSize(@NonNull Integer fadingValueTabuSize) {
         this.fadingValueTabuSize = fadingValueTabuSize;
         return this;
     }
 
-    public LocalSearchAcceptorConfig withFadingValueTabuRatio(Double fadingValueTabuRatio) {
+    public @NonNull LocalSearchAcceptorConfig withFadingValueTabuRatio(@NonNull Double fadingValueTabuRatio) {
         this.fadingValueTabuRatio = fadingValueTabuRatio;
         return this;
     }
 
-    public LocalSearchAcceptorConfig withMoveTabuSize(Integer moveTabuSize) {
+    public @NonNull LocalSearchAcceptorConfig withMoveTabuSize(@NonNull Integer moveTabuSize) {
         this.moveTabuSize = moveTabuSize;
         return this;
     }
 
-    public LocalSearchAcceptorConfig withFadingMoveTabuSize(Integer fadingMoveTabuSize) {
+    public @NonNull LocalSearchAcceptorConfig withFadingMoveTabuSize(@NonNull Integer fadingMoveTabuSize) {
         this.fadingMoveTabuSize = fadingMoveTabuSize;
         return this;
     }
@@ -328,29 +331,30 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
         return this;
     }
 
-    public LocalSearchAcceptorConfig withSimulatedAnnealingStartingTemperature(String simulatedAnnealingStartingTemperature) {
+    public @NonNull LocalSearchAcceptorConfig
+            withSimulatedAnnealingStartingTemperature(@NonNull String simulatedAnnealingStartingTemperature) {
         this.simulatedAnnealingStartingTemperature = simulatedAnnealingStartingTemperature;
         return this;
     }
 
-    public LocalSearchAcceptorConfig withLateAcceptanceSize(Integer lateAcceptanceSize) {
+    public @NonNull LocalSearchAcceptorConfig withLateAcceptanceSize(@NonNull Integer lateAcceptanceSize) {
         this.lateAcceptanceSize = lateAcceptanceSize;
         return this;
     }
 
-    public LocalSearchAcceptorConfig withStepCountingHillClimbingSize(Integer stepCountingHillClimbingSize) {
+    public @NonNull LocalSearchAcceptorConfig withStepCountingHillClimbingSize(@NonNull Integer stepCountingHillClimbingSize) {
         this.stepCountingHillClimbingSize = stepCountingHillClimbingSize;
         return this;
     }
 
-    public LocalSearchAcceptorConfig
-            withStepCountingHillClimbingType(StepCountingHillClimbingType stepCountingHillClimbingType) {
+    public @NonNull LocalSearchAcceptorConfig
+            withStepCountingHillClimbingType(@NonNull StepCountingHillClimbingType stepCountingHillClimbingType) {
         this.stepCountingHillClimbingType = stepCountingHillClimbingType;
         return this;
     }
 
     @Override
-    public LocalSearchAcceptorConfig inherit(LocalSearchAcceptorConfig inheritedConfig) {
+    public @NonNull LocalSearchAcceptorConfig inherit(@NonNull LocalSearchAcceptorConfig inheritedConfig) {
         if (acceptorTypeList == null) {
             acceptorTypeList = inheritedConfig.getAcceptorTypeList();
         } else {
@@ -398,12 +402,12 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
     }
 
     @Override
-    public LocalSearchAcceptorConfig copyConfig() {
+    public @NonNull LocalSearchAcceptorConfig copyConfig() {
         return new LocalSearchAcceptorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         // No referenced classes
     }
 

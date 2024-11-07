@@ -12,6 +12,8 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.impl.score.DefaultScoreExplanation;
 import ai.timefold.solver.test.api.score.stream.MultiConstraintAssertion;
 
+import org.jspecify.annotations.NonNull;
+
 public final class DefaultMultiConstraintAssertion<Score_ extends Score<Score_>>
         implements MultiConstraintAssertion {
 
@@ -30,7 +32,7 @@ public final class DefaultMultiConstraintAssertion<Score_ extends Score<Score_>>
     }
 
     @Override
-    public void scores(Score<?> score, String message) {
+    public void scores(@NonNull Score<?> score, String message) {
         if (actualScore.equals(score)) {
             return;
         }

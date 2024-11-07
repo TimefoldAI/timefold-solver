@@ -4,6 +4,8 @@ import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 
+import org.jspecify.annotations.NonNull;
+
 public interface SingleConstraintVerification<Solution_> {
 
     /**
@@ -16,21 +18,18 @@ public interface SingleConstraintVerification<Solution_> {
      * <li>The planning values need to have their {@link InverseRelationShadowVariable} set to the entity
      * with the relevant list variable.</li>
      * </ul>
-     * 
+     *
      * In case none of these are met,
      * the values will be reported as unassigned
      * and therefore will be filtered out by the {@link ConstraintFactory#forEach(Class)} check.
      * {@link ConstraintFactory#forEachIncludingUnassigned(Class)} will include them regardless.
      *
-     * @param facts never null, at least one
-     * @return never null
+     * @param facts at least one
      */
-    SingleConstraintAssertion given(Object... facts);
+    @NonNull
+    SingleConstraintAssertion given(@NonNull Object @NonNull... facts);
 
-    /**
-     * @param solution never null
-     * @return never null
-     */
-    SingleConstraintAssertion givenSolution(Solution_ solution);
+    @NonNull
+    SingleConstraintAssertion givenSolution(@NonNull Solution_ solution);
 
 }

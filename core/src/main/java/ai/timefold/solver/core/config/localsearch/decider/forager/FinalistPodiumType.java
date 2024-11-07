@@ -6,6 +6,8 @@ import ai.timefold.solver.core.impl.localsearch.decider.forager.finalist.Finalis
 import ai.timefold.solver.core.impl.localsearch.decider.forager.finalist.HighestScoreFinalistPodium;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.finalist.StrategicOscillationByLevelFinalistPodium;
 
+import org.jspecify.annotations.NonNull;
+
 @XmlEnum
 public enum FinalistPodiumType {
     HIGHEST_SCORE,
@@ -13,7 +15,7 @@ public enum FinalistPodiumType {
     STRATEGIC_OSCILLATION_BY_LEVEL,
     STRATEGIC_OSCILLATION_BY_LEVEL_ON_BEST_SCORE;
 
-    public <Solution_> FinalistPodium<Solution_> buildFinalistPodium() {
+    public <Solution_> @NonNull FinalistPodium<Solution_> buildFinalistPodium() {
         switch (this) {
             case HIGHEST_SCORE:
                 return new HighestScoreFinalistPodium<>();

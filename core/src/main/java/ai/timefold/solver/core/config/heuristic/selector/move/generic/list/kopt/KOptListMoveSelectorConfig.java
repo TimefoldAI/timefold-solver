@@ -13,6 +13,9 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConf
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 @XmlType(propOrder = {
         "minimumK",
         "maximumK",
@@ -34,35 +37,35 @@ public class KOptListMoveSelectorConfig
     @XmlElement(name = "valueSelector")
     private ValueSelectorConfig valueSelectorConfig = null;
 
-    public Integer getMinimumK() {
+    public @Nullable Integer getMinimumK() {
         return minimumK;
     }
 
-    public void setMinimumK(Integer minimumK) {
+    public void setMinimumK(@Nullable Integer minimumK) {
         this.minimumK = minimumK;
     }
 
-    public Integer getMaximumK() {
+    public @Nullable Integer getMaximumK() {
         return maximumK;
     }
 
-    public void setMaximumK(Integer maximumK) {
+    public void setMaximumK(@Nullable Integer maximumK) {
         this.maximumK = maximumK;
     }
 
-    public ValueSelectorConfig getOriginSelectorConfig() {
+    public @Nullable ValueSelectorConfig getOriginSelectorConfig() {
         return originSelectorConfig;
     }
 
-    public void setOriginSelectorConfig(ValueSelectorConfig originSelectorConfig) {
+    public void setOriginSelectorConfig(@Nullable ValueSelectorConfig originSelectorConfig) {
         this.originSelectorConfig = originSelectorConfig;
     }
 
-    public ValueSelectorConfig getValueSelectorConfig() {
+    public @Nullable ValueSelectorConfig getValueSelectorConfig() {
         return valueSelectorConfig;
     }
 
-    public void setValueSelectorConfig(ValueSelectorConfig valueSelectorConfig) {
+    public void setValueSelectorConfig(@Nullable ValueSelectorConfig valueSelectorConfig) {
         this.valueSelectorConfig = valueSelectorConfig;
     }
 
@@ -70,22 +73,22 @@ public class KOptListMoveSelectorConfig
     // With methods
     // ************************************************************************
 
-    public KOptListMoveSelectorConfig withMinimumK(Integer minimumK) {
+    public @NonNull KOptListMoveSelectorConfig withMinimumK(@NonNull Integer minimumK) {
         this.minimumK = minimumK;
         return this;
     }
 
-    public KOptListMoveSelectorConfig withMaximumK(Integer maximumK) {
+    public @NonNull KOptListMoveSelectorConfig withMaximumK(@NonNull Integer maximumK) {
         this.maximumK = maximumK;
         return this;
     }
 
-    public KOptListMoveSelectorConfig withOriginSelectorConfig(ValueSelectorConfig originSelectorConfig) {
+    public @NonNull KOptListMoveSelectorConfig withOriginSelectorConfig(@NonNull ValueSelectorConfig originSelectorConfig) {
         this.originSelectorConfig = originSelectorConfig;
         return this;
     }
 
-    public KOptListMoveSelectorConfig withValueSelectorConfig(ValueSelectorConfig valueSelectorConfig) {
+    public @NonNull KOptListMoveSelectorConfig withValueSelectorConfig(@NonNull ValueSelectorConfig valueSelectorConfig) {
         this.valueSelectorConfig = valueSelectorConfig;
         return this;
     }
@@ -95,7 +98,7 @@ public class KOptListMoveSelectorConfig
     // ************************************************************************
 
     @Override
-    public KOptListMoveSelectorConfig inherit(KOptListMoveSelectorConfig inheritedConfig) {
+    public @NonNull KOptListMoveSelectorConfig inherit(@NonNull KOptListMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         this.minimumK = ConfigUtils.inheritOverwritableProperty(minimumK, inheritedConfig.minimumK);
         this.maximumK = ConfigUtils.inheritOverwritableProperty(maximumK, inheritedConfig.maximumK);
@@ -105,12 +108,12 @@ public class KOptListMoveSelectorConfig
     }
 
     @Override
-    public KOptListMoveSelectorConfig copyConfig() {
+    public @NonNull KOptListMoveSelectorConfig copyConfig() {
         return new KOptListMoveSelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         visitCommonReferencedClasses(classVisitor);
 
         if (originSelectorConfig != null) {
@@ -123,8 +126,9 @@ public class KOptListMoveSelectorConfig
     }
 
     @Override
-    public KOptListMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
-            Random random) {
+    public @NonNull KOptListMoveSelectorConfig enableNearbySelection(
+            @NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
+            @NonNull Random random) {
         return NearbyUtil.enable(this, distanceMeter, random);
     }
 

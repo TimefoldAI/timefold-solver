@@ -13,6 +13,9 @@ import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 @XmlSeeAlso({
         ConstructionHeuristicPhaseConfig.class,
         CustomPhaseConfig.class,
@@ -36,11 +39,11 @@ public abstract class PhaseConfig<Config_ extends PhaseConfig<Config_>> extends 
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public TerminationConfig getTerminationConfig() {
+    public @Nullable TerminationConfig getTerminationConfig() {
         return terminationConfig;
     }
 
-    public void setTerminationConfig(TerminationConfig terminationConfig) {
+    public void setTerminationConfig(@Nullable TerminationConfig terminationConfig) {
         this.terminationConfig = terminationConfig;
     }
 
@@ -48,13 +51,13 @@ public abstract class PhaseConfig<Config_ extends PhaseConfig<Config_>> extends 
     // With methods
     // ************************************************************************
 
-    public Config_ withTerminationConfig(TerminationConfig terminationConfig) {
+    public @NonNull Config_ withTerminationConfig(@NonNull TerminationConfig terminationConfig) {
         this.setTerminationConfig(terminationConfig);
         return (Config_) this;
     }
 
     @Override
-    public Config_ inherit(Config_ inheritedConfig) {
+    public @NonNull Config_ inherit(@NonNull Config_ inheritedConfig) {
         terminationConfig = ConfigUtils.inheritConfig(terminationConfig, inheritedConfig.getTerminationConfig());
         return (Config_) this;
     }

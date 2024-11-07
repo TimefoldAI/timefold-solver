@@ -16,6 +16,9 @@ import ai.timefold.solver.core.config.heuristic.selector.move.NearbyUtil;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 @XmlType(propOrder = {
         "entitySelectorConfig",
         "secondaryEntitySelectorConfig",
@@ -36,27 +39,27 @@ public class SwapMoveSelectorConfig
     @XmlElement(name = "variableNameInclude")
     private List<String> variableNameIncludeList = null;
 
-    public EntitySelectorConfig getEntitySelectorConfig() {
+    public @Nullable EntitySelectorConfig getEntitySelectorConfig() {
         return entitySelectorConfig;
     }
 
-    public void setEntitySelectorConfig(EntitySelectorConfig entitySelectorConfig) {
+    public void setEntitySelectorConfig(@Nullable EntitySelectorConfig entitySelectorConfig) {
         this.entitySelectorConfig = entitySelectorConfig;
     }
 
-    public EntitySelectorConfig getSecondaryEntitySelectorConfig() {
+    public @Nullable EntitySelectorConfig getSecondaryEntitySelectorConfig() {
         return secondaryEntitySelectorConfig;
     }
 
-    public void setSecondaryEntitySelectorConfig(EntitySelectorConfig secondaryEntitySelectorConfig) {
+    public void setSecondaryEntitySelectorConfig(@Nullable EntitySelectorConfig secondaryEntitySelectorConfig) {
         this.secondaryEntitySelectorConfig = secondaryEntitySelectorConfig;
     }
 
-    public List<String> getVariableNameIncludeList() {
+    public @Nullable List<@NonNull String> getVariableNameIncludeList() {
         return variableNameIncludeList;
     }
 
-    public void setVariableNameIncludeList(List<String> variableNameIncludeList) {
+    public void setVariableNameIncludeList(@Nullable List<@NonNull String> variableNameIncludeList) {
         this.variableNameIncludeList = variableNameIncludeList;
     }
 
@@ -64,17 +67,18 @@ public class SwapMoveSelectorConfig
     // With methods
     // ************************************************************************
 
-    public SwapMoveSelectorConfig withEntitySelectorConfig(EntitySelectorConfig entitySelectorConfig) {
+    public @NonNull SwapMoveSelectorConfig withEntitySelectorConfig(@NonNull EntitySelectorConfig entitySelectorConfig) {
         this.setEntitySelectorConfig(entitySelectorConfig);
         return this;
     }
 
-    public SwapMoveSelectorConfig withSecondaryEntitySelectorConfig(EntitySelectorConfig secondaryEntitySelectorConfig) {
+    public @NonNull SwapMoveSelectorConfig
+            withSecondaryEntitySelectorConfig(@NonNull EntitySelectorConfig secondaryEntitySelectorConfig) {
         this.setSecondaryEntitySelectorConfig(secondaryEntitySelectorConfig);
         return this;
     }
 
-    public SwapMoveSelectorConfig withVariableNameIncludes(String... variableNameIncludes) {
+    public @NonNull SwapMoveSelectorConfig withVariableNameIncludes(@NonNull String @NonNull... variableNameIncludes) {
         this.setVariableNameIncludeList(Arrays.asList(variableNameIncludes));
         return this;
     }
@@ -84,7 +88,7 @@ public class SwapMoveSelectorConfig
     // ************************************************************************
 
     @Override
-    public SwapMoveSelectorConfig inherit(SwapMoveSelectorConfig inheritedConfig) {
+    public @NonNull SwapMoveSelectorConfig inherit(@NonNull SwapMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         entitySelectorConfig = ConfigUtils.inheritConfig(entitySelectorConfig, inheritedConfig.getEntitySelectorConfig());
         secondaryEntitySelectorConfig = ConfigUtils.inheritConfig(secondaryEntitySelectorConfig,
@@ -95,12 +99,12 @@ public class SwapMoveSelectorConfig
     }
 
     @Override
-    public SwapMoveSelectorConfig copyConfig() {
+    public @NonNull SwapMoveSelectorConfig copyConfig() {
         return new SwapMoveSelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         visitCommonReferencedClasses(classVisitor);
         if (entitySelectorConfig != null) {
             entitySelectorConfig.visitReferencedClasses(classVisitor);
@@ -111,8 +115,9 @@ public class SwapMoveSelectorConfig
     }
 
     @Override
-    public SwapMoveSelectorConfig enableNearbySelection(Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
-            Random random) {
+    public @NonNull SwapMoveSelectorConfig enableNearbySelection(
+            @NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeter,
+            @NonNull Random random) {
         return NearbyUtil.enable(this, distanceMeter, random);
     }
 

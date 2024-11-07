@@ -24,6 +24,7 @@ import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 import ai.timefold.solver.test.api.score.stream.MultiConstraintVerification;
 import ai.timefold.solver.test.api.score.stream.SingleConstraintVerification;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor;
@@ -166,18 +167,23 @@ public class TimefoldSolverBeanFactory implements ApplicationContextAware, Envir
                 this.errorMessage = errorMessage;
             }
 
+            @NonNull
             @Override
             public ConstraintVerifier<ConstraintProvider_, SolutionClass_>
-                    withConstraintStreamImplType(ConstraintStreamImplType constraintStreamImplType) {
+                    withConstraintStreamImplType(
+                            @NonNull ConstraintStreamImplType constraintStreamImplType) {
                 throw new UnsupportedOperationException(errorMessage);
             }
 
+            @NonNull
             @Override
             public SingleConstraintVerification<SolutionClass_>
-                    verifyThat(BiFunction<ConstraintProvider_, ConstraintFactory, Constraint> constraintFunction) {
+                    verifyThat(
+                            @NonNull BiFunction<ConstraintProvider_, ConstraintFactory, Constraint> constraintFunction) {
                 throw new UnsupportedOperationException(errorMessage);
             }
 
+            @NonNull
             @Override
             public MultiConstraintVerification<SolutionClass_> verifyThat() {
                 throw new UnsupportedOperationException(errorMessage);
