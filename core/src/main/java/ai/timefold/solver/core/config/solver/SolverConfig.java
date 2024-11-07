@@ -516,11 +516,9 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
 
     /**
      * As defined by {@link ScoreDirectorFactoryConfig#withEasyScoreCalculatorClass(Class)}, but returns this.
-     *
-     * @param easyScoreCalculatorClass sometimes null
      */
-    // TODO docu says param of a with-method may be null
-    public @NonNull SolverConfig withEasyScoreCalculatorClass(Class<? extends EasyScoreCalculator> easyScoreCalculatorClass) {
+    public @NonNull SolverConfig withEasyScoreCalculatorClass(
+            @NonNull Class<? extends EasyScoreCalculator> easyScoreCalculatorClass) {
         if (scoreDirectorFactoryConfig == null) {
             scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
         }
@@ -530,11 +528,9 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
 
     /**
      * As defined by {@link ScoreDirectorFactoryConfig#withConstraintProviderClass(Class)}, but returns this.
-     *
-     * @param constraintProviderClass sometimes null
      */
-    // TODO: docu says constraintProviderClass may be null in a with-method
-    public @NonNull SolverConfig withConstraintProviderClass(Class<? extends ConstraintProvider> constraintProviderClass) {
+    public @NonNull SolverConfig withConstraintProviderClass(
+            @NonNull Class<? extends ConstraintProvider> constraintProviderClass) {
         if (scoreDirectorFactoryConfig == null) {
             scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
         }
@@ -557,11 +553,8 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
 
     /**
      * As defined by {@link TerminationConfig#withSpentLimit(Duration)}, but returns this.
-     *
-     * @param spentLimit sometimes null
      */
-    // TODO: docu says spentLimit may be null even this is a with-method
-    public @NonNull SolverConfig withTerminationSpentLimit(Duration spentLimit) {
+    public @NonNull SolverConfig withTerminationSpentLimit(@NonNull Duration spentLimit) {
         if (terminationConfig == null) {
             terminationConfig = new TerminationConfig();
         }
