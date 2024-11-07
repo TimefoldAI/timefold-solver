@@ -48,10 +48,9 @@ public final class EasyScoreDirectorFactory<Solution_, Score_ extends Score<Scor
     // ************************************************************************
 
     @Override
-    public EasyScoreDirector<Solution_, Score_> buildScoreDirector(
-            boolean lookUpEnabled, ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState) {
-        return new EasyScoreDirector<>(this, lookUpEnabled, constraintMatchPolicy, expectShadowVariablesInCorrectState,
-                easyScoreCalculator);
+    public EasyScoreDirector<Solution_, Score_> buildScoreDirector(boolean lookUpEnabled,
+            ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState) {
+        return new EasyScoreDirector<>(this, lookUpEnabled, expectShadowVariablesInCorrectState, easyScoreCalculator);
     }
 
 }

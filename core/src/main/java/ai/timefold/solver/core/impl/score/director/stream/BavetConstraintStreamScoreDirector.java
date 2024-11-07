@@ -61,11 +61,6 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     }
 
     @Override
-    public ConstraintMatchPolicy getConstraintMatchPolicy() {
-        return constraintMatchPolicy;
-    }
-
-    @Override
     public Map<String, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
         if (workingSolution == null) {
             throw new IllegalStateException(

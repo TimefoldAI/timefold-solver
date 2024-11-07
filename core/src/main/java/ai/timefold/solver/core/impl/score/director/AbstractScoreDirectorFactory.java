@@ -95,7 +95,7 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
 
     @Override
     public InnerScoreDirector<Solution_, Score_> buildScoreDirector() {
-        return buildScoreDirector(true, ConstraintMatchPolicy.ENABLED);
+        return buildScoreDirector(false, ConstraintMatchPolicy.DISABLED);
     }
 
     @Override

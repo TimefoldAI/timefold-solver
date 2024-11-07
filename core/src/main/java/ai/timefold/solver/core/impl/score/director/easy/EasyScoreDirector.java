@@ -29,9 +29,9 @@ public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
     private final EasyScoreCalculator<Solution_, Score_> easyScoreCalculator;
 
     public EasyScoreDirector(EasyScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
-            boolean lookUpEnabled, ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState,
+            boolean lookUpEnabled, boolean expectShadowVariablesInCorrectState,
             EasyScoreCalculator<Solution_, Score_> easyScoreCalculator) {
-        super(scoreDirectorFactory, lookUpEnabled, constraintMatchPolicy, expectShadowVariablesInCorrectState);
+        super(scoreDirectorFactory, lookUpEnabled, ConstraintMatchPolicy.DISABLED, expectShadowVariablesInCorrectState);
         this.easyScoreCalculator = easyScoreCalculator;
     }
 
@@ -62,16 +62,6 @@ public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
         }
         setCalculatedScore(score);
         return score;
-    }
-
-    /**
-     * Always false, {@link ConstraintMatchTotal}s are not supported by this {@link ScoreDirector} implementation.
-     *
-     * @return false
-     */
-    @Override
-    public ConstraintMatchPolicy getConstraintMatchPolicy() {
-        return ConstraintMatchPolicy.DISABLED;
     }
 
     /**

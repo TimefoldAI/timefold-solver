@@ -105,7 +105,8 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                     metricsRequiringConstraintMatchSet);
         }
 
-        var castScoreDirector = scoreDirectorFactory.buildScoreDirector(true, ConstraintMatchPolicy.ENABLED);
+        var castScoreDirector = scoreDirectorFactory.buildScoreDirector(true,
+                constraintMatchEnabled ? ConstraintMatchPolicy.ENABLED : ConstraintMatchPolicy.DISABLED);
         solverScope.setScoreDirector(castScoreDirector);
         solverScope.setProblemChangeDirector(new DefaultProblemChangeDirector<>(castScoreDirector));
 

@@ -30,8 +30,8 @@ public interface InnerScoreDirectorFactory<Solution_, Score_ extends Score<Score
     InnerScoreDirector<Solution_, Score_> buildScoreDirector();
 
     /**
-     * Like {@link #buildScoreDirector()}, but optionally disables {@link ConstraintMatch} tracking and look up
-     * for more performance (presuming the {@link ScoreDirector} implementation actually supports it to begin with).
+     * Like {@link #buildScoreDirector()}, but optionally enables {@link ConstraintMatch} tracking and look up
+     * where possible and necessary.
      *
      * @param lookUpEnabled true if a {@link ScoreDirector} implementation should track all working objects
      *        for {@link ScoreDirector#lookUpWorkingObject(Object)}
@@ -46,8 +46,8 @@ public interface InnerScoreDirectorFactory<Solution_, Score_ extends Score<Score
     }
 
     /**
-     * Like {@link #buildScoreDirector()}, but optionally disables {@link ConstraintMatch} tracking and look up
-     * for more performance (presuming the {@link ScoreDirector} implementation actually supports it to begin with).
+     * Like {@link #buildScoreDirector()}, but optionally enables {@link ConstraintMatch} tracking and look up
+     * where possible and necessary.
      *
      * @param lookUpEnabled true if a {@link ScoreDirector} implementation should track all working objects
      *        for {@link ScoreDirector#lookUpWorkingObject(Object)}
