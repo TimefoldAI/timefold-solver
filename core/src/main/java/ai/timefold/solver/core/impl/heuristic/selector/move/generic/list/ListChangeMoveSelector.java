@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.api.domain.metamodel.UnassignedLocation;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
@@ -13,6 +12,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveS
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedLocation;
 
 public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
 

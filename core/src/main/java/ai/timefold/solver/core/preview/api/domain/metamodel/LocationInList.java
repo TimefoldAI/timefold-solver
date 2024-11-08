@@ -1,8 +1,13 @@
+package ai.timefold.solver.core.preview.api.domain.metamodel;
+
+import org.jspecify.annotations.NonNull;
+
 /**
- * This package contains classes and interfaces that represent the metamodel of the domain.
- * This meta-model describes the planning solution, its entities and their variables,
- * typically for use within {@link ai.timefold.solver.core.api.move.Move}s
- *
+ * Uniquely identifies the location of a value in a list variable.
+ * Instances can be created by {@link ElementLocation#of(Object, int)}.
+ * <p>
+ * Within that one list, the index is unique for each value and therefore the instances are comparable.
+ * Comparing them between different lists has no meaning.
  * <p>
  * <strong>This package and all of its contents are part of the Move Streams API,
  * which is under development and is only offered as a preview feature.</strong>
@@ -14,5 +19,14 @@
  * before we finalize the API.
  * Please direct your feedback to
  * <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver Github</a>.
+ *
  */
-package ai.timefold.solver.core.api.domain.metamodel;
+public sealed interface LocationInList
+        extends ElementLocation, Comparable<LocationInList>
+        permits DefaultLocationInList {
+
+    <Entity_> @NonNull Entity_ entity();
+
+    int index();
+
+}

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.api.domain.metamodel;
+package ai.timefold.solver.core.preview.api.domain.metamodel;
 
 import java.util.List;
 

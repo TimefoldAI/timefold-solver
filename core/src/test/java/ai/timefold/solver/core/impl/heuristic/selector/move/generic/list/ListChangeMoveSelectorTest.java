@@ -18,7 +18,6 @@ import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.mockSc
 
 import java.util.List;
 
-import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
@@ -28,6 +27,7 @@ import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.Testd
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListValue;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
 
 import org.junit.jupiter.api.Test;
 

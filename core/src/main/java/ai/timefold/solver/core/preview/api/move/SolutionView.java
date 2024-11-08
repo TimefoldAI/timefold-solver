@@ -1,10 +1,10 @@
-package ai.timefold.solver.core.api.move;
+package ai.timefold.solver.core.preview.api.move;
 
-import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
-import ai.timefold.solver.core.api.domain.metamodel.PlanningListVariableMetaModel;
-import ai.timefold.solver.core.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

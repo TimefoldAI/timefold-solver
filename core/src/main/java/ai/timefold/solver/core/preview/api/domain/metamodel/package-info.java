@@ -1,7 +1,7 @@
 /**
- * This package contains classes and interfaces that are used to write moves to explore the neighborhood of a
- * {@link ai.timefold.solver.core.api.domain.solution.PlanningSolution}.
- * It will eventually replace the move selector framework.
+ * This package contains classes and interfaces that represent the metamodel of the domain.
+ * This meta-model describes the planning solution, its entities and their variables,
+ * typically for use within {@link ai.timefold.solver.core.preview.api.move.Move}s
  *
  * <p>
  * <strong>This package and all of its contents are part of the Move Streams API,
@@ -15,4 +15,4 @@
  * Please direct your feedback to
  * <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver Github</a>.
  */
-package ai.timefold.solver.core.api.move;
+package ai.timefold.solver.core.preview.api.domain.metamodel;

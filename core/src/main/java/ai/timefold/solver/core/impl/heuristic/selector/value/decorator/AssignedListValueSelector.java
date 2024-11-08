@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.impl.heuristic.selector.value.decorator;
 
-import ai.timefold.solver.core.api.domain.metamodel.LocationInList;
 import ai.timefold.solver.core.impl.heuristic.selector.list.ElementDestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.preview.api.domain.metamodel.LocationInList;
 
 /**
  * Only selects values from the child value selector that are initialized.

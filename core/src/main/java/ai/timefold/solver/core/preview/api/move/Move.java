@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.api.move;
+package ai.timefold.solver.core.preview.api.move;
 
 import java.util.Collection;
 import java.util.HashSet;

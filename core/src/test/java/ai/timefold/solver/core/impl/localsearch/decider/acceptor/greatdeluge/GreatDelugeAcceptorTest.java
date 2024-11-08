@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.localsearch.decider.acceptor.greatdeluge;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptorTest;
@@ -11,6 +10,7 @@ import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.junit.jupiter.api.Test;
 

@@ -3,10 +3,10 @@ package ai.timefold.solver.core.impl.move.director;
 import java.util.List;
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.move.Move;
-import ai.timefold.solver.core.api.move.MutableSolutionView;
-import ai.timefold.solver.core.api.move.Rebaser;
 import ai.timefold.solver.core.impl.move.InnerMutableSolutionView;
+import ai.timefold.solver.core.preview.api.move.Move;
+import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
+import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 import org.jspecify.annotations.NonNull;
 

@@ -4,10 +4,10 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
-import ai.timefold.solver.core.api.domain.metamodel.LocationInList;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
+import ai.timefold.solver.core.preview.api.domain.metamodel.LocationInList;
 
 import org.jspecify.annotations.NonNull;
 

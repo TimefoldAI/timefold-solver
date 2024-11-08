@@ -8,8 +8,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
-import ai.timefold.solver.core.api.domain.metamodel.LocationInList;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
@@ -25,6 +23,8 @@ import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.pinne
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListValue;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
+import ai.timefold.solver.core.preview.api.domain.metamodel.LocationInList;
 
 public final class TestdataListUtils {
 
