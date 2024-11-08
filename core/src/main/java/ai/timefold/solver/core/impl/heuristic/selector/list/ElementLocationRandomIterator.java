@@ -3,12 +3,12 @@ package ai.timefold.solver.core.impl.heuristic.selector.list;
 import java.util.Iterator;
 import java.util.Random;
 
-import ai.timefold.solver.core.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
 
 final class ElementLocationRandomIterator<Solution_> implements Iterator<ElementLocation> {
 

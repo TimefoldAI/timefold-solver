@@ -2,14 +2,14 @@ package ai.timefold.solver.core.impl.heuristic.move;
 
 import java.util.Collection;
 
-import ai.timefold.solver.core.api.move.Move;
-import ai.timefold.solver.core.api.move.MutableSolutionView;
-import ai.timefold.solver.core.api.move.Rebaser;
-import ai.timefold.solver.core.api.move.SolutionView;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.move.InnerMutableSolutionView;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.move.generic.NoChangeMove;
+import ai.timefold.solver.core.preview.api.move.Move;
+import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
+import ai.timefold.solver.core.preview.api.move.Rebaser;
+import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 import org.jspecify.annotations.NonNull;
 

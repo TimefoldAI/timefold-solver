@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.impl.domain.solution.descriptor;
 
-import ai.timefold.solver.core.api.domain.metamodel.PlanningEntityMetaModel;
-import ai.timefold.solver.core.api.domain.metamodel.ShadowVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ShadowVariableMetaModel;
 
 import org.jspecify.annotations.NonNull;
 

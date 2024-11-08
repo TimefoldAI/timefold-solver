@@ -6,8 +6,6 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.function.Function;
 
-import ai.timefold.solver.core.api.domain.metamodel.LocationInList;
-import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
@@ -24,6 +22,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListUna
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.preview.api.domain.metamodel.LocationInList;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recommendation_, In_, Out_>
         implements Function<InnerScoreDirector<Solution_, Score_>, List<Recommendation_>> {

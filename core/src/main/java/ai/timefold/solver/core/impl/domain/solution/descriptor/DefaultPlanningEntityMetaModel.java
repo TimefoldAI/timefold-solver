@@ -5,10 +5,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.domain.metamodel.PlanningEntityMetaModel;
-import ai.timefold.solver.core.api.domain.metamodel.PlanningSolutionMetaModel;
-import ai.timefold.solver.core.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 import org.jspecify.annotations.NonNull;
 

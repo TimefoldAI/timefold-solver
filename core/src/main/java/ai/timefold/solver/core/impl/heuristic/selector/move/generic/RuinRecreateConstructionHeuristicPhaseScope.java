@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 
-import ai.timefold.solver.core.api.move.Move;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.preview.api.move.Move;
 
 final class RuinRecreateConstructionHeuristicPhaseScope<Solution_> extends ConstructionHeuristicPhaseScope<Solution_> {
 

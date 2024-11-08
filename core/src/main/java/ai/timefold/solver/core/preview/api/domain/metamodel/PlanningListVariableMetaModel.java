@@ -1,13 +1,9 @@
-package ai.timefold.solver.core.api.domain.metamodel;
+package ai.timefold.solver.core.preview.api.domain.metamodel;
 
-import ai.timefold.solver.core.api.domain.variable.VariableListener;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
 /**
- * A {@link VariableMetaModel} that represents a shadow planning variable.
- * The solver doesn't directly modify a shadow variable;
- * its value is derived from genuine variables
- * (see {@link PlanningVariableMetaModel} and {@link PlanningListVariableMetaModel})
- * using a {@link VariableListener} provided either internally or by the user.
+ * A {@link VariableMetaModel} that represents a @{@link PlanningVariable list planning variable}.
  * <p>
  * <strong>This package and all of its contents are part of the Move Streams API,
  * which is under development and is only offered as a preview feature.</strong>
@@ -24,17 +20,24 @@ import ai.timefold.solver.core.api.domain.variable.VariableListener;
  * @param <Entity_> the entity type
  * @param <Value_> the value type
  */
-public non-sealed interface ShadowVariableMetaModel<Solution_, Entity_, Value_>
+public non-sealed interface PlanningListVariableMetaModel<Solution_, Entity_, Value_>
         extends VariableMetaModel<Solution_, Entity_, Value_> {
 
     @Override
     default boolean isList() {
-        return false;
+        return true;
     }
 
     @Override
     default boolean isGenuine() {
-        return false;
+        return true;
     }
+
+    /**
+     * Returns whether the planning variable allows values not to be assigned to any entity's list variable.
+     *
+     * @return {@code true} if the planning variable allows unassigned values, {@code false} otherwise.
+     */
+    boolean allowsUnassignedValues();
 
 }

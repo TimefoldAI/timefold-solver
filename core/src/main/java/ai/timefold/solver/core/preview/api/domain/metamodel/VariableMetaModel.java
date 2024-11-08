@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.api.domain.metamodel;
+package ai.timefold.solver.core.preview.api.domain.metamodel;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;

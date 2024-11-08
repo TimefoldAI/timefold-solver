@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 import java.util.Collections;
 import java.util.Iterator;
 
-import ai.timefold.solver.core.api.domain.metamodel.UnassignedLocation;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.heuristic.move.CompositeMove;
@@ -11,6 +10,7 @@ import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedLocation;
 
 /**
  *

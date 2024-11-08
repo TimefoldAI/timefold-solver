@@ -2,9 +2,9 @@ package ai.timefold.solver.core.impl.move.director;
 
 import java.util.List;
 
-import ai.timefold.solver.core.api.move.Rebaser;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
+import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 record ListVariableAfterChangeAction<Solution_, Entity_, Value_>(Entity_ entity, int fromIndex, int toIndex,
         ListVariableDescriptor<Solution_> variableDescriptor) implements ChangeAction<Solution_> {

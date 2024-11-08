@@ -1,10 +1,13 @@
-package ai.timefold.solver.core.api.domain.metamodel;
+package ai.timefold.solver.core.preview.api.domain.metamodel;
 
-import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.api.domain.variable.VariableListener;
 
 /**
- * A {@link VariableMetaModel} that represents a @{@link PlanningVariable basic planning variable}.
- *
+ * A {@link VariableMetaModel} that represents a shadow planning variable.
+ * The solver doesn't directly modify a shadow variable;
+ * its value is derived from genuine variables
+ * (see {@link PlanningVariableMetaModel} and {@link PlanningListVariableMetaModel})
+ * using a {@link VariableListener} provided either internally or by the user.
  * <p>
  * <strong>This package and all of its contents are part of the Move Streams API,
  * which is under development and is only offered as a preview feature.</strong>
@@ -21,7 +24,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
  * @param <Entity_> the entity type
  * @param <Value_> the value type
  */
-public non-sealed interface PlanningVariableMetaModel<Solution_, Entity_, Value_>
+public non-sealed interface ShadowVariableMetaModel<Solution_, Entity_, Value_>
         extends VariableMetaModel<Solution_, Entity_, Value_> {
 
     @Override
@@ -31,21 +34,7 @@ public non-sealed interface PlanningVariableMetaModel<Solution_, Entity_, Value_
 
     @Override
     default boolean isGenuine() {
-        return true;
+        return false;
     }
-
-    /**
-     * Returns whether the planning variable allows null values.
-     *
-     * @return {@code true} if the planning variable allows null values, {@code false} otherwise.
-     */
-    boolean allowsUnassigned();
-
-    /**
-     * Returns whether the planning variable is chained.
-     *
-     * @return {@code true} if the planning variable is chained, {@code false} otherwise.
-     */
-    boolean isChained();
 
 }

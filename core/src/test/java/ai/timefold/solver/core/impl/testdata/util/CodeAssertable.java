@@ -3,8 +3,6 @@ package ai.timefold.solver.core.impl.testdata.util;
 import java.util.List;
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.domain.metamodel.LocationInList;
-import ai.timefold.solver.core.api.domain.metamodel.UnassignedLocation;
 import ai.timefold.solver.core.impl.heuristic.move.CompositeMove;
 import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
@@ -20,6 +18,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubList
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListSwapMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListUnassignMove;
 import ai.timefold.solver.core.impl.heuristic.selector.value.chained.SubChain;
+import ai.timefold.solver.core.preview.api.domain.metamodel.LocationInList;
+import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedLocation;
 
 public interface CodeAssertable {
 

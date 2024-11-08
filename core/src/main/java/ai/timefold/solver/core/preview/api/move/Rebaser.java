@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.api.move;
+package ai.timefold.solver.core.preview.api.move;
 
 import ai.timefold.solver.core.api.domain.lookup.LookUpStrategyType;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;

@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.impl.move.director;
 
-import ai.timefold.solver.core.api.move.Rebaser;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
+import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 record ListVariableAfterAssignmentAction<Solution_>(Object element,
         ListVariableDescriptor<Solution_> variableDescriptor) implements ChangeAction<Solution_> {
