@@ -61,6 +61,12 @@
       <scope>runtime</scope>
     </dependency>
 
+    <!-- standardized nullness annotations  -->
+    <dependency>
+      <groupId>org.jspecify</groupId>
+      <artifactId>jspecify</artifactId>
+    </dependency>
+
     <!-- Testing -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>

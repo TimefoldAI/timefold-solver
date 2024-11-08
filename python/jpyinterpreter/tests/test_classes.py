@@ -1,6 +1,5 @@
-from typing import Type
-
 import pytest
+from typing import Type
 
 from .conftest import verifier_for
 
@@ -942,11 +941,12 @@ def test_enum_as_attribute_in_class():
 
 def test_class_annotations():
     from typing import Annotated
-    from java.lang import Deprecated
+    from java.lang import Deprecated, Integer
     from java.lang.annotation import Target, ElementType
     from ai.timefold.solver.core.api.domain.variable import PiggybackShadowVariable
     from jpyinterpreter import (add_class_annotation, JavaAnnotation, translate_python_class_to_java_class,
-                                get_java_type_for_python_type)
+                                get_java_type_for_python_type, convert_to_java_python_like_object)
+    from ai.timefold.jpyinterpreter.types.numeric import PythonInteger
 
     class B:
         some_field: int
@@ -967,6 +967,10 @@ def test_class_annotations():
             'shadowEntityClass': B
         })
         ]
+        type_overridden: Annotated[int, JavaAnnotation(Deprecated, {
+            'forRemoval': True,
+            'since': '1.0.0'
+        }, field_type_override=Integer)]
 
         def my_method(self) -> Annotated[str, 'extra', JavaAnnotation(Deprecated, {
             'forRemoval': False,
@@ -981,7 +985,9 @@ def test_class_annotations():
     assert annotations[0].forRemoval()
     assert annotations[0].since() == '0.0.0'
 
-    annotations = translated_class.getMethod('getMy_field').getAnnotations()
+    my_field_getter = translated_class.getMethod('getMy_field')
+    annotations = my_field_getter.getAnnotations()
+    assert my_field_getter.getReturnType() == PythonInteger.class_
     assert len(annotations) == 3
     assert isinstance(annotations[0], Deprecated)
     assert annotations[0].forRemoval()
@@ -992,11 +998,23 @@ def test_class_annotations():
     assert annotations[2].shadowVariableName() == 'some_field'
     assert annotations[2].shadowEntityClass() == get_java_type_for_python_type(B).getJavaClass()
 
+    type_overridden_getter = translated_class.getMethod('getType_overridden')
+    assert type_overridden_getter.getReturnType() == Integer.class_
+
     annotations = translated_class.getMethod('$method$my_method').getAnnotations()
     assert len(annotations) == 1
     assert isinstance(annotations[0], Deprecated)
     assert annotations[0].forRemoval() is False
     assert annotations[0].since() == '2.0.0'
+
+    a = A()
+    a.my_field = 1
+    a.type_overridden = 2
+
+    converted_a = convert_to_java_python_like_object(a)
+    assert isinstance(converted_a.getMy_field(), PythonInteger)
+    assert converted_a.getMy_field().equals(PythonInteger.valueOf(1))
+    assert converted_a.getType_overridden() == 2
 
 
 def test_extra_attributes():

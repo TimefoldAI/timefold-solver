@@ -8,6 +8,9 @@ import java.util.Objects;
 
 import ai.timefold.jpyinterpreter.types.PythonLikeType;
 
+import org.jspecify.annotations.Nullable;
+import org.objectweb.asm.Type;
+
 public record TypeHint(PythonLikeType type, List<AnnotationMetadata> annotationList, TypeHint[] genericArgs,
         PythonLikeType javaGetterType) {
     public TypeHint {
@@ -20,6 +23,20 @@ public record TypeHint(PythonLikeType type, List<AnnotationMetadata> annotationL
 
     public TypeHint(PythonLikeType type, List<AnnotationMetadata> annotationList, PythonLikeType javaGetterType) {
         this(type, annotationList, null, javaGetterType);
+    }
+
+    @Nullable
+    public String getOverrideTypeDescriptor() {
+        Class<?> override = null;
+        for (var annotation : annotationList) {
+            var newOverride = annotation.fieldTypeOverride();
+            if (override != null && !override.equals(newOverride)) {
+                throw new IllegalArgumentException(
+                        "Multiple override specified that do not match in annotations (" + annotationList + ").");
+            }
+            override = newOverride;
+        }
+        return (override != null) ? Type.getDescriptor(override) : null;
     }
 
     public TypeHint addAnnotations(List<AnnotationMetadata> addedAnnotations) {

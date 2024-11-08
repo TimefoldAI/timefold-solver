@@ -845,6 +845,11 @@ public class PythonClassTranslator {
     private static void createJavaGetter(ClassWriter classWriter, PreparedClassInfo preparedClassInfo,
             MatchedMapping matchedMapping, String attributeName,
             Type attributeType, Type getterType, String signature, TypeHint typeHint) {
+        var typeOverride = typeHint.getOverrideTypeDescriptor();
+        var isTypeOverridden = typeOverride != null;
+        if (isTypeOverridden) {
+            getterType = Type.getType(typeOverride);
+        }
         var getterName = "get" + attributeName.substring(0, 1).toUpperCase() + attributeName.substring(1);
         if (signature != null && Objects.equals(attributeType, getterType)) {
             signature = "()" + signature;
@@ -858,6 +863,9 @@ public class PythonClassTranslator {
         }
 
         getterVisitor.visitCode();
+        if (isTypeOverridden && !Objects.equals(attributeType, getterType)) {
+            getterVisitor.visitLdcInsn(getterType);
+        }
         getterVisitor.visitVarInsn(Opcodes.ALOAD, 0);
         getterVisitor.visitFieldInsn(Opcodes.GETFIELD, preparedClassInfo.classInternalName,
                 attributeName, attributeType.getDescriptor());
@@ -890,6 +898,15 @@ public class PythonClassTranslator {
                         true);
                 getterVisitor.visitLabel(skipMapping);
             }
+            if (isTypeOverridden) {
+                getterVisitor.visitMethodInsn(Opcodes.INVOKESTATIC,
+                        Type.getInternalName(JavaPythonTypeConversionImplementor.class),
+                        "convertPythonObjectToJavaType",
+                        Type.getMethodDescriptor(Type.getType(Object.class),
+                                Type.getType(Class.class),
+                                Type.getType(PythonLikeObject.class)),
+                        false);
+            }
             getterVisitor.visitTypeInsn(Opcodes.CHECKCAST, getterType.getInternalName());
         }
         getterVisitor.visitInsn(Opcodes.ARETURN);
@@ -901,6 +918,11 @@ public class PythonClassTranslator {
             MatchedMapping matchedMapping, String attributeName,
             Type attributeType, Type setterType, String signature, TypeHint typeHint) {
         var setterName = "set" + attributeName.substring(0, 1).toUpperCase() + attributeName.substring(1);
+        var typeOverride = typeHint.getOverrideTypeDescriptor();
+        var isTypeOverridden = typeOverride != null;
+        if (isTypeOverridden) {
+            setterType = Type.getType(typeOverride);
+        }
         if (signature != null && Objects.equals(attributeType, setterType)) {
             signature = "(" + signature + ")V";
         }
@@ -940,6 +962,14 @@ public class PythonClassTranslator {
                         Type.getMethodDescriptor(Type.getType(Object.class), Type.getType(Object.class)),
                         true);
                 setterVisitor.visitLabel(skipMapping);
+            }
+            if (isTypeOverridden) {
+                setterVisitor.visitMethodInsn(Opcodes.INVOKESTATIC,
+                        Type.getInternalName(JavaPythonTypeConversionImplementor.class),
+                        "wrapJavaObject",
+                        Type.getMethodDescriptor(Type.getType(PythonLikeObject.class),
+                                Type.getType(Object.class)),
+                        false);
             }
             setterVisitor.visitTypeInsn(Opcodes.CHECKCAST, attributeType.getInternalName());
         }
