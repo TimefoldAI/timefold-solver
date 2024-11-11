@@ -941,6 +941,7 @@ def test_enum_as_attribute_in_class():
 
 def test_class_annotations():
     from typing import Annotated
+    from jpype import JInt
     from java.lang import Deprecated, Integer
     from java.lang.annotation import Target, ElementType
     from ai.timefold.solver.core.api.domain.variable import PiggybackShadowVariable
@@ -971,6 +972,10 @@ def test_class_annotations():
             'forRemoval': True,
             'since': '1.0.0'
         }, field_type_override=Integer)]
+        primitive_type_overridden: Annotated[int, JavaAnnotation(Deprecated, {
+            'forRemoval': True,
+            'since': '1.0.0'
+        }, field_type_override=JInt)]
 
         def my_method(self) -> Annotated[str, 'extra', JavaAnnotation(Deprecated, {
             'forRemoval': False,
@@ -1001,6 +1006,9 @@ def test_class_annotations():
     type_overridden_getter = translated_class.getMethod('getType_overridden')
     assert type_overridden_getter.getReturnType() == Integer.class_
 
+    type_overridden_getter = translated_class.getMethod('getPrimitive_type_overridden')
+    assert type_overridden_getter.getReturnType() == JInt.class_
+
     annotations = translated_class.getMethod('$method$my_method').getAnnotations()
     assert len(annotations) == 1
     assert isinstance(annotations[0], Deprecated)
@@ -1010,11 +1018,13 @@ def test_class_annotations():
     a = A()
     a.my_field = 1
     a.type_overridden = 2
+    a.primitive_type_overridden = 3
 
     converted_a = convert_to_java_python_like_object(a)
     assert isinstance(converted_a.getMy_field(), PythonInteger)
     assert converted_a.getMy_field().equals(PythonInteger.valueOf(1))
     assert converted_a.getType_overridden() == 2
+    assert converted_a.getPrimitive_type_overridden() == 3
 
 
 def test_extra_attributes():

@@ -37,7 +37,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
  * Example: Assuming a list of values {@code [A, B, C]}:
  *
  * <ul>
- * <li>0 or null allows the entire list to be modified.</li>
+ * <li>0 allows the entire list to be modified.</li>
  * <li>1 pins {@code A}; rest of the list may be modified or added to.</li>
  * <li>2 pins {@code A, B}; rest of the list may be modified or added to.</li>
  * <li>3 pins {@code A, B, C}; the list can only be added to.</li>

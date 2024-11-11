@@ -119,7 +119,7 @@ public class DelegatingInterfaceImplementor extends JavaInterfaceImplementor {
             interfaceMethodVisitor.visitInsn(Opcodes.RETURN);
         } else {
             if (returnType.isPrimitive()) {
-                loadBoxedPrimitiveTypeClass(returnType, interfaceMethodVisitor);
+                JavaPythonTypeConversionImplementor.loadTypeClass(returnType, interfaceMethodVisitor);
             } else {
                 interfaceMethodVisitor.visitLdcInsn(Type.getType(returnType));
             }
@@ -131,7 +131,7 @@ public class DelegatingInterfaceImplementor extends JavaInterfaceImplementor {
                             PythonLikeObject.class)),
                     false);
             if (returnType.isPrimitive()) {
-                unboxBoxedPrimitiveType(returnType, interfaceMethodVisitor);
+                JavaPythonTypeConversionImplementor.unboxBoxedPrimitiveType(returnType, interfaceMethodVisitor);
                 interfaceMethodVisitor.visitInsn(Type.getType(returnType).getOpcode(Opcodes.IRETURN));
             } else {
                 interfaceMethodVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(returnType));
@@ -156,7 +156,7 @@ public class DelegatingInterfaceImplementor extends JavaInterfaceImplementor {
             interfaceMethodVisitor.visitVarInsn(Type.getType(parameterType).getOpcode(Opcodes.ILOAD),
                     i + 1);
             if (parameterType.isPrimitive()) {
-                convertPrimitiveToObjectType(parameterType, interfaceMethodVisitor);
+                JavaPythonTypeConversionImplementor.boxPrimitiveType(parameterType, interfaceMethodVisitor);
             }
             interfaceMethodVisitor.visitVarInsn(Opcodes.ALOAD, interfaceMethod.getParameterCount() + 1);
             interfaceMethodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC,
@@ -191,93 +191,4 @@ public class DelegatingInterfaceImplementor extends JavaInterfaceImplementor {
         interfaceMethodVisitor.visitInsn(Opcodes.POP);
     }
 
-    public static void convertPrimitiveToObjectType(Class<?> primitiveType, MethodVisitor methodVisitor) {
-        if (primitiveType.equals(boolean.class)) {
-            methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(Boolean.class),
-                    "valueOf", Type.getMethodDescriptor(Type.getType(Boolean.class), Type.BOOLEAN_TYPE), false);
-        } else if (primitiveType.equals(byte.class)) {
-            methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(Byte.class),
-                    "valueOf", Type.getMethodDescriptor(Type.getType(Byte.class), Type.BYTE_TYPE), false);
-        } else if (primitiveType.equals(char.class)) {
-            methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(Character.class),
-                    "valueOf", Type.getMethodDescriptor(Type.getType(Character.class), Type.CHAR_TYPE), false);
-        } else if (primitiveType.equals(short.class)) {
-            methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(Short.class),
-                    "valueOf", Type.getMethodDescriptor(Type.getType(Short.class), Type.SHORT_TYPE), false);
-        } else if (primitiveType.equals(int.class)) {
-            methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(Integer.class),
-                    "valueOf", Type.getMethodDescriptor(Type.getType(Integer.class), Type.INT_TYPE), false);
-        } else if (primitiveType.equals(long.class)) {
-            methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(Long.class),
-                    "valueOf", Type.getMethodDescriptor(Type.getType(Long.class), Type.LONG_TYPE), false);
-        } else if (primitiveType.equals(float.class)) {
-            methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(Float.class),
-                    "valueOf", Type.getMethodDescriptor(Type.getType(Float.class), Type.FLOAT_TYPE), false);
-        } else if (primitiveType.equals(double.class)) {
-            methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(Double.class),
-                    "valueOf", Type.getMethodDescriptor(Type.getType(Double.class), Type.DOUBLE_TYPE), false);
-        } else {
-            throw new IllegalStateException("Unknown primitive type %s.".formatted(primitiveType));
-        }
-    }
-
-    public static void loadBoxedPrimitiveTypeClass(Class<?> primitiveType, MethodVisitor methodVisitor) {
-        if (primitiveType.equals(boolean.class)) {
-            methodVisitor.visitLdcInsn(Type.getType(Boolean.class));
-        } else if (primitiveType.equals(byte.class)) {
-            methodVisitor.visitLdcInsn(Type.getType(Byte.class));
-        } else if (primitiveType.equals(char.class)) {
-            methodVisitor.visitLdcInsn(Type.getType(Character.class));
-        } else if (primitiveType.equals(short.class)) {
-            methodVisitor.visitLdcInsn(Type.getType(Short.class));
-        } else if (primitiveType.equals(int.class)) {
-            methodVisitor.visitLdcInsn(Type.getType(Integer.class));
-        } else if (primitiveType.equals(long.class)) {
-            methodVisitor.visitLdcInsn(Type.getType(Long.class));
-        } else if (primitiveType.equals(float.class)) {
-            methodVisitor.visitLdcInsn(Type.getType(Float.class));
-        } else if (primitiveType.equals(double.class)) {
-            methodVisitor.visitLdcInsn(Type.getType(Double.class));
-        } else {
-            throw new IllegalStateException("Unknown primitive type %s.".formatted(primitiveType));
-        }
-    }
-
-    public static void unboxBoxedPrimitiveType(Class<?> primitiveType, MethodVisitor methodVisitor) {
-        if (primitiveType.equals(boolean.class)) {
-            methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(Boolean.class));
-            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Boolean.class),
-                    "booleanValue", Type.getMethodDescriptor(Type.BOOLEAN_TYPE), false);
-        } else if (primitiveType.equals(byte.class)) {
-            methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(Byte.class));
-            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Byte.class),
-                    "byteValue", Type.getMethodDescriptor(Type.BYTE_TYPE), false);
-        } else if (primitiveType.equals(char.class)) {
-            methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(Character.class));
-            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Character.class),
-                    "charValue", Type.getMethodDescriptor(Type.CHAR_TYPE), false);
-        } else if (primitiveType.equals(short.class)) {
-            methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(Short.class));
-            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Short.class),
-                    "shortValue", Type.getMethodDescriptor(Type.SHORT_TYPE), false);
-        } else if (primitiveType.equals(int.class)) {
-            methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(Integer.class));
-            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Integer.class),
-                    "intValue", Type.getMethodDescriptor(Type.INT_TYPE), false);
-        } else if (primitiveType.equals(long.class)) {
-            methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(Long.class));
-            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Long.class),
-                    "longValue", Type.getMethodDescriptor(Type.LONG_TYPE), false);
-        } else if (primitiveType.equals(float.class)) {
-            methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(Float.class));
-            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Float.class),
-                    "floatValue", Type.getMethodDescriptor(Type.FLOAT_TYPE), false);
-        } else if (primitiveType.equals(double.class)) {
-            methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(Double.class));
-            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Double.class),
-                    "doubleValue", Type.getMethodDescriptor(Type.DOUBLE_TYPE), false);
-        } else {
-            throw new IllegalStateException("Unknown primitive type %s.".formatted(primitiveType));
-        }
-    }
 }

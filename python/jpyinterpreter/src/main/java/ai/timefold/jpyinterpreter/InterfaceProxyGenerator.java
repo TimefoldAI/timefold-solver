@@ -267,7 +267,7 @@ public class InterfaceProxyGenerator {
             interfaceMethodVisitor.visitInsn(Opcodes.RETURN);
         } else {
             if (returnType.isPrimitive()) {
-                DelegatingInterfaceImplementor.loadBoxedPrimitiveTypeClass(returnType, interfaceMethodVisitor);
+                JavaPythonTypeConversionImplementor.loadTypeClass(returnType, interfaceMethodVisitor);
             } else {
                 interfaceMethodVisitor.visitLdcInsn(Type.getType(returnType));
             }
@@ -279,7 +279,7 @@ public class InterfaceProxyGenerator {
                             PythonLikeObject.class)),
                     false);
             if (returnType.isPrimitive()) {
-                DelegatingInterfaceImplementor.unboxBoxedPrimitiveType(returnType, interfaceMethodVisitor);
+                JavaPythonTypeConversionImplementor.unboxBoxedPrimitiveType(returnType, interfaceMethodVisitor);
                 interfaceMethodVisitor.visitInsn(Type.getType(returnType).getOpcode(Opcodes.IRETURN));
             } else {
                 interfaceMethodVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(returnType));

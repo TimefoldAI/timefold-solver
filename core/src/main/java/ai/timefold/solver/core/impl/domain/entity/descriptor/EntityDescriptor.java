@@ -15,7 +15,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -410,9 +409,9 @@ public class EntityDescriptor<Solution_> {
             var memberAccessor = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
                     FIELD_OR_READ_METHOD, PlanningPinToIndex.class, descriptorPolicy.getDomainAccessType());
             var type = memberAccessor.getType();
-            if (!Integer.TYPE.isAssignableFrom(type) && !Integer.class.isAssignableFrom(type)) {
+            if (!Integer.TYPE.isAssignableFrom(type)) {
                 throw new IllegalStateException(
-                        "The entityClass (%s) has a %s annotated member (%s) that is not a primitive int or Integer."
+                        "The entityClass (%s) has a %s annotated member (%s) that is not a primitive int."
                                 .formatted(entityClass, PlanningPinToIndex.class.getSimpleName(), member));
             }
             declaredPlanningPinIndexMemberAccessorList.add(memberAccessor);
@@ -520,7 +519,7 @@ public class EntityDescriptor<Solution_> {
             case 1 -> {
                 var memberAccessor = planningPinIndexMemberAccessorList.get(0);
                 effectivePlanningPinToIndexReader =
-                        (solution, entity) -> (int) Objects.requireNonNullElse(memberAccessor.executeGetter(entity), 0);
+                        (solution, entity) -> (int) memberAccessor.executeGetter(entity);
             }
             default -> throw new IllegalStateException(
                     "The entityClass (%s) has (%d) @%s-annotated members (%s), where it should only have one."

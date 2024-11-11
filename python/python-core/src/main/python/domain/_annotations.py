@@ -69,8 +69,8 @@ class PlanningPin(JavaAnnotation):
     def __init__(self):
         ensure_init()
         from ai.timefold.solver.core.api.domain.entity import PlanningPin as JavaPlanningPin
-        from java.lang import Boolean
-        super().__init__(JavaPlanningPin, {}, field_type_override=Boolean)
+        from jpype import JBoolean
+        super().__init__(JavaPlanningPin, {}, field_type_override=JBoolean)
 
 
 class PlanningPinToIndex(JavaAnnotation):
@@ -102,7 +102,7 @@ class PlanningPinToIndex(JavaAnnotation):
 
     Example: Assuming a list of values [A, B, C]:
 
-    - 0 or None allows the entire list to be modified.
+    - 0 allows the entire list to be modified.
     - 1 pins [A] rest of the list may be modified or added to.
     - 2 pins [A, B] rest of the list may be modified or added to.
     - 3 pins [A, B, C] the list can only be added to.
@@ -129,8 +129,8 @@ class PlanningPinToIndex(JavaAnnotation):
     def __init__(self):
         ensure_init()
         from ai.timefold.solver.core.api.domain.entity import PlanningPinToIndex as JavaPlanningPinToIndex
-        from java.lang import Integer
-        super().__init__(JavaPlanningPinToIndex, {}, field_type_override=Integer)
+        from jpype import JInt
+        super().__init__(JavaPlanningPinToIndex, {}, field_type_override=JInt)
 
 
 class PlanningVariableGraphType(Enum):

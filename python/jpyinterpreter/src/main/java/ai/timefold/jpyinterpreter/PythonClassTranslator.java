@@ -864,7 +864,7 @@ public class PythonClassTranslator {
 
         getterVisitor.visitCode();
         if (isTypeOverridden && !Objects.equals(attributeType, getterType)) {
-            getterVisitor.visitLdcInsn(getterType);
+            JavaPythonTypeConversionImplementor.loadTypeClass(getterType, getterVisitor);
         }
         getterVisitor.visitVarInsn(Opcodes.ALOAD, 0);
         getterVisitor.visitFieldInsn(Opcodes.GETFIELD, preparedClassInfo.classInternalName,
@@ -907,9 +907,13 @@ public class PythonClassTranslator {
                                 Type.getType(PythonLikeObject.class)),
                         false);
             }
-            getterVisitor.visitTypeInsn(Opcodes.CHECKCAST, getterType.getInternalName());
+            if (getterType.getSort() == Type.OBJECT) {
+                getterVisitor.visitTypeInsn(Opcodes.CHECKCAST, getterType.getInternalName());
+            } else {
+                JavaPythonTypeConversionImplementor.unboxBoxedPrimitiveType(getterType, getterVisitor);
+            }
         }
-        getterVisitor.visitInsn(Opcodes.ARETURN);
+        getterVisitor.visitInsn(getterType.getOpcode(Opcodes.IRETURN));
         getterVisitor.visitMaxs(maxStack, 0);
         getterVisitor.visitEnd();
     }
@@ -932,7 +936,10 @@ public class PythonClassTranslator {
         var maxStack = 2;
         setterVisitor.visitCode();
         setterVisitor.visitVarInsn(Opcodes.ALOAD, 0);
-        setterVisitor.visitVarInsn(Opcodes.ALOAD, 1);
+        setterVisitor.visitVarInsn(setterType.getOpcode(Opcodes.ILOAD), 1);
+        if (setterType.getSort() != Type.OBJECT) {
+            JavaPythonTypeConversionImplementor.boxPrimitiveType(setterType, setterVisitor);
+        }
         if (typeHint.type().isInstance(PythonNone.INSTANCE)) {
             maxStack = 4;
             // We want to replace null with None
