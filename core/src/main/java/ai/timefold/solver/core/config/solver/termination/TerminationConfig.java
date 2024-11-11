@@ -260,11 +260,11 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         this.moveCountLimit = moveCountLimit;
     }
 
-    public  @Nullable Double getUnimprovedBestSolutionLimit() {
+    public @Nullable Double getUnimprovedBestSolutionLimit() {
         return unimprovedBestSolutionLimit;
     }
 
-    public void setUnimprovedBestSolutionLimit( @Nullable Double unimprovedBestSolutionLimit) {
+    public void setUnimprovedBestSolutionLimit(@Nullable Double unimprovedBestSolutionLimit) {
         this.unimprovedBestSolutionLimit = unimprovedBestSolutionLimit;
     }
 
