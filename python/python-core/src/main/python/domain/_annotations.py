@@ -38,7 +38,7 @@ class PlanningId(JavaAnnotation):
         super().__init__(JavaPlanningId, {})
 
 
-class PlanningPin:
+class PlanningPin(JavaAnnotation):
     """
     Specifies that a boolean attribute of a `planning_entity` determines if the planning entity is pinned.
     A pinned planning entity is never changed during planning.
@@ -60,8 +60,77 @@ class PlanningPin:
     >>> @planning_entity
     ... class Lesson:
     ...     is_pinned: Annotated[bool, PlanningPin]
+
+    See Also
+    --------
+    PlanningPinToIndex
     """
-    pass
+
+    def __init__(self):
+        ensure_init()
+        from ai.timefold.solver.core.api.domain.entity import PlanningPin as JavaPlanningPin
+        from jpype import JBoolean
+        super().__init__(JavaPlanningPin, {}, field_type_override=JBoolean)
+
+
+class PlanningPinToIndex(JavaAnnotation):
+    """
+    Specifies that an int attribute of a `planning_entity` determines how far
+    a PlanningListVariable is pinned.
+
+    This annotation can only be specified on an attribute of the same entity,
+    which also specifies a PlanningListVariable.
+
+    The annotated int field has the following semantics:
+
+    - 0: Pinning is disabled.
+      All the values in the list can be removed,
+      new values may be added anywhere in the list,
+      values in the list may be reordered.
+
+    - Positive int: Values before this index in the list are pinned.
+      No value can be added at those indexes,
+      removed from them, or shuffled between them.
+      Values on or after this index are not pinned
+      and can be added, removed or shuffled freely.
+
+    - Positive int that exceeds the lists size: fail fast.
+
+    - Negative int: fail fast.
+
+    To pin the entire list and disallow any changes, use PlanningPin instead.
+
+    Example: Assuming a list of values [A, B, C]:
+
+    - 0 allows the entire list to be modified.
+    - 1 pins [A] rest of the list may be modified or added to.
+    - 2 pins [A, B] rest of the list may be modified or added to.
+    - 3 pins [A, B, C] the list can only be added to.
+    - 4 fails fast as there is no such index in the list.
+
+    If the same entity also specifies a PlanningPin and the pin is enabled,
+    any value of PlanningPinToIndex is ignored.
+    In other words, enabling PlanningPin pins the entire list without exception.
+
+    Examples
+    --------
+    >>> from timefold.solver.domain import PlanningPinToIndex, planning_entity
+    >>> from typing import Annotated
+    >>>
+    >>> @planning_entity
+    ... class Visit:
+    ...     first_unpinned_index: Annotated[int, PlanningPinToIndex]
+
+    See Also
+    --------
+    planning_entity
+    """
+
+    def __init__(self):
+        ensure_init()
+        from ai.timefold.solver.core.api.domain.entity import PlanningPinToIndex as JavaPlanningPinToIndex
+        from jpype import JInt
+        super().__init__(JavaPlanningPinToIndex, {}, field_type_override=JInt)
 
 
 class PlanningVariableGraphType(Enum):
@@ -716,28 +785,10 @@ def planning_entity(entity_class: Type = None, /, *, pinning_filter: Callable = 
     def planning_entity_wrapper(entity_class_argument):
         from .._timefold_java_interop import _add_to_compilation_queue
         from _jpyinterpreter import add_class_annotation
-        from typing import get_origin, Annotated
-
-        planning_pin_field = None
-        for name, type_hint in entity_class_argument.__annotations__.items():
-            if get_origin(type_hint) == Annotated:
-                for metadata in type_hint.__metadata__:
-                    if metadata == PlanningPin or isinstance(metadata, PlanningPin):
-                        if planning_pin_field is not None:
-                            raise ValueError(f'Only one attribute can be annotated with PlanningPin, '
-                                             f'but found multiple fields ({planning_pin_field} and {name}).')
-                        planning_pin_field = name
 
         pinning_filter_function = None
         if pinning_filter is not None:
-            if planning_pin_field is not None:
-                pinning_filter_function = lambda solution, entity: (getattr(entity, planning_pin_field, False) or
-                                                                    pinning_filter(solution, entity))
-            else:
-                pinning_filter_function = pinning_filter
-        else:
-            if planning_pin_field is not None:
-                pinning_filter_function = lambda solution, entity: getattr(entity, planning_pin_field, False)
+            pinning_filter_function = pinning_filter
 
         out = add_class_annotation(JavaPlanningEntity,
                                    pinningFilter=pinning_filter_function)(entity_class_argument)
@@ -823,9 +874,9 @@ def constraint_configuration(constraint_configuration_class: Type[Solution_]) ->
     return out
 
 
-__all__ = ['PlanningId', 'PlanningScore', 'PlanningPin', 'PlanningVariable',
-           'PlanningVariableGraphType', 'PlanningListVariable', 'ShadowVariable',
-           'PiggybackShadowVariable', 'CascadingUpdateShadowVariable',
+__all__ = ['PlanningId', 'PlanningScore', 'PlanningPin', 'PlanningPinToIndex',
+           'PlanningVariable', 'PlanningVariableGraphType', 'PlanningListVariable',
+           'ShadowVariable', 'PiggybackShadowVariable', 'CascadingUpdateShadowVariable',
            'IndexShadowVariable', 'PreviousElementShadowVariable', 'NextElementShadowVariable',
            'AnchorShadowVariable', 'InverseRelationShadowVariable',
            'ProblemFactProperty', 'ProblemFactCollectionProperty',

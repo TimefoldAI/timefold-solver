@@ -340,6 +340,108 @@ public class JavaPythonTypeConversionImplementor {
                 false);
     }
 
+    public static void unboxBoxedPrimitiveType(Class<?> primitiveType, MethodVisitor methodVisitor) {
+        unboxBoxedPrimitiveType(Type.getType(primitiveType), methodVisitor);
+    }
+
+    public static void unboxBoxedPrimitiveType(Type primitiveType, MethodVisitor methodVisitor) {
+        if (primitiveType.equals(Type.BOOLEAN_TYPE)) {
+            methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(Boolean.class));
+            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Boolean.class),
+                    "booleanValue", Type.getMethodDescriptor(Type.BOOLEAN_TYPE), false);
+        } else if (primitiveType.equals(Type.BYTE_TYPE)) {
+            methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(Byte.class));
+            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Byte.class),
+                    "byteValue", Type.getMethodDescriptor(Type.BYTE_TYPE), false);
+        } else if (primitiveType.equals(Type.CHAR_TYPE)) {
+            methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(Character.class));
+            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Character.class),
+                    "charValue", Type.getMethodDescriptor(Type.CHAR_TYPE), false);
+        } else if (primitiveType.equals(Type.SHORT_TYPE)) {
+            methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(Short.class));
+            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Short.class),
+                    "shortValue", Type.getMethodDescriptor(Type.SHORT_TYPE), false);
+        } else if (primitiveType.equals(Type.INT_TYPE)) {
+            methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(Integer.class));
+            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Integer.class),
+                    "intValue", Type.getMethodDescriptor(Type.INT_TYPE), false);
+        } else if (primitiveType.equals(Type.LONG_TYPE)) {
+            methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(Long.class));
+            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Long.class),
+                    "longValue", Type.getMethodDescriptor(Type.LONG_TYPE), false);
+        } else if (primitiveType.equals(Type.FLOAT_TYPE)) {
+            methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(Float.class));
+            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Float.class),
+                    "floatValue", Type.getMethodDescriptor(Type.FLOAT_TYPE), false);
+        } else if (primitiveType.equals(Type.DOUBLE_TYPE)) {
+            methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(Double.class));
+            methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, Type.getInternalName(Double.class),
+                    "doubleValue", Type.getMethodDescriptor(Type.DOUBLE_TYPE), false);
+        } else {
+            throw new IllegalStateException("Unknown primitive type %s.".formatted(primitiveType));
+        }
+    }
+
+    public static void boxPrimitiveType(Class<?> primitiveType, MethodVisitor methodVisitor) {
+        boxPrimitiveType(Type.getType(primitiveType), methodVisitor);
+    }
+
+    public static void boxPrimitiveType(Type primitiveType, MethodVisitor methodVisitor) {
+        if (primitiveType.equals(Type.BOOLEAN_TYPE)) {
+            methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(Boolean.class),
+                    "valueOf", Type.getMethodDescriptor(Type.getType(Boolean.class), Type.BOOLEAN_TYPE), false);
+        } else if (primitiveType.equals(Type.BYTE_TYPE)) {
+            methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(Byte.class),
+                    "valueOf", Type.getMethodDescriptor(Type.getType(Byte.class), Type.BYTE_TYPE), false);
+        } else if (primitiveType.equals(Type.CHAR_TYPE)) {
+            methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(Character.class),
+                    "valueOf", Type.getMethodDescriptor(Type.getType(Character.class), Type.CHAR_TYPE), false);
+        } else if (primitiveType.equals(Type.SHORT_TYPE)) {
+            methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(Short.class),
+                    "valueOf", Type.getMethodDescriptor(Type.getType(Short.class), Type.SHORT_TYPE), false);
+        } else if (primitiveType.equals(Type.INT_TYPE)) {
+            methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(Integer.class),
+                    "valueOf", Type.getMethodDescriptor(Type.getType(Integer.class), Type.INT_TYPE), false);
+        } else if (primitiveType.equals(Type.LONG_TYPE)) {
+            methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(Long.class),
+                    "valueOf", Type.getMethodDescriptor(Type.getType(Long.class), Type.LONG_TYPE), false);
+        } else if (primitiveType.equals(Type.FLOAT_TYPE)) {
+            methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(Float.class),
+                    "valueOf", Type.getMethodDescriptor(Type.getType(Float.class), Type.FLOAT_TYPE), false);
+        } else if (primitiveType.equals(Type.DOUBLE_TYPE)) {
+            methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(Double.class),
+                    "valueOf", Type.getMethodDescriptor(Type.getType(Double.class), Type.DOUBLE_TYPE), false);
+        } else {
+            throw new IllegalStateException("Unknown primitive type %s.".formatted(primitiveType));
+        }
+    }
+
+    public static void loadTypeClass(Class<?> type, MethodVisitor methodVisitor) {
+        loadTypeClass(Type.getType(type), methodVisitor);
+    }
+
+    public static void loadTypeClass(Type type, MethodVisitor methodVisitor) {
+        if (type.equals(Type.BOOLEAN_TYPE)) {
+            methodVisitor.visitLdcInsn(Type.getType(Boolean.class));
+        } else if (type.equals(Type.BYTE_TYPE)) {
+            methodVisitor.visitLdcInsn(Type.getType(Byte.class));
+        } else if (type.equals(Type.CHAR_TYPE)) {
+            methodVisitor.visitLdcInsn(Type.getType(Character.class));
+        } else if (type.equals(Type.SHORT_TYPE)) {
+            methodVisitor.visitLdcInsn(Type.getType(Short.class));
+        } else if (type.equals(Type.INT_TYPE)) {
+            methodVisitor.visitLdcInsn(Type.getType(Integer.class));
+        } else if (type.equals(Type.LONG_TYPE)) {
+            methodVisitor.visitLdcInsn(Type.getType(Long.class));
+        } else if (type.equals(Type.FLOAT_TYPE)) {
+            methodVisitor.visitLdcInsn(Type.getType(Float.class));
+        } else if (type.equals(Type.DOUBLE_TYPE)) {
+            methodVisitor.visitLdcInsn(Type.getType(Double.class));
+        } else {
+            methodVisitor.visitLdcInsn(type);
+        }
+    }
+
     private record ReturnValueOpDescriptor(
             String wrapperClassName,
             String methodName,

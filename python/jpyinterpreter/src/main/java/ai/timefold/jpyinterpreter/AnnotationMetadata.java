@@ -8,13 +8,17 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
-public record AnnotationMetadata(Class<? extends Annotation> annotationType, Map<String, Object> annotationValueMap) {
+public record AnnotationMetadata(@NonNull Class<? extends Annotation> annotationType,
+        @NonNull Map<String, Object> annotationValueMap,
+        @Nullable Class<?> fieldTypeOverride) {
     public void addAnnotationTo(ClassVisitor classVisitor) {
         visitAnnotation(classVisitor.visitAnnotation(Type.getDescriptor(annotationType), true));
     }
@@ -30,6 +34,7 @@ public record AnnotationMetadata(Class<? extends Annotation> annotationType, Map
     public static List<AnnotationMetadata> getAnnotationListWithoutRepeatable(List<AnnotationMetadata> metadata) {
         List<AnnotationMetadata> out = new ArrayList<>();
         Map<Class<? extends Annotation>, List<AnnotationMetadata>> repeatableAnnotationMap = new LinkedHashMap<>();
+        Map<Class<? extends Annotation>, Class<?>> fieldTypeOverrideMap = new LinkedHashMap<>();
         for (AnnotationMetadata annotation : metadata) {
             Repeatable repeatable = annotation.annotationType().getAnnotation(Repeatable.class);
             if (repeatable == null) {
@@ -37,12 +42,14 @@ public record AnnotationMetadata(Class<? extends Annotation> annotationType, Map
                 continue;
             }
             var annotationContainer = repeatable.value();
+            fieldTypeOverrideMap.put(annotationContainer, annotation.fieldTypeOverride());
             repeatableAnnotationMap.computeIfAbsent(annotationContainer,
                     ignored -> new ArrayList<>()).add(annotation);
         }
         for (var entry : repeatableAnnotationMap.entrySet()) {
             out.add(new AnnotationMetadata(entry.getKey(),
-                    Map.of("value", entry.getValue().toArray(AnnotationMetadata[]::new))));
+                    Map.of("value", entry.getValue().toArray(AnnotationMetadata[]::new)),
+                    fieldTypeOverrideMap.get(entry.getKey())));
         }
         return out;
     }

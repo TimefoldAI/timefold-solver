@@ -18,6 +18,7 @@ class AnnotationValueSupplier:
 class JavaAnnotation:
     annotation_type: JClass
     annotation_values: Dict[str, Any]
+    field_type_override: JClass | None = None
 
     def __hash__(self):
         return 0
@@ -191,7 +192,11 @@ def convert_java_annotation(java_annotation: JavaAnnotation):
                                                         attribute_name, attribute_value)
         if java_attribute_value is not None:
             annotation_values.put(attribute_name, java_attribute_value)
-    return AnnotationMetadata(java_annotation.annotation_type.class_, annotation_values)
+
+    field_type_override = (java_annotation.field_type_override.class_
+                           if java_annotation.field_type_override is not None
+                           else None)
+    return AnnotationMetadata(java_annotation.annotation_type.class_, annotation_values, field_type_override)
 
 
 def convert_annotation_value(annotation_type: JClass, attribute_type: JClass, attribute_name: str, attribute_value: Any):

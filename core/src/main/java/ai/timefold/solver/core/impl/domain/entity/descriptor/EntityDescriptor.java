@@ -518,7 +518,8 @@ public class EntityDescriptor<Solution_> {
             case 0 -> effectivePlanningPinToIndexReader = null;
             case 1 -> {
                 var memberAccessor = planningPinIndexMemberAccessorList.get(0);
-                effectivePlanningPinToIndexReader = (solution, entity) -> (int) memberAccessor.executeGetter(entity);
+                effectivePlanningPinToIndexReader =
+                        (solution, entity) -> (int) memberAccessor.executeGetter(entity);
             }
             default -> throw new IllegalStateException(
                     "The entityClass (%s) has (%d) @%s-annotated members (%s), where it should only have one."
