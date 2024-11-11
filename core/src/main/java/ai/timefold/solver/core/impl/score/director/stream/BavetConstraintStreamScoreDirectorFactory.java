@@ -1,14 +1,10 @@
 package ai.timefold.solver.core.impl.score.director.stream;
 
-import static ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType.BAVET;
-
 import java.util.Arrays;
-import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
@@ -28,12 +24,6 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
     public static <Solution_, Score_ extends Score<Score_>> BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>
             buildScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor, ScoreDirectorFactoryConfig config,
                     EnvironmentMode environmentMode) {
-        var constraintStreamImplType_ =
-                Objects.requireNonNullElse(config.getConstraintStreamImplType(), ConstraintStreamImplType.BAVET);
-        if (constraintStreamImplType_ != BAVET) {
-            throw new IllegalStateException("The constraintStreamImplType (%s) is not supported."
-                    .formatted(constraintStreamImplType_));
-        }
         if (!ConstraintProvider.class.isAssignableFrom(config.getConstraintProviderClass())) {
             throw new IllegalArgumentException(
                     "The constraintProviderClass (%s) does not implement %s."

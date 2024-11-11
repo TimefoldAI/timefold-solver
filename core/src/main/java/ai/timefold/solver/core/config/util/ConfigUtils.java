@@ -78,15 +78,16 @@ public class ConfigUtils {
      * @param <T> the new instance type
      * @return new instance of clazz
      */
-    public static <T> @NonNull T newInstance(Supplier<String> ownerDescriptor, String propertyName, Class<T> clazz) {
+    public static <T> @NonNull T newInstance(@NonNull Supplier<String> ownerDescriptor, @NonNull String propertyName,
+            @NonNull Class<T> clazz) {
         try {
             return clazz.getDeclaredConstructor().newInstance();
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new IllegalArgumentException("The " + ownerDescriptor.get() + "'s " + propertyName + " ("
-                    + clazz.getName() + ") does not have a public no-arg constructor"
-                    // Inner classes include local, anonymous and non-static member classes
-                    + ((clazz.isLocalClass() || clazz.isAnonymousClass() || clazz.isMemberClass())
-                            && !Modifier.isStatic(clazz.getModifiers()) ? " because it is an inner class." : "."),
+            // Inner classes include local, anonymous and non-static member classes
+            throw new IllegalArgumentException("The %s's %s (%s) does not have a public no-arg constructor%s"
+                    .formatted(ownerDescriptor.get(), propertyName, clazz.getName(),
+                            ((clazz.isLocalClass() || clazz.isAnonymousClass() || clazz.isMemberClass())
+                                    && !Modifier.isStatic(clazz.getModifiers()) ? " because it is an inner class." : ".")),
                     e);
         }
     }
@@ -553,12 +554,12 @@ public class ConfigUtils {
     }
 
     public static @NonNull String abbreviate(@Nullable List<@Nullable String> list, int limit) {
-        var abbreviation = "";
-        if (list != null) {
-            abbreviation = list.stream().limit(limit).collect(Collectors.joining(", "));
-            if (list.size() > limit) {
-                abbreviation += ", ...";
-            }
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        var abbreviation = list.stream().limit(limit).collect(Collectors.joining(", "));
+        if (list.size() > limit) {
+            abbreviation += ", ...";
         }
         return abbreviation;
     }

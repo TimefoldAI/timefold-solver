@@ -1,6 +1,5 @@
 <solver>
   <scoreDirectorFactory>
-    <constraintStreamImplType>BAVET</constraintStreamImplType>
     <constraintProviderClass>ai.timefold.solver.benchmark.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider</constraintProviderClass>
   </scoreDirectorFactory>
   <termination>

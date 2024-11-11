@@ -247,17 +247,6 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                     assertThat(solver1).isNotNull();
                     assertThat(solver2).isNotNull();
                 });
-        contextRunner
-                .withPropertyValues("timefold.solver.solver1.constraint-stream-impl-type=BAVET")
-                .withPropertyValues("timefold.solver.solver2.constraint-stream-impl-type=DROOLS")
-                .run(context -> {
-                    SolverManager<TestdataSpringSolution, Long> solver1 =
-                            (SolverManager<TestdataSpringSolution, Long>) context.getBean("solver1");
-                    SolverManager<TestdataSpringSolution, Long> solver2 =
-                            (SolverManager<TestdataSpringSolution, Long>) context.getBean("solver2");
-                    assertThat(solver1).isNotNull();
-                    assertThat(solver2).isNotNull();
-                });
     }
 
     @Test

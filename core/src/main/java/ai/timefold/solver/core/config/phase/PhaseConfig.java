@@ -33,7 +33,7 @@ public abstract class PhaseConfig<Config_ extends PhaseConfig<Config_>> extends 
     // and also because the input config file should match the output config file
 
     @XmlElement(name = "termination")
-    private TerminationConfig terminationConfig = null;
+    protected TerminationConfig terminationConfig = null;
 
     // ************************************************************************
     // Constructors and simple getters/setters

@@ -1,7 +1,5 @@
 package ai.timefold.solver.test.impl.score.stream;
 
-import static java.util.Objects.requireNonNull;
-
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 
@@ -32,24 +30,10 @@ public final class DefaultConstraintVerifier<ConstraintProvider_ extends Constra
      */
     private final AtomicReference<ConfiguredConstraintVerifier<ConstraintProvider_, Solution_, Score_>> configuredConstraintVerifierRef =
             new AtomicReference<>();
-    private final AtomicReference<ConstraintStreamImplType> constraintStreamImplTypeRef = new AtomicReference<>();
 
     public DefaultConstraintVerifier(ConstraintProvider_ constraintProvider, SolutionDescriptor<Solution_> solutionDescriptor) {
         this.constraintProvider = constraintProvider;
         this.solutionDescriptor = solutionDescriptor;
-    }
-
-    public ConstraintStreamImplType getConstraintStreamImplType() {
-        return constraintStreamImplTypeRef.get();
-    }
-
-    @Override
-    public @NonNull ConstraintVerifier<ConstraintProvider_, Solution_> withConstraintStreamImplType(
-            @NonNull ConstraintStreamImplType constraintStreamImplType) {
-        requireNonNull(constraintStreamImplType);
-        this.constraintStreamImplTypeRef.set(constraintStreamImplType);
-        this.configuredConstraintVerifierRef.set(null);
-        return this;
     }
 
     // ************************************************************************
@@ -65,8 +49,7 @@ public final class DefaultConstraintVerifier<ConstraintProvider_ extends Constra
     private ConfiguredConstraintVerifier<ConstraintProvider_, Solution_, Score_> getOrCreateConfiguredConstraintVerifier() {
         return configuredConstraintVerifierRef.updateAndGet(v -> {
             if (v == null) {
-                return new ConfiguredConstraintVerifier<>(constraintProvider, solutionDescriptor,
-                        getConstraintStreamImplType());
+                return new ConfiguredConstraintVerifier<>(constraintProvider, solutionDescriptor);
             }
             return v;
         });

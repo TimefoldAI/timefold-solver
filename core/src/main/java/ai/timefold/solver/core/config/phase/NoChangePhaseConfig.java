@@ -21,8 +21,8 @@ public class NoChangePhaseConfig extends PhaseConfig<NoChangePhaseConfig> {
 
     @Override
     public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
-        if (getTerminationConfig() != null) {
-            getTerminationConfig().visitReferencedClasses(classVisitor);
+        if (terminationConfig != null) {
+            terminationConfig.visitReferencedClasses(classVisitor);
         }
     }
 
