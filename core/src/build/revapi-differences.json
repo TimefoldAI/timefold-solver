@@ -80,6 +80,17 @@
           "old": "method Score_ ai.timefold.solver.core.api.score.constraint.ConstraintMatch<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::getScore()",
           "new": "method Score_ ai.timefold.solver.core.api.score.constraint.ConstraintMatch<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::getScore()",
           "justification": "False positive after addition of @NonNull annotation"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.solver.termination.TerminationConfig",
+          "new": "class ai.timefold.solver.core.config.solver.termination.TerminationConfig",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"terminationClass\", \"terminationCompositionStyle\", \"spentLimit\", \"millisecondsSpentLimit\", \"secondsSpentLimit\", \"minutesSpentLimit\", \"hoursSpentLimit\", \"daysSpentLimit\", \"unimprovedSpentLimit\", \"unimprovedMillisecondsSpentLimit\", \"unimprovedSecondsSpentLimit\", \"unimprovedMinutesSpentLimit\", \"unimprovedHoursSpentLimit\", \"unimprovedDaysSpentLimit\", \"unimprovedScoreDifferenceThreshold\", \"bestScoreLimit\", \"bestScoreFeasible\", \"stepCountLimit\", \"unimprovedStepCountLimit\", \"scoreCalculationCountLimit\", \"terminationConfigList\"}",
+          "newValue": "{\"terminationClass\", \"terminationCompositionStyle\", \"spentLimit\", \"millisecondsSpentLimit\", \"secondsSpentLimit\", \"minutesSpentLimit\", \"hoursSpentLimit\", \"daysSpentLimit\", \"unimprovedSpentLimit\", \"unimprovedMillisecondsSpentLimit\", \"unimprovedSecondsSpentLimit\", \"unimprovedMinutesSpentLimit\", \"unimprovedHoursSpentLimit\", \"unimprovedDaysSpentLimit\", \"unimprovedScoreDifferenceThreshold\", \"bestScoreLimit\", \"bestScoreFeasible\", \"stepCountLimit\", \"unimprovedStepCountLimit\", \"scoreCalculationCountLimit\", \"moveCountLimit\", \"unimprovedBestSolutionLimit\", \"terminationConfigList\"}",
+          "justification": "Add new termination config"
         }
       ]
     }

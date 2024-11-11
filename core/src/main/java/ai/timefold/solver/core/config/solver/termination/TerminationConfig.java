@@ -39,6 +39,7 @@ import org.jspecify.annotations.Nullable;
         "unimprovedStepCountLimit",
         "scoreCalculationCountLimit",
         "moveCountLimit",
+        "unimprovedBestSolutionLimit",
         "terminationConfigList"
 })
 public class TerminationConfig extends AbstractConfig<TerminationConfig> {
@@ -77,6 +78,8 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
     private Long scoreCalculationCountLimit = null;
 
     private Long moveCountLimit = null;
+
+    private Double unimprovedBestSolutionLimit = null;
 
     @XmlElement(name = "termination")
     private List<TerminationConfig> terminationConfigList = null;
@@ -257,6 +260,14 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         this.moveCountLimit = moveCountLimit;
     }
 
+    public  @Nullable Double getUnimprovedBestSolutionLimit() {
+        return unimprovedBestSolutionLimit;
+    }
+
+    public void setUnimprovedBestSolutionLimit( @Nullable Double unimprovedBestSolutionLimit) {
+        this.unimprovedBestSolutionLimit = unimprovedBestSolutionLimit;
+    }
+
     public @Nullable List<@NonNull TerminationConfig> getTerminationConfigList() {
         return terminationConfigList;
     }
@@ -380,6 +391,11 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         return this;
     }
 
+    public @NonNull TerminationConfig withUnimprovedBestSolutionLimit(@NonNull Double unimprovedBestSolutionLimit) {
+        this.unimprovedBestSolutionLimit = unimprovedBestSolutionLimit;
+        return this;
+    }
+
     public @NonNull TerminationConfig
             withTerminationConfigList(@NonNull List<@NonNull TerminationConfig> terminationConfigList) {
         this.terminationConfigList = terminationConfigList;
@@ -489,6 +505,7 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
                 unimprovedStepCountLimit != null ||
                 scoreCalculationCountLimit != null ||
                 moveCountLimit != null ||
+                unimprovedBestSolutionLimit != null ||
                 isTerminationListConfigured();
     }
 
@@ -529,6 +546,8 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
                 inheritedConfig.getScoreCalculationCountLimit());
         moveCountLimit = ConfigUtils.inheritOverwritableProperty(moveCountLimit,
                 inheritedConfig.getMoveCountLimit());
+        unimprovedBestSolutionLimit = ConfigUtils.inheritOverwritableProperty(unimprovedBestSolutionLimit,
+                inheritedConfig.getUnimprovedBestSolutionLimit());
         terminationConfigList = ConfigUtils.inheritMergeableListConfig(
                 terminationConfigList, inheritedConfig.getTerminationConfigList());
         return this;

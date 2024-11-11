@@ -565,6 +565,58 @@ Terminates as soon as a feasible solution has been discovered.
 
 This `Termination` is usually combined with other terminations.
 
+[#unimprovedBestSolutionTermination]
+==== `UnimprovedBestSolutionTermination`
+
+`UnimprovedBestSolutionTermination` terminates when the solver cannot improve the best solution in an estimated time interval.
+The estimation of the termination interval is based on the last time
+the solver improved the solution and how much time has passed without any improvements.
+
+[source,xml,options="nowrap"]
+----
+  <termination>
+    <unimprovedBestSolutionLimit>0.5</unimprovedBestSolutionLimit>
+  </termination>
+----
+
+Let's consider a solution process based on the following image.
+
+image::optimization-algorithms/overview/terminationGrowthCurve.png[align="center"]
+
+In the previous image, the estimated unimproved time is represented by the flat red line.
+With a configuration for `unimprovedBestSolutionLimit` set to `0.5`,
+and considering that the last best score was achieved at `10 seconds`,
+the solver will terminate the process if no improvement is found within a maximum of 10 seconds.
+This `10-seconds` limit is calculated
+by multiplying the estimated total time (`20 seconds`) by the `unimprovedBestSolutionLimit` (`0.5`).
+
+
+[NOTE]
+====
+This `Termination` configuration includes some built-in properties:
+
+* The `Termination` process requires the growth curve to last at least `10 seconds`,
+meaning that the solver will not finish until approximately `10 seconds` after the growth curve evaluation begins.
+* The estimated time is determined by the speed of move evaluation.
+As the evaluation speed changes during the solving process,
+the conditions for ending the solver will also be adjusted.
+This means that the flat line may appear longer when analyzing a growth curve chart.
+====
+
+Now, let's discuss the problem-solving process involving multiple growth curves:
+
+image::optimization-algorithms/overview/terminationMultipleGrowthCurve.png[align="center"]
+
+The termination process will track the solver's progress to identify various growth curves.
+Each time a new curve is identified, the newly identified curve is used to trigger the termination process.
+This means
+that the previously explained interval calculation will only consider the last curve rather than the entire flow.
+
+The previous chart displays a red line that is smaller than the size needed to trigger termination,
+but it is still significant enough to indicate the beginning of a new curve.
+The termination threshold is calculated as `80%` of the size of the flat line that would end the solving process.
+
+This `Termination` is usually combined with other terminations.
 
 [#stepCountTermination]
 ==== `StepCountTermination`

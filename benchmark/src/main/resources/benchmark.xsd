@@ -587,6 +587,9 @@
           <xs:element minOccurs="0" name="moveCountLimit" type="xs:long"/>
                               
           
+          <xs:element minOccurs="0" name="unimprovedBestSolutionLimit" type="xs:double"/>
+                              
+          
           <xs:element maxOccurs="unbounded" minOccurs="0" name="termination" type="tns:terminationConfig"/>
                             
         
