@@ -4,9 +4,10 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
+import ai.timefold.solver.core.impl.bavet.tri.ConditionalTriTupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TriTuple;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
 
 final class BavetFilterTriConstraintStream<Solution_, A, B, C>
         extends BavetAbstractTriConstraintStream<Solution_, A, B, C> {
@@ -28,7 +29,7 @@ final class BavetFilterTriConstraintStream<Solution_, A, B, C>
     // ************************************************************************
 
     @Override
-    public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
+    public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         buildHelper.<TriTuple<A, B, C>> putInsertUpdateRetract(this, childStreamList,
                 tupleLifecycle -> new ConditionalTriTupleLifecycle<>(predicate, tupleLifecycle));
     }

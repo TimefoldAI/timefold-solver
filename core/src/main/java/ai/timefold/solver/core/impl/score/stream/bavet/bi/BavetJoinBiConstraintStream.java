@@ -5,15 +5,17 @@ import java.util.Set;
 import java.util.function.BiPredicate;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.bavet.bi.IndexedJoinBiNode;
+import ai.timefold.solver.core.impl.bavet.bi.UnindexedJoinBiNode;
+import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
+import ai.timefold.solver.core.impl.bavet.common.index.joiner.DefaultBiJoiner;
+import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetJoinConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.BiTuple;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
-import ai.timefold.solver.core.impl.score.stream.common.bi.DefaultBiJoiner;
 
 public final class BavetJoinBiConstraintStream<Solution_, A, B> extends BavetAbstractBiConstraintStream<Solution_, A, B>
         implements BavetJoinConstraintStream<Solution_> {
@@ -51,7 +53,7 @@ public final class BavetJoinBiConstraintStream<Solution_, A, B> extends BavetAbs
     }
 
     @Override
-    public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
+    public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         int outputStoreSize = buildHelper.extractTupleStoreSize(this);
         TupleLifecycle<BiTuple<A, B>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         IndexerFactory<B> indexerFactory = new IndexerFactory<>(joiner);

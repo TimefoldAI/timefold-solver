@@ -8,6 +8,7 @@ import java.util.Set;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.impl.bavet.common.TupleSource;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraint;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStream;
@@ -109,7 +110,7 @@ public abstract class BavetAbstractConstraintStream<Solution_> extends AbstractC
         return parent.getTupleSource();
     }
 
-    public abstract <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper);
+    public abstract <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper);
 
     // ************************************************************************
     // Helper methods
@@ -135,6 +136,7 @@ public abstract class BavetAbstractConstraintStream<Solution_> extends AbstractC
      * @return null for join/ifExists nodes, which have left and right parents instead;
      *         also null for forEach node, which has no parent.
      */
+    @Override
     public final BavetAbstractConstraintStream<Solution_> getParent() {
         return parent;
     }
