@@ -31,7 +31,7 @@ public final class UnimprovedBestSolutionTermination<Solution_> extends Abstract
     private Score<?> previousBest;
     protected Score<?> currentBest;
     protected boolean waitForFirstBestScore;
-    protected Boolean cachedResult;
+    protected Boolean terminate;
 
     public UnimprovedBestSolutionTermination(double unimprovedBestSolutionLimit) {
         this.maxUnimprovedBestSolutionLimit = unimprovedBestSolutionLimit;
@@ -61,13 +61,13 @@ public final class UnimprovedBestSolutionTermination<Solution_> extends Abstract
         currentBest = phaseScope.getBestScore();
         previousBest = currentBest;
         waitForFirstBestScore = true;
-        cachedResult = null;
+        terminate = null;
     }
 
     @Override
     public void stepStarted(AbstractStepScope<Solution_> stepScope) {
         super.stepStarted(stepScope);
-        cachedResult = null;
+        terminate = null;
     }
 
     @Override
@@ -91,8 +91,8 @@ public final class UnimprovedBestSolutionTermination<Solution_> extends Abstract
 
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
-        if (cachedResult != null) {
-            return cachedResult;
+        if (terminate != null) {
+            return terminate;
         }
         // Validate if there is a first best solution and the poll time
         if (waitForFirstBestScore) {
@@ -121,16 +121,22 @@ public final class UnimprovedBestSolutionTermination<Solution_> extends Abstract
             }
             lastImprovementMoveCount = currentMoveCount;
             currentBest = phaseScope.getBestScore();
-            cachedResult = false;
+            terminate = null;
+            return false;
         } else {
             if (interval < MINIMAL_INTERVAL_TIME) {
                 return false;
             }
             var maxInterval = Math.floor(interval * maxUnimprovedBestSolutionLimit);
             var newInterval = calculateInterval(lastImprovementMoveCount, currentMoveCount);
-            cachedResult = newInterval > maxInterval;
+            if (newInterval > maxInterval) {
+                terminate = true;
+                return true;
+            } else {
+                terminate = null;
+                return false;
+            }
         }
-        return cachedResult;
     }
 
     // ************************************************************************

@@ -33,7 +33,7 @@ class UnimprovedBestSolutionTerminationTest {
         assertThat(termination.isPhaseTerminated(phaseScope)).isTrue();
 
         // Second curve
-        termination.cachedResult = null;
+        termination.terminate = null;
         termination.currentBest = SimpleScore.of(2);
         termination.initialImprovementMoveCount = 10L;
         termination.lastImprovementMoveCount = 15L;
@@ -62,7 +62,7 @@ class UnimprovedBestSolutionTerminationTest {
         assertThat(termination.initialImprovementMoveCount).isEqualTo(11L);
 
         // Not adding a new curve - flat line smaller than the minimum
-        termination.cachedResult = null;
+        termination.terminate = null;
         termination.currentBest = SimpleScore.of(1);
         termination.initialImprovementMoveCount = 0L;
         termination.lastImprovementMoveCount = 11L;
@@ -72,7 +72,7 @@ class UnimprovedBestSolutionTerminationTest {
         assertThat(termination.initialImprovementMoveCount).isZero();
 
         // Not adding a new curve - flat line larger than the minimum
-        termination.cachedResult = null;
+        termination.terminate = null;
         termination.currentBest = SimpleScore.of(1);
         termination.initialImprovementMoveCount = 0L;
         termination.lastImprovementMoveCount = 11L;
@@ -97,7 +97,7 @@ class UnimprovedBestSolutionTerminationTest {
         when(solverScope.getMoveEvaluationCount()).thenReturn(UnimprovedBestSolutionTermination.MINIMAL_INTERVAL_TIME - 1);
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
 
-        termination.cachedResult = null;
+        termination.terminate = null;
         when(solverScope.getMoveEvaluationCount()).thenReturn(UnimprovedBestSolutionTermination.MINIMAL_INTERVAL_TIME + 1);
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
     }
