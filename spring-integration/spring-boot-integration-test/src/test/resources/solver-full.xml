@@ -26,7 +26,6 @@
       <!--Zero or more repetitions:-->
       <property name="string" value="string"/>
     </constraintProviderCustomProperties>
-    <constraintStreamImplType>DROOLS</constraintStreamImplType>
     <incrementalScoreCalculatorClass>java.lang.Object</incrementalScoreCalculatorClass>
     <incrementalScoreCalculatorCustomProperties>
       <!--Zero or more repetitions:-->

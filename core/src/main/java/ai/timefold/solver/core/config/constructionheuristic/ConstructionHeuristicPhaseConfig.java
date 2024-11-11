@@ -195,8 +195,8 @@ public class ConstructionHeuristicPhaseConfig extends PhaseConfig<ConstructionHe
 
     @Override
     public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
-        if (getTerminationConfig() != null) {
-            getTerminationConfig().visitReferencedClasses(classVisitor);
+        if (terminationConfig != null) {
+            terminationConfig.visitReferencedClasses(classVisitor);
         }
         if (entityPlacerConfig != null) {
             entityPlacerConfig.visitReferencedClasses(classVisitor);

@@ -168,8 +168,8 @@ public class PartitionedSearchPhaseConfig extends PhaseConfig<PartitionedSearchP
 
     @Override
     public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
-        if (getTerminationConfig() != null) {
-            getTerminationConfig().visitReferencedClasses(classVisitor);
+        if (terminationConfig != null) {
+            terminationConfig.visitReferencedClasses(classVisitor);
         }
         classVisitor.accept(solutionPartitionerClass);
         if (phaseConfigList != null) {

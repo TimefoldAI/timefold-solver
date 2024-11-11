@@ -216,6 +216,7 @@ class ConfigUtilsTest {
                 .withMessageContaining("inner class");
     }
 
+    @SuppressWarnings("InnerClassMayBeStatic")
     public class NonStaticInnerClass {
     }
 
@@ -269,7 +270,7 @@ class ConfigUtilsTest {
     public static class ClassWithSyntheticFieldParent {
         int x;
 
-        public class ClassWithSyntheticField {
+        public static class ClassWithSyntheticField {
             @PlanningScore
             int y;
         }

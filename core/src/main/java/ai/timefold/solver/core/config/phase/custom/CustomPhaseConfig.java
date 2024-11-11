@@ -126,8 +126,8 @@ public class CustomPhaseConfig extends PhaseConfig<CustomPhaseConfig> {
 
     @Override
     public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
-        if (getTerminationConfig() != null) {
-            getTerminationConfig().visitReferencedClasses(classVisitor);
+        if (terminationConfig != null) {
+            terminationConfig.visitReferencedClasses(classVisitor);
         }
         if (customPhaseCommandClassList != null) {
             customPhaseCommandClassList.forEach(classVisitor);

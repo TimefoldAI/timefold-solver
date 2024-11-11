@@ -593,16 +593,15 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
      *         or all of its phases have a termination configured
      */
     public boolean canTerminate() {
-        if (terminationConfig == null || !terminationConfig.isConfigured()) {
-            if (getPhaseConfigList() == null) {
-                return true;
-            } else {
-                return getPhaseConfigList().stream()
-                        .allMatch(PhaseFactory::canTerminate);
-            }
-        } else {
-            return terminationConfig.isConfigured();
+        if (terminationConfig != null && terminationConfig.isConfigured()) {
+            return true;
         }
+        var configList = getPhaseConfigList();
+        if (configList == null) {
+            return true;
+        }
+        return configList.stream()
+                .allMatch(PhaseFactory::canTerminate);
     }
 
     public @NonNull EnvironmentMode determineEnvironmentMode() {

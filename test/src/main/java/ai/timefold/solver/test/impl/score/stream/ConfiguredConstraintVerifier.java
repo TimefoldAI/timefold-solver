@@ -10,7 +10,6 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
@@ -44,18 +43,11 @@ final class ConfiguredConstraintVerifier<ConstraintProvider_ extends ConstraintP
     @SuppressWarnings("java:S5164") // Suppress SonarCloud warning; this is safe in the context of tests.
     private final ThreadLocal<ScoreDirectorFactoryCache<ConstraintProvider_, Solution_, Score_>> scoreDirectorFactoryContainerThreadLocal;
 
-    private final ConstraintStreamImplType constraintStreamImplType;
-
     public ConfiguredConstraintVerifier(ConstraintProvider_ constraintProvider,
-            SolutionDescriptor<Solution_> solutionDescriptor, ConstraintStreamImplType constraintStreamImplType) {
+            SolutionDescriptor<Solution_> solutionDescriptor) {
         this.constraintProvider = constraintProvider;
         this.scoreDirectorFactoryContainerThreadLocal =
                 ThreadLocal.withInitial(() -> new ScoreDirectorFactoryCache<>(solutionDescriptor));
-        this.constraintStreamImplType = constraintStreamImplType;
-    }
-
-    public ConstraintStreamImplType getConstraintStreamImplType() {
-        return constraintStreamImplType;
     }
 
     public DefaultSingleConstraintVerification<Solution_, Score_> verifyThat(

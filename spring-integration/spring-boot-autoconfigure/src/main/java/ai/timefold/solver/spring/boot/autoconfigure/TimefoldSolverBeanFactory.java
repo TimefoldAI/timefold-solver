@@ -8,7 +8,6 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
@@ -159,21 +158,10 @@ public class TimefoldSolverBeanFactory implements ApplicationContextAware, Envir
             this.context = context;
         }
 
-        private static class UnsupportedConstraintVerifier<ConstraintProvider_ extends ConstraintProvider, SolutionClass_>
-                implements ConstraintVerifier<ConstraintProvider_, SolutionClass_> {
-            final String errorMessage;
-
-            public UnsupportedConstraintVerifier(String errorMessage) {
-                this.errorMessage = errorMessage;
-            }
-
-            @NonNull
-            @Override
-            public ConstraintVerifier<ConstraintProvider_, SolutionClass_>
-                    withConstraintStreamImplType(
-                            @NonNull ConstraintStreamImplType constraintStreamImplType) {
-                throw new UnsupportedOperationException(errorMessage);
-            }
+        private record UnsupportedConstraintVerifier<ConstraintProvider_ extends ConstraintProvider, SolutionClass_>(
+                String errorMessage)
+                implements
+                    ConstraintVerifier<ConstraintProvider_, SolutionClass_> {
 
             @NonNull
             @Override

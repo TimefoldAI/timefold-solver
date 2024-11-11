@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
-import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 
 import org.junit.jupiter.api.extension.Extension;
@@ -16,9 +15,8 @@ import org.junit.jupiter.api.extension.TestTemplateInvocationContext;
 import org.junit.jupiter.api.extension.TestTemplateInvocationContextProvider;
 
 /**
- * This extension helps implement parameterized {@link ConstraintStream} tests. It provides invocation contexts
- * representing the cartesian product of {true, false} ⨯ {BAVET} for a test matrix with
- * {@link ConstraintMatchPolicy} and {@link ConstraintStreamImplType} axes.
+ * This extension helps implement parameterized {@link ConstraintStream} tests.
+ * It provides invocation contexts representing test matrix with {@link ConstraintMatchPolicy} axis.
  * <p>
  * Each invocation context includes two additional extensions being {@link ParameterResolver parameter resolvers} that
  * populate the test class constructor with the test data. Since each CS test class has dozens of test methods

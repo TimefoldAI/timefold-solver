@@ -139,6 +139,7 @@ class DefaultPlannerBenchmarkFactoryTest {
         config.setWarmUpSecondsSpentLimit(5L);
         config.setWarmUpMillisecondsSpentLimit(753L);
         DefaultPlannerBenchmarkFactory benchmarkFactory = new DefaultPlannerBenchmarkFactory(config);
-        assertThat(benchmarkFactory.calculateWarmUpTimeMillisSpentLimit()).isEqualTo(3_725_753L);
+        assertThat(benchmarkFactory.calculateWarmUpTimeMillisSpentLimit(30_000L))
+                .isEqualTo(3_725_753L);
     }
 }

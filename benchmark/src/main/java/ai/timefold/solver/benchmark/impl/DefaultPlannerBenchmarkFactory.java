@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -67,8 +66,7 @@ public class DefaultPlannerBenchmarkFactory extends PlannerBenchmarkFactory {
         plannerBenchmarkResult.setAggregation(false);
         int parallelBenchmarkCount = resolveParallelBenchmarkCount();
         plannerBenchmarkResult.setParallelBenchmarkCount(parallelBenchmarkCount);
-        plannerBenchmarkResult
-                .setWarmUpTimeMillisSpentLimit(Objects.requireNonNullElse(calculateWarmUpTimeMillisSpentLimit(), 30L));
+        plannerBenchmarkResult.setWarmUpTimeMillisSpentLimit(calculateWarmUpTimeMillisSpentLimit(30L));
         plannerBenchmarkResult.setUnifiedProblemBenchmarkResultList(new ArrayList<>());
         plannerBenchmarkResult.setSolverBenchmarkResultList(new ArrayList<>(effectiveSolverBenchmarkConfigList.size()));
         for (SolverBenchmarkConfig solverBenchmarkConfig : effectiveSolverBenchmarkConfigList) {
@@ -87,34 +85,36 @@ public class DefaultPlannerBenchmarkFactory extends PlannerBenchmarkFactory {
     }
 
     private ExecutorService buildExecutorService(int parallelBenchmarkCount) {
-        ThreadFactory threadFactory;
-        if (plannerBenchmarkConfig.getThreadFactoryClass() != null) {
-            threadFactory = ConfigUtils.newInstance(plannerBenchmarkConfig, "threadFactoryClass",
-                    plannerBenchmarkConfig.getThreadFactoryClass());
+        return Executors.newFixedThreadPool(parallelBenchmarkCount, getThreadFactory());
+    }
+
+    private ThreadFactory getThreadFactory() {
+        var threadFactoryClass = plannerBenchmarkConfig.getThreadFactoryClass();
+        if (threadFactoryClass != null) {
+            return ConfigUtils.newInstance(plannerBenchmarkConfig, "threadFactoryClass", threadFactoryClass);
         } else {
-            threadFactory = new DefaultSolverThreadFactory("BenchmarkThread");
+            return new DefaultSolverThreadFactory("BenchmarkThread");
         }
-        return Executors.newFixedThreadPool(parallelBenchmarkCount, threadFactory);
     }
 
     protected void validate() {
-        if (plannerBenchmarkConfig.getName() != null) {
-            if (!VALID_NAME_PATTERN.matcher(plannerBenchmarkConfig.getName()).matches()) {
-                throw new IllegalStateException("The plannerBenchmark name (" + plannerBenchmarkConfig.getName()
-                        + ") is invalid because it does not follow the nameRegex ("
-                        + VALID_NAME_PATTERN.pattern() + ")" +
-                        " which might cause an illegal filename.");
+        var name = plannerBenchmarkConfig.getName();
+        if (name != null) {
+            if (!VALID_NAME_PATTERN.matcher(name).matches()) {
+                throw new IllegalStateException(
+                        "The plannerBenchmark name (%s) is invalid because it does not follow the nameRegex (%s) which might cause an illegal filename."
+                                .formatted(name, VALID_NAME_PATTERN.pattern()));
             }
-            if (!plannerBenchmarkConfig.getName().trim().equals(plannerBenchmarkConfig.getName())) {
-                throw new IllegalStateException("The plannerBenchmark name (" + plannerBenchmarkConfig.getName()
-                        + ") is invalid because it starts or ends with whitespace.");
+            if (!name.trim().equals(name)) {
+                throw new IllegalStateException(
+                        "The plannerBenchmark name (%s) is invalid because it starts or ends with whitespace."
+                                .formatted(name));
             }
         }
         if (ConfigUtils.isEmptyCollection(plannerBenchmarkConfig.getSolverBenchmarkBluePrintConfigList())
                 && ConfigUtils.isEmptyCollection(plannerBenchmarkConfig.getSolverBenchmarkConfigList())) {
             throw new IllegalArgumentException(
-                    "Configure at least 1 <solverBenchmark> (or 1 <solverBenchmarkBluePrint>)"
-                            + " in the <plannerBenchmark> configuration.");
+                    "Configure at least 1 <solverBenchmark> (or 1 <solverBenchmarkBluePrint>) in the <plannerBenchmark> configuration.");
         }
     }
 
@@ -168,22 +168,12 @@ public class DefaultPlannerBenchmarkFactory extends PlannerBenchmarkFactory {
     }
 
     protected int resolveParallelBenchmarkCount() {
-        int availableProcessorCount = Runtime.getRuntime().availableProcessors();
-        int resolvedParallelBenchmarkCount;
-        if (plannerBenchmarkConfig.getParallelBenchmarkCount() == null) {
-            resolvedParallelBenchmarkCount = 1;
-        } else if (plannerBenchmarkConfig.getParallelBenchmarkCount()
-                .equals(PlannerBenchmarkConfig.PARALLEL_BENCHMARK_COUNT_AUTO)) {
-            resolvedParallelBenchmarkCount = resolveParallelBenchmarkCountAutomatically(availableProcessorCount);
-        } else {
-            resolvedParallelBenchmarkCount = ConfigUtils.resolvePoolSize("parallelBenchmarkCount",
-                    plannerBenchmarkConfig.getParallelBenchmarkCount(), PlannerBenchmarkConfig.PARALLEL_BENCHMARK_COUNT_AUTO);
-        }
+        var availableProcessorCount = Runtime.getRuntime().availableProcessors();
+        var resolvedParallelBenchmarkCount = actuallyResolverParallelBenchmarkCount(availableProcessorCount);
         if (resolvedParallelBenchmarkCount < 1) {
             throw new IllegalArgumentException(
-                    "The parallelBenchmarkCount (" + plannerBenchmarkConfig.getParallelBenchmarkCount()
-                            + ") resulted in a resolvedParallelBenchmarkCount (" + resolvedParallelBenchmarkCount
-                            + ") that is lower than 1.");
+                    "The parallelBenchmarkCount (%s) resulted in a resolvedParallelBenchmarkCount (%d) that is lower than 1."
+                            .formatted(plannerBenchmarkConfig.getParallelBenchmarkCount(), resolvedParallelBenchmarkCount));
         }
         if (resolvedParallelBenchmarkCount > availableProcessorCount) {
             LOGGER.warn("Because the resolvedParallelBenchmarkCount ({}) is higher "
@@ -192,6 +182,18 @@ public class DefaultPlannerBenchmarkFactory extends PlannerBenchmarkFactory {
             resolvedParallelBenchmarkCount = availableProcessorCount;
         }
         return resolvedParallelBenchmarkCount;
+    }
+
+    private int actuallyResolverParallelBenchmarkCount(int availableProcessorCount) {
+        var parallelBenchmarkCount = plannerBenchmarkConfig.getParallelBenchmarkCount();
+        if (parallelBenchmarkCount == null) {
+            return 1;
+        } else if (parallelBenchmarkCount.equals(PlannerBenchmarkConfig.PARALLEL_BENCHMARK_COUNT_AUTO)) {
+            return resolveParallelBenchmarkCountAutomatically(availableProcessorCount);
+        } else {
+            return ConfigUtils.resolvePoolSize("parallelBenchmarkCount", parallelBenchmarkCount,
+                    PlannerBenchmarkConfig.PARALLEL_BENCHMARK_COUNT_AUTO);
+        }
     }
 
     protected int resolveParallelBenchmarkCountAutomatically(int availableProcessorCount) {
@@ -205,55 +207,33 @@ public class DefaultPlannerBenchmarkFactory extends PlannerBenchmarkFactory {
         }
     }
 
-    protected Long calculateWarmUpTimeMillisSpentLimit() {
+    protected long calculateWarmUpTimeMillisSpentLimit(long defaultWarmUpTimeMillisSpentLimit) {
         if (plannerBenchmarkConfig.getWarmUpMillisecondsSpentLimit() == null
                 && plannerBenchmarkConfig.getWarmUpSecondsSpentLimit() == null
                 && plannerBenchmarkConfig.getWarmUpMinutesSpentLimit() == null
                 && plannerBenchmarkConfig.getWarmUpHoursSpentLimit() == null
                 && plannerBenchmarkConfig.getWarmUpDaysSpentLimit() == null) {
-            return null;
+            return defaultWarmUpTimeMillisSpentLimit;
         }
-        long warmUpTimeMillisSpentLimit = 0L;
-        if (plannerBenchmarkConfig.getWarmUpMillisecondsSpentLimit() != null) {
-            if (plannerBenchmarkConfig.getWarmUpMillisecondsSpentLimit() < 0L) {
-                throw new IllegalArgumentException(
-                        "The warmUpMillisecondsSpentLimit (" + plannerBenchmarkConfig.getWarmUpMillisecondsSpentLimit()
-                                + ") cannot be negative.");
-            }
-            warmUpTimeMillisSpentLimit += plannerBenchmarkConfig.getWarmUpMillisecondsSpentLimit();
-        }
-        if (plannerBenchmarkConfig.getWarmUpSecondsSpentLimit() != null) {
-            if (plannerBenchmarkConfig.getWarmUpSecondsSpentLimit() < 0L) {
-                throw new IllegalArgumentException(
-                        "The warmUpSecondsSpentLimit (" + plannerBenchmarkConfig.getWarmUpSecondsSpentLimit()
-                                + ") cannot be negative.");
-            }
-            warmUpTimeMillisSpentLimit += plannerBenchmarkConfig.getWarmUpSecondsSpentLimit() * 1_000L;
-        }
-        if (plannerBenchmarkConfig.getWarmUpMinutesSpentLimit() != null) {
-            if (plannerBenchmarkConfig.getWarmUpMinutesSpentLimit() < 0L) {
-                throw new IllegalArgumentException(
-                        "The warmUpMinutesSpentLimit (" + plannerBenchmarkConfig.getWarmUpMinutesSpentLimit()
-                                + ") cannot be negative.");
-            }
-            warmUpTimeMillisSpentLimit += plannerBenchmarkConfig.getWarmUpMinutesSpentLimit() * 60_000L;
-        }
-        if (plannerBenchmarkConfig.getWarmUpHoursSpentLimit() != null) {
-            if (plannerBenchmarkConfig.getWarmUpHoursSpentLimit() < 0L) {
-                throw new IllegalArgumentException(
-                        "The warmUpHoursSpentLimit (" + plannerBenchmarkConfig.getWarmUpHoursSpentLimit()
-                                + ") cannot be negative.");
-            }
-            warmUpTimeMillisSpentLimit += plannerBenchmarkConfig.getWarmUpHoursSpentLimit() * 3_600_000L;
-        }
-        if (plannerBenchmarkConfig.getWarmUpDaysSpentLimit() != null) {
-            if (plannerBenchmarkConfig.getWarmUpDaysSpentLimit() < 0L) {
-                throw new IllegalArgumentException(
-                        "The warmUpDaysSpentLimit (" + plannerBenchmarkConfig.getWarmUpDaysSpentLimit()
-                                + ") cannot be negative.");
-            }
-            warmUpTimeMillisSpentLimit += plannerBenchmarkConfig.getWarmUpDaysSpentLimit() * 86_400_000L;
-        }
-        return warmUpTimeMillisSpentLimit;
+        var warmUpTimeMillisSpentLimit =
+                resolveLimit(plannerBenchmarkConfig.getWarmUpMillisecondsSpentLimit(), "warmUpMillisecondsSpentLimit");
+        warmUpTimeMillisSpentLimit +=
+                resolveLimit(plannerBenchmarkConfig.getWarmUpSecondsSpentLimit(), "warmUpSecondsSpentLimit") * 1_000L;
+        warmUpTimeMillisSpentLimit +=
+                resolveLimit(plannerBenchmarkConfig.getWarmUpMinutesSpentLimit(), "warmUpMinutesSpentLimit") * 60_000L;
+        warmUpTimeMillisSpentLimit +=
+                resolveLimit(plannerBenchmarkConfig.getWarmUpHoursSpentLimit(), "warmUpHoursSpentLimit") * 3_600_000L;
+        return warmUpTimeMillisSpentLimit
+                + resolveLimit(plannerBenchmarkConfig.getWarmUpDaysSpentLimit(), "warmUpDaysSpentLimit") * 86_400_000L;
     }
+
+    private static long resolveLimit(Long limit, String limitName) {
+        if (limit == null) {
+            return 0L;
+        } else if (limit < 0L) {
+            throw new IllegalArgumentException("The %s (%d) cannot be negative.".formatted(limitName, limit));
+        }
+        return limit;
+    }
+
 }

@@ -18,7 +18,6 @@ import ai.timefold.solver.core.api.score.ScoreManager;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
-import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverConfigOverride;
 import ai.timefold.solver.core.api.solver.SolverFactory;
@@ -61,7 +60,6 @@ import ai.timefold.solver.spring.boot.autoconfigure.normal.constraints.TestdataS
 import ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringEntity;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringSolution;
 import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
-import ai.timefold.solver.test.impl.score.stream.DefaultConstraintVerifier;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -325,12 +323,6 @@ class TimefoldSolverAutoConfigurationTest {
                     SolverConfig solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig.getDaemon()).isTrue();
                     assertThat(context.getBean(SolverFactory.class)).isNotNull();
-                });
-        contextRunner
-                .withPropertyValues("timefold.solver.constraint-stream-impl-type=BAVET")
-                .run(context -> {
-                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
-                    assertThat(solverConfig).isNotNull();
                 });
         contextRunner
                 .withPropertyValues(
@@ -667,8 +659,6 @@ class TimefoldSolverAutoConfigurationTest {
                 .run(context -> {
                     ConstraintVerifier<TestdataSpringConstraintProvider, TestdataSpringSolution> constraintVerifier =
                             context.getBean(ConstraintVerifier.class);
-                    assertThat(((DefaultConstraintVerifier) constraintVerifier).getConstraintStreamImplType())
-                            .isEqualTo(ConstraintStreamImplType.BAVET);
 
                     TestdataSpringSolution problem = new TestdataSpringSolution();
                     problem.setValueList(IntStream.range(1, 3)

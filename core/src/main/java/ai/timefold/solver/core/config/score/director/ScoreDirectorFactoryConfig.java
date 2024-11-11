@@ -100,10 +100,20 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
         this.constraintProviderCustomProperties = constraintProviderCustomProperties;
     }
 
+    /**
+     * @deprecated There is only one implementation, so this method is deprecated.
+     *             This method no longer has any effect.
+     */
+    @Deprecated(forRemoval = true, since = "1.16.0")
     public @Nullable ConstraintStreamImplType getConstraintStreamImplType() {
         return constraintStreamImplType;
     }
 
+    /**
+     * @deprecated There is only one implementation, so this method is deprecated.
+     *             This method no longer has any effect.
+     */
+    @Deprecated(forRemoval = true, since = "1.16.0")
     public void setConstraintStreamImplType(@Nullable ConstraintStreamImplType constraintStreamImplType) {
         this.constraintStreamImplType = constraintStreamImplType;
     }
@@ -201,6 +211,11 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
         return this;
     }
 
+    /**
+     * @deprecated There is only one implementation, so this method is deprecated.
+     *             This method no longer has any effect.
+     */
+    @Deprecated(forRemoval = true, since = "1.16.0")
     public @NonNull ScoreDirectorFactoryConfig
             withConstraintStreamImplType(@NonNull ConstraintStreamImplType constraintStreamImplType) {
         this.constraintStreamImplType = constraintStreamImplType;

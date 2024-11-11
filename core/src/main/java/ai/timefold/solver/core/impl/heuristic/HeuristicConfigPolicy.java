@@ -190,17 +190,10 @@ public class HeuristicConfigPolicy<Solution_> {
         if (threadFactoryClass != null) {
             return ConfigUtils.newInstance(this::toString, "threadFactoryClass", threadFactoryClass);
         } else {
-            String threadPrefix;
-            switch (childThreadType) {
-                case MOVE_THREAD:
-                    threadPrefix = "MoveThread";
-                    break;
-                case PART_THREAD:
-                    threadPrefix = "PartThread";
-                    break;
-                default:
-                    throw new IllegalStateException("Unsupported childThreadType (" + childThreadType + ").");
-            }
+            var threadPrefix = switch (childThreadType) {
+                case MOVE_THREAD -> "MoveThread";
+                case PART_THREAD -> "PartThread";
+            };
             return new DefaultSolverThreadFactory(threadPrefix);
         }
     }

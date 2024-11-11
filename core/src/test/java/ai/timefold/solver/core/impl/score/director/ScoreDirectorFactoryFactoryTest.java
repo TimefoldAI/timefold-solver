@@ -12,7 +12,6 @@ import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
@@ -93,8 +92,7 @@ class ScoreDirectorFactoryFactoryTest {
     @Test
     void constraintStreamsBavet() {
         var config = new ScoreDirectorFactoryConfig()
-                .withConstraintProviderClass(TestdataConstraintProvider.class)
-                .withConstraintStreamImplType(ConstraintStreamImplType.BAVET);
+                .withConstraintProviderClass(TestdataConstraintProvider.class);
         var scoreDirectorFactory =
                 BavetConstraintStreamScoreDirectorFactory.buildScoreDirectorFactory(TestdataSolution.buildSolutionDescriptor(),
                         config, EnvironmentMode.REPRODUCIBLE);

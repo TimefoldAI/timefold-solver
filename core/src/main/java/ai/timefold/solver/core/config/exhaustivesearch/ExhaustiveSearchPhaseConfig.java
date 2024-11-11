@@ -175,8 +175,8 @@ public class ExhaustiveSearchPhaseConfig extends PhaseConfig<ExhaustiveSearchPha
 
     @Override
     public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
-        if (getTerminationConfig() != null) {
-            getTerminationConfig().visitReferencedClasses(classVisitor);
+        if (terminationConfig != null) {
+            terminationConfig.visitReferencedClasses(classVisitor);
         }
         if (entitySelectorConfig != null) {
             entitySelectorConfig.visitReferencedClasses(classVisitor);

@@ -497,14 +497,10 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
             return false;
         }
 
-        switch (terminationCompositionStyle) {
-            case AND:
-                return terminationConfigList.stream().allMatch(TerminationConfig::isConfigured);
-            case OR:
-                return terminationConfigList.stream().anyMatch(TerminationConfig::isConfigured);
-            default:
-                throw new IllegalStateException("Unhandled case (" + terminationCompositionStyle + ").");
-        }
+        return switch (terminationCompositionStyle) {
+            case AND -> terminationConfigList.stream().allMatch(TerminationConfig::isConfigured);
+            case OR -> terminationConfigList.stream().anyMatch(TerminationConfig::isConfigured);
+        };
     }
 
     @Override
