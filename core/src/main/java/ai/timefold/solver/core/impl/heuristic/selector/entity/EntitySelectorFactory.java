@@ -2,8 +2,8 @@ package ai.timefold.solver.core.impl.heuristic.selector.entity;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -44,6 +44,7 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
 
     public EntityDescriptor<Solution_> extractEntityDescriptor(HeuristicConfigPolicy<Solution_> configPolicy) {
         var entityClass = config.getEntityClass();
+        var mimicSelectorRef = config.getMimicSelectorRef();
         if (entityClass != null) {
             var solutionDescriptor = configPolicy.getSolutionDescriptor();
             var entityDescriptor = solutionDescriptor.getEntityDescriptorStrict(entityClass);
@@ -56,8 +57,8 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
                                 solutionDescriptor.getEntityClassSet(), PlanningSolution.class.getSimpleName()));
             }
             return entityDescriptor;
-        } else if (config.getMimicSelectorRef() != null) {
-            return configPolicy.getEntityMimicRecorder(config.getMimicSelectorRef()).getEntityDescriptor();
+        } else if (mimicSelectorRef != null) {
+            return configPolicy.getEntityMimicRecorder(mimicSelectorRef).getEntityDescriptor();
         } else {
             return null;
         }
@@ -118,15 +119,15 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
                         config.getSorterClass(), config.getProbabilityWeightFactoryClass(), config.getSelectedCountLimit())
                 .anyMatch(Objects::nonNull);
         if (anyConfigurationParameterDefined) {
-            throw new IllegalArgumentException("The entitySelectorConfig (" + config
-                    + ") with mimicSelectorRef (" + config.getMimicSelectorRef()
-                    + ") has another property that is not null.");
+            throw new IllegalArgumentException(
+                    "The entitySelectorConfig (%s) with mimicSelectorRef (%s) has another property that is not null."
+                            .formatted(config, config.getMimicSelectorRef()));
         }
         var entityMimicRecorder = configPolicy.getEntityMimicRecorder(config.getMimicSelectorRef());
         if (entityMimicRecorder == null) {
-            throw new IllegalArgumentException("The entitySelectorConfig (" + config
-                    + ") has a mimicSelectorRef (" + config.getMimicSelectorRef()
-                    + ") for which no entitySelector with that id exists (in its solver phase).");
+            throw new IllegalArgumentException(
+                    "The entitySelectorConfig (%s) has a mimicSelectorRef (%s) for which no entitySelector with that id exists (in its solver phase)."
+                            .formatted(config, config.getMimicSelectorRef()));
         }
         return new MimicReplayingEntitySelector<>(entityMimicRecorder);
     }
@@ -134,8 +135,7 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
     protected boolean determineBaseRandomSelection(EntityDescriptor<Solution_> entityDescriptor,
             SelectionCacheType resolvedCacheType, SelectionOrder resolvedSelectionOrder) {
         return switch (resolvedSelectionOrder) {
-            case ORIGINAL -> false;
-            case SORTED, SHUFFLED, PROBABILISTIC ->
+            case ORIGINAL, SORTED, SHUFFLED, PROBABILISTIC ->
                 // baseValueSelector and lower should be ORIGINAL if they are going to get cached completely
                 false;
             case RANDOM ->
@@ -156,8 +156,8 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
         if (minimumCacheType == SelectionCacheType.SOLVER) {
             // TODO Solver cached entities are not compatible with ConstraintStreams and IncrementalScoreDirector
             // because between phases the entities get cloned
-            throw new IllegalArgumentException("The minimumCacheType (" + minimumCacheType
-                    + ") is not yet supported. Please use " + SelectionCacheType.PHASE + " instead.");
+            throw new IllegalArgumentException("The minimumCacheType (%s) is not supported here. Please use %s instead."
+                    .formatted(minimumCacheType, SelectionCacheType.PHASE));
         }
         // FromSolutionEntitySelector has an intrinsicCacheType STEP
         return new FromSolutionEntitySelector<>(entityDescriptor, minimumCacheType, randomSelection);
@@ -179,10 +179,11 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
             ClassInstanceCache instanceCache) {
         var entityDescriptor = entitySelector.getEntityDescriptor();
         if (hasFiltering(entityDescriptor)) {
-            List<SelectionFilter<Solution_, Object>> filterList = new ArrayList<>(config.getFilterClass() == null ? 1 : 2);
-            if (config.getFilterClass() != null) {
+            var filterClass = config.getFilterClass();
+            var filterList = new ArrayList<SelectionFilter<Solution_, Object>>(filterClass == null ? 1 : 2);
+            if (filterClass != null) {
                 SelectionFilter<Solution_, Object> selectionFilter =
-                        instanceCache.newInstance(config, "filterClass", config.getFilterClass());
+                        instanceCache.newInstance(config, "filterClass", filterClass);
                 filterList.add(selectionFilter);
             }
             // Filter out pinned entities
@@ -198,58 +199,52 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
     }
 
     protected void validateSorting(SelectionOrder resolvedSelectionOrder) {
-        if ((config.getSorterManner() != null || config.getSorterComparatorClass() != null
-                || config.getSorterWeightFactoryClass() != null
-                || config.getSorterOrder() != null || config.getSorterClass() != null)
-                && resolvedSelectionOrder != SelectionOrder.SORTED) {
-            throw new IllegalArgumentException("The entitySelectorConfig (" + config
-                    + ") with sorterManner (" + config.getSorterManner()
-                    + ") and sorterComparatorClass (" + config.getSorterComparatorClass()
-                    + ") and sorterWeightFactoryClass (" + config.getSorterWeightFactoryClass()
-                    + ") and sorterOrder (" + config.getSorterOrder()
-                    + ") and sorterClass (" + config.getSorterClass()
-                    + ") has a resolvedSelectionOrder (" + resolvedSelectionOrder
-                    + ") that is not " + SelectionOrder.SORTED + ".");
+        var sorterManner = config.getSorterManner();
+        var sorterComparatorClass = config.getSorterComparatorClass();
+        var sorterWeightFactoryClass = config.getSorterWeightFactoryClass();
+        var sorterOrder = config.getSorterOrder();
+        var sorterClass = config.getSorterClass();
+        if ((sorterManner != null || sorterComparatorClass != null || sorterWeightFactoryClass != null || sorterOrder != null
+                || sorterClass != null) && resolvedSelectionOrder != SelectionOrder.SORTED) {
+            throw new IllegalArgumentException("""
+                    The entitySelectorConfig (%s) with sorterManner (%s) \
+                    and sorterComparatorClass (%s) and sorterWeightFactoryClass (%s) and sorterOrder (%s) and sorterClass (%s) \
+                    has a resolvedSelectionOrder (%s) that is not %s."""
+                    .formatted(config, sorterManner, sorterComparatorClass, sorterWeightFactoryClass, sorterOrder, sorterClass,
+                            resolvedSelectionOrder, SelectionOrder.SORTED));
         }
-        if (config.getSorterManner() != null && config.getSorterComparatorClass() != null) {
-            throw new IllegalArgumentException("The entitySelectorConfig (" + config
-                    + ") has both a sorterManner (" + config.getSorterManner()
-                    + ") and a sorterComparatorClass (" + config.getSorterComparatorClass() + ").");
+        assertNotSorterMannerAnd(config, "sorterComparatorClass", EntitySelectorConfig::getSorterComparatorClass);
+        assertNotSorterMannerAnd(config, "sorterWeightFactoryClass", EntitySelectorConfig::getSorterWeightFactoryClass);
+        assertNotSorterMannerAnd(config, "sorterClass", EntitySelectorConfig::getSorterClass);
+        assertNotSorterMannerAnd(config, "sorterOrder", EntitySelectorConfig::getSorterOrder);
+        assertNotSorterClassAnd(config, "sorterComparatorClass", EntitySelectorConfig::getSorterComparatorClass);
+        assertNotSorterClassAnd(config, "sorterWeightFactoryClass", EntitySelectorConfig::getSorterWeightFactoryClass);
+        assertNotSorterClassAnd(config, "sorterOrder", EntitySelectorConfig::getSorterOrder);
+        if (sorterComparatorClass != null && sorterWeightFactoryClass != null) {
+            throw new IllegalArgumentException(
+                    "The entitySelectorConfig (%s) has both a sorterComparatorClass (%s) and a sorterWeightFactoryClass (%s)."
+                            .formatted(config, sorterComparatorClass, sorterWeightFactoryClass));
         }
-        if (config.getSorterManner() != null && config.getSorterWeightFactoryClass() != null) {
-            throw new IllegalArgumentException("The entitySelectorConfig (" + config
-                    + ") has both a sorterManner (" + config.getSorterManner()
-                    + ") and a sorterWeightFactoryClass (" + config.getSorterWeightFactoryClass() + ").");
+    }
+
+    private static void assertNotSorterMannerAnd(EntitySelectorConfig config, String propertyName,
+            Function<EntitySelectorConfig, Object> propertyAccessor) {
+        var sorterManner = config.getSorterManner();
+        var property = propertyAccessor.apply(config);
+        if (sorterManner != null && property != null) {
+            throw new IllegalArgumentException("The entitySelectorConfig (%s) has both a sorterManner (%s) and a %s (%s)."
+                    .formatted(config, sorterManner, propertyName, property));
         }
-        if (config.getSorterManner() != null && config.getSorterClass() != null) {
-            throw new IllegalArgumentException("The entitySelectorConfig (" + config
-                    + ") has both a sorterManner (" + config.getSorterManner()
-                    + ") and a sorterClass (" + config.getSorterClass() + ").");
-        }
-        if (config.getSorterManner() != null && config.getSorterOrder() != null) {
-            throw new IllegalArgumentException("The entitySelectorConfig (" + config
-                    + ") with sorterManner (" + config.getSorterManner()
-                    + ") has a non-null sorterOrder (" + config.getSorterOrder() + ").");
-        }
-        if (config.getSorterComparatorClass() != null && config.getSorterWeightFactoryClass() != null) {
-            throw new IllegalArgumentException("The entitySelectorConfig (" + config
-                    + ") has both a sorterComparatorClass (" + config.getSorterComparatorClass()
-                    + ") and a sorterWeightFactoryClass (" + config.getSorterWeightFactoryClass() + ").");
-        }
-        if (config.getSorterComparatorClass() != null && config.getSorterClass() != null) {
-            throw new IllegalArgumentException("The entitySelectorConfig (" + config
-                    + ") has both a sorterComparatorClass (" + config.getSorterComparatorClass()
-                    + ") and a sorterClass (" + config.getSorterClass() + ").");
-        }
-        if (config.getSorterWeightFactoryClass() != null && config.getSorterClass() != null) {
-            throw new IllegalArgumentException("The entitySelectorConfig (" + config
-                    + ") has both a sorterWeightFactoryClass (" + config.getSorterWeightFactoryClass()
-                    + ") and a sorterClass (" + config.getSorterClass() + ").");
-        }
-        if (config.getSorterClass() != null && config.getSorterOrder() != null) {
-            throw new IllegalArgumentException("The entitySelectorConfig (" + config
-                    + ") with sorterClass (" + config.getSorterClass()
-                    + ") has a non-null sorterOrder (" + config.getSorterOrder() + ").");
+    }
+
+    private static void assertNotSorterClassAnd(EntitySelectorConfig config, String propertyName,
+            Function<EntitySelectorConfig, Object> propertyAccessor) {
+        var sorterClass = config.getSorterClass();
+        var property = propertyAccessor.apply(config);
+        if (sorterClass != null && property != null) {
+            throw new IllegalArgumentException(
+                    "The entitySelectorConfig (%s) with sorterClass (%s) has a non-null %s (%s)."
+                            .formatted(config, sorterClass, propertyName, property));
         }
     }
 
@@ -257,12 +252,13 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
             SelectionOrder resolvedSelectionOrder, EntitySelector<Solution_> entitySelector, ClassInstanceCache instanceCache) {
         if (resolvedSelectionOrder == SelectionOrder.SORTED) {
             SelectionSorter<Solution_, Object> sorter;
-            if (config.getSorterManner() != null) {
+            var sorterManner = config.getSorterManner();
+            if (sorterManner != null) {
                 var entityDescriptor = entitySelector.getEntityDescriptor();
-                if (!EntitySelectorConfig.hasSorter(config.getSorterManner(), entityDescriptor)) {
+                if (!EntitySelectorConfig.hasSorter(sorterManner, entityDescriptor)) {
                     return entitySelector;
                 }
-                sorter = EntitySelectorConfig.determineSorter(config.getSorterManner(), entityDescriptor);
+                sorter = EntitySelectorConfig.determineSorter(sorterManner, entityDescriptor);
             } else if (config.getSorterComparatorClass() != null) {
                 Comparator<Object> sorterComparator =
                         instanceCache.newInstance(config, "sorterComparatorClass", config.getSorterComparatorClass());
@@ -276,12 +272,12 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
             } else if (config.getSorterClass() != null) {
                 sorter = instanceCache.newInstance(config, "sorterClass", config.getSorterClass());
             } else {
-                throw new IllegalArgumentException("The entitySelectorConfig (" + config
-                        + ") with resolvedSelectionOrder (" + resolvedSelectionOrder
-                        + ") needs a sorterManner (" + config.getSorterManner()
-                        + ") or a sorterComparatorClass (" + config.getSorterComparatorClass()
-                        + ") or a sorterWeightFactoryClass (" + config.getSorterWeightFactoryClass()
-                        + ") or a sorterClass (" + config.getSorterClass() + ").");
+                throw new IllegalArgumentException("""
+                        The entitySelectorConfig (%s) with resolvedSelectionOrder (%s) needs \
+                        a sorterManner (%s) or a sorterComparatorClass (%s) or a sorterWeightFactoryClass (%s) \
+                        or a sorterClass (%s)."""
+                        .formatted(config, resolvedSelectionOrder, sorterManner, config.getSorterComparatorClass(),
+                                config.getSorterWeightFactoryClass(), config.getSorterClass()));
             }
             entitySelector = new SortingEntitySelector<>(entitySelector, resolvedCacheType, sorter);
         }

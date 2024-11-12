@@ -24,25 +24,28 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
     public static <Solution_, Score_ extends Score<Score_>> BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>
             buildScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor, ScoreDirectorFactoryConfig config,
                     EnvironmentMode environmentMode) {
-        if (!ConstraintProvider.class.isAssignableFrom(config.getConstraintProviderClass())) {
+        var providedConstraintProviderClass = config.getConstraintProviderClass();
+        if (providedConstraintProviderClass == null
+                || !ConstraintProvider.class.isAssignableFrom(providedConstraintProviderClass)) {
             throw new IllegalArgumentException(
                     "The constraintProviderClass (%s) does not implement %s."
-                            .formatted(config.getConstraintProviderClass(), ConstraintProvider.class.getSimpleName()));
+                            .formatted(providedConstraintProviderClass, ConstraintProvider.class.getSimpleName()));
         }
-        var constraintProviderClass = getConstraintProviderClass(config);
+        var constraintProviderClass = getConstraintProviderClass(config, providedConstraintProviderClass);
         var constraintProvider = ConfigUtils.newInstance(config, "constraintProviderClass", constraintProviderClass);
         ConfigUtils.applyCustomProperties(constraintProvider, "constraintProviderClass",
                 config.getConstraintProviderCustomProperties(), "constraintProviderCustomProperties");
         return new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor, constraintProvider, environmentMode);
     }
 
-    private static Class<? extends ConstraintProvider> getConstraintProviderClass(ScoreDirectorFactoryConfig config) {
+    private static Class<? extends ConstraintProvider> getConstraintProviderClass(ScoreDirectorFactoryConfig config,
+            Class<? extends ConstraintProvider> providedConstraintProviderClass) {
         if (Boolean.TRUE.equals(config.getConstraintStreamAutomaticNodeSharing())) {
             var enterpriseService =
                     TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.AUTOMATIC_NODE_SHARING);
             return enterpriseService.buildLambdaSharedConstraintProvider(config.getConstraintProviderClass());
         } else {
-            return config.getConstraintProviderClass();
+            return providedConstraintProviderClass;
         }
     }
 

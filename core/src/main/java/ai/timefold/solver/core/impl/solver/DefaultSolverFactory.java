@@ -192,24 +192,24 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     }
 
     public RandomFactory buildRandomFactory(EnvironmentMode environmentMode_) {
-        RandomFactory randomFactory;
-        if (solverConfig.getRandomFactoryClass() != null) {
-            if (solverConfig.getRandomType() != null || solverConfig.getRandomSeed() != null) {
+        var randomFactoryClass = solverConfig.getRandomFactoryClass();
+        if (randomFactoryClass != null) {
+            var randomType = solverConfig.getRandomType();
+            var randomSeed = solverConfig.getRandomSeed();
+            if (randomType != null || randomSeed != null) {
                 throw new IllegalArgumentException(
-                        "The solverConfig with randomFactoryClass (" + solverConfig.getRandomFactoryClass()
-                                + ") has a non-null randomType (" + solverConfig.getRandomType()
-                                + ") or a non-null randomSeed (" + solverConfig.getRandomSeed() + ").");
+                        "The solverConfig with randomFactoryClass (%s) has a non-null randomType (%s) or a non-null randomSeed (%s)."
+                                .formatted(randomFactoryClass, randomType, randomSeed));
             }
-            randomFactory = ConfigUtils.newInstance(solverConfig, "randomFactoryClass", solverConfig.getRandomFactoryClass());
+            return ConfigUtils.newInstance(solverConfig, "randomFactoryClass", randomFactoryClass);
         } else {
-            RandomType randomType_ = Objects.requireNonNullElse(solverConfig.getRandomType(), RandomType.JDK);
-            Long randomSeed_ = solverConfig.getRandomSeed();
+            var randomType_ = Objects.requireNonNullElse(solverConfig.getRandomType(), RandomType.JDK);
+            var randomSeed_ = solverConfig.getRandomSeed();
             if (solverConfig.getRandomSeed() == null && environmentMode_ != EnvironmentMode.NON_REPRODUCIBLE) {
                 randomSeed_ = DEFAULT_RANDOM_SEED;
             }
-            randomFactory = new DefaultRandomFactory(randomType_, randomSeed_);
+            return new DefaultRandomFactory(randomType_, randomSeed_);
         }
-        return randomFactory;
     }
 
     public List<Phase<Solution_>> buildPhaseList(HeuristicConfigPolicy<Solution_> configPolicy,

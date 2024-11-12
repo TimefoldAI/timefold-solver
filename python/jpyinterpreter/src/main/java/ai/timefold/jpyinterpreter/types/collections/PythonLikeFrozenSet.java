@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -329,8 +328,7 @@ public class PythonLikeFrozenSet extends AbstractPythonLikeObject implements Set
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Set) {
-            Set other = (Set) o;
+        if (o instanceof Set<?> other) {
             if (other.size() != this.size()) {
                 return false;
             }
@@ -341,7 +339,7 @@ public class PythonLikeFrozenSet extends AbstractPythonLikeObject implements Set
 
     @Override
     public int hashCode() {
-        return Objects.hash(delegate);
+        return delegate.hashCode();
     }
 
     @Override

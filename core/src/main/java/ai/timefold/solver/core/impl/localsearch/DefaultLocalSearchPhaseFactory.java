@@ -20,7 +20,6 @@ import ai.timefold.solver.core.config.localsearch.decider.acceptor.AcceptorType;
 import ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig;
 import ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchForagerConfig;
 import ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchPickEarlyType;
-import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -47,12 +46,13 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
     public LocalSearchPhase<Solution_> buildPhase(int phaseIndex, boolean triggerFirstInitializedSolutionEvent,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             Termination<Solution_> solverTermination) {
-        HeuristicConfigPolicy<Solution_> phaseConfigPolicy = solverConfigPolicy.createPhaseConfigPolicy();
-        Termination<Solution_> phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
-        DefaultLocalSearchPhase.Builder<Solution_> builder =
-                new DefaultLocalSearchPhase.Builder<>(phaseIndex, solverConfigPolicy.getLogIndentation(), phaseTermination,
+        var phaseConfigPolicy = solverConfigPolicy.createPhaseConfigPolicy();
+        var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
+        var builder =
+                new DefaultLocalSearchPhase.Builder<Solution_>(phaseIndex, solverConfigPolicy.getLogIndentation(),
+                        phaseTermination,
                         buildDecider(phaseConfigPolicy, phaseTermination));
-        EnvironmentMode environmentMode = phaseConfigPolicy.getEnvironmentMode();
+        var environmentMode = phaseConfigPolicy.getEnvironmentMode();
         if (environmentMode.isNonIntrusiveFullAsserted()) {
             builder.setAssertStepScoreFromScratch(true);
         }
@@ -65,9 +65,9 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
 
     private LocalSearchDecider<Solution_> buildDecider(HeuristicConfigPolicy<Solution_> configPolicy,
             Termination<Solution_> termination) {
-        MoveSelector<Solution_> moveSelector = buildMoveSelector(configPolicy);
-        Acceptor<Solution_> acceptor = buildAcceptor(configPolicy);
-        LocalSearchForager<Solution_> forager = buildForager(configPolicy);
+        var moveSelector = buildMoveSelector(configPolicy);
+        var acceptor = buildAcceptor(configPolicy);
+        var forager = buildForager(configPolicy);
         if (moveSelector.isNeverEnding() && !forager.supportsNeverEndingMoveSelector()) {
             throw new IllegalStateException("The moveSelector (" + moveSelector
                     + ") has neverEnding (" + moveSelector.isNeverEnding()
@@ -75,8 +75,8 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                     + ") does not support it.\n"
                     + "Maybe configure the <forager> with an <acceptedCountLimit>.");
         }
-        Integer moveThreadCount = configPolicy.getMoveThreadCount();
-        EnvironmentMode environmentMode = configPolicy.getEnvironmentMode();
+        var moveThreadCount = configPolicy.getMoveThreadCount();
+        var environmentMode = configPolicy.getEnvironmentMode();
         LocalSearchDecider<Solution_> decider;
         if (moveThreadCount == null) {
             decider = new LocalSearchDecider<>(configPolicy.getLogIndentation(), termination, moveSelector, acceptor, forager);
@@ -148,7 +148,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
             }
             foragerConfig_ = phaseConfig.getForagerConfig();
         } else {
-            LocalSearchType localSearchType_ =
+            var localSearchType_ =
                     Objects.requireNonNullElse(phaseConfig.getLocalSearchType(), LocalSearchType.LATE_ACCEPTANCE);
             foragerConfig_ = new LocalSearchForagerConfig();
             switch (localSearchType_) {
@@ -176,30 +176,30 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         return LocalSearchForagerFactory.<Solution_> create(foragerConfig_).buildForager();
     }
 
+    @SuppressWarnings("rawtypes")
     protected MoveSelector<Solution_> buildMoveSelector(HeuristicConfigPolicy<Solution_> configPolicy) {
         MoveSelector<Solution_> moveSelector;
-        SelectionCacheType defaultCacheType = SelectionCacheType.JUST_IN_TIME;
+        var defaultCacheType = SelectionCacheType.JUST_IN_TIME;
         SelectionOrder defaultSelectionOrder;
         if (phaseConfig.getLocalSearchType() == LocalSearchType.VARIABLE_NEIGHBORHOOD_DESCENT) {
             defaultSelectionOrder = SelectionOrder.ORIGINAL;
         } else {
             defaultSelectionOrder = SelectionOrder.RANDOM;
         }
-        if (phaseConfig.getMoveSelectorConfig() == null) {
+        var moveSelectorConfig = phaseConfig.getMoveSelectorConfig();
+        if (moveSelectorConfig == null) {
             moveSelector = new UnionMoveSelectorFactory<Solution_>(determineDefaultMoveSelectorConfig(configPolicy))
                     .buildMoveSelector(configPolicy, defaultCacheType, defaultSelectionOrder, true);
         } else {
-            AbstractMoveSelectorFactory<Solution_, ?> moveSelectorFactory =
-                    MoveSelectorFactory.create(phaseConfig.getMoveSelectorConfig());
+            AbstractMoveSelectorFactory<Solution_, ?> moveSelectorFactory = MoveSelectorFactory.create(moveSelectorConfig);
 
             if (configPolicy.getNearbyDistanceMeterClass() != null
-                    && NearbyAutoConfigurationEnabled.class
-                            .isAssignableFrom(phaseConfig.getMoveSelectorConfig().getClass())
-                    && !UnionMoveSelectorConfig.class.isAssignableFrom(phaseConfig.getMoveSelectorConfig().getClass())) {
+                    && NearbyAutoConfigurationEnabled.class.isAssignableFrom(moveSelectorConfig.getClass())
+                    && !UnionMoveSelectorConfig.class.isAssignableFrom(moveSelectorConfig.getClass())) {
                 // The move selector config is not a composite selector, but it accepts Nearby autoconfiguration.
                 // We create a new UnionMoveSelectorConfig with the existing selector to enable Nearby autoconfiguration.
-                MoveSelectorConfig moveSelectorCopy = (MoveSelectorConfig) phaseConfig.getMoveSelectorConfig().copyConfig();
-                UnionMoveSelectorConfig updatedConfig = new UnionMoveSelectorConfig()
+                var moveSelectorCopy = (MoveSelectorConfig) moveSelectorConfig.copyConfig();
+                var updatedConfig = new UnionMoveSelectorConfig()
                         .withMoveSelectors(moveSelectorCopy);
                 moveSelectorFactory = MoveSelectorFactory.create(updatedConfig);
             }

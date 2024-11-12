@@ -304,11 +304,11 @@ public class JavaObjectWrapper implements PythonLikeObject,
     }
 
     @Override
-    public boolean equals(Object other) {
-        if (other instanceof JavaObjectWrapper) {
-            return wrappedObject.equals(((JavaObjectWrapper) other).wrappedObject);
+    public boolean equals(Object o) {
+        if (o instanceof JavaObjectWrapper other) {
+            return wrappedObject.equals(other.wrappedObject);
         }
-        return wrappedObject.equals(other);
+        return wrappedObject.equals(o);
     }
 
     @Override

@@ -53,15 +53,15 @@ public class UnionMoveSelectorFactory<Solution_>
                 buildInnerMoveSelectors(moveSelectorConfigList, configPolicy, minimumCacheType, randomSelection);
 
         SelectionProbabilityWeightFactory<Solution_, MoveSelector<Solution_>> selectorProbabilityWeightFactory;
-        if (config.getSelectorProbabilityWeightFactoryClass() != null) {
+        var selectorProbabilityWeightFactoryClass = config.getSelectorProbabilityWeightFactoryClass();
+        if (selectorProbabilityWeightFactoryClass != null) {
             if (!randomSelection) {
-                throw new IllegalArgumentException("The moveSelectorConfig (" + config
-                        + ") with selectorProbabilityWeightFactoryClass ("
-                        + config.getSelectorProbabilityWeightFactoryClass()
-                        + ") has non-random randomSelection (" + randomSelection + ").");
+                throw new IllegalArgumentException(
+                        "The moveSelectorConfig (%s) with selectorProbabilityWeightFactoryClass (%s) has non-random randomSelection (%s)."
+                                .formatted(configPolicy, selectorProbabilityWeightFactoryClass, randomSelection));
             }
-            selectorProbabilityWeightFactory = ConfigUtils.newInstance(config,
-                    "selectorProbabilityWeightFactoryClass", config.getSelectorProbabilityWeightFactoryClass());
+            selectorProbabilityWeightFactory = ConfigUtils.newInstance(config, "selectorProbabilityWeightFactoryClass",
+                    selectorProbabilityWeightFactoryClass);
         } else if (randomSelection) {
             Map<MoveSelector<Solution_>, Double> fixedProbabilityWeightMap =
                     new HashMap<>(moveSelectorConfigList.size());

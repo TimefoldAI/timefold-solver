@@ -64,7 +64,9 @@ public class DefaultCustomPhaseFactory<Solution_> extends AbstractPhaseFactory<S
     }
 
     private int getCustomPhaseCommandListSize() {
-        return (phaseConfig.getCustomPhaseCommandClassList() == null ? 0 : phaseConfig.getCustomPhaseCommandClassList().size())
-                + (phaseConfig.getCustomPhaseCommandList() == null ? 0 : phaseConfig.getCustomPhaseCommandList().size());
+        var customPhaseCommandClassList = phaseConfig.getCustomPhaseCommandClassList();
+        var customPhaseCommandList = phaseConfig.getCustomPhaseCommandList();
+        return (customPhaseCommandClassList == null ? 0 : customPhaseCommandClassList.size())
+                + (customPhaseCommandList == null ? 0 : customPhaseCommandList.size());
     }
 }

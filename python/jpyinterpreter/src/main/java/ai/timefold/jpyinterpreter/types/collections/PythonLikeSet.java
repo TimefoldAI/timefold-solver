@@ -460,8 +460,7 @@ public class PythonLikeSet<T extends PythonLikeObject> extends AbstractPythonLik
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Set) {
-            Set other = (Set) o;
+        if (o instanceof Set<?> other) {
             if (other.size() != this.size()) {
                 return false;
             }

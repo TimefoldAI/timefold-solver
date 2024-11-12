@@ -171,8 +171,7 @@ public class DictItemView extends AbstractPythonLikeObject {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof DictItemView) {
-            DictItemView other = (DictItemView) o;
+        if (o instanceof DictItemView other) {
             return entrySet.equals(other.entrySet);
         }
         return false;

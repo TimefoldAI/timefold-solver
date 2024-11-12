@@ -23,13 +23,14 @@ public final class EasyScoreDirectorFactory<Solution_, Score_ extends Score<Scor
 
     public static <Solution_, Score_ extends Score<Score_>> EasyScoreDirectorFactory<Solution_, Score_>
             buildScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor, ScoreDirectorFactoryConfig config) {
-        if (!EasyScoreCalculator.class.isAssignableFrom(config.getEasyScoreCalculatorClass())) {
+        var easyScoreCalculatorClass = config.getEasyScoreCalculatorClass();
+        if (easyScoreCalculatorClass == null || !EasyScoreCalculator.class.isAssignableFrom(easyScoreCalculatorClass)) {
             throw new IllegalArgumentException(
                     "The easyScoreCalculatorClass (%s) does not implement %s."
                             .formatted(config.getEasyScoreCalculatorClass(), EasyScoreCalculator.class.getSimpleName()));
         }
-        EasyScoreCalculator<Solution_, Score_> easyScoreCalculator = ConfigUtils.newInstance(config,
-                "easyScoreCalculatorClass", config.getEasyScoreCalculatorClass());
+        EasyScoreCalculator<Solution_, Score_> easyScoreCalculator =
+                ConfigUtils.newInstance(config, "easyScoreCalculatorClass", easyScoreCalculatorClass);
         ConfigUtils.applyCustomProperties(easyScoreCalculator, "easyScoreCalculatorClass",
                 config.getEasyScoreCalculatorCustomProperties(), "easyScoreCalculatorCustomProperties");
         return new EasyScoreDirectorFactory<>(solutionDescriptor, easyScoreCalculator);
