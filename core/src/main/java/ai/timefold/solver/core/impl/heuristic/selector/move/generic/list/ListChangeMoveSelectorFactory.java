@@ -67,10 +67,9 @@ public class ListChangeMoveSelectorFactory<Solution_>
         var destinationSelectorConfig = config.getDestinationSelectorConfig();
         var destinationEntitySelectorConfig = destinationSelectorConfig == null ? null
                 : destinationSelectorConfig.getEntitySelectorConfig();
-        var onlyEntityDescriptor = destinationSelectorConfig == null ? null
-                : destinationEntitySelectorConfig == null ? null
-                        : EntitySelectorFactory.<Solution_> create(destinationEntitySelectorConfig)
-                                .extractEntityDescriptor(configPolicy);
+        var onlyEntityDescriptor = destinationEntitySelectorConfig == null ? null
+                : EntitySelectorFactory.<Solution_> create(destinationEntitySelectorConfig)
+                        .extractEntityDescriptor(configPolicy);
         var entityDescriptors =
                 onlyEntityDescriptor == null ? configPolicy.getSolutionDescriptor().getGenuineEntityDescriptors()
                         : Collections.singletonList(onlyEntityDescriptor);
@@ -89,10 +88,9 @@ public class ListChangeMoveSelectorFactory<Solution_>
         var destinationValueSelectorConfig = destinationSelectorConfig == null ? null
                 : destinationSelectorConfig.getValueSelectorConfig();
         var onlyDestinationVariableDescriptor =
-                destinationSelectorConfig == null ? null
-                        : destinationValueSelectorConfig == null ? null
-                                : ValueSelectorFactory.<Solution_> create(destinationValueSelectorConfig)
-                                        .extractVariableDescriptor(configPolicy, entityDescriptor);
+                destinationValueSelectorConfig == null ? null
+                        : ValueSelectorFactory.<Solution_> create(destinationValueSelectorConfig)
+                                .extractVariableDescriptor(configPolicy, entityDescriptor);
         if (onlyVariableDescriptor != null && onlyDestinationVariableDescriptor != null) {
             if (!onlyVariableDescriptor.isListVariable()) {
                 throw new IllegalArgumentException("The listChangeMoveSelector (" + config

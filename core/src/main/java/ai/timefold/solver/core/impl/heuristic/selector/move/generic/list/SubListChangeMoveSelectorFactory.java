@@ -61,10 +61,9 @@ public class SubListChangeMoveSelectorFactory<Solution_>
         var destinationEntitySelectorConfig = destinationSelectorConfig == null ? null
                 : destinationSelectorConfig.getEntitySelectorConfig();
         Collection<EntityDescriptor<Solution_>> entityDescriptors;
-        var onlyEntityDescriptor = destinationSelectorConfig == null ? null
-                : destinationEntitySelectorConfig == null ? null
-                        : EntitySelectorFactory.<Solution_> create(destinationEntitySelectorConfig)
-                                .extractEntityDescriptor(configPolicy);
+        var onlyEntityDescriptor = destinationEntitySelectorConfig == null ? null
+                : EntitySelectorFactory.<Solution_> create(destinationEntitySelectorConfig)
+                        .extractEntityDescriptor(configPolicy);
         if (onlyEntityDescriptor != null) {
             entityDescriptors = Collections.singletonList(onlyEntityDescriptor);
         } else {
@@ -82,18 +81,14 @@ public class SubListChangeMoveSelectorFactory<Solution_>
         var subListValueSelectorConfig = subListSelectorConfig == null ? null
                 : subListSelectorConfig.getValueSelectorConfig();
         var variableDescriptorList = new ArrayList<ListVariableDescriptor<Solution_>>();
-        var onlySubListVariableDescriptor =
-                subListSelectorConfig == null ? null
-                        : subListValueSelectorConfig == null ? null
-                                : ValueSelectorFactory.<Solution_> create(subListValueSelectorConfig)
-                                        .extractVariableDescriptor(configPolicy, entityDescriptor);
+        var onlySubListVariableDescriptor = subListValueSelectorConfig == null ? null
+                : ValueSelectorFactory.<Solution_> create(subListValueSelectorConfig)
+                        .extractVariableDescriptor(configPolicy, entityDescriptor);
         var destinationValueSelectorConfig = destinationSelectorConfig == null ? null
                 : destinationSelectorConfig.getValueSelectorConfig();
-        var onlyDestinationVariableDescriptor =
-                destinationSelectorConfig == null ? null
-                        : destinationValueSelectorConfig == null ? null
-                                : ValueSelectorFactory.<Solution_> create(destinationValueSelectorConfig)
-                                        .extractVariableDescriptor(configPolicy, entityDescriptor);
+        var onlyDestinationVariableDescriptor = destinationValueSelectorConfig == null ? null
+                : ValueSelectorFactory.<Solution_> create(destinationValueSelectorConfig)
+                        .extractVariableDescriptor(configPolicy, entityDescriptor);
         if (onlySubListVariableDescriptor != null && onlyDestinationVariableDescriptor != null) {
             if (!onlySubListVariableDescriptor.isListVariable()) {
                 throw new IllegalArgumentException(

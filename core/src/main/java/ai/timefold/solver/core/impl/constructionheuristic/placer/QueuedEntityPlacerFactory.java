@@ -24,6 +24,7 @@ import org.jspecify.annotations.NonNull;
 public class QueuedEntityPlacerFactory<Solution_>
         extends AbstractEntityPlacerFactory<Solution_, QueuedEntityPlacerConfig> {
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public static <Solution_> QueuedEntityPlacerConfig unfoldNew(HeuristicConfigPolicy<Solution_> configPolicy,
             List<MoveSelectorConfig> templateMoveSelectorConfigList) {
         var config = new QueuedEntityPlacerConfig();
@@ -79,6 +80,7 @@ public class QueuedEntityPlacerFactory<Solution_>
         return new QueuedEntityPlacer<>(entitySelector, moveSelectorList);
     }
 
+    @SuppressWarnings("rawtypes")
     private @NonNull List<MoveSelectorConfig> getMoveSelectorConfigs(HeuristicConfigPolicy<Solution_> configPolicy,
             EntitySelector<Solution_> entitySelector, EntitySelectorConfig entitySelectorConfig_) {
         var moveSelectorConfigList = config.getMoveSelectorConfigList();

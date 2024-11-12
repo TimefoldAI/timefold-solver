@@ -30,8 +30,9 @@ public class ProblemBenchmarksFactory {
         this.config = config;
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public <Solution_> void buildProblemBenchmarkList(SolverBenchmarkResult solverBenchmarkResult,
-            Solution_[] extraProblems) {
+                                                      Solution_[] extraProblems) {
         PlannerBenchmarkResult plannerBenchmarkResult = solverBenchmarkResult.getPlannerBenchmarkResult();
         List<ProblemBenchmarkResult> unifiedProblemBenchmarkResultList = plannerBenchmarkResult
                 .getUnifiedProblemBenchmarkResultList();
@@ -102,8 +103,9 @@ public class ProblemBenchmarksFactory {
         return (SolutionFileIO<Solution_>) ConfigUtils.newInstance(config, "solutionFileIOClass", solutionFileIOClass);
     }
 
+    @SuppressWarnings("rawtypes")
     private <Solution_> ProblemBenchmarkResult<Solution_> buildProblemBenchmark(PlannerBenchmarkResult plannerBenchmarkResult,
-            ProblemProvider<Solution_> problemProvider) {
+                                                                                ProblemProvider<Solution_> problemProvider) {
         ProblemBenchmarkResult<Solution_> problemBenchmarkResult = new ProblemBenchmarkResult<>(plannerBenchmarkResult);
         problemBenchmarkResult.setName(problemProvider.getProblemName());
         problemBenchmarkResult.setProblemProvider(problemProvider);
@@ -115,6 +117,7 @@ public class ProblemBenchmarksFactory {
         return problemBenchmarkResult;
     }
 
+    @SuppressWarnings("rawtypes")
     private List<ProblemStatistic> getProblemStatisticList(ProblemBenchmarkResult problemBenchmarkResult) {
         var problemStatisticEnabled = config.getProblemStatisticEnabled();
         if (problemStatisticEnabled != null && !problemStatisticEnabled) {
@@ -131,8 +134,8 @@ public class ProblemBenchmarksFactory {
         }
     }
 
-    private void buildSingleBenchmark(SolverBenchmarkResult solverBenchmarkResult,
-            ProblemBenchmarkResult problemBenchmarkResult) {
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private void buildSingleBenchmark(SolverBenchmarkResult solverBenchmarkResult, ProblemBenchmarkResult problemBenchmarkResult) {
         SingleBenchmarkResult singleBenchmarkResult = new SingleBenchmarkResult(solverBenchmarkResult, problemBenchmarkResult);
         buildSubSingleBenchmarks(singleBenchmarkResult, solverBenchmarkResult.getSubSingleCount());
         List<SingleStatisticType> singleStatisticTypeList = config.determineSingleStatisticTypeList();
