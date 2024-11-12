@@ -64,8 +64,13 @@ To complete this guide, you need:
 
 == The build file and the dependencies
 
-Use https://code.quarkus.io/[code.quarkus.io] to generate an application
+Use https://code.quarkus.io/?a=timefold-solver-quickstart&j=17&e=resteasy&e=resteasy-jackson&e=ai.timefold.solver%3Atimefold-solver-quarkus-jackson&e=ai.timefold.solver%3Atimefold-solver-quarkus[code.quarkus.io] to generate an application
 with the following extensions, for Maven or Gradle:
+
+[NOTE]
+====
+Clicking the link above will automatically select the dependencies for you on *code.quarkus.io*.
+====
 
 * RESTEasy JAX-RS (`quarkus-resteasy`)
 * RESTEasy Jackson (`quarkus-resteasy-jackson`)
@@ -250,9 +255,9 @@ package org.acme.schooltimetabling.rest;
 
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
-import javax.inject.Inject;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
 
 import org.acme.schooltimetabling.domain.Timetable;
 import ai.timefold.solver.core.api.solver.SolverJob;
@@ -602,7 +607,7 @@ package org.acme.schooltimetabling.solver;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import io.quarkus.test.junit.QuarkusTest;
 import org.acme.schooltimetabling.domain.Lesson;
@@ -615,7 +620,7 @@ import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 @QuarkusTest
 class TimetableConstraintProviderTest {
 
-    private static final Room ROOM = new Room("Room1");
+    private static final Room ROOM1 = new Room("Room1");
     private static final Timeslot TIMESLOT1 = new Timeslot(DayOfWeek.MONDAY, LocalTime.of(9,0), LocalTime.NOON);
     private static final Timeslot TIMESLOT2 = new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(9,0), LocalTime.NOON);
 
@@ -624,12 +629,21 @@ class TimetableConstraintProviderTest {
 
     @Test
     void roomConflict() {
-        Lesson firstLesson = new Lesson("1", "Subject1", "Teacher1", "Group1", TIMESLOT1, ROOM1);
-        Lesson conflictingLesson = new Lesson("2", "Subject2", "Teacher2", "Group2", TIMESLOT1, ROOM1);
-        Lesson nonConflictingLesson = new Lesson("3", "Subject3", "Teacher3", "Group3", TIMESLOT2, ROOM1);
+        Lesson firstLesson = createTestLesson("1", "Subject1", "Teacher1", "Group1", TIMESLOT1, ROOM1);
+        Lesson conflictingLesson = createTestLesson("2", "Subject2", "Teacher2", "Group2", TIMESLOT1, ROOM1);
+        Lesson nonConflictingLesson = createTestLesson("3", "Subject3", "Teacher3", "Group3", TIMESLOT2, ROOM1);
+
         constraintVerifier.verifyThat(TimetableConstraintProvider::roomConflict)
                 .given(firstLesson, conflictingLesson, nonConflictingLesson)
                 .penalizesBy(1);
+    }
+
+    // This methods avoids the need to create a constructor just for testing and uses the setter like the solver does.
+    Lesson createTestLesson(String id, String subject, String teacher, String studentGroup, Timeslot timeslot, Room room) {
+        Lesson lesson = new Lesson(id, subject, teacher, group);
+        lesson.setTimeslot(timeslot);
+        lesson.setRoom(room);
+        return lesson;
     }
 
 }
@@ -670,9 +684,18 @@ class TimetableConstraintProviderTest {
         val firstLesson = Lesson("1", "Subject1", "Teacher1", "Group1", TIMESLOT1, ROOM1)
         val conflictingLesson = Lesson("2", "Subject2", "Teacher2", "Group2", TIMESLOT1, ROOM1)
         val nonConflictingLesson = Lesson("3", "Subject3", "Teacher3", "Group3", TIMESLOT2, ROOM1)
+
         constraintVerifier.verifyThat(TimeTableConstraintProvider::roomConflict)
             .given(firstLesson, conflictingLesson, nonConflictingLesson)
             .penalizesBy(1)
+    }
+
+    // This methods avoids the need to create a constructor just for testing and uses the setter like the solver does.
+    fun createTestLesson(String id, String subject, String teacher, String studentGroup, Timeslot timeslot, Room room) : Lesson {
+        Lesson lesson = Lesson(id, subject, teacher, group);
+        lesson.setTimeslot(timeslot);
+        lesson.setRoom(room);
+        return lesson;
     }
 
 }
@@ -707,7 +730,6 @@ package org.acme.schooltimetabling.rest;
 
 import static io.restassured.RestAssured.get;
 import static io.restassured.RestAssured.given;
-import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -738,14 +760,9 @@ class TimetableResourceTest {
 
     @Test
     void solveDemoDataUntilFeasible() {
-        Timetable testTimetable = given()
-                .when().get("/demo-data/SMALL")
-                .then()
-                .statusCode(200)
-                .extract()
-                .as(Timetable.class);
+        Timetable testTimetable = //setup your test data
 
-        String jobId = given()
+        Timetable solution = given()
                 .contentType(ContentType.JSON)
                 .body(testTimetable)
                 .expect().contentType(ContentType.TEXT)
@@ -753,17 +770,8 @@ class TimetableResourceTest {
                 .then()
                 .statusCode(200)
                 .extract()
-                .asString();
+                .as(Timetable.class);
 
-        await()
-                .atMost(Duration.ofMinutes(1))
-                .pollInterval(Duration.ofMillis(500L))
-                .until(() -> SolverStatus.NOT_SOLVING.name().equals(
-                        get("/timetables/" + jobId + "/status")
-                                .jsonPath().get("solverStatus")));
-
-        Timetable solution = get("/timetables/" + jobId).then().extract().as(Timetable.class);
-        assertEquals(SolverStatus.NOT_SOLVING, solution.getSolverStatus());
         assertNotNull(solution.getLessons());
         assertNotNull(solution.getTimeslots());
         assertNotNull(solution.getRooms());
@@ -792,7 +800,6 @@ import io.restassured.http.ContentType
 import org.acme.schooltimetabling.domain.Room
 import org.acme.schooltimetabling.domain.Timeslot
 import org.acme.schooltimetabling.domain.Timetable
-import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -804,12 +811,7 @@ class TimetableResourceTest {
 
     @Test
     fun solveDemoDataUntilFeasible() {
-        val testTimetable: Timetable = given()
-            .`when`()["/demo-data/SMALL"]
-            .then()
-            .statusCode(200)
-            .extract()
-            .`as`(Timetable::class.java)
+        val testTimetable: Timetable = //setup your test data
 
         val jobId: String = given()
             .contentType(ContentType.JSON)
@@ -821,14 +823,6 @@ class TimetableResourceTest {
             .extract()
             .asString()
 
-        await()
-            .atMost(Duration.ofMinutes(1))
-            .pollInterval(Duration.ofMillis(500L))
-            .until {
-                SolverStatus.NOT_SOLVING.name ==
-                        get("/timetables/$jobId/status")
-                            .jsonPath().get("solverStatus")
-            }
         val solution: Timetable =
             get("/timetables/$jobId").then().extract().`as`<Timetable>(
                 Timetable::class.java

@@ -170,7 +170,7 @@ public class TimetableConstraintProvider implements ConstraintProvider {
         };
     }
 
-    private Constraint roomConflict(ConstraintFactory constraintFactory) {
+    Constraint roomConflict(ConstraintFactory constraintFactory) {
         // A room can accommodate at most one lesson at the same time.
         return constraintFactory
                 // Select each pair of 2 different lessons ...
@@ -184,7 +184,7 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                 .asConstraint("Room conflict");
     }
 
-    private Constraint teacherConflict(ConstraintFactory constraintFactory) {
+    Constraint teacherConflict(ConstraintFactory constraintFactory) {
         // A teacher can teach at most one lesson at the same time.
         return constraintFactory
                 .forEachUniquePair(Lesson.class,
@@ -194,7 +194,7 @@ public class TimetableConstraintProvider implements ConstraintProvider {
                 .asConstraint("Teacher conflict");
     }
 
-    private Constraint studentGroupConflict(ConstraintFactory constraintFactory) {
+    Constraint studentGroupConflict(ConstraintFactory constraintFactory) {
         // A student can attend at most one lesson at the same time.
         return constraintFactory
                 .forEachUniquePair(Lesson.class,
