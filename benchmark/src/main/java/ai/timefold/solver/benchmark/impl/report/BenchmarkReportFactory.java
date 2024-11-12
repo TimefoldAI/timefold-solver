@@ -29,26 +29,26 @@ public class BenchmarkReportFactory {
     }
 
     protected void supplySolverRanking(BenchmarkReport benchmarkReport) {
-        if (config.getSolverRankingType() != null && config.getSolverRankingComparatorClass() != null) {
-            throw new IllegalStateException("The PlannerBenchmark cannot have"
-                    + " a solverRankingType (" + config.getSolverRankingType()
-                    + ") and a solverRankingComparatorClass (" + config.getSolverRankingComparatorClass().getName()
-                    + ") at the same time.");
-        } else if (config.getSolverRankingType() != null && config.getSolverRankingWeightFactoryClass() != null) {
-            throw new IllegalStateException("The PlannerBenchmark cannot have"
-                    + " a solverRankingType (" + config.getSolverRankingType()
-                    + ") and a solverRankingWeightFactoryClass ("
-                    + config.getSolverRankingWeightFactoryClass().getName() + ") at the same time.");
-        } else if (config.getSolverRankingComparatorClass() != null && config.getSolverRankingWeightFactoryClass() != null) {
-            throw new IllegalStateException("The PlannerBenchmark cannot have"
-                    + " a solverRankingComparatorClass (" + config.getSolverRankingComparatorClass().getName()
-                    + ") and a solverRankingWeightFactoryClass (" + config.getSolverRankingWeightFactoryClass().getName()
-                    + ") at the same time.");
+        var solverRankingType = config.getSolverRankingType();
+        var solverRankingComparatorClass = config.getSolverRankingComparatorClass();
+        var solverRankingWeightFactoryClass = config.getSolverRankingWeightFactoryClass();
+        if (solverRankingType != null && solverRankingComparatorClass != null) {
+            throw new IllegalStateException(
+                    "The PlannerBenchmark cannot have a solverRankingType (%s) and a solverRankingComparatorClass (%s) at the same time."
+                            .formatted(solverRankingType, solverRankingComparatorClass.getName()));
+        } else if (solverRankingType != null && solverRankingWeightFactoryClass != null) {
+            throw new IllegalStateException(
+                    "The PlannerBenchmark cannot have a solverRankingType (%s) and a solverRankingWeightFactoryClass (%s) at the same time."
+                            .formatted(solverRankingType, solverRankingWeightFactoryClass.getName()));
+        } else if (solverRankingComparatorClass != null && solverRankingWeightFactoryClass != null) {
+            throw new IllegalStateException(
+                    "The PlannerBenchmark cannot have a solverRankingComparatorClass (%s) and a solverRankingWeightFactoryClass (%s) at the same time."
+                            .formatted(solverRankingComparatorClass.getName(), solverRankingWeightFactoryClass.getName()));
         }
         Comparator<SolverBenchmarkResult> solverRankingComparator = null;
         SolverRankingWeightFactory solverRankingWeightFactory = null;
-        if (config.getSolverRankingType() != null) {
-            switch (config.getSolverRankingType()) {
+        if (solverRankingType != null) {
+            switch (solverRankingType) {
                 case TOTAL_SCORE:
                     solverRankingComparator = new TotalScoreSolverRankingComparator();
                     break;
@@ -59,17 +59,17 @@ public class BenchmarkReportFactory {
                     solverRankingWeightFactory = new TotalRankSolverRankingWeightFactory();
                     break;
                 default:
-                    throw new IllegalStateException("The solverRankingType ("
-                            + config.getSolverRankingType() + ") is not implemented.");
+                    throw new IllegalStateException("The solverRankingType (%s) is not implemented."
+                            .formatted(solverRankingType));
             }
         }
-        if (config.getSolverRankingComparatorClass() != null) {
-            solverRankingComparator = ConfigUtils.newInstance(config,
-                    "solverRankingComparatorClass", config.getSolverRankingComparatorClass());
+        if (solverRankingComparatorClass != null) {
+            solverRankingComparator =
+                    ConfigUtils.newInstance(config, "solverRankingComparatorClass", solverRankingComparatorClass);
         }
-        if (config.getSolverRankingWeightFactoryClass() != null) {
-            solverRankingWeightFactory = ConfigUtils.newInstance(config,
-                    "solverRankingWeightFactoryClass", config.getSolverRankingWeightFactoryClass());
+        if (solverRankingWeightFactoryClass != null) {
+            solverRankingWeightFactory =
+                    ConfigUtils.newInstance(config, "solverRankingWeightFactoryClass", solverRankingWeightFactoryClass);
         }
         if (solverRankingComparator != null) {
             benchmarkReport.setSolverRankingComparator(solverRankingComparator);

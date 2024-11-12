@@ -24,19 +24,21 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
     public InnerScoreDirectorFactory<Solution_, Score_> buildScoreDirectorFactory(EnvironmentMode environmentMode,
             SolutionDescriptor<Solution_> solutionDescriptor) {
         var scoreDirectorFactory = decideMultipleScoreDirectorFactories(solutionDescriptor, environmentMode);
-        if (config.getAssertionScoreDirectorFactory() != null) {
-            if (config.getAssertionScoreDirectorFactory().getAssertionScoreDirectorFactory() != null) {
-                throw new IllegalArgumentException("A assertionScoreDirectorFactory ("
-                        + config.getAssertionScoreDirectorFactory() + ") cannot have a non-null assertionScoreDirectorFactory ("
-                        + config.getAssertionScoreDirectorFactory().getAssertionScoreDirectorFactory() + ").");
+        var assertionScoreDirectorFactory = config.getAssertionScoreDirectorFactory();
+        if (assertionScoreDirectorFactory != null) {
+            if (assertionScoreDirectorFactory.getAssertionScoreDirectorFactory() != null) {
+                throw new IllegalArgumentException(
+                        "A assertionScoreDirectorFactory (%s) cannot have a non-null assertionScoreDirectorFactory (%s)."
+                                .formatted(assertionScoreDirectorFactory,
+                                        assertionScoreDirectorFactory.getAssertionScoreDirectorFactory()));
             }
             if (environmentMode.compareTo(EnvironmentMode.FAST_ASSERT) > 0) {
-                throw new IllegalArgumentException("A non-null assertionScoreDirectorFactory ("
-                        + config.getAssertionScoreDirectorFactory() + ") requires an environmentMode ("
-                        + environmentMode + ") of " + EnvironmentMode.FAST_ASSERT + " or lower.");
+                throw new IllegalArgumentException(
+                        "A non-null assertionScoreDirectorFactory (%s) requires an environmentMode (%s) of %s or lower."
+                                .formatted(assertionScoreDirectorFactory, environmentMode, EnvironmentMode.FAST_ASSERT));
             }
             var assertionScoreDirectorFactoryFactory =
-                    new ScoreDirectorFactoryFactory<Solution_, Score_>(config.getAssertionScoreDirectorFactory());
+                    new ScoreDirectorFactoryFactory<Solution_, Score_>(assertionScoreDirectorFactory);
             scoreDirectorFactory.setAssertionScoreDirectorFactory(assertionScoreDirectorFactoryFactory
                     .buildScoreDirectorFactory(EnvironmentMode.NON_REPRODUCIBLE, solutionDescriptor));
         }
@@ -80,40 +82,42 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
     }
 
     private static void assertCorrectDirectorFactory(ScoreDirectorFactoryConfig config) {
-        var hasEasyScoreCalculator = config.getEasyScoreCalculatorClass() != null;
+        var easyScoreCalculatorClass = config.getEasyScoreCalculatorClass();
+        var hasEasyScoreCalculator = easyScoreCalculatorClass != null;
         if (!hasEasyScoreCalculator && config.getEasyScoreCalculatorCustomProperties() != null) {
             throw new IllegalStateException(
                     "If there is no easyScoreCalculatorClass (%s), then there can be no easyScoreCalculatorCustomProperties (%s) either."
-                            .formatted(config.getEasyScoreCalculatorClass(), config.getEasyScoreCalculatorCustomProperties()));
+                            .formatted(easyScoreCalculatorClass, config.getEasyScoreCalculatorCustomProperties()));
         }
-        var hasIncrementalScoreCalculator = config.getIncrementalScoreCalculatorClass() != null;
+        var incrementalScoreCalculatorClass = config.getIncrementalScoreCalculatorClass();
+        var hasIncrementalScoreCalculator = incrementalScoreCalculatorClass != null;
         if (!hasIncrementalScoreCalculator && config.getIncrementalScoreCalculatorCustomProperties() != null) {
             throw new IllegalStateException(
                     "If there is no incrementalScoreCalculatorClass (%s), then there can be no incrementalScoreCalculatorCustomProperties (%s) either."
-                            .formatted(config.getIncrementalScoreCalculatorClass(),
+                            .formatted(incrementalScoreCalculatorClass,
                                     config.getIncrementalScoreCalculatorCustomProperties()));
         }
-        var hasConstraintProvider = config.getConstraintProviderClass() != null;
+        var constraintProviderClass = config.getConstraintProviderClass();
+        var hasConstraintProvider = constraintProviderClass != null;
         if (!hasConstraintProvider && config.getConstraintProviderCustomProperties() != null) {
             throw new IllegalStateException(
                     "If there is no constraintProviderClass (%s), then there can be no constraintProviderCustomProperties (%s) either."
-                            .formatted(config.getConstraintProviderClass(),
-                                    config.getConstraintProviderCustomProperties()));
+                            .formatted(constraintProviderClass, config.getConstraintProviderCustomProperties()));
         }
         if (hasEasyScoreCalculator && (hasIncrementalScoreCalculator || hasConstraintProvider)
                 || (hasIncrementalScoreCalculator && hasConstraintProvider)) {
             var scoreDirectorFactoryPropertyList = new ArrayList<String>(3);
             if (hasEasyScoreCalculator) {
                 scoreDirectorFactoryPropertyList
-                        .add("an easyScoreCalculatorClass (%s)".formatted(config.getEasyScoreCalculatorClass().getName()));
+                        .add("an easyScoreCalculatorClass (%s)".formatted(easyScoreCalculatorClass.getName()));
             }
             if (hasConstraintProvider) {
                 scoreDirectorFactoryPropertyList
-                        .add("an constraintProviderClass (%s)".formatted(config.getConstraintProviderClass().getName()));
+                        .add("an constraintProviderClass (%s)".formatted(constraintProviderClass.getName()));
             }
             if (hasIncrementalScoreCalculator) {
                 scoreDirectorFactoryPropertyList.add("an incrementalScoreCalculatorClass (%s)"
-                        .formatted(config.getIncrementalScoreCalculatorClass().getName()));
+                        .formatted(incrementalScoreCalculatorClass.getName()));
             }
             var joined = String.join(" and ", scoreDirectorFactoryPropertyList);
             throw new IllegalArgumentException("The scoreDirectorFactory cannot have %s together."

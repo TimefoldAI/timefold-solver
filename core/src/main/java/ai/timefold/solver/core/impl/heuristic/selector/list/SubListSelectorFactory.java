@@ -36,10 +36,8 @@ public final class SubListSelectorFactory<Solution_> extends AbstractFromConfigF
         return new SubListSelectorFactory<>(subListSelectorConfig);
     }
 
-    public SubListSelector<Solution_> buildSubListSelector(
-            HeuristicConfigPolicy<Solution_> configPolicy,
-            EntitySelector<Solution_> entitySelector,
-            SelectionCacheType minimumCacheType,
+    public SubListSelector<Solution_> buildSubListSelector(HeuristicConfigPolicy<Solution_> configPolicy,
+            EntitySelector<Solution_> entitySelector, SelectionCacheType minimumCacheType,
             SelectionOrder inheritedSelectionOrder) {
         if (config.getMimicSelectorRef() != null) {
             return buildMimicReplaying(configPolicy);
@@ -88,14 +86,14 @@ public final class SubListSelectorFactory<Solution_> extends AbstractFromConfigF
 
     private SubListSelector<Solution_> applyMimicRecording(HeuristicConfigPolicy<Solution_> configPolicy,
             SubListSelector<Solution_> subListSelector) {
-        if (config.getId() != null) {
-            if (config.getId().isEmpty()) {
-                throw new IllegalArgumentException("The subListSelectorConfig (" + config
-                        + ") has an empty id (" + config.getId() + ").");
+        var id = config.getId();
+        if (id != null) {
+            if (id.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "The subListSelectorConfig (%s) has an empty id (%s).".formatted(config, id));
             }
-            MimicRecordingSubListSelector<Solution_> mimicRecordingSubListSelector =
-                    new MimicRecordingSubListSelector<>(subListSelector);
-            configPolicy.addSubListMimicRecorder(config.getId(), mimicRecordingSubListSelector);
+            var mimicRecordingSubListSelector = new MimicRecordingSubListSelector<>(subListSelector);
+            configPolicy.addSubListMimicRecorder(id, mimicRecordingSubListSelector);
             subListSelector = mimicRecordingSubListSelector;
         }
         return subListSelector;

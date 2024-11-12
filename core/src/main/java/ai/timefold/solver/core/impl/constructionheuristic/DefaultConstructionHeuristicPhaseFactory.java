@@ -93,20 +93,20 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
     }
 
     private Optional<EntityPlacerConfig<?>> getValidEntityPlacerConfig() {
-        EntityPlacerConfig<?> entityPlacerConfig = phaseConfig.getEntityPlacerConfig();
+        var entityPlacerConfig = phaseConfig.getEntityPlacerConfig();
         if (entityPlacerConfig == null) {
             return Optional.empty();
         }
         if (phaseConfig.getConstructionHeuristicType() != null) {
             throw new IllegalArgumentException(
-                    "The constructionHeuristicType (" + phaseConfig.getConstructionHeuristicType()
-                            + ") must not be configured if the entityPlacerConfig (" + entityPlacerConfig
-                            + ") is explicitly configured.");
+                    "The constructionHeuristicType (%s) must not be configured if the entityPlacerConfig (%s) is explicitly configured."
+                            .formatted(phaseConfig.getConstructionHeuristicType(), entityPlacerConfig));
         }
-        if (phaseConfig.getMoveSelectorConfigList() != null) {
-            throw new IllegalArgumentException("The moveSelectorConfigList (" + phaseConfig.getMoveSelectorConfigList()
-                    + ") cannot be configured if the entityPlacerConfig (" + entityPlacerConfig
-                    + ") is explicitly configured.");
+        var moveSelectorConfigList = phaseConfig.getMoveSelectorConfigList();
+        if (moveSelectorConfigList != null) {
+            throw new IllegalArgumentException(
+                    "The moveSelectorConfigList (%s) cannot be configured if the entityPlacerConfig (%s) is explicitly configured."
+                            .formatted(moveSelectorConfigList, entityPlacerConfig));
         }
         return Optional.of(entityPlacerConfig);
     }
@@ -208,16 +208,17 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         };
     }
 
-    private MoveSelectorConfig<?> checkSingleMoveSelectorConfig() {
-        if (phaseConfig.getMoveSelectorConfigList().size() != 1) {
-            throw new IllegalArgumentException("For the constructionHeuristicType ("
-                    + phaseConfig.getConstructionHeuristicType() + "), the moveSelectorConfigList ("
-                    + phaseConfig.getMoveSelectorConfigList()
-                    + ") must be a singleton. Use a single " + UnionMoveSelectorConfig.class.getSimpleName()
-                    + " or " + CartesianProductMoveSelectorConfig.class.getSimpleName()
-                    + " element to nest multiple MoveSelectors.");
+    private MoveSelectorConfig<?> checkSingleMoveSelectorConfig() { // Non-null guaranteed by the caller.
+        var moveSelectorConfigList = Objects.requireNonNull(phaseConfig.getMoveSelectorConfigList());
+        if (moveSelectorConfigList.size() != 1) {
+            throw new IllegalArgumentException("""
+                    For the constructionHeuristicType (%s), the moveSelectorConfigList (%s) must be a singleton.
+                    Use a single %s or %s element to nest multiple MoveSelectors."""
+                    .formatted(phaseConfig.getConstructionHeuristicType(), phaseConfig.getMoveSelectorConfigList(),
+                            UnionMoveSelectorConfig.class.getSimpleName(),
+                            CartesianProductMoveSelectorConfig.class.getSimpleName()));
         }
 
-        return phaseConfig.getMoveSelectorConfigList().get(0);
+        return moveSelectorConfigList.get(0);
     }
 }

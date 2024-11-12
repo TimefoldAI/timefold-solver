@@ -16,6 +16,7 @@ final class ResilientScoreComparator implements Comparator<Score> {
         this.aScoreDefinition = aScoreDefinition;
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public int compare(Score a, Score b) {
         if (a == null) {
@@ -25,14 +26,16 @@ final class ResilientScoreComparator implements Comparator<Score> {
         }
         if (!aScoreDefinition.isCompatibleArithmeticArgument(a) ||
                 !aScoreDefinition.isCompatibleArithmeticArgument(b)) {
-            Number[] aNumbers = a.toLevelNumbers();
-            Number[] bNumbers = b.toLevelNumbers();
-            for (int i = 0; i < aNumbers.length || i < bNumbers.length; i++) {
-                Number aToken = i < aNumbers.length ? aNumbers[i] : 0;
-                Number bToken = i < bNumbers.length ? bNumbers[i] : 0;
+            var aNumbers = a.toLevelNumbers();
+            var bNumbers = b.toLevelNumbers();
+            for (var i = 0; i < aNumbers.length || i < bNumbers.length; i++) {
+                var aToken = i < aNumbers.length ? aNumbers[i] : 0;
+                var bToken = i < bNumbers.length ? bNumbers[i] : 0;
                 int comparison;
-                if (aToken.getClass().equals(bToken.getClass())) {
-                    comparison = ((Comparable) aToken).compareTo(bToken);
+                if (aToken.getClass().equals(bToken.getClass())
+                        && aToken instanceof Comparable aTokenComparable
+                        && bToken instanceof Comparable bTokenComparable) {
+                    comparison = aTokenComparable.compareTo(bTokenComparable);
                 } else {
                     comparison = Double.compare(aToken.doubleValue(), bToken.doubleValue());
                 }

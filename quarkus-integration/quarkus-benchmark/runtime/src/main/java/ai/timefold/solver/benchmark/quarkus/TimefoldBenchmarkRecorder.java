@@ -2,7 +2,7 @@ package ai.timefold.solver.benchmark.quarkus;
 
 import java.io.File;
 import java.util.Collections;
-import java.util.List;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -22,7 +22,7 @@ public class TimefoldBenchmarkRecorder {
     public Supplier<PlannerBenchmarkConfig> benchmarkConfigSupplier(PlannerBenchmarkConfig benchmarkConfig,
             TimefoldBenchmarkRuntimeConfig timefoldRuntimeConfig) {
         return () -> {
-            SolverConfig solverConfig =
+            var solverConfig =
                     Arc.container().instance(SolverConfig.class).get();
             // If the termination configuration is set and the created benchmark configuration has no configuration item,
             // we need to add at least one configuration; otherwise, we will fail to recognize the runtime termination setting.
@@ -45,7 +45,7 @@ public class TimefoldBenchmarkRecorder {
         if (benchmarkRuntimeConfig != null && benchmarkRuntimeConfig.resultDirectory() != null) {
             plannerBenchmarkConfig.setBenchmarkDirectory(new File(benchmarkRuntimeConfig.resultDirectory()));
         }
-        SolverBenchmarkConfig inheritedBenchmarkConfig = plannerBenchmarkConfig.getInheritedSolverBenchmarkConfig();
+        var inheritedBenchmarkConfig = plannerBenchmarkConfig.getInheritedSolverBenchmarkConfig();
 
         if (plannerBenchmarkConfig.getSolverBenchmarkBluePrintConfigList() != null) {
             if (inheritedBenchmarkConfig == null) {
@@ -75,7 +75,7 @@ public class TimefoldBenchmarkRecorder {
         }
 
         if (inheritedTerminationConfig == null || !inheritedTerminationConfig.isConfigured()) {
-            List<SolverBenchmarkConfig> solverBenchmarkConfigList = plannerBenchmarkConfig.getSolverBenchmarkConfigList();
+            var solverBenchmarkConfigList = plannerBenchmarkConfig.getSolverBenchmarkConfigList();
             if (solverBenchmarkConfigList == null) {
                 throw new IllegalStateException("At least one of the properties " +
                         "quarkus.timefold.benchmark.solver.termination.spent-limit, " +
@@ -84,13 +84,10 @@ public class TimefoldBenchmarkRecorder {
                         "is required if termination is not configured in the " +
                         "inherited solver benchmark config and solverBenchmarkBluePrint is used.");
             }
-            for (int i = 0; i < solverBenchmarkConfigList.size(); i++) {
-                SolverBenchmarkConfig solverBenchmarkConfig = solverBenchmarkConfigList.get(i);
-                if (solverBenchmarkConfig.getSolverConfig() == null) {
-                    solverBenchmarkConfig.setSolverConfig(new SolverConfig());
-                }
-                SolverConfig solverConfig_ = solverBenchmarkConfig.getSolverConfig();
-                TerminationConfig terminationConfig = solverConfig_.getTerminationConfig();
+            for (var solverBenchmarkConfig : solverBenchmarkConfigList) {
+                var solverConfig_ = Objects.requireNonNullElseGet(solverBenchmarkConfig.getSolverConfig(), SolverConfig::new);
+                solverBenchmarkConfig.setSolverConfig(solverConfig_); // In case it was null before.
+                var terminationConfig = solverConfig_.getTerminationConfig();
                 if (terminationConfig == null) {
                     terminationConfig = new TerminationConfig();
                     solverConfig_.setTerminationConfig(terminationConfig);
@@ -117,7 +114,7 @@ public class TimefoldBenchmarkRecorder {
         }
 
         if (plannerBenchmarkConfig.getSolverBenchmarkConfigList() != null) {
-            for (SolverBenchmarkConfig childBenchmarkConfig : plannerBenchmarkConfig.getSolverBenchmarkConfigList()) {
+            for (var childBenchmarkConfig : plannerBenchmarkConfig.getSolverBenchmarkConfigList()) {
                 if (childBenchmarkConfig.getSolverConfig() == null) {
                     childBenchmarkConfig.setSolverConfig(new SolverConfig());
                 }
@@ -168,12 +165,13 @@ public class TimefoldBenchmarkRecorder {
                 isScoreCalculationDefined(inheritedBenchmarkConfig.getSolverConfig())) {
             return;
         }
-        ScoreDirectorFactoryConfig childScoreDirectorFactoryConfig = childBenchmarkConfig.getSolverConfig()
+        var childScoreDirectorFactoryConfig = Objects.requireNonNull(childBenchmarkConfig.getSolverConfig())
                 .getScoreDirectorFactoryConfig();
-        ScoreDirectorFactoryConfig inheritedScoreDirectorFactoryConfig = solverConfig.getScoreDirectorFactoryConfig();
+        var inheritedScoreDirectorFactoryConfig = Objects.requireNonNull(solverConfig.getScoreDirectorFactoryConfig());
         if (childScoreDirectorFactoryConfig == null) {
             childScoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
-            childBenchmarkConfig.getSolverConfig().setScoreDirectorFactoryConfig(childScoreDirectorFactoryConfig);
+            Objects.requireNonNull(childBenchmarkConfig.getSolverConfig())
+                    .setScoreDirectorFactoryConfig(childScoreDirectorFactoryConfig);
         }
         childScoreDirectorFactoryConfig.inherit(inheritedScoreDirectorFactoryConfig);
     }
@@ -182,7 +180,7 @@ public class TimefoldBenchmarkRecorder {
         if (solverConfig == null) {
             return false;
         }
-        ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = solverConfig.getScoreDirectorFactoryConfig();
+        var scoreDirectorFactoryConfig = solverConfig.getScoreDirectorFactoryConfig();
         if (scoreDirectorFactoryConfig == null) {
             return false;
         }

@@ -57,18 +57,20 @@ public class TerminationFactory<Solution_> {
             Arrays.fill(timeGradientWeightNumbers, 0.50); // Number pulled out of thin air
             terminationList.add(new BestScoreTermination<>(scoreDefinition, bestScoreLimit_, timeGradientWeightNumbers));
         }
-        if (terminationConfig.getBestScoreFeasible() != null) {
+        var bestScoreFeasible = terminationConfig.getBestScoreFeasible();
+        if (bestScoreFeasible != null) {
             ScoreDefinition<Score_> scoreDefinition = configPolicy.getScoreDefinition();
-            if (!terminationConfig.getBestScoreFeasible()) {
-                throw new IllegalArgumentException("The termination bestScoreFeasible ("
-                        + terminationConfig.getBestScoreFeasible() + ") cannot be false.");
+            if (!bestScoreFeasible) {
+                throw new IllegalArgumentException("The termination bestScoreFeasible (%s) cannot be false."
+                        .formatted(bestScoreFeasible));
             }
             int feasibleLevelsSize = scoreDefinition.getFeasibleLevelsSize();
             if (feasibleLevelsSize < 1) {
-                throw new IllegalStateException("The termination with bestScoreFeasible ("
-                        + terminationConfig.getBestScoreFeasible()
-                        + ") can only be used with a score type that has at least 1 feasible level but the scoreDefinition ("
-                        + scoreDefinition + ") has feasibleLevelsSize (" + feasibleLevelsSize + "), which is less than 1.");
+                throw new IllegalStateException("""
+                        The termination with bestScoreFeasible (%s) can only be used with a score type \
+                        that has at least 1 feasible level but the scoreDefinition (%s) has feasibleLevelsSize (%s), \
+                        which is less than 1."""
+                        .formatted(bestScoreFeasible, scoreDefinition, feasibleLevelsSize));
             }
             double[] timeGradientWeightFeasibleNumbers = new double[feasibleLevelsSize - 1];
             Arrays.fill(timeGradientWeightFeasibleNumbers, 0.50); // Number pulled out of thin air
@@ -124,11 +126,12 @@ public class TerminationFactory<Solution_> {
     }
 
     protected List<Termination<Solution_>> buildInnerTermination(HeuristicConfigPolicy<Solution_> configPolicy) {
-        if (ConfigUtils.isEmptyCollection(terminationConfig.getTerminationConfigList())) {
+        var terminationConfigList = terminationConfig.getTerminationConfigList();
+        if (ConfigUtils.isEmptyCollection(terminationConfigList)) {
             return Collections.emptyList();
         }
 
-        return terminationConfig.getTerminationConfigList().stream()
+        return terminationConfigList.stream()
                 .map(config -> TerminationFactory.<Solution_> create(config)
                         .buildTermination(configPolicy))
                 .filter(Objects::nonNull)

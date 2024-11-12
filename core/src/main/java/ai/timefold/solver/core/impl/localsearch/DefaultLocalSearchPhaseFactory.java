@@ -95,18 +95,18 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
     }
 
     protected Acceptor<Solution_> buildAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
-        LocalSearchAcceptorConfig acceptorConfig_;
-        if (phaseConfig.getAcceptorConfig() != null) {
-            if (phaseConfig.getLocalSearchType() != null) {
-                throw new IllegalArgumentException("The localSearchType (" + phaseConfig.getLocalSearchType()
-                        + ") must not be configured if the acceptorConfig (" + phaseConfig.getAcceptorConfig()
-                        + ") is explicitly configured.");
+        var acceptorConfig = phaseConfig.getAcceptorConfig();
+        var localSearchType = phaseConfig.getLocalSearchType();
+        if (acceptorConfig != null) {
+            if (localSearchType != null) {
+                throw new IllegalArgumentException(
+                        "The localSearchType (%s) must not be configured if the acceptorConfig (%s) is explicitly configured."
+                                .formatted(localSearchType, acceptorConfig));
             }
-            acceptorConfig_ = phaseConfig.getAcceptorConfig();
+            return buildAcceptor(acceptorConfig, configPolicy);
         } else {
-            LocalSearchType localSearchType_ =
-                    Objects.requireNonNullElse(phaseConfig.getLocalSearchType(), LocalSearchType.LATE_ACCEPTANCE);
-            acceptorConfig_ = new LocalSearchAcceptorConfig();
+            var localSearchType_ = Objects.requireNonNullElse(localSearchType, LocalSearchType.LATE_ACCEPTANCE);
+            var acceptorConfig_ = new LocalSearchAcceptorConfig();
             switch (localSearchType_) {
                 case HILL_CLIMBING:
                 case VARIABLE_NEIGHBORHOOD_DESCENT:
@@ -128,8 +128,13 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                     throw new IllegalStateException("The localSearchType (" + localSearchType_
                             + ") is not implemented.");
             }
+            return buildAcceptor(acceptorConfig_, configPolicy);
         }
-        return AcceptorFactory.<Solution_> create(acceptorConfig_)
+    }
+
+    private Acceptor<Solution_> buildAcceptor(LocalSearchAcceptorConfig acceptorConfig,
+            HeuristicConfigPolicy<Solution_> configPolicy) {
+        return AcceptorFactory.<Solution_> create(acceptorConfig)
                 .buildAcceptor(configPolicy);
     }
 

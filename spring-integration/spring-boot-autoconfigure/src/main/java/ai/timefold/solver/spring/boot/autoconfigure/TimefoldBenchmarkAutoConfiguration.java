@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNullElse;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.benchmark.api.PlannerBenchmarkFactory;
@@ -51,9 +52,6 @@ public class TimefoldBenchmarkAutoConfiguration implements BeanClassLoaderAware,
     public PlannerBenchmarkConfig plannerBenchmarkConfig() {
         assertSingleSolver();
         SolverConfig solverConfig = context.getBean(SolverConfig.class);
-        if (solverConfig == null) {
-            return null;
-        }
         PlannerBenchmarkConfig benchmarkConfig;
         if (timefoldProperties.getBenchmark() != null
                 && timefoldProperties.getBenchmark().getSolverBenchmarkConfigXml() != null) {
@@ -81,20 +79,21 @@ public class TimefoldBenchmarkAutoConfiguration implements BeanClassLoaderAware,
             benchmarkConfig.setBenchmarkDirectory(new File(BenchmarkProperties.DEFAULT_BENCHMARK_RESULT_DIRECTORY));
         }
 
-        if (benchmarkConfig.getInheritedSolverBenchmarkConfig() == null) {
-            SolverBenchmarkConfig inheritedBenchmarkConfig = new SolverBenchmarkConfig();
+        var inheritedBenchmarkConfig = benchmarkConfig.getInheritedSolverBenchmarkConfig();
+        if (inheritedBenchmarkConfig == null) {
+            inheritedBenchmarkConfig = new SolverBenchmarkConfig();
             benchmarkConfig.setInheritedSolverBenchmarkConfig(inheritedBenchmarkConfig);
             inheritedBenchmarkConfig.setSolverConfig(solverConfig.copyConfig());
         }
 
+        var inheritedBenchmarkSolverConfig = Objects.requireNonNull(inheritedBenchmarkConfig.getSolverConfig());
         if (timefoldProperties.getBenchmark() != null && timefoldProperties.getBenchmark().getSolver() != null) {
-            TimefoldSolverAutoConfiguration
-                    .applyTerminationProperties(benchmarkConfig.getInheritedSolverBenchmarkConfig().getSolverConfig(),
-                            timefoldProperties.getBenchmark().getSolver().getTermination());
+            TimefoldSolverAutoConfiguration.applyTerminationProperties(inheritedBenchmarkSolverConfig,
+                    timefoldProperties.getBenchmark().getSolver().getTermination());
         }
 
-        if (benchmarkConfig.getInheritedSolverBenchmarkConfig().getSolverConfig().getTerminationConfig() == null ||
-                !benchmarkConfig.getInheritedSolverBenchmarkConfig().getSolverConfig().getTerminationConfig().isConfigured()) {
+        var inheritedTerminationConfig = inheritedBenchmarkSolverConfig.getTerminationConfig();
+        if (inheritedTerminationConfig == null || !inheritedTerminationConfig.isConfigured()) {
             List<SolverBenchmarkConfig> solverBenchmarkConfigList = benchmarkConfig.getSolverBenchmarkConfigList();
             List<String> unconfiguredTerminationSolverBenchmarkList = new ArrayList<>();
             if (solverBenchmarkConfigList == null) {
@@ -107,10 +106,9 @@ public class TimefoldBenchmarkAutoConfiguration implements BeanClassLoaderAware,
             }
             if (solverBenchmarkConfigList.size() == 1 && solverBenchmarkConfigList.get(0).getSolverConfig() == null) {
                 // Benchmark config was created from solver config, which means only the inherited solver config exists.
-                SolverBenchmarkConfig solverBenchmarkConfig = benchmarkConfig.getInheritedSolverBenchmarkConfig();
-                if (!solverBenchmarkConfig.getSolverConfig().canTerminate()) {
+                if (!inheritedBenchmarkSolverConfig.canTerminate()) {
                     String benchmarkConfigName =
-                            requireNonNullElse(solverBenchmarkConfig.getName(), "InheritedSolverBenchmarkConfig");
+                            requireNonNullElse(inheritedBenchmarkConfig.getName(), "InheritedSolverBenchmarkConfig");
                     unconfiguredTerminationSolverBenchmarkList.add(benchmarkConfigName);
                 }
             } else {

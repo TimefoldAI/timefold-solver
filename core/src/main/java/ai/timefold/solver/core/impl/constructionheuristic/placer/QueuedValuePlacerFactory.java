@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.constructionheuristic.placer;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
@@ -58,29 +60,27 @@ public class QueuedValuePlacerFactory<Solution_>
 
     private ValueSelectorConfig buildValueSelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy,
             EntityDescriptor<Solution_> entityDescriptor) {
-        ValueSelectorConfig valueSelectorConfig_;
-        if (config.getValueSelectorConfig() == null) {
-            Class<?> entityClass = entityDescriptor.getEntityClass();
-            GenuineVariableDescriptor<Solution_> variableDescriptor = getTheOnlyVariableDescriptor(entityDescriptor);
-            valueSelectorConfig_ = new ValueSelectorConfig()
-                    .withId(entityClass.getName() + "." + variableDescriptor.getVariableName())
-                    .withVariableName(variableDescriptor.getVariableName());
-            if (ValueSelectorConfig.hasSorter(configPolicy.getValueSorterManner(), variableDescriptor)) {
-                valueSelectorConfig_ = valueSelectorConfig_.withCacheType(SelectionCacheType.PHASE)
-                        .withSelectionOrder(SelectionOrder.SORTED)
-                        .withSorterManner(configPolicy.getValueSorterManner());
-            }
-        } else {
-            valueSelectorConfig_ = config.getValueSelectorConfig();
+        var result = Objects.requireNonNullElseGet(config.getValueSelectorConfig(),
+                () -> {
+                    var entityClass = entityDescriptor.getEntityClass();
+                    var variableDescriptor = getTheOnlyVariableDescriptor(entityDescriptor);
+                    var valueSelectorConfig = new ValueSelectorConfig()
+                            .withId(entityClass.getName() + "." + variableDescriptor.getVariableName())
+                            .withVariableName(variableDescriptor.getVariableName());
+                    if (ValueSelectorConfig.hasSorter(configPolicy.getValueSorterManner(), variableDescriptor)) {
+                        valueSelectorConfig = valueSelectorConfig.withCacheType(SelectionCacheType.PHASE)
+                                .withSelectionOrder(SelectionOrder.SORTED)
+                                .withSorterManner(configPolicy.getValueSorterManner());
+                    }
+                    return valueSelectorConfig;
+                });
+        var cacheType = result.getCacheType();
+        if (cacheType != null && cacheType.compareTo(SelectionCacheType.PHASE) < 0) {
+            throw new IllegalArgumentException(
+                    "The queuedValuePlacer (%s) cannot have a valueSelectorConfig (%s) with a cacheType (%s) lower than %s."
+                            .formatted(this, result, cacheType, SelectionCacheType.PHASE));
         }
-        if (valueSelectorConfig_.getCacheType() != null
-                && valueSelectorConfig_.getCacheType().compareTo(SelectionCacheType.PHASE) < 0) {
-            throw new IllegalArgumentException("The queuedValuePlacer (" + this
-                    + ") cannot have a valueSelectorConfig (" + valueSelectorConfig_
-                    + ") with a cacheType (" + valueSelectorConfig_.getCacheType()
-                    + ") lower than " + SelectionCacheType.PHASE + ".");
-        }
-        return valueSelectorConfig_;
+        return result;
     }
 
     @Override

@@ -90,11 +90,12 @@ public abstract class AbstractMoveSelectorFactory<Solution_, MoveSelectorConfig_
         return null;
     }
 
-    protected static void checkUnfolded(String configPropertyName, Object configProperty) {
+    protected static <T> T checkUnfolded(String configPropertyName, T configProperty) {
         if (configProperty == null) {
-            throw new IllegalStateException("The " + configPropertyName + " (" + configProperty
-                    + ") should haven been initialized during unfolding.");
+            throw new IllegalStateException("The %s (%s) should haven been initialized during unfolding."
+                    .formatted(configPropertyName, configProperty));
         }
+        return configProperty;
     }
 
     private void validateResolvedCacheType(SelectionCacheType resolvedCacheType, MoveSelector<Solution_> moveSelector) {
@@ -107,21 +108,17 @@ public abstract class AbstractMoveSelectorFactory<Solution_, MoveSelectorConfig_
 
     protected boolean determineBaseRandomSelection(SelectionCacheType resolvedCacheType,
             SelectionOrder resolvedSelectionOrder) {
-        switch (resolvedSelectionOrder) {
-            case ORIGINAL:
-                return false;
-            case SORTED:
-            case SHUFFLED:
-            case PROBABILISTIC:
+        return switch (resolvedSelectionOrder) {
+            case ORIGINAL -> false;
+            case SORTED, SHUFFLED, PROBABILISTIC ->
                 // baseValueSelector and lower should be ORIGINAL if they are going to get cached completely
-                return false;
-            case RANDOM:
+                false;
+            case RANDOM ->
                 // Predict if caching will occur
-                return resolvedCacheType.isNotCached() || (isBaseInherentlyCached() && !hasFiltering());
-            default:
-                throw new IllegalStateException("The selectionOrder (" + resolvedSelectionOrder
-                        + ") is not implemented.");
-        }
+                resolvedCacheType.isNotCached() || (isBaseInherentlyCached() && !hasFiltering());
+            default -> throw new IllegalStateException("The selectionOrder (" + resolvedSelectionOrder
+                    + ") is not implemented.");
+        };
     }
 
     protected boolean isBaseInherentlyCached() {
