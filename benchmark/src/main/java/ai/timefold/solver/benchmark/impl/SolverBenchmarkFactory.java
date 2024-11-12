@@ -3,6 +3,7 @@ package ai.timefold.solver.benchmark.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import ai.timefold.solver.benchmark.config.ProblemBenchmarksConfig;
@@ -15,7 +16,6 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.monitoring.MonitoringConfig;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.config.util.ConfigUtils;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 
 public class SolverBenchmarkFactory {
@@ -28,59 +28,60 @@ public class SolverBenchmarkFactory {
     public <Solution_> void buildSolverBenchmark(ClassLoader classLoader, PlannerBenchmarkResult plannerBenchmark,
             Solution_[] extraProblems) {
         validate();
-        SolverBenchmarkResult solverBenchmarkResult = new SolverBenchmarkResult(plannerBenchmark);
+        var solverBenchmarkResult = new SolverBenchmarkResult(plannerBenchmark);
         solverBenchmarkResult.setName(config.getName());
         solverBenchmarkResult.setSubSingleCount(ConfigUtils.inheritOverwritableProperty(config.getSubSingleCount(), 1));
-        if (config.getSolverConfig().getClassLoader() == null) {
-            config.getSolverConfig().setClassLoader(classLoader);
+        var solverConfig = Objects.requireNonNullElseGet(config.getSolverConfig(), SolverConfig::new);
+        if (solverConfig.getClassLoader() == null) {
+            solverConfig.setClassLoader(classLoader);
         }
-        if (config.getSolverConfig().getMonitoringConfig() != null &&
-                config.getSolverConfig().getMonitoringConfig().getSolverMetricList() != null &&
-                !config.getSolverConfig().getMonitoringConfig().getSolverMetricList().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "The solverBenchmarkConfig (" + config + ") has a " + SolverConfig.class.getSimpleName() +
-                            " (" + config.getSolverConfig() + " ) with a non-empty " + MonitoringConfig.class.getSimpleName() +
-                            " (" + config.getSolverConfig().getMonitoringConfig() + ").");
+        var monitoringConfig = solverConfig.getMonitoringConfig();
+        var monitoringSolverMetricList =
+                monitoringConfig == null ? Collections.<SolverMetric> emptyList() : monitoringConfig.getSolverMetricList();
+        if (monitoringConfig != null && monitoringSolverMetricList != null && !monitoringSolverMetricList.isEmpty()) {
+            throw new IllegalArgumentException("The solverBenchmarkConfig (%s) has a %s (%s) with a non-empty %s (%s)."
+                    .formatted(config, SolverConfig.class.getSimpleName(), solverConfig, MonitoringConfig.class.getSimpleName(),
+                            monitoringConfig));
         }
-        List<SolverMetric> solverMetricList = getSolverMetrics(config.getProblemBenchmarksConfig());
-        solverBenchmarkResult.setSolverConfig(config.getSolverConfig()
-                .copyConfig().withMonitoringConfig(
-                        new MonitoringConfig()
-                                .withSolverMetricList(solverMetricList)));
-        DefaultSolverFactory<Solution_> defaultSolverFactory = new DefaultSolverFactory<>(config.getSolverConfig());
-        SolutionDescriptor<Solution_> solutionDescriptor = defaultSolverFactory.getSolutionDescriptor();
-        for (Solution_ extraProblem : extraProblems) {
+        var solverMetricList = getSolverMetrics(config.getProblemBenchmarksConfig());
+        solverBenchmarkResult.setSolverConfig(
+                solverConfig.copyConfig().withMonitoringConfig(new MonitoringConfig().withSolverMetricList(solverMetricList)));
+        var defaultSolverFactory = new DefaultSolverFactory<Solution_>(solverConfig);
+        var solutionDescriptor = defaultSolverFactory.getSolutionDescriptor();
+        for (var extraProblem : extraProblems) {
             if (!solutionDescriptor.getSolutionClass().isInstance(extraProblem)) {
-                throw new IllegalArgumentException("The solverBenchmark name (" + config.getName()
-                        + ") for solution class (" + solutionDescriptor.getSolutionClass()
-                        + ") cannot solve a problem (" + extraProblem
-                        + ") of class (" + (extraProblem == null ? null : extraProblem.getClass()) + ").");
+                throw new IllegalArgumentException(
+                        "The solverBenchmark name (%s) for solution class (%s) cannot solve a problem (%s) of class (%s)."
+                                .formatted(config.getName(), solutionDescriptor.getSolutionClass(), extraProblem,
+                                        extraProblem == null ? null : extraProblem.getClass()));
             }
         }
         solverBenchmarkResult.setScoreDefinition(solutionDescriptor.getScoreDefinition());
         solverBenchmarkResult.setSingleBenchmarkResultList(new ArrayList<>());
-        ProblemBenchmarksConfig problemBenchmarksConfig_ =
-                config.getProblemBenchmarksConfig() == null ? new ProblemBenchmarksConfig()
-                        : config.getProblemBenchmarksConfig();
+        var problemBenchmarksConfig =
+                Objects.requireNonNullElseGet(config.getProblemBenchmarksConfig(), ProblemBenchmarksConfig::new);
         plannerBenchmark.getSolverBenchmarkResultList().add(solverBenchmarkResult);
-        ProblemBenchmarksFactory problemBenchmarksFactory = new ProblemBenchmarksFactory(problemBenchmarksConfig_);
+        var problemBenchmarksFactory = new ProblemBenchmarksFactory(problemBenchmarksConfig);
         problemBenchmarksFactory.buildProblemBenchmarkList(solverBenchmarkResult, extraProblems);
     }
 
     protected void validate() {
-        if (!DefaultPlannerBenchmarkFactory.VALID_NAME_PATTERN.matcher(config.getName()).matches()) {
-            throw new IllegalStateException("The solverBenchmark name (" + config.getName()
-                    + ") is invalid because it does not follow the nameRegex ("
-                    + DefaultPlannerBenchmarkFactory.VALID_NAME_PATTERN.pattern() + ")" +
-                    " which might cause an illegal filename.");
+        var configName = config.getName();
+        if (configName == null || !DefaultPlannerBenchmarkFactory.VALID_NAME_PATTERN.matcher(configName).matches()) {
+            throw new IllegalStateException(
+                    "The solverBenchmark name (%s) is invalid because it does not follow the nameRegex (%s) which might cause an illegal filename."
+                            .formatted(configName, DefaultPlannerBenchmarkFactory.VALID_NAME_PATTERN.pattern()));
         }
-        if (!config.getName().trim().equals(config.getName())) {
-            throw new IllegalStateException("The solverBenchmark name (" + config.getName()
-                    + ") is invalid because it starts or ends with whitespace.");
+        if (!configName.trim().equals(configName)) {
+            throw new IllegalStateException(
+                    "The solverBenchmark name (%s) is invalid because it starts or ends with whitespace."
+                            .formatted(configName));
         }
-        if (config.getSubSingleCount() != null && config.getSubSingleCount() < 1) {
-            throw new IllegalStateException("The solverBenchmark name (" + config.getName()
-                    + ") is invalid because the subSingleCount (" + config.getSubSingleCount() + ") must be greater than 1.");
+        var subSingleCount = config.getSubSingleCount();
+        if (subSingleCount != null && subSingleCount < 1) {
+            throw new IllegalStateException(
+                    "The solverBenchmark name (%s) is invalid because the subSingleCount (%d) must be greater than 1."
+                            .formatted(configName, subSingleCount));
         }
     }
 

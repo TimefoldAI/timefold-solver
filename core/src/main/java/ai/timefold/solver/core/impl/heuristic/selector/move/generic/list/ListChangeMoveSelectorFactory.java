@@ -1,11 +1,8 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
@@ -15,18 +12,14 @@ import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelecto
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
-import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
 
 public class ListChangeMoveSelectorFactory<Solution_>
@@ -39,67 +32,66 @@ public class ListChangeMoveSelectorFactory<Solution_>
     @Override
     protected MoveSelector<Solution_> buildBaseMoveSelector(HeuristicConfigPolicy<Solution_> configPolicy,
             SelectionCacheType minimumCacheType, boolean randomSelection) {
-        checkUnfolded("valueSelectorConfig", config.getValueSelectorConfig());
-        checkUnfolded("destinationSelectorConfig", config.getDestinationSelectorConfig());
-        checkUnfolded("destinationEntitySelectorConfig", config.getDestinationSelectorConfig().getEntitySelectorConfig());
-        checkUnfolded("destinationValueSelectorConfig", config.getDestinationSelectorConfig().getValueSelectorConfig());
+        var valueSelectorConfig = checkUnfolded("valueSelectorConfig", config.getValueSelectorConfig());
+        var destinationSelectorConfig = checkUnfolded("destinationSelectorConfig", config.getDestinationSelectorConfig());
+        var destinationEntitySelectorConfig =
+                checkUnfolded("destinationEntitySelectorConfig", destinationSelectorConfig.getEntitySelectorConfig());
+        checkUnfolded("destinationValueSelectorConfig", destinationSelectorConfig.getValueSelectorConfig());
 
-        SelectionOrder selectionOrder = SelectionOrder.fromRandomSelectionBoolean(randomSelection);
+        var selectionOrder = SelectionOrder.fromRandomSelectionBoolean(randomSelection);
 
-        EntityDescriptor<Solution_> entityDescriptor = EntitySelectorFactory
-                .<Solution_> create(config.getDestinationSelectorConfig().getEntitySelectorConfig())
+        var entityDescriptor = EntitySelectorFactory
+                .<Solution_> create(destinationEntitySelectorConfig)
                 .extractEntityDescriptor(configPolicy);
 
-        ValueSelector<Solution_> sourceValueSelector = ValueSelectorFactory
-                .<Solution_> create(config.getValueSelectorConfig())
+        var sourceValueSelector = ValueSelectorFactory
+                .<Solution_> create(valueSelectorConfig)
                 .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, selectionOrder);
 
-        if (!(sourceValueSelector instanceof EntityIndependentValueSelector)) {
+        if (!(sourceValueSelector instanceof EntityIndependentValueSelector<Solution_> castSourceValueSelector)) {
             throw new IllegalArgumentException("The listChangeMoveSelector (" + config
                     + ") for a list variable needs to be based on an "
                     + EntityIndependentValueSelector.class.getSimpleName() + " (" + sourceValueSelector + ")."
                     + " Check your valueSelectorConfig.");
         }
 
-        DestinationSelector<Solution_> destinationSelector = DestinationSelectorFactory
-                .<Solution_> create(config.getDestinationSelectorConfig())
+        var destinationSelector = DestinationSelectorFactory
+                .<Solution_> create(destinationSelectorConfig)
                 .buildDestinationSelector(configPolicy, minimumCacheType, randomSelection);
 
-        return new ListChangeMoveSelector<>(
-                (EntityIndependentValueSelector<Solution_>) sourceValueSelector,
-                destinationSelector,
-                randomSelection);
+        return new ListChangeMoveSelector<>(castSourceValueSelector, destinationSelector, randomSelection);
     }
 
     @Override
     protected MoveSelectorConfig<?> buildUnfoldedMoveSelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy) {
-        Collection<EntityDescriptor<Solution_>> entityDescriptors;
-        EntityDescriptor<Solution_> onlyEntityDescriptor = config.getDestinationSelectorConfig() == null ? null
-                : config.getDestinationSelectorConfig().getEntitySelectorConfig() == null ? null
-                        : EntitySelectorFactory
-                                .<Solution_> create(config.getDestinationSelectorConfig().getEntitySelectorConfig())
+        var destinationSelectorConfig = config.getDestinationSelectorConfig();
+        var destinationEntitySelectorConfig = destinationSelectorConfig == null ? null
+                : destinationSelectorConfig.getEntitySelectorConfig();
+        var onlyEntityDescriptor = destinationSelectorConfig == null ? null
+                : destinationEntitySelectorConfig == null ? null
+                        : EntitySelectorFactory.<Solution_> create(destinationEntitySelectorConfig)
                                 .extractEntityDescriptor(configPolicy);
-        if (onlyEntityDescriptor != null) {
-            entityDescriptors = Collections.singletonList(onlyEntityDescriptor);
-        } else {
-            entityDescriptors = configPolicy.getSolutionDescriptor().getGenuineEntityDescriptors();
-        }
+        var entityDescriptors =
+                onlyEntityDescriptor == null ? configPolicy.getSolutionDescriptor().getGenuineEntityDescriptors()
+                        : Collections.singletonList(onlyEntityDescriptor);
         if (entityDescriptors.size() > 1) {
             throw new IllegalArgumentException("The listChangeMoveSelector (" + config
                     + ") cannot unfold when there are multiple entities (" + entityDescriptors + ")."
                     + " Please use one listChangeMoveSelector per each planning list variable.");
         }
-        EntityDescriptor<Solution_> entityDescriptor = entityDescriptors.iterator().next();
+        var entityDescriptor = entityDescriptors.iterator().next();
 
-        List<ListVariableDescriptor<Solution_>> variableDescriptorList = new ArrayList<>();
-        GenuineVariableDescriptor<Solution_> onlyVariableDescriptor = config.getValueSelectorConfig() == null ? null
-                : ValueSelectorFactory.<Solution_> create(config.getValueSelectorConfig())
+        var variableDescriptorList = new ArrayList<ListVariableDescriptor<Solution_>>();
+        var valueSelectorConfig = config.getValueSelectorConfig();
+        var onlyVariableDescriptor = valueSelectorConfig == null ? null
+                : ValueSelectorFactory.<Solution_> create(valueSelectorConfig)
                         .extractVariableDescriptor(configPolicy, entityDescriptor);
-        GenuineVariableDescriptor<Solution_> onlyDestinationVariableDescriptor =
-                config.getDestinationSelectorConfig() == null ? null
-                        : config.getDestinationSelectorConfig().getValueSelectorConfig() == null ? null
-                                : ValueSelectorFactory
-                                        .<Solution_> create(config.getDestinationSelectorConfig().getValueSelectorConfig())
+        var destinationValueSelectorConfig = destinationSelectorConfig == null ? null
+                : destinationSelectorConfig.getValueSelectorConfig();
+        var onlyDestinationVariableDescriptor =
+                destinationSelectorConfig == null ? null
+                        : destinationValueSelectorConfig == null ? null
+                                : ValueSelectorFactory.<Solution_> create(destinationValueSelectorConfig)
                                         .extractVariableDescriptor(configPolicy, entityDescriptor);
         if (onlyVariableDescriptor != null && onlyDestinationVariableDescriptor != null) {
             if (!onlyVariableDescriptor.isListVariable()) {
@@ -111,15 +103,15 @@ public class ListChangeMoveSelectorFactory<Solution_>
                         + " or use a changeMoveSelector instead.");
             }
             if (!onlyDestinationVariableDescriptor.isListVariable()) {
-                throw new IllegalArgumentException("The destinationSelector (" + config.getDestinationSelectorConfig()
+                throw new IllegalArgumentException("The destinationSelector (" + destinationSelectorConfig
                         + ") is configured to use a planning variable (" + onlyDestinationVariableDescriptor
                         + "), which is not a planning list variable.");
             }
             if (onlyVariableDescriptor != onlyDestinationVariableDescriptor) {
                 throw new IllegalArgumentException("The listChangeMoveSelector's valueSelector ("
-                        + config.getValueSelectorConfig()
+                        + valueSelectorConfig
                         + ") and destinationSelector's valueSelector ("
-                        + config.getDestinationSelectorConfig().getValueSelectorConfig()
+                        + destinationValueSelectorConfig
                         + ") must be configured for the same planning variable.");
             }
             if (onlyEntityDescriptor != null) {
@@ -132,7 +124,7 @@ public class ListChangeMoveSelectorFactory<Solution_>
                     entityDescriptor.getGenuineVariableDescriptorList().stream()
                             .filter(VariableDescriptor::isListVariable)
                             .map(variableDescriptor -> ((ListVariableDescriptor<Solution_>) variableDescriptor))
-                            .collect(Collectors.toList()));
+                            .toList());
         }
         if (variableDescriptorList.isEmpty()) {
             throw new IllegalArgumentException("The listChangeMoveSelector (" + config
@@ -142,10 +134,8 @@ public class ListChangeMoveSelectorFactory<Solution_>
             throw new IllegalArgumentException("The listChangeMoveSelector (" + config
                     + ") cannot unfold because there are multiple planning list variables.");
         }
-        ListChangeMoveSelectorConfig listChangeMoveSelectorConfig = buildChildMoveSelectorConfig(
-                variableDescriptorList.get(0),
-                config.getValueSelectorConfig(),
-                config.getDestinationSelectorConfig());
+        var listChangeMoveSelectorConfig =
+                buildChildMoveSelectorConfig(variableDescriptorList.get(0), valueSelectorConfig, destinationSelectorConfig);
         listChangeMoveSelectorConfig.inheritFolded(config);
         return listChangeMoveSelectorConfig;
     }
@@ -155,7 +145,7 @@ public class ListChangeMoveSelectorFactory<Solution_>
             ValueSelectorConfig inheritedValueSelectorConfig,
             DestinationSelectorConfig inheritedDestinationSelectorConfig) {
 
-        ValueSelectorConfig childValueSelectorConfig = new ValueSelectorConfig(inheritedValueSelectorConfig);
+        var childValueSelectorConfig = new ValueSelectorConfig(inheritedValueSelectorConfig);
         if (childValueSelectorConfig.getMimicSelectorRef() == null) {
             childValueSelectorConfig.setVariableName(variableDescriptor.getVariableName());
         }

@@ -14,7 +14,6 @@ import ai.timefold.solver.benchmark.api.PlannerBenchmark;
 import ai.timefold.solver.benchmark.api.PlannerBenchmarkFactory;
 import ai.timefold.solver.benchmark.config.PlannerBenchmarkConfig;
 import ai.timefold.solver.benchmark.config.SolverBenchmarkConfig;
-import ai.timefold.solver.benchmark.config.blueprint.SolverBenchmarkBluePrintConfig;
 import ai.timefold.solver.benchmark.config.report.BenchmarkReportConfig;
 import ai.timefold.solver.benchmark.impl.report.BenchmarkReport;
 import ai.timefold.solver.benchmark.impl.report.BenchmarkReportFactory;
@@ -148,20 +147,22 @@ public class DefaultPlannerBenchmarkFactory extends PlannerBenchmarkFactory {
     }
 
     protected List<SolverBenchmarkConfig> buildEffectiveSolverBenchmarkConfigList() {
-        List<SolverBenchmarkConfig> effectiveSolverBenchmarkConfigList = new ArrayList<>(0);
-        if (plannerBenchmarkConfig.getSolverBenchmarkConfigList() != null) {
-            effectiveSolverBenchmarkConfigList.addAll(plannerBenchmarkConfig.getSolverBenchmarkConfigList());
+        var effectiveSolverBenchmarkConfigList = new ArrayList<SolverBenchmarkConfig>(0);
+        var solverBenchmarkConfigList = plannerBenchmarkConfig.getSolverBenchmarkConfigList();
+        if (solverBenchmarkConfigList != null) {
+            effectiveSolverBenchmarkConfigList.addAll(solverBenchmarkConfigList);
         }
-        if (plannerBenchmarkConfig.getSolverBenchmarkBluePrintConfigList() != null) {
-            for (SolverBenchmarkBluePrintConfig solverBenchmarkBluePrintConfig : plannerBenchmarkConfig
-                    .getSolverBenchmarkBluePrintConfigList()) {
+        var solverBenchmarkBluePrintConfigList = plannerBenchmarkConfig.getSolverBenchmarkBluePrintConfigList();
+        if (solverBenchmarkBluePrintConfigList != null) {
+            for (var solverBenchmarkBluePrintConfig : solverBenchmarkBluePrintConfigList) {
                 effectiveSolverBenchmarkConfigList.addAll(solverBenchmarkBluePrintConfig.buildSolverBenchmarkConfigList());
             }
         }
-        if (plannerBenchmarkConfig.getInheritedSolverBenchmarkConfig() != null) {
-            for (SolverBenchmarkConfig solverBenchmarkConfig : effectiveSolverBenchmarkConfigList) {
+        var inheritedSolverBenchmarkConfig = plannerBenchmarkConfig.getInheritedSolverBenchmarkConfig();
+        if (inheritedSolverBenchmarkConfig != null) {
+            for (var solverBenchmarkConfig : effectiveSolverBenchmarkConfigList) {
                 // Side effect: changes the unmarshalled solverBenchmarkConfig
-                solverBenchmarkConfig.inherit(plannerBenchmarkConfig.getInheritedSolverBenchmarkConfig());
+                solverBenchmarkConfig.inherit(inheritedSolverBenchmarkConfig);
             }
         }
         return effectiveSolverBenchmarkConfigList;

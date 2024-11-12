@@ -64,7 +64,6 @@ public final class Joiners {
     /**
      * Joins every A and B that share a property.
      * These are exactly the pairs where {@code leftMapping.apply(A).equals(rightMapping.apply(B))}.
-     *
      * For example, on a cartesian product of list {@code [Ann(age = 20), Beth(age = 25), Eric(age = 20)]}
      * with both leftMapping and rightMapping being {@code Person::getAge},
      * this joiner will produce pairs {@code (Ann, Ann), (Ann, Eric), (Beth, Beth), (Eric, Ann), (Eric, Eric)}.

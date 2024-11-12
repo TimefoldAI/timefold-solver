@@ -102,27 +102,26 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
     }
 
     private EntitySelectorConfig buildEntitySelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy) {
-        EntitySelectorConfig entitySelectorConfig_;
-        if (phaseConfig.getEntitySelectorConfig() == null) {
-            EntityDescriptor<Solution_> entityDescriptor = deduceEntityDescriptor(configPolicy.getSolutionDescriptor());
-            entitySelectorConfig_ = new EntitySelectorConfig()
-                    .withEntityClass(entityDescriptor.getEntityClass());
-            if (EntitySelectorConfig.hasSorter(configPolicy.getEntitySorterManner(), entityDescriptor)) {
-                entitySelectorConfig_ = entitySelectorConfig_.withCacheType(SelectionCacheType.PHASE)
-                        .withSelectionOrder(SelectionOrder.SORTED)
-                        .withSorterManner(configPolicy.getEntitySorterManner());
-            }
-        } else {
-            entitySelectorConfig_ = phaseConfig.getEntitySelectorConfig();
+        var result = Objects.requireNonNullElseGet(
+                phaseConfig.getEntitySelectorConfig(),
+                () -> {
+                    var entityDescriptor = deduceEntityDescriptor(configPolicy.getSolutionDescriptor());
+                    var entitySelectorConfig = new EntitySelectorConfig()
+                            .withEntityClass(entityDescriptor.getEntityClass());
+                    if (EntitySelectorConfig.hasSorter(configPolicy.getEntitySorterManner(), entityDescriptor)) {
+                        entitySelectorConfig = entitySelectorConfig.withCacheType(SelectionCacheType.PHASE)
+                                .withSelectionOrder(SelectionOrder.SORTED)
+                                .withSorterManner(configPolicy.getEntitySorterManner());
+                    }
+                    return entitySelectorConfig;
+                });
+        var cacheType = result.getCacheType();
+        if (cacheType != null && cacheType.compareTo(SelectionCacheType.PHASE) < 0) {
+            throw new IllegalArgumentException(
+                    "The phaseConfig (%s) cannot have an entitySelectorConfig (%s) with a cacheType (%s) lower than %s."
+                            .formatted(phaseConfig, result, cacheType, SelectionCacheType.PHASE));
         }
-        if (entitySelectorConfig_.getCacheType() != null
-                && entitySelectorConfig_.getCacheType().compareTo(SelectionCacheType.PHASE) < 0) {
-            throw new IllegalArgumentException("The phaseConfig (" + phaseConfig
-                    + ") cannot have an entitySelectorConfig (" + entitySelectorConfig_
-                    + ") with a cacheType (" + entitySelectorConfig_.getCacheType()
-                    + ") lower than " + SelectionCacheType.PHASE + ".");
-        }
-        return entitySelectorConfig_;
+        return result;
     }
 
     protected EntityDescriptor<Solution_> deduceEntityDescriptor(SolutionDescriptor<Solution_> solutionDescriptor) {

@@ -14,7 +14,6 @@ import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySel
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
@@ -29,7 +28,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.Probabil
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.SelectedCountLimitEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.ShufflingEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.SortingEntitySelector;
-import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.EntityMimicRecorder;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.MimicRecordingEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.MimicReplayingEntitySelector;
 import ai.timefold.solver.core.impl.solver.ClassInstanceCache;
@@ -45,17 +43,17 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
     }
 
     public EntityDescriptor<Solution_> extractEntityDescriptor(HeuristicConfigPolicy<Solution_> configPolicy) {
-        if (config.getEntityClass() != null) {
-            SolutionDescriptor<Solution_> solutionDescriptor = configPolicy.getSolutionDescriptor();
-            EntityDescriptor<Solution_> entityDescriptor =
-                    solutionDescriptor.getEntityDescriptorStrict(config.getEntityClass());
+        var entityClass = config.getEntityClass();
+        if (entityClass != null) {
+            var solutionDescriptor = configPolicy.getSolutionDescriptor();
+            var entityDescriptor = solutionDescriptor.getEntityDescriptorStrict(entityClass);
             if (entityDescriptor == null) {
-                throw new IllegalArgumentException("The selectorConfig (" + config
-                        + ") has an entityClass (" + config.getEntityClass() + ") that is not a known planning entity.\n"
-                        + "Check your solver configuration. If that class (" + config.getEntityClass().getSimpleName()
-                        + ") is not in the entityClassSet (" + solutionDescriptor.getEntityClassSet()
-                        + "), check your @" + PlanningSolution.class.getSimpleName()
-                        + " implementation's annotated methods too.");
+                throw new IllegalArgumentException("""
+                        The selectorConfig (%s) has an entityClass (%s) that is not a known planning entity.
+                        Check your solver configuration. If that class (%s) is not in the entityClassSet (%s), \
+                        check your @%s implementation's annotated methods too."""
+                        .formatted(config, entityClass, entityClass.getSimpleName(),
+                                solutionDescriptor.getEntityClassSet(), PlanningSolution.class.getSimpleName()));
             }
             return entityDescriptor;
         } else if (config.getMimicSelectorRef() != null) {
@@ -78,12 +76,13 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
         if (config.getMimicSelectorRef() != null) {
             return buildMimicReplaying(configPolicy);
         }
-        EntityDescriptor<Solution_> entityDescriptor = deduceEntityDescriptor(configPolicy, config.getEntityClass());
-        SelectionCacheType resolvedCacheType = SelectionCacheType.resolve(config.getCacheType(), minimumCacheType);
-        SelectionOrder resolvedSelectionOrder = SelectionOrder.resolve(config.getSelectionOrder(), inheritedSelectionOrder);
+        var entityDescriptor = deduceEntityDescriptor(configPolicy, config.getEntityClass());
+        var resolvedCacheType = SelectionCacheType.resolve(config.getCacheType(), minimumCacheType);
+        var resolvedSelectionOrder = SelectionOrder.resolve(config.getSelectionOrder(), inheritedSelectionOrder);
 
-        if (config.getNearbySelectionConfig() != null) {
-            config.getNearbySelectionConfig().validateNearby(resolvedCacheType, resolvedSelectionOrder);
+        var nearbySelectionConfig = config.getNearbySelectionConfig();
+        if (nearbySelectionConfig != null) {
+            nearbySelectionConfig.validateNearby(resolvedCacheType, resolvedSelectionOrder);
         }
         validateCacheTypeVersusSelectionOrder(resolvedCacheType, resolvedSelectionOrder);
         validateSorting(resolvedSelectionOrder);
@@ -91,16 +90,16 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
         validateSelectedLimit(minimumCacheType);
 
         // baseEntitySelector and lower should be SelectionOrder.ORIGINAL if they are going to get cached completely
-        boolean baseRandomSelection = determineBaseRandomSelection(entityDescriptor, resolvedCacheType, resolvedSelectionOrder);
-        SelectionCacheType baseSelectionCacheType = SelectionCacheType.max(minimumCacheType, resolvedCacheType);
-        EntitySelector<Solution_> entitySelector = buildBaseEntitySelector(entityDescriptor, baseSelectionCacheType,
+        var baseRandomSelection = determineBaseRandomSelection(entityDescriptor, resolvedCacheType, resolvedSelectionOrder);
+        var baseSelectionCacheType = SelectionCacheType.max(minimumCacheType, resolvedCacheType);
+        var entitySelector = buildBaseEntitySelector(entityDescriptor, baseSelectionCacheType,
                 baseRandomSelection);
-        if (config.getNearbySelectionConfig() != null) {
+        if (nearbySelectionConfig != null) {
             // TODO Static filtering (such as movableEntitySelectionFilter) should affect nearbySelection
-            entitySelector = applyNearbySelection(configPolicy, config.getNearbySelectionConfig(), minimumCacheType,
+            entitySelector = applyNearbySelection(configPolicy, nearbySelectionConfig, minimumCacheType,
                     resolvedSelectionOrder, entitySelector);
         }
-        ClassInstanceCache instanceCache = configPolicy.getClassInstanceCache();
+        var instanceCache = configPolicy.getClassInstanceCache();
         entitySelector = applyFiltering(entitySelector, instanceCache);
         entitySelector = applySorting(resolvedCacheType, resolvedSelectionOrder, entitySelector, instanceCache);
         entitySelector = applyProbability(resolvedCacheType, resolvedSelectionOrder, entitySelector, instanceCache);
@@ -112,7 +111,7 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
     }
 
     protected EntitySelector<Solution_> buildMimicReplaying(HeuristicConfigPolicy<Solution_> configPolicy) {
-        final boolean anyConfigurationParameterDefined = Stream
+        final var anyConfigurationParameterDefined = Stream
                 .of(config.getId(), config.getEntityClass(), config.getCacheType(), config.getSelectionOrder(),
                         config.getNearbySelectionConfig(), config.getFilterClass(), config.getSorterManner(),
                         config.getSorterComparatorClass(), config.getSorterWeightFactoryClass(), config.getSorterOrder(),
@@ -123,7 +122,7 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
                     + ") with mimicSelectorRef (" + config.getMimicSelectorRef()
                     + ") has another property that is not null.");
         }
-        EntityMimicRecorder<Solution_> entityMimicRecorder = configPolicy.getEntityMimicRecorder(config.getMimicSelectorRef());
+        var entityMimicRecorder = configPolicy.getEntityMimicRecorder(config.getMimicSelectorRef());
         if (entityMimicRecorder == null) {
             throw new IllegalArgumentException("The entitySelectorConfig (" + config
                     + ") has a mimicSelectorRef (" + config.getMimicSelectorRef()
@@ -134,22 +133,18 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
 
     protected boolean determineBaseRandomSelection(EntityDescriptor<Solution_> entityDescriptor,
             SelectionCacheType resolvedCacheType, SelectionOrder resolvedSelectionOrder) {
-        switch (resolvedSelectionOrder) {
-            case ORIGINAL:
-                return false;
-            case SORTED:
-            case SHUFFLED:
-            case PROBABILISTIC:
+        return switch (resolvedSelectionOrder) {
+            case ORIGINAL -> false;
+            case SORTED, SHUFFLED, PROBABILISTIC ->
                 // baseValueSelector and lower should be ORIGINAL if they are going to get cached completely
-                return false;
-            case RANDOM:
+                false;
+            case RANDOM ->
                 // Predict if caching will occur
-                return resolvedCacheType.isNotCached()
+                resolvedCacheType.isNotCached()
                         || (isBaseInherentlyCached() && !hasFiltering(entityDescriptor));
-            default:
-                throw new IllegalStateException("The selectionOrder (" + resolvedSelectionOrder
-                        + ") is not implemented.");
-        }
+            default -> throw new IllegalStateException("The selectionOrder (%s) is not implemented."
+                    .formatted(resolvedSelectionOrder));
+        };
     }
 
     protected boolean isBaseInherentlyCached() {
@@ -182,7 +177,7 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
 
     private EntitySelector<Solution_> applyFiltering(EntitySelector<Solution_> entitySelector,
             ClassInstanceCache instanceCache) {
-        EntityDescriptor<Solution_> entityDescriptor = entitySelector.getEntityDescriptor();
+        var entityDescriptor = entitySelector.getEntityDescriptor();
         if (hasFiltering(entityDescriptor)) {
             List<SelectionFilter<Solution_, Object>> filterList = new ArrayList<>(config.getFilterClass() == null ? 1 : 2);
             if (config.getFilterClass() != null) {
@@ -263,7 +258,7 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
         if (resolvedSelectionOrder == SelectionOrder.SORTED) {
             SelectionSorter<Solution_, Object> sorter;
             if (config.getSorterManner() != null) {
-                EntityDescriptor<Solution_> entityDescriptor = entitySelector.getEntityDescriptor();
+                var entityDescriptor = entitySelector.getEntityDescriptor();
                 if (!EntitySelectorConfig.hasSorter(config.getSorterManner(), entityDescriptor)) {
                     return entitySelector;
                 }
@@ -357,14 +352,13 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
 
     private EntitySelector<Solution_> applyMimicRecording(HeuristicConfigPolicy<Solution_> configPolicy,
             EntitySelector<Solution_> entitySelector) {
-        if (config.getId() != null) {
-            if (config.getId().isEmpty()) {
-                throw new IllegalArgumentException("The entitySelectorConfig (" + config
-                        + ") has an empty id (" + config.getId() + ").");
+        var id = config.getId();
+        if (id != null) {
+            if (id.isEmpty()) {
+                throw new IllegalArgumentException("The entitySelectorConfig (%s) has an empty id (%s).".formatted(config, id));
             }
-            MimicRecordingEntitySelector<Solution_> mimicRecordingEntitySelector =
-                    new MimicRecordingEntitySelector<>(entitySelector);
-            configPolicy.addEntityMimicRecorder(config.getId(), mimicRecordingEntitySelector);
+            var mimicRecordingEntitySelector = new MimicRecordingEntitySelector<>(entitySelector);
+            configPolicy.addEntityMimicRecorder(id, mimicRecordingEntitySelector);
             entitySelector = mimicRecordingEntitySelector;
         }
         return entitySelector;

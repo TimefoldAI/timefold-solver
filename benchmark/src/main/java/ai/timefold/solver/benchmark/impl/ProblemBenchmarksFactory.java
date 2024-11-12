@@ -4,10 +4,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import ai.timefold.solver.benchmark.api.PlannerBenchmarkFactory;
 import ai.timefold.solver.benchmark.config.ProblemBenchmarksConfig;
-import ai.timefold.solver.benchmark.config.statistic.ProblemStatisticType;
 import ai.timefold.solver.benchmark.config.statistic.SingleStatisticType;
 import ai.timefold.solver.benchmark.impl.loader.FileProblemProvider;
 import ai.timefold.solver.benchmark.impl.loader.InstanceProblemProvider;
@@ -61,9 +61,8 @@ public class ProblemBenchmarksFactory {
                             + "Or maybe pass at least one problem to " + PlannerBenchmarkFactory.class.getSimpleName()
                             + ".buildPlannerBenchmark().");
         }
-        List<ProblemProvider<Solution_>> problemProviderList = new ArrayList<>(
-                extraProblems.length
-                        + (config.getInputSolutionFileList() == null ? 0 : config.getInputSolutionFileList().size()));
+        List<ProblemProvider<Solution_>> problemProviderList = new ArrayList<>(extraProblems.length
+                + Objects.requireNonNullElse(config.getInputSolutionFileList(), Collections.emptyList()).size());
         DefaultSolverFactory<Solution_> defaultSolverFactory =
                 new DefaultSolverFactory<>(solverBenchmarkResult.getSolverConfig());
         SolutionDescriptor<Solution_> solutionDescriptor = defaultSolverFactory.getSolutionDescriptor();
@@ -94,40 +93,42 @@ public class ProblemBenchmarksFactory {
         return problemProviderList;
     }
 
+    @SuppressWarnings("unchecked")
     private <Solution_> SolutionFileIO<Solution_> buildSolutionFileIO() {
-        if (config.getSolutionFileIOClass() == null) {
-            throw new IllegalArgumentException(
-                    "The solutionFileIOClass (" + config.getSolutionFileIOClass() + ") cannot be null.");
+        var solutionFileIOClass = config.getSolutionFileIOClass();
+        if (solutionFileIOClass == null) {
+            throw new IllegalArgumentException("The solutionFileIOClass cannot be null.");
         }
-        return (SolutionFileIO<Solution_>) ConfigUtils.newInstance(config, "solutionFileIOClass",
-                config.getSolutionFileIOClass());
+        return (SolutionFileIO<Solution_>) ConfigUtils.newInstance(config, "solutionFileIOClass", solutionFileIOClass);
     }
 
-    private <Solution_> ProblemBenchmarkResult<Solution_> buildProblemBenchmark(
-            PlannerBenchmarkResult plannerBenchmarkResult, ProblemProvider<Solution_> problemProvider) {
+    private <Solution_> ProblemBenchmarkResult<Solution_> buildProblemBenchmark(PlannerBenchmarkResult plannerBenchmarkResult,
+            ProblemProvider<Solution_> problemProvider) {
         ProblemBenchmarkResult<Solution_> problemBenchmarkResult = new ProblemBenchmarkResult<>(plannerBenchmarkResult);
         problemBenchmarkResult.setName(problemProvider.getProblemName());
         problemBenchmarkResult.setProblemProvider(problemProvider);
-        problemBenchmarkResult.setWriteOutputSolutionEnabled(
-                config.getWriteOutputSolutionEnabled() == null ? false : config.getWriteOutputSolutionEnabled());
-        List<ProblemStatistic> problemStatisticList;
-        if (config.getProblemStatisticEnabled() != null && !config.getProblemStatisticEnabled()) {
-            if (!ConfigUtils.isEmptyCollection(config.getProblemStatisticTypeList())) {
-                throw new IllegalArgumentException("The problemStatisticEnabled (" + config.getProblemStatisticEnabled()
-                        + ") and problemStatisticTypeList (" + config.getProblemStatisticTypeList()
-                        + ") cannot be used together.");
-            }
-            problemStatisticList = Collections.emptyList();
-        } else {
-            List<ProblemStatisticType> problemStatisticTypeList_ = config.determineProblemStatisticTypeList();
-            problemStatisticList = new ArrayList<>(problemStatisticTypeList_.size());
-            for (ProblemStatisticType problemStatisticType : problemStatisticTypeList_) {
-                problemStatisticList.add(problemStatisticType.buildProblemStatistic(problemBenchmarkResult));
-            }
-        }
+        problemBenchmarkResult
+                .setWriteOutputSolutionEnabled(Objects.requireNonNullElse(config.getWriteOutputSolutionEnabled(), false));
+        List<ProblemStatistic> problemStatisticList = getProblemStatisticList(problemBenchmarkResult);
         problemBenchmarkResult.setProblemStatisticList(problemStatisticList);
         problemBenchmarkResult.setSingleBenchmarkResultList(new ArrayList<>());
         return problemBenchmarkResult;
+    }
+
+    private List<ProblemStatistic> getProblemStatisticList(ProblemBenchmarkResult problemBenchmarkResult) {
+        var problemStatisticEnabled = config.getProblemStatisticEnabled();
+        if (problemStatisticEnabled != null && !problemStatisticEnabled) {
+            if (!ConfigUtils.isEmptyCollection(config.getProblemStatisticTypeList())) {
+                throw new IllegalArgumentException(
+                        "The problemStatisticEnabled (%b) and problemStatisticTypeList (%s) cannot be used together."
+                                .formatted(problemStatisticEnabled, config.getProblemStatisticTypeList()));
+            }
+            return Collections.emptyList();
+        } else {
+            return config.determineProblemStatisticTypeList().stream()
+                    .map(problemStatisticType -> problemStatisticType.buildProblemStatistic(problemBenchmarkResult))
+                    .toList();
+        }
     }
 
     private void buildSingleBenchmark(SolverBenchmarkResult solverBenchmarkResult,
