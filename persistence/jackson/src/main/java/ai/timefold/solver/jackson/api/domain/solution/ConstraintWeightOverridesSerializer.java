@@ -18,8 +18,8 @@ public final class ConstraintWeightOverridesSerializer<Score_ extends Score<Scor
             SerializerProvider serializerProvider) throws IOException {
         generator.writeStartObject();
         for (var constraintName : constraintWeightOverrides.getKnownConstraintNames()) {
-            var weight = constraintWeightOverrides.getConstraintWeight(constraintName);
-            generator.writeStringField(constraintName, Objects.requireNonNull(weight).toString());
+            var weight = Objects.requireNonNull(constraintWeightOverrides.getConstraintWeight(constraintName));
+            generator.writeStringField(constraintName, weight.toString());
         }
         generator.writeEndObject();
     }

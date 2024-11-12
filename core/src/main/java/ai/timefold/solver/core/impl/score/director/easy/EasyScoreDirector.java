@@ -48,10 +48,11 @@ public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
         variableListenerSupport.assertNotificationQueuesAreEmpty();
         Score_ score = easyScoreCalculator.calculateScore(workingSolution);
         if (!score.isSolutionInitialized()) {
-            throw new IllegalStateException("The score (" + this + ")'s initScore (" + score.initScore()
-                    + ") should be 0.\n"
-                    + "Maybe the score calculator (" + easyScoreCalculator.getClass() + ") is calculating "
-                    + "the initScore too, although it's the score director's responsibility.");
+            throw new IllegalStateException("""
+                    The score (%s)'s initScore (%d) should be 0.
+                    Maybe the score calculator (%s) is calculating the initScore too, \
+                    although it's the score director's responsibility."""
+                    .formatted(this, score.initScore(), easyScoreCalculator.getClass()));
         }
         int workingInitScore = getWorkingInitScore();
         if (workingInitScore != 0) {
@@ -69,8 +70,8 @@ public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
      */
     @Override
     public Map<String, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
-        throw new IllegalStateException(ConstraintMatch.class.getSimpleName()
-                + " is not supported by " + EasyScoreDirector.class.getSimpleName() + ".");
+        throw new IllegalStateException("%s is not supported by %s."
+                .formatted(ConstraintMatch.class.getSimpleName(), EasyScoreDirector.class.getSimpleName()));
     }
 
     /**
@@ -81,8 +82,8 @@ public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
      */
     @Override
     public Map<Object, Indictment<Score_>> getIndictmentMap() {
-        throw new IllegalStateException(ConstraintMatch.class.getSimpleName()
-                + " is not supported by " + EasyScoreDirector.class.getSimpleName() + ".");
+        throw new IllegalStateException("%s is not supported by %s."
+                .formatted(ConstraintMatch.class.getSimpleName(), EasyScoreDirector.class.getSimpleName()));
     }
 
     @Override

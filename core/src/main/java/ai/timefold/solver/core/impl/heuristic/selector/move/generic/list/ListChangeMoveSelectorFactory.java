@@ -49,10 +49,10 @@ public class ListChangeMoveSelectorFactory<Solution_>
                 .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, selectionOrder);
 
         if (!(sourceValueSelector instanceof EntityIndependentValueSelector<Solution_> castSourceValueSelector)) {
-            throw new IllegalArgumentException("The listChangeMoveSelector (" + config
-                    + ") for a list variable needs to be based on an "
-                    + EntityIndependentValueSelector.class.getSimpleName() + " (" + sourceValueSelector + ")."
-                    + " Check your valueSelectorConfig.");
+            throw new IllegalArgumentException("""
+                    The listChangeMoveSelector (%s) for a list variable needs to be based on an %s (%s).
+                    Check your valueSelectorConfig."""
+                    .formatted(config, EntityIndependentValueSelector.class.getSimpleName(), sourceValueSelector));
         }
 
         var destinationSelector = DestinationSelectorFactory
@@ -74,9 +74,10 @@ public class ListChangeMoveSelectorFactory<Solution_>
                 onlyEntityDescriptor == null ? configPolicy.getSolutionDescriptor().getGenuineEntityDescriptors()
                         : Collections.singletonList(onlyEntityDescriptor);
         if (entityDescriptors.size() > 1) {
-            throw new IllegalArgumentException("The listChangeMoveSelector (" + config
-                    + ") cannot unfold when there are multiple entities (" + entityDescriptors + ")."
-                    + " Please use one listChangeMoveSelector per each planning list variable.");
+            throw new IllegalArgumentException("""
+                    The listChangeMoveSelector (%s) cannot unfold when there are multiple entities (%s).
+                    Please use one listChangeMoveSelector per each planning list variable."""
+                    .formatted(config, entityDescriptors));
         }
         var entityDescriptor = entityDescriptors.iterator().next();
 
@@ -93,24 +94,22 @@ public class ListChangeMoveSelectorFactory<Solution_>
                                 .extractVariableDescriptor(configPolicy, entityDescriptor);
         if (onlyVariableDescriptor != null && onlyDestinationVariableDescriptor != null) {
             if (!onlyVariableDescriptor.isListVariable()) {
-                throw new IllegalArgumentException("The listChangeMoveSelector (" + config
-                        + ") is configured to use a planning variable (" + onlyVariableDescriptor
-                        + "), which is not a planning list variable."
-                        + " Either fix your annotations and use a @" + PlanningListVariable.class.getSimpleName()
-                        + " on the variable to make it work with listChangeMoveSelector"
-                        + " or use a changeMoveSelector instead.");
+                throw new IllegalArgumentException("""
+                        The listChangeMoveSelector (%s) is configured to use a planning variable (%s), \
+                        which is not a planning list variable.
+                        Either fix your annotations and use a @%s on the variable to make it work with listChangeMoveSelector
+                        or use a changeMoveSelector instead."""
+                        .formatted(config, onlyVariableDescriptor, PlanningListVariable.class.getSimpleName()));
             }
             if (!onlyDestinationVariableDescriptor.isListVariable()) {
-                throw new IllegalArgumentException("The destinationSelector (" + destinationSelectorConfig
-                        + ") is configured to use a planning variable (" + onlyDestinationVariableDescriptor
-                        + "), which is not a planning list variable.");
+                throw new IllegalArgumentException(
+                        "The destinationSelector (%s) is configured to use a planning variable (%s), which is not a planning list variable."
+                                .formatted(destinationSelectorConfig, onlyDestinationVariableDescriptor));
             }
             if (onlyVariableDescriptor != onlyDestinationVariableDescriptor) {
-                throw new IllegalArgumentException("The listChangeMoveSelector's valueSelector ("
-                        + valueSelectorConfig
-                        + ") and destinationSelector's valueSelector ("
-                        + destinationValueSelectorConfig
-                        + ") must be configured for the same planning variable.");
+                throw new IllegalArgumentException(
+                        "The listChangeMoveSelector's valueSelector (%s) and destinationSelector's valueSelector (%s) must be configured for the same planning variable."
+                                .formatted(valueSelectorConfig, destinationValueSelectorConfig));
             }
             if (onlyEntityDescriptor != null) {
                 // No need for unfolding or deducing
@@ -125,12 +124,14 @@ public class ListChangeMoveSelectorFactory<Solution_>
                             .toList());
         }
         if (variableDescriptorList.isEmpty()) {
-            throw new IllegalArgumentException("The listChangeMoveSelector (" + config
-                    + ") cannot unfold because there are no planning list variables.");
+            throw new IllegalArgumentException(
+                    "The listChangeMoveSelector (%s) cannot unfold because there are no planning list variables."
+                            .formatted(config));
         }
         if (variableDescriptorList.size() > 1) {
-            throw new IllegalArgumentException("The listChangeMoveSelector (" + config
-                    + ") cannot unfold because there are multiple planning list variables.");
+            throw new IllegalArgumentException(
+                    "The listChangeMoveSelector (%s) cannot unfold because there are multiple planning list variables."
+                            .formatted(config));
         }
         var listChangeMoveSelectorConfig =
                 buildChildMoveSelectorConfig(variableDescriptorList.get(0), valueSelectorConfig, destinationSelectorConfig);

@@ -185,8 +185,7 @@ public class ValueSelectorFactory<Solution_>
     protected boolean determineBaseRandomSelection(GenuineVariableDescriptor<Solution_> variableDescriptor,
             SelectionCacheType resolvedCacheType, SelectionOrder resolvedSelectionOrder) {
         return switch (resolvedSelectionOrder) {
-            case ORIGINAL -> false;
-            case SORTED, SHUFFLED, PROBABILISTIC ->
+            case ORIGINAL, SORTED, SHUFFLED, PROBABILISTIC ->
                 // baseValueSelector and lower should be ORIGINAL if they are going to get cached completely
                 false;
             case RANDOM ->

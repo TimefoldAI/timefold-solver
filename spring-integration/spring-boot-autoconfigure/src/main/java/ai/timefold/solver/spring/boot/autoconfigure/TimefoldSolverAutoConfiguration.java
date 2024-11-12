@@ -242,7 +242,7 @@ public class TimefoldSolverAutoConfiguration
         if (solverEntityClassList == null) {
             solverConfig.setEntityClassList(entityScanner.findEntityClassList());
         } else {
-            long entityClassCount = solverEntityClassList.stream()
+            var entityClassCount = solverEntityClassList.stream()
                     .filter(Objects::nonNull)
                     .count();
             if (entityClassCount == 0L) {

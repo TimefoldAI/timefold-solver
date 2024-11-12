@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.score.stream.common;
 
 import static ai.timefold.solver.core.api.score.stream.Joiners.lessThan;
 import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
 
 import java.util.Arrays;
 import java.util.List;
@@ -42,9 +41,9 @@ public abstract class InnerConstraintFactory<Solution_, Constraint_ extends Cons
         SolutionDescriptor<Solution_> solutionDescriptor = getSolutionDescriptor();
         MemberAccessor planningIdMemberAccessor = solutionDescriptor.getPlanningIdAccessor(sourceClass);
         if (planningIdMemberAccessor == null) {
-            throw new IllegalArgumentException("The fromClass (" + sourceClass + ") has no member with a @"
-                    + PlanningId.class.getSimpleName() + " annotation,"
-                    + " so the pairs cannot be made unique ([A,B] vs [B,A]).");
+            throw new IllegalArgumentException(
+                    "The fromClass (%s) has no member with a @%s annotation, so the pairs cannot be made unique ([A,B] vs [B,A])."
+                            .formatted(sourceClass, PlanningId.class.getSimpleName()));
         }
         Function<A, Comparable> planningIdGetter = planningIdMemberAccessor.getGetterFunction();
         return (DefaultBiJoiner<A, A>) lessThan(planningIdGetter);
@@ -74,17 +73,19 @@ public abstract class InnerConstraintFactory<Solution_, Constraint_ extends Cons
             List<String> canonicalClassNameList = problemFactOrEntityClassSet.stream()
                     .map(Class::getCanonicalName)
                     .sorted()
-                    .collect(toList());
-            throw new IllegalArgumentException("Cannot use class (" + fromType.getCanonicalName()
-                    + ") in a constraint stream as it is neither the same as, nor a superclass or superinterface of "
-                    + "one of planning entities or problem facts.\n"
-                    + "Ensure that all from(), join(), ifExists() and ifNotExists() building blocks only reference "
-                    + "classes assignable from planning entities or problem facts (" + canonicalClassNameList + ") "
-                    + "annotated on the planning solution (" + solutionDescriptor.getSolutionClass().getCanonicalName()
-                    + ").");
+                    .toList();
+            throw new IllegalArgumentException("""
+                    Cannot use class (%s) in a constraint stream as it is neither the same as, \
+                    nor a superclass or superinterface of one of planning entities or problem facts.
+                    Ensure that all from(), join(), ifExists() and ifNotExists() building blocks \
+                    only reference classes assignable from planning entities \
+                    or problem facts (%s) annotated on the planning solution (%s)."""
+                    .formatted(fromType.getCanonicalName(), canonicalClassNameList,
+                            solutionDescriptor.getSolutionClass().getCanonicalName()));
         }
     }
 
+    @SuppressWarnings("unchecked")
     public List<Constraint_> buildConstraints(ConstraintProvider constraintProvider) {
         Constraint[] constraints = Objects.requireNonNull(constraintProvider.defineConstraints(this),
                 () -> """
@@ -92,16 +93,18 @@ public abstract class InnerConstraintFactory<Solution_, Constraint_ extends Cons
                         Maybe return an empty array instead if there are no constraints."""
                         .formatted(constraintProvider.getClass()));
         if (Arrays.stream(constraints).anyMatch(Objects::isNull)) {
-            throw new IllegalStateException("The constraintProvider class (" + constraintProvider.getClass()
-                    + ")'s defineConstraints() must not contain an element that is null.\n"
-                    + "Maybe don't include any null elements in the " + Constraint.class.getSimpleName() + " array.");
+            throw new IllegalStateException("""
+                    The constraintProvider class (%s)'s defineConstraints() must not contain an element that is null.
+                    Maybe don't include any null elements in the %s array."""
+                    .formatted(constraintProvider.getClass(), Constraint.class.getSimpleName()));
         }
         // Fail fast on duplicate constraint IDs.
         Map<ConstraintRef, List<Constraint>> constraintsPerIdMap =
                 Arrays.stream(constraints).collect(groupingBy(Constraint::getConstraintRef));
         constraintsPerIdMap.forEach((constraintRef, duplicateConstraintList) -> {
             if (duplicateConstraintList.size() > 1) {
-                throw new IllegalStateException("There are multiple constraints with the same ID (" + constraintRef + ").");
+                throw new IllegalStateException("There are multiple constraints with the same ID (%s)."
+                        .formatted(constraintRef));
             }
         });
         return Arrays.stream(constraints)
