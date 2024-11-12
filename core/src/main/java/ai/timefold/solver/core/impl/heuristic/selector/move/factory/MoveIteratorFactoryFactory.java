@@ -17,12 +17,12 @@ public class MoveIteratorFactoryFactory<Solution_>
     @Override
     public MoveSelector<Solution_> buildBaseMoveSelector(HeuristicConfigPolicy<Solution_> configPolicy,
             SelectionCacheType minimumCacheType, boolean randomSelection) {
-        if (config.getMoveIteratorFactoryClass() == null) {
-            throw new IllegalArgumentException("The moveIteratorFactoryConfig (" + config
-                    + ") lacks a moveListFactoryClass (" + config.getMoveIteratorFactoryClass() + ").");
+        var moveIteratorFactoryClass = config.getMoveIteratorFactoryClass();
+        if (moveIteratorFactoryClass == null) {
+            throw new IllegalArgumentException("The moveIteratorFactoryConfig (%s) lacks a moveListFactoryClass (%s)."
+                    .formatted(config, moveIteratorFactoryClass));
         }
-        MoveIteratorFactory moveIteratorFactory = ConfigUtils.newInstance(config,
-                "moveIteratorFactoryClass", config.getMoveIteratorFactoryClass());
+        var moveIteratorFactory = ConfigUtils.newInstance(config, "moveIteratorFactoryClass", moveIteratorFactoryClass);
         ConfigUtils.applyCustomProperties(moveIteratorFactory, "moveIteratorFactoryClass",
                 config.getMoveIteratorFactoryCustomProperties(), "moveIteratorFactoryCustomProperties");
         return new MoveIteratorFactoryToMoveSelectorBridge<>(moveIteratorFactory, randomSelection);

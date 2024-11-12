@@ -613,15 +613,15 @@ public class PythonLikeType implements PythonLikeObject,
         if (this == o) {
             return true;
         }
-        if (o == null || !PythonLikeType.class.isAssignableFrom(o.getClass())) {
+        if (!(o instanceof PythonLikeType that)) {
             return false;
         }
-        PythonLikeType that = (PythonLikeType) o;
-        return JAVA_TYPE_INTERNAL_NAME.equals(that.JAVA_TYPE_INTERNAL_NAME);
+        return Objects.equals(JAVA_TYPE_INTERNAL_NAME, that.JAVA_TYPE_INTERNAL_NAME);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(JAVA_TYPE_INTERNAL_NAME);
+        return JAVA_TYPE_INTERNAL_NAME.hashCode();
     }
+
 }

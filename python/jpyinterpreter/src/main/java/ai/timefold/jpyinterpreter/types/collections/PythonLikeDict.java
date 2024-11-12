@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -387,8 +386,7 @@ public class PythonLikeDict<K extends PythonLikeObject, V extends PythonLikeObje
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Map) {
-            Map other = (Map) o;
+        if (o instanceof Map<?, ?> other) {
             if (other.size() != this.size()) {
                 return false;
             }
@@ -399,7 +397,7 @@ public class PythonLikeDict<K extends PythonLikeObject, V extends PythonLikeObje
 
     @Override
     public int hashCode() {
-        return Objects.hash(delegate);
+        return delegate.hashCode();
     }
 
     @Override

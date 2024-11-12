@@ -123,8 +123,8 @@ public class ConcurrentWeakIdentityHashMap<K, V> extends AbstractMap<K, V> imple
         }
 
         @Override
-        public boolean equals(Object obj) {
-            return this == obj || obj instanceof Key && ((Key<?>) obj).get() == get();
+        public boolean equals(Object o) {
+            return this == o || o instanceof Key<?> other && other.get() == get();
         }
 
         @Override

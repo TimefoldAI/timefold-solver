@@ -131,13 +131,33 @@ public class ChangeMoveSelectorFactory<Solution_>
                         Please update your solver config to use {} now.""",
                 config, ListChangeMoveSelectorConfig.class.getSimpleName());
         ListChangeMoveSelectorConfig listChangeMoveSelectorConfig = ListChangeMoveSelectorFactory.buildChildMoveSelectorConfig(
-                variableDescriptor, config.getValueSelectorConfig(),
-                new DestinationSelectorConfig()
-                        .withEntitySelectorConfig(config.getEntitySelectorConfig())
-                        .withValueSelectorConfig(config.getValueSelectorConfig()));
+                variableDescriptor, config.getValueSelectorConfig(), createDestinationSelectorConfig());
         if (inheritFoldedConfig) {
             listChangeMoveSelectorConfig.inheritFolded(config);
         }
         return listChangeMoveSelectorConfig;
     }
+
+    private DestinationSelectorConfig createDestinationSelectorConfig() {
+        var entitySelectorConfig = config.getEntitySelectorConfig();
+        var valueSelectorConfig = config.getValueSelectorConfig();
+        if (entitySelectorConfig == null) {
+            if (valueSelectorConfig == null) {
+                return new DestinationSelectorConfig();
+            } else {
+                return new DestinationSelectorConfig()
+                        .withValueSelectorConfig(valueSelectorConfig);
+            }
+        } else {
+            if (valueSelectorConfig == null) {
+                return new DestinationSelectorConfig()
+                        .withEntitySelectorConfig(entitySelectorConfig);
+            } else {
+                return new DestinationSelectorConfig()
+                        .withEntitySelectorConfig(entitySelectorConfig)
+                        .withValueSelectorConfig(valueSelectorConfig);
+            }
+        }
+    }
+
 }

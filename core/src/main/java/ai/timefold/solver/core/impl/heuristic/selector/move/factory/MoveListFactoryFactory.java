@@ -17,12 +17,13 @@ public class MoveListFactoryFactory<Solution_>
     @Override
     public MoveSelector<Solution_> buildBaseMoveSelector(HeuristicConfigPolicy<Solution_> configPolicy,
             SelectionCacheType minimumCacheType, boolean randomSelection) {
-        if (config.getMoveListFactoryClass() == null) {
-            throw new IllegalArgumentException("The moveListFactoryConfig (" + config
-                    + ") lacks a moveListFactoryClass (" + config.getMoveListFactoryClass() + ").");
+        var moveListFactoryClass = config.getMoveListFactoryClass();
+        if (moveListFactoryClass == null) {
+            throw new IllegalArgumentException("The moveListFactoryConfig (%s) lacks a moveListFactoryClass (%s)."
+                    .formatted(config, moveListFactoryClass));
         }
         MoveListFactory<Solution_> moveListFactory =
-                ConfigUtils.newInstance(config, "moveListFactoryClass", config.getMoveListFactoryClass());
+                ConfigUtils.newInstance(config, "moveListFactoryClass", moveListFactoryClass);
         ConfigUtils.applyCustomProperties(moveListFactory, "moveListFactoryClass",
                 config.getMoveListFactoryCustomProperties(), "moveListFactoryCustomProperties");
         // MoveListFactoryToMoveSelectorBridge caches by design, so it uses the minimumCacheType

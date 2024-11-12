@@ -131,29 +131,31 @@ public class SubListChangeMoveSelectorFactory<Solution_>
     }
 
     private SubListChangeMoveSelectorConfig buildChildMoveSelectorConfig(ListVariableDescriptor<?> variableDescriptor) {
+        var subListSelectorConfig = config.getSubListSelectorConfig();
+        var destinationSelectorConfig = config.getDestinationSelectorConfig();
         var subListChangeMoveSelectorConfig = config.copyConfig()
-                .withSubListSelectorConfig(new SubListSelectorConfig(config.getSubListSelectorConfig())
-                        .withValueSelectorConfig(Optional.ofNullable(config.getSubListSelectorConfig())
+                .withSubListSelectorConfig(new SubListSelectorConfig(subListSelectorConfig)
+                        .withValueSelectorConfig(Optional.ofNullable(subListSelectorConfig)
                                 .map(SubListSelectorConfig::getValueSelectorConfig)
                                 .map(ValueSelectorConfig::new) // use copy constructor if inherited not null
                                 .orElseGet(ValueSelectorConfig::new)))
-                .withDestinationSelectorConfig(new DestinationSelectorConfig(config.getDestinationSelectorConfig())
+                .withDestinationSelectorConfig(new DestinationSelectorConfig(destinationSelectorConfig)
                         .withEntitySelectorConfig(
-                                Optional.ofNullable(config.getDestinationSelectorConfig())
+                                Optional.ofNullable(destinationSelectorConfig)
                                         .map(DestinationSelectorConfig::getEntitySelectorConfig)
                                         .map(EntitySelectorConfig::new) // use copy constructor if inherited not null
                                         .orElseGet(EntitySelectorConfig::new) // otherwise create new instance
                                         // override entity class (destination entity selector is never replaying)
                                         .withEntityClass(variableDescriptor.getEntityDescriptor().getEntityClass()))
                         .withValueSelectorConfig(
-                                Optional.ofNullable(config.getDestinationSelectorConfig())
+                                Optional.ofNullable(destinationSelectorConfig)
                                         .map(DestinationSelectorConfig::getValueSelectorConfig)
                                         .map(ValueSelectorConfig::new) // use copy constructor if inherited not null
                                         .orElseGet(ValueSelectorConfig::new) // otherwise create new instance
                                         // override variable name (destination value selector is never replaying)
                                         .withVariableName(variableDescriptor.getVariableName())));
 
-        var subListSelectorConfig = Objects.requireNonNull(subListChangeMoveSelectorConfig.getSubListSelectorConfig());
+        subListSelectorConfig = Objects.requireNonNull(subListChangeMoveSelectorConfig.getSubListSelectorConfig());
         SubListConfigUtil.transferDeprecatedMinimumSubListSize(
                 subListChangeMoveSelectorConfig,
                 SubListChangeMoveSelectorConfig::getMinimumSubListSize,

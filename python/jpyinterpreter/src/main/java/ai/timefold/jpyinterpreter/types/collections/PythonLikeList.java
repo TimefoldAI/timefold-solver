@@ -581,8 +581,7 @@ public class PythonLikeList<T> extends AbstractPythonLikeObject implements List<
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof List) {
-            List other = (List) o;
+        if (o instanceof List<?> other) {
             if (other.size() != delegate.size()) {
                 return false;
             }
@@ -599,7 +598,7 @@ public class PythonLikeList<T> extends AbstractPythonLikeObject implements List<
 
     @Override
     public int hashCode() {
-        return Objects.hash(delegate);
+        return delegate.hashCode();
     }
 
     public List getDelegate() {

@@ -392,8 +392,7 @@ public class PythonLikeTuple<T extends PythonLikeObject> extends AbstractPythonL
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof List) {
-            List other = (List) o;
+        if (o instanceof List<?> other) {
             if (other.size() != this.size()) {
                 return false;
             }
@@ -437,7 +436,7 @@ public class PythonLikeTuple<T extends PythonLikeObject> extends AbstractPythonL
 
     @Override
     public int hashCode() {
-        return Objects.hash(delegate);
+        return delegate.hashCode();
     }
 
     @Override

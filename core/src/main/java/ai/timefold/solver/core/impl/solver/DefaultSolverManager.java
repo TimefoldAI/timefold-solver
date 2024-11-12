@@ -42,18 +42,15 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
     private final ExecutorService solverThreadPool;
     private final ConcurrentMap<Object, DefaultSolverJob<Solution_, ProblemId_>> problemIdToSolverJobMap;
 
-    public DefaultSolverManager(SolverFactory<Solution_> solverFactory,
-            SolverManagerConfig solverManagerConfig) {
-        defaultExceptionHandler = (problemId, throwable) -> LOGGER.error(
-                "Solving failed for problemId ({}).", problemId, throwable);
+    public DefaultSolverManager(SolverFactory<Solution_> solverFactory, SolverManagerConfig solverManagerConfig) {
+        this.defaultExceptionHandler =
+                (problemId, throwable) -> LOGGER.error("Solving failed for problemId ({}).", problemId, throwable);
         this.solverFactory = solverFactory;
         validateSolverFactory();
-        int parallelSolverCount = solverManagerConfig.resolveParallelSolverCount();
-        var threadFactory = Executors.defaultThreadFactory();
-        if (solverManagerConfig.getThreadFactoryClass() != null) {
-            threadFactory = ConfigUtils.newInstance(solverManagerConfig, "threadFactoryClass",
-                    solverManagerConfig.getThreadFactoryClass());
-        }
+        var parallelSolverCount = solverManagerConfig.resolveParallelSolverCount();
+        var threadFactoryClass = solverManagerConfig.getThreadFactoryClass();
+        var threadFactory = threadFactoryClass == null ? Executors.defaultThreadFactory()
+                : ConfigUtils.newInstance(solverManagerConfig, "threadFactoryClass", threadFactoryClass);
         solverThreadPool = Executors.newFixedThreadPool(parallelSolverCount, threadFactory);
         problemIdToSolverJobMap = new ConcurrentHashMap<>(parallelSolverCount * 10);
     }

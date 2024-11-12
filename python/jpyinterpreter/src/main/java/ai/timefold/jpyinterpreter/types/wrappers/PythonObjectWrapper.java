@@ -88,15 +88,13 @@ public class PythonObjectWrapper extends CPythonBackedPythonLikeObject
         if (this == o) {
             return true;
         }
-        if (!(o instanceof PythonObjectWrapper)) {
+        if (!(o instanceof PythonObjectWrapper other)) {
             return false;
         }
-        PythonObjectWrapper other = (PythonObjectWrapper) o;
         Object maybeEquals = $getType().$getAttributeOrNull("__eq__");
-        if (!(maybeEquals instanceof PythonLikeFunction)) {
+        if (!(maybeEquals instanceof PythonLikeFunction equals)) {
             return super.equals(o);
         }
-        PythonLikeFunction equals = (PythonLikeFunction) maybeEquals;
         PythonLikeObject result = equals.$call(List.of(this, other), Map.of(), null);
         if (result instanceof PythonBoolean) {
             return ((PythonBoolean) result).getBooleanValue();
@@ -107,10 +105,9 @@ public class PythonObjectWrapper extends CPythonBackedPythonLikeObject
     @Override
     public int hashCode() {
         Object maybeHash = $getType().$getAttributeOrNull("__hash__");
-        if (!(maybeHash instanceof PythonLikeFunction)) {
+        if (!(maybeHash instanceof PythonLikeFunction hash)) {
             return super.hashCode();
         }
-        PythonLikeFunction hash = (PythonLikeFunction) maybeHash;
         PythonLikeObject result = hash.$call(List.of(this), Map.of(), null);
         if (result instanceof PythonInteger) {
             return ((PythonInteger) result).value.hashCode();

@@ -1504,10 +1504,10 @@ public class PythonString extends AbstractPythonLikeObject implements PythonLike
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof String) {
-            return value.equals(o);
-        } else if (o instanceof PythonString) {
-            return ((PythonString) o).value.equals(value);
+        if (o instanceof String s) {
+            return s.equals(value);
+        } else if (o instanceof PythonString s) {
+            return s.value.equals(value);
         } else {
             return false;
         }
