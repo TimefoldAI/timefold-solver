@@ -12,9 +12,7 @@ import ai.timefold.solver.core.config.heuristic.selector.common.decorator.Select
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.EntityIndependentValueRangeDescriptor;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -40,7 +38,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.SortingVa
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.UnassignedListValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.MimicRecordingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.MimicReplayingValueSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.ValueMimicRecorder;
 import ai.timefold.solver.core.impl.solver.ClassInstanceCache;
 
 public class ValueSelectorFactory<Solution_>
@@ -56,11 +53,12 @@ public class ValueSelectorFactory<Solution_>
 
     public GenuineVariableDescriptor<Solution_> extractVariableDescriptor(HeuristicConfigPolicy<Solution_> configPolicy,
             EntityDescriptor<Solution_> entityDescriptor) {
-        String variableName = config.getVariableName();
+        var variableName = config.getVariableName();
+        var mimicSelectorRef = config.getMimicSelectorRef();
         if (variableName != null) {
             return getVariableDescriptorForName(downcastEntityDescriptor(configPolicy, entityDescriptor), variableName);
-        } else if (config.getMimicSelectorRef() != null) {
-            return configPolicy.getValueMimicRecorder(config.getMimicSelectorRef()).getVariableDescriptor();
+        } else if (mimicSelectorRef != null) {
+            return configPolicy.getValueMimicRecorder(mimicSelectorRef).getVariableDescriptor();
         } else {
             return null;
         }
@@ -86,20 +84,21 @@ public class ValueSelectorFactory<Solution_>
             EntityDescriptor<Solution_> entityDescriptor, SelectionCacheType minimumCacheType,
             SelectionOrder inheritedSelectionOrder, boolean applyReinitializeVariableFiltering,
             ListValueFilteringType listValueFilteringType) {
-        GenuineVariableDescriptor<Solution_> variableDescriptor = deduceGenuineVariableDescriptor(
-                downcastEntityDescriptor(configPolicy, entityDescriptor), config.getVariableName());
+        var variableDescriptor = deduceGenuineVariableDescriptor(downcastEntityDescriptor(configPolicy, entityDescriptor),
+                config.getVariableName());
         if (config.getMimicSelectorRef() != null) {
-            ValueSelector<Solution_> valueSelector = buildMimicReplaying(configPolicy);
+            var valueSelector = buildMimicReplaying(configPolicy);
             valueSelector =
                     applyReinitializeVariableFiltering(applyReinitializeVariableFiltering, variableDescriptor, valueSelector);
             valueSelector = applyDowncasting(valueSelector);
             return valueSelector;
         }
-        SelectionCacheType resolvedCacheType = SelectionCacheType.resolve(config.getCacheType(), minimumCacheType);
-        SelectionOrder resolvedSelectionOrder = SelectionOrder.resolve(config.getSelectionOrder(), inheritedSelectionOrder);
+        var resolvedCacheType = SelectionCacheType.resolve(config.getCacheType(), minimumCacheType);
+        var resolvedSelectionOrder = SelectionOrder.resolve(config.getSelectionOrder(), inheritedSelectionOrder);
 
-        if (config.getNearbySelectionConfig() != null) {
-            config.getNearbySelectionConfig().validateNearby(resolvedCacheType, resolvedSelectionOrder);
+        var nearbySelectionConfig = config.getNearbySelectionConfig();
+        if (nearbySelectionConfig != null) {
+            nearbySelectionConfig.validateNearby(resolvedCacheType, resolvedSelectionOrder);
         }
         validateCacheTypeVersusSelectionOrder(resolvedCacheType, resolvedSelectionOrder);
         validateSorting(resolvedSelectionOrder);
@@ -107,16 +106,16 @@ public class ValueSelectorFactory<Solution_>
         validateSelectedLimit(minimumCacheType);
 
         // baseValueSelector and lower should be SelectionOrder.ORIGINAL if they are going to get cached completely
-        ValueSelector<Solution_> valueSelector =
+        var valueSelector =
                 buildBaseValueSelector(variableDescriptor, SelectionCacheType.max(minimumCacheType, resolvedCacheType),
                         determineBaseRandomSelection(variableDescriptor, resolvedCacheType, resolvedSelectionOrder));
 
-        if (config.getNearbySelectionConfig() != null) {
+        if (nearbySelectionConfig != null) {
             // TODO Static filtering (such as movableEntitySelectionFilter) should affect nearbySelection too
             valueSelector = applyNearbySelection(configPolicy, entityDescriptor, minimumCacheType,
                     resolvedSelectionOrder, valueSelector);
         }
-        ClassInstanceCache instanceCache = configPolicy.getClassInstanceCache();
+        var instanceCache = configPolicy.getClassInstanceCache();
         valueSelector = applyFiltering(valueSelector, instanceCache);
         valueSelector = applyInitializedChainedValueFilter(configPolicy, variableDescriptor, valueSelector);
         valueSelector = applySorting(resolvedCacheType, resolvedSelectionOrder, valueSelector, instanceCache);
@@ -146,38 +145,38 @@ public class ValueSelectorFactory<Solution_>
                 || config.getSorterClass() != null
                 || config.getProbabilityWeightFactoryClass() != null
                 || config.getSelectedCountLimit() != null) {
-            throw new IllegalArgumentException("The valueSelectorConfig (" + config
-                    + ") with mimicSelectorRef (" + config.getMimicSelectorRef()
-                    + ") has another property that is not null.");
+            throw new IllegalArgumentException(
+                    "The valueSelectorConfig (%s) with mimicSelectorRef (%s) has another property that is not null."
+                            .formatted(config, config.getMimicSelectorRef()));
         }
-        ValueMimicRecorder<Solution_> valueMimicRecorder = configPolicy.getValueMimicRecorder(config.getMimicSelectorRef());
+        var valueMimicRecorder = configPolicy.getValueMimicRecorder(config.getMimicSelectorRef());
         if (valueMimicRecorder == null) {
-            throw new IllegalArgumentException("The valueSelectorConfig (" + config
-                    + ") has a mimicSelectorRef (" + config.getMimicSelectorRef()
-                    + ") for which no valueSelector with that id exists (in its solver phase).");
+            throw new IllegalArgumentException(
+                    "The valueSelectorConfig (%s) has a mimicSelectorRef (%s) for which no valueSelector with that id exists (in its solver phase)."
+                            .formatted(config, config.getMimicSelectorRef()));
         }
         return new MimicReplayingValueSelector<>(valueMimicRecorder);
     }
 
     protected EntityDescriptor<Solution_> downcastEntityDescriptor(HeuristicConfigPolicy<Solution_> configPolicy,
             EntityDescriptor<Solution_> entityDescriptor) {
-        if (config.getDowncastEntityClass() != null) {
-            Class<?> parentEntityClass = entityDescriptor.getEntityClass();
-            if (!parentEntityClass.isAssignableFrom(config.getDowncastEntityClass())) {
-                throw new IllegalStateException("The downcastEntityClass (" + config.getDowncastEntityClass()
-                        + ") is not a subclass of the parentEntityClass (" + parentEntityClass
-                        + ") configured by the " + EntitySelector.class.getSimpleName() + ".");
+        var downcastEntityClass = config.getDowncastEntityClass();
+        if (downcastEntityClass != null) {
+            var parentEntityClass = entityDescriptor.getEntityClass();
+            if (!parentEntityClass.isAssignableFrom(downcastEntityClass)) {
+                throw new IllegalStateException(
+                        "The downcastEntityClass (%s) is not a subclass of the parentEntityClass (%s) configured by the %s."
+                                .formatted(downcastEntityClass, parentEntityClass, EntitySelector.class.getSimpleName()));
             }
-            SolutionDescriptor<Solution_> solutionDescriptor = configPolicy.getSolutionDescriptor();
-            entityDescriptor = solutionDescriptor.getEntityDescriptorStrict(config.getDowncastEntityClass());
+            var solutionDescriptor = configPolicy.getSolutionDescriptor();
+            entityDescriptor = solutionDescriptor.getEntityDescriptorStrict(downcastEntityClass);
             if (entityDescriptor == null) {
-                throw new IllegalArgumentException("The selectorConfig (" + config
-                        + ") has an downcastEntityClass (" + config.getDowncastEntityClass()
-                        + ") that is not a known planning entity.\n"
-                        + "Check your solver configuration. If that class (" + config.getDowncastEntityClass().getSimpleName()
-                        + ") is not in the entityClassSet (" + solutionDescriptor.getEntityClassSet()
-                        + "), check your @" + PlanningSolution.class.getSimpleName()
-                        + " implementation's annotated methods too.");
+                throw new IllegalArgumentException("""
+                        The selectorConfig (%s) has an downcastEntityClass (%s) that is not a known planning entity.
+                        Check your solver configuration. If that class (%s) is not in the entityClassSet (%s), \
+                        check your @%s implementation's annotated methods too."""
+                        .formatted(config, downcastEntityClass, downcastEntityClass.getSimpleName(),
+                                solutionDescriptor.getEntityClassSet(), PlanningSolution.class.getSimpleName()));
             }
         }
         return entityDescriptor;
@@ -185,22 +184,18 @@ public class ValueSelectorFactory<Solution_>
 
     protected boolean determineBaseRandomSelection(GenuineVariableDescriptor<Solution_> variableDescriptor,
             SelectionCacheType resolvedCacheType, SelectionOrder resolvedSelectionOrder) {
-        switch (resolvedSelectionOrder) {
-            case ORIGINAL:
-                return false;
-            case SORTED:
-            case SHUFFLED:
-            case PROBABILISTIC:
+        return switch (resolvedSelectionOrder) {
+            case ORIGINAL -> false;
+            case SORTED, SHUFFLED, PROBABILISTIC ->
                 // baseValueSelector and lower should be ORIGINAL if they are going to get cached completely
-                return false;
-            case RANDOM:
+                false;
+            case RANDOM ->
                 // Predict if caching will occur
-                return resolvedCacheType.isNotCached()
+                resolvedCacheType.isNotCached()
                         || (isBaseInherentlyCached(variableDescriptor) && !hasFiltering(variableDescriptor));
-            default:
-                throw new IllegalStateException("The selectionOrder (" + resolvedSelectionOrder
-                        + ") is not implemented.");
-        }
+            default -> throw new IllegalStateException("The selectionOrder (" + resolvedSelectionOrder
+                    + ") is not implemented.");
+        };
     }
 
     protected boolean isBaseInherentlyCached(GenuineVariableDescriptor<Solution_> variableDescriptor) {
@@ -209,7 +204,7 @@ public class ValueSelectorFactory<Solution_>
 
     private ValueSelector<Solution_> buildBaseValueSelector(GenuineVariableDescriptor<Solution_> variableDescriptor,
             SelectionCacheType minimumCacheType, boolean randomSelection) {
-        ValueRangeDescriptor<Solution_> valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
+        var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
         // TODO minimumCacheType SOLVER is only a problem if the valueRange includes entities or custom weird cloning
         if (minimumCacheType == SelectionCacheType.SOLVER) {
             // TODO Solver cached entities are not compatible with ConstraintStreams and IncrementalScoreDirector
@@ -235,7 +230,7 @@ public class ValueSelectorFactory<Solution_>
 
     protected ValueSelector<Solution_> applyFiltering(ValueSelector<Solution_> valueSelector,
             ClassInstanceCache instanceCache) {
-        GenuineVariableDescriptor<Solution_> variableDescriptor = valueSelector.getVariableDescriptor();
+        var variableDescriptor = valueSelector.getVariableDescriptor();
         if (hasFiltering(variableDescriptor)) {
             List<SelectionFilter<Solution_, Object>> filterList = new ArrayList<>(config.getFilterClass() == null ? 1 : 2);
             if (config.getFilterClass() != null) {
@@ -253,7 +248,7 @@ public class ValueSelectorFactory<Solution_>
 
     protected ValueSelector<Solution_> applyInitializedChainedValueFilter(HeuristicConfigPolicy<Solution_> configPolicy,
             GenuineVariableDescriptor<Solution_> variableDescriptor, ValueSelector<Solution_> valueSelector) {
-        boolean isChained = variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
+        var isChained = variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
                 && basicVariableDescriptor.isChained();
         if (configPolicy.isInitializedChainedValueFilterEnabled() && isChained) {
             valueSelector = InitializedValueSelector.create(valueSelector);
@@ -322,7 +317,7 @@ public class ValueSelectorFactory<Solution_>
         if (resolvedSelectionOrder == SelectionOrder.SORTED) {
             SelectionSorter<Solution_, Object> sorter;
             if (config.getSorterManner() != null) {
-                GenuineVariableDescriptor<Solution_> variableDescriptor = valueSelector.getVariableDescriptor();
+                var variableDescriptor = valueSelector.getVariableDescriptor();
                 if (!ValueSelectorConfig.hasSorter(config.getSorterManner(), variableDescriptor)) {
                     return valueSelector;
                 }
@@ -461,21 +456,21 @@ public class ValueSelectorFactory<Solution_>
 
     private ValueSelector<Solution_> applyMimicRecording(HeuristicConfigPolicy<Solution_> configPolicy,
             ValueSelector<Solution_> valueSelector) {
-        if (config.getId() != null) {
-            if (config.getId().isEmpty()) {
-                throw new IllegalArgumentException("The valueSelectorConfig (" + config
-                        + ") has an empty id (" + config.getId() + ").");
+        var id = config.getId();
+        if (id != null) {
+            if (id.isEmpty()) {
+                throw new IllegalArgumentException("The valueSelectorConfig (%s) has an empty id (%s).".formatted(config, id));
             }
             if (!(valueSelector instanceof EntityIndependentValueSelector)) {
-                throw new IllegalArgumentException("The valueSelectorConfig (" + config
-                        + ") with id (" + config.getId()
-                        + ") needs to be based on an "
-                        + EntityIndependentValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
-                        + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
+                throw new IllegalArgumentException("""
+                        The valueSelectorConfig (%s) with id (%s) needs to be based on an %s (%s).
+                        Check your @%s annotations."""
+                        .formatted(config, id, EntityIndependentValueSelector.class.getSimpleName(), valueSelector,
+                                ValueRangeProvider.class.getSimpleName()));
             }
-            MimicRecordingValueSelector<Solution_> mimicRecordingValueSelector = new MimicRecordingValueSelector<>(
-                    (EntityIndependentValueSelector<Solution_>) valueSelector);
-            configPolicy.addValueMimicRecorder(config.getId(), mimicRecordingValueSelector);
+            var mimicRecordingValueSelector =
+                    new MimicRecordingValueSelector<>((EntityIndependentValueSelector<Solution_>) valueSelector);
+            configPolicy.addValueMimicRecorder(id, mimicRecordingValueSelector);
             valueSelector = mimicRecordingValueSelector;
         }
         return valueSelector;
