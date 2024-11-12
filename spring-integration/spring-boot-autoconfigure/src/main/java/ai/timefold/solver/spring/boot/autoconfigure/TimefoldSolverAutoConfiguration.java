@@ -238,10 +238,11 @@ public class TimefoldSolverAutoConfiguration
         if (solverConfig.getSolutionClass() == null) {
             solverConfig.setSolutionClass(entityScanner.findFirstSolutionClass());
         }
-        if (solverConfig.getEntityClassList() == null) {
+        var solverEntityClassList = solverConfig.getEntityClassList();
+        if (solverEntityClassList == null) {
             solverConfig.setEntityClassList(entityScanner.findEntityClassList());
         } else {
-            long entityClassCount = solverConfig.getEntityClassList().stream()
+            long entityClassCount = solverEntityClassList.stream()
                     .filter(Objects::nonNull)
                     .count();
             if (entityClassCount == 0L) {
@@ -249,7 +250,7 @@ public class TimefoldSolverAutoConfiguration
                         """
                                 The solverConfig's entityClassList (%s) does not contain any non-null entries.
                                 Maybe the classes listed there do not actually exist and therefore deserialization turned them to null?"""
-                                .formatted(solverConfig.getEntityClassList().stream().map(Class::getSimpleName)
+                                .formatted(solverEntityClassList.stream().map(Class::getSimpleName)
                                         .collect(joining(", "))));
             }
         }
@@ -268,7 +269,8 @@ public class TimefoldSolverAutoConfiguration
                 throw new UnsupportedOperationException(
                         "Constraint stream automatic node sharing is unsupported in a Spring native image.");
             }
-            solverConfig.getScoreDirectorFactoryConfig().setConstraintStreamAutomaticNodeSharing(true);
+            Objects.requireNonNull(solverConfig.getScoreDirectorFactoryConfig())
+                    .setConstraintStreamAutomaticNodeSharing(true);
         }
         if (solverProperties.getEnvironmentMode() != null) {
             solverConfig.setEnvironmentMode(solverProperties.getEnvironmentMode());

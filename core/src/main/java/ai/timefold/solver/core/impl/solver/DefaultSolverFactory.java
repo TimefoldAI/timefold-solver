@@ -86,9 +86,10 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         var solverScope = new SolverScope<Solution_>();
         var monitoringConfig = solverConfig.determineMetricConfig();
         solverScope.setMonitoringTags(Tags.empty());
+        var solverMetricList = Objects.requireNonNull(monitoringConfig.getSolverMetricList());
         var metricsRequiringConstraintMatchSet = Collections.<SolverMetric> emptyList();
-        if (!monitoringConfig.getSolverMetricList().isEmpty()) {
-            solverScope.setSolverMetricSet(EnumSet.copyOf(monitoringConfig.getSolverMetricList()));
+        if (!solverMetricList.isEmpty()) {
+            solverScope.setSolverMetricSet(EnumSet.copyOf(solverMetricList));
             metricsRequiringConstraintMatchSet = solverScope.getSolverMetricSet().stream()
                     .filter(SolverMetric::isMetricConstraintMatchBased)
                     .filter(solverScope::isMetricEnabled)

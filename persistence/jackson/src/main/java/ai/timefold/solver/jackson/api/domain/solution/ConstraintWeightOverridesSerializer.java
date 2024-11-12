@@ -1,6 +1,7 @@
 package ai.timefold.solver.jackson.api.domain.solution;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.score.Score;
@@ -18,7 +19,7 @@ public final class ConstraintWeightOverridesSerializer<Score_ extends Score<Scor
         generator.writeStartObject();
         for (var constraintName : constraintWeightOverrides.getKnownConstraintNames()) {
             var weight = constraintWeightOverrides.getConstraintWeight(constraintName);
-            generator.writeStringField(constraintName, weight.toString());
+            generator.writeStringField(constraintName, Objects.requireNonNull(weight).toString());
         }
         generator.writeEndObject();
     }

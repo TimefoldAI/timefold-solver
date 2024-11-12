@@ -64,24 +64,26 @@ public class AcceptorFactory<Solution_> {
     }
 
     private Optional<HillClimbingAcceptor<Solution_>> buildHillClimbingAcceptor() {
-        if (acceptorConfig.getAcceptorTypeList() != null
-                && acceptorConfig.getAcceptorTypeList().contains(AcceptorType.HILL_CLIMBING)) {
-            HillClimbingAcceptor<Solution_> acceptor = new HillClimbingAcceptor<>();
-            return Optional.of(acceptor);
+        if (acceptorTypeListsContainsAcceptorType(AcceptorType.HILL_CLIMBING)) {
+            return Optional.of(new HillClimbingAcceptor<>());
         }
         return Optional.empty();
     }
 
+    private boolean acceptorTypeListsContainsAcceptorType(AcceptorType acceptorType) {
+        var acceptorTypeList = acceptorConfig.getAcceptorTypeList();
+        return acceptorTypeList != null && acceptorTypeList.contains(acceptorType);
+    }
+
     private Optional<StepCountingHillClimbingAcceptor<Solution_>> buildStepCountingHillClimbingAcceptor() {
-        if ((acceptorConfig.getAcceptorTypeList() != null
-                && acceptorConfig.getAcceptorTypeList().contains(AcceptorType.STEP_COUNTING_HILL_CLIMBING))
+        if (acceptorTypeListsContainsAcceptorType(AcceptorType.STEP_COUNTING_HILL_CLIMBING)
                 || acceptorConfig.getStepCountingHillClimbingSize() != null) {
             int stepCountingHillClimbingSize_ =
                     Objects.requireNonNullElse(acceptorConfig.getStepCountingHillClimbingSize(), 400);
-            StepCountingHillClimbingType stepCountingHillClimbingType_ =
+            var stepCountingHillClimbingType_ =
                     Objects.requireNonNullElse(acceptorConfig.getStepCountingHillClimbingType(),
                             StepCountingHillClimbingType.STEP);
-            StepCountingHillClimbingAcceptor<Solution_> acceptor = new StepCountingHillClimbingAcceptor<>(
+            var acceptor = new StepCountingHillClimbingAcceptor<Solution_>(
                     stepCountingHillClimbingSize_, stepCountingHillClimbingType_);
             return Optional.of(acceptor);
         }
@@ -89,11 +91,10 @@ public class AcceptorFactory<Solution_> {
     }
 
     private Optional<EntityTabuAcceptor<Solution_>> buildEntityTabuAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
-        if ((acceptorConfig.getAcceptorTypeList() != null
-                && acceptorConfig.getAcceptorTypeList().contains(AcceptorType.ENTITY_TABU))
+        if (acceptorTypeListsContainsAcceptorType(AcceptorType.ENTITY_TABU)
                 || acceptorConfig.getEntityTabuSize() != null || acceptorConfig.getEntityTabuRatio() != null
                 || acceptorConfig.getFadingEntityTabuSize() != null || acceptorConfig.getFadingEntityTabuRatio() != null) {
-            EntityTabuAcceptor<Solution_> acceptor = new EntityTabuAcceptor<>(configPolicy.getLogIndentation());
+            var acceptor = new EntityTabuAcceptor<Solution_>(configPolicy.getLogIndentation());
             if (acceptorConfig.getEntityTabuSize() != null) {
                 if (acceptorConfig.getEntityTabuRatio() != null) {
                     throw new IllegalArgumentException("The acceptor cannot have both acceptorConfig.getEntityTabuSize() ("
@@ -128,11 +129,10 @@ public class AcceptorFactory<Solution_> {
     }
 
     private Optional<ValueTabuAcceptor<Solution_>> buildValueTabuAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
-        if ((acceptorConfig.getAcceptorTypeList() != null
-                && acceptorConfig.getAcceptorTypeList().contains(AcceptorType.VALUE_TABU))
+        if (acceptorTypeListsContainsAcceptorType(AcceptorType.VALUE_TABU)
                 || acceptorConfig.getValueTabuSize() != null || acceptorConfig.getValueTabuRatio() != null
                 || acceptorConfig.getFadingValueTabuSize() != null || acceptorConfig.getFadingValueTabuRatio() != null) {
-            ValueTabuAcceptor<Solution_> acceptor = new ValueTabuAcceptor<>(configPolicy.getLogIndentation());
+            var acceptor = new ValueTabuAcceptor<Solution_>(configPolicy.getLogIndentation());
             if (acceptorConfig.getValueTabuSize() != null) {
                 if (acceptorConfig.getValueTabuRatio() != null) {
                     throw new IllegalArgumentException("The acceptor cannot have both acceptorConfig.getValueTabuSize() ("
@@ -177,10 +177,9 @@ public class AcceptorFactory<Solution_> {
     }
 
     private Optional<MoveTabuAcceptor<Solution_>> buildMoveTabuAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
-        if ((acceptorConfig.getAcceptorTypeList() != null
-                && acceptorConfig.getAcceptorTypeList().contains(AcceptorType.MOVE_TABU))
+        if (acceptorTypeListsContainsAcceptorType(AcceptorType.MOVE_TABU)
                 || acceptorConfig.getMoveTabuSize() != null || acceptorConfig.getFadingMoveTabuSize() != null) {
-            MoveTabuAcceptor<Solution_> acceptor = new MoveTabuAcceptor<>(configPolicy.getLogIndentation());
+            var acceptor = new MoveTabuAcceptor<Solution_>(configPolicy.getLogIndentation());
             if (acceptorConfig.getMoveTabuSize() != null) {
                 acceptor.setTabuSizeStrategy(new FixedTabuSizeStrategy<>(acceptorConfig.getMoveTabuSize()));
             }
@@ -197,10 +196,9 @@ public class AcceptorFactory<Solution_> {
 
     private Optional<SimulatedAnnealingAcceptor<Solution_>>
             buildSimulatedAnnealingAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
-        if ((acceptorConfig.getAcceptorTypeList() != null
-                && acceptorConfig.getAcceptorTypeList().contains(AcceptorType.SIMULATED_ANNEALING))
+        if (acceptorTypeListsContainsAcceptorType(AcceptorType.SIMULATED_ANNEALING)
                 || acceptorConfig.getSimulatedAnnealingStartingTemperature() != null) {
-            SimulatedAnnealingAcceptor<Solution_> acceptor = new SimulatedAnnealingAcceptor<>();
+            var acceptor = new SimulatedAnnealingAcceptor<Solution_>();
             if (acceptorConfig.getSimulatedAnnealingStartingTemperature() == null) {
                 // TODO Support SA without a parameter
                 throw new IllegalArgumentException("The acceptorType (" + AcceptorType.SIMULATED_ANNEALING
@@ -215,10 +213,9 @@ public class AcceptorFactory<Solution_> {
     }
 
     private Optional<LateAcceptanceAcceptor<Solution_>> buildLateAcceptanceAcceptor() {
-        if ((acceptorConfig.getAcceptorTypeList() != null
-                && acceptorConfig.getAcceptorTypeList().contains(AcceptorType.LATE_ACCEPTANCE))
+        if (acceptorTypeListsContainsAcceptorType(AcceptorType.LATE_ACCEPTANCE)
                 || acceptorConfig.getLateAcceptanceSize() != null) {
-            LateAcceptanceAcceptor<Solution_> acceptor = new LateAcceptanceAcceptor<>();
+            var acceptor = new LateAcceptanceAcceptor<Solution_>();
             acceptor.setLateAcceptanceSize(Objects.requireNonNullElse(acceptorConfig.getLateAcceptanceSize(), 400));
             return Optional.of(acceptor);
         }
@@ -226,11 +223,10 @@ public class AcceptorFactory<Solution_> {
     }
 
     private Optional<GreatDelugeAcceptor<Solution_>> buildGreatDelugeAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
-        if ((acceptorConfig.getAcceptorTypeList() != null
-                && acceptorConfig.getAcceptorTypeList().contains(AcceptorType.GREAT_DELUGE))
+        if (acceptorTypeListsContainsAcceptorType(AcceptorType.GREAT_DELUGE)
                 || acceptorConfig.getGreatDelugeWaterLevelIncrementScore() != null
                 || acceptorConfig.getGreatDelugeWaterLevelIncrementRatio() != null) {
-            GreatDelugeAcceptor<Solution_> acceptor = new GreatDelugeAcceptor<>();
+            var acceptor = new GreatDelugeAcceptor<Solution_>();
             if (acceptorConfig.getGreatDelugeWaterLevelIncrementScore() != null) {
                 if (acceptorConfig.getGreatDelugeWaterLevelIncrementRatio() != null) {
                     throw new IllegalArgumentException("The acceptor cannot have both a "

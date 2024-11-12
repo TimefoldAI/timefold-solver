@@ -1,6 +1,7 @@
 package ai.timefold.solver.migration.v8;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import ai.timefold.solver.migration.AbstractRecipe;
@@ -225,17 +226,18 @@ public final class AsConstraintRecipe extends AbstractRecipe {
                         if (matcherMeta == null) {
                             return method;
                         }
-                        var select = method.getSelect();
+                        var select = Objects.requireNonNull(method.getSelect());
                         var arguments = method.getArguments();
 
                         String templateCode;
-                        if (select.getType().isAssignableFrom(uniConstraintStreamPattern)) {
+                        var selectType = Objects.requireNonNull(select.getType());
+                        if (selectType.isAssignableFrom(uniConstraintStreamPattern)) {
                             templateCode = "#{any(ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream)}\n";
-                        } else if (select.getType().isAssignableFrom(biConstraintStreamPattern)) {
+                        } else if (selectType.isAssignableFrom(biConstraintStreamPattern)) {
                             templateCode = "#{any(ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream)}\n";
-                        } else if (select.getType().isAssignableFrom(triConstraintStreamPattern)) {
+                        } else if (selectType.isAssignableFrom(triConstraintStreamPattern)) {
                             templateCode = "#{any(ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream)}\n";
-                        } else if (select.getType().isAssignableFrom(quadConstraintStreamPattern)) {
+                        } else if (selectType.isAssignableFrom(quadConstraintStreamPattern)) {
                             templateCode = "#{any(ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream)}\n";
                         } else {
                             LOGGER.warn("Cannot refactor to asConstraint() method for deprecated method ({}).", method);

@@ -2,10 +2,8 @@ package ai.timefold.solver.core.impl.phase.custom;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
-import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
@@ -22,32 +20,34 @@ public class DefaultCustomPhaseFactory<Solution_> extends AbstractPhaseFactory<S
     public CustomPhase<Solution_> buildPhase(int phaseIndex, boolean triggerFirstInitializedSolutionEvent,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             Termination<Solution_> solverTermination) {
-        HeuristicConfigPolicy<Solution_> phaseConfigPolicy = solverConfigPolicy.createPhaseConfigPolicy();
-        if (ConfigUtils.isEmptyCollection(phaseConfig.getCustomPhaseCommandClassList())
-                && ConfigUtils.isEmptyCollection(phaseConfig.getCustomPhaseCommandList())) {
+        var phaseConfigPolicy = solverConfigPolicy.createPhaseConfigPolicy();
+        var customPhaseCommandClassList = phaseConfig.getCustomPhaseCommandClassList();
+        var customPhaseCommandList = phaseConfig.getCustomPhaseCommandList();
+        if (ConfigUtils.isEmptyCollection(customPhaseCommandClassList)
+                && ConfigUtils.isEmptyCollection(customPhaseCommandList)) {
             throw new IllegalArgumentException(
                     "Configure at least 1 <customPhaseCommandClass> in the <customPhase> configuration.");
         }
 
-        List<CustomPhaseCommand<Solution_>> customPhaseCommandList_ = new ArrayList<>(getCustomPhaseCommandListSize());
-        if (phaseConfig.getCustomPhaseCommandClassList() != null) {
-            for (Class<? extends CustomPhaseCommand> customPhaseCommandClass : phaseConfig.getCustomPhaseCommandClassList()) {
+        var customPhaseCommandList_ = new ArrayList<CustomPhaseCommand<Solution_>>(getCustomPhaseCommandListSize());
+        if (customPhaseCommandClassList != null) {
+            for (var customPhaseCommandClass : customPhaseCommandClassList) {
                 if (customPhaseCommandClass == null) {
-                    throw new IllegalArgumentException("The customPhaseCommandClass (" + customPhaseCommandClass
-                            + ") cannot be null in the customPhase (" + phaseConfig + ").\n" +
-                            "Maybe there was a typo in the class name provided in the solver config XML?");
+                    throw new IllegalArgumentException("""
+                            The customPhaseCommandClass (%s) cannot be null in the customPhase (%s).
+                            Maybe there was a typo in the class name provided in the solver config XML?"""
+                            .formatted(customPhaseCommandClass, phaseConfig));
                 }
                 customPhaseCommandList_.add(createCustomPhaseCommand(customPhaseCommandClass));
             }
         }
-        if (phaseConfig.getCustomPhaseCommandList() != null) {
-            customPhaseCommandList_.addAll((Collection) phaseConfig.getCustomPhaseCommandList());
+        if (customPhaseCommandList != null) {
+            customPhaseCommandList_.addAll((Collection) customPhaseCommandList);
         }
-        DefaultCustomPhase.Builder<Solution_> builder =
-                new DefaultCustomPhase.Builder<>(phaseIndex, triggerFirstInitializedSolutionEvent,
-                        solverConfigPolicy.getLogIndentation(),
-                        buildPhaseTermination(phaseConfigPolicy, solverTermination), customPhaseCommandList_);
-        EnvironmentMode environmentMode = phaseConfigPolicy.getEnvironmentMode();
+        var builder = new DefaultCustomPhase.Builder<>(phaseIndex, triggerFirstInitializedSolutionEvent,
+                solverConfigPolicy.getLogIndentation(), buildPhaseTermination(phaseConfigPolicy, solverTermination),
+                customPhaseCommandList_);
+        var environmentMode = phaseConfigPolicy.getEnvironmentMode();
         if (environmentMode.isNonIntrusiveFullAsserted()) {
             builder.setAssertStepScoreFromScratch(true);
         }

@@ -86,12 +86,11 @@ public abstract class InnerConstraintFactory<Solution_, Constraint_ extends Cons
     }
 
     public List<Constraint_> buildConstraints(ConstraintProvider constraintProvider) {
-        Constraint[] constraints = constraintProvider.defineConstraints(this);
-        if (constraints == null) {
-            throw new IllegalStateException("The constraintProvider class (" + constraintProvider.getClass()
-                    + ")'s defineConstraints() must not return null.\n"
-                    + "Maybe return an empty array instead if there are no constraints.");
-        }
+        Constraint[] constraints = Objects.requireNonNull(constraintProvider.defineConstraints(this),
+                () -> """
+                        The constraintProvider class (%s)'s defineConstraints() must not return null."
+                        Maybe return an empty array instead if there are no constraints."""
+                        .formatted(constraintProvider.getClass()));
         if (Arrays.stream(constraints).anyMatch(Objects::isNull)) {
             throw new IllegalStateException("The constraintProvider class (" + constraintProvider.getClass()
                     + ")'s defineConstraints() must not contain an element that is null.\n"

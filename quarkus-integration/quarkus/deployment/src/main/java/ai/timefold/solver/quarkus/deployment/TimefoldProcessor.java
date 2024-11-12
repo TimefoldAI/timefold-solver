@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -336,9 +337,9 @@ class TimefoldProcessor {
     private void assertNodeSharingDisabled(Map<String, SolverConfig> solverConfigMap) {
         for (var entry : solverConfigMap.entrySet()) {
             var solverConfig = entry.getValue();
-            if (solverConfig.getScoreDirectorFactoryConfig() != null &&
-                    Boolean.TRUE
-                            .equals(solverConfig.getScoreDirectorFactoryConfig().getConstraintStreamAutomaticNodeSharing())) {
+            var scoreDirectorFactoryConfig = solverConfig.getScoreDirectorFactoryConfig();
+            if (scoreDirectorFactoryConfig != null &&
+                    Boolean.TRUE.equals(scoreDirectorFactoryConfig.getConstraintStreamAutomaticNodeSharing())) {
                 throw new IllegalStateException("""
                         SolverConfig %s enabled automatic node sharing via SolverConfig, which is not allowed.
                         Enable automatic node sharing with the property %s instead."""
@@ -532,9 +533,10 @@ class TimefoldProcessor {
         // Configure planning problem models and score director per solver
         applySolverProperties(indexView, solverName, solverConfig);
 
-        if (solverConfig.getSolutionClass() != null) {
+        var solutionClass = solverConfig.getSolutionClass();
+        if (solutionClass != null) {
             // Need to register even when using GIZMO so annotations are preserved
-            Type jandexType = Type.create(DotName.createSimple(solverConfig.getSolutionClass().getName()), Type.Kind.CLASS);
+            Type jandexType = Type.create(DotName.createSimple(solutionClass.getName()), Type.Kind.CLASS);
             reflectiveHierarchyClass.produce(new ReflectiveHierarchyBuildItem.Builder()
                     .type(jandexType)
                     // Ignore only the packages from timefold-solver-core
@@ -639,11 +641,11 @@ class TimefoldProcessor {
     private void generateConstraintVerifier(SolverConfig solverConfig,
             BuildProducer<SyntheticBeanBuildItem> syntheticBeanBuildItemBuildProducer) {
         String constraintVerifierClassName = DotNames.CONSTRAINT_VERIFIER.toString();
-        if (solverConfig.getScoreDirectorFactoryConfig().getConstraintProviderClass() != null &&
-                isClassDefined(constraintVerifierClassName)) {
-            final Class<?> constraintProviderClass = solverConfig.getScoreDirectorFactoryConfig().getConstraintProviderClass();
-            final Class<?> planningSolutionClass = solverConfig.getSolutionClass();
-            final List<Class<?>> planningEntityClassList = solverConfig.getEntityClassList();
+        var scoreDirectorFactoryConfig = Objects.requireNonNull(solverConfig.getScoreDirectorFactoryConfig());
+        var constraintProviderClass = scoreDirectorFactoryConfig.getConstraintProviderClass();
+        if (constraintProviderClass != null && isClassDefined(constraintVerifierClassName)) {
+            final Class<?> planningSolutionClass = Objects.requireNonNull(solverConfig.getSolutionClass());
+            final List<Class<?>> planningEntityClassList = Objects.requireNonNull(solverConfig.getEntityClassList());
             // TODO Don't duplicate defaults by using ConstraintVerifier.create(solverConfig) instead
             SyntheticBeanBuildItem.ExtendedBeanConfigurator constraintDescriptor =
                     SyntheticBeanBuildItem.configure(DotNames.CONSTRAINT_VERIFIER)
