@@ -32,8 +32,8 @@ final class ResilientScoreComparator implements Comparator<Score> {
                 var bToken = i < bNumbers.length ? bNumbers[i] : 0;
                 int comparison;
                 if (aToken.getClass().equals(bToken.getClass())
-                    && aToken instanceof Comparable aTokenComparable
-                    && bToken instanceof Comparable bTokenComparable) {
+                        && aToken instanceof Comparable aTokenComparable
+                        && bToken instanceof Comparable bTokenComparable) {
                     comparison = aTokenComparable.compareTo(bTokenComparable);
                 } else {
                     comparison = Double.compare(aToken.doubleValue(), bToken.doubleValue());
