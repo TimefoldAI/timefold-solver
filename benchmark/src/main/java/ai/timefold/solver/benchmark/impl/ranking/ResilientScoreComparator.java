@@ -16,7 +16,7 @@ final class ResilientScoreComparator implements Comparator<Score> {
         this.aScoreDefinition = aScoreDefinition;
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public int compare(Score a, Score b) {
         if (a == null) {
