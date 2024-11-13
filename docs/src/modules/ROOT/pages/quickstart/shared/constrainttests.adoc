@@ -1,0 +1,103 @@
+Then create the test itself:
+
+[tabs]
+====
+Java::
++
+--
+Create the `src/test/java/org/acme/schooltimetabling/solver/TimetableConstraintProviderTest.java` class:
+
+[source,java,subs="attributes"]
+----
+package org.acme.schooltimetabling.solver;
+
+import java.time.DayOfWeek;
+import java.time.LocalTime;
+
+import {wiringannotationfq};
+
+import {testannotationfq};
+import org.acme.schooltimetabling.domain.Lesson;
+import org.acme.schooltimetabling.domain.Room;
+import org.acme.schooltimetabling.domain.Timetable;
+import org.acme.schooltimetabling.domain.Timeslot;
+import org.junit.jupiter.api.Test;
+import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
+
+{testannotation}
+class TimetableConstraintProviderTest {
+
+    private static final Room ROOM = new Room("Room1");
+    private static final Timeslot TIMESLOT1 = new Timeslot(DayOfWeek.MONDAY, LocalTime.of(9,0), LocalTime.NOON);
+    private static final Timeslot TIMESLOT2 = new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(9,0), LocalTime.NOON);
+
+    {wiringannotation}
+    ConstraintVerifier<TimetableConstraintProvider, Timetable> constraintVerifier;
+
+    @Test
+    void roomConflict() {
+        Lesson firstLesson = new Lesson("1", "Subject1", "Teacher1", "Group1", TIMESLOT1, ROOM1);
+        Lesson conflictingLesson = new Lesson("2", "Subject2", "Teacher2", "Group2", TIMESLOT1, ROOM1);
+        Lesson nonConflictingLesson = new Lesson("3", "Subject3", "Teacher3", "Group3", TIMESLOT2, ROOM1);
+        constraintVerifier.verifyThat(TimetableConstraintProvider::roomConflict)
+                .given(firstLesson, conflictingLesson, nonConflictingLesson)
+                .penalizesBy(1);
+    }
+
+}
+----
+--
+Kotlin::
++
+--
+Create the `src/test/kotlin/org/acme/schooltimetabling/solver/TimetableConstraintProviderTest.kt` class:
+
+[source,kotlin,subs="attributes"]
+----
+package org.acme.schooltimetabling.solver
+
+import ai.timefold.solver.test.api.score.stream.ConstraintVerifier
+import {testannotationfq}
+import {wiringannotationfq}
+import org.acme.schooltimetabling.domain.Lesson
+import org.acme.schooltimetabling.domain.Room
+import org.acme.schooltimetabling.domain.Timeslot
+import org.acme.schooltimetabling.domain.Timetable
+import org.junit.jupiter.api.Test
+import java.time.DayOfWeek
+import java.time.LocalTime
+
+{testannotation}
+class TimetableConstraintProviderTest {
+
+    val ROOM1: Room = Room(1, "Room1")
+    private val TIMESLOT1: Timeslot = Timeslot(1, DayOfWeek.MONDAY, LocalTime.NOON)
+    private val TIMESLOT2: Timeslot = Timeslot(2, DayOfWeek.TUESDAY, LocalTime.NOON)
+
+    {wiringannotation}
+    lateinit var constraintVerifier: ConstraintVerifier<TimeTableConstraintProvider, Timetable>
+
+    @Test
+    fun roomConflict() {
+        val firstLesson = Lesson("1", "Subject1", "Teacher1", "Group1", TIMESLOT1, ROOM1)
+        val conflictingLesson = Lesson("2", "Subject2", "Teacher2", "Group2", TIMESLOT1, ROOM1)
+        val nonConflictingLesson = Lesson("3", "Subject3", "Teacher3", "Group3", TIMESLOT2, ROOM1)
+        constraintVerifier.verifyThat(TimeTableConstraintProvider::roomConflict)
+            .given(firstLesson, conflictingLesson, nonConflictingLesson)
+            .penalizesBy(1)
+    }
+
+}
+----
+--
+====
+
+This test verifies that the constraint `TimetableConstraintProvider::roomConflict`,
+when given three lessons in the same room, where two lessons have the same timeslot,
+it penalizes with a match weight of `1`.
+So with a constraint weight of `10hard` it would reduce the score by `-10hard`.
+
+Notice how `ConstraintVerifier` ignores the constraint weight during testing - even
+if those constraint weights are hard coded in the `ConstraintProvider` - because
+constraints weights change regularly before going into production.
+This way, constraint weight tweaking does not break the unit tests.

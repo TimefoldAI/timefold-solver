@@ -1,0 +1,10 @@
+* https://adoptopenjdk.net/[JDK] {java-version}+ with `JAVA_HOME` configured appropriately.
+For example with https://sdkman.io[Sdkman]:
++
+[source, shell]
+----
+$ curl -s "https://get.sdkman.io" | bash
+$ sdk install java
+----
+* https://maven.apache.org/download.html[Apache Maven] {maven-version}+ or https://gradle.org/install/[Gradle] 7+
+* An IDE, such as https://www.jetbrains.com/idea[IntelliJ IDEA], VSCode or Eclipse

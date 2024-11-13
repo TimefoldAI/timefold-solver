@@ -6,6 +6,14 @@
 :icons: font
 include::../../_attributes.adoc[]
 
+:wiringannotation: @Inject
+:wiringannotationfq: jakarta.inject.Inject
+:testannotation: @QuarkusTest
+:testannotationfq: io.quarkus.test.junit.QuarkusTest
+:framework-quickstart-url: {quarkus-quickstart-url-quickstart-url}
+// disable python code examples for quarkus
+:python-disabled:
+
 // Keep this in sync with the quarkus repo's copy
 // https://github.com/quarkusio/quarkus/blob/main/docs/src/main/asciidoc/timefold.adoc
 // Keep this also in sync with spring-boot-quickstart.adoc where applicable
@@ -13,54 +21,15 @@ include::../../_attributes.adoc[]
 This guide walks you through the process of creating a https://quarkus.io/[Quarkus] application
 with https://timefold.ai[Timefold]'s constraint solving Artificial Intelligence (AI).
 
-== What you will build
+include::../shared/whatyoubuild.adoc[]
 
-You will build a REST application that optimizes a school timetable for students and teachers:
-
-image::quickstart/school-timetabling/schoolTimetablingScreenshot.png[]
-
-Your service will assign `Lesson` instances to `Timeslot` and `Room` instances automatically
-by using AI to adhere to hard and soft scheduling _constraints_, such as the following examples:
-
-* A room can have at most one lesson at the same time.
-* A teacher can teach at most one lesson at the same time.
-* A student can attend at most one lesson at the same time.
-* A teacher prefers to teach all lessons in the same room.
-* A teacher prefers to teach sequential lessons and dislikes gaps between lessons.
-* A student dislikes sequential lessons on the same subject.
-
-Mathematically speaking, school timetabling is an _NP-hard_ problem.
-This means it is difficult to scale.
-Simply brute force iterating through all possible combinations takes millions of years
-for a non-trivial dataset, even on a supercomputer.
-Luckily, AI constraint solvers such as Timefold Solver have advanced algorithms
-that deliver a near-optimal solution in a reasonable amount of time.
-
-== Solution source code
-
-Follow the instructions in the next sections to create the application step by step (recommended).
-
-Alternatively, you can also skip right to the completed example:
-
-. Clone the Git repository:
-+
-[source,shell,subs=attributes+]
-----
-$ git clone {quickstarts-clone-url}
-----
-+
-or download an {quickstarts-archive-url}[archive].
-
-. Find the solution in {quarkus-quickstart-url}[the `java` directory]
-and run it (see its README file).
+include::../shared/solutionsourcecode.adoc[]
 
 == Prerequisites
 
 To complete this guide, you need:
 
-* https://adoptopenjdk.net/[JDK] {java-version}+ with `JAVA_HOME` configured appropriately
-* https://maven.apache.org/download.html[Apache Maven] {maven-version}+ or https://gradle.org/install/[Gradle] 7+
-* An IDE, such as https://www.jetbrains.com/idea[IntelliJ IDEA], VSCode or Eclipse
+include::../shared/java-prerequisites.adoc[]
 
 == The build file and the dependencies
 
@@ -77,162 +46,9 @@ Clicking the link above will automatically select the dependencies for you on *c
 * Timefold Solver (`timefold-solver-quarkus`)
 * Timefold Solver Jackson (`timefold-solver-quarkus-jackson`)
 
-[tabs]
-====
-Maven::
-+
---
-Your `pom.xml` file has the following content:
-
-[source,xml,subs=attributes+]
-----
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-
-  <groupId>org.acme</groupId>
-  <artifactId>school-timetabling</artifactId>
-  <version>1.0-SNAPSHOT</version>
-
-  <properties>
-    <maven.compiler.release>11</maven.compiler.release>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-    <version.io.quarkus>{quarkus-version}</version.io.quarkus>
-    <version.ai.timefold.solver>{timefold-solver-version}</version.ai.timefold.solver>
-  </properties>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-bom</artifactId>
-        <version>${version.io.quarkus}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>ai.timefold.solver</groupId>
-        <artifactId>timefold-solver-bom</artifactId>
-        <version>${version.ai.timefold.solver}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-  <dependencies>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy-jackson</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-quarkus</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-quarkus-jackson</artifactId>
-    </dependency>
-  </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-maven-plugin</artifactId>
-        <version>${version.io.quarkus}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>build</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <systemPropertyVariables>
-            <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-          </systemPropertyVariables>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-  <profiles>
-    <profile>
-        <id>native</id>
-        <properties>
-            <quarkus.package.type>native</quarkus.package.type>
-        </properties>
-    </profile>
-  </profiles>
-</project>
-----
---
-Gradle::
-+
---
-Your `build.gradle` file has this content:
-
-[source,groovy,subs=attributes+]
-----
-plugins {
-    id "java"
-    id "io.quarkus" version "{quarkus-version}"
-}
-
-def quarkusVersion = "{quarkus-version}"
-def timefoldSolverVersion = "{timefold-solver-version}"
-
-group = "org.acme"
-version = "1.0-SNAPSHOT"
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    implementation platform("io.quarkus:quarkus-bom:${quarkusVersion}")
-    implementation "io.quarkus:quarkus-resteasy"
-    implementation "io.quarkus:quarkus-resteasy-jackson"
-    testImplementation "io.quarkus:quarkus-junit5"
-
-    implementation platform("ai.timefold.solver:timefold-solver-bom:${timefoldSolverVersion}")
-    implementation "ai.timefold.solver:timefold-solver-quarkus"
-    implementation "ai.timefold.solver:timefold-solver-quarkus-jackson"
-    testImplementation "ai.timefold.solver:timefold-solver-test"
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-}
-
-compileJava {
-    options.encoding = "UTF-8"
-    options.compilerArgs << "-parameters"
-}
-
-compileTestJava {
-    options.encoding = "UTF-8"
-}
-
-test {
-    systemProperty "java.util.logging.manager", "org.jboss.logmanager.LogManager"
-}
-----
---
-====
-
-include::../school-timetabling/school-timetabling-model.adoc[leveloffset=+1]
-include::../school-timetabling/school-timetabling-constraints.adoc[leveloffset=+1]
-include::../school-timetabling/school-timetabling-solution.adoc[leveloffset=+1]
+include::../shared/school-timetabling/school-timetabling-model.adoc[leveloffset=+1]
+include::../shared/school-timetabling/school-timetabling-constraints.adoc[leveloffset=+1]
+include::../shared/school-timetabling/school-timetabling-solution.adoc[leveloffset=+1]
 
 == Create the solver service
 
@@ -320,139 +136,32 @@ import org.acme.schooltimetabling.rest.exception.TimetableSolverException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentMap
-import java.util.function.BiConsumer
-import java.util.function.Consumer
-import java.util.function.Function
 
 @Path("timetables")
 class TimetableResource {
 
-    private val LOGGER: Logger = LoggerFactory.getLogger(TimetableResource::class.java)
-
-    private final var solverManager: SolverManager<Timetable, String>?
-
-    private final var solutionManager: SolutionManager<Timetable, HardSoftScore>?
-
-    // TODO: Without any "time to live", the map may eventually grow out of memory.
-    private val jobIdToJob: ConcurrentMap<String, Job> = ConcurrentHashMap()
-
-    // Workaround to make Quarkus CDI happy. Do not use.
-    constructor() {
-        solverManager = null
-        solutionManager = null
-    }
-
     @Inject
-    constructor(
-        solverManager: SolverManager<Timetable, String>, solutionManager: SolutionManager<Timetable, HardSoftScore>
-    ) {
-        this.solverManager = solverManager
-        this.solutionManager = solutionManager
-    }
-
-    @GET
-    @Produces(
-        MediaType.APPLICATION_JSON
-    )
-    fun list(): Collection<String> {
-        return jobIdToJob.keys
-    }
+    private final var solverManager: SolverManager<Timetable, String>?
 
     @POST
     @Consumes(
         MediaType.APPLICATION_JSON
     )
     @Produces(MediaType.TEXT_PLAIN)
-    fun solve(problem: Timetable?): String {
-        val jobId = UUID.randomUUID().toString()
-        jobIdToJob[jobId] = Job.ofTimetable(problem)
-        solverManager!!.solveAndListen(jobId, Function<String, Timetable?> { jobId_: String? ->
-            jobIdToJob[jobId]!!.timetable
-        }, Consumer { solution: Timetable? ->
-            jobIdToJob[jobId] = Job.ofTimetable(solution)
-        }, BiConsumer { jobId_: String?, exception: Throwable? ->
-            jobIdToJob[jobId] = Job.ofException(exception)
-            LOGGER.error("Failed solving jobId ({}).", jobId, exception)
-        })
-        return jobId
-    }
-
-    @PUT
-    @Consumes(
-        MediaType.APPLICATION_JSON
-    )
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("analyze")
-    fun analyze(
-        problem: Timetable, @QueryParam("fetchPolicy") fetchPolicy: ScoreAnalysisFetchPolicy?
-    ): ScoreAnalysis<HardSoftScore> {
-        return if (fetchPolicy == null) solutionManager!!.analyze(problem) else solutionManager!!.analyze(
-            problem, fetchPolicy
-        )
-    }
-
-    @GET
-    @Produces(
-        MediaType.APPLICATION_JSON
-    )
-    @Path("{jobId}")
-    fun getTimeTable(
-        @Parameter(description = "The job ID returned by the POST method.") @PathParam("jobId") jobId: String
-    ): Timetable? {
-        val timetable: Timetable? = getTimetableAndCheckForExceptions(jobId)
-        val solverStatus = solverManager!!.getSolverStatus(jobId)
-        timetable?.solverStatus = solverStatus
-        return timetable
-    }
-
-    @GET
-    @Produces(
-        MediaType.APPLICATION_JSON
-    )
-    @Path("{jobId}/status")
-    fun getStatus(
-        @Parameter(description = "The job ID returned by the POST method.") @PathParam("jobId") jobId: String
-    ): Timetable {
-        val timetable: Timetable = getTimetableAndCheckForExceptions(jobId)
-        val solverStatus = solverManager!!.getSolverStatus(jobId)
-        return Timetable(timetable.name, timetable.score, solverStatus)
-    }
-
-    private fun getTimetableAndCheckForExceptions(jobId: String): Timetable {
-        val job = jobIdToJob[jobId] ?: throw TimetableSolverException(
-            jobId, Response.Status.NOT_FOUND, "No timetable found."
-        )
-        if (job.exception != null) {
-            throw TimetableSolverException(jobId, job.exception)
+    fun solve(problem: Timetable?): Timetable {
+        val problemId = UUID.randomUUID()
+        // Submit the problem to start solving
+        val solverJob = solverManager!!.solve(problemId, problem)
+        val solution: Timetable
+        try {
+            // Wait until the solving ends
+            solution = solverJob.finalBestSolution
+        } catch (e: InterruptedException) {
+            throw IllegalStateException("Solving failed.", e)
+        } catch (e: ExecutionException) {
+            throw IllegalStateException("Solving failed.", e)
         }
-        return job.timetable!!
-    }
-
-    @DELETE
-    @Produces(
-        MediaType.APPLICATION_JSON
-    )
-    @Path("{jobId}")
-    fun terminateSolving(
-        @Parameter(description = "The job ID returned by the POST method.") @PathParam("jobId") jobId: String
-    ): Timetable? {
-        solverManager!!.terminateEarly(jobId)
-        return getTimeTable(jobId)
-    }
-
-
-    data class Job(val timetable: Timetable?, val exception: Throwable?) {
-        companion object {
-            fun ofTimetable(timetable: Timetable?): Job {
-                return Job(timetable, null)
-            }
-
-            fun ofException(error: Throwable?): Job {
-                return Job(null, error)
-            }
-        }
+        return solution
     }
 }
 ----
@@ -505,42 +214,7 @@ $ gradle --console=plain quarkusDev
 
 ====
 
-=== Try the application
-
-Now that the application is running, you can test the REST service.
-You can use any REST client you wish.
-The following example uses the Linux command `curl` to send a POST request:
-
-[source,shell]
-----
-$ curl -i -X POST http://localhost:8080/timetables/solve -H "Content-Type:application/json" -d '{"timeslots":[{"dayOfWeek":"MONDAY","startTime":"08:30:00","endTime":"09:30:00"},{"dayOfWeek":"MONDAY","startTime":"09:30:00","endTime":"10:30:00"}],"rooms":[{"name":"Room A"},{"name":"Room B"}],"lessons":[{"id":1,"subject":"Math","teacher":"A. Turing","studentGroup":"9th grade"},{"id":2,"subject":"Chemistry","teacher":"M. Curie","studentGroup":"9th grade"},{"id":3,"subject":"French","teacher":"M. Curie","studentGroup":"10th grade"},{"id":4,"subject":"History","teacher":"I. Jones","studentGroup":"10th grade"}]}'
-----
-
-After about five seconds, according to the termination spent time defined in your `application.properties`,
-the service returns an output similar to the following example:
-
-[source]
-----
-HTTP/1.1 200
-Content-Type: application/json
-...
-
-{"timeslots":...,"rooms":...,"lessons":[{"id":1,"subject":"Math","teacher":"A. Turing","studentGroup":"9th grade","timeslot":{"dayOfWeek":"MONDAY","startTime":"08:30:00","endTime":"09:30:00"},"room":{"name":"Room A"}},{"id":2,"subject":"Chemistry","teacher":"M. Curie","studentGroup":"9th grade","timeslot":{"dayOfWeek":"MONDAY","startTime":"09:30:00","endTime":"10:30:00"},"room":{"name":"Room A"}},{"id":3,"subject":"French","teacher":"M. Curie","studentGroup":"10th grade","timeslot":{"dayOfWeek":"MONDAY","startTime":"08:30:00","endTime":"09:30:00"},"room":{"name":"Room B"}},{"id":4,"subject":"History","teacher":"I. Jones","studentGroup":"10th grade","timeslot":{"dayOfWeek":"MONDAY","startTime":"09:30:00","endTime":"10:30:00"},"room":{"name":"Room B"}}],"score":"0hard/0soft"}
-----
-
-Notice that your application assigned all four lessons to one of the two time slots and one of the two rooms.
-Also notice that it conforms to all hard constraints.
-For example, M. Curie's two lessons are in different time slots.
-
-On the server side, the `info` log shows what Timefold Solver did in those five seconds:
-
-[source,options="nowrap"]
-----
-... Solving started: time spent (33), best score (-8init/0hard/0soft), environment mode (REPRODUCIBLE), random (JDK with seed 0).
-... Construction Heuristic phase (0) ended: time spent (73), best score (0hard/0soft), move evaluation speed (459/sec), step total (4).
-... Local Search phase (1) ended: time spent (5000), best score (0hard/0soft), move evaluation speed (28949/sec), step total (28398).
-... Solving ended: time spent (5000), best score (0hard/0soft), move evaluation speed (28524/sec), phase total (2), environment mode (REPRODUCIBLE).
-----
+include::../shared/try-the-application.adoc[]
 
 [NOTE]
 ====
@@ -591,127 +265,7 @@ Add the subsequent dependencies to your `build.gradle`:
 --
 ====
 
-Then create the test itself:
-
-[tabs]
-====
-Java::
-+
---
-Create the `src/test/java/org/acme/schooltimetabling/solver/TimetableConstraintProviderTest.java` class:
-
-[source,java]
-----
-package org.acme.schooltimetabling.solver;
-
-import java.time.DayOfWeek;
-import java.time.LocalTime;
-
-import jakarta.inject.Inject;
-
-import io.quarkus.test.junit.QuarkusTest;
-import org.acme.schooltimetabling.domain.Lesson;
-import org.acme.schooltimetabling.domain.Room;
-import org.acme.schooltimetabling.domain.Timetable;
-import org.acme.schooltimetabling.domain.Timeslot;
-import org.junit.jupiter.api.Test;
-import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
-
-@QuarkusTest
-class TimetableConstraintProviderTest {
-
-    private static final Room ROOM1 = new Room("Room1");
-    private static final Timeslot TIMESLOT1 = new Timeslot(DayOfWeek.MONDAY, LocalTime.of(9,0), LocalTime.NOON);
-    private static final Timeslot TIMESLOT2 = new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(9,0), LocalTime.NOON);
-
-    @Inject
-    ConstraintVerifier<TimetableConstraintProvider, Timetable> constraintVerifier;
-
-    @Test
-    void roomConflict() {
-        Lesson firstLesson = createTestLesson("1", "Subject1", "Teacher1", "Group1", TIMESLOT1, ROOM1);
-        Lesson conflictingLesson = createTestLesson("2", "Subject2", "Teacher2", "Group2", TIMESLOT1, ROOM1);
-        Lesson nonConflictingLesson = createTestLesson("3", "Subject3", "Teacher3", "Group3", TIMESLOT2, ROOM1);
-
-        constraintVerifier.verifyThat(TimetableConstraintProvider::roomConflict)
-                .given(firstLesson, conflictingLesson, nonConflictingLesson)
-                .penalizesBy(1);
-    }
-
-    // This methods avoids the need to create a constructor just for testing and uses the setter like the solver does.
-    Lesson createTestLesson(String id, String subject, String teacher, String studentGroup, Timeslot timeslot, Room room) {
-        Lesson lesson = new Lesson(id, subject, teacher, group);
-        lesson.setTimeslot(timeslot);
-        lesson.setRoom(room);
-        return lesson;
-    }
-
-}
-----
---
-Kotlin::
-+
---
-Create the `src/test/kotlin/org/acme/schooltimetabling/solver/TimetableConstraintProviderTest.kt` class:
-
-[source,kotlin]
-----
-package org.acme.schooltimetabling.solver
-
-import ai.timefold.solver.test.api.score.stream.ConstraintVerifier
-import io.quarkus.test.junit.QuarkusTest
-import jakarta.inject.Inject
-import org.acme.schooltimetabling.domain.Lesson
-import org.acme.schooltimetabling.domain.Room
-import org.acme.schooltimetabling.domain.Timeslot
-import org.acme.schooltimetabling.domain.Timetable
-import org.junit.jupiter.api.Test
-import java.time.DayOfWeek
-import java.time.LocalTime
-
-@QuarkusTest
-class TimetableConstraintProviderTest {
-
-    val ROOM1: Room = Room(1, "Room1")
-    private val TIMESLOT1: Timeslot = Timeslot(1, DayOfWeek.MONDAY, LocalTime.NOON)
-    private val TIMESLOT2: Timeslot = Timeslot(2, DayOfWeek.TUESDAY, LocalTime.NOON)
-
-    @Inject
-    lateinit var constraintVerifier: ConstraintVerifier<TimeTableConstraintProvider, Timetable>
-
-    @Test
-    fun roomConflict() {
-        val firstLesson = Lesson("1", "Subject1", "Teacher1", "Group1", TIMESLOT1, ROOM1)
-        val conflictingLesson = Lesson("2", "Subject2", "Teacher2", "Group2", TIMESLOT1, ROOM1)
-        val nonConflictingLesson = Lesson("3", "Subject3", "Teacher3", "Group3", TIMESLOT2, ROOM1)
-
-        constraintVerifier.verifyThat(TimeTableConstraintProvider::roomConflict)
-            .given(firstLesson, conflictingLesson, nonConflictingLesson)
-            .penalizesBy(1)
-    }
-
-    // This methods avoids the need to create a constructor just for testing and uses the setter like the solver does.
-    fun createTestLesson(String id, String subject, String teacher, String studentGroup, Timeslot timeslot, Room room) : Lesson {
-        Lesson lesson = Lesson(id, subject, teacher, group);
-        lesson.setTimeslot(timeslot);
-        lesson.setRoom(room);
-        return lesson;
-    }
-
-}
-----
---
-====
-
-This test verifies that the constraint `TimetableConstraintProvider::roomConflict`,
-when given three lessons in the same room, where two lessons have the same timeslot,
-it penalizes with a match weight of `1`.
-So with a constraint weight of `10hard` it would reduce the score by `-10hard`.
-
-Notice how `ConstraintVerifier` ignores the constraint weight during testing - even
-if those constraint weights are hard coded in the `ConstraintProvider` - because
-constraints weights change regularly before going into production.
-This way, constraint weight tweaking does not break the unit tests.
+include::../shared/constrainttests.adoc
 
 ==== Test the solver
 
@@ -733,8 +287,6 @@ import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.time.Duration;
 
 import jakarta.inject.Singleton;
 
@@ -760,7 +312,7 @@ class TimetableResourceTest {
 
     @Test
     void solveDemoDataUntilFeasible() {
-        Timetable testTimetable = //setup your test data
+        Timetable testTimetable = // setup test data
 
         Timetable solution = given()
                 .contentType(ContentType.JSON)
@@ -811,9 +363,9 @@ class TimetableResourceTest {
 
     @Test
     fun solveDemoDataUntilFeasible() {
-        val testTimetable: Timetable = //setup your test data
+        val testTimetable: Timetable = // setup test data
 
-        val jobId: String = given()
+        val solution: Timetable = given()
             .contentType(ContentType.JSON)
             .body(testTimetable)
             .expect().contentType(ContentType.TEXT)
@@ -821,13 +373,8 @@ class TimetableResourceTest {
             .then()
             .statusCode(200)
             .extract()
-            .asString()
+            .as(Timetable.class);
 
-        val solution: Timetable =
-            get("/timetables/$jobId").then().extract().`as`<Timetable>(
-                Timetable::class.java
-            )
-        assertEquals(solution.solverStatus, SolverStatus.NOT_SOLVING)
         assertNotNull(solution.lessons)
         assertNotNull(solution.timeslots)
         assertNotNull(solution.rooms)
@@ -893,51 +440,13 @@ Use `debug` logging to show every _step_:
 
 Use `trace` logging to show every _step_ and every _move_ per step.
 
-=== Create a native image
-
-[[native]]
-To decrease startup times for serverless deployments, or to deploy to environments without a JVM, you can build the application as a native executable.
-As a prerequisite,
-https://quarkus.io/guides/building-native-image#configuring-graalvm[install GraalVM and gu install the native-image tool].
-Then continue with your build tool of choice:
-
-[tabs]
-====
-Maven::
-. Compile it natively.
-This takes a few minutes:
-+
-[source,shell]
-----
-$ mvn -Pnative package
-----
-. Run the native executable:
-+
-[source,shell]
-----
-$ ./target/*-runner
-----
-
-Gradle::
-. Compile it natively.
-This takes a few minutes:
-+
-[source,shell]
-----
-$ gradle build -Dquarkus.package.type=native
-----
-. Run the native executable:
-+
-[source,shell]
-----
-$ ./build/*-runner
-----
-
-====
-
 == Summary
 
 Congratulations!
 You have just developed a Quarkus application with https://timefold.ai[Timefold]!
 
-For a full implementation with a web UI and in-memory storage, check out {quarkus-quickstart-url}[the Quarkus quickstart source code].
+Next Steps:
+
+- For a full implementation with a web UI and in-memory storage, check out {quarkus-quickstart-url}[the Quarkus quickstart source code].
+- Check out more information about Timefold's integration with Quarkus in our xref:../integration/integration.adoc#integrationWithQuarkus[Integration documentation].
+// TODO Link here - Create a native image using Spring Boot

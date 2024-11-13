@@ -112,7 +112,7 @@ data class Timetable (
 }
 ----
 --
-
+ifndef::python-disabled[]
 Python::
 +
 --
@@ -143,6 +143,8 @@ class Timetable:
     score: Annotated[HardSoftScore, PlanningScore] = field(default=None)
 ----
 --
+This content is for GitHub only.
+endif::[]
 ====
 
 

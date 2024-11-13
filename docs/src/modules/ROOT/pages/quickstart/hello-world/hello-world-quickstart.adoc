@@ -72,7 +72,10 @@ $ git clone {quickstarts-clone-url}
 +
 [tabs]
 ====
-Java / Kotlin::
+Java::
+{hello-world-java-quickstart-url}[the `java` directory].
+
+Kotlin::
 {hello-world-java-quickstart-url}[the `java` directory].
 
 Python::
@@ -87,12 +90,16 @@ To complete this guide, you need:
 
 [tabs]
 ====
-Java / Kotlin::
+Java::
 +
 --
-* https://adoptopenjdk.net/[JDK] {java-version}+ with `JAVA_HOME` configured appropriately
-* https://maven.apache.org/download.html[Apache Maven] {maven-version}+ or https://gradle.org/install/[Gradle] 7+
-* An IDE, such as https://www.jetbrains.com/idea[IntelliJ IDEA], https://code.visualstudio.com[VSCode] or https://www.eclipse.org[Eclipse]
+include::../shared/java-prerequisites.adoc[]
+--
+
+Kotlin::
++
+--
+include::../shared/java-prerequisites.adoc[]
 --
 
 Python::
@@ -270,9 +277,9 @@ dependencies = [
 --
 ====
 
-include::../school-timetabling/school-timetabling-model.adoc[leveloffset=+1]
-include::../school-timetabling/school-timetabling-constraints.adoc[leveloffset=+1]
-include::../school-timetabling/school-timetabling-solution.adoc[leveloffset=+1]
+include::../shared/school-timetabling/school-timetabling-model.adoc[leveloffset=+1]
+include::../shared/school-timetabling/school-timetabling-constraints.adoc[leveloffset=+1]
+include::../shared/school-timetabling/school-timetabling-solution.adoc[leveloffset=+1]
 
 == Create the application
 
@@ -500,7 +507,7 @@ object TimetableApp {
         printTimetable(solution)
     }
 
-    fun generateDemoData(demoData: DemoData): Timetable {
+    fun generateDemoData(): Timetable {
         val timeslots: MutableList<Timeslot> = ArrayList(10)
         timeslots.add(Timeslot(DayOfWeek.MONDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)))
         timeslots.add(Timeslot(DayOfWeek.MONDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)))
@@ -543,7 +550,7 @@ object TimetableApp {
         lessons.add(Lesson(nextLessonId++.toString(), "English", "P. Cruz", "10th grade"))
         lessons.add(Lesson(nextLessonId.toString(), "Spanish", "P. Cruz", "10th grade"))
 
-        return Timetable(demoData.name, timeslots, rooms, lessons)
+        return Timetable(timeslots, rooms, lessons)
     }
 
     private fun printTimetable(timeTable: Timetable) {
@@ -610,11 +617,6 @@ object TimetableApp {
                 LOGGER.info("  " + lesson.subject + " - " + lesson.teacher + " - " + lesson.studentGroup)
             }
         }
-    }
-
-    enum class DemoData {
-        SMALL,
-        LARGE
     }
 }
 ----
@@ -897,29 +899,16 @@ To see any output in the console, logging must be configured properly.
 
 [tabs]
 ====
-Java/Kotlin::
+Java::
 +
 --
-Create the `src/main/resource/logback.xml` file:
-
-[source,xml]
+include::../shared/java-logback-config.adoc[]
 ----
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-
-  <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
-    <encoder>
-      <pattern>%d{HH:mm:ss.SSS} [%-12.12t] %-5p %m%n</pattern>
-    </encoder>
-  </appender>
-
-  <logger name="ai.timefold.solver" level="info"/>
-
-  <root level="info">
-    <appender-ref ref="consoleAppender" />
-  </root>
-
-</configuration>
+--
+Kotlin::
++
+--
+include::../shared/java-logback-config.adoc[]
 ----
 --
 
@@ -967,10 +956,16 @@ format=%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 [tabs]
 ====
-Java/Kotlin::
+Java::
 +
 --
-Run that `TimetableApp` class as the main class of a normal Java application:
+Run the `TimetableApp` class as the main class of a normal Java application:
+--
+
+Kotlin::
++
+--
+Run the `TimetableApp` class as the main class of a normal Java application:
 --
 
 Python::
@@ -1170,7 +1165,18 @@ To understand how Timefold Solver is solving your problem internally:
 
 [tabs]
 ====
-Java/Kotlin::
+Java::
++
+--
+Change the logging in the `logback.xml` file:
+
+[source,xml]
+----
+  <logger name="ai.timefold.solver" level="debug"/>
+----
+--
+
+Kotlin::
 +
 --
 Change the logging in the `logback.xml` file:

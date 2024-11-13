@@ -88,7 +88,7 @@ data class Timeslot(
 }
 ----
 --
-
+ifndef::python-disabled[]
 Python::
 +
 --
@@ -110,6 +110,7 @@ class Timeslot:
         return f'{self.day_of_week} {self.start_time.strftime('%H:%M')}'
 ----
 --
+endif::[]
 ====
 
 
@@ -178,7 +179,7 @@ data class Room(
 }
 ----
 --
-
+ifndef::python-disabled[]
 Python::
 +
 --
@@ -197,6 +198,8 @@ class Room:
         return f'{self.name}'
 ----
 --
+endif:[]
+endif::[]
 ====
 
 
@@ -342,7 +345,7 @@ data class Lesson (
 }
 ----
 --
-
+ifndef::python-disabled[]
 Python::
 +
 --
@@ -366,6 +369,7 @@ class Lesson:
     room: Annotated[Room | None, PlanningVariable] = field(default=None)
 ----
 --
+endif::[]
 ====
 
 The `Lesson` class has an `@PlanningEntity` annotation,
