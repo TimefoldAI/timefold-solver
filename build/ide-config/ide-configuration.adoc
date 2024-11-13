@@ -24,6 +24,8 @@ file in the `build/ide-config/src/main/resources/` directory.
 
 . select the `eclipse.importorder` file as the import order config file.
 
+. Open the _Editor -> Code Style -> Java -> Imports_ settings and set the _Class count to use import with '\*'_ to 999. This is to avoid the `*` imports, which should only be used in special cases.
+
 == Eclipse setup
 
 . Open the _Preferences_ window, and then navigate to _Java -> Code Style -> Formatter_.
