@@ -95,7 +95,7 @@ class TimetableEasyScoreCalculator : EasyScoreCalculator<Timetable, HardSoftScor
 }
 ----
 --
-
+ifndef::python-disabled[]
 Python::
 +
 --
@@ -127,6 +127,7 @@ def school_timetable_constraints(solution: Timetable):
     return HardSoftScore.of(hard_score, soft_score)
 ----
 --
+endif::[]
 ====
 
 
@@ -345,7 +346,7 @@ class TimeTableConstraintProvider : ConstraintProvider {
 }
 ----
 --
-
+ifndef::python-disabled[]
 Python::
 +
 --
@@ -402,6 +403,7 @@ def student_group_conflict(constraint_factory: ConstraintFactory) -> Constraint:
             .as_constraint("Student group conflict"))
 ----
 --
+endif::[]
 ====
 
 The `ConstraintProvider` scales an order of magnitude better than the `EasyScoreCalculator`: __O__(n) instead of __O__(n²).

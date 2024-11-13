@@ -12,6 +12,9 @@ The Timefold Team <https://timefold.ai/company/about/>
 :icons: font
 :docinfo:
 
+// Sync all the tabs so that when a programming language is selected, it persists.
+:tabs-sync-option:
+
 
 // PDF uses :title-logo-image: on first page, no need to repeat image later on
 ifndef::backend-pdf[]
