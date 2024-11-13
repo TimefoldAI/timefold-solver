@@ -13,3 +13,11 @@ Timefold Solver Enterprise Edition is a commercial product
 that offers xref:enterprise-edition/enterprise-edition.adoc#enterpriseEditionFeatures[additional features]
 to scale out to very large datasets.
 To find out more, see xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition section] of this documentation.
+
+== Can Timefold Solver be included in a (GraalVM) native application?
+
+Yes. Timefold Solver has been tested with Quarkus and Spring Boot plugins to create native executables.
+Native executables typically have a fast startup time and reduced memory consumption.
+However, given the nature of the workloads running with the solver, these benefits are often overshadowed by slower solving speeds due to lack of JIT optimizations.
+
+Read more about this in https://timefold.ai/blog/how-to-speed-up-timefold-solver-startup-time-by-20x-with-native-images[our blog post].
