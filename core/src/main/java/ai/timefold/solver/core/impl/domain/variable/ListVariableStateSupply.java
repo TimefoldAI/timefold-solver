@@ -7,6 +7,7 @@ import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelat
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
 
 public interface ListVariableStateSupply<Solution_> extends
         SourcedVariableListener<Solution_>,
@@ -16,6 +17,8 @@ public interface ListVariableStateSupply<Solution_> extends
         ListVariableElementStateSupply<Solution_> {
 
     void externalizeSingletonListInverseVariable(InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
+
+    void enablePreviousElementShadowVariable(PreviousElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
 
     void enableNextElementShadowVariable(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
 

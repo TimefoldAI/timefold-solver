@@ -8,6 +8,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.preview.api.domain.metamodel.LocationInList;
@@ -26,6 +27,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
                 }
                 return elementLocation.entity();
             });
+    private PreviousElementVariableProcessor<Solution_> previousElementProcessor;
     private NextElementVariableProcessor<Solution_> nextElementProcessor;
     private Map<Object, LocationInList> elementLocationMap;
     private int unassignedCount;
@@ -34,14 +36,23 @@ final class ExternalizedListVariableStateSupply<Solution_>
         this.sourceVariableDescriptor = sourceVariableDescriptor;
     }
 
+    @Override
     public void externalizeSingletonListInverseVariable(
             InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         this.inverseProcessor =
                 new InternalSingletonListListInverseVariableProcessor<>(shadowVariableDescriptor, sourceVariableDescriptor);
     }
 
+    @Override
+    public void
+            enablePreviousElementShadowVariable(PreviousElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        this.previousElementProcessor =
+                new PreviousElementVariableProcessor<>(shadowVariableDescriptor);
+    }
+
+    @Override
     public void enableNextElementShadowVariable(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        this.nextElementProcessor = new NextElementVariableProcessor<>(shadowVariableDescriptor, sourceVariableDescriptor);
+        this.nextElementProcessor = new NextElementVariableProcessor<>(shadowVariableDescriptor);
     }
 
     private Map<Object, LocationInList> getElementLocationMap() {
@@ -77,6 +88,10 @@ final class ExternalizedListVariableStateSupply<Solution_>
             inverseProcessor.addElement((InnerScoreDirector<Solution_, ?>) scoreDirector, entity, element);
             if (nextElementProcessor != null) {
                 nextElementProcessor.addElement((InnerScoreDirector<Solution_, ?>) scoreDirector, assignedElements, element,
+                        location);
+            }
+            if (previousElementProcessor != null) {
+                previousElementProcessor.addElement((InnerScoreDirector<Solution_, ?>) scoreDirector, assignedElements, element,
                         location);
             }
             index++;
@@ -131,6 +146,9 @@ final class ExternalizedListVariableStateSupply<Solution_>
             if (nextElementProcessor != null) {
                 nextElementProcessor.removeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element);
             }
+            if (previousElementProcessor != null) {
+                previousElementProcessor.removeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element);
+            }
             unassignedCount++;
         }
     }
@@ -146,6 +164,9 @@ final class ExternalizedListVariableStateSupply<Solution_>
         inverseProcessor.unassignElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element);
         if (nextElementProcessor != null) {
             nextElementProcessor.removeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element);
+        }
+        if (previousElementProcessor != null) {
+            previousElementProcessor.removeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element);
         }
         unassignedCount++;
     }
@@ -176,12 +197,23 @@ final class ExternalizedListVariableStateSupply<Solution_>
                 nextElementProcessor.changeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, assignedElements, element,
                         newLocation);
             }
+            if (previousElementProcessor != null) {
+                previousElementProcessor.changeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, assignedElements,
+                        element,
+                        newLocation);
+            }
             if (oldLocation == null) {
                 unassignedCount--;
             }
             if (index >= toIndex && newLocation.equals(oldLocation)) {
                 // Location is unchanged and we are past the part of the list that changed.
-                // Also, we don't need to update the next element shadows.
+                // If we need to process previous elements, include the last element of the previous part of the list too.
+                // Otherwise the last element would point to the wrong next element.
+                if (previousElementProcessor != null && index < assignedElements.size() - 1) {
+                    previousElementProcessor.changeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, assignedElements,
+                            assignedElements.get(index + 1), ElementLocation.of(o, index + 1));
+                }
+                // Finally, we can terminate the loop prematurely.
                 return;
             } else {
                 // Continue to the next element.

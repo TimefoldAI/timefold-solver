@@ -5,7 +5,8 @@ import java.util.List;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.LocationInList;
 
-abstract class AbstractNextPrevElementVariableProcessor<Solution_> {
+abstract sealed class AbstractNextPrevElementVariableProcessor<Solution_>
+        permits NextElementVariableProcessor, PreviousElementVariableProcessor {
 
     public abstract void addElement(InnerScoreDirector<Solution_, ?> scoreDirector, List<Object> listVariable,
             Object originalElement, LocationInList originalElementLocation);

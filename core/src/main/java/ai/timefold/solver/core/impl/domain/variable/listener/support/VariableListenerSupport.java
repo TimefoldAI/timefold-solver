@@ -18,6 +18,7 @@ import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelat
 import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.ShadowVariablesAssert;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
@@ -77,6 +78,9 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         if (shadowVariableDescriptor instanceof InverseRelationShadowVariableDescriptor<Solution_> inverseRelationShadowVariableDescriptor) {
             demand(listVariableDescriptor.getStateDemand())
                     .externalizeSingletonListInverseVariable(inverseRelationShadowVariableDescriptor);
+        } else if (shadowVariableDescriptor instanceof PreviousElementShadowVariableDescriptor<Solution_> previousElementShadowVariableDescriptor) {
+            demand(listVariableDescriptor.getStateDemand())
+                    .enablePreviousElementShadowVariable(previousElementShadowVariableDescriptor);
         } else if (shadowVariableDescriptor instanceof NextElementShadowVariableDescriptor<Solution_> nextElementShadowVariableDescriptor) {
             demand(listVariableDescriptor.getStateDemand())
                     .enableNextElementShadowVariable(nextElementShadowVariableDescriptor);
