@@ -14,6 +14,7 @@ import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShado
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.ShadowVariablesAssert;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
@@ -64,6 +65,24 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     }
 
     private void processShadowVariableDescriptor(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        if (listVariableDescriptor == null) {
+            processShadowVariableDescriptorWithoutListVariable(shadowVariableDescriptor);
+        } else {
+            processShadowVariableDescriptorWithListVariable(shadowVariableDescriptor);
+        }
+    }
+
+    private void processShadowVariableDescriptorWithListVariable(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        if (shadowVariableDescriptor instanceof InverseRelationShadowVariableDescriptor<Solution_> inverseRelationShadowVariableDescriptor) {
+            demand(listVariableDescriptor.getStateDemand())
+                    .externalizeSingletonListInverseVariable(inverseRelationShadowVariableDescriptor);
+        } else { // These are shadow variables not supported by the list variable supply; we use the standard mechanism.
+            processShadowVariableDescriptorWithoutListVariable(shadowVariableDescriptor);
+        }
+    }
+
+    private void
+            processShadowVariableDescriptorWithoutListVariable(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         for (var listenerWithSources : shadowVariableDescriptor.buildVariableListeners(this)) {
             var variableListener = listenerWithSources.getVariableListener();
             if (variableListener instanceof Supply supply) {

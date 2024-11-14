@@ -6,6 +6,8 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.preview.api.domain.metamodel.LocationInList;
 
@@ -15,11 +17,29 @@ final class ExternalizedListVariableStateSupply<Solution_>
         implements ListVariableStateSupply<Solution_> {
 
     private final ListVariableDescriptor<Solution_> sourceVariableDescriptor;
+    private SingletonListInverseVariableProcessor<Solution_> inverseProcessor =
+            new ExternalizedSingletonListListInverseVariableProcessor<>(planningValue -> {
+                var elementLocation = getElementLocationMap().get(Objects.requireNonNull(planningValue));
+                if (elementLocation == null) {
+                    return null;
+                }
+                return elementLocation.entity();
+            });
     private Map<Object, LocationInList> elementLocationMap;
     private int unassignedCount;
 
     public ExternalizedListVariableStateSupply(ListVariableDescriptor<Solution_> sourceVariableDescriptor) {
         this.sourceVariableDescriptor = sourceVariableDescriptor;
+    }
+
+    public void externalizeSingletonListInverseVariable(
+            InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        this.inverseProcessor =
+                new InternalSingletonListListInverseVariableProcessor<>(shadowVariableDescriptor, sourceVariableDescriptor);
+    }
+
+    private Map<Object, LocationInList> getElementLocationMap() {
+        return elementLocationMap;
     }
 
     @Override
@@ -33,10 +53,11 @@ final class ExternalizedListVariableStateSupply<Solution_>
         // Start with everything unassigned.
         unassignedCount = (int) sourceVariableDescriptor.getValueRangeSize(workingSolution, null);
         // Will run over all entities and unmark all present elements as unassigned.
-        sourceVariableDescriptor.getEntityDescriptor().visitAllEntities(workingSolution, this::insert);
+        sourceVariableDescriptor.getEntityDescriptor()
+                .visitAllEntities(workingSolution, o -> insert(scoreDirector, o));
     }
 
-    private void insert(Object entity) {
+    private void insert(ScoreDirector<Solution_> scoreDirector, Object entity) {
         var assignedElements = sourceVariableDescriptor.getValue(entity);
         var index = 0;
         for (var element : assignedElements) {
@@ -46,6 +67,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
                         "The supply (%s) is corrupted, because the element (%s) at index (%d) already exists (%s)."
                                 .formatted(this, element, index, oldLocation));
             }
+            inverseProcessor.addElement((InnerScoreDirector<Solution_, ?>) scoreDirector, entity, element);
             index++;
             unassignedCount--;
         }
@@ -63,7 +85,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     @Override
     public void afterEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object o) {
-        insert(o);
+        insert(scoreDirector, o);
     }
 
     @Override
@@ -75,10 +97,10 @@ final class ExternalizedListVariableStateSupply<Solution_>
     public void afterEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object o) {
         // When the entity is removed, its values become unassigned.
         // An unassigned value has no inverse entity and no index.
-        retract(o);
+        retract(scoreDirector, o);
     }
 
-    private void retract(Object entity) {
+    private void retract(ScoreDirector<Solution_> scoreDirector, Object entity) {
         var assignedElements = sourceVariableDescriptor.getValue(entity);
         for (var index = 0; index < assignedElements.size(); index++) {
             var element = assignedElements.get(index);
@@ -94,6 +116,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
                         "The supply (%s) is corrupted, because the element (%s) at index (%d) had an old index (%d) which is not the current index (%d)."
                                 .formatted(this, element, index, oldIndex, index));
             }
+            inverseProcessor.removeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, entity, element);
             unassignedCount++;
         }
     }
@@ -106,6 +129,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
                     "The supply (%s) is corrupted, because the element (%s) did not exist before unassigning."
                             .formatted(this, element));
         }
+        inverseProcessor.unassignElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element);
         unassignedCount++;
     }
 
@@ -118,15 +142,16 @@ final class ExternalizedListVariableStateSupply<Solution_>
     @Override
     public void afterListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object o, int fromIndex,
             int toIndex) {
-        updateIndexes(o, fromIndex, toIndex);
+        updateIndexes(scoreDirector, o, fromIndex, toIndex);
     }
 
-    private void updateIndexes(Object entity, int startIndex, int toIndex) {
+    private void updateIndexes(ScoreDirector<Solution_> scoreDirector, Object entity, int startIndex, int toIndex) {
         var assignedElements = sourceVariableDescriptor.getValue(entity);
         for (var index = startIndex; index < assignedElements.size(); index++) {
             var element = assignedElements.get(index);
             var newLocation = ElementLocation.of(entity, index);
             var oldLocation = elementLocationMap.put(element, newLocation);
+            inverseProcessor.changeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, entity, element);
             if (oldLocation == null) {
                 unassignedCount--;
             } else if (index >= toIndex && newLocation.equals(oldLocation)) {
@@ -155,11 +180,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     @Override
     public Object getInverseSingleton(Object planningValue) {
-        var elementLocation = elementLocationMap.get(Objects.requireNonNull(planningValue));
-        if (elementLocation == null) {
-            return null;
-        }
-        return elementLocation.entity();
+        return inverseProcessor.getInverseSingleton(planningValue);
     }
 
     @Override
