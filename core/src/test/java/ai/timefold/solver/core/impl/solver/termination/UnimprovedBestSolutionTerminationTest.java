@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.mockito.Mockito.when;
 
+import java.time.Clock;
+
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -16,7 +18,10 @@ class UnimprovedBestSolutionTerminationTest {
 
     @Test
     void testTermination() {
-        var termination = new UnimprovedBestSolutionTermination<TestdataSolution>(0.5);
+        Clock clock = Mockito.mock(Clock.class);
+        var currentTime = Clock.systemUTC().millis();
+        var termination = new UnimprovedBestSolutionTermination<TestdataSolution>(0.5, 0.4,
+                clock);
         var solverScope = Mockito.mock(SolverScope.class);
         var phaseScope = Mockito.mock(LocalSearchPhaseScope.class);
         when(phaseScope.getSolverScope()).thenReturn(solverScope);
@@ -25,25 +30,29 @@ class UnimprovedBestSolutionTerminationTest {
         termination.phaseStarted(phaseScope);
         termination.waitForFirstBestScore = false;
 
-        // First curve
+        // Terminate
         termination.currentBest = SimpleScore.of(2);
-        termination.initialImprovementMoveCount = 0L;
-        termination.lastImprovementMoveCount = 5L;
-        when(solverScope.getMoveEvaluationCount()).thenReturn(11L);
+        termination.initialCurvePointMillis = currentTime;
+        termination.lastImprovementMillis = currentTime + 10000;
+        when(clock.millis()).thenReturn(currentTime + 21000);
         assertThat(termination.isPhaseTerminated(phaseScope)).isTrue();
 
-        // Second curve
+        // Don't terminate
         termination.terminate = null;
         termination.currentBest = SimpleScore.of(2);
-        termination.initialImprovementMoveCount = 10L;
-        termination.lastImprovementMoveCount = 15L;
-        when(solverScope.getMoveEvaluationCount()).thenReturn(21L);
-        assertThat(termination.isPhaseTerminated(phaseScope)).isTrue();
+        termination.initialCurvePointMillis = currentTime;
+        termination.lastImprovementMillis = currentTime + 10000;
+        when(clock.millis()).thenReturn(currentTime + 20000);
+        assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
+
     }
 
     @Test
-    void testGrowthCurves() {
-        var termination = new UnimprovedBestSolutionTermination<TestdataSolution>(0.5);
+    void testStartNewCurve() {
+        Clock clock = Mockito.mock(Clock.class);
+        var currentTime = Clock.systemUTC().millis();
+        var termination = new UnimprovedBestSolutionTermination<TestdataSolution>(0.5, 0.4,
+                clock);
         var solverScope = Mockito.mock(SolverScope.class);
         var phaseScope = Mockito.mock(LocalSearchPhaseScope.class);
         when(phaseScope.getSolverScope()).thenReturn(solverScope);
@@ -54,56 +63,68 @@ class UnimprovedBestSolutionTerminationTest {
 
         // Adding a new curve
         termination.currentBest = SimpleScore.of(1);
-        termination.initialImprovementMoveCount = 0L;
-        termination.lastImprovementMoveCount = 11L;
-        assertThat(termination.initialImprovementMoveCount).isZero();
-        when(solverScope.getMoveEvaluationCount()).thenReturn(20L);
+        termination.initialCurvePointMillis = currentTime;
+        termination.lastImprovementMillis = currentTime + 10000;
+        when(clock.millis()).thenReturn(currentTime + 19000);
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
-        assertThat(termination.initialImprovementMoveCount).isEqualTo(11L);
+        assertThat(termination.initialCurvePointMillis).isEqualTo(currentTime + 10000);
 
         // Not adding a new curve - flat line smaller than the minimum
         termination.terminate = null;
         termination.currentBest = SimpleScore.of(1);
-        termination.initialImprovementMoveCount = 0L;
-        termination.lastImprovementMoveCount = 11L;
-        assertThat(termination.initialImprovementMoveCount).isZero();
-        when(solverScope.getMoveEvaluationCount()).thenReturn(15L);
+        termination.initialCurvePointMillis = currentTime;
+        termination.lastImprovementMillis = currentTime + 10000;
+        when(clock.millis()).thenReturn(currentTime + 11000);
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
-        assertThat(termination.initialImprovementMoveCount).isZero();
+        assertThat(termination.initialCurvePointMillis).isEqualTo(currentTime);
 
         // Not adding a new curve - flat line larger than the minimum
         termination.terminate = null;
         termination.currentBest = SimpleScore.of(1);
-        termination.initialImprovementMoveCount = 0L;
-        termination.lastImprovementMoveCount = 11L;
-        assertThat(termination.initialImprovementMoveCount).isZero();
-        when(solverScope.getMoveEvaluationCount()).thenReturn(30L);
+        termination.initialCurvePointMillis = currentTime;
+        termination.lastImprovementMillis = currentTime + 10000;
+        when(clock.millis()).thenReturn(currentTime + 20000);
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
-        assertThat(termination.initialImprovementMoveCount).isZero();
+        assertThat(termination.initialCurvePointMillis).isEqualTo(currentTime);
     }
 
     @Test
     void testMinimalInterval() {
-        var termination = new UnimprovedBestSolutionTermination<TestdataSolution>(0.5);
+        Clock clock = Mockito.mock(Clock.class);
+        var currentTime = Clock.systemUTC().millis();
+        var termination = new UnimprovedBestSolutionTermination<TestdataSolution>(0.5, 0.4,
+                clock);
         var solverScope = Mockito.mock(SolverScope.class);
         var phaseScope = Mockito.mock(LocalSearchPhaseScope.class);
         when(phaseScope.getSolverScope()).thenReturn(solverScope);
         when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(2));
         when(solverScope.getMoveEvaluationSpeed()).thenReturn(1L);
         termination.phaseStarted(phaseScope);
+        termination.waitForFirstBestScore = false;
 
-        termination.lastImprovementMoveCount = 7L;
+        // Don't terminate
         termination.currentBest = SimpleScore.of(2);
-        when(solverScope.getMoveEvaluationCount()).thenReturn(UnimprovedBestSolutionTermination.MINIMAL_INTERVAL_TIME - 1);
+        termination.initialCurvePointMillis = currentTime;
+        termination.lastImprovementMillis = currentTime + UnimprovedBestSolutionTermination.MINIMAL_INTERVAL_TIME_MILLIS;
+        when(clock.millis()).thenReturn(currentTime + UnimprovedBestSolutionTermination.MINIMAL_INTERVAL_TIME_MILLIS * 2 - 1);
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
 
+        // Don't terminate
         termination.terminate = null;
-        when(solverScope.getMoveEvaluationCount()).thenReturn(UnimprovedBestSolutionTermination.MINIMAL_INTERVAL_TIME + 1);
-        assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
+        termination.currentBest = SimpleScore.of(2);
+        termination.initialCurvePointMillis = currentTime;
+        termination.lastImprovementMillis = currentTime + UnimprovedBestSolutionTermination.MINIMAL_INTERVAL_TIME_MILLIS;
+        when(clock.millis()).thenReturn(currentTime + UnimprovedBestSolutionTermination.MINIMAL_INTERVAL_TIME_MILLIS * 2 + 1);
+        assertThat(termination.isPhaseTerminated(phaseScope)).isTrue();
     }
 
     @Test
     void invalidTermination() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new UnimprovedBestSolutionTermination<TestdataSolution>(-1));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> new UnimprovedBestSolutionTermination<TestdataSolution>(-1.0, 0.0));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> new UnimprovedBestSolutionTermination<TestdataSolution>(0.0, -1.0));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> new UnimprovedBestSolutionTermination<TestdataSolution>(0.0, 1.0));
     }
 }

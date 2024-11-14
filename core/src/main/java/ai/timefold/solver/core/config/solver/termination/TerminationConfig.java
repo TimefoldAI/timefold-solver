@@ -39,7 +39,8 @@ import org.jspecify.annotations.Nullable;
         "unimprovedStepCountLimit",
         "scoreCalculationCountLimit",
         "moveCountLimit",
-        "unimprovedBestSolutionLimit",
+        "flatLineDetectionRatio",
+        "newCurveDetectionRatio",
         "terminationConfigList"
 })
 public class TerminationConfig extends AbstractConfig<TerminationConfig> {
@@ -79,7 +80,8 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
 
     private Long moveCountLimit = null;
 
-    private Double unimprovedBestSolutionLimit = null;
+    private Double flatLineDetectionRatio = null;
+    private Double newCurveDetectionRatio = null;
 
     @XmlElement(name = "termination")
     private List<TerminationConfig> terminationConfigList = null;
@@ -260,12 +262,20 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         this.moveCountLimit = moveCountLimit;
     }
 
-    public @Nullable Double getUnimprovedBestSolutionLimit() {
-        return unimprovedBestSolutionLimit;
+    public @Nullable Double getFlatLineDetectionRatio() {
+        return flatLineDetectionRatio;
     }
 
-    public void setUnimprovedBestSolutionLimit(@Nullable Double unimprovedBestSolutionLimit) {
-        this.unimprovedBestSolutionLimit = unimprovedBestSolutionLimit;
+    public void setFlatLineDetectionRatio(@Nullable Double flatLineDetectionRatio) {
+        this.flatLineDetectionRatio = flatLineDetectionRatio;
+    }
+
+    public @Nullable Double getNewCurveDetectionRatio() {
+        return newCurveDetectionRatio;
+    }
+
+    public void setNewCurveDetectionRatio(@Nullable Double newCurveDetectionRatio) {
+        this.newCurveDetectionRatio = newCurveDetectionRatio;
     }
 
     public @Nullable List<@NonNull TerminationConfig> getTerminationConfigList() {
@@ -391,8 +401,13 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         return this;
     }
 
-    public @NonNull TerminationConfig withUnimprovedBestSolutionLimit(@NonNull Double unimprovedBestSolutionLimit) {
-        this.unimprovedBestSolutionLimit = unimprovedBestSolutionLimit;
+    public @NonNull TerminationConfig withFlatLineDetectionRatio(@NonNull Double flatLineDetectionRatio) {
+        this.flatLineDetectionRatio = flatLineDetectionRatio;
+        return this;
+    }
+
+    public @NonNull TerminationConfig withNewCurveDetectionRatio(@NonNull Double newCurveDetectionRatio) {
+        this.newCurveDetectionRatio = newCurveDetectionRatio;
         return this;
     }
 
@@ -505,7 +520,8 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
                 unimprovedStepCountLimit != null ||
                 scoreCalculationCountLimit != null ||
                 moveCountLimit != null ||
-                unimprovedBestSolutionLimit != null ||
+                flatLineDetectionRatio != null ||
+                newCurveDetectionRatio != null ||
                 isTerminationListConfigured();
     }
 
@@ -546,8 +562,10 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
                 inheritedConfig.getScoreCalculationCountLimit());
         moveCountLimit = ConfigUtils.inheritOverwritableProperty(moveCountLimit,
                 inheritedConfig.getMoveCountLimit());
-        unimprovedBestSolutionLimit = ConfigUtils.inheritOverwritableProperty(unimprovedBestSolutionLimit,
-                inheritedConfig.getUnimprovedBestSolutionLimit());
+        flatLineDetectionRatio = ConfigUtils.inheritOverwritableProperty(flatLineDetectionRatio,
+                inheritedConfig.getFlatLineDetectionRatio());
+        newCurveDetectionRatio = ConfigUtils.inheritOverwritableProperty(newCurveDetectionRatio,
+                inheritedConfig.getNewCurveDetectionRatio());
         terminationConfigList = ConfigUtils.inheritMergeableListConfig(
                 terminationConfigList, inheritedConfig.getTerminationConfigList());
         return this;
