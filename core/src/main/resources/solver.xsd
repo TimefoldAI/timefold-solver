@@ -197,9 +197,9 @@
                     
           <xs:element minOccurs="0" name="moveCountLimit" type="xs:long"/>
                     
-          <xs:element minOccurs="0" name="flatLineDetectionRatio" type="xs:double"/>
+          <xs:element minOccurs="0" name="stopFlatLineDetectionRatio" type="xs:double"/>
                     
-          <xs:element minOccurs="0" name="newCurveDetectionRatio" type="xs:double"/>
+          <xs:element minOccurs="0" name="noStopFlatLineDetectionRatio" type="xs:double"/>
                     
           <xs:element minOccurs="0" name="minimalExecutionTimeSeconds" type="xs:long"/>
                     

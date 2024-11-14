@@ -38,12 +38,12 @@ public final class UnimprovedBestSolutionTermination<Solution_> extends Abstract
     protected Boolean terminate;
 
     public UnimprovedBestSolutionTermination(Double stopFlatLineDetectionRatio,
-                                             Double noStopFlatLineDetectionRatio, Long minimalExecutionTimeSeconds) {
+            Double noStopFlatLineDetectionRatio, Long minimalExecutionTimeSeconds) {
         this(stopFlatLineDetectionRatio, noStopFlatLineDetectionRatio, minimalExecutionTimeSeconds, Clock.systemUTC());
     }
 
     public UnimprovedBestSolutionTermination(Double stopFlatLineDetectionRatio, Double noStopFlatLineDetectionRatio,
-                                             Long minimalExecutionTimeSeconds, Clock clock) {
+            Long minimalExecutionTimeSeconds, Clock clock) {
         this.stopFlatLineDetectionRatio = Objects.requireNonNull(stopFlatLineDetectionRatio,
                 "The field stopFlatLineDetectionRatio is required for the termination UnimprovedBestSolutionTermination");
         this.noStopFlatLineDetectionRatio = Objects.requireNonNull(noStopFlatLineDetectionRatio,
@@ -137,7 +137,7 @@ public final class UnimprovedBestSolutionTermination<Solution_> extends Abstract
                 initialCurvePointMillis = lastImprovementMillis;
                 previousBest = currentBest;
                 if (logger.isInfoEnabled()) {
-                    logger.debug("Starting a new curve with ({}), estimated time interval ({}s)",
+                    logger.debug("Starting a new curve with ({}), time interval ({}s)",
                             previousBest,
                             String.format("%.2f", completeInterval / 1000.0));
                 }
@@ -191,6 +191,7 @@ public final class UnimprovedBestSolutionTermination<Solution_> extends Abstract
 
     @Override
     public String toString() {
-        return "UnimprovedBestSolutionTermination(%.2f, %.2f)".formatted(stopFlatLineDetectionRatio, noStopFlatLineDetectionRatio);
+        return "UnimprovedBestSolutionTermination(%.2f, %.2f)".formatted(stopFlatLineDetectionRatio,
+                noStopFlatLineDetectionRatio);
     }
 }
