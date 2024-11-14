@@ -7,6 +7,7 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.preview.api.domain.metamodel.LocationInList;
@@ -25,6 +26,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
                 }
                 return elementLocation.entity();
             });
+    private NextElementVariableProcessor<Solution_> nextElementProcessor;
     private Map<Object, LocationInList> elementLocationMap;
     private int unassignedCount;
 
@@ -36,6 +38,10 @@ final class ExternalizedListVariableStateSupply<Solution_>
             InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         this.inverseProcessor =
                 new InternalSingletonListListInverseVariableProcessor<>(shadowVariableDescriptor, sourceVariableDescriptor);
+    }
+
+    public void enableNextElementShadowVariable(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        this.nextElementProcessor = new NextElementVariableProcessor<>(shadowVariableDescriptor, sourceVariableDescriptor);
     }
 
     private Map<Object, LocationInList> getElementLocationMap() {
@@ -61,13 +67,18 @@ final class ExternalizedListVariableStateSupply<Solution_>
         var assignedElements = sourceVariableDescriptor.getValue(entity);
         var index = 0;
         for (var element : assignedElements) {
-            var oldLocation = elementLocationMap.put(element, ElementLocation.of(entity, index));
+            var location = ElementLocation.of(entity, index);
+            var oldLocation = elementLocationMap.put(element, location);
             if (oldLocation != null) {
                 throw new IllegalStateException(
                         "The supply (%s) is corrupted, because the element (%s) at index (%d) already exists (%s)."
                                 .formatted(this, element, index, oldLocation));
             }
             inverseProcessor.addElement((InnerScoreDirector<Solution_, ?>) scoreDirector, entity, element);
+            if (nextElementProcessor != null) {
+                nextElementProcessor.addElement((InnerScoreDirector<Solution_, ?>) scoreDirector, assignedElements, element,
+                        location);
+            }
             index++;
             unassignedCount--;
         }
@@ -117,6 +128,9 @@ final class ExternalizedListVariableStateSupply<Solution_>
                                 .formatted(this, element, index, oldIndex, index));
             }
             inverseProcessor.removeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, entity, element);
+            if (nextElementProcessor != null) {
+                nextElementProcessor.removeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element);
+            }
             unassignedCount++;
         }
     }
@@ -130,6 +144,9 @@ final class ExternalizedListVariableStateSupply<Solution_>
                             .formatted(this, element));
         }
         inverseProcessor.unassignElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element);
+        if (nextElementProcessor != null) {
+            nextElementProcessor.removeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element);
+        }
         unassignedCount++;
     }
 
@@ -142,20 +159,29 @@ final class ExternalizedListVariableStateSupply<Solution_>
     @Override
     public void afterListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object o, int fromIndex,
             int toIndex) {
-        updateIndexes(scoreDirector, o, fromIndex, toIndex);
-    }
-
-    private void updateIndexes(ScoreDirector<Solution_> scoreDirector, Object entity, int startIndex, int toIndex) {
-        var assignedElements = sourceVariableDescriptor.getValue(entity);
-        for (var index = startIndex; index < assignedElements.size(); index++) {
+        var assignedElements = sourceVariableDescriptor.getValue(o);
+        if (nextElementProcessor != null && fromIndex > 0) {
+            // If we need to process next elements, include the last element of the previous part of the list too.
+            // Otherwise the last element would point to the wrong next element.
+            nextElementProcessor.changeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, assignedElements,
+                    assignedElements.get(fromIndex - 1),
+                    ElementLocation.of(o, fromIndex - 1));
+        }
+        for (var index = fromIndex; index < assignedElements.size(); index++) {
             var element = assignedElements.get(index);
-            var newLocation = ElementLocation.of(entity, index);
+            var newLocation = ElementLocation.of(o, index);
             var oldLocation = elementLocationMap.put(element, newLocation);
-            inverseProcessor.changeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, entity, element);
+            inverseProcessor.changeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, o, element);
+            if (nextElementProcessor != null) {
+                nextElementProcessor.changeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, assignedElements, element,
+                        newLocation);
+            }
             if (oldLocation == null) {
                 unassignedCount--;
-            } else if (index >= toIndex && newLocation.equals(oldLocation)) {
+            }
+            if (index >= toIndex && newLocation.equals(oldLocation)) {
                 // Location is unchanged and we are past the part of the list that changed.
+                // Also, we don't need to update the next element shadows.
                 return;
             } else {
                 // Continue to the next element.
