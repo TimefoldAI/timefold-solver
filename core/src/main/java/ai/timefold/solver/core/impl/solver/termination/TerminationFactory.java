@@ -90,7 +90,7 @@ public class TerminationFactory<Solution_> {
         }
         if (terminationConfig.getFlatLineDetectionRatio() != null) {
             terminationList.add(new UnimprovedBestSolutionTermination<>(terminationConfig.getFlatLineDetectionRatio(),
-                    terminationConfig.getNewCurveDetectionRatio()));
+                    terminationConfig.getNewCurveDetectionRatio(), terminationConfig.getMinimalExecutionTimeSeconds()));
         }
         terminationList.addAll(buildInnerTermination(configPolicy));
         return buildTerminationFromList(terminationList);

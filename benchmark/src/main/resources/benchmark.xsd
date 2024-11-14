@@ -593,6 +593,9 @@
           <xs:element minOccurs="0" name="newCurveDetectionRatio" type="xs:double"/>
                               
           
+          <xs:element minOccurs="0" name="minimalExecutionTimeSeconds" type="xs:long"/>
+                              
+          
           <xs:element maxOccurs="unbounded" minOccurs="0" name="termination" type="tns:terminationConfig"/>
                             
         

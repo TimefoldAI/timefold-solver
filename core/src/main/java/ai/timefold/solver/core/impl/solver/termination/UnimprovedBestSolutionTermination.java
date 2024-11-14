@@ -12,7 +12,7 @@ import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 public final class UnimprovedBestSolutionTermination<Solution_> extends AbstractTermination<Solution_> {
 
     // Minimal interval of time to avoid early conclusions
-    protected static final long MINIMAL_INTERVAL_TIME_MILLIS = 10_000L;
+    private final long minimalExecutionTimeMillis;
     // This setting determines the amount of time
     // that is allowed without any improvements since the last best solution was identified.
     // For example, if the last solution was found at 10 seconds and the setting is configured to 0.5,
@@ -37,15 +37,20 @@ public final class UnimprovedBestSolutionTermination<Solution_> extends Abstract
     protected boolean waitForFirstBestScore;
     protected Boolean terminate;
 
-    public UnimprovedBestSolutionTermination(Double flatLineDetectionRatio, Double newCurveDetectionRatio) {
-        this(flatLineDetectionRatio, newCurveDetectionRatio, Clock.systemUTC());
+    public UnimprovedBestSolutionTermination(Double flatLineDetectionRatio,
+            Double newCurveDetectionRatio, Long minimalExecutionTimeSeconds) {
+        this(flatLineDetectionRatio, newCurveDetectionRatio, minimalExecutionTimeSeconds, Clock.systemUTC());
     }
 
-    public UnimprovedBestSolutionTermination(Double flatLineDetectionRatio, Double newCurveDetectionRatio, Clock clock) {
+    public UnimprovedBestSolutionTermination(Double flatLineDetectionRatio, Double newCurveDetectionRatio,
+            Long minimalExecutionTimeSeconds, Clock clock) {
         this.flatLineDetectionRatio = Objects.requireNonNull(flatLineDetectionRatio,
                 "The field flatLineDetectionRatio is required for the termination UnimprovedBestSolutionTermination");
         this.newCurveDetectionRatio = Objects.requireNonNull(newCurveDetectionRatio,
                 "The field newCurveDetectionRatio is required for the termination UnimprovedBestSolutionTermination");
+        this.minimalExecutionTimeMillis = Objects.requireNonNull(minimalExecutionTimeSeconds,
+                "The field minimalExecutionTimeSeconds is required for the termination UnimprovedBestSolutionTermination")
+                * 1000L;
         this.clock = Objects.requireNonNull(clock);
         if (flatLineDetectionRatio < 0) {
             throw new IllegalArgumentException(
@@ -60,10 +65,10 @@ public final class UnimprovedBestSolutionTermination<Solution_> extends Abstract
                     "The newCurveDetectionRatio (%.2f) cannot be greater than flatLineDetectionRatio (%.2f)."
                             .formatted(newCurveDetectionRatio, flatLineDetectionRatio));
         }
-    }
-
-    public double getFlatLineDetectionRatio() {
-        return flatLineDetectionRatio;
+        if (minimalExecutionTimeSeconds <= 0) {
+            throw new IllegalArgumentException(
+                    "The minimalExecutionTimeSeconds %d must be great than zero.".formatted(minimalExecutionTimeSeconds));
+        }
     }
 
     // ************************************************************************
@@ -118,15 +123,16 @@ public final class UnimprovedBestSolutionTermination<Solution_> extends Abstract
         }
         var currentTimeMillis = clock.millis();
         var improved = currentBest.compareTo(phaseScope.getBestScore()) < 0;
+        var lastImprovementInterval = lastImprovementMillis - initialCurvePointMillis;
         var completeInterval = currentTimeMillis - initialCurvePointMillis;
         var newInterval = currentTimeMillis - lastImprovementMillis;
         if (improved) {
             // If there is a flat line between the last and new best solutions,
             // the initial value becomes the most recent best score,
             // as it would be the starting point for the new curve.
-            var minInterval = Math.floor(completeInterval * newCurveDetectionRatio);
-            var maxInterval = Math.floor(completeInterval * flatLineDetectionRatio);
-            if (lastImprovementMillis > 0 && completeInterval >= MINIMAL_INTERVAL_TIME_MILLIS && newInterval > minInterval
+            var minInterval = Math.floor(lastImprovementInterval * newCurveDetectionRatio);
+            var maxInterval = Math.floor(lastImprovementInterval * flatLineDetectionRatio);
+            if (lastImprovementMillis > 0 && completeInterval >= minimalExecutionTimeMillis && newInterval > minInterval
                     && newInterval < maxInterval) {
                 initialCurvePointMillis = lastImprovementMillis;
                 previousBest = currentBest;
@@ -141,10 +147,10 @@ public final class UnimprovedBestSolutionTermination<Solution_> extends Abstract
             terminate = null;
             return false;
         } else {
-            if (completeInterval < MINIMAL_INTERVAL_TIME_MILLIS) {
+            if (completeInterval < minimalExecutionTimeMillis) {
                 return false;
             }
-            var maxInterval = Math.floor(completeInterval * flatLineDetectionRatio);
+            var maxInterval = Math.floor(lastImprovementInterval * flatLineDetectionRatio);
             if (newInterval > maxInterval) {
                 terminate = true;
                 return true;
@@ -179,7 +185,8 @@ public final class UnimprovedBestSolutionTermination<Solution_> extends Abstract
     @Override
     public UnimprovedBestSolutionTermination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
             ChildThreadType childThreadType) {
-        return new UnimprovedBestSolutionTermination<>(flatLineDetectionRatio, newCurveDetectionRatio, clock);
+        return new UnimprovedBestSolutionTermination<>(flatLineDetectionRatio, newCurveDetectionRatio,
+                minimalExecutionTimeMillis, clock);
     }
 
     @Override

@@ -41,6 +41,7 @@ import org.jspecify.annotations.Nullable;
         "moveCountLimit",
         "flatLineDetectionRatio",
         "newCurveDetectionRatio",
+        "minimalExecutionTimeSeconds",
         "terminationConfigList"
 })
 public class TerminationConfig extends AbstractConfig<TerminationConfig> {
@@ -82,6 +83,7 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
 
     private Double flatLineDetectionRatio = null;
     private Double newCurveDetectionRatio = null;
+    private Long minimalExecutionTimeSeconds = null;
 
     @XmlElement(name = "termination")
     private List<TerminationConfig> terminationConfigList = null;
@@ -278,6 +280,14 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         this.newCurveDetectionRatio = newCurveDetectionRatio;
     }
 
+    public @Nullable Long getMinimalExecutionTimeSeconds() {
+        return minimalExecutionTimeSeconds;
+    }
+
+    public void setMinimalExecutionTimeSeconds(@Nullable Long minimalExecutionTimeSeconds) {
+        this.minimalExecutionTimeSeconds = minimalExecutionTimeSeconds;
+    }
+
     public @Nullable List<@NonNull TerminationConfig> getTerminationConfigList() {
         return terminationConfigList;
     }
@@ -411,6 +421,11 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         return this;
     }
 
+    public @NonNull TerminationConfig withMinimalExecutionTimeSeconds(@NonNull Long minimalExecutionTimeSeconds) {
+        this.minimalExecutionTimeSeconds = minimalExecutionTimeSeconds;
+        return this;
+    }
+
     public @NonNull TerminationConfig
             withTerminationConfigList(@NonNull List<@NonNull TerminationConfig> terminationConfigList) {
         this.terminationConfigList = terminationConfigList;
@@ -522,6 +537,7 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
                 moveCountLimit != null ||
                 flatLineDetectionRatio != null ||
                 newCurveDetectionRatio != null ||
+                minimalExecutionTimeSeconds != null ||
                 isTerminationListConfigured();
     }
 
@@ -566,6 +582,8 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
                 inheritedConfig.getFlatLineDetectionRatio());
         newCurveDetectionRatio = ConfigUtils.inheritOverwritableProperty(newCurveDetectionRatio,
                 inheritedConfig.getNewCurveDetectionRatio());
+        minimalExecutionTimeSeconds = ConfigUtils.inheritOverwritableProperty(minimalExecutionTimeSeconds,
+                inheritedConfig.getMinimalExecutionTimeSeconds());
         terminationConfigList = ConfigUtils.inheritMergeableListConfig(
                 terminationConfigList, inheritedConfig.getTerminationConfigList());
         return this;
