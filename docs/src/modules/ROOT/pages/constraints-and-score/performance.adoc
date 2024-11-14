@@ -312,7 +312,7 @@ Filters are just a simple check if a tuple matches a predicate.
 If it does, it is propagated downstream, otherwise it is no longer evaluated.
 Each tuple needs to go through this check, and that means every pair of lessons will be evaluated.
 When a `Lesson` changes, all pairs with that `Lesson` will be wastefully re-evaluated.
-Let's move the `Teacher` equality check moved from the final filter to a `Joiner`:
+Let's move the `Teacher` equality check from the final filter above to a `Joiner`:
 
 
 [tabs]
@@ -468,7 +468,7 @@ For example, move multiple items from the same container to another container.
 == `stepLimit` benchmark
 
 Not all score constraints have the same performance cost.
-Sometimes one score constraint can performance outright.
+Sometimes one score constraint can ruin performance outright.
 Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker]
 to do a one minute run and check what happens to the move evaluation speed
 if you comment out all but one of the score constraints.
