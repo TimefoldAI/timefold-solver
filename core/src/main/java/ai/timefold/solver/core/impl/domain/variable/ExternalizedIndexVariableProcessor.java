@@ -1,40 +1,53 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
-import java.util.function.Function;
+import java.util.Objects;
 
+import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
-public final class ExternalizedIndexVariableProcessor<Solution_>
+final class ExternalizedIndexVariableProcessor<Solution_>
         implements IndexVariableProcessor<Solution_> {
 
-    private final Function<Object, Integer> indexFunction;
+    private final IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor;
 
-    public ExternalizedIndexVariableProcessor(Function<Object, Integer> indexFunction) {
-        this.indexFunction = indexFunction;
+    public ExternalizedIndexVariableProcessor(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        this.shadowVariableDescriptor = shadowVariableDescriptor;
     }
 
     @Override
     public void addElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object element, Integer index) {
-        // Do nothing.
+        updateIndex(scoreDirector, element, index);
     }
 
     @Override
     public void removeElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object element) {
-        // Do nothing.
+        scoreDirector.beforeVariableChanged(shadowVariableDescriptor, element);
+        shadowVariableDescriptor.setValue(element, null);
+        scoreDirector.afterVariableChanged(shadowVariableDescriptor, element);
     }
 
     @Override
     public void unassignElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object element) {
-        // Do nothing.
+        removeElement(scoreDirector, element);
     }
 
     @Override
     public void changeElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object element, Integer index) {
-        // Do nothing.
+        updateIndex(scoreDirector, element, index);
+    }
+
+    private void updateIndex(InnerScoreDirector<Solution_, ?> scoreDirector, Object element, Integer index) {
+        var oldIndex = shadowVariableDescriptor.getValue(element);
+        if (!Objects.equals(oldIndex, index)) {
+            scoreDirector.beforeVariableChanged(shadowVariableDescriptor, element);
+            shadowVariableDescriptor.setValue(element, index);
+            scoreDirector.afterVariableChanged(shadowVariableDescriptor, element);
+        }
     }
 
     @Override
     public Integer getIndex(Object planningValue) {
-        return indexFunction.apply(planningValue);
+        return shadowVariableDescriptor.getValue(planningValue);
     }
+
 }

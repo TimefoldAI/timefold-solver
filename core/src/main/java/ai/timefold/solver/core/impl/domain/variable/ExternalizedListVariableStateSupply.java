@@ -20,21 +20,10 @@ final class ExternalizedListVariableStateSupply<Solution_>
         implements ListVariableStateSupply<Solution_> {
 
     private final ListVariableDescriptor<Solution_> sourceVariableDescriptor;
-    private IndexVariableProcessor<Solution_> indexProcessor = new ExternalizedIndexVariableProcessor<>(planningValue -> {
-        var elementLocation = getElementLocation(planningValue);
-        if (elementLocation == null) {
-            return null;
-        }
-        return elementLocation.index();
-    });
+    private IndexVariableProcessor<Solution_> indexProcessor =
+            new InternalIndexVariableProcessor<>(this::getIndexFromElementLocationMap);
     private SingletonListInverseVariableProcessor<Solution_> inverseProcessor =
-            new ExternalizedSingletonListListInverseVariableProcessor<>(planningValue -> {
-                var elementLocation = getElementLocation(planningValue);
-                if (elementLocation == null) {
-                    return null;
-                }
-                return elementLocation.entity();
-            });
+            new InternalSingletonListListInverseVariableProcessor<>(this::getInverseFromElementLocationMap);
     private PreviousElementVariableProcessor<Solution_> previousElementProcessor;
     private NextElementVariableProcessor<Solution_> nextElementProcessor;
     private Map<Object, LocationInList> elementLocationMap;
@@ -44,16 +33,36 @@ final class ExternalizedListVariableStateSupply<Solution_>
         this.sourceVariableDescriptor = sourceVariableDescriptor;
     }
 
+    private Integer getIndexFromElementLocationMap(Object planningValue) {
+        var elementLocation = getElementLocation(planningValue);
+        if (elementLocation == null) {
+            return null;
+        }
+        return elementLocation.index();
+    }
+
+    private LocationInList getElementLocation(Object planningValue) {
+        return elementLocationMap.get(Objects.requireNonNull(planningValue));
+    }
+
+    private Object getInverseFromElementLocationMap(Object planningValue) {
+        var elementLocation = getElementLocation(planningValue);
+        if (elementLocation == null) {
+            return null;
+        }
+        return elementLocation.entity();
+    }
+
     @Override
     public void externalizeIndexVariable(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        this.indexProcessor = new InternalIndexVariableProcessor<>(shadowVariableDescriptor);
+        this.indexProcessor = new ExternalizedIndexVariableProcessor<>(shadowVariableDescriptor);
     }
 
     @Override
     public void externalizeSingletonListInverseVariable(
             InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         this.inverseProcessor =
-                new InternalSingletonListListInverseVariableProcessor<>(shadowVariableDescriptor, sourceVariableDescriptor);
+                new ExternalizedSingletonListListInverseVariableProcessor<>(shadowVariableDescriptor, sourceVariableDescriptor);
     }
 
     @Override
@@ -63,13 +72,17 @@ final class ExternalizedListVariableStateSupply<Solution_>
                 new PreviousElementVariableProcessor<>(shadowVariableDescriptor);
     }
 
+    private boolean isPreviousElementShadowVariableEnabled() {
+        return previousElementProcessor != null;
+    }
+
+    private boolean isNextElementShadowVariableEnabled() {
+        return nextElementProcessor != null;
+    }
+
     @Override
     public void enableNextElementShadowVariable(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         this.nextElementProcessor = new NextElementVariableProcessor<>(shadowVariableDescriptor);
-    }
-
-    private LocationInList getElementLocation(Object planningValue) {
-        return elementLocationMap.get(Objects.requireNonNull(planningValue));
     }
 
     @Override
@@ -84,10 +97,12 @@ final class ExternalizedListVariableStateSupply<Solution_>
         unassignedCount = (int) sourceVariableDescriptor.getValueRangeSize(workingSolution, null);
         // Will run over all entities and unmark all present elements as unassigned.
         sourceVariableDescriptor.getEntityDescriptor()
-                .visitAllEntities(workingSolution, o -> insert(scoreDirector, o));
+                .visitAllEntities(workingSolution, o -> insert(scoreDirector, o, isPreviousElementShadowVariableEnabled(),
+                        isNextElementShadowVariableEnabled()));
     }
 
-    private void insert(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    private void insert(ScoreDirector<Solution_> scoreDirector, Object entity, boolean previousElementProcessingEnabled,
+            boolean nextElementProcessingEnabled) {
         var assignedElements = sourceVariableDescriptor.getValue(entity);
         var index = 0;
         for (var element : assignedElements) {
@@ -98,15 +113,14 @@ final class ExternalizedListVariableStateSupply<Solution_>
                         "The supply (%s) is corrupted, because the element (%s) at index (%d) already exists (%s)."
                                 .formatted(this, element, index, oldLocation));
             }
-            indexProcessor.addElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element, index);
-            inverseProcessor.addElement((InnerScoreDirector<Solution_, ?>) scoreDirector, entity, element);
-            if (nextElementProcessor != null) {
-                nextElementProcessor.addElement((InnerScoreDirector<Solution_, ?>) scoreDirector, assignedElements, element,
-                        location);
+            var castScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
+            indexProcessor.addElement(castScoreDirector, element, index);
+            inverseProcessor.addElement(castScoreDirector, entity, element);
+            if (previousElementProcessingEnabled) {
+                previousElementProcessor.addElement(castScoreDirector, assignedElements, element, index);
             }
-            if (previousElementProcessor != null) {
-                previousElementProcessor.addElement((InnerScoreDirector<Solution_, ?>) scoreDirector, assignedElements, element,
-                        location);
+            if (nextElementProcessingEnabled) {
+                nextElementProcessor.addElement(castScoreDirector, assignedElements, element, index);
             }
             index++;
             unassignedCount--;
@@ -125,7 +139,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     @Override
     public void afterEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object o) {
-        insert(scoreDirector, o);
+        insert(scoreDirector, o, previousElementProcessor != null, nextElementProcessor != null);
     }
 
     @Override
@@ -137,10 +151,11 @@ final class ExternalizedListVariableStateSupply<Solution_>
     public void afterEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object o) {
         // When the entity is removed, its values become unassigned.
         // An unassigned value has no inverse entity and no index.
-        retract(scoreDirector, o);
+        retract(scoreDirector, o, isPreviousElementShadowVariableEnabled(), isNextElementShadowVariableEnabled());
     }
 
-    private void retract(ScoreDirector<Solution_> scoreDirector, Object entity) {
+    private void retract(ScoreDirector<Solution_> scoreDirector, Object entity, boolean previousElementProcessingEnabled,
+            boolean nextElementProcessingEnabled) {
         var assignedElements = sourceVariableDescriptor.getValue(entity);
         for (var index = 0; index < assignedElements.size(); index++) {
             var element = assignedElements.get(index);
@@ -156,13 +171,14 @@ final class ExternalizedListVariableStateSupply<Solution_>
                         "The supply (%s) is corrupted, because the element (%s) at index (%d) had an old index (%d) which is not the current index (%d)."
                                 .formatted(this, element, index, oldIndex, index));
             }
-            indexProcessor.removeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element);
-            inverseProcessor.removeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, entity, element);
-            if (nextElementProcessor != null) {
-                nextElementProcessor.removeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element);
+            var castScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
+            indexProcessor.removeElement(castScoreDirector, element);
+            inverseProcessor.removeElement(castScoreDirector, entity, element);
+            if (previousElementProcessingEnabled) {
+                previousElementProcessor.removeElement(castScoreDirector, element);
             }
-            if (previousElementProcessor != null) {
-                previousElementProcessor.removeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element);
+            if (nextElementProcessingEnabled) {
+                nextElementProcessor.removeElement(castScoreDirector, element);
             }
             unassignedCount++;
         }
@@ -176,13 +192,14 @@ final class ExternalizedListVariableStateSupply<Solution_>
                     "The supply (%s) is corrupted, because the element (%s) did not exist before unassigning."
                             .formatted(this, element));
         }
-        indexProcessor.unassignElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element);
-        inverseProcessor.unassignElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element);
-        if (nextElementProcessor != null) {
-            nextElementProcessor.removeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element);
+        var castScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
+        indexProcessor.unassignElement(castScoreDirector, element);
+        inverseProcessor.unassignElement(castScoreDirector, element);
+        if (isPreviousElementShadowVariableEnabled()) {
+            previousElementProcessor.removeElement(castScoreDirector, element);
         }
-        if (previousElementProcessor != null) {
-            previousElementProcessor.removeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element);
+        if (isNextElementShadowVariableEnabled()) {
+            nextElementProcessor.removeElement(castScoreDirector, element);
         }
         unassignedCount++;
     }
@@ -196,28 +213,29 @@ final class ExternalizedListVariableStateSupply<Solution_>
     @Override
     public void afterListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object o, int fromIndex,
             int toIndex) {
+        var castScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
         var assignedElements = sourceVariableDescriptor.getValue(o);
-        if (nextElementProcessor != null && fromIndex > 0) {
+        var previousElementProcessingEnabled = isPreviousElementShadowVariableEnabled();
+        var nextElementProcessingEnabled = isNextElementShadowVariableEnabled();
+        if (nextElementProcessingEnabled && fromIndex > 0) {
             // If we need to process next elements, include the last element of the previous part of the list too.
             // Otherwise the last element would point to the wrong next element.
-            nextElementProcessor.changeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, assignedElements,
-                    assignedElements.get(fromIndex - 1),
-                    ElementLocation.of(o, fromIndex - 1));
+            var previousIndex = fromIndex - 1;
+            nextElementProcessor.changeElement(castScoreDirector, assignedElements, assignedElements.get(previousIndex),
+                    previousIndex);
         }
-        for (var index = fromIndex; index < assignedElements.size(); index++) {
+        var elementCount = assignedElements.size();
+        for (var index = fromIndex; index < elementCount; index++) {
             var element = assignedElements.get(index);
             var newLocation = ElementLocation.of(o, index);
             var oldLocation = elementLocationMap.put(element, newLocation);
-            indexProcessor.changeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element, index);
-            inverseProcessor.changeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, o, element);
-            if (nextElementProcessor != null) {
-                nextElementProcessor.changeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, assignedElements, element,
-                        newLocation);
+            indexProcessor.changeElement(castScoreDirector, element, index);
+            inverseProcessor.changeElement(castScoreDirector, o, element);
+            if (previousElementProcessingEnabled) {
+                previousElementProcessor.changeElement(castScoreDirector, assignedElements, element, index);
             }
-            if (previousElementProcessor != null) {
-                previousElementProcessor.changeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, assignedElements,
-                        element,
-                        newLocation);
+            if (nextElementProcessingEnabled) {
+                nextElementProcessor.changeElement(castScoreDirector, assignedElements, element, index);
             }
             if (oldLocation == null) {
                 unassignedCount--;
@@ -226,9 +244,10 @@ final class ExternalizedListVariableStateSupply<Solution_>
                 // Location is unchanged and we are past the part of the list that changed.
                 // If we need to process previous elements, include the last element of the previous part of the list too.
                 // Otherwise the last element would point to the wrong next element.
-                if (previousElementProcessor != null && index < assignedElements.size() - 1) {
-                    previousElementProcessor.changeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, assignedElements,
-                            assignedElements.get(index + 1), ElementLocation.of(o, index + 1));
+                if (previousElementProcessingEnabled && index < elementCount - 1) {
+                    var nextIndex = index + 1;
+                    previousElementProcessor.changeElement(castScoreDirector, assignedElements, assignedElements.get(nextIndex),
+                            nextIndex);
                 }
                 // Finally, we can terminate the loop prematurely.
                 return;

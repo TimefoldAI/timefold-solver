@@ -1,69 +1,40 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
-import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
+import java.util.function.Function;
+
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
-public final class InternalSingletonListListInverseVariableProcessor<Solution_>
+final class InternalSingletonListListInverseVariableProcessor<Solution_>
         implements SingletonListInverseVariableProcessor<Solution_> {
 
-    private final InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor;
-    private final ListVariableDescriptor<Solution_> sourceVariableDescriptor;
+    private final Function<Object, Object> inverseSingletonFunction;
 
-    public InternalSingletonListListInverseVariableProcessor(
-            InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor,
-            ListVariableDescriptor<Solution_> sourceVariableDescriptor) {
-        this.shadowVariableDescriptor = shadowVariableDescriptor;
-        this.sourceVariableDescriptor = sourceVariableDescriptor;
+    public InternalSingletonListListInverseVariableProcessor(Function<Object, Object> inverseSingletonFunction) {
+        this.inverseSingletonFunction = inverseSingletonFunction;
     }
 
     @Override
     public void addElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, Object element) {
-        setInverse(scoreDirector, element, entity, null);
+        // Do nothing.
     }
 
     @Override
     public void removeElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, Object element) {
-        setInverse(scoreDirector, element, null, entity);
+        // Do nothing.
     }
 
     @Override
     public void unassignElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object element) {
-        updateInverse(scoreDirector, null, element);
-    }
-
-    private void updateInverse(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, Object element) {
-        scoreDirector.beforeVariableChanged(shadowVariableDescriptor, element);
-        shadowVariableDescriptor.setValue(element, entity);
-        scoreDirector.afterVariableChanged(shadowVariableDescriptor, element);
+        // Do nothing.
     }
 
     @Override
     public void changeElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, Object element) {
-        if (getInverseSingleton(element) != entity) {
-            updateInverse(scoreDirector, entity, element);
-        }
-    }
-
-    private void setInverse(InnerScoreDirector<Solution_, ?> scoreDirector,
-            Object element, Object inverseEntity, Object expectedOldInverseEntity) {
-        var oldInverseEntity = getInverseSingleton(element);
-        if (oldInverseEntity == inverseEntity) {
-            return;
-        }
-        if (scoreDirector.expectShadowVariablesInCorrectState() && oldInverseEntity != expectedOldInverseEntity) {
-            throw new IllegalStateException("The entity (" + inverseEntity
-                    + ") has a list variable (" + sourceVariableDescriptor.getVariableName()
-                    + ") and one of its elements (" + element
-                    + ") which has a shadow variable (" + shadowVariableDescriptor.getVariableName()
-                    + ") has an oldInverseEntity (" + oldInverseEntity + ") which is not that entity.\n"
-                    + "Verify the consistency of your input problem for that shadow variable.");
-        }
-        updateInverse(scoreDirector, inverseEntity, element);
+        // Do nothing.
     }
 
     @Override
     public Object getInverseSingleton(Object planningValue) {
-        return shadowVariableDescriptor.getValue(planningValue);
+        return inverseSingletonFunction.apply(planningValue);
     }
 }

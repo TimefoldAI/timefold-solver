@@ -10,6 +10,15 @@ import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableList
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
 
+/**
+ * Single source of truth for all information about elements inside list variables.
+ * Shadow variables can be connected to this class to save on iteration costs
+ * that would've been incurred otherwise if using variable listeners for each of them independently.
+ * This way, there is only one variable listener for all such shadow variables,
+ * and therefore only a single iteration to update all the information.
+ * 
+ * @param <Solution_>
+ */
 public interface ListVariableStateSupply<Solution_> extends
         SourcedVariableListener<Solution_>,
         ListVariableListener<Solution_, Object, Object>,
@@ -27,4 +36,5 @@ public interface ListVariableStateSupply<Solution_> extends
 
     @Override
     ListVariableDescriptor<Solution_> getSourceVariableDescriptor();
+
 }

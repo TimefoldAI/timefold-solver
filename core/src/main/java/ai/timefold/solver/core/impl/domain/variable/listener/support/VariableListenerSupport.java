@@ -71,6 +71,9 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         if (listVariableDescriptor == null) {
             processShadowVariableDescriptorWithoutListVariable(shadowVariableDescriptor);
         } else {
+            // All information about elements in all shadow variables is tracked in a centralized place.
+            // Therefore all list-related shadow variables need to be connected to that centralized place.
+            // Shadow variables which are not related to a list variable are processed normally.
             processShadowVariableDescriptorWithListVariable(shadowVariableDescriptor);
         }
     }

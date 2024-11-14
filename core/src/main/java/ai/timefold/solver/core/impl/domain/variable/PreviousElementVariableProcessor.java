@@ -4,7 +4,6 @@ import java.util.List;
 
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.preview.api.domain.metamodel.LocationInList;
 
 final class PreviousElementVariableProcessor<Solution_>
         extends AbstractNextPrevElementVariableProcessor<Solution_> {
@@ -16,11 +15,10 @@ final class PreviousElementVariableProcessor<Solution_>
     }
 
     @Override
-    public void addElement(InnerScoreDirector<Solution_, ?> scoreDirector, List<Object> listVariable,
-            Object originalElement, LocationInList originalElementLocation) {
-        var index = originalElementLocation.index();
-        var previous = index == 0 ? null : listVariable.get(originalElementLocation.index() - 1);
-        setValue(scoreDirector, originalElement, previous);
+    public void addElement(InnerScoreDirector<Solution_, ?> scoreDirector, List<Object> listVariable, Object element,
+            int index) {
+        var previous = index == 0 ? null : listVariable.get(index - 1);
+        setValue(scoreDirector, element, previous);
     }
 
     void setValue(InnerScoreDirector<Solution_, ?> scoreDirector, Object element, Object value) {
@@ -37,13 +35,12 @@ final class PreviousElementVariableProcessor<Solution_>
     }
 
     @Override
-    public void changeElement(InnerScoreDirector<Solution_, ?> scoreDirector, List<Object> listVariable, Object originalElement,
-            LocationInList originalElementLocation) {
-        var index = originalElementLocation.index();
+    public void changeElement(InnerScoreDirector<Solution_, ?> scoreDirector, List<Object> listVariable, Object element,
+            int index) {
         if (index == 0) {
-            setValue(scoreDirector, originalElement, null);
+            setValue(scoreDirector, element, null);
         } else {
-            setValue(scoreDirector, originalElement, listVariable.get(index - 1));
+            setValue(scoreDirector, element, listVariable.get(index - 1));
         }
     }
 }
