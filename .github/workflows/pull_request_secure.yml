@@ -42,16 +42,16 @@ jobs:
       - id: validation
         shell: bash
         run: |
-            echo "Authorized user: ${{ steps.auth_check.outputs.authorized }}"
+          echo "Authorized user: ${{ steps.auth_check.outputs.authorized }}"
   # If the user is not a member, require a member to approve the PR.
   approval_required:
     needs: known_user
     environment:
-      ${{ 
-          github.event_name == 'pull_request_target' &&
-          github.event.pull_request.head.repo.full_name != github.repository &&
-          (needs.known_user.outputs.is_member_of_org != 'true' || github.actor == 'dependabot[bot]') &&
-          'external' || 'internal' 
+      ${{
+      github.event_name == 'pull_request_target' &&
+      github.event.pull_request.head.repo.full_name != github.repository &&
+      (needs.known_user.outputs.is_member_of_org != 'true' || github.actor == 'dependabot[bot]') &&
+      'external' || 'internal'
       }}
     runs-on: ubuntu-latest
     steps:
@@ -262,6 +262,10 @@ jobs:
 
   build_documentation:
     runs-on: ubuntu-latest
+    needs: approval_required
+    name: Build Documentation
+    env:
+      BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
     steps:
       - name: Checkout frontend
         id: checkout-frontend
@@ -270,6 +274,11 @@ jobs:
           repository: TimefoldAI/frontend
           token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
+
+      - name: Checkout timefold-solver
+        uses: actions/checkout@v4
+        with:
+          path: ./timefold-solver
 
       - name: Set up NodeJs
         uses: actions/setup-node@v4
@@ -281,12 +290,17 @@ jobs:
         env:
           GIT_CREDENTIALS: ${{ secrets.GIT_CREDENTIALS }}
         run: |
-          sed -i 's/tags:\s*\[v[0-9.]*,\s*v0.8.42]/tags: \[main]/' apps/docs/antora-playbook.yml
+          cp ${{ github.workspace }}/timefold-solver/docs/src/antora-playbook-template.yml apps/docs/antora-playbook.yml
+          cd ${{ github.workspace }}/timefold-solver/
+          GURL="$(git remote get-url origin)"
+          cd -
+          sed -i "s#CHANGE_URL#$GURL#" apps/docs/antora-playbook.yml
+          sed -i "s/CHANGE_BRANCH/$BRANCH_NAME/" apps/docs/antora-playbook.yml
           npm ci
           npm run build -- --filter docs
 
       - name: Deploy Documentation (Preview Mode)
-        if: ${{ github.ref != 'refs/heads/main' }}
+        if: ${{ env.BRANCH_NAME != 'main' }}
         id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
