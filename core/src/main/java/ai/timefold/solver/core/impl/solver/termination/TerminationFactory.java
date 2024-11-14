@@ -88,9 +88,11 @@ public class TerminationFactory<Solution_> {
         if (terminationConfig.getMoveCountLimit() != null) {
             terminationList.add(new MoveCountTermination<>(terminationConfig.getMoveCountLimit()));
         }
-        if (terminationConfig.getFlatLineDetectionRatio() != null) {
-            terminationList.add(new UnimprovedBestSolutionTermination<>(terminationConfig.getFlatLineDetectionRatio(),
-                    terminationConfig.getNewCurveDetectionRatio(), terminationConfig.getMinimalExecutionTimeSeconds()));
+        if (terminationConfig.getStopFlatLineDetectionRatio() != null
+                || terminationConfig.getNoStopFlatLineDetectionRatio() != null
+                || terminationConfig.getMinimalExecutionTimeSeconds() != null) {
+            terminationList.add(new UnimprovedBestSolutionTermination<>(terminationConfig.getStopFlatLineDetectionRatio(),
+                    terminationConfig.getNoStopFlatLineDetectionRatio(), terminationConfig.getMinimalExecutionTimeSeconds()));
         }
         terminationList.addAll(buildInnerTermination(configPolicy));
         return buildTerminationFromList(terminationList);

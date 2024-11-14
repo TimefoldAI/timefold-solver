@@ -39,8 +39,8 @@ import org.jspecify.annotations.Nullable;
         "unimprovedStepCountLimit",
         "scoreCalculationCountLimit",
         "moveCountLimit",
-        "flatLineDetectionRatio",
-        "newCurveDetectionRatio",
+        "stopFlatLineDetectionRatio",
+        "noStopFlatLineDetectionRatio",
         "minimalExecutionTimeSeconds",
         "terminationConfigList"
 })
@@ -81,8 +81,8 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
 
     private Long moveCountLimit = null;
 
-    private Double flatLineDetectionRatio = null;
-    private Double newCurveDetectionRatio = null;
+    private Double stopFlatLineDetectionRatio = null;
+    private Double noStopFlatLineDetectionRatio = null;
     private Long minimalExecutionTimeSeconds = null;
 
     @XmlElement(name = "termination")
@@ -264,20 +264,20 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         this.moveCountLimit = moveCountLimit;
     }
 
-    public @Nullable Double getFlatLineDetectionRatio() {
-        return flatLineDetectionRatio;
+    public @Nullable Double getStopFlatLineDetectionRatio() {
+        return stopFlatLineDetectionRatio;
     }
 
-    public void setFlatLineDetectionRatio(@Nullable Double flatLineDetectionRatio) {
-        this.flatLineDetectionRatio = flatLineDetectionRatio;
+    public void setStopFlatLineDetectionRatio(@Nullable Double stopFlatLineDetectionRatio) {
+        this.stopFlatLineDetectionRatio = stopFlatLineDetectionRatio;
     }
 
-    public @Nullable Double getNewCurveDetectionRatio() {
-        return newCurveDetectionRatio;
+    public @Nullable Double getNoStopFlatLineDetectionRatio() {
+        return noStopFlatLineDetectionRatio;
     }
 
-    public void setNewCurveDetectionRatio(@Nullable Double newCurveDetectionRatio) {
-        this.newCurveDetectionRatio = newCurveDetectionRatio;
+    public void setNoStopFlatLineDetectionRatio(@Nullable Double noStopFlatLineDetectionRatio) {
+        this.noStopFlatLineDetectionRatio = noStopFlatLineDetectionRatio;
     }
 
     public @Nullable Long getMinimalExecutionTimeSeconds() {
@@ -411,13 +411,13 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         return this;
     }
 
-    public @NonNull TerminationConfig withFlatLineDetectionRatio(@NonNull Double flatLineDetectionRatio) {
-        this.flatLineDetectionRatio = flatLineDetectionRatio;
+    public @NonNull TerminationConfig withStopFlatLineDetectionRatio(@NonNull Double stopFlatLineDetectionRatio) {
+        this.stopFlatLineDetectionRatio = stopFlatLineDetectionRatio;
         return this;
     }
 
-    public @NonNull TerminationConfig withNewCurveDetectionRatio(@NonNull Double newCurveDetectionRatio) {
-        this.newCurveDetectionRatio = newCurveDetectionRatio;
+    public @NonNull TerminationConfig withNoStopFlatLineDetectionRatio(@NonNull Double noStopFlatLineDetectionRatio) {
+        this.noStopFlatLineDetectionRatio = noStopFlatLineDetectionRatio;
         return this;
     }
 
@@ -535,8 +535,8 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
                 unimprovedStepCountLimit != null ||
                 scoreCalculationCountLimit != null ||
                 moveCountLimit != null ||
-                flatLineDetectionRatio != null ||
-                newCurveDetectionRatio != null ||
+                stopFlatLineDetectionRatio != null ||
+                noStopFlatLineDetectionRatio != null ||
                 minimalExecutionTimeSeconds != null ||
                 isTerminationListConfigured();
     }
@@ -578,10 +578,10 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
                 inheritedConfig.getScoreCalculationCountLimit());
         moveCountLimit = ConfigUtils.inheritOverwritableProperty(moveCountLimit,
                 inheritedConfig.getMoveCountLimit());
-        flatLineDetectionRatio = ConfigUtils.inheritOverwritableProperty(flatLineDetectionRatio,
-                inheritedConfig.getFlatLineDetectionRatio());
-        newCurveDetectionRatio = ConfigUtils.inheritOverwritableProperty(newCurveDetectionRatio,
-                inheritedConfig.getNewCurveDetectionRatio());
+        stopFlatLineDetectionRatio = ConfigUtils.inheritOverwritableProperty(stopFlatLineDetectionRatio,
+                inheritedConfig.getStopFlatLineDetectionRatio());
+        noStopFlatLineDetectionRatio = ConfigUtils.inheritOverwritableProperty(noStopFlatLineDetectionRatio,
+                inheritedConfig.getNoStopFlatLineDetectionRatio());
         minimalExecutionTimeSeconds = ConfigUtils.inheritOverwritableProperty(minimalExecutionTimeSeconds,
                 inheritedConfig.getMinimalExecutionTimeSeconds());
         terminationConfigList = ConfigUtils.inheritMergeableListConfig(

@@ -568,55 +568,70 @@ This `Termination` is usually combined with other terminations.
 [#unimprovedBestSolutionTermination]
 ==== `UnimprovedBestSolutionTermination`
 
-`UnimprovedBestSolutionTermination` terminates when the solver cannot improve the best solution in an estimated time interval.
-The estimation of the termination interval is based on the last time
+`UnimprovedBestSolutionTermination` terminates the process when the solver cannot enhance the best solution over a time period.
+The duration for this period is determined by the last time
 the solver improved the solution and how much time has passed without any improvements.
 
 [source,xml,options="nowrap"]
 ----
   <termination>
-    <unimprovedBestSolutionLimit>0.5</unimprovedBestSolutionLimit>
+    <stopFlatLineDetectionRatio>0.5</stopFlatLineDetectionRatio>
+    <noStopFlatLineDetectionRatio>0.1</noStopFlatLineDetectionRatio>
+    <minimalExecutionTimeSeconds>120</minimalExecutionTimeSeconds>
   </termination>
 ----
 
 Let's consider a solution process based on the following image.
 
-image::optimization-algorithms/overview/terminationGrowthCurve.png[align="center"]
+image::optimization-algorithms/overview/terminationSingleFlatLine.png[align="center"]
 
-In the previous image, the estimated unimproved time is represented by the flat red line.
-With a configuration for `unimprovedBestSolutionLimit` set to `0.5`,
+In the previous image, the unimproved time is represented by the flat red line.
+With the stop condition `stopFlatLineDetectionRatio` set to `0.5`,
 and considering that the last best score was achieved at `10 seconds`,
-the solver will terminate the process if no improvement is found within a maximum of 10 seconds.
-This `10-seconds` limit is calculated
-by multiplying the estimated total time (`20 seconds`) by the `unimprovedBestSolutionLimit` (`0.5`).
-
+the solver will terminate the process if no improvement is found within a maximum of 5 seconds.
+This `5-seconds` limit is calculated
+by multiplying the last improvement time (`10 seconds`) by the `stopFlatLineDetectionRatio` (`0.5`).
+Similarly,
+setting the `stopFlatLineDetectionRatio` to `1.0` will lead to termination after `10 seconds` if there is no improvement.
 
 [NOTE]
 ====
-This `Termination` configuration includes some built-in properties:
-
-* The `Termination` process requires the growth curve to last at least `10 seconds`,
-meaning that the solver will not finish until approximately `10 seconds` after the growth curve evaluation begins.
-* The estimated time is determined by the speed of move evaluation.
-As the evaluation speed changes during the solving process,
-the conditions for ending the solver will also be adjusted.
-This means that the flat line may appear longer when analyzing a growth curve chart.
+The `Termination` process requires a minimum execution time, specified by `minimalExecutionTimeSeconds`.
 ====
 
-Now, let's discuss the problem-solving process involving multiple growth curves:
+The solving process may identify points for improvement after periods of no progress
+that are not significant enough to trigger the termination.
+These periods are referred to as non-stop periods, which are defined by the `noStopFlatLineDetectionRatio`.
+Let's analyze the next image:
 
-image::optimization-algorithms/overview/terminationMultipleGrowthCurve.png[align="center"]
+image::optimization-algorithms/overview/terminationMultipleFlatLines.png[align="center"]
 
-The termination process will track the solver's progress to identify various growth curves.
-Each time a new curve is identified, the newly identified curve is used to trigger the termination process.
-This means
-that the previously explained interval calculation will only consider the last curve rather than the entire flow.
+The orange flat line represents a non-stop period.
+By setting the `stopFlatLineDetectionRatio` to `0.5` and the `noStopFlatLineDetectionRatio` to `0.1`,
+we can calculate the unimproved stop period as `8 * 0.5 = 4s`,
+while the unimproved non-stop period is calculated as `8 * 0.1 = ~1s`.
+The difference between the solutions found at `8 seconds` and `10 seconds` is `2 seconds`.
+A flat line is accepted if the time difference between the solutions is greater
+than or equal to the non-stop period and less than the stop period.
 
-The previous chart displays a red line that is smaller than the size needed to trigger termination,
-but it is still significant enough to indicate the beginning of a new curve.
-The termination threshold is calculated as `80%` of the size of the flat line that would end the solving process.
+Accepting a non-stop flat line means adjusting the start time to the last improvement time.
+In the previous example, the start time will change from `0` to `8` seconds.
 
-This `Termination` is usually combined with other terminations.
+As more time passes, the flat line must be longer to trigger termination.
+Beginning at `0 seconds`,
+the termination criterion will only be activated after `15 seconds` of no improvement: `30s * 0.5 = 15s`.
+If we start counting from `8 seconds`, the time allowed for unimproved performance adjusts to `(30s - 8s) * 0.5 = 11s`.
+
+Evaluating the stopping criterion only from the beginning of the solving process may prevent the solver from terminating,
+as the necessary period without improvement tends to increase.
+Adjusting the start time enables the solver
+to advance its termination analysis when the solution remains unchanged for a specific duration.
+
+[NOTE]
+====
+The minimum execution time must be met whenever the start time changes,
+meaning the total executed time will be calculated from the new starting point.
+====
 
 [#stepCountTermination]
 ==== `StepCountTermination`
