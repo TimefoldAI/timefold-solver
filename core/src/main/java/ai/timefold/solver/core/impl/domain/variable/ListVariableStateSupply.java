@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.variable;
 
 import ai.timefold.solver.core.api.domain.variable.ListVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
@@ -15,6 +16,8 @@ public interface ListVariableStateSupply<Solution_> extends
         SingletonInverseVariableSupply,
         IndexVariableSupply,
         ListVariableElementStateSupply<Solution_> {
+
+    void externalizeIndexVariable(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
 
     void externalizeSingletonListInverseVariable(InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
 

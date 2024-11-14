@@ -58,8 +58,12 @@ class ListVariableListenerTest {
 
     static void assertPreviousHistory(TestdataListValueWithShadowHistory element,
             TestdataListValueWithShadowHistory... previousHistory) {
-        assertThat(element.getPrevious()).isEqualTo(previousHistory[previousHistory.length - 1]);
-        assertThat(element.getPreviousHistory()).containsExactly(previousHistory);
+        assertThat(element.getPrevious())
+                .as("Previous is incorrect")
+                .isEqualTo(previousHistory[previousHistory.length - 1]);
+        assertThat(element.getPreviousHistory())
+                .as("History is incorrect")
+                .containsExactly(previousHistory);
     }
 
     static void assertEmptyNextHistory(TestdataListValueWithShadowHistory element) {
@@ -201,10 +205,6 @@ class ListVariableListenerTest {
         assertPreviousHistory(x, b);
         assertPreviousHistory(c, b, x);
 
-        System.out.println("Next of A: " + a.getNext() + " " + a.getNextHistory());
-        System.out.println("Next of B: " + b.getNext() + " " + b.getNextHistory());
-        System.out.println("Next of X: " + x.getNext() + " " + x.getNextHistory());
-        System.out.println("Next of C: " + c.getNext() + " " + c.getNextHistory());
         assertNextHistory(a, b);
         assertNextHistory(b, c, x);
         assertNextHistory(x, c);

@@ -8,6 +8,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -93,7 +94,7 @@ abstract class AbstractNextPrevElementShadowVariableDescriptor<Solution_> extend
 
     @Override
     public Demand<?> getProvidedDemand() {
-        throw new UnsupportedOperationException(
-                "Not implemented because no subsystems demand previous or next shadow variables.");
+        throw new UnsupportedOperationException("Impossible state: Handled by %s."
+                .formatted(ListVariableStateSupply.class.getSimpleName()));
     }
 }

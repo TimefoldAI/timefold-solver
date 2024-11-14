@@ -14,6 +14,7 @@ import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShado
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.ShadowVariablesAssert;
@@ -75,7 +76,10 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     }
 
     private void processShadowVariableDescriptorWithListVariable(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        if (shadowVariableDescriptor instanceof InverseRelationShadowVariableDescriptor<Solution_> inverseRelationShadowVariableDescriptor) {
+        if (shadowVariableDescriptor instanceof IndexShadowVariableDescriptor<Solution_> indexShadowVariableDescriptor) {
+            demand(listVariableDescriptor.getStateDemand())
+                    .externalizeIndexVariable(indexShadowVariableDescriptor);
+        } else if (shadowVariableDescriptor instanceof InverseRelationShadowVariableDescriptor<Solution_> inverseRelationShadowVariableDescriptor) {
             demand(listVariableDescriptor.getStateDemand())
                     .externalizeSingletonListInverseVariable(inverseRelationShadowVariableDescriptor);
         } else if (shadowVariableDescriptor instanceof PreviousElementShadowVariableDescriptor<Solution_> previousElementShadowVariableDescriptor) {

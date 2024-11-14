@@ -6,6 +6,7 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
@@ -19,9 +20,16 @@ final class ExternalizedListVariableStateSupply<Solution_>
         implements ListVariableStateSupply<Solution_> {
 
     private final ListVariableDescriptor<Solution_> sourceVariableDescriptor;
+    private IndexVariableProcessor<Solution_> indexProcessor = new ExternalizedIndexVariableProcessor<>(planningValue -> {
+        var elementLocation = getElementLocation(planningValue);
+        if (elementLocation == null) {
+            return null;
+        }
+        return elementLocation.index();
+    });
     private SingletonListInverseVariableProcessor<Solution_> inverseProcessor =
             new ExternalizedSingletonListListInverseVariableProcessor<>(planningValue -> {
-                var elementLocation = getElementLocationMap().get(Objects.requireNonNull(planningValue));
+                var elementLocation = getElementLocation(planningValue);
                 if (elementLocation == null) {
                     return null;
                 }
@@ -34,6 +42,11 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     public ExternalizedListVariableStateSupply(ListVariableDescriptor<Solution_> sourceVariableDescriptor) {
         this.sourceVariableDescriptor = sourceVariableDescriptor;
+    }
+
+    @Override
+    public void externalizeIndexVariable(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        this.indexProcessor = new InternalIndexVariableProcessor<>(shadowVariableDescriptor);
     }
 
     @Override
@@ -55,8 +68,8 @@ final class ExternalizedListVariableStateSupply<Solution_>
         this.nextElementProcessor = new NextElementVariableProcessor<>(shadowVariableDescriptor);
     }
 
-    private Map<Object, LocationInList> getElementLocationMap() {
-        return elementLocationMap;
+    private LocationInList getElementLocation(Object planningValue) {
+        return elementLocationMap.get(Objects.requireNonNull(planningValue));
     }
 
     @Override
@@ -85,6 +98,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
                         "The supply (%s) is corrupted, because the element (%s) at index (%d) already exists (%s)."
                                 .formatted(this, element, index, oldLocation));
             }
+            indexProcessor.addElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element, index);
             inverseProcessor.addElement((InnerScoreDirector<Solution_, ?>) scoreDirector, entity, element);
             if (nextElementProcessor != null) {
                 nextElementProcessor.addElement((InnerScoreDirector<Solution_, ?>) scoreDirector, assignedElements, element,
@@ -142,6 +156,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
                         "The supply (%s) is corrupted, because the element (%s) at index (%d) had an old index (%d) which is not the current index (%d)."
                                 .formatted(this, element, index, oldIndex, index));
             }
+            indexProcessor.removeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element);
             inverseProcessor.removeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, entity, element);
             if (nextElementProcessor != null) {
                 nextElementProcessor.removeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element);
@@ -161,6 +176,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
                     "The supply (%s) is corrupted, because the element (%s) did not exist before unassigning."
                             .formatted(this, element));
         }
+        indexProcessor.unassignElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element);
         inverseProcessor.unassignElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element);
         if (nextElementProcessor != null) {
             nextElementProcessor.removeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element);
@@ -192,6 +208,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
             var element = assignedElements.get(index);
             var newLocation = ElementLocation.of(o, index);
             var oldLocation = elementLocationMap.put(element, newLocation);
+            indexProcessor.changeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, element, index);
             inverseProcessor.changeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, o, element);
             if (nextElementProcessor != null) {
                 nextElementProcessor.changeElement((InnerScoreDirector<Solution_, ?>) scoreDirector, assignedElements, element,
@@ -229,11 +246,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     @Override
     public Integer getIndex(Object planningValue) {
-        var elementLocation = elementLocationMap.get(Objects.requireNonNull(planningValue));
-        if (elementLocation == null) {
-            return null;
-        }
-        return elementLocation.index();
+        return indexProcessor.getIndex(planningValue);
     }
 
     @Override
