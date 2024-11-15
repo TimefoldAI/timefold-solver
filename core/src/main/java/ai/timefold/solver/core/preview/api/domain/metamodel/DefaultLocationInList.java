@@ -24,6 +24,22 @@ record DefaultLocationInList(@NonNull Object entity, int index) implements Locat
     }
 
     @Override
+    public boolean equals(Object element) {
+        if (!(element instanceof DefaultLocationInList that)) {
+            return false;
+        }
+        return index == that.index && entity == that.entity;
+    }
+
+    @Override
+    public int hashCode() {
+        var result = 1;
+        result = 31 * result + (System.identityHashCode(entity));
+        result = 31 * result + (Integer.hashCode(index));
+        return result;
+    }
+
+    @Override
     public String toString() {
         return entity + "[" + index + "]";
     }
