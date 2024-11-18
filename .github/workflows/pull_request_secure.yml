@@ -267,6 +267,10 @@ jobs:
     env:
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
     steps:
+      - name: Install yq
+        run: |
+          sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq 
+          sudo chmod +x /usr/bin/yq
       - name: Checkout frontend
         id: checkout-frontend
         uses: actions/checkout@v4
@@ -290,17 +294,12 @@ jobs:
         env:
           GIT_CREDENTIALS: ${{ secrets.GIT_CREDENTIALS }}
         run: |
+          
           cd ${{ github.workspace }}/timefold-solver/
-          GURL="$(git remote get-url origin)"
+          export GURL="$(git remote get-url origin)"
           cd -
-          sed -i '/algolia/,+1d' apps/docs/antora-playbook.yml
-          sed -i '/timefold-orbit/,+3d' apps/docs/antora-playbook.yml
-          sed -i '/timefold-field/,+3d' apps/docs/antora-playbook.yml
-          sed -i '/timefold-models/,+3d' apps/docs/antora-playbook.yml
-          sed -i '/timefold-employee/,+3d' apps/docs/antora-playbook.yml
-          sed -i '/tags/,1d' apps/docs/antora-playbook.yml
-          sed -i "s#git@github.com:timefoldai/timefold-solver.git#$GURL#g" apps/docs/antora-playbook.yml
-          sed -i "s/branches:[ .-~]*/branches: $BRANCH_NAME/" apps/docs/antora-playbook.yml
+          yq -i e 'del(.content.sources)' apps/docs/antora-playbook.yml
+          yq -i e '.content.sources += [{"url": env(GURL), "branches": env(BRANCH_NAME), "start_path": "docs/src"}]' apps/docs/antora-playbook.yml
           npm ci
           npm run build -- --filter docs
 
