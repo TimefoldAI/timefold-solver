@@ -301,7 +301,6 @@ jobs:
           sed -i '/tags/,1d' apps/docs/antora-playbook.yml
           sed -i "s#git@github.com:timefoldai/timefold-solver.git#$GURL#g" apps/docs/antora-playbook.yml
           sed -i "s/branches:[ .-~]*/branches: $BRANCH_NAME/" apps/docs/antora-playbook.yml
-          cat apps/docs/antora-playbook.yml
           npm ci
           npm run build -- --filter docs
 
