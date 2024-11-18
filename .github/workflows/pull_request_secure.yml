@@ -290,12 +290,18 @@ jobs:
         env:
           GIT_CREDENTIALS: ${{ secrets.GIT_CREDENTIALS }}
         run: |
-          cp ${{ github.workspace }}/timefold-solver/docs/src/antora-playbook-template.yml apps/docs/antora-playbook.yml
           cd ${{ github.workspace }}/timefold-solver/
           GURL="$(git remote get-url origin)"
           cd -
-          sed -i "s#CHANGE_URL#$GURL#" apps/docs/antora-playbook.yml
-          sed -i "s/CHANGE_BRANCH/$BRANCH_NAME/" apps/docs/antora-playbook.yml
+          sed -i '/algolia/,+1d' apps/docs/antora-playbook.yml
+          sed -i '/timefold-orbit/,+3d' apps/docs/antora-playbook.yml
+          sed -i '/timefold-field/,+3d' apps/docs/antora-playbook.yml
+          sed -i '/timefold-models/,+3d' apps/docs/antora-playbook.yml
+          sed -i '/timefold-employee/,+3d' apps/docs/antora-playbook.yml
+          sed -i '/tags/,1d' apps/docs/antora-playbook.yml
+          sed -i "s#git@github.com:timefoldai/timefold-solver.git#$GURL#g" apps/docs/antora-playbook.yml
+          sed -i "s/branches:[ .-~]*/branches: $BRANCH_NAME/" apps/docs/antora-playbook.yml
+          cat apps/docs/antora-playbook.yml
           npm ci
           npm run build -- --filter docs
 
