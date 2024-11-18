@@ -54,7 +54,7 @@
     <version.sonar.plugin>5.0.0.4389</version.sonar.plugin>
     <version.spotless.plugin>2.43.0</version.spotless.plugin>
     <version.surefire.plugin>3.5.2</version.surefire.plugin>
-    <version.versions.plugin>2.17.1</version.versions.plugin>
+    <version.versions.plugin>2.18.0</version.versions.plugin>
 
     <!-- Plugin configuration properties -->
     <maven.min.version>3.9.2</maven.min.version>
