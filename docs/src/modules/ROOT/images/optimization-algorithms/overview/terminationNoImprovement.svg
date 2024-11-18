@@ -7662,15 +7662,15 @@
          x="441.67017"
          y="1013.9101">100s</tspan></text>
     <path
-       style="fill:none;fill-opacity:1;stroke:#808080;stroke-width:1;stroke-dasharray:12,12;stroke-dashoffset:0;stroke-opacity:1"
+       style="fill:none;fill-opacity:1;stroke:#808080;stroke-width:1;stroke-dasharray:6,6;stroke-dashoffset:0;stroke-opacity:1"
        d="m 349.94894,682.86473 0.13919,308.99382"
        id="path7" />
     <path
-       style="display:inline;fill:none;fill-opacity:1;stroke:#808080;stroke-width:1;stroke-dasharray:12.00000815,12.00000815;stroke-dashoffset:0;stroke-opacity:1"
+       style="display:inline;fill:none;fill-opacity:1;stroke:#808080;stroke-width:1;stroke-dasharray:6,6;stroke-dashoffset:0;stroke-opacity:1"
        d="m 190.13136,962.86588 0.14166,28.99571"
        id="path7-3" />
     <path
-       style="display:inline;fill:none;fill-opacity:1;stroke:#808080;stroke-width:1;stroke-dasharray:12,12;stroke-dashoffset:0;stroke-opacity:1"
+       style="display:inline;fill:none;fill-opacity:1;stroke:#808080;stroke-width:1;stroke-dasharray:6,6;stroke-dashoffset:0;stroke-opacity:1"
        d="m 450.04,673.00884 0.13917,318.86939"
        id="path7-6" />
   </g>
