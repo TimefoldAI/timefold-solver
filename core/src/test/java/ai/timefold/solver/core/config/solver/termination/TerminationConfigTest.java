@@ -85,6 +85,19 @@ class TerminationConfigTest {
     }
 
     @Test
+    void childWithUnimprovedPropertiesFromParent() {
+        TerminationConfig child = new TerminationConfig();
+        TerminationConfig parent = new TerminationConfig()
+                .withStopFlatLineDetectionRatio(0.5)
+                .withNoStopFlatLineDetectionRatio(0.1)
+                .withMinimalExecutionTimeSeconds(10L);
+        child.inherit(parent);
+        assertThat(child.getStopFlatLineDetectionRatio()).isEqualTo(0.5);
+        assertThat(child.getNoStopFlatLineDetectionRatio()).isEqualTo(0.1);
+        assertThat(child.getMinimalExecutionTimeSeconds()).isEqualTo(10L);
+    }
+
+    @Test
     void checkMoveCountMetrics() {
         TerminationConfig parent = new TerminationConfig()
                 .withMoveCountLimit(2L);

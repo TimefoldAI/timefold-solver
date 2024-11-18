@@ -44,6 +44,7 @@ class UnimprovedBestSolutionTerminationTest {
         when(clock.millis()).thenReturn(currentTime + 14_000);
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
 
+        assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(-1.0);
     }
 
     @Test
@@ -125,5 +126,8 @@ class UnimprovedBestSolutionTerminationTest {
                 .isThrownBy(() -> new UnimprovedBestSolutionTermination<TestdataSolution>(0.0, 1.0, 1L));
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> new UnimprovedBestSolutionTermination<TestdataSolution>(1.0, 1.0, 0L));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> new UnimprovedBestSolutionTermination<TestdataSolution>(0.1, 1.0, 1L)
+                        .calculateSolverTimeGradient(null));
     }
 }

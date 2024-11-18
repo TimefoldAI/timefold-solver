@@ -201,4 +201,55 @@ class TerminationFactoryTest {
                 .isThrownBy(() -> terminationFactory.buildTermination(heuristicConfigPolicy))
                 .withMessageContaining("can only be used with a score type that has at least 1 feasible level");
     }
+
+    @Test
+    void buildBestScoreFeasible() {
+        var heuristicConfigPolicy = mock(HeuristicConfigPolicy.class);
+        when(heuristicConfigPolicy.getScoreDefinition()).thenReturn(new HardSoftScoreDefinition());
+        var terminationConfig = new TerminationConfig();
+        terminationConfig.setBestScoreFeasible(true);
+        var termination = TerminationFactory.create(terminationConfig).buildTermination(heuristicConfigPolicy);
+        assertThat(termination)
+                .isInstanceOf(BestScoreFeasibleTermination.class);
+    }
+
+    @Test
+    void buildStepCountLimit() {
+        var heuristicConfigPolicy = mock(HeuristicConfigPolicy.class);
+        when(heuristicConfigPolicy.getScoreDefinition()).thenReturn(new HardSoftScoreDefinition());
+        var terminationConfig = new TerminationConfig();
+        terminationConfig.setStepCountLimit(1);
+        var termination = TerminationFactory.create(terminationConfig).buildTermination(heuristicConfigPolicy);
+        assertThat(termination)
+                .isInstanceOf(StepCountTermination.class);
+    }
+
+    @Test
+    void buildUnimprovedStepCountLimit() {
+        var heuristicConfigPolicy = mock(HeuristicConfigPolicy.class);
+        when(heuristicConfigPolicy.getScoreDefinition()).thenReturn(new HardSoftScoreDefinition());
+        var terminationConfig = new TerminationConfig();
+        terminationConfig.withUnimprovedStepCountLimit(1);
+        var termination = TerminationFactory.create(terminationConfig).buildTermination(heuristicConfigPolicy);
+        assertThat(termination)
+                .isInstanceOf(UnimprovedStepCountTermination.class);
+    }
+
+    @Test
+    void buildUnimprovedBestScoreRatio() {
+        var terminationConfig = new TerminationConfig();
+        terminationConfig.setStopFlatLineDetectionRatio(0.5);
+        terminationConfig.setNoStopFlatLineDetectionRatio(0.1);
+        terminationConfig.setMinimalExecutionTimeSeconds(10L);
+        var termination = TerminationFactory.create(terminationConfig)
+                .buildTermination(mock(HeuristicConfigPolicy.class));
+        assertThat(termination)
+                .isInstanceOf(UnimprovedBestSolutionTermination.class);
+        assertThat(((UnimprovedBestSolutionTermination<?>) termination).getStopFlatLineDetectionRatio())
+                .isEqualTo(0.5);
+        assertThat(((UnimprovedBestSolutionTermination<?>) termination).getNoStopFlatLineDetectionRatio())
+                .isEqualTo(0.1);
+        assertThat(((UnimprovedBestSolutionTermination<?>) termination).getMinimalExecutionTimeMillis())
+                .isEqualTo(10000L);
+    }
 }

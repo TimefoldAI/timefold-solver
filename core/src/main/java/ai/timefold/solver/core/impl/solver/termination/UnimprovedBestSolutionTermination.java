@@ -71,6 +71,18 @@ public final class UnimprovedBestSolutionTermination<Solution_> extends Abstract
         }
     }
 
+    public long getMinimalExecutionTimeMillis() {
+        return minimalExecutionTimeMillis;
+    }
+
+    public double getStopFlatLineDetectionRatio() {
+        return stopFlatLineDetectionRatio;
+    }
+
+    public double getNoStopFlatLineDetectionRatio() {
+        return noStopFlatLineDetectionRatio;
+    }
+
     // ************************************************************************
     // Lifecycle methods
     // ************************************************************************
