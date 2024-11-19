@@ -90,9 +90,10 @@ public class TerminationFactory<Solution_> {
         }
         if (terminationConfig.getStopFlatLineDetectionRatio() != null
                 || terminationConfig.getNoStopFlatLineDetectionRatio() != null
-                || terminationConfig.getMinimalExecutionTimeSeconds() != null) {
+                || terminationConfig.getDelayFlatLineSecondsSpentLimit() != null) {
             terminationList.add(new UnimprovedBestSolutionTermination<>(terminationConfig.getStopFlatLineDetectionRatio(),
-                    terminationConfig.getNoStopFlatLineDetectionRatio(), terminationConfig.getMinimalExecutionTimeSeconds()));
+                    terminationConfig.getNoStopFlatLineDetectionRatio(),
+                    terminationConfig.getDelayFlatLineSecondsSpentLimit()));
         }
         terminationList.addAll(buildInnerTermination(configPolicy));
         return buildTerminationFromList(terminationList);

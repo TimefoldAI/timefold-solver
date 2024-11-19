@@ -577,7 +577,7 @@ the solver improved the solution and how much time has passed without any improv
   <termination>
     <stopFlatLineDetectionRatio>0.5</stopFlatLineDetectionRatio>
     <noStopFlatLineDetectionRatio>0.1</noStopFlatLineDetectionRatio>
-    <minimalExecutionTimeSeconds>120</minimalExecutionTimeSeconds>
+    <delayFlatLineSecondsSpentLimit>120</delayFlatLineSecondsSpentLimit>
   </termination>
 ----
 
@@ -596,7 +596,7 @@ setting the `stopFlatLineDetectionRatio` to `1.0` will lead to termination after
 
 [NOTE]
 ====
-The `Termination` process requires a minimum execution time, specified by `minimalExecutionTimeSeconds`.
+The `Termination` process requires a minimum execution time, specified by `delayFlatLineSecondsSpentLimit`.
 ====
 
 The solving process may identify no improvement periods that are not significant enough to trigger the termination.

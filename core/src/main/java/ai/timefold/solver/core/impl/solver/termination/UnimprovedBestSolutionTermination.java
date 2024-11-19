@@ -11,8 +11,8 @@ import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
 public final class UnimprovedBestSolutionTermination<Solution_> extends AbstractTermination<Solution_> {
 
-    // Minimal interval of time to avoid early conclusions
-    private final long minimalExecutionTimeMillis;
+    // Evaluation delay to avoid early conclusions
+    private final long delayExecutionTimeMillis;
     // This setting determines the amount of time
     // that is allowed without any improvements since the last best solution was identified.
     // For example, if the last solution was found at 10 seconds and the setting is configured to 0.5,
@@ -38,19 +38,20 @@ public final class UnimprovedBestSolutionTermination<Solution_> extends Abstract
     protected Boolean terminate;
 
     public UnimprovedBestSolutionTermination(Double stopFlatLineDetectionRatio,
-            Double noStopFlatLineDetectionRatio, Long minimalExecutionTimeSeconds) {
-        this(stopFlatLineDetectionRatio, noStopFlatLineDetectionRatio, minimalExecutionTimeSeconds, Clock.systemUTC());
+            Double noStopFlatLineDetectionRatio, Long delayFlatLineSecondsSpentLimit) {
+        this(stopFlatLineDetectionRatio, noStopFlatLineDetectionRatio, delayFlatLineSecondsSpentLimit, Clock.systemUTC());
     }
 
     public UnimprovedBestSolutionTermination(Double stopFlatLineDetectionRatio, Double noStopFlatLineDetectionRatio,
-            Long minimalExecutionTimeSeconds, Clock clock) {
+            Long delayFlatLineSecondsSpentLimit, Clock clock) {
         this.stopFlatLineDetectionRatio = Objects.requireNonNull(stopFlatLineDetectionRatio,
                 "The field stopFlatLineDetectionRatio is required for the termination UnimprovedBestSolutionTermination");
         this.noStopFlatLineDetectionRatio = Objects.requireNonNull(noStopFlatLineDetectionRatio,
                 "The field noStopFlatLineDetectionRatio is required for the termination UnimprovedBestSolutionTermination");
-        this.minimalExecutionTimeMillis = Objects.requireNonNull(minimalExecutionTimeSeconds,
-                "The field minimalExecutionTimeSeconds is required for the termination UnimprovedBestSolutionTermination")
-                * 1000L;
+        this.delayExecutionTimeMillis =
+                (Objects.requireNonNull(delayFlatLineSecondsSpentLimit,
+                        "The field delayFlatLineSecondsSpentLimit is required for the termination UnimprovedBestSolutionTermination")
+                        * 1000L);
         this.clock = Objects.requireNonNull(clock);
         if (stopFlatLineDetectionRatio < 0) {
             throw new IllegalArgumentException(
@@ -65,14 +66,14 @@ public final class UnimprovedBestSolutionTermination<Solution_> extends Abstract
                     "The noStopFlatLineDetectionRatio (%.2f) cannot be greater than stopFlatLineDetectionRatio (%.2f)."
                             .formatted(noStopFlatLineDetectionRatio, stopFlatLineDetectionRatio));
         }
-        if (minimalExecutionTimeSeconds <= 0) {
+        if (delayFlatLineSecondsSpentLimit < 0) {
             throw new IllegalArgumentException(
-                    "The minimalExecutionTimeSeconds %d must be great than zero.".formatted(minimalExecutionTimeSeconds));
+                    "The delayFlatLineSecondsSpentLimit (%d) cannot be negative.".formatted(delayFlatLineSecondsSpentLimit));
         }
     }
 
-    public long getMinimalExecutionTimeMillis() {
-        return minimalExecutionTimeMillis;
+    public long getDelayExecutionTimeMillis() {
+        return delayExecutionTimeMillis;
     }
 
     public double getStopFlatLineDetectionRatio() {
@@ -129,7 +130,7 @@ public final class UnimprovedBestSolutionTermination<Solution_> extends Abstract
         if (terminate != null) {
             return terminate;
         }
-        // Validate if there is a first best solution and the poll time
+        // Validate if there is a first best solution
         if (waitForFirstBestScore) {
             return false;
         }
@@ -144,7 +145,7 @@ public final class UnimprovedBestSolutionTermination<Solution_> extends Abstract
             // as it would be the starting point for the new curve.
             var minInterval = Math.floor(lastImprovementInterval * noStopFlatLineDetectionRatio);
             var maxInterval = Math.floor(lastImprovementInterval * stopFlatLineDetectionRatio);
-            if (lastImprovementMillis > 0 && completeInterval >= minimalExecutionTimeMillis && newInterval > minInterval
+            if (lastImprovementMillis > 0 && completeInterval >= delayExecutionTimeMillis && newInterval >= minInterval
                     && newInterval < maxInterval) {
                 initialCurvePointMillis = lastImprovementMillis;
                 previousBest = currentBest;
@@ -159,7 +160,7 @@ public final class UnimprovedBestSolutionTermination<Solution_> extends Abstract
             terminate = null;
             return false;
         } else {
-            if (completeInterval < minimalExecutionTimeMillis) {
+            if (completeInterval < delayExecutionTimeMillis) {
                 return false;
             }
             var maxInterval = Math.floor(lastImprovementInterval * stopFlatLineDetectionRatio);
@@ -198,12 +199,12 @@ public final class UnimprovedBestSolutionTermination<Solution_> extends Abstract
     public UnimprovedBestSolutionTermination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
             ChildThreadType childThreadType) {
         return new UnimprovedBestSolutionTermination<>(stopFlatLineDetectionRatio, noStopFlatLineDetectionRatio,
-                minimalExecutionTimeMillis, clock);
+                delayExecutionTimeMillis / 1000, clock);
     }
 
     @Override
     public String toString() {
-        return "UnimprovedBestSolutionTermination(%.2f, %.2f)".formatted(stopFlatLineDetectionRatio,
-                noStopFlatLineDetectionRatio);
+        return "UnimprovedBestSolutionTermination(%.2f, %.2f, %d)".formatted(stopFlatLineDetectionRatio,
+                noStopFlatLineDetectionRatio, delayExecutionTimeMillis / 1000);
     }
 }

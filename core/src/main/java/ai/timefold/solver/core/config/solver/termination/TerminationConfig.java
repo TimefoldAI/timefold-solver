@@ -41,7 +41,7 @@ import org.jspecify.annotations.Nullable;
         "moveCountLimit",
         "stopFlatLineDetectionRatio",
         "noStopFlatLineDetectionRatio",
-        "minimalExecutionTimeSeconds",
+        "delayFlatLineSecondsSpentLimit",
         "terminationConfigList"
 })
 public class TerminationConfig extends AbstractConfig<TerminationConfig> {
@@ -83,7 +83,7 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
 
     private Double stopFlatLineDetectionRatio = null;
     private Double noStopFlatLineDetectionRatio = null;
-    private Long minimalExecutionTimeSeconds = null;
+    private Long delayFlatLineSecondsSpentLimit = null;
 
     @XmlElement(name = "termination")
     private List<TerminationConfig> terminationConfigList = null;
@@ -280,12 +280,12 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         this.noStopFlatLineDetectionRatio = noStopFlatLineDetectionRatio;
     }
 
-    public @Nullable Long getMinimalExecutionTimeSeconds() {
-        return minimalExecutionTimeSeconds;
+    public @Nullable Long getDelayFlatLineSecondsSpentLimit() {
+        return delayFlatLineSecondsSpentLimit;
     }
 
-    public void setMinimalExecutionTimeSeconds(@Nullable Long minimalExecutionTimeSeconds) {
-        this.minimalExecutionTimeSeconds = minimalExecutionTimeSeconds;
+    public void setDelayFlatLineSecondsSpentLimit(@Nullable Long delayFlatLineSecondsSpentLimit) {
+        this.delayFlatLineSecondsSpentLimit = delayFlatLineSecondsSpentLimit;
     }
 
     public @Nullable List<@NonNull TerminationConfig> getTerminationConfigList() {
@@ -421,8 +421,8 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         return this;
     }
 
-    public @NonNull TerminationConfig withMinimalExecutionTimeSeconds(@NonNull Long minimalExecutionTimeSeconds) {
-        this.minimalExecutionTimeSeconds = minimalExecutionTimeSeconds;
+    public @NonNull TerminationConfig withDelayFlatLineSecondsSpentLimit(@NonNull Long delayFlatLineSecondsSpentLimit) {
+        this.delayFlatLineSecondsSpentLimit = delayFlatLineSecondsSpentLimit;
         return this;
     }
 
@@ -537,7 +537,7 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
                 moveCountLimit != null ||
                 stopFlatLineDetectionRatio != null ||
                 noStopFlatLineDetectionRatio != null ||
-                minimalExecutionTimeSeconds != null ||
+                delayFlatLineSecondsSpentLimit != null ||
                 isTerminationListConfigured();
     }
 
@@ -582,8 +582,8 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
                 inheritedConfig.getStopFlatLineDetectionRatio());
         noStopFlatLineDetectionRatio = ConfigUtils.inheritOverwritableProperty(noStopFlatLineDetectionRatio,
                 inheritedConfig.getNoStopFlatLineDetectionRatio());
-        minimalExecutionTimeSeconds = ConfigUtils.inheritOverwritableProperty(minimalExecutionTimeSeconds,
-                inheritedConfig.getMinimalExecutionTimeSeconds());
+        delayFlatLineSecondsSpentLimit = ConfigUtils.inheritOverwritableProperty(delayFlatLineSecondsSpentLimit,
+                inheritedConfig.getDelayFlatLineSecondsSpentLimit());
         terminationConfigList = ConfigUtils.inheritMergeableListConfig(
                 terminationConfigList, inheritedConfig.getTerminationConfigList());
         return this;

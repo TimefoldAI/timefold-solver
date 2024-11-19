@@ -90,11 +90,11 @@ class TerminationConfigTest {
         TerminationConfig parent = new TerminationConfig()
                 .withStopFlatLineDetectionRatio(0.5)
                 .withNoStopFlatLineDetectionRatio(0.1)
-                .withMinimalExecutionTimeSeconds(10L);
+                .withDelayFlatLineSecondsSpentLimit(10L);
         child.inherit(parent);
         assertThat(child.getStopFlatLineDetectionRatio()).isEqualTo(0.5);
         assertThat(child.getNoStopFlatLineDetectionRatio()).isEqualTo(0.1);
-        assertThat(child.getMinimalExecutionTimeSeconds()).isEqualTo(10L);
+        assertThat(child.getDelayFlatLineSecondsSpentLimit()).isEqualTo(10L);
     }
 
     @Test

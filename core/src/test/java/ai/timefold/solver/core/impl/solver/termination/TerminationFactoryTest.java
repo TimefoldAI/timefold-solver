@@ -240,7 +240,7 @@ class TerminationFactoryTest {
         var terminationConfig = new TerminationConfig();
         terminationConfig.setStopFlatLineDetectionRatio(0.5);
         terminationConfig.setNoStopFlatLineDetectionRatio(0.1);
-        terminationConfig.setMinimalExecutionTimeSeconds(10L);
+        terminationConfig.setDelayFlatLineSecondsSpentLimit(10L);
         var termination = TerminationFactory.create(terminationConfig)
                 .buildTermination(mock(HeuristicConfigPolicy.class));
         assertThat(termination)
@@ -249,7 +249,7 @@ class TerminationFactoryTest {
                 .isEqualTo(0.5);
         assertThat(((UnimprovedBestSolutionTermination<?>) termination).getNoStopFlatLineDetectionRatio())
                 .isEqualTo(0.1);
-        assertThat(((UnimprovedBestSolutionTermination<?>) termination).getMinimalExecutionTimeMillis())
+        assertThat(((UnimprovedBestSolutionTermination<?>) termination).getDelayExecutionTimeMillis())
                 .isEqualTo(10000L);
     }
 }

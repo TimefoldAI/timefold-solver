@@ -48,10 +48,10 @@ class UnimprovedBestSolutionTerminationTest {
     }
 
     @Test
-    void testStartNewCurve() {
+    void testStartNewPoint() {
         Clock clock = Mockito.mock(Clock.class);
         var currentTime = Clock.systemUTC().millis();
-        var termination = new UnimprovedBestSolutionTermination<TestdataSolution>(0.5, 0.3, 10L, clock);
+        var termination = new UnimprovedBestSolutionTermination<TestdataSolution>(0.5, 0.4, 10L, clock);
         var solverScope = Mockito.mock(SolverScope.class);
         var phaseScope = Mockito.mock(LocalSearchPhaseScope.class);
         when(phaseScope.getSolverScope()).thenReturn(solverScope);
@@ -60,7 +60,7 @@ class UnimprovedBestSolutionTerminationTest {
         termination.phaseStarted(phaseScope);
         termination.waitForFirstBestScore = false;
 
-        // Adding a new curve
+        // New start point
         termination.currentBest = SimpleScore.of(1);
         termination.initialCurvePointMillis = currentTime;
         termination.lastImprovementMillis = currentTime + 10_000;
@@ -68,7 +68,7 @@ class UnimprovedBestSolutionTerminationTest {
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
         assertThat(termination.initialCurvePointMillis).isEqualTo(currentTime + 10_000);
 
-        // Not adding a new curve - flat line smaller than the minimum
+        // Don't change start point - flat line smaller than the minimum
         termination.terminate = null;
         termination.currentBest = SimpleScore.of(1);
         termination.initialCurvePointMillis = currentTime;
@@ -77,7 +77,7 @@ class UnimprovedBestSolutionTerminationTest {
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
         assertThat(termination.initialCurvePointMillis).isEqualTo(currentTime);
 
-        // Not adding a new curve - flat line larger than the minimum
+        // Don't change start point - flat line larger than the minimum
         termination.terminate = null;
         termination.currentBest = SimpleScore.of(1);
         termination.initialCurvePointMillis = currentTime;
@@ -88,7 +88,7 @@ class UnimprovedBestSolutionTerminationTest {
     }
 
     @Test
-    void testMinimalInterval() {
+    void testDelayInterval() {
         Clock clock = Mockito.mock(Clock.class);
         var currentTime = Clock.systemUTC().millis();
         var termination = new UnimprovedBestSolutionTermination<TestdataSolution>(0.5, 0.4, 10L, clock);
@@ -119,15 +119,12 @@ class UnimprovedBestSolutionTerminationTest {
     @Test
     void invalidTermination() {
         assertThatIllegalArgumentException()
-                .isThrownBy(() -> new UnimprovedBestSolutionTermination<TestdataSolution>(-1.0, 0.0, 1L));
+                .isThrownBy(() -> new UnimprovedBestSolutionTermination<TestdataSolution>(-1.0, 0.0, 0L));
         assertThatIllegalArgumentException()
-                .isThrownBy(() -> new UnimprovedBestSolutionTermination<TestdataSolution>(0.0, -1.0, 1L));
+                .isThrownBy(() -> new UnimprovedBestSolutionTermination<TestdataSolution>(0.0, -1.0, 0L));
         assertThatIllegalArgumentException()
-                .isThrownBy(() -> new UnimprovedBestSolutionTermination<TestdataSolution>(0.0, 1.0, 1L));
+                .isThrownBy(() -> new UnimprovedBestSolutionTermination<TestdataSolution>(0.0, 1.0, 0L));
         assertThatIllegalArgumentException()
-                .isThrownBy(() -> new UnimprovedBestSolutionTermination<TestdataSolution>(1.0, 1.0, 0L));
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> new UnimprovedBestSolutionTermination<TestdataSolution>(0.1, 1.0, 1L)
-                        .calculateSolverTimeGradient(null));
+                .isThrownBy(() -> new UnimprovedBestSolutionTermination<TestdataSolution>(1.0, 1.0, -1L));
     }
 }
