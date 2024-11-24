@@ -138,11 +138,11 @@ final class ExternalizedListVariableStateSupply<Solution_>
     }
 
     private void insert(ScoreDirector<Solution_> scoreDirector, Object entity) {
+        var castScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
         var assignedElements = sourceVariableDescriptor.getValue(entity);
-        var trackLocation = requiresLocationMap;
         var index = 0;
         for (var element : assignedElements) {
-            if (trackLocation) {
+            if (requiresLocationMap) {
                 var location = ElementLocation.of(entity, index);
                 var oldLocation = elementLocationMap.put(element, location);
                 if (oldLocation != null) {
@@ -151,11 +151,11 @@ final class ExternalizedListVariableStateSupply<Solution_>
                                     .formatted(this, element, index, oldLocation));
                 }
             }
-            var castScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
-            indexProcessor.addElement(castScoreDirector, element, index);
+            var castIndex = Integer.valueOf(index); // Avoid multiple auto-boxing.
+            indexProcessor.addElement(castScoreDirector, element, castIndex);
             inverseProcessor.addElement(castScoreDirector, entity, element);
-            previousElementProcessor.setElement(castScoreDirector, assignedElements, element, index);
-            nextElementProcessor.setElement(castScoreDirector, assignedElements, element, index);
+            previousElementProcessor.setElement(castScoreDirector, assignedElements, element, castIndex);
+            nextElementProcessor.setElement(castScoreDirector, assignedElements, element, castIndex);
             index++;
             unassignedCount--;
         }
@@ -167,33 +167,33 @@ final class ExternalizedListVariableStateSupply<Solution_>
     }
 
     @Override
-    public void beforeEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object o) {
+    public void beforeEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         // No need to do anything.
     }
 
     @Override
-    public void afterEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object o) {
-        insert(scoreDirector, o);
+    public void afterEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
+        insert(scoreDirector, entity);
     }
 
     @Override
-    public void beforeEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object o) {
+    public void beforeEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         // No need to do anything.
     }
 
     @Override
-    public void afterEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object o) {
+    public void afterEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         // When the entity is removed, its values become unassigned.
         // An unassigned value has no inverse entity and no index.
-        retract(scoreDirector, o);
+        retract(scoreDirector, entity);
     }
 
     private void retract(ScoreDirector<Solution_> scoreDirector, Object entity) {
+        var castScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
         var assignedElements = sourceVariableDescriptor.getValue(entity);
-        var trackLocation = requiresLocationMap;
         for (var index = 0; index < assignedElements.size(); index++) {
             var element = assignedElements.get(index);
-            if (trackLocation) {
+            if (requiresLocationMap) {
                 var oldElementLocation = elementLocationMap.remove(element);
                 if (oldElementLocation == null) {
                     throw new IllegalStateException(
@@ -207,7 +207,6 @@ final class ExternalizedListVariableStateSupply<Solution_>
                                     .formatted(this, element, index, oldIndex, index));
                 }
             }
-            var castScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
             indexProcessor.removeElement(castScoreDirector, element);
             inverseProcessor.removeElement(castScoreDirector, entity, element);
             previousElementProcessor.unsetElement(castScoreDirector, element);
@@ -235,64 +234,54 @@ final class ExternalizedListVariableStateSupply<Solution_>
     }
 
     @Override
-    public void beforeListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object o, int fromIndex,
-            int toIndex) {
+    public void beforeListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity,
+            int fromIndex, int toIndex) {
         // No need to do anything.
     }
 
     @Override
-    public void afterListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object o, int fromIndex,
+    public void afterListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity, int fromIndex,
             int toIndex) {
         var castScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
-        var assignedElements = sourceVariableDescriptor.getValue(o);
-        if (fromIndex > 0) {
-            // Include the last element of the previous part of the list too.
-            // Otherwise the last element would point to the wrong next element.
-            var previousIndex = fromIndex - 1;
-            nextElementProcessor.setElement(castScoreDirector, assignedElements, assignedElements.get(previousIndex),
-                    previousIndex);
-        }
+        var assignedElements = sourceVariableDescriptor.getValue(entity);
         var elementCount = assignedElements.size();
-        var trackLocation = requiresLocationMap;
-        for (var index = fromIndex; index < elementCount; index++) {
-            var element = assignedElements.get(index);
-
-            boolean locationsDiffer;
-            if (trackLocation) { // Update the location and figure out if it is different from previous.
-                var newLocation = ElementLocation.of(o, index);
-                var oldLocation = elementLocationMap.put(element, newLocation);
-                if (oldLocation == null) {
-                    unassignedCount--;
-                }
-                locationsDiffer = !newLocation.equals(oldLocation);
-            } else { // Read the location and figure out if it is different from previous.
-                var previousEntity = getInverseSingleton(element);
-                if (previousEntity == null) {
-                    unassignedCount--;
-                }
-                locationsDiffer = previousEntity != o || getIndex(element) != index;
-            }
+        // Include the last element of the previous part of the list, if any, for the next element shadow var.
+        var firstChangeIndex = Math.max(0, fromIndex - 1);
+        // Include the first element of the next part of the list, if any, for the previous element shadow var.
+        var lastChangeIndex = Math.min(toIndex + 1, elementCount);
+        for (var index = firstChangeIndex; index < elementCount; index++) {
+            var boxedIndex = Integer.valueOf(index); // Avoid many counts of auto-boxing.
+            var element = assignedElements.get(boxedIndex);
+            var locationsDiffer = processElementLocation(entity, element, boxedIndex);
             // Update location; no-op if the map is used.
-            indexProcessor.changeElement(castScoreDirector, element, index);
-            inverseProcessor.changeElement(castScoreDirector, o, element);
+            indexProcessor.changeElement(castScoreDirector, element, boxedIndex);
+            inverseProcessor.changeElement(castScoreDirector, entity, element);
             // Update previous and next elements; no-op if the map is used.
-            previousElementProcessor.setElement(castScoreDirector, assignedElements, element, index);
-            nextElementProcessor.setElement(castScoreDirector, assignedElements, element, index);
+            previousElementProcessor.setElement(castScoreDirector, assignedElements, element, boxedIndex);
+            nextElementProcessor.setElement(castScoreDirector, assignedElements, element, boxedIndex);
 
-            if (index >= toIndex && !locationsDiffer) {
+            if (!locationsDiffer && index > lastChangeIndex) {
                 // Location is unchanged and we are past the part of the list that changed.
-                if (index < elementCount - 1) {
-                    // Include the last element of the previous part of the list too.
-                    // Otherwise the last element would point to the wrong next element.
-                    var nextIndex = index + 1;
-                    previousElementProcessor.setElement(castScoreDirector, assignedElements, assignedElements.get(nextIndex),
-                            nextIndex);
-                }
-                // Finally, we can terminate the loop prematurely.
+                // We can terminate the loop prematurely.
                 return;
-            } else {
-                // Continue to the next element.
             }
+        }
+    }
+
+    private boolean processElementLocation(Object entity, Object element, Integer index) {
+        if (requiresLocationMap) { // Update the location and figure out if it is different from previous.
+            var newLocation = ElementLocation.of(entity, index);
+            var oldLocation = elementLocationMap.put(element, newLocation);
+            if (oldLocation == null) {
+                unassignedCount--;
+            }
+            return !newLocation.equals(oldLocation);
+        } else { // Read the location and figure out if it is different from previous.
+            var previousEntity = getInverseSingleton(element);
+            if (previousEntity == null) {
+                unassignedCount--;
+            }
+            return previousEntity != entity || !Objects.equals(getIndex(element), index);
         }
     }
 

@@ -16,7 +16,7 @@ final class InternalNextPrevVariableProcessor<Solution_>
 
     @Override
     public void setElement(InnerScoreDirector<Solution_, ?> scoreDirector, List<Object> listVariable, Object element,
-            int index) {
+            Integer index) {
         // Do nothing.
     }
 
