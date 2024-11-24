@@ -128,10 +128,10 @@ final class ExternalizedListVariableStateSupply<Solution_>
             indexProcessor.addElement(castScoreDirector, element, index);
             inverseProcessor.addElement(castScoreDirector, entity, element);
             if (previousElementProcessingEnabled) {
-                previousElementProcessor.addElement(castScoreDirector, assignedElements, element, index);
+                previousElementProcessor.setElement(castScoreDirector, assignedElements, element, index);
             }
             if (nextElementProcessingEnabled) {
-                nextElementProcessor.addElement(castScoreDirector, assignedElements, element, index);
+                nextElementProcessor.setElement(castScoreDirector, assignedElements, element, index);
             }
             index++;
             unassignedCount--;
@@ -189,10 +189,10 @@ final class ExternalizedListVariableStateSupply<Solution_>
             indexProcessor.removeElement(castScoreDirector, element);
             inverseProcessor.removeElement(castScoreDirector, entity, element);
             if (previousElementProcessingEnabled) {
-                previousElementProcessor.removeElement(castScoreDirector, element);
+                previousElementProcessor.unsetElement(castScoreDirector, element);
             }
             if (nextElementProcessingEnabled) {
-                nextElementProcessor.removeElement(castScoreDirector, element);
+                nextElementProcessor.unsetElement(castScoreDirector, element);
             }
             unassignedCount++;
         }
@@ -212,10 +212,10 @@ final class ExternalizedListVariableStateSupply<Solution_>
         indexProcessor.unassignElement(castScoreDirector, element);
         inverseProcessor.unassignElement(castScoreDirector, element);
         if (isPreviousElementShadowVariableEnabled()) {
-            previousElementProcessor.removeElement(castScoreDirector, element);
+            previousElementProcessor.unsetElement(castScoreDirector, element);
         }
         if (isNextElementShadowVariableEnabled()) {
-            nextElementProcessor.removeElement(castScoreDirector, element);
+            nextElementProcessor.unsetElement(castScoreDirector, element);
         }
         unassignedCount++;
     }
@@ -237,7 +237,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
             // If we need to process next elements, include the last element of the previous part of the list too.
             // Otherwise the last element would point to the wrong next element.
             var previousIndex = fromIndex - 1;
-            nextElementProcessor.changeElement(castScoreDirector, assignedElements, assignedElements.get(previousIndex),
+            nextElementProcessor.setElement(castScoreDirector, assignedElements, assignedElements.get(previousIndex),
                     previousIndex);
         }
         var elementCount = assignedElements.size();
@@ -248,10 +248,10 @@ final class ExternalizedListVariableStateSupply<Solution_>
             indexProcessor.changeElement(castScoreDirector, element, index);
             inverseProcessor.changeElement(castScoreDirector, o, element);
             if (previousElementProcessingEnabled) {
-                previousElementProcessor.changeElement(castScoreDirector, assignedElements, element, index);
+                previousElementProcessor.setElement(castScoreDirector, assignedElements, element, index);
             }
             if (nextElementProcessingEnabled) {
-                nextElementProcessor.changeElement(castScoreDirector, assignedElements, element, index);
+                nextElementProcessor.setElement(castScoreDirector, assignedElements, element, index);
             }
             if (index >= toIndex && !locationsDiffer) {
                 // Location is unchanged and we are past the part of the list that changed.
@@ -259,7 +259,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
                 // Otherwise the last element would point to the wrong next element.
                 if (previousElementProcessingEnabled && index < elementCount - 1) {
                     var nextIndex = index + 1;
-                    previousElementProcessor.changeElement(castScoreDirector, assignedElements, assignedElements.get(nextIndex),
+                    previousElementProcessor.setElement(castScoreDirector, assignedElements, assignedElements.get(nextIndex),
                             nextIndex);
                 }
                 // Finally, we can terminate the loop prematurely.
