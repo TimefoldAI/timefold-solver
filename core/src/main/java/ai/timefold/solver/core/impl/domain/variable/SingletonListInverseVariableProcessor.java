@@ -7,16 +7,16 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
  * Has two implementations:
  *
  * <ul>
- * <li>{@link ExternalizedSingletonListListInverseVariableProcessor} uses the shadow variable declared in user's data
+ * <li>{@link ExternalizedSingletonListInverseVariableProcessor} uses the shadow variable declared in user's data
  * model.</li>
- * <li>{@link InternalSingletonListListInverseVariableProcessor} uses our internal tracker when the shadow variable isn't
+ * <li>{@link InternalSingletonListInverseVariableProcessor} uses our internal tracker when the shadow variable isn't
  * present.</li>
  * </ul>
  *
  * @param <Solution_>
  */
 sealed interface SingletonListInverseVariableProcessor<Solution_> extends SingletonInverseVariableSupply
-        permits ExternalizedSingletonListListInverseVariableProcessor, InternalSingletonListListInverseVariableProcessor {
+        permits ExternalizedSingletonListInverseVariableProcessor, InternalSingletonListInverseVariableProcessor {
 
     void addElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, Object element);
 

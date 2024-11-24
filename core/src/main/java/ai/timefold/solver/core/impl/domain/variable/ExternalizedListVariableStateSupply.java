@@ -13,7 +13,6 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.preview.api.domain.metamodel.LocationInList;
-import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedLocation;
 
 import org.jspecify.annotations.NonNull;
 
@@ -24,12 +23,13 @@ final class ExternalizedListVariableStateSupply<Solution_>
     private IndexVariableProcessor<Solution_> indexProcessor =
             new InternalIndexVariableProcessor<>(this::getIndexFromElementLocationMap);
     private SingletonListInverseVariableProcessor<Solution_> inverseProcessor =
-            new InternalSingletonListListInverseVariableProcessor<>(this::getInverseFromElementLocationMap);
+            new InternalSingletonListInverseVariableProcessor<>(this::getInverseFromElementLocationMap);
     private NextPrevElementVariableProcessor<Solution_> previousElementProcessor =
             new InternalNextPrevVariableProcessor<>(this::getPreviousElementFromElementLocationMap);
     private NextPrevElementVariableProcessor<Solution_> nextElementProcessor =
             new InternalNextPrevVariableProcessor<>(this::getNextElementFromElementLocationMap);
-    private boolean requiresLocationTracking = true;
+    private boolean readLocationFromMap = true;
+    private boolean requiresLocationMap = true;
     private Map<Object, LocationInList> elementLocationMap;
     private int unassignedCount;
 
@@ -85,7 +85,8 @@ final class ExternalizedListVariableStateSupply<Solution_>
     @Override
     public void externalizeIndexVariable(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         this.indexProcessor = new ExternalizedIndexVariableProcessor<>(shadowVariableDescriptor);
-        this.requiresLocationTracking = inverseProcessor instanceof InternalSingletonListListInverseVariableProcessor
+        this.readLocationFromMap = inverseProcessor instanceof InternalSingletonListInverseVariableProcessor<Solution_>;
+        this.requiresLocationMap = readLocationFromMap
                 || previousElementProcessor instanceof InternalNextPrevVariableProcessor
                 || nextElementProcessor instanceof InternalNextPrevVariableProcessor;
     }
@@ -94,8 +95,9 @@ final class ExternalizedListVariableStateSupply<Solution_>
     public void externalizeSingletonListInverseVariable(
             InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         this.inverseProcessor =
-                new ExternalizedSingletonListListInverseVariableProcessor<>(shadowVariableDescriptor, sourceVariableDescriptor);
-        this.requiresLocationTracking = indexProcessor instanceof InternalIndexVariableProcessor<Solution_>
+                new ExternalizedSingletonListInverseVariableProcessor<>(shadowVariableDescriptor, sourceVariableDescriptor);
+        this.readLocationFromMap = indexProcessor instanceof InternalIndexVariableProcessor<Solution_>;
+        this.requiresLocationMap = readLocationFromMap
                 || previousElementProcessor instanceof InternalNextPrevVariableProcessor
                 || nextElementProcessor instanceof InternalNextPrevVariableProcessor;
     }
@@ -105,17 +107,15 @@ final class ExternalizedListVariableStateSupply<Solution_>
             PreviousElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         this.previousElementProcessor =
                 new ExternalizedPreviousElementVariableProcessor<>(shadowVariableDescriptor);
-        this.requiresLocationTracking = indexProcessor instanceof InternalIndexVariableProcessor<Solution_>
-                || inverseProcessor instanceof InternalSingletonListListInverseVariableProcessor<Solution_>
-                || nextElementProcessor instanceof InternalNextPrevVariableProcessor;
+        this.requiresLocationMap =
+                readLocationFromMap || nextElementProcessor instanceof InternalNextPrevVariableProcessor;
     }
 
     @Override
     public void externalizeNextElementShadowVariable(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         this.nextElementProcessor = new ExternalizedNextElementVariableProcessor<>(shadowVariableDescriptor);
-        this.requiresLocationTracking = indexProcessor instanceof InternalIndexVariableProcessor<Solution_>
-                || inverseProcessor instanceof InternalSingletonListListInverseVariableProcessor
-                || previousElementProcessor instanceof InternalNextPrevVariableProcessor;
+        this.requiresLocationMap =
+                readLocationFromMap || previousElementProcessor instanceof InternalNextPrevVariableProcessor;
     }
 
     @Override
@@ -123,7 +123,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
         var workingSolution = scoreDirector.getWorkingSolution();
         // Start with everything unassigned.
         this.unassignedCount = (int) sourceVariableDescriptor.getValueRangeSize(workingSolution, null);
-        if (requiresLocationTracking) {
+        if (requiresLocationMap) {
             if (elementLocationMap == null) {
                 elementLocationMap = CollectionUtils.newIdentityHashMap(unassignedCount);
             } else {
@@ -139,7 +139,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     private void insert(ScoreDirector<Solution_> scoreDirector, Object entity) {
         var assignedElements = sourceVariableDescriptor.getValue(entity);
-        var trackLocation = requiresLocationTracking;
+        var trackLocation = requiresLocationMap;
         var index = 0;
         for (var element : assignedElements) {
             if (trackLocation) {
@@ -190,7 +190,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     private void retract(ScoreDirector<Solution_> scoreDirector, Object entity) {
         var assignedElements = sourceVariableDescriptor.getValue(entity);
-        var trackLocation = requiresLocationTracking;
+        var trackLocation = requiresLocationMap;
         for (var index = 0; index < assignedElements.size(); index++) {
             var element = assignedElements.get(index);
             if (trackLocation) {
@@ -218,7 +218,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     @Override
     public void afterListVariableElementUnassigned(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object element) {
-        if (requiresLocationTracking) {
+        if (requiresLocationMap) {
             var oldLocation = elementLocationMap.remove(element);
             if (oldLocation == null) {
                 throw new IllegalStateException(
@@ -246,26 +246,44 @@ final class ExternalizedListVariableStateSupply<Solution_>
         var castScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
         var assignedElements = sourceVariableDescriptor.getValue(o);
         if (fromIndex > 0) {
-            // If we need to process next elements, include the last element of the previous part of the list too.
+            // Include the last element of the previous part of the list too.
             // Otherwise the last element would point to the wrong next element.
             var previousIndex = fromIndex - 1;
             nextElementProcessor.setElement(castScoreDirector, assignedElements, assignedElements.get(previousIndex),
                     previousIndex);
         }
         var elementCount = assignedElements.size();
-        var trackLocation = requiresLocationTracking;
+        var trackLocation = requiresLocationMap;
         for (var index = fromIndex; index < elementCount; index++) {
             var element = assignedElements.get(index);
-            var locationsDiffer = changeLocation(o, element, index, trackLocation);
+
+            boolean locationsDiffer;
+            if (trackLocation) { // Update the location and figure out if it is different from previous.
+                var newLocation = ElementLocation.of(o, index);
+                var oldLocation = elementLocationMap.put(element, newLocation);
+                if (oldLocation == null) {
+                    unassignedCount--;
+                }
+                locationsDiffer = !newLocation.equals(oldLocation);
+            } else { // Read the location and figure out if it is different from previous.
+                var previousEntity = getInverseSingleton(element);
+                if (previousEntity == null) {
+                    unassignedCount--;
+                }
+                locationsDiffer = previousEntity != o || getIndex(element) != index;
+            }
+            // Update location; no-op if the map is used.
             indexProcessor.changeElement(castScoreDirector, element, index);
             inverseProcessor.changeElement(castScoreDirector, o, element);
+            // Update previous and next elements; no-op if the map is used.
             previousElementProcessor.setElement(castScoreDirector, assignedElements, element, index);
             nextElementProcessor.setElement(castScoreDirector, assignedElements, element, index);
+
             if (index >= toIndex && !locationsDiffer) {
                 // Location is unchanged and we are past the part of the list that changed.
-                // If we need to process previous elements, include the last element of the previous part of the list too.
-                // Otherwise the last element would point to the wrong next element.
                 if (index < elementCount - 1) {
+                    // Include the last element of the previous part of the list too.
+                    // Otherwise the last element would point to the wrong next element.
                     var nextIndex = index + 1;
                     previousElementProcessor.setElement(castScoreDirector, assignedElements, assignedElements.get(nextIndex),
                             nextIndex);
@@ -278,25 +296,17 @@ final class ExternalizedListVariableStateSupply<Solution_>
         }
     }
 
-    private boolean changeLocation(Object entity, Object element, int index, boolean trackLocation) {
-        var newLocation = ElementLocation.of(entity, index);
-        var oldLocation = trackLocation ? elementLocationMap.put(element, newLocation)
-                : getLocationInList(element);
-        if (oldLocation == null || oldLocation instanceof UnassignedLocation) {
-            unassignedCount--;
-            return true;
-        } else {
-            return !oldLocation.equals(newLocation);
-        }
-    }
-
     @Override
     public ElementLocation getLocationInList(Object planningValue) {
-        var inverse = getInverseSingleton(planningValue);
-        if (inverse == null) {
-            return ElementLocation.unassigned();
+        if (readLocationFromMap) {
+            return Objects.requireNonNullElse(getElementLocation(planningValue), ElementLocation.unassigned());
+        } else {
+            var inverse = getInverseSingleton(planningValue);
+            if (inverse == null) {
+                return ElementLocation.unassigned();
+            }
+            return ElementLocation.of(inverse, getIndex(planningValue));
         }
-        return ElementLocation.of(inverse, getIndex(planningValue));
     }
 
     @Override

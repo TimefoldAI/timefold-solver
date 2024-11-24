@@ -17,6 +17,13 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
  * that would've been incurred otherwise if using variable listeners for each of them independently.
  * This way, there is only one variable listener for all such shadow variables,
  * and therefore only a single iteration to update all the information.
+ *
+ * <p>
+ * If a particular shadow variable is externalized,
+ * it means that there is a field on an entity holding the value of the shadow variable.
+ * In this case, we will attempt to use that value.
+ * Otherwise, we will keep an internal track of all the possible shadow variables (index, inverse, previous, next, ...)
+ * and use their values from this internal representation.
  * 
  * @param <Solution_>
  */

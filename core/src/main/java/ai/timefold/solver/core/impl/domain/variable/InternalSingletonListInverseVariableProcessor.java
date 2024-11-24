@@ -4,12 +4,12 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
-final class InternalSingletonListListInverseVariableProcessor<Solution_>
+final class InternalSingletonListInverseVariableProcessor<Solution_>
         implements SingletonListInverseVariableProcessor<Solution_> {
 
     private final Function<Object, Object> inverseSingletonFunction;
 
-    public InternalSingletonListListInverseVariableProcessor(Function<Object, Object> inverseSingletonFunction) {
+    public InternalSingletonListInverseVariableProcessor(Function<Object, Object> inverseSingletonFunction) {
         this.inverseSingletonFunction = inverseSingletonFunction;
     }
 
