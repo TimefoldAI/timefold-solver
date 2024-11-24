@@ -87,10 +87,10 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                     .externalizeSingletonListInverseVariable(inverseRelationShadowVariableDescriptor);
         } else if (shadowVariableDescriptor instanceof PreviousElementShadowVariableDescriptor<Solution_> previousElementShadowVariableDescriptor) {
             demand(listVariableDescriptor.getStateDemand())
-                    .enablePreviousElementShadowVariable(previousElementShadowVariableDescriptor);
+                    .externalizePreviousElementShadowVariable(previousElementShadowVariableDescriptor);
         } else if (shadowVariableDescriptor instanceof NextElementShadowVariableDescriptor<Solution_> nextElementShadowVariableDescriptor) {
             demand(listVariableDescriptor.getStateDemand())
-                    .enableNextElementShadowVariable(nextElementShadowVariableDescriptor);
+                    .externalizeNextElementShadowVariable(nextElementShadowVariableDescriptor);
         } else { // These are shadow variables not supported by the list variable supply; we use the standard mechanism.
             processShadowVariableDescriptorWithoutListVariable(shadowVariableDescriptor);
         }

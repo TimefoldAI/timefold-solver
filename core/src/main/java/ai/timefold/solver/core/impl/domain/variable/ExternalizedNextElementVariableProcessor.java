@@ -5,10 +5,10 @@ import java.util.List;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
-final class NextElementVariableProcessor<Solution_>
-        extends AbstractNextPrevElementVariableProcessor<Solution_> {
+final class ExternalizedNextElementVariableProcessor<Solution_>
+        extends AbstractExternalizedNextPrevElementVariableProcessor<Solution_> {
 
-    public NextElementVariableProcessor(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+    public ExternalizedNextElementVariableProcessor(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         super(shadowVariableDescriptor);
     }
 
@@ -17,6 +17,10 @@ final class NextElementVariableProcessor<Solution_>
             int index) {
         var next = index == listVariable.size() - 1 ? null : listVariable.get(index + 1);
         setValue(scoreDirector, element, next);
+    }
+
+    public Object getElement(Object element) {
+        return shadowVariableDescriptor.getValue(element);
     }
 
 }

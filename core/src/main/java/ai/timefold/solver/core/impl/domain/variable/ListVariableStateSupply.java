@@ -9,6 +9,7 @@ import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInv
 import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
 
 /**
  * Single source of truth for all information about elements inside list variables.
@@ -23,18 +24,53 @@ public interface ListVariableStateSupply<Solution_> extends
         SourcedVariableListener<Solution_>,
         ListVariableListener<Solution_, Object, Object>,
         SingletonInverseVariableSupply,
-        IndexVariableSupply,
-        ListVariableElementStateSupply<Solution_> {
+        IndexVariableSupply {
 
     void externalizeIndexVariable(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
 
     void externalizeSingletonListInverseVariable(InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
 
-    void enablePreviousElementShadowVariable(PreviousElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
+    void externalizePreviousElementShadowVariable(PreviousElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
 
-    void enableNextElementShadowVariable(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
+    void externalizeNextElementShadowVariable(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
 
     @Override
     ListVariableDescriptor<Solution_> getSourceVariableDescriptor();
+
+    /**
+     *
+     * @param element never null
+     * @return true if the element is contained in a list variable of any entity.
+     */
+    boolean isAssigned(Object element);
+
+    /**
+     *
+     * @param value never null
+     * @return never null
+     */
+    ElementLocation getLocationInList(Object value);
+
+    /**
+     * Consider calling this before {@link #isAssigned(Object)} to eliminate some map accesses.
+     * If unassigned count is 0, {@link #isAssigned(Object)} is guaranteed to return true.
+     *
+     * @return number of elements for which {@link #isAssigned(Object)} would return false.
+     */
+    int getUnassignedCount();
+
+    /**
+     *
+     * @param element never null
+     * @return null if the element is the first element in the list
+     */
+    Object getPreviousElement(Object element);
+
+    /**
+     *
+     * @param element never null
+     * @return null if the element is the last element in the list
+     */
+    Object getNextElement(Object element);
 
 }
