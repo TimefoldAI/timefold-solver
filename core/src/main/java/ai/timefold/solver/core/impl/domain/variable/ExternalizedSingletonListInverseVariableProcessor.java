@@ -4,8 +4,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
-final class ExternalizedSingletonListInverseVariableProcessor<Solution_>
-        implements SingletonListInverseVariableProcessor<Solution_> {
+final class ExternalizedSingletonListInverseVariableProcessor<Solution_> {
 
     private final InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor;
     private final ListVariableDescriptor<Solution_> sourceVariableDescriptor;
@@ -17,7 +16,6 @@ final class ExternalizedSingletonListInverseVariableProcessor<Solution_>
         this.sourceVariableDescriptor = sourceVariableDescriptor;
     }
 
-    @Override
     public void addElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, Object element) {
         setInverseAsserted(scoreDirector, element, entity, null);
     }
@@ -45,24 +43,20 @@ final class ExternalizedSingletonListInverseVariableProcessor<Solution_>
         scoreDirector.afterVariableChanged(shadowVariableDescriptor, element);
     }
 
-    @Override
     public void removeElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, Object element) {
         setInverseAsserted(scoreDirector, element, null, entity);
     }
 
-    @Override
     public void unassignElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object element) {
         setInverse(scoreDirector, null, element);
     }
 
-    @Override
     public void changeElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, Object element) {
         if (getInverseSingleton(element) != entity) {
             setInverse(scoreDirector, entity, element);
         }
     }
 
-    @Override
     public Object getInverseSingleton(Object planningValue) {
         return shadowVariableDescriptor.getValue(planningValue);
     }

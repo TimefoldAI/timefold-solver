@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -20,15 +22,16 @@ final class ExternalizedListVariableStateSupply<Solution_>
         implements ListVariableStateSupply<Solution_> {
 
     private final ListVariableDescriptor<Solution_> sourceVariableDescriptor;
-    private IndexVariableProcessor<Solution_> indexProcessor =
-            new InternalIndexVariableProcessor<>(this::getIndexFromElementLocationMap);
-    private SingletonListInverseVariableProcessor<Solution_> inverseProcessor =
-            new InternalSingletonListInverseVariableProcessor<>(this::getInverseFromElementLocationMap);
-    private NextPrevElementVariableProcessor<Solution_> previousElementProcessor =
-            new InternalNextPrevVariableProcessor<>(this::getPreviousElementFromElementLocationMap);
-    private NextPrevElementVariableProcessor<Solution_> nextElementProcessor =
-            new InternalNextPrevVariableProcessor<>(this::getNextElementFromElementLocationMap);
-    private boolean readLocationFromMap = true;
+
+    private ExternalizedIndexVariableProcessor<Solution_> externalizedIndexProcessor = null;
+    private ExternalizedSingletonListInverseVariableProcessor<Solution_> externalizedInverseProcessor = null;
+    private AbstractExternalizedNextPrevElementVariableProcessor<Solution_> externalizedPreviousElementProcessor = null;
+    private AbstractExternalizedNextPrevElementVariableProcessor<Solution_> externalizedNextElementProcessor = null;
+    private ElementAdder<Solution_> elementAdder = createElementAdder();
+    private ElementRemover<Solution_> elementRemover = createElementRemover();
+    private ElementUnassigner<Solution_> elementUnassigner = createElementUnassigner();
+    private ElementChanger<Solution_> elementChanger = createElementChanger();
+    private boolean canUseExternalizedLocation = false;
     private boolean requiresLocationMap = true;
     private Map<Object, LocationInList> elementLocationMap;
     private int unassignedCount;
@@ -37,85 +40,206 @@ final class ExternalizedListVariableStateSupply<Solution_>
         this.sourceVariableDescriptor = sourceVariableDescriptor;
     }
 
-    private Integer getIndexFromElementLocationMap(Object planningValue) {
-        var elementLocation = getElementLocation(planningValue);
-        if (elementLocation == null) {
-            return null;
-        }
-        return elementLocation.index();
-    }
-
-    private LocationInList getElementLocation(Object planningValue) {
-        return elementLocationMap.get(Objects.requireNonNull(planningValue));
-    }
-
-    private Object getInverseFromElementLocationMap(Object planningValue) {
-        var elementLocation = getElementLocation(planningValue);
-        if (elementLocation == null) {
-            return null;
-        }
-        return elementLocation.entity();
-    }
-
-    private Object getPreviousElementFromElementLocationMap(Object planningValue) {
-        var elementLocation = getElementLocation(planningValue);
-        if (elementLocation == null) {
-            return null;
-        }
-        var index = elementLocation.index();
-        if (index == 0) {
-            return null;
-        }
-        return sourceVariableDescriptor.getValue(elementLocation.entity()).get(index - 1);
-    }
-
-    private Object getNextElementFromElementLocationMap(Object planningValue) {
-        var elementLocation = getElementLocation(planningValue);
-        if (elementLocation == null) {
-            return null;
-        }
-        var list = sourceVariableDescriptor.getValue(elementLocation.entity());
-        var index = elementLocation.index();
-        if (index == list.size() - 1) {
-            return null;
-        }
-        return list.get(index + 1);
-    }
-
     @Override
     public void externalizeIndexVariable(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        this.indexProcessor = new ExternalizedIndexVariableProcessor<>(shadowVariableDescriptor);
-        this.readLocationFromMap = inverseProcessor instanceof InternalSingletonListInverseVariableProcessor<Solution_>;
-        this.requiresLocationMap = readLocationFromMap
-                || previousElementProcessor instanceof InternalNextPrevVariableProcessor
-                || nextElementProcessor instanceof InternalNextPrevVariableProcessor;
+        this.externalizedIndexProcessor = new ExternalizedIndexVariableProcessor<>(shadowVariableDescriptor);
+        reinitializeAccessors();
+    }
+
+    private void reinitializeAccessors() {
+        this.canUseExternalizedLocation = externalizedIndexProcessor != null && externalizedInverseProcessor != null;
+        this.requiresLocationMap = !canUseExternalizedLocation
+                || externalizedPreviousElementProcessor == null || externalizedNextElementProcessor == null;
+        this.elementAdder = createElementAdder();
+        this.elementRemover = createElementRemover();
+        this.elementUnassigner = createElementUnassigner();
+        this.elementChanger = createElementChanger();
     }
 
     @Override
     public void externalizeSingletonListInverseVariable(
             InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        this.inverseProcessor =
+        this.externalizedInverseProcessor =
                 new ExternalizedSingletonListInverseVariableProcessor<>(shadowVariableDescriptor, sourceVariableDescriptor);
-        this.readLocationFromMap = indexProcessor instanceof InternalIndexVariableProcessor<Solution_>;
-        this.requiresLocationMap = readLocationFromMap
-                || previousElementProcessor instanceof InternalNextPrevVariableProcessor
-                || nextElementProcessor instanceof InternalNextPrevVariableProcessor;
+        reinitializeAccessors();
     }
 
     @Override
     public void externalizePreviousElementShadowVariable(
             PreviousElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        this.previousElementProcessor =
+        this.externalizedPreviousElementProcessor =
                 new ExternalizedPreviousElementVariableProcessor<>(shadowVariableDescriptor);
-        this.requiresLocationMap =
-                readLocationFromMap || nextElementProcessor instanceof InternalNextPrevVariableProcessor;
+        reinitializeAccessors();
     }
 
     @Override
     public void externalizeNextElementShadowVariable(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        this.nextElementProcessor = new ExternalizedNextElementVariableProcessor<>(shadowVariableDescriptor);
-        this.requiresLocationMap =
-                readLocationFromMap || previousElementProcessor instanceof InternalNextPrevVariableProcessor;
+        this.externalizedNextElementProcessor = new ExternalizedNextElementVariableProcessor<>(shadowVariableDescriptor);
+        reinitializeAccessors();
+    }
+
+    @FunctionalInterface
+    private interface ElementAdder<Solution_> {
+
+        void apply(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, List<Object> elements, Object element,
+                Integer index);
+
+    }
+
+    private ElementAdder<Solution_> createElementAdder() {
+        var list = new ArrayList<ElementAdder<Solution_>>(4);
+        if (externalizedIndexProcessor != null) {
+            list.add((scoreDirector, entity, elements, element, index) -> externalizedIndexProcessor.addElement(scoreDirector,
+                    element, index));
+        }
+        if (externalizedInverseProcessor != null) {
+            list.add((scoreDirector, entity, elements, element, index) -> externalizedInverseProcessor.addElement(scoreDirector,
+                    entity, element));
+        }
+        if (externalizedPreviousElementProcessor != null) {
+            list.add((scoreDirector, entity, elements, element, index) -> externalizedPreviousElementProcessor
+                    .setElement(scoreDirector, elements, element, index));
+        }
+        if (externalizedNextElementProcessor != null) {
+            list.add((scoreDirector, entity, elements, element, index) -> externalizedNextElementProcessor
+                    .setElement(scoreDirector, elements, element, index));
+        }
+
+        return switch (list.size()) {
+            case 0 -> (scoreDirector, entity, elements, element, index) -> {
+                // Do nothing
+            };
+            case 1 -> list.get(0);
+            default -> {
+                var array = list.toArray(ElementAdder[]::new);
+                yield (scoreDirector, entity, elements, element, index) -> {
+                    for (var adder : array) {
+                        adder.apply(scoreDirector, entity, elements, element, index);
+                    }
+                };
+            }
+        };
+    }
+
+    @FunctionalInterface
+    private interface ElementRemover<Solution_> {
+
+        void apply(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, Object element);
+
+    }
+
+    private ElementRemover<Solution_> createElementRemover() {
+        var list = new ArrayList<ElementRemover<Solution_>>(4);
+        if (externalizedIndexProcessor != null) {
+            list.add((scoreDirector, entity, element) -> externalizedIndexProcessor.removeElement(scoreDirector, element));
+        }
+        if (externalizedInverseProcessor != null) {
+            list.add((scoreDirector, entity, element) -> externalizedInverseProcessor.removeElement(scoreDirector, entity,
+                    element));
+        }
+        if (externalizedPreviousElementProcessor != null) {
+            list.add((scoreDirector, entity, element) -> externalizedPreviousElementProcessor.unsetElement(scoreDirector,
+                    element));
+        }
+        if (externalizedNextElementProcessor != null) {
+            list.add((scoreDirector, entity, element) -> externalizedNextElementProcessor.unsetElement(scoreDirector, element));
+        }
+
+        return switch (list.size()) {
+            case 0 -> (scoreDirector, entity, element) -> {
+                // Do nothing
+            };
+            case 1 -> list.get(0);
+            default -> {
+                var array = list.toArray(ElementRemover[]::new);
+                yield (scoreDirector, entity, element) -> {
+                    for (var remover : array) {
+                        remover.apply(scoreDirector, entity, element);
+                    }
+                };
+            }
+        };
+    }
+
+    @FunctionalInterface
+    private interface ElementUnassigner<Solution_> {
+
+        void apply(InnerScoreDirector<Solution_, ?> scoreDirector, Object element);
+
+    }
+
+    private ElementUnassigner<Solution_> createElementUnassigner() {
+        var list = new ArrayList<ElementUnassigner<Solution_>>(4);
+        if (externalizedIndexProcessor != null) {
+            list.add((scoreDirector, element) -> externalizedIndexProcessor.unassignElement(scoreDirector, element));
+        }
+        if (externalizedInverseProcessor != null) {
+            list.add((scoreDirector, element) -> externalizedInverseProcessor.unassignElement(scoreDirector, element));
+        }
+        if (externalizedPreviousElementProcessor != null) {
+            list.add((scoreDirector, element) -> externalizedPreviousElementProcessor.unsetElement(scoreDirector, element));
+        }
+        if (externalizedNextElementProcessor != null) {
+            list.add((scoreDirector, element) -> externalizedNextElementProcessor.unsetElement(scoreDirector, element));
+        }
+
+        return switch (list.size()) {
+            case 0 -> (scoreDirector, element) -> {
+                // Do nothing
+            };
+            case 1 -> list.get(0);
+            default -> {
+                var array = list.toArray(ElementUnassigner[]::new);
+                yield (scoreDirector, element) -> {
+                    for (var unassigner : array) {
+                        unassigner.apply(scoreDirector, element);
+                    }
+                };
+            }
+        };
+    }
+
+    @FunctionalInterface
+    private interface ElementChanger<Solution_> {
+
+        void apply(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, List<Object> elements, Object element,
+                Integer index);
+
+    }
+
+    private ElementChanger<Solution_> createElementChanger() {
+        var list = new ArrayList<ElementChanger<Solution_>>(4);
+        if (externalizedIndexProcessor != null) {
+            list.add((scoreDirector, entity, elements, element, index) -> externalizedIndexProcessor
+                    .changeElement(scoreDirector, element, index));
+        }
+        if (externalizedInverseProcessor != null) {
+            list.add((scoreDirector, entity, elements, element, index) -> externalizedInverseProcessor
+                    .changeElement(scoreDirector, entity, element));
+        }
+        if (externalizedPreviousElementProcessor != null) {
+            list.add((scoreDirector, entity, elements, element, index) -> externalizedPreviousElementProcessor
+                    .setElement(scoreDirector, elements, element, index));
+        }
+        if (externalizedNextElementProcessor != null) {
+            list.add((scoreDirector, entity, elements, element, index) -> externalizedNextElementProcessor
+                    .setElement(scoreDirector, elements, element, index));
+        }
+
+        return switch (list.size()) {
+            case 0 -> (scoreDirector, entity, elements, element, index) -> {
+                // Do nothing
+            };
+            case 1 -> list.get(0);
+            default -> {
+                var array = list.toArray(ElementChanger[]::new);
+                yield (scoreDirector, entity, elements, element, index) -> {
+                    for (var changer : array) {
+                        changer.apply(scoreDirector, entity, elements, element, index);
+                    }
+                };
+            }
+        };
     }
 
     @Override
@@ -151,11 +275,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
                                     .formatted(this, element, index, oldLocation));
                 }
             }
-            var castIndex = Integer.valueOf(index); // Avoid multiple auto-boxing.
-            indexProcessor.addElement(castScoreDirector, element, castIndex);
-            inverseProcessor.addElement(castScoreDirector, entity, element);
-            previousElementProcessor.setElement(castScoreDirector, assignedElements, element, castIndex);
-            nextElementProcessor.setElement(castScoreDirector, assignedElements, element, castIndex);
+            elementAdder.apply(castScoreDirector, entity, assignedElements, element, index);
             index++;
             unassignedCount--;
         }
@@ -207,10 +327,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
                                     .formatted(this, element, index, oldIndex, index));
                 }
             }
-            indexProcessor.removeElement(castScoreDirector, element);
-            inverseProcessor.removeElement(castScoreDirector, entity, element);
-            previousElementProcessor.unsetElement(castScoreDirector, element);
-            nextElementProcessor.unsetElement(castScoreDirector, element);
+            elementRemover.apply(castScoreDirector, entity, element);
             unassignedCount++;
         }
     }
@@ -225,11 +342,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
                                 .formatted(this, element));
             }
         }
-        var castScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
-        indexProcessor.unassignElement(castScoreDirector, element);
-        inverseProcessor.unassignElement(castScoreDirector, element);
-        previousElementProcessor.unsetElement(castScoreDirector, element);
-        nextElementProcessor.unsetElement(castScoreDirector, element);
+        elementUnassigner.apply((InnerScoreDirector<Solution_, ?>) scoreDirector, element);
         unassignedCount++;
     }
 
@@ -250,17 +363,11 @@ final class ExternalizedListVariableStateSupply<Solution_>
         // Include the first element of the next part of the list, if any, for the previous element shadow var.
         var lastChangeIndex = Math.min(toIndex + 1, elementCount);
         for (var index = firstChangeIndex; index < elementCount; index++) {
+            var element = assignedElements.get(index);
             var boxedIndex = Integer.valueOf(index); // Avoid many counts of auto-boxing.
-            var element = assignedElements.get(boxedIndex);
             var locationsDiffer = processElementLocation(entity, element, boxedIndex);
-            // Update location; no-op if the map is used.
-            indexProcessor.changeElement(castScoreDirector, element, boxedIndex);
-            inverseProcessor.changeElement(castScoreDirector, entity, element);
-            // Update previous and next elements; no-op if the map is used.
-            previousElementProcessor.setElement(castScoreDirector, assignedElements, element, boxedIndex);
-            nextElementProcessor.setElement(castScoreDirector, assignedElements, element, boxedIndex);
-
-            if (!locationsDiffer && index > lastChangeIndex) {
+            elementChanger.apply(castScoreDirector, entity, assignedElements, element, boxedIndex);
+            if (!locationsDiffer && index >= lastChangeIndex) {
                 // Location is unchanged and we are past the part of the list that changed.
                 // We can terminate the loop prematurely.
                 return;
@@ -274,12 +381,14 @@ final class ExternalizedListVariableStateSupply<Solution_>
             var oldLocation = elementLocationMap.put(element, newLocation);
             if (oldLocation == null) {
                 unassignedCount--;
+                return true;
             }
             return !newLocation.equals(oldLocation);
         } else { // Read the location and figure out if it is different from previous.
             var previousEntity = getInverseSingleton(element);
             if (previousEntity == null) {
                 unassignedCount--;
+                return true;
             }
             return previousEntity != entity || !Objects.equals(getIndex(element), index);
         }
@@ -287,8 +396,8 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     @Override
     public ElementLocation getLocationInList(Object planningValue) {
-        if (readLocationFromMap) {
-            return Objects.requireNonNullElse(getElementLocation(planningValue), ElementLocation.unassigned());
+        if (!canUseExternalizedLocation) {
+            return Objects.requireNonNullElse(elementLocationMap.get(planningValue), ElementLocation.unassigned());
         } else {
             var inverse = getInverseSingleton(planningValue);
             if (inverse == null) {
@@ -300,12 +409,26 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     @Override
     public Integer getIndex(Object planningValue) {
-        return indexProcessor.getIndex(planningValue);
+        if (externalizedIndexProcessor == null) {
+            var elementLocation = elementLocationMap.get(planningValue);
+            if (elementLocation == null) {
+                return null;
+            }
+            return elementLocation.index();
+        }
+        return externalizedIndexProcessor.getIndex(planningValue);
     }
 
     @Override
     public Object getInverseSingleton(Object planningValue) {
-        return inverseProcessor.getInverseSingleton(planningValue);
+        if (externalizedInverseProcessor == null) {
+            var elementLocation = elementLocationMap.get(planningValue);
+            if (elementLocation == null) {
+                return null;
+            }
+            return elementLocation.entity();
+        }
+        return externalizedInverseProcessor.getInverseSingleton(planningValue);
     }
 
     @Override
@@ -320,12 +443,35 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     @Override
     public Object getPreviousElement(Object element) {
-        return previousElementProcessor.getElement(element);
+        if (externalizedPreviousElementProcessor == null) {
+            var elementLocation = getLocationInList(element);
+            if (!(elementLocation instanceof LocationInList locationInList)) {
+                return null;
+            }
+            var index = locationInList.index();
+            if (index == 0) {
+                return null;
+            }
+            return sourceVariableDescriptor.getValue(locationInList.entity()).get(index - 1);
+        }
+        return externalizedPreviousElementProcessor.getElement(element);
     }
 
     @Override
     public Object getNextElement(Object element) {
-        return nextElementProcessor.getElement(element);
+        if (externalizedNextElementProcessor == null) {
+            var elementLocation = getLocationInList(element);
+            if (!(elementLocation instanceof LocationInList locationInList)) {
+                return null;
+            }
+            var list = sourceVariableDescriptor.getValue(locationInList.entity());
+            var index = locationInList.index();
+            if (index == list.size() - 1) {
+                return null;
+            }
+            return list.get(index + 1);
+        }
+        return externalizedNextElementProcessor.getElement(element);
     }
 
     @Override
