@@ -7,7 +7,7 @@ Java::
 --
 Create the `src/test/java/org/acme/schooltimetabling/solver/TimetableConstraintProviderTest.java` class:
 
-[source,java,subs="attributes"]
+[source,java,subs="attributes,specialchars"]
 ----
 package org.acme.schooltimetabling.solver;
 
@@ -52,7 +52,7 @@ Kotlin::
 --
 Create the `src/test/kotlin/org/acme/schooltimetabling/solver/TimetableConstraintProviderTest.kt` class:
 
-[source,kotlin,subs="attributes"]
+[source,kotlin,subs="attributes,specialchars"]
 ----
 package org.acme.schooltimetabling.solver
 
