@@ -23,25 +23,23 @@ final class ExternalizedListVariableStateSupply<Solution_>
     }
 
     @Override
-    public void externalizeIndexVariable(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        listVariableState.linkIndexVariable(shadowVariableDescriptor);
+    public void externalize(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        listVariableState.linkDescriptor(shadowVariableDescriptor);
     }
 
     @Override
-    public void externalizeSingletonListInverseVariable(
-            InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        listVariableState.linkInverseVariable(shadowVariableDescriptor);
+    public void externalize(InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        listVariableState.linkDescriptor(shadowVariableDescriptor);
     }
 
     @Override
-    public void externalizePreviousElementShadowVariable(
-            PreviousElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        listVariableState.linkPreviousElementVariable(shadowVariableDescriptor);
+    public void externalize(PreviousElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        listVariableState.linkDescriptor(shadowVariableDescriptor);
     }
 
     @Override
-    public void externalizeNextElementShadowVariable(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        listVariableState.linkNextElementVariable(shadowVariableDescriptor);
+    public void externalize(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        listVariableState.linkDescriptor(shadowVariableDescriptor);
     }
 
     @Override

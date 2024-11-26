@@ -41,13 +41,13 @@ public interface ListVariableStateSupply<Solution_> extends
         SingletonInverseVariableSupply,
         IndexVariableSupply {
 
-    void externalizeIndexVariable(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
+    void externalize(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
 
-    void externalizeSingletonListInverseVariable(InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
+    void externalize(InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
 
-    void externalizePreviousElementShadowVariable(PreviousElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
+    void externalize(PreviousElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
 
-    void externalizeNextElementShadowVariable(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
+    void externalize(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
 
     @Override
     ListVariableDescriptor<Solution_> getSourceVariableDescriptor();

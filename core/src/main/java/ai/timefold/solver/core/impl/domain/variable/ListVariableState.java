@@ -33,21 +33,21 @@ final class ListVariableState<Solution_> {
         this.sourceVariableDescriptor = sourceVariableDescriptor;
     }
 
-    public void linkIndexVariable(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+    public void linkDescriptor(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         this.externalizedIndexProcessor = new ExternalizedIndexVariableProcessor<>(shadowVariableDescriptor);
     }
 
-    public void linkInverseVariable(InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+    public void linkDescriptor(InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         this.externalizedInverseProcessor =
                 new ExternalizedSingletonListInverseVariableProcessor<>(shadowVariableDescriptor, sourceVariableDescriptor);
     }
 
-    public void linkPreviousElementVariable(PreviousElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+    public void linkDescriptor(PreviousElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         this.externalizedPreviousElementProcessor =
                 new ExternalizedPreviousElementVariableProcessor<>(shadowVariableDescriptor);
     }
 
-    public void linkNextElementVariable(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+    public void linkDescriptor(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         this.externalizedNextElementProcessor = new ExternalizedNextElementVariableProcessor<>(shadowVariableDescriptor);
     }
 
@@ -150,10 +150,9 @@ final class ListVariableState<Solution_> {
 
     public boolean changeElement(Object entity, List<Object> elements, int index) {
         var element = elements.get(index);
-        var boxedIndex = Integer.valueOf(index);
-        var locationsDiffer = processElementLocation(entity, element, boxedIndex);
+        var locationsDiffer = processElementLocation(entity, element, index);
         if (externalizedIndexProcessor != null) {
-            externalizedIndexProcessor.changeElement(scoreDirector, element, boxedIndex);
+            externalizedIndexProcessor.changeElement(scoreDirector, element, index);
         }
         if (externalizedInverseProcessor != null) {
             externalizedInverseProcessor.changeElement(scoreDirector, entity, element);
@@ -167,7 +166,7 @@ final class ListVariableState<Solution_> {
         return locationsDiffer;
     }
 
-    private boolean processElementLocation(Object entity, Object element, Integer index) {
+    private boolean processElementLocation(Object entity, Object element, int index) {
         if (requiresLocationMap) { // Update the location and figure out if it is different from previous.
             var newLocation = ElementLocation.of(entity, index);
             var oldLocation = elementLocationMap.put(element, newLocation);
@@ -182,8 +181,12 @@ final class ListVariableState<Solution_> {
                 unassignedCount--;
                 return true;
             }
-            return previousEntity != entity || !Objects.equals(getIndex(element), index);
+            return previousEntity != entity || !equalsIntegerAndInt(getIndex(element), index);
         }
+    }
+
+    private static boolean equalsIntegerAndInt(Integer integer, int i) {
+        return integer != null && integer == i;
     }
 
     public ElementLocation getLocationInList(Object planningValue) {
