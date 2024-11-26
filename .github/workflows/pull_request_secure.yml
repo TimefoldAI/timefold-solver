@@ -295,11 +295,11 @@ jobs:
         env:
           GIT_CREDENTIALS: ${{ secrets.GIT_CREDENTIALS }}
         run: |
-          
           cd ${{ github.workspace }}/timefold-solver/
           export GURL="$(git remote get-url origin)"
           cd -
           yq -i e 'del(.content.sources)' apps/docs/antora-playbook.yml
+          yq -i e 'del(.site.keys)' apps/docs/antora-playbook.yml
           yq -i e '.content.sources += [{"url": env(GURL), "branches": env(BRANCH_NAME), "start_path": "docs/src"}]' apps/docs/antora-playbook.yml
           npm ci
           npm run build -- --filter docs
