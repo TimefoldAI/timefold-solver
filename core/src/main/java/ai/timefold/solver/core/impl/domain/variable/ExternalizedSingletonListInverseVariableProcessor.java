@@ -27,12 +27,12 @@ final class ExternalizedSingletonListInverseVariableProcessor<Solution_> {
             return;
         }
         if (scoreDirector.expectShadowVariablesInCorrectState() && oldInverseEntity != expectedOldInverseEntity) {
-            throw new IllegalStateException("The entity (" + inverseEntity
-                    + ") has a list variable (" + sourceVariableDescriptor.getVariableName()
-                    + ") and one of its elements (" + element
-                    + ") which has a shadow variable (" + shadowVariableDescriptor.getVariableName()
-                    + ") has an oldInverseEntity (" + oldInverseEntity + ") which is not that entity.\n"
-                    + "Verify the consistency of your input problem for that shadow variable.");
+            throw new IllegalStateException("""
+                    The entity (%s) has a list variable (%s) and one of its elements (%s) which has a shadow variable (%s) \
+                    has an oldInverseEntity (%s) which is not that entity.
+                    Verify the consistency of your input problem for that shadow variable."""
+                    .formatted(inverseEntity, sourceVariableDescriptor.getVariableName(), element,
+                            shadowVariableDescriptor.getVariableName(), oldInverseEntity));
         }
         setInverse(scoreDirector, inverseEntity, element);
     }

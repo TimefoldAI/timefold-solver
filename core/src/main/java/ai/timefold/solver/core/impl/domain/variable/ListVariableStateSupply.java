@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
 import ai.timefold.solver.core.api.domain.variable.ListVariableListener;
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
@@ -12,7 +13,7 @@ import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShad
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
 
 /**
- * Single source of truth for all information about elements inside list variables.
+ * Single source of truth for all information about elements inside {@link PlanningListVariable list variables}.
  * Shadow variables can be connected to this class to save on iteration costs
  * that would've been incurred otherwise if using variable listeners for each of them independently.
  * This way, there is only one variable listener for all such shadow variables,
@@ -22,10 +23,17 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
  * If a particular shadow variable is externalized,
  * it means that there is a field on an entity holding the value of the shadow variable.
  * In this case, we will attempt to use that value.
- * Otherwise, we will keep an internal track of all the possible shadow variables (index, inverse, previous, next, ...)
- * and use their values from this internal representation.
+ * Otherwise, we will keep an internal track of all the possible shadow variables
+ * ({@link ai.timefold.solver.core.api.domain.variable.IndexShadowVariable},
+ * {@link ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable},
+ * {@link ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable},
+ * {@link ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable}),
+ * and use values from this internal representation.
  * 
  * @param <Solution_>
+ * @see ListVariableState The logic of switching between internal and externalized shadow variables.
+ * @see ExternalizedListVariableStateSupply The external representation of these shadow variables,
+ *      which doesn't care whether the variable is internal or externalized.
  */
 public interface ListVariableStateSupply<Solution_> extends
         SourcedVariableListener<Solution_>,

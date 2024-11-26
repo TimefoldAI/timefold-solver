@@ -17,7 +17,7 @@ abstract sealed class AbstractExternalizedNextPrevElementVariableProcessor<Solut
     }
 
     public abstract void setElement(InnerScoreDirector<Solution_, ?> scoreDirector, List<Object> listVariable, Object element,
-            Integer index);
+            int index);
 
     public abstract Object getElement(Object element);
 

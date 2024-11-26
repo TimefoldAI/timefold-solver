@@ -14,7 +14,7 @@ final class ExternalizedNextElementVariableProcessor<Solution_>
 
     @Override
     public void setElement(InnerScoreDirector<Solution_, ?> scoreDirector, List<Object> listVariable, Object element,
-            Integer index) {
+            int index) {
         var next = index == listVariable.size() - 1 ? null : listVariable.get(index + 1);
         setValue(scoreDirector, element, next);
     }
