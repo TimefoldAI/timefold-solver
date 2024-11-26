@@ -150,43 +150,73 @@ final class ListVariableState<Solution_> {
 
     public boolean changeElement(Object entity, List<Object> elements, int index) {
         var element = elements.get(index);
-        var locationsDiffer = processElementLocation(entity, element, index);
-        if (externalizedIndexProcessor != null) {
+        var difference = processElementLocation(entity, element, index);
+        if (difference.indexChanged && externalizedIndexProcessor != null) {
             externalizedIndexProcessor.changeElement(scoreDirector, element, index);
         }
-        if (externalizedInverseProcessor != null) {
+        if (difference.entityChanged && externalizedInverseProcessor != null) {
             externalizedInverseProcessor.changeElement(scoreDirector, entity, element);
         }
+        // Next and previous still might have changed, even if the index and entity did not.
+        // Those are based on what happened elsewhere in the list.
         if (externalizedPreviousElementProcessor != null) {
             externalizedPreviousElementProcessor.setElement(scoreDirector, elements, element, index);
         }
         if (externalizedNextElementProcessor != null) {
             externalizedNextElementProcessor.setElement(scoreDirector, elements, element, index);
         }
-        return locationsDiffer;
+        return difference.anythingChanged;
     }
 
-    private boolean processElementLocation(Object entity, Object element, int index) {
+    private ChangeType processElementLocation(Object entity, Object element, int index) {
         if (requiresLocationMap) { // Update the location and figure out if it is different from previous.
             var newLocation = ElementLocation.of(entity, index);
             var oldLocation = elementLocationMap.put(element, newLocation);
             if (oldLocation == null) {
                 unassignedCount--;
-                return true;
+                return ChangeType.BOTH;
             }
-            return !newLocation.equals(oldLocation);
+            return compareLocations(entity, oldLocation.entity(), index, oldLocation.index());
         } else { // Read the location and figure out if it is different from previous.
-            var previousEntity = getInverseSingleton(element);
-            if (previousEntity == null) {
+            var oldEntity = getInverseSingleton(element);
+            if (oldEntity == null) {
                 unassignedCount--;
-                return true;
+                return ChangeType.BOTH;
             }
-            return previousEntity != entity || !equalsIntegerAndInt(getIndex(element), index);
+            var oldIndex = getIndex(element);
+            if (oldIndex == null) { // Technically impossible, but we handle it anyway.
+                return ChangeType.BOTH;
+            }
+            return compareLocations(entity, oldEntity, index, oldIndex);
         }
     }
 
-    private static boolean equalsIntegerAndInt(Integer integer, int i) {
-        return integer != null && integer == i;
+    private static ChangeType compareLocations(Object entity, Object otherEntity, int index, int otherIndex) {
+        if (entity != otherEntity) {
+            return ChangeType.BOTH; // Entity changed, so index changed too.
+        } else if (index != otherIndex) {
+            return ChangeType.INDEX;
+        } else {
+            return ChangeType.NEITHER;
+        }
+    }
+
+    private enum ChangeType {
+
+        BOTH(true, true),
+        INDEX(false, true),
+        NEITHER(false, false);
+
+        final boolean anythingChanged;
+        final boolean entityChanged;
+        final boolean indexChanged;
+
+        ChangeType(boolean entityChanged, boolean indexChanged) {
+            this.anythingChanged = entityChanged || indexChanged;
+            this.entityChanged = entityChanged;
+            this.indexChanged = indexChanged;
+        }
+
     }
 
     public ElementLocation getLocationInList(Object planningValue) {
