@@ -17,6 +17,9 @@ final class ExternalizedListVariableStateSupply<Solution_>
     private final ListVariableDescriptor<Solution_> sourceVariableDescriptor;
     private final ListVariableState<Solution_> listVariableState;
 
+    private boolean previousExternalized = false;
+    private boolean nextExternalized = false;
+
     public ExternalizedListVariableStateSupply(ListVariableDescriptor<Solution_> sourceVariableDescriptor) {
         this.sourceVariableDescriptor = sourceVariableDescriptor;
         this.listVariableState = new ListVariableState<>(sourceVariableDescriptor);
@@ -35,11 +38,13 @@ final class ExternalizedListVariableStateSupply<Solution_>
     @Override
     public void externalize(PreviousElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         listVariableState.linkDescriptor(shadowVariableDescriptor);
+        previousExternalized = true;
     }
 
     @Override
     public void externalize(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         listVariableState.linkDescriptor(shadowVariableDescriptor);
+        nextExternalized = true;
     }
 
     @Override
@@ -103,9 +108,11 @@ final class ExternalizedListVariableStateSupply<Solution_>
         var assignedElements = sourceVariableDescriptor.getValue(entity);
         var elementCount = assignedElements.size();
         // Include the last element of the previous part of the list, if any, for the next element shadow var.
-        var firstChangeIndex = Math.max(0, fromIndex - 1);
+        // But only if the next element shadow var is externalized; otherwise, there is nothing to update.
+        var firstChangeIndex = nextExternalized ? Math.max(0, fromIndex - 1) : fromIndex;
         // Include the first element of the next part of the list, if any, for the previous element shadow var.
-        var lastChangeIndex = Math.min(toIndex + 1, elementCount);
+        // But only if the previous element shadow var is externalized; otherwise, there is nothing to update.
+        var lastChangeIndex = previousExternalized ? Math.min(toIndex + 1, elementCount) : toIndex;
         for (var index = firstChangeIndex; index < elementCount; index++) {
             var locationsDiffer = listVariableState.changeElement(entity, assignedElements, index);
             if (!locationsDiffer && index >= lastChangeIndex) {
