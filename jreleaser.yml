@@ -34,14 +34,13 @@ release:
 
 deploy:
   maven:
-    nexus2:
-      maven-central:
+    mavenCentral:
+      timefold:
         active: ALWAYS
-        url: https://s01.oss.sonatype.org/service/local
+        url: https://central.sonatype.com/api/v1/publisher
+        authorization: BASIC
         # TODO Remove verifyPom tag, hack for https://github.com/jreleaser/jreleaser/issues/1397
         verifyPom: false
-        closeRepository: true
-        releaseRepository: false
         stagingRepositories:
           - "target/staging-deploy"
         artifactOverrides:
