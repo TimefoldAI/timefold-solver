@@ -34,7 +34,7 @@
     <version.org.jfree.jfreechart>1.5.5</version.org.jfree.jfreechart>
     <version.org.openrewrite.recipe>2.22.0</version.org.openrewrite.recipe>
     <version.org.slf4j>2.0.16</version.org.slf4j><!-- TODO keep in sync with quarkus-bom -->
-    <version.org.springframework.boot>3.3.5</version.org.springframework.boot>
+    <version.org.springframework.boot>3.4.0</version.org.springframework.boot>
     <version.org.jspecify>1.0.0</version.org.jspecify>
 
     <!-- ************************************************************************ -->
