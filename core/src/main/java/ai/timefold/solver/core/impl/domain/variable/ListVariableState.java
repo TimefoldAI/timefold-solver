@@ -19,7 +19,7 @@ final class ListVariableState<Solution_> {
     private final ListVariableDescriptor<Solution_> sourceVariableDescriptor;
 
     private ExternalizedIndexVariableProcessor<Solution_> externalizedIndexProcessor = null;
-    private ExternalizedSingletonListInverseVariableProcessor<Solution_> externalizedInverseProcessor = null;
+    private ExternalizedListInverseVariableProcessor<Solution_> externalizedInverseProcessor = null;
     private AbstractExternalizedNextPrevElementVariableProcessor<Solution_> externalizedPreviousElementProcessor = null;
     private AbstractExternalizedNextPrevElementVariableProcessor<Solution_> externalizedNextElementProcessor = null;
 
@@ -39,7 +39,7 @@ final class ListVariableState<Solution_> {
 
     public void linkDescriptor(InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         this.externalizedInverseProcessor =
-                new ExternalizedSingletonListInverseVariableProcessor<>(shadowVariableDescriptor, sourceVariableDescriptor);
+                new ExternalizedListInverseVariableProcessor<>(shadowVariableDescriptor, sourceVariableDescriptor);
     }
 
     public void linkDescriptor(PreviousElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
@@ -256,10 +256,6 @@ final class ListVariableState<Solution_> {
 
     public int getUnassignedCount() {
         return unassignedCount;
-    }
-
-    void close() {
-        elementLocationMap = null;
     }
 
 }

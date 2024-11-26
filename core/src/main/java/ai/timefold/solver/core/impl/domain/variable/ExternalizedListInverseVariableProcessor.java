@@ -4,12 +4,12 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
-final class ExternalizedSingletonListInverseVariableProcessor<Solution_> {
+final class ExternalizedListInverseVariableProcessor<Solution_> {
 
     private final InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor;
     private final ListVariableDescriptor<Solution_> sourceVariableDescriptor;
 
-    public ExternalizedSingletonListInverseVariableProcessor(
+    public ExternalizedListInverseVariableProcessor(
             InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor,
             ListVariableDescriptor<Solution_> sourceVariableDescriptor) {
         this.shadowVariableDescriptor = shadowVariableDescriptor;

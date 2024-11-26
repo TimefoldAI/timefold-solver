@@ -164,11 +164,6 @@ final class ExternalizedListVariableStateSupply<Solution_>
     }
 
     @Override
-    public void close() {
-        listVariableState.close();
-    }
-
-    @Override
     public String toString() {
         return getClass().getSimpleName() + "(" + sourceVariableDescriptor.getVariableName() + ")";
     }
