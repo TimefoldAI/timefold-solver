@@ -42,16 +42,16 @@ jobs:
       - id: validation
         shell: bash
         run: |
-            echo "Authorized user: ${{ steps.auth_check.outputs.authorized }}"
+          echo "Authorized user: ${{ steps.auth_check.outputs.authorized }}"
   # If the user is not a member, require a member to approve the PR.
   approval_required:
     needs: known_user
     environment:
-      ${{ 
-          github.event_name == 'pull_request_target' &&
-          github.event.pull_request.head.repo.full_name != github.repository &&
-          (needs.known_user.outputs.is_member_of_org != 'true' || github.actor == 'dependabot[bot]') &&
-          'external' || 'internal' 
+      ${{
+      github.event_name == 'pull_request_target' &&
+      github.event.pull_request.head.repo.full_name != github.repository &&
+      (needs.known_user.outputs.is_member_of_org != 'true' || github.actor == 'dependabot[bot]') &&
+      'external' || 'internal'
       }}
     runs-on: ubuntu-latest
     steps:
@@ -259,6 +259,61 @@ jobs:
         env:
           PIP_FIND_LINKS: ${{ github.workspace }}/timefold-solver/dist
         run: tox
+
+  build_documentation:
+    runs-on: ubuntu-latest
+    needs: approval_required
+    name: Build Documentation
+    env:
+      BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+    steps:
+      - name: Install yq
+        run: |
+          sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq 
+          sudo chmod +x /usr/bin/yq
+
+      - name: Checkout frontend
+        id: checkout-frontend
+        uses: actions/checkout@v4
+        with:
+          repository: TimefoldAI/frontend
+          token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
+          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
+
+      - name: Checkout timefold-solver
+        uses: actions/checkout@v4
+        with:
+          path: ./timefold-solver
+
+      - name: Set up NodeJs
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Build Documentation
+        env:
+          GIT_CREDENTIALS: ${{ secrets.GIT_CREDENTIALS }}
+        run: |
+          
+          cd ${{ github.workspace }}/timefold-solver/
+          export GURL="$(git remote get-url origin)"
+          cd -
+          yq -i e 'del(.content.sources)' apps/docs/antora-playbook.yml
+          yq -i e '.content.sources += [{"url": env(GURL), "branches": env(BRANCH_NAME), "start_path": "docs/src"}]' apps/docs/antora-playbook.yml
+          npm ci
+          npm run build -- --filter docs
+
+      - name: Deploy Documentation (Preview Mode)
+        if: ${{ env.BRANCH_NAME != 'main' }}
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: ./apps/docs
+          command: pages deploy ./public-serve --project-name=timefold-docs --branch=${{ github.ref }}
+
   sonarcloud:
     needs: approval_required
     name: SonarCloud
