@@ -18,13 +18,7 @@ final class ExternalizedIndexVariableProcessor<Solution_> {
     }
 
     public void removeElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object element) {
-        setIndex(scoreDirector, element, null);
-    }
-
-    private void setIndex(InnerScoreDirector<Solution_, ?> scoreDirector, Object element, Object value) {
-        scoreDirector.beforeVariableChanged(shadowVariableDescriptor, element);
-        shadowVariableDescriptor.setValue(element, value);
-        scoreDirector.afterVariableChanged(shadowVariableDescriptor, element);
+        updateIndex(scoreDirector, element, null);
     }
 
     public void unassignElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object element) {
@@ -36,9 +30,11 @@ final class ExternalizedIndexVariableProcessor<Solution_> {
     }
 
     private void updateIndex(InnerScoreDirector<Solution_, ?> scoreDirector, Object element, Integer index) {
-        var oldIndex = shadowVariableDescriptor.getValue(element);
+        var oldIndex = getIndex(element);
         if (!Objects.equals(oldIndex, index)) {
-            setIndex(scoreDirector, element, index);
+            scoreDirector.beforeVariableChanged(shadowVariableDescriptor, element);
+            shadowVariableDescriptor.setValue(element, index);
+            scoreDirector.afterVariableChanged(shadowVariableDescriptor, element);
         }
     }
 

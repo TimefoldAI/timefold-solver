@@ -26,7 +26,7 @@ abstract sealed class AbstractExternalizedNextPrevElementVariableProcessor<Solut
     }
 
     protected void setValue(InnerScoreDirector<Solution_, ?> scoreDirector, Object element, Object value) {
-        if (shadowVariableDescriptor.getValue(element) != value) {
+        if (getElement(element) != value) {
             scoreDirector.beforeVariableChanged(shadowVariableDescriptor, element);
             shadowVariableDescriptor.setValue(element, value);
             scoreDirector.afterVariableChanged(shadowVariableDescriptor, element);

@@ -48,7 +48,7 @@ final class ExternalizedListInverseVariableProcessor<Solution_> {
     }
 
     public void unassignElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object element) {
-        setInverse(scoreDirector, null, element);
+        changeElement(scoreDirector, null, element);
     }
 
     public void changeElement(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity, Object element) {
