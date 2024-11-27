@@ -41,15 +41,6 @@ import org.acme.vehiclerouting.domain.geo.HaversineDrivingTimeCalculator;
 @PlanningSolution
 public class VehicleRoutePlan {
 
-    private String name;
-
-    private Location southWestCorner;
-    private Location northEastCorner;
-
-    private LocalDateTime startDateTime;
-
-    private LocalDateTime endDateTime;
-
     @PlanningEntityCollectionProperty
     private List<Vehicle> vehicles;
 
@@ -60,33 +51,19 @@ public class VehicleRoutePlan {
     @PlanningScore
     private HardSoftLongScore score;
 
-    private SolverStatus solverStatus;
-
-    private String scoreExplanation;
+    // Fields and constructors used for visualization excluded
 
     public VehicleRoutePlan() {
     }
 
-    public VehicleRoutePlan(String name, HardSoftLongScore score, SolverStatus solverStatus) {
-        this.name = name;
-        this.score = score;
-        this.solverStatus = solverStatus;
-    }
-
     public VehicleRoutePlan(String name,
-            Location southWestCorner,
-            Location northEastCorner,
-            LocalDateTime startDateTime,
-            LocalDateTime endDateTime,
             List<Vehicle> vehicles,
             List<Visit> visits) {
         this.name = name;
-        this.southWestCorner = southWestCorner;
-        this.northEastCorner = northEastCorner;
-        this.startDateTime = startDateTime;
-        this.endDateTime = endDateTime;
         this.vehicles = vehicles;
         this.visits = visits;
+
+        // Enhance locations with a pre-calculated driving time map
         List<Location> locations = Stream.concat(
                 vehicles.stream().map(Vehicle::getHomeLocation),
                 visits.stream().map(Visit::getLocation)).toList();
@@ -95,61 +72,7 @@ public class VehicleRoutePlan {
         drivingTimeCalculator.initDrivingTimeMaps(locations);
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public Location getSouthWestCorner() {
-        return southWestCorner;
-    }
-
-    public Location getNorthEastCorner() {
-        return northEastCorner;
-    }
-
-    public LocalDateTime getStartDateTime() {
-        return startDateTime;
-    }
-
-    public LocalDateTime getEndDateTime() {
-        return endDateTime;
-    }
-
-    public List<Vehicle> getVehicles() {
-        return vehicles;
-    }
-
-    public List<Visit> getVisits() {
-        return visits;
-    }
-
-    public HardSoftLongScore getScore() {
-        return score;
-    }
-
-    public void setScore(HardSoftLongScore score) {
-        this.score = score;
-    }
-
-    public long getTotalDrivingTimeSeconds() {
-        return vehicles == null ? 0 : vehicles.stream().mapToLong(Vehicle::getTotalDrivingTimeSeconds).sum();
-    }
-
-    public SolverStatus getSolverStatus() {
-        return solverStatus;
-    }
-
-    public void setSolverStatus(SolverStatus solverStatus) {
-        this.solverStatus = solverStatus;
-    }
-
-    public String getScoreExplanation() {
-        return scoreExplanation;
-    }
-
-    public void setScoreExplanation(String scoreExplanation) {
-        this.scoreExplanation = scoreExplanation;
-    }
+    // Getters and Setters excluded
 }
 ----
 --
@@ -179,14 +102,6 @@ import org.acme.vehiclerouting.domain.geo.HaversineDrivingTimeCalculator
 @PlanningSolution
 class VehicleRoutePlan {
     lateinit var name: String
-    var southWestCorner: Location? = null
-        private set
-    var northEastCorner: Location? = null
-        private set
-    var startDateTime: LocalDateTime? = null
-        private set
-    var endDateTime: LocalDateTime? = null
-        private set
 
     @PlanningEntityCollectionProperty
     var vehicles: List<Vehicle>? = null
@@ -200,34 +115,20 @@ class VehicleRoutePlan {
     @PlanningScore
     var score: HardSoftLongScore? = null
 
-    var solverStatus: SolverStatus? = null
-
-    var scoreExplanation: String? = null
+    // Fields and constructors used for visualization excluded
 
     constructor()
 
-    constructor(name: String, score: HardSoftLongScore?, solverStatus: SolverStatus?) {
-        this.name = name
-        this.score = score
-        this.solverStatus = solverStatus
-    }
-
     constructor(
         name: String,
-        southWestCorner: Location?,
-        northEastCorner: Location?,
-        startDateTime: LocalDateTime?,
-        endDateTime: LocalDateTime?,
         vehicles: List<Vehicle>,
         visits: List<Visit>
     ) {
         this.name = name
-        this.southWestCorner = southWestCorner
-        this.northEastCorner = northEastCorner
-        this.startDateTime = startDateTime
-        this.endDateTime = endDateTime
         this.vehicles = vehicles
         this.visits = visits
+
+        // Enhance locations with a pre-calculated driving time map
         val locations = Stream.concat(
             vehicles.stream().map({ obj: Vehicle -> obj.homeLocation }),
             visits.stream().map({ obj: Visit -> obj.location })
@@ -236,10 +137,6 @@ class VehicleRoutePlan {
         val drivingTimeCalculator: DrivingTimeCalculator = HaversineDrivingTimeCalculator.INSTANCE
         drivingTimeCalculator.initDrivingTimeMaps(locations)
     }
-
-    val totalDrivingTimeSeconds: Long
-        get() = if (vehicles == null) 0 else vehicles!!.stream()
-            .mapToLong({ obj: Vehicle -> obj.totalDrivingTimeSeconds }).sum()
 }
 ----
 --
@@ -280,8 +177,7 @@ by matching the type of the planning list variable with the type returned by the
 
 == Distance calculation
 
-The distance calculation method applies the Haversine approach,
-which measures distances in meters.
+A matrix of distances between each location is typically calculated before starting the solver.
 First create a contract for driving time calculation:
 
 [tabs]

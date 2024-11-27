@@ -18,111 +18,7 @@ Hard constraints are weighted against other hard constraints.
 Soft constraints are weighted too, against other soft constraints.
 *Hard constraints always outweigh soft constraints*, regardless of their respective weights.
 
-To calculate the score, you could implement an `EasyScoreCalculator` class:
-
-[tabs]
-====
-Java::
-+
---
-[source,java]
-----
-package org.acme.vehiclerouting.solver;
-
-import java.util.List;
-
-import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
-import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
-
-import org.acme.vehiclerouting.domain.Vehicle;
-import org.acme.vehiclerouting.domain.VehicleRoutePlan;
-import org.acme.vehiclerouting.domain.Visit;
-
-public class VehicleRoutingEasyScoreCalculator implements EasyScoreCalculator<VehicleRoutePlan, HardSoftLongScore> {
-    @Override
-    public HardSoftLongScore calculateScore(VehicleRoutePlan vehicleRoutePlan) {
-
-        List<Vehicle> vehicleList = vehicleRoutePlan.getVehicles();
-
-        int hardScore = 0;
-        int softScore = 0;
-        for (Vehicle vehicle : vehicleList) {
-
-            // The demand exceeds the capacity
-            if (vehicle.getVisits() != null && vehicle.getTotalDemand() > vehicle.getCapacity()) {
-                hardScore -= vehicle.getTotalDemand() - vehicle.getCapacity();
-            }
-
-            // Max end-time not met
-            if (vehicle.getVisits() != null) {
-                for (Visit visit: vehicle.getVisits()) {
-                    if (visit.isServiceFinishedAfterMaxEndTime()) {
-                        hardScore -= visit.getServiceFinishedDelayInMinutes();
-                    }
-                }
-            }
-
-            softScore -= (int) vehicle.getTotalDrivingTimeSeconds();
-        }
-
-        return HardSoftLongScore.of(hardScore, softScore);
-    }
-}
-----
---
-
-Kotlin::
-+
---
-[source,kotlin]
-----
-package org.acme.vehiclerouting.solver;
-
-import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore
-import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator
-
-import org.acme.vehiclerouting.domain.Vehicle
-import org.acme.vehiclerouting.domain.VehicleRoutePlan
-
-class VehicleRoutingEasyScoreCalculator :
-    EasyScoreCalculator<VehicleRoutePlan, HardSoftLongScore> {
-    override fun calculateScore(vehicleRoutePlan: VehicleRoutePlan): HardSoftLongScore {
-        val vehicleList: List<Vehicle> = vehicleRoutePlan.vehicles!!
-
-        var hardScore = 0
-        var softScore = 0
-        for (vehicle in vehicleList) {
-            // The demand exceeds the capacity
-
-            if (vehicle.visits != null && vehicle.totalDemand > vehicle.capacity) {
-                hardScore -= (vehicle.totalDemand - vehicle.capacity).toInt()
-            }
-
-            // Max end-time not met
-            if (vehicle.visits != null) {
-                for (visit in vehicle.visits!!) {
-                    if (visit.isServiceFinishedAfterMaxEndTime) {
-                        hardScore -= visit.serviceFinishedDelayInMinutes.toInt()
-                    }
-                }
-            }
-
-            softScore -= vehicle.totalDrivingTimeSeconds.toInt()
-        }
-
-        return HardSoftLongScore.of(hardScore.toLong(), softScore.toLong())
-    }
-}
-----
---
-====
-
-
-Unfortunately **that does not scale well**, because it is non-incremental:
-every time a visit is scheduled to a different vehicle,
-all visits are re-evaluated to calculate the new score.
-
-Instead, create a `VehicleRoutingConstraintProvider` class
+To calculate the score, create a `VehicleRoutingConstraintProvider` class
 to perform incremental score calculation.
 It uses Timefold Solver's xref:constraints-and-score/score-calculation.adoc[Constraint Streams API]
 which is inspired by Java Streams and SQL:
@@ -145,9 +41,6 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 
 import org.acme.vehiclerouting.domain.Visit;
 import org.acme.vehiclerouting.domain.Vehicle;
-import org.acme.vehiclerouting.solver.justifications.MinimizeTravelTimeJustification;
-import org.acme.vehiclerouting.solver.justifications.ServiceFinishedAfterMaxEndTimeJustification;
-import org.acme.vehiclerouting.solver.justifications.VehicleCapacityJustification;
 
 public class VehicleRoutingConstraintProvider implements ConstraintProvider {
 
@@ -169,8 +62,6 @@ public class VehicleRoutingConstraintProvider implements ConstraintProvider {
                 .filter(vehicle -> vehicle.getTotalDemand() > vehicle.getCapacity())
                 .penalizeLong(HardSoftLongScore.ONE_HARD,
                         vehicle -> vehicle.getTotalDemand() - vehicle.getCapacity())
-                .justifyWith((vehicle, score) -> new VehicleCapacityJustification(vehicle.getId(), vehicle.getTotalDemand(),
-                        vehicle.getCapacity()))
                 .asConstraint(VEHICLE_CAPACITY);
     }
 
@@ -179,8 +70,6 @@ public class VehicleRoutingConstraintProvider implements ConstraintProvider {
                 .filter(Visit::isServiceFinishedAfterMaxEndTime)
                 .penalizeLong(HardSoftLongScore.ONE_HARD,
                         Visit::getServiceFinishedDelayInMinutes)
-                .justifyWith((visit, score) -> new ServiceFinishedAfterMaxEndTimeJustification(visit.getId(),
-                        visit.getServiceFinishedDelayInMinutes()))
                 .asConstraint(SERVICE_FINISHED_AFTER_MAX_END_TIME);
     }
 
@@ -188,8 +77,6 @@ public class VehicleRoutingConstraintProvider implements ConstraintProvider {
         return factory.forEach(Vehicle.class)
                 .penalizeLong(HardSoftLongScore.ONE_SOFT,
                         Vehicle::getTotalDrivingTimeSeconds)
-                .justifyWith((vehicle, score) -> new MinimizeTravelTimeJustification(vehicle.getId(),
-                        vehicle.getTotalDrivingTimeSeconds()))
                 .asConstraint(MINIMIZE_TRAVEL_TIME);
     }
 }
@@ -213,9 +100,6 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider
 
 import org.acme.vehiclerouting.domain.Visit
 import org.acme.vehiclerouting.domain.Vehicle
-import org.acme.vehiclerouting.solver.justifications.MinimizeTravelTimeJustification
-import org.acme.vehiclerouting.solver.justifications.ServiceFinishedAfterMaxEndTimeJustification
-import org.acme.vehiclerouting.solver.justifications.VehicleCapacityJustification
 
 class VehicleRoutingConstraintProvider : ConstraintProvider {
     override fun defineConstraints(factory: ConstraintFactory): Array<Constraint> {
@@ -232,12 +116,6 @@ class VehicleRoutingConstraintProvider : ConstraintProvider {
             .penalizeLong(
                 HardSoftLongScore.ONE_HARD
             ) { vehicle: Vehicle -> vehicle.totalDemand - vehicle.capacity }
-            .justifyWith({ vehicle: Vehicle, score: HardSoftLongScore? ->
-                VehicleCapacityJustification(
-                    vehicle.id, vehicle.totalDemand.toInt(),
-                    vehicle.capacity
-                )
-            })
             .asConstraint(VEHICLE_CAPACITY)
     }
 
@@ -246,12 +124,6 @@ class VehicleRoutingConstraintProvider : ConstraintProvider {
             .filter({ obj: Visit -> obj.isServiceFinishedAfterMaxEndTime })
             .penalizeLong(HardSoftLongScore.ONE_HARD,
                 { obj: Visit -> obj.serviceFinishedDelayInMinutes })
-            .justifyWith({ visit: Visit, score: HardSoftLongScore? ->
-                ServiceFinishedAfterMaxEndTimeJustification(
-                    visit.id,
-                    visit.serviceFinishedDelayInMinutes
-                )
-            })
             .asConstraint(SERVICE_FINISHED_AFTER_MAX_END_TIME)
     }
 
@@ -259,12 +131,6 @@ class VehicleRoutingConstraintProvider : ConstraintProvider {
         return factory.forEach(Vehicle::class.java)
             .penalizeLong(HardSoftLongScore.ONE_SOFT,
                 { obj: Vehicle -> obj.totalDrivingTimeSeconds })
-            .justifyWith({ vehicle: Vehicle, score: HardSoftLongScore? ->
-                MinimizeTravelTimeJustification(
-                    vehicle.id,
-                    vehicle.totalDrivingTimeSeconds
-                )
-            })
             .asConstraint(MINIMIZE_TRAVEL_TIME)
     }
 
@@ -277,5 +143,3 @@ class VehicleRoutingConstraintProvider : ConstraintProvider {
 ----
 --
 ====
-
-The `ConstraintProvider` scales much better than the `EasyScoreCalculator`: typically __O__(n) instead of __O__(n²).

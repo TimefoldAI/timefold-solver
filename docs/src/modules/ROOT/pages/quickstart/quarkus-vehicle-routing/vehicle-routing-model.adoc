@@ -10,6 +10,8 @@ image::quickstart/vehicle-routing/vehicleRoutingClassDiagramPure.png[]
 == Location
 
 The `Location` class is used to represent the destination for deliveries or the home location for vehicles.
+The `drivingTimeSeconds` map contains the time required to drive from `this` location to any other location.
+This field will be initialized later.
 
 [tabs]
 ====
@@ -146,41 +148,7 @@ public class Vehicle {
         this.visits = new ArrayList<>();
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public int getCapacity() {
-        return capacity;
-    }
-
-    public void setCapacity(int capacity) {
-        this.capacity = capacity;
-    }
-
-    public Location getHomeLocation() {
-        return homeLocation;
-    }
-
-    public void setHomeLocation(Location homeLocation) {
-        this.homeLocation = homeLocation;
-    }
-
-    public LocalDateTime getDepartureTime() {
-        return departureTime;
-    }
-
-    public List<Visit> getVisits() {
-        return visits;
-    }
-
-    public void setVisits(List<Visit> visits) {
-        this.visits = visits;
-    }
+    // Getters and Setters excluded
 
     public int getTotalDemand() {
         int totalDemand = 0;
@@ -306,12 +274,15 @@ The `Visit` class represents a delivery that needs to be made by vehicles.
 A visit includes a destination location, a delivery time window represented by `[minStartTime, maxEndTime]`,
 a demand that needs to be fulfilled by the vehicle, and a service duration time.
 
+The `Visit` class has an `@PlanningEntity` annotation
+but no genuine variables and is called a https://timefold.ai/docs/timefold-solver/latest/using-timefold-solver/modeling-planning-problems#shadowVariable[shadow entity].
+
 [tabs]
 ====
 Java::
 +
 --
-Create the `src/main/java/org/acme/vehiclerouting/domain/Visit.java` class:
+Create or adjust the `src/main/java/org/acme/vehiclerouting/domain/Visit.java` class:
 
 [source,java]
 ----
@@ -341,12 +312,13 @@ public class Visit {
     private LocalDateTime maxEndTime;
     private Duration serviceDuration;
 
+    @InverseRelationShadowVariable(sourceVariableName = "visits")
     private Vehicle vehicle;
 
+    @PreviousElementShadowVariable(sourceVariableName = "visits")
     private Visit previousVisit;
 
-    private Visit nextVisit;
-
+    @CascadingUpdateShadowVariable(targetMethodName = "updateArrivalTime")
     private LocalDateTime arrivalTime;
 
     public Visit() {
@@ -363,81 +335,15 @@ public class Visit {
         this.serviceDuration = serviceDuration;
     }
 
-    public String getId() {
-        return id;
-    }
+    // Getters and Setters excluded
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Location getLocation() {
-        return location;
-    }
-
-    public void setLocation(Location location) {
-        this.location = location;
-    }
-
-    public int getDemand() {
-        return demand;
-    }
-
-    public void setDemand(int demand) {
-        this.demand = demand;
-    }
-
-    public LocalDateTime getMinStartTime() {
-        return minStartTime;
-    }
-
-    public LocalDateTime getMaxEndTime() {
-        return maxEndTime;
-    }
-
-    public Duration getServiceDuration() {
-        return serviceDuration;
-    }
-
-    @InverseRelationShadowVariable(sourceVariableName = "visits")
-    public Vehicle getVehicle() {
-        return vehicle;
-    }
-
-    public void setVehicle(Vehicle vehicle) {
-        this.vehicle = vehicle;
-    }
-
-    @PreviousElementShadowVariable(sourceVariableName = "visits")
-    public Visit getPreviousVisit() {
-        return previousVisit;
-    }
-
-    public void setPreviousVisit(Visit previousVisit) {
-        this.previousVisit = previousVisit;
-    }
-
-    @NextElementShadowVariable(sourceVariableName = "visits")
-    public Visit getNextVisit() {
-        return nextVisit;
-    }
-
-    public void setNextVisit(Visit nextVisit) {
-        this.nextVisit = nextVisit;
-    }
-
-    @ShadowVariable(variableListenerClass = ArrivalTimeUpdatingVariableListener.class, sourceVariableName = "vehicle")
-    @ShadowVariable(variableListenerClass = ArrivalTimeUpdatingVariableListener.class, sourceVariableName = "previousVisit")
-    public LocalDateTime getArrivalTime() {
-        return arrivalTime;
-    }
-
-    public void setArrivalTime(LocalDateTime arrivalTime) {
-        this.arrivalTime = arrivalTime;
+    private void updateArrivalTime() {
+        if (previousVisit == null && vehicle == null) {
+            arrivalTime = null;
+            return;
+        }
+        LocalDateTime departureTime = previousVisit == null ? vehicle.getDepartureTime() : previousVisit.getDepartureTime();
+        arrivalTime = departureTime != null ? departureTime.plusSeconds(getDrivingTimeSecondsFromPreviousStandstill()) : null;
     }
 
     public LocalDateTime getDepartureTime() {
@@ -517,22 +423,13 @@ class Visit {
     lateinit var maxEndTime: LocalDateTime
     lateinit var serviceDuration: Duration
 
+    @InverseRelationShadowVariable(sourceVariableName = "visits")
     private var vehicle: Vehicle? = null
 
-    @get:PreviousElementShadowVariable(sourceVariableName = "visits")
+    @PreviousElementShadowVariable(sourceVariableName = "visits")
     var previousVisit: Visit? = null
 
-    @get:NextElementShadowVariable(sourceVariableName = "visits")
-    var nextVisit: Visit? = null
-
-    @get:ShadowVariable(
-        variableListenerClass = ArrivalTimeUpdatingVariableListener::class,
-        sourceVariableName = "previousVisit"
-    )
-    @get:ShadowVariable(
-        variableListenerClass = ArrivalTimeUpdatingVariableListener::class,
-        sourceVariableName = "vehicle"
-    )
+    @CascadingUpdateShadowVariable(targetMethodName = "updateArrivalTime")
     var arrivalTime: LocalDateTime? = null
 
     constructor()
@@ -550,13 +447,13 @@ class Visit {
         this.serviceDuration = serviceDuration
     }
 
-    @InverseRelationShadowVariable(sourceVariableName = "visits")
-    fun getVehicle(): Vehicle? {
-        return vehicle
-    }
-
-    fun setVehicle(vehicle: Vehicle?) {
-        this.vehicle = vehicle
+    private fun updateArrivalTime() {
+        if (previousVisit == null && vehicle == null) {
+            arrivalTime = null
+            return
+        }
+        val departureTime = previousVisit?.departureTime ?: vehicle?.departureTime
+        arrivalTime = departureTime?.plusSeconds(getDrivingTimeSecondsFromPreviousStandstill())
     }
 
     val departureTime: LocalDateTime?
@@ -608,193 +505,27 @@ class Visit {
 --
 ====
 
-Some methods are annotated with `@InverseRelationShadowVariable`, `@PreviousElementShadowVariable`,
-`@NextElementShadowVariable`, and `@ShadowVariable`.
+Some methods are annotated with `@InverseRelationShadowVariable`, `@PreviousElementShadowVariable` and `@CascadingUpdateShadowVariable`.
 They are called https://timefold.ai/docs/timefold-solver/latest/using-timefold-solver/modeling-planning-problems#shadowVariable[shadow variables],
 and because Timefold Solver changes them,
 `Visit` is a https://timefold.ai/docs/timefold-solver/latest/using-timefold-solver/modeling-planning-problems#planningEntity[_planning entity_]:
 
 image::quickstart/vehicle-routing/vehicleRoutingCompleteClassDiagramAnnotated.png[]
 
-The method `getVehicle()` has an `@InverseRelationShadowVariable` annotation,
+The field `vehicle` has an `@InverseRelationShadowVariable` annotation,
 creating a bi-directional relationship with the `Vehicle`.
 The function returns a reference to the `Vehicle` where the visit is scheduled.
 Let's say the visit `Ann` was scheduled to the vehicle `V1` during the solving process.
 The method returns a reference of `V1`.
 
-The methods `getPreviousVisit()` and `getNextVisit()` are annotated with `@PreviousElementShadowVariable` and
-`@NextElementShadowVariable`, respectively.
-The method returns a reference of the previous and next visit of the current visit instance.
+The field `previousVisit` is annotated with `@PreviousElementShadowVariable`.
+The solver will update this field with a reference of the visit preceding the current visit instance.
 Assuming that vehicle `V1` is assigned the visits of `Ann`, `Beth`, and `Carl`,
-the `getNextVisit()` method returns `Carl`,
-and the `getPreviousVisit()` method returns `Ann` for the visit of `Beth`.
+the `previousVisit` field will be filled with `Ann` for the visit of `Beth`.
 
-The method `getArrivalTime()` has two `@ShadowVariable` annotations,
-one per each variable: `vehicle` and `previousVisit`.
-The solver triggers `ArrivalTimeUpdatingVariableListener` to update `arrivalTime` field every time the fields `vehicle`
-or `previousVisit` get updated.
+NOTE: `@NextElementShadowVariable` also exists, which can be used to get a reference to the successor element.
 
-The `Visit` class has an `@PlanningEntity` annotation
-but no genuine variables and is called https://timefold.ai/docs/timefold-solver/latest/using-timefold-solver/modeling-planning-problems#shadowVariable[shadow entity].
+The `arrivalTime` field has a `@CascadingUpdateShadowVariable` annotation.
+This annotation indicates which method should be triggered to update this field whenever this entity is moved, in this case the `updateArrivalTime()` method.
+This change is automatically propagated to the subsequent visits and stops when the `arrivalTime` value hasn't changed or when it's reached the end of the chain of visit objects.
 
-[tabs]
-====
-Java::
-+
---
-Create the `src/main/java/org/acme/vehiclerouting/solver/ArrivalTimeUpdatingVariableListener.java` class:
-
-[source,java]
-----
-package org.acme.vehiclerouting.solver;
-
-import java.time.LocalDateTime;
-import java.util.Objects;
-
-import ai.timefold.solver.core.api.domain.variable.VariableListener;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
-
-import org.acme.vehiclerouting.domain.Visit;
-import org.acme.vehiclerouting.domain.VehicleRoutePlan;
-
-public class ArrivalTimeUpdatingVariableListener implements VariableListener<VehicleRoutePlan, Visit> {
-
-    private static final String ARRIVAL_TIME_FIELD = "arrivalTime";
-
-    @Override
-    public void beforeVariableChanged(ScoreDirector<VehicleRoutePlan> scoreDirector, Visit visit) {
-
-    }
-
-    @Override
-    public void afterVariableChanged(ScoreDirector<VehicleRoutePlan> scoreDirector, Visit visit) {
-        if (visit.getVehicle() == null) {
-            if (visit.getArrivalTime() != null) {
-                scoreDirector.beforeVariableChanged(visit, ARRIVAL_TIME_FIELD);
-                visit.setArrivalTime(null);
-                scoreDirector.afterVariableChanged(visit, ARRIVAL_TIME_FIELD);
-            }
-            return;
-        }
-
-        Visit previousVisit = visit.getPreviousVisit();
-        LocalDateTime departureTime =
-                previousVisit == null ? visit.getVehicle().getDepartureTime() : previousVisit.getDepartureTime();
-
-        Visit nextVisit = visit;
-        LocalDateTime arrivalTime = calculateArrivalTime(nextVisit, departureTime);
-        while (nextVisit != null && !Objects.equals(nextVisit.getArrivalTime(), arrivalTime)) {
-            scoreDirector.beforeVariableChanged(nextVisit, ARRIVAL_TIME_FIELD);
-            nextVisit.setArrivalTime(arrivalTime);
-            scoreDirector.afterVariableChanged(nextVisit, ARRIVAL_TIME_FIELD);
-            departureTime = nextVisit.getDepartureTime();
-            nextVisit = nextVisit.getNextVisit();
-            arrivalTime = calculateArrivalTime(nextVisit, departureTime);
-        }
-    }
-
-    @Override
-    public void beforeEntityAdded(ScoreDirector<VehicleRoutePlan> scoreDirector, Visit visit) {
-
-    }
-
-    @Override
-    public void afterEntityAdded(ScoreDirector<VehicleRoutePlan> scoreDirector, Visit visit) {
-
-    }
-
-    @Override
-    public void beforeEntityRemoved(ScoreDirector<VehicleRoutePlan> scoreDirector, Visit visit) {
-
-    }
-
-    @Override
-    public void afterEntityRemoved(ScoreDirector<VehicleRoutePlan> scoreDirector, Visit visit) {
-
-    }
-
-    private LocalDateTime calculateArrivalTime(Visit visit, LocalDateTime previousDepartureTime) {
-        if (visit == null || previousDepartureTime == null) {
-            return null;
-        }
-        return previousDepartureTime.plusSeconds(visit.getDrivingTimeSecondsFromPreviousStandstill());
-    }
-}
-----
---
-
-Kotlin::
-+
---
-Create the `src/main/kotlin/org/acme/vehiclerouting/solver/ArrivalTimeUpdatingVariableListener.kt` class:
-
-[source,kotlin]
-----
-package org.acme.vehiclerouting.solver
-
-import java.time.LocalDateTime
-
-import ai.timefold.solver.core.api.domain.variable.VariableListener
-import ai.timefold.solver.core.api.score.director.ScoreDirector
-
-import org.acme.vehiclerouting.domain.Visit
-import org.acme.vehiclerouting.domain.VehicleRoutePlan
-
-class ArrivalTimeUpdatingVariableListener : VariableListener<VehicleRoutePlan?, Visit> {
-
-    override fun beforeVariableChanged(scoreDirector: ScoreDirector<VehicleRoutePlan?>, visit: Visit) {
-    }
-
-    override fun afterVariableChanged(scoreDirector: ScoreDirector<VehicleRoutePlan?>, visit: Visit) {
-        if (visit.getVehicle() == null) {
-            if (visit.arrivalTime != null) {
-                scoreDirector.beforeVariableChanged(visit, ARRIVAL_TIME_FIELD)
-                visit.arrivalTime = null
-                scoreDirector.afterVariableChanged(visit, ARRIVAL_TIME_FIELD)
-            }
-            return
-        }
-
-        val previousVisit: Visit? = visit.previousVisit
-        var departureTime: LocalDateTime? =
-            if (previousVisit == null) visit.getVehicle()!!.departureTime else previousVisit.departureTime
-
-        var nextVisit: Visit? = visit
-        var arrivalTime = calculateArrivalTime(nextVisit, departureTime)
-        while (nextVisit != null && nextVisit.arrivalTime != arrivalTime) {
-            scoreDirector.beforeVariableChanged(nextVisit, ARRIVAL_TIME_FIELD)
-            nextVisit.arrivalTime = arrivalTime
-            scoreDirector.afterVariableChanged(nextVisit, ARRIVAL_TIME_FIELD)
-            departureTime = nextVisit.departureTime
-            nextVisit = nextVisit.nextVisit
-            arrivalTime = calculateArrivalTime(nextVisit, departureTime)
-        }
-    }
-
-    override fun beforeEntityAdded(scoreDirector: ScoreDirector<VehicleRoutePlan?>?, visit: Visit?) {
-    }
-
-    override fun afterEntityAdded(scoreDirector: ScoreDirector<VehicleRoutePlan?>?, visit: Visit?) {
-    }
-
-    override fun beforeEntityRemoved(scoreDirector: ScoreDirector<VehicleRoutePlan?>?, visit: Visit?) {
-    }
-
-    override fun afterEntityRemoved(scoreDirector: ScoreDirector<VehicleRoutePlan?>?, visit: Visit?) {
-    }
-
-    private fun calculateArrivalTime(visit: Visit?, previousDepartureTime: LocalDateTime?): LocalDateTime? {
-        if (visit == null || previousDepartureTime == null) {
-            return null
-        }
-        return previousDepartureTime.plusSeconds(visit.drivingTimeSecondsFromPreviousStandstill)
-    }
-
-
-    companion object {
-        private const val ARRIVAL_TIME_FIELD = "arrivalTime"
-    }
-}
-----
---
-====
