@@ -6,13 +6,13 @@ name: Secured Workflow
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   # There are two differences to "pull_request" here:
   # - The workflow will receive secrets, even in PRs from forks.
   # - The workflow will be executed automatically, without requiring a manual approval.
   # Therefore the workflow needs to be explicitly secured; see "known_user" and "approval_required" jobs below.
   pull_request_target:
-    branches: [main] # Benchmarks aren't branched, so they will only ever work against current main.
+    branches: [ main ] # Benchmarks aren't branched, so they will only ever work against current main.
     types:
       - opened
       - reopened
@@ -266,13 +266,7 @@ jobs:
     name: Build Documentation
     env:
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-      GURL: "https://github.com/${{ github.event.pull_request.head.repo.owner.login || 'TimefoldAI' }}/timefold-solver"
     steps:
-      - name: Install yq
-        run: |
-          sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq 
-          sudo chmod +x /usr/bin/yq
-
       - name: Checkout frontend
         id: checkout-frontend
         uses: actions/checkout@v4
@@ -287,13 +281,60 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
+      - name: Checkout timefold-solver
+        uses: actions/checkout@v4
+        with:
+          repository: "${{ github.event.pull_request.head.repo.owner.login || 'TimefoldAI' }}/timefold-solver"
+          ref: ${{ github.event.pull_request.head.sha || 'main' }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
+          path: "./timefold-solver"
+          fetch-depth: 0
+
+      - name: Install yq
+        run: |
+          sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq 
+          sudo chmod +x /usr/bin/yq          
+
+      - name: Configuring Antora version
+        working-directory: "./timefold-solver"
+        run: |
+          LATEST_VERSION="SNAPSHOT"
+          echo "LATEST_VERSION=$LATEST_VERSION" >> "$GITHUB_ENV"
+          LATEST_DATE="$(date +"%F")"
+          echo "LATEST_DATE=$LATEST_DATE" >> "$GITHUB_ENV"
+          JAVA_VERSION="$(find build/build-parent/ -name pom.xml -exec grep '<maven.compiler.release>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)"
+          echo "JAVA_VERSION=$JAVA_VERSION" >> "$GITHUB_ENV"
+          MAVEN_VERSION="$(find build/build-parent/ -name pom.xml -exec grep '<maven.min.version>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)"
+          echo "MAVEN_VERSION=$MAVEN_VERSION" >> "$GITHUB_ENV"
+          QUARKUS_VERSION="$(find build/build-parent/ -name pom.xml -exec grep '<version.io.quarkus>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)"
+          echo "QUARKUS_VERSION=$QUARKUS_VERSION" >> "$GITHUB_ENV"
+          SPRING_VERSION="$(find build/build-parent/ -name pom.xml -exec grep '<version.org.springframework.boot>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)"
+          echo "SPRING_VERSION=$SPRING_VERSION" >> "$GITHUB_ENV"
+          LOGBACK_VERSION="$(find build/build-parent/ -name pom.xml -exec grep '<version.ch.qos.logback>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)"
+          echo "LOGBACK_VERSION=$LOGBACK_VERSION" >> "$GITHUB_ENV"
+          EXEC_MAVEN_VERSION="$(find build/build-parent/ -name pom.xml -exec grep '<version.exec.plugin>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)"
+          echo "EXEC_MAVEN_VERSION=$EXEC_MAVEN_VERSION" >> "$GITHUB_ENV"
+          REWRITE_PLUGIN_VERSION="$(find . -name pom.xml -exec grep '<version.rewrite.plugin>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)"
+          echo "REWRITE_PLUGIN_VERSION=$REWRITE_PLUGIN_VERSION" >> "$GITHUB_ENV"
+          echo "=== Resulting environment variables:"
+          cat $GITHUB_ENV
+          echo "=== End of environment variables."
+
+      - name: Updating Antora configuration
+        working-directory: "./timefold-solver"
+        run: |
+          echo "=== Updating antora.yml"
+          cp docs/src/antora-template.yml docs/src/antora.yml
+          sh .github/scripts/update-antora-configuration.sh docs/src/antora.yml
+          cat docs/src/antora.yml
+
       - name: Build Documentation
+        working-directory: "./"
         env:
           GIT_CREDENTIALS: ${{ secrets.GIT_CREDENTIALS }}
         run: |
           yq -i e 'del(.content.sources)' apps/docs/antora-playbook.yml
           yq -i e 'del(.site.keys)' apps/docs/antora-playbook.yml
-          yq -i e '.content.sources += [{"url": env(GURL), "branches": env(BRANCH_NAME), "start_path": "docs/src"}]' apps/docs/antora-playbook.yml
+          yq -i e '.content.sources += [{"url": "../../timefold-solver", "start_path": "docs/src"}]' apps/docs/antora-playbook.yml
           npm ci
           npm run build -- --filter docs
 
