@@ -266,7 +266,7 @@ jobs:
     name: Build Documentation
     env:
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-      HEAD_OWNER: ${{ github.event.pull_request.head.repo.owner.login }}
+      HEAD_OWNER: ${{ github.event.pull_request.head.repo.owner.login || 'TimefoldAI' }}
     steps:
       - name: Install yq
         run: |
