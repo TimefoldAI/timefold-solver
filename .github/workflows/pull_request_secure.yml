@@ -266,6 +266,7 @@ jobs:
     name: Build Documentation
     env:
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+      HEAD_OWNER: ${{ github.event.pull_request.head.repo.owner.login }}
     steps:
       - name: Install yq
         run: |
@@ -280,11 +281,6 @@ jobs:
           token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
 
-      - name: Checkout timefold-solver
-        uses: actions/checkout@v4
-        with:
-          path: ./timefold-solver
-
       - name: Set up NodeJs
         uses: actions/setup-node@v4
         with:
@@ -295,9 +291,9 @@ jobs:
         env:
           GIT_CREDENTIALS: ${{ secrets.GIT_CREDENTIALS }}
         run: |
-          cd ${{ github.workspace }}/timefold-solver/
-          export GURL="$(git remote get-url origin)"
-          cd -
+          export GURL="https://github.com/$(HEAD_OWNER)/timefold-solver"
+          echo $GURL
+          echo $BRANCH_NAME
           yq -i e 'del(.content.sources)' apps/docs/antora-playbook.yml
           yq -i e 'del(.site.keys)' apps/docs/antora-playbook.yml
           yq -i e '.content.sources += [{"url": env(GURL), "branches": env(BRANCH_NAME), "start_path": "docs/src"}]' apps/docs/antora-playbook.yml
