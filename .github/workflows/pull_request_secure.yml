@@ -291,7 +291,7 @@ jobs:
         env:
           GIT_CREDENTIALS: ${{ secrets.GIT_CREDENTIALS }}
         run: |
-          export GURL="https://github.com/$(HEAD_OWNER)/timefold-solver"
+          export GURL="https://github.com/${{ env.HEAD_OWNER }}/timefold-solver"
           echo $GURL
           echo $BRANCH_NAME
           yq -i e 'del(.content.sources)' apps/docs/antora-playbook.yml
