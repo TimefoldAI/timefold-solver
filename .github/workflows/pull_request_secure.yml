@@ -294,37 +294,20 @@ jobs:
           sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq 
           sudo chmod +x /usr/bin/yq          
 
-      - name: Configuring Antora version
-        working-directory: "./timefold-solver"
-        run: |
-          LATEST_VERSION="SNAPSHOT"
-          echo "LATEST_VERSION=$LATEST_VERSION" >> "$GITHUB_ENV"
-          LATEST_DATE="$(date +"%F")"
-          echo "LATEST_DATE=$LATEST_DATE" >> "$GITHUB_ENV"
-          JAVA_VERSION="$(find build/build-parent/ -name pom.xml -exec grep '<maven.compiler.release>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)"
-          echo "JAVA_VERSION=$JAVA_VERSION" >> "$GITHUB_ENV"
-          MAVEN_VERSION="$(find build/build-parent/ -name pom.xml -exec grep '<maven.min.version>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)"
-          echo "MAVEN_VERSION=$MAVEN_VERSION" >> "$GITHUB_ENV"
-          QUARKUS_VERSION="$(find build/build-parent/ -name pom.xml -exec grep '<version.io.quarkus>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)"
-          echo "QUARKUS_VERSION=$QUARKUS_VERSION" >> "$GITHUB_ENV"
-          SPRING_VERSION="$(find build/build-parent/ -name pom.xml -exec grep '<version.org.springframework.boot>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)"
-          echo "SPRING_VERSION=$SPRING_VERSION" >> "$GITHUB_ENV"
-          LOGBACK_VERSION="$(find build/build-parent/ -name pom.xml -exec grep '<version.ch.qos.logback>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)"
-          echo "LOGBACK_VERSION=$LOGBACK_VERSION" >> "$GITHUB_ENV"
-          EXEC_MAVEN_VERSION="$(find build/build-parent/ -name pom.xml -exec grep '<version.exec.plugin>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)"
-          echo "EXEC_MAVEN_VERSION=$EXEC_MAVEN_VERSION" >> "$GITHUB_ENV"
-          REWRITE_PLUGIN_VERSION="$(find . -name pom.xml -exec grep '<version.rewrite.plugin>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)"
-          echo "REWRITE_PLUGIN_VERSION=$REWRITE_PLUGIN_VERSION" >> "$GITHUB_ENV"
-          echo "=== Resulting environment variables:"
-          cat $GITHUB_ENV
-          echo "=== End of environment variables."
-
       - name: Updating Antora configuration
         working-directory: "./timefold-solver"
         run: |
           echo "=== Updating antora.yml"
           cp docs/src/antora-template.yml docs/src/antora.yml
-          sh .github/scripts/update-antora-configuration.sh docs/src/antora.yml
+          sed -i "s/\${project\.version}b0/SNAPSHOT/g" docs/src/antora.yml
+          sed -i "s/\${project\.version}/SNAPSHOT/g" docs/src/antora.yml
+          sed -i "s/\${maven\.compiler\.release}/$(find build/build-parent/ -name pom.xml -exec grep '<maven.compiler.release>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)/g" docs/src/antora.yml
+          sed -i "s/\${maven\.min\.version}/$(find build/build-parent/ -name pom.xml -exec grep '<maven.min.version>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)/g" docs/src/antora.yml
+          sed -i "s/\${version\.io\.quarkus}/$(find build/build-parent/ -name pom.xml -exec grep '<maven.min.version>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)/g" docs/src/antora.yml
+          sed -i "s/\${version\.org\.springframework\.boot}/$(find build/build-parent/ -name pom.xml -exec grep '<version.ch.qos.logback>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)N/g" docs/src/antora.yml
+          sed -i "s/\${version\.ch\.qos\.logback}/$(find build/build-parent/ -name pom.xml -exec grep '<version.ch.qos.logback>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)/g" docs/src/antora.yml
+          sed -i "s/\${version\.exec\.plugin}/$(find build/build-parent/ -name pom.xml -exec grep '<version.exec.plugin>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)/g" docs/src/antora.yml
+          sed -i "s/\${version\.rewrite\.plugin}/$(find . -name pom.xml -exec grep '<version.rewrite.plugin>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)/g" docs/src/antora.yml
           cat docs/src/antora.yml
 
       - name: Build Documentation
