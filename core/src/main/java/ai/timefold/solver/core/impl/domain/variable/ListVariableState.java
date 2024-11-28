@@ -20,8 +20,8 @@ final class ListVariableState<Solution_> {
 
     private ExternalizedIndexVariableProcessor<Solution_> externalizedIndexProcessor = null;
     private ExternalizedListInverseVariableProcessor<Solution_> externalizedInverseProcessor = null;
-    private AbstractExternalizedNextPrevElementVariableProcessor<Solution_> externalizedPreviousElementProcessor = null;
-    private AbstractExternalizedNextPrevElementVariableProcessor<Solution_> externalizedNextElementProcessor = null;
+    private ExternalizedNextPrevElementVariableProcessor<Solution_> externalizedPreviousElementProcessor = null;
+    private ExternalizedNextPrevElementVariableProcessor<Solution_> externalizedNextElementProcessor = null;
 
     private boolean canUseExternalizedLocation = false;
     private boolean requiresLocationMap = true;
@@ -33,22 +33,22 @@ final class ListVariableState<Solution_> {
         this.sourceVariableDescriptor = sourceVariableDescriptor;
     }
 
-    public void linkDescriptor(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+    public void linkShadowVariable(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         this.externalizedIndexProcessor = new ExternalizedIndexVariableProcessor<>(shadowVariableDescriptor);
     }
 
-    public void linkDescriptor(InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+    public void linkShadowVariable(InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         this.externalizedInverseProcessor =
                 new ExternalizedListInverseVariableProcessor<>(shadowVariableDescriptor, sourceVariableDescriptor);
     }
 
-    public void linkDescriptor(PreviousElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+    public void linkShadowVariable(PreviousElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         this.externalizedPreviousElementProcessor =
-                new ExternalizedPreviousElementVariableProcessor<>(shadowVariableDescriptor);
+                ExternalizedNextPrevElementVariableProcessor.ofPrevious(shadowVariableDescriptor);
     }
 
-    public void linkDescriptor(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        this.externalizedNextElementProcessor = new ExternalizedNextElementVariableProcessor<>(shadowVariableDescriptor);
+    public void linkShadowVariable(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        this.externalizedNextElementProcessor = ExternalizedNextPrevElementVariableProcessor.ofNext(shadowVariableDescriptor);
     }
 
     public void initialize(InnerScoreDirector<Solution_, ?> scoreDirector, int initialUnassignedCount) {
