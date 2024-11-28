@@ -264,7 +264,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: approval_required
     name: Build Documentation
-    env:
+    environment:
+      name: "documentation (preview)"
+      url: ${{ steps.deploy.outputs.deployment-url }}
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
     steps:
       - name: Checkout frontend
