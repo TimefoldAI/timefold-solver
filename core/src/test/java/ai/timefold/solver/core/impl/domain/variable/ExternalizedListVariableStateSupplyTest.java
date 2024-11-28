@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListValue;
@@ -21,7 +22,7 @@ class ExternalizedListVariableStateSupplyTest {
     @Test
     void initializeRoundTrip() {
         var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
-        var scoreDirector = (ScoreDirector<TestdataAllowsUnassignedValuesListSolution>) mock(ScoreDirector.class);
+        var scoreDirector = (ScoreDirector<TestdataAllowsUnassignedValuesListSolution>) mock(InnerScoreDirector.class);
         try (var supply = new ExternalizedListVariableStateSupply<>(variableDescriptor)) {
 
             var v1 = new TestdataAllowsUnassignedValuesListValue("1");
@@ -49,7 +50,7 @@ class ExternalizedListVariableStateSupplyTest {
     @Test
     void assignRoundTrip() {
         var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
-        var scoreDirector = (ScoreDirector<TestdataAllowsUnassignedValuesListSolution>) mock(ScoreDirector.class);
+        var scoreDirector = (ScoreDirector<TestdataAllowsUnassignedValuesListSolution>) mock(InnerScoreDirector.class);
         try (var supply = new ExternalizedListVariableStateSupply<>(variableDescriptor)) {
 
             var v1 = new TestdataAllowsUnassignedValuesListValue("1");

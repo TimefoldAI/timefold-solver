@@ -11,10 +11,12 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWithSources;
+import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
 public final class IndexShadowVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
@@ -94,18 +96,20 @@ public final class IndexShadowVariableDescriptor<Solution_> extends ShadowVariab
 
     @Override
     public Collection<Class<? extends AbstractVariableListener>> getVariableListenerClasses() {
-        return Collections.singleton(IndexVariableListener.class);
+        throw new UnsupportedOperationException("Impossible state: Handled by %s."
+                .formatted(ListVariableStateSupply.class.getSimpleName()));
     }
 
     @Override
-    public IndexVariableDemand<Solution_> getProvidedDemand() {
-        return new IndexVariableDemand<>(sourceVariableDescriptor);
+    public Demand<?> getProvidedDemand() {
+        throw new UnsupportedOperationException("Impossible state: Handled by %s."
+                .formatted(ListVariableStateSupply.class.getSimpleName()));
     }
 
     @Override
     public Iterable<VariableListenerWithSources<Solution_>> buildVariableListeners(SupplyManager supplyManager) {
-        return new VariableListenerWithSources<>(new IndexVariableListener<>(this, sourceVariableDescriptor),
-                sourceVariableDescriptor).toCollection();
+        throw new UnsupportedOperationException("Impossible state: Handled by %s."
+                .formatted(ListVariableStateSupply.class.getSimpleName()));
     }
 
     @Override

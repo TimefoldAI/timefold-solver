@@ -15,8 +15,8 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWithSources;
@@ -138,7 +138,8 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
             if (chained) {
                 return Collections.singleton(SingletonInverseVariableListener.class);
             } else {
-                return Collections.singleton(SingletonListInverseVariableListener.class);
+                throw new UnsupportedOperationException("Impossible state: Handled by %s."
+                        .formatted(ListVariableStateSupply.class.getSimpleName()));
             }
         } else {
             return Collections.singleton(CollectionInverseVariableListener.class);
@@ -155,7 +156,8 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
             if (chained) {
                 return new SingletonInverseVariableDemand<>(sourceVariableDescriptor);
             } else {
-                return new SingletonListInverseVariableDemand<>((ListVariableDescriptor<Solution_>) sourceVariableDescriptor);
+                throw new UnsupportedOperationException("Impossible state: Handled by %s."
+                        .formatted(ListVariableStateSupply.class.getSimpleName()));
             }
         } else {
             return new CollectionInverseVariableDemand<>(sourceVariableDescriptor);
@@ -172,8 +174,8 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
             if (chained) {
                 return new SingletonInverseVariableListener<>(this, sourceVariableDescriptor);
             } else {
-                return new SingletonListInverseVariableListener<>(
-                        this, (ListVariableDescriptor<Solution_>) sourceVariableDescriptor);
+                throw new UnsupportedOperationException("Impossible state: Handled by %s."
+                        .formatted(ListVariableStateSupply.class.getSimpleName()));
             }
         } else {
             return new CollectionInverseVariableListener<>(this, sourceVariableDescriptor);

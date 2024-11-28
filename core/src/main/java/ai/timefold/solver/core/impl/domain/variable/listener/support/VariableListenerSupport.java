@@ -10,12 +10,17 @@ import java.util.Map;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.ShadowVariablesAssert;
+import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
@@ -55,15 +60,41 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     }
 
     public void linkVariableListeners() {
+        var listVariableStateSupply = listVariableDescriptor == null ? null : demand(listVariableDescriptor.getStateDemand());
         scoreDirector.getSolutionDescriptor().getEntityDescriptors().stream()
                 .map(EntityDescriptor::getDeclaredShadowVariableDescriptors)
                 .flatMap(Collection::stream)
                 .filter(ShadowVariableDescriptor::hasVariableListener)
                 .sorted(Comparator.comparingInt(ShadowVariableDescriptor::getGlobalShadowOrder))
-                .forEach(this::processShadowVariableDescriptor);
+                .forEach(d -> {
+                    // All information about elements in all shadow variables is tracked in a centralized place.
+                    // Therefore all list-related shadow variables need to be connected to that centralized place.
+                    // Shadow variables which are not related to a list variable are processed normally.
+                    if (listVariableStateSupply == null) {
+                        processShadowVariableDescriptorWithoutListVariable(d);
+                    } else {
+                        processShadowVariableDescriptorWithListVariable(d, listVariableStateSupply);
+                    }
+                });
     }
 
-    private void processShadowVariableDescriptor(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+    private void processShadowVariableDescriptorWithListVariable(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor,
+            ListVariableStateSupply<Solution_> listVariableStateSupply) {
+        if (shadowVariableDescriptor instanceof IndexShadowVariableDescriptor<Solution_> indexShadowVariableDescriptor) {
+            listVariableStateSupply.externalize(indexShadowVariableDescriptor);
+        } else if (shadowVariableDescriptor instanceof InverseRelationShadowVariableDescriptor<Solution_> inverseRelationShadowVariableDescriptor) {
+            listVariableStateSupply.externalize(inverseRelationShadowVariableDescriptor);
+        } else if (shadowVariableDescriptor instanceof PreviousElementShadowVariableDescriptor<Solution_> previousElementShadowVariableDescriptor) {
+            listVariableStateSupply.externalize(previousElementShadowVariableDescriptor);
+        } else if (shadowVariableDescriptor instanceof NextElementShadowVariableDescriptor<Solution_> nextElementShadowVariableDescriptor) {
+            listVariableStateSupply.externalize(nextElementShadowVariableDescriptor);
+        } else { // The list variable supply supports no other shadow variables.
+            processShadowVariableDescriptorWithoutListVariable(shadowVariableDescriptor);
+        }
+    }
+
+    private void
+            processShadowVariableDescriptorWithoutListVariable(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         for (var listenerWithSources : shadowVariableDescriptor.buildVariableListeners(this)) {
             var variableListener = listenerWithSources.getVariableListener();
             if (variableListener instanceof Supply supply) {

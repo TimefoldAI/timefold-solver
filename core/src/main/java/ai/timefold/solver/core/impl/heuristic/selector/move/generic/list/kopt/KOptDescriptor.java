@@ -165,8 +165,7 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
         }
 
         var combinedList = computeCombinedList(listVariableDescriptor, listVariableStateSupply);
-        IndexVariableSupply indexVariableSupply =
-                node -> combinedList.getIndexOfValue(listVariableStateSupply, node);
+        IndexVariableSupply indexVariableSupply = node -> combinedList.getIndexOfValue(listVariableStateSupply, node);
         var entityListSize = combinedList.size();
         List<FlipSublistAction> out = new ArrayList<>();
         var originalToCurrentIndexList = new int[entityListSize];

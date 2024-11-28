@@ -1,13 +1,13 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
-import java.util.IdentityHashMap;
-import java.util.Map;
-import java.util.Objects;
-
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
-import ai.timefold.solver.core.preview.api.domain.metamodel.LocationInList;
 
 import org.jspecify.annotations.NonNull;
 
@@ -15,161 +15,147 @@ final class ExternalizedListVariableStateSupply<Solution_>
         implements ListVariableStateSupply<Solution_> {
 
     private final ListVariableDescriptor<Solution_> sourceVariableDescriptor;
-    private Map<Object, LocationInList> elementLocationMap;
-    private int unassignedCount;
+    private final ListVariableState<Solution_> listVariableState;
+
+    private boolean previousExternalized = false;
+    private boolean nextExternalized = false;
 
     public ExternalizedListVariableStateSupply(ListVariableDescriptor<Solution_> sourceVariableDescriptor) {
         this.sourceVariableDescriptor = sourceVariableDescriptor;
+        this.listVariableState = new ListVariableState<>(sourceVariableDescriptor);
+    }
+
+    @Override
+    public void externalize(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        listVariableState.linkDescriptor(shadowVariableDescriptor);
+    }
+
+    @Override
+    public void externalize(InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        listVariableState.linkDescriptor(shadowVariableDescriptor);
+    }
+
+    @Override
+    public void externalize(PreviousElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        listVariableState.linkDescriptor(shadowVariableDescriptor);
+        previousExternalized = true;
+    }
+
+    @Override
+    public void externalize(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        listVariableState.linkDescriptor(shadowVariableDescriptor);
+        nextExternalized = true;
     }
 
     @Override
     public void resetWorkingSolution(@NonNull ScoreDirector<Solution_> scoreDirector) {
+        listVariableState.initialize((InnerScoreDirector<Solution_, ?>) scoreDirector,
+                (int) sourceVariableDescriptor.getValueRangeSize(scoreDirector.getWorkingSolution(), null));
         var workingSolution = scoreDirector.getWorkingSolution();
-        if (elementLocationMap == null) {
-            elementLocationMap = new IdentityHashMap<>((int) sourceVariableDescriptor.getValueRangeSize(workingSolution, null));
-        } else {
-            elementLocationMap.clear();
-        }
-        // Start with everything unassigned.
-        unassignedCount = (int) sourceVariableDescriptor.getValueRangeSize(workingSolution, null);
         // Will run over all entities and unmark all present elements as unassigned.
-        sourceVariableDescriptor.getEntityDescriptor().visitAllEntities(workingSolution, this::insert);
+        sourceVariableDescriptor.getEntityDescriptor()
+                .visitAllEntities(workingSolution, this::insert);
     }
 
     private void insert(Object entity) {
         var assignedElements = sourceVariableDescriptor.getValue(entity);
         var index = 0;
         for (var element : assignedElements) {
-            var oldLocation = elementLocationMap.put(element, ElementLocation.of(entity, index));
-            if (oldLocation != null) {
-                throw new IllegalStateException(
-                        "The supply (%s) is corrupted, because the element (%s) at index (%d) already exists (%s)."
-                                .formatted(this, element, index, oldLocation));
-            }
+            listVariableState.addElement(entity, assignedElements, element, index);
             index++;
-            unassignedCount--;
         }
     }
 
     @Override
-    public void close() {
-        elementLocationMap = null;
-    }
-
-    @Override
-    public void beforeEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object o) {
+    public void beforeEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         // No need to do anything.
     }
 
     @Override
-    public void afterEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object o) {
-        insert(o);
+    public void afterEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
+        insert(entity);
     }
 
     @Override
-    public void beforeEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object o) {
+    public void beforeEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         // No need to do anything.
     }
 
     @Override
-    public void afterEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object o) {
+    public void afterEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
         // When the entity is removed, its values become unassigned.
         // An unassigned value has no inverse entity and no index.
-        retract(o);
-    }
-
-    private void retract(Object entity) {
         var assignedElements = sourceVariableDescriptor.getValue(entity);
         for (var index = 0; index < assignedElements.size(); index++) {
-            var element = assignedElements.get(index);
-            var oldElementLocation = elementLocationMap.remove(element);
-            if (oldElementLocation == null) {
-                throw new IllegalStateException(
-                        "The supply (%s) is corrupted, because the element (%s) at index (%d) was already unassigned (%s)."
-                                .formatted(this, element, index, oldElementLocation));
-            }
-            var oldIndex = oldElementLocation.index();
-            if (oldIndex != index) {
-                throw new IllegalStateException(
-                        "The supply (%s) is corrupted, because the element (%s) at index (%d) had an old index (%d) which is not the current index (%d)."
-                                .formatted(this, element, index, oldIndex, index));
-            }
-            unassignedCount++;
+            listVariableState.removeElement(entity, assignedElements.get(index), index);
         }
     }
 
     @Override
     public void afterListVariableElementUnassigned(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object element) {
-        var oldLocation = elementLocationMap.remove(element);
-        if (oldLocation == null) {
-            throw new IllegalStateException(
-                    "The supply (%s) is corrupted, because the element (%s) did not exist before unassigning."
-                            .formatted(this, element));
-        }
-        unassignedCount++;
+        listVariableState.unassignElement(element);
     }
 
     @Override
-    public void beforeListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object o, int fromIndex,
-            int toIndex) {
+    public void beforeListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity,
+            int fromIndex, int toIndex) {
         // No need to do anything.
     }
 
     @Override
-    public void afterListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object o, int fromIndex,
+    public void afterListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity, int fromIndex,
             int toIndex) {
-        updateIndexes(o, fromIndex, toIndex);
-    }
-
-    private void updateIndexes(Object entity, int startIndex, int toIndex) {
         var assignedElements = sourceVariableDescriptor.getValue(entity);
-        for (var index = startIndex; index < assignedElements.size(); index++) {
-            var element = assignedElements.get(index);
-            var newLocation = ElementLocation.of(entity, index);
-            var oldLocation = elementLocationMap.put(element, newLocation);
-            if (oldLocation == null) {
-                unassignedCount--;
-            } else if (index >= toIndex && newLocation.equals(oldLocation)) {
+        var elementCount = assignedElements.size();
+        // Include the last element of the previous part of the list, if any, for the next element shadow var.
+        // But only if the next element shadow var is externalized; otherwise, there is nothing to update.
+        var firstChangeIndex = nextExternalized ? Math.max(0, fromIndex - 1) : fromIndex;
+        // Include the first element of the next part of the list, if any, for the previous element shadow var.
+        // But only if the previous element shadow var is externalized; otherwise, there is nothing to update.
+        var lastChangeIndex = previousExternalized ? Math.min(toIndex + 1, elementCount) : toIndex;
+        for (var index = firstChangeIndex; index < elementCount; index++) {
+            var locationsDiffer = listVariableState.changeElement(entity, assignedElements, index);
+            if (!locationsDiffer && index >= lastChangeIndex) {
                 // Location is unchanged and we are past the part of the list that changed.
+                // We can terminate the loop prematurely.
                 return;
-            } else {
-                // Continue to the next element.
             }
         }
     }
 
     @Override
     public ElementLocation getLocationInList(Object planningValue) {
-        return Objects.requireNonNullElse(elementLocationMap.get(Objects.requireNonNull(planningValue)),
-                ElementLocation.unassigned());
+        return listVariableState.getLocationInList(planningValue);
     }
 
     @Override
     public Integer getIndex(Object planningValue) {
-        var elementLocation = elementLocationMap.get(Objects.requireNonNull(planningValue));
-        if (elementLocation == null) {
-            return null;
-        }
-        return elementLocation.index();
+        return listVariableState.getIndex(planningValue);
     }
 
     @Override
     public Object getInverseSingleton(Object planningValue) {
-        var elementLocation = elementLocationMap.get(Objects.requireNonNull(planningValue));
-        if (elementLocation == null) {
-            return null;
-        }
-        return elementLocation.entity();
+        return listVariableState.getInverseSingleton(planningValue);
     }
 
     @Override
     public boolean isAssigned(Object element) {
-        return getLocationInList(element) instanceof LocationInList;
+        return getInverseSingleton(element) != null;
     }
 
     @Override
     public int getUnassignedCount() {
-        return unassignedCount;
+        return listVariableState.getUnassignedCount();
+    }
+
+    @Override
+    public Object getPreviousElement(Object element) {
+        return listVariableState.getPreviousElement(element);
+    }
+
+    @Override
+    public Object getNextElement(Object element) {
+        return listVariableState.getNextElement(element);
     }
 
     @Override
