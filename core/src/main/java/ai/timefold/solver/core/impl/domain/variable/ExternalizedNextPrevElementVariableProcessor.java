@@ -10,23 +10,27 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 final class ExternalizedNextPrevElementVariableProcessor<Solution_> {
 
-    public static <Solution_> ExternalizedNextPrevElementVariableProcessor<Solution_> ofPrevious(PreviousElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+    public static <Solution_> ExternalizedNextPrevElementVariableProcessor<Solution_>
+            ofPrevious(PreviousElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         return new ExternalizedNextPrevElementVariableProcessor<>(shadowVariableDescriptor, -1);
     }
 
-    public static <Solution_> ExternalizedNextPrevElementVariableProcessor<Solution_> ofNext(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+    public static <Solution_> ExternalizedNextPrevElementVariableProcessor<Solution_>
+            ofNext(NextElementShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         return new ExternalizedNextPrevElementVariableProcessor<>(shadowVariableDescriptor, 1);
     }
 
     private final ShadowVariableDescriptor<Solution_> shadowVariableDescriptor;
     private final int modifier;
 
-    private ExternalizedNextPrevElementVariableProcessor(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor, int modifier) {
+    private ExternalizedNextPrevElementVariableProcessor(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor,
+            int modifier) {
         this.shadowVariableDescriptor = Objects.requireNonNull(shadowVariableDescriptor);
         this.modifier = modifier;
     }
 
-    public void setElement(InnerScoreDirector<Solution_, ?> scoreDirector, List<Object> listVariable, Object element, int index) {
+    public void setElement(InnerScoreDirector<Solution_, ?> scoreDirector, List<Object> listVariable, Object element,
+            int index) {
         var target = index + modifier;
         if (target < 0 || target >= listVariable.size()) {
             setValue(scoreDirector, element, null);

@@ -23,7 +23,6 @@ final class ListVariableState<Solution_> {
     private ExternalizedNextPrevElementVariableProcessor<Solution_> externalizedPreviousElementProcessor = null;
     private ExternalizedNextPrevElementVariableProcessor<Solution_> externalizedNextElementProcessor = null;
 
-    private boolean canUseExternalizedLocation = false;
     private boolean requiresLocationMap = true;
     private InnerScoreDirector<Solution_, ?> scoreDirector;
     private int unassignedCount = 0;
@@ -55,8 +54,7 @@ final class ListVariableState<Solution_> {
         this.scoreDirector = scoreDirector;
         this.unassignedCount = initialUnassignedCount;
 
-        this.canUseExternalizedLocation = externalizedIndexProcessor != null && externalizedInverseProcessor != null;
-        this.requiresLocationMap = !canUseExternalizedLocation
+        this.requiresLocationMap = externalizedIndexProcessor == null || externalizedInverseProcessor == null
                 || externalizedPreviousElementProcessor == null || externalizedNextElementProcessor == null;
         if (requiresLocationMap) {
             if (elementLocationMap == null) {
@@ -220,14 +218,14 @@ final class ListVariableState<Solution_> {
     }
 
     public ElementLocation getLocationInList(Object planningValue) {
-        if (!canUseExternalizedLocation) {
+        if (requiresLocationMap) {
             return Objects.requireNonNullElse(elementLocationMap.get(planningValue), ElementLocation.unassigned());
-        } else {
-            var inverse = getInverseSingleton(planningValue);
+        } else { // At this point, both inverse and index are externalized.
+            var inverse = externalizedInverseProcessor.getInverseSingleton(planningValue);
             if (inverse == null) {
                 return ElementLocation.unassigned();
             }
-            return ElementLocation.of(inverse, getIndex(planningValue));
+            return ElementLocation.of(inverse, externalizedIndexProcessor.getIndex(planningValue));
         }
     }
 
