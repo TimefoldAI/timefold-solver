@@ -307,7 +307,7 @@ jobs:
           sed -i "s/\${maven\.compiler\.release}/$(find build/build-parent/ -name pom.xml -exec grep '<maven.compiler.release>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)/g" docs/src/antora.yml
           sed -i "s/\${maven\.min\.version}/$(find build/build-parent/ -name pom.xml -exec grep '<maven.min.version>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)/g" docs/src/antora.yml
           sed -i "s/\${version\.io\.quarkus}/$(find build/build-parent/ -name pom.xml -exec grep '<maven.min.version>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)/g" docs/src/antora.yml
-          sed -i "s/\${version\.org\.springframework\.boot}/$(find build/build-parent/ -name pom.xml -exec grep '<version.ch.qos.logback>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)N/g" docs/src/antora.yml
+          sed -i "s/\${version\.org\.springframework\.boot}/$(find build/build-parent/ -name pom.xml -exec grep '<version.ch.qos.logback>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)/g" docs/src/antora.yml
           sed -i "s/\${version\.ch\.qos\.logback}/$(find build/build-parent/ -name pom.xml -exec grep '<version.ch.qos.logback>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)/g" docs/src/antora.yml
           sed -i "s/\${version\.exec\.plugin}/$(find build/build-parent/ -name pom.xml -exec grep '<version.exec.plugin>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)/g" docs/src/antora.yml
           sed -i "s/\${version\.rewrite\.plugin}/$(find . -name pom.xml -exec grep '<version.rewrite.plugin>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)/g" docs/src/antora.yml
