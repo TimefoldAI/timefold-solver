@@ -267,6 +267,7 @@ jobs:
     environment:
       name: "documentation (preview)"
       url: ${{ steps.deploy.outputs.deployment-url }}
+    env:
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
     steps:
       - name: Checkout frontend
