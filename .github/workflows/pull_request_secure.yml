@@ -331,6 +331,11 @@ jobs:
           workingDirectory: ./apps/docs
           command: pages deploy ./public-serve --project-name=timefold-docs --branch=${{ github.ref }}
 
+      - name: Print deployment-url
+        env:
+          DEPLOYMENT_ALIAS_URL: ${{ steps.deploy.outputs.pages-deployment-alias-url }}
+        run: echo $DEPLOYMENT_ALIAS_URL
+
   sonarcloud:
     needs: approval_required
     name: SonarCloud
