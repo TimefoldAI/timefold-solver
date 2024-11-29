@@ -42,6 +42,9 @@ public class TestdataVariousTypes {
     @DeepPlanningClone
     public List<String> deepClonedListRef = Collections.singletonList(stringRef);
 
+    // And a DeepPlanningCloned object
+    public ExtraDeepClonedObject extraDeepClonedObject = new ExtraDeepClonedObject("extra");
+
     public record NonClonedRecord(int a, String b) {
     }
 
