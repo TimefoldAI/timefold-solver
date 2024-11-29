@@ -902,6 +902,8 @@ public abstract class AbstractSolutionClonerTest {
             softly.assertThat(cloned.deepClonedListRef)
                     .first()
                     .isSameAs(original.deepClonedListRef.get(0));
+            softly.assertThat(cloned.extraDeepClonedObject).isNotSameAs(original.extraDeepClonedObject);
+            softly.assertThat(cloned.extraDeepClonedObject.id).isSameAs(original.extraDeepClonedObject.id);
         });
         assertSoftly(softly -> {
             softly.assertThat(cloned.shallowClonedListRef).isSameAs(original.shallowClonedListRef);
