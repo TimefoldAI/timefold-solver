@@ -24,12 +24,32 @@ public final class GizmoCloningUtils {
         Set<Class<?>> classesToProcess = new LinkedHashSet<>(solutionDescriptor.getEntityClassSet());
         classesToProcess.add(solutionDescriptor.getSolutionClass());
         classesToProcess.addAll(entitySubclasses);
-        for (Class<?> clazz : classesToProcess) {
+
+        // deepClonedClassSet contains all processed classes so far,
+        // so we can use it to determine if we need to add a class
+        // to the classesToProcess set.
+        //
+        // This is important, since SolverConfig does not contain
+        // info on @DeepPlanningCloned classes, so we need to discover
+        // them from the domain classes, possibly recursively
+        // (when a @DeepPlanningCloned class reference another @DeepPlanningCloned
+        //  that is not referenced by any entity).
+        while (!classesToProcess.isEmpty()) {
+            var clazz = classesToProcess.iterator().next();
+            classesToProcess.remove(clazz);
             deepClonedClassSet.add(clazz);
             for (Field field : getAllFields(clazz)) {
-                deepClonedClassSet.addAll(getDeepClonedTypeArguments(solutionDescriptor, field.getGenericType()));
+                var deepClonedTypeArguments = getDeepClonedTypeArguments(solutionDescriptor, field.getGenericType());
+                for (var deepClonedTypeArgument : deepClonedTypeArguments) {
+                    if (!deepClonedClassSet.contains(deepClonedTypeArgument)) {
+                        classesToProcess.add(deepClonedTypeArgument);
+                        deepClonedClassSet.add(deepClonedTypeArgument);
+                    }
+                }
                 if (DeepCloningUtils.isFieldDeepCloned(solutionDescriptor, field, clazz)
-                        && !PlanningCloneable.class.isAssignableFrom(field.getType())) {
+                        && !PlanningCloneable.class.isAssignableFrom(field.getType())
+                        && !deepClonedClassSet.contains(field.getType())) {
+                    classesToProcess.add(field.getType());
                     deepClonedClassSet.add(field.getType());
                 }
             }

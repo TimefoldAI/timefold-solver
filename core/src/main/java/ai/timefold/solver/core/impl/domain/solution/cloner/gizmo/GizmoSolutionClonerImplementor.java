@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -121,6 +122,10 @@ public class GizmoSolutionClonerImplementor {
                 memoizedSolutionOrEntityDescriptorMap, deepClonedClassSet);
     }
 
+    public static boolean isCloneableClass(Class<?> clazz) {
+        return !clazz.isInterface() && !Modifier.isAbstract(clazz.getModifiers());
+    }
+
     /**
      * Generates the constructor and implementations of SolutionCloner
      * methods for the given SolutionDescriptor using the given ClassCreator
@@ -139,7 +144,7 @@ public class GizmoSolutionClonerImplementor {
         Set<Class<?>> deepCloneClassesThatAreNotSolutionSet =
                 deepClonedClassSet.stream()
                         .filter(clazz -> !solutionClassSet.contains(clazz) && !clazz.isArray())
-                        .filter(clazz -> !clazz.isInterface() && !Modifier.isAbstract(clazz.getModifiers()))
+                        .filter(GizmoSolutionClonerImplementor::isCloneableClass)
                         .collect(Collectors.toSet());
 
         Comparator<Class<?>> instanceOfComparator = getInstanceOfComparator(deepClonedClassSet);
@@ -163,7 +168,7 @@ public class GizmoSolutionClonerImplementor {
         Set<Class<?>> abstractDeepCloneClassSet =
                 deepClonedClassSet.stream()
                         .filter(clazz -> !solutionClassSet.contains(clazz) && !clazz.isArray())
-                        .filter(clazz -> clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers()))
+                        .filter(Predicate.not(GizmoSolutionClonerImplementor::isCloneableClass))
                         .collect(Collectors.toSet());
 
         for (Class<?> abstractDeepClonedClass : abstractDeepCloneClassSet) {

@@ -7,6 +7,7 @@ import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfigurati
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
+import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
@@ -55,6 +56,7 @@ public final class DotNames {
 
     static final DotName PLANNING_ENTITY = DotName.createSimple(PlanningEntity.class.getName());
     static final DotName PLANNING_PIN = DotName.createSimple(PlanningPin.class.getName());
+    static final DotName PLANNING_PIN_TO_INDEX = DotName.createSimple(PlanningPinToIndex.class.getName());
     static final DotName PLANNING_ID = DotName.createSimple(PlanningId.class.getName());
 
     static final DotName PLANNING_VARIABLE = DotName.createSimple(PlanningVariable.class.getName());
@@ -79,6 +81,7 @@ public final class DotNames {
 
     static final DotName[] PLANNING_ENTITY_FIELD_ANNOTATIONS = {
             PLANNING_PIN,
+            PLANNING_PIN_TO_INDEX,
             PLANNING_VARIABLE,
             PLANNING_LIST_VARIABLE,
             ANCHOR_SHADOW_VARIABLE,
@@ -101,6 +104,7 @@ public final class DotNames {
             CONSTRAINT_CONFIGURATION_PROVIDER,
             CONSTRAINT_WEIGHT,
             PLANNING_PIN,
+            PLANNING_PIN_TO_INDEX,
             PLANNING_ID,
             PLANNING_VARIABLE,
             PLANNING_LIST_VARIABLE,
