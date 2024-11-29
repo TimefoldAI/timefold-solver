@@ -47,11 +47,10 @@ public final class GizmoCloningUtils {
                     }
                 }
                 if (DeepCloningUtils.isFieldDeepCloned(solutionDescriptor, field, clazz)
-                        && !PlanningCloneable.class.isAssignableFrom(field.getType())) {
-                    if (!deepClonedClassSet.contains(field.getType())) {
-                        classesToProcess.add(field.getType());
-                        deepClonedClassSet.add(field.getType());
-                    }
+                        && !PlanningCloneable.class.isAssignableFrom(field.getType())
+                        && !deepClonedClassSet.contains(field.getType())) {
+                    classesToProcess.add(field.getType());
+                    deepClonedClassSet.add(field.getType());
                 }
             }
         }
