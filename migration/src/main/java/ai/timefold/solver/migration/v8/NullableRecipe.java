@@ -25,7 +25,7 @@ public final class NullableRecipe extends AbstractRecipe {
     @Override
     public List<Recipe> getRecipeList() {
         var packageName = "ai.timefold.solver.core.api.score.stream";
-        var methodsToRename = Map.ofEntries(
+        var methodsToRename = List.of(
                 Map.entry("ConstraintFactory forEachIncludingNullVars(Class)",
                         "forEachIncludingUnassigned"),
                 Map.entry("uni.UniConstraintStream ifExistsIncludingNullVars(..)",
@@ -50,9 +50,9 @@ public final class NullableRecipe extends AbstractRecipe {
                         "ifNotExistsIncludingUnassigned"));
 
         var result = new ArrayList<Recipe>();
-        methodsToRename.forEach((oldPattern, newMethodName) -> {
-            var pattern = packageName + "." + oldPattern;
-            result.add(new ChangeMethodName(pattern, newMethodName, null, null));
+        methodsToRename.forEach(entry -> {
+            var pattern = packageName + "." + entry.getKey();
+            result.add(new ChangeMethodName(pattern, entry.getValue(), null, null));
         });
         result.add(new ChangeAnnotationAttributeName("ai.timefold.solver.core.api.domain.variable.PlanningVariable", "nullable",
                 "allowsUnassigned"));
