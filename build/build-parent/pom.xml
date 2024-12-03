@@ -21,21 +21,15 @@
     <!-- Dependencies -->
     <!-- ************************************************************************ -->
     <version.ch.qos.logback>1.5.12</version.ch.qos.logback>
-    <version.org.apache.logging.log4j>2.24.2</version.org.apache.logging.log4j>
-    <version.ow2.asm>9.7.1</version.ow2.asm>
     <version.io.quarkus>3.17.2</version.io.quarkus>
-    <version.org.apache.commons.compress>1.26.1</version.org.apache.commons.compress>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
-    <version.org.apache.commons.text>1.11.0</version.org.apache.commons.text>
-    <version.org.apache.poi>5.2.5</version.org.apache.poi>
+    <version.org.apache.logging.log4j>2.24.2</version.org.apache.logging.log4j>
     <version.org.assertj>3.26.3</version.org.assertj>
     <version.org.freemarker>2.3.33</version.org.freemarker>
-    <version.org.jdom2>2.0.6.1</version.org.jdom2>
-    <version.org.jfree.jfreechart>1.5.5</version.org.jfree.jfreechart>
-    <version.org.openrewrite.recipe>2.23.1</version.org.openrewrite.recipe>
-    <version.org.slf4j>2.0.16</version.org.slf4j><!-- TODO keep in sync with quarkus-bom -->
-    <version.org.springframework.boot>3.4.0</version.org.springframework.boot>
     <version.org.jspecify>1.0.0</version.org.jspecify>
+    <version.org.openrewrite.recipe>2.23.1</version.org.openrewrite.recipe>
+    <version.org.springframework.boot>3.4.0</version.org.springframework.boot>
+    <version.ow2.asm>9.7.1</version.ow2.asm>
 
     <!-- ************************************************************************ -->
     <!-- Plugins -->
@@ -162,11 +156,6 @@
         <version>${version.org.openrewrite.recipe}</version>
         <type>pom</type>
         <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>jcl-over-slf4j</artifactId>
-        <version>${version.org.slf4j}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
