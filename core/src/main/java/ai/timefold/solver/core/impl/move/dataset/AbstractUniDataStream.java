@@ -4,8 +4,8 @@ import java.util.function.Predicate;
 
 import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 import ai.timefold.solver.core.impl.bavet.common.index.joiner.BiJoinerComber;
+import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.move.dataset.common.bridge.ForeBridgeUniDataStream;
-import ai.timefold.solver.core.preview.api.move.Dataset;
 import ai.timefold.solver.core.preview.api.move.UniDataStream;
 
 import org.jspecify.annotations.NonNull;
@@ -77,9 +77,9 @@ public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataSt
                 joinerComber.getMergedJoiner(), joinerComber.getMergedFiltering()), childStreamList::add);
     }
 
-    @Override
-    public Dataset<Solution_, Object> createDataset() {
-        return null;
+    public Dataset<Solution_, UniTuple<A>> createDataset() {
+        var stream = shareAndAddChild(new TerminalUniDataStream<>(datasetFactory, this));
+        return stream.getDataset();
     }
 
 }
