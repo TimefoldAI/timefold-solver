@@ -52,8 +52,10 @@ final class ElementLocationRandomIterator<Solution_> implements Iterator<Element
         // This code operates under the assumption that the entity selector already filtered out all immovable entities.
         // At this point, entities are only partially pinned, or not pinned at all.
         var entitySize = entitySelector.getSize();
+        // If we support unassigned values, we have to add 1 to all the sizes
+        // to account for the unassigned destination, which is an extra element.
         var entityBoundary = allowsUnassignedValues ? entitySize + 1 : entitySize;
-        long random = RandomUtils.nextLong(workingRandom, totalSize);
+        var random = RandomUtils.nextLong(workingRandom, allowsUnassignedValues ? totalSize + 1 : totalSize);
         if (allowsUnassignedValues && random == 0) {
             // We have already excluded all unassigned elements,
             // the only way to get an unassigned destination is to explicitly add it.
@@ -75,11 +77,11 @@ final class ElementLocationRandomIterator<Solution_> implements Iterator<Element
                 // This skews the selection probability towards entities with fewer unpinned values,
                 // but at this point, there is no other thing we could possibly do.
                 var entity = entityIterator.next();
-                int unpinnedSize = listVariableDescriptor.getUnpinnedSubListSize(entity);
+                var unpinnedSize = listVariableDescriptor.getUnpinnedSubListSize(entity);
                 if (unpinnedSize == 0) { // Only the last destination remains.
                     return ElementLocation.of(entity, listVariableDescriptor.getListSize(entity));
                 } else { // +1 to include the destination after the final element in the list.
-                    int randomIndex = workingRandom.nextInt(unpinnedSize + 1);
+                    var randomIndex = workingRandom.nextInt(unpinnedSize + 1);
                     return ElementLocation.of(entity, listVariableDescriptor.getFirstUnpinnedIndex(entity) + randomIndex);
                 }
             } else { // +1 to include the destination after the final element in the list.

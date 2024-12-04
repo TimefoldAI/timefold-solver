@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.list;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.phaseStarted;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.solvingStarted;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.stepStarted;
+import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.getAllowsUnassignedvaluesListVariableDescriptor;
 import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.getListVariableDescriptor;
 import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.getPinnedAllowsUnassignedvaluesListVariableDescriptor;
 import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.getPinnedListVariableDescriptor;
@@ -19,6 +20,7 @@ import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.mockSc
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.FromSolutionEntitySelector;
@@ -27,6 +29,9 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
+import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEntity;
+import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListValue;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.pinned.TestdataPinnedUnassignedValuesListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.pinned.TestdataPinnedUnassignedValuesListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.pinned.TestdataPinnedUnassignedValuesListValue;
@@ -200,6 +205,42 @@ class ElementDestinationSelectorTest {
                 "A[2]",
                 "D[2]",
                 "D[3]");
+    }
+
+    @Test
+    void randomUnassignedSingleEntity() {
+        var unassignedValue = new TestdataAllowsUnassignedValuesListValue("3");
+        var a = TestdataAllowsUnassignedValuesListEntity.createWithValues("A");
+
+        var solution = new TestdataAllowsUnassignedValuesListSolution();
+        solution.setEntityList(List.of(a));
+        solution.setValueList(List.of(unassignedValue));
+
+        var solutionDescriptor = TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor();
+        var scoreDirector = mockScoreDirector(solutionDescriptor);
+        scoreDirector.setWorkingSolution(solution);
+
+        var solverScope = new SolverScope<TestdataAllowsUnassignedValuesListSolution>();
+        solverScope.setScoreDirector(scoreDirector);
+        // This needs to use a real Random instance, otherwise the test never covers the situation where
+        // the random value of 1 needs to be produced to get to the entity.
+        solverScope.setWorkingRandom(new Random(0));
+        var entitySelector = new FromSolutionEntitySelector<>(
+                solutionDescriptor.findEntityDescriptorOrFail(TestdataAllowsUnassignedValuesListEntity.class),
+                SelectionCacheType.PHASE, true);
+        entitySelector.solvingStarted(solverScope);
+        entitySelector.phaseStarted(new LocalSearchPhaseScope<>(solverScope, 0));
+
+        var valueSelector = mockEntityIndependentValueSelector(
+                getAllowsUnassignedvaluesListVariableDescriptor(scoreDirector),
+                unassignedValue);
+        var selector = new ElementDestinationSelector<>(entitySelector, valueSelector, true);
+        selector.solvingStarted(solverScope);
+        selector.phaseStarted(new LocalSearchPhaseScope<>(solverScope, 0));
+
+        assertCodesOfNeverEndingIterator(selector.iterator(),
+                "A[0]", // Ensure the entity is accessible.
+                "UnassignedLocation"); // As well as the unassigned location.
     }
 
     @Test
