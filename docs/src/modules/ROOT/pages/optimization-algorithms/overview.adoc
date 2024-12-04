@@ -565,6 +565,68 @@ Terminates as soon as a feasible solution has been discovered.
 
 This `Termination` is usually combined with other terminations.
 
+[#unimprovedBestSolutionTermination]
+==== `UnimprovedBestSolutionTermination`
+
+`UnimprovedBestSolutionTermination` terminates the process when the solver cannot enhance the best solution over a time period.
+The duration for this period is determined by the last time
+the solver improved the solution and how much time has passed without any improvements.
+
+[source,xml,options="nowrap"]
+----
+  <termination>
+    <stopFlatLineDetectionRatio>0.5</stopFlatLineDetectionRatio>
+    <noStopFlatLineDetectionRatio>0.1</noStopFlatLineDetectionRatio>
+    <delayFlatLineSecondsSpentLimit>120</delayFlatLineSecondsSpentLimit>
+  </termination>
+----
+
+Let's consider a solution process based on the following image.
+
+image::optimization-algorithms/overview/terminationNoImprovement.png[align="center"]
+
+In the previous image, the unimproved time is represented by the flat red line.
+With the stop condition `stopFlatLineDetectionRatio` set to `0.5`,
+and considering the start point at `10 seconds`, the last best score achieved at `70 seconds`,
+the solver will terminate the process if no improvement is found within a maximum of `30 seconds`.
+This `30-seconds` limit is calculated
+by multiplying the last improvement time (`70s - 10s = 60 seconds`) by the `stopFlatLineDetectionRatio` (`0.5`).
+Similarly,
+setting the `stopFlatLineDetectionRatio` to `1.0` will lead to termination after `60 seconds` if there is no improvement.
+
+[NOTE]
+====
+The `Termination` process requires a minimum execution time, specified by `delayFlatLineSecondsSpentLimit`.
+====
+
+The solving process may identify no improvement periods that are not significant enough to trigger the termination.
+These periods are referred to as *non-stop* periods, which are defined by the `noStopFlatLineDetectionRatio`.
+Let's analyze the next image:
+
+image::optimization-algorithms/overview/terminationNonStopCriteria.png[align="center"]
+
+The orange flat line represents a *non-stop* period.
+By setting the `stopFlatLineDetectionRatio` to `0.5` and the `noStopFlatLineDetectionRatio` to `0.1`,
+we can calculate the unimproved stop period as `(70s - 10s) * 0.5 = 30s`,
+while the unimproved non-stop period is calculated as `(70s - 10s) * 0.1 = 6s`.
+The difference between the solutions found at `70 seconds` and `82 seconds` is `12 seconds`.
+A *non-stop* period is accepted if the time difference between the last best solution and the new one is greater
+than or equal to the *non-stop* period and less than the stop period.
+
+Accepting a *non-stop* stop period means adjusting the start time to the last improvement time.
+In the previous example, the start time will change from `10` to `70` seconds.
+
+Evaluating the stopping criterion only at the beginning of the solver process may prevent it from terminating,
+as the necessary period without improvement tends to increase over time.
+Adjusting the start time enables the solver
+to advance its termination analysis when the solution remains unchanged for a specific duration,
+and terminate the solver after evaluating more recent events.
+
+[NOTE]
+====
+The minimum execution time must be met whenever the start time changes,
+meaning the total executed time will be calculated from the new starting point.
+====
 
 [#stepCountTermination]
 ==== `StepCountTermination`

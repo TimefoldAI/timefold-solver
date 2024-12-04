@@ -88,6 +88,13 @@ public class TerminationFactory<Solution_> {
         if (terminationConfig.getMoveCountLimit() != null) {
             terminationList.add(new MoveCountTermination<>(terminationConfig.getMoveCountLimit()));
         }
+        if (terminationConfig.getStopFlatLineDetectionRatio() != null
+                || terminationConfig.getNoStopFlatLineDetectionRatio() != null
+                || terminationConfig.getDelayFlatLineSecondsSpentLimit() != null) {
+            terminationList.add(new UnimprovedBestSolutionTermination<>(terminationConfig.getStopFlatLineDetectionRatio(),
+                    terminationConfig.getNoStopFlatLineDetectionRatio(),
+                    terminationConfig.getDelayFlatLineSecondsSpentLimit()));
+        }
         terminationList.addAll(buildInnerTermination(configPolicy));
         return buildTerminationFromList(terminationList);
     }

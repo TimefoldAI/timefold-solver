@@ -197,6 +197,12 @@
                     
           <xs:element minOccurs="0" name="moveCountLimit" type="xs:long"/>
                     
+          <xs:element minOccurs="0" name="stopFlatLineDetectionRatio" type="xs:double"/>
+                    
+          <xs:element minOccurs="0" name="noStopFlatLineDetectionRatio" type="xs:double"/>
+                    
+          <xs:element minOccurs="0" name="delayFlatLineSecondsSpentLimit" type="xs:long"/>
+                    
           <xs:element maxOccurs="unbounded" minOccurs="0" name="termination" type="tns:terminationConfig"/>
                   
         </xs:sequence>

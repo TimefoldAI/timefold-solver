@@ -12,7 +12,7 @@ public abstract sealed class AbstractTermination<Solution_>
         implements Termination<Solution_>
         permits AbstractCompositeTermination, BasicPlumbingTermination, BestScoreFeasibleTermination, BestScoreTermination,
         ChildThreadPlumbingTermination, MoveCountTermination, PhaseToSolverTerminationBridge, ScoreCalculationCountTermination,
-        StepCountTermination, TimeMillisSpentTermination, UnimprovedStepCountTermination,
+        StepCountTermination, TimeMillisSpentTermination, UnimprovedBestSolutionTermination, UnimprovedStepCountTermination,
         UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination, UnimprovedTimeMillisSpentTermination {
 
     protected final transient Logger logger = LoggerFactory.getLogger(getClass());
