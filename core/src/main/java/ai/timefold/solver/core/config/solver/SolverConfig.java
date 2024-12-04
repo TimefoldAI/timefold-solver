@@ -562,6 +562,17 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
         return this;
     }
 
+    /**
+     * As defined by {@link TerminationConfig#withUnimprovedSpentLimit(Duration)}, but returns this.
+     */
+    public @NonNull SolverConfig withTerminationUnimprovedSpentLimit(@NonNull Duration unimprovedSpentLimit) {
+        if (terminationConfig == null) {
+            terminationConfig = new TerminationConfig();
+        }
+        terminationConfig.setUnimprovedSpentLimit(unimprovedSpentLimit);
+        return this;
+    }
+
     public @NonNull SolverConfig
             withNearbyDistanceMeterClass(@NonNull Class<? extends NearbyDistanceMeter<?, ?>> distanceMeterClass) {
         this.nearbyDistanceMeterClass = distanceMeterClass;

@@ -2,17 +2,17 @@ package ai.timefold.solver.core.config.solver;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
@@ -55,7 +55,6 @@ import ai.timefold.solver.core.impl.testdata.domain.record.TestdataRecordEntity;
 import ai.timefold.solver.core.impl.testdata.domain.record.TestdataRecordSolution;
 
 import org.apache.commons.io.IOUtils;
-import org.assertj.core.api.Assertions;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -71,26 +70,29 @@ class SolverConfigTest {
     @ParameterizedTest
     @ValueSource(strings = { TEST_SOLVER_CONFIG_WITHOUT_NAMESPACE, TEST_SOLVER_CONFIG_WITH_NAMESPACE })
     void xmlConfigRemainsSameAfterReadWrite(String solverConfigResource) throws IOException {
-        SolverConfig jaxbSolverConfig = readSolverConfig(solverConfigResource);
+        var jaxbSolverConfig = readSolverConfig(solverConfigResource);
 
-        Writer stringWriter = new StringWriter();
+        var stringWriter = new StringWriter();
         solverConfigIO.write(jaxbSolverConfig, stringWriter);
-        String jaxbString = stringWriter.toString();
+        var jaxbString = stringWriter.toString();
 
-        String originalXml = IOUtils.toString(
-                SolverConfigTest.class.getResourceAsStream(solverConfigResource), StandardCharsets.UTF_8);
+        var originalXml =
+                IOUtils.toString(SolverConfigTest.class.getResourceAsStream(solverConfigResource), StandardCharsets.UTF_8);
 
         // During writing the solver config, the solver element's namespace is removed.
-        String solverElementWithNamespace = SolverConfig.XML_ELEMENT_NAME + " xmlns=\"" + SolverConfig.XML_NAMESPACE + "\"";
+        var solverElementWithNamespace = """
+                %s xmlns="%s"
+                """.formatted(SolverConfig.XML_ELEMENT_NAME, SolverConfig.XML_NAMESPACE)
+                .trim();
         if (originalXml.contains(solverElementWithNamespace)) {
             originalXml = originalXml.replace(solverElementWithNamespace, SolverConfig.XML_ELEMENT_NAME);
         }
-        assertThat(jaxbString).isXmlEqualTo(originalXml);
+        assertThat(jaxbString).isEqualToIgnoringWhitespace(originalXml);
     }
 
     @Test
     void readXmlConfigWithNamespace() {
-        SolverConfig solverConfig = readSolverConfig(TEST_SOLVER_CONFIG_WITH_NAMESPACE);
+        var solverConfig = readSolverConfig(TEST_SOLVER_CONFIG_WITH_NAMESPACE);
 
         assertThat(solverConfig).isNotNull();
         assertThat(solverConfig.getPhaseConfigList())
@@ -103,7 +105,7 @@ class SolverConfigTest {
     }
 
     private SolverConfig readSolverConfig(String solverConfigResource) {
-        try (Reader reader = new InputStreamReader(SolverConfigTest.class.getResourceAsStream(solverConfigResource))) {
+        try (var reader = new InputStreamReader(SolverConfigTest.class.getResourceAsStream(solverConfigResource))) {
             return solverConfigIO.read(reader);
         } catch (IOException ioException) {
             throw new UncheckedIOException(ioException);
@@ -112,29 +114,32 @@ class SolverConfigTest {
 
     @Test
     void whiteCharsInClassName() {
-        String solutionClassName = "ai.timefold.solver.core.impl.testdata.domain.TestdataSolution";
-        String xmlFragment = String.format("<solver xmlns=\"https://timefold.ai/xsd/solver\">%n"
-                + "  <solutionClass>  %s  %n" // Intentionally included white chars around the class name.
-                + "  </solutionClass>%n"
-                + "</solver>", solutionClassName);
-        SolverConfig solverConfig = solverConfigIO.read(new StringReader(xmlFragment));
+        var solutionClassName = "ai.timefold.solver.core.impl.testdata.domain.TestdataSolution";
+        // Intentionally included white chars around the class name.
+        var xmlFragment = """
+                <solver xmlns="https://timefold.ai/xsd/solver">
+                    <solutionClass>  %s\s
+                    </solutionClass>
+                </solver>""".formatted(solutionClassName);
+        var solverConfig = solverConfigIO.read(new StringReader(xmlFragment));
         assertThat(solverConfig.getSolutionClass().getName()).isEqualTo(solutionClassName);
     }
 
     @Test
     void readAndValidateInvalidSolverConfig_failsIndicatingTheIssue() {
-        String solverConfigXml = "<solver xmlns=\"https://timefold.ai/xsd/solver\">\n"
-                + "  <constructionHeuristic>\n"
-                + "      <changeMoveSelector>\n"
-                + "        <valueSelector>\n"
-                // Intentionally wrong: variableName should be an attribute of the <valueSelector/>
-                + "          <variableName>subValue</variableName>\n"
-                + "        </valueSelector>\n"
-                + "      </changeMoveSelector>\n"
-                + "  </constructionHeuristic>\n"
-                + "</solver>";
+        // Intentionally wrong: variableName should be an attribute of the <valueSelector/>
+        var solverConfigXml = """
+                <solver xmlns="https://timefold.ai/xsd/solver">
+                    <constructionHeuristic>
+                        <changeMoveSelector>
+                            <valueSelector>
+                                <variableName>subValue</variableName>
+                            </valueSelector>
+                        </changeMoveSelector>
+                    </constructionHeuristic>
+                </solver>""";
 
-        StringReader stringReader = new StringReader(solverConfigXml);
+        var stringReader = new StringReader(solverConfigXml);
         assertThatExceptionOfType(TimefoldXmlSerializationException.class)
                 .isThrownBy(() -> solverConfigIO.read(stringReader))
                 .withRootCauseExactlyInstanceOf(SAXParseException.class)
@@ -143,7 +148,7 @@ class SolverConfigTest {
 
     @Test
     void withEasyScoreCalculatorClass() {
-        SolverConfig solverConfig = new SolverConfig();
+        var solverConfig = new SolverConfig();
         assertThat(solverConfig.getScoreDirectorFactoryConfig()).isNull();
         solverConfig.withEasyScoreCalculatorClass(DummyEasyScoreCalculator.class);
         assertThat(solverConfig.getScoreDirectorFactoryConfig().getEasyScoreCalculatorClass())
@@ -152,7 +157,7 @@ class SolverConfigTest {
 
     @Test
     void withConstraintProviderClass() {
-        SolverConfig solverConfig = new SolverConfig();
+        var solverConfig = new SolverConfig();
         assertThat(solverConfig.getScoreDirectorFactoryConfig()).isNull();
         solverConfig.withConstraintProviderClass(DummyConstraintProvider.class);
         assertThat(solverConfig.getScoreDirectorFactoryConfig().getConstraintProviderClass())
@@ -161,25 +166,36 @@ class SolverConfigTest {
 
     @Test
     void withTerminationSpentLimit() {
-        SolverConfig solverConfig = new SolverConfig();
+        var solverConfig = new SolverConfig();
+        var duration = Duration.ofMinutes(2);
         assertThat(solverConfig.getTerminationConfig()).isNull();
-        solverConfig.withTerminationSpentLimit(Duration.ofMinutes(2));
+        solverConfig.withTerminationSpentLimit(duration);
         assertThat(solverConfig.getTerminationConfig().getSpentLimit())
-                .isEqualTo(Duration.ofMinutes(2));
+                .isEqualTo(duration);
+    }
+
+    @Test
+    void withTerminationUnimprovedSpentLimit() {
+        var solverConfig = new SolverConfig();
+        var duration = Duration.ofMinutes(2);
+        assertThat(solverConfig.getTerminationConfig()).isNull();
+        solverConfig.withTerminationUnimprovedSpentLimit(duration);
+        assertThat(solverConfig.getTerminationConfig().getUnimprovedSpentLimit())
+                .isEqualTo(duration);
     }
 
     @Test
     void inherit() {
-        SolverConfig originalSolverConfig = readSolverConfig(TEST_SOLVER_CONFIG_WITHOUT_NAMESPACE);
-        SolverConfig inheritedSolverConfig =
+        var originalSolverConfig = readSolverConfig(TEST_SOLVER_CONFIG_WITHOUT_NAMESPACE);
+        var inheritedSolverConfig =
                 new SolverConfig().inherit(originalSolverConfig);
         assertThat(inheritedSolverConfig).usingRecursiveComparison().isEqualTo(originalSolverConfig);
     }
 
     @Test
     void visitReferencedClasses() {
-        SolverConfig solverConfig = readSolverConfig(TEST_SOLVER_CONFIG_WITHOUT_NAMESPACE);
-        Consumer<Class<?>> classVisitor = mock(Consumer.class);
+        var solverConfig = readSolverConfig(TEST_SOLVER_CONFIG_WITHOUT_NAMESPACE);
+        var classVisitor = (Consumer<Class<?>>) mock(Consumer.class);
         solverConfig.visitReferencedClasses(classVisitor);
         verify(classVisitor, atLeastOnce()).accept(TestdataAnnotatedExtendedSolution.class);
         verify(classVisitor, atLeastOnce()).accept(TestdataEntity.class);
@@ -201,7 +217,7 @@ class SolverConfigTest {
         var solverConfig = new SolverConfig()
                 .withSolutionClass(DummyRecordSolution.class)
                 .withEntityClasses(TestdataEntity.class);
-        Assertions.assertThatThrownBy(() -> SolverFactory.create(solverConfig))
+        assertThatThrownBy(() -> SolverFactory.create(solverConfig))
                 .hasMessageContaining(DummyRecordSolution.class.getSimpleName())
                 .hasMessageContaining("record");
     }
@@ -211,7 +227,7 @@ class SolverConfigTest {
         var solverConfig = new SolverConfig()
                 .withSolutionClass(DummySolutionWithRecordEntity.class)
                 .withEntityClasses(DummyRecordEntity.class);
-        Assertions.assertThatThrownBy(() -> SolverFactory.create(solverConfig))
+        assertThatThrownBy(() -> SolverFactory.create(solverConfig))
                 .hasMessageContaining(DummyRecordEntity.class.getSimpleName())
                 .hasMessageContaining("record");
     }
@@ -227,7 +243,7 @@ class SolverConfigTest {
                 .buildSolver();
 
         var solution = TestdataRecordSolution.generateSolution();
-        Assertions.assertThatNoException().isThrownBy(() -> solver.solve(solution));
+        assertThatNoException().isThrownBy(() -> solver.solve(solution));
     }
 
     @Test
@@ -241,7 +257,7 @@ class SolverConfigTest {
                 .buildSolver();
 
         var solution = TestdataInterfaceSolution.generateSolution();
-        Assertions.assertThatNoException().isThrownBy(() -> solver.solve(solution));
+        assertThatNoException().isThrownBy(() -> solver.solve(solution));
     }
 
     @Test
@@ -250,7 +266,7 @@ class SolverConfigTest {
                 .withSolutionClass(DummySolutionWithTwoListVariablesEntity.class)
                 .withEntityClasses(DummyEntityWithTwoListVariables.class)
                 .withEasyScoreCalculatorClass(DummyRecordEasyScoreCalculator.class);
-        Assertions.assertThatThrownBy(() -> SolverFactory.create(solverConfig))
+        assertThatThrownBy(() -> SolverFactory.create(solverConfig))
                 .isExactlyInstanceOf(UnsupportedOperationException.class)
                 .hasMessageContaining(DummyEntityWithTwoListVariables.class.getSimpleName())
                 .hasMessageContaining("firstListVariable")
@@ -263,7 +279,7 @@ class SolverConfigTest {
                 .withSolutionClass(DummySolutionWithMixedSimpleAndListVariableEntity.class)
                 .withEntityClasses(DummyEntityWithMixedSimpleAndListVariable.class)
                 .withEasyScoreCalculatorClass(DummyRecordEasyScoreCalculator.class);
-        Assertions.assertThatThrownBy(() -> SolverFactory.create(solverConfig))
+        assertThatThrownBy(() -> SolverFactory.create(solverConfig))
                 .isExactlyInstanceOf(UnsupportedOperationException.class)
                 .hasMessageContaining(DummyEntityWithMixedSimpleAndListVariable.class.getSimpleName())
                 .hasMessageContaining("listVariable")
@@ -278,7 +294,7 @@ class SolverConfigTest {
     }
 
     @PlanningSolution
-    private class DummySolutionWithRecordEntity {
+    private static class DummySolutionWithRecordEntity {
 
         @PlanningEntityCollectionProperty
         List<DummyRecordEntity> entities;
@@ -294,7 +310,7 @@ class SolverConfigTest {
     }
 
     @PlanningSolution
-    private class DummySolutionWithMixedSimpleAndListVariableEntity {
+    private static class DummySolutionWithMixedSimpleAndListVariableEntity {
 
         @PlanningEntityCollectionProperty
         List<DummyEntityWithMixedSimpleAndListVariable> entities;
@@ -311,7 +327,7 @@ class SolverConfigTest {
     }
 
     @PlanningEntity
-    private class DummyEntityWithMixedSimpleAndListVariable {
+    private static class DummyEntityWithMixedSimpleAndListVariable {
 
         @PlanningListVariable(valueRangeProviderRefs = "listValueRange")
         private List<DummyEntityForListVariable> listVariable;
@@ -322,7 +338,7 @@ class SolverConfigTest {
     }
 
     @PlanningSolution
-    private class DummySolutionWithTwoListVariablesEntity {
+    private static class DummySolutionWithTwoListVariablesEntity {
 
         @PlanningEntityCollectionProperty
         List<DummyEntityWithTwoListVariables> entities;
@@ -339,7 +355,7 @@ class SolverConfigTest {
     }
 
     @PlanningEntity
-    private class DummyEntityWithTwoListVariables {
+    private static class DummyEntityWithTwoListVariables {
 
         @PlanningListVariable(valueRangeProviderRefs = "firstListValueRange")
         private List<DummyEntityForListVariable> firstListVariable;
@@ -350,7 +366,7 @@ class SolverConfigTest {
     }
 
     @PlanningEntity
-    private class DummyEntityForListVariable {
+    private static class DummyEntityForListVariable {
 
     }
 
@@ -394,7 +410,7 @@ class SolverConfigTest {
     public abstract static class DummyMoveListFactory implements MoveListFactory<TestdataSolution> {
     }
 
-    public class DummyNearbyDistanceClass implements NearbyDistanceMeter<String, String> {
+    public static class DummyNearbyDistanceClass implements NearbyDistanceMeter<String, String> {
 
         @Override
         public double getNearbyDistance(String origin, String destination) {
