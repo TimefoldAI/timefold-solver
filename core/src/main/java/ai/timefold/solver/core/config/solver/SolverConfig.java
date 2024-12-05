@@ -10,6 +10,7 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +61,7 @@ import org.jspecify.annotations.Nullable;
  */
 @XmlRootElement(name = SolverConfig.XML_ELEMENT_NAME)
 @XmlType(name = SolverConfig.XML_TYPE_NAME, propOrder = {
+        "enablePreviewFeatureList",
         "environmentMode",
         "daemon",
         "randomType",
@@ -210,6 +212,7 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
     // Warning: all fields are null (and not defaulted) because they can be inherited
     // and also because the input config file should match the output config file
 
+    protected List<PreviewFeature> enablePreviewFeatureList = null;
     protected EnvironmentMode environmentMode = null;
     protected Boolean daemon = null;
     protected RandomType randomType = null;
@@ -282,6 +285,14 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
 
     public void setClassLoader(@Nullable ClassLoader classLoader) {
         this.classLoader = classLoader;
+    }
+
+    public @Nullable List<PreviewFeature> getEnablePreviewFeatureList() {
+        return enablePreviewFeatureList;
+    }
+
+    public void setEnablePreviewFeatureList(@Nullable List<PreviewFeature> enablePreviewFeatureList) {
+        this.enablePreviewFeatureList = enablePreviewFeatureList;
     }
 
     public @Nullable EnvironmentMode getEnvironmentMode() {
@@ -431,6 +442,14 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
     // ************************************************************************
     // With methods
     // ************************************************************************
+
+    public @NonNull SolverConfig withPreviewFeature(@NonNull PreviewFeature previewFeature) {
+        if (enablePreviewFeatureList == null) {
+            enablePreviewFeatureList = new ArrayList<>();
+        }
+        enablePreviewFeatureList.add(previewFeature);
+        return this;
+    }
 
     public @NonNull SolverConfig withEnvironmentMode(@NonNull EnvironmentMode environmentMode) {
         this.environmentMode = environmentMode;
@@ -636,10 +655,8 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
     // ************************************************************************
 
     public void offerRandomSeedFromSubSingleIndex(long subSingleIndex) {
-        if (environmentMode == null || environmentMode.isReproducible()) {
-            if (randomFactoryClass == null && randomSeed == null) {
-                randomSeed = subSingleIndex;
-            }
+        if ((environmentMode == null || environmentMode.isReproducible()) && randomFactoryClass == null && randomSeed == null) {
+            randomSeed = subSingleIndex;
         }
     }
 
@@ -650,6 +667,8 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
     @Override
     public @NonNull SolverConfig inherit(@NonNull SolverConfig inheritedConfig) {
         classLoader = ConfigUtils.inheritOverwritableProperty(classLoader, inheritedConfig.getClassLoader());
+        enablePreviewFeatureList = ConfigUtils.inheritMergeableListProperty(enablePreviewFeatureList,
+                inheritedConfig.getEnablePreviewFeatureList());
         environmentMode = ConfigUtils.inheritOverwritableProperty(environmentMode, inheritedConfig.getEnvironmentMode());
         daemon = ConfigUtils.inheritOverwritableProperty(daemon, inheritedConfig.getDaemon());
         randomType = ConfigUtils.inheritOverwritableProperty(randomType, inheritedConfig.getRandomType());

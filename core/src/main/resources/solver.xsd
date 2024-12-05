@@ -11,6 +11,8 @@
                 
         <xs:sequence>
                     
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="enablePreviewFeatureList" nillable="true" type="tns:previewFeature"/>
+                    
           <xs:element minOccurs="0" name="environmentMode" type="tns:environmentMode"/>
                     
           <xs:element minOccurs="0" name="daemon" type="xs:boolean"/>
@@ -1536,6 +1538,16 @@
       <xs:enumeration value="REPRODUCIBLE"/>
             
       <xs:enumeration value="NON_REPRODUCIBLE"/>
+          
+    </xs:restriction>
+      
+  </xs:simpleType>
+    
+  <xs:simpleType name="previewFeature">
+        
+    <xs:restriction base="xs:string">
+            
+      <xs:enumeration value="DIVERSIFIED_LATE_ACCEPTANCE"/>
           
     </xs:restriction>
       

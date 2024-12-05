@@ -165,6 +165,15 @@ class SolverConfigTest {
     }
 
     @Test
+    void withEnablePreviewFeatureList() {
+        var solverConfig = new SolverConfig();
+        assertThat(solverConfig.getEnablePreviewFeatureList()).isNull();
+        solverConfig.withPreviewFeature(PreviewFeature.DIVERSIFIED_LATE_ACCEPTANCE);
+        assertThat(solverConfig.getEnablePreviewFeatureList())
+                .hasSameElementsAs(List.of(PreviewFeature.DIVERSIFIED_LATE_ACCEPTANCE));
+    }
+
+    @Test
     void withTerminationSpentLimit() {
         var solverConfig = new SolverConfig();
         var duration = Duration.ofMinutes(2);
@@ -380,18 +389,18 @@ class SolverConfigTest {
 
     /* Dummy classes below are referenced from the testSolverConfig.xml used in this test case. */
 
-    public static abstract class DummySolutionPartitioner implements SolutionPartitioner<TestdataSolution> {
+    public abstract static class DummySolutionPartitioner implements SolutionPartitioner<TestdataSolution> {
     }
 
-    public static abstract class DummyEasyScoreCalculator
+    public abstract static class DummyEasyScoreCalculator
             implements EasyScoreCalculator<TestdataSolution, SimpleScore> {
     }
 
-    public static abstract class DummyIncrementalScoreCalculator
+    public abstract static class DummyIncrementalScoreCalculator
             implements IncrementalScoreCalculator<TestdataSolution, SimpleScore> {
     }
 
-    public static abstract class DummyConstraintProvider implements ConstraintProvider {
+    public abstract static class DummyConstraintProvider implements ConstraintProvider {
     }
 
     public abstract static class DummyValueFilter implements SelectionFilter<TestdataSolution, TestdataValue> {
