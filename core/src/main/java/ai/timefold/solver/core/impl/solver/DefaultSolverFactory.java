@@ -114,8 +114,10 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         var moveThreadCount = resolveMoveThreadCount(true);
         var bestSolutionRecaller = BestSolutionRecallerFactory.create().<Solution_> buildBestSolutionRecaller(environmentMode);
         var randomFactory = buildRandomFactory(environmentMode);
+        var previewFeaturesEnabled = solverConfig.getEnablePreviewFeatureList();
 
         var configPolicy = new HeuristicConfigPolicy.Builder<>(
+                previewFeaturesEnabled,
                 environmentMode,
                 moveThreadCount,
                 solverConfig.getMoveThreadBufferSize(),

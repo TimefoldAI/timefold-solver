@@ -3080,6 +3080,9 @@
       <xs:enumeration value="LATE_ACCEPTANCE"/>
                   
       
+      <xs:enumeration value="DIVERSIFIED_LATE_ACCEPTANCE"/>
+                  
+      
       <xs:enumeration value="GREAT_DELUGE"/>
                   
       

@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ThreadFactory;
@@ -8,6 +9,7 @@ import java.util.concurrent.ThreadFactory;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
@@ -25,6 +27,7 @@ import ai.timefold.solver.core.impl.solver.thread.DefaultSolverThreadFactory;
 
 public class HeuristicConfigPolicy<Solution_> {
 
+    private final List<PreviewFeature> previewFeatureList;
     private final EnvironmentMode environmentMode;
     private final String logIndentation;
     private final Integer moveThreadCount;
@@ -46,6 +49,7 @@ public class HeuristicConfigPolicy<Solution_> {
     private final Map<String, ValueMimicRecorder<Solution_>> valueMimicRecorderMap = new HashMap<>();
 
     private HeuristicConfigPolicy(Builder<Solution_> builder) {
+        this.previewFeatureList = builder.previewFeatureList;
         this.environmentMode = builder.environmentMode;
         this.logIndentation = builder.logIndentation;
         this.moveThreadCount = builder.moveThreadCount;
@@ -128,7 +132,7 @@ public class HeuristicConfigPolicy<Solution_> {
     // ************************************************************************
 
     public Builder<Solution_> cloneBuilder() {
-        return new Builder<>(environmentMode, moveThreadCount, moveThreadBufferSize, threadFactoryClass,
+        return new Builder<>(previewFeatureList, environmentMode, moveThreadCount, moveThreadBufferSize, threadFactoryClass,
                 nearbyDistanceMeterClass, random, initializingScoreTrend, solutionDescriptor, classInstanceCache)
                 .withLogIndentation(logIndentation);
     }
@@ -148,11 +152,13 @@ public class HeuristicConfigPolicy<Solution_> {
     // ************************************************************************
 
     public void addEntityMimicRecorder(String id, EntityMimicRecorder<Solution_> mimicRecordingEntitySelector) {
-        EntityMimicRecorder<Solution_> put = entityMimicRecorderMap.put(id, mimicRecordingEntitySelector);
+        var put = entityMimicRecorderMap.put(id, mimicRecordingEntitySelector);
         if (put != null) {
-            throw new IllegalStateException("Multiple " + EntityMimicRecorder.class.getSimpleName() + "s (usually "
-                    + EntitySelector.class.getSimpleName() + "s) have the same id (" + id + ").\n" +
-                    "Maybe specify a variable name for the mimicking selector in situations with multiple variables on the same entity?");
+            throw new IllegalStateException(
+                    """
+                            Multiple %ss (usually %ss) have the same id (%s).
+                            Maybe specify a variable name for the mimicking selector in situations with multiple variables on the same entity?"""
+                            .formatted(EntityMimicRecorder.class.getSimpleName(), EntitySelector.class.getSimpleName(), id));
         }
     }
 
@@ -161,11 +167,13 @@ public class HeuristicConfigPolicy<Solution_> {
     }
 
     public void addSubListMimicRecorder(String id, SubListMimicRecorder<Solution_> mimicRecordingSubListSelector) {
-        SubListMimicRecorder<Solution_> put = subListMimicRecorderMap.put(id, mimicRecordingSubListSelector);
+        var put = subListMimicRecorderMap.put(id, mimicRecordingSubListSelector);
         if (put != null) {
-            throw new IllegalStateException("Multiple " + SubListMimicRecorder.class.getSimpleName() + "s (usually "
-                    + SubListSelector.class.getSimpleName() + "s) have the same id (" + id + ").\n" +
-                    "Maybe specify a variable name for the mimicking selector in situations with multiple variables on the same entity?");
+            throw new IllegalStateException(
+                    """
+                            Multiple %ss (usually %ss) have the same id (%s).
+                            Maybe specify a variable name for the mimicking selector in situations with multiple variables on the same entity?"""
+                            .formatted(SubListMimicRecorder.class.getSimpleName(), SubListSelector.class.getSimpleName(), id));
         }
     }
 
@@ -174,11 +182,13 @@ public class HeuristicConfigPolicy<Solution_> {
     }
 
     public void addValueMimicRecorder(String id, ValueMimicRecorder<Solution_> mimicRecordingValueSelector) {
-        ValueMimicRecorder<Solution_> put = valueMimicRecorderMap.put(id, mimicRecordingValueSelector);
+        var put = valueMimicRecorderMap.put(id, mimicRecordingValueSelector);
         if (put != null) {
-            throw new IllegalStateException("Multiple " + ValueMimicRecorder.class.getSimpleName() + "s (usually "
-                    + ValueSelector.class.getSimpleName() + "s) have the same id (" + id + ").\n" +
-                    "Maybe specify a variable name for the mimicking selector in situations with multiple variables on the same entity?");
+            throw new IllegalStateException(
+                    """
+                            Multiple %ss (usually %ss) have the same id (%s).
+                            Maybe specify a variable name for the mimicking selector in situations with multiple variables on the same entity?"""
+                            .formatted(ValueMimicRecorder.class.getSimpleName(), ValueSelector.class.getSimpleName(), id));
         }
     }
 
@@ -198,6 +208,16 @@ public class HeuristicConfigPolicy<Solution_> {
         }
     }
 
+    public void ensurePreviewFeature(PreviewFeature previewFeature) {
+        if (previewFeatureList == null || !previewFeatureList.contains(previewFeature)) {
+            throw new IllegalStateException(
+                    """
+                            The preview feature %s is not enabled.
+                            Maybe add %s to <enablePreviewFeatureList> in your configuration file?"""
+                            .formatted(previewFeature, previewFeature));
+        }
+    }
+
     @Override
     public String toString() {
         return getClass().getSimpleName() + "(" + environmentMode + ")";
@@ -205,6 +225,7 @@ public class HeuristicConfigPolicy<Solution_> {
 
     public static class Builder<Solution_> {
 
+        private final List<PreviewFeature> previewFeatureList;
         private final EnvironmentMode environmentMode;
         private final Integer moveThreadCount;
         private final Integer moveThreadBufferSize;
@@ -225,11 +246,12 @@ public class HeuristicConfigPolicy<Solution_> {
         private final Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass;
         private final Random random;
 
-        public Builder(EnvironmentMode environmentMode, Integer moveThreadCount, Integer moveThreadBufferSize,
-                Class<? extends ThreadFactory> threadFactoryClass,
+        public Builder(List<PreviewFeature> previewFeatureList, EnvironmentMode environmentMode, Integer moveThreadCount,
+                Integer moveThreadBufferSize, Class<? extends ThreadFactory> threadFactoryClass,
                 Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass, Random random,
                 InitializingScoreTrend initializingScoreTrend, SolutionDescriptor<Solution_> solutionDescriptor,
                 ClassInstanceCache classInstanceCache) {
+            this.previewFeatureList = previewFeatureList;
             this.environmentMode = environmentMode;
             this.moveThreadCount = moveThreadCount;
             this.moveThreadBufferSize = moveThreadBufferSize;
