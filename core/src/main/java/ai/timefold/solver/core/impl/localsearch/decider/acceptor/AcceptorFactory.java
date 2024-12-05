@@ -228,8 +228,8 @@ public class AcceptorFactory<Solution_> {
 
     private Optional<LateAcceptanceAcceptor<Solution_>>
             buildDiversifiedLateAcceptanceAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
-        configPolicy.ensurePreviewFeature(PreviewFeature.DIVERSIFIED_LATE_ACCEPTANCE);
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE)) {
+            configPolicy.ensurePreviewFeature(PreviewFeature.DIVERSIFIED_LATE_ACCEPTANCE);
             var acceptor = new DiversifiedLateAcceptanceAcceptor<Solution_>();
             acceptor.setLateAcceptanceSize(Objects.requireNonNullElse(acceptorConfig.getLateAcceptanceSize(), 5));
             return Optional.of(acceptor);
