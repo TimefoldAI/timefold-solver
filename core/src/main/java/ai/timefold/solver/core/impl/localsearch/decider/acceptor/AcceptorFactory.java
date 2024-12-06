@@ -226,7 +226,7 @@ public class AcceptorFactory<Solution_> {
         return Optional.empty();
     }
 
-    private Optional<LateAcceptanceAcceptor<Solution_>>
+    private Optional<DiversifiedLateAcceptanceAcceptor<Solution_>>
             buildDiversifiedLateAcceptanceAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE)) {
             configPolicy.ensurePreviewFeature(PreviewFeature.DIVERSIFIED_LATE_ACCEPTANCE);

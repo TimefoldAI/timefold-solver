@@ -11,7 +11,7 @@
                 
         <xs:sequence>
                     
-          <xs:element maxOccurs="unbounded" minOccurs="0" name="enablePreviewFeatureList" nillable="true" type="tns:previewFeature"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="enablePreviewFeature" type="tns:previewFeature"/>
                     
           <xs:element minOccurs="0" name="environmentMode" type="tns:environmentMode"/>
                     

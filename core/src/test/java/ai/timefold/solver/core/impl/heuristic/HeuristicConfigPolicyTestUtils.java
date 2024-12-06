@@ -15,8 +15,12 @@ public final class HeuristicConfigPolicyTestUtils {
 
     public static <Solution_> HeuristicConfigPolicy<Solution_>
             buildHeuristicConfigPolicy(SolutionDescriptor<Solution_> solutionDescriptor) {
-        return new HeuristicConfigPolicy.Builder<>(null, EnvironmentMode.REPRODUCIBLE, null, null, null, null, new Random(),
-                null, solutionDescriptor, ClassInstanceCache.create()).build();
+        return new HeuristicConfigPolicy.Builder<Solution_>()
+                .withEnvironmentMode(EnvironmentMode.REPRODUCIBLE)
+                .withRandom(new Random())
+                .withSolutionDescriptor(solutionDescriptor)
+                .withClassInstanceCache(ClassInstanceCache.create())
+                .build();
     }
 
     private HeuristicConfigPolicyTestUtils() {

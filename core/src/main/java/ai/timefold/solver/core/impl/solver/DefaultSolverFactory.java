@@ -114,19 +114,20 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         var moveThreadCount = resolveMoveThreadCount(true);
         var bestSolutionRecaller = BestSolutionRecallerFactory.create().<Solution_> buildBestSolutionRecaller(environmentMode);
         var randomFactory = buildRandomFactory(environmentMode);
-        var previewFeaturesEnabled = solverConfig.getEnablePreviewFeatureList();
+        var previewFeaturesEnabled = solverConfig.getEnablePreviewFeatureSet();
 
-        var configPolicy = new HeuristicConfigPolicy.Builder<>(
-                previewFeaturesEnabled,
-                environmentMode,
-                moveThreadCount,
-                solverConfig.getMoveThreadBufferSize(),
-                solverConfig.getThreadFactoryClass(),
-                solverConfig.getNearbyDistanceMeterClass(),
-                randomFactory.createRandom(),
-                scoreDirectorFactory.getInitializingScoreTrend(),
-                solutionDescriptor,
-                ClassInstanceCache.create()).build();
+        var configPolicy = new HeuristicConfigPolicy.Builder<Solution_>()
+                .withPreviewFeatureList(previewFeaturesEnabled)
+                .withEnvironmentMode(environmentMode)
+                .withMoveThreadCount(moveThreadCount)
+                .withMoveThreadCount(solverConfig.getMoveThreadBufferSize())
+                .withThreadFactoryClass(solverConfig.getThreadFactoryClass())
+                .withNearbyDistanceMeterClass(solverConfig.getNearbyDistanceMeterClass())
+                .withRandom(randomFactory.createRandom())
+                .withInitializingScoreTrend(scoreDirectorFactory.getInitializingScoreTrend())
+                .withSolutionDescriptor(solutionDescriptor)
+                .withClassInstanceCache(ClassInstanceCache.create())
+                .build();
         var basicPlumbingTermination = new BasicPlumbingTermination<Solution_>(isDaemon);
         var termination = buildTerminationConfig(basicPlumbingTermination, configPolicy, configOverride);
         var phaseList = buildPhaseList(configPolicy, bestSolutionRecaller, termination);

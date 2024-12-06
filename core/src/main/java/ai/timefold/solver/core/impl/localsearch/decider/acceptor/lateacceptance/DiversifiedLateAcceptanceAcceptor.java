@@ -1,16 +1,27 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance;
 
+import java.util.Arrays;
+
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptor;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
-import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 
-public class DiversifiedLateAcceptanceAcceptor<Solution_> extends LateAcceptanceAcceptor<Solution_> {
+public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
 
     // The worst score in the late elements list
     protected Score<?> lateWorse;
     // Number of occurrences of lateWorse in the late elements
     protected int lateWorseOccurrences = -1;
+
+    protected int lateAcceptanceSize = -1;
+
+    protected Score<?>[] previousScores;
+    protected int lateScoreIndex = -1;
+
+    public void setLateAcceptanceSize(int lateAcceptanceSize) {
+        this.lateAcceptanceSize = lateAcceptanceSize;
+    }
 
     // ************************************************************************
     // Worker methods
@@ -19,61 +30,72 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends LateAcceptance
     @Override
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
+        validate();
+        previousScores = new Score[lateAcceptanceSize];
+        var initialScore = phaseScope.getBestScore();
+        Arrays.fill(previousScores, initialScore);
+        lateScoreIndex = 0;
         lateWorseOccurrences = lateAcceptanceSize;
-        lateWorse = phaseScope.getBestScore();
+        lateWorse = initialScore;
+    }
+
+    private void validate() {
+        if (lateAcceptanceSize <= 0) {
+            throw new IllegalArgumentException(
+                    "The lateAcceptanceSize (%d) cannot be negative or zero.".formatted(lateAcceptanceSize));
+        }
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         // The acceptance and replacement strategies are based on the work:
         // Diversified Late Acceptance Search by M. Namazi, C. Sanderson, M. A. H. Newton, M. M. A. Polash, and A. Sattar
         var lateScore = previousScores[lateScoreIndex];
         var moveScore = moveScope.getScore();
-        var current = moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore();
+        var current = (Score) moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore();
         var previous = current;
-        var accept = compare(moveScore, current) == 0 || compare(moveScore, lateWorse) > 0;
+        var accept = moveScore.compareTo(current) == 0 || moveScore.compareTo(lateWorse) > 0;
         if (accept) {
             current = moveScore;
         }
         // Improves the diversification to allow the next iterations to find a better solution
-        var lateUnimprovedCmp = compare(current, lateScore) < 0;
+        var currentScoreWorse = current.compareTo(lateScore) < 0;
         // Improves the intensification but avoids replacing values when the search falls into a plateau or local minima
-        var lateImprovedCmp = compare(current, lateScore) > 0 && compare(current, previous) > 0;
-        if (lateUnimprovedCmp || lateImprovedCmp) {
+        var currentScoreBetter = current.compareTo(lateScore) > 0 && current.compareTo(previous) > 0;
+        if (currentScoreWorse || currentScoreBetter) {
             updateLateScore(current);
         }
         lateScoreIndex = (lateScoreIndex + 1) % lateAcceptanceSize;
         return accept;
     }
 
-    @Override
-    public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
-        // Do nothing
-    }
-
-    private void updateLateScore(Score<?> score) {
-        var worseCmp = compare(score, lateWorse);
-        var lateCmp = compare(previousScores[lateScoreIndex], lateWorse);
-        if (worseCmp < 0) {
-            this.lateWorse = score;
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private void updateLateScore(Score newScore) {
+        var newScoreWorse = newScore.compareTo(lateWorse) < 0;
+        var newScoreEqual = newScore.compareTo(lateWorse) == 0;
+        var lateScore = (Score) previousScores[lateScoreIndex];
+        var lateScoreEqual = lateScore.compareTo(lateWorse) == 0;
+        if (newScoreWorse) {
+            this.lateWorse = newScore;
             this.lateWorseOccurrences = 1;
-        } else if (lateCmp == 0 && worseCmp != 0) {
+        } else if (lateScoreEqual && !newScoreEqual) {
             this.lateWorseOccurrences--;
-        } else if (lateCmp != 0 && worseCmp == 0) {
+        } else if (!lateScoreEqual && newScoreEqual) {
             this.lateWorseOccurrences++;
         }
-        previousScores[lateScoreIndex] = score;
+        previousScores[lateScoreIndex] = newScore;
         // Recompute the new lateWorse and the number of occurrences
         if (lateWorseOccurrences == 0) {
             lateWorse = previousScores[0];
             lateWorseOccurrences = 1;
             for (var i = 1; i < lateAcceptanceSize; i++) {
-                var cmp = compare(previousScores[i], lateWorse);
-                if (cmp < 0) {
+                Score previousScore = previousScores[i];
+                var scoreCmp = previousScore.compareTo(lateWorse);
+                if (scoreCmp < 0) {
                     lateWorse = previousScores[i];
                     lateWorseOccurrences = 1;
-                } else if (cmp == 0) {
+                } else if (scoreCmp == 0) {
                     lateWorseOccurrences++;
                 }
             }
@@ -83,13 +105,9 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends LateAcceptance
     @Override
     public void phaseEnded(LocalSearchPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
+        previousScores = null;
+        lateScoreIndex = -1;
         lateWorse = null;
         lateWorseOccurrences = -1;
     }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private int compare(Score<?> first, Score<?> second) {
-        return ((Score) first).compareTo(second);
-    }
-
 }

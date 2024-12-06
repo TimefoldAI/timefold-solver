@@ -65,6 +65,7 @@ class SolverConfigTest {
 
     private static final String TEST_SOLVER_CONFIG_WITH_NAMESPACE = "testSolverConfigWithNamespace.xml";
     private static final String TEST_SOLVER_CONFIG_WITHOUT_NAMESPACE = "testSolverConfigWithoutNamespace.xml";
+    private static final String TEST_SOLVER_CONFIG_WITH_ENUM_SET = "testSolverConfigWithEnumSet.xml";
     private final SolverConfigIO solverConfigIO = new SolverConfigIO();
 
     @ParameterizedTest
@@ -167,9 +168,9 @@ class SolverConfigTest {
     @Test
     void withEnablePreviewFeatureList() {
         var solverConfig = new SolverConfig();
-        assertThat(solverConfig.getEnablePreviewFeatureList()).isNull();
+        assertThat(solverConfig.getEnablePreviewFeatureSet()).isNull();
         solverConfig.withPreviewFeature(PreviewFeature.DIVERSIFIED_LATE_ACCEPTANCE);
-        assertThat(solverConfig.getEnablePreviewFeatureList())
+        assertThat(solverConfig.getEnablePreviewFeatureSet())
                 .hasSameElementsAs(List.of(PreviewFeature.DIVERSIFIED_LATE_ACCEPTANCE));
     }
 
@@ -196,6 +197,14 @@ class SolverConfigTest {
     @Test
     void inherit() {
         var originalSolverConfig = readSolverConfig(TEST_SOLVER_CONFIG_WITHOUT_NAMESPACE);
+        var inheritedSolverConfig =
+                new SolverConfig().inherit(originalSolverConfig);
+        assertThat(inheritedSolverConfig).usingRecursiveComparison().isEqualTo(originalSolverConfig);
+    }
+
+    @Test
+    void inheritEnumSet() {
+        var originalSolverConfig = readSolverConfig(TEST_SOLVER_CONFIG_WITH_ENUM_SET);
         var inheritedSolverConfig =
                 new SolverConfig().inherit(originalSolverConfig);
         assertThat(inheritedSolverConfig).usingRecursiveComparison().isEqualTo(originalSolverConfig);

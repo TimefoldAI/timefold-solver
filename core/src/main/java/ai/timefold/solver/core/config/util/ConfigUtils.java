@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -208,6 +209,19 @@ public class ConfigUtils {
             List<T> mergedList = new ArrayList<>(inheritedList);
             mergedList.addAll(originalList);
             return mergedList;
+        }
+    }
+
+    public static <E extends Enum<E>> @Nullable Set<E> inheritMergeableEnumSetProperty(@Nullable Set<E> originalSet,
+            @Nullable Set<E> inheritedSet) {
+        if (inheritedSet == null) {
+            return originalSet;
+        } else if (originalSet == null) {
+            return EnumSet.copyOf(inheritedSet);
+        } else {
+            var newSet = EnumSet.copyOf(originalSet);
+            newSet.addAll(inheritedSet);
+            return newSet;
         }
     }
 

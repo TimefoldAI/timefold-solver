@@ -528,19 +528,26 @@ Simplest configuration:
 
 [source,xml,options="nowrap"]
 ----
+<solver xmlns="https://timefold.ai/xsd/solver">
+  <enablePreviewFeature>DIVERSIFIED_LATE_ACCEPTANCE</enablePreviewFeature>
+   ...
   <localSearch>
     <localSearchType>DIVERSIFIED_LATE_ACCEPTANCE</localSearchType>
   </localSearch>
+</solver>
 ----
 
-The late elements list is updated
-only if the current solution score is worse than the late score or better than the late score and different from the previous one.
-The size of the late elements list is typically smaller.
+The late elements list is updated as follows:
 
+* The current solution score is worse than the late score.
+* The current solution score is better than the late score and different from the previous one.
+
+The size of the late elements list is typically smaller.
 Advanced configuration:
 
 [source,xml,options="nowrap"]
 ----
+  ...
   <localSearch>
     ...
     <acceptor>
@@ -551,6 +558,12 @@ Advanced configuration:
     </forager>
   </localSearch>
 ----
+
+[IMPORTANT]
+====
+The new acceptor is available as a xref:upgrading-timefold-solver/backwards-compatibility.adoc#previewFeatures[preview feature]
+and must be specifically enabled with `<enablePreviewFeature>`.
+====
 
 [#greatDeluge]
 == Great Deluge

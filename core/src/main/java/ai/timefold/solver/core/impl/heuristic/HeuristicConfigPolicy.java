@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.impl.heuristic;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner;
@@ -27,7 +27,7 @@ import ai.timefold.solver.core.impl.solver.thread.DefaultSolverThreadFactory;
 
 public class HeuristicConfigPolicy<Solution_> {
 
-    private final List<PreviewFeature> previewFeatureList;
+    private final Set<PreviewFeature> previewFeatureList;
     private final EnvironmentMode environmentMode;
     private final String logIndentation;
     private final Integer moveThreadCount;
@@ -132,8 +132,17 @@ public class HeuristicConfigPolicy<Solution_> {
     // ************************************************************************
 
     public Builder<Solution_> cloneBuilder() {
-        return new Builder<>(previewFeatureList, environmentMode, moveThreadCount, moveThreadBufferSize, threadFactoryClass,
-                nearbyDistanceMeterClass, random, initializingScoreTrend, solutionDescriptor, classInstanceCache)
+        return new Builder<Solution_>()
+                .withPreviewFeatureList(previewFeatureList)
+                .withEnvironmentMode(environmentMode)
+                .withMoveThreadCount(moveThreadCount)
+                .withMoveThreadBufferSize(moveThreadBufferSize)
+                .withThreadFactoryClass(threadFactoryClass)
+                .withNearbyDistanceMeterClass(nearbyDistanceMeterClass)
+                .withRandom(random)
+                .withInitializingScoreTrend(initializingScoreTrend)
+                .withSolutionDescriptor(solutionDescriptor)
+                .withClassInstanceCache(classInstanceCache)
                 .withLogIndentation(logIndentation);
     }
 
@@ -225,14 +234,14 @@ public class HeuristicConfigPolicy<Solution_> {
 
     public static class Builder<Solution_> {
 
-        private final List<PreviewFeature> previewFeatureList;
-        private final EnvironmentMode environmentMode;
-        private final Integer moveThreadCount;
-        private final Integer moveThreadBufferSize;
-        private final Class<? extends ThreadFactory> threadFactoryClass;
-        private final InitializingScoreTrend initializingScoreTrend;
-        private final SolutionDescriptor<Solution_> solutionDescriptor;
-        private final ClassInstanceCache classInstanceCache;
+        private Set<PreviewFeature> previewFeatureList;
+        private EnvironmentMode environmentMode;
+        private Integer moveThreadCount;
+        private Integer moveThreadBufferSize;
+        private Class<? extends ThreadFactory> threadFactoryClass;
+        private InitializingScoreTrend initializingScoreTrend;
+        private SolutionDescriptor<Solution_> solutionDescriptor;
+        private ClassInstanceCache classInstanceCache;
 
         private String logIndentation = "";
 
@@ -243,24 +252,58 @@ public class HeuristicConfigPolicy<Solution_> {
         private boolean initializedChainedValueFilterEnabled = false;
         private boolean unassignedValuesAllowed = false;
 
-        private final Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass;
-        private final Random random;
+        private Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass;
+        private Random random;
 
-        public Builder(List<PreviewFeature> previewFeatureList, EnvironmentMode environmentMode, Integer moveThreadCount,
-                Integer moveThreadBufferSize, Class<? extends ThreadFactory> threadFactoryClass,
-                Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass, Random random,
-                InitializingScoreTrend initializingScoreTrend, SolutionDescriptor<Solution_> solutionDescriptor,
-                ClassInstanceCache classInstanceCache) {
+        public Builder<Solution_> withPreviewFeatureList(Set<PreviewFeature> previewFeatureList) {
             this.previewFeatureList = previewFeatureList;
+            return this;
+        }
+
+        public Builder<Solution_> withEnvironmentMode(EnvironmentMode environmentMode) {
             this.environmentMode = environmentMode;
+            return this;
+        }
+
+        public Builder<Solution_> withMoveThreadCount(Integer moveThreadCount) {
             this.moveThreadCount = moveThreadCount;
+            return this;
+        }
+
+        public Builder<Solution_> withMoveThreadBufferSize(Integer moveThreadBufferSize) {
             this.moveThreadBufferSize = moveThreadBufferSize;
+            return this;
+        }
+
+        public Builder<Solution_> withThreadFactoryClass(Class<? extends ThreadFactory> threadFactoryClass) {
             this.threadFactoryClass = threadFactoryClass;
+            return this;
+        }
+
+        public Builder<Solution_>
+                withNearbyDistanceMeterClass(Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass) {
             this.nearbyDistanceMeterClass = nearbyDistanceMeterClass;
+            return this;
+        }
+
+        public Builder<Solution_> withRandom(Random random) {
             this.random = random;
+            return this;
+        }
+
+        public Builder<Solution_> withInitializingScoreTrend(InitializingScoreTrend initializingScoreTrend) {
             this.initializingScoreTrend = initializingScoreTrend;
+            return this;
+        }
+
+        public Builder<Solution_> withSolutionDescriptor(SolutionDescriptor<Solution_> solutionDescriptor) {
             this.solutionDescriptor = solutionDescriptor;
+            return this;
+        }
+
+        public Builder<Solution_> withClassInstanceCache(ClassInstanceCache classInstanceCache) {
             this.classInstanceCache = classInstanceCache;
+            return this;
         }
 
         public Builder<Solution_> withLogIndentation(String logIndentation) {

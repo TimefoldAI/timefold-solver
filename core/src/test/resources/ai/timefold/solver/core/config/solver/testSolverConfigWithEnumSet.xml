@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<solver xmlns="https://timefold.ai/xsd/solver">
+  <enablePreviewFeature>DIVERSIFIED_LATE_ACCEPTANCE</enablePreviewFeature>
+  <environmentMode>FULL_ASSERT</environmentMode>
+  <moveThreadCount>AUTO</moveThreadCount>
+  <solutionClass>ai.timefold.solver.core.impl.testdata.domain.TestdataSolution</solutionClass>
+  <entityClass>ai.timefold.solver.core.impl.testdata.domain.TestdataEntity</entityClass>
+  <scoreDirectorFactory>
+    <constraintProviderClass>ai.timefold.solver.core.config.solver.SolverConfigTest$DummyConstraintProvider</constraintProviderClass>
+    <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
+  </scoreDirectorFactory>
+  <constructionHeuristic>
+    <constructionHeuristicType>FIRST_FIT_DECREASING</constructionHeuristicType>
+  </constructionHeuristic>
+  <localSearch>
+    <localSearchType>TABU_SEARCH</localSearchType>
+  </localSearch>
+</solver>
