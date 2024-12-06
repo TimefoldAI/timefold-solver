@@ -11,9 +11,11 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.Consumer;
 
@@ -60,6 +62,7 @@ import org.jspecify.annotations.Nullable;
  */
 @XmlRootElement(name = SolverConfig.XML_ELEMENT_NAME)
 @XmlType(name = SolverConfig.XML_TYPE_NAME, propOrder = {
+        "enablePreviewFeatureSet",
         "environmentMode",
         "daemon",
         "randomType",
@@ -209,7 +212,8 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
 
     // Warning: all fields are null (and not defaulted) because they can be inherited
     // and also because the input config file should match the output config file
-
+    @XmlElement(name = "enablePreviewFeature")
+    protected Set<PreviewFeature> enablePreviewFeatureSet = null;
     protected EnvironmentMode environmentMode = null;
     protected Boolean daemon = null;
     protected RandomType randomType = null;
@@ -282,6 +286,14 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
 
     public void setClassLoader(@Nullable ClassLoader classLoader) {
         this.classLoader = classLoader;
+    }
+
+    public @Nullable Set<PreviewFeature> getEnablePreviewFeatureSet() {
+        return enablePreviewFeatureSet;
+    }
+
+    public void setEnablePreviewFeatureSet(@Nullable Set<PreviewFeature> enablePreviewFeatureSet) {
+        this.enablePreviewFeatureSet = enablePreviewFeatureSet;
     }
 
     public @Nullable EnvironmentMode getEnvironmentMode() {
@@ -431,6 +443,11 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
     // ************************************************************************
     // With methods
     // ************************************************************************
+
+    public @NonNull SolverConfig withPreviewFeature(@NonNull PreviewFeature... previewFeature) {
+        enablePreviewFeatureSet = EnumSet.copyOf(Arrays.asList(previewFeature));
+        return this;
+    }
 
     public @NonNull SolverConfig withEnvironmentMode(@NonNull EnvironmentMode environmentMode) {
         this.environmentMode = environmentMode;
@@ -636,10 +653,8 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
     // ************************************************************************
 
     public void offerRandomSeedFromSubSingleIndex(long subSingleIndex) {
-        if (environmentMode == null || environmentMode.isReproducible()) {
-            if (randomFactoryClass == null && randomSeed == null) {
-                randomSeed = subSingleIndex;
-            }
+        if ((environmentMode == null || environmentMode.isReproducible()) && randomFactoryClass == null && randomSeed == null) {
+            randomSeed = subSingleIndex;
         }
     }
 
@@ -650,6 +665,8 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
     @Override
     public @NonNull SolverConfig inherit(@NonNull SolverConfig inheritedConfig) {
         classLoader = ConfigUtils.inheritOverwritableProperty(classLoader, inheritedConfig.getClassLoader());
+        enablePreviewFeatureSet = ConfigUtils.inheritMergeableEnumSetProperty(enablePreviewFeatureSet,
+                inheritedConfig.getEnablePreviewFeatureSet());
         environmentMode = ConfigUtils.inheritOverwritableProperty(environmentMode, inheritedConfig.getEnvironmentMode());
         daemon = ConfigUtils.inheritOverwritableProperty(daemon, inheritedConfig.getDaemon());
         randomType = ConfigUtils.inheritOverwritableProperty(randomType, inheritedConfig.getRandomType());

@@ -507,6 +507,64 @@ Use a lower tabu size than in a pure Tabu Search configuration.
   </localSearch>
 ----
 
+[#diversifiedLateAcceptance]
+== Diversified Late acceptance
+
+
+[#diversifiedLateAcceptanceAlgorithm]
+=== Algorithm description
+
+Diversified Late Acceptance is similar to Late Acceptance,
+but it offers different acceptance and replacement strategies.
+A move is accepted if its score matches the current solution score
+or is better than the late score (which is the winning score of a fixed number of steps ago).
+
+Diversified Late Acceptance was first proposed in
+https://arxiv.org/pdf/1806.09328[Diversified Late Acceptance Search by M. Namazi, C. Sanderson, M. A. H. Newton, M. M. A. Polash, and A. Sattar]
+
+[#diversifiedLateAcceptanceConfiguration]
+=== Configuration
+
+Simplest configuration:
+
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver">
+  <enablePreviewFeature>DIVERSIFIED_LATE_ACCEPTANCE</enablePreviewFeature>
+   ...
+  <localSearch>
+    <localSearchType>DIVERSIFIED_LATE_ACCEPTANCE</localSearchType>
+  </localSearch>
+</solver>
+----
+
+The late elements list is updated as follows:
+
+* The current solution score is worse than the late score.
+* The current solution score is better than the late score and different from the previous one.
+
+The size of the late elements list is typically smaller.
+Advanced configuration:
+
+[source,xml,options="nowrap"]
+----
+  ...
+  <localSearch>
+    ...
+    <acceptor>
+      <lateAcceptanceSize>5</lateAcceptanceSize>
+    </acceptor>
+    <forager>
+      <acceptedCountLimit>1</acceptedCountLimit>
+    </forager>
+  </localSearch>
+----
+
+[IMPORTANT]
+====
+The new acceptor is available as a xref:upgrading-timefold-solver/backwards-compatibility.adoc#previewFeatures[preview feature]
+and must be specifically enabled with `<enablePreviewFeature>`.
+====
 
 [#greatDeluge]
 == Great Deluge

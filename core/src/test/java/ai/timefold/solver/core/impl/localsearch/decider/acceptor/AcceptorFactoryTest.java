@@ -2,10 +2,14 @@ package ai.timefold.solver.core.impl.localsearch.decider.acceptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.config.localsearch.decider.acceptor.AcceptorType;
@@ -15,6 +19,7 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.greatdeluge.GreatDelugeAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.hillclimbing.HillClimbingAcceptor;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance.DiversifiedLateAcceptanceAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance.LateAcceptanceAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.simulatedannealing.SimulatedAnnealingAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stepcountinghillclimbing.StepCountingHillClimbingAcceptor;
@@ -57,7 +62,7 @@ class AcceptorFactoryTest {
                 .map(a -> (Class) a.getClass())
                 .containsExactly(HillClimbingAcceptor.class, StepCountingHillClimbingAcceptor.class, EntityTabuAcceptor.class,
                         ValueTabuAcceptor.class, MoveTabuAcceptor.class, SimulatedAnnealingAcceptor.class,
-                        LateAcceptanceAcceptor.class, GreatDelugeAcceptor.class);
+                        LateAcceptanceAcceptor.class, DiversifiedLateAcceptanceAcceptor.class, GreatDelugeAcceptor.class);
     }
 
     @Test
@@ -65,5 +70,45 @@ class AcceptorFactoryTest {
         AcceptorFactory<Solution_> acceptorFactory = AcceptorFactory.create(new LocalSearchAcceptorConfig());
         assertThatIllegalArgumentException().isThrownBy(() -> acceptorFactory.buildAcceptor(mock(HeuristicConfigPolicy.class)))
                 .withMessageContaining("The acceptor does not specify any acceptorType");
+    }
+
+    @Test
+    <Solution_> void lateAcceptanceAcceptor() {
+        var localSearchAcceptorConfig = new LocalSearchAcceptorConfig()
+                .withAcceptorTypeList(List.of(AcceptorType.LATE_ACCEPTANCE));
+        HeuristicConfigPolicy<Solution_> heuristicConfigPolicy = mock(HeuristicConfigPolicy.class);
+        AcceptorFactory<Solution_> acceptorFactory = AcceptorFactory.create(localSearchAcceptorConfig);
+        var acceptor = acceptorFactory.buildAcceptor(heuristicConfigPolicy);
+        assertThat(acceptor).isExactlyInstanceOf(LateAcceptanceAcceptor.class);
+
+        localSearchAcceptorConfig = new LocalSearchAcceptorConfig()
+                .withLateAcceptanceSize(10);
+        acceptorFactory = AcceptorFactory.create(localSearchAcceptorConfig);
+        acceptor = acceptorFactory.buildAcceptor(heuristicConfigPolicy);
+        assertThat(acceptor).isExactlyInstanceOf(LateAcceptanceAcceptor.class);
+    }
+
+    @Test
+    <Solution_> void diversifiedLateAcceptanceAcceptor() {
+        var localSearchAcceptorConfig = new LocalSearchAcceptorConfig()
+                .withAcceptorTypeList(List.of(AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE));
+        HeuristicConfigPolicy<Solution_> heuristicConfigPolicy = mock(HeuristicConfigPolicy.class);
+        AcceptorFactory<Solution_> acceptorFactory = AcceptorFactory.create(localSearchAcceptorConfig);
+        var acceptor = acceptorFactory.buildAcceptor(heuristicConfigPolicy);
+        assertThat(acceptor).isExactlyInstanceOf(DiversifiedLateAcceptanceAcceptor.class);
+
+        localSearchAcceptorConfig = new LocalSearchAcceptorConfig()
+                .withAcceptorTypeList(List.of(AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE))
+                .withLateAcceptanceSize(10);
+        acceptorFactory = AcceptorFactory.create(localSearchAcceptorConfig);
+        acceptor = acceptorFactory.buildAcceptor(heuristicConfigPolicy);
+        assertThat(acceptor).isExactlyInstanceOf(DiversifiedLateAcceptanceAcceptor.class);
+
+        doThrow(new IllegalStateException()).when(heuristicConfigPolicy).ensurePreviewFeature(any());
+        localSearchAcceptorConfig = new LocalSearchAcceptorConfig()
+                .withAcceptorTypeList(List.of(AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE))
+                .withLateAcceptanceSize(10);
+        AcceptorFactory<Solution_> badAcceptorFactory = AcceptorFactory.create(localSearchAcceptorConfig);
+        assertThatIllegalStateException().isThrownBy(() -> badAcceptorFactory.buildAcceptor(heuristicConfigPolicy));
     }
 }

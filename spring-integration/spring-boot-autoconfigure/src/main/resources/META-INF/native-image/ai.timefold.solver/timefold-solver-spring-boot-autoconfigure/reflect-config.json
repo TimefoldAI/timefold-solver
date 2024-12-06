@@ -595,6 +595,10 @@
     ]
   },
   {
+    "name": "ai.timefold.solver.core.config.solver.PreviewFeature",
+    "allDeclaredFields": true
+  },
+  {
     "name": "ai.timefold.solver.core.config.solver.EnvironmentMode",
     "allDeclaredFields": true
   },

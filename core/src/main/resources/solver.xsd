@@ -11,6 +11,8 @@
                 
         <xs:sequence>
                     
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="enablePreviewFeature" type="tns:previewFeature"/>
+                    
           <xs:element minOccurs="0" name="environmentMode" type="tns:environmentMode"/>
                     
           <xs:element minOccurs="0" name="daemon" type="xs:boolean"/>
@@ -1541,6 +1543,16 @@
       
   </xs:simpleType>
     
+  <xs:simpleType name="previewFeature">
+        
+    <xs:restriction base="xs:string">
+            
+      <xs:enumeration value="DIVERSIFIED_LATE_ACCEPTANCE"/>
+          
+    </xs:restriction>
+      
+  </xs:simpleType>
+    
   <xs:simpleType name="randomType">
         
     <xs:restriction base="xs:string">
@@ -1866,6 +1878,8 @@
       <xs:enumeration value="SIMULATED_ANNEALING"/>
             
       <xs:enumeration value="LATE_ACCEPTANCE"/>
+            
+      <xs:enumeration value="DIVERSIFIED_LATE_ACCEPTANCE"/>
             
       <xs:enumeration value="GREAT_DELUGE"/>
             

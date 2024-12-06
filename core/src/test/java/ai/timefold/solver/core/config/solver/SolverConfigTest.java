@@ -65,6 +65,7 @@ class SolverConfigTest {
 
     private static final String TEST_SOLVER_CONFIG_WITH_NAMESPACE = "testSolverConfigWithNamespace.xml";
     private static final String TEST_SOLVER_CONFIG_WITHOUT_NAMESPACE = "testSolverConfigWithoutNamespace.xml";
+    private static final String TEST_SOLVER_CONFIG_WITH_ENUM_SET = "testSolverConfigWithEnumSet.xml";
     private final SolverConfigIO solverConfigIO = new SolverConfigIO();
 
     @ParameterizedTest
@@ -165,6 +166,15 @@ class SolverConfigTest {
     }
 
     @Test
+    void withEnablePreviewFeatureList() {
+        var solverConfig = new SolverConfig();
+        assertThat(solverConfig.getEnablePreviewFeatureSet()).isNull();
+        solverConfig.withPreviewFeature(PreviewFeature.DIVERSIFIED_LATE_ACCEPTANCE);
+        assertThat(solverConfig.getEnablePreviewFeatureSet())
+                .hasSameElementsAs(List.of(PreviewFeature.DIVERSIFIED_LATE_ACCEPTANCE));
+    }
+
+    @Test
     void withTerminationSpentLimit() {
         var solverConfig = new SolverConfig();
         var duration = Duration.ofMinutes(2);
@@ -187,6 +197,14 @@ class SolverConfigTest {
     @Test
     void inherit() {
         var originalSolverConfig = readSolverConfig(TEST_SOLVER_CONFIG_WITHOUT_NAMESPACE);
+        var inheritedSolverConfig =
+                new SolverConfig().inherit(originalSolverConfig);
+        assertThat(inheritedSolverConfig).usingRecursiveComparison().isEqualTo(originalSolverConfig);
+    }
+
+    @Test
+    void inheritEnumSet() {
+        var originalSolverConfig = readSolverConfig(TEST_SOLVER_CONFIG_WITH_ENUM_SET);
         var inheritedSolverConfig =
                 new SolverConfig().inherit(originalSolverConfig);
         assertThat(inheritedSolverConfig).usingRecursiveComparison().isEqualTo(originalSolverConfig);
@@ -380,18 +398,18 @@ class SolverConfigTest {
 
     /* Dummy classes below are referenced from the testSolverConfig.xml used in this test case. */
 
-    public static abstract class DummySolutionPartitioner implements SolutionPartitioner<TestdataSolution> {
+    public abstract static class DummySolutionPartitioner implements SolutionPartitioner<TestdataSolution> {
     }
 
-    public static abstract class DummyEasyScoreCalculator
+    public abstract static class DummyEasyScoreCalculator
             implements EasyScoreCalculator<TestdataSolution, SimpleScore> {
     }
 
-    public static abstract class DummyIncrementalScoreCalculator
+    public abstract static class DummyIncrementalScoreCalculator
             implements IncrementalScoreCalculator<TestdataSolution, SimpleScore> {
     }
 
-    public static abstract class DummyConstraintProvider implements ConstraintProvider {
+    public abstract static class DummyConstraintProvider implements ConstraintProvider {
     }
 
     public abstract static class DummyValueFilter implements SelectionFilter<TestdataSolution, TestdataValue> {
