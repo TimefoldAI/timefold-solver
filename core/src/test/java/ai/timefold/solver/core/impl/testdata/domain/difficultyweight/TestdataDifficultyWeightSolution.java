@@ -47,9 +47,6 @@ public class TestdataDifficultyWeightSolution extends TestdataObject {
 
     private SimpleScore score;
 
-    public TestdataDifficultyWeightSolution() {
-    }
-
     public TestdataDifficultyWeightSolution(String code) {
         super(code);
     }
@@ -81,9 +78,5 @@ public class TestdataDifficultyWeightSolution extends TestdataObject {
     public void setScore(SimpleScore score) {
         this.score = score;
     }
-
-    // ************************************************************************
-    // Complex methods
-    // ************************************************************************
 
 }

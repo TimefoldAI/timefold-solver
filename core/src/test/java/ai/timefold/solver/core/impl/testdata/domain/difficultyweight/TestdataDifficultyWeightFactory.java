@@ -8,21 +8,13 @@ public class TestdataDifficultyWeightFactory implements
     @Override
     public TestdataDifficultyWeightComparable createSorterWeight(TestdataDifficultyWeightSolution solution,
             TestdataDifficultyWeightEntity entity) {
-        return new TestdataDifficultyWeightComparable(entity);
+        return new TestdataDifficultyWeightComparable();
     }
 
     public static class TestdataDifficultyWeightComparable implements Comparable<TestdataDifficultyWeightComparable> {
 
-        private final TestdataDifficultyWeightEntity entity;
-
-        public TestdataDifficultyWeightComparable(TestdataDifficultyWeightEntity entity) {
-            this.entity = entity;
-        }
-
         @Override
         public int compareTo(TestdataDifficultyWeightComparable other) {
-            entity.setComparisonCalled(true);
-            other.entity.setComparisonCalled(true);
             return 0;
         }
     }
