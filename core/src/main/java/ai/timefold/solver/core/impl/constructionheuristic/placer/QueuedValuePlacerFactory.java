@@ -91,7 +91,8 @@ public class QueuedValuePlacerFactory<Solution_>
         EntityDescriptor<Solution_> entityDescriptor = variableDescriptor.getEntityDescriptor();
         EntitySelectorConfig changeEntitySelectorConfig = new EntitySelectorConfig()
                 .withEntityClass(entityDescriptor.getEntityClass());
-        if (EntitySelectorConfig.hasSorter(configPolicy.getEntitySorterManner(), entityDescriptor)) {
+        if (configPolicy.getEntitySorterManner() != null
+                && EntitySelectorConfig.hasSorter(configPolicy.getEntitySorterManner(), entityDescriptor)) {
             changeEntitySelectorConfig = changeEntitySelectorConfig.withCacheType(SelectionCacheType.PHASE)
                     .withSelectionOrder(SelectionOrder.SORTED)
                     .withSorterManner(configPolicy.getEntitySorterManner());
