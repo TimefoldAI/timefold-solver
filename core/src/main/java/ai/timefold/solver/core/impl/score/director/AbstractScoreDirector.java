@@ -625,6 +625,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (assertionScoreDirectorFactory == null) {
             assertionScoreDirectorFactory = scoreDirectorFactory;
         }
+        if (trackingWorkingSolution) {
+            var directorCorruption = solutionTracker.buildDirectorCorruptionMessage(completedAction);
+            if (directorCorruption != null) {
+                throw new IllegalStateException(directorCorruption);
+            }
+        }
         try (var uncorruptedScoreDirector =
                 assertionScoreDirectorFactory.buildDerivedScoreDirector(false, ConstraintMatchPolicy.ENABLED)) {
             uncorruptedScoreDirector.setWorkingSolution(workingSolution);
