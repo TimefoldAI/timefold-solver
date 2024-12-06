@@ -16,7 +16,8 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
 public class TestdataDifficultyWeightSolution extends TestdataObject {
 
     public static SolutionDescriptor<TestdataDifficultyWeightSolution> buildSolutionDescriptor() {
-        return SolutionDescriptor.buildSolutionDescriptor(TestdataDifficultyWeightSolution.class, TestdataDifficultyWeightEntity.class);
+        return SolutionDescriptor.buildSolutionDescriptor(TestdataDifficultyWeightSolution.class,
+                TestdataDifficultyWeightEntity.class);
     }
 
     public static TestdataDifficultyWeightSolution generateSolution() {

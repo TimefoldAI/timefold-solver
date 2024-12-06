@@ -108,7 +108,7 @@ public class QueuedEntityPlacerFactory<Solution_>
             entitySelectorConfig = getDefaultEntitySelectorConfigForEntity(configPolicy, entityDescriptor);
         } else {
             // The default phase configuration generates the entity selector config without an updated version of the configuration policy.
-            // We need to ensure that no sorting settings are not applied.
+            // We need to ensure that there are no missing sorting settings.
             var entityDescriptor = getTheOnlyEntityDescriptor(configPolicy.getSolutionDescriptor());
             entitySelectorConfig = deduceEntitySortManner(configPolicy, entityDescriptor, entitySelectorConfig);
         }
