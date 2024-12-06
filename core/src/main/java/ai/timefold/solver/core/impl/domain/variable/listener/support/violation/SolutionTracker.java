@@ -11,6 +11,8 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
+import org.jspecify.annotations.Nullable;
+
 public final class SolutionTracker<Solution_> {
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final List<VariableTracker<Solution_>> normalVariableTrackers;
@@ -68,7 +70,7 @@ public final class SolutionTracker<Solution_> {
         if (beforeVariables != null) {
             missingEventsForward = getEntitiesMissingBeforeAfterEvents(beforeVariables, afterVariables);
         } else {
-            missingEventsBackward = Collections.emptyList();
+            missingEventsForward = Collections.emptyList();
         }
     }
 
@@ -106,9 +108,21 @@ public final class SolutionTracker<Solution_> {
             out.addAll(normalVariableTracker.getEntitiesMissingBeforeAfterEvents(changes));
         }
         for (ListVariableTracker<Solution_> listVariableTracker : listVariableTrackers) {
-            out.addAll(listVariableTracker.getEntitiesMissingBeforeAfterEvents(changes));
+            out.addAll(listVariableTracker.getEntitiesMissingBeforeAfterEvents(changes,
+                    beforeSolution, afterSolution));
         }
         return out;
+    }
+
+    public @Nullable String buildDirectorCorruptionMessage(Object completedAction) {
+        if (missingEventsForward != null && !missingEventsForward.isEmpty()) {
+            return """
+                    Score Director Corruption Detected.
+                    Missing variable listener events for actual move (%s):
+                    %s
+                    """.formatted(completedAction, formatList(missingEventsForward));
+        }
+        return null;
     }
 
     public String buildScoreCorruptionMessage() {

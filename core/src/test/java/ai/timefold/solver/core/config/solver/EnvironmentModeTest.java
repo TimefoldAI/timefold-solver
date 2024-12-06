@@ -16,6 +16,8 @@ import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveListFactoryConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
@@ -26,6 +28,9 @@ import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.Corrup
 import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.CorruptedUndoShadowEntity;
 import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.CorruptedUndoShadowSolution;
 import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.CorruptedUndoShadowValue;
+import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
+import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveListFactory;
 import ai.timefold.solver.core.impl.phase.custom.CustomPhaseCommand;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
@@ -37,6 +42,7 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -192,6 +198,35 @@ class EnvironmentModeTest {
         }
     }
 
+    @ParameterizedTest(name = "{0}")
+    @EnumSource(EnvironmentMode.class)
+    void corruptedScoreDirector(EnvironmentMode environmentMode) {
+        SolverConfig solverConfig = buildSolverConfig(environmentMode);
+        // For full assert modes it should throw exception about corrupted score
+        solverConfig.setPhaseConfigList(List.of(
+                new ConstructionHeuristicPhaseConfig(),
+                new LocalSearchPhaseConfig()
+                        .withMoveSelectorConfig(
+                                new MoveListFactoryConfig()
+                                        .withMoveListFactoryClass(ChangeMoveWithoutListenersMoveListFactory.class))));
+        setSolverConfigCalculatorClass(solverConfig, ConstantEasyScoreCalculator.class);
+
+        switch (environmentMode) {
+            case TRACKED_FULL_ASSERT -> {
+                assertIllegalStateExceptionWhileSolving(
+                        solverConfig,
+                        "Score Director Corruption Detected.");
+            }
+            case FULL_ASSERT,
+                    NON_INTRUSIVE_FULL_ASSERT,
+                    FAST_ASSERT,
+                    REPRODUCIBLE,
+                    NON_REPRODUCIBLE -> {
+                // No exception expected
+            }
+        }
+    }
+
     private void assertReproducibility(Solver<TestdataSolution> solver1, Solver<TestdataSolution> solver2) {
         assertGeneratingSameNumbers(((DefaultSolver<TestdataSolution>) solver1).getRandomFactory(),
                 ((DefaultSolver<TestdataSolution>) solver2).getRandomFactory());
@@ -318,6 +353,46 @@ class EnvironmentModeTest {
 
         public List<SimpleScore> getScores() {
             return scores;
+        }
+    }
+
+    public static class ConstantEasyScoreCalculator implements EasyScoreCalculator<TestdataSolution, SimpleScore> {
+        @Override
+        public @NonNull SimpleScore calculateScore(@NonNull TestdataSolution o) {
+            return SimpleScore.ZERO;
+        }
+    }
+
+    public static class ChangeMoveWithoutListeners extends AbstractMove<TestdataSolution> {
+        private final TestdataEntity entity;
+        private final TestdataValue value;
+
+        public ChangeMoveWithoutListeners(TestdataEntity entity, TestdataValue value) {
+            this.entity = entity;
+            this.value = value;
+        }
+
+        @Override
+        protected void doMoveOnGenuineVariables(ScoreDirector<TestdataSolution> scoreDirector) {
+            entity.setValue(value);
+        }
+
+        @Override
+        public boolean isMoveDoable(ScoreDirector<TestdataSolution> scoreDirector) {
+            return entity.getValue() != value;
+        }
+    }
+
+    public static class ChangeMoveWithoutListenersMoveListFactory implements MoveListFactory<TestdataSolution> {
+        @Override
+        public List<? extends Move<TestdataSolution>> createMoveList(TestdataSolution testdataSolution) {
+            var out = new ArrayList<Move<TestdataSolution>>();
+            for (var entity : testdataSolution.getEntityList()) {
+                for (var value : testdataSolution.getValueList()) {
+                    out.add(new ChangeMoveWithoutListeners(entity, value));
+                }
+            }
+            return out;
         }
     }
 }
