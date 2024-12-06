@@ -29,7 +29,13 @@ public abstract class AbstractFromConfigFactory<Solution_, Config_ extends Abstr
         EntitySelectorConfig entitySelectorConfig = new EntitySelectorConfig()
                 .withId(entityClass.getName())
                 .withEntityClass(entityClass);
-        if (EntitySelectorConfig.hasSorter(configPolicy.getEntitySorterManner(), entityDescriptor)) {
+        return deduceEntitySortManner(configPolicy, entityDescriptor, entitySelectorConfig);
+    }
+
+    public static <Solution_> EntitySelectorConfig deduceEntitySortManner(HeuristicConfigPolicy<Solution_> configPolicy,
+            EntityDescriptor<Solution_> entityDescriptor, EntitySelectorConfig entitySelectorConfig) {
+        if (configPolicy.getEntitySorterManner() != null
+                && EntitySelectorConfig.hasSorter(configPolicy.getEntitySorterManner(), entityDescriptor)) {
             entitySelectorConfig = entitySelectorConfig.withCacheType(SelectionCacheType.PHASE)
                     .withSelectionOrder(SelectionOrder.SORTED)
                     .withSorterManner(configPolicy.getEntitySorterManner());

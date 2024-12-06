@@ -8,9 +8,12 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
+import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
+import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.Placement;
@@ -23,6 +26,7 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
+import ai.timefold.solver.core.impl.testdata.domain.difficultyweight.TestdataDifficultyWeightSolution;
 import ai.timefold.solver.core.impl.testdata.domain.multivar.TestdataMultiVarEntity;
 import ai.timefold.solver.core.impl.testdata.domain.multivar.TestdataMultiVarSolution;
 
@@ -70,6 +74,21 @@ class QueuedEntityPlacerFactoryTest {
         Placement<TestdataMultiVarSolution> placement = placementIterator.next();
 
         assertEntityPlacement(placement, "e1", "e1v1", "e1v2", "e2v1", "e2v2");
+    }
+
+    @Test
+    void buildWithEntitySortManner() {
+        ChangeMoveSelectorConfig primaryMoveSelectorConfig = new ChangeMoveSelectorConfig()
+                .withValueSelectorConfig(new ValueSelectorConfig("primaryValue"));
+        var configPolicy = buildHeuristicConfigPolicy(TestdataDifficultyWeightSolution.buildSolutionDescriptor(),
+                EntitySorterManner.DECREASING_DIFFICULTY_IF_AVAILABLE);
+        QueuedEntityPlacerConfig placerConfig =
+                QueuedEntityPlacerFactory.unfoldNew(configPolicy, List.of(primaryMoveSelectorConfig));
+        var entityPlacer =
+                new QueuedEntityPlacerFactory<TestdataDifficultyWeightSolution>(placerConfig);
+        var entitySelectorConfig = entityPlacer.buildEntitySelectorConfig(configPolicy);
+        assertThat(entitySelectorConfig.getSelectionOrder()).isEqualTo(SelectionOrder.SORTED);
+        assertThat(entitySelectorConfig.getSorterManner()).isEqualTo(EntitySorterManner.DECREASING_DIFFICULTY_IF_AVAILABLE);
     }
 
     private TestdataMultiVarSolution generateTestdataSolution() {
