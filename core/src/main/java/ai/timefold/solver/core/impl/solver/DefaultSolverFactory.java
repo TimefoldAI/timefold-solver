@@ -120,7 +120,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 .withPreviewFeatureList(previewFeaturesEnabled)
                 .withEnvironmentMode(environmentMode)
                 .withMoveThreadCount(moveThreadCount)
-                .withMoveThreadCount(solverConfig.getMoveThreadBufferSize())
+                .withMoveThreadBufferSize(solverConfig.getMoveThreadBufferSize())
                 .withThreadFactoryClass(solverConfig.getThreadFactoryClass())
                 .withNearbyDistanceMeterClass(solverConfig.getNearbyDistanceMeterClass())
                 .withRandom(randomFactory.createRandom())
