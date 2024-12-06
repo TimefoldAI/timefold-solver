@@ -27,6 +27,9 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEasyScoreCalculator;
 import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedSolution;
+import ai.timefold.solver.core.impl.testdata.domain.difficultyComparator.TestdataDifficultyWeightEntity;
+import ai.timefold.solver.core.impl.testdata.domain.difficultyComparator.TestdataDifficultyWeightSolution;
+import ai.timefold.solver.core.impl.testdata.domain.difficultyComparator.TestdataDifficultyWeightValue;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
@@ -339,6 +342,41 @@ class DefaultConstructionHeuristicPhaseTest {
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
         assertThat(solution.getScore().isSolutionInitialized()).isTrue();
+    }
+
+    @Test
+    void constructionHeuristicWithDifficultyComparator() {
+        // Default configuration
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataDifficultyWeightSolution.class,
+                TestdataDifficultyWeightEntity.class);
+        solverConfig.setPhaseConfigList(null);
+
+        var solution = new TestdataDifficultyWeightSolution("s1");
+        solution.setValueList(
+                List.of(new TestdataDifficultyWeightValue("v1"),
+                        new TestdataDifficultyWeightValue("v2")));
+        solution.setEntityList(List.of(new TestdataDifficultyWeightEntity("e1")));
+
+        solution = PlannerTestUtils.solve(solverConfig, solution);
+        assertThat(solution).isNotNull();
+        assertThat(solution.getEntityList().stream().allMatch(TestdataDifficultyWeightEntity::isComparisonCalled))
+                .isTrue();
+
+        // Custom phase configuration
+        solverConfig = PlannerTestUtils.buildSolverConfig(TestdataDifficultyWeightSolution.class,
+                TestdataDifficultyWeightEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig());
+
+        solution = new TestdataDifficultyWeightSolution("s1");
+        solution.setValueList(
+                List.of(new TestdataDifficultyWeightValue("v1"),
+                        new TestdataDifficultyWeightValue("v2")));
+        solution.setEntityList(List.of(new TestdataDifficultyWeightEntity("e1")));
+
+        solution = PlannerTestUtils.solve(solverConfig, solution);
+        assertThat(solution).isNotNull();
+        assertThat(solution.getEntityList().stream().allMatch(TestdataDifficultyWeightEntity::isComparisonCalled))
+                .isTrue();
     }
 
 }

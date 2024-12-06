@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.constructionheuristic.placer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
@@ -103,11 +102,16 @@ public class QueuedEntityPlacerFactory<Solution_>
     }
 
     public EntitySelectorConfig buildEntitySelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy) {
-        var entitySelectorConfig =
-                Objects.requireNonNullElseGet(config.getEntitySelectorConfig(), () -> {
-                    var entityDescriptor = getTheOnlyEntityDescriptor(configPolicy.getSolutionDescriptor());
-                    return getDefaultEntitySelectorConfigForEntity(configPolicy, entityDescriptor);
-                });
+        var entitySelectorConfig = config.getEntitySelectorConfig();
+        if (entitySelectorConfig == null) {
+            var entityDescriptor = getTheOnlyEntityDescriptor(configPolicy.getSolutionDescriptor());
+            entitySelectorConfig = getDefaultEntitySelectorConfigForEntity(configPolicy, entityDescriptor);
+        } else {
+            // The default phase configuration generates the entity selector config without an updated version of the configuration policy.
+            // We need to ensure that no sorting settings are not applied.
+            var entityDescriptor = getTheOnlyEntityDescriptor(configPolicy.getSolutionDescriptor());
+            entitySelectorConfig = deduceEntitySortManner(configPolicy, entityDescriptor, entitySelectorConfig);
+        }
         var cacheType = entitySelectorConfig.getCacheType();
         if (cacheType != null && cacheType.compareTo(SelectionCacheType.PHASE) < 0) {
             throw new IllegalArgumentException(
