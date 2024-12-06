@@ -345,18 +345,16 @@ class DefaultConstructionHeuristicPhaseTest {
     }
 
     @Test
-    void constructionHeuristicWithDifficultyComparator() {
+    void constructionHeuristicWithDifficultyWeight() {
         // Default configuration
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataDifficultyWeightSolution.class,
                 TestdataDifficultyWeightEntity.class);
         solverConfig.setPhaseConfigList(null);
-
         var solution = new TestdataDifficultyWeightSolution("s1");
         solution.setValueList(
                 List.of(new TestdataDifficultyWeightValue("v1"),
                         new TestdataDifficultyWeightValue("v2")));
         solution.setEntityList(List.of(new TestdataDifficultyWeightEntity("e1")));
-
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
         assertThat(solution.getEntityList().stream().allMatch(TestdataDifficultyWeightEntity::isComparisonCalled))
@@ -372,7 +370,6 @@ class DefaultConstructionHeuristicPhaseTest {
                 List.of(new TestdataDifficultyWeightValue("v1"),
                         new TestdataDifficultyWeightValue("v2")));
         solution.setEntityList(List.of(new TestdataDifficultyWeightEntity("e1")));
-
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
         assertThat(solution.getEntityList().stream().allMatch(TestdataDifficultyWeightEntity::isComparisonCalled))
