@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.difficultyComparator;
+package ai.timefold.solver.core.impl.testdata.domain.difficultyweight;
 
 import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
 
