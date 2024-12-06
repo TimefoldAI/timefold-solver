@@ -519,7 +519,8 @@ but it offers different acceptance and replacement strategies.
 A move is accepted if its score matches the current solution score
 or is better than the late score (which is the winning score of a fixed number of steps ago).
 
-Scientific paper: https://arxiv.org/pdf/1806.09328[Diversified Late Acceptance Search by M. Namazi, C. Sanderson, M. A. H. Newton, M. M. A. Polash, and A. Sattar]
+Diversified Late Acceptance was first proposed in
+https://arxiv.org/pdf/1806.09328[Diversified Late Acceptance Search by M. Namazi, C. Sanderson, M. A. H. Newton, M. M. A. Polash, and A. Sattar]
 
 [#diversifiedLateAcceptanceConfiguration]
 === Configuration

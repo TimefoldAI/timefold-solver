@@ -222,7 +222,7 @@ public class HeuristicConfigPolicy<Solution_> {
             throw new IllegalStateException(
                     """
                             The preview feature %s is not enabled.
-                            Maybe add %s to <enablePreviewFeatureList> in your configuration file?"""
+                            Maybe add %s to <enablePreviewFeature> in your configuration file?"""
                             .formatted(previewFeature, previewFeature));
         }
     }

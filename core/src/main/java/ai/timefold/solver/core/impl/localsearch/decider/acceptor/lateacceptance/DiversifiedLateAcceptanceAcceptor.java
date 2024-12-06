@@ -51,7 +51,6 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAccept
     public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         // The acceptance and replacement strategies are based on the work:
         // Diversified Late Acceptance Search by M. Namazi, C. Sanderson, M. A. H. Newton, M. M. A. Polash, and A. Sattar
-        var lateScore = previousScores[lateScoreIndex];
         var moveScore = moveScope.getScore();
         var current = (Score) moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore();
         var previous = current;
@@ -59,10 +58,12 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAccept
         if (accept) {
             current = moveScore;
         }
+        var lateScore = previousScores[lateScoreIndex];
         // Improves the diversification to allow the next iterations to find a better solution
-        var currentScoreWorse = current.compareTo(lateScore) < 0;
+        var currentScoreCmp = current.compareTo(lateScore);
+        var currentScoreWorse = currentScoreCmp < 0;
         // Improves the intensification but avoids replacing values when the search falls into a plateau or local minima
-        var currentScoreBetter = current.compareTo(lateScore) > 0 && current.compareTo(previous) > 0;
+        var currentScoreBetter = currentScoreCmp > 0 && current.compareTo(previous) > 0;
         if (currentScoreWorse || currentScoreBetter) {
             updateLateScore(current);
         }
@@ -72,16 +73,15 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAccept
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private void updateLateScore(Score newScore) {
-        var newScoreWorse = newScore.compareTo(lateWorse) < 0;
-        var newScoreEqual = newScore.compareTo(lateWorse) == 0;
+        var newScoreWorseCmp = newScore.compareTo(lateWorse);
         var lateScore = (Score) previousScores[lateScoreIndex];
         var lateScoreEqual = lateScore.compareTo(lateWorse) == 0;
-        if (newScoreWorse) {
+        if (newScoreWorseCmp < 0) {
             this.lateWorse = newScore;
             this.lateWorseOccurrences = 1;
-        } else if (lateScoreEqual && !newScoreEqual) {
+        } else if (lateScoreEqual && newScoreWorseCmp != 0) {
             this.lateWorseOccurrences--;
-        } else if (!lateScoreEqual && newScoreEqual) {
+        } else if (!lateScoreEqual && newScoreWorseCmp == 0) {
             this.lateWorseOccurrences++;
         }
         previousScores[lateScoreIndex] = newScore;
