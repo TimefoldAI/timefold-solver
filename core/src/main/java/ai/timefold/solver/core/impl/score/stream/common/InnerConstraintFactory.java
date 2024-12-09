@@ -18,10 +18,10 @@ import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
+import ai.timefold.solver.core.impl.bavet.common.index.joiner.BiJoinerComber;
+import ai.timefold.solver.core.impl.bavet.common.index.joiner.DefaultBiJoiner;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.score.stream.common.bi.BiJoinerComber;
-import ai.timefold.solver.core.impl.score.stream.common.bi.DefaultBiJoiner;
 import ai.timefold.solver.core.impl.score.stream.common.uni.InnerUniConstraintStream;
 
 import org.jspecify.annotations.NonNull;
