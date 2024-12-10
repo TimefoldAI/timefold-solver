@@ -114,7 +114,7 @@ This is an exclusive feature of the xref:enterprise-edition/enterprise-edition.a
 ** Not recommended: This is a marginal gain for a high cost of hardware resources.
 ** Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] during development to determine the algorithm that is the most appropriate on average.
 * *Multitenancy*: solve different datasets in parallel.
-** The xref:using-timefold-solver/running-the-solver.adoc#solverManager[`SolverManager`] can help with that.
+** The xref:using-timefold-solver/running-the-solver.adoc#solverManager[`SolverManager`] can help with this.
 
 image::using-timefold-solver/running-the-solver/multiThreadingStrategies.png[align="center"]
 
