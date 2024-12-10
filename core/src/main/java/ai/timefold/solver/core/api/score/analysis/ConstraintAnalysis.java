@@ -61,6 +61,7 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull Constrai
         }
     }
 
+    @NonNull
     ConstraintAnalysis<Score_> negate() {
         if (matches == null) {
             return new ConstraintAnalysis<>(constraintRef, weight.negate(), score.negate(), null, matchCount);
@@ -72,9 +73,9 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull Constrai
         }
     }
 
-    static <Score_ extends Score<Score_>> ConstraintAnalysis<Score_> diff(
-            ConstraintRef constraintRef, ConstraintAnalysis<Score_> constraintAnalysis,
-            ConstraintAnalysis<Score_> otherConstraintAnalysis) {
+    static <Score_ extends Score<Score_>> @NonNull ConstraintAnalysis<Score_> diff(
+            @NonNull ConstraintRef constraintRef, @Nullable ConstraintAnalysis<Score_> constraintAnalysis,
+            @Nullable ConstraintAnalysis<Score_> otherConstraintAnalysis) {
         if (constraintAnalysis == null) {
             if (otherConstraintAnalysis == null) {
                 throw new IllegalStateException(
@@ -214,10 +215,15 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull Constrai
     @Override
     public String toString() {
         if (matches == null) {
-            return "(%s at %s, no matches)"
-                    .formatted(score, weight);
+            if (matchCount == -1) {
+                return "(%s at %s, constraint matching disabled)"
+                        .formatted(score, weight);
+            } else {
+                return "(%s at %s, %d matches, justifications disabled)"
+                        .formatted(score, weight, matchCount);
+            }
         } else {
-            return "(%s at %s, %s matches)"
+            return "(%s at %s, %d matches with justifications)"
                     .formatted(score, weight, matches.size());
         }
     }
