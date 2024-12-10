@@ -281,7 +281,7 @@ Even `debug` logging can slow down performance considerably for fast stepping al
 (such as Late Acceptance and Simulated Annealing),
 but not for slow stepping algorithms (such as Tabu Search).
 
-Both cause congestion in xref:using-timefold-solver/running-the.solver.adoc#multithreadedSolving[multi-threaded solving] with most appenders,
+Both trace logging and debug logging cause congestion in xref:using-timefold-solver/running-the.solver.adoc#multithreadedSolving[multi-threaded solving] with most appenders,
 see below.
 
 In Eclipse, `debug` logging to the console tends to cause congestion with move evaluation speeds above 10 000 per second.
