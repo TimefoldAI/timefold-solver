@@ -54,8 +54,8 @@ jobs:
 
       - name: Create release branch and switch to it
         run: |
-          git config user.name "Timefold Release Bot"
-          git config user.email "release@timefold.ai"
+          git config --global user.name "Timefold Release Bot"
+          git config --global user.email "release@timefold.ai"
           git checkout -b $RELEASE_BRANCH_NAME
 
       - uses: actions/setup-java@v4
@@ -92,6 +92,8 @@ jobs:
           cp docs/target/antora-template.yml docs/src/antora.yml
           git add docs/src/antora.yml
           find . -name 'pom.xml' | xargs git add
+          git config --global user.name "Timefold Release Bot"
+          git config --global user.email "release@timefold.ai"
           git commit -m "build: release version ${{ github.event.inputs.version }}"
           git push origin $RELEASE_BRANCH_NAME
 
