@@ -98,6 +98,25 @@ The solution instance given to the `solve(Solution)` method does not need to be 
 It can be partially or fully initialized, which is often the case in xref:responding-to-change/responding-to-change.adoc[repeated planning].
 ====
 
+[#multithreadedSolving]
+=== Multi-threaded solving
+
+There are several ways of running the solver in parallel:
+
+* *xref:enterprise-edition/enterprise-edition.adoc#multithreadedIncrementalSolving[Multi-threaded incremental solving]*:
+Solve 1 dataset with multiple threads without sacrificing xref:constraints-and-score/performance.adoc#incrementalScoreCalculationPerformance[incremental score calculation].
+This is an exclusive feature of the xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition].
+
+* *xref:enterprise-edition/enterprise-edition.adoc#partitionedSearch[Partitioned search]*:
+Split 1 dataset in multiple parts and solve them independently.
+This is an exclusive feature of the xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition].
+* *Multi bet solving*: solve 1 dataset with multiple, isolated solvers and take the best result.
+** Not recommended: This is a marginal gain for a high cost of hardware resources.
+** Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] during development to determine the algorithm that is the most appropriate on average.
+* *Multitenancy*: solve different datasets in parallel.
+** The xref:using-timefold-solver/running-the-solver.adoc#solverManager[`SolverManager`] can help with this.
+
+image::using-timefold-solver/running-the-solver/multiThreadingStrategies.png[align="center"]
 
 [#environmentMode]
 == Environment mode: are there bugs in my code?
@@ -262,7 +281,8 @@ Even `debug` logging can slow down performance considerably for fast stepping al
 (such as Late Acceptance and Simulated Annealing),
 but not for slow stepping algorithms (such as Tabu Search).
 
-Both cause congestion in xref:enterprise-edition/enterprise-edition.adoc#multithreadedSolving[multi-threaded solving] with most appenders, see below.
+Both trace logging and debug logging cause congestion in xref:using-timefold-solver/running-the-solver.adoc#multithreadedSolving[multi-threaded solving] with most appenders,
+see below.
 
 In Eclipse, `debug` logging to the console tends to cause congestion with move evaluation speeds above 10 000 per second.
 Nor IntelliJ, nor the Maven command line suffer from this problem.
@@ -371,7 +391,7 @@ logging.config.fileConfig('logging.conf')
 
 [NOTE]
 ====
-When running multiple solvers or a xref:enterprise-edition/enterprise-edition.adoc#multithreadedSolving[multi-threaded solver],
+When running multiple solvers or a xref:using-timefold-solver/running-the-solver.adoc#multithreadedSolving[multi-threaded solver],
 most appenders (including the console) cause congestion with `debug` and `trace` logging.
 Switch to an async appender to avoid this problem or turn off `debug` logging.
 ====
@@ -645,7 +665,7 @@ For example, if set to `4`, submitting five problems
 has four problems solving immediately, and the fifth one starts when another one ends.
 If those problems solve for 5 minutes each, the fifth problem takes 10 minutes to finish.
 By default, `parallelSolverCount` is set to `AUTO`, which resolves to half the CPU cores,
-regardless of the xref:enterprise-edition/enterprise-edition.adoc#multithreadedSolving[`moveThreadCount`] of the solvers.
+regardless of the xref:enterprise-edition/enterprise-edition.adoc#enterpriseMultithreadedSolving[`moveThreadCount`] of the solvers.
 
 To retrieve the best solution, after solving terminates normally, use `SolverJob.getFinalBestSolution()`:
 

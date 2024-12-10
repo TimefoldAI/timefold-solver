@@ -319,7 +319,7 @@ see xref:enterprise-edition/enterprise-edition.adoc#switchToEnterpriseEdition[th
 .icon:info-circle[role=yellow] `LookupStrategyType` deprecated for removal
 [%collapsible%open]
 ====
-`LookupStrategyType` is used in xref:enterprise-edition/enterprise-edition.adoc#multithreadedSolving[multi-threaded solving]
+`LookupStrategyType` is used in xref:enterprise-edition/enterprise-edition.adoc#multithreadedIncrementalSolving[multi-threaded incremental solving]
 to specify how the solver should match entities and facts between parent and child score directors.
 The default value is `PLANNING_ID_OR_NONE`, which means
 that the solver will look up entities by their xref:using-timefold-solver/modeling-planning-problems.adoc#planningId[planning ID].

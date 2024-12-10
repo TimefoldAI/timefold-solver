@@ -1086,7 +1086,8 @@ for example when running benchmarks on an application server or a cloud platform
 
 [NOTE]
 ====
-This feature is independent of xref:enterprise-edition/enterprise-edition.adoc#multithreadedSolving[multithreaded solving].
+This feature is independent of xref:enterprise-edition/enterprise-edition.adoc#multithreadedIncrementalSolving[multi-threaded incremental solving] (an enterprise feature),
+and can be used in Timefold Solver Community Edition as well.
 ====
 
 
