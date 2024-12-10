@@ -31,3 +31,7 @@ release:
           - ci
         contributors:
           - "Timefold Release Bot"
+
+deploy:
+  maven:
+    active: NEVER
