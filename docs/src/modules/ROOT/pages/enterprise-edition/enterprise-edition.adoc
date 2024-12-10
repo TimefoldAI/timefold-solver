@@ -154,7 +154,7 @@ as shown in the following table:
 The following features are only available in Timefold Solver Enterprise Edition:
 
 * <<nearbySelection,Nearby selection>>,
-* <<multithreadedSolving,multi-threaded solving>>,
+* <<multithreadedIncrementalSolving,multi-threaded incremental solving>>,
 * <<partitionedSearch,partitioned search>>,
 * <<automaticNodeSharing,automatic node sharing>>,
 * and <<throttlingBestSolutionEvents, throttling best solution events>>.
@@ -457,41 +457,25 @@ only set the distribution type (so without a `distributionSizeMaximum` parameter
 ----
 
 
-[#multithreadedSolving]
+[#enterpriseMultithreadedSolving]
 === Multi-threaded solving
+
+Multi-threaded solving is a term
+which encapsulates several features that allow Timefold Solver to run on multi-core machines.
+Timefold Solver Enterprise Edition makes multi-threaded solving more powerful by introducing
+<<multithreadedIncrementalSolving,multi-threaded incremental solving>> and
+<<partitionedSearch,partitioned search>>.
+
+For a primer on multi-threaded solving in general, see xref:using-timefold-solver/running-the-solver.adoc#multithreadedSolving[Multi-threaded solving].
+
+[#multithreadedIncrementalSolving]
+==== Multi-threaded incremental solving
 
 [NOTE]
 ====
 This feature is a commercial feature of Timefold Solver Enterprise Edition.
 It is not available in the Community Edition.
 ====
-
-There are several ways of doing multi-threaded solving:
-
-* *<<multithreadedIncrementalSolving,Multi-threaded incremental solving>>*:
-Solve 1 dataset with multiple threads without sacrificing xref:constraints-and-score/performance.adoc#incrementalScoreCalculationPerformance[incremental score calculation].
-** Donate a portion of your CPU cores to Timefold Solver to scale up the move evaluation speed and get the same results in fraction of the time.
-* *<<partitionedSearch,Partitioned Search>>*:
-Split 1 dataset in multiple parts and solve them independently.
-* *Multi bet solving*: solve 1 dataset with multiple, isolated solvers and take the best result.
-** Not recommended: This is a marginal gain for a high cost of hardware resources.
-** Use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] during development to determine the algorithm that is the most appropriate on average.
-* *Multitenancy*: solve different datasets in parallel.
-** The xref:using-timefold-solver/running-the-solver.adoc#solverManager[`SolverManager`] can help with that.
-
-image::enterprise-edition/multiThreadingStrategies.png[align="center"]
-
-In this section, we will focus on multi-threaded incremental solving and partitioned search.
-
-[NOTE]
-====
-A xref:using-timefold-solver/running-the-solver.adoc#logging[logging level] of `debug` or `trace` might cause congestion
-and slow down the xref:constraints-and-score/performance.adoc#moveEvaluationSpeed[move evaluation speed].
-====
-
-
-[#multithreadedIncrementalSolving]
-==== Multi-threaded incremental solving
 
 With this feature, the solver can run significantly faster, 
 getting you the right solution earlier.
