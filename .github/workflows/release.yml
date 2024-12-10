@@ -48,16 +48,6 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.inputs.sourceBranch }}
 
-      - name: Delete release branch (if exists)
-        continue-on-error: true
-        run: git push -d origin $RELEASE_BRANCH_NAME
-
-      - name: Create release branch and switch to it
-        run: |
-          git config user.name "Timefold Release Bot"
-          git config user.email "release@timefold.ai"
-          git checkout -b $RELEASE_BRANCH_NAME
-
       - uses: actions/setup-java@v4
         with:
           java-version: '17'
@@ -93,28 +83,6 @@ jobs:
           git add docs/src/antora.yml
           find . -name 'pom.xml' | xargs git add
           git commit -m "build: release version ${{ github.event.inputs.version }}"
-          git push origin $RELEASE_BRANCH_NAME
-
-      - name: Run JReleaser
-        uses: jreleaser/release-action@v2
-        env:
-          JRELEASER_DRY_RUN: ${{ github.event.inputs.dryRun }}
-          JRELEASER_PROJECT_VERSION: ${{ github.event.inputs.version }}
-          JRELEASER_GITHUB_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
-          JRELEASER_GPG_PASSPHRASE: ${{ secrets.JRELEASER_GPG_PASSPHRASE }}
-          JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.JRELEASER_GPG_PUBLIC_KEY }}
-          JRELEASER_GPG_SECRET_KEY: ${{ secrets.JRELEASER_GPG_SECRET_KEY }}
-          JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.JRELEASER_MAVEN_CENTRAL_TOKEN_USER }}
-          JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.JRELEASER_MAVEN_CENTRAL_TOKEN }}
-
-      - name: JReleaser release output
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: jreleaser-release
-          path: |
-            out/jreleaser/trace.log
-            out/jreleaser/output.properties
 
       - name: Publish distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
