@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.common;
 
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.AbstractTuple;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.UndoScoreImpacter;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.WeightedScoreImpacter;
 

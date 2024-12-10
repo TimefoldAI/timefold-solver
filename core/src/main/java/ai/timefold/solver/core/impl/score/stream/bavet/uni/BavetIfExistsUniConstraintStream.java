@@ -5,15 +5,17 @@ import java.util.Set;
 import java.util.function.BiPredicate;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
+import ai.timefold.solver.core.impl.bavet.common.index.joiner.DefaultBiJoiner;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.bavet.uni.IndexedIfExistsUniNode;
+import ai.timefold.solver.core.impl.bavet.uni.UnindexedIfExistsUniNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetIfExistsConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.score.stream.common.bi.DefaultBiJoiner;
 
 final class BavetIfExistsUniConstraintStream<Solution_, A, B>
         extends BavetAbstractUniConstraintStream<Solution_, A>
@@ -60,7 +62,7 @@ final class BavetIfExistsUniConstraintStream<Solution_, A, B>
     }
 
     @Override
-    public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
+    public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         TupleLifecycle<UniTuple<A>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         IndexerFactory<B> indexerFactory = new IndexerFactory<>(joiner);
         var node = indexerFactory.hasJoiners()
