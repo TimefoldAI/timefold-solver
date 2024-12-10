@@ -11,6 +11,7 @@ import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristi
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchType;
 import ai.timefold.solver.core.config.phase.PhaseConfig;
+import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 
 import org.jspecify.annotations.NonNull;
@@ -35,20 +36,16 @@ public enum SolverBenchmarkBluePrintType {
      */
     EVERY_CONSTRUCTION_HEURISTIC_TYPE_WITH_EVERY_LOCAL_SEARCH_TYPE;
 
-    protected @NonNull List<SolverBenchmarkConfig> buildSolverBenchmarkConfigList() {
-        switch (this) {
-            case CONSTRUCTION_HEURISTIC_WITH_AND_WITHOUT_LOCAL_SEARCH:
-                return buildConstructionHeuristicWithAndWithoutLocalSearch();
-            case EVERY_CONSTRUCTION_HEURISTIC_TYPE:
-                return buildEveryConstructionHeuristicType();
-            case EVERY_LOCAL_SEARCH_TYPE:
-                return buildEveryLocalSearchType();
-            case EVERY_CONSTRUCTION_HEURISTIC_TYPE_WITH_EVERY_LOCAL_SEARCH_TYPE:
-                return buildEveryConstructionHeuristicTypeWithEveryLocalSearchType();
-            default:
-                throw new IllegalStateException("The solverBenchmarkBluePrintType ("
-                        + this + ") is not implemented.");
-        }
+    @NonNull
+    List<SolverBenchmarkConfig> buildSolverBenchmarkConfigList() {
+        return switch (this) {
+            case CONSTRUCTION_HEURISTIC_WITH_AND_WITHOUT_LOCAL_SEARCH ->
+                buildConstructionHeuristicWithAndWithoutLocalSearch();
+            case EVERY_CONSTRUCTION_HEURISTIC_TYPE -> buildEveryConstructionHeuristicType();
+            case EVERY_LOCAL_SEARCH_TYPE -> buildEveryLocalSearchType();
+            case EVERY_CONSTRUCTION_HEURISTIC_TYPE_WITH_EVERY_LOCAL_SEARCH_TYPE ->
+                buildEveryConstructionHeuristicTypeWithEveryLocalSearchType();
+        };
     }
 
     private List<SolverBenchmarkConfig> buildConstructionHeuristicWithAndWithoutLocalSearch() {
@@ -68,10 +65,21 @@ public enum SolverBenchmarkBluePrintType {
     }
 
     private List<SolverBenchmarkConfig> buildEveryLocalSearchType() {
+        return buildEveryLocalSearchType(null);
+    }
+
+    private List<SolverBenchmarkConfig> buildEveryLocalSearchType(ConstructionHeuristicType constructionHeuristicType) {
         LocalSearchType[] lsTypes = LocalSearchType.getBluePrintTypes();
         List<SolverBenchmarkConfig> solverBenchmarkConfigList = new ArrayList<>(lsTypes.length);
         for (LocalSearchType lsType : lsTypes) {
-            solverBenchmarkConfigList.add(buildSolverBenchmarkConfig(null, true, lsType));
+            if (PreviewFeature.DIVERSIFIED_LATE_ACCEPTANCE != null && lsType == LocalSearchType.DIVERSIFIED_LATE_ACCEPTANCE) {
+                // When the preview feature is removed, this will fail at compile time
+                // and the code will have to be adjusted.
+                // Most likely, the preview feature will be promoted to a regular feature,
+                // and this if statement will be removed.
+                continue;
+            }
+            solverBenchmarkConfigList.add(buildSolverBenchmarkConfig(constructionHeuristicType, true, lsType));
         }
         return solverBenchmarkConfigList;
     }
@@ -79,17 +87,15 @@ public enum SolverBenchmarkBluePrintType {
     private List<SolverBenchmarkConfig> buildEveryConstructionHeuristicTypeWithEveryLocalSearchType() {
         ConstructionHeuristicType[] chTypes = ConstructionHeuristicType.getBluePrintTypes();
         LocalSearchType[] lsTypes = LocalSearchType.getBluePrintTypes();
-        List<SolverBenchmarkConfig> solverBenchmarkConfigList = new ArrayList<>(
-                chTypes.length * lsTypes.length);
+        List<SolverBenchmarkConfig> solverBenchmarkConfigList = new ArrayList<>(chTypes.length * lsTypes.length);
         for (ConstructionHeuristicType chType : chTypes) {
-            for (LocalSearchType lsType : lsTypes) {
-                solverBenchmarkConfigList.add(buildSolverBenchmarkConfig(chType, true, lsType));
-            }
+            solverBenchmarkConfigList.addAll(buildEveryLocalSearchType(chType));
         }
         return solverBenchmarkConfigList;
     }
 
-    protected @NonNull SolverBenchmarkConfig buildSolverBenchmarkConfig(
+    @NonNull
+    private SolverBenchmarkConfig buildSolverBenchmarkConfig(
             @Nullable ConstructionHeuristicType constructionHeuristicType,
             boolean localSearchEnabled, @Nullable LocalSearchType localSearchType) {
         SolverBenchmarkConfig solverBenchmarkConfig = new SolverBenchmarkConfig();

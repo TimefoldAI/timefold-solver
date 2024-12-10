@@ -107,27 +107,15 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         } else {
             var localSearchType_ = Objects.requireNonNullElse(localSearchType, LocalSearchType.LATE_ACCEPTANCE);
             var acceptorConfig_ = new LocalSearchAcceptorConfig();
-            switch (localSearchType_) {
-                case HILL_CLIMBING:
-                case VARIABLE_NEIGHBORHOOD_DESCENT:
-                    acceptorConfig_.setAcceptorTypeList(Collections.singletonList(AcceptorType.HILL_CLIMBING));
-                    break;
-                case TABU_SEARCH:
-                    acceptorConfig_.setAcceptorTypeList(Collections.singletonList(AcceptorType.ENTITY_TABU));
-                    break;
-                case SIMULATED_ANNEALING:
-                    acceptorConfig_.setAcceptorTypeList(Collections.singletonList(AcceptorType.SIMULATED_ANNEALING));
-                    break;
-                case LATE_ACCEPTANCE:
-                    acceptorConfig_.setAcceptorTypeList(Collections.singletonList(AcceptorType.LATE_ACCEPTANCE));
-                    break;
-                case GREAT_DELUGE:
-                    acceptorConfig_.setAcceptorTypeList(Collections.singletonList(AcceptorType.GREAT_DELUGE));
-                    break;
-                default:
-                    throw new IllegalStateException("The localSearchType (" + localSearchType_
-                            + ") is not implemented.");
-            }
+            var acceptorType = switch (localSearchType_) {
+                case HILL_CLIMBING, VARIABLE_NEIGHBORHOOD_DESCENT -> AcceptorType.HILL_CLIMBING;
+                case TABU_SEARCH -> AcceptorType.ENTITY_TABU;
+                case SIMULATED_ANNEALING -> AcceptorType.SIMULATED_ANNEALING;
+                case LATE_ACCEPTANCE -> AcceptorType.LATE_ACCEPTANCE;
+                case DIVERSIFIED_LATE_ACCEPTANCE -> AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE;
+                case GREAT_DELUGE -> AcceptorType.GREAT_DELUGE;
+            };
+            acceptorConfig_.setAcceptorTypeList(Collections.singletonList(acceptorType));
             return buildAcceptor(acceptorConfig_, configPolicy);
         }
     }
@@ -161,6 +149,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                     break;
                 case SIMULATED_ANNEALING:
                 case LATE_ACCEPTANCE:
+                case DIVERSIFIED_LATE_ACCEPTANCE:
                 case GREAT_DELUGE:
                     // Fast stepping algorithm
                     foragerConfig_.setAcceptedCountLimit(1);
