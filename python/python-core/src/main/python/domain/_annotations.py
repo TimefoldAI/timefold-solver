@@ -654,12 +654,12 @@ class PlanningScore(JavaAnnotation):
 
 class DeepPlanningClone(JavaAnnotation):
     """
-    Marks a problem fact class as being required to be deep planning cloned.
-    Not needed for a `planning_solution` or `planning_entity` because those are automatically deep cloned.
-    It can also mark an attribute as being required to be deep planning cloned.
+    Marks an attribute as being required to be deep planning cloned.
     This is especially useful for `list` (or `dict`) properties.
     Not needed for a `list` (or `dist`) attribute with a generic type of `planning_entity`,
     because those are automatically deep cloned.
+
+    To annotate a class, use @deep_planning_clone
 
     Notes
     -----
@@ -878,6 +878,32 @@ def constraint_configuration(constraint_configuration_class: Type[Solution_]) ->
     out = add_class_annotation(JavaConstraintConfiguration)(constraint_configuration_class)
     return out
 
+def deep_planning_clone(entity_class: Type[A] = None) -> Type[A]:
+    """
+    Marks a problem fact class as being required to be deep planning cloned.
+    Not needed for a `planning_solution` or `planning_entity` because those are automatically deep cloned.
+
+    To annotate an attribute, use DeepPlanningClone
+
+    Examples
+    --------
+    >>> from timefold.solver.domain import deep_planning_clone
+    >>>
+    >>> @deep_planning_clone
+    ... @dataclass
+    ... class Timeslot:
+    ...     day_of_week: str
+    ...     start_time: time
+    ...     end_time: time
+    """
+    ensure_init()
+    from _jpyinterpreter import add_class_annotation
+    from .._timefold_java_interop import _add_to_compilation_queue
+    from ai.timefold.solver.core.api.domain.solution.cloner import (
+            DeepPlanningClone as JavaDeepPlanningClone)
+    out = add_class_annotation(JavaDeepPlanningClone)(entity_class)
+    _add_to_compilation_queue(entity_class)
+    return out
 
 __all__ = ['PlanningId', 'PlanningScore', 'PlanningPin', 'PlanningPinToIndex',
            'PlanningVariable', 'PlanningVariableGraphType', 'PlanningListVariable',
@@ -888,4 +914,4 @@ __all__ = ['PlanningId', 'PlanningScore', 'PlanningPin', 'PlanningPinToIndex',
            'PlanningEntityProperty', 'PlanningEntityCollectionProperty',
            'ValueRangeProvider', 'DeepPlanningClone', 'ConstraintConfigurationProvider',
            'ConstraintWeight',
-           'planning_entity', 'planning_solution', 'constraint_configuration']
+           'planning_entity', 'planning_solution', 'constraint_configuration', 'deep_planning_clone']
