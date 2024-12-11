@@ -1,12 +1,13 @@
 from _jpyinterpreter import JavaAnnotation
 from enum import Enum
 from jpype import JImplements, JOverride, JClass
-from typing import Union, List, Callable, Type, TypeVar
+from typing import Union, List, Callable, Type, TypeVar, overload
 
 from ._variable_listener import VariableListener
 from .._timefold_java_interop import ensure_init
 
 Solution_ = TypeVar('Solution_')
+Entity_ = TypeVar('Entity_')
 
 
 class PlanningId(JavaAnnotation):
@@ -741,9 +742,13 @@ class _PythonPinningFilter:
     def accept(self, solution, entity):
         return self.delegate(solution, entity)
 
-
-def planning_entity(entity_class: Type = None, /, *, pinning_filter: Callable = None) -> Union[Type,
-                                                                                               Callable[[Type], Type]]:
+@overload
+def planning_entity(entity_class: Type[Entity_]) -> Type[Entity_]:
+    ...
+@overload
+def planning_entity(pinning_filter: Callable = None) -> Callable[[Type[Entity_]], Type[Entity_]]:
+    ...
+def planning_entity(entity_class = None, /, *, pinning_filter = None):
     """
     Specifies that the class is a planning entity.
     There are two types of entities:
