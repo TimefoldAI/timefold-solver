@@ -207,24 +207,6 @@ final class ListVariableState<Solution_> {
         }
     }
 
-    private enum ChangeType {
-
-        BOTH(true, true),
-        INDEX(false, true),
-        NEITHER(false, false);
-
-        final boolean anythingChanged;
-        final boolean entityChanged;
-        final boolean indexChanged;
-
-        ChangeType(boolean entityChanged, boolean indexChanged) {
-            this.anythingChanged = entityChanged || indexChanged;
-            this.entityChanged = entityChanged;
-            this.indexChanged = indexChanged;
-        }
-
-    }
-
     public ElementLocation getLocationInList(Object planningValue) {
         if (requiresLocationMap) {
             var mutableLocationInList = elementLocationMap.get(planningValue);
@@ -317,6 +299,30 @@ final class ListVariableState<Solution_> {
         return unassignedCount;
     }
 
+    private enum ChangeType {
+
+        BOTH(true, true),
+        INDEX(false, true),
+        NEITHER(false, false);
+
+        final boolean anythingChanged;
+        final boolean entityChanged;
+        final boolean indexChanged;
+
+        ChangeType(boolean entityChanged, boolean indexChanged) {
+            this.anythingChanged = entityChanged || indexChanged;
+            this.entityChanged = entityChanged;
+            this.indexChanged = indexChanged;
+        }
+
+    }
+
+    /**
+     * This class is used to avoid creating a new {@link LocationInList} object every time we need to return a location.
+     * The actual value is held in a map and can be updated without doing a put() operation, which is more efficient.
+     * The {@link LocationInList} object is only created when it is actually requested,
+     * and stored until the next time the mutable state is updated and therefore the cache invalidated.
+     */
     private static final class MutableLocationInList {
 
         private Object entity;
