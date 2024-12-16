@@ -26,7 +26,7 @@ final class ListVariableState<Solution_> {
     private boolean requiresLocationMap = true;
     private InnerScoreDirector<Solution_, ?> scoreDirector;
     private int unassignedCount = 0;
-    private Map<Object, LocationInList> elementLocationMap;
+    private Map<Object, MutableLocationInList> elementLocationMap;
 
     public ListVariableState(ListVariableDescriptor<Solution_> sourceVariableDescriptor) {
         this.sourceVariableDescriptor = sourceVariableDescriptor;
@@ -69,8 +69,7 @@ final class ListVariableState<Solution_> {
 
     public void addElement(Object entity, List<Object> elements, Object element, int index) {
         if (requiresLocationMap) {
-            var location = ElementLocation.of(entity, index);
-            var oldLocation = elementLocationMap.put(element, location);
+            var oldLocation = elementLocationMap.put(element, new MutableLocationInList(entity, index));
             if (oldLocation != null) {
                 throw new IllegalStateException(
                         "The supply for list variable (%s) is corrupted, because the element (%s) at index (%d) already exists (%s)."
@@ -100,7 +99,7 @@ final class ListVariableState<Solution_> {
                         "The supply for list variable (%s) is corrupted, because the element (%s) at index (%d) was already unassigned (%s)."
                                 .formatted(sourceVariableDescriptor, element, index, oldElementLocation));
             }
-            var oldIndex = oldElementLocation.index();
+            var oldIndex = oldElementLocation.getIndex();
             if (oldIndex != index) {
                 throw new IllegalStateException(
                         "The supply for list variable (%s) is corrupted, because the element (%s) at index (%d) had an old index (%d) which is not the current index (%d)."
@@ -168,13 +167,22 @@ final class ListVariableState<Solution_> {
 
     private ChangeType processElementLocation(Object entity, Object element, int index) {
         if (requiresLocationMap) { // Update the location and figure out if it is different from previous.
-            var newLocation = ElementLocation.of(entity, index);
-            var oldLocation = elementLocationMap.put(element, newLocation);
+            var oldLocation = elementLocationMap.get(element);
             if (oldLocation == null) {
+                elementLocationMap.put(element, new MutableLocationInList(entity, index));
                 unassignedCount--;
                 return ChangeType.BOTH;
             }
-            return compareLocations(entity, oldLocation.entity(), index, oldLocation.index());
+            var changeType = compareLocations(entity, oldLocation.getEntity(), index, oldLocation.getIndex());
+            if (changeType.anythingChanged) { // Replace the map value in-place, to avoid a put() on the hot path.
+                if (changeType.entityChanged) {
+                    oldLocation.setEntity(entity);
+                }
+                if (changeType.indexChanged) {
+                    oldLocation.setIndex(index);
+                }
+            }
+            return changeType;
         } else { // Read the location and figure out if it is different from previous.
             var oldEntity = getInverseSingleton(element);
             if (oldEntity == null) {
@@ -219,7 +227,11 @@ final class ListVariableState<Solution_> {
 
     public ElementLocation getLocationInList(Object planningValue) {
         if (requiresLocationMap) {
-            return Objects.requireNonNullElse(elementLocationMap.get(planningValue), ElementLocation.unassigned());
+            var mutableLocationInList =  elementLocationMap.get(planningValue);
+            if (mutableLocationInList == null) {
+                return ElementLocation.unassigned();
+            }
+            return mutableLocationInList.getLocationInList();
         } else { // At this point, both inverse and index are externalized.
             var inverse = externalizedInverseProcessor.getInverseSingleton(planningValue);
             if (inverse == null) {
@@ -235,7 +247,7 @@ final class ListVariableState<Solution_> {
             if (elementLocation == null) {
                 return null;
             }
-            return elementLocation.index();
+            return elementLocation.getIndex();
         }
         return externalizedIndexProcessor.getIndex(planningValue);
     }
@@ -246,34 +258,35 @@ final class ListVariableState<Solution_> {
             if (elementLocation == null) {
                 return null;
             }
-            return elementLocation.entity();
+            return elementLocation.getEntity();
         }
         return externalizedInverseProcessor.getInverseSingleton(planningValue);
     }
 
     public Object getPreviousElement(Object element) {
         if (externalizedPreviousElementProcessor == null) {
-            var elementLocation = getLocationInList(element);
-            if (!(elementLocation instanceof LocationInList locationInList)) {
+            var mutableLocationInList = elementLocationMap.get(element);
+            if (mutableLocationInList == null) {
                 return null;
             }
-            var index = locationInList.index();
+            var index = mutableLocationInList.getIndex();
             if (index == 0) {
                 return null;
             }
-            return sourceVariableDescriptor.getValue(locationInList.entity()).get(index - 1);
+            return sourceVariableDescriptor.getValue(mutableLocationInList.getEntity())
+                    .get(index - 1);
         }
         return externalizedPreviousElementProcessor.getElement(element);
     }
 
     public Object getNextElement(Object element) {
         if (externalizedNextElementProcessor == null) {
-            var elementLocation = getLocationInList(element);
-            if (!(elementLocation instanceof LocationInList locationInList)) {
+            var mutableLocationInList = elementLocationMap.get(element);
+            if (mutableLocationInList == null) {
                 return null;
             }
-            var list = sourceVariableDescriptor.getValue(locationInList.entity());
-            var index = locationInList.index();
+            var list = sourceVariableDescriptor.getValue(mutableLocationInList.getEntity());
+            var index = mutableLocationInList.getIndex();
             if (index == list.size() - 1) {
                 return null;
             }
@@ -284,6 +297,59 @@ final class ListVariableState<Solution_> {
 
     public int getUnassignedCount() {
         return unassignedCount;
+    }
+
+    private static final class MutableLocationInList {
+
+        private Object entity;
+        private int index;
+        private LocationInList locationInList;
+
+        public MutableLocationInList(Object entity, int index) {
+            this.entity = entity;
+            this.index = index;
+        }
+
+        public Object getEntity() {
+            return entity;
+        }
+
+        public void setEntity(Object entity) {
+            this.entity = entity;
+            this.locationInList = null;
+        }
+
+        public int getIndex() {
+            return index;
+        }
+
+        public void setIndex(int index) {
+            this.index = index;
+            this.locationInList = null;
+        }
+
+        public LocationInList getLocationInList() {
+            if (locationInList == null) {
+                locationInList = ElementLocation.of(entity, index);
+            }
+            return locationInList;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof MutableLocationInList that)) {
+                return false;
+            }
+            return index == that.index && Objects.equals(entity, that.entity);
+        }
+
+        @Override
+        public int hashCode() {
+            var result = 1;
+            result = 31 * result + (System.identityHashCode(entity));
+            result = 31 * result + (Integer.hashCode(index));
+            return result;
+        }
     }
 
 }
