@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.domain.variable;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
@@ -359,21 +358,6 @@ final class ListVariableState<Solution_> {
             return locationInList;
         }
 
-        @Override
-        public boolean equals(Object o) {
-            if (!(o instanceof MutableLocationInList that)) {
-                return false;
-            }
-            return index == that.index && Objects.equals(entity, that.entity);
-        }
-
-        @Override
-        public int hashCode() {
-            var result = 1;
-            result = 31 * result + (System.identityHashCode(entity));
-            result = 31 * result + (Integer.hashCode(index));
-            return result;
-        }
     }
 
 }
