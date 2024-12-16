@@ -129,8 +129,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
             // Simplify tests.
             stream = Stream.concat(stream,
                     StreamSupport.stream(valueSelector.spliterator(), false)
-                            .map(v -> listVariableStateSupply.getLocationInList(v).ensureAssigned())
-                            .map(locationInList -> ElementLocation.of(locationInList.entity(), locationInList.index() + 1)));
+                            .map(v -> listVariableStateSupply.getNextLocationInList(v)));
             // If the list variable allows unassigned values, add the option of unassigning.
             if (listVariableDescriptor.allowsUnassignedValues()) {
                 stream = Stream.concat(stream, Stream.of(ElementLocation.unassigned()));

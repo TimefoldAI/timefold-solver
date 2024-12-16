@@ -59,12 +59,6 @@ public final class TestdataListUtils {
                 (Object[]) entities);
     }
 
-    public static EntitySelector<TestdataPinnedUnassignedValuesListSolution>
-            mockNeverEndingEntitySelector(TestdataPinnedUnassignedValuesListEntity... entities) {
-        return SelectorTestUtils.mockEntitySelector(TestdataPinnedUnassignedValuesListEntity.buildEntityDescriptor(),
-                (Object[]) entities);
-    }
-
     public static <Solution_> EntityIndependentValueSelector<Solution_> mockEntityIndependentValueSelector(
             ListVariableDescriptor<Solution_> listVariableDescriptor, Object... values) {
         return SelectorTestUtils.mockEntityIndependentValueSelector(listVariableDescriptor, values);

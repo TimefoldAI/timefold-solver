@@ -27,7 +27,7 @@ class ProbabilityMoveSelectorTest {
 
     @Test
     void randomSelection() {
-        MoveSelector<TestdataSolution> childMoveSelector = SelectorTestUtils.mockMoveSelector(DummyMove.class,
+        MoveSelector<TestdataSolution> childMoveSelector = SelectorTestUtils.mockMoveSelector(
                 new DummyMove("e1"), new DummyMove("e2"), new DummyMove("e3"), new DummyMove("e4"));
 
         SelectionProbabilityWeightFactory<TestdataSolution, DummyMove> probabilityWeightFactory =

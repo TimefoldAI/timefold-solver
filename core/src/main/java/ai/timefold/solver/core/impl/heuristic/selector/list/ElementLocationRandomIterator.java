@@ -84,10 +84,8 @@ final class ElementLocationRandomIterator<Solution_> implements Iterator<Element
                     var randomIndex = workingRandom.nextInt(unpinnedSize + 1);
                     return ElementLocation.of(entity, listVariableDescriptor.getFirstUnpinnedIndex(entity) + randomIndex);
                 }
-            } else { // +1 to include the destination after the final element in the list.
-                var elementLocation = listVariableStateSupply.getLocationInList(value)
-                        .ensureAssigned();
-                return ElementLocation.of(elementLocation.entity(), elementLocation.index() + 1);
+            } else { // Include the destination after the final element in the list.
+                return listVariableStateSupply.getNextLocationInList(value);
             }
         }
     }

@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move;
 
 import static ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicyTestUtils.buildHeuristicConfigPolicy;
-import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
@@ -14,7 +13,6 @@ import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
-import ai.timefold.solver.core.impl.heuristic.move.DummyMove;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
@@ -32,7 +30,7 @@ class MoveSelectorFactoryTest {
 
     @Test
     void phaseOriginal() {
-        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector(DummyMove.class);
+        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
         DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
         moveSelectorConfig.setCacheType(SelectionCacheType.PHASE);
         moveSelectorConfig.setSelectionOrder(SelectionOrder.ORIGINAL);
@@ -50,7 +48,7 @@ class MoveSelectorFactoryTest {
 
     @Test
     void stepOriginal() {
-        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector(DummyMove.class);
+        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
         DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
         moveSelectorConfig.setCacheType(SelectionCacheType.STEP);
         moveSelectorConfig.setSelectionOrder(SelectionOrder.ORIGINAL);
@@ -68,7 +66,7 @@ class MoveSelectorFactoryTest {
 
     @Test
     void justInTimeOriginal() {
-        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector(DummyMove.class);
+        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
         DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
         MoveSelectorFactory<TestdataSolution> moveSelectorFactory =
                 new AssertingMoveSelectorFactory(moveSelectorConfig, baseMoveSelector, SelectionCacheType.JUST_IN_TIME, false);
@@ -82,7 +80,7 @@ class MoveSelectorFactoryTest {
 
     @Test
     void phaseRandom() {
-        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector(DummyMove.class);
+        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
         DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
         MoveSelectorFactory<TestdataSolution> moveSelectorFactory =
                 new AssertingMoveSelectorFactory(moveSelectorConfig, baseMoveSelector, SelectionCacheType.PHASE, false);
@@ -100,7 +98,7 @@ class MoveSelectorFactoryTest {
 
     @Test
     void stepRandom() {
-        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector(DummyMove.class);
+        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
         DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
         MoveSelectorFactory<TestdataSolution> moveSelectorFactory =
                 new AssertingMoveSelectorFactory(moveSelectorConfig, baseMoveSelector, SelectionCacheType.STEP, false);
@@ -118,7 +116,7 @@ class MoveSelectorFactoryTest {
 
     @Test
     void justInTimeRandom() {
-        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector(DummyMove.class);
+        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
         DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
         MoveSelectorFactory<TestdataSolution> moveSelectorFactory =
                 new AssertingMoveSelectorFactory(moveSelectorConfig, baseMoveSelector, SelectionCacheType.JUST_IN_TIME, true);
@@ -132,7 +130,7 @@ class MoveSelectorFactoryTest {
 
     @Test
     void phaseShuffled() {
-        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector(DummyMove.class);
+        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
         DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
         MoveSelectorFactory<TestdataSolution> moveSelectorFactory =
                 new AssertingMoveSelectorFactory(moveSelectorConfig, baseMoveSelector, SelectionCacheType.PHASE, false);
@@ -149,7 +147,7 @@ class MoveSelectorFactoryTest {
 
     @Test
     void stepShuffled() {
-        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector(DummyMove.class);
+        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
         DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
         MoveSelectorFactory<TestdataSolution> moveSelectorFactory =
                 new AssertingMoveSelectorFactory(moveSelectorConfig, baseMoveSelector, SelectionCacheType.STEP, false);
@@ -165,7 +163,7 @@ class MoveSelectorFactoryTest {
 
     @Test
     void justInTimeShuffled() {
-        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector(DummyMove.class);
+        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
         DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
         moveSelectorConfig.setCacheType(SelectionCacheType.JUST_IN_TIME);
         moveSelectorConfig.setSelectionOrder(SelectionOrder.SHUFFLED);
@@ -179,7 +177,7 @@ class MoveSelectorFactoryTest {
 
     @Test
     void validateSorting_incompatibleSelectionOrder() {
-        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector(DummyMove.class);
+        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
         DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
         moveSelectorConfig.setSorterOrder(SelectionSorterOrder.ASCENDING);
 
@@ -190,7 +188,7 @@ class MoveSelectorFactoryTest {
 
     @Test
     void applySorting_withoutAnySortingClass() {
-        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector(DummyMove.class);
+        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
         DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
         moveSelectorConfig.setSorterOrder(SelectionSorterOrder.ASCENDING);
 
@@ -203,7 +201,7 @@ class MoveSelectorFactoryTest {
 
     @Test
     void applySorting_withSorterComparatorClass() {
-        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector(DummyMove.class);
+        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
         DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
         moveSelectorConfig.setSorterOrder(SelectionSorterOrder.ASCENDING);
         moveSelectorConfig.setSorterComparatorClass(DummyComparator.class);
@@ -216,7 +214,7 @@ class MoveSelectorFactoryTest {
 
     @Test
     void applyProbability_withProbabilityWeightFactoryClass() {
-        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector(DummyMove.class);
+        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
         DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
         moveSelectorConfig.setCacheType(SelectionCacheType.PHASE);
         moveSelectorConfig.setProbabilityWeightFactoryClass(DummySelectionProbabilityWeightFactory.class);
@@ -241,7 +239,7 @@ class MoveSelectorFactoryTest {
             }
         };
         final MoveSelector<TestdataSolution> baseMoveSelector =
-                SelectorTestUtils.mockMoveSelector(DummyMove.class, notDoableMove);
+                SelectorTestUtils.mockMoveSelector(notDoableMove);
         DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
         MoveSelectorFactory<TestdataSolution> moveSelectorFactory =
                 new DummyMoveSelectorFactory(moveSelectorConfig, baseMoveSelector);

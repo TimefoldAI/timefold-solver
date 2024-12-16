@@ -11,6 +11,7 @@ import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableList
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
+import ai.timefold.solver.core.preview.api.domain.metamodel.LocationInList;
 
 /**
  * Single source of truth for all information about elements inside {@link PlanningListVariable list variables}.
@@ -65,6 +66,18 @@ public interface ListVariableStateSupply<Solution_> extends
      * @return never null
      */
     ElementLocation getLocationInList(Object value);
+
+    /**
+     * Serves as a short-hand for {@link #getLocationInList(Object)} + 1.
+     * This way, we can only allocate the location instance for the next element,
+     * whereas {@link #getLocationInList(Object)} would allocate the location instance for the current element as well.
+     * This is a micro-optimization, but this code lives on the hot path.
+     *
+     * @param value never null
+     * @return never null
+     * @throws IllegalArgumentException if the value is not in the list
+     */
+    LocationInList getNextLocationInList(Object value);
 
     /**
      * Consider calling this before {@link #isAssigned(Object)} to eliminate some map accesses.
