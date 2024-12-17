@@ -4,9 +4,10 @@ import java.util.Objects;
 import java.util.function.BiPredicate;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.bavet.bi.ConditionalBiTupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.BiTuple;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
 
 final class BavetFilterBiConstraintStream<Solution_, A, B>
         extends BavetAbstractBiConstraintStream<Solution_, A, B> {
@@ -28,7 +29,7 @@ final class BavetFilterBiConstraintStream<Solution_, A, B>
     // ************************************************************************
 
     @Override
-    public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
+    public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         buildHelper.<BiTuple<A, B>> putInsertUpdateRetract(this, childStreamList,
                 tupleLifecycle -> new ConditionalBiTupleLifecycle<>(predicate, tupleLifecycle));
     }

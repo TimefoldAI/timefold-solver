@@ -26,6 +26,20 @@ public sealed class MoveDirector<Solution_>
         this.scoreDirector = Objects.requireNonNull(scoreDirector);
     }
 
+    @Override
+    public <Entity_, Value_> void assignValue(
+            @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, @NonNull Value_ planningValue,
+            @NonNull Entity_ destinationEntity, int destinationIndex) {
+
+    }
+
+    @Override
+    public <Entity_, Value_> void unassignValue(
+            @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, @NonNull Value_ movedValue,
+            @NonNull Entity_ sourceEntity, int sourceIndex) {
+
+    }
+
     public final <Entity_, Value_> void changeVariable(
             @NonNull PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             @NonNull Entity_ entity, Value_ newValue) {
@@ -35,40 +49,42 @@ public sealed class MoveDirector<Solution_>
         scoreDirector.afterVariableChanged(variableDescriptor, entity);
     }
 
-    public final <Entity_, Value_> void moveValueBetweenLists(
+    @SuppressWarnings("unchecked")
+    public final <Entity_, Value_> Value_ moveValueBetweenLists(
             @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             @NonNull Entity_ sourceEntity, int sourceIndex, @NonNull Entity_ destinationEntity, int destinationIndex) {
         if (sourceEntity == destinationEntity) {
-            moveValueInList(variableMetaModel, sourceEntity, sourceIndex, destinationIndex);
-            return;
+            return moveValueInList(variableMetaModel, sourceEntity, sourceIndex, destinationIndex);
         }
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
         scoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex + 1);
-        var element = variableDescriptor.removeElement(sourceEntity, sourceIndex);
+        var element = (Value_) variableDescriptor.removeElement(sourceEntity, sourceIndex);
         scoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex);
 
         scoreDirector.beforeListVariableChanged(variableDescriptor, destinationEntity, destinationIndex, destinationIndex);
         variableDescriptor.addElement(destinationEntity, destinationIndex, element);
         scoreDirector.afterListVariableChanged(variableDescriptor, destinationEntity, destinationIndex, destinationIndex + 1);
+        return element;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public final <Entity_, Value_> void moveValueInList(
+    public final <Entity_, Value_> Value_ moveValueInList(
             @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             @NonNull Entity_ entity, int sourceIndex, int destinationIndex) {
         if (sourceIndex == destinationIndex) {
-            return;
+            return null;
         } else if (sourceIndex > destinationIndex) { // Always start from the lower index.
-            moveValueInList(variableMetaModel, entity, destinationIndex, sourceIndex);
-            return;
+            return moveValueInList(variableMetaModel, entity, destinationIndex, sourceIndex);
         }
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
         var toIndex = destinationIndex + 1;
         scoreDirector.beforeListVariableChanged(variableDescriptor, entity, sourceIndex, toIndex);
         var variable = variableDescriptor.getValue(entity);
-        var value = variable.remove(sourceIndex);
+        var value = (Value_) variable.remove(sourceIndex);
         variable.add(destinationIndex, value);
         scoreDirector.afterListVariableChanged(variableDescriptor, entity, sourceIndex, toIndex);
+        return value;
     }
 
     @Override
@@ -86,7 +102,7 @@ public sealed class MoveDirector<Solution_>
 
     @SuppressWarnings("unchecked")
     @Override
-    public final <Entity_, Value_> Value_ getValueAtIndex(
+    public final <Entity_, Value_> @NonNull Value_ getValueAtIndex(
             @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             @NonNull Entity_ entity, int index) {
         return (Value_) extractVariableDescriptor(variableMetaModel).getValue(entity).get(index);
