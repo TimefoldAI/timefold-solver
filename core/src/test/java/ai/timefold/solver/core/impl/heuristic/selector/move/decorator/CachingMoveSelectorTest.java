@@ -38,7 +38,7 @@ class CachingMoveSelectorTest {
     }
 
     public void runOriginalSelection(SelectionCacheType cacheType, int timesCalled) {
-        MoveSelector childMoveSelector = SelectorTestUtils.mockMoveSelector(DummyMove.class,
+        MoveSelector childMoveSelector = SelectorTestUtils.mockMoveSelector(
                 new DummyMove("a1"), new DummyMove("a2"), new DummyMove("a3"));
 
         CachingMoveSelector moveSelector = new CachingMoveSelector(childMoveSelector, cacheType, false);
@@ -112,7 +112,7 @@ class CachingMoveSelectorTest {
     }
 
     public void runRandomSelection(SelectionCacheType cacheType, int timesCalled) {
-        MoveSelector childMoveSelector = SelectorTestUtils.mockMoveSelector(DummyMove.class,
+        MoveSelector childMoveSelector = SelectorTestUtils.mockMoveSelector(
                 new DummyMove("a1"), new DummyMove("a2"), new DummyMove("a3"));
 
         CachingMoveSelector moveSelector = new CachingMoveSelector(childMoveSelector, cacheType, true);

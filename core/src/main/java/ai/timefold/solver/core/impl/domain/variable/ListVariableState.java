@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.domain.variable;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
@@ -26,7 +25,7 @@ final class ListVariableState<Solution_> {
     private boolean requiresLocationMap = true;
     private InnerScoreDirector<Solution_, ?> scoreDirector;
     private int unassignedCount = 0;
-    private Map<Object, LocationInList> elementLocationMap;
+    private Map<Object, MutableLocationInList> elementLocationMap;
 
     public ListVariableState(ListVariableDescriptor<Solution_> sourceVariableDescriptor) {
         this.sourceVariableDescriptor = sourceVariableDescriptor;
@@ -69,8 +68,7 @@ final class ListVariableState<Solution_> {
 
     public void addElement(Object entity, List<Object> elements, Object element, int index) {
         if (requiresLocationMap) {
-            var location = ElementLocation.of(entity, index);
-            var oldLocation = elementLocationMap.put(element, location);
+            var oldLocation = elementLocationMap.put(element, new MutableLocationInList(entity, index));
             if (oldLocation != null) {
                 throw new IllegalStateException(
                         "The supply for list variable (%s) is corrupted, because the element (%s) at index (%d) already exists (%s)."
@@ -100,7 +98,7 @@ final class ListVariableState<Solution_> {
                         "The supply for list variable (%s) is corrupted, because the element (%s) at index (%d) was already unassigned (%s)."
                                 .formatted(sourceVariableDescriptor, element, index, oldElementLocation));
             }
-            var oldIndex = oldElementLocation.index();
+            var oldIndex = oldElementLocation.getIndex();
             if (oldIndex != index) {
                 throw new IllegalStateException(
                         "The supply for list variable (%s) is corrupted, because the element (%s) at index (%d) had an old index (%d) which is not the current index (%d)."
@@ -168,13 +166,22 @@ final class ListVariableState<Solution_> {
 
     private ChangeType processElementLocation(Object entity, Object element, int index) {
         if (requiresLocationMap) { // Update the location and figure out if it is different from previous.
-            var newLocation = ElementLocation.of(entity, index);
-            var oldLocation = elementLocationMap.put(element, newLocation);
+            var oldLocation = elementLocationMap.get(element);
             if (oldLocation == null) {
+                elementLocationMap.put(element, new MutableLocationInList(entity, index));
                 unassignedCount--;
                 return ChangeType.BOTH;
             }
-            return compareLocations(entity, oldLocation.entity(), index, oldLocation.index());
+            var changeType = compareLocations(entity, oldLocation.getEntity(), index, oldLocation.getIndex());
+            if (changeType.anythingChanged) { // Replace the map value in-place, to avoid a put() on the hot path.
+                if (changeType.entityChanged) {
+                    oldLocation.setEntity(entity);
+                }
+                if (changeType.indexChanged) {
+                    oldLocation.setIndex(index);
+                }
+            }
+            return changeType;
         } else { // Read the location and figure out if it is different from previous.
             var oldEntity = getInverseSingleton(element);
             if (oldEntity == null) {
@@ -199,6 +206,80 @@ final class ListVariableState<Solution_> {
         }
     }
 
+    public ElementLocation getLocationInList(Object planningValue) {
+        if (requiresLocationMap) {
+            var mutableLocationInList = elementLocationMap.get(planningValue);
+            if (mutableLocationInList == null) {
+                return ElementLocation.unassigned();
+            }
+            return mutableLocationInList.getLocationInList();
+        } else { // At this point, both inverse and index are externalized.
+            var inverse = externalizedInverseProcessor.getInverseSingleton(planningValue);
+            if (inverse == null) {
+                return ElementLocation.unassigned();
+            }
+            return ElementLocation.of(inverse, externalizedIndexProcessor.getIndex(planningValue));
+        }
+    }
+
+    public Integer getIndex(Object planningValue) {
+        if (externalizedIndexProcessor == null) {
+            var elementLocation = elementLocationMap.get(planningValue);
+            if (elementLocation == null) {
+                return null;
+            }
+            return elementLocation.getIndex();
+        }
+        return externalizedIndexProcessor.getIndex(planningValue);
+    }
+
+    public Object getInverseSingleton(Object planningValue) {
+        if (externalizedInverseProcessor == null) {
+            var elementLocation = elementLocationMap.get(planningValue);
+            if (elementLocation == null) {
+                return null;
+            }
+            return elementLocation.getEntity();
+        }
+        return externalizedInverseProcessor.getInverseSingleton(planningValue);
+    }
+
+    public Object getPreviousElement(Object element) {
+        if (externalizedPreviousElementProcessor == null) {
+            var mutableLocationInList = elementLocationMap.get(element);
+            if (mutableLocationInList == null) {
+                return null;
+            }
+            var index = mutableLocationInList.getIndex();
+            if (index == 0) {
+                return null;
+            }
+            return sourceVariableDescriptor.getValue(mutableLocationInList.getEntity())
+                    .get(index - 1);
+        }
+        return externalizedPreviousElementProcessor.getElement(element);
+    }
+
+    public Object getNextElement(Object element) {
+        if (externalizedNextElementProcessor == null) {
+            var mutableLocationInList = elementLocationMap.get(element);
+            if (mutableLocationInList == null) {
+                return null;
+            }
+            var list = sourceVariableDescriptor.getValue(mutableLocationInList.getEntity());
+            var index = mutableLocationInList.getIndex();
+            if (index == list.size() - 1) {
+                return null;
+            }
+            return list.get(index + 1);
+        }
+        return externalizedNextElementProcessor.getElement(element);
+    }
+
+    public int getUnassignedCount() {
+        return unassignedCount;
+    }
+
     private enum ChangeType {
 
         BOTH(true, true),
@@ -217,73 +298,48 @@ final class ListVariableState<Solution_> {
 
     }
 
-    public ElementLocation getLocationInList(Object planningValue) {
-        if (requiresLocationMap) {
-            return Objects.requireNonNullElse(elementLocationMap.get(planningValue), ElementLocation.unassigned());
-        } else { // At this point, both inverse and index are externalized.
-            var inverse = externalizedInverseProcessor.getInverseSingleton(planningValue);
-            if (inverse == null) {
-                return ElementLocation.unassigned();
-            }
-            return ElementLocation.of(inverse, externalizedIndexProcessor.getIndex(planningValue));
-        }
-    }
+    /**
+     * This class is used to avoid creating a new {@link LocationInList} object every time we need to return a location.
+     * The actual value is held in a map and can be updated without doing a put() operation, which is more efficient.
+     * The {@link LocationInList} object is only created when it is actually requested,
+     * and stored until the next time the mutable state is updated and therefore the cache invalidated.
+     */
+    private static final class MutableLocationInList {
 
-    public Integer getIndex(Object planningValue) {
-        if (externalizedIndexProcessor == null) {
-            var elementLocation = elementLocationMap.get(planningValue);
-            if (elementLocation == null) {
-                return null;
-            }
-            return elementLocation.index();
-        }
-        return externalizedIndexProcessor.getIndex(planningValue);
-    }
+        private Object entity;
+        private int index;
+        private LocationInList locationInList;
 
-    public Object getInverseSingleton(Object planningValue) {
-        if (externalizedInverseProcessor == null) {
-            var elementLocation = elementLocationMap.get(planningValue);
-            if (elementLocation == null) {
-                return null;
-            }
-            return elementLocation.entity();
+        public MutableLocationInList(Object entity, int index) {
+            this.entity = entity;
+            this.index = index;
         }
-        return externalizedInverseProcessor.getInverseSingleton(planningValue);
-    }
 
-    public Object getPreviousElement(Object element) {
-        if (externalizedPreviousElementProcessor == null) {
-            var elementLocation = getLocationInList(element);
-            if (!(elementLocation instanceof LocationInList locationInList)) {
-                return null;
-            }
-            var index = locationInList.index();
-            if (index == 0) {
-                return null;
-            }
-            return sourceVariableDescriptor.getValue(locationInList.entity()).get(index - 1);
+        public Object getEntity() {
+            return entity;
         }
-        return externalizedPreviousElementProcessor.getElement(element);
-    }
 
-    public Object getNextElement(Object element) {
-        if (externalizedNextElementProcessor == null) {
-            var elementLocation = getLocationInList(element);
-            if (!(elementLocation instanceof LocationInList locationInList)) {
-                return null;
-            }
-            var list = sourceVariableDescriptor.getValue(locationInList.entity());
-            var index = locationInList.index();
-            if (index == list.size() - 1) {
-                return null;
-            }
-            return list.get(index + 1);
+        public void setEntity(Object entity) {
+            this.entity = entity;
+            this.locationInList = null;
         }
-        return externalizedNextElementProcessor.getElement(element);
-    }
 
-    public int getUnassignedCount() {
-        return unassignedCount;
+        public int getIndex() {
+            return index;
+        }
+
+        public void setIndex(int index) {
+            this.index = index;
+            this.locationInList = null;
+        }
+
+        public LocationInList getLocationInList() {
+            if (locationInList == null) {
+                locationInList = ElementLocation.of(entity, index);
+            }
+            return locationInList;
+        }
+
     }
 
 }

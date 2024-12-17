@@ -42,7 +42,7 @@ class FilteringMoveSelectorTest {
     }
 
     public void filter(SelectionCacheType cacheType, int timesCalled) {
-        MoveSelector childMoveSelector = SelectorTestUtils.mockMoveSelector(DummyMove.class,
+        MoveSelector childMoveSelector = SelectorTestUtils.mockMoveSelector(
                 new DummyMove("a1"), new DummyMove("a2"), new DummyMove("a3"), new DummyMove("a4"));
 
         SelectionFilter<TestdataSolution, DummyMove> filter = (scoreDirector, move) -> !move.getCode().equals("a3");

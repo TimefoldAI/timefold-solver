@@ -37,7 +37,7 @@ class ShufflingMoveSelectorTest {
     }
 
     public void run(SelectionCacheType cacheType, int timesCalled) {
-        MoveSelector childMoveSelector = SelectorTestUtils.mockMoveSelector(DummyMove.class,
+        MoveSelector childMoveSelector = SelectorTestUtils.mockMoveSelector(
                 new DummyMove("a1"), new DummyMove("a2"), new DummyMove("a3"));
 
         ShufflingMoveSelector moveSelector = new ShufflingMoveSelector(childMoveSelector, cacheType);

@@ -187,7 +187,7 @@ public class SelectorTestUtils {
     }
 
     @SafeVarargs
-    public static <Solution_> MoveSelector<Solution_> mockMoveSelector(Class<?> moveClass, Move<Solution_>... moves) {
+    public static <Solution_> MoveSelector<Solution_> mockMoveSelector(Move<Solution_>... moves) {
         MoveSelector<Solution_> moveSelector = mock(MoveSelector.class);
         final List<Move<Solution_>> moveList = Arrays.asList(moves);
         when(moveSelector.iterator()).thenAnswer(invocation -> moveList.iterator());

@@ -24,7 +24,7 @@ class PooledEntityPlacerTest {
 
     @Test
     void oneMoveSelector() {
-        MoveSelector<TestdataSolution> moveSelector = SelectorTestUtils.mockMoveSelector(DummyMove.class,
+        MoveSelector<TestdataSolution> moveSelector = SelectorTestUtils.mockMoveSelector(
                 new DummyMove("a1"), new DummyMove("a2"), new DummyMove("b1"));
 
         PooledEntityPlacer<TestdataSolution> placer = new PooledEntityPlacer<>(moveSelector);

@@ -45,7 +45,7 @@ class SortingMoveSelectorTest {
     }
 
     public void runCacheType(SelectionCacheType cacheType, int timesCalled) {
-        MoveSelector childMoveSelector = SelectorTestUtils.mockMoveSelector(DummyMove.class,
+        MoveSelector childMoveSelector = SelectorTestUtils.mockMoveSelector(
                 new DummyMove("jan"), new DummyMove("feb"), new DummyMove("mar"),
                 new DummyMove("apr"), new DummyMove("may"), new DummyMove("jun"));
 
