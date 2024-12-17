@@ -8,7 +8,6 @@ import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVa
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
-import ai.timefold.solver.core.preview.api.domain.metamodel.LocationInList;
 
 import org.jspecify.annotations.NonNull;
 
@@ -127,11 +126,6 @@ final class ExternalizedListVariableStateSupply<Solution_>
     @Override
     public ElementLocation getLocationInList(Object planningValue) {
         return listVariableState.getLocationInList(planningValue);
-    }
-
-    @Override
-    public LocationInList getNextLocationInList(Object planningValue) {
-        return listVariableState.getNextLocationInList(planningValue);
     }
 
     @Override

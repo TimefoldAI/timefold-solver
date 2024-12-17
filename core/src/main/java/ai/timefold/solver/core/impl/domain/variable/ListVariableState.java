@@ -222,24 +222,6 @@ final class ListVariableState<Solution_> {
         }
     }
 
-    public LocationInList getNextLocationInList(Object planningValue) {
-        if (requiresLocationMap) {
-            var mutableLocationInList = elementLocationMap.get(planningValue);
-            if (mutableLocationInList == null) {
-                throw new IllegalArgumentException("The element (%s) is not assigned (%s)."
-                        .formatted(planningValue, sourceVariableDescriptor));
-            }
-            return ElementLocation.of(mutableLocationInList.getEntity(), mutableLocationInList.getIndex() + 1);
-        } else { // At this point, both inverse and index are externalized.
-            var inverse = externalizedInverseProcessor.getInverseSingleton(planningValue);
-            if (inverse == null) {
-                throw new IllegalArgumentException("The element (%s) is not assigned (%s)."
-                        .formatted(planningValue, sourceVariableDescriptor));
-            }
-            return ElementLocation.of(inverse, externalizedIndexProcessor.getIndex(planningValue) + 1);
-        }
-    }
-
     public Integer getIndex(Object planningValue) {
         if (externalizedIndexProcessor == null) {
             var elementLocation = elementLocationMap.get(planningValue);
