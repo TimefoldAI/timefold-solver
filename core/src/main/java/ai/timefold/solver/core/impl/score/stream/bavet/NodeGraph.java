@@ -1,8 +1,10 @@
 package ai.timefold.solver.core.impl.score.stream.bavet;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetAbstractConstraintStream;
@@ -44,6 +46,10 @@ public record NodeGraph(List<AbstractNode> sources, List<GraphEdge> edges, List<
                 sinkList.stream().distinct().toList());
     }
 
+    public boolean isSource(AbstractNode node) {
+        return sources.contains(node);
+    }
+
     public String buildDOT() {
         var sb = new StringBuilder("digraph G {\n");
         var allNodes = new LinkedHashSet<AbstractNode>();
@@ -67,13 +73,39 @@ public record NodeGraph(List<AbstractNode> sources, List<GraphEdge> edges, List<
             sb.append(nodeId(sink.node())).append(" -> ").append(constraintId(i)).append(";\n");
         }
         for (var node : allNodes) {
-            sb.append(nodeId(node)).append(" [label=\"").append(nodeLabel(node)).append("\"];\n");
+            sb.append(nodeId(node)).append(" ").append(getMetadata(node)).append(";\n");
         }
         for (int i = 0; i < sinks.size(); i++) {
             var sink = sinks.get(i);
-            sb.append(constraintId(i)).append(" [label=\"").append(sink.constraint().getConstraintRef().constraintName()).append("\"];\n");
+            sb.append(constraintId(i)).append(" ").append(getMetadata(sink)).append(";\n");
         }
         return sb.append("}").toString();
+    }
+
+    private String getMetadata(AbstractNode node) {
+        var metadata = new HashMap<String, String>();
+        if (isSource(node)) {
+            metadata.put("shape", "ellipse");
+            metadata.put("style", "filled");
+            metadata.put("fillcolor", "lightblue");
+        } else {
+            metadata.put("shape", "box");
+        }
+        metadata.put("label", nodeLabel(node));
+        return metadata.entrySet().stream()
+                .map(entry -> "%s=\"%s\"".formatted(entry.getKey(), entry.getValue()))
+                .collect(Collectors.joining(", ", "[", "]"));
+    }
+
+    private String getMetadata(GraphSink sink) {
+        var metadata = new HashMap<String, String>();
+        metadata.put("shape", "ellipse");
+        metadata.put("style", "filled");
+        metadata.put("fillcolor", "lightgreen");
+        metadata.put("label", sink.constraint().getConstraintRef().constraintName());
+        return metadata.entrySet().stream()
+                .map(entry -> "%s=\"%s\"".formatted(entry.getKey(), entry.getValue()))
+                .collect(Collectors.joining(", ", "[", "]"));
     }
 
     private String nodeId(AbstractNode node) {
