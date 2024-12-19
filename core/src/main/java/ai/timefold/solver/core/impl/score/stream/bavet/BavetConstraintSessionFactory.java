@@ -1,5 +1,8 @@
 package ai.timefold.solver.core.impl.score.stream.bavet;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -119,12 +122,12 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
             LOGGER.atLevel(CONSTRAINT_WEIGHT_LOGGING_LEVEL)
                     .log(constraintWeightString.toString().trim());
         }
-        return new BavetConstraintSession<>(scoreInliner, buildNodeNetwork(constraintStreamSet, scoreInliner));
+        return new BavetConstraintSession<>(scoreInliner, buildNodeNetwork(workingSolution, constraintStreamSet, scoreInliner));
     }
 
     @SuppressWarnings("unchecked")
     private static <Solution_, Score_ extends Score<Score_>> NodeNetwork buildNodeNetwork(
-            Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet, AbstractScoreInliner<Score_> scoreInliner) {
+            Solution_ solution, Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet, AbstractScoreInliner<Score_> scoreInliner) {
         /*
          * Build constraintStreamSet in reverse order to create downstream nodes first
          * so every node only has final variables (some of which have downstream node method references).
@@ -169,8 +172,12 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
             var layer = layerMap.get((long) i);
             layeredNodes[i] = layer.toArray(new Propagator[0]);
         }
-        var graph = NodeGraph.of(buildHelper, nodeList, scoreInliner);
-        System.out.println(graph.buildDOT());
+        var graph = NodeGraph.of(solution.toString(), buildHelper, nodeList, scoreInliner);
+        try (var writer = Files.newBufferedWriter(Path.of("graph.dot"))) {
+            graph.buildDOT(writer);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to write graph to file.", e);
+        }
         return new NodeNetwork(declaredClassToNodeMap, layeredNodes);
     }
 
