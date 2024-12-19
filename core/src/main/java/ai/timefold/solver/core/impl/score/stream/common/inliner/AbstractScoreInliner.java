@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Supplier;
 
@@ -224,8 +225,7 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
                     if (indictedObject == null) { // Users may have sent null, or it came from the default mapping.
                         continue;
                     }
-                    var indictment =
-                            (DefaultIndictment<Score_>) getIndictment(workingIndictmentMap, constraintMatch, indictedObject);
+                    var indictment = getIndictment(workingIndictmentMap, constraintMatch, indictedObject);
                     /*
                      * Optimization: In order to not have to go over the indicted object list and remove duplicates,
                      * we use a method that will silently skip duplicate constraint matches.
@@ -247,6 +247,10 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
             indictmentMap.put(indictedObject, indictment);
         }
         return indictment;
+    }
+
+    public Set<Constraint> getConstraints() {
+        return constraintWeightMap.keySet();
     }
 
     private static final class ConstraintMatchCarrier<Score_ extends Score<Score_>>

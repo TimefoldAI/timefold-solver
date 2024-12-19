@@ -169,6 +169,8 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
             var layer = layerMap.get((long) i);
             layeredNodes[i] = layer.toArray(new Propagator[0]);
         }
+        var graph = NodeGraph.of(buildHelper, nodeList, scoreInliner);
+        System.out.println(graph.buildDOT());
         return new NodeNetwork(declaredClassToNodeMap, layeredNodes);
     }
 
