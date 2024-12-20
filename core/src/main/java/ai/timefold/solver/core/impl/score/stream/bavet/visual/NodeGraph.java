@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.score.stream.bavet;
+package ai.timefold.solver.core.impl.score.stream.bavet.visual;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -13,6 +13,7 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraint;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetStreamBinaryOperation;
@@ -21,9 +22,11 @@ import ai.timefold.solver.core.impl.score.stream.bavet.uni.AbstractForEachUniNod
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.BavetForEachUniConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 
-public record NodeGraph(String name, List<AbstractNode> sources, List<GraphEdge> edges, List<GraphSink> sinks) {
+public record NodeGraph<Solution_>(Solution_ solution, List<AbstractNode> sources, List<GraphEdge> edges,
+        List<GraphSink<Solution_>> sinks) {
 
-    public static NodeGraph of(String name, NodeBuildHelper<?> buildHelper, List<AbstractNode> nodeList,
+    public static <Solution_> NodeGraph<Solution_> of(Solution_ solution, NodeBuildHelper<?> buildHelper,
+            List<AbstractNode> nodeList,
             AbstractScoreInliner<?> scoreInliner) {
         var sourceList = new ArrayList<AbstractNode>();
         var edgeList = new ArrayList<GraphEdge>();
@@ -41,14 +44,14 @@ public record NodeGraph(String name, List<AbstractNode> sources, List<GraphEdge>
                 edgeList.add(new GraphEdge(parent, node));
             }
         }
-        var sinkList = new ArrayList<GraphSink>();
+        var sinkList = new ArrayList<GraphSink<Solution_>>();
         for (var constraint : scoreInliner.getConstraints()) {
-            var castConstraint = (BavetConstraint<?>) constraint;
+            var castConstraint = (BavetConstraint<Solution_>) constraint;
             var stream = (BavetAbstractConstraintStream<?>) castConstraint.getScoringConstraintStream();
             var node = buildHelper.findParentNode(stream);
-            sinkList.add(new GraphSink(node, castConstraint));
+            sinkList.add(new GraphSink<>(node, castConstraint));
         }
-        return new NodeGraph(name, sourceList.stream().distinct().toList(),
+        return new NodeGraph<>(solution, sourceList.stream().distinct().toList(),
                 edgeList.stream().distinct().toList(),
                 sinkList.stream().distinct().toList());
     }
@@ -64,7 +67,7 @@ public record NodeGraph(String name, List<AbstractNode> sources, List<GraphEdge>
                 .sorted(Comparator.comparingLong(AbstractNode::getId))
                 .toList();
         writer.append("label=\"Bavet Node Network for '%s'\\n%d constraints, %d nodes\"\n"
-                .formatted(name, sinks.size(), allNodes.size()));
+                .formatted(solution.toString(), sinks.size(), allNodes.size()));
         // Specify the edges.
         for (AbstractNode node : allNodes) {
             for (var edge : edges) {
@@ -83,7 +86,7 @@ public record NodeGraph(String name, List<AbstractNode> sources, List<GraphEdge>
         }
         for (int i = 0; i < sinks.size(); i++) {
             var sink = sinks.get(i);
-            writer.append(constraintId(i)).append(" ").append(getMetadata(sink)).append(";\n");
+            writer.append(constraintId(i)).append(" ").append(getMetadata(sink, solution)).append(";\n");
         }
         // Put nodes in the same layer to appear in the same rank.
         SortedMap<Long, Set<AbstractNode>> layerMap = new TreeMap<>();
@@ -116,12 +119,14 @@ public record NodeGraph(String name, List<AbstractNode> sources, List<GraphEdge>
                 .collect(Collectors.joining(", ", "[", "]"));
     }
 
-    private String getMetadata(GraphSink sink) {
+    private String getMetadata(GraphSink<Solution_> sink, Solution_ solution) {
+        var constraint = sink.constraint();
         var metadata = new HashMap<String, String>();
         metadata.put("shape", "ellipse");
         metadata.put("style", "filled");
         metadata.put("fillcolor", "lightgreen");
-        metadata.put("label", sink.constraint().getConstraintRef().constraintName());
+        metadata.put("label", "%s\\n(Weight: %s)"
+                .formatted(constraint.getConstraintRef().constraintName(), constraint.extractConstraintWeight(solution)));
         return metadata.entrySet().stream()
                 .map(entry -> "%s=\"%s\"".formatted(entry.getKey(), entry.getValue()))
                 .collect(Collectors.joining(", ", "[", "]"));
