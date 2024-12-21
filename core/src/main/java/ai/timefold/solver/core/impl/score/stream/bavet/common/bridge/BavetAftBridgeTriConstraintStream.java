@@ -3,10 +3,10 @@ package ai.timefold.solver.core.impl.score.stream.bavet.common.bridge;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.bavet.common.TupleSource;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetAbstractConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.TupleSource;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.bavet.tri.BavetAbstractTriConstraintStream;
 
 public final class BavetAftBridgeTriConstraintStream<Solution_, A, B, C>
@@ -19,7 +19,7 @@ public final class BavetAftBridgeTriConstraintStream<Solution_, A, B, C>
     }
 
     @Override
-    public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
+    public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         // Do nothing. The parent stream builds everything.
     }
 

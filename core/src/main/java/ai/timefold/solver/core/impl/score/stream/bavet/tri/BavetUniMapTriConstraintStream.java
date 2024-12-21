@@ -4,8 +4,9 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.bavet.tri.MapTriToUniNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetAftBridgeUniConstraintStream;
 
 final class BavetUniMapTriConstraintStream<Solution_, A, B, C, NewA>
@@ -34,7 +35,7 @@ final class BavetUniMapTriConstraintStream<Solution_, A, B, C, NewA>
     }
 
     @Override
-    public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
+    public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         assertEmptyChildStreamList();
         int inputStoreIndex = buildHelper.reserveTupleStoreIndex(parent.getTupleSource());
         int outputStoreSize = buildHelper.extractTupleStoreSize(aftStream);

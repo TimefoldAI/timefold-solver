@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.score.stream.bavet.common.bridge;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.BavetAbstractUniConstraintStream;
 
 public final class BavetForeBridgeUniConstraintStream<Solution_, A>
@@ -18,7 +18,7 @@ public final class BavetForeBridgeUniConstraintStream<Solution_, A>
     // ************************************************************************
 
     @Override
-    public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
+    public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         // Do nothing. The child stream builds everything.
     }
 
