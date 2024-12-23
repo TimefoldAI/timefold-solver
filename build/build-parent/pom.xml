@@ -24,7 +24,7 @@
     <version.io.quarkus>3.17.4</version.io.quarkus>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
     <version.org.apache.logging.log4j>2.24.3</version.org.apache.logging.log4j>
-    <version.org.assertj>3.26.3</version.org.assertj>
+    <version.org.assertj>3.27.0</version.org.assertj>
     <version.org.freemarker>2.3.34</version.org.freemarker>
     <version.org.jspecify>1.0.0</version.org.jspecify>
     <version.org.openrewrite.recipe>2.23.2</version.org.openrewrite.recipe>
