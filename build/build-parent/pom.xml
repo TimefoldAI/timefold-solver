@@ -27,7 +27,7 @@
     <version.org.assertj>3.26.3</version.org.assertj>
     <version.org.freemarker>2.3.33</version.org.freemarker>
     <version.org.jspecify>1.0.0</version.org.jspecify>
-    <version.org.openrewrite.recipe>2.23.1</version.org.openrewrite.recipe>
+    <version.org.openrewrite.recipe>2.23.2</version.org.openrewrite.recipe>
     <version.org.springframework.boot>3.4.0</version.org.springframework.boot>
     <version.ow2.asm>9.7.1</version.ow2.asm>
 
