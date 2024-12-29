@@ -265,7 +265,7 @@ Add the subsequent dependencies to your `build.gradle`:
 --
 ====
 
-include::../shared/constrainttests.adoc
+include::../shared/constrainttests.adoc[]
 
 ==== Test the solver
 
