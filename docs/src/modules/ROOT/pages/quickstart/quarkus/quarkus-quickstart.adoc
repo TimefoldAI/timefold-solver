@@ -311,8 +311,10 @@ import io.restassured.http.ContentType;
 class TimetableResourceTest {
 
     @Test
-    void solveDemoDataUntilFeasible() {
-        Timetable testTimetable = // setup test data
+    void solveDemoDataUntilFeasible() throws IOException {
+        Timetable testTimetable = new ObjectMapper()
+                .findAndRegisterModules()
+                .readValue(new File("src/test/resources/testing-timetable.json"), Timetable.class);
 
         Timetable solution = given()
                 .contentType(ContentType.JSON)
