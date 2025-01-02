@@ -3,10 +3,11 @@ package ai.timefold.solver.core.impl.score.stream.common;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
+import ai.timefold.solver.core.impl.bavet.common.BavetStream;
 
 import org.jspecify.annotations.NonNull;
 
-public abstract class AbstractConstraintStream<Solution_> implements ConstraintStream {
+public abstract class AbstractConstraintStream<Solution_> implements ConstraintStream, BavetStream {
 
     private final RetrievalSemantics retrievalSemantics;
 

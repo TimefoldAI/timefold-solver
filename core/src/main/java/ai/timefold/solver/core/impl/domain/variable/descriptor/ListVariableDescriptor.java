@@ -154,26 +154,35 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
         return (List<Object>) value;
     }
 
-    public Object removeElement(Object entity, int index) {
-        return getValue(entity).remove(index);
+    @SuppressWarnings("unchecked")
+    public <Value_> Value_ removeElement(Object entity, int index) {
+        var list = getValue(entity);
+        if (list.size() <= index) {
+            throw new IllegalArgumentException(
+                    "The index to remove (%s) must be less than the size (%s) of the planning list variable (%s) of entity (%s)."
+                            .formatted(index, list.size(), this, entity));
+        }
+        return (Value_) list.remove(index);
     }
 
     public void addElement(Object entity, int index, Object element) {
         getValue(entity).add(index, element);
     }
 
-    public Object getElement(Object entity, int index) {
+    @SuppressWarnings("unchecked")
+    public <Value_> Value_ getElement(Object entity, int index) {
         var values = getValue(entity);
         if (index >= values.size()) {
             throw new IndexOutOfBoundsException(
                     "Impossible state: The index (%s) must be less than the size (%s) of the planning list variable (%s) of entity (%s)."
                             .formatted(index, values.size(), this, entity));
         }
-        return values.get(index);
+        return (Value_) values.get(index);
     }
 
-    public Object setElement(Object entity, int index, Object element) {
-        return getValue(entity).set(index, element);
+    @SuppressWarnings("unchecked")
+    public <Value_> Value_ setElement(Object entity, int index, Value_ element) {
+        return (Value_) getValue(entity).set(index, element);
     }
 
     public int getListSize(Object entity) {

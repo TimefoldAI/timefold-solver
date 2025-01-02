@@ -108,7 +108,7 @@ class ListChangeMoveTest {
         move.doMoveOnly(scoreDirector);
         // ...V2 ends up at the destinationIndex
         assertThat(e.getValueList().indexOf(v2)).isEqualTo(destinationIndex);
-        assertThat(variableDescriptor.getElement(e, destinationIndex)).isEqualTo(v2);
+        assertThat((TestdataListValue) variableDescriptor.getElement(e, destinationIndex)).isEqualTo(v2);
         // ...and the modified value list matches the expectation.
         assertThat(e.getValueList()).map(TestdataObject::toString).isEqualTo(expectedValueList);
 
