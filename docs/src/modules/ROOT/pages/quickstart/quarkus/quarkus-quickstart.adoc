@@ -265,7 +265,7 @@ Add the subsequent dependencies to your `build.gradle`:
 --
 ====
 
-include::../shared/constrainttests.adoc
+include::../shared/constrainttests.adoc[]
 
 ==== Test the solver
 
@@ -311,14 +311,16 @@ import io.restassured.http.ContentType;
 class TimetableResourceTest {
 
     @Test
-    void solveDemoDataUntilFeasible() {
-        Timetable testTimetable = // setup test data
+    void solveDemoDataUntilFeasible() throws IOException {
+        Timetable testTimetable = new ObjectMapper()
+                .findAndRegisterModules()
+                .readValue(new File("src/test/resources/testing-timetable.json"), Timetable.class);
 
         Timetable solution = given()
                 .contentType(ContentType.JSON)
                 .body(testTimetable)
-                .expect().contentType(ContentType.TEXT)
-                .when().post("/timetables")
+                .expect().contentType(ContentType.JSON)
+                .when().post("/timetables/solve")
                 .then()
                 .statusCode(200)
                 .extract()
