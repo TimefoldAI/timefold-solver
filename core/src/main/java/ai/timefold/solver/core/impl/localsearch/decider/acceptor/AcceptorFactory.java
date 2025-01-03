@@ -46,7 +46,7 @@ public class AcceptorFactory<Solution_> {
                 buildValueTabuAcceptor(configPolicy),
                 buildMoveTabuAcceptor(configPolicy),
                 buildSimulatedAnnealingAcceptor(configPolicy),
-                buildLateAcceptanceAcceptor(),
+                buildLateAcceptanceAcceptor(configPolicy),
                 buildDiversifiedLateAcceptanceAcceptor(configPolicy),
                 buildGreatDelugeAcceptor(configPolicy))
                 .filter(Optional::isPresent)
@@ -215,11 +215,16 @@ public class AcceptorFactory<Solution_> {
         return Optional.empty();
     }
 
-    private Optional<LateAcceptanceAcceptor<Solution_>> buildLateAcceptanceAcceptor() {
+    private Optional<LateAcceptanceAcceptor<Solution_>>
+            buildLateAcceptanceAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.LATE_ACCEPTANCE)
                 || (!acceptorTypeListsContainsAcceptorType(AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE)
                         && acceptorConfig.getLateAcceptanceSize() != null)) {
-            var acceptor = new LateAcceptanceAcceptor<Solution_>();
+            var enableReconfiguration = Objects.requireNonNullElse(acceptorConfig.getEnableReconfiguration(), false);
+            if (enableReconfiguration) {
+                configPolicy.ensurePreviewFeature(PreviewFeature.ACCEPTOR_RECONFIGURATION);
+            }
+            var acceptor = new LateAcceptanceAcceptor<Solution_>(enableReconfiguration);
             acceptor.setLateAcceptanceSize(Objects.requireNonNullElse(acceptorConfig.getLateAcceptanceSize(), 400));
             return Optional.of(acceptor);
         }
@@ -230,7 +235,11 @@ public class AcceptorFactory<Solution_> {
             buildDiversifiedLateAcceptanceAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE)) {
             configPolicy.ensurePreviewFeature(PreviewFeature.DIVERSIFIED_LATE_ACCEPTANCE);
-            var acceptor = new DiversifiedLateAcceptanceAcceptor<Solution_>();
+            var enableReconfiguration = Objects.requireNonNullElse(acceptorConfig.getEnableReconfiguration(), false);
+            if (enableReconfiguration) {
+                configPolicy.ensurePreviewFeature(PreviewFeature.ACCEPTOR_RECONFIGURATION);
+            }
+            var acceptor = new DiversifiedLateAcceptanceAcceptor<Solution_>(enableReconfiguration);
             acceptor.setLateAcceptanceSize(Objects.requireNonNullElse(acceptorConfig.getLateAcceptanceSize(), 5));
             return Optional.of(acceptor);
         }

@@ -14,7 +14,7 @@ class DiversifiedLateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
     @Test
     void acceptanceCriterion() {
-        var acceptor = new DiversifiedLateAcceptanceAcceptor<>();
+        var acceptor = new DiversifiedLateAcceptanceAcceptor<>(false);
         acceptor.setLateAcceptanceSize(3);
 
         var solverScope = new SolverScope<>();
@@ -51,7 +51,7 @@ class DiversifiedLateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
     @Test
     void replacementCriterion() {
-        var acceptor = new DiversifiedLateAcceptanceAcceptor<>();
+        var acceptor = new DiversifiedLateAcceptanceAcceptor<>(false);
         acceptor.setLateAcceptanceSize(3);
 
         var solverScope = new SolverScope<>();

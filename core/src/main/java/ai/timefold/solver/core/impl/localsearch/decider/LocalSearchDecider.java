@@ -78,8 +78,12 @@ public class LocalSearchDecider<Solution_> {
         forager.solvingStarted(solverScope);
     }
 
-    public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
+    public void moveSelectorPhaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
         moveSelector.phaseStarted(phaseScope);
+    }
+
+    public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
+        moveSelectorPhaseStarted(phaseScope);
         acceptor.phaseStarted(phaseScope);
         forager.phaseStarted(phaseScope);
     }

@@ -15,7 +15,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
     @Test
     void lateAcceptanceSize() {
-        var acceptor = new LateAcceptanceAcceptor<>();
+        var acceptor = new LateAcceptanceAcceptor<>(false);
         acceptor.setLateAcceptanceSize(3);
         acceptor.setHillClimbingEnabled(false);
 
@@ -128,7 +128,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
     @Test
     void hillClimbingEnabled() {
-        var acceptor = new LateAcceptanceAcceptor<>();
+        var acceptor = new LateAcceptanceAcceptor<>(false);
         acceptor.setLateAcceptanceSize(2);
         acceptor.setHillClimbingEnabled(true);
 
@@ -241,14 +241,14 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
     @Test
     void zeroLateAcceptanceSize() {
-        var acceptor = new LateAcceptanceAcceptor<>();
+        var acceptor = new LateAcceptanceAcceptor<>(false);
         acceptor.setLateAcceptanceSize(0);
         assertThatIllegalArgumentException().isThrownBy(() -> acceptor.phaseStarted(null));
     }
 
     @Test
     void negativeLateAcceptanceSize() {
-        var acceptor = new LateAcceptanceAcceptor<>();
+        var acceptor = new LateAcceptanceAcceptor<>(false);
         acceptor.setLateAcceptanceSize(-1);
         assertThatIllegalArgumentException().isThrownBy(() -> acceptor.phaseStarted(null));
     }
