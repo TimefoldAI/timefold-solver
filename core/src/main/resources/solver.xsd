@@ -1415,6 +1415,8 @@
                     
           <xs:element maxOccurs="unbounded" minOccurs="0" name="acceptorType" type="tns:acceptorType"/>
                     
+          <xs:element minOccurs="0" name="enableReconfiguration" type="xs:boolean"/>
+
           <xs:element minOccurs="0" name="entityTabuSize" type="xs:int"/>
                     
           <xs:element minOccurs="0" name="entityTabuRatio" type="xs:double"/>
@@ -1586,9 +1588,11 @@
     <xs:restriction base="xs:string">
             
       <xs:enumeration value="DIVERSIFIED_LATE_ACCEPTANCE"/>
-            
+
+      <xs:enumeration value="ACCEPTOR_RECONFIGURATION"/>
+
       <xs:enumeration value="PLANNING_SOLUTION_DIFF"/>
-          
+
     </xs:restriction>
       
   </xs:simpleType>

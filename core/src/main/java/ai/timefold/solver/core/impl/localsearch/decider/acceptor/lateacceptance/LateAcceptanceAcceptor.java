@@ -3,18 +3,23 @@ package ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance
 import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptor;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.ReconfigurableAbstractAcceptor;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.reconfiguration.GeometricUnimprovedSolutionReconfigurationStrategy;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 
-public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
+public class LateAcceptanceAcceptor<Solution_> extends ReconfigurableAbstractAcceptor<Solution_> {
 
     protected int lateAcceptanceSize = -1;
     protected boolean hillClimbingEnabled = true;
 
     protected Score<?>[] previousScores;
     protected int lateScoreIndex = -1;
+
+    public LateAcceptanceAcceptor(boolean enableReconfiguration) {
+        super(new GeometricUnimprovedSolutionReconfigurationStrategy<>(), enableReconfiguration);
+    }
 
     public void setLateAcceptanceSize(int lateAcceptanceSize) {
         this.lateAcceptanceSize = lateAcceptanceSize;
@@ -47,7 +52,7 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
 
     @Override
     @SuppressWarnings("unchecked")
-    public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
+    public boolean evaluate(LocalSearchMoveScope<Solution_> moveScope) {
         var moveScore = moveScope.getScore();
         var lateScore = previousScores[lateScoreIndex];
         if (moveScore.compareTo(lateScore) >= 0) {
@@ -58,6 +63,11 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
             return moveScore.compareTo(lastStepScore) >= 0;
         }
         return false;
+    }
+
+    @Override
+    protected <Score_ extends Score<Score_>> void reset(Score_ score) {
+        previousScores[lateScoreIndex] = score;
     }
 
     @Override

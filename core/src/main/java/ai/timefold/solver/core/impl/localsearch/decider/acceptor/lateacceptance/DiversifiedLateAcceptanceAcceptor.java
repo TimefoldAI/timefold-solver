@@ -3,11 +3,12 @@ package ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance
 import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptor;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.ReconfigurableAbstractAcceptor;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.reconfiguration.GeometricUnimprovedSolutionReconfigurationStrategy;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 
-public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
+public class DiversifiedLateAcceptanceAcceptor<Solution_> extends ReconfigurableAbstractAcceptor<Solution_> {
 
     // The worst score in the late elements list
     protected Score<?> lateWorse;
@@ -18,6 +19,10 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAccept
 
     protected Score<?>[] previousScores;
     protected int lateScoreIndex = -1;
+
+    public DiversifiedLateAcceptanceAcceptor(boolean enableReconfiguration) {
+        super(new GeometricUnimprovedSolutionReconfigurationStrategy<>(), enableReconfiguration);
+    }
 
     public void setLateAcceptanceSize(int lateAcceptanceSize) {
         this.lateAcceptanceSize = lateAcceptanceSize;
@@ -48,7 +53,7 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAccept
 
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
+    protected boolean evaluate(LocalSearchMoveScope<Solution_> moveScope) {
         // The acceptance and replacement strategies are based on the work:
         // Diversified Late Acceptance Search by M. Namazi, C. Sanderson, M. A. H. Newton, M. M. A. Polash, and A. Sattar
         var moveScore = moveScope.getScore();
@@ -69,6 +74,11 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAccept
         }
         lateScoreIndex = (lateScoreIndex + 1) % lateAcceptanceSize;
         return accept;
+    }
+
+    @Override
+    protected <Score_ extends Score<Score_>> void reset(Score_ score) {
+        previousScores[lateScoreIndex] = score;
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })

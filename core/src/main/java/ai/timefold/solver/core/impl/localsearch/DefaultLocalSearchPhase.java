@@ -100,9 +100,15 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
                 // Although stepStarted has been called, stepEnded is not called for this step
                 break;
             }
-            doStep(stepScope);
-            stepEnded(stepScope);
-            phaseScope.setLastCompletedStepScope(stepScope);
+            if (!solverScope.isResetWorkingSolution()) {
+                doStep(stepScope);
+                stepEnded(stepScope);
+                phaseScope.setLastCompletedStepScope(stepScope);
+            } else {
+                logger.debug("Working solution reset, score ({})", solverScope.getBestScore());
+                solverScope.setWorkingSolutionFromBestSolution();
+                decider.moveSelectorPhaseStarted(phaseScope);
+            }
         }
         phaseEnded(phaseScope);
     }
