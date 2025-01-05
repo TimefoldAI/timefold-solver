@@ -9,6 +9,7 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecyc
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.util.ElementAwareList;
+import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
 /**
  * This class has two direct children: {@link AbstractIndexedJoinNode} and {@link AbstractUnindexedJoinNode}.
@@ -136,7 +137,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         while (item != null) {
             // Creating list iterators here caused major GC pressure; therefore, we iterate over the entries directly.
             var outTuple = item.getElement();
-            ElementAwareList<Tuple_>.Entry outEntry = outTuple.getStore(outputStoreIndexOutEntry);
+            ElementAwareListEntry<Tuple_> outEntry = outTuple.getStore(outputStoreIndexOutEntry);
             var outEntryList = outEntry.getList();
             if (outList == outEntryList) {
                 return outTuple;
@@ -147,9 +148,9 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     }
 
     protected final void retractOutTuple(OutTuple_ outTuple) {
-        ElementAwareList<OutTuple_>.Entry outEntryLeft = outTuple.removeStore(outputStoreIndexLeftOutEntry);
+        ElementAwareListEntry<OutTuple_> outEntryLeft = outTuple.removeStore(outputStoreIndexLeftOutEntry);
         outEntryLeft.remove();
-        ElementAwareList<OutTuple_>.Entry outEntryRight = outTuple.removeStore(outputStoreIndexRightOutEntry);
+        ElementAwareListEntry<OutTuple_> outEntryRight = outTuple.removeStore(outputStoreIndexRightOutEntry);
         outEntryRight.remove();
         var state = outTuple.state;
         if (!state.isActive()) {

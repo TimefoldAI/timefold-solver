@@ -19,13 +19,13 @@ public final class ElementAwareList<T> {
      * It is a frequent pattern that an entry is added immediately after one is removed.
      * By reusing the entry, we can reduce the considerable GC pressure this creates.
      */
-    private Entry availableBlankEntry = null;
+    private ElementAwareListEntry<T> availableBlankEntry = null;
     private int size = 0;
-    private Entry first = null;
-    private Entry last = null;
+    private ElementAwareListEntry<T> first = null;
+    private ElementAwareListEntry<T> last = null;
 
-    public Entry add(T tuple) {
-        Entry entry = newInstance(tuple, last);
+    public ElementAwareListEntry<T> add(T tuple) {
+        var entry = newInstance(tuple, last);
         if (first == null) {
             first = entry;
         } else {
@@ -36,22 +36,23 @@ public final class ElementAwareList<T> {
         return entry;
     }
 
-    private Entry newInstance(T tuple, Entry previous) {
+    private ElementAwareListEntry<T> newInstance(T tuple, ElementAwareListEntry<T> previous) {
         if (availableBlankEntry != null) {
-            Entry entry = availableBlankEntry;
+            var entry = availableBlankEntry;
             availableBlankEntry = null;
+            entry.list = this;
             entry.element = tuple;
             entry.previous = previous;
             entry.next = null;
             return entry;
         } else {
-            return new Entry(tuple, previous);
+            return new ElementAwareListEntry<>(this, tuple, previous);
         }
     }
 
-    public Entry addFirst(T tuple) {
+    public ElementAwareListEntry<T> addFirst(T tuple) {
         if (first != null) {
-            Entry entry = newInstance(tuple, null);
+            var entry = newInstance(tuple, null);
             first.previous = entry;
             entry.next = first;
             first = entry;
@@ -62,13 +63,13 @@ public final class ElementAwareList<T> {
         }
     }
 
-    public Entry addAfter(T tuple, Entry previous) {
+    public ElementAwareListEntry<T> addAfter(T tuple, ElementAwareListEntry<T> previous) {
         Objects.requireNonNull(previous);
         if (first == null || previous == last) {
             return add(tuple);
         } else {
-            Entry entry = newInstance(tuple, previous);
-            Entry currentNext = previous.next;
+            var entry = newInstance(tuple, previous);
+            var currentNext = previous.next;
             if (currentNext != null) {
                 currentNext.previous = entry;
             } else {
@@ -81,7 +82,7 @@ public final class ElementAwareList<T> {
         }
     }
 
-    public void remove(Entry entry) {
+    public void remove(ElementAwareListEntry<T> entry) {
         if (first == entry) {
             first = entry.next;
         } else {
@@ -92,6 +93,7 @@ public final class ElementAwareList<T> {
         } else {
             entry.next.previous = entry.previous;
         }
+        entry.list = null;
         entry.previous = null;
         entry.next = null;
         if (availableBlankEntry == null) {
@@ -101,11 +103,11 @@ public final class ElementAwareList<T> {
         size--;
     }
 
-    public Entry first() {
+    public ElementAwareListEntry<T> first() {
         return first;
     }
 
-    public Entry last() {
+    public ElementAwareListEntry<T> last() {
         return last;
     }
 
@@ -126,34 +128,28 @@ public final class ElementAwareList<T> {
      * 
      * <p>
      * For example, the following code is perfectly fine:
-     *
      * <code>
      *     for (int i = 0; i &lt; 3; i++) {
      *         elementAwareList.forEach(entry -&gt; doSomething(entry));
      *     }
      * </code>
-     *
      * It will create only one lambda instance, regardless of the number of iterations;
      * it doesn't need to capture any state.
      * On the contrary, the following code will create three instances of a capturing lambda,
      * one for each iteration of the for loop:
-     *
      * <code>
      *     for (int a: List.of(1, 2, 3)) {
      *         elementAwareList.forEach(entry -&gt; doSomething(entry, a));
      *     }
      * </code>
-     *
      * In this case, the lambda would need to capture "a" which is different in every iteration.
      * It will generally be better to use a {@link #forEach(Object, BiConsumer)} variant with one extra argument,
      * as that will not result in any new instances of the lambda (or iterator) being created:
-     *
      * <code>
      *     for (int a: List.of(1, 2, 3)) {
      *         elementAwareList.forEach(a, (entry, a_) -&gt; doSomething(entry, a_));
      *     }
      * </code>
-     *
      * This is only an issue on the hot path,
      * where this method can create quite a large garbage collector pressure
      * on account of creating throw-away instances of capturing lambdas.
@@ -161,10 +157,10 @@ public final class ElementAwareList<T> {
      * @param tupleConsumer The action to be performed for each element
      */
     public void forEach(Consumer<? super T> tupleConsumer) {
-        Entry entry = first;
+        var entry = first;
         while (entry != null) {
             // Extract next before processing it, in case the entry is removed and entry.next becomes null
-            Entry next = entry.next;
+            var next = entry.next;
             tupleConsumer.accept(entry.getElement());
             entry = next;
         }
@@ -177,10 +173,10 @@ public final class ElementAwareList<T> {
      * @param tupleConsumer The action to be performed for each element
      */
     public <U> void forEach(U other, BiConsumer<? super T, U> tupleConsumer) {
-        Entry entry = first;
+        var entry = first;
         while (entry != null) {
             // Extract next before processing it, in case the entry is removed and entry.next becomes null
-            Entry next = entry.next;
+            var next = entry.next;
             tupleConsumer.accept(entry.getElement(), other);
             entry = next;
         }
@@ -194,10 +190,10 @@ public final class ElementAwareList<T> {
      * @param tupleConsumer The action to be performed for each element
      */
     public <U, V> void forEach(U other, V another, TriConsumer<? super T, U, V> tupleConsumer) {
-        Entry entry = first;
+        var entry = first;
         while (entry != null) {
             // Extract next before processing it, in case the entry is removed and entry.next becomes null
-            Entry next = entry.next;
+            var next = entry.next;
             tupleConsumer.accept(entry.getElement(), other, another);
             entry = next;
         }
@@ -212,10 +208,10 @@ public final class ElementAwareList<T> {
      * @param tupleConsumer The action to be performed for each element
      */
     public <U, V, W> void forEach(U other, V another, W yetAnother, QuadConsumer<? super T, U, V, W> tupleConsumer) {
-        Entry entry = first;
+        var entry = first;
         while (entry != null) {
             // Extract next before processing it, in case the entry is removed and entry.next becomes null
-            Entry next = entry.next;
+            var next = entry.next;
             tupleConsumer.accept(entry.getElement(), other, another, yetAnother);
             entry = next;
         }
@@ -231,59 +227,14 @@ public final class ElementAwareList<T> {
                 return "[" + first.getElement() + "]";
             }
             default -> {
-                StringBuilder builder = new StringBuilder("[");
-                for (Entry entry = first; entry != null; entry = entry.next) {
+                var builder = new StringBuilder("[");
+                for (var entry = first; entry != null; entry = entry.next) {
                     builder.append(entry.getElement()).append(", ");
                 }
                 builder.replace(builder.length() - 2, builder.length(), "");
                 return builder.append("]").toString();
             }
         }
-    }
-
-    /**
-     * An entry of {@link ElementAwareList}
-     */
-    public final class Entry {
-
-        private T element;
-        Entry previous;
-        Entry next;
-
-        Entry(T element, Entry previous) {
-            this.element = element;
-            this.previous = previous;
-            this.next = null;
-        }
-
-        public Entry previous() {
-            return previous;
-        }
-
-        public Entry next() {
-            return next;
-        }
-
-        public void remove() {
-            if (element == null && previous == null && next == null) { // The element may be null if the entry was reused.
-                throw new IllegalStateException("The entry was already removed.");
-            }
-            ElementAwareList.this.remove(this);
-        }
-
-        public T getElement() {
-            return element;
-        }
-
-        public ElementAwareList<T> getList() {
-            return ElementAwareList.this;
-        }
-
-        @Override
-        public String toString() {
-            return element.toString();
-        }
-
     }
 
 }

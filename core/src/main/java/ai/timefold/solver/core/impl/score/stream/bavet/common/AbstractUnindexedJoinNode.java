@@ -6,6 +6,7 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.RightTupleLi
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.util.ElementAwareList;
+import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
 /**
  * There is a strong likelihood that any change made to this class
@@ -39,7 +40,7 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends AbstractTuple
             throw new IllegalStateException("Impossible state: the input for the tuple (" + leftTuple
                     + ") was already added in the tupleStore.");
         }
-        ElementAwareList<LeftTuple_>.Entry leftEntry = leftTupleList.add(leftTuple);
+        ElementAwareListEntry<LeftTuple_> leftEntry = leftTupleList.add(leftTuple);
         leftTuple.setStore(inputStoreIndexLeftEntry, leftEntry);
         ElementAwareList<OutTuple_> outTupleListLeft = new ElementAwareList<>();
         leftTuple.setStore(inputStoreIndexLeftOutTupleList, outTupleListLeft);
@@ -48,8 +49,7 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends AbstractTuple
 
     @Override
     public final void updateLeft(LeftTuple_ leftTuple) {
-        ElementAwareList<LeftTuple_>.Entry leftEntry = leftTuple.getStore(inputStoreIndexLeftEntry);
-        if (leftEntry == null) {
+        if (leftTuple.getStore(inputStoreIndexLeftEntry) == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             insertLeft(leftTuple);
             return;
@@ -59,7 +59,7 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends AbstractTuple
 
     @Override
     public final void retractLeft(LeftTuple_ leftTuple) {
-        ElementAwareList<LeftTuple_>.Entry leftEntry = leftTuple.removeStore(inputStoreIndexLeftEntry);
+        ElementAwareListEntry<LeftTuple_> leftEntry = leftTuple.removeStore(inputStoreIndexLeftEntry);
         if (leftEntry == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
@@ -75,7 +75,7 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends AbstractTuple
             throw new IllegalStateException("Impossible state: the input for the tuple (" + rightTuple
                     + ") was already added in the tupleStore.");
         }
-        ElementAwareList<UniTuple<Right_>>.Entry rightEntry = rightTupleList.add(rightTuple);
+        ElementAwareListEntry<UniTuple<Right_>> rightEntry = rightTupleList.add(rightTuple);
         rightTuple.setStore(inputStoreIndexRightEntry, rightEntry);
         ElementAwareList<OutTuple_> outTupleListRight = new ElementAwareList<>();
         rightTuple.setStore(inputStoreIndexRightOutTupleList, outTupleListRight);
@@ -84,8 +84,7 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends AbstractTuple
 
     @Override
     public final void updateRight(UniTuple<Right_> rightTuple) {
-        ElementAwareList<UniTuple<Right_>>.Entry rightEntry = rightTuple.getStore(inputStoreIndexRightEntry);
-        if (rightEntry == null) {
+        if (rightTuple.getStore(inputStoreIndexRightEntry) == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             insertRight(rightTuple);
             return;
@@ -95,7 +94,7 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends AbstractTuple
 
     @Override
     public final void retractRight(UniTuple<Right_> rightTuple) {
-        ElementAwareList<UniTuple<Right_>>.Entry rightEntry = rightTuple.removeStore(inputStoreIndexRightEntry);
+        ElementAwareListEntry<UniTuple<Right_>> rightEntry = rightTuple.removeStore(inputStoreIndexRightEntry);
         if (rightEntry == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
