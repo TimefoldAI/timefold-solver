@@ -22,10 +22,10 @@ import ai.timefold.jpyinterpreter.types.numeric.PythonInteger;
 import ai.timefold.jpyinterpreter.types.wrappers.OpaquePythonReference;
 import ai.timefold.jpyinterpreter.types.wrappers.PythonObjectWrapper;
 import ai.timefold.jpyinterpreter.util.ConcurrentWeakIdentityHashMap;
-import ai.timefold.jpyinterpreter.util.function.PentaFunction;
-import ai.timefold.jpyinterpreter.util.function.QuadConsumer;
-import ai.timefold.jpyinterpreter.util.function.QuadFunction;
-import ai.timefold.jpyinterpreter.util.function.TriFunction;
+import ai.timefold.solver.core.api.function.PentaFunction;
+import ai.timefold.solver.core.api.function.QuadConsumer;
+import ai.timefold.solver.core.api.function.QuadFunction;
+import ai.timefold.solver.core.api.function.TriFunction;
 
 public class CPythonBackedPythonInterpreter implements PythonInterpreter {
     InputStream standardInput;

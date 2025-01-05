@@ -22,7 +22,7 @@ import ai.timefold.jpyinterpreter.types.collections.PythonLikeList;
 import ai.timefold.jpyinterpreter.types.collections.PythonLikeTuple;
 import ai.timefold.jpyinterpreter.types.numeric.PythonInteger;
 import ai.timefold.jpyinterpreter.util.PythonFunctionBuilder;
-import ai.timefold.jpyinterpreter.util.function.TriFunction;
+import ai.timefold.solver.core.api.function.TriFunction;
 
 import org.junit.jupiter.api.Test;
 

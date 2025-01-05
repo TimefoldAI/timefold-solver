@@ -70,7 +70,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
         } else {
             var leftTrackerList = new ElementAwareList<FilteringTracker<LeftTuple_>>();
             indexerRight.forEach(indexProperties,
-                    rightTuple -> updateCounterFromLeft(leftTuple, rightTuple, counter, leftTrackerList));
+                    rightTuple -> updateCounterFromLeft(rightTuple, leftTuple, counter, leftTrackerList));
             leftTuple.setStore(inputStoreIndexLeftTrackerList, leftTrackerList);
         }
     }
@@ -99,7 +99,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
                 leftTrackerList.forEach(FilteringTracker::remove);
                 counter.countRight = 0;
                 indexerRight.forEach(oldIndexProperties,
-                        rightTuple -> updateCounterFromLeft(leftTuple, rightTuple, counter, leftTrackerList));
+                        rightTuple -> updateCounterFromLeft(rightTuple, leftTuple, counter, leftTrackerList));
                 updateCounterLeft(counter);
             }
         } else {
@@ -152,7 +152,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
             indexerLeft.forEach(indexProperties, this::incrementCounterRight);
         } else {
             var rightTrackerList = new ElementAwareList<FilteringTracker<LeftTuple_>>();
-            indexerLeft.forEach(indexProperties, counter -> updateCounterFromRight(rightTuple, counter, rightTrackerList));
+            indexerLeft.forEach(indexProperties, counter -> updateCounterFromRight(counter, rightTuple, rightTrackerList));
             rightTuple.setStore(inputStoreIndexRightTrackerList, rightTrackerList);
         }
     }
@@ -172,7 +172,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
             if (isFiltering) {
                 ElementAwareList<FilteringTracker<LeftTuple_>> rightTrackerList = updateRightTrackerList(rightTuple);
                 indexerLeft.forEach(oldIndexProperties,
-                        counter -> updateCounterFromRight(rightTuple, counter, rightTrackerList));
+                        counter -> updateCounterFromRight(counter, rightTuple, rightTrackerList));
             }
         } else {
             ElementAwareList<UniTuple<Right_>>.Entry rightEntry = rightTuple.getStore(inputStoreIndexRightEntry);

@@ -71,9 +71,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         ElementAwareList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
         // Propagate the update for downstream filters, matchWeighers, ...
         if (!isFiltering) {
-            for (var outTuple : outTupleListLeft) {
-                updateOutTupleLeft(outTuple, leftTuple);
-            }
+            outTupleListLeft.forEach(leftTuple, this::updateOutTupleLeft);
         } else {
             rightTupleConsumer.accept(rightTuple -> {
                 ElementAwareList<OutTuple_> rightOutList = rightTuple.getStore(inputStoreIndexRightOutTupleList);
@@ -103,10 +101,10 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         ElementAwareList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
         if (!isFiltering) {
             // Propagate the update for downstream filters, matchWeighers, ...
-            for (var outTuple : outTupleListRight) {
-                setOutTupleRightFact(outTuple, rightTuple);
+            outTupleListRight.forEach(rightTuple, (outTuple, rightTuple_) -> {
+                setOutTupleRightFact(outTuple, rightTuple_);
                 doUpdateOutTuple(outTuple);
-            }
+            });
         } else {
             leftTupleConsumer.accept(leftTuple -> {
                 ElementAwareList<OutTuple_> leftOutList = leftTuple.getStore(inputStoreIndexLeftOutTupleList);

@@ -1,9 +1,11 @@
 package ai.timefold.solver.core.impl.util;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+
+import ai.timefold.solver.core.api.function.QuadConsumer;
+import ai.timefold.solver.core.api.function.TriConsumer;
 
 /**
  * Linked list that allows to add and remove an element in O(1) time.
@@ -11,7 +13,7 @@ import java.util.function.Consumer;
  *
  * @param <T> The element type. Often a tuple.
  */
-public final class ElementAwareList<T> implements Iterable<T> {
+public final class ElementAwareList<T> {
 
     /**
      * It is a frequent pattern that an entry is added immediately after one is removed.
@@ -113,10 +115,16 @@ public final class ElementAwareList<T> implements Iterable<T> {
 
     /**
      * Convenience method for where it is easy to use a non-capturing lambda.
-     * If a capturing lambda consumer were to be created for this method, use {@link #iterator()} instead,
-     * which will consume less memory.
+     * If a capturing lambda consumer were to be created for this method, use either of the following instead,
+     * which will consume less memory:
+     * 
+     * <ul>
+     * <li>{@link #forEach(Object, BiConsumer)} for when one extra argument is required.</li>
+     * <li>{@link #forEach(Object, Object, TriConsumer)} for when two extra arguments are required.</li>
+     * <li>{@link #forEach(Object, Object, Object, QuadConsumer)} for when three extra arguments are required.</li>
+     * </ul>
+     * 
      * <p>
-     *
      * For example, the following code is perfectly fine:
      *
      * <code>
@@ -137,15 +145,12 @@ public final class ElementAwareList<T> implements Iterable<T> {
      * </code>
      *
      * In this case, the lambda would need to capture "a" which is different in every iteration.
-     * Therefore, it will generally be better to use the iterator variant,
-     * as that will only ever create one instance of the iterator,
-     * regardless of the number of iterations:
+     * It will generally be better to use a {@link #forEach(Object, BiConsumer)} variant with one extra argument,
+     * as that will not result in any new instances of the lambda (or iterator) being created:
      *
      * <code>
      *     for (int a: List.of(1, 2, 3)) {
-     *         for (var entry: elementAwareList) {
-     *             doSomething(entry, a);
-     *         }
+     *         elementAwareList.forEach(a, (entry, a_) -&gt; doSomething(entry, a_));
      *     }
      * </code>
      *
@@ -155,7 +160,6 @@ public final class ElementAwareList<T> implements Iterable<T> {
      *
      * @param tupleConsumer The action to be performed for each element
      */
-    @Override
     public void forEach(Consumer<? super T> tupleConsumer) {
         Entry entry = first;
         while (entry != null) {
@@ -167,13 +171,54 @@ public final class ElementAwareList<T> implements Iterable<T> {
     }
 
     /**
-     * See {@link #forEach(Consumer)} for a discussion on the correct use of this method.
+     * As {@link #forEach(Consumer)}, but with an extra argument.
      *
-     * @return never null
+     * @param other Extra argument to be passed to the consumer.
+     * @param tupleConsumer The action to be performed for each element
      */
-    @Override
-    public Iterator<T> iterator() {
-        return new ElementAwareListIterator(first);
+    public <U> void forEach(U other, BiConsumer<? super T, U> tupleConsumer) {
+        Entry entry = first;
+        while (entry != null) {
+            // Extract next before processing it, in case the entry is removed and entry.next becomes null
+            Entry next = entry.next;
+            tupleConsumer.accept(entry.getElement(), other);
+            entry = next;
+        }
+    }
+
+    /**
+     * As {@link #forEach(Consumer)}, but with two extra arguments.
+     *
+     * @param other Extra argument to be passed to the consumer.
+     * @param another Another extra argument to be passed to the consumer.
+     * @param tupleConsumer The action to be performed for each element
+     */
+    public <U, V> void forEach(U other, V another, TriConsumer<? super T, U, V> tupleConsumer) {
+        Entry entry = first;
+        while (entry != null) {
+            // Extract next before processing it, in case the entry is removed and entry.next becomes null
+            Entry next = entry.next;
+            tupleConsumer.accept(entry.getElement(), other, another);
+            entry = next;
+        }
+    }
+
+    /**
+     * As {@link #forEach(Consumer)}, but with three extra arguments.
+     *
+     * @param other Extra argument to be passed to the consumer.
+     * @param another Another extra argument to be passed to the consumer.
+     * @param yetAnother Yet another extra argument to be passed to the consumer.
+     * @param tupleConsumer The action to be performed for each element
+     */
+    public <U, V, W> void forEach(U other, V another, W yetAnother, QuadConsumer<? super T, U, V, W> tupleConsumer) {
+        Entry entry = first;
+        while (entry != null) {
+            // Extract next before processing it, in case the entry is removed and entry.next becomes null
+            Entry next = entry.next;
+            tupleConsumer.accept(entry.getElement(), other, another, yetAnother);
+            entry = next;
+        }
     }
 
     @Override
@@ -187,38 +232,13 @@ public final class ElementAwareList<T> implements Iterable<T> {
             }
             default -> {
                 StringBuilder builder = new StringBuilder("[");
-                for (T entry : this) {
-                    builder.append(entry).append(", ");
+                for (Entry entry = first; entry != null; entry = entry.next) {
+                    builder.append(entry.getElement()).append(", ");
                 }
                 builder.replace(builder.length() - 2, builder.length(), "");
                 return builder.append("]").toString();
             }
         }
-    }
-
-    private final class ElementAwareListIterator implements Iterator<T> {
-
-        private Entry nextEntry;
-
-        public ElementAwareListIterator(Entry nextEntry) {
-            this.nextEntry = nextEntry;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return nextEntry != null;
-        }
-
-        @Override
-        public T next() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-            T element = nextEntry.getElement();
-            nextEntry = nextEntry.next;
-            return element;
-        }
-
     }
 
     /**

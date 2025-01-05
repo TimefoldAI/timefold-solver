@@ -119,14 +119,14 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
 
     protected ElementAwareList<FilteringTracker<LeftTuple_>> updateRightTrackerList(UniTuple<Right_> rightTuple) {
         ElementAwareList<FilteringTracker<LeftTuple_>> rightTrackerList = rightTuple.getStore(inputStoreIndexRightTrackerList);
-        for (FilteringTracker<LeftTuple_> tuple : rightTrackerList) {
+        rightTrackerList.forEach(tuple -> {
             decrementCounterRight(tuple.counter);
             tuple.remove();
-        }
+        });
         return rightTrackerList;
     }
 
-    protected void updateCounterFromLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, ExistsCounter<LeftTuple_> counter,
+    protected void updateCounterFromLeft(UniTuple<Right_> rightTuple, LeftTuple_ leftTuple, ExistsCounter<LeftTuple_> counter,
             ElementAwareList<FilteringTracker<LeftTuple_>> leftTrackerList) {
         if (testFiltering(leftTuple, rightTuple)) {
             counter.countRight++;
@@ -136,7 +136,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
         }
     }
 
-    protected void updateCounterFromRight(UniTuple<Right_> rightTuple, ExistsCounter<LeftTuple_> counter,
+    protected void updateCounterFromRight(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple,
             ElementAwareList<FilteringTracker<LeftTuple_>> rightTrackerList) {
         if (testFiltering(counter.leftTuple, rightTuple)) {
             incrementCounterRight(counter);
