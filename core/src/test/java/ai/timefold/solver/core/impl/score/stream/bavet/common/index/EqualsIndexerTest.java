@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.score.stream.common.bi.DefaultBiJoiner;
-import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
+import ai.timefold.solver.core.impl.util.ElementAwareList;
 import ai.timefold.solver.core.impl.util.Pair;
 
 import org.assertj.core.api.Assertions;
@@ -20,13 +20,13 @@ class EqualsIndexerTest extends AbstractIndexerTest {
 
     @Test
     void isEmpty() {
-        Indexer<UniTuple<String>> indexer = new IndexerFactory(joiner).buildIndexer(true);
+        Indexer<UniTuple<String>> indexer = new IndexerFactory<>(joiner).buildIndexer(true);
         Assertions.assertThat(getTuples(indexer, "F", 40)).isEmpty();
     }
 
     @Test
     void put() {
-        Indexer<UniTuple<String>> indexer = new IndexerFactory(joiner).buildIndexer(true);
+        Indexer<UniTuple<String>> indexer = new IndexerFactory<>(joiner).buildIndexer(true);
         UniTuple<String> annTuple = newTuple("Ann-F-40");
         assertThat(indexer.size(new ManyIndexProperties("F", 40))).isEqualTo(0);
         indexer.put(new ManyIndexProperties("F", 40), annTuple);
@@ -35,9 +35,9 @@ class EqualsIndexerTest extends AbstractIndexerTest {
 
     @Test
     void removeTwice() {
-        Indexer<UniTuple<String>> indexer = new IndexerFactory(joiner).buildIndexer(true);
+        Indexer<UniTuple<String>> indexer = new IndexerFactory<>(joiner).buildIndexer(true);
         UniTuple<String> annTuple = newTuple("Ann-F-40");
-        ElementAwareListEntry<UniTuple<String>> annEntry = indexer.put(new ManyIndexProperties("F", 40), annTuple);
+        ElementAwareList<UniTuple<String>>.Entry annEntry = indexer.put(new ManyIndexProperties("F", 40), annTuple);
 
         indexer.remove(new ManyIndexProperties("F", 40), annEntry);
         assertThatThrownBy(() -> indexer.remove(new ManyIndexProperties("F", 40), annEntry))
@@ -46,16 +46,16 @@ class EqualsIndexerTest extends AbstractIndexerTest {
 
     @Test
     void visit() {
-        Indexer<UniTuple<String>> indexer = new IndexerFactory(joiner).buildIndexer(true);
+        Indexer<UniTuple<String>> indexer = new IndexerFactory<>(joiner).buildIndexer(true);
 
         UniTuple<String> annTuple = newTuple("Ann-F-40");
-        indexer.put(new SingleIndexProperties(new Pair<>("F", 40)), annTuple);
+        indexer.put(new SingleIndexProperties<>(new Pair<>("F", 40)), annTuple);
         UniTuple<String> bethTuple = newTuple("Beth-F-30");
-        indexer.put(new SingleIndexProperties(new Pair<>("F", 30)), bethTuple);
-        indexer.put(new SingleIndexProperties(new Pair<>("M", 40)), newTuple("Carl-M-40"));
-        indexer.put(new SingleIndexProperties(new Pair<>("M", 30)), newTuple("Dan-M-30"));
+        indexer.put(new SingleIndexProperties<>(new Pair<>("F", 30)), bethTuple);
+        indexer.put(new SingleIndexProperties<>(new Pair<>("M", 40)), newTuple("Carl-M-40"));
+        indexer.put(new SingleIndexProperties<>(new Pair<>("M", 30)), newTuple("Dan-M-30"));
         UniTuple<String> ednaTuple = newTuple("Edna-F-40");
-        indexer.put(new SingleIndexProperties(new Pair<>("F", 40)), ednaTuple);
+        indexer.put(new SingleIndexProperties<>(new Pair<>("F", 40)), ednaTuple);
 
         Assertions.assertThat(getTuples(indexer, new Pair<>("F", 40))).containsOnly(annTuple, ednaTuple);
         Assertions.assertThat(getTuples(indexer, new Pair<>("F", 30))).containsOnly(bethTuple);

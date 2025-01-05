@@ -3,19 +3,18 @@ package ai.timefold.solver.core.impl.score.stream.bavet.common.index;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.util.ElementAwareList;
-import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
 final class NoneIndexer<T> implements Indexer<T> {
 
     private final ElementAwareList<T> tupleList = new ElementAwareList<>();
 
     @Override
-    public ElementAwareListEntry<T> put(IndexProperties indexProperties, T tuple) {
+    public ElementAwareList<T>.Entry put(IndexProperties indexProperties, T tuple) {
         return tupleList.add(tuple);
     }
 
     @Override
-    public void remove(IndexProperties indexProperties, ElementAwareListEntry<T> entry) {
+    public void remove(IndexProperties indexProperties, ElementAwareList<T>.Entry entry) {
         entry.remove();
     }
 

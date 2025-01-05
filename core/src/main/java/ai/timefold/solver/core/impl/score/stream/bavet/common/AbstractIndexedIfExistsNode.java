@@ -10,7 +10,6 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.RightTupleLi
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.util.ElementAwareList;
-import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
 /**
  * There is a strong likelihood that any change to this class, which is not related to indexing,
@@ -61,13 +60,13 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
         leftTuple.setStore(inputStoreIndexLeftProperties, indexProperties);
 
         ExistsCounter<LeftTuple_> counter = new ExistsCounter<>(leftTuple);
-        ElementAwareListEntry<ExistsCounter<LeftTuple_>> counterEntry = indexerLeft.put(indexProperties, counter);
+        ElementAwareList<ExistsCounter<LeftTuple_>>.Entry counterEntry = indexerLeft.put(indexProperties, counter);
         updateCounterRight(leftTuple, indexProperties, counter, counterEntry);
         initCounterLeft(counter);
     }
 
     private void updateCounterRight(LeftTuple_ leftTuple, IndexProperties indexProperties, ExistsCounter<LeftTuple_> counter,
-            ElementAwareListEntry<ExistsCounter<LeftTuple_>> counterEntry) {
+                                    ElementAwareList<ExistsCounter<LeftTuple_>>.Entry counterEntry) {
         leftTuple.setStore(inputStoreIndexLeftCounterEntry, counterEntry);
         if (!isFiltering) {
             counter.countRight = indexerRight.size(indexProperties);
@@ -88,7 +87,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
             return;
         }
         IndexProperties newIndexProperties = createIndexProperties(leftTuple);
-        ElementAwareListEntry<ExistsCounter<LeftTuple_>> counterEntry = leftTuple.getStore(inputStoreIndexLeftCounterEntry);
+        ElementAwareList<ExistsCounter<LeftTuple_>>.Entry counterEntry = leftTuple.getStore(inputStoreIndexLeftCounterEntry);
         ExistsCounter<LeftTuple_> counter = counterEntry.getElement();
 
         if (oldIndexProperties.equals(newIndexProperties)) {
@@ -122,14 +121,14 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
         }
-        ElementAwareListEntry<ExistsCounter<LeftTuple_>> counterEntry = leftTuple.getStore(inputStoreIndexLeftCounterEntry);
+        ElementAwareList<ExistsCounter<LeftTuple_>>.Entry counterEntry = leftTuple.getStore(inputStoreIndexLeftCounterEntry);
         ExistsCounter<LeftTuple_> counter = counterEntry.getElement();
         updateIndexerLeft(indexProperties, counterEntry, leftTuple);
         killCounterLeft(counter);
     }
 
     private void updateIndexerLeft(IndexProperties indexProperties,
-            ElementAwareListEntry<ExistsCounter<LeftTuple_>> counterEntry,
+                                   ElementAwareList<ExistsCounter<LeftTuple_>>.Entry counterEntry,
             LeftTuple_ leftTuple) {
         indexerLeft.remove(indexProperties, counterEntry);
         if (isFiltering) {
@@ -147,7 +146,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
         IndexProperties indexProperties = mappingRight.apply(rightTuple.factA);
         rightTuple.setStore(inputStoreIndexRightProperties, indexProperties);
 
-        ElementAwareListEntry<UniTuple<Right_>> rightEntry = indexerRight.put(indexProperties, rightTuple);
+        ElementAwareList<UniTuple<Right_>>.Entry rightEntry = indexerRight.put(indexProperties, rightTuple);
         rightTuple.setStore(inputStoreIndexRightEntry, rightEntry);
         updateCounterLeft(rightTuple, indexProperties);
     }
@@ -180,7 +179,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
                         counter -> updateCounterFromRight(rightTuple, counter, rightTrackerList));
             }
         } else {
-            ElementAwareListEntry<UniTuple<Right_>> rightEntry = rightTuple.getStore(inputStoreIndexRightEntry);
+            ElementAwareList<UniTuple<Right_>>.Entry rightEntry = rightTuple.getStore(inputStoreIndexRightEntry);
             indexerRight.remove(oldIndexProperties, rightEntry);
             if (!isFiltering) {
                 indexerLeft.forEach(oldIndexProperties, this::decrementCounterRight);
@@ -201,7 +200,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
         }
-        ElementAwareListEntry<UniTuple<Right_>> rightEntry = rightTuple.removeStore(inputStoreIndexRightEntry);
+        ElementAwareList<UniTuple<Right_>>.Entry rightEntry = rightTuple.removeStore(inputStoreIndexRightEntry);
         indexerRight.remove(indexProperties, rightEntry);
         if (!isFiltering) {
             indexerLeft.forEach(indexProperties, this::decrementCounterRight);

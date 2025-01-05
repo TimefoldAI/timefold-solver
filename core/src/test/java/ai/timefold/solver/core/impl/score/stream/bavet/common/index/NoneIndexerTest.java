@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
+import ai.timefold.solver.core.impl.util.ElementAwareList;
 
 import org.junit.jupiter.api.Test;
 
@@ -37,7 +37,7 @@ class NoneIndexerTest extends AbstractIndexerTest {
     void removeTwice() {
         Indexer<UniTuple<String>> indexer = new NoneIndexer<>();
         UniTuple<String> annTuple = newTuple("Ann-F-40");
-        ElementAwareListEntry<UniTuple<String>> annEntry = indexer.put(NoneIndexProperties.INSTANCE, annTuple);
+        ElementAwareList<UniTuple<String>>.Entry annEntry = indexer.put(NoneIndexProperties.INSTANCE, annTuple);
         assertSoftly(softly -> {
             softly.assertThat(indexer.isEmpty()).isFalse();
             softly.assertThat(getTuples(indexer)).containsExactly(annTuple);

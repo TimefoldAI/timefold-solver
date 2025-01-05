@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
+import ai.timefold.solver.core.impl.util.ElementAwareList;
 
 final class EqualsIndexer<T, Key_> implements Indexer<T> {
 
@@ -24,7 +24,7 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
     }
 
     @Override
-    public ElementAwareListEntry<T> put(IndexProperties indexProperties, T tuple) {
+    public ElementAwareList<T>.Entry put(IndexProperties indexProperties, T tuple) {
         Key_ indexKey = indexProperties.toKey(propertyIndex);
         // Avoids computeIfAbsent in order to not create lambdas on the hot path.
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
@@ -36,7 +36,7 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
     }
 
     @Override
-    public void remove(IndexProperties indexProperties, ElementAwareListEntry<T> entry) {
+    public void remove(IndexProperties indexProperties, ElementAwareList<T>.Entry entry) {
         Key_ indexKey = indexProperties.toKey(propertyIndex);
         Indexer<T> downstreamIndexer = getDownstreamIndexer(indexProperties, indexKey, entry);
         downstreamIndexer.remove(indexProperties, entry);
@@ -46,7 +46,7 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
     }
 
     private Indexer<T> getDownstreamIndexer(IndexProperties indexProperties, Key_ indexerKey,
-            ElementAwareListEntry<T> entry) {
+                                            ElementAwareList<T>.Entry entry) {
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexerKey);
         if (downstreamIndexer == null) {
             throw new IllegalStateException("Impossible state: the tuple (" + entry.getElement()

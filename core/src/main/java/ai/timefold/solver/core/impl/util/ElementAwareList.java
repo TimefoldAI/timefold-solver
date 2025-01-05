@@ -13,12 +13,17 @@ import java.util.function.Consumer;
  */
 public final class ElementAwareList<T> implements Iterable<T> {
 
+    /**
+     * It is a frequent pattern that an entry is added immediately after one is removed.
+     * By reusing the entry, we can reduce the considerable GC pressure this creates.
+     */
+    private Entry availableBlankEntry = null;
     private int size = 0;
-    private ElementAwareListEntry<T> first = null;
-    private ElementAwareListEntry<T> last = null;
+    private Entry first = null;
+    private Entry last = null;
 
-    public ElementAwareListEntry<T> add(T tuple) {
-        ElementAwareListEntry<T> entry = new ElementAwareListEntry<>(this, tuple, last);
+    public Entry add(T tuple) {
+        Entry entry = newInstance(tuple, last);
         if (first == null) {
             first = entry;
         } else {
@@ -29,9 +34,22 @@ public final class ElementAwareList<T> implements Iterable<T> {
         return entry;
     }
 
-    public ElementAwareListEntry<T> addFirst(T tuple) {
+    private Entry newInstance(T tuple, Entry previous) {
+        if (availableBlankEntry != null) {
+            Entry entry = availableBlankEntry;
+            availableBlankEntry = null;
+            entry.element = tuple;
+            entry.previous = previous;
+            entry.next = null;
+            return entry;
+        } else {
+            return new Entry(tuple, previous);
+        }
+    }
+
+    public Entry addFirst(T tuple) {
         if (first != null) {
-            ElementAwareListEntry<T> entry = new ElementAwareListEntry<>(this, tuple, null);
+            Entry entry = newInstance(tuple, null);
             first.previous = entry;
             entry.next = first;
             first = entry;
@@ -42,13 +60,13 @@ public final class ElementAwareList<T> implements Iterable<T> {
         }
     }
 
-    public ElementAwareListEntry<T> addAfter(T tuple, ElementAwareListEntry<T> previous) {
+    public Entry addAfter(T tuple, Entry previous) {
         Objects.requireNonNull(previous);
         if (first == null || previous == last) {
             return add(tuple);
         } else {
-            ElementAwareListEntry<T> entry = new ElementAwareListEntry<>(this, tuple, previous);
-            ElementAwareListEntry<T> currentNext = previous.next;
+            Entry entry = newInstance(tuple, previous);
+            Entry currentNext = previous.next;
             if (currentNext != null) {
                 currentNext.previous = entry;
             } else {
@@ -61,7 +79,7 @@ public final class ElementAwareList<T> implements Iterable<T> {
         }
     }
 
-    public void remove(ElementAwareListEntry<T> entry) {
+    public void remove(Entry entry) {
         if (first == entry) {
             first = entry.next;
         } else {
@@ -74,14 +92,18 @@ public final class ElementAwareList<T> implements Iterable<T> {
         }
         entry.previous = null;
         entry.next = null;
+        if (availableBlankEntry == null) {
+            entry.element = null;
+            availableBlankEntry = entry;
+        }
         size--;
     }
 
-    public ElementAwareListEntry<T> first() {
+    public Entry first() {
         return first;
     }
 
-    public ElementAwareListEntry<T> last() {
+    public Entry last() {
         return last;
     }
 
@@ -135,10 +157,10 @@ public final class ElementAwareList<T> implements Iterable<T> {
      */
     @Override
     public void forEach(Consumer<? super T> tupleConsumer) {
-        ElementAwareListEntry<T> entry = first;
+        Entry entry = first;
         while (entry != null) {
             // Extract next before processing it, in case the entry is removed and entry.next becomes null
-            ElementAwareListEntry<T> next = entry.next;
+            Entry next = entry.next;
             tupleConsumer.accept(entry.getElement());
             entry = next;
         }
@@ -151,7 +173,7 @@ public final class ElementAwareList<T> implements Iterable<T> {
      */
     @Override
     public Iterator<T> iterator() {
-        return new ElementAwareListIterator<>(first);
+        return new ElementAwareListIterator(first);
     }
 
     @Override
@@ -174,11 +196,11 @@ public final class ElementAwareList<T> implements Iterable<T> {
         }
     }
 
-    private static final class ElementAwareListIterator<T> implements Iterator<T> {
+    private final class ElementAwareListIterator implements Iterator<T> {
 
-        private ElementAwareListEntry<T> nextEntry;
+        private Entry nextEntry;
 
-        public ElementAwareListIterator(ElementAwareListEntry<T> nextEntry) {
+        public ElementAwareListIterator(Entry nextEntry) {
             this.nextEntry = nextEntry;
         }
 
@@ -198,4 +220,50 @@ public final class ElementAwareList<T> implements Iterable<T> {
         }
 
     }
+
+    /**
+     * An entry of {@link ElementAwareList}
+     */
+    public final class Entry {
+
+        private T element;
+        Entry previous;
+        Entry next;
+
+        Entry(T element, Entry previous) {
+            this.element = element;
+            this.previous = previous;
+            this.next = null;
+        }
+
+        public Entry previous() {
+            return previous;
+        }
+
+        public Entry next() {
+            return next;
+        }
+
+        public void remove() {
+            if (element == null && previous == null && next == null) { // The element may be null if the entry was reused.
+                throw new IllegalStateException("The entry was already removed.");
+            }
+            ElementAwareList.this.remove(this);
+        }
+
+        public T getElement() {
+            return element;
+        }
+
+        public ElementAwareList<T> getList() {
+            return ElementAwareList.this;
+        }
+
+        @Override
+        public String toString() {
+            return element.toString();
+        }
+
+    }
+
 }

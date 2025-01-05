@@ -18,7 +18,7 @@ class ElementAwareListTest {
         assertThat(tupleList.first()).isNull();
         assertThat(tupleList.last()).isNull();
 
-        ElementAwareListEntry<String> entryA = tupleList.add("A");
+        ElementAwareList<String>.Entry entryA = tupleList.add("A");
         Assertions.assertThat(entryA.getElement()).isEqualTo("A");
         assertThat(tupleList.size()).isEqualTo(1);
         assertThat(tupleList.first()).isEqualTo(entryA);
@@ -26,7 +26,7 @@ class ElementAwareListTest {
         assertThat(entryA.next).isNull();
         assertThat(tupleList.last()).isEqualTo(entryA);
 
-        ElementAwareListEntry<String> entryB = tupleList.add("B");
+        ElementAwareList<String>.Entry entryB = tupleList.add("B");
         Assertions.assertThat(entryB.getElement()).isEqualTo("B");
         assertThat(tupleList.size()).isEqualTo(2);
         assertThat(tupleList.first()).isEqualTo(entryA);
@@ -56,9 +56,9 @@ class ElementAwareListTest {
         assertThat(tupleList.first()).isNull();
         assertThat(tupleList.last()).isNull();
 
-        ElementAwareListEntry<String> entryA = tupleList.add("A");
-        ElementAwareListEntry<String> entryB = tupleList.add("B");
-        ElementAwareListEntry<String> entryC = tupleList.addFirst("C");
+        ElementAwareList<String>.Entry entryA = tupleList.add("A");
+        ElementAwareList<String>.Entry entryB = tupleList.add("B");
+        ElementAwareList<String>.Entry entryC = tupleList.addFirst("C");
 
         assertThat(tupleList.size()).isEqualTo(3);
 
@@ -81,9 +81,9 @@ class ElementAwareListTest {
         assertThat(tupleList.first()).isNull();
         assertThat(tupleList.last()).isNull();
 
-        ElementAwareListEntry<String> entryA = tupleList.add("A");
-        ElementAwareListEntry<String> entryB = tupleList.add("B");
-        ElementAwareListEntry<String> entryC = tupleList.addAfter("C", entryA);
+        ElementAwareList<String>.Entry entryA = tupleList.add("A");
+        ElementAwareList<String>.Entry entryB = tupleList.add("B");
+        ElementAwareList<String>.Entry entryC = tupleList.addAfter("C", entryA);
 
         assertThat(tupleList.size()).isEqualTo(3);
 
@@ -98,7 +98,7 @@ class ElementAwareListTest {
         assertThat(tupleList.first()).isEqualTo(entryA);
         assertThat(tupleList.last()).isEqualTo(entryB);
 
-        ElementAwareListEntry<String> entryD = tupleList.addAfter("D", entryB);
+        ElementAwareList<String>.Entry entryD = tupleList.addAfter("D", entryB);
 
         assertThat(tupleList.size()).isEqualTo(4);
 

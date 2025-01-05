@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.score.stream.common.bi.DefaultBiJoiner;
-import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
+import ai.timefold.solver.core.impl.util.ElementAwareList;
 
 import org.junit.jupiter.api.Test;
 
@@ -18,13 +18,13 @@ class EqualsAndComparisonIndexerTest extends AbstractIndexerTest {
 
     @Test
     void iEmpty() {
-        Indexer<UniTuple<String>> indexer = new IndexerFactory(joiner).buildIndexer(true);
+        Indexer<UniTuple<String>> indexer = new IndexerFactory<>(joiner).buildIndexer(true);
         assertThat(getTuples(indexer, "F", 40)).isEmpty();
     }
 
     @Test
     void put() {
-        Indexer<UniTuple<String>> indexer = new IndexerFactory(joiner).buildIndexer(true);
+        Indexer<UniTuple<String>> indexer = new IndexerFactory<>(joiner).buildIndexer(true);
         UniTuple<String> annTuple = newTuple("Ann-F-40");
         assertThat(indexer.size(new ManyIndexProperties("F", 40))).isEqualTo(0);
         indexer.put(new ManyIndexProperties("F", 40), annTuple);
@@ -33,9 +33,9 @@ class EqualsAndComparisonIndexerTest extends AbstractIndexerTest {
 
     @Test
     void removeTwice() {
-        Indexer<UniTuple<String>> indexer = new IndexerFactory(joiner).buildIndexer(true);
+        Indexer<UniTuple<String>> indexer = new IndexerFactory<>(joiner).buildIndexer(true);
         UniTuple<String> annTuple = newTuple("Ann-F-40");
-        ElementAwareListEntry<UniTuple<String>> annEntry = indexer.put(new ManyIndexProperties("F", 40), annTuple);
+        ElementAwareList<UniTuple<String>>.Entry annEntry = indexer.put(new ManyIndexProperties("F", 40), annTuple);
 
         indexer.remove(new ManyIndexProperties("F", 40), annEntry);
         assertThatThrownBy(() -> indexer.remove(new ManyIndexProperties("F", 40), annEntry))
@@ -44,7 +44,7 @@ class EqualsAndComparisonIndexerTest extends AbstractIndexerTest {
 
     @Test
     void visit() {
-        Indexer<UniTuple<String>> indexer = new IndexerFactory(joiner).buildIndexer(true);
+        Indexer<UniTuple<String>> indexer = new IndexerFactory<>(joiner).buildIndexer(true);
 
         UniTuple<String> annTuple = newTuple("Ann-F-40");
         indexer.put(new ManyIndexProperties("F", 40), annTuple);

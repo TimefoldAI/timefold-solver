@@ -7,7 +7,6 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecyc
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.util.ElementAwareList;
-import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
 /**
  * This class has two direct children: {@link AbstractIndexedIfExistsNode} and {@link AbstractUnindexedIfExistsNode}.
@@ -174,8 +173,8 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
 
     protected static final class FilteringTracker<LeftTuple_ extends AbstractTuple> {
         final ExistsCounter<LeftTuple_> counter;
-        private final ElementAwareListEntry<FilteringTracker<LeftTuple_>> leftTrackerEntry;
-        private final ElementAwareListEntry<FilteringTracker<LeftTuple_>> rightTrackerEntry;
+        private final ElementAwareList<FilteringTracker<LeftTuple_>>.Entry leftTrackerEntry;
+        private final ElementAwareList<FilteringTracker<LeftTuple_>>.Entry rightTrackerEntry;
 
         FilteringTracker(ExistsCounter<LeftTuple_> counter, ElementAwareList<FilteringTracker<LeftTuple_>> leftTrackerList,
                 ElementAwareList<FilteringTracker<LeftTuple_>> rightTrackerList) {
