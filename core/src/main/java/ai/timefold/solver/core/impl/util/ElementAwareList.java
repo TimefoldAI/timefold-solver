@@ -96,7 +96,7 @@ public final class ElementAwareList<T> {
         entry.list = null;
         entry.previous = null;
         entry.next = null;
-        if (availableBlankEntry == null) {
+        if (availableBlankEntry == null) { // Entry will be reused.
             entry.element = null;
             availableBlankEntry = entry;
         }
@@ -161,7 +161,7 @@ public final class ElementAwareList<T> {
         while (entry != null) {
             // Extract next before processing it, in case the entry is removed and entry.next becomes null
             var next = entry.next;
-            tupleConsumer.accept(entry.getElement());
+            tupleConsumer.accept(entry.element);
             entry = next;
         }
     }
@@ -177,7 +177,7 @@ public final class ElementAwareList<T> {
         while (entry != null) {
             // Extract next before processing it, in case the entry is removed and entry.next becomes null
             var next = entry.next;
-            tupleConsumer.accept(entry.getElement(), other);
+            tupleConsumer.accept(entry.element, other);
             entry = next;
         }
     }
@@ -194,7 +194,7 @@ public final class ElementAwareList<T> {
         while (entry != null) {
             // Extract next before processing it, in case the entry is removed and entry.next becomes null
             var next = entry.next;
-            tupleConsumer.accept(entry.getElement(), other, another);
+            tupleConsumer.accept(entry.element, other, another);
             entry = next;
         }
     }
@@ -212,29 +212,25 @@ public final class ElementAwareList<T> {
         while (entry != null) {
             // Extract next before processing it, in case the entry is removed and entry.next becomes null
             var next = entry.next;
-            tupleConsumer.accept(entry.getElement(), other, another, yetAnother);
+            tupleConsumer.accept(entry.element, other, another, yetAnother);
             entry = next;
         }
     }
 
     @Override
     public String toString() {
-        switch (size) {
-            case 0 -> {
-                return "[]";
-            }
-            case 1 -> {
-                return "[" + first.getElement() + "]";
-            }
+        var content = switch (size) {
+            case 0 -> "";
+            case 1 -> first.element;
             default -> {
-                var builder = new StringBuilder("[");
-                for (var entry = first; entry != null; entry = entry.next) {
-                    builder.append(entry.getElement()).append(", ");
-                }
-                builder.replace(builder.length() - 2, builder.length(), "");
-                return builder.append("]").toString();
+                var builder = new StringBuilder();
+                forEach(builder, (element, builder_) -> builder_.append(element).append(", "));
+                var length = builder.length();
+                builder.replace(length - 2, length, ""); // Remove the final ", ".
+                yield builder.toString();
             }
-        }
+        };
+        return "[" + content + "]";
     }
 
 }
