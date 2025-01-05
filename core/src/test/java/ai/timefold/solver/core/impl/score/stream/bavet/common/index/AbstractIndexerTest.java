@@ -18,18 +18,11 @@ abstract class AbstractIndexerTest {
     }
 
     protected <T> List<T> getTuples(Indexer<T> indexer, Object... objectProperties) {
-        IndexProperties properties = null;
-        switch (objectProperties.length) {
-            case 0:
-                properties = NoneIndexProperties.INSTANCE;
-                break;
-            case 1:
-                properties = new SingleIndexProperties(objectProperties[0]);
-                break;
-            default:
-                properties = new ManyIndexProperties(objectProperties);
-                break;
-        }
+        Object properties = switch (objectProperties.length) {
+            case 0 -> NoneIndexProperties.INSTANCE;
+            case 1 -> objectProperties[0];
+            default -> new ManyIndexProperties(objectProperties);
+        };
         List<T> result = new ArrayList<>();
         indexer.forEach(properties, result::add);
         return result;

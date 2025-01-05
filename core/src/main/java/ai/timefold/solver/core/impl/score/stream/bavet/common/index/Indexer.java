@@ -14,7 +14,12 @@ import ai.timefold.solver.core.impl.util.ElementAwareList;
  * calling {@code visit(room=A)} would visit lesson 1 and 3.
  * <p>
  * The fact X is wrapped in a Tuple, because the {@link TupleState} is needed by clients of
- * {@link #forEach(IndexProperties, Consumer)}.
+ * {@link #forEach(Object, Consumer)}.
+ * <p>
+ * Index properties are typically provided by {@link IndexProperties}.
+ * The only exception is when there is only one key, in which case the key is provided directly.
+ * This is to alleviate the GC pressure in that case, as this simple wrapper provides no additional value.
+ * In this case, the single key needs to respect the requirements of {@link IndexProperties}.
  *
  * @param <T> The element type. Often a tuple.
  *        For example for {@code from(A).join(B)}, the tuple is {@code UniTuple<A>} xor {@code UniTuple<B>}.
@@ -22,13 +27,21 @@ import ai.timefold.solver.core.impl.util.ElementAwareList;
  */
 public sealed interface Indexer<T> permits ComparisonIndexer, EqualsIndexer, NoneIndexer {
 
-    ElementAwareList<T>.Entry put(IndexProperties indexProperties, T tuple);
+    @SuppressWarnings("unchecked")
+    static <Key_> Key_ extractKey(Object indexPropertiesObject, int propertyIndex) {
+        if (indexPropertiesObject instanceof IndexProperties indexProperties) {
+            return indexProperties.toKey(propertyIndex);
+        }
+        return (Key_) indexPropertiesObject;
+    }
 
-    void remove(IndexProperties indexProperties, ElementAwareList<T>.Entry entry);
+    ElementAwareList<T>.Entry put(Object indexProperties, T tuple);
 
-    int size(IndexProperties indexProperties);
+    void remove(Object indexProperties, ElementAwareList<T>.Entry entry);
 
-    void forEach(IndexProperties indexProperties, Consumer<T> tupleConsumer);
+    int size(Object indexProperties);
+
+    void forEach(Object indexProperties, Consumer<T> tupleConsumer);
 
     boolean isEmpty();
 

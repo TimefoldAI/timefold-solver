@@ -49,13 +49,13 @@ class EqualsIndexerTest extends AbstractIndexerTest {
         Indexer<UniTuple<String>> indexer = new IndexerFactory<>(joiner).buildIndexer(true);
 
         UniTuple<String> annTuple = newTuple("Ann-F-40");
-        indexer.put(new SingleIndexProperties<>(new Pair<>("F", 40)), annTuple);
+        indexer.put(new Pair<>("F", 40), annTuple);
         UniTuple<String> bethTuple = newTuple("Beth-F-30");
-        indexer.put(new SingleIndexProperties<>(new Pair<>("F", 30)), bethTuple);
-        indexer.put(new SingleIndexProperties<>(new Pair<>("M", 40)), newTuple("Carl-M-40"));
-        indexer.put(new SingleIndexProperties<>(new Pair<>("M", 30)), newTuple("Dan-M-30"));
+        indexer.put(new Pair<>("F", 30), bethTuple);
+        indexer.put(new Pair<>("M", 40), newTuple("Carl-M-40"));
+        indexer.put(new Pair<>("M", 30), newTuple("Dan-M-30"));
         UniTuple<String> ednaTuple = newTuple("Edna-F-40");
-        indexer.put(new SingleIndexProperties<>(new Pair<>("F", 40)), ednaTuple);
+        indexer.put(new Pair<>("F", 40), ednaTuple);
 
         Assertions.assertThat(getTuples(indexer, new Pair<>("F", 40))).containsOnly(annTuple, ednaTuple);
         Assertions.assertThat(getTuples(indexer, new Pair<>("F", 30))).containsOnly(bethTuple);

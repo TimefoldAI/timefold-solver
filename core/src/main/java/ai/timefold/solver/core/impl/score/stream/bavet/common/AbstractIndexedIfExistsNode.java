@@ -1,9 +1,8 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.common;
 
-import java.util.function.Function;
-
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexProperties;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.UniMapping;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.RightTupleLifecycle;
@@ -22,7 +21,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
         extends AbstractIfExistsNode<LeftTuple_, Right_>
         implements LeftTupleLifecycle<LeftTuple_>, RightTupleLifecycle<UniTuple<Right_>> {
 
-    private final Function<Right_, IndexProperties> mappingRight;
+    private final UniMapping<Right_> mappingRight;
     private final int inputStoreIndexLeftProperties;
     private final int inputStoreIndexLeftCounterEntry;
     private final int inputStoreIndexRightProperties;
@@ -30,13 +29,11 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
     private final Indexer<ExistsCounter<LeftTuple_>> indexerLeft;
     private final Indexer<UniTuple<Right_>> indexerRight;
 
-    protected AbstractIndexedIfExistsNode(boolean shouldExist,
-            Function<Right_, IndexProperties> mappingRight,
+    protected AbstractIndexedIfExistsNode(boolean shouldExist, IndexerFactory.UniMapping<Right_> mappingRight,
             int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList,
             int inputStoreIndexRightProperties, int inputStoreIndexRightEntry, int inputStoreIndexRightTrackerList,
             TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle,
-            Indexer<ExistsCounter<LeftTuple_>> indexerLeft,
-            Indexer<UniTuple<Right_>> indexerRight,
+            Indexer<ExistsCounter<LeftTuple_>> indexerLeft, Indexer<UniTuple<Right_>> indexerRight,
             boolean isFiltering) {
         super(shouldExist,
                 inputStoreIndexLeftTrackerList, inputStoreIndexRightTrackerList,
@@ -56,7 +53,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
             throw new IllegalStateException("Impossible state: the input for the tuple (" + leftTuple
                     + ") was already added in the tupleStore.");
         }
-        IndexProperties indexProperties = createIndexProperties(leftTuple);
+        Object indexProperties = createIndexProperties(leftTuple);
         leftTuple.setStore(inputStoreIndexLeftProperties, indexProperties);
 
         ExistsCounter<LeftTuple_> counter = new ExistsCounter<>(leftTuple);
@@ -65,8 +62,8 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
         initCounterLeft(counter);
     }
 
-    private void updateCounterRight(LeftTuple_ leftTuple, IndexProperties indexProperties, ExistsCounter<LeftTuple_> counter,
-                                    ElementAwareList<ExistsCounter<LeftTuple_>>.Entry counterEntry) {
+    private void updateCounterRight(LeftTuple_ leftTuple, Object indexProperties, ExistsCounter<LeftTuple_> counter,
+            ElementAwareList<ExistsCounter<LeftTuple_>>.Entry counterEntry) {
         leftTuple.setStore(inputStoreIndexLeftCounterEntry, counterEntry);
         if (!isFiltering) {
             counter.countRight = indexerRight.size(indexProperties);
@@ -80,13 +77,13 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
 
     @Override
     public final void updateLeft(LeftTuple_ leftTuple) {
-        IndexProperties oldIndexProperties = leftTuple.getStore(inputStoreIndexLeftProperties);
+        Object oldIndexProperties = leftTuple.getStore(inputStoreIndexLeftProperties);
         if (oldIndexProperties == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             insertLeft(leftTuple);
             return;
         }
-        IndexProperties newIndexProperties = createIndexProperties(leftTuple);
+        Object newIndexProperties = createIndexProperties(leftTuple);
         ElementAwareList<ExistsCounter<LeftTuple_>>.Entry counterEntry = leftTuple.getStore(inputStoreIndexLeftCounterEntry);
         ExistsCounter<LeftTuple_> counter = counterEntry.getElement();
 
@@ -116,7 +113,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
 
     @Override
     public final void retractLeft(LeftTuple_ leftTuple) {
-        IndexProperties indexProperties = leftTuple.removeStore(inputStoreIndexLeftProperties);
+        Object indexProperties = leftTuple.removeStore(inputStoreIndexLeftProperties);
         if (indexProperties == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
@@ -127,8 +124,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
         killCounterLeft(counter);
     }
 
-    private void updateIndexerLeft(IndexProperties indexProperties,
-                                   ElementAwareList<ExistsCounter<LeftTuple_>>.Entry counterEntry,
+    private void updateIndexerLeft(Object indexProperties, ElementAwareList<ExistsCounter<LeftTuple_>>.Entry counterEntry,
             LeftTuple_ leftTuple) {
         indexerLeft.remove(indexProperties, counterEntry);
         if (isFiltering) {
@@ -143,7 +139,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
             throw new IllegalStateException("Impossible state: the input for the tuple (" + rightTuple
                     + ") was already added in the tupleStore.");
         }
-        IndexProperties indexProperties = mappingRight.apply(rightTuple.factA);
+        Object indexProperties = mappingRight.apply(rightTuple.factA);
         rightTuple.setStore(inputStoreIndexRightProperties, indexProperties);
 
         ElementAwareList<UniTuple<Right_>>.Entry rightEntry = indexerRight.put(indexProperties, rightTuple);
@@ -151,7 +147,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
         updateCounterLeft(rightTuple, indexProperties);
     }
 
-    private void updateCounterLeft(UniTuple<Right_> rightTuple, IndexProperties indexProperties) {
+    private void updateCounterLeft(UniTuple<Right_> rightTuple, Object indexProperties) {
         if (!isFiltering) {
             indexerLeft.forEach(indexProperties, this::incrementCounterRight);
         } else {
@@ -163,13 +159,13 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
 
     @Override
     public final void updateRight(UniTuple<Right_> rightTuple) {
-        IndexProperties oldIndexProperties = rightTuple.getStore(inputStoreIndexRightProperties);
+        Object oldIndexProperties = rightTuple.getStore(inputStoreIndexRightProperties);
         if (oldIndexProperties == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             insertRight(rightTuple);
             return;
         }
-        IndexProperties newIndexProperties = mappingRight.apply(rightTuple.factA);
+        Object newIndexProperties = mappingRight.apply(rightTuple.factA);
 
         if (oldIndexProperties.equals(newIndexProperties)) {
             // No need for re-indexing because the index properties didn't change
@@ -195,7 +191,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
 
     @Override
     public final void retractRight(UniTuple<Right_> rightTuple) {
-        IndexProperties indexProperties = rightTuple.removeStore(inputStoreIndexRightProperties);
+        Object indexProperties = rightTuple.removeStore(inputStoreIndexRightProperties);
         if (indexProperties == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
@@ -209,6 +205,9 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
         }
     }
 
-    protected abstract IndexProperties createIndexProperties(LeftTuple_ leftTuple);
+    /**
+     * @see Indexer Information about indexing, and the contract of index properties.
+     */
+    protected abstract Object createIndexProperties(LeftTuple_ leftTuple);
 
 }
