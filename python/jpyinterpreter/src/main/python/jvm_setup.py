@@ -169,7 +169,7 @@ class GetAttributePointerArrayOnPythonObject:
         return out_array
 
 
-@jpype.JImplements('ai.timefold.jpyinterpreter.util.function.TriFunction', deferred=True)
+@jpype.JImplements('ai.timefold.solver.core.api.function.TriFunction', deferred=True)
 class GetAttributeOnPythonObjectWithMap:
     @jpype.JOverride()
     def apply(self, python_object, attribute_name, instance_map):
@@ -180,7 +180,7 @@ class GetAttributeOnPythonObjectWithMap:
         return convert_to_java_python_like_object(out, instance_map)
 
 
-@jpype.JImplements('ai.timefold.jpyinterpreter.util.function.QuadConsumer', deferred=True)
+@jpype.JImplements('ai.timefold.solver.core.api.function.QuadConsumer', deferred=True)
 class SetAttributeOnPythonObject:
     @jpype.JOverride()
     def accept(self, python_object, clone_map, attribute_name, value):
@@ -214,7 +214,7 @@ class GetDictOnPythonObject:
         return out
 
 
-@jpype.JImplements('ai.timefold.jpyinterpreter.util.function.TriFunction', deferred=True)
+@jpype.JImplements('ai.timefold.solver.core.api.function.TriFunction', deferred=True)
 class CallPythonFunction:
     @jpype.JOverride()
     def apply(self, python_object, var_args_list, keyword_args_map):
@@ -231,7 +231,7 @@ class CallPythonFunction:
             raise CPythonException(str(e))
 
 
-@jpype.JImplements('ai.timefold.jpyinterpreter.util.function.QuadFunction', deferred=True)
+@jpype.JImplements('ai.timefold.solver.core.api.function.QuadFunction', deferred=True)
 class CreateFunctionFromCode:
     @jpype.JOverride()
     def apply(self, code_object, function_globals, closure, name):
@@ -262,7 +262,7 @@ class CreateFunctionFromCode:
         return out
 
 
-@jpype.JImplements('ai.timefold.jpyinterpreter.util.function.PentaFunction', deferred=True)
+@jpype.JImplements('ai.timefold.solver.core.api.function.PentaFunction', deferred=True)
 class ImportModule:
     @jpype.JOverride()
     def apply(self, module_name, globals_map, locals_map, from_list, level):
