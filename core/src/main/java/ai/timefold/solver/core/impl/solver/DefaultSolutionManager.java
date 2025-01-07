@@ -20,6 +20,8 @@ import ai.timefold.solver.core.impl.score.DefaultScoreExplanation;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
+import ai.timefold.solver.core.impl.util.MutableReference;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -139,6 +141,45 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
                 propositionFunction, DefaultRecommendedFit::new, fetchPolicy, solution, fittedEntityOrElement);
         return callScoreDirector(solution, SolutionUpdatePolicy.UPDATE_ALL, assigner, ConstraintMatchPolicy.match(fetchPolicy),
                 true);
+    }
+
+    /**
+     * Generates a Bavet node network visualization for the given solution.
+     * It uses a Graphviz DOT language representation.
+     * The string returned by this method can be converted to an image using {@code dot}:
+     *
+     * <pre>
+     * $ dot -Tsvg input.dot > output.svg
+     * </pre>
+     * 
+     * This assumes the string returned by this method is saved to a file named {@code input.dot}.
+     * 
+     * <p>
+     * The node network itself is an internal implementation detail of Constraint Streams.
+     * Do not rely on any particular node network structure in production code,
+     * and do not micro-optimize your constraints to match the node network.
+     * Such optimizations are destined to become obsolete and possibly harmful as the node network evolves.
+     * 
+     * <p>
+     * This method is only provided for debugging purposes
+     * and is deliberately not part of the public API.
+     * Its signature or behavior may change without notice,
+     * and it may be removed in future versions.
+     *
+     * @see <a href="https://graphviz.org/doc/info/lang.html">Graphviz DOT language</a>
+     *
+     * @param solution Will be used to read constraint weights, which determine the final node network.
+     * @return A string representing the node network in Graphviz DOT language.
+     */
+    public @NonNull String visualizeNodeNetwork(@NonNull Solution_ solution) {
+        var scoreDirectorFactory = solverFactory.getScoreDirectorFactory();
+        if (!(scoreDirectorFactory instanceof BavetConstraintStreamScoreDirectorFactory<Solution_, ?> bavetScoreDirectorFactory)) {
+            throw new UnsupportedOperationException(
+                    "Node network visualization is only supported when using Constraint Streams.");
+        }
+        var result = new MutableReference<String>(null);
+        bavetScoreDirectorFactory.newSession(solution, ConstraintMatchPolicy.ENABLED, false, result::setValue);
+        return result.getValue();
     }
 
 }

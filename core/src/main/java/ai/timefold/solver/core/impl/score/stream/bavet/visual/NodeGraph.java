@@ -9,7 +9,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -28,9 +27,9 @@ import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInl
 public record NodeGraph<Solution_>(Solution_ solution, List<AbstractNode> sources, List<GraphEdge> edges,
         List<GraphSink<Solution_>> sinks) {
 
+    @SuppressWarnings("unchecked")
     public static <Solution_> NodeGraph<Solution_> of(Solution_ solution, NodeBuildHelper<?> buildHelper,
-            List<AbstractNode> nodeList,
-            AbstractScoreInliner<?> scoreInliner) {
+                                                      List<AbstractNode> nodeList, AbstractScoreInliner<?> scoreInliner) {
         var sourceList = new ArrayList<AbstractNode>();
         var edgeList = new ArrayList<GraphEdge>();
         for (var node : nodeList) {
@@ -59,7 +58,7 @@ public record NodeGraph<Solution_>(Solution_ solution, List<AbstractNode> source
                 sinkList.stream().distinct().toList());
     }
 
-    public void buildDOT(Writer writer) throws IOException {
+    public void write(Writer writer) throws IOException {
         writer.append("digraph {\n");
         writer.append("rankdir=LR;\n");
         var sourceStream = sources.stream();
@@ -92,7 +91,7 @@ public record NodeGraph<Solution_>(Solution_ solution, List<AbstractNode> source
             writer.append(constraintId(i)).append(" ").append(getMetadata(sink, solution)).append(";\n");
         }
         // Put nodes in the same layer to appear in the same rank.
-        SortedMap<Long, Set<AbstractNode>> layerMap = new TreeMap<>();
+        var layerMap = new TreeMap<Long, Set<AbstractNode>>();
         for (var node : allNodes) {
             var layer = node.getLayerIndex();
             layerMap.computeIfAbsent(layer, k -> new LinkedHashSet<>()).add(node);

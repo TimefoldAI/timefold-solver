@@ -1,8 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.bavet;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -11,6 +10,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.score.Score;
@@ -47,8 +47,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final ConstraintMetaModel constraintMetaModel;
 
-    public BavetConstraintSessionFactory(SolutionDescriptor<Solution_> solutionDescriptor,
-            ConstraintMetaModel constraintMetaModel) {
+    public BavetConstraintSessionFactory(SolutionDescriptor<Solution_> solutionDescriptor, ConstraintMetaModel constraintMetaModel) {
         this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
         this.constraintMetaModel = Objects.requireNonNull(constraintMetaModel);
     }
@@ -59,7 +58,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
 
     @SuppressWarnings("unchecked")
     public BavetConstraintSession<Score_> buildSession(Solution_ workingSolution, ConstraintMatchPolicy constraintMatchPolicy,
-            boolean scoreDirectorDerived) {
+            boolean scoreDirectorDerived, Consumer<String> nodeNetworkVisualizationConsumer) {
         var constraintWeightSupplier = solutionDescriptor.getConstraintWeightSupplier();
         var constraints = constraintMetaModel.getConstraints();
         if (constraintWeightSupplier != null) { // Fail fast on unknown constraints.
@@ -123,19 +122,24 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
             LOGGER.atLevel(CONSTRAINT_WEIGHT_LOGGING_LEVEL)
                     .log(constraintWeightString.toString().trim());
         }
-        visualizeNodeNetwork(workingSolution, constraintStreamSet, scoreInliner);
-        return new BavetConstraintSession<>(scoreInliner, buildNodeNetwork(constraintStreamSet, scoreInliner));
+        return new BavetConstraintSession<>(scoreInliner,
+                buildNodeNetwork(workingSolution, constraintStreamSet, scoreInliner, nodeNetworkVisualizationConsumer));
     }
 
     @SuppressWarnings("unchecked")
-    private static <Solution_, Score_ extends Score<Score_>> NodeNetwork buildNodeNetwork(
-            Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet, AbstractScoreInliner<Score_> scoreInliner) {
+    private static <Solution_, Score_ extends Score<Score_>> NodeNetwork buildNodeNetwork(Solution_ workingSolution,
+            Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet, AbstractScoreInliner<Score_> scoreInliner,
+            Consumer<String> nodeNetworkVisualizationConsumer) {
         /*
          * Build constraintStreamSet in reverse order to create downstream nodes first
          * so every node only has final variables (some of which have downstream node method references).
          */
         var buildHelper = new NodeBuildHelper<>(constraintStreamSet, scoreInliner);
         var nodeList = buildNodeList(constraintStreamSet, buildHelper);
+        if (nodeNetworkVisualizationConsumer != null) {
+            var visualisation = visualizeNodeNetwork(workingSolution, buildHelper, scoreInliner, nodeList);
+            nodeNetworkVisualizationConsumer.accept(visualisation);
+        }
         var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<AbstractForEachUniNode<Object>>>();
         for (var node : nodeList) {
             if (node instanceof AbstractForEachUniNode<?> forEachUniNode) {
@@ -189,13 +193,12 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
         return nodeList;
     }
 
-    public static <Solution_, Score_ extends Score<Score_>> void visualizeNodeNetwork(Solution_ solution,
-            Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet, AbstractScoreInliner<Score_> scoreInliner) {
-        var buildHelper = new NodeBuildHelper<>(constraintStreamSet, scoreInliner);
-        var nodeList = buildNodeList(constraintStreamSet, buildHelper);
-        var graph = NodeGraph.of(solution, buildHelper, nodeList, scoreInliner);
-        try (var writer = Files.newBufferedWriter(Path.of("graph.dot"))) {
-            graph.buildDOT(writer);
+    public static <Solution_, Score_ extends Score<Score_>> String visualizeNodeNetwork(Solution_ solution,
+            NodeBuildHelper<Score_> buildHelper, AbstractScoreInliner<Score_> scoreInliner, List<AbstractNode> nodeList) {
+        try (var writer = new StringWriter()) {
+            var graph = NodeGraph.of(solution, buildHelper, nodeList, scoreInliner);
+            graph.write(writer);
+            return writer.toString();
         } catch (IOException e) {
             throw new IllegalStateException("Failed to write graph to file.", e);
         }

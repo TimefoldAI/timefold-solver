@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.score.director.stream;
 
 import java.util.Arrays;
+import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
@@ -56,8 +57,7 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
             ConstraintProvider constraintProvider, EnvironmentMode environmentMode) {
         super(solutionDescriptor);
         var constraintFactory = new BavetConstraintFactory<>(solutionDescriptor, environmentMode);
-        constraintMetaModel =
-                DefaultConstraintMetaModel.of(constraintFactory.buildConstraints(constraintProvider));
+        constraintMetaModel = DefaultConstraintMetaModel.of(constraintFactory.buildConstraints(constraintProvider));
         constraintSessionFactory = new BavetConstraintSessionFactory<>(solutionDescriptor, constraintMetaModel);
     }
 
@@ -74,9 +74,13 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
         return new BavetConstraintStreamScoreDirector<>(this, lookUpEnabled, constraintMatchPolicy, true, true);
     }
 
+    public BavetConstraintSession<Score_> newSession(Solution_ workingSolution, ConstraintMatchPolicy constraintMatchPolicy, boolean scoreDirectorDerived) {
+        return newSession(workingSolution, constraintMatchPolicy, scoreDirectorDerived, null);
+    }
+
     public BavetConstraintSession<Score_> newSession(Solution_ workingSolution, ConstraintMatchPolicy constraintMatchPolicy,
-            boolean scoreDirectorDerived) {
-        return constraintSessionFactory.buildSession(workingSolution, constraintMatchPolicy, scoreDirectorDerived);
+            boolean scoreDirectorDerived, Consumer<String> nodeNetworkVisualizationConsumer) {
+        return constraintSessionFactory.buildSession(workingSolution, constraintMatchPolicy, scoreDirectorDerived, nodeNetworkVisualizationConsumer);
     }
 
     @Override
