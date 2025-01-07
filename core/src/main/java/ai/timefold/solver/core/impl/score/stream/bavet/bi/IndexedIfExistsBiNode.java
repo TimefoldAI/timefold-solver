@@ -30,7 +30,7 @@ final class IndexedIfExistsBiNode<A, B, C> extends AbstractIndexedIfExistsNode<B
     }
 
     public IndexedIfExistsBiNode(boolean shouldExist,
-            BiMapping<A, B> mappingAB, IndexerFactory.UniMapping<C> mappingC,
+            BiMapping<A, B> mappingAB, UniMapping<C> mappingC,
             int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList,
             int inputStoreIndexRightProperties, int inputStoreIndexRightEntry, int inputStoreIndexRightTrackerList,
             TupleLifecycle<BiTuple<A, B>> nextNodesTupleLifecycle,
