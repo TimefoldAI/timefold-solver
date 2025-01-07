@@ -1776,7 +1776,7 @@ public class SolutionManagerTest {
                 """
                         digraph {
                             rankdir=LR;
-                            label=<<B>Bavet Node Network for 'null'</B><BR />n1 constraints, 1 nodes>
+                            label=<<B>Bavet Node Network for 'null'</B><BR />1 constraints, 1 nodes>
                             node0 -> impact0;
                             node0 [pad="0.2", fillcolor="#3e00ff", shape="plaintext", fontcolor="white", style="filled", label=<<B>ForEachExcludingUnassignedUni</B><BR/>(TestdataEntity)>, fontname="Courier New"];
                             impact0 [pad="0.2", fillcolor="#3423a6", shape="plaintext", fontcolor="white", style="filled", label=<<B>Always penalize</B><BR />(Weight: -1)>, fontname="Courier New"];
