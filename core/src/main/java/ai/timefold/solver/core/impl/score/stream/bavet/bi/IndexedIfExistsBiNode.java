@@ -4,7 +4,6 @@ import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractIndexedIfExistsNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ExistsCounter;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.BiMapping;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.UniMapping;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.BiTuple;
