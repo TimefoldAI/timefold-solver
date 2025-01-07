@@ -123,6 +123,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
             LOGGER.atLevel(CONSTRAINT_WEIGHT_LOGGING_LEVEL)
                     .log(constraintWeightString.toString().trim());
         }
+        visualizeNodeNetwork(workingSolution, constraintStreamSet, scoreInliner);
         return new BavetConstraintSession<>(scoreInliner, buildNodeNetwork(constraintStreamSet, scoreInliner));
     }
 

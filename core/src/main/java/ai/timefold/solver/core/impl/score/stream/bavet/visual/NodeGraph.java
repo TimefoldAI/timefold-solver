@@ -69,7 +69,7 @@ public record NodeGraph<Solution_>(Solution_ solution, List<AbstractNode> source
                 .distinct()
                 .sorted(Comparator.comparingLong(AbstractNode::getId))
                 .toList();
-        writer.append("label=\"Bavet Node Network for '%s'\\n%d constraints, %d nodes\"\n"
+        writer.append("label=<<B>Bavet Node Network for '%s'</B><BR />n%d constraints, %d nodes>\n"
                 .formatted(solution.toString(), sinks.size(), allNodes.size()));
         // Specify the edges.
         for (AbstractNode node : allNodes) {
@@ -108,7 +108,7 @@ public record NodeGraph<Solution_>(Solution_ solution, List<AbstractNode> source
     }
 
     private static String getMetadata(AbstractNode node) {
-        var metadata = getBaseProperties("lightgrey", false);
+        var metadata = getBaseDOTProperties("lightgrey", false);
         if (node instanceof AbstractForEachUniNode<?>) {
             metadata.put("style", "filled");
             metadata.put("fillcolor", "#3e00ff");
@@ -125,22 +125,31 @@ public record NodeGraph<Solution_>(Solution_ solution, List<AbstractNode> source
 
     private static String mergeMetadata(Map<String, String> metadata) {
         return metadata.entrySet().stream()
-                .map(entry -> "%s=\"%s\"".formatted(entry.getKey(), entry.getValue()))
+                .map(entry -> {
+                    if (entry.getKey().equals("label")) { // Labels are HTML-formatted.
+                        return "%s=<%s>".formatted(entry.getKey(), entry.getValue());
+                    } else {
+                        return "%s=\"%s\"".formatted(entry.getKey(), entry.getValue());
+                    }
+                })
                 .collect(Collectors.joining(", ", "[", "]"));
     }
 
     private static <Solution_> String getMetadata(GraphSink<Solution_> sink, Solution_ solution) {
         var constraint = sink.constraint();
-        var metadata = getBaseProperties("#3423a6", true);
-        metadata.put("label", "%s\\n(Weight: %s)"
+        var metadata = getBaseDOTProperties("#3423a6", true);
+        metadata.put("label", "<B>%s</B><BR />(Weight: %s)"
                 .formatted(constraint.getConstraintRef().constraintName(), constraint.extractConstraintWeight(solution)));
         return mergeMetadata(metadata);
     }
 
-    private static Map<String, String> getBaseProperties(String fillcolor, boolean whiteText) {
+    private static Map<String, String> getBaseDOTProperties(String fillcolor, boolean whiteText) {
         var metadata = new HashMap<String, String>();
-        metadata.put("shape", "box");
+        metadata.put("shape", "plaintext");
+        metadata.put("pad", "0.2");
+        metadata.put("style", "filled");
         metadata.put("fillcolor", fillcolor);
+        metadata.put("fontname", "Courier New");
         metadata.put("fontcolor", whiteText ? "white" : "black");
         return metadata;
     }
@@ -157,9 +166,10 @@ public record NodeGraph<Solution_>(Solution_ solution, List<AbstractNode> source
         var className = node.getClass().getSimpleName()
                 .replace("Node", "");
         if (node instanceof AbstractForEachUniNode<?> forEachNode) {
-            return className + "\\n(" + forEachNode.getForEachClass().getSimpleName() + ")";
+            return "<B>%s</B><BR/>(%s)".formatted(className, forEachNode.getForEachClass().getSimpleName());
+        } else {
+            return "<B>%s</B>".formatted(className);
         }
-        return className;
     }
 
 }
