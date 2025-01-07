@@ -4,7 +4,7 @@ final class NoneIndexProperties implements IndexProperties {
 
     static final NoneIndexProperties INSTANCE = new NoneIndexProperties();
 
-    private NoneIndexProperties() {
+    private NoneIndexProperties() { // No external instances.
     }
 
     @Override

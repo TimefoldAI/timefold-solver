@@ -23,7 +23,7 @@ import ai.timefold.jpyinterpreter.types.errors.ValueError;
 import ai.timefold.jpyinterpreter.types.numeric.PythonBoolean;
 import ai.timefold.jpyinterpreter.types.numeric.PythonInteger;
 import ai.timefold.jpyinterpreter.util.PythonFunctionBuilder;
-import ai.timefold.jpyinterpreter.util.function.TriFunction;
+import ai.timefold.solver.core.api.function.TriFunction;
 
 import org.junit.jupiter.api.Test;
 

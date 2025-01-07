@@ -196,11 +196,11 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
             var constraint = entry.getKey();
             var constraintMatchTotal =
                     new DefaultConstraintMatchTotal<>(constraint.getConstraintRef(), constraintWeightMap.get(constraint));
-            for (var carrier : entry.getValue()) {
+            entry.getValue().forEach(constraintMatchTotal, (carrier, constraintMatchTotal_) -> {
                 // Constraint match instances are only created here when we actually need them.
                 var constraintMatch = carrier.get();
-                constraintMatchTotal.addConstraintMatch(constraintMatch);
-            }
+                constraintMatchTotal_.addConstraintMatch(constraintMatch);
+            });
             constraintIdToConstraintMatchTotalMap.put(constraint.getConstraintRef().constraintId(), constraintMatchTotal);
         }
         this.constraintIdToConstraintMatchTotalMap = constraintIdToConstraintMatchTotalMap;
@@ -218,14 +218,14 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
     private void rebuildIndictments() {
         var workingIndictmentMap = new LinkedHashMap<Object, Indictment<Score_>>();
         for (var entry : constraintMatchMap.entrySet()) {
-            for (var carrier : entry.getValue()) {
+            entry.getValue().forEach(workingIndictmentMap, (carrier, indictmentMap_) -> {
                 // Constraint match instances are only created here when we actually need them.
                 var constraintMatch = carrier.get();
                 for (var indictedObject : constraintMatch.getIndictedObjectList()) {
                     if (indictedObject == null) { // Users may have sent null, or it came from the default mapping.
                         continue;
                     }
-                    var indictment = getIndictment(workingIndictmentMap, constraintMatch, indictedObject);
+                    var indictment = getIndictment(indictmentMap_, constraintMatch, indictedObject);
                     /*
                      * Optimization: In order to not have to go over the indicted object list and remove duplicates,
                      * we use a method that will silently skip duplicate constraint matches.
@@ -233,13 +233,13 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
                      */
                     indictment.addConstraintMatchWithoutFail(constraintMatch);
                 }
-            }
+            });
         }
         indictmentMap = workingIndictmentMap;
     }
 
-    private DefaultIndictment<Score_> getIndictment(Map<Object, Indictment<Score_>> indictmentMap,
-            ConstraintMatch<Score_> constraintMatch, Object indictedObject) {
+    private static <Score_ extends Score<Score_>> DefaultIndictment<Score_> getIndictment(
+            Map<Object, Indictment<Score_>> indictmentMap, ConstraintMatch<Score_> constraintMatch, Object indictedObject) {
         // Like computeIfAbsent(), but doesn't create a capturing lambda on the hot path.
         var indictment = (DefaultIndictment<Score_>) indictmentMap.get(indictedObject);
         if (indictment == null) {
