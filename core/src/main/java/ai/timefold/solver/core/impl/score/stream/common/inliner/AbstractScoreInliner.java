@@ -217,14 +217,14 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
     private void rebuildIndictments() {
         var workingIndictmentMap = new LinkedHashMap<Object, Indictment<Score_>>();
         for (var entry : constraintMatchMap.entrySet()) {
-            entry.getValue().forEach(workingIndictmentMap, (carrier, indictmentMap) -> {
+            entry.getValue().forEach(workingIndictmentMap, (carrier, indictmentMap_) -> {
                 // Constraint match instances are only created here when we actually need them.
                 var constraintMatch = carrier.get();
                 for (var indictedObject : constraintMatch.getIndictedObjectList()) {
                     if (indictedObject == null) { // Users may have sent null, or it came from the default mapping.
                         continue;
                     }
-                    var indictment = getIndictment(indictmentMap, constraintMatch, indictedObject);
+                    var indictment = getIndictment(indictmentMap_, constraintMatch, indictedObject);
                     /*
                      * Optimization: In order to not have to go over the indicted object list and remove duplicates,
                      * we use a method that will silently skip duplicate constraint matches.
@@ -237,8 +237,8 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
         indictmentMap = workingIndictmentMap;
     }
 
-    private DefaultIndictment<Score_> getIndictment(Map<Object, Indictment<Score_>> indictmentMap,
-            ConstraintMatch<Score_> constraintMatch, Object indictedObject) {
+    private static <Score_ extends Score<Score_>> DefaultIndictment<Score_> getIndictment(
+            Map<Object, Indictment<Score_>> indictmentMap, ConstraintMatch<Score_> constraintMatch, Object indictedObject) {
         // Like computeIfAbsent(), but doesn't create a capturing lambda on the hot path.
         var indictment = (DefaultIndictment<Score_>) indictmentMap.get(indictedObject);
         if (indictment == null) {
