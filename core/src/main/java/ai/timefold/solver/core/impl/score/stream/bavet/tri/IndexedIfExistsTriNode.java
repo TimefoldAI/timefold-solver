@@ -4,7 +4,6 @@ import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractIndexedIfExistsNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ExistsCounter;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.TriMapping;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.UniMapping;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TriTuple;
@@ -30,7 +29,7 @@ final class IndexedIfExistsTriNode<A, B, C, D> extends AbstractIndexedIfExistsNo
     }
 
     public IndexedIfExistsTriNode(boolean shouldExist,
-            TriMapping<A, B, C> mappingABC, IndexerFactory.UniMapping<D> mappingD,
+            TriMapping<A, B, C> mappingABC, UniMapping<D> mappingD,
             int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList,
             int inputStoreIndexRightProperties, int inputStoreIndexRightEntry, int inputStoreIndexRightTrackerList,
             TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle,

@@ -7,16 +7,20 @@ import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
 /**
  * An indexer for entity or fact {@code X},
- * maps a property or a combination of properties of {@code X}, denoted by {@code indexProperties},
+ * maps a property or a combination of properties of {@code X}
+ * (keys denoted by {@code indexProperties})
  * to all instances of {@code X} that match those properties,
- * depending on the the indexer type (equal, lower than, ...).
- * For example for {@code {Lesson(id=1, room=A), Lesson(id=2, room=B), Lesson(id=3, room=A)}},
- * calling {@code visit(room=A)} would visit lesson 1 and 3.
+ * depending on the indexer type (equal, lower than, ...).
+ * <p>
+ * Example: for {@code {Lesson(id=1, room=A), Lesson(id=2, room=B), Lesson(id=3, room=A)}}
+ * and an index on {@code Lesson::room},
+ * calling {@code EqualsIndexer.forEach(A)} would visit lesson 1 and 3,
+ * room "A" being the key.
  * <p>
  * The fact X is wrapped in a Tuple, because the {@link TupleState} is needed by clients of
  * {@link #forEach(Object, Consumer)}.
  * <p>
- * Index properties are typically provided by {@link IndexProperties}.
+ * Index keys are typically provided by {@link IndexProperties}.
  * The only exception is when there is only one key, in which case the key is provided directly.
  * This is to alleviate the GC pressure in that case, as this simple wrapper provides no additional value.
  * In this case, the single key needs to respect the requirements of {@link IndexProperties}.

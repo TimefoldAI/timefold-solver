@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.common;
 
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.UniMapping;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.LeftTupleLifecycle;
@@ -30,7 +29,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
     private final Indexer<ExistsCounter<LeftTuple_>> indexerLeft;
     private final Indexer<UniTuple<Right_>> indexerRight;
 
-    protected AbstractIndexedIfExistsNode(boolean shouldExist, IndexerFactory.UniMapping<Right_> mappingRight,
+    protected AbstractIndexedIfExistsNode(boolean shouldExist, UniMapping<Right_> mappingRight,
             int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList,
             int inputStoreIndexRightProperties, int inputStoreIndexRightEntry, int inputStoreIndexRightTrackerList,
             TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle,

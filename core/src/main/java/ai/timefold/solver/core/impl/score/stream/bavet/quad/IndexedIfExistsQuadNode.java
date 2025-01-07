@@ -30,7 +30,7 @@ final class IndexedIfExistsQuadNode<A, B, C, D, E> extends AbstractIndexedIfExis
     }
 
     public IndexedIfExistsQuadNode(boolean shouldExist,
-            QuadMapping<A, B, C, D> mappingABCD, IndexerFactory.UniMapping<E> mappingE,
+            QuadMapping<A, B, C, D> mappingABCD, UniMapping<E> mappingE,
             int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList,
             int inputStoreIndexRightProperties, int inputStoreIndexRightEntry, int inputStoreIndexRightTrackerList,
             TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle,
