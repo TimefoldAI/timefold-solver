@@ -183,12 +183,12 @@ class TimefoldProcessor {
     /**
      * Converts a method's camelCase name to the kabab-case name used in properties.
      */
-    private String toKebabCase(String camelCaseName) {
+    private static String toKebabCase(String camelCaseName) {
         var matcher = CAPITAL_LETTER_PATTERN.matcher(camelCaseName);
         return matcher.replaceAll(letter -> "-" + letter.group().toLowerCase());
     }
 
-    private void addAllConfigProperties(Class<?> config, String prefix, Set<String> result) {
+    private static void addAllConfigProperties(Class<?> config, String prefix, Set<String> result) {
         for (var method : config.getMethods()) {
             if (method.getReturnType().getAnnotation(ConfigGroup.class) != null) {
                 addAllConfigProperties(method.getReturnType(), prefix + "." + toKebabCase(method.getName()), result);

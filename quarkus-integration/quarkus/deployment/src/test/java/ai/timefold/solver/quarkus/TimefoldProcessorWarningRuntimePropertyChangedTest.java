@@ -27,14 +27,13 @@ class TimefoldProcessorWarningRuntimePropertyChangedTest {
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
                             TestdataQuarkusConstraintProvider.class))
             // Make sure Quarkus does not produce a warning for overwriting a build time value at runtime
-            .setLogRecordPredicate(record -> record.getLoggerName().startsWith("io.quarkus")
-                    && record.getLevel().intValue() >= Level.WARNING.intValue())
-            .assertLogRecords(logRecords -> {
-                assertEquals(0, logRecords.size(), "expected no warnings to be generated");
-            });
+            .setLogRecordPredicate(logRecord -> logRecord.getLoggerName().startsWith("io.quarkus")
+                    && logRecord.getLevel().intValue() >= Level.WARNING.intValue());
 
     @Test
     void solverProperties() {
-        // Test is done by assertLogRecords
+        config.assertLogRecords(logRecords -> {
+            assertEquals(0, logRecords.size(), "expected no warnings to be generated");
+        });
     }
 }
