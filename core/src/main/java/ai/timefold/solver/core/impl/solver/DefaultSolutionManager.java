@@ -172,14 +172,12 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
      * @return A string representing the node network in Graphviz DOT language.
      */
     public @NonNull String visualizeNodeNetwork(@NonNull Solution_ solution) {
-        var scoreDirectorFactory = solverFactory.getScoreDirectorFactory();
-        if (!(scoreDirectorFactory instanceof BavetConstraintStreamScoreDirectorFactory<Solution_, ?> bavetScoreDirectorFactory)) {
-            throw new UnsupportedOperationException(
-                    "Node network visualization is only supported when using Constraint Streams.");
+        if (scoreDirectorFactory instanceof BavetConstraintStreamScoreDirectorFactory<Solution_, ?> bavetScoreDirectorFactory) {
+            var result = new MutableReference<String>(null);
+            bavetScoreDirectorFactory.newSession(solution, ConstraintMatchPolicy.ENABLED, false, result::setValue);
+            return result.getValue();
         }
-        var result = new MutableReference<String>(null);
-        bavetScoreDirectorFactory.newSession(solution, ConstraintMatchPolicy.ENABLED, false, result::setValue);
-        return result.getValue();
+        throw new UnsupportedOperationException("Node network visualization is only supported when using Constraint Streams.");
     }
 
 }

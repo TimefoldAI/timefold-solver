@@ -68,7 +68,7 @@ public record NodeGraph<Solution_>(Solution_ solution, List<AbstractNode> source
                 .distinct()
                 .sorted(Comparator.comparingLong(AbstractNode::getId))
                 .toList();
-        writer.append("label=<<B>Bavet Node Network for '%s'</B><BR />n%d constraints, %d nodes>\n"
+        writer.append("label=<<B>Bavet Node Network for '%s'</B><BR />%d constraints, %d nodes>\n"
                 .formatted(solution.toString(), sinks.size(), allNodes.size()));
         // Specify the edges.
         for (AbstractNode node : allNodes) {
