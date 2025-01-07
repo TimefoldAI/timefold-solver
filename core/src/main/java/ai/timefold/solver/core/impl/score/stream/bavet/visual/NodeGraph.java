@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -18,6 +19,8 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetStreamBinaryOperation;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.LeftTupleLifecycle;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.BavetForEachUniConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
@@ -104,43 +107,53 @@ public record NodeGraph<Solution_>(Solution_ solution, List<AbstractNode> source
         writer.append("}");
     }
 
-    private String getMetadata(AbstractNode node) {
-        var metadata = new HashMap<String, String>();
-        if (sources.contains(node)) {
-            metadata.put("shape", "ellipse");
+    private static String getMetadata(AbstractNode node) {
+        var metadata = getBaseProperties("lightgrey", false);
+        if (node instanceof AbstractForEachUniNode<?>) {
             metadata.put("style", "filled");
-            metadata.put("fillcolor", "lightblue");
-        } else {
-            metadata.put("shape", "box");
+            metadata.put("fillcolor", "#3e00ff");
+            metadata.put("fontcolor", "white");
+        } else if (node instanceof LeftTupleLifecycle<?> && node instanceof RightTupleLifecycle<?>) {
+            // Nodes that join get a different color.
+            metadata.put("style", "filled");
+            metadata.put("fillcolor", "#ff7700");
+            metadata.put("fontcolor", "white");
         }
         metadata.put("label", nodeLabel(node));
+        return mergeMetadata(metadata);
+    }
+
+    private static String mergeMetadata(Map<String, String> metadata) {
         return metadata.entrySet().stream()
                 .map(entry -> "%s=\"%s\"".formatted(entry.getKey(), entry.getValue()))
                 .collect(Collectors.joining(", ", "[", "]"));
     }
 
-    private String getMetadata(GraphSink<Solution_> sink, Solution_ solution) {
+    private static <Solution_> String getMetadata(GraphSink<Solution_> sink, Solution_ solution) {
         var constraint = sink.constraint();
-        var metadata = new HashMap<String, String>();
-        metadata.put("shape", "ellipse");
-        metadata.put("style", "filled");
-        metadata.put("fillcolor", "lightgreen");
+        var metadata = getBaseProperties("#3423a6", true);
         metadata.put("label", "%s\\n(Weight: %s)"
                 .formatted(constraint.getConstraintRef().constraintName(), constraint.extractConstraintWeight(solution)));
-        return metadata.entrySet().stream()
-                .map(entry -> "%s=\"%s\"".formatted(entry.getKey(), entry.getValue()))
-                .collect(Collectors.joining(", ", "[", "]"));
+        return mergeMetadata(metadata);
     }
 
-    private String nodeId(AbstractNode node) {
+    private static Map<String, String> getBaseProperties(String fillcolor, boolean whiteText) {
+        var metadata = new HashMap<String, String>();
+        metadata.put("shape", "box");
+        metadata.put("fillcolor", fillcolor);
+        metadata.put("fontcolor", whiteText ? "white" : "black");
+        return metadata;
+    }
+
+    private static String nodeId(AbstractNode node) {
         return "node" + node.getId();
     }
 
-    private String constraintId(int id) {
+    private static String constraintId(int id) {
         return "impact" + id;
     }
 
-    private String nodeLabel(AbstractNode node) {
+    private static String nodeLabel(AbstractNode node) {
         var className = node.getClass().getSimpleName()
                 .replace("Node", "");
         if (node instanceof AbstractForEachUniNode<?> forEachNode) {

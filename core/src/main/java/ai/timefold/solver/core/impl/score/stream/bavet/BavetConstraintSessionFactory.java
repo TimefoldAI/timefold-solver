@@ -134,11 +134,6 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
          * so every node only has final variables (some of which have downstream node method references).
          */
         var buildHelper = new NodeBuildHelper<>(constraintStreamSet, scoreInliner);
-        var reversedConstraintStreamList = new ArrayList<>(constraintStreamSet);
-        Collections.reverse(reversedConstraintStreamList);
-        for (var constraintStream : reversedConstraintStreamList) {
-            constraintStream.buildNode(buildHelper);
-        }
         var nodeList = buildNodeList(constraintStreamSet, buildHelper);
         var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<AbstractForEachUniNode<Object>>>();
         for (var node : nodeList) {
