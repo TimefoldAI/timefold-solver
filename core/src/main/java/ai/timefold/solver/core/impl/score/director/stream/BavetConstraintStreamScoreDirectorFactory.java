@@ -74,13 +74,15 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
         return new BavetConstraintStreamScoreDirector<>(this, lookUpEnabled, constraintMatchPolicy, true, true);
     }
 
-    public BavetConstraintSession<Score_> newSession(Solution_ workingSolution, ConstraintMatchPolicy constraintMatchPolicy, boolean scoreDirectorDerived) {
+    public BavetConstraintSession<Score_> newSession(Solution_ workingSolution, ConstraintMatchPolicy constraintMatchPolicy,
+            boolean scoreDirectorDerived) {
         return newSession(workingSolution, constraintMatchPolicy, scoreDirectorDerived, null);
     }
 
     public BavetConstraintSession<Score_> newSession(Solution_ workingSolution, ConstraintMatchPolicy constraintMatchPolicy,
             boolean scoreDirectorDerived, Consumer<String> nodeNetworkVisualizationConsumer) {
-        return constraintSessionFactory.buildSession(workingSolution, constraintMatchPolicy, scoreDirectorDerived, nodeNetworkVisualizationConsumer);
+        return constraintSessionFactory.buildSession(workingSolution, constraintMatchPolicy, scoreDirectorDerived,
+                nodeNetworkVisualizationConsumer);
     }
 
     @Override

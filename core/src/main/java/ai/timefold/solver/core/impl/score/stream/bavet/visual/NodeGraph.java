@@ -29,7 +29,7 @@ public record NodeGraph<Solution_>(Solution_ solution, List<AbstractNode> source
 
     @SuppressWarnings("unchecked")
     public static <Solution_> NodeGraph<Solution_> of(Solution_ solution, NodeBuildHelper<?> buildHelper,
-                                                      List<AbstractNode> nodeList, AbstractScoreInliner<?> scoreInliner) {
+            List<AbstractNode> nodeList, AbstractScoreInliner<?> scoreInliner) {
         var sourceList = new ArrayList<AbstractNode>();
         var edgeList = new ArrayList<GraphEdge>();
         for (var node : nodeList) {

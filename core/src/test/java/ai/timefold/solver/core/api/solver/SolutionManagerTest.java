@@ -1769,18 +1769,20 @@ public class SolutionManagerTest {
     @EnumSource(SolutionManagerSource.class)
     void visualizeNodeNetwork(SolutionManagerSource SolutionManagerSource) {
         var solution = new TestdataSolution();
-        var solutionManager = (DefaultSolutionManager<TestdataSolution, SimpleScore>) SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_WITH_CS);
+        var solutionManager = (DefaultSolutionManager<TestdataSolution, SimpleScore>) SolutionManagerSource
+                .createSolutionManager(SOLVER_FACTORY_WITH_CS);
         var result = solutionManager.visualizeNodeNetwork(solution);
-        assertThat(result).isEqualToIgnoringWhitespace("""
-                digraph {
-                    rankdir=LR;
-                    label=<<B>Bavet Node Network for 'null'</B><BR />n1 constraints, 1 nodes>
-                    node0 -> impact0;
-                    node0 [pad="0.2", fillcolor="#3e00ff", shape="plaintext", fontcolor="white", style="filled", label=<<B>ForEachExcludingUnassignedUni</B><BR/>(TestdataEntity)>, fontname="Courier New"];
-                    impact0 [pad="0.2", fillcolor="#3423a6", shape="plaintext", fontcolor="white", style="filled", label=<<B>Always penalize</B><BR />(Weight: -1)>, fontname="Courier New"];
-                    { rank=same; node0; }
-                }
-                """);
+        assertThat(result).isEqualToIgnoringWhitespace(
+                """
+                        digraph {
+                            rankdir=LR;
+                            label=<<B>Bavet Node Network for 'null'</B><BR />n1 constraints, 1 nodes>
+                            node0 -> impact0;
+                            node0 [pad="0.2", fillcolor="#3e00ff", shape="plaintext", fontcolor="white", style="filled", label=<<B>ForEachExcludingUnassignedUni</B><BR/>(TestdataEntity)>, fontname="Courier New"];
+                            impact0 [pad="0.2", fillcolor="#3423a6", shape="plaintext", fontcolor="white", style="filled", label=<<B>Always penalize</B><BR />(Weight: -1)>, fontname="Courier New"];
+                            { rank=same; node0; }
+                        }
+                        """);
     }
 
     @SuppressWarnings("unchecked")
@@ -1788,7 +1790,8 @@ public class SolutionManagerTest {
     @EnumSource(SolutionManagerSource.class)
     void visualizeNodeNetworkNoBavet(SolutionManagerSource SolutionManagerSource) {
         var solution = new TestdataPinnedWithIndexListSolution();
-        var solutionManager = (DefaultSolutionManager<TestdataPinnedWithIndexListSolution, SimpleScore>) SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_LIST_PINNED);
+        var solutionManager = (DefaultSolutionManager<TestdataPinnedWithIndexListSolution, SimpleScore>) SolutionManagerSource
+                .createSolutionManager(SOLVER_FACTORY_LIST_PINNED);
         assertThatThrownBy(() -> solutionManager.visualizeNodeNetwork(solution))
                 .isInstanceOf(UnsupportedOperationException.class)
                 .hasMessageContaining("Constraint Streams");

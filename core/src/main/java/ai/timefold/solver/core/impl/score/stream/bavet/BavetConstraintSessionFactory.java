@@ -47,7 +47,8 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final ConstraintMetaModel constraintMetaModel;
 
-    public BavetConstraintSessionFactory(SolutionDescriptor<Solution_> solutionDescriptor, ConstraintMetaModel constraintMetaModel) {
+    public BavetConstraintSessionFactory(SolutionDescriptor<Solution_> solutionDescriptor,
+            ConstraintMetaModel constraintMetaModel) {
         this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
         this.constraintMetaModel = Objects.requireNonNull(constraintMetaModel);
     }
