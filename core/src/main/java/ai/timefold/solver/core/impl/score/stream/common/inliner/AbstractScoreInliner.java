@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Supplier;
 
@@ -246,6 +247,10 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
             indictmentMap.put(indictedObject, indictment);
         }
         return indictment;
+    }
+
+    public Set<Constraint> getConstraints() {
+        return constraintWeightMap.keySet();
     }
 
     private static final class ConstraintMatchCarrier<Score_ extends Score<Score_>>

@@ -21,6 +21,10 @@ public abstract class AbstractNode {
      */
     public abstract Propagator getPropagator();
 
+    public long getId() {
+        return id;
+    }
+
     public final void setId(long id) {
         this.id = id;
     }

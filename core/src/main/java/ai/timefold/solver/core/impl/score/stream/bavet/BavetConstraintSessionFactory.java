@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.score.Score;
@@ -28,6 +29,7 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.PropagationQueue;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.AbstractForEachUniNode;
+import ai.timefold.solver.core.impl.score.stream.bavet.visual.NodeGraph;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
@@ -55,7 +57,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
 
     @SuppressWarnings("unchecked")
     public BavetConstraintSession<Score_> buildSession(Solution_ workingSolution, ConstraintMatchPolicy constraintMatchPolicy,
-            boolean scoreDirectorDerived) {
+            boolean scoreDirectorDerived, Consumer<String> nodeNetworkVisualizationConsumer) {
         var constraintWeightSupplier = solutionDescriptor.getConstraintWeightSupplier();
         var constraints = constraintMetaModel.getConstraints();
         if (constraintWeightSupplier != null) { // Fail fast on unknown constraints.
@@ -119,32 +121,26 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
             LOGGER.atLevel(CONSTRAINT_WEIGHT_LOGGING_LEVEL)
                     .log(constraintWeightString.toString().trim());
         }
-        return new BavetConstraintSession<>(scoreInliner, buildNodeNetwork(constraintStreamSet, scoreInliner));
+        return new BavetConstraintSession<>(scoreInliner,
+                buildNodeNetwork(workingSolution, constraintStreamSet, scoreInliner, nodeNetworkVisualizationConsumer));
     }
 
     @SuppressWarnings("unchecked")
-    private static <Solution_, Score_ extends Score<Score_>> NodeNetwork buildNodeNetwork(
-            Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet, AbstractScoreInliner<Score_> scoreInliner) {
+    private static <Solution_, Score_ extends Score<Score_>> NodeNetwork buildNodeNetwork(Solution_ workingSolution,
+            Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet, AbstractScoreInliner<Score_> scoreInliner,
+            Consumer<String> nodeNetworkVisualizationConsumer) {
         /*
          * Build constraintStreamSet in reverse order to create downstream nodes first
          * so every node only has final variables (some of which have downstream node method references).
          */
         var buildHelper = new NodeBuildHelper<>(constraintStreamSet, scoreInliner);
-        var reversedConstraintStreamList = new ArrayList<>(constraintStreamSet);
-        Collections.reverse(reversedConstraintStreamList);
-        for (var constraintStream : reversedConstraintStreamList) {
-            constraintStream.buildNode(buildHelper);
+        var nodeList = buildNodeList(constraintStreamSet, buildHelper);
+        if (nodeNetworkVisualizationConsumer != null) {
+            var visualisation = visualizeNodeNetwork(workingSolution, buildHelper, scoreInliner, nodeList);
+            nodeNetworkVisualizationConsumer.accept(visualisation);
         }
-        var nodeList = buildHelper.destroyAndGetNodeList();
         var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<AbstractForEachUniNode<Object>>>();
-        var nextNodeId = 0L;
         for (var node : nodeList) {
-            /*
-             * Nodes are iterated first to last, starting with forEach(), the ultimate parent.
-             * Parents are guaranteed to come before children.
-             */
-            node.setId(nextNodeId++);
-            node.setLayerIndex(determineLayerIndex(node, buildHelper));
             if (node instanceof AbstractForEachUniNode<?> forEachUniNode) {
                 var forEachClass = forEachUniNode.getForEachClass();
                 var forEachUniNodeList =
@@ -170,6 +166,36 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
             layeredNodes[i] = layer.toArray(new Propagator[0]);
         }
         return new NodeNetwork(declaredClassToNodeMap, layeredNodes);
+    }
+
+    private static <Solution_, Score_ extends Score<Score_>> List<AbstractNode> buildNodeList(
+            Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet, NodeBuildHelper<Score_> buildHelper) {
+        /*
+         * Build constraintStreamSet in reverse order to create downstream nodes first
+         * so every node only has final variables (some of which have downstream node method references).
+         */
+        var reversedConstraintStreamList = new ArrayList<>(constraintStreamSet);
+        Collections.reverse(reversedConstraintStreamList);
+        for (var constraintStream : reversedConstraintStreamList) {
+            constraintStream.buildNode(buildHelper);
+        }
+        var nodeList = buildHelper.destroyAndGetNodeList();
+        var nextNodeId = 0L;
+        for (var node : nodeList) {
+            /*
+             * Nodes are iterated first to last, starting with forEach(), the ultimate parent.
+             * Parents are guaranteed to come before children.
+             */
+            node.setId(nextNodeId++);
+            node.setLayerIndex(determineLayerIndex(node, buildHelper));
+        }
+        return nodeList;
+    }
+
+    public static <Solution_, Score_ extends Score<Score_>> String visualizeNodeNetwork(Solution_ solution,
+            NodeBuildHelper<Score_> buildHelper, AbstractScoreInliner<Score_> scoreInliner, List<AbstractNode> nodeList) {
+        return NodeGraph.of(solution, buildHelper, nodeList, scoreInliner)
+                .buildGraphvizDOT();
     }
 
     /**

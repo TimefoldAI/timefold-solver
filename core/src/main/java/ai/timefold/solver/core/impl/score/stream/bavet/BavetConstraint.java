@@ -23,9 +23,9 @@ public final class BavetConstraint<Solution_> extends
         this.scoringConstraintStream = scoringConstraintStream;
     }
 
-    // ************************************************************************
-    // Node creation
-    // ************************************************************************
+    public BavetScoringConstraintStream<Solution_> getScoringConstraintStream() {
+        return scoringConstraintStream;
+    }
 
     @Override
     public String toString() {

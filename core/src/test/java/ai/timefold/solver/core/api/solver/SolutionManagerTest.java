@@ -12,6 +12,10 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.impl.solver.DefaultSolutionManager;
+import ai.timefold.solver.core.impl.testdata.domain.TestdataConstraintProvider;
+import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
+import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedIncrementalScoreCalculator;
@@ -90,6 +94,11 @@ public class SolutionManagerTest {
                     .withScoreDirectorFactory(
                             new ScoreDirectorFactoryConfig().withIncrementalScoreCalculatorClass(
                                     TestdataPinnedWithIndexListCMAIncrementalScoreCalculator.class)));
+    public static final SolverFactory<TestdataSolution> SOLVER_FACTORY_WITH_CS = SolverFactory.create(
+            new SolverConfig()
+                    .withSolutionClass(TestdataSolution.class)
+                    .withEntityClasses(TestdataEntity.class)
+                    .withConstraintProviderClass(TestdataConstraintProvider.class));
 
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
@@ -1753,6 +1762,38 @@ public class SolutionManagerTest {
                 solutionManager.recommendAssignment(solution, uninitializedValue,
                         v -> new Pair<>(v.getEntity(), v.getEntity().getValueList().indexOf(v)));
         assertThat(recommendationList).hasSize(4);
+    }
+
+    @SuppressWarnings("unchecked")
+    @ParameterizedTest
+    @EnumSource(SolutionManagerSource.class)
+    void visualizeNodeNetwork(SolutionManagerSource SolutionManagerSource) {
+        var solution = new TestdataSolution();
+        var solutionManager = (DefaultSolutionManager<TestdataSolution, SimpleScore>) SolutionManagerSource
+                .createSolutionManager(SOLVER_FACTORY_WITH_CS);
+        var result = solutionManager.visualizeNodeNetwork(solution);
+        assertThat(result).isEqualToIgnoringWhitespace(
+                """
+                        digraph {
+                            rankdir=LR;
+                            label=<<B>Bavet Node Network for 'null'</B><BR />1 constraints, 1 nodes>;
+                            node0 -> impact0;
+                            node0 [pad="0.2", fillcolor="#3e00ff", shape="plaintext", fontcolor="white", style="filled", label=<<B>ForEachExcludingUnassignedUni</B><BR/>(TestdataEntity)>, fontname="Courier New"];
+                            impact0 [pad="0.2", fillcolor="#3423a6", shape="plaintext", fontcolor="white", style="filled", label=<<B>Always penalize</B><BR />(Weight: -1)>, fontname="Courier New"];
+                            { rank=same; node0; }
+                        }""");
+    }
+
+    @SuppressWarnings("unchecked")
+    @ParameterizedTest
+    @EnumSource(SolutionManagerSource.class)
+    void visualizeNodeNetworkNoBavet(SolutionManagerSource SolutionManagerSource) {
+        var solution = new TestdataPinnedWithIndexListSolution();
+        var solutionManager = (DefaultSolutionManager<TestdataPinnedWithIndexListSolution, SimpleScore>) SolutionManagerSource
+                .createSolutionManager(SOLVER_FACTORY_LIST_PINNED);
+        assertThatThrownBy(() -> solutionManager.visualizeNodeNetwork(solution))
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining("Constraint Streams");
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
