@@ -86,7 +86,6 @@ public class TimetableResource {
     SolverManager<Timetable, UUID> solverManager;
 
     @POST
-    @Path("/solve")
     public Timetable solve(Timetable problem) {
         UUID problemId = UUID.randomUUID();
         // Submit the problem to start solving
@@ -144,10 +143,6 @@ class TimetableResource {
     private final var solverManager: SolverManager<Timetable, String>?
 
     @POST
-    @Consumes(
-        MediaType.APPLICATION_JSON
-    )
-    @Produces(MediaType.TEXT_PLAIN)
     fun solve(problem: Timetable?): Timetable {
         val problemId = UUID.randomUUID()
         // Submit the problem to start solving
@@ -312,6 +307,7 @@ class TimetableResourceTest {
 
     @Test
     void solveDemoDataUntilFeasible() throws IOException {
+        // Provide the same input data shown in the text above.
         Timetable testTimetable = new ObjectMapper()
                 .findAndRegisterModules()
                 .readValue(new File("src/test/resources/testing-timetable.json"), Timetable.class);
@@ -320,7 +316,7 @@ class TimetableResourceTest {
                 .contentType(ContentType.JSON)
                 .body(testTimetable)
                 .expect().contentType(ContentType.JSON)
-                .when().post("/timetables/solve")
+                .when().post("/timetables")
                 .then()
                 .statusCode(200)
                 .extract()
