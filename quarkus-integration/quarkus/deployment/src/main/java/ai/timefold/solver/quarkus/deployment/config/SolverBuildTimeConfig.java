@@ -6,9 +6,7 @@ import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.quarkus.config.SolverRuntimeConfig;
-import ai.timefold.solver.quarkus.config.TerminationRuntimeConfig;
 
 import io.quarkus.runtime.annotations.ConfigGroup;
 
@@ -19,7 +17,7 @@ import io.quarkus.runtime.annotations.ConfigGroup;
  * @see SolverRuntimeConfig
  */
 @ConfigGroup
-public interface SolverBuildTimeConfig {
+public interface SolverBuildTimeConfig extends SolverRuntimeConfig {
 
     /**
      * A classpath resource to read the specific solver configuration XML.
@@ -46,22 +44,6 @@ public interface SolverBuildTimeConfig {
      * Defaults to {@link DomainAccessType#GIZMO}.
      */
     Optional<DomainAccessType> domainAccessType();
-
-    /**
-     * Note: this setting is only available
-     * for <a href="https://timefold.ai/docs/timefold-solver/latest/enterprise-edition/enterprise-edition">Timefold Solver
-     * Enterprise Edition</a>.
-     * Enable multithreaded solving for a single problem, which increases CPU consumption.
-     * Defaults to {@value SolverConfig#MOVE_THREAD_COUNT_NONE}.
-     * Other options include {@value SolverConfig#MOVE_THREAD_COUNT_AUTO}, a number
-     * or formula based on the available processor count.
-     */
-    Optional<String> moveThreadCount();
-
-    /**
-     * Configuration properties regarding {@link TerminationConfig}.
-     */
-    TerminationRuntimeConfig termination();
 
     /**
      * Enable the Nearby Selection quick configuration.

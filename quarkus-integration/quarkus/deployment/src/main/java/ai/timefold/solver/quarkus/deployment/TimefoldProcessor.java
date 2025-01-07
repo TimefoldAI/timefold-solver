@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -43,6 +44,7 @@ import ai.timefold.solver.quarkus.TimefoldRecorder;
 import ai.timefold.solver.quarkus.bean.DefaultTimefoldBeanProvider;
 import ai.timefold.solver.quarkus.bean.TimefoldSolverBannerBean;
 import ai.timefold.solver.quarkus.bean.UnavailableTimefoldBeanProvider;
+import ai.timefold.solver.quarkus.config.SolverRuntimeConfig;
 import ai.timefold.solver.quarkus.config.TimefoldRuntimeConfig;
 import ai.timefold.solver.quarkus.deployment.config.SolverBuildTimeConfig;
 import ai.timefold.solver.quarkus.deployment.config.TimefoldBuildTimeConfig;
@@ -76,10 +78,12 @@ import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.BytecodeTransformerBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
+import io.quarkus.deployment.builditem.ConfigurationBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
 import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
+import io.quarkus.deployment.builditem.SuppressNonRuntimeConfigChangedWarningBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyBuildItem;
 import io.quarkus.deployment.pkg.steps.NativeBuild;
 import io.quarkus.deployment.recording.RecorderContext;
@@ -89,11 +93,14 @@ import io.quarkus.devui.spi.page.Page;
 import io.quarkus.gizmo.ClassOutput;
 import io.quarkus.gizmo.MethodDescriptor;
 import io.quarkus.gizmo.ResultHandle;
+import io.quarkus.runtime.annotations.ConfigGroup;
+import io.quarkus.runtime.annotations.ConfigRoot;
 import io.quarkus.runtime.configuration.ConfigurationException;
 
 class TimefoldProcessor {
 
     private static final Logger log = Logger.getLogger(TimefoldProcessor.class.getName());
+    private static final Pattern CAPITAL_LETTER_PATTERN = Pattern.compile("[A-Z]");
 
     TimefoldBuildTimeConfig timefoldBuildTimeConfig;
 
@@ -173,8 +180,28 @@ class TimefoldProcessor {
         unremovableBeans.produce(UnremovableBeanBuildItem.beanTypes(SolverFactory.class));
     }
 
+    /**
+     * Converts a method's camelCase name to the kabab-case name used in properties.
+     */
+    private String toKebabCase(String camelCaseName) {
+        var matcher = CAPITAL_LETTER_PATTERN.matcher(camelCaseName);
+        return matcher.replaceAll(letter -> "-" + letter.group().toLowerCase());
+    }
+
+    private void addAllConfigProperties(Class<?> config, String prefix, Set<String> result) {
+        for (var method : config.getMethods()) {
+            if (method.getReturnType().getAnnotation(ConfigGroup.class) != null) {
+                addAllConfigProperties(method.getReturnType(), prefix + "." + toKebabCase(method.getName()), result);
+            } else {
+                result.add(prefix + "." + toKebabCase(method.getName()));
+            }
+        }
+    }
+
     @BuildStep
     SolverConfigBuildItem recordAndRegisterBuildTimeBeans(CombinedIndexBuildItem combinedIndex,
+            ConfigurationBuildItem configurationBuildItem,
+            BuildProducer<SuppressNonRuntimeConfigChangedWarningBuildItem> suppressRuntimeConfigChange,
             BuildProducer<ReflectiveHierarchyBuildItem> reflectiveHierarchyClass,
             BuildProducer<SyntheticBeanBuildItem> syntheticBeanBuildItemBuildProducer,
             BuildProducer<AdditionalBeanBuildItem> additionalBeans,
@@ -201,17 +228,38 @@ class TimefoldProcessor {
 
         // Quarkus extensions must always use getContextClassLoader()
         // Internally, Timefold defaults the ClassLoader to getContextClassLoader() too
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        var classLoader = Thread.currentThread().getContextClassLoader();
 
-        Map<String, SolverConfig> solverConfigMap = new HashMap<>();
+        var solverConfigMap = new HashMap<String, SolverConfig>();
+        var solverNames = new HashSet<>(timefoldBuildTimeConfig.solver().keySet());
+
+        // Step 0 - Suppress all changed at runtime warnings for runtime properties that were included in the build time
+        //          configuration so we can determine the list of solver names
+        var timefoldSolverPropertyPrefix = TimefoldBuildTimeConfig.class.getAnnotation(ConfigRoot.class).prefix();
+        var runtimePropertySuffices = new HashSet<String>();
+        addAllConfigProperties(SolverRuntimeConfig.class, "", runtimePropertySuffices);
+
+        for (var property : configurationBuildItem.getReadResult().getAllBuildTimeValues().keySet()) {
+            if (!property.startsWith(timefoldSolverPropertyPrefix)) {
+                // Not a timefold solver property; skip
+                continue;
+            }
+            for (var suffix : runtimePropertySuffices) {
+                if (property.endsWith(suffix)) {
+                    // This is a solver runtime property, so suppress the changed at runtime warning generated for it.
+                    suppressRuntimeConfigChange.produce(new SuppressNonRuntimeConfigChangedWarningBuildItem(property));
+                    break;
+                }
+            }
+        }
         // Step 1 - create all SolverConfig
         // If the config map is empty, we build the config using the default solver name
-        if (timefoldBuildTimeConfig.solver().isEmpty()) {
+        if (solverNames.isEmpty()) {
             solverConfigMap.put(TimefoldBuildTimeConfig.DEFAULT_SOLVER_NAME,
                     createSolverConfig(classLoader, TimefoldBuildTimeConfig.DEFAULT_SOLVER_NAME));
         } else {
             // One config per solver mapped name
-            this.timefoldBuildTimeConfig.solver().keySet().forEach(solverName -> solverConfigMap.put(solverName,
+            solverNames.forEach(solverName -> solverConfigMap.put(solverName,
                     createSolverConfig(classLoader, solverName)));
         }
 
