@@ -499,10 +499,8 @@ public class IndexerFactory<Right_> {
     }
 
     public <T> Indexer<T> buildIndexer(boolean isLeftBridge) {
-        /*
-         * Note that if creating indexer for a right bridge node, the joiner type has to be flipped.
-         * (<A, B> becomes <B, A>.)
-         */
+        // If creating an indexer for a right-bridge node, the joiner type has to be flipped.
+        // (<A, B> becomes <B, A>.)
         if (!hasJoiners()) { // NoneJoiner results in NoneIndexer.
             return new NoneIndexer<>();
         } else if (joiner.getJoinerCount() == 1) { // Single joiner maps directly to EqualsIndexer or ComparisonIndexer.
