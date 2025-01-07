@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.visual;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -58,9 +56,8 @@ public record NodeGraph<Solution_>(Solution_ solution, List<AbstractNode> source
                 sinkList.stream().distinct().toList());
     }
 
-    public void write(Writer writer) throws IOException {
-        writer.append("digraph {\n");
-        writer.append("rankdir=LR;\n");
+    public String write() {
+        var stringBuilder = new StringBuilder();
         var sourceStream = sources.stream();
         var edgeStream = edges.stream().flatMap(edge -> Stream.of(edge.from(), edge.to()));
         // Gather all known nodes and order them by their ID.
@@ -68,27 +65,32 @@ public record NodeGraph<Solution_>(Solution_ solution, List<AbstractNode> source
                 .distinct()
                 .sorted(Comparator.comparingLong(AbstractNode::getId))
                 .toList();
-        writer.append("label=<<B>Bavet Node Network for '%s'</B><BR />%d constraints, %d nodes>\n"
-                .formatted(solution.toString(), sinks.size(), allNodes.size()));
+        stringBuilder.append(
+                "    label=<<B>Bavet Node Network for '%s'</B><BR />%d constraints, %d nodes>;%n"
+                        .formatted(solution.toString(), sinks.size(), allNodes.size()));
         // Specify the edges.
-        for (AbstractNode node : allNodes) {
+        for (var node : allNodes) {
             for (var edge : edges) {
                 if (edge.from().equals(node)) {
-                    writer.append(nodeId(node)).append(" -> ").append(nodeId(edge.to())).append(";\n");
+                    var line = "    %s -> %s;%n".formatted(nodeId(node), nodeId(edge.to()));
+                    stringBuilder.append(line);
                 }
             }
         }
-        for (int i = 0; i < sinks.size(); i++) {
+        for (var i = 0; i < sinks.size(); i++) {
             var sink = sinks.get(i);
-            writer.append(nodeId(sink.node())).append(" -> ").append(constraintId(i)).append(";\n");
+            var line = "    %s -> %s;%n".formatted(nodeId(sink.node()), constraintId(i));
+            stringBuilder.append(line);
         }
         // Specify visual attributes of the nodes.
         for (var node : allNodes) {
-            writer.append(nodeId(node)).append(" ").append(getMetadata(node)).append(";\n");
+            var line = "    %s %s;%n".formatted(nodeId(node), getMetadata(node));
+            stringBuilder.append(line);
         }
-        for (int i = 0; i < sinks.size(); i++) {
+        for (var i = 0; i < sinks.size(); i++) {
             var sink = sinks.get(i);
-            writer.append(constraintId(i)).append(" ").append(getMetadata(sink, solution)).append(";\n");
+            var line = "    %s %s;%n".formatted(constraintId(i), getMetadata(sink, solution));
+            stringBuilder.append(line);
         }
         // Put nodes in the same layer to appear in the same rank.
         var layerMap = new TreeMap<Long, Set<AbstractNode>>();
@@ -97,13 +99,16 @@ public record NodeGraph<Solution_>(Solution_ solution, List<AbstractNode> source
             layerMap.computeIfAbsent(layer, k -> new LinkedHashSet<>()).add(node);
         }
         for (var entry : layerMap.entrySet()) {
-            writer.append("{ rank=same; ");
-            for (var node : entry.getValue()) {
-                writer.append(nodeId(node)).append("; ");
-            }
-            writer.append("}\n");
+            var line = entry.getValue().stream()
+                    .map(NodeGraph::nodeId)
+                    .collect(Collectors.joining("; ", "    { rank=same; ", "; }" + System.lineSeparator()));
+            stringBuilder.append(line);
         }
-        writer.append("}");
+        return """
+                digraph {
+                    rankdir=LR;
+                %s}"""
+                .formatted(stringBuilder.toString());
     }
 
     private static String getMetadata(AbstractNode node) {

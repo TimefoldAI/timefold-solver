@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.score.stream.bavet;
 
-import java.io.IOException;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -196,13 +194,8 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
 
     public static <Solution_, Score_ extends Score<Score_>> String visualizeNodeNetwork(Solution_ solution,
             NodeBuildHelper<Score_> buildHelper, AbstractScoreInliner<Score_> scoreInliner, List<AbstractNode> nodeList) {
-        try (var writer = new StringWriter()) {
-            var graph = NodeGraph.of(solution, buildHelper, nodeList, scoreInliner);
-            graph.write(writer);
-            return writer.toString();
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to write graph to file.", e);
-        }
+        var graph = NodeGraph.of(solution, buildHelper, nodeList, scoreInliner);
+        return graph.write();
     }
 
     /**
