@@ -423,10 +423,7 @@ public class IndexerFactory<Right_> {
         var joinerCount = joiner.getJoinerCount();
         return switch (joinerCount) {
             case 0 -> a -> NoneIndexProperties.INSTANCE;
-            case 1 -> {
-                var mapping = joiner.getRightMapping(0);
-                yield mapping::apply;
-            }
+            case 1 -> wrap(joiner.getRightMapping(0));
             default -> {
                 var startIndexInclusive = 0;
                 var keyFunctionList = new ArrayList<Function<Right_, Object>>();
