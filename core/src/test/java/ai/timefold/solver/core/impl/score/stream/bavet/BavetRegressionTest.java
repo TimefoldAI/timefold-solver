@@ -6,6 +6,7 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamTest;
@@ -19,6 +20,55 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
 
     protected BavetRegressionTest(ConstraintMatchPolicy constraintMatchPolicy) {
         super(new BavetConstraintStreamImplSupport(constraintMatchPolicy));
+    }
+
+    @TestTemplate
+    public void joinWithNullKeyFromRight() {
+        InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
+                        factory -> new Constraint[] {
+                                factory.forEachIncludingUnassigned(TestdataEntity.class)
+                                        .join(factory.forEachIncludingUnassigned(TestdataEntity.class),
+                                                Joiners.equal(TestdataEntity::getValue))
+                                        .penalize(SimpleScore.ONE)
+                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                        });
+
+        TestdataSolution solution = TestdataSolution.generateSolution(1, 2);
+        TestdataEntity entity1 = solution.getEntityList().get(0);
+        TestdataEntity entity2 = solution.getEntityList().get(1);
+        TestdataValue value = solution.getValueList().get(0);
+        entity1.setValue(null);
+        entity2.setValue(value);
+
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(entity1, entity1),
+                assertMatch(entity2, entity2));
+
+        // Switch entity1 and entity2 values; now entity2 has null and entity1 does not.
+        scoreDirector.beforeVariableChanged(entity1, "value");
+        entity1.setValue(value);
+        scoreDirector.afterVariableChanged(entity1, "value");
+        scoreDirector.beforeVariableChanged(entity2, "value");
+        entity2.setValue(null);
+        scoreDirector.afterVariableChanged(entity2, "value");
+        assertScore(scoreDirector,
+                assertMatch(entity1, entity1),
+                assertMatch(entity2, entity2));
+
+        // Put both to null.
+        scoreDirector.beforeVariableChanged(entity1, "value");
+        entity1.setValue(null);
+        scoreDirector.afterVariableChanged(entity1, "value");
+        scoreDirector.beforeVariableChanged(entity2, "value");
+        entity2.setValue(null);
+        scoreDirector.afterVariableChanged(entity2, "value");
+        assertScore(scoreDirector,
+                assertMatch(entity1, entity1),
+                assertMatch(entity1, entity2),
+                assertMatch(entity2, entity1),
+                assertMatch(entity2, entity2));
     }
 
     /**
