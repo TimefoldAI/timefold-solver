@@ -508,8 +508,7 @@ public class IndexerFactory<Right_> {
             if (joinerType == JoinerType.EQUAL) {
                 return new EqualsIndexer<>(NoneIndexer::new);
             } else {
-                return new ComparisonIndexer<>(
-                        isLeftBridge ? joinerType : joinerType.flip(), NoneIndexer::new);
+                return new ComparisonIndexer<>(isLeftBridge ? joinerType : joinerType.flip(), NoneIndexer::new);
             }
         }
         // The following code builds the children first, so it needs to iterate over the joiners in reverse order.
