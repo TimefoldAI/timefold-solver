@@ -56,7 +56,7 @@ public record NodeGraph<Solution_>(Solution_ solution, List<AbstractNode> source
                 sinkList.stream().distinct().toList());
     }
 
-    public String write() {
+    public String buildGraphvizDOT() {
         var stringBuilder = new StringBuilder();
         var sourceStream = sources.stream();
         var edgeStream = edges.stream().flatMap(edge -> Stream.of(edge.from(), edge.to()));

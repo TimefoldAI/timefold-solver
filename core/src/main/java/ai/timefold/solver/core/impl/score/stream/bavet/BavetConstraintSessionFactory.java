@@ -194,8 +194,8 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
 
     public static <Solution_, Score_ extends Score<Score_>> String visualizeNodeNetwork(Solution_ solution,
             NodeBuildHelper<Score_> buildHelper, AbstractScoreInliner<Score_> scoreInliner, List<AbstractNode> nodeList) {
-        var graph = NodeGraph.of(solution, buildHelper, nodeList, scoreInliner);
-        return graph.write();
+        return NodeGraph.of(solution, buildHelper, nodeList, scoreInliner)
+                .buildGraphvizDOT();
     }
 
     /**
