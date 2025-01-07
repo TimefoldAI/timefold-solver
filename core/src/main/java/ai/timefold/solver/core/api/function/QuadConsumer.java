@@ -7,7 +7,7 @@ import java.util.function.Function;
 import org.jspecify.annotations.NonNull;
 
 /**
- * Represents a function that accepts three arguments and returns no result.
+ * Represents a function that accepts four arguments and returns no result.
  * This is the three-arity specialization of {@link Consumer}.
  *
  * <p>
