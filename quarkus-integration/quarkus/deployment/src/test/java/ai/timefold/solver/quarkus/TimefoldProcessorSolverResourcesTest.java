@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.Duration;
 
 import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.ScoreManager;
@@ -50,6 +51,10 @@ class TimefoldProcessorSolverResourcesTest {
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
                             TestdataQuarkusConstraintProvider.class));
+
+    @Inject
+    @Named("solver1")
+    SolverManager<?, ?> solverManager1;
 
     @Inject
     ConstraintMetaModel constraintMetaModel;

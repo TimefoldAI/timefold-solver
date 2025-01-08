@@ -17,7 +17,7 @@ import io.quarkus.runtime.annotations.ConfigGroup;
  * @see SolverRuntimeConfig
  */
 @ConfigGroup
-public interface SolverBuildTimeConfig extends SolverRuntimeConfig {
+public interface SolverBuildTimeConfig {
 
     /**
      * A classpath resource to read the specific solver configuration XML.

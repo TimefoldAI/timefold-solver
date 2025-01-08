@@ -34,12 +34,6 @@ public interface TimefoldBuildTimeConfig {
     @WithUnnamedKey(DEFAULT_SOLVER_NAME)
     Map<String, SolverBuildTimeConfig> solver();
 
-    default boolean isDefaultSolverConfig(String solverName) {
-        // 1 - No solver configuration, which means we will use a default empty SolverConfig and default Solver name
-        // 2 - Only one solve config. It will be the default one.
-        return solver().isEmpty() || solver().size() == 1 && getSolverConfig(solverName).isPresent();
-    }
-
     default Optional<SolverBuildTimeConfig> getSolverConfig(String solverName) {
         return Optional.ofNullable(solver().get(solverName));
     }

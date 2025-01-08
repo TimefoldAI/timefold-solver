@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -44,7 +43,6 @@ import ai.timefold.solver.quarkus.TimefoldRecorder;
 import ai.timefold.solver.quarkus.bean.DefaultTimefoldBeanProvider;
 import ai.timefold.solver.quarkus.bean.TimefoldSolverBannerBean;
 import ai.timefold.solver.quarkus.bean.UnavailableTimefoldBeanProvider;
-import ai.timefold.solver.quarkus.config.SolverRuntimeConfig;
 import ai.timefold.solver.quarkus.config.TimefoldRuntimeConfig;
 import ai.timefold.solver.quarkus.deployment.config.SolverBuildTimeConfig;
 import ai.timefold.solver.quarkus.deployment.config.TimefoldBuildTimeConfig;
@@ -78,12 +76,10 @@ import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.BytecodeTransformerBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
-import io.quarkus.deployment.builditem.ConfigurationBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
 import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
-import io.quarkus.deployment.builditem.SuppressNonRuntimeConfigChangedWarningBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyBuildItem;
 import io.quarkus.deployment.pkg.steps.NativeBuild;
 import io.quarkus.deployment.recording.RecorderContext;
@@ -93,14 +89,11 @@ import io.quarkus.devui.spi.page.Page;
 import io.quarkus.gizmo.ClassOutput;
 import io.quarkus.gizmo.MethodDescriptor;
 import io.quarkus.gizmo.ResultHandle;
-import io.quarkus.runtime.annotations.ConfigGroup;
-import io.quarkus.runtime.annotations.ConfigRoot;
 import io.quarkus.runtime.configuration.ConfigurationException;
 
 class TimefoldProcessor {
 
     private static final Logger log = Logger.getLogger(TimefoldProcessor.class.getName());
-    private static final Pattern CAPITAL_LETTER_PATTERN = Pattern.compile("[A-Z]");
 
     TimefoldBuildTimeConfig timefoldBuildTimeConfig;
 
@@ -180,28 +173,8 @@ class TimefoldProcessor {
         unremovableBeans.produce(UnremovableBeanBuildItem.beanTypes(SolverFactory.class));
     }
 
-    /**
-     * Converts a method's camelCase name to the kabab-case name used in properties.
-     */
-    private static String toKebabCase(String camelCaseName) {
-        var matcher = CAPITAL_LETTER_PATTERN.matcher(camelCaseName);
-        return matcher.replaceAll(letter -> "-" + letter.group().toLowerCase());
-    }
-
-    private static void addAllConfigProperties(Class<?> config, String prefix, Set<String> result) {
-        for (var method : config.getMethods()) {
-            if (method.getReturnType().getAnnotation(ConfigGroup.class) != null) {
-                addAllConfigProperties(method.getReturnType(), prefix + "." + toKebabCase(method.getName()), result);
-            } else {
-                result.add(prefix + "." + toKebabCase(method.getName()));
-            }
-        }
-    }
-
     @BuildStep
     SolverConfigBuildItem recordAndRegisterBuildTimeBeans(CombinedIndexBuildItem combinedIndex,
-            ConfigurationBuildItem configurationBuildItem,
-            BuildProducer<SuppressNonRuntimeConfigChangedWarningBuildItem> suppressRuntimeConfigChange,
             BuildProducer<ReflectiveHierarchyBuildItem> reflectiveHierarchyClass,
             BuildProducer<SyntheticBeanBuildItem> syntheticBeanBuildItemBuildProducer,
             BuildProducer<AdditionalBeanBuildItem> additionalBeans,
@@ -210,6 +183,24 @@ class TimefoldProcessor {
             BuildProducer<GeneratedClassBuildItem> generatedClasses,
             BuildProducer<BytecodeTransformerBuildItem> transformers) {
         IndexView indexView = combinedIndex.getIndex();
+
+        // Step 0 - determine list of names used for injected solver components
+        var solverNames = new HashSet<String>();
+        var solverConfigMap = new HashMap<String, SolverConfig>();
+        for (var namedItem : indexView.getAnnotations(DotNames.NAMED)) {
+            var target = namedItem.target();
+            DotName type = switch (target.kind()) {
+                case CLASS -> target.asClass().name();
+                case FIELD -> target.asField().type().name();
+                case METHOD_PARAMETER -> target.asMethodParameter().type().name();
+                case RECORD_COMPONENT -> target.asRecordComponent().type().name();
+                case TYPE, METHOD -> null;
+            };
+            if (type != null && DotNames.SOLVER_INJECTABLE_TYPES.contains(type)) {
+                solverNames.add(namedItem.value().asString());
+            }
+        }
+        solverNames.addAll(timefoldBuildTimeConfig.solver().keySet());
 
         // Only skip this extension if everything is missing. Otherwise, if some parts are missing, fail fast later.
         if (indexView.getAnnotations(DotNames.PLANNING_SOLUTION).isEmpty()
@@ -221,8 +212,7 @@ class TimefoldProcessor {
                     + "application.properties entries (quarkus.index-dependency.<name>.group-id"
                     + " and quarkus.index-dependency.<name>.artifact-id).");
             additionalBeans.produce(new AdditionalBeanBuildItem(UnavailableTimefoldBeanProvider.class));
-            Map<String, SolverConfig> solverConfigMap = new HashMap<>();
-            this.timefoldBuildTimeConfig.solver().keySet().forEach(solverName -> solverConfigMap.put(solverName, null));
+            solverNames.forEach(solverName -> solverConfigMap.put(solverName, null));
             return new SolverConfigBuildItem(solverConfigMap, null);
         }
 
@@ -230,28 +220,6 @@ class TimefoldProcessor {
         // Internally, Timefold defaults the ClassLoader to getContextClassLoader() too
         var classLoader = Thread.currentThread().getContextClassLoader();
 
-        var solverConfigMap = new HashMap<String, SolverConfig>();
-        var solverNames = new HashSet<>(timefoldBuildTimeConfig.solver().keySet());
-
-        // Step 0 - Suppress all changed at runtime warnings for runtime properties that were included in the build time
-        //          configuration so we can determine the list of solver names
-        var timefoldSolverPropertyPrefix = TimefoldBuildTimeConfig.class.getAnnotation(ConfigRoot.class).prefix();
-        var runtimePropertySuffices = new HashSet<String>();
-        addAllConfigProperties(SolverRuntimeConfig.class, "", runtimePropertySuffices);
-
-        for (var property : configurationBuildItem.getReadResult().getAllBuildTimeValues().keySet()) {
-            if (!property.startsWith(timefoldSolverPropertyPrefix)) {
-                // Not a timefold solver property; skip
-                continue;
-            }
-            for (var suffix : runtimePropertySuffices) {
-                if (property.endsWith(suffix)) {
-                    // This is a solver runtime property, so suppress the changed at runtime warning generated for it.
-                    suppressRuntimeConfigChange.produce(new SuppressNonRuntimeConfigChangedWarningBuildItem(property));
-                    break;
-                }
-            }
-        }
         // Step 1 - create all SolverConfig
         // If the config map is empty, we build the config using the default solver name
         if (solverNames.isEmpty()) {
@@ -617,7 +585,7 @@ class TimefoldProcessor {
         // Therefore, we allow only the injection of SolverManager, except for the default solver,
         // which can inject all resources to be retro-compatible.
         solverConfigBuildItem.getSolverConfigMap().forEach((key, value) -> {
-            if (timefoldBuildTimeConfig.isDefaultSolverConfig(key)) {
+            if (solverConfigBuildItem.isDefaultSolverConfig(key)) {
                 // The two configuration resources are required for DefaultTimefoldBeanProvider
                 // to produce all available managed beans for the default solver.
                 syntheticBeanBuildItemBuildProducer.produce(SyntheticBeanBuildItem.configure(SolverConfig.class)
@@ -640,7 +608,8 @@ class TimefoldProcessor {
                         .setRuntimeInit()
                         .defaultBean()
                         .done());
-            } else {
+            }
+            if (!TimefoldBuildTimeConfig.DEFAULT_SOLVER_NAME.equals(key)) {
                 // The default SolverManager instance is generated by DefaultTimefoldBeanProvider
                 syntheticBeanBuildItemBuildProducer.produce(
                         // We generate all required resources only to create a SolverManager and set it as managed bean

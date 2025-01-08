@@ -3,6 +3,7 @@ package ai.timefold.solver.quarkus.deployment;
 import java.util.Map;
 
 import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.quarkus.deployment.config.TimefoldBuildTimeConfig;
 
 import io.quarkus.builder.item.SimpleBuildItem;
 
@@ -16,6 +17,10 @@ public final class SolverConfigBuildItem extends SimpleBuildItem {
     public SolverConfigBuildItem(Map<String, SolverConfig> solverConfig, GeneratedGizmoClasses generatedGizmoClasses) {
         this.solverConfigurations = solverConfig;
         this.generatedGizmoClasses = generatedGizmoClasses;
+    }
+
+    public boolean isDefaultSolverConfig(String solverName) {
+        return solverConfigurations.size() <= 1 || TimefoldBuildTimeConfig.DEFAULT_SOLVER_NAME.equals(solverName);
     }
 
     public Map<String, SolverConfig> getSolverConfigMap() {

@@ -14,6 +14,9 @@ import io.quarkus.runtime.annotations.ConfigGroup;
 @ConfigGroup
 public interface SolverRuntimeConfig {
     /**
+     * Note: this setting is only available
+     * for <a href="https://timefold.ai/docs/timefold-solver/latest/enterprise-edition/enterprise-edition">Timefold Solver
+     * Enterprise Edition</a>.
      * Enable multithreaded solving for a single problem, which increases CPU consumption.
      * Defaults to {@value SolverConfig#MOVE_THREAD_COUNT_NONE}.
      * Other options include {@value SolverConfig#MOVE_THREAD_COUNT_AUTO}, a number
