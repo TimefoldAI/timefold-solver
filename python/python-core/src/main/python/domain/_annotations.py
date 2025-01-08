@@ -654,6 +654,7 @@ class PlanningScore(JavaAnnotation):
 class DeepPlanningClone(JavaAnnotation):
     """
     Marks an attribute as being required to be deep planning cloned.
+    Not needed for `planning_solution` or `planning_entity` attributes because those are automatically deep cloned.
     This is especially useful for `list` (or `dict`) properties.
     Not needed for a `list` (or `dist`) attribute with a generic type of `planning_entity`,
     because those are automatically deep cloned.
