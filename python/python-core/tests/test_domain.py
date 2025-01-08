@@ -957,7 +957,7 @@ def test_list_variable():
 
 def test_deep_clone_class():
     @deep_planning_clone
-    @dataclass(eq=False)
+    @dataclass
     class Code:
         value: str
         parent_entity: 'Entity' = field(default=None)
@@ -1019,4 +1019,4 @@ def test_deep_clone_class():
     assert solution.score.score == 2
     assert solution.entities[0].value == v1
     assert solution.codes[0].parent_entity == solution.entities[0]
-    assert solution.codes[0] != e1.code
+    assert solution.codes[0] is not e1.code
