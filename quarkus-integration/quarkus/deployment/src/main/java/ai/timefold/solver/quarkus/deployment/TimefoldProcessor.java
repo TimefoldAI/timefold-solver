@@ -200,7 +200,6 @@ class TimefoldProcessor {
                 solverNames.add(namedItem.value().asString());
             }
         }
-        solverNames.addAll(timefoldBuildTimeConfig.solver().keySet());
 
         // Only skip this extension if everything is missing. Otherwise, if some parts are missing, fail fast later.
         if (indexView.getAnnotations(DotNames.PLANNING_SOLUTION).isEmpty()
