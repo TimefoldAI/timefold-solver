@@ -224,7 +224,7 @@ class MoveDirectorTest {
         // The objective is to simulate the reassignment of v1 from e1 to e2
         // The R&R move analyzes only e1 initially,
         // since it is impossible to know that v1 will be assigned to e2 during the nested CH phase
-         var v1 = new TestdataListValue("v1");
+        var v1 = new TestdataListValue("v1");
         var v2 = new TestdataListValue("v2");
         var e1 = new TestdataListEntity("e1", v1);
         var e2 = new TestdataListEntity("e2", v2, v1);
@@ -266,8 +266,8 @@ class MoveDirectorTest {
             assertThat(undoMove.getVariableChangeActionList().stream().anyMatch(action -> {
                 if (action instanceof ListVariableBeforeChangeAction<?, ?, ?> beforeChangeAction) {
                     return beforeChangeAction.entity() == e2 && beforeChangeAction.fromIndex() == 0
-                           && beforeChangeAction.toIndex() == 1 && beforeChangeAction.oldValue().size() == 1
-                           && beforeChangeAction.oldValue().get(0).equals(v2);
+                            && beforeChangeAction.toIndex() == 1 && beforeChangeAction.oldValue().size() == 1
+                            && beforeChangeAction.oldValue().get(0).equals(v2);
                 }
                 return false;
             })).isTrue();
