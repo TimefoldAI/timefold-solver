@@ -9,7 +9,6 @@ from .._timefold_java_interop import ensure_init
 Solution_ = TypeVar('Solution_')
 Entity_ = TypeVar('Entity_')
 
-
 class PlanningId(JavaAnnotation):
     """
     Specifies that an attribute is the id to match when locating
@@ -878,7 +877,7 @@ def constraint_configuration(constraint_configuration_class: Type[Solution_]) ->
     out = add_class_annotation(JavaConstraintConfiguration)(constraint_configuration_class)
     return out
 
-def deep_planning_clone(entity_class: Type[A] = None) -> Type[A]:
+def deep_planning_clone(entity_class: Type[Entity_] = None) -> Type[Entity_]:
     """
     Marks a problem fact class as being required to be deep planning cloned.
     Not needed for a `planning_solution` or `planning_entity` because those are automatically deep cloned.
