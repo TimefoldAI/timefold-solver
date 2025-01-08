@@ -1,8 +1,13 @@
 package ai.timefold.solver.quarkus;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
+
+import jakarta.inject.Named;
 
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.solver.SolverFactory;
@@ -19,14 +24,43 @@ import io.quarkus.runtime.annotations.Recorder;
 
 @Recorder
 public class TimefoldRecorder {
+    final TimefoldRuntimeConfig timefoldRuntimeConfig;
+
+    public TimefoldRecorder(final TimefoldRuntimeConfig timefoldRuntimeConfig) {
+        this.timefoldRuntimeConfig = timefoldRuntimeConfig;
+    }
+
+    public static void assertNoUnmatchedProperties(Set<String> expectedNames, Set<String> actualNames) {
+        var allExpectedNames = new HashSet<>(expectedNames);
+        allExpectedNames.add(TimefoldRuntimeConfig.DEFAULT_SOLVER_NAME);
+
+        if (!allExpectedNames.containsAll(actualNames)) {
+            var expectedNamesSorted = expectedNames.stream()
+                    .sorted()
+                    .toList();
+            var unmatchedNamesSorted = actualNames.stream()
+                    .filter(Predicate.not(allExpectedNames::contains))
+                    .sorted()
+                    .toList();
+            throw new IllegalStateException("""
+                    Some names defined in properties (%s) do not have \
+                    a corresponding @%s injection point (%s). Maybe you \
+                    misspelled them?
+                    """.formatted(unmatchedNamesSorted, Named.class.getSimpleName(),
+                    expectedNamesSorted));
+        }
+    }
+
+    public void assertNoUnmatchedRuntimeProperties(Set<String> names) {
+        assertNoUnmatchedProperties(names, timefoldRuntimeConfig.solver().keySet());
+    }
 
     public Supplier<SolverConfig> solverConfigSupplier(final String solverName,
             final SolverConfig solverConfig,
-            final TimefoldRuntimeConfig timefoldRuntimeConfig,
             Map<String, RuntimeValue<MemberAccessor>> generatedGizmoMemberAccessorMap,
             Map<String, RuntimeValue<SolutionCloner>> generatedGizmoSolutionClonerMap) {
         return () -> {
-            updateSolverConfigWithRuntimeProperties(solverName, solverConfig, timefoldRuntimeConfig);
+            updateSolverConfigWithRuntimeProperties(solverName, solverConfig);
             Map<String, MemberAccessor> memberAccessorMap = new HashMap<>();
             Map<String, SolutionCloner> solutionClonerMap = new HashMap<>();
             generatedGizmoMemberAccessorMap
@@ -40,21 +74,19 @@ public class TimefoldRecorder {
         };
     }
 
-    public Supplier<SolverManagerConfig> solverManagerConfig(final SolverManagerConfig solverManagerConfig,
-            final TimefoldRuntimeConfig timefoldRuntimeConfig) {
+    public Supplier<SolverManagerConfig> solverManagerConfig(final SolverManagerConfig solverManagerConfig) {
         return () -> {
-            updateSolverManagerConfigWithRuntimeProperties(solverManagerConfig, timefoldRuntimeConfig);
+            updateSolverManagerConfigWithRuntimeProperties(solverManagerConfig);
             return solverManagerConfig;
         };
     }
 
     public <Solution_, ProblemId_> Supplier<SolverManager<Solution_, ProblemId_>> solverManager(final String solverName,
             final SolverConfig solverConfig,
-            final TimefoldRuntimeConfig timefoldRuntimeConfig,
             Map<String, RuntimeValue<MemberAccessor>> generatedGizmoMemberAccessorMap,
             Map<String, RuntimeValue<SolutionCloner>> generatedGizmoSolutionClonerMap) {
         return () -> {
-            updateSolverConfigWithRuntimeProperties(solverName, solverConfig, timefoldRuntimeConfig);
+            updateSolverConfigWithRuntimeProperties(solverName, solverConfig);
             Map<String, MemberAccessor> memberAccessorMap = new HashMap<>();
             Map<String, SolutionCloner> solutionClonerMap = new HashMap<>();
             generatedGizmoMemberAccessorMap
@@ -66,7 +98,7 @@ public class TimefoldRecorder {
             solverConfig.setGizmoSolutionClonerMap(solutionClonerMap);
 
             SolverManagerConfig solverManagerConfig = new SolverManagerConfig();
-            updateSolverManagerConfigWithRuntimeProperties(solverManagerConfig, timefoldRuntimeConfig);
+            updateSolverManagerConfigWithRuntimeProperties(solverManagerConfig);
 
             SolverFactory<Solution_> solverFactory = SolverFactory.create(solverConfig);
 
@@ -74,26 +106,24 @@ public class TimefoldRecorder {
         };
     }
 
-    private void updateSolverConfigWithRuntimeProperties(String solverName, SolverConfig solverConfig,
-            TimefoldRuntimeConfig timefoldRunTimeConfig) {
+    private void updateSolverConfigWithRuntimeProperties(String solverName, SolverConfig solverConfig) {
         TerminationConfig terminationConfig = solverConfig.getTerminationConfig();
         if (terminationConfig == null) {
             terminationConfig = new TerminationConfig();
             solverConfig.setTerminationConfig(terminationConfig);
         }
-        timefoldRunTimeConfig.getSolverRuntimeConfig(solverName).flatMap(config -> config.termination().spentLimit())
+        timefoldRuntimeConfig.getSolverRuntimeConfig(solverName).flatMap(config -> config.termination().spentLimit())
                 .ifPresent(terminationConfig::setSpentLimit);
-        timefoldRunTimeConfig.getSolverRuntimeConfig(solverName).flatMap(config -> config.termination().unimprovedSpentLimit())
+        timefoldRuntimeConfig.getSolverRuntimeConfig(solverName).flatMap(config -> config.termination().unimprovedSpentLimit())
                 .ifPresent(terminationConfig::setUnimprovedSpentLimit);
-        timefoldRunTimeConfig.getSolverRuntimeConfig(solverName).flatMap(config -> config.termination().bestScoreLimit())
+        timefoldRuntimeConfig.getSolverRuntimeConfig(solverName).flatMap(config -> config.termination().bestScoreLimit())
                 .ifPresent(terminationConfig::setBestScoreLimit);
-        timefoldRunTimeConfig.getSolverRuntimeConfig(solverName).flatMap(SolverRuntimeConfig::moveThreadCount)
+        timefoldRuntimeConfig.getSolverRuntimeConfig(solverName).flatMap(SolverRuntimeConfig::moveThreadCount)
                 .ifPresent(solverConfig::setMoveThreadCount);
     }
 
-    private void updateSolverManagerConfigWithRuntimeProperties(SolverManagerConfig solverManagerConfig,
-            TimefoldRuntimeConfig timefoldRunTimeConfig) {
-        timefoldRunTimeConfig.solverManager().parallelSolverCount().ifPresent(solverManagerConfig::setParallelSolverCount);
+    private void updateSolverManagerConfigWithRuntimeProperties(SolverManagerConfig solverManagerConfig) {
+        timefoldRuntimeConfig.solverManager().parallelSolverCount().ifPresent(solverManagerConfig::setParallelSolverCount);
     }
 
 }

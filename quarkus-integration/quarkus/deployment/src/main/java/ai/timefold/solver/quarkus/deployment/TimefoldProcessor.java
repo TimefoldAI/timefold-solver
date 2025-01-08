@@ -197,7 +197,9 @@ class TimefoldProcessor {
                 case TYPE, METHOD -> null;
             };
             if (type != null && DotNames.SOLVER_INJECTABLE_TYPES.contains(type)) {
-                solverNames.add(namedItem.value().asString());
+                var annotationValue = namedItem.value();
+                var value = (annotationValue != null) ? annotationValue.asString() : "";
+                solverNames.add(value);
             }
         }
 
@@ -218,6 +220,8 @@ class TimefoldProcessor {
         // Quarkus extensions must always use getContextClassLoader()
         // Internally, Timefold defaults the ClassLoader to getContextClassLoader() too
         var classLoader = Thread.currentThread().getContextClassLoader();
+        TimefoldRecorder.assertNoUnmatchedProperties(solverNames,
+                timefoldBuildTimeConfig.solver().keySet());
 
         // Step 1 - create all SolverConfig
         // If the config map is empty, we build the config using the default solver name
@@ -573,13 +577,13 @@ class TimefoldProcessor {
     @Record(RUNTIME_INIT)
     void recordAndRegisterRuntimeBeans(TimefoldRecorder recorder, RecorderContext recorderContext,
             BuildProducer<SyntheticBeanBuildItem> syntheticBeanBuildItemBuildProducer,
-            SolverConfigBuildItem solverConfigBuildItem,
-            TimefoldRuntimeConfig runtimeConfig) {
+            SolverConfigBuildItem solverConfigBuildItem) {
         // Skip this extension if everything is missing.
         if (solverConfigBuildItem.getGeneratedGizmoClasses() == null) {
             return;
         }
 
+        recorder.assertNoUnmatchedRuntimeProperties(solverConfigBuildItem.getSolverConfigMap().keySet());
         // Using the same name for synthetic beans is impossible, even if they are different types.
         // Therefore, we allow only the injection of SolverManager, except for the default solver,
         // which can inject all resources to be retro-compatible.
@@ -589,7 +593,7 @@ class TimefoldProcessor {
                 // to produce all available managed beans for the default solver.
                 syntheticBeanBuildItemBuildProducer.produce(SyntheticBeanBuildItem.configure(SolverConfig.class)
                         .scope(Singleton.class)
-                        .supplier(recorder.solverConfigSupplier(key, value, runtimeConfig,
+                        .supplier(recorder.solverConfigSupplier(key, value,
                                 GizmoMemberAccessorEntityEnhancer.getGeneratedGizmoMemberAccessorMap(recorderContext,
                                         solverConfigBuildItem
                                                 .getGeneratedGizmoClasses().generatedGizmoMemberAccessorClassSet),
@@ -603,7 +607,7 @@ class TimefoldProcessor {
                 SolverManagerConfig solverManagerConfig = new SolverManagerConfig();
                 syntheticBeanBuildItemBuildProducer.produce(SyntheticBeanBuildItem.configure(SolverManagerConfig.class)
                         .scope(Singleton.class)
-                        .supplier(recorder.solverManagerConfig(solverManagerConfig, runtimeConfig))
+                        .supplier(recorder.solverManagerConfig(solverManagerConfig))
                         .setRuntimeInit()
                         .defaultBean()
                         .done());
@@ -618,7 +622,7 @@ class TimefoldProcessor {
                                         Type.create(DotName.createSimple(value.getSolutionClass().getName()),
                                                 Type.Kind.CLASS),
                                         TypeVariable.create(Object.class.getName())))
-                                .supplier(recorder.solverManager(key, value, runtimeConfig,
+                                .supplier(recorder.solverManager(key, value,
                                         GizmoMemberAccessorEntityEnhancer.getGeneratedGizmoMemberAccessorMap(recorderContext,
                                                 solverConfigBuildItem
                                                         .getGeneratedGizmoClasses().generatedGizmoMemberAccessorClassSet),
