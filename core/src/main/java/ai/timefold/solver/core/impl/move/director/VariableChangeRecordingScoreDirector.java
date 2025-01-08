@@ -203,4 +203,20 @@ public final class VariableChangeRecordingScoreDirector<Solution_> implements Va
             variableChanges.add(new ListVariableAfterAssignmentAction<>(element, variableDescriptor));
         }
     }
+
+    /**
+     * Record a before list assigment.
+     * Used when moves with nested phases create a new solution but do not record events before the list changes,
+     * such as ruin and recreate.
+     * The before event must be manually recorded,
+     * or the original list will not be restored during the rollback action.
+     *
+     * @param variableDescriptor never null
+     * @param entity never null
+     * @param list never null and may be empty
+     */
+    public void recordBeforeListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity,
+            List<Object> list) {
+        variableChanges.add(new ListVariableBeforeChangeAction<>(entity, list, 0, list.size(), variableDescriptor));
+    }
 }

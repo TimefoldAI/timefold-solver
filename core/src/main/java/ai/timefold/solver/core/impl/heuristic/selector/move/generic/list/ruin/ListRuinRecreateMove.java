@@ -95,6 +95,19 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
         }
 
         for (var entry : entityToInsertedValuesMap.entrySet()) {
+            if (!entityToOriginalPositionMap.containsKey(entry.getKey())) {
+                // The entity has not been evaluated while creating the entityToOriginalPositionMap,
+                // meaning it is a new destination entity without a ListVariableBeforeChangeAction
+                // to restore the original elements.
+                // We need to ensure the before action is executed in order to restore the original elements.
+                var beforeActionElementList = new ArrayList<>(listVariableDescriptor.getValue(entry.getKey()));
+                for (var element : entry.getValue()) {
+                    var location = listVariableStateSupply.getLocationInList(element).ensureAssigned();
+                    beforeActionElementList.set(location.index(), null);
+                }
+                recordingScoreDirector.recordBeforeListVariableChanged(listVariableDescriptor, entry.getKey(),
+                        beforeActionElementList.stream().filter(Objects::nonNull).toList());
+            }
             recordingScoreDirector.recordListAssignment(listVariableDescriptor, entry.getKey(), entry.getValue());
         }
 

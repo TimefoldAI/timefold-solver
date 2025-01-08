@@ -8,10 +8,19 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
+import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhase;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhaseBuilder;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin.ListRuinRecreateMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
@@ -201,6 +210,68 @@ class MoveDirectorTest {
 
         moveDirector.updateShadowVariables();
         verify(mockScoreDirector).triggerVariableListeners();
+    }
+
+    @Test
+    void undoNestedPhaseMove() {
+        var innerScoreDirector = mock(InnerScoreDirector.class);
+        var moveDirector = new MoveDirector<TestdataListSolution>(innerScoreDirector);
+        var listVariableStateSupply = mock(ListVariableStateSupply.class);
+        var listVariableDescriptor = mock(ListVariableDescriptor.class);
+        var ruinRecreateConstructionHeuristicPhaseBuilder = mock(RuinRecreateConstructionHeuristicPhaseBuilder.class);
+        var constructionHeuristicPhase = mock(DefaultConstructionHeuristicPhase.class);
+
+        // The objective is to simulate the reassignment of v1 from e1 to e2
+        // The R&R move analyzes only e1 initially,
+        // since it is impossible to know that v1 will be assigned to e2 during the nested CH phase
+         var v1 = new TestdataListValue("v1");
+        var v2 = new TestdataListValue("v2");
+        var e1 = new TestdataListEntity("e1", v1);
+        var e2 = new TestdataListEntity("e2", v2, v1);
+        var s1 = new TestdataListSolution();
+        s1.setEntityList(List.of(e1, e2));
+        s1.setValueList(List.of(v1, v2));
+        when(innerScoreDirector.getWorkingSolution()).thenReturn(s1);
+        // 1 - v1 is on e1 list
+        // 2 - v1 moves to e2 list
+        when(listVariableStateSupply.getLocationInList(any()))
+                .thenReturn(ElementLocation.of(e1, 0), ElementLocation.of(e2, 1));
+        when(listVariableStateSupply.getSourceVariableDescriptor()).thenReturn(listVariableDescriptor);
+        when(listVariableDescriptor.getFirstUnpinnedIndex(any())).thenReturn(0);
+        when(listVariableDescriptor.getListSize(any())).thenReturn(1);
+        when(listVariableDescriptor.getValue(any())).thenReturn(e1.getValueList(), e2.getValueList());
+        // Ignore the nested phase but simulates v1 moving to e2
+        when(ruinRecreateConstructionHeuristicPhaseBuilder.withElementsToRecreate(any()))
+                .thenReturn(ruinRecreateConstructionHeuristicPhaseBuilder);
+        when(ruinRecreateConstructionHeuristicPhaseBuilder.build())
+                .thenReturn(constructionHeuristicPhase);
+
+        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
+            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
+            var move = new ListRuinRecreateMove<TestdataListSolution>(listVariableStateSupply,
+                    ruinRecreateConstructionHeuristicPhaseBuilder, mock(SolverScope.class), Arrays.asList(v1), Set.of(e1));
+            move.doMoveOnly(scoreDirector);
+            var undoMove = (RecordedUndoMove<TestdataListSolution>) ephemeralMoveDirector.createUndoMove();
+            // e1 must be analyzed at the beginning of the move execution
+            assertThat(undoMove.getVariableChangeActionList().stream().anyMatch(action -> {
+                if (action instanceof ListVariableBeforeChangeAction<?, ?, ?> beforeChangeAction) {
+                    return beforeChangeAction.entity() == e1 && beforeChangeAction.fromIndex() == 0
+                            && beforeChangeAction.toIndex() == 1 && beforeChangeAction.oldValue().size() == 1
+                            && beforeChangeAction.oldValue().get(0).equals(v1);
+                }
+                return false;
+            })).isTrue();
+            // e2 is not analyzed at the beginning of move execution,
+            // but it must have a before list change event to restore the original elements.
+            assertThat(undoMove.getVariableChangeActionList().stream().anyMatch(action -> {
+                if (action instanceof ListVariableBeforeChangeAction<?, ?, ?> beforeChangeAction) {
+                    return beforeChangeAction.entity() == e2 && beforeChangeAction.fromIndex() == 0
+                           && beforeChangeAction.toIndex() == 1 && beforeChangeAction.oldValue().size() == 1
+                           && beforeChangeAction.oldValue().get(0).equals(v2);
+                }
+                return false;
+            })).isTrue();
+        }
     }
 
 }
