@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.move.director;
 
+import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -192,7 +193,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_> implements Va
      * @param values never null, may be empty
      */
     public void recordListAssignment(ListVariableDescriptor<Solution_> variableDescriptor, Object entity,
-            List<Object> values) {
+            Collection<Object> values) {
         for (var element : values) {
             variableChanges.add(new ListVariableBeforeAssignmentAction<>(element, variableDescriptor));
         }

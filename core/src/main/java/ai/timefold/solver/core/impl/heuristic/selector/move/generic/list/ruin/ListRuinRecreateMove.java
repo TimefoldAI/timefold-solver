@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
@@ -81,9 +82,9 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
         constructionHeuristicPhase.solvingEnded(solverScope);
         scoreDirector.triggerVariableListeners();
 
-        var entityToInsertedValuesMap = CollectionUtils.<Object, List<Object>> newIdentityHashMap(0);
+        var entityToInsertedValuesMap = CollectionUtils.<Object, Set<Object>> newIdentityHashMap(0);
         for (var entity : entityToOriginalPositionMap.keySet()) {
-            entityToInsertedValuesMap.put(entity, new ArrayList<>());
+            entityToInsertedValuesMap.put(entity, new HashSet<>());
         }
 
         for (var ruinedValue : ruinedValueList) {
@@ -91,7 +92,7 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
                     .ensureAssigned();
             entityToNewPositionMap.computeIfAbsent(location.entity(), ignored -> new TreeSet<>())
                     .add(new RuinedLocation(ruinedValue, location.index()));
-            entityToInsertedValuesMap.computeIfAbsent(location.entity(), ignored -> new ArrayList<>()).add(ruinedValue);
+            entityToInsertedValuesMap.computeIfAbsent(location.entity(), ignored -> new HashSet<>()).add(ruinedValue);
         }
 
         for (var entry : entityToInsertedValuesMap.entrySet()) {
@@ -100,10 +101,12 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
                 // meaning it is a new destination entity without a ListVariableBeforeChangeAction
                 // to restore the original elements.
                 // We need to ensure the before action is executed in order to restore the original elements.
-                var beforeActionElementList = new ArrayList<>(listVariableDescriptor.getValue(entry.getKey()));
-                for (var element : entry.getValue()) {
-                    var location = listVariableStateSupply.getLocationInList(element).ensureAssigned();
-                    beforeActionElementList.set(location.index(), null);
+                var currentElementList = listVariableDescriptor.getValue(entry.getKey());
+                var beforeActionElementList = new ArrayList<>(currentElementList.size() - entry.getValue().size());
+                for (var element : currentElementList) {
+                    if (!entry.getValue().contains(element)) {
+                        beforeActionElementList.add(element);
+                    }
                 }
                 recordingScoreDirector.recordBeforeListVariableChanged(listVariableDescriptor, entry.getKey(),
                         beforeActionElementList.stream().filter(Objects::nonNull).toList());
