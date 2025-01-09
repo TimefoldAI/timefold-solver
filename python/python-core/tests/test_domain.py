@@ -954,3 +954,69 @@ def test_list_variable():
     solution = solver.solve(problem)
     assert solution.score.score == 0
     assert solution.entity.value == [1, 2, 3]
+
+def test_deep_clone_class():
+    @deep_planning_clone
+    @dataclass
+    class Code:
+        value: str
+        parent_entity: 'Entity' = field(default=None)
+
+    @dataclass
+    class Value:
+        code: Code
+
+    @planning_entity
+    @dataclass
+    class Entity:
+        code: Code
+        value: Annotated[Value, PlanningVariable] = field(default=None)
+
+    def assign_to_v1(constraint_factory: ConstraintFactory):
+        return (constraint_factory.for_each(Entity)
+                .filter(lambda e: e.value.code.value == 'v1')
+                .reward(SimpleScore.ONE)
+                .as_constraint('assign to v1')
+                )
+
+    @constraint_provider
+    def my_constraints(constraint_factory: ConstraintFactory):
+        return [
+            assign_to_v1(constraint_factory)
+        ]
+
+    @planning_solution
+    @dataclass
+    class Solution:
+        entities: Annotated[List[Entity], PlanningEntityCollectionProperty]
+        values: Annotated[List[Value], ProblemFactCollectionProperty, ValueRangeProvider]
+        codes: Annotated[List[Code], ProblemFactCollectionProperty]
+        score: Annotated[SimpleScore, PlanningScore] = field(default=None)
+
+    solver_config = SolverConfig(
+        solution_class=Solution,
+        entity_class_list=[Entity],
+        score_director_factory_config=ScoreDirectorFactoryConfig(
+            constraint_provider_function=my_constraints
+        ),
+        termination_config=TerminationConfig(
+            best_score_limit='2'
+        )
+    )
+
+    e1 = Entity(Code('e1'))
+    e1.code.parent_entity = e1
+    e2 = Entity(Code('e2'))
+    e2.code.parent_entity = e2
+
+    v1 = Value(Code('v1'))
+    v2 = Value(Code('v2'))
+
+    problem = Solution([e1, e2], [v1, v2], [e1.code, e2.code, v1.code, v2.code])
+    solver = SolverFactory.create(solver_config).build_solver()
+    solution = solver.solve(problem)
+
+    assert solution.score.score == 2
+    assert solution.entities[0].value == v1
+    assert solution.codes[0].parent_entity == solution.entities[0]
+    assert solution.codes[0] is not e1.code

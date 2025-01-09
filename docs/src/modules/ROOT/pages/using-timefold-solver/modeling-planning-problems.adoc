@@ -2659,6 +2659,10 @@ If any of your problem facts needs to be deep cloned for a planning clone,
 for example if the problem fact references a planning entity or the planning solution,
 mark its class with a `@DeepPlanningClone` annotation:
 
+[tabs]
+===
+Java::
++
 [source,java,options="nowrap"]
 ----
 @DeepPlanningClone
@@ -2669,12 +2673,41 @@ public class SeatDesignationDependency {
 }
 ----
 
+Python::
++
+[source,python,options="nowrap"]
+----
+@deep_planning_clone
+class SeatDesignationDependency:
+    leftSeatDesignation: SeatDesignation # planning entity
+    rightSeatDesignation: SeatDesignation # planning entity
+----
+====
+
 In the example above, because `SeatDesignationDependency` references the planning entity `SeatDesignation`
 (which is deep planning cloned automatically), it should also be deep planning cloned.
 
 Alternatively, the `@DeepPlanningClone` annotation also works on a getter method or a field to planning clone it.
 If that property is a `Collection` or a `Map`, it will shallow clone it and deep planning clone
 any element thereof that is an instance of a class that has a `@DeepPlanningClone` annotation.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    @DeepPlanningClone
+    private SeatDesignationDependency seatDesignationDependency;
+----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+seat_designation_dependency: Annotated[SeatDesignationDependency, DeepPlanningClone]
+----
+====
 
 [NOTE]
 ====
