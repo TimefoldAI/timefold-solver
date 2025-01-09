@@ -108,10 +108,25 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
                         beforeActionElementList.add(element);
                     }
                 }
-                recordingScoreDirector.recordBeforeListVariableChanged(listVariableDescriptor, entry.getKey(),
-                        beforeActionElementList.stream().filter(Objects::nonNull).toList());
+                recordingScoreDirector
+                        .recordCustomAction(recorder -> recorder.recordListVariableBeforeChangeAction(listVariableDescriptor,
+                                entry.getKey(), beforeActionElementList, 0, beforeActionElementList.size()));
             }
-            recordingScoreDirector.recordListAssignment(listVariableDescriptor, entry.getKey(), entry.getValue());
+            // Since the solution was generated through a nested phase,
+            // all actions taken to produce the solution are not accessible.
+            // Therefore, we need to replicate all the actions required to generate the solution
+            // while also allowing for restoring the original state.
+            recordingScoreDirector.recordCustomAction(recorder -> {
+                for (var element : entry.getValue()) {
+                    recorder.recordListVariableBeforeAssignmentAction(listVariableDescriptor, element);
+                }
+                recorder.recordListVariableAfterChangeAction(listVariableDescriptor, entry.getKey(),
+                        listVariableDescriptor.getFirstUnpinnedIndex(entry.getKey()),
+                        listVariableDescriptor.getListSize(entry.getKey()));
+                for (var element : entry.getValue()) {
+                    recorder.recordListVariableAfterAssignmentAction(listVariableDescriptor, element);
+                }
+            });
         }
 
     }
