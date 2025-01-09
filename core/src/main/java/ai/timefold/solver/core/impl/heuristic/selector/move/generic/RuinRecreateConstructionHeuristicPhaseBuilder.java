@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 
 import java.util.List;
+import java.util.Set;
 
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
@@ -29,6 +30,7 @@ public final class RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>
                         .buildTermination(solverConfigPolicy));
     }
 
+    Set<Object> elementsToRuin;
     private List<Object> elementsToRecreate;
 
     RuinRecreateConstructionHeuristicPhaseBuilder(Termination<Solution_> phaseTermination,
@@ -38,6 +40,11 @@ public final class RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>
 
     public RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> withElementsToRecreate(List<Object> elements) {
         this.elementsToRecreate = elements;
+        return this;
+    }
+
+    public RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> withElementsToRuin(Set<Object> elements) {
+        this.elementsToRuin = elements;
         return this;
     }
 

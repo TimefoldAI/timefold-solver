@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -14,6 +13,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhase;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhaseBuilder;
 import ai.timefold.solver.core.impl.move.director.VariableChangeRecordingScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -74,7 +74,9 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
         }
         scoreDirector.triggerVariableListeners();
 
-        var constructionHeuristicPhase = constructionHeuristicPhaseBuilder.withElementsToRecreate(ruinedValueList)
+        var constructionHeuristicPhase = (RuinRecreateConstructionHeuristicPhase<Solution_>) constructionHeuristicPhaseBuilder
+                .withElementsToRuin(entityToOriginalPositionMap.keySet())
+                .withElementsToRecreate(ruinedValueList)
                 .build();
         constructionHeuristicPhase.setSolver(solverScope.getSolver());
         constructionHeuristicPhase.solvingStarted(solverScope);
@@ -101,13 +103,8 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
                 // meaning it is a new destination entity without a ListVariableBeforeChangeAction
                 // to restore the original elements.
                 // We need to ensure the before action is executed in order to restore the original elements.
-                var currentElementList = listVariableDescriptor.getValue(entry.getKey());
-                var beforeActionElementList = new ArrayList<>(currentElementList.size() - entry.getValue().size());
-                for (var element : currentElementList) {
-                    if (!entry.getValue().contains(element)) {
-                        beforeActionElementList.add(element);
-                    }
-                }
+                var beforeActionElementList =
+                        constructionHeuristicPhase.getMissingUpdatedElementsMap().get(entry.getKey());
                 recordingScoreDirector
                         .recordCustomAction(recorder -> recorder.recordListVariableBeforeChangeAction(listVariableDescriptor,
                                 entry.getKey(), beforeActionElementList, 0, beforeActionElementList.size()));
