@@ -1,8 +1,6 @@
 package ai.timefold.solver.core.impl.move.director;
 
-import java.util.Collection;
 import java.util.IdentityHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -12,13 +10,14 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
+import ai.timefold.solver.core.impl.score.director.RevertableScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorCache;
 
-public final class VariableChangeRecordingScoreDirector<Solution_> implements VariableDescriptorAwareScoreDirector<Solution_> {
+public final class VariableChangeRecordingScoreDirector<Solution_>
+        implements RevertableScoreDirector<Solution_>, CustomChangeActionRecorder<Solution_> {
 
+    private final DefaultActionRecorder<Solution_> recorder;
     private final InnerScoreDirector<Solution_, ?> delegate;
-    private final List<ChangeAction<Solution_>> variableChanges;
     /*
      * The fromIndex of afterListVariableChanged must match the fromIndex of its beforeListVariableChanged call.
      * Otherwise this will happen in the undo move:
@@ -45,35 +44,33 @@ public final class VariableChangeRecordingScoreDirector<Solution_> implements Va
     public VariableChangeRecordingScoreDirector(ScoreDirector<Solution_> delegate, boolean requiresIndexCache) {
         this.delegate = (InnerScoreDirector<Solution_, ?>) delegate;
         this.cache = requiresIndexCache ? new IdentityHashMap<>() : null;
-        // Intentional LinkedList; fast clear, no allocations upfront,
-        // will most often only carry a small number of items.
-        this.variableChanges = new LinkedList<>();
+        this.recorder = new DefaultActionRecorder<>();
     }
 
-    List<ChangeAction<Solution_>> copyVariableChanges() {
-        return List.copyOf(variableChanges);
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<?> copyChanges() {
+        return recorder.copy();
     }
 
+    @Override
     public void undoChanges() {
-        var changeCount = variableChanges.size();
+        var changeCount = recorder.size();
         if (changeCount == 0) {
             return;
         }
-        var listIterator = variableChanges.listIterator(changeCount);
+        var listIterator = recorder.iterator(changeCount);
         while (listIterator.hasPrevious()) { // Iterate in reverse.
             var changeAction = listIterator.previous();
             changeAction.undo(delegate);
         }
         delegate.triggerVariableListeners();
-        variableChanges.clear();
-        if (cache != null) {
-            cache.clear();
-        }
+        recorder.clear();
     }
 
     @Override
     public void beforeVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
-        variableChanges.add(new VariableChangeAction<>(entity, variableDescriptor.getValue(entity), variableDescriptor));
+        recorder.recordVariableChangeAction(variableDescriptor, entity, variableDescriptor.getValue(entity));
         delegate.beforeVariableChanged(variableDescriptor, entity);
     }
 
@@ -90,9 +87,8 @@ public final class VariableChangeRecordingScoreDirector<Solution_> implements Va
             cache.put(entity, fromIndex);
         }
         var list = variableDescriptor.getValue(entity);
-        variableChanges.add(new ListVariableBeforeChangeAction<>(entity,
-                List.copyOf(list.subList(fromIndex, toIndex)), fromIndex, toIndex,
-                variableDescriptor));
+        recorder.recordListVariableBeforeChangeAction(variableDescriptor, entity, List.copyOf(list.subList(fromIndex, toIndex)),
+                fromIndex, toIndex);
         delegate.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
     }
 
@@ -109,31 +105,31 @@ public final class VariableChangeRecordingScoreDirector<Solution_> implements Va
                                 .formatted(fromIndex, requiredFromIndex, AbstractMove.class.getSimpleName()));
             }
         }
-        variableChanges.add(new ListVariableAfterChangeAction<>(entity, fromIndex, toIndex, variableDescriptor));
+        recorder.recordListVariableAfterChangeAction(variableDescriptor, entity, fromIndex, toIndex);
         delegate.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
     }
 
     @Override
     public void beforeListVariableElementAssigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        variableChanges.add(new ListVariableBeforeAssignmentAction<>(element, variableDescriptor));
+        recorder.recordListVariableBeforeAssignmentAction(variableDescriptor, element);
         delegate.beforeListVariableElementAssigned(variableDescriptor, element);
     }
 
     @Override
     public void afterListVariableElementAssigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        variableChanges.add(new ListVariableAfterAssignmentAction<>(element, variableDescriptor));
+        recorder.recordListVariableAfterAssignmentAction(variableDescriptor, element);
         delegate.afterListVariableElementAssigned(variableDescriptor, element);
     }
 
     @Override
     public void beforeListVariableElementUnassigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        variableChanges.add(new ListVariableBeforeUnassignmentAction<>(element, variableDescriptor));
+        recorder.recordListVariableBeforeUnassignmentAction(variableDescriptor, element);
         delegate.beforeListVariableElementUnassigned(variableDescriptor, element);
     }
 
     @Override
     public void afterListVariableElementUnassigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        variableChanges.add(new ListVariableAfterUnassignmentAction<>(element, variableDescriptor));
+        recorder.recordListVariableAfterUnassignmentAction(variableDescriptor, element);
         delegate.afterListVariableElementUnassigned(variableDescriptor, element);
     }
 
@@ -180,44 +176,8 @@ public final class VariableChangeRecordingScoreDirector<Solution_> implements Va
         afterVariableChanged(variableDescriptor, entity);
     }
 
-    /**
-     * Record a list assignment.
-     * Used by moves with nested phases, such as ruin and recreate.
-     * These moves need to record some changes manually,
-     * because they cannot influence what will happen in the nested phases.
-     * Cannot be sent via the before/after events, because we don't want to delegate to the actual score director;
-     * these new changes should only be used for undoing the move(s).
-     *
-     * @param variableDescriptor never null
-     * @param entity never null
-     * @param values never null, may be empty
-     */
-    public void recordListAssignment(ListVariableDescriptor<Solution_> variableDescriptor, Object entity,
-            Collection<Object> values) {
-        for (var element : values) {
-            variableChanges.add(new ListVariableBeforeAssignmentAction<>(element, variableDescriptor));
-        }
-        variableChanges.add(new ListVariableAfterChangeAction<>(entity,
-                variableDescriptor.getFirstUnpinnedIndex(entity), variableDescriptor.getListSize(entity),
-                variableDescriptor));
-        for (var element : values) {
-            variableChanges.add(new ListVariableAfterAssignmentAction<>(element, variableDescriptor));
-        }
-    }
-
-    /**
-     * Record a before list assigment.
-     * Used when moves with nested phases create a new solution but do not record events before the list changes,
-     * such as ruin and recreate.
-     * The before event must be manually recorded,
-     * or the original list will not be restored during the rollback action.
-     *
-     * @param variableDescriptor never null
-     * @param entity never null
-     * @param list never null and may be empty
-     */
-    public void recordBeforeListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity,
-            List<Object> list) {
-        variableChanges.add(new ListVariableBeforeChangeAction<>(entity, list, 0, list.size(), variableDescriptor));
+    @Override
+    public void recordCustomAction(CustomChangeAction<Solution_> customChangeAction) {
+        customChangeAction.apply(recorder);
     }
 }
