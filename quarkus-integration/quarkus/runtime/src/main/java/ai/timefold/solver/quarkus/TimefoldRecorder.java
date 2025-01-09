@@ -3,6 +3,7 @@ package ai.timefold.solver.quarkus;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -18,6 +19,8 @@ import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.quarkus.config.SolverRuntimeConfig;
 import ai.timefold.solver.quarkus.config.TimefoldRuntimeConfig;
+
+import org.jspecify.annotations.Nullable;
 
 import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.annotations.Recorder;
@@ -107,18 +110,29 @@ public class TimefoldRecorder {
     }
 
     private void updateSolverConfigWithRuntimeProperties(String solverName, SolverConfig solverConfig) {
+        updateSolverConfigWithRuntimeProperties(solverConfig, timefoldRuntimeConfig
+                .getSolverRuntimeConfig(solverName).orElse(null));
+    }
+
+    public static void updateSolverConfigWithRuntimeProperties(SolverConfig solverConfig,
+            @Nullable SolverRuntimeConfig solverRuntimeConfig) {
         TerminationConfig terminationConfig = solverConfig.getTerminationConfig();
         if (terminationConfig == null) {
             terminationConfig = new TerminationConfig();
             solverConfig.setTerminationConfig(terminationConfig);
         }
-        timefoldRuntimeConfig.getSolverRuntimeConfig(solverName).flatMap(config -> config.termination().spentLimit())
+        var maybeSolverRuntimeConfig = Optional.ofNullable(solverRuntimeConfig);
+        maybeSolverRuntimeConfig.flatMap(config -> config.termination().spentLimit())
                 .ifPresent(terminationConfig::setSpentLimit);
-        timefoldRuntimeConfig.getSolverRuntimeConfig(solverName).flatMap(config -> config.termination().unimprovedSpentLimit())
+        maybeSolverRuntimeConfig.flatMap(config -> config.termination().unimprovedSpentLimit())
                 .ifPresent(terminationConfig::setUnimprovedSpentLimit);
-        timefoldRuntimeConfig.getSolverRuntimeConfig(solverName).flatMap(config -> config.termination().bestScoreLimit())
+        maybeSolverRuntimeConfig.flatMap(config -> config.termination().bestScoreLimit())
                 .ifPresent(terminationConfig::setBestScoreLimit);
-        timefoldRuntimeConfig.getSolverRuntimeConfig(solverName).flatMap(SolverRuntimeConfig::moveThreadCount)
+        maybeSolverRuntimeConfig.flatMap(SolverRuntimeConfig::environmentMode)
+                .ifPresent(solverConfig::setEnvironmentMode);
+        maybeSolverRuntimeConfig.flatMap(SolverRuntimeConfig::daemon)
+                .ifPresent(solverConfig::setDaemon);
+        maybeSolverRuntimeConfig.flatMap(SolverRuntimeConfig::moveThreadCount)
                 .ifPresent(solverConfig::setMoveThreadCount);
     }
 

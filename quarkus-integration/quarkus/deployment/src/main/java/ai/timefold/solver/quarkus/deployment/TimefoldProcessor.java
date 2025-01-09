@@ -642,11 +642,10 @@ class TimefoldProcessor {
             TimefoldDevUIRecorder devUIRecorder,
             RecorderContext recorderContext,
             SolverConfigBuildItem solverConfigBuildItem,
-            TimefoldRuntimeConfig runtimeConfig,
             BuildProducer<SyntheticBeanBuildItem> syntheticBeans) {
         syntheticBeans.produce(SyntheticBeanBuildItem.configure(DevUISolverConfig.class)
                 .scope(ApplicationScoped.class)
-                .supplier(devUIRecorder.solverConfigSupplier(solverConfigBuildItem.getSolverConfigMap(), runtimeConfig,
+                .supplier(devUIRecorder.solverConfigSupplier(solverConfigBuildItem.getSolverConfigMap(),
                         GizmoMemberAccessorEntityEnhancer.getGeneratedGizmoMemberAccessorMap(recorderContext,
                                 solverConfigBuildItem
                                         .getGeneratedGizmoClasses().generatedGizmoMemberAccessorClassSet),
@@ -721,10 +720,6 @@ class TimefoldProcessor {
         applyScoreDirectorFactoryProperties(indexView, solverConfig);
 
         // Override the current configuration with values from the solver properties
-        timefoldBuildTimeConfig.getSolverConfig(solverName).flatMap(SolverBuildTimeConfig::environmentMode)
-                .ifPresent(solverConfig::setEnvironmentMode);
-        timefoldBuildTimeConfig.getSolverConfig(solverName).flatMap(SolverBuildTimeConfig::daemon)
-                .ifPresent(solverConfig::setDaemon);
         timefoldBuildTimeConfig.getSolverConfig(solverName).flatMap(SolverBuildTimeConfig::domainAccessType)
                 .ifPresent(solverConfig::setDomainAccessType);
 
