@@ -10,13 +10,14 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhase;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhase;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhaseBuilder;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin.ListRuinRecreateMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -219,7 +220,7 @@ class MoveDirectorTest {
         var listVariableStateSupply = mock(ListVariableStateSupply.class);
         var listVariableDescriptor = mock(ListVariableDescriptor.class);
         var ruinRecreateConstructionHeuristicPhaseBuilder = mock(RuinRecreateConstructionHeuristicPhaseBuilder.class);
-        var constructionHeuristicPhase = mock(DefaultConstructionHeuristicPhase.class);
+        var constructionHeuristicPhase = mock(RuinRecreateConstructionHeuristicPhase.class);
 
         // The objective is to simulate the reassignment of v1 from e1 to e2
         // The R&R move analyzes only e1 initially,
@@ -243,8 +244,11 @@ class MoveDirectorTest {
         // Ignore the nested phase but simulates v1 moving to e2
         when(ruinRecreateConstructionHeuristicPhaseBuilder.withElementsToRecreate(any()))
                 .thenReturn(ruinRecreateConstructionHeuristicPhaseBuilder);
+        when(ruinRecreateConstructionHeuristicPhaseBuilder.withElementsToRuin(any()))
+                .thenReturn(ruinRecreateConstructionHeuristicPhaseBuilder);
         when(ruinRecreateConstructionHeuristicPhaseBuilder.build())
                 .thenReturn(constructionHeuristicPhase);
+        when(constructionHeuristicPhase.getMissingUpdatedElementsMap()).thenReturn(Map.of(e2, List.of(v2)));
 
         try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
             var scoreDirector = ephemeralMoveDirector.getScoreDirector();
