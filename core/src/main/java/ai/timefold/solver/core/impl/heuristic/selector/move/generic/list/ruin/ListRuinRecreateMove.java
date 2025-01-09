@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
@@ -84,9 +84,9 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
         constructionHeuristicPhase.solvingEnded(solverScope);
         scoreDirector.triggerVariableListeners();
 
-        var entityToInsertedValuesMap = CollectionUtils.<Object, Set<Object>> newIdentityHashMap(0);
+        var entityToInsertedValuesMap = CollectionUtils.<Object, List<Object>> newIdentityHashMap(0);
         for (var entity : entityToOriginalPositionMap.keySet()) {
-            entityToInsertedValuesMap.put(entity, new HashSet<>());
+            entityToInsertedValuesMap.put(entity, new ArrayList<>());
         }
 
         for (var ruinedValue : ruinedValueList) {
@@ -94,7 +94,7 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
                     .ensureAssigned();
             entityToNewPositionMap.computeIfAbsent(location.entity(), ignored -> new TreeSet<>())
                     .add(new RuinedLocation(ruinedValue, location.index()));
-            entityToInsertedValuesMap.computeIfAbsent(location.entity(), ignored -> new HashSet<>()).add(ruinedValue);
+            entityToInsertedValuesMap.computeIfAbsent(location.entity(), ignored -> new ArrayList<>()).add(ruinedValue);
         }
 
         for (var entry : entityToInsertedValuesMap.entrySet()) {
