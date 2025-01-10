@@ -20,6 +20,7 @@ import org.jspecify.annotations.Nullable;
 @XmlType(propOrder = {
         "terminationClass",
         "terminationCompositionStyle",
+        "adaptiveTerminationConfig",
         "spentLimit",
         "millisecondsSpentLimit",
         "secondsSpentLimit",
@@ -50,6 +51,9 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
     private Class<? extends Termination> terminationClass = null;
 
     private TerminationCompositionStyle terminationCompositionStyle = null;
+
+    @XmlElement(name = "adaptive")
+    private AdaptiveTerminationConfig adaptiveTerminationConfig;
 
     @XmlJavaTypeAdapter(JaxbDurationAdapter.class)
     private Duration spentLimit = null;
@@ -103,6 +107,15 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
 
     public void setTerminationCompositionStyle(@Nullable TerminationCompositionStyle terminationCompositionStyle) {
         this.terminationCompositionStyle = terminationCompositionStyle;
+    }
+
+    public AdaptiveTerminationConfig getAdaptiveTerminationConfig() {
+        return adaptiveTerminationConfig;
+    }
+
+    public void setAdaptiveTerminationConfig(
+            AdaptiveTerminationConfig adaptiveTerminationConfig) {
+        this.adaptiveTerminationConfig = adaptiveTerminationConfig;
     }
 
     public @Nullable Duration getSpentLimit() {
@@ -284,6 +297,12 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         return this;
     }
 
+    public @NonNull TerminationConfig
+            withAdaptiveTerminationConfig(@NonNull AdaptiveTerminationConfig adaptiveTerminationConfig) {
+        this.adaptiveTerminationConfig = adaptiveTerminationConfig;
+        return this;
+    }
+
     public @NonNull TerminationConfig withSpentLimit(@NonNull Duration spentLimit) {
         this.spentLimit = spentLimit;
         return this;
@@ -447,7 +466,8 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
 
     public @Nullable Long calculateUnimprovedTimeMillisSpentLimit() {
         if (unimprovedMillisecondsSpentLimit == null && unimprovedSecondsSpentLimit == null
-                && unimprovedMinutesSpentLimit == null && unimprovedHoursSpentLimit == null) {
+                && unimprovedMinutesSpentLimit == null && unimprovedHoursSpentLimit == null
+                && unimprovedDaysSpentLimit == null) {
             if (unimprovedSpentLimit != null) {
                 if (unimprovedSpentLimit.getNano() % 1000 != 0) {
                     throw new IllegalArgumentException("The termination unimprovedSpentLimit (" + unimprovedSpentLimit
@@ -462,7 +482,8 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
                     + ") cannot be combined with unimprovedMillisecondsSpentLimit (" + unimprovedMillisecondsSpentLimit
                     + "), unimprovedSecondsSpentLimit (" + unimprovedSecondsSpentLimit
                     + "), unimprovedMinutesSpentLimit (" + unimprovedMinutesSpentLimit
-                    + "), unimprovedHoursSpentLimit (" + unimprovedHoursSpentLimit + ").");
+                    + "), unimprovedHoursSpentLimit (" + unimprovedHoursSpentLimit + "),"
+                    + ") or unimprovedDaysSpentLimit (" + unimprovedDaysSpentLimit + ").");
         }
         long unimprovedTimeMillisSpentLimit = 0L
                 + requireNonNegative(unimprovedMillisecondsSpentLimit, "unimprovedMillisecondsSpentLimit")
@@ -511,6 +532,8 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         if (!unimprovedTimeSpentLimitIsSet()) {
             inheritUnimprovedTimeSpentLimit(inheritedConfig);
         }
+        adaptiveTerminationConfig = ConfigUtils.inheritConfig(adaptiveTerminationConfig,
+                inheritedConfig.getAdaptiveTerminationConfig());
         terminationClass = ConfigUtils.inheritOverwritableProperty(terminationClass,
                 inheritedConfig.getTerminationClass());
         terminationCompositionStyle = ConfigUtils.inheritOverwritableProperty(terminationCompositionStyle,
@@ -544,6 +567,9 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         classVisitor.accept(terminationClass);
         if (terminationConfigList != null) {
             terminationConfigList.forEach(tc -> tc.visitReferencedClasses(classVisitor));
+        }
+        if (adaptiveTerminationConfig != null) {
+            adaptiveTerminationConfig.visitReferencedClasses(classVisitor);
         }
     }
 
@@ -587,7 +613,7 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
      * @param name the name of the parameter, for use in the exception message
      * @throws IllegalArgumentException iff param is negative
      */
-    private Long requireNonNegative(Long param, String name) {
+    static Long requireNonNegative(Long param, String name) {
         if (param == null) {
             return 0L; // Makes adding a null param a NOP.
         } else if (param < 0L) {

@@ -161,6 +161,8 @@
                     
           <xs:element minOccurs="0" name="terminationCompositionStyle" type="tns:terminationCompositionStyle"/>
                     
+          <xs:element minOccurs="0" name="adaptive" type="tns:adaptiveTerminationConfig"/>
+                    
           <xs:element minOccurs="0" name="spentLimit" type="xs:string"/>
                     
           <xs:element minOccurs="0" name="millisecondsSpentLimit" type="xs:long"/>
@@ -200,6 +202,36 @@
           <xs:element minOccurs="0" name="moveCountLimit" type="xs:long"/>
                     
           <xs:element maxOccurs="unbounded" minOccurs="0" name="termination" type="tns:terminationConfig"/>
+                  
+        </xs:sequence>
+              
+      </xs:extension>
+          
+    </xs:complexContent>
+      
+  </xs:complexType>
+    
+  <xs:complexType name="adaptiveTerminationConfig">
+        
+    <xs:complexContent>
+            
+      <xs:extension base="tns:abstractConfig">
+                
+        <xs:sequence>
+                    
+          <xs:element minOccurs="0" name="gracePeriod" type="xs:string"/>
+                    
+          <xs:element minOccurs="0" name="gracePeriodMilliseconds" type="xs:long"/>
+                    
+          <xs:element minOccurs="0" name="gracePeriodSeconds" type="xs:long"/>
+                    
+          <xs:element minOccurs="0" name="gracePeriodMinutes" type="xs:long"/>
+                    
+          <xs:element minOccurs="0" name="gracePeriodHours" type="xs:long"/>
+                    
+          <xs:element minOccurs="0" name="gracePeriodDays" type="xs:long"/>
+                    
+          <xs:element minOccurs="0" name="minimumImprovementRatio" type="xs:double"/>
                   
         </xs:sequence>
               
