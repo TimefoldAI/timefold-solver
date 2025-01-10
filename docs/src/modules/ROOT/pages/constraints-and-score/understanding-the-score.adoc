@@ -4,8 +4,7 @@
 :sectnums:
 :icons: font
 
-The score in its pure form is just a number,
-and does not help us understand the make-up of the solution it represents.
+The score in its pure form is just a number, and does not help us understand the make-up of the solution it represents.
 It doesn't say which constraints are broken, or what caused them to break.
 To understand the score, it needs to be broken down.
 
@@ -30,8 +29,7 @@ print(solution_manager.explain(vehicle_route_plan))
 ----
 ====
 
-For example, in vehicle routing,
-this prints that vehicle `vehicle '1'` matched the soft constraint `minimizeTravelTime`:
+For example, in vehicle routing, this prints that vehicle `vehicle '1'` matched the soft constraint `minimizeTravelTime`:
 
 ----
 Explanation of score (0hard/-10343soft):
@@ -56,14 +54,10 @@ Use <<scoreAnalysis,score analysis>> instead.
 In the string above, there are some previously unexplained concepts.
 
 * A _Constraint match_ is created every time a constraint causes a change to the score.
-* _Justifications_ are user-defined objects that implement the `ai.timefold.solver.core.api.score.stream.ConstraintJustification` interface,
-which carry meaningful information about a constraint match,
-such as its name and any metadata that the user chooses to expose.
+* _Justifications_ are user-defined objects that implement the `ai.timefold.solver.core.api.score.stream.ConstraintJustification` interface, which carry meaningful information about a constraint match, such as its name and any metadata that the user chooses to expose.
 Justifications are most easily available via <<scoreAnalysis,score analysis>>.
 * _Indicted objects_ are objects which were directly involved in causing a constraint to match.
-For example, if your constraints penalize each vehicle,
-then there will be one `ai.timefold.solver.core.api.score.constraint.Indictment` instance per vehicle,
-carrying the vehicle as an indicted object.
+For example, if your constraints penalize each vehicle, then there will be one `ai.timefold.solver.core.api.score.constraint.Indictment` instance per vehicle, carrying the vehicle as an indicted object.
 Indictments are typically used for xref:indictmentHeatMap[heat map visualization].
 
 [NOTE]
@@ -74,12 +68,10 @@ xref:constraints-and-score/score-calculation.adoc#constraintMatchAwareIncrementa
 xref:constraints-and-score/score-calculation.adoc#easyScoreCalculation[Easy Java score calculation] does not support score explanation.
 ====
 
-
 [#scoreAnalysis]
 == Score Analysis: Which constraints are broken?
 
-If other parts of your application, such as your web interface,
-need to describe the solution to the user, use the `SolutionManager` API:
+If other parts of your application, such as your web interface, need to describe the solution to the user, use the `SolutionManager` API:
 
 [tabs]
 ====
@@ -100,8 +92,7 @@ score_analysis = solution_manager.analyze(vehicle_route_plan)
 ----
 ====
 
-`ScoreAnalysis` is a JSON-friendly representation of the score,
-breaking down the score into individual constraints.
+`ScoreAnalysis` is a JSON-friendly representation of the score, breaking down the score into individual constraints.
 Using score analysis, you can find out:
 
 * What's the total score.
@@ -110,11 +101,8 @@ Using score analysis, you can find out:
 
 [NOTE]
 ====
-For performance reasons and especially with large datasets that you'll later need to serialize,
-you may choose to use `ScoreAnalysis` without justifications,
-while still maintaining the count of constraint matches.
-In that case, use `ScoreAnalysisFetchPolicy.FETCH_MATCH_COUNT` instead of
-the default `ScoreAnalysisFetchPolicy.FETCH_ALL` when calling `SolutionManager.analyze(...)`.
+For performance reasons and especially with large datasets that you'll later need to serialize, you may choose to use `ScoreAnalysis` without justifications, while still maintaining the count of constraint matches.
+In that case, use `ScoreAnalysisFetchPolicy.FETCH_MATCH_COUNT` instead of the default `ScoreAnalysisFetchPolicy.FETCH_ALL` when calling `SolutionManager.analyze(...)`.
 ====
 
 It is also possible to print the score summary:
@@ -140,8 +128,7 @@ print(score_analysis.summary)
 ----
 ====
 
-For example,
-this prints that vehicle `vehicle '1'` matched the soft constraint `minimizeTravelTime`:
+For example, this prints that vehicle `vehicle '1'` matched the soft constraint `minimizeTravelTime`:
 
 ----
 Explanation of score (0hard/-10343soft):
@@ -187,9 +174,7 @@ for constraint_ref, constraint_analysis in score_analysis.constraint_map.items()
 ----
 ====
 
-If you wish to go further
-and find out which planning entities and problem facts are responsible for breaking the constraint,
-you can further explore the `ConstraintAnalysis` instance you received from `ScoreAnalysis.constraintMap()`:
+If you wish to go further and find out which planning entities and problem facts are responsible for breaking the constraint, you can further explore the `ConstraintAnalysis` instance you received from `ScoreAnalysis.constraintMap()`:
 
 [tabs]
 ====
@@ -219,14 +204,12 @@ for match_analysis in constraint_analysis.matches:
 ====
 
 Each match is accompanied by the score difference it caused, and a justification object (see above).
-Typically, the scoring engine creates justification objects automatically
-by using the results of xref:constraints-and-score/score-calculation.adoc#constraintStreamsCustomizingJustificationsAndIndictments[Constraint Streams' `justifyWith(...)` call].
+Typically, the scoring engine creates justification objects automatically by using the results of xref:constraints-and-score/score-calculation.adoc#constraintStreamsCustomizingJustificationsAndIndictments[Constraint Streams' `justifyWith(...)` call].
 
 [#scoreAnalysisDiff]
 === Identifying changes between two solutions
 
-If you have two different solutions from the Solver,
-you can compare them using `ScoreAnalysis`
+If you have two different solutions from the Solver, you can compare them using `ScoreAnalysis`
 and find out what changed between them:
 
 [tabs]
@@ -274,26 +257,19 @@ for constraint_ref, constraint_analysis in diff.constraint_map.items():
 ----
 ====
 
-Think of `diff(...)` as a subtraction operation,
-where the second solution is subtracted from the first solution.
+Think of `diff(...)` as a subtraction operation, where the second solution is subtracted from the first solution.
 For example, if the first solution has score of `2hard/3soft`
-and the second solution has score of `1hard/2soft`,
-then the score difference will be `1hard/1soft`,
-indicating that the second solution is better than the first solution.
+and the second solution has score of `1hard/2soft`, then the score difference will be `1hard/1soft`, indicating that the second solution is better than the first solution.
 
 The same applies to constraints and constraint matches.
-If a constraint did not match in the first solution but did match in the second,
-then the constraint match will be included in the diff as negative.
-If instead the constraint did match in the first solution but did not match in the second,
-then the constraint match will be included in the diff as positive.
-
+If a constraint did not match in the first solution but did match in the second, then the constraint match will be included in the diff as negative.
+If instead the constraint did match in the first solution but did not match in the second, then the constraint match will be included in the diff as positive.
 
 [#scoreAnalysisSerialization]
 === Sending score analysis over the wire
 
 The purpose of `ScoreAnalysis` is to break down the score so that the end user can understand it.
-To succeed at this, `ScoreAnalysis` is JSON-friendly and can be easily sent over the wire
-from the backend to the frontend.
+To succeed at this, `ScoreAnalysis` is JSON-friendly and can be easily sent over the wire from the backend to the frontend.
 
 `ScoreAnalysis` instances will serialize into JSON automatically (using Jackson):
 
@@ -301,8 +277,7 @@ from the backend to the frontend.
 * or if you use Timefold Solver's xref:integration/integration.adoc#integrationWithSpringBoot[Spring Boot integration],
 * or if you directly included the `timefold-solver-jackson` module in your project.
 
-If you implemented `ConstraintJustication` to provide custom justification objects,
-you are responsible for making them JSON-friendly yourself.
+If you implemented `ConstraintJustication` to provide custom justification objects, you are responsible for making them JSON-friendly yourself.
 
 [NOTE]
 ====
@@ -312,18 +287,54 @@ However, deserialization is easy to implement yourself by extending `AbstractSco
 and registering it with Jackson's `ObjectMapper`.
 ====
 
-With large datasets,
-you may choose to use `ScoreAnalysis` without justifications,
-while still maintaining the count of constraint matches.
-In that case, use `ScoreAnalysisFetchPolicy.FETCH_MATCH_COUNT` instead of
-the default `ScoreAnalysisFetchPolicy.FETCH_ALL` when calling `SolutionManager.analyze(...)`.
+With large datasets, you may choose to use `ScoreAnalysis` without justifications, while still maintaining the count of constraint matches.
+In that case, use `ScoreAnalysisFetchPolicy.FETCH_MATCH_COUNT` instead of the default `ScoreAnalysisFetchPolicy.FETCH_ALL` when calling `SolutionManager.analyze(...)`.
 
+[#solutionDiff]
+== Solution Diff: What changed between now and then?
+
+[IMPORTANT]
+====
+The solution diff is available as a xref:upgrading-timefold-solver/backwards-compatibility.adoc#previewFeatures[preview feature]
+and must be specifically enabled in the solver configuration.
+====
+
+[NOTE]
+====
+This feature is not yet supported in Timefold Solver for Python.
+====
+
+Using the `SolutionManager` API, you can compare two solutions provided by the solver, and find out what changed between them:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+SolutionManager<VehicleRoutePlan, HardSoftLongScore> solutionManager = SolutionManager.create(solverFactory);
+...
+PlanningSolutionDiff<VehicleRoutePlan> solutionDiff = solutionManager.diff(oldSolution, newSolution);
+----
+====
+
+The `PlanningSolutionDiff` instance contains the following information:
+
+* A full list of entities whose genuine planning variables changed between the two solutions.
+Each entity is represented by a `PlanningEntityDiff` instance,
+which contains the entity itself,
+as well as the old and new values of its genuine planning variables.
+* Set of planning entities not present in the new solution (removed entities).
+* Set of planning entities not present in the old solution (added entities).
+* The `oldSolution` and `newSolution` planning solutions.
+
+It also has a useful `toString()` for a quick overview of the changes.
+Do not attempt to parse this string or expose it in services, its format is not stable and is subject to change.
 
 [#indictmentHeatMap]
 == Heat map: Visualize the hot planning entities
 
-To show a heat map in the UI that highlights the planning entities and problem facts have an impact on the ``Score``,
-get the `Indictment` map from the ``ScoreExplanation``:
+To show a heat map in the UI that highlights the planning entities and problem facts have an impact on the ``Score``, get the `Indictment` map from the ``ScoreExplanation``:
 
 [tabs]
 ====
@@ -375,12 +386,10 @@ for visit in vehicle_route_plan.visits:
 [NOTE]
 ====
 `ScoreExplanation` should only be used for processing indictments.
-For analyzing the score and processing constraint matches,
-use <<scoreAnalysis,score analysis>> instead, which is faster and JSON-friendly.
+For analyzing the score and processing constraint matches, use <<scoreAnalysis,score analysis>> instead, which is faster and JSON-friendly.
 ====
 
 Each `Indictment` is the sum of all constraints where that justification object is involved with.
-The sum of all the `Indictment.getScoreTotal()` differs from the overall score,
-because multiple ``Indictment``s can share the same `ConstraintMatch`.
+The sum of all the `Indictment.getScoreTotal()` differs from the overall score, because multiple ``Indictment``s can share the same `ConstraintMatch`.
 
 image::constraints-and-score/understanding-the-score/scoreVisualization.png[align="center"]

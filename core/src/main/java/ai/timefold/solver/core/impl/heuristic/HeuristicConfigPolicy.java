@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -218,12 +219,15 @@ public class HeuristicConfigPolicy<Solution_> {
     }
 
     public void ensurePreviewFeature(PreviewFeature previewFeature) {
+        ensurePreviewFeature(previewFeature, previewFeatureList);
+    }
+
+    public static void ensurePreviewFeature(PreviewFeature previewFeature, Collection<PreviewFeature> previewFeatureList) {
         if (previewFeatureList == null || !previewFeatureList.contains(previewFeature)) {
-            throw new IllegalStateException(
-                    """
-                            The preview feature %s is not enabled.
-                            Maybe add %s to <enablePreviewFeature> in your configuration file?"""
-                            .formatted(previewFeature, previewFeature));
+            throw new IllegalStateException("""
+                    The preview feature %s is not enabled.
+                    Maybe add %s to <enablePreviewFeature> in your configuration file?"""
+                    .formatted(previewFeature, previewFeature));
         }
     }
 

@@ -22,17 +22,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
  * @param <Value_> the value type
  */
 public non-sealed interface PlanningVariableMetaModel<Solution_, Entity_, Value_>
-        extends VariableMetaModel<Solution_, Entity_, Value_> {
-
-    @Override
-    default boolean isList() {
-        return false;
-    }
-
-    @Override
-    default boolean isGenuine() {
-        return true;
-    }
+        extends GenuineVariableMetaModel<Solution_, Entity_, Value_> {
 
     /**
      * Returns whether the planning variable allows null values.

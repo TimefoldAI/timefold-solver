@@ -1,0 +1,67 @@
+package ai.timefold.solver.jackson.preview.api.domain.solution.diff;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import ai.timefold.solver.core.impl.testdata.domain.equals.TestdataEqualsByCodeSolution;
+import ai.timefold.solver.jackson.api.TimefoldJacksonModule;
+
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+class PlanningSolutionDiffTest {
+
+    @Test
+    void serialize() throws JsonProcessingException {
+        var oldSolution = TestdataEqualsByCodeSolution.generateSolution("A", 2, 2);
+        oldSolution.getEntityList().get(0).setValue(oldSolution.getValueList().get(1));
+        var newSolution = TestdataEqualsByCodeSolution.generateSolution("B", 3, 3);
+        var solutionDescriptor = TestdataEqualsByCodeSolution.buildSolutionDescriptor();
+        var diff = solutionDescriptor.diff(oldSolution, newSolution);
+
+        var objectMapper = new ObjectMapper();
+        objectMapper.enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
+        objectMapper.registerModule(TimefoldJacksonModule.createModule());
+
+        var serialized = objectMapper.writeValueAsString(diff);
+        assertThat(serialized)
+                .isEqualToIgnoringWhitespace("""
+                        {
+                           "added_entities": [
+                             {
+                               "code": "Generated Entity 2",
+                               "value": {
+                                 "code": "Generated Value 2"
+                               }
+                             }
+                           ],
+                           "entity_diffs": [
+                             {
+                               "entity": {
+                                 "code": "Generated Entity 0",
+                                 "value": {
+                                   "code": "Generated Value 1"
+                                 }
+                               },
+                               "entity_class": "ai.timefold.solver.core.impl.testdata.domain.equals.TestdataEqualsByCodeEntity",
+                               "variable_diffs": [
+                                 {
+                                   "name": "value",
+                                   "new_value": {
+                                     "code": "Generated Value 0"
+                                   },
+                                   "old_value": {
+                                     "code": "Generated Value 1"
+                                   }
+                                 }
+                               ]
+                             }
+                           ],
+                           "removed_entities": []
+                         }""");
+
+    }
+
+}

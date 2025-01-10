@@ -19,6 +19,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -74,7 +75,9 @@ import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.impl.util.MutableLong;
 import ai.timefold.solver.core.impl.util.MutablePair;
+import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
+import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningSolutionDiff;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1263,6 +1266,68 @@ public class SolutionDescriptor<Solution_> {
      */
     public <Score_ extends Score<Score_>> void setScore(Solution_ solution, Score_ score) {
         ((ScoreDescriptor) scoreDescriptor).setScore(solution, score);
+    }
+
+    public PlanningSolutionDiff<Solution_> diff(Solution_ oldSolution, Solution_ newSolution) {
+        var oldEntities = getEntityDescriptors().stream()
+                .map(descriptor -> descriptor.extractEntities(oldSolution))
+                .flatMap(Collection::stream)
+                .collect(Collectors.groupingBy(Object::getClass, Collectors.toSet()));
+        var newEntities = getEntityDescriptors().stream()
+                .map(descriptor -> descriptor.extractEntities(newSolution))
+                .flatMap(Collection::stream)
+                .collect(Collectors.groupingBy(Object::getClass, Collectors.toSet()));
+
+        var removedOldEntities = new LinkedHashSet<>();
+        var oldToNewEntities = new LinkedHashMap<>();
+        for (var entry : oldEntities.entrySet()) {
+            var entityClass = entry.getKey();
+            for (var oldEntity : entry.getValue()) {
+                var newEntity = newEntities.getOrDefault(entityClass, Collections.emptySet())
+                        .stream()
+                        .filter(e -> Objects.equals(e, oldEntity))
+                        .findFirst()
+                        .orElse(null);
+                if (newEntity == null) {
+                    removedOldEntities.add(oldEntity);
+                } else {
+                    oldToNewEntities.put(oldEntity, newEntity);
+                }
+            }
+        }
+
+        var addedNewEntities = new LinkedHashSet<>();
+        for (var entry : newEntities.entrySet()) {
+            for (var newEntity : entry.getValue()) {
+                var noOldEqualsNew = !oldToNewEntities.containsValue(newEntity);
+                if (noOldEqualsNew) {
+                    addedNewEntities.add(newEntity);
+                }
+            }
+        }
+
+        var solutionDiff = new DefaultPlanningSolutionDiff<>(getMetaModel(), oldSolution, newSolution, removedOldEntities,
+                addedNewEntities);
+        for (var entry : oldToNewEntities.entrySet()) {
+            var oldEntity = entry.getKey();
+            var newEntity = entry.getValue();
+            var entityDescriptor = findEntityDescriptorOrFail(oldEntity.getClass());
+            var entityDiff = new DefaultPlanningEntityDiff<>(solutionDiff, entry.getKey());
+            for (var variableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
+                var oldValue = variableDescriptor.getValue(oldEntity);
+                var newValue = variableDescriptor.getValue(newEntity);
+                if (!Objects.equals(oldValue, newValue)) {
+                    var variableMetaModel = (GenuineVariableMetaModel<Solution_, Object, Object>) entityDiff.entityMetaModel()
+                            .variable(variableDescriptor.getVariableName());
+                    var variableDiff = new DefaultPlanningVariableDiff<>(entityDiff, variableMetaModel, oldValue, newValue);
+                    entityDiff.addVariableDiff(variableDiff);
+                }
+            }
+            if (!entityDiff.variableDiffs().isEmpty()) {
+                solutionDiff.addEntityDiff(entityDiff);
+            }
+        }
+        return solutionDiff;
     }
 
     @Override

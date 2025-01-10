@@ -18,6 +18,7 @@ import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityP
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.config.solver.random.RandomType;
@@ -255,6 +256,10 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
             phaseConfigList.add(new LocalSearchPhaseConfig());
         }
         return PhaseFactory.buildPhases(phaseConfigList, configPolicy, bestSolutionRecaller, termination);
+    }
+
+    public void ensurePreviewFeature(PreviewFeature previewFeature) {
+        HeuristicConfigPolicy.ensurePreviewFeature(previewFeature, solverConfig.getEnablePreviewFeatureSet());
     }
 
     // Required for testability as final classes cannot be mocked.

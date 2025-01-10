@@ -36,9 +36,13 @@ but we're just not entirely comfortable yet to write their signatures in stone.
 Timefold Solver includes several components which are only available as preview features.
 These are:
 
-- _Diversified Late Acceptance_ acceptor in the package `ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance`.
-- _Move Streams API_ in the `ai.timefold.solver.core.api.move` package and its subpackages,
-as well as the `ai.timefold.solver.core.api.domain.metamodel` package and its subpackages.
+- xref:optimization-algorithms/local-search.adoc#diversifiedLateAcceptance[Diversified Late Acceptance] acceptor.
+- xref:constraints-and-score/understanding-the-score.adoc#solutionDiff[Solution diff API]
+in the `ai.timefold.solver.core.preview.api.domain.solution.diff` package,
+and in the `SolutionManager`.
+- _Move Streams API_ in the `ai.timefold.solver.core.preview.api.move` package
+and the `ai.timefold.solver.core.preview.api.domain.metamodel` package,
+as well as in their subpackages.
 - _Timefold Solver for Python_, which is currently in beta.
 
 These preview features are developed to the same standard as the rest of Timefold Solver.

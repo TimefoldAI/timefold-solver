@@ -25,7 +25,7 @@ import org.jspecify.annotations.NonNull;
  * @param <Value_>
  */
 public sealed interface VariableMetaModel<Solution_, Entity_, Value_>
-        permits PlanningVariableMetaModel, PlanningListVariableMetaModel, ShadowVariableMetaModel {
+        permits GenuineVariableMetaModel, ShadowVariableMetaModel {
 
     /**
      * Describes the entity that owns this variable.
@@ -58,7 +58,9 @@ public sealed interface VariableMetaModel<Solution_, Entity_, Value_>
      *
      * @return true if this variable is a genuine @{@link PlanningListVariable}, false otherwise
      */
-    boolean isList();
+    default boolean isList() {
+        return false;
+    }
 
     /**
      * Whether this variable is a genuine variable.
@@ -68,6 +70,8 @@ public sealed interface VariableMetaModel<Solution_, Entity_, Value_>
      *
      * @return true if this variable is genuine, false otherwise
      */
-    boolean isGenuine();
+    default boolean isGenuine() {
+        return false;
+    }
 
 }
