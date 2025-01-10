@@ -247,6 +247,10 @@ public class SolverScope<Solution_> {
         resetWorkingSolution = true;
     }
 
+    public void cancelResetWorkingSolution() {
+        resetWorkingSolution = false;
+    }
+
     public boolean isResetWorkingSolution() {
         return resetWorkingSolution;
     }
