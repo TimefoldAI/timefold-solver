@@ -104,10 +104,6 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
                 doStep(stepScope);
                 stepEnded(stepScope);
                 phaseScope.setLastCompletedStepScope(stepScope);
-            } else {
-                logger.debug("Working solution reset, score ({})", solverScope.getBestScore());
-                solverScope.setWorkingSolutionFromBestSolution();
-                decider.moveSelectorPhaseStarted(phaseScope);
             }
         }
         phaseEnded(phaseScope);

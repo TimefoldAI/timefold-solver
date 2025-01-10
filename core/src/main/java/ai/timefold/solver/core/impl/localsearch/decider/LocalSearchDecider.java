@@ -30,6 +30,7 @@ public class LocalSearchDecider<Solution_> {
     protected final String logIndentation;
     protected final Termination<Solution_> termination;
     protected final MoveSelector<Solution_> moveSelector;
+    protected final MoveSelector<Solution_> perturbationMoveSelector;
     protected final Acceptor<Solution_> acceptor;
     protected final LocalSearchForager<Solution_> forager;
 
@@ -37,10 +38,12 @@ public class LocalSearchDecider<Solution_> {
     protected boolean assertExpectedUndoMoveScore = false;
 
     public LocalSearchDecider(String logIndentation, Termination<Solution_> termination,
-            MoveSelector<Solution_> moveSelector, Acceptor<Solution_> acceptor, LocalSearchForager<Solution_> forager) {
+            MoveSelector<Solution_> moveSelector, MoveSelector<Solution_> perturbationMoveSelector,
+            Acceptor<Solution_> acceptor, LocalSearchForager<Solution_> forager) {
         this.logIndentation = logIndentation;
         this.termination = termination;
         this.moveSelector = moveSelector;
+        this.perturbationMoveSelector = perturbationMoveSelector;
         this.acceptor = acceptor;
         this.forager = forager;
     }
@@ -76,12 +79,8 @@ public class LocalSearchDecider<Solution_> {
         forager.solvingStarted(solverScope);
     }
 
-    public void moveSelectorPhaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
-        moveSelector.phaseStarted(phaseScope);
-    }
-
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
-        moveSelectorPhaseStarted(phaseScope);
+        moveSelector.phaseStarted(phaseScope);
         acceptor.phaseStarted(phaseScope);
         forager.phaseStarted(phaseScope);
     }
@@ -96,6 +95,9 @@ public class LocalSearchDecider<Solution_> {
         InnerScoreDirector<Solution_, ?> scoreDirector = stepScope.getScoreDirector();
         scoreDirector.setAllChangesWillBeUndoneBeforeStepEnds(true);
         int moveIndex = 0;
+        if (resetWorkingSolution(stepScope)) {
+            return;
+        }
         for (var move : moveSelector) {
             var adaptedMove = new LegacyMoveAdapter<>(move);
             LocalSearchMoveScope<Solution_> moveScope = new LocalSearchMoveScope<>(stepScope, moveIndex, adaptedMove);
@@ -111,6 +113,26 @@ public class LocalSearchDecider<Solution_> {
         }
         scoreDirector.setAllChangesWillBeUndoneBeforeStepEnds(false);
         pickMove(stepScope);
+    }
+
+    private boolean resetWorkingSolution(LocalSearchStepScope<Solution_> stepScope) {
+        var solverScope = stepScope.getPhaseScope().getSolverScope();
+        var phaseScope = stepScope.getPhaseScope();
+        if (perturbationMoveSelector != null && solverScope.isResetWorkingSolution()) {
+            logger.debug("Working solution reset, score ({})", solverScope.getBestScore());
+            solverScope.setWorkingSolutionFromBestSolution();
+            perturbationMoveSelector.phaseStarted(phaseScope);
+            var perturbationMove = perturbationMoveSelector.iterator().next();
+            stepScope.setScore(perturbationMove);
+
+            logger.debug("Generating a new perturbation with Ruin and Recreate: old score ({}), new score ({})", solverScope.getBestScore());
+            moveSelector.phaseStarted(phaseScope);
+            return true;
+        } else if (solverScope.isResetWorkingSolution()) {
+            // Reset the flag
+            solverScope.cancelResetWorkingSolution();
+        }
+        return false;
     }
 
     @SuppressWarnings("unchecked")
