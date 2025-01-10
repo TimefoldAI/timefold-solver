@@ -53,7 +53,7 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
     private TerminationCompositionStyle terminationCompositionStyle = null;
 
     @XmlElement(name = "adaptive")
-    private AdaptiveTerminationConfig adaptiveTerminationConfig;
+    private AdaptiveTerminationConfig adaptiveTerminationConfig = null;
 
     @XmlJavaTypeAdapter(JaxbDurationAdapter.class)
     private Duration spentLimit = null;
@@ -504,6 +504,7 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         return terminationClass != null ||
                 timeSpentLimitIsSet() ||
                 unimprovedTimeSpentLimitIsSet() ||
+                adaptiveTerminationConfig != null ||
                 bestScoreLimit != null ||
                 bestScoreFeasible != null ||
                 stepCountLimit != null ||
