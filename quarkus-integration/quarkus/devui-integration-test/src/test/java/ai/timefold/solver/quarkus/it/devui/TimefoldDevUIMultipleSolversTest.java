@@ -28,8 +28,6 @@ public class TimefoldDevUIMultipleSolversTest extends DevUIJsonRPCTest {
 
     @RegisterExtension
     static final QuarkusDevModeTest config = new QuarkusDevModeTest()
-            .setBuildSystemProperty("quarkus.timefold.solver.\"solver1\".environment-mode", "FULL_ASSERT")
-            .setBuildSystemProperty("quarkus.timefold.solver.\"solver2\".environment-mode", "REPRODUCIBLE")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(StringLengthVariableListener.class,
                             TestdataStringLengthShadowEntity.class, TestdataStringLengthShadowSolution.class,
@@ -54,16 +52,24 @@ public class TimefoldDevUIMultipleSolversTest extends DevUIJsonRPCTest {
     @Test
     void testSolverConfigPage() throws Exception {
         JsonNode configResponse = super.executeJsonRPCMethod("getConfig");
-        assertSolverConfigPage(configResponse.get("config").get("solver1").asText(), "FULL_ASSERT");
-        assertSolverConfigPage(configResponse.get("config").get("solver2").asText(), "REPRODUCIBLE");
+
+        // All properties in SolverBuildTimeConfig either are
+        // - Enterprise properties
+        // - Have fail fasts if they are not consistent across solvers
+        // - Store the entire solver XML
+        //
+        // Since runtime properties are not included in the generated XML file,
+        // this leaves a surprising few ways to make the SolverConfig different.
+        // So we only check that they both exist.
+        assertSolverConfigPage(configResponse.get("config").get("solver1").asText());
+        assertSolverConfigPage(configResponse.get("config").get("solver2").asText());
     }
 
-    private void assertSolverConfigPage(String solverConfig, String environment) {
+    private void assertSolverConfigPage(String solverConfig) {
         assertThat(solverConfig).isEqualToIgnoringWhitespace(
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                         + "<!--Properties that can be set at runtime are not included-->\n"
                         + "<solver>\n"
-                        + "  <environmentMode>" + environment + "</environmentMode>\n"
                         + "  <solutionClass>" + TestdataStringLengthShadowSolution.class.getCanonicalName()
                         + "</solutionClass>\n"
                         + "  <entityClass>" + TestdataStringLengthShadowEntity.class.getCanonicalName() + "</entityClass>\n"

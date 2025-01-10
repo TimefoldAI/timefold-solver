@@ -184,6 +184,25 @@ class TimefoldProcessor {
             BuildProducer<BytecodeTransformerBuildItem> transformers) {
         IndexView indexView = combinedIndex.getIndex();
 
+        // Step 0 - determine list of names used for injected solver components
+        var solverNames = new HashSet<String>();
+        var solverConfigMap = new HashMap<String, SolverConfig>();
+        for (var namedItem : indexView.getAnnotations(DotNames.NAMED)) {
+            var target = namedItem.target();
+            DotName type = switch (target.kind()) {
+                case CLASS -> target.asClass().name();
+                case FIELD -> target.asField().type().name();
+                case METHOD_PARAMETER -> target.asMethodParameter().type().name();
+                case RECORD_COMPONENT -> target.asRecordComponent().type().name();
+                case TYPE, METHOD -> null;
+            };
+            if (type != null && DotNames.SOLVER_INJECTABLE_TYPES.contains(type)) {
+                var annotationValue = namedItem.value();
+                var value = (annotationValue != null) ? annotationValue.asString() : "";
+                solverNames.add(value);
+            }
+        }
+
         // Only skip this extension if everything is missing. Otherwise, if some parts are missing, fail fast later.
         if (indexView.getAnnotations(DotNames.PLANNING_SOLUTION).isEmpty()
                 && indexView.getAnnotations(DotNames.PLANNING_ENTITY).isEmpty()) {
@@ -194,24 +213,24 @@ class TimefoldProcessor {
                     + "application.properties entries (quarkus.index-dependency.<name>.group-id"
                     + " and quarkus.index-dependency.<name>.artifact-id).");
             additionalBeans.produce(new AdditionalBeanBuildItem(UnavailableTimefoldBeanProvider.class));
-            Map<String, SolverConfig> solverConfigMap = new HashMap<>();
-            this.timefoldBuildTimeConfig.solver().keySet().forEach(solverName -> solverConfigMap.put(solverName, null));
+            solverNames.forEach(solverName -> solverConfigMap.put(solverName, null));
             return new SolverConfigBuildItem(solverConfigMap, null);
         }
 
         // Quarkus extensions must always use getContextClassLoader()
         // Internally, Timefold defaults the ClassLoader to getContextClassLoader() too
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        var classLoader = Thread.currentThread().getContextClassLoader();
+        TimefoldRecorder.assertNoUnmatchedProperties(solverNames,
+                timefoldBuildTimeConfig.solver().keySet());
 
-        Map<String, SolverConfig> solverConfigMap = new HashMap<>();
         // Step 1 - create all SolverConfig
         // If the config map is empty, we build the config using the default solver name
-        if (timefoldBuildTimeConfig.solver().isEmpty()) {
+        if (solverNames.isEmpty()) {
             solverConfigMap.put(TimefoldBuildTimeConfig.DEFAULT_SOLVER_NAME,
                     createSolverConfig(classLoader, TimefoldBuildTimeConfig.DEFAULT_SOLVER_NAME));
         } else {
             // One config per solver mapped name
-            this.timefoldBuildTimeConfig.solver().keySet().forEach(solverName -> solverConfigMap.put(solverName,
+            solverNames.forEach(solverName -> solverConfigMap.put(solverName,
                     createSolverConfig(classLoader, solverName)));
         }
 
@@ -558,23 +577,23 @@ class TimefoldProcessor {
     @Record(RUNTIME_INIT)
     void recordAndRegisterRuntimeBeans(TimefoldRecorder recorder, RecorderContext recorderContext,
             BuildProducer<SyntheticBeanBuildItem> syntheticBeanBuildItemBuildProducer,
-            SolverConfigBuildItem solverConfigBuildItem,
-            TimefoldRuntimeConfig runtimeConfig) {
+            SolverConfigBuildItem solverConfigBuildItem) {
         // Skip this extension if everything is missing.
         if (solverConfigBuildItem.getGeneratedGizmoClasses() == null) {
             return;
         }
 
+        recorder.assertNoUnmatchedRuntimeProperties(solverConfigBuildItem.getSolverConfigMap().keySet());
         // Using the same name for synthetic beans is impossible, even if they are different types.
         // Therefore, we allow only the injection of SolverManager, except for the default solver,
         // which can inject all resources to be retro-compatible.
         solverConfigBuildItem.getSolverConfigMap().forEach((key, value) -> {
-            if (timefoldBuildTimeConfig.isDefaultSolverConfig(key)) {
+            if (solverConfigBuildItem.isDefaultSolverConfig(key)) {
                 // The two configuration resources are required for DefaultTimefoldBeanProvider
                 // to produce all available managed beans for the default solver.
                 syntheticBeanBuildItemBuildProducer.produce(SyntheticBeanBuildItem.configure(SolverConfig.class)
                         .scope(Singleton.class)
-                        .supplier(recorder.solverConfigSupplier(key, value, runtimeConfig,
+                        .supplier(recorder.solverConfigSupplier(key, value,
                                 GizmoMemberAccessorEntityEnhancer.getGeneratedGizmoMemberAccessorMap(recorderContext,
                                         solverConfigBuildItem
                                                 .getGeneratedGizmoClasses().generatedGizmoMemberAccessorClassSet),
@@ -588,11 +607,12 @@ class TimefoldProcessor {
                 SolverManagerConfig solverManagerConfig = new SolverManagerConfig();
                 syntheticBeanBuildItemBuildProducer.produce(SyntheticBeanBuildItem.configure(SolverManagerConfig.class)
                         .scope(Singleton.class)
-                        .supplier(recorder.solverManagerConfig(solverManagerConfig, runtimeConfig))
+                        .supplier(recorder.solverManagerConfig(solverManagerConfig))
                         .setRuntimeInit()
                         .defaultBean()
                         .done());
-            } else {
+            }
+            if (!TimefoldBuildTimeConfig.DEFAULT_SOLVER_NAME.equals(key)) {
                 // The default SolverManager instance is generated by DefaultTimefoldBeanProvider
                 syntheticBeanBuildItemBuildProducer.produce(
                         // We generate all required resources only to create a SolverManager and set it as managed bean
@@ -602,7 +622,7 @@ class TimefoldProcessor {
                                         Type.create(DotName.createSimple(value.getSolutionClass().getName()),
                                                 Type.Kind.CLASS),
                                         TypeVariable.create(Object.class.getName())))
-                                .supplier(recorder.solverManager(key, value, runtimeConfig,
+                                .supplier(recorder.solverManager(key, value,
                                         GizmoMemberAccessorEntityEnhancer.getGeneratedGizmoMemberAccessorMap(recorderContext,
                                                 solverConfigBuildItem
                                                         .getGeneratedGizmoClasses().generatedGizmoMemberAccessorClassSet),
@@ -622,11 +642,10 @@ class TimefoldProcessor {
             TimefoldDevUIRecorder devUIRecorder,
             RecorderContext recorderContext,
             SolverConfigBuildItem solverConfigBuildItem,
-            TimefoldRuntimeConfig runtimeConfig,
             BuildProducer<SyntheticBeanBuildItem> syntheticBeans) {
         syntheticBeans.produce(SyntheticBeanBuildItem.configure(DevUISolverConfig.class)
                 .scope(ApplicationScoped.class)
-                .supplier(devUIRecorder.solverConfigSupplier(solverConfigBuildItem.getSolverConfigMap(), runtimeConfig,
+                .supplier(devUIRecorder.solverConfigSupplier(solverConfigBuildItem.getSolverConfigMap(),
                         GizmoMemberAccessorEntityEnhancer.getGeneratedGizmoMemberAccessorMap(recorderContext,
                                 solverConfigBuildItem
                                         .getGeneratedGizmoClasses().generatedGizmoMemberAccessorClassSet),
@@ -701,10 +720,6 @@ class TimefoldProcessor {
         applyScoreDirectorFactoryProperties(indexView, solverConfig);
 
         // Override the current configuration with values from the solver properties
-        timefoldBuildTimeConfig.getSolverConfig(solverName).flatMap(SolverBuildTimeConfig::environmentMode)
-                .ifPresent(solverConfig::setEnvironmentMode);
-        timefoldBuildTimeConfig.getSolverConfig(solverName).flatMap(SolverBuildTimeConfig::daemon)
-                .ifPresent(solverConfig::setDaemon);
         timefoldBuildTimeConfig.getSolverConfig(solverName).flatMap(SolverBuildTimeConfig::domainAccessType)
                 .ifPresent(solverConfig::setDomainAccessType);
 

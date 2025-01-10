@@ -4,6 +4,10 @@ package ai.timefold.solver.quarkus;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+
+import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusEasyScoreCalculator;
 import ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusIncrementalScoreCalculator;
 import ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusShadowVariableEasyScoreCalculator;
@@ -225,6 +229,14 @@ class TimefoldProcessorMultipleSolversInvalidConstraintClassTest {
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining(
                             "Unused classes ([ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusShadowVariableIncrementalScoreCalculator]) that implements IncrementalScoreCalculator were found."));
+
+    @Inject
+    @Named("solver1")
+    SolverManager<?, ?> solverManager1;
+
+    @Inject
+    @Named("solver2")
+    SolverManager<?, ?> solverManager2;
 
     @Test
     void test() {

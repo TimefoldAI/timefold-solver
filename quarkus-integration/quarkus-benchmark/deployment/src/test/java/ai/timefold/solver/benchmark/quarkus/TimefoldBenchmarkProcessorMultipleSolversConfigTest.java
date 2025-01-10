@@ -5,9 +5,13 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.concurrent.ExecutionException;
 
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+
 import ai.timefold.solver.benchmark.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider;
 import ai.timefold.solver.benchmark.quarkus.testdata.normal.domain.TestdataQuarkusEntity;
 import ai.timefold.solver.benchmark.quarkus.testdata.normal.domain.TestdataQuarkusSolution;
+import ai.timefold.solver.core.api.solver.SolverManager;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -34,6 +38,14 @@ class TimefoldBenchmarkProcessorMultipleSolversConfigTest {
                             """
                                     When defining multiple solvers, the benchmark feature is not enabled.
                                     Consider using separate <solverBenchmark> instances for evaluating different solver configurations."""));
+
+    @Inject
+    @Named("solver1")
+    SolverManager<?, ?> solverManager1;
+
+    @Inject
+    @Named("solver2")
+    SolverManager<?, ?> solverManager2;
 
     @Test
     void benchmark() throws ExecutionException, InterruptedException {

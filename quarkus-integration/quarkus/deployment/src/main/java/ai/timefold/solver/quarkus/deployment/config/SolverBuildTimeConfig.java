@@ -4,11 +4,8 @@ import java.util.Optional;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
-import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.quarkus.config.SolverRuntimeConfig;
-import ai.timefold.solver.quarkus.config.TerminationRuntimeConfig;
 
 import io.quarkus.runtime.annotations.ConfigGroup;
 
@@ -25,47 +22,23 @@ public interface SolverBuildTimeConfig {
      * A classpath resource to read the specific solver configuration XML.
      * If this property isn't specified, that solverConfig.xml is optional.
      */
+    // Build time - classes in the SolverConfig are visited by SolverConfig.visitReferencedClasses
+    // which generates the constructor of classes used by Quarkus
     Optional<String> solverConfigXml();
-
-    /**
-     * Enable runtime assertions to detect common bugs in your implementation during development.
-     * Defaults to {@link EnvironmentMode#REPRODUCIBLE}.
-     */
-    Optional<EnvironmentMode> environmentMode();
-
-    /**
-     * Enable daemon mode. In daemon mode, non-early termination pauses the solver instead of stopping it,
-     * until the next problem fact change arrives.
-     * This is often useful for real-time planning.
-     * Defaults to "false".
-     */
-    Optional<Boolean> daemon();
 
     /**
      * Determines how to access the fields and methods of domain classes.
      * Defaults to {@link DomainAccessType#GIZMO}.
      */
+    // Build time - GIZMO classes are only generated if at least one solver
+    // has domain access type GIZMO
     Optional<DomainAccessType> domainAccessType();
-
-    /**
-     * Note: this setting is only available
-     * for <a href="https://timefold.ai/docs/timefold-solver/latest/enterprise-edition/enterprise-edition">Timefold Solver
-     * Enterprise Edition</a>.
-     * Enable multithreaded solving for a single problem, which increases CPU consumption.
-     * Defaults to {@value SolverConfig#MOVE_THREAD_COUNT_NONE}.
-     * Other options include {@value SolverConfig#MOVE_THREAD_COUNT_AUTO}, a number
-     * or formula based on the available processor count.
-     */
-    Optional<String> moveThreadCount();
-
-    /**
-     * Configuration properties regarding {@link TerminationConfig}.
-     */
-    TerminationRuntimeConfig termination();
 
     /**
      * Enable the Nearby Selection quick configuration.
      */
+    // Build time - visited by SolverConfig.visitReferencedClasses
+    // which generates the constructor used by Quarkus
     Optional<Class<?>> nearbyDistanceMeterClass();
 
     /**
@@ -86,5 +59,6 @@ public interface SolverBuildTimeConfig {
      * will no longer be triggered.
      * Defaults to "false".
      */
+    // Build time - modifies the ConstraintProvider class if set
     Optional<Boolean> constraintStreamAutomaticNodeSharing();
 }

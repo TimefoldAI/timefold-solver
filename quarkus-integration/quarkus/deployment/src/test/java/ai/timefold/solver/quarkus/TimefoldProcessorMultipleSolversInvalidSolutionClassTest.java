@@ -4,6 +4,10 @@ package ai.timefold.solver.quarkus;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+
+import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.quarkus.testdata.chained.domain.TestdataChainedQuarkusSolution;
 import ai.timefold.solver.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider;
 import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusEntity;
@@ -77,6 +81,14 @@ class TimefoldProcessorMultipleSolversInvalidSolutionClassTest {
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining(
                             "Unused classes ([ai.timefold.solver.quarkus.testdata.chained.domain.TestdataChainedQuarkusSolution]) found with a @PlanningSolution annotation."));
+
+    @Inject
+    @Named("solver1")
+    SolverManager<?, ?> solverManager1;
+
+    @Inject
+    @Named("solver2")
+    SolverManager<?, ?> solverManager2;
 
     @Test
     void test() {

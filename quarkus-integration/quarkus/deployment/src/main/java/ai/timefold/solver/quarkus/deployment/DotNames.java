@@ -2,6 +2,9 @@ package ai.timefold.solver.quarkus.deployment;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+
+import jakarta.inject.Named;
 
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfigurationProvider;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
@@ -32,11 +35,18 @@ import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.api.solver.SolverManager;
+import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 
 import org.jboss.jandex.DotName;
 
 public final class DotNames {
+    // Jakarta classes
+    static final DotName NAMED = DotName.createSimple(Named.class);
 
+    // Timefold classes
     static final DotName PLANNING_SOLUTION = DotName.createSimple(PlanningSolution.class.getName());
     static final DotName PLANNING_ENTITY_COLLECTION_PROPERTY =
             DotName.createSimple(PlanningEntityCollectionProperty.class.getName());
@@ -74,6 +84,11 @@ public final class DotNames {
     static final DotName SHADOW_VARIABLE = DotName.createSimple(ShadowVariable.class.getName());
     static final DotName CASCADING_UPDATE_SHADOW_VARIABLE =
             DotName.createSimple(CascadingUpdateShadowVariable.class.getName());
+
+    static final DotName SOLVER_CONFIG = DotName.createSimple(SolverConfig.class.getName());
+    static final DotName SOLVER_MANAGER_CONFIG = DotName.createSimple(SolverManagerConfig.class.getName());
+    static final DotName SOLVER_FACTORY = DotName.createSimple(SolverFactory.class.getName());
+    static final DotName SOLVER_MANAGER = DotName.createSimple(SolverManager.class.getName());
 
     // Need to use String since timefold-solver-test is not on the compile classpath
     static final DotName CONSTRAINT_VERIFIER =
@@ -120,6 +135,12 @@ public final class DotNames {
             SHADOW_VARIABLE,
             CASCADING_UPDATE_SHADOW_VARIABLE
     };
+
+    static final Set<DotName> SOLVER_INJECTABLE_TYPES = Set.of(
+            SOLVER_CONFIG,
+            SOLVER_MANAGER_CONFIG,
+            SOLVER_FACTORY,
+            SOLVER_MANAGER);
 
     public enum BeanDefiningAnnotations {
         PLANNING_SCORE(DotNames.PLANNING_SCORE, "scoreDefinitionClass"),

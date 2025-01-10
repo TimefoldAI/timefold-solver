@@ -2,11 +2,8 @@ package ai.timefold.solver.quarkus;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Named;
+import java.util.logging.Level;
 
-import ai.timefold.solver.core.api.solver.SolverManager;
-import ai.timefold.solver.quarkus.rest.TestdataQuarkusSolutionConfigResource;
 import ai.timefold.solver.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider;
 import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusEntity;
 import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusSolution;
@@ -17,28 +14,24 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.test.QuarkusUnitTest;
-import io.restassured.RestAssured;
 
-class TimefoldProcessorMultipleSolversYamlTest {
-
+class TimefoldProcessorWarningBuildTimePropertyChangedTest {
     @RegisterExtension
     static final QuarkusUnitTest config = new QuarkusUnitTest()
+            .overrideConfigKey("quarkus.timefold.solver.daemon", "true")
+            // We overwrite the value at runtime
+            .overrideRuntimeConfigKey("quarkus.timefold.solver.daemon", "false")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
-                            TestdataQuarkusConstraintProvider.class, TestdataQuarkusSolutionConfigResource.class)
-                    .addAsResource("ai/timefold/solver/quarkus/multiple-solvers/application.yaml", "application.yaml"));
-
-    @Inject
-    @Named("solver1")
-    SolverManager<?, ?> solverManager1;
-
-    @Inject
-    @Named("solver2")
-    SolverManager<?, ?> solverManager2;
+                            TestdataQuarkusConstraintProvider.class))
+            // Make sure Quarkus does not produce a warning for overwriting a build time value at runtime
+            .setLogRecordPredicate(logRecord -> logRecord.getLoggerName().startsWith("io.quarkus")
+                    && logRecord.getLevel().intValue() >= Level.WARNING.intValue());
 
     @Test
     void solverProperties() {
-        String resp = RestAssured.get("/solver-config/seconds-spent-limit").asString();
-        assertEquals("secondsSpentLimit=0.06;secondsSpentLimit=0.12", resp);
+        config.assertLogRecords(logRecords -> {
+            assertEquals(1, logRecords.size(), "expected warning to be generated");
+        });
     }
 }

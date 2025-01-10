@@ -4,6 +4,10 @@ package ai.timefold.solver.quarkus;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+
+import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -25,6 +29,14 @@ class TimefoldProcessorMultipleSolversInvalidEntityClassTest {
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining(
                             "No classes were found with a @PlanningEntity annotation."));
+
+    @Inject
+    @Named("solver1")
+    SolverManager<?, ?> solverManager1;
+
+    @Inject
+    @Named("solver2")
+    SolverManager<?, ?> solverManager2;
 
     @Test
     void test() {
