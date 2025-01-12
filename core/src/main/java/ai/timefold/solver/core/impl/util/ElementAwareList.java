@@ -1,9 +1,10 @@
 package ai.timefold.solver.core.impl.util;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+
+import ai.timefold.solver.core.api.function.QuadConsumer;
+import ai.timefold.solver.core.api.function.TriConsumer;
 
 /**
  * Linked list that allows to add and remove an element in O(1) time.
@@ -11,14 +12,19 @@ import java.util.function.Consumer;
  *
  * @param <T> The element type. Often a tuple.
  */
-public final class ElementAwareList<T> implements Iterable<T> {
+public final class ElementAwareList<T> {
 
     private int size = 0;
     private ElementAwareListEntry<T> first = null;
     private ElementAwareListEntry<T> last = null;
+    /**
+     * It is a frequent pattern that an entry is added immediately after one is removed.
+     * By reusing the entry, we can reduce the considerable GC pressure this creates.
+     */
+    private ElementAwareListEntry<T> availableBlankEntry = null;
 
-    public ElementAwareListEntry<T> add(T tuple) {
-        ElementAwareListEntry<T> entry = new ElementAwareListEntry<>(this, tuple, last);
+    public ElementAwareListEntry<T> add(T element) {
+        var entry = newInstance(element, last);
         if (first == null) {
             first = entry;
         } else {
@@ -29,52 +35,40 @@ public final class ElementAwareList<T> implements Iterable<T> {
         return entry;
     }
 
-    public ElementAwareListEntry<T> addFirst(T tuple) {
-        if (first != null) {
-            ElementAwareListEntry<T> entry = new ElementAwareListEntry<>(this, tuple, null);
-            first.previous = entry;
-            entry.next = first;
-            first = entry;
-            size++;
-            return entry;
-        } else {
-            return add(tuple);
+    private ElementAwareListEntry<T> newInstance(T element, ElementAwareListEntry<T> previous) {
+        if (availableBlankEntry == null) {
+            return new ElementAwareListEntry<>(this, element, previous);
         }
-    }
-
-    public ElementAwareListEntry<T> addAfter(T tuple, ElementAwareListEntry<T> previous) {
-        Objects.requireNonNull(previous);
-        if (first == null || previous == last) {
-            return add(tuple);
-        } else {
-            ElementAwareListEntry<T> entry = new ElementAwareListEntry<>(this, tuple, previous);
-            ElementAwareListEntry<T> currentNext = previous.next;
-            if (currentNext != null) {
-                currentNext.previous = entry;
-            } else {
-                last = entry;
-            }
-            previous.next = entry;
-            entry.next = currentNext;
-            size++;
-            return entry;
-        }
+        var entry = availableBlankEntry;
+        availableBlankEntry = null;
+        entry.list = this;
+        entry.element = element;
+        entry.previous = previous;
+        return entry;
     }
 
     public void remove(ElementAwareListEntry<T> entry) {
+        relinkNext(entry);
+        relinkPrevious(entry);
+        entry.clear();
+        availableBlankEntry = entry;
+        size--;
+    }
+
+    private void relinkNext(ElementAwareListEntry<T> entry) {
         if (first == entry) {
             first = entry.next;
         } else {
             entry.previous.next = entry.next;
         }
+    }
+
+    private void relinkPrevious(ElementAwareListEntry<T> entry) {
         if (last == entry) {
             last = entry.previous;
         } else {
             entry.next.previous = entry.previous;
         }
-        entry.previous = null;
-        entry.next = null;
-        size--;
     }
 
     public ElementAwareListEntry<T> first() {
@@ -91,111 +85,120 @@ public final class ElementAwareList<T> implements Iterable<T> {
 
     /**
      * Convenience method for where it is easy to use a non-capturing lambda.
-     * If a capturing lambda consumer were to be created for this method, use {@link #iterator()} instead,
-     * which will consume less memory.
+     * If a capturing lambda consumer were to be created for this method, use either of the following instead,
+     * which will consume less memory:
+     * 
+     * <ul>
+     * <li>{@link #forEach(Object, BiConsumer)} for when one extra argument is required.</li>
+     * <li>{@link #forEach(Object, Object, TriConsumer)} for when two extra arguments are required.</li>
+     * <li>{@link #forEach(Object, Object, Object, QuadConsumer)} for when three extra arguments are required.</li>
+     * </ul>
+     * 
      * <p>
-     *
      * For example, the following code is perfectly fine:
-     *
      * <code>
      *     for (int i = 0; i &lt; 3; i++) {
      *         elementAwareList.forEach(entry -&gt; doSomething(entry));
      *     }
      * </code>
-     *
      * It will create only one lambda instance, regardless of the number of iterations;
      * it doesn't need to capture any state.
      * On the contrary, the following code will create three instances of a capturing lambda,
      * one for each iteration of the for loop:
-     *
      * <code>
      *     for (int a: List.of(1, 2, 3)) {
      *         elementAwareList.forEach(entry -&gt; doSomething(entry, a));
      *     }
      * </code>
-     *
      * In this case, the lambda would need to capture "a" which is different in every iteration.
-     * Therefore, it will generally be better to use the iterator variant,
-     * as that will only ever create one instance of the iterator,
-     * regardless of the number of iterations:
-     *
+     * It will generally be better to use a {@link #forEach(Object, BiConsumer)} variant with one extra argument,
+     * as that will not result in any new instances of the lambda (or iterator) being created:
      * <code>
      *     for (int a: List.of(1, 2, 3)) {
-     *         for (var entry: elementAwareList) {
-     *             doSomething(entry, a);
-     *         }
+     *         elementAwareList.forEach(a, (entry, a_) -&gt; doSomething(entry, a_));
      *     }
      * </code>
-     *
      * This is only an issue on the hot path,
      * where this method can create quite a large garbage collector pressure
      * on account of creating throw-away instances of capturing lambdas.
      *
-     * @param tupleConsumer The action to be performed for each element
+     * @param elementConsumer The action to be performed for each element
      */
-    @Override
-    public void forEach(Consumer<? super T> tupleConsumer) {
-        ElementAwareListEntry<T> entry = first;
+    public void forEach(Consumer<? super T> elementConsumer) {
+        var entry = first;
         while (entry != null) {
             // Extract next before processing it, in case the entry is removed and entry.next becomes null
-            ElementAwareListEntry<T> next = entry.next;
-            tupleConsumer.accept(entry.getElement());
+            var next = entry.next;
+            elementConsumer.accept(entry.element);
             entry = next;
         }
     }
 
     /**
-     * See {@link #forEach(Consumer)} for a discussion on the correct use of this method.
+     * As {@link #forEach(Consumer)}, but with an extra argument.
      *
-     * @return never null
+     * @param other Extra argument to be passed to the consumer.
+     * @param elementConsumer The action to be performed for each element
      */
-    @Override
-    public Iterator<T> iterator() {
-        return new ElementAwareListIterator<>(first);
+    public <U> void forEach(U other, BiConsumer<? super T, U> elementConsumer) {
+        var entry = first;
+        while (entry != null) {
+            // Extract next before processing it, in case the entry is removed and entry.next becomes null
+            var next = entry.next;
+            elementConsumer.accept(entry.element, other);
+            entry = next;
+        }
+    }
+
+    /**
+     * As {@link #forEach(Consumer)}, but with two extra arguments.
+     *
+     * @param other Extra argument to be passed to the consumer.
+     * @param another Another extra argument to be passed to the consumer.
+     * @param elementConsumer The action to be performed for each element
+     */
+    public <U, V> void forEach(U other, V another, TriConsumer<? super T, U, V> elementConsumer) {
+        var entry = first;
+        while (entry != null) {
+            // Extract next before processing it, in case the entry is removed and entry.next becomes null
+            var next = entry.next;
+            elementConsumer.accept(entry.element, other, another);
+            entry = next;
+        }
+    }
+
+    /**
+     * As {@link #forEach(Consumer)}, but with three extra arguments.
+     *
+     * @param other Extra argument to be passed to the consumer.
+     * @param another Another extra argument to be passed to the consumer.
+     * @param yetAnother Yet another extra argument to be passed to the consumer.
+     * @param elementConsumer The action to be performed for each element
+     */
+    public <U, V, W> void forEach(U other, V another, W yetAnother, QuadConsumer<? super T, U, V, W> elementConsumer) {
+        var entry = first;
+        while (entry != null) {
+            // Extract next before processing it, in case the entry is removed and entry.next becomes null
+            var next = entry.next;
+            elementConsumer.accept(entry.element, other, another, yetAnother);
+            entry = next;
+        }
     }
 
     @Override
     public String toString() {
-        switch (size) {
-            case 0 -> {
-                return "[]";
-            }
-            case 1 -> {
-                return "[" + first.getElement() + "]";
-            }
+        var content = switch (size) {
+            case 0 -> "";
+            case 1 -> first.element;
             default -> {
-                StringBuilder builder = new StringBuilder("[");
-                for (T entry : this) {
-                    builder.append(entry).append(", ");
-                }
-                builder.replace(builder.length() - 2, builder.length(), "");
-                return builder.append("]").toString();
+                var builder = new StringBuilder();
+                forEach(builder, (element, builder_) -> builder_.append(element).append(", "));
+                var length = builder.length();
+                builder.replace(length - 2, length, ""); // Remove the final ", ".
+                yield builder.toString();
             }
-        }
+        };
+        return "[" + content + "]";
     }
 
-    private static final class ElementAwareListIterator<T> implements Iterator<T> {
-
-        private ElementAwareListEntry<T> nextEntry;
-
-        public ElementAwareListIterator(ElementAwareListEntry<T> nextEntry) {
-            this.nextEntry = nextEntry;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return nextEntry != null;
-        }
-
-        @Override
-        public T next() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-            T element = nextEntry.getElement();
-            nextEntry = nextEntry.next;
-            return element;
-        }
-
-    }
 }

@@ -157,7 +157,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
             indexerLeft.forEach(indexProperties, this::incrementCounterRight);
         } else {
             var rightTrackerList = new ElementAwareList<FilteringTracker<LeftTuple_>>();
-            indexerLeft.forEach(indexProperties, counter -> updateCounterFromRight(rightTuple, counter, rightTrackerList));
+            indexerLeft.forEach(indexProperties, counter -> updateCounterFromRight(counter, rightTuple, rightTrackerList));
             rightTuple.setStore(inputStoreIndexRightTrackerList, rightTrackerList);
         }
     }
@@ -177,7 +177,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
             if (isFiltering) {
                 ElementAwareList<FilteringTracker<LeftTuple_>> rightTrackerList = updateRightTrackerList(rightTuple);
                 indexerLeft.forEach(oldIndexProperties,
-                        counter -> updateCounterFromRight(rightTuple, counter, rightTrackerList));
+                        counter -> updateCounterFromRight(counter, rightTuple, rightTrackerList));
             }
         } else {
             ElementAwareListEntry<UniTuple<Right_>> rightEntry = rightTuple.getStore(inputStoreIndexRightEntry);
