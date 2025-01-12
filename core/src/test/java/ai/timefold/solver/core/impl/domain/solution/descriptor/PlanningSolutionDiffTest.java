@@ -92,8 +92,8 @@ class PlanningSolutionDiffTest {
 
             @Test
             void hasHelpfulToString() {
-                assertThat(diff)
-                        .hasToString(
+                assertThat(diff.toString())
+                        .isEqualToIgnoringWhitespace(
                                 """
                                         Difference(s) between old planning solution (Old Solution) and new planning solution (New Solution):
 
@@ -155,8 +155,8 @@ class PlanningSolutionDiffTest {
 
             @Test
             void hasHelpfulToString() {
-                assertThat(diff)
-                        .hasToString(
+                assertThat(diff.toString())
+                        .isEqualToIgnoringWhitespace(
                                 """
                                         Difference(s) between old planning solution (Old Solution) and new planning solution (New Solution):
 
@@ -227,8 +227,8 @@ class PlanningSolutionDiffTest {
 
             @Test
             void hasHelpfulToString() {
-                assertThat(diff)
-                        .hasToString(
+                assertThat(diff.toString())
+                        .isEqualToIgnoringWhitespace(
                                 """
                                         Difference(s) between old planning solution (Old Solution) and new planning solution (New Solution):
 
@@ -290,8 +290,8 @@ class PlanningSolutionDiffTest {
 
             @Test
             void hasHelpfulToString() {
-                assertThat(diff)
-                        .hasToString(
+                assertThat(diff.toString())
+                        .isEqualToIgnoringWhitespace(
                                 """
                                         Difference(s) between old planning solution (Old Solution) and new planning solution (New Solution):
 
