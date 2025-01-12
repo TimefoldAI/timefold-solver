@@ -33,22 +33,6 @@ record DefaultPlanningEntityDiff<Solution_, Entity_>(PlanningSolutionDiff<Soluti
         this(solutionDiff, entity, entityMetaModel, new LinkedHashMap<>(entityMetaModel.variables().size()));
     }
 
-    @Override
-    public PlanningSolutionDiff<Solution_> solutionDiff() {
-        return solutionDiff;
-    }
-
-    @Override
-    public Entity_ entity() {
-        return entity;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public PlanningEntityMetaModel<Solution_, Entity_> entityMetaModel() {
-        return (PlanningEntityMetaModel<Solution_, Entity_>) solutionDiff.solutionMetaModel().entity(entity.getClass());
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     public <Value_> PlanningVariableDiff<Solution_, Entity_, Value_> variableDiff() {

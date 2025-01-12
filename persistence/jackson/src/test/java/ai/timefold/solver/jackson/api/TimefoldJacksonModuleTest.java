@@ -33,6 +33,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
@@ -45,9 +46,10 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
      */
     @Test
     void polymorphicScore() {
-        var objectMapper = new ObjectMapper();
-        objectMapper.enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
-        objectMapper.registerModule(TimefoldJacksonModule.createModule());
+        var objectMapper = JsonMapper.builder()
+                .addModule(TimefoldJacksonModule.createModule())
+                .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+                .build();
 
         var input = new TestTimefoldJacksonModuleWrapper();
         input.setBendableScore(BendableScore.of(new int[] { 1000, 200 }, new int[] { 34 }));

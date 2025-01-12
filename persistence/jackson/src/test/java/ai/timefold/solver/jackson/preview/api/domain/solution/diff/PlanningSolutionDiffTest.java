@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
 class PlanningSolutionDiffTest {
 
@@ -21,9 +21,10 @@ class PlanningSolutionDiffTest {
         var solutionDescriptor = TestdataEqualsByCodeSolution.buildSolutionDescriptor();
         var diff = solutionDescriptor.diff(oldSolution, newSolution);
 
-        var objectMapper = new ObjectMapper();
-        objectMapper.enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
-        objectMapper.registerModule(TimefoldJacksonModule.createModule());
+        var objectMapper = JsonMapper.builder()
+                .addModule(TimefoldJacksonModule.createModule())
+                .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+                .build();
 
         var serialized = objectMapper.writeValueAsString(diff);
         assertThat(serialized)
