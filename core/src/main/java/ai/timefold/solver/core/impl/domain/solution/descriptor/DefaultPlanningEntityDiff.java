@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
@@ -15,18 +16,21 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-final class DefaultPlanningEntityDiff<Solution_, Entity_> implements PlanningEntityDiff<Solution_, Entity_> {
-
-    private final PlanningSolutionDiff<Solution_> solutionDiff;
-    private final Entity_ entity;
-    private final PlanningEntityMetaModel<Solution_, Entity_> entityMetaModel;
-    private final Map<String, PlanningVariableDiff<Solution_, Entity_, ?>> variableDiffMap = new LinkedHashMap<>();
+record DefaultPlanningEntityDiff<Solution_, Entity_>(PlanningSolutionDiff<Solution_> solutionDiff, Entity_ entity,
+        PlanningEntityMetaModel<Solution_, Entity_> entityMetaModel,
+        Map<String, PlanningVariableDiff<Solution_, Entity_, ?>> variableDiffMap)
+        implements
+            PlanningEntityDiff<Solution_, Entity_> {
 
     @SuppressWarnings("unchecked")
     DefaultPlanningEntityDiff(PlanningSolutionDiff<Solution_> solutionDiff, Entity_ entity) {
-        this.solutionDiff = solutionDiff;
-        this.entity = entity;
-        this.entityMetaModel = solutionDiff.solutionMetaModel().entity((Class<Entity_>) entity.getClass());
+        this(solutionDiff, entity,
+                (PlanningEntityMetaModel<Solution_, Entity_>) solutionDiff.solutionMetaModel().entity(entity.getClass()));
+    }
+
+    DefaultPlanningEntityDiff(PlanningSolutionDiff<Solution_> solutionDiff, Entity_ entity,
+            PlanningEntityMetaModel<Solution_, Entity_> entityMetaModel) {
+        this(solutionDiff, entity, entityMetaModel, new LinkedHashMap<>(entityMetaModel.variables().size()));
     }
 
     @Override
@@ -39,9 +43,10 @@ final class DefaultPlanningEntityDiff<Solution_, Entity_> implements PlanningEnt
         return entity;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public PlanningEntityMetaModel<Solution_, Entity_> entityMetaModel() {
-        return entityMetaModel;
+        return (PlanningEntityMetaModel<Solution_, Entity_>) solutionDiff.solutionMetaModel().entity(entity.getClass());
     }
 
     @SuppressWarnings("unchecked")
@@ -75,15 +80,33 @@ final class DefaultPlanningEntityDiff<Solution_, Entity_> implements PlanningEnt
         return """
                 Difference between two solutions in variable(s) of planning entity (%s) of type (%s):
                 %s
-                """.formatted(entity, entityMetaModel.type(), entityDiffToString(this));
+                """.formatted(entity, entityMetaModel().type(), entityDiffToString(this));
     }
 
     private static String entityDiffToString(PlanningEntityDiff<?, ?> entityDiff) {
         var variableDiffs = entityDiff.variableDiffs();
+        if (variableDiffs.size() == 1) {
+            var diff = variableDiffs.iterator().next();
+            return "  %s: %s -> %s".formatted(diff.variableMetaModel().name(), diff.oldValue(), diff.newValue());
+        }
         return variableDiffs.stream()
-                .map(diff -> "  %s: %s -> %s".formatted(diff.variableMetaModel().name(), diff.oldValue(),
-                        diff.newValue()))
+                .map(diff -> "  %s (%s): %s -> %s".formatted(diff.variableMetaModel().name(),
+                        diff.variableMetaModel().isGenuine() ? "genuine" : "shadow", diff.oldValue(), diff.newValue()))
                 .collect(Collectors.joining(System.lineSeparator()));
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof DefaultPlanningEntityDiff<?, ?> that)) {
+            return false;
+        }
+        return Objects.equals(entityMetaModel, that.entityMetaModel)
+                && Objects.equals(solutionDiff, that.solutionDiff)
+                && Objects.equals(entity, that.entity);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(entityMetaModel, solutionDiff, entity);
+    }
 }

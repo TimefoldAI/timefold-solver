@@ -41,9 +41,9 @@ public interface PlanningSolutionDiff<Solution_> {
 
     /**
      * Returns the diffs of all entities that can be found in both the old and new solution,
-     * where at least one genuine variable of that entity changed.
+     * where at least one variable (genuine or shadow) of that entity changed.
      */
-    <Entity_> Set<PlanningEntityDiff<Solution_, Entity_>> entityDiffs();
+    Set<PlanningEntityDiff<Solution_, ?>> entityDiffs();
 
     /**
      * As defined by {@link #entityDiffs()}, but only for entities of the given class.

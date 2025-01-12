@@ -33,8 +33,8 @@ final class DefaultPlanningSolutionDiff<Solution_> implements PlanningSolutionDi
         this.solutionMetaModel = Objects.requireNonNull(solutionMetaModel);
         this.oldSolution = Objects.requireNonNull(oldSolution);
         this.newSolution = Objects.requireNonNull(newSolution);
-        this.removedEntities = Set.copyOf(Objects.requireNonNull(removedEntities));
-        this.addedEntities = Set.copyOf(Objects.requireNonNull(addedEntities));
+        this.removedEntities = Collections.unmodifiableSet(Objects.requireNonNull(removedEntities));
+        this.addedEntities = Collections.unmodifiableSet(Objects.requireNonNull(addedEntities));
     }
 
     @Override
@@ -51,18 +51,14 @@ final class DefaultPlanningSolutionDiff<Solution_> implements PlanningSolutionDi
                 .orElse(null);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <Entity_> Set<PlanningEntityDiff<Solution_, Entity_>> entityDiffs() {
+    public Set<PlanningEntityDiff<Solution_, ?>> entityDiffs() {
         if (entityDiffMap.isEmpty()) {
             return Collections.emptySet();
         }
-        if (entityDiffMap.size() != 1) {
-            throw new UnsupportedOperationException("""
-                    There is more than one entity class in the planning solution (%s).
-                    Use entityDiffs(Class) instead.""".formatted(entityDiffMap.keySet()));
-        }
-        return entityDiffs((Class<Entity_>) entityDiffMap.keySet().iterator().next());
+        return entityDiffMap.values().stream()
+                .flatMap(Set::stream)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -102,13 +98,23 @@ final class DefaultPlanningSolutionDiff<Solution_> implements PlanningSolutionDi
 
     @Override
     public String toString() {
-        var removedEntityString = collectionToString(removedEntities);
-        var addedEntityString = collectionToString(addedEntities);
+        return toString(TO_STRING_ITEM_LIMIT);
+    }
+
+    /**
+     * Like {@link #toString()}, but with a configurable limit on the number of items listed.
+     * 
+     * @param limit Use Integer.MAX_VALUE to list all items.
+     * @return A string representation of the diff.
+     */
+    String toString(int limit) {
+        var removedEntityString = collectionToString(removedEntities, limit);
+        var addedEntityString = collectionToString(addedEntities, limit);
         var entityDiffStringList = entityDiffMap.values().stream()
                 .flatMap(Set::stream)
                 .map(DefaultPlanningSolutionDiff::entityDiffToString)
                 .toList();
-        var entityDiffString = collectionToString(entityDiffStringList);
+        var entityDiffString = collectionToString(entityDiffStringList, limit);
         return """
                 Difference(s) between old planning solution (%s) and new planning solution (%s):
 
@@ -123,35 +129,47 @@ final class DefaultPlanningSolutionDiff<Solution_> implements PlanningSolutionDi
                 """.formatted(oldSolution, newSolution, removedEntityString, addedEntityString, entityDiffString);
     }
 
-    private static String collectionToString(Collection<?> entitySet) {
+    private static String collectionToString(Collection<?> entitySet, int limit) {
         if (entitySet.isEmpty()) {
             return "  (None.)";
         }
         var addedEntityString = entitySet.stream()
-                .limit(TO_STRING_ITEM_LIMIT)
+                .limit(limit)
                 .map(s -> "  " + s.toString())
                 .collect(Collectors.joining(System.lineSeparator()));
-        if (entitySet.size() > TO_STRING_ITEM_LIMIT) {
+        if (entitySet.size() > limit) {
             addedEntityString += System.lineSeparator() + "  ...";
         }
         return addedEntityString;
     }
 
     static String entityDiffToString(PlanningEntityDiff<?, ?> entityDiff) {
-        var entityClass = entityDiff.entityMetaModel().type().getSimpleName();
         var entity = entityDiff.entity();
         var variableDiffs = entityDiff.variableDiffs();
-        if (variableDiffs.size() == 1) {
+        if (entityDiff.entityMetaModel().variables().size() == 1) {
             var variableDiff = variableDiffs.iterator().next();
-            return "%s %s (%s -> %s)".formatted(entityClass, entity, variableDiff.oldValue(), variableDiff.newValue());
+            return "%s (%s -> %s)".formatted(entity, variableDiff.oldValue(), variableDiff.newValue());
         }
         var variableDiffString = variableDiffs.stream()
-                .map(diff -> "    %s: %s -> %s".formatted(diff.variableMetaModel().name(), diff.oldValue(),
-                        diff.newValue()))
+                .map(diff -> "    %s (%s): %s -> %s".formatted(diff.variableMetaModel().name(),
+                        diff.variableMetaModel().isGenuine() ? "genuine" : "shadow", diff.oldValue(), diff.newValue()))
                 .collect(Collectors.joining(System.lineSeparator()));
         return """
-                %s %s:
-                %s""".formatted(entityClass, entity, variableDiffString);
+                %s:
+                %s""".formatted(entity, variableDiffString);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof DefaultPlanningSolutionDiff<?> that)) {
+            return false;
+        }
+        return Objects.equals(solutionMetaModel, that.solutionMetaModel) && Objects.equals(oldSolution, that.oldSolution)
+                && Objects.equals(newSolution, that.newSolution);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(solutionMetaModel, oldSolution, newSolution);
+    }
 }

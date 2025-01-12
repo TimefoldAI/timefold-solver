@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.preview.api.domain.solution.diff;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -27,9 +27,9 @@ public interface PlanningVariableDiff<Solution_, Entity_, Value_> {
     PlanningEntityDiff<Solution_, Entity_> entityDiff();
 
     /**
-     * Describes the genuine variable that this diff is of.
+     * Describes the variable that this diff is of.
      */
-    GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel();
+    VariableMetaModel<Solution_, Entity_, Value_> variableMetaModel();
 
     /**
      * The entity that this diff is about.

@@ -290,6 +290,7 @@ and registering it with Jackson's `ObjectMapper`.
 With large datasets, you may choose to use `ScoreAnalysis` without justifications, while still maintaining the count of constraint matches.
 In that case, use `ScoreAnalysisFetchPolicy.FETCH_MATCH_COUNT` instead of the default `ScoreAnalysisFetchPolicy.FETCH_ALL` when calling `SolutionManager.analyze(...)`.
 
+
 [#solutionDiff]
 == Solution Diff: What changed between now and then?
 
@@ -320,16 +321,17 @@ PlanningSolutionDiff<VehicleRoutePlan> solutionDiff = solutionManager.diff(oldSo
 
 The `PlanningSolutionDiff` instance contains the following information:
 
-* A full list of entities whose genuine planning variables changed between the two solutions.
+* A full list of entities whose planning variables (genuine or shadow) changed between the two solutions.
 Each entity is represented by a `PlanningEntityDiff` instance,
 which contains the entity itself,
-as well as the old and new values of its genuine planning variables.
+as well as the old and new values of the changed variables.
 * Set of planning entities not present in the new solution (removed entities).
 * Set of planning entities not present in the old solution (added entities).
 * The `oldSolution` and `newSolution` planning solutions.
 
 It also has a useful `toString()` for a quick overview of the changes.
 Do not attempt to parse this string or expose it in services, its format is not stable and is subject to change.
+
 
 [#indictmentHeatMap]
 == Heat map: Visualize the hot planning entities

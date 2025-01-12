@@ -16,6 +16,7 @@ import ai.timefold.solver.core.impl.testdata.domain.equals.TestdataEqualsByCodeS
 import ai.timefold.solver.core.impl.testdata.domain.equals.list.TestdataEqualsByCodeListEasyScoreCalculator;
 import ai.timefold.solver.core.impl.testdata.domain.equals.list.TestdataEqualsByCodeListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.equals.list.TestdataEqualsByCodeListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.equals.list.TestdataEqualsByCodeListValue;
 import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningSolutionDiff;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -166,11 +167,11 @@ class PlanningSolutionDiffTest {
                                           Generated Entity 0
 
                                         - Entities changed between the solutions:
-                                          TestdataEqualsByCodeEntity Generated Entity 4 (Generated Value 0 -> Generated Value 1)
-                                          TestdataEqualsByCodeEntity Generated Entity 5 (Generated Value 1 -> Generated Value 0)
-                                          TestdataEqualsByCodeEntity Generated Entity 6 (Generated Value 0 -> Generated Value 1)
-                                          TestdataEqualsByCodeEntity Generated Entity 7 (Generated Value 1 -> Generated Value 0)
-                                          TestdataEqualsByCodeEntity Generated Entity 8 (Generated Value 0 -> Generated Value 1)
+                                          Generated Entity 1 (Generated Value 1 -> Generated Value 0)
+                                          Generated Entity 2 (Generated Value 0 -> Generated Value 1)
+                                          Generated Entity 3 (Generated Value 1 -> Generated Value 0)
+                                          Generated Entity 4 (Generated Value 0 -> Generated Value 1)
+                                          Generated Entity 5 (Generated Value 1 -> Generated Value 0)
                                           ...
                                         """);
             }
@@ -186,7 +187,7 @@ class PlanningSolutionDiffTest {
                 SolutionManager.create(SolverFactory.create(new SolverConfig()
                         .withPreviewFeature(PreviewFeature.PLANNING_SOLUTION_DIFF)
                         .withSolutionClass(TestdataEqualsByCodeListSolution.class)
-                        .withEntityClasses(TestdataEqualsByCodeListEntity.class)
+                        .withEntityClasses(TestdataEqualsByCodeListEntity.class, TestdataEqualsByCodeListValue.class)
                         .withEasyScoreCalculatorClass(TestdataEqualsByCodeListEasyScoreCalculator.class)));
 
         @Nested
@@ -248,35 +249,42 @@ class PlanningSolutionDiffTest {
         class ListVariablePlanningSolutionDiffDifferentEntitiesTest {
 
             private final TestdataEqualsByCodeListSolution oldSolution =
-                    TestdataEqualsByCodeListSolution.generateSolution("Old Solution", 3, 10)
-                            .initialize();
-            private final TestdataEqualsByCodeListEntity oldEntityRemoved = oldSolution.getEntityList().remove(0);
+                    TestdataEqualsByCodeListSolution.generateSolution("Old Solution", 3, 10);
+            private final TestdataEqualsByCodeListEntity oldEntityRemoved = oldSolution.getEntityList().remove(1);
+            private final TestdataEqualsByCodeListValue oldValueRemoved = oldSolution.getValueList().remove(0);
             private final TestdataEqualsByCodeListSolution newSolution =
-                    TestdataEqualsByCodeListSolution.generateSolution("New Solution", 4, 10)
-                            .initialize();
+                    TestdataEqualsByCodeListSolution.generateSolution("New Solution", 3, 10);
             private final TestdataEqualsByCodeListEntity newEntityRemoved = newSolution.getEntityList().remove(9);
-            private PlanningSolutionDiff<TestdataEqualsByCodeListSolution> diff =
-                    solutionManager.diff(oldSolution, newSolution);
+            private final TestdataEqualsByCodeListValue newValueRemoved = newSolution.getValueList().remove(2);
+            private PlanningSolutionDiff<TestdataEqualsByCodeListSolution> diff;
+
+            @BeforeEach
+            void beforeEach() {
+                oldSolution.initialize();
+                newSolution.initialize();
+                diff = solutionManager.diff(oldSolution, newSolution);
+            }
 
             @Test
             void hasFieldsSet() {
                 assertSoftly(softly -> {
                     softly.assertThat(diff.solutionMetaModel()).isNotNull();
-                    softly.assertThat(diff.addedEntities()).containsExactly(oldEntityRemoved);
-                    softly.assertThat(diff.removedEntities()).containsExactly(newEntityRemoved);
+                    softly.assertThat(diff.addedEntities()).containsOnly(oldEntityRemoved, oldValueRemoved);
+                    softly.assertThat(diff.removedEntities()).containsOnly(newEntityRemoved, newValueRemoved);
                     softly.assertThat(diff.oldSolution()).isSameAs(oldSolution);
                     softly.assertThat(diff.newSolution()).isSameAs(newSolution);
                 });
             }
 
             @Test
-            void providesEntityDiffs() { // 8 entities are different.
+            void providesEntityDiffs() {
                 assertSoftly(softly -> {
                     softly.assertThat(diff.entityDiff(oldEntityRemoved)).isNull();
                     softly.assertThat(diff.entityDiff(newEntityRemoved)).isNull();
-                    softly.assertThat(diff.entityDiffs()).hasSize(1);
+                    softly.assertThat(diff.entityDiffs()).hasSize(3);
                     softly.assertThat(diff.entityDiffs(TestdataEqualsByCodeEntity.class)).isEmpty();
-                    softly.assertThat(diff.entityDiffs(TestdataEqualsByCodeListEntity.class)).hasSize(1);
+                    softly.assertThat(diff.entityDiffs(TestdataEqualsByCodeListEntity.class)).hasSize(2);
+                    softly.assertThat(diff.entityDiffs(TestdataEqualsByCodeListValue.class)).hasSize(1);
                 });
             }
 
@@ -289,12 +297,17 @@ class PlanningSolutionDiffTest {
 
                                         - Old solution entities not present in new solution:
                                           Generated Entity 9
+                                          Generated Value 2
 
                                         - New solution entities not present in old solution:
-                                          Generated Entity 0
+                                          Generated Entity 1
+                                          Generated Value 0
 
                                         - Entities changed between the solutions:
-                                          TestdataEqualsByCodeListEntity Generated Entity 3 ([] -> [Generated Value 3])
+                                          Generated Entity 0 ([Generated Value 1] -> [Generated Value 0])
+                                          Generated Entity 2 ([Generated Value 2] -> [])
+                                          Generated Value 1:
+                                            entity (shadow): Generated Entity 0 -> Generated Entity 1
                                         """);
             }
         }

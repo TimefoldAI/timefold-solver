@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
@@ -75,7 +77,6 @@ import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.impl.util.MutableLong;
 import ai.timefold.solver.core.impl.util.MutablePair;
-import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningSolutionDiff;
 
@@ -1269,21 +1270,16 @@ public class SolutionDescriptor<Solution_> {
     }
 
     public PlanningSolutionDiff<Solution_> diff(Solution_ oldSolution, Solution_ newSolution) {
-        var oldEntities = getEntityDescriptors().stream()
-                .map(descriptor -> descriptor.extractEntities(oldSolution))
-                .flatMap(Collection::stream)
-                .collect(Collectors.groupingBy(Object::getClass, Collectors.toSet()));
-        var newEntities = getEntityDescriptors().stream()
-                .map(descriptor -> descriptor.extractEntities(newSolution))
-                .flatMap(Collection::stream)
-                .collect(Collectors.groupingBy(Object::getClass, Collectors.toSet()));
+        // Genuine entities first, then sort by class name.
+        var oldEntities = sortEntitiesForDiff(oldSolution);
+        var newEntities = sortEntitiesForDiff(newSolution);
 
-        var removedOldEntities = new LinkedHashSet<>();
-        var oldToNewEntities = new LinkedHashMap<>();
+        var removedOldEntities = new LinkedHashSet<>(oldEntities.size());
+        var oldToNewEntities = new LinkedHashMap<>(newEntities.size());
         for (var entry : oldEntities.entrySet()) {
-            var entityClass = entry.getKey();
+            var entityClassName = entry.getKey();
             for (var oldEntity : entry.getValue()) {
-                var newEntity = newEntities.getOrDefault(entityClass, Collections.emptySet())
+                var newEntity = newEntities.getOrDefault(entityClassName, Collections.emptySet())
                         .stream()
                         .filter(e -> Objects.equals(e, oldEntity))
                         .findFirst()
@@ -1296,16 +1292,15 @@ public class SolutionDescriptor<Solution_> {
             }
         }
 
-        var addedNewEntities = new LinkedHashSet<>();
-        for (var entry : newEntities.entrySet()) {
-            for (var newEntity : entry.getValue()) {
-                var noOldEqualsNew = !oldToNewEntities.containsValue(newEntity);
-                if (noOldEqualsNew) {
-                    addedNewEntities.add(newEntity);
-                }
-            }
-        }
+        var addedNewEntities = newEntities.values().stream()
+                .flatMap(Collection::stream)
+                .filter(newEntity -> !oldToNewEntities.containsValue(newEntity))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
 
+        // Genuine variables first, then sort by ordinal.
+        var variableDescriptorComparator = Comparator.<VariableDescriptor<Solution_>, String> comparing(
+                variableDescriptor -> variableDescriptor instanceof GenuineVariableDescriptor<Solution_> ? "0" : "1")
+                .thenComparingInt(VariableDescriptor::getOrdinal);
         var solutionDiff = new DefaultPlanningSolutionDiff<>(getMetaModel(), oldSolution, newSolution, removedOldEntities,
                 addedNewEntities);
         for (var entry : oldToNewEntities.entrySet()) {
@@ -1313,21 +1308,32 @@ public class SolutionDescriptor<Solution_> {
             var newEntity = entry.getValue();
             var entityDescriptor = findEntityDescriptorOrFail(oldEntity.getClass());
             var entityDiff = new DefaultPlanningEntityDiff<>(solutionDiff, entry.getKey());
-            for (var variableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
-                var oldValue = variableDescriptor.getValue(oldEntity);
-                var newValue = variableDescriptor.getValue(newEntity);
-                if (!Objects.equals(oldValue, newValue)) {
-                    var variableMetaModel = (GenuineVariableMetaModel<Solution_, Object, Object>) entityDiff.entityMetaModel()
-                            .variable(variableDescriptor.getVariableName());
-                    var variableDiff = new DefaultPlanningVariableDiff<>(entityDiff, variableMetaModel, oldValue, newValue);
-                    entityDiff.addVariableDiff(variableDiff);
-                }
-            }
+            entityDescriptor.getVariableDescriptorMap().values().stream()
+                    .sorted(variableDescriptorComparator)
+                    .flatMap(variableDescriptor -> {
+                        var oldValue = variableDescriptor.getValue(oldEntity);
+                        var newValue = variableDescriptor.getValue(newEntity);
+                        if (Objects.equals(oldValue, newValue)) {
+                            return Stream.empty();
+                        }
+                        var variableMetaModel = entityDiff.entityMetaModel().variable(variableDescriptor.getVariableName());
+                        var variableDiff = new DefaultPlanningVariableDiff<>(entityDiff, variableMetaModel, oldValue, newValue);
+                        return Stream.of(variableDiff);
+                    }).forEach(entityDiff::addVariableDiff);
             if (!entityDiff.variableDiffs().isEmpty()) {
                 solutionDiff.addEntityDiff(entityDiff);
             }
         }
         return solutionDiff;
+    }
+
+    private SortedMap<String, Set<Object>> sortEntitiesForDiff(Solution_ solution) {
+        return getEntityDescriptors().stream()
+                .map(descriptor -> descriptor.extractEntities(solution))
+                .flatMap(Collection::stream)
+                // TreeMap and LinkedHashSet for fully reproducible ordering of entities and variables.
+                .collect(Collectors.groupingBy(s -> s.getClass().getCanonicalName(), TreeMap::new,
+                        Collectors.toCollection(LinkedHashSet::new)));
     }
 
     @Override
