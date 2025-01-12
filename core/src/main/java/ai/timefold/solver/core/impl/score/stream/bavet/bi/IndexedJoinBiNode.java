@@ -1,26 +1,29 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.bi;
 
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractIndexedJoinNode;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexProperties;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.UniMapping;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.UniTuple;
 
 final class IndexedJoinBiNode<A, B> extends AbstractIndexedJoinNode<UniTuple<A>, B, BiTuple<A, B>> {
 
-    private final UniMapping<A> mappingA;
+    private final Function<A, IndexProperties> mappingA;
     private final BiPredicate<A, B> filtering;
     private final int outputStoreSize;
 
-    public IndexedJoinBiNode(UniMapping<A> mappingA, UniMapping<B> mappingB,
+    public IndexedJoinBiNode(Function<A, IndexProperties> mappingA, Function<B, IndexProperties> mappingB,
             int inputStoreIndexA, int inputStoreIndexEntryA, int inputStoreIndexOutTupleListA,
             int inputStoreIndexB, int inputStoreIndexEntryB, int inputStoreIndexOutTupleListB,
             TupleLifecycle<BiTuple<A, B>> nextNodesTupleLifecycle, BiPredicate<A, B> filtering,
-            int outputStoreSize, int outputStoreIndexOutEntryA, int outputStoreIndexOutEntryB,
-            Indexer<UniTuple<A>> indexerA, Indexer<UniTuple<B>> indexerB) {
+            int outputStoreSize,
+            int outputStoreIndexOutEntryA, int outputStoreIndexOutEntryB,
+            Indexer<UniTuple<A>> indexerA,
+            Indexer<UniTuple<B>> indexerB) {
         super(mappingB,
                 inputStoreIndexA, inputStoreIndexEntryA, inputStoreIndexOutTupleListA,
                 inputStoreIndexB, inputStoreIndexEntryB, inputStoreIndexOutTupleListB,
@@ -33,7 +36,7 @@ final class IndexedJoinBiNode<A, B> extends AbstractIndexedJoinNode<UniTuple<A>,
     }
 
     @Override
-    protected Object createIndexPropertiesLeft(UniTuple<A> leftTuple) {
+    protected IndexProperties createIndexPropertiesLeft(UniTuple<A> leftTuple) {
         return mappingA.apply(leftTuple.factA);
     }
 

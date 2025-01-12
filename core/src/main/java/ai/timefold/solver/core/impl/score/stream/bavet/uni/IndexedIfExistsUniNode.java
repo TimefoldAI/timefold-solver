@@ -1,21 +1,22 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.uni;
 
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractIndexedIfExistsNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ExistsCounter;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexProperties;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.UniMapping;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.UniTuple;
 
 final class IndexedIfExistsUniNode<A, B> extends AbstractIndexedIfExistsNode<UniTuple<A>, B> {
 
-    private final UniMapping<A> mappingA;
+    private final Function<A, IndexProperties> mappingA;
     private final BiPredicate<A, B> filtering;
 
     public IndexedIfExistsUniNode(boolean shouldExist,
-            UniMapping<A> mappingA, UniMapping<B> mappingB,
+            Function<A, IndexProperties> mappingA, Function<B, IndexProperties> mappingB,
             int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry, int inputStoreIndexRightProperties,
             int inputStoreIndexRightEntry,
             TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
@@ -27,7 +28,7 @@ final class IndexedIfExistsUniNode<A, B> extends AbstractIndexedIfExistsNode<Uni
     }
 
     public IndexedIfExistsUniNode(boolean shouldExist,
-            UniMapping<A> mappingA, UniMapping<B> mappingB,
+            Function<A, IndexProperties> mappingA, Function<B, IndexProperties> mappingB,
             int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList,
             int inputStoreIndexRightProperties, int inputStoreIndexRightEntry, int inputStoreIndexRightTrackerList,
             TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
@@ -42,7 +43,7 @@ final class IndexedIfExistsUniNode<A, B> extends AbstractIndexedIfExistsNode<Uni
     }
 
     @Override
-    protected Object createIndexProperties(UniTuple<A> leftTuple) {
+    protected IndexProperties createIndexProperties(UniTuple<A> leftTuple) {
         return mappingA.apply(leftTuple.factA);
     }
 

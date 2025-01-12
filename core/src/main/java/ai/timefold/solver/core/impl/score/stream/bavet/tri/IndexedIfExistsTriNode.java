@@ -1,22 +1,24 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.tri;
 
+import java.util.function.Function;
+
 import ai.timefold.solver.core.api.function.QuadPredicate;
+import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractIndexedIfExistsNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ExistsCounter;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexProperties;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.TriMapping;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.UniMapping;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.UniTuple;
 
 final class IndexedIfExistsTriNode<A, B, C, D> extends AbstractIndexedIfExistsNode<TriTuple<A, B, C>, D> {
 
-    private final TriMapping<A, B, C> mappingABC;
+    private final TriFunction<A, B, C, IndexProperties> mappingABC;
     private final QuadPredicate<A, B, C, D> filtering;
 
     public IndexedIfExistsTriNode(boolean shouldExist,
-            TriMapping<A, B, C> mappingABC, UniMapping<D> mappingD,
+            TriFunction<A, B, C, IndexProperties> mappingABC, Function<D, IndexProperties> mappingD,
             int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry, int inputStoreIndexRightProperties,
             int inputStoreIndexRightEntry,
             TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle,
@@ -29,7 +31,7 @@ final class IndexedIfExistsTriNode<A, B, C, D> extends AbstractIndexedIfExistsNo
     }
 
     public IndexedIfExistsTriNode(boolean shouldExist,
-            TriMapping<A, B, C> mappingABC, UniMapping<D> mappingD,
+            TriFunction<A, B, C, IndexProperties> mappingABC, Function<D, IndexProperties> mappingD,
             int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList,
             int inputStoreIndexRightProperties, int inputStoreIndexRightEntry, int inputStoreIndexRightTrackerList,
             TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle,
@@ -45,7 +47,7 @@ final class IndexedIfExistsTriNode<A, B, C, D> extends AbstractIndexedIfExistsNo
     }
 
     @Override
-    protected Object createIndexProperties(TriTuple<A, B, C> leftTuple) {
+    protected IndexProperties createIndexProperties(TriTuple<A, B, C> leftTuple) {
         return mappingABC.apply(leftTuple.factA, leftTuple.factB, leftTuple.factC);
     }
 

@@ -40,16 +40,19 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends AbstractTuple
             throw new IllegalStateException("Impossible state: the input for the tuple (" + leftTuple
                     + ") was already added in the tupleStore.");
         }
-        var leftEntry = leftTupleList.add(leftTuple);
+        ElementAwareListEntry<LeftTuple_> leftEntry = leftTupleList.add(leftTuple);
         leftTuple.setStore(inputStoreIndexLeftEntry, leftEntry);
-        var outTupleListLeft = new ElementAwareList<OutTuple_>();
+        ElementAwareList<OutTuple_> outTupleListLeft = new ElementAwareList<>();
         leftTuple.setStore(inputStoreIndexLeftOutTupleList, outTupleListLeft);
-        rightTupleList.forEach(leftTuple, (rightTuple, leftTuple_) -> insertOutTupleFiltered(leftTuple_, rightTuple));
+        for (UniTuple<Right_> tuple : rightTupleList) {
+            insertOutTupleFiltered(leftTuple, tuple);
+        }
     }
 
     @Override
     public final void updateLeft(LeftTuple_ leftTuple) {
-        if (leftTuple.getStore(inputStoreIndexLeftEntry) == null) {
+        ElementAwareListEntry<LeftTuple_> leftEntry = leftTuple.getStore(inputStoreIndexLeftEntry);
+        if (leftEntry == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             insertLeft(leftTuple);
             return;
@@ -75,16 +78,19 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends AbstractTuple
             throw new IllegalStateException("Impossible state: the input for the tuple (" + rightTuple
                     + ") was already added in the tupleStore.");
         }
-        var rightEntry = rightTupleList.add(rightTuple);
+        ElementAwareListEntry<UniTuple<Right_>> rightEntry = rightTupleList.add(rightTuple);
         rightTuple.setStore(inputStoreIndexRightEntry, rightEntry);
-        var outTupleListRight = new ElementAwareList<OutTuple_>();
+        ElementAwareList<OutTuple_> outTupleListRight = new ElementAwareList<>();
         rightTuple.setStore(inputStoreIndexRightOutTupleList, outTupleListRight);
-        leftTupleList.forEach(rightTuple, this::insertOutTupleFiltered);
+        for (LeftTuple_ tuple : leftTupleList) {
+            insertOutTupleFiltered(tuple, rightTuple);
+        }
     }
 
     @Override
     public final void updateRight(UniTuple<Right_> rightTuple) {
-        if (rightTuple.getStore(inputStoreIndexRightEntry) == null) {
+        ElementAwareListEntry<UniTuple<Right_>> rightEntry = rightTuple.getStore(inputStoreIndexRightEntry);
+        if (rightEntry == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             insertRight(rightTuple);
             return;
