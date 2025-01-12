@@ -16,12 +16,14 @@ import ai.timefold.solver.core.api.solver.SolutionUpdatePolicy;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.score.DefaultScoreExplanation;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.util.MutableReference;
+import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningSolutionDiff;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -122,6 +124,13 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
                 false);
         assertFreshScore(solution, currentScore, analysis.score(), solutionUpdatePolicy);
         return analysis;
+    }
+
+    @Override
+    public @NonNull PlanningSolutionDiff<Solution_> diff(@NonNull Solution_ oldSolution, @NonNull Solution_ newSolution) {
+        solverFactory.ensurePreviewFeature(PreviewFeature.PLANNING_SOLUTION_DIFF);
+        return solverFactory.getSolutionDescriptor()
+                .diff(oldSolution, newSolution);
     }
 
     @Override

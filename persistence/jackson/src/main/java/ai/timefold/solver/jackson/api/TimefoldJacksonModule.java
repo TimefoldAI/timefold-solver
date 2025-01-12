@@ -24,6 +24,9 @@ import ai.timefold.solver.core.api.solver.RecommendedAssignment;
 import ai.timefold.solver.core.api.solver.RecommendedFit;
 import ai.timefold.solver.core.impl.domain.solution.DefaultConstraintWeightOverrides;
 import ai.timefold.solver.core.impl.solver.DefaultRecommendedAssignment;
+import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningEntityDiff;
+import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningSolutionDiff;
+import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningVariableDiff;
 import ai.timefold.solver.jackson.api.domain.solution.ConstraintWeightOverridesSerializer;
 import ai.timefold.solver.jackson.api.score.PolymorphicScoreJacksonDeserializer;
 import ai.timefold.solver.jackson.api.score.PolymorphicScoreJacksonSerializer;
@@ -65,6 +68,9 @@ import ai.timefold.solver.jackson.api.score.stream.common.SequenceJacksonSeriali
 import ai.timefold.solver.jackson.api.solver.RecommendedAssignmentJacksonSerializer;
 import ai.timefold.solver.jackson.api.solver.RecommendedFitJacksonSerializer;
 import ai.timefold.solver.jackson.impl.domain.solution.JacksonSolutionFileIO;
+import ai.timefold.solver.jackson.preview.api.domain.solution.diff.PlanningEntityDiffJacksonSerializer;
+import ai.timefold.solver.jackson.preview.api.domain.solution.diff.PlanningSolutionDiffJacksonSerializer;
+import ai.timefold.solver.jackson.preview.api.domain.solution.diff.PlanningVariableDiffJacksonSerializer;
 
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.Module;
@@ -147,6 +153,11 @@ public class TimefoldJacksonModule extends SimpleModule {
         addDeserializer(SequenceChain.class, new SequenceChainJacksonDeserializer<>());
         addSerializer(LoadBalance.class, new LoadBalanceJacksonSerializer());
         addDeserializer(LoadBalance.class, new LoadBalanceJacksonDeserializer<>());
+
+        // Solution diff
+        addSerializer(PlanningSolutionDiff.class, new PlanningSolutionDiffJacksonSerializer());
+        addSerializer(PlanningEntityDiff.class, new PlanningEntityDiffJacksonSerializer());
+        addSerializer(PlanningVariableDiff.class, new PlanningVariableDiffJacksonSerializer());
     }
 
 }

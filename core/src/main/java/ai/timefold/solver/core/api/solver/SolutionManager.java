@@ -16,6 +16,7 @@ import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.impl.solver.DefaultSolutionManager;
+import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningSolutionDiff;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -135,6 +136,33 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
     @NonNull
     ScoreAnalysis<Score_> analyze(@NonNull Solution_ solution, @NonNull ScoreAnalysisFetchPolicy fetchPolicy,
             @NonNull SolutionUpdatePolicy solutionUpdatePolicy);
+
+    /**
+     * Compute a difference between two solutions.
+     * The difference will contain information about which entities's variables have changed,
+     * which entities were added and which were removed.
+     * <p>
+     * Two instances of a planning entity or a variable value are considered equal if they {@link Object#equals(Object) equal).
+     * Instances of different classes are never considered equal, even if they share a common superclass.
+     * For the correct operation of this method, make sure that
+     * {@link Object#equals(Object) equals} and {@link Object#equals(Object) hashCode} honor their contract
+     * and are mutually consistent.
+     * <p>
+     * <strong>This method is only offered as a preview feature.</strong>
+     * There are no guarantees for backward compatibility;
+     * its signature or the types it operates on and returns may change or be removed without prior notice,
+     * although we will strive to avoid this as much as possible.
+     * 
+     * @param oldSolution The solution to use as a base for comparison.
+     * @param newSolution The solution to compare against the base.
+     * @return A diff object containing information about the differences between the two solutions.
+     *         Entities from the old solution that are not present in the new solution will be marked as removed.
+     *         Entities from the new solution that are not present in the old solution will be marked as added.
+     *         Entities that are present in both solutions will be marked as changed if their variables differ,
+     *         according to the equality rules described above.
+     */
+    @NonNull
+    PlanningSolutionDiff<Solution_> diff(@NonNull Solution_ oldSolution, @NonNull Solution_ newSolution);
 
     /**
      * As defined by {@link #recommendAssignment(Object, Object, Function, ScoreAnalysisFetchPolicy)},
@@ -268,4 +296,5 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
     <EntityOrElement_, Proposition_> List<RecommendedFit<Proposition_, Score_>> recommendFit(Solution_ solution,
             EntityOrElement_ fittedEntityOrElement, Function<EntityOrElement_, Proposition_> propositionFunction,
             ScoreAnalysisFetchPolicy fetchPolicy);
+
 }
