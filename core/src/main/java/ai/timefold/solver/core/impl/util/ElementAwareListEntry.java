@@ -2,11 +2,13 @@ package ai.timefold.solver.core.impl.util;
 
 /**
  * An entry of {@link ElementAwareList}
+ *
+ * @param <T> The element type. Often a tuple.
  */
 public final class ElementAwareListEntry<T> {
 
-    ElementAwareList<T> list;
-    T element;
+    private ElementAwareList<T> list;
+    private final T element;
     ElementAwareListEntry<T> previous;
     ElementAwareListEntry<T> next;
 
@@ -27,9 +29,10 @@ public final class ElementAwareListEntry<T> {
 
     public void remove() {
         if (list == null) {
-            throw new IllegalStateException("The entry was already removed.");
+            throw new IllegalStateException("The element (" + element + ") was already removed.");
         }
         list.remove(this);
+        list = null;
     }
 
     public T getElement() {

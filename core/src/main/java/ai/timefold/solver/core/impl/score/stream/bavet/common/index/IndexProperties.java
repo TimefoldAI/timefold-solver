@@ -5,12 +5,9 @@ package ai.timefold.solver.core.impl.score.stream.bavet.common.index;
  * <p>
  * Instances are shallow immutable and implement {@link Object#equals(Object)} and {@link Object#hashCode()}.
  * If two instances contain elements which are equal, they must be equal.
- * <p>
- * There is no SingleIndexProperties - that is handled equally well just by passing the key directly.
- * {@link NullIndexProperties} is the exception to that.
  */
 public sealed interface IndexProperties
-        permits ManyIndexProperties, NoneIndexProperties, NullIndexProperties, ThreeIndexProperties, TwoIndexProperties {
+        permits ManyIndexProperties, NoneIndexProperties, SingleIndexProperties, ThreeIndexProperties, TwoIndexProperties {
 
     /**
      * Retrieves index property at a given position.
