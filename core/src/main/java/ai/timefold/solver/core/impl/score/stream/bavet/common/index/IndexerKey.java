@@ -7,16 +7,13 @@ import ai.timefold.solver.core.impl.util.Triple;
 
 /**
  * Often replaced by a specialization such as {@link Pair}, {@link Triple}, ...
- * Overrides {@link Object#equals(Object)} and {@link Object#hashCode()} as it references external object.
+ * Overrides {@link Object#equals(Object)} and {@link Object#hashCode()} as it references an external object.
  */
 record IndexerKey(Object... properties) {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof IndexerKey other) {
-            return Arrays.deepEquals(properties, other.properties);
-        }
-        return false;
+        return o instanceof IndexerKey other && Arrays.deepEquals(properties, other.properties);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.common.index;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.function.BiFunction;
@@ -95,6 +96,7 @@ public class IndexerFactory<Right_> {
         return joiner.getJoinerCount() > 0;
     }
 
+    @SuppressWarnings("unchecked")
     public <A> UniMapping<A> buildUniLeftMapping() {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultBiJoiner<A, Right_>) joiner;
@@ -135,46 +137,54 @@ public class IndexerFactory<Right_> {
                                 var mapping = castJoiner.getLeftMapping(i);
                                 mappings[i] = mapping;
                             }
-                            yield a -> {
-                                int mappingCount = mappings.length;
-                                var result = new Object[mappingCount];
-                                for (int i = 0; i < mappingCount; i++) {
-                                    result[i] = mappings[i].apply(a);
-                                }
-                                return new IndexerKey(result);
-                            };
+                            yield toKeyFunction(mappings);
                         }
                     };
                     keyFunctionList.add(keyFunction);
                     startIndexInclusive = endIndexExclusive;
                 }
-                int keyFunctionCount = keyFunctionList.size();
-                yield switch (keyFunctionCount) {
-                    case 1 -> wrap(keyFunctionList.get(0));
-                    case 2 -> {
-                        var keyFunction1 = keyFunctionList.get(0);
-                        var keyFunction2 = keyFunctionList.get(1);
-                        yield a -> new TwoIndexProperties<>(keyFunction1.apply(a), keyFunction2.apply(a));
-                    }
-                    case 3 -> {
-                        var keyFunction1 = keyFunctionList.get(0);
-                        var keyFunction2 = keyFunctionList.get(1);
-                        var keyFunction3 = keyFunctionList.get(2);
-                        yield a -> new ThreeIndexProperties<>(keyFunction1.apply(a), keyFunction2.apply(a),
-                                keyFunction3.apply(a));
-                    }
-                    default -> a -> {
-                        Object[] arr = new Object[keyFunctionCount];
-                        for (int i = 0; i < keyFunctionCount; i++) {
-                            arr[i] = keyFunctionList.get(i).apply(a);
-                        }
-                        return new ManyIndexProperties(arr);
-                    };
-                };
+                yield toUniMapping(keyFunctionList);
             }
         };
     }
 
+    private static <A> Function<A, Object> toKeyFunction(Function<A, Object>[] mappings) {
+        return a -> {
+            int mappingCount = mappings.length;
+            var result = new Object[mappingCount];
+            for (int i = 0; i < mappingCount; i++) {
+                result[i] = mappings[i].apply(a);
+            }
+            return new IndexerKey(result);
+        };
+    }
+
+    private static <A> UniMapping<A> toUniMapping(List<Function<A, Object>> keyFunctionList) {
+        int keyFunctionCount = keyFunctionList.size();
+        return switch (keyFunctionCount) {
+            case 1 -> wrap(keyFunctionList.get(0));
+            case 2 -> {
+                var keyFunction1 = keyFunctionList.get(0);
+                var keyFunction2 = keyFunctionList.get(1);
+                yield a -> new TwoIndexProperties<>(keyFunction1.apply(a), keyFunction2.apply(a));
+            }
+            case 3 -> {
+                var keyFunction1 = keyFunctionList.get(0);
+                var keyFunction2 = keyFunctionList.get(1);
+                var keyFunction3 = keyFunctionList.get(2);
+                yield a -> new ThreeIndexProperties<>(keyFunction1.apply(a), keyFunction2.apply(a), keyFunction3.apply(a));
+            }
+            default -> a -> {
+                Object[] arr = new Object[keyFunctionCount];
+                for (int i = 0; i < keyFunctionCount; i++) {
+                    arr[i] = keyFunctionList.get(i).apply(a);
+                }
+                return new ManyIndexProperties(arr);
+            };
+        };
+    }
+
+    @SuppressWarnings("unchecked")
     public <A, B> BiMapping<A, B> buildBiLeftMapping() {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultTriJoiner<A, B, Right_>) joiner;
@@ -255,6 +265,7 @@ public class IndexerFactory<Right_> {
         };
     }
 
+    @SuppressWarnings("unchecked")
     public <A, B, C> TriMapping<A, B, C> buildTriLeftMapping() {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultQuadJoiner<A, B, C, Right_>) joiner;
@@ -336,6 +347,7 @@ public class IndexerFactory<Right_> {
         };
     }
 
+    @SuppressWarnings("unchecked")
     public <A, B, C, D> QuadMapping<A, B, C, D> buildQuadLeftMapping() {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultPentaJoiner<A, B, C, D, Right_>) joiner;
@@ -418,6 +430,7 @@ public class IndexerFactory<Right_> {
         };
     }
 
+    @SuppressWarnings("unchecked")
     public UniMapping<Right_> buildRightMapping() {
         var joinerCount = joiner.getJoinerCount();
         return switch (joinerCount) {
@@ -457,42 +470,13 @@ public class IndexerFactory<Right_> {
                                 var mapping = joiner.getRightMapping(i);
                                 mappings[i] = mapping;
                             }
-                            yield a -> {
-                                int mappingCount = mappings.length;
-                                var result = new Object[mappingCount];
-                                for (int i = 0; i < mappingCount; i++) {
-                                    result[i] = mappings[i].apply(a);
-                                }
-                                return new IndexerKey(result);
-                            };
+                            yield toKeyFunction(mappings);
                         }
                     };
                     keyFunctionList.add(keyFunction);
                     startIndexInclusive = endIndexExclusive;
                 }
-                int keyFunctionCount = keyFunctionList.size();
-                yield switch (keyFunctionCount) {
-                    case 1 -> wrap(keyFunctionList.get(0));
-                    case 2 -> {
-                        var keyFunction1 = keyFunctionList.get(0);
-                        var keyFunction2 = keyFunctionList.get(1);
-                        yield a -> new TwoIndexProperties<>(keyFunction1.apply(a), keyFunction2.apply(a));
-                    }
-                    case 3 -> {
-                        var keyFunction1 = keyFunctionList.get(0);
-                        var keyFunction2 = keyFunctionList.get(1);
-                        var keyFunction3 = keyFunctionList.get(2);
-                        yield a -> new ThreeIndexProperties<>(keyFunction1.apply(a), keyFunction2.apply(a),
-                                keyFunction3.apply(a));
-                    }
-                    default -> a -> {
-                        Object[] arr = new Object[keyFunctionCount];
-                        for (int i = 0; i < keyFunctionCount; i++) {
-                            arr[i] = keyFunctionList.get(i).apply(a);
-                        }
-                        return new ManyIndexProperties(arr);
-                    };
-                };
+                yield toUniMapping(keyFunctionList);
             }
         };
     }
