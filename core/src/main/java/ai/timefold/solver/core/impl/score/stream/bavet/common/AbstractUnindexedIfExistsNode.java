@@ -52,12 +52,19 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
             counter.countRight = rightTupleList.size();
         } else {
             var leftTrackerList = new ElementAwareList<FilteringTracker<LeftTuple_>>();
-            rightTupleList.forEach(leftTuple, counter, leftTrackerList,
-                    (rightTuple, leftTuple_, counter_, leftTrackerList_) -> updateCounterFromLeft(leftTuple_, rightTuple,
-                            counter_, leftTrackerList_));
+            iterateRightTupleList(counter, leftTrackerList);
             leftTuple.setStore(inputStoreIndexLeftTrackerList, leftTrackerList);
         }
         initCounterLeft(counter);
+    }
+
+    private void iterateRightTupleList(ExistsCounter<LeftTuple_> counter,
+            ElementAwareList<FilteringTracker<LeftTuple_>> leftTrackerList) {
+        var rightTupleIterator = rightTupleList.iterator();
+        while (rightTupleIterator.hasNext()) {
+            updateCounterFromLeft(counter, rightTupleIterator.next(), leftTrackerList);
+        }
+        rightTupleIterator.close();
     }
 
     @Override
@@ -77,9 +84,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
             ElementAwareList<FilteringTracker<LeftTuple_>> leftTrackerList = leftTuple.getStore(inputStoreIndexLeftTrackerList);
             leftTrackerList.forEach(FilteringTracker::remove);
             counter.countRight = 0;
-            rightTupleList.forEach(leftTuple, counter, leftTrackerList,
-                    (rightTuple, leftTuple_, counter_, leftTrackerList_) -> updateCounterFromLeft(leftTuple_, rightTuple,
-                            counter_, leftTrackerList_));
+            iterateRightTupleList(counter, leftTrackerList);
             updateCounterLeft(counter);
         }
     }
@@ -112,9 +117,18 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
             leftCounterList.forEach(this::incrementCounterRight);
         } else {
             ElementAwareList<FilteringTracker<LeftTuple_>> rightTrackerList = new ElementAwareList<>();
-            leftCounterList.forEach(rightTuple, rightTrackerList, this::updateCounterFromRight);
+            iterateLeftCounterList(rightTuple, rightTrackerList);
             rightTuple.setStore(inputStoreIndexRightTrackerList, rightTrackerList);
         }
+    }
+
+    private void iterateLeftCounterList(UniTuple<Right_> rightTuple,
+            ElementAwareList<FilteringTracker<LeftTuple_>> rightTrackerList) {
+        var leftCounterInterator = leftCounterList.iterator();
+        while (leftCounterInterator.hasNext()) {
+            updateCounterFromRight(leftCounterInterator.next(), rightTuple, rightTrackerList);
+        }
+        leftCounterInterator.close();
     }
 
     @Override
@@ -127,7 +141,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
         }
         if (isFiltering) {
             ElementAwareList<FilteringTracker<LeftTuple_>> rightTrackerList = updateRightTrackerList(rightTuple);
-            leftCounterList.forEach(rightTuple, rightTrackerList, this::updateCounterFromRight);
+            iterateLeftCounterList(rightTuple, rightTrackerList);
         }
     }
 

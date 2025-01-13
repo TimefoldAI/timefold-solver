@@ -72,7 +72,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
         } else {
             var leftTrackerList = new ElementAwareList<FilteringTracker<LeftTuple_>>();
             indexerRight.forEach(indexProperties,
-                    rightTuple -> updateCounterFromLeft(leftTuple, rightTuple, counter, leftTrackerList));
+                    rightTuple -> updateCounterFromLeft(counter, rightTuple, leftTrackerList));
             leftTuple.setStore(inputStoreIndexLeftTrackerList, leftTrackerList);
         }
     }
@@ -101,7 +101,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
                 leftTrackerList.forEach(FilteringTracker::remove);
                 counter.countRight = 0;
                 indexerRight.forEach(oldIndexProperties,
-                        rightTuple -> updateCounterFromLeft(leftTuple, rightTuple, counter, leftTrackerList));
+                        rightTuple -> updateCounterFromLeft(counter, rightTuple, leftTrackerList));
                 updateCounterLeft(counter);
             }
         } else {
