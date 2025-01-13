@@ -60,7 +60,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
         var indexProperties = createIndexProperties(leftTuple);
         leftTuple.setStore(inputStoreIndexLeftProperties, indexProperties);
 
-        var counter = new ExistsCounter<LeftTuple_>(leftTuple);
+        var counter = new ExistsCounter<>(leftTuple);
         var counterEntry = indexerLeft.put(indexProperties, counter);
         updateCounterRight(leftTuple, indexProperties, counter, counterEntry);
         initCounterLeft(counter);
