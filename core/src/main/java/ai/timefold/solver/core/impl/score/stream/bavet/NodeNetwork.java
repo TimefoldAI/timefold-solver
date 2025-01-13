@@ -17,7 +17,7 @@ import ai.timefold.solver.core.impl.score.stream.bavet.uni.AbstractForEachUniNod
  * @param layeredNodes nodes grouped first by their layer, then by their index within the layer;
  *        propagation needs to happen in this order.
  */
-record NodeNetwork(Map<Class<?>, List<AbstractForEachUniNode<Object>>> declaredClassToNodeMap, Propagator[][] layeredNodes) {
+record NodeNetwork(Map<Class<?>, List<AbstractForEachUniNode<?>>> declaredClassToNodeMap, Propagator[][] layeredNodes) {
 
     public static final NodeNetwork EMPTY = new NodeNetwork(Map.of(), new Propagator[0][0]);
 
