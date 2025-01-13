@@ -13,8 +13,8 @@ import org.junit.jupiter.api.Test;
 class EqualsAndComparisonIndexerTest extends AbstractIndexerTest {
 
     private final DefaultBiJoiner<Person, Person> joiner =
-            (DefaultBiJoiner<Person, Person>) Joiners.equal((Person p) -> p.gender)
-                    .and(Joiners.lessThanOrEqual(a -> a.age));
+            (DefaultBiJoiner<Person, Person>) Joiners.equal((Person p) -> p.gender())
+                    .and(Joiners.lessThanOrEqual(a -> a.age()));
 
     @Test
     void iEmpty() {

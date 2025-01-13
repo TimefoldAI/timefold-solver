@@ -7,7 +7,10 @@ package ai.timefold.solver.core.impl.score.stream.bavet.common.index;
  * If two instances contain elements which are equal, they must be equal.
  */
 public sealed interface IndexProperties
-        permits ManyIndexProperties, NoneIndexProperties, SingleIndexProperties, ThreeIndexProperties, TwoIndexProperties {
+        permits ManyIndexProperties, SingleIndexProperties, ThreeIndexProperties, TwoIndexProperties {
+
+    // Used often enough for the singleton to make meaningful memory savings.
+    IndexProperties EMPTY = new ManyIndexProperties();
 
     /**
      * Retrieves index property at a given position.

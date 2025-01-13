@@ -1,9 +1,8 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.common;
 
-import java.util.function.Function;
-
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexProperties;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.UniMapping;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.RightTupleLifecycle;
@@ -23,7 +22,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
         extends AbstractJoinNode<LeftTuple_, Right_, OutTuple_>
         implements LeftTupleLifecycle<LeftTuple_>, RightTupleLifecycle<UniTuple<Right_>> {
 
-    private final Function<Right_, IndexProperties> mappingRight;
+    private final UniMapping<Right_> mappingRight;
     private final int inputStoreIndexLeftProperties;
     private final int inputStoreIndexLeftEntry;
     private final int inputStoreIndexRightProperties;
@@ -34,9 +33,9 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
     private final Indexer<LeftTuple_> indexerLeft;
     private final Indexer<UniTuple<Right_>> indexerRight;
 
-    protected AbstractIndexedJoinNode(Function<Right_, IndexProperties> mappingRight, int inputStoreIndexLeftProperties,
-            int inputStoreIndexLeftEntry, int inputStoreIndexLeftOutTupleList, int inputStoreIndexRightProperties,
-            int inputStoreIndexRightEntry, int inputStoreIndexRightOutTupleList,
+    protected AbstractIndexedJoinNode(UniMapping<Right_> mappingRight,
+            int inputStoreIndexLeftProperties, int inputStoreIndexLeftEntry, int inputStoreIndexLeftOutTupleList,
+            int inputStoreIndexRightProperties, int inputStoreIndexRightEntry, int inputStoreIndexRightOutTupleList,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, boolean isFiltering, int outputStoreIndexLeftOutEntry,
             int outputStoreIndexRightOutEntry, Indexer<LeftTuple_> indexerLeft, Indexer<UniTuple<Right_>> indexerRight) {
         super(inputStoreIndexLeftOutTupleList, inputStoreIndexRightOutTupleList, nextNodesTupleLifecycle, isFiltering,
@@ -56,9 +55,9 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
             throw new IllegalStateException("Impossible state: the input for the tuple (" + leftTuple
                     + ") was already added in the tupleStore.");
         }
-        IndexProperties indexProperties = createIndexPropertiesLeft(leftTuple);
+        var indexProperties = createIndexPropertiesLeft(leftTuple);
 
-        ElementAwareList<OutTuple_> outTupleListLeft = new ElementAwareList<>();
+        var outTupleListLeft = new ElementAwareList<OutTuple_>();
         leftTuple.setStore(inputStoreIndexLeftOutTupleList, outTupleListLeft);
         indexAndPropagateLeft(leftTuple, indexProperties);
     }
@@ -71,7 +70,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
             insertLeft(leftTuple);
             return;
         }
-        IndexProperties newIndexProperties = createIndexPropertiesLeft(leftTuple);
+        var newIndexProperties = createIndexPropertiesLeft(leftTuple);
         if (oldIndexProperties.equals(newIndexProperties)) {
             // No need for re-indexing because the index properties didn't change
             // Prefer an update over retract-insert if possible
@@ -89,7 +88,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
 
     private void indexAndPropagateLeft(LeftTuple_ leftTuple, IndexProperties indexProperties) {
         leftTuple.setStore(inputStoreIndexLeftProperties, indexProperties);
-        ElementAwareListEntry<LeftTuple_> leftEntry = indexerLeft.put(indexProperties, leftTuple);
+        var leftEntry = indexerLeft.put(indexProperties, leftTuple);
         leftTuple.setStore(inputStoreIndexLeftEntry, leftEntry);
         indexerRight.forEach(indexProperties, rightTuple -> insertOutTupleFiltered(leftTuple, rightTuple));
     }
@@ -113,9 +112,9 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
             throw new IllegalStateException("Impossible state: the input for the tuple (" + rightTuple
                     + ") was already added in the tupleStore.");
         }
-        IndexProperties indexProperties = mappingRight.apply(rightTuple.factA);
+        var indexProperties = mappingRight.apply(rightTuple.factA);
 
-        ElementAwareList<OutTuple_> outTupleListRight = new ElementAwareList<>();
+        var outTupleListRight = new ElementAwareList<OutTuple_>();
         rightTuple.setStore(inputStoreIndexRightOutTupleList, outTupleListRight);
         indexAndPropagateRight(rightTuple, indexProperties);
     }
@@ -128,7 +127,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
             insertRight(rightTuple);
             return;
         }
-        IndexProperties newIndexProperties = mappingRight.apply(rightTuple.factA);
+        var newIndexProperties = mappingRight.apply(rightTuple.factA);
         if (oldIndexProperties.equals(newIndexProperties)) {
             // No need for re-indexing because the index properties didn't change
             // Prefer an update over retract-insert if possible
@@ -146,7 +145,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
 
     private void indexAndPropagateRight(UniTuple<Right_> rightTuple, IndexProperties indexProperties) {
         rightTuple.setStore(inputStoreIndexRightProperties, indexProperties);
-        ElementAwareListEntry<UniTuple<Right_>> rightEntry = indexerRight.put(indexProperties, rightTuple);
+        var rightEntry = indexerRight.put(indexProperties, rightTuple);
         rightTuple.setStore(inputStoreIndexRightEntry, rightEntry);
         indexerLeft.forEach(indexProperties, leftTuple -> insertOutTupleFiltered(leftTuple, rightTuple));
     }

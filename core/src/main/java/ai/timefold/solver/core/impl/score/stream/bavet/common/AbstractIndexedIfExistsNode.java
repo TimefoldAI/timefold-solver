@@ -1,9 +1,8 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.common;
 
-import java.util.function.Function;
-
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexProperties;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.UniMapping;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.RightTupleLifecycle;
@@ -23,7 +22,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
         extends AbstractIfExistsNode<LeftTuple_, Right_>
         implements LeftTupleLifecycle<LeftTuple_>, RightTupleLifecycle<UniTuple<Right_>> {
 
-    private final Function<Right_, IndexProperties> mappingRight;
+    private final UniMapping<Right_> mappingRight;
     private final int inputStoreIndexLeftProperties;
     private final int inputStoreIndexLeftCounterEntry;
     private final int inputStoreIndexRightProperties;
@@ -32,12 +31,11 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
     private final Indexer<UniTuple<Right_>> indexerRight;
 
     protected AbstractIndexedIfExistsNode(boolean shouldExist,
-            Function<Right_, IndexProperties> mappingRight,
+            UniMapping<Right_> mappingRight,
             int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList,
             int inputStoreIndexRightProperties, int inputStoreIndexRightEntry, int inputStoreIndexRightTrackerList,
             TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle,
-            Indexer<ExistsCounter<LeftTuple_>> indexerLeft,
-            Indexer<UniTuple<Right_>> indexerRight,
+            Indexer<ExistsCounter<LeftTuple_>> indexerLeft, Indexer<UniTuple<Right_>> indexerRight,
             boolean isFiltering) {
         super(shouldExist,
                 inputStoreIndexLeftTrackerList, inputStoreIndexRightTrackerList,

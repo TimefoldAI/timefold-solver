@@ -24,9 +24,9 @@ class NoneIndexerTest extends AbstractIndexerTest {
     void put() {
         Indexer<UniTuple<String>> indexer = new NoneIndexer<>();
         UniTuple<String> annTuple = newTuple("Ann-F-40");
-        assertThat(indexer.size(NoneIndexProperties.INSTANCE)).isEqualTo(0);
-        indexer.put(NoneIndexProperties.INSTANCE, annTuple);
-        assertThat(indexer.size(NoneIndexProperties.INSTANCE)).isEqualTo(1);
+        assertThat(indexer.size(IndexProperties.EMPTY)).isEqualTo(0);
+        indexer.put(IndexProperties.EMPTY, annTuple);
+        assertThat(indexer.size(IndexProperties.EMPTY)).isEqualTo(1);
         assertSoftly(softly -> {
             softly.assertThat(indexer.isEmpty()).isFalse();
             softly.assertThat(getTuples(indexer)).containsExactly(annTuple);
@@ -37,18 +37,18 @@ class NoneIndexerTest extends AbstractIndexerTest {
     void removeTwice() {
         Indexer<UniTuple<String>> indexer = new NoneIndexer<>();
         UniTuple<String> annTuple = newTuple("Ann-F-40");
-        ElementAwareListEntry<UniTuple<String>> annEntry = indexer.put(NoneIndexProperties.INSTANCE, annTuple);
+        ElementAwareListEntry<UniTuple<String>> annEntry = indexer.put(IndexProperties.EMPTY, annTuple);
         assertSoftly(softly -> {
             softly.assertThat(indexer.isEmpty()).isFalse();
             softly.assertThat(getTuples(indexer)).containsExactly(annTuple);
         });
 
-        indexer.remove(NoneIndexProperties.INSTANCE, annEntry);
+        indexer.remove(IndexProperties.EMPTY, annEntry);
         assertSoftly(softly -> {
             softly.assertThat(indexer.isEmpty()).isTrue();
             softly.assertThat(getTuples(indexer)).isEmpty();
         });
-        assertThatThrownBy(() -> indexer.remove(NoneIndexProperties.INSTANCE, annEntry))
+        assertThatThrownBy(() -> indexer.remove(IndexProperties.EMPTY, annEntry))
                 .isInstanceOf(IllegalStateException.class);
     }
 
@@ -57,9 +57,9 @@ class NoneIndexerTest extends AbstractIndexerTest {
         Indexer<UniTuple<String>> indexer = new NoneIndexer<>();
 
         UniTuple<String> annTuple = newTuple("Ann-F-40");
-        indexer.put(NoneIndexProperties.INSTANCE, annTuple);
+        indexer.put(IndexProperties.EMPTY, annTuple);
         UniTuple<String> bethTuple = newTuple("Beth-F-30");
-        indexer.put(NoneIndexProperties.INSTANCE, bethTuple);
+        indexer.put(IndexProperties.EMPTY, bethTuple);
 
         assertThat(getTuples(indexer)).containsOnly(annTuple, bethTuple);
     }

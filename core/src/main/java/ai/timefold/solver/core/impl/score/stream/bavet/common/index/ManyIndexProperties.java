@@ -11,10 +11,10 @@ record ManyIndexProperties(Object... properties) implements IndexProperties {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof ManyIndexProperties other) {
-            return Arrays.equals(properties, other.properties);
+        if (this == o) {
+            return true;
         }
-        return false;
+        return o instanceof ManyIndexProperties other && Arrays.equals(properties, other.properties);
     }
 
     @Override
