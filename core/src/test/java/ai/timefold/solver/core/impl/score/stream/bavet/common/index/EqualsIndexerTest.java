@@ -47,13 +47,13 @@ class EqualsIndexerTest extends AbstractIndexerTest {
         var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
 
         var annTuple = newTuple("Ann-F-40");
-        indexer.put(new Pair<>("F", 40), annTuple);
+        indexer.put(new SingleIndexProperties<>(new Pair<>("F", 40)), annTuple);
         var bethTuple = newTuple("Beth-F-30");
-        indexer.put(new Pair<>("F", 30), bethTuple);
-        indexer.put(new Pair<>("M", 40), newTuple("Carl-M-40"));
-        indexer.put(new Pair<>("M", 30), newTuple("Dan-M-30"));
+        indexer.put(new SingleIndexProperties<>(new Pair<>("F", 30)), bethTuple);
+        indexer.put(new SingleIndexProperties<>(new Pair<>("M", 40)), newTuple("Carl-M-40"));
+        indexer.put(new SingleIndexProperties<>(new Pair<>("M", 30)), newTuple("Dan-M-30"));
         var ednaTuple = newTuple("Edna-F-40");
-        indexer.put(new Pair<>("F", 40), ednaTuple);
+        indexer.put(new SingleIndexProperties<>(new Pair<>("F", 40)), ednaTuple);
 
         assertThat(getTuples(indexer, new Pair<>("F", 40))).containsOnly(annTuple, ednaTuple);
         assertThat(getTuples(indexer, new Pair<>("F", 30))).containsOnly(bethTuple);

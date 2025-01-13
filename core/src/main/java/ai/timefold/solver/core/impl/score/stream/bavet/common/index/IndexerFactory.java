@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.score.stream.bavet.common.index;
 
 import java.util.ArrayList;
 import java.util.NavigableMap;
-import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -66,7 +65,7 @@ import ai.timefold.solver.core.impl.util.Triple;
  *
  * @param <Right_>
  */
-public class IndexerFactory<Right_> {
+public final class IndexerFactory<Right_> {
 
     private final AbstractJoiner<Right_> joiner;
     private final NavigableMap<Integer, JoinerType> joinerTypeMap;
@@ -96,12 +95,15 @@ public class IndexerFactory<Right_> {
         return joiner.getJoinerCount() > 0;
     }
 
-    public <A> UniMapping<A> buildUniLeftMapping() {
+    public <A> Function<A, IndexProperties> buildUniLeftMapping() {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultBiJoiner<A, Right_>) joiner;
         return switch (joinerCount) {
             case 0 -> a -> NoneIndexProperties.INSTANCE;
-            case 1 -> wrap(castJoiner.getLeftMapping(0));
+            case 1 -> {
+                var mapping = castJoiner.getLeftMapping(0);
+                yield a -> new SingleIndexProperties<>(mapping.apply(a));
+            }
             default -> {
                 var startIndexInclusive = 0;
                 var keyFunctionList = new ArrayList<Function<A, Object>>();
@@ -151,7 +153,10 @@ public class IndexerFactory<Right_> {
                 }
                 int keyFunctionCount = keyFunctionList.size();
                 yield switch (keyFunctionCount) {
-                    case 1 -> wrap(keyFunctionList.get(0));
+                    case 1 -> {
+                        var keyFunction = keyFunctionList.get(0);
+                        yield a -> new SingleIndexProperties<>(keyFunction.apply(a));
+                    }
                     case 2 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
@@ -176,12 +181,15 @@ public class IndexerFactory<Right_> {
         };
     }
 
-    public <A, B> BiMapping<A, B> buildBiLeftMapping() {
+    public <A, B> BiFunction<A, B, IndexProperties> buildBiLeftMapping() {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultTriJoiner<A, B, Right_>) joiner;
         return switch (joinerCount) {
             case 0 -> (a, b) -> NoneIndexProperties.INSTANCE;
-            case 1 -> wrap(castJoiner.getLeftMapping(0));
+            case 1 -> {
+                var mapping = castJoiner.getLeftMapping(0);
+                yield (a, b) -> new SingleIndexProperties<>(mapping.apply(a, b));
+            }
             default -> {
                 var startIndexInclusive = 0;
                 var keyFunctionList = new ArrayList<BiFunction<A, B, Object>>();
@@ -231,7 +239,10 @@ public class IndexerFactory<Right_> {
                 }
                 int keyFunctionCount = keyFunctionList.size();
                 yield switch (keyFunctionCount) {
-                    case 1 -> wrap(keyFunctionList.get(0));
+                    case 1 -> {
+                        var keyFunction = keyFunctionList.get(0);
+                        yield (a, b) -> new SingleIndexProperties<>(keyFunction.apply(a, b));
+                    }
                     case 2 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
@@ -256,12 +267,15 @@ public class IndexerFactory<Right_> {
         };
     }
 
-    public <A, B, C> TriMapping<A, B, C> buildTriLeftMapping() {
+    public <A, B, C> TriFunction<A, B, C, IndexProperties> buildTriLeftMapping() {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultQuadJoiner<A, B, C, Right_>) joiner;
         return switch (joinerCount) {
             case 0 -> (a, b, c) -> NoneIndexProperties.INSTANCE;
-            case 1 -> wrap(castJoiner.getLeftMapping(0));
+            case 1 -> {
+                var mapping = castJoiner.getLeftMapping(0);
+                yield (a, b, c) -> new SingleIndexProperties<>(mapping.apply(a, b, c));
+            }
             default -> {
                 var startIndexInclusive = 0;
                 var keyFunctionList = new ArrayList<TriFunction<A, B, C, Object>>();
@@ -312,7 +326,10 @@ public class IndexerFactory<Right_> {
                 }
                 int keyFunctionCount = keyFunctionList.size();
                 yield switch (keyFunctionCount) {
-                    case 1 -> wrap(keyFunctionList.get(0));
+                    case 1 -> {
+                        var keyFunction = keyFunctionList.get(0);
+                        yield (a, b, c) -> new SingleIndexProperties<>(keyFunction.apply(a, b, c));
+                    }
                     case 2 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
@@ -337,12 +354,15 @@ public class IndexerFactory<Right_> {
         };
     }
 
-    public <A, B, C, D> QuadMapping<A, B, C, D> buildQuadLeftMapping() {
+    public <A, B, C, D> QuadFunction<A, B, C, D, IndexProperties> buildQuadLeftMapping() {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultPentaJoiner<A, B, C, D, Right_>) joiner;
         return switch (joinerCount) {
             case 0 -> (a, b, c, d) -> NoneIndexProperties.INSTANCE;
-            case 1 -> wrap(castJoiner.getLeftMapping(0));
+            case 1 -> {
+                var mapping = castJoiner.getLeftMapping(0);
+                yield (a, b, c, d) -> new SingleIndexProperties<>(mapping.apply(a, b, c, d));
+            }
             default -> {
                 var startIndexInclusive = 0;
                 var keyFunctionList = new ArrayList<QuadFunction<A, B, C, D, Object>>();
@@ -393,7 +413,10 @@ public class IndexerFactory<Right_> {
                 }
                 int keyFunctionCount = keyFunctionList.size();
                 yield switch (keyFunctionList.size()) {
-                    case 1 -> wrap(keyFunctionList.get(0));
+                    case 1 -> {
+                        var keyFunction = keyFunctionList.get(0);
+                        yield (a, b, c, d) -> new SingleIndexProperties<>(keyFunction.apply(a, b, c, d));
+                    }
                     case 2 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
@@ -419,11 +442,14 @@ public class IndexerFactory<Right_> {
         };
     }
 
-    public UniMapping<Right_> buildRightMapping() {
+    public Function<Right_, IndexProperties> buildRightMapping() {
         var joinerCount = joiner.getJoinerCount();
         return switch (joinerCount) {
             case 0 -> a -> NoneIndexProperties.INSTANCE;
-            case 1 -> wrap(joiner.getRightMapping(0));
+            case 1 -> {
+                var mapping = joiner.getRightMapping(0);
+                yield a -> new SingleIndexProperties<>(mapping.apply(a));
+            }
             default -> {
                 var startIndexInclusive = 0;
                 var keyFunctionList = new ArrayList<Function<Right_, Object>>();
@@ -473,7 +499,10 @@ public class IndexerFactory<Right_> {
                 }
                 int keyFunctionCount = keyFunctionList.size();
                 yield switch (keyFunctionCount) {
-                    case 1 -> wrap(keyFunctionList.get(0));
+                    case 1 -> {
+                        var keyFunction = keyFunctionList.get(0);
+                        yield a -> new SingleIndexProperties<>(keyFunction.apply(a));
+                    }
                     case 2 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
@@ -499,8 +528,10 @@ public class IndexerFactory<Right_> {
     }
 
     public <T> Indexer<T> buildIndexer(boolean isLeftBridge) {
-        // If creating an indexer for a right-bridge node, the joiner type has to be flipped.
-        // (<A, B> becomes <B, A>.)
+        /*
+         * Note that if creating indexer for a right bridge node, the joiner type has to be flipped.
+         * (<A, B> becomes <B, A>.)
+         */
         if (!hasJoiners()) { // NoneJoiner results in NoneIndexer.
             return new NoneIndexer<>();
         } else if (joiner.getJoinerCount() == 1) { // Single joiner maps directly to EqualsIndexer or ComparisonIndexer.
@@ -530,50 +561,6 @@ public class IndexerFactory<Right_> {
             indexPropertyId--;
         }
         return downstreamIndexerSupplier.get();
-    }
-
-    private static <A> UniMapping<A> wrap(Function<A, Object> mapping) {
-        return a -> {
-            var result = mapping.apply(a);
-            return Objects.requireNonNullElse(result, NullIndexProperties.INSTANCE);
-        };
-    }
-
-    private static <A, B> BiMapping<A, B> wrap(BiFunction<A, B, Object> mapping) {
-        return (a, b) -> {
-            var result = mapping.apply(a, b);
-            return Objects.requireNonNullElse(result, NullIndexProperties.INSTANCE);
-        };
-    }
-
-    private static <A, B, C> TriMapping<A, B, C> wrap(TriFunction<A, B, C, Object> mapping) {
-        return (a, b, c) -> {
-            var result = mapping.apply(a, b, c);
-            return Objects.requireNonNullElse(result, NullIndexProperties.INSTANCE);
-        };
-    }
-
-    private static <A, B, C, D> QuadMapping<A, B, C, D> wrap(QuadFunction<A, B, C, D, Object> mapping) {
-        return (a, b, c, d) -> {
-            var result = mapping.apply(a, b, c, d);
-            return Objects.requireNonNullElse(result, NullIndexProperties.INSTANCE);
-        };
-    }
-
-    @FunctionalInterface
-    public interface UniMapping<A> extends Function<A, Object> {
-    }
-
-    @FunctionalInterface
-    public interface BiMapping<A, B> extends BiFunction<A, B, Object> {
-    }
-
-    @FunctionalInterface
-    public interface TriMapping<A, B, C> extends TriFunction<A, B, C, Object> {
-    }
-
-    @FunctionalInterface
-    public interface QuadMapping<A, B, C, D> extends QuadFunction<A, B, C, D, Object> {
     }
 
 }

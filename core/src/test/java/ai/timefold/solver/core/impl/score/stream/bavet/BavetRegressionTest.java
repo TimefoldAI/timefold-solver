@@ -18,7 +18,7 @@ import org.junit.jupiter.api.TestTemplate;
 
 final class BavetRegressionTest extends AbstractConstraintStreamTest {
 
-    protected BavetRegressionTest(ConstraintMatchPolicy constraintMatchPolicy) {
+    public BavetRegressionTest(ConstraintMatchPolicy constraintMatchPolicy) {
         super(new BavetConstraintStreamImplSupport(constraintMatchPolicy));
     }
 

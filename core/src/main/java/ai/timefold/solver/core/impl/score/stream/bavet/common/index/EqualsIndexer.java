@@ -24,8 +24,8 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
     }
 
     @Override
-    public ElementAwareListEntry<T> put(Object indexProperties, T tuple) {
-        Key_ indexKey = Indexer.extractKey(indexProperties, propertyIndex);
+    public ElementAwareListEntry<T> put(IndexProperties indexProperties, T tuple) {
+        Key_ indexKey = indexProperties.toKey(propertyIndex);
         // Avoids computeIfAbsent in order to not create lambdas on the hot path.
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
@@ -36,8 +36,8 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
     }
 
     @Override
-    public void remove(Object indexProperties, ElementAwareListEntry<T> entry) {
-        Key_ indexKey = Indexer.extractKey(indexProperties, propertyIndex);
+    public void remove(IndexProperties indexProperties, ElementAwareListEntry<T> entry) {
+        Key_ indexKey = indexProperties.toKey(propertyIndex);
         Indexer<T> downstreamIndexer = getDownstreamIndexer(indexProperties, indexKey, entry);
         downstreamIndexer.remove(indexProperties, entry);
         if (downstreamIndexer.isEmpty()) {
@@ -45,7 +45,8 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
         }
     }
 
-    private Indexer<T> getDownstreamIndexer(Object indexProperties, Key_ indexerKey, ElementAwareListEntry<T> entry) {
+    private Indexer<T> getDownstreamIndexer(IndexProperties indexProperties, Key_ indexerKey,
+            ElementAwareListEntry<T> entry) {
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexerKey);
         if (downstreamIndexer == null) {
             throw new IllegalStateException("Impossible state: the tuple (" + entry.getElement()
@@ -56,8 +57,8 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
     }
 
     @Override
-    public int size(Object indexProperties) {
-        Key_ indexKey = Indexer.extractKey(indexProperties, propertyIndex);
+    public int size(IndexProperties indexProperties) {
+        Key_ indexKey = indexProperties.toKey(propertyIndex);
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
             return 0;
@@ -66,8 +67,8 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
     }
 
     @Override
-    public void forEach(Object indexProperties, Consumer<T> tupleConsumer) {
-        Key_ indexKey = Indexer.extractKey(indexProperties, propertyIndex);
+    public void forEach(IndexProperties indexProperties, Consumer<T> tupleConsumer) {
+        Key_ indexKey = indexProperties.toKey(propertyIndex);
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
             return;

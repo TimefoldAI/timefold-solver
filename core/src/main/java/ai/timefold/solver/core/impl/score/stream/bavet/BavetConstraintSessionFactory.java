@@ -125,34 +125,32 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
                 buildNodeNetwork(workingSolution, constraintStreamSet, scoreInliner, nodeNetworkVisualizationConsumer));
     }
 
-    @SuppressWarnings("unchecked")
     private static <Solution_, Score_ extends Score<Score_>> NodeNetwork buildNodeNetwork(Solution_ workingSolution,
             Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet, AbstractScoreInliner<Score_> scoreInliner,
             Consumer<String> nodeNetworkVisualizationConsumer) {
-        /*
-         * Build constraintStreamSet in reverse order to create downstream nodes first
-         * so every node only has final variables (some of which have downstream node method references).
-         */
         var buildHelper = new NodeBuildHelper<>(constraintStreamSet, scoreInliner);
-        var nodeList = buildNodeList(constraintStreamSet, buildHelper);
-        if (nodeNetworkVisualizationConsumer != null) {
-            var visualisation = visualizeNodeNetwork(workingSolution, buildHelper, scoreInliner, nodeList);
-            nodeNetworkVisualizationConsumer.accept(visualisation);
-        }
-        var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<AbstractForEachUniNode<Object>>>();
-        for (var node : nodeList) {
-            if (node instanceof AbstractForEachUniNode<?> forEachUniNode) {
-                var forEachClass = forEachUniNode.getForEachClass();
-                var forEachUniNodeList =
-                        declaredClassToNodeMap.computeIfAbsent(forEachClass, k -> new ArrayList<>());
-                if (forEachUniNodeList.size() == 2) {
-                    // Each class can have at most two forEach nodes: one including null vars, the other excluding them.
-                    throw new IllegalStateException("Impossible state: For class (" + forEachClass
-                            + ") there are already 2 nodes (" + forEachUniNodeList + "), not adding another ("
-                            + forEachUniNode + ").");
-                }
-                forEachUniNodeList.add((AbstractForEachUniNode<Object>) forEachUniNode);
+        var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<AbstractForEachUniNode<?>>>();
+        var nodeList = buildNodeList(constraintStreamSet, buildHelper, node -> {
+            if (!(node instanceof AbstractForEachUniNode<?> forEachUniNode)) {
+                return;
             }
+            var forEachClass = forEachUniNode.getForEachClass();
+            var forEachUniNodeList =
+                    declaredClassToNodeMap.computeIfAbsent(forEachClass, k -> new ArrayList<>(2));
+            if (forEachUniNodeList.size() == 2) {
+                // Each class can have at most two forEach nodes: one including null vars, the other excluding them.
+                throw new IllegalStateException(
+                        "Impossible state: For class (%s) there are already 2 nodes (%s), not adding another (%s)."
+                                .formatted(forEachClass, forEachUniNodeList, forEachUniNode));
+            }
+            forEachUniNodeList.add(forEachUniNode);
+        });
+        if (nodeNetworkVisualizationConsumer != null) {
+            var constraintSet = scoreInliner.getConstraints();
+            var visualisation = NodeGraph.of(workingSolution, nodeList, constraintSet, buildHelper::getNodeCreatingStream,
+                    buildHelper::findParentNode)
+                    .buildGraphvizDOT();
+            nodeNetworkVisualizationConsumer.accept(visualisation);
         }
         var layerMap = new TreeMap<Long, List<Propagator>>();
         for (var node : nodeList) {
@@ -169,7 +167,8 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
     }
 
     private static <Solution_, Score_ extends Score<Score_>> List<AbstractNode> buildNodeList(
-            Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet, NodeBuildHelper<Score_> buildHelper) {
+            Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet, NodeBuildHelper<Score_> buildHelper,
+            Consumer<AbstractNode> nodeProcessor) {
         /*
          * Build constraintStreamSet in reverse order to create downstream nodes first
          * so every node only has final variables (some of which have downstream node method references).
@@ -188,14 +187,9 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
              */
             node.setId(nextNodeId++);
             node.setLayerIndex(determineLayerIndex(node, buildHelper));
+            nodeProcessor.accept(node);
         }
         return nodeList;
-    }
-
-    public static <Solution_, Score_ extends Score<Score_>> String visualizeNodeNetwork(Solution_ solution,
-            NodeBuildHelper<Score_> buildHelper, AbstractScoreInliner<Score_> scoreInliner, List<AbstractNode> nodeList) {
-        return NodeGraph.of(solution, buildHelper, nodeList, scoreInliner)
-                .buildGraphvizDOT();
     }
 
     /**

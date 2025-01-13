@@ -12,7 +12,7 @@ abstract class AbstractIndexerTest {
     protected <T> List<T> getTuples(Indexer<T> indexer, Object... objectProperties) {
         var properties = switch (objectProperties.length) {
             case 0 -> NoneIndexProperties.INSTANCE;
-            case 1 -> objectProperties[0];
+            case 1 -> new SingleIndexProperties<>(objectProperties[0]);
             default -> new ManyIndexProperties(objectProperties);
         };
         var result = new ArrayList<T>();

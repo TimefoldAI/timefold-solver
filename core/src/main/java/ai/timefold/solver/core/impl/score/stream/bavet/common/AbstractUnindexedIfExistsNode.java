@@ -52,7 +52,9 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
             counter.countRight = rightTupleList.size();
         } else {
             var leftTrackerList = new ElementAwareList<FilteringTracker<LeftTuple_>>();
-            rightTupleList.forEach(leftTuple, counter, leftTrackerList, this::updateCounterFromLeft);
+            for (var tuple : rightTupleList) {
+                updateCounterFromLeft(leftTuple, tuple, counter, leftTrackerList);
+            }
             leftTuple.setStore(inputStoreIndexLeftTrackerList, leftTrackerList);
         }
         initCounterLeft(counter);
@@ -75,7 +77,9 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
             ElementAwareList<FilteringTracker<LeftTuple_>> leftTrackerList = leftTuple.getStore(inputStoreIndexLeftTrackerList);
             leftTrackerList.forEach(FilteringTracker::remove);
             counter.countRight = 0;
-            rightTupleList.forEach(leftTuple, counter, leftTrackerList, this::updateCounterFromLeft);
+            for (var tuple : rightTupleList) {
+                updateCounterFromLeft(leftTuple, tuple, counter, leftTrackerList);
+            }
             updateCounterLeft(counter);
         }
     }
@@ -108,21 +112,26 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
             leftCounterList.forEach(this::incrementCounterRight);
         } else {
             var rightTrackerList = new ElementAwareList<FilteringTracker<LeftTuple_>>();
-            leftCounterList.forEach(rightTuple, rightTrackerList, this::updateCounterFromRight);
+            for (var tuple : leftCounterList) {
+                updateCounterFromRight(rightTuple, tuple, rightTrackerList);
+            }
             rightTuple.setStore(inputStoreIndexRightTrackerList, rightTrackerList);
         }
     }
 
     @Override
     public final void updateRight(UniTuple<Right_> rightTuple) {
-        if (rightTuple.getStore(inputStoreIndexRightEntry) == null) {
+        ElementAwareListEntry<UniTuple<Right_>> rightEntry = rightTuple.getStore(inputStoreIndexRightEntry);
+        if (rightEntry == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             insertRight(rightTuple);
             return;
         }
         if (isFiltering) {
             var rightTrackerList = updateRightTrackerList(rightTuple);
-            leftCounterList.forEach(rightTuple, rightTrackerList, this::updateCounterFromRight);
+            for (var tuple : leftCounterList) {
+                updateCounterFromRight(rightTuple, tuple, rightTrackerList);
+            }
         }
     }
 

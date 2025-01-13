@@ -8,47 +8,49 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraint;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetStreamBinaryOperation;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.BavetForEachUniConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 
 public record NodeGraph<Solution_>(Solution_ solution, List<AbstractNode> sources, List<GraphEdge> edges,
         List<GraphSink<Solution_>> sinks) {
 
     @SuppressWarnings("unchecked")
-    public static <Solution_> NodeGraph<Solution_> of(Solution_ solution, NodeBuildHelper<?> buildHelper,
-            List<AbstractNode> nodeList, AbstractScoreInliner<?> scoreInliner) {
+    public static <Solution_> NodeGraph<Solution_> of(Solution_ solution, List<AbstractNode> nodeList,
+            Set<Constraint> constraintSet,
+            Function<AbstractNode, BavetAbstractConstraintStream<?>> nodeToStreamFunction,
+            Function<BavetAbstractConstraintStream<?>, AbstractNode> streamToParentNodeFunction) {
         var sourceList = new ArrayList<AbstractNode>();
         var edgeList = new ArrayList<GraphEdge>();
         for (var node : nodeList) {
-            var nodeCreator = buildHelper.getNodeCreatingStream(node);
+            var nodeCreator = nodeToStreamFunction.apply(node);
             if (nodeCreator instanceof BavetForEachUniConstraintStream<?, ?>) {
                 sourceList.add(node);
             } else if (nodeCreator instanceof BavetStreamBinaryOperation<?> binaryOperation) {
-                var leftParent = buildHelper.findParentNode(binaryOperation.getLeftParent());
+                var leftParent = streamToParentNodeFunction.apply(binaryOperation.getLeftParent());
                 edgeList.add(new GraphEdge(leftParent, node));
-                var rightParent = buildHelper.findParentNode(binaryOperation.getRightParent());
+                var rightParent = streamToParentNodeFunction.apply(binaryOperation.getRightParent());
                 edgeList.add(new GraphEdge(rightParent, node));
             } else {
-                var parent = buildHelper.findParentNode(nodeCreator.getParent());
+                var parent = streamToParentNodeFunction.apply(nodeCreator.getParent());
                 edgeList.add(new GraphEdge(parent, node));
             }
         }
         var sinkList = new ArrayList<GraphSink<Solution_>>();
-        for (var constraint : scoreInliner.getConstraints()) {
+        for (var constraint : constraintSet) {
             var castConstraint = (BavetConstraint<Solution_>) constraint;
             var stream = (BavetAbstractConstraintStream<?>) castConstraint.getScoringConstraintStream();
-            var node = buildHelper.findParentNode(stream);
+            var node = streamToParentNodeFunction.apply(stream);
             sinkList.add(new GraphSink<>(node, castConstraint));
         }
         return new NodeGraph<>(solution, sourceList.stream().distinct().toList(),

@@ -44,12 +44,15 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends AbstractTuple
         leftTuple.setStore(inputStoreIndexLeftEntry, leftEntry);
         var outTupleListLeft = new ElementAwareList<OutTuple_>();
         leftTuple.setStore(inputStoreIndexLeftOutTupleList, outTupleListLeft);
-        rightTupleList.forEach(leftTuple, (rightTuple, leftTuple_) -> insertOutTupleFiltered(leftTuple_, rightTuple));
+        for (var tuple : rightTupleList) {
+            insertOutTupleFiltered(leftTuple, tuple);
+        }
     }
 
     @Override
     public final void updateLeft(LeftTuple_ leftTuple) {
-        if (leftTuple.getStore(inputStoreIndexLeftEntry) == null) {
+        ElementAwareListEntry<LeftTuple_> leftEntry = leftTuple.getStore(inputStoreIndexLeftEntry);
+        if (leftEntry == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             insertLeft(leftTuple);
             return;
@@ -79,12 +82,15 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends AbstractTuple
         rightTuple.setStore(inputStoreIndexRightEntry, rightEntry);
         var outTupleListRight = new ElementAwareList<OutTuple_>();
         rightTuple.setStore(inputStoreIndexRightOutTupleList, outTupleListRight);
-        leftTupleList.forEach(rightTuple, this::insertOutTupleFiltered);
+        for (var tuple : leftTupleList) {
+            insertOutTupleFiltered(tuple, rightTuple);
+        }
     }
 
     @Override
     public final void updateRight(UniTuple<Right_> rightTuple) {
-        if (rightTuple.getStore(inputStoreIndexRightEntry) == null) {
+        ElementAwareListEntry<UniTuple<Right_>> rightEntry = rightTuple.getStore(inputStoreIndexRightEntry);
+        if (rightEntry == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             insertRight(rightTuple);
             return;
