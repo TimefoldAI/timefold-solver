@@ -40,11 +40,11 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends AbstractTuple
             throw new IllegalStateException("Impossible state: the input for the tuple (" + leftTuple
                     + ") was already added in the tupleStore.");
         }
-        ElementAwareListEntry<LeftTuple_> leftEntry = leftTupleList.add(leftTuple);
+        var leftEntry = leftTupleList.add(leftTuple);
         leftTuple.setStore(inputStoreIndexLeftEntry, leftEntry);
-        ElementAwareList<OutTuple_> outTupleListLeft = new ElementAwareList<>();
+        var outTupleListLeft = new ElementAwareList<OutTuple_>();
         leftTuple.setStore(inputStoreIndexLeftOutTupleList, outTupleListLeft);
-        for (UniTuple<Right_> tuple : rightTupleList) {
+        for (var tuple : rightTupleList) {
             insertOutTupleFiltered(leftTuple, tuple);
         }
     }
@@ -78,11 +78,11 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends AbstractTuple
             throw new IllegalStateException("Impossible state: the input for the tuple (" + rightTuple
                     + ") was already added in the tupleStore.");
         }
-        ElementAwareListEntry<UniTuple<Right_>> rightEntry = rightTupleList.add(rightTuple);
+        var rightEntry = rightTupleList.add(rightTuple);
         rightTuple.setStore(inputStoreIndexRightEntry, rightEntry);
-        ElementAwareList<OutTuple_> outTupleListRight = new ElementAwareList<>();
+        var outTupleListRight = new ElementAwareList<OutTuple_>();
         rightTuple.setStore(inputStoreIndexRightOutTupleList, outTupleListRight);
-        for (LeftTuple_ tuple : leftTupleList) {
+        for (var tuple : leftTupleList) {
             insertOutTupleFiltered(tuple, rightTuple);
         }
     }

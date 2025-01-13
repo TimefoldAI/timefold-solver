@@ -57,11 +57,11 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
             throw new IllegalStateException("Impossible state: the input for the tuple (" + leftTuple
                     + ") was already added in the tupleStore.");
         }
-        IndexProperties indexProperties = createIndexProperties(leftTuple);
+        var indexProperties = createIndexProperties(leftTuple);
         leftTuple.setStore(inputStoreIndexLeftProperties, indexProperties);
 
-        ExistsCounter<LeftTuple_> counter = new ExistsCounter<>(leftTuple);
-        ElementAwareListEntry<ExistsCounter<LeftTuple_>> counterEntry = indexerLeft.put(indexProperties, counter);
+        var counter = new ExistsCounter<LeftTuple_>(leftTuple);
+        var counterEntry = indexerLeft.put(indexProperties, counter);
         updateCounterRight(leftTuple, indexProperties, counter, counterEntry);
         initCounterLeft(counter);
     }
@@ -87,9 +87,9 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
             insertLeft(leftTuple);
             return;
         }
-        IndexProperties newIndexProperties = createIndexProperties(leftTuple);
+        var newIndexProperties = createIndexProperties(leftTuple);
         ElementAwareListEntry<ExistsCounter<LeftTuple_>> counterEntry = leftTuple.getStore(inputStoreIndexLeftCounterEntry);
-        ExistsCounter<LeftTuple_> counter = counterEntry.getElement();
+        var counter = counterEntry.getElement();
 
         if (oldIndexProperties.equals(newIndexProperties)) {
             // No need for re-indexing because the index properties didn't change
@@ -123,7 +123,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
             return;
         }
         ElementAwareListEntry<ExistsCounter<LeftTuple_>> counterEntry = leftTuple.getStore(inputStoreIndexLeftCounterEntry);
-        ExistsCounter<LeftTuple_> counter = counterEntry.getElement();
+        var counter = counterEntry.getElement();
         updateIndexerLeft(indexProperties, counterEntry, leftTuple);
         killCounterLeft(counter);
     }
@@ -144,10 +144,10 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
             throw new IllegalStateException("Impossible state: the input for the tuple (" + rightTuple
                     + ") was already added in the tupleStore.");
         }
-        IndexProperties indexProperties = mappingRight.apply(rightTuple.factA);
+        var indexProperties = mappingRight.apply(rightTuple.factA);
         rightTuple.setStore(inputStoreIndexRightProperties, indexProperties);
 
-        ElementAwareListEntry<UniTuple<Right_>> rightEntry = indexerRight.put(indexProperties, rightTuple);
+        var rightEntry = indexerRight.put(indexProperties, rightTuple);
         rightTuple.setStore(inputStoreIndexRightEntry, rightEntry);
         updateCounterLeft(rightTuple, indexProperties);
     }
@@ -170,12 +170,12 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
             insertRight(rightTuple);
             return;
         }
-        IndexProperties newIndexProperties = mappingRight.apply(rightTuple.factA);
+        var newIndexProperties = mappingRight.apply(rightTuple.factA);
 
         if (oldIndexProperties.equals(newIndexProperties)) {
             // No need for re-indexing because the index properties didn't change
             if (isFiltering) {
-                ElementAwareList<FilteringTracker<LeftTuple_>> rightTrackerList = updateRightTrackerList(rightTuple);
+                var rightTrackerList = updateRightTrackerList(rightTuple);
                 indexerLeft.forEach(oldIndexProperties,
                         counter -> updateCounterFromRight(rightTuple, counter, rightTrackerList));
             }
