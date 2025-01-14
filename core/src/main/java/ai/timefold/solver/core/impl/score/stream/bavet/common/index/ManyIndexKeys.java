@@ -7,9 +7,10 @@ record ManyIndexKeys(Object... properties) implements IndexKeys {
     static final ManyIndexKeys EMPTY = new ManyIndexKeys();
     static final ManyIndexKeys SINGLE_NULL = new ManyIndexKeys((Object) null);
 
+    @SuppressWarnings("unchecked")
     @Override
-    public <Type_> Type_ get(int id) {
-        return (Type_) properties[id];
+    public <Key_> Key_ get(int id) {
+        return (Key_) properties[id];
     }
 
     @Override

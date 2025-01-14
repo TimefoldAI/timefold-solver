@@ -8,12 +8,19 @@ package ai.timefold.solver.core.impl.score.stream.bavet.common.index;
  * <p>
  * Instances should be obtained using {@link IndexKeys#none()},
  * {@link IndexKeys#of(Object)},
- * {@link IndexKeys#of(Object, Object)},
- * {@link IndexKeys#of(Object, Object, Object)}
+ * {@link IndexKeys#of(Object, Object)}
  * or {@link IndexKeys#ofMany(Object[])}.
+ * <p>
+ * This interface only has two implementations,
+ * giving the JVM simple bi-morphic call sites.
+ * There is no {@code NoIndexKeys}, as that is handled by {@link #none()}.
+ * There is also no {@code SingleIndexKeys}, see {@link #of(Object)} for rationale.
+ * {@link TwoIndexKeys} exists to avoid wrapping two keys with an entire array,
+ * with the use case of two keys still being relatively common.
+ * ThreeIndexKeys and higher are sufficiently rare for {@link ManyIndexKeys} to suffice.
  */
 public sealed interface IndexKeys
-        permits ManyIndexKeys, ThreeIndexKeys, TwoIndexKeys {
+        permits ManyIndexKeys, TwoIndexKeys {
 
     static IndexKeys none() {
         return ManyIndexKeys.EMPTY;
@@ -36,10 +43,6 @@ public sealed interface IndexKeys
         return new TwoIndexKeys<>(key1, key2);
     }
 
-    static <Key1_, Key2_, Key3_> IndexKeys of(Key1_ key1, Key2_ key2, Key3_ key3) {
-        return new ThreeIndexKeys<>(key1, key2, key3);
-    }
-
     static IndexKeys ofMany(Object... keys) {
         return new ManyIndexKeys(keys);
     }
@@ -48,10 +51,10 @@ public sealed interface IndexKeys
      * Retrieves key at a given position.
      *
      * @param id Maps to a single {@link Indexer} instance in the indexer chain.
-     * @return never null
-     * @param <Type_> {@link ComparisonIndexer} will expect this to implement {@link Comparable}.
+     * @return May be null if the key is null.
+     * @param <Key_> {@link ComparisonIndexer} will expect this to implement {@link Comparable}.
      *        {@link EqualsIndexer} will treat items as the same if they are equal.
      */
-    <Type_> Type_ get(int id);
+    <Key_> Key_ get(int id);
 
 }

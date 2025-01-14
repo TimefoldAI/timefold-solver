@@ -31,6 +31,7 @@ public sealed interface Indexer<T> permits ComparisonIndexer, EqualsIndexer, Non
      * @param <Key_> The type of the key.
      * @see IndexKeys#of(Object) Description of why indexKeys sometimes isn't an instance of class IndexKeys.
      */
+    @SuppressWarnings("unchecked")
     static <Key_> Key_ of(Object indexKeys, int id) {
         if (indexKeys instanceof IndexKeys keys) {
             return keys.get(id);

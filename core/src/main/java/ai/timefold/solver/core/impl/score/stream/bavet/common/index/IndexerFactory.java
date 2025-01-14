@@ -6,6 +6,7 @@ import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
@@ -100,12 +101,17 @@ public final class IndexerFactory<Right_> {
     }
 
     public <A> UniKeysExtractor<A> buildUniLeftKeysExtractor() {
-        var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultBiJoiner<A, Right_>) joiner;
+        return buildUniKeysExtractor(castJoiner::getLeftMapping);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <A> UniKeysExtractor<A> buildUniKeysExtractor(IntFunction<Function<A, Object>> mappingExtractor) {
+        var joinerCount = joiner.getJoinerCount();
         if (joinerCount == 0) {
             return tuple -> IndexKeys.none();
         } else if (joinerCount == 1) {
-            return toKeysExtractor(castJoiner.getLeftMapping(0));
+            return toKeysExtractor(mappingExtractor.apply(0));
         }
         var startIndexInclusive = 0;
         var keyFunctionList = new ArrayList<Function<A, Object>>();
@@ -114,30 +120,30 @@ public final class IndexerFactory<Right_> {
             var keyFunctionLength = endIndexExclusive - startIndexInclusive;
             // Consecutive EQUAL joiners are merged into a single composite keyFunction.
             Function<A, Object> keyFunction = switch (keyFunctionLength) {
-                case 1 -> castJoiner.getLeftMapping(startIndexInclusive);
+                case 1 -> mappingExtractor.apply(startIndexInclusive);
                 case 2 -> {
-                    var mapping1 = castJoiner.getLeftMapping(startIndexInclusive);
-                    var mapping2 = castJoiner.getLeftMapping(startIndexInclusive + 1);
+                    var mapping1 = mappingExtractor.apply(startIndexInclusive);
+                    var mapping2 = mappingExtractor.apply(startIndexInclusive + 1);
                     yield a -> new Pair<>(mapping1.apply(a), mapping2.apply(a));
                 }
                 case 3 -> {
-                    var mapping1 = castJoiner.getLeftMapping(startIndexInclusive);
-                    var mapping2 = castJoiner.getLeftMapping(startIndexInclusive + 1);
-                    var mapping3 = castJoiner.getLeftMapping(startIndexInclusive + 2);
+                    var mapping1 = mappingExtractor.apply(startIndexInclusive);
+                    var mapping2 = mappingExtractor.apply(startIndexInclusive + 1);
+                    var mapping3 = mappingExtractor.apply(startIndexInclusive + 2);
                     yield a -> new Triple<>(mapping1.apply(a), mapping2.apply(a), mapping3.apply(a));
                 }
                 case 4 -> {
-                    var mapping1 = castJoiner.getLeftMapping(startIndexInclusive);
-                    var mapping2 = castJoiner.getLeftMapping(startIndexInclusive + 1);
-                    var mapping3 = castJoiner.getLeftMapping(startIndexInclusive + 2);
-                    var mapping4 = castJoiner.getLeftMapping(startIndexInclusive + 3);
+                    var mapping1 = mappingExtractor.apply(startIndexInclusive);
+                    var mapping2 = mappingExtractor.apply(startIndexInclusive + 1);
+                    var mapping3 = mappingExtractor.apply(startIndexInclusive + 2);
+                    var mapping4 = mappingExtractor.apply(startIndexInclusive + 3);
                     yield a -> new Quadruple<>(mapping1.apply(a), mapping2.apply(a), mapping3.apply(a),
                             mapping4.apply(a));
                 }
                 default -> {
                     Function<A, Object>[] mappings = new Function[joinerCount];
                     for (var i = 0; i < joinerCount; i++) {
-                        var mapping = castJoiner.getLeftMapping(i);
+                        var mapping = mappingExtractor.apply(i);
                         mappings[i] = mapping;
                     }
                     yield toCompositeKeyFunction(mappings);
@@ -152,9 +158,9 @@ public final class IndexerFactory<Right_> {
     @SafeVarargs
     private static <A> Function<A, Object> toCompositeKeyFunction(Function<A, Object>... mappings) {
         return a -> {
-            int mappingCount = mappings.length;
+            var mappingCount = mappings.length;
             var result = new Object[mappingCount];
-            for (int i = 0; i < mappingCount; i++) {
+            for (var i = 0; i < mappingCount; i++) {
                 result[i] = mappings[i].apply(a);
             }
             return new IndexerKey(result);
@@ -169,7 +175,7 @@ public final class IndexerFactory<Right_> {
     }
 
     private static <A> UniKeysExtractor<A> toKeysExtractor(List<Function<A, Object>> keyFunctionList) {
-        int keyFunctionCount = keyFunctionList.size();
+        var keyFunctionCount = keyFunctionList.size();
         return switch (keyFunctionCount) {
             case 1 -> toKeysExtractor(keyFunctionList.get(0));
             case 2 -> {
@@ -180,19 +186,10 @@ public final class IndexerFactory<Right_> {
                     return IndexKeys.of(keyFunction1.apply(a), keyFunction2.apply(a));
                 };
             }
-            case 3 -> {
-                var keyFunction1 = keyFunctionList.get(0);
-                var keyFunction2 = keyFunctionList.get(1);
-                var keyFunction3 = keyFunctionList.get(2);
-                yield tuple -> {
-                    var a = tuple.factA;
-                    return IndexKeys.of(keyFunction1.apply(a), keyFunction2.apply(a), keyFunction3.apply(a));
-                };
-            }
             default -> tuple -> {
                 var a = tuple.factA;
-                Object[] arr = new Object[keyFunctionCount];
-                for (int i = 0; i < keyFunctionCount; i++) {
+                var arr = new Object[keyFunctionCount];
+                for (var i = 0; i < keyFunctionCount; i++) {
                     arr[i] = keyFunctionList.get(i).apply(a);
                 }
                 return IndexKeys.ofMany(arr);
@@ -200,6 +197,7 @@ public final class IndexerFactory<Right_> {
         };
     }
 
+    @SuppressWarnings("unchecked")
     public <A, B> BiKeysExtractor<A, B> buildBiLeftKeysExtractor() {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultTriJoiner<A, B, Right_>) joiner;
@@ -242,9 +240,9 @@ public final class IndexerFactory<Right_> {
                         mappings[i] = mapping;
                     }
                     yield (a, b) -> {
-                        int mappingCount = mappings.length;
+                        var mappingCount = mappings.length;
                         var result = new Object[mappingCount];
-                        for (int i = 0; i < mappingCount; i++) {
+                        for (var i = 0; i < mappingCount; i++) {
                             result[i] = mappings[i].apply(a, b);
                         }
                         return new IndexerKey(result);
@@ -254,7 +252,7 @@ public final class IndexerFactory<Right_> {
             keyFunctionList.add(keyFunction);
             startIndexInclusive = endIndexExclusive;
         }
-        int keyFunctionCount = keyFunctionList.size();
+        var keyFunctionCount = keyFunctionList.size();
         return switch (keyFunctionCount) {
             case 1 -> toKeysExtractor(keyFunctionList.get(0));
             case 2 -> {
@@ -266,22 +264,11 @@ public final class IndexerFactory<Right_> {
                     return IndexKeys.of(keyFunction1.apply(a, b), keyFunction2.apply(a, b));
                 };
             }
-            case 3 -> {
-                var keyFunction1 = keyFunctionList.get(0);
-                var keyFunction2 = keyFunctionList.get(1);
-                var keyFunction3 = keyFunctionList.get(2);
-                yield tuple -> {
-                    var a = tuple.factA;
-                    var b = tuple.factB;
-                    return IndexKeys.of(keyFunction1.apply(a, b), keyFunction2.apply(a, b),
-                            keyFunction3.apply(a, b));
-                };
-            }
             default -> tuple -> {
                 var a = tuple.factA;
                 var b = tuple.factB;
-                Object[] arr = new Object[keyFunctionCount];
-                for (int i = 0; i < keyFunctionCount; i++) {
+                var arr = new Object[keyFunctionCount];
+                for (var i = 0; i < keyFunctionCount; i++) {
                     arr[i] = keyFunctionList.get(i).apply(a, b);
                 }
                 return IndexKeys.ofMany(arr);
@@ -297,6 +284,7 @@ public final class IndexerFactory<Right_> {
         };
     }
 
+    @SuppressWarnings("unchecked")
     public <A, B, C> TriKeysExtractor<A, B, C> buildTriLeftKeysExtractor() {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultQuadJoiner<A, B, C, Right_>) joiner;
@@ -340,9 +328,9 @@ public final class IndexerFactory<Right_> {
                         mappings[i] = mapping;
                     }
                     yield (a, b, c) -> {
-                        int mappingCount = mappings.length;
+                        var mappingCount = mappings.length;
                         var result = new Object[mappingCount];
-                        for (int i = 0; i < mappingCount; i++) {
+                        for (var i = 0; i < mappingCount; i++) {
                             result[i] = mappings[i].apply(a, b, c);
                         }
                         return new IndexerKey(result);
@@ -352,7 +340,7 @@ public final class IndexerFactory<Right_> {
             keyFunctionList.add(keyFunction);
             startIndexInclusive = endIndexExclusive;
         }
-        int keyFunctionCount = keyFunctionList.size();
+        var keyFunctionCount = keyFunctionList.size();
         return switch (keyFunctionCount) {
             case 1 -> toKeysExtractor(keyFunctionList.get(0));
             case 2 -> {
@@ -365,24 +353,12 @@ public final class IndexerFactory<Right_> {
                     return IndexKeys.of(keyFunction1.apply(a, b, c), keyFunction2.apply(a, b, c));
                 };
             }
-            case 3 -> {
-                var keyFunction1 = keyFunctionList.get(0);
-                var keyFunction2 = keyFunctionList.get(1);
-                var keyFunction3 = keyFunctionList.get(2);
-                yield tuple -> {
-                    var a = tuple.factA;
-                    var b = tuple.factB;
-                    var c = tuple.factC;
-                    return IndexKeys.of(keyFunction1.apply(a, b, c), keyFunction2.apply(a, b, c),
-                            keyFunction3.apply(a, b, c));
-                };
-            }
             default -> tuple -> {
                 var a = tuple.factA;
                 var b = tuple.factB;
                 var c = tuple.factC;
-                Object[] arr = new Object[keyFunctionCount];
-                for (int i = 0; i < keyFunctionCount; i++) {
+                var arr = new Object[keyFunctionCount];
+                for (var i = 0; i < keyFunctionCount; i++) {
                     arr[i] = keyFunctionList.get(i).apply(a, b, c);
                 }
                 return IndexKeys.ofMany(arr);
@@ -399,6 +375,7 @@ public final class IndexerFactory<Right_> {
         };
     }
 
+    @SuppressWarnings("unchecked")
     public <A, B, C, D> QuadKeysExtractor<A, B, C, D> buildQuadLeftKeysExtractor() {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultPentaJoiner<A, B, C, D, Right_>) joiner;
@@ -442,9 +419,9 @@ public final class IndexerFactory<Right_> {
                         mappings[i] = mapping;
                     }
                     yield (a, b, c, d) -> {
-                        int mappingCount = mappings.length;
+                        var mappingCount = mappings.length;
                         var result = new Object[mappingCount];
-                        for (int i = 0; i < mappingCount; i++) {
+                        for (var i = 0; i < mappingCount; i++) {
                             result[i] = mappings[i].apply(a, b, c, d);
                         }
                         return new IndexerKey(result);
@@ -454,7 +431,7 @@ public final class IndexerFactory<Right_> {
             keyFunctionList.add(keyFunction);
             startIndexInclusive = endIndexExclusive;
         }
-        int keyFunctionCount = keyFunctionList.size();
+        var keyFunctionCount = keyFunctionList.size();
         return switch (keyFunctionList.size()) {
             case 1 -> toKeysExtractor(keyFunctionList.get(0));
             case 2 -> {
@@ -468,26 +445,13 @@ public final class IndexerFactory<Right_> {
                     return IndexKeys.of(keyFunction1.apply(a, b, c, d), keyFunction2.apply(a, b, c, d));
                 };
             }
-            case 3 -> {
-                var keyFunction1 = keyFunctionList.get(0);
-                var keyFunction2 = keyFunctionList.get(1);
-                var keyFunction3 = keyFunctionList.get(2);
-                yield tuple -> {
-                    var a = tuple.factA;
-                    var b = tuple.factB;
-                    var c = tuple.factC;
-                    var d = tuple.factD;
-                    return IndexKeys.of(keyFunction1.apply(a, b, c, d), keyFunction2.apply(a, b, c, d),
-                            keyFunction3.apply(a, b, c, d));
-                };
-            }
             default -> tuple -> {
                 var a = tuple.factA;
                 var b = tuple.factB;
                 var c = tuple.factC;
                 var d = tuple.factD;
-                Object[] arr = new Object[keyFunctionCount];
-                for (int i = 0; i < keyFunctionCount; i++) {
+                var arr = new Object[keyFunctionCount];
+                for (var i = 0; i < keyFunctionCount; i++) {
                     arr[i] = keyFunctionList.get(i).apply(a, b, c, d);
                 }
                 return IndexKeys.ofMany(arr);
@@ -506,52 +470,7 @@ public final class IndexerFactory<Right_> {
     }
 
     public UniKeysExtractor<Right_> buildRightKeysExtractor() {
-        var joinerCount = joiner.getJoinerCount();
-        if (joinerCount == 0) {
-            return tuple -> IndexKeys.none();
-        } else if (joinerCount == 1) {
-            return toKeysExtractor(joiner.getRightMapping(0));
-        }
-        var startIndexInclusive = 0;
-        var keyFunctionList = new ArrayList<Function<Right_, Object>>();
-        for (var entry : joinerTypeMap.entrySet()) {
-            var endIndexExclusive = entry.getKey();
-            var keyFunctionLength = endIndexExclusive - startIndexInclusive;
-            // Consecutive EQUAL joiners are merged into a single composite keyFunction.
-            Function<Right_, Object> keyFunction = switch (keyFunctionLength) {
-                case 1 -> joiner.getRightMapping(startIndexInclusive);
-                case 2 -> {
-                    var mapping1 = joiner.getRightMapping(startIndexInclusive);
-                    var mapping2 = joiner.getRightMapping(startIndexInclusive + 1);
-                    yield a -> new Pair<>(mapping1.apply(a), mapping2.apply(a));
-                }
-                case 3 -> {
-                    var mapping1 = joiner.getRightMapping(startIndexInclusive);
-                    var mapping2 = joiner.getRightMapping(startIndexInclusive + 1);
-                    var mapping3 = joiner.getRightMapping(startIndexInclusive + 2);
-                    yield a -> new Triple<>(mapping1.apply(a), mapping2.apply(a), mapping3.apply(a));
-                }
-                case 4 -> {
-                    var mapping1 = joiner.getRightMapping(startIndexInclusive);
-                    var mapping2 = joiner.getRightMapping(startIndexInclusive + 1);
-                    var mapping3 = joiner.getRightMapping(startIndexInclusive + 2);
-                    var mapping4 = joiner.getRightMapping(startIndexInclusive + 3);
-                    yield a -> new Quadruple<>(mapping1.apply(a), mapping2.apply(a), mapping3.apply(a),
-                            mapping4.apply(a));
-                }
-                default -> {
-                    Function<Right_, Object>[] mappings = new Function[joinerCount];
-                    for (var i = 0; i < joinerCount; i++) {
-                        var mapping = joiner.getRightMapping(i);
-                        mappings[i] = mapping;
-                    }
-                    yield toCompositeKeyFunction(mappings);
-                }
-            };
-            keyFunctionList.add(keyFunction);
-            startIndexInclusive = endIndexExclusive;
-        }
-        return toKeysExtractor(keyFunctionList);
+        return buildUniKeysExtractor(joiner::getRightMapping);
     }
 
     public <T> Indexer<T> buildIndexer(boolean isLeftBridge) {
