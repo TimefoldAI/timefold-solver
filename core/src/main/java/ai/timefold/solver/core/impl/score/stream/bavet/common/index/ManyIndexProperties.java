@@ -4,6 +4,8 @@ import java.util.Arrays;
 
 record ManyIndexProperties(Object... properties) implements IndexProperties {
 
+    static final ManyIndexProperties EMPTY = new ManyIndexProperties();
+
     @Override
     public <Type_> Type_ toKey(int id) {
         return (Type_) properties[id];
@@ -11,10 +13,10 @@ record ManyIndexProperties(Object... properties) implements IndexProperties {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof ManyIndexProperties other) {
-            return Arrays.equals(properties, other.properties);
+        if (this == o) { // Due to the use of ManyIndexProperties.EMPTY, this is possible.
+            return true;
         }
-        return false;
+        return o instanceof ManyIndexProperties other && Arrays.equals(properties, other.properties);
     }
 
     @Override

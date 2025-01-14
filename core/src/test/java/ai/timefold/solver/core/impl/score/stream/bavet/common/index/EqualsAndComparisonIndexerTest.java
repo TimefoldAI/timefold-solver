@@ -25,19 +25,19 @@ class EqualsAndComparisonIndexerTest extends AbstractIndexerTest {
     void put() {
         var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
         var annTuple = newTuple("Ann-F-40");
-        assertThat(indexer.size(new ManyIndexProperties("F", 40))).isEqualTo(0);
-        indexer.put(new ManyIndexProperties("F", 40), annTuple);
-        assertThat(indexer.size(new ManyIndexProperties("F", 40))).isEqualTo(1);
+        assertThat(indexer.size(IndexProperties.many("F", 40))).isEqualTo(0);
+        indexer.put(IndexProperties.many("F", 40), annTuple);
+        assertThat(indexer.size(IndexProperties.many("F", 40))).isEqualTo(1);
     }
 
     @Test
     void removeTwice() {
         var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
         var annTuple = newTuple("Ann-F-40");
-        var annEntry = indexer.put(new ManyIndexProperties("F", 40), annTuple);
+        var annEntry = indexer.put(IndexProperties.many("F", 40), annTuple);
 
-        indexer.remove(new ManyIndexProperties("F", 40), annEntry);
-        assertThatThrownBy(() -> indexer.remove(new ManyIndexProperties("F", 40), annEntry))
+        indexer.remove(IndexProperties.many("F", 40), annEntry);
+        assertThatThrownBy(() -> indexer.remove(IndexProperties.many("F", 40), annEntry))
                 .isInstanceOf(IllegalStateException.class);
     }
 
@@ -46,13 +46,13 @@ class EqualsAndComparisonIndexerTest extends AbstractIndexerTest {
         var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
 
         var annTuple = newTuple("Ann-F-40");
-        indexer.put(new ManyIndexProperties("F", 40), annTuple);
+        indexer.put(IndexProperties.many("F", 40), annTuple);
         var bethTuple = newTuple("Beth-F-30");
-        indexer.put(new ManyIndexProperties("F", 30), bethTuple);
-        indexer.put(new ManyIndexProperties("M", 40), newTuple("Carl-M-40"));
-        indexer.put(new ManyIndexProperties("M", 30), newTuple("Dan-M-30"));
+        indexer.put(IndexProperties.many("F", 30), bethTuple);
+        indexer.put(IndexProperties.many("M", 40), newTuple("Carl-M-40"));
+        indexer.put(IndexProperties.many("M", 30), newTuple("Dan-M-30"));
         var ednaTuple = newTuple("Edna-F-40");
-        indexer.put(new ManyIndexProperties("F", 40), ednaTuple);
+        indexer.put(IndexProperties.many("F", 40), ednaTuple);
 
         assertThat(getTuples(indexer, "F", 40)).containsOnly(annTuple, bethTuple, ednaTuple);
         assertThat(getTuples(indexer, "F", 35)).containsOnly(bethTuple);

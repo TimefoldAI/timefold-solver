@@ -99,10 +99,10 @@ public final class IndexerFactory<Right_> {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultBiJoiner<A, Right_>) joiner;
         return switch (joinerCount) {
-            case 0 -> a -> NoneIndexProperties.INSTANCE;
+            case 0 -> a -> IndexProperties.none();
             case 1 -> {
                 var mapping = castJoiner.getLeftMapping(0);
-                yield a -> new SingleIndexProperties<>(mapping.apply(a));
+                yield a -> IndexProperties.single(mapping.apply(a));
             }
             default -> {
                 var startIndexInclusive = 0;
@@ -155,18 +155,18 @@ public final class IndexerFactory<Right_> {
                 yield switch (keyFunctionCount) {
                     case 1 -> {
                         var keyFunction = keyFunctionList.get(0);
-                        yield a -> new SingleIndexProperties<>(keyFunction.apply(a));
+                        yield a -> IndexProperties.single(keyFunction.apply(a));
                     }
                     case 2 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
-                        yield a -> new TwoIndexProperties<>(keyFunction1.apply(a), keyFunction2.apply(a));
+                        yield a -> IndexProperties.two(keyFunction1.apply(a), keyFunction2.apply(a));
                     }
                     case 3 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
                         var keyFunction3 = keyFunctionList.get(2);
-                        yield a -> new ThreeIndexProperties<>(keyFunction1.apply(a), keyFunction2.apply(a),
+                        yield a -> IndexProperties.three(keyFunction1.apply(a), keyFunction2.apply(a),
                                 keyFunction3.apply(a));
                     }
                     default -> a -> {
@@ -174,7 +174,7 @@ public final class IndexerFactory<Right_> {
                         for (int i = 0; i < keyFunctionCount; i++) {
                             arr[i] = keyFunctionList.get(i).apply(a);
                         }
-                        return new ManyIndexProperties(arr);
+                        return IndexProperties.many(arr);
                     };
                 };
             }
@@ -185,10 +185,10 @@ public final class IndexerFactory<Right_> {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultTriJoiner<A, B, Right_>) joiner;
         return switch (joinerCount) {
-            case 0 -> (a, b) -> NoneIndexProperties.INSTANCE;
+            case 0 -> (a, b) -> IndexProperties.none();
             case 1 -> {
                 var mapping = castJoiner.getLeftMapping(0);
-                yield (a, b) -> new SingleIndexProperties<>(mapping.apply(a, b));
+                yield (a, b) -> IndexProperties.single(mapping.apply(a, b));
             }
             default -> {
                 var startIndexInclusive = 0;
@@ -241,18 +241,18 @@ public final class IndexerFactory<Right_> {
                 yield switch (keyFunctionCount) {
                     case 1 -> {
                         var keyFunction = keyFunctionList.get(0);
-                        yield (a, b) -> new SingleIndexProperties<>(keyFunction.apply(a, b));
+                        yield (a, b) -> IndexProperties.single(keyFunction.apply(a, b));
                     }
                     case 2 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
-                        yield (a, b) -> new TwoIndexProperties<>(keyFunction1.apply(a, b), keyFunction2.apply(a, b));
+                        yield (a, b) -> IndexProperties.two(keyFunction1.apply(a, b), keyFunction2.apply(a, b));
                     }
                     case 3 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
                         var keyFunction3 = keyFunctionList.get(2);
-                        yield (a, b) -> new ThreeIndexProperties<>(keyFunction1.apply(a, b), keyFunction2.apply(a, b),
+                        yield (a, b) -> IndexProperties.three(keyFunction1.apply(a, b), keyFunction2.apply(a, b),
                                 keyFunction3.apply(a, b));
                     }
                     default -> (a, b) -> {
@@ -260,7 +260,7 @@ public final class IndexerFactory<Right_> {
                         for (int i = 0; i < keyFunctionCount; i++) {
                             arr[i] = keyFunctionList.get(i).apply(a, b);
                         }
-                        return new ManyIndexProperties(arr);
+                        return IndexProperties.many(arr);
                     };
                 };
             }
@@ -271,10 +271,10 @@ public final class IndexerFactory<Right_> {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultQuadJoiner<A, B, C, Right_>) joiner;
         return switch (joinerCount) {
-            case 0 -> (a, b, c) -> NoneIndexProperties.INSTANCE;
+            case 0 -> (a, b, c) -> IndexProperties.none();
             case 1 -> {
                 var mapping = castJoiner.getLeftMapping(0);
-                yield (a, b, c) -> new SingleIndexProperties<>(mapping.apply(a, b, c));
+                yield (a, b, c) -> IndexProperties.single(mapping.apply(a, b, c));
             }
             default -> {
                 var startIndexInclusive = 0;
@@ -328,18 +328,18 @@ public final class IndexerFactory<Right_> {
                 yield switch (keyFunctionCount) {
                     case 1 -> {
                         var keyFunction = keyFunctionList.get(0);
-                        yield (a, b, c) -> new SingleIndexProperties<>(keyFunction.apply(a, b, c));
+                        yield (a, b, c) -> IndexProperties.single(keyFunction.apply(a, b, c));
                     }
                     case 2 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
-                        yield (a, b, c) -> new TwoIndexProperties<>(keyFunction1.apply(a, b, c), keyFunction2.apply(a, b, c));
+                        yield (a, b, c) -> IndexProperties.two(keyFunction1.apply(a, b, c), keyFunction2.apply(a, b, c));
                     }
                     case 3 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
                         var keyFunction3 = keyFunctionList.get(2);
-                        yield (a, b, c) -> new ThreeIndexProperties<>(keyFunction1.apply(a, b, c), keyFunction2.apply(a, b, c),
+                        yield (a, b, c) -> IndexProperties.three(keyFunction1.apply(a, b, c), keyFunction2.apply(a, b, c),
                                 keyFunction3.apply(a, b, c));
                     }
                     default -> (a, b, c) -> {
@@ -347,7 +347,7 @@ public final class IndexerFactory<Right_> {
                         for (int i = 0; i < keyFunctionCount; i++) {
                             arr[i] = keyFunctionList.get(i).apply(a, b, c);
                         }
-                        return new ManyIndexProperties(arr);
+                        return IndexProperties.many(arr);
                     };
                 };
             }
@@ -358,10 +358,10 @@ public final class IndexerFactory<Right_> {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultPentaJoiner<A, B, C, D, Right_>) joiner;
         return switch (joinerCount) {
-            case 0 -> (a, b, c, d) -> NoneIndexProperties.INSTANCE;
+            case 0 -> (a, b, c, d) -> IndexProperties.none();
             case 1 -> {
                 var mapping = castJoiner.getLeftMapping(0);
-                yield (a, b, c, d) -> new SingleIndexProperties<>(mapping.apply(a, b, c, d));
+                yield (a, b, c, d) -> IndexProperties.single(mapping.apply(a, b, c, d));
             }
             default -> {
                 var startIndexInclusive = 0;
@@ -415,19 +415,19 @@ public final class IndexerFactory<Right_> {
                 yield switch (keyFunctionList.size()) {
                     case 1 -> {
                         var keyFunction = keyFunctionList.get(0);
-                        yield (a, b, c, d) -> new SingleIndexProperties<>(keyFunction.apply(a, b, c, d));
+                        yield (a, b, c, d) -> IndexProperties.single(keyFunction.apply(a, b, c, d));
                     }
                     case 2 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
-                        yield (a, b, c, d) -> new TwoIndexProperties<>(keyFunction1.apply(a, b, c, d),
+                        yield (a, b, c, d) -> IndexProperties.two(keyFunction1.apply(a, b, c, d),
                                 keyFunction2.apply(a, b, c, d));
                     }
                     case 3 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
                         var keyFunction3 = keyFunctionList.get(2);
-                        yield (a, b, c, d) -> new ThreeIndexProperties<>(keyFunction1.apply(a, b, c, d),
+                        yield (a, b, c, d) -> IndexProperties.three(keyFunction1.apply(a, b, c, d),
                                 keyFunction2.apply(a, b, c, d), keyFunction3.apply(a, b, c, d));
                     }
                     default -> (a, b, c, d) -> {
@@ -435,7 +435,7 @@ public final class IndexerFactory<Right_> {
                         for (int i = 0; i < keyFunctionCount; i++) {
                             arr[i] = keyFunctionList.get(i).apply(a, b, c, d);
                         }
-                        return new ManyIndexProperties(arr);
+                        return IndexProperties.many(arr);
                     };
                 };
             }
@@ -445,10 +445,10 @@ public final class IndexerFactory<Right_> {
     public Function<Right_, IndexProperties> buildRightMapping() {
         var joinerCount = joiner.getJoinerCount();
         return switch (joinerCount) {
-            case 0 -> a -> NoneIndexProperties.INSTANCE;
+            case 0 -> a -> IndexProperties.none();
             case 1 -> {
                 var mapping = joiner.getRightMapping(0);
-                yield a -> new SingleIndexProperties<>(mapping.apply(a));
+                yield a -> IndexProperties.single(mapping.apply(a));
             }
             default -> {
                 var startIndexInclusive = 0;
@@ -501,18 +501,18 @@ public final class IndexerFactory<Right_> {
                 yield switch (keyFunctionCount) {
                     case 1 -> {
                         var keyFunction = keyFunctionList.get(0);
-                        yield a -> new SingleIndexProperties<>(keyFunction.apply(a));
+                        yield a -> IndexProperties.single(keyFunction.apply(a));
                     }
                     case 2 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
-                        yield a -> new TwoIndexProperties<>(keyFunction1.apply(a), keyFunction2.apply(a));
+                        yield a -> IndexProperties.two(keyFunction1.apply(a), keyFunction2.apply(a));
                     }
                     case 3 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
                         var keyFunction3 = keyFunctionList.get(2);
-                        yield a -> new ThreeIndexProperties<>(keyFunction1.apply(a), keyFunction2.apply(a),
+                        yield a -> IndexProperties.three(keyFunction1.apply(a), keyFunction2.apply(a),
                                 keyFunction3.apply(a));
                     }
                     default -> a -> {
@@ -520,7 +520,7 @@ public final class IndexerFactory<Right_> {
                         for (int i = 0; i < keyFunctionCount; i++) {
                             arr[i] = keyFunctionList.get(i).apply(a);
                         }
-                        return new ManyIndexProperties(arr);
+                        return IndexProperties.many(arr);
                     };
                 };
             }
