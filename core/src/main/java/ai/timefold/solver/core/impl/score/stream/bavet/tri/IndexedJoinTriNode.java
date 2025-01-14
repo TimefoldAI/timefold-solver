@@ -2,9 +2,7 @@ package ai.timefold.solver.core.impl.score.stream.bavet.tri;
 
 import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractIndexedJoinNode;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.BiMapping;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.UniMapping;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
@@ -16,18 +14,16 @@ final class IndexedJoinTriNode<A, B, C>
     private final TriPredicate<A, B, C> filtering;
     private final int outputStoreSize;
 
-    public IndexedJoinTriNode(BiMapping<A, B> mappingAB, UniMapping<C> mappingC,
+    public IndexedJoinTriNode(IndexerFactory<C> indexerFactory,
             int inputStoreIndexAB, int inputStoreIndexEntryAB, int inputStoreIndexOutTupleListAB,
             int inputStoreIndexC, int inputStoreIndexEntryC, int inputStoreIndexOutTupleListC,
             TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle, TriPredicate<A, B, C> filtering,
-            int outputStoreSize, int outputStoreIndexOutEntryAB, int outputStoreIndexOutEntryC,
-            Indexer<BiTuple<A, B>> indexerAB, Indexer<UniTuple<C>> indexerC) {
-        super(mappingAB, mappingC,
+            int outputStoreSize, int outputStoreIndexOutEntryAB, int outputStoreIndexOutEntryC) {
+        super(indexerFactory.buildBiLeftKeysExtractor(), indexerFactory,
                 inputStoreIndexAB, inputStoreIndexEntryAB, inputStoreIndexOutTupleListAB,
                 inputStoreIndexC, inputStoreIndexEntryC, inputStoreIndexOutTupleListC,
                 nextNodesTupleLifecycle, filtering != null,
-                outputStoreIndexOutEntryAB, outputStoreIndexOutEntryC,
-                indexerAB, indexerC);
+                outputStoreIndexOutEntryAB, outputStoreIndexOutEntryC);
         this.filtering = filtering;
         this.outputStoreSize = outputStoreSize;
     }

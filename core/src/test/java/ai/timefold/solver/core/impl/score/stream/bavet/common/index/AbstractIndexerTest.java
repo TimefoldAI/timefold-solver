@@ -11,9 +11,9 @@ abstract class AbstractIndexerTest {
 
     protected <T> List<T> getTuples(Indexer<T> indexer, Object... objectProperties) {
         var properties = switch (objectProperties.length) {
-            case 0 -> IndexProperties.none();
-            case 1 -> IndexProperties.single(objectProperties[0]);
-            default -> IndexProperties.many(objectProperties);
+            case 0 -> IndexKeys.none();
+            case 1 -> IndexKeys.of(objectProperties[0]);
+            default -> IndexKeys.ofMany(objectProperties);
         };
         var result = new ArrayList<T>();
         indexer.forEach(properties, result::add);

@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
 final class EqualsIndexer<T, Key_> implements Indexer<T> {
 
-    private final int propertyIndex;
+    private final int keyIndex;
     private final Supplier<Indexer<T>> downstreamIndexerSupplier;
     private final Map<Key_, Indexer<T>> downstreamIndexerMap = new HashMap<>();
 
@@ -18,62 +18,61 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
         this(0, downstreamIndexerSupplier);
     }
 
-    public EqualsIndexer(int propertyIndex, Supplier<Indexer<T>> downstreamIndexerSupplier) {
-        this.propertyIndex = propertyIndex;
+    public EqualsIndexer(int keyIndex, Supplier<Indexer<T>> downstreamIndexerSupplier) {
+        this.keyIndex = keyIndex;
         this.downstreamIndexerSupplier = Objects.requireNonNull(downstreamIndexerSupplier);
     }
 
     @Override
-    public ElementAwareListEntry<T> put(IndexProperties indexProperties, T tuple) {
-        Key_ indexKey = indexProperties.toKey(propertyIndex);
+    public ElementAwareListEntry<T> put(IndexKeys indexKeys, T tuple) {
+        Key_ indexKey = indexKeys.get(keyIndex);
         // Avoids computeIfAbsent in order to not create lambdas on the hot path.
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
             downstreamIndexer = downstreamIndexerSupplier.get();
             downstreamIndexerMap.put(indexKey, downstreamIndexer);
         }
-        return downstreamIndexer.put(indexProperties, tuple);
+        return downstreamIndexer.put(indexKeys, tuple);
     }
 
     @Override
-    public void remove(IndexProperties indexProperties, ElementAwareListEntry<T> entry) {
-        Key_ indexKey = indexProperties.toKey(propertyIndex);
-        Indexer<T> downstreamIndexer = getDownstreamIndexer(indexProperties, indexKey, entry);
-        downstreamIndexer.remove(indexProperties, entry);
+    public void remove(IndexKeys indexKeys, ElementAwareListEntry<T> entry) {
+        Key_ indexKey = indexKeys.get(keyIndex);
+        Indexer<T> downstreamIndexer = getDownstreamIndexer(indexKeys, indexKey, entry);
+        downstreamIndexer.remove(indexKeys, entry);
         if (downstreamIndexer.isEmpty()) {
             downstreamIndexerMap.remove(indexKey);
         }
     }
 
-    private Indexer<T> getDownstreamIndexer(IndexProperties indexProperties, Key_ indexerKey,
-            ElementAwareListEntry<T> entry) {
+    private Indexer<T> getDownstreamIndexer(IndexKeys indexKeys, Key_ indexerKey, ElementAwareListEntry<T> entry) {
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexerKey);
         if (downstreamIndexer == null) {
-            throw new IllegalStateException("Impossible state: the tuple (" + entry.getElement()
-                    + ") with indexProperties (" + indexProperties
-                    + ") doesn't exist in the indexer " + this + ".");
+            throw new IllegalStateException(
+                    "Impossible state: the tuple (%s) with indexKey (%s) doesn't exist in the indexer %s."
+                            .formatted(entry.getElement(), indexKeys, this));
         }
         return downstreamIndexer;
     }
 
     @Override
-    public int size(IndexProperties indexProperties) {
-        Key_ indexKey = indexProperties.toKey(propertyIndex);
+    public int size(IndexKeys indexKeys) {
+        Key_ indexKey = indexKeys.get(keyIndex);
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
             return 0;
         }
-        return downstreamIndexer.size(indexProperties);
+        return downstreamIndexer.size(indexKeys);
     }
 
     @Override
-    public void forEach(IndexProperties indexProperties, Consumer<T> tupleConsumer) {
-        Key_ indexKey = indexProperties.toKey(propertyIndex);
+    public void forEach(IndexKeys indexKeys, Consumer<T> tupleConsumer) {
+        Key_ indexKey = indexKeys.get(keyIndex);
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
             return;
         }
-        downstreamIndexer.forEach(indexProperties, tupleConsumer);
+        downstreamIndexer.forEach(indexKeys, tupleConsumer);
     }
 
     @Override

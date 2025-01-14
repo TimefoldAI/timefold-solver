@@ -65,23 +65,20 @@ final class BavetIfExistsQuadConstraintStream<Solution_, A, B, C, D, E>
         TupleLifecycle<QuadTuple<A, B, C, D>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         IndexerFactory<E> indexerFactory = new IndexerFactory<>(joiner);
         var node = indexerFactory.hasJoiners()
-                ? (filtering == null ? new IndexedIfExistsQuadNode<>(shouldExist,
-                        indexerFactory.buildQuadLeftMapping(), indexerFactory.buildRightMapping(),
+                ? (filtering == null ? new IndexedIfExistsQuadNode<>(shouldExist, indexerFactory,
                         buildHelper.reserveTupleStoreIndex(parentABCD.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentABCD.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentBridgeE.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentBridgeE.getTupleSource()),
-                        downstream, indexerFactory.buildIndexer(true), indexerFactory.buildIndexer(false))
-                        : new IndexedIfExistsQuadNode<>(shouldExist,
-                                indexerFactory.buildQuadLeftMapping(), indexerFactory.buildRightMapping(),
+                        downstream)
+                        : new IndexedIfExistsQuadNode<>(shouldExist, indexerFactory,
                                 buildHelper.reserveTupleStoreIndex(parentABCD.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentABCD.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentABCD.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentBridgeE.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentBridgeE.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentBridgeE.getTupleSource()),
-                                downstream, indexerFactory.buildIndexer(true), indexerFactory.buildIndexer(false),
-                                filtering))
+                                downstream, filtering))
                 : (filtering == null ? new UnindexedIfExistsQuadNode<>(shouldExist,
                         buildHelper.reserveTupleStoreIndex(parentABCD.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentBridgeE.getTupleSource()), downstream)

@@ -3,9 +3,7 @@ package ai.timefold.solver.core.impl.score.stream.bavet.uni;
 import java.util.function.BiPredicate;
 
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractIndexedIfExistsNode;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.ExistsCounter;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.UniMapping;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.UniTuple;
 
@@ -13,29 +11,24 @@ final class IndexedIfExistsUniNode<A, B> extends AbstractIndexedIfExistsNode<Uni
 
     private final BiPredicate<A, B> filtering;
 
-    public IndexedIfExistsUniNode(boolean shouldExist,
-            UniMapping<A> mappingA, UniMapping<B> mappingB,
-            int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry, int inputStoreIndexRightProperties,
-            int inputStoreIndexRightEntry,
-            TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
-            Indexer<ExistsCounter<UniTuple<A>>> indexerA, Indexer<UniTuple<B>> indexerB) {
-        this(shouldExist, mappingA, mappingB,
-                inputStoreIndexLeftProperties, inputStoreIndexLeftCounterEntry, -1, inputStoreIndexRightProperties,
-                inputStoreIndexRightEntry, -1,
-                nextNodesTupleLifecycle, indexerA, indexerB, null);
+    public IndexedIfExistsUniNode(boolean shouldExist, IndexerFactory<B> indexerFactory,
+            int inputStoreIndexLeftKeys, int inputStoreIndexLeftCounterEntry,
+            int inputStoreIndexRightKeys, int inputStoreIndexRightEntry,
+            TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle) {
+        this(shouldExist, indexerFactory,
+                inputStoreIndexLeftKeys, inputStoreIndexLeftCounterEntry, -1,
+                inputStoreIndexRightKeys, inputStoreIndexRightEntry, -1,
+                nextNodesTupleLifecycle, null);
     }
 
-    public IndexedIfExistsUniNode(boolean shouldExist,
-            UniMapping<A> mappingA, UniMapping<B> mappingB,
-            int inputStoreIndexLeftProperties, int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList,
-            int inputStoreIndexRightProperties, int inputStoreIndexRightEntry, int inputStoreIndexRightTrackerList,
-            TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
-            Indexer<ExistsCounter<UniTuple<A>>> indexerA, Indexer<UniTuple<B>> indexerB,
-            BiPredicate<A, B> filtering) {
-        super(shouldExist, mappingA, mappingB,
-                inputStoreIndexLeftProperties, inputStoreIndexLeftCounterEntry, inputStoreIndexLeftTrackerList,
-                inputStoreIndexRightProperties, inputStoreIndexRightEntry, inputStoreIndexRightTrackerList,
-                nextNodesTupleLifecycle, indexerA, indexerB, filtering != null);
+    public IndexedIfExistsUniNode(boolean shouldExist, IndexerFactory<B> indexerFactory,
+            int inputStoreIndexLeftKeys, int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList,
+            int inputStoreIndexRightKeys, int inputStoreIndexRightEntry, int inputStoreIndexRightTrackerList,
+            TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle, BiPredicate<A, B> filtering) {
+        super(shouldExist, indexerFactory.buildUniLeftKeysExtractor(), indexerFactory,
+                inputStoreIndexLeftKeys, inputStoreIndexLeftCounterEntry, inputStoreIndexLeftTrackerList,
+                inputStoreIndexRightKeys, inputStoreIndexRightEntry, inputStoreIndexRightTrackerList,
+                nextNodesTupleLifecycle, filtering != null);
         this.filtering = filtering;
     }
 

@@ -2,9 +2,7 @@ package ai.timefold.solver.core.impl.score.stream.bavet.quad;
 
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractIndexedJoinNode;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.TriMapping;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.UniMapping;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
@@ -16,18 +14,16 @@ final class IndexedJoinQuadNode<A, B, C, D>
     private final QuadPredicate<A, B, C, D> filtering;
     private final int outputStoreSize;
 
-    public IndexedJoinQuadNode(TriMapping<A, B, C> mappingABC, UniMapping<D> mappingD,
+    public IndexedJoinQuadNode(IndexerFactory<D> indexerFactory,
             int inputStoreIndexABC, int inputStoreIndexEntryABC, int inputStoreIndexOutTupleListABC,
             int inputStoreIndexD, int inputStoreIndexEntryD, int inputStoreIndexOutTupleListD,
             TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle, QuadPredicate<A, B, C, D> filtering,
-            int outputStoreSize, int outputStoreIndexOutEntryABC, int outputStoreIndexOutEntryD,
-            Indexer<TriTuple<A, B, C>> indexerABC, Indexer<UniTuple<D>> indexerD) {
-        super(mappingABC, mappingD,
+            int outputStoreSize, int outputStoreIndexOutEntryABC, int outputStoreIndexOutEntryD) {
+        super(indexerFactory.buildTriLeftKeysExtractor(), indexerFactory,
                 inputStoreIndexABC, inputStoreIndexEntryABC, inputStoreIndexOutTupleListABC,
                 inputStoreIndexD, inputStoreIndexEntryD, inputStoreIndexOutTupleListD,
                 nextNodesTupleLifecycle, filtering != null,
-                outputStoreIndexOutEntryABC, outputStoreIndexOutEntryD,
-                indexerABC, indexerD);
+                outputStoreIndexOutEntryABC, outputStoreIndexOutEntryD);
         this.filtering = filtering;
         this.outputStoreSize = outputStoreSize;
     }

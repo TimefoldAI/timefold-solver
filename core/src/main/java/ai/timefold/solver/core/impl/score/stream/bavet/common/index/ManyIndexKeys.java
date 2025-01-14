@@ -2,21 +2,21 @@ package ai.timefold.solver.core.impl.score.stream.bavet.common.index;
 
 import java.util.Arrays;
 
-record ManyIndexProperties(Object... properties) implements IndexProperties {
+record ManyIndexKeys(Object... properties) implements IndexKeys {
 
-    static final ManyIndexProperties EMPTY = new ManyIndexProperties();
+    static final ManyIndexKeys EMPTY = new ManyIndexKeys();
 
     @Override
-    public <Type_> Type_ toKey(int id) {
+    public <Type_> Type_ get(int id) {
         return (Type_) properties[id];
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) { // Due to the use of ManyIndexProperties.EMPTY, this is possible.
+        if (this == o) { // Due to the use of ManyIndexKeys.EMPTY, this is possible.
             return true;
         }
-        return o instanceof ManyIndexProperties other && Arrays.equals(properties, other.properties);
+        return o instanceof ManyIndexKeys other && Arrays.equals(properties, other.properties);
     }
 
     @Override

@@ -2,12 +2,12 @@ package ai.timefold.solver.core.impl.score.stream.bavet.common.index;
 
 import java.util.Objects;
 
-record SingleIndexProperties<A>(A property) implements IndexProperties {
+record SingleIndexKeys<A>(A property) implements IndexKeys {
 
-    static final SingleIndexProperties<Void> NULL = new SingleIndexProperties<>(null);
+    static final SingleIndexKeys<Void> NULL = new SingleIndexKeys<>(null);
 
     @Override
-    public <Type_> Type_ toKey(int id) {
+    public <Type_> Type_ get(int id) {
         if (id != 0) {
             throw new IllegalArgumentException("Impossible state: index (" + id + ") != 0");
         }
@@ -16,10 +16,10 @@ record SingleIndexProperties<A>(A property) implements IndexProperties {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) { // Due to the use of SingleIndexProperties.NULL, this is possible and likely.
+        if (this == o) { // Due to the use of SingleIndexKeys.NULL, this is possible and likely.
             return true;
         }
-        return o instanceof SingleIndexProperties<?> that && Objects.equals(property, that.property);
+        return o instanceof SingleIndexKeys<?> that && Objects.equals(property, that.property);
     }
 
     @Override

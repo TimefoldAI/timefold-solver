@@ -7,14 +7,14 @@ import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
 /**
  * An indexer for entity or fact {@code X},
- * maps a property or a combination of properties of {@code X}, denoted by {@code indexProperties},
+ * maps a property or a combination of properties of {@code X}, denoted by {@code indexKeys},
  * to all instances of {@code X} that match those properties,
  * depending on the the indexer type (equal, lower than, ...).
  * For example for {@code {Lesson(id=1, room=A), Lesson(id=2, room=B), Lesson(id=3, room=A)}},
  * calling {@code visit(room=A)} would visit lesson 1 and 3.
  * <p>
  * The fact X is wrapped in a Tuple, because the {@link TupleState} is needed by clients of
- * {@link #forEach(IndexProperties, Consumer)}.
+ * {@link #forEach(IndexKeys, Consumer)}.
  *
  * @param <T> The element type. Often a tuple.
  *        For example for {@code from(A).join(B)}, the tuple is {@code UniTuple<A>} xor {@code UniTuple<B>}.
@@ -22,13 +22,13 @@ import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
  */
 public sealed interface Indexer<T> permits ComparisonIndexer, EqualsIndexer, NoneIndexer {
 
-    ElementAwareListEntry<T> put(IndexProperties indexProperties, T tuple);
+    ElementAwareListEntry<T> put(IndexKeys indexKeys, T tuple);
 
-    void remove(IndexProperties indexProperties, ElementAwareListEntry<T> entry);
+    void remove(IndexKeys indexKeys, ElementAwareListEntry<T> entry);
 
-    int size(IndexProperties indexProperties);
+    int size(IndexKeys indexKeys);
 
-    void forEach(IndexProperties indexProperties, Consumer<T> tupleConsumer);
+    void forEach(IndexKeys indexKeys, Consumer<T> tupleConsumer);
 
     boolean isEmpty();
 

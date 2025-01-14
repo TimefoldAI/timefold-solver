@@ -23,9 +23,9 @@ class NoneIndexerTest extends AbstractIndexerTest {
     void put() {
         var indexer = new NoneIndexer<>();
         var annTuple = newTuple("Ann-F-40");
-        assertThat(indexer.size(IndexProperties.none())).isEqualTo(0);
-        indexer.put(IndexProperties.none(), annTuple);
-        assertThat(indexer.size(IndexProperties.none())).isEqualTo(1);
+        assertThat(indexer.size(IndexKeys.none())).isEqualTo(0);
+        indexer.put(IndexKeys.none(), annTuple);
+        assertThat(indexer.size(IndexKeys.none())).isEqualTo(1);
         assertSoftly(softly -> {
             softly.assertThat(indexer.isEmpty()).isFalse();
             softly.assertThat(getTuples(indexer)).containsExactly(annTuple);
@@ -36,18 +36,18 @@ class NoneIndexerTest extends AbstractIndexerTest {
     void removeTwice() {
         var indexer = new NoneIndexer<>();
         var annTuple = newTuple("Ann-F-40");
-        var annEntry = indexer.put(IndexProperties.none(), annTuple);
+        var annEntry = indexer.put(IndexKeys.none(), annTuple);
         assertSoftly(softly -> {
             softly.assertThat(indexer.isEmpty()).isFalse();
             softly.assertThat(getTuples(indexer)).containsExactly(annTuple);
         });
 
-        indexer.remove(IndexProperties.none(), annEntry);
+        indexer.remove(IndexKeys.none(), annEntry);
         assertSoftly(softly -> {
             softly.assertThat(indexer.isEmpty()).isTrue();
             softly.assertThat(getTuples(indexer)).isEmpty();
         });
-        assertThatThrownBy(() -> indexer.remove(IndexProperties.none(), annEntry))
+        assertThatThrownBy(() -> indexer.remove(IndexKeys.none(), annEntry))
                 .isInstanceOf(IllegalStateException.class);
     }
 
@@ -56,9 +56,9 @@ class NoneIndexerTest extends AbstractIndexerTest {
         var indexer = new NoneIndexer<>();
 
         var annTuple = newTuple("Ann-F-40");
-        indexer.put(IndexProperties.none(), annTuple);
+        indexer.put(IndexKeys.none(), annTuple);
         var bethTuple = newTuple("Beth-F-30");
-        indexer.put(IndexProperties.none(), bethTuple);
+        indexer.put(IndexKeys.none(), bethTuple);
 
         assertThat(getTuples(indexer)).containsOnly(annTuple, bethTuple);
     }

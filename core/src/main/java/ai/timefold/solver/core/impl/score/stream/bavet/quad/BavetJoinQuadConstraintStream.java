@@ -59,8 +59,7 @@ public final class BavetJoinQuadConstraintStream<Solution_, A, B, C, D>
         TupleLifecycle<QuadTuple<A, B, C, D>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         IndexerFactory<D> indexerFactory = new IndexerFactory<>(joiner);
         var node = indexerFactory.hasJoiners()
-                ? new IndexedJoinQuadNode<>(
-                        indexerFactory.buildTriLeftMapping(), indexerFactory.buildRightMapping(),
+                ? new IndexedJoinQuadNode<>(indexerFactory,
                         buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
@@ -68,8 +67,7 @@ public final class BavetJoinQuadConstraintStream<Solution_, A, B, C, D>
                         buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
                         downstream, filtering, outputStoreSize + 2,
-                        outputStoreSize, outputStoreSize + 1,
-                        indexerFactory.buildIndexer(true), indexerFactory.buildIndexer(false))
+                        outputStoreSize, outputStoreSize + 1)
                 : new UnindexedJoinQuadNode<>(
                         buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
