@@ -76,7 +76,7 @@ public class QueuedEntityPlacerFactory<Solution_>
                     .buildMoveSelector(configPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.ORIGINAL, false);
             moveSelectorList.add(moveSelector);
         }
-        return new QueuedEntityPlacer<>(entitySelector, moveSelectorList);
+        return new QueuedEntityPlacer<>(this, configPolicy, entitySelector, moveSelectorList);
     }
 
     @SuppressWarnings("rawtypes")

@@ -7,4 +7,5 @@ public interface EntityPlacer<Solution_> extends Iterable<Placement<Solution_>>,
 
     EntityPlacer<Solution_> rebuildWithFilter(SelectionFilter<Solution_, Object> filter);
 
+    EntityPlacer<Solution_> copy();
 }

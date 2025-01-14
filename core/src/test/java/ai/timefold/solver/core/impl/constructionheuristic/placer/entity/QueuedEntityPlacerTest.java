@@ -4,16 +4,22 @@ import static ai.timefold.solver.core.impl.constructionheuristic.placer.entity.P
 import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertAllCodesOfIterator;
 import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.verifyPhaseLifecycle;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 
+import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacerFactory;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.Placement;
+import ai.timefold.solver.core.impl.constructionheuristic.placer.PooledEntityPlacer;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.QueuedEntityPlacer;
+import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.MimicRecordingEntitySelector;
@@ -44,35 +50,34 @@ class QueuedEntityPlacerTest {
         ValueSelector<TestdataSolution> valueSelector = SelectorTestUtils.mockValueSelector(TestdataEntity.class, "value",
                 new TestdataValue("1"), new TestdataValue("2"));
 
-        MoveSelector<TestdataSolution> moveSelector =
+        var moveSelector =
                 new ChangeMoveSelector<>(new MimicReplayingEntitySelector<>(recordingEntitySelector), valueSelector, false);
-        QueuedEntityPlacer<TestdataSolution> placer =
-                new QueuedEntityPlacer<>(recordingEntitySelector, Collections.singletonList(moveSelector));
+        var placer = new QueuedEntityPlacer<>(null, null, recordingEntitySelector, Collections.singletonList(moveSelector));
 
-        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+        var solverScope = mock(SolverScope.class);
         placer.solvingStarted(solverScope);
 
-        AbstractPhaseScope<TestdataSolution> phaseScopeA = mock(AbstractPhaseScope.class);
+        var phaseScopeA = mock(AbstractPhaseScope.class);
         when(phaseScopeA.getSolverScope()).thenReturn(solverScope);
         placer.phaseStarted(phaseScopeA);
-        Iterator<Placement<TestdataSolution>> placementIterator = placer.iterator();
+        var placementIterator = placer.iterator();
 
         assertThat(placementIterator).hasNext();
-        AbstractStepScope<TestdataSolution> stepScopeA1 = mock(AbstractStepScope.class);
+        var stepScopeA1 = mock(AbstractStepScope.class);
         when(stepScopeA1.getPhaseScope()).thenReturn(phaseScopeA);
         placer.stepStarted(stepScopeA1);
         assertEntityPlacement(placementIterator.next(), "a", "1", "2");
         placer.stepEnded(stepScopeA1);
 
         assertThat(placementIterator).hasNext();
-        AbstractStepScope<TestdataSolution> stepScopeA2 = mock(AbstractStepScope.class);
+        var stepScopeA2 = mock(AbstractStepScope.class);
         when(stepScopeA2.getPhaseScope()).thenReturn(phaseScopeA);
         placer.stepStarted(stepScopeA2);
         assertEntityPlacement(placementIterator.next(), "b", "1", "2");
         placer.stepEnded(stepScopeA2);
 
         assertThat(placementIterator).hasNext();
-        AbstractStepScope<TestdataSolution> stepScopeA3 = mock(AbstractStepScope.class);
+        var stepScopeA3 = mock(AbstractStepScope.class);
         when(stepScopeA3.getPhaseScope()).thenReturn(phaseScopeA);
         placer.stepStarted(stepScopeA3);
         assertEntityPlacement(placementIterator.next(), "c", "1", "2");
@@ -81,13 +86,13 @@ class QueuedEntityPlacerTest {
         assertThat(placementIterator).isExhausted();
         placer.phaseEnded(phaseScopeA);
 
-        AbstractPhaseScope<TestdataSolution> phaseScopeB = mock(AbstractPhaseScope.class);
+        var phaseScopeB = mock(AbstractPhaseScope.class);
         when(phaseScopeB.getSolverScope()).thenReturn(solverScope);
         placer.phaseStarted(phaseScopeB);
         placementIterator = placer.iterator();
 
         assertThat(placementIterator).hasNext();
-        AbstractStepScope<TestdataSolution> stepScopeB1 = mock(AbstractStepScope.class);
+        var stepScopeB1 = mock(AbstractStepScope.class);
         when(stepScopeB1.getPhaseScope()).thenReturn(phaseScopeB);
         placer.stepStarted(stepScopeB1);
         assertEntityPlacement(placementIterator.next(), "a", "1", "2");
@@ -115,7 +120,7 @@ class QueuedEntityPlacerTest {
                 TestdataMultiVarEntity.class, "secondaryValue",
                 new TestdataValue("8"), new TestdataValue("9"));
 
-        List<MoveSelector<TestdataMultiVarSolution>> moveSelectorList = new ArrayList<>(2);
+        var moveSelectorList = new ArrayList<MoveSelector<TestdataMultiVarSolution>>(2);
         moveSelectorList.add(new ChangeMoveSelector<>(new MimicReplayingEntitySelector<>(recordingEntitySelector),
                 primaryValueSelector,
                 false));
@@ -123,40 +128,40 @@ class QueuedEntityPlacerTest {
                 new MimicReplayingEntitySelector<>(recordingEntitySelector),
                 secondaryValueSelector,
                 false));
-        QueuedEntityPlacer<TestdataMultiVarSolution> placer =
-                new QueuedEntityPlacer<>(recordingEntitySelector, moveSelectorList);
+        var placer =
+                new QueuedEntityPlacer<>(null, null, recordingEntitySelector, moveSelectorList);
 
-        SolverScope<TestdataMultiVarSolution> solverScope = mock(SolverScope.class);
+        var solverScope = mock(SolverScope.class);
         placer.solvingStarted(solverScope);
 
-        AbstractPhaseScope<TestdataMultiVarSolution> phaseScopeA = mock(AbstractPhaseScope.class);
+        var phaseScopeA = mock(AbstractPhaseScope.class);
         when(phaseScopeA.getSolverScope()).thenReturn(solverScope);
         placer.phaseStarted(phaseScopeA);
         Iterator<Placement<TestdataMultiVarSolution>> placementIterator = placer.iterator();
 
         assertThat(placementIterator).hasNext();
-        AbstractStepScope<TestdataMultiVarSolution> stepScopeA1 = mock(AbstractStepScope.class);
+        var stepScopeA1 = mock(AbstractStepScope.class);
         when(stepScopeA1.getPhaseScope()).thenReturn(phaseScopeA);
         placer.stepStarted(stepScopeA1);
         assertEntityPlacement(placementIterator.next(), "a", "1", "2", "3");
         placer.stepEnded(stepScopeA1);
 
         assertThat(placementIterator).hasNext();
-        AbstractStepScope<TestdataMultiVarSolution> stepScopeA2 = mock(AbstractStepScope.class);
+        var stepScopeA2 = mock(AbstractStepScope.class);
         when(stepScopeA2.getPhaseScope()).thenReturn(phaseScopeA);
         placer.stepStarted(stepScopeA2);
         assertEntityPlacement(placementIterator.next(), "a", "8", "9");
         placer.stepEnded(stepScopeA2);
 
         assertThat(placementIterator).hasNext();
-        AbstractStepScope<TestdataMultiVarSolution> stepScopeA3 = mock(AbstractStepScope.class);
+        var stepScopeA3 = mock(AbstractStepScope.class);
         when(stepScopeA3.getPhaseScope()).thenReturn(phaseScopeA);
         placer.stepStarted(stepScopeA3);
         assertEntityPlacement(placementIterator.next(), "b", "1", "2", "3");
         placer.stepEnded(stepScopeA3);
 
         assertThat(placementIterator).hasNext();
-        AbstractStepScope<TestdataMultiVarSolution> stepScopeA4 = mock(AbstractStepScope.class);
+        var stepScopeA4 = mock(AbstractStepScope.class);
         when(stepScopeA4.getPhaseScope()).thenReturn(phaseScopeA);
         placer.stepStarted(stepScopeA4);
         assertEntityPlacement(placementIterator.next(), "b", "8", "9");
@@ -186,27 +191,27 @@ class QueuedEntityPlacerTest {
                 TestdataMultiVarEntity.class, "secondaryValue",
                 new TestdataValue("8"), new TestdataValue("9"));
 
-        List<MoveSelector<TestdataMultiVarSolution>> moveSelectorList = new ArrayList<>(2);
+        var moveSelectorList = new ArrayList<MoveSelector<TestdataMultiVarSolution>>(2);
         moveSelectorList.add(new ChangeMoveSelector<>(new MimicReplayingEntitySelector<>(recordingEntitySelector),
                 primaryValueSelector,
                 false));
         moveSelectorList.add(new ChangeMoveSelector<>(new MimicReplayingEntitySelector<>(recordingEntitySelector),
                 secondaryValueSelector,
                 false));
-        MoveSelector<TestdataMultiVarSolution> moveSelector = new CartesianProductMoveSelector<>(moveSelectorList, true, false);
-        QueuedEntityPlacer<TestdataMultiVarSolution> placer = new QueuedEntityPlacer<>(recordingEntitySelector,
+        var moveSelector = new CartesianProductMoveSelector<>(moveSelectorList, true, false);
+        var placer = new QueuedEntityPlacer<>(null, null, recordingEntitySelector,
                 Collections.singletonList(moveSelector));
 
-        SolverScope<TestdataMultiVarSolution> solverScope = mock(SolverScope.class);
+        var solverScope = mock(SolverScope.class);
         placer.solvingStarted(solverScope);
 
-        AbstractPhaseScope<TestdataMultiVarSolution> phaseScopeA = mock(AbstractPhaseScope.class);
+        var phaseScopeA = mock(AbstractPhaseScope.class);
         when(phaseScopeA.getSolverScope()).thenReturn(solverScope);
         placer.phaseStarted(phaseScopeA);
         Iterator<Placement<TestdataMultiVarSolution>> placementIterator = placer.iterator();
 
         assertThat(placementIterator).hasNext();
-        AbstractStepScope<TestdataMultiVarSolution> stepScopeA1 = mock(AbstractStepScope.class);
+        var stepScopeA1 = mock(AbstractStepScope.class);
         when(stepScopeA1.getPhaseScope()).thenReturn(phaseScopeA);
         placer.stepStarted(stepScopeA1);
         assertAllCodesOfIterator(placementIterator.next().iterator(),
@@ -214,7 +219,7 @@ class QueuedEntityPlacerTest {
         placer.stepEnded(stepScopeA1);
 
         assertThat(placementIterator).hasNext();
-        AbstractStepScope<TestdataMultiVarSolution> stepScopeA2 = mock(AbstractStepScope.class);
+        var stepScopeA2 = mock(AbstractStepScope.class);
         when(stepScopeA2.getPhaseScope()).thenReturn(phaseScopeA);
         placer.stepStarted(stepScopeA2);
         assertAllCodesOfIterator(placementIterator.next().iterator(),
@@ -229,6 +234,37 @@ class QueuedEntityPlacerTest {
         verifyPhaseLifecycle(entitySelector, 1, 1, 2);
         verifyPhaseLifecycle(primaryValueSelector, 1, 1, 2);
         verifyPhaseLifecycle(secondaryValueSelector, 1, 1, 2);
+    }
+
+    @Test
+    void copy() {
+        EntitySelector<TestdataMultiVarSolution> entitySelector =
+                SelectorTestUtils.mockEntitySelector(TestdataMultiVarEntity.class,
+                        new TestdataMultiVarEntity("a"), new TestdataMultiVarEntity("b"));
+        MimicRecordingEntitySelector<TestdataMultiVarSolution> recordingEntitySelector =
+                new MimicRecordingEntitySelector<>(entitySelector);
+        ValueSelector<TestdataMultiVarSolution> primaryValueSelector = SelectorTestUtils.mockValueSelector(
+                TestdataMultiVarEntity.class, "primaryValue",
+                new TestdataValue("1"), new TestdataValue("2"), new TestdataValue("3"));
+        ValueSelector<TestdataMultiVarSolution> secondaryValueSelector = SelectorTestUtils.mockValueSelector(
+                TestdataMultiVarEntity.class, "secondaryValue",
+                new TestdataValue("8"), new TestdataValue("9"));
+        var moveSelectorList = new ArrayList<MoveSelector<TestdataMultiVarSolution>>(2);
+        moveSelectorList.add(new ChangeMoveSelector<>(
+                new MimicReplayingEntitySelector<>(recordingEntitySelector),
+                primaryValueSelector,
+                false));
+        moveSelectorList.add(
+                new ChangeMoveSelector<>(new MimicReplayingEntitySelector<>(recordingEntitySelector), secondaryValueSelector,
+                        false));
+        var moveSelector = new CartesianProductMoveSelector<>(moveSelectorList, true, false);
+        var factory = mock(EntityPlacerFactory.class);
+        var configPolicy = mock(HeuristicConfigPolicy.class);
+        assertThatThrownBy(() -> new PooledEntityPlacer<>(null, null, moveSelector).copy());
+        var placer = new QueuedEntityPlacer<>(factory, configPolicy, recordingEntitySelector,
+                Collections.singletonList(moveSelector));
+        placer.copy();
+        verify(factory, times(1)).buildEntityPlacer(any());
     }
 
 }

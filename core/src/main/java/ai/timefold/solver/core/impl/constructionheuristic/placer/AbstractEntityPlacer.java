@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.constructionheuristic.placer;
 
+import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleSupport;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
@@ -17,7 +18,23 @@ public abstract class AbstractEntityPlacer<Solution_> implements EntityPlacer<So
 
     protected final transient Logger logger = LoggerFactory.getLogger(getClass());
 
+    protected final EntityPlacerFactory<Solution_> factory;
+    protected final HeuristicConfigPolicy<Solution_> configPolicy;
+
     protected PhaseLifecycleSupport<Solution_> phaseLifecycleSupport = new PhaseLifecycleSupport<>();
+
+    AbstractEntityPlacer(EntityPlacerFactory<Solution_> factory, HeuristicConfigPolicy<Solution_> configPolicy) {
+        this.factory = factory;
+        this.configPolicy = configPolicy;
+    }
+
+    @Override
+    public EntityPlacer<Solution_> copy() {
+        if (factory == null || configPolicy == null) {
+            throw new IllegalStateException("The entity placer cannot be copied.");
+        }
+        return factory.buildEntityPlacer(configPolicy.copyConfigPolicy());
+    }
 
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {

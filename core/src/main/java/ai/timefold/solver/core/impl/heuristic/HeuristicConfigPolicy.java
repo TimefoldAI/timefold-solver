@@ -147,6 +147,16 @@ public class HeuristicConfigPolicy<Solution_> {
                 .withLogIndentation(logIndentation);
     }
 
+    public HeuristicConfigPolicy<Solution_> copyConfigPolicy() {
+        return cloneBuilder()
+                .withEntitySorterManner(entitySorterManner)
+                .withValueSorterManner(valueSorterManner)
+                .withReinitializeVariableFilterEnabled(reinitializeVariableFilterEnabled)
+                .withInitializedChainedValueFilterEnabled(initializedChainedValueFilterEnabled)
+                .withUnassignedValuesAllowed(unassignedValuesAllowed)
+                .build();
+    }
+
     public HeuristicConfigPolicy<Solution_> createPhaseConfigPolicy() {
         return cloneBuilder().build();
     }
