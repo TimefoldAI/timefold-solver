@@ -10,22 +10,34 @@ import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
 final class EqualsIndexer<T, Key_> implements Indexer<T> {
 
-    private final int keyIndex;
+    private final KeyRetriever<Key_> keyRetriever;
     private final Supplier<Indexer<T>> downstreamIndexerSupplier;
     private final Map<Key_, Indexer<T>> downstreamIndexerMap = new HashMap<>();
 
-    public EqualsIndexer(Supplier<Indexer<T>> downstreamIndexerSupplier) {
-        this(0, downstreamIndexerSupplier);
+    /**
+     * Construct an {@link EqualsIndexer} which immediately ends in a {@link NoneIndexer}.
+     * This means {@code indexKeys} must be a single key.
+     */
+    public EqualsIndexer() {
+        this.keyRetriever = new SingleKeyRetriever<>();
+        this.downstreamIndexerSupplier = NoneIndexer::new;
     }
 
+    /**
+     * Construct an {@link EqualsIndexer} which does not immediately go to a {@link NoneIndexer}.
+     * This means {@code indexKeys} must be an instance of {@link IndexKeys}.
+     * 
+     * @param keyIndex the index of the key to use within {@link IndexKeys}.
+     * @param downstreamIndexerSupplier the supplier of the downstream indexer
+     */
     public EqualsIndexer(int keyIndex, Supplier<Indexer<T>> downstreamIndexerSupplier) {
-        this.keyIndex = keyIndex;
+        this.keyRetriever = new ManyKeyRetriever<>(keyIndex);
         this.downstreamIndexerSupplier = Objects.requireNonNull(downstreamIndexerSupplier);
     }
 
     @Override
     public ElementAwareListEntry<T> put(Object indexKeys, T tuple) {
-        Key_ indexKey = Indexer.of(indexKeys, keyIndex);
+        Key_ indexKey = keyRetriever.apply(indexKeys);
         // Avoids computeIfAbsent in order to not create lambdas on the hot path.
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
@@ -37,7 +49,7 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
 
     @Override
     public void remove(Object indexKeys, ElementAwareListEntry<T> entry) {
-        Key_ indexKey = Indexer.of(indexKeys, keyIndex);
+        Key_ indexKey = keyRetriever.apply(indexKeys);
         Indexer<T> downstreamIndexer = getDownstreamIndexer(indexKeys, indexKey, entry);
         downstreamIndexer.remove(indexKeys, entry);
         if (downstreamIndexer.isEmpty()) {
@@ -57,7 +69,7 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
 
     @Override
     public int size(Object indexKeys) {
-        Key_ indexKey = Indexer.of(indexKeys, keyIndex);
+        Key_ indexKey = keyRetriever.apply(indexKeys);
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
             return 0;
@@ -67,7 +79,7 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
 
     @Override
     public void forEach(Object indexKeys, Consumer<T> tupleConsumer) {
-        Key_ indexKey = Indexer.of(indexKeys, keyIndex);
+        Key_ indexKey = keyRetriever.apply(indexKeys);
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
             return;

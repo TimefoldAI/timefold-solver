@@ -22,26 +22,6 @@ import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
  */
 public sealed interface Indexer<T> permits ComparisonIndexer, EqualsIndexer, NoneIndexer {
 
-    /**
-     * Retrieves the key at a given position.
-     *
-     * @param indexKeys The key(s) available to the indexer.
-     * @param id The position of the key.
-     * @return The key at the given position.
-     * @param <Key_> The type of the key.
-     * @see IndexKeys#of(Object) Description of why indexKeys sometimes isn't an instance of class IndexKeys.
-     */
-    @SuppressWarnings("unchecked")
-    static <Key_> Key_ of(Object indexKeys, int id) {
-        if (indexKeys instanceof IndexKeys keys) {
-            return keys.get(id);
-        } else if (id != 0) {
-            throw new IllegalArgumentException("Impossible state: the index is a single key (%s), yet the id is not zero (%d)."
-                    .formatted(indexKeys, id));
-        }
-        return (Key_) indexKeys;
-    }
-
     ElementAwareListEntry<T> put(Object indexKeys, T tuple);
 
     void remove(Object indexKeys, ElementAwareListEntry<T> entry);

@@ -483,26 +483,36 @@ public final class IndexerFactory<Right_> {
         } else if (joiner.getJoinerCount() == 1) { // Single joiner maps directly to EqualsIndexer or ComparisonIndexer.
             var joinerType = joiner.getJoinerType(0);
             if (joinerType == JoinerType.EQUAL) {
-                return new EqualsIndexer<>(NoneIndexer::new);
+                return new EqualsIndexer<>();
             } else {
-                return new ComparisonIndexer<>(isLeftBridge ? joinerType : joinerType.flip(), NoneIndexer::new);
+                return new ComparisonIndexer<>(isLeftBridge ? joinerType : joinerType.flip());
             }
         }
         // The following code builds the children first, so it needs to iterate over the joiners in reverse order.
         var descendingJoinerTypeMap = joinerTypeMap.descendingMap();
-        Supplier<Indexer<T>> downstreamIndexerSupplier = NoneIndexer::new;
+        Supplier<Indexer<T>> noneIndexerSupplier = NoneIndexer::new;
+        Supplier<Indexer<T>> downstreamIndexerSupplier = noneIndexerSupplier;
         var indexPropertyId = descendingJoinerTypeMap.size() - 1;
         for (var entry : descendingJoinerTypeMap.entrySet()) {
             var joinerType = entry.getValue();
-            var actualDownstreamIndexerSupplier = downstreamIndexerSupplier;
-            var effectivelyFinalIndexPropertyId = indexPropertyId;
-            if (joinerType == JoinerType.EQUAL) {
-                downstreamIndexerSupplier =
-                        () -> new EqualsIndexer<>(effectivelyFinalIndexPropertyId, actualDownstreamIndexerSupplier);
+            if (downstreamIndexerSupplier == noneIndexerSupplier && indexPropertyId == 0) {
+                if (joinerType == JoinerType.EQUAL) {
+                    downstreamIndexerSupplier = EqualsIndexer::new;
+                } else {
+                    var actualJoinerType = isLeftBridge ? joinerType : joinerType.flip();
+                    downstreamIndexerSupplier = () -> new ComparisonIndexer<>(actualJoinerType);
+                }
             } else {
-                var actualJoinerType = isLeftBridge ? joinerType : joinerType.flip();
-                downstreamIndexerSupplier = () -> new ComparisonIndexer<>(actualJoinerType, effectivelyFinalIndexPropertyId,
-                        actualDownstreamIndexerSupplier);
+                var actualDownstreamIndexerSupplier = downstreamIndexerSupplier;
+                var effectivelyFinalIndexPropertyId = indexPropertyId;
+                if (joinerType == JoinerType.EQUAL) {
+                    downstreamIndexerSupplier =
+                            () -> new EqualsIndexer<>(effectivelyFinalIndexPropertyId, actualDownstreamIndexerSupplier);
+                } else {
+                    var actualJoinerType = isLeftBridge ? joinerType : joinerType.flip();
+                    downstreamIndexerSupplier = () -> new ComparisonIndexer<>(actualJoinerType, effectivelyFinalIndexPropertyId,
+                            actualDownstreamIndexerSupplier);
+                }
             }
             indexPropertyId--;
         }
