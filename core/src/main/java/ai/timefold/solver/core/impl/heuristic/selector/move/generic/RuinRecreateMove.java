@@ -10,8 +10,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
+import ai.timefold.solver.core.impl.move.director.VariableChangeRecordingScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 public final class RuinRecreateMove<Solution_> extends AbstractMove<Solution_> {
@@ -39,23 +38,23 @@ public final class RuinRecreateMove<Solution_> extends AbstractMove<Solution_> {
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         recordedNewValues = new Object[ruinedEntityList.size()];
 
-        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
+        var recordingScoreDirector = (VariableChangeRecordingScoreDirector<Solution_>) scoreDirector;
         for (var ruinedEntity : ruinedEntityList) {
-            castScoreDirector.beforeVariableChanged(genuineVariableDescriptor, ruinedEntity);
+            recordingScoreDirector.beforeVariableChanged(genuineVariableDescriptor, ruinedEntity);
             genuineVariableDescriptor.setValue(ruinedEntity, null);
-            castScoreDirector.afterVariableChanged(genuineVariableDescriptor, ruinedEntity);
+            recordingScoreDirector.afterVariableChanged(genuineVariableDescriptor, ruinedEntity);
         }
-        castScoreDirector.triggerVariableListeners();
+        recordingScoreDirector.triggerVariableListeners();
 
         var constructionHeuristicPhase = constructionHeuristicPhaseBuilder
-                .ensureThreadSafe((InnerScoreDirector<Solution_, ?>) scoreDirector)
+                .ensureThreadSafe(recordingScoreDirector.getDelegate())
                 .withElementsToRecreate(ruinedEntityList)
                 .build();
         constructionHeuristicPhase.setSolver(solverScope.getSolver());
         constructionHeuristicPhase.solvingStarted(solverScope);
         constructionHeuristicPhase.solve(solverScope);
         constructionHeuristicPhase.solvingEnded(solverScope);
-        castScoreDirector.triggerVariableListeners();
+        recordingScoreDirector.triggerVariableListeners();
 
         for (var i = 0; i < ruinedEntityList.size(); i++) {
             recordedNewValues[i] = genuineVariableDescriptor.getValue(ruinedEntityList.get(i));
