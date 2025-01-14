@@ -11,7 +11,10 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.impl.score.stream.JoinerType;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.BiTuple;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TriTuple;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractJoiner;
 import ai.timefold.solver.core.impl.score.stream.common.bi.DefaultBiJoiner;
 import ai.timefold.solver.core.impl.score.stream.common.penta.DefaultPentaJoiner;
@@ -95,14 +98,14 @@ public final class IndexerFactory<Right_> {
         return joiner.getJoinerCount() > 0;
     }
 
-    public <A> Function<A, IndexProperties> buildUniLeftMapping() {
+    public <A> UniMapping<A> buildUniLeftMapping() {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultBiJoiner<A, Right_>) joiner;
         return switch (joinerCount) {
             case 0 -> a -> IndexProperties.none();
             case 1 -> {
                 var mapping = castJoiner.getLeftMapping(0);
-                yield a -> IndexProperties.single(mapping.apply(a));
+                yield tuple -> IndexProperties.single(mapping.apply(tuple.factA));
             }
             default -> {
                 var startIndexInclusive = 0;
@@ -155,21 +158,30 @@ public final class IndexerFactory<Right_> {
                 yield switch (keyFunctionCount) {
                     case 1 -> {
                         var keyFunction = keyFunctionList.get(0);
-                        yield a -> IndexProperties.single(keyFunction.apply(a));
+                        yield tuple -> {
+                            var a = tuple.factA;
+                            return IndexProperties.single(keyFunction.apply(a));
+                        };
                     }
                     case 2 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
-                        yield a -> IndexProperties.two(keyFunction1.apply(a), keyFunction2.apply(a));
+                        yield tuple -> {
+                            var a = tuple.factA;
+                            return IndexProperties.two(keyFunction1.apply(a), keyFunction2.apply(a));
+                        };
                     }
                     case 3 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
                         var keyFunction3 = keyFunctionList.get(2);
-                        yield a -> IndexProperties.three(keyFunction1.apply(a), keyFunction2.apply(a),
-                                keyFunction3.apply(a));
+                        yield tuple -> {
+                            var a = tuple.factA;
+                            return IndexProperties.three(keyFunction1.apply(a), keyFunction2.apply(a), keyFunction3.apply(a));
+                        };
                     }
-                    default -> a -> {
+                    default -> tuple -> {
+                        var a = tuple.factA;
                         Object[] arr = new Object[keyFunctionCount];
                         for (int i = 0; i < keyFunctionCount; i++) {
                             arr[i] = keyFunctionList.get(i).apply(a);
@@ -181,14 +193,18 @@ public final class IndexerFactory<Right_> {
         };
     }
 
-    public <A, B> BiFunction<A, B, IndexProperties> buildBiLeftMapping() {
+    public <A, B> BiMapping<A, B> buildBiLeftMapping() {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultTriJoiner<A, B, Right_>) joiner;
         return switch (joinerCount) {
-            case 0 -> (a, b) -> IndexProperties.none();
+            case 0 -> tuple -> IndexProperties.none();
             case 1 -> {
                 var mapping = castJoiner.getLeftMapping(0);
-                yield (a, b) -> IndexProperties.single(mapping.apply(a, b));
+                yield tuple -> {
+                    var a = tuple.factA;
+                    var b = tuple.factB;
+                    return IndexProperties.single(mapping.apply(a, b));
+                };
             }
             default -> {
                 var startIndexInclusive = 0;
@@ -241,21 +257,35 @@ public final class IndexerFactory<Right_> {
                 yield switch (keyFunctionCount) {
                     case 1 -> {
                         var keyFunction = keyFunctionList.get(0);
-                        yield (a, b) -> IndexProperties.single(keyFunction.apply(a, b));
+                        yield tuple -> {
+                            var a = tuple.factA;
+                            var b = tuple.factB;
+                            return IndexProperties.single(keyFunction.apply(a, b));
+                        };
                     }
                     case 2 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
-                        yield (a, b) -> IndexProperties.two(keyFunction1.apply(a, b), keyFunction2.apply(a, b));
+                        yield tuple -> {
+                            var a = tuple.factA;
+                            var b = tuple.factB;
+                            return IndexProperties.two(keyFunction1.apply(a, b), keyFunction2.apply(a, b));
+                        };
                     }
                     case 3 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
                         var keyFunction3 = keyFunctionList.get(2);
-                        yield (a, b) -> IndexProperties.three(keyFunction1.apply(a, b), keyFunction2.apply(a, b),
-                                keyFunction3.apply(a, b));
+                        yield tuple -> {
+                            var a = tuple.factA;
+                            var b = tuple.factB;
+                            return IndexProperties.three(keyFunction1.apply(a, b), keyFunction2.apply(a, b),
+                                    keyFunction3.apply(a, b));
+                        };
                     }
-                    default -> (a, b) -> {
+                    default -> tuple -> {
+                        var a = tuple.factA;
+                        var b = tuple.factB;
                         Object[] arr = new Object[keyFunctionCount];
                         for (int i = 0; i < keyFunctionCount; i++) {
                             arr[i] = keyFunctionList.get(i).apply(a, b);
@@ -267,14 +297,19 @@ public final class IndexerFactory<Right_> {
         };
     }
 
-    public <A, B, C> TriFunction<A, B, C, IndexProperties> buildTriLeftMapping() {
+    public <A, B, C> TriMapping<A, B, C> buildTriLeftMapping() {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultQuadJoiner<A, B, C, Right_>) joiner;
         return switch (joinerCount) {
-            case 0 -> (a, b, c) -> IndexProperties.none();
+            case 0 -> tuple -> IndexProperties.none();
             case 1 -> {
                 var mapping = castJoiner.getLeftMapping(0);
-                yield (a, b, c) -> IndexProperties.single(mapping.apply(a, b, c));
+                yield tuple -> {
+                    var a = tuple.factA;
+                    var b = tuple.factB;
+                    var c = tuple.factC;
+                    return IndexProperties.single(mapping.apply(a, b, c));
+                };
             }
             default -> {
                 var startIndexInclusive = 0;
@@ -328,21 +363,39 @@ public final class IndexerFactory<Right_> {
                 yield switch (keyFunctionCount) {
                     case 1 -> {
                         var keyFunction = keyFunctionList.get(0);
-                        yield (a, b, c) -> IndexProperties.single(keyFunction.apply(a, b, c));
+                        yield tuple -> {
+                            var a = tuple.factA;
+                            var b = tuple.factB;
+                            var c = tuple.factC;
+                            return IndexProperties.single(keyFunction.apply(a, b, c));
+                        };
                     }
                     case 2 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
-                        yield (a, b, c) -> IndexProperties.two(keyFunction1.apply(a, b, c), keyFunction2.apply(a, b, c));
+                        yield tuple -> {
+                            var a = tuple.factA;
+                            var b = tuple.factB;
+                            var c = tuple.factC;
+                            return IndexProperties.two(keyFunction1.apply(a, b, c), keyFunction2.apply(a, b, c));
+                        };
                     }
                     case 3 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
                         var keyFunction3 = keyFunctionList.get(2);
-                        yield (a, b, c) -> IndexProperties.three(keyFunction1.apply(a, b, c), keyFunction2.apply(a, b, c),
-                                keyFunction3.apply(a, b, c));
+                        yield tuple -> {
+                            var a = tuple.factA;
+                            var b = tuple.factB;
+                            var c = tuple.factC;
+                            return IndexProperties.three(keyFunction1.apply(a, b, c), keyFunction2.apply(a, b, c),
+                                    keyFunction3.apply(a, b, c));
+                        };
                     }
-                    default -> (a, b, c) -> {
+                    default -> tuple -> {
+                        var a = tuple.factA;
+                        var b = tuple.factB;
+                        var c = tuple.factC;
                         Object[] arr = new Object[keyFunctionCount];
                         for (int i = 0; i < keyFunctionCount; i++) {
                             arr[i] = keyFunctionList.get(i).apply(a, b, c);
@@ -354,14 +407,20 @@ public final class IndexerFactory<Right_> {
         };
     }
 
-    public <A, B, C, D> QuadFunction<A, B, C, D, IndexProperties> buildQuadLeftMapping() {
+    public <A, B, C, D> QuadMapping<A, B, C, D> buildQuadLeftMapping() {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultPentaJoiner<A, B, C, D, Right_>) joiner;
         return switch (joinerCount) {
-            case 0 -> (a, b, c, d) -> IndexProperties.none();
+            case 0 -> tuple -> IndexProperties.none();
             case 1 -> {
                 var mapping = castJoiner.getLeftMapping(0);
-                yield (a, b, c, d) -> IndexProperties.single(mapping.apply(a, b, c, d));
+                yield tuple -> {
+                    var a = tuple.factA;
+                    var b = tuple.factB;
+                    var c = tuple.factC;
+                    var d = tuple.factD;
+                    return IndexProperties.single(mapping.apply(a, b, c, d));
+                };
             }
             default -> {
                 var startIndexInclusive = 0;
@@ -415,22 +474,43 @@ public final class IndexerFactory<Right_> {
                 yield switch (keyFunctionList.size()) {
                     case 1 -> {
                         var keyFunction = keyFunctionList.get(0);
-                        yield (a, b, c, d) -> IndexProperties.single(keyFunction.apply(a, b, c, d));
+                        yield tuple -> {
+                            var a = tuple.factA;
+                            var b = tuple.factB;
+                            var c = tuple.factC;
+                            var d = tuple.factD;
+                            return IndexProperties.single(keyFunction.apply(a, b, c, d));
+                        };
                     }
                     case 2 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
-                        yield (a, b, c, d) -> IndexProperties.two(keyFunction1.apply(a, b, c, d),
-                                keyFunction2.apply(a, b, c, d));
+                        yield tuple -> {
+                            var a = tuple.factA;
+                            var b = tuple.factB;
+                            var c = tuple.factC;
+                            var d = tuple.factD;
+                            return IndexProperties.two(keyFunction1.apply(a, b, c, d), keyFunction2.apply(a, b, c, d));
+                        };
                     }
                     case 3 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
                         var keyFunction3 = keyFunctionList.get(2);
-                        yield (a, b, c, d) -> IndexProperties.three(keyFunction1.apply(a, b, c, d),
-                                keyFunction2.apply(a, b, c, d), keyFunction3.apply(a, b, c, d));
+                        yield tuple -> {
+                            var a = tuple.factA;
+                            var b = tuple.factB;
+                            var c = tuple.factC;
+                            var d = tuple.factD;
+                            return IndexProperties.three(keyFunction1.apply(a, b, c, d), keyFunction2.apply(a, b, c, d),
+                                    keyFunction3.apply(a, b, c, d));
+                        };
                     }
-                    default -> (a, b, c, d) -> {
+                    default -> tuple -> {
+                        var a = tuple.factA;
+                        var b = tuple.factB;
+                        var c = tuple.factC;
+                        var d = tuple.factD;
                         Object[] arr = new Object[keyFunctionCount];
                         for (int i = 0; i < keyFunctionCount; i++) {
                             arr[i] = keyFunctionList.get(i).apply(a, b, c, d);
@@ -442,13 +522,16 @@ public final class IndexerFactory<Right_> {
         };
     }
 
-    public Function<Right_, IndexProperties> buildRightMapping() {
+    public UniMapping<Right_> buildRightMapping() {
         var joinerCount = joiner.getJoinerCount();
         return switch (joinerCount) {
-            case 0 -> a -> IndexProperties.none();
+            case 0 -> tuple -> IndexProperties.none();
             case 1 -> {
                 var mapping = joiner.getRightMapping(0);
-                yield a -> IndexProperties.single(mapping.apply(a));
+                yield tuple -> {
+                    var a = tuple.factA;
+                    return IndexProperties.single(mapping.apply(a));
+                };
             }
             default -> {
                 var startIndexInclusive = 0;
@@ -501,21 +584,30 @@ public final class IndexerFactory<Right_> {
                 yield switch (keyFunctionCount) {
                     case 1 -> {
                         var keyFunction = keyFunctionList.get(0);
-                        yield a -> IndexProperties.single(keyFunction.apply(a));
+                        yield tuple -> {
+                            var a = tuple.factA;
+                            return IndexProperties.single(keyFunction.apply(a));
+                        };
                     }
                     case 2 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
-                        yield a -> IndexProperties.two(keyFunction1.apply(a), keyFunction2.apply(a));
+                        yield tuple -> {
+                            var a = tuple.factA;
+                            return IndexProperties.two(keyFunction1.apply(a), keyFunction2.apply(a));
+                        };
                     }
                     case 3 -> {
                         var keyFunction1 = keyFunctionList.get(0);
                         var keyFunction2 = keyFunctionList.get(1);
                         var keyFunction3 = keyFunctionList.get(2);
-                        yield a -> IndexProperties.three(keyFunction1.apply(a), keyFunction2.apply(a),
-                                keyFunction3.apply(a));
+                        yield tuple -> {
+                            var a = tuple.factA;
+                            return IndexProperties.three(keyFunction1.apply(a), keyFunction2.apply(a), keyFunction3.apply(a));
+                        };
                     }
-                    default -> a -> {
+                    default -> tuple -> {
+                        var a = tuple.factA;
                         Object[] arr = new Object[keyFunctionCount];
                         for (int i = 0; i < keyFunctionCount; i++) {
                             arr[i] = keyFunctionList.get(i).apply(a);
@@ -561,6 +653,26 @@ public final class IndexerFactory<Right_> {
             indexPropertyId--;
         }
         return downstreamIndexerSupplier.get();
+    }
+
+    @FunctionalInterface
+    public interface Mapping<Tuple_ extends AbstractTuple> extends Function<Tuple_, IndexProperties> {
+    }
+
+    @FunctionalInterface
+    public interface UniMapping<A> extends Mapping<UniTuple<A>> {
+    }
+
+    @FunctionalInterface
+    public interface BiMapping<A, B> extends Mapping<BiTuple<A, B>> {
+    }
+
+    @FunctionalInterface
+    public interface TriMapping<A, B, C> extends Mapping<TriTuple<A, B, C>> {
+    }
+
+    @FunctionalInterface
+    public interface QuadMapping<A, B, C, D> extends Mapping<QuadTuple<A, B, C, D>> {
     }
 
 }
