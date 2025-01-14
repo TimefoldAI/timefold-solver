@@ -28,6 +28,14 @@ public final class AdaptiveTermination<Solution_, Score_ extends Score<Score_>> 
         this.scoresByTime = new AdaptiveScoreRingBuffer<>();
     }
 
+    public long getGracePeriodNanos() {
+        return gracePeriodNanos;
+    }
+
+    public double getMinimumImprovementRatio() {
+        return minimumImprovementRatio;
+    }
+
     /**
      * An exception that is thrown to signal a hard score improvement.
      * This is done since:
@@ -45,7 +53,7 @@ public final class AdaptiveTermination<Solution_, Score_ extends Score<Score_>> 
      */
     private static final class HardLevelImprovedSignal extends Exception {
         @Override
-        public Throwable fillInStackTrace() {
+        public synchronized Throwable fillInStackTrace() {
             return this;
         }
     }

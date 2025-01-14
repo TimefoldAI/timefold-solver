@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.solver.termination;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 
@@ -224,6 +225,44 @@ class AdaptiveScoreRingBufferTest {
                 null,
                 null,
                 null);
+    }
+
+    @Test
+    void testPollLatestScoreBeforeTimeAndClearPriorFull() {
+        var buffer = new AdaptiveScoreRingBuffer<>(
+                0, 0,
+                new long[] { 1, 2, 3, 4 },
+                new SimpleScore[] {
+                        SimpleScore.of(1),
+                        SimpleScore.of(2),
+                        SimpleScore.of(3),
+                        SimpleScore.of(4)
+                });
+        assertThat(buffer.pollLatestScoreBeforeTimeAndClearPrior(2)).isEqualTo(SimpleScore.of(2));
+
+        var bufferState = buffer.getState();
+        assertThat(bufferState.readIndex()).isEqualTo(1);
+        assertThat(bufferState.writeIndex()).isEqualTo(0);
+        assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(0, 2, 3, 4);
+        assertThat(bufferState.scoreRingBuffer()).containsExactly(null,
+                SimpleScore.of(2),
+                SimpleScore.of(3),
+                SimpleScore.of(4));
+    }
+
+    @Test
+    void testPollLatestScoreBeforeTimeAndClearPriorEmpty() {
+        var buffer = new AdaptiveScoreRingBuffer<>(
+                0, 0,
+                new long[] { 0, 0, 0, 0 },
+                new SimpleScore[] {
+                        null,
+                        null,
+                        null,
+                        null
+                });
+        assertThatCode(() -> buffer.pollLatestScoreBeforeTimeAndClearPrior(10))
+                .isInstanceOf(IllegalStateException.class);
     }
 
     @Test

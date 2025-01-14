@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.solver.termination;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
 
@@ -34,6 +35,19 @@ final class AdaptiveScoreRingBuffer<Score_ extends Score<Score_>> {
 
     record RingBufferState(int readIndex, int writeIndex,
             long[] nanoTimeRingBuffer, @Nullable Score<?>[] scoreRingBuffer) {
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof RingBufferState that)) {
+                return false;
+            }
+            return readIndex == that.readIndex && writeIndex == that.writeIndex && Objects.deepEquals(nanoTimeRingBuffer,
+                    that.nanoTimeRingBuffer) && Objects.deepEquals(scoreRingBuffer, that.scoreRingBuffer);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(readIndex, writeIndex, Arrays.hashCode(nanoTimeRingBuffer), Arrays.hashCode(scoreRingBuffer));
+        }
     }
 
     @NonNull

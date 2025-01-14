@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import ai.timefold.solver.core.config.solver.termination.AdaptiveTerminationConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationCompositionStyle;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -200,5 +201,65 @@ class TerminationFactoryTest {
         assertThatIllegalStateException()
                 .isThrownBy(() -> terminationFactory.buildTermination(heuristicConfigPolicy))
                 .withMessageContaining("can only be used with a score type that has at least 1 feasible level");
+    }
+
+    @Test
+    void adaptive_default() {
+        TerminationConfig terminationConfig = new TerminationConfig();
+        terminationConfig.setAdaptiveTerminationConfig(new AdaptiveTerminationConfig());
+        Termination<?> termination = TerminationFactory.create(terminationConfig)
+                .buildTermination(mock(HeuristicConfigPolicy.class));
+        assertThat(termination)
+                .isInstanceOf(AdaptiveTermination.class);
+        assertThat((AdaptiveTermination<?, ?>) termination)
+                .extracting(AdaptiveTermination::getGracePeriodNanos)
+                .isEqualTo(Duration.ofSeconds(30).toNanos());
+        assertThat((AdaptiveTermination<?, ?>) termination)
+                .extracting(AdaptiveTermination::getMinimumImprovementRatio)
+                .isEqualTo(0.01);
+    }
+
+    @Test
+    void adaptive_custom() {
+        TerminationConfig terminationConfig = new TerminationConfig();
+        terminationConfig.setAdaptiveTerminationConfig(new AdaptiveTerminationConfig()
+                .withGracePeriodMilliseconds(1L)
+                .withGracePeriodSeconds(2L)
+                .withGracePeriodMinutes(3L)
+                .withGracePeriodHours(4L)
+                .withGracePeriodDays(5L)
+                .withMinimumImprovementRatio(0.5));
+        Termination<?> termination = TerminationFactory.create(terminationConfig)
+                .buildTermination(mock(HeuristicConfigPolicy.class));
+        assertThat(termination)
+                .isInstanceOf(AdaptiveTermination.class);
+        assertThat((AdaptiveTermination<?, ?>) termination)
+                .extracting(AdaptiveTermination::getGracePeriodNanos)
+                .isEqualTo(Duration.ofMillis(1)
+                        .plusSeconds(2)
+                        .plusMinutes(3)
+                        .plusHours(4)
+                        .plusDays(5).toNanos());
+        assertThat((AdaptiveTermination<?, ?>) termination)
+                .extracting(AdaptiveTermination::getMinimumImprovementRatio)
+                .isEqualTo(0.5);
+    }
+
+    @Test
+    void adaptive_custom_duration() {
+        TerminationConfig terminationConfig = new TerminationConfig();
+        terminationConfig.setAdaptiveTerminationConfig(new AdaptiveTerminationConfig()
+                .withGracePeriod(Duration.ofMinutes(123))
+                .withMinimumImprovementRatio(0.5));
+        Termination<?> termination = TerminationFactory.create(terminationConfig)
+                .buildTermination(mock(HeuristicConfigPolicy.class));
+        assertThat(termination)
+                .isInstanceOf(AdaptiveTermination.class);
+        assertThat((AdaptiveTermination<?, ?>) termination)
+                .extracting(AdaptiveTermination::getGracePeriodNanos)
+                .isEqualTo(Duration.ofMinutes(123).toNanos());
+        assertThat((AdaptiveTermination<?, ?>) termination)
+                .extracting(AdaptiveTermination::getMinimumImprovementRatio)
+                .isEqualTo(0.5);
     }
 }
