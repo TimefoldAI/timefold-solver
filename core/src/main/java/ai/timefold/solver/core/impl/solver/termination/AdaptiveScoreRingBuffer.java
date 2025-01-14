@@ -48,6 +48,16 @@ final class AdaptiveScoreRingBuffer<Score_ extends Score<Score_>> {
         public int hashCode() {
             return Objects.hash(readIndex, writeIndex, Arrays.hashCode(nanoTimeRingBuffer), Arrays.hashCode(scoreRingBuffer));
         }
+
+        @Override
+        public String toString() {
+            return "RingBufferState{" +
+                    "readIndex=" + readIndex +
+                    ", writeIndex=" + writeIndex +
+                    ", nanoTimeRingBuffer=" + Arrays.toString(nanoTimeRingBuffer) +
+                    ", scoreRingBuffer=" + Arrays.toString(scoreRingBuffer) +
+                    '}';
+        }
     }
 
     @NonNull
