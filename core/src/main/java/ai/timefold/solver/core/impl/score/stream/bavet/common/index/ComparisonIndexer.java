@@ -42,8 +42,8 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     @Override
-    public ElementAwareListEntry<T> put(IndexKeys indexKeys, T tuple) {
-        Key_ indexKey = indexKeys.get(keyIndex);
+    public ElementAwareListEntry<T> put(Object indexKeys, T tuple) {
+        Key_ indexKey = Indexer.of(indexKeys, keyIndex);
         // Avoids computeIfAbsent in order to not create lambdas on the hot path.
         var downstreamIndexer = comparisonMap.get(indexKey);
         if (downstreamIndexer == null) {
@@ -54,8 +54,8 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     @Override
-    public void remove(IndexKeys indexKeys, ElementAwareListEntry<T> entry) {
-        Key_ indexKey = indexKeys.get(keyIndex);
+    public void remove(Object indexKeys, ElementAwareListEntry<T> entry) {
+        Key_ indexKey = Indexer.of(indexKeys, keyIndex);
         var downstreamIndexer = getDownstreamIndexer(indexKeys, indexKey, entry);
         downstreamIndexer.remove(indexKeys, entry);
         if (downstreamIndexer.isEmpty()) {
@@ -63,7 +63,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         }
     }
 
-    private Indexer<T> getDownstreamIndexer(IndexKeys indexKeys, Key_ indexerKey, ElementAwareListEntry<T> entry) {
+    private Indexer<T> getDownstreamIndexer(Object indexKeys, Key_ indexerKey, ElementAwareListEntry<T> entry) {
         var downstreamIndexer = comparisonMap.get(indexerKey);
         if (downstreamIndexer == null) {
             throw new IllegalStateException(
@@ -75,12 +75,12 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
 
     // TODO clean up DRY
     @Override
-    public int size(IndexKeys indexKeys) {
+    public int size(Object indexKeys) {
         var mapSize = comparisonMap.size();
         if (mapSize == 0) {
             return 0;
         }
-        Key_ indexKey = indexKeys.get(keyIndex);
+        Key_ indexKey = Indexer.of(indexKeys, keyIndex);
         if (mapSize == 1) { // Avoid creation of the entry set and iterator.
             var entry = comparisonMap.firstEntry();
             var comparison = keyComparator.compare(entry.getKey(), indexKey);
@@ -109,12 +109,12 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     @Override
-    public void forEach(IndexKeys indexKeys, Consumer<T> tupleConsumer) {
+    public void forEach(Object indexKeys, Consumer<T> tupleConsumer) {
         var size = comparisonMap.size();
         if (size == 0) {
             return;
         }
-        Key_ indexKey = indexKeys.get(keyIndex);
+        Key_ indexKey = Indexer.of(indexKeys, keyIndex);
         if (size == 1) { // Avoid creation of the entry set and iterator.
             var entry = comparisonMap.firstEntry();
             visitEntry(indexKeys, tupleConsumer, indexKey, entry);
@@ -128,7 +128,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         }
     }
 
-    private boolean visitEntry(IndexKeys indexKeys, Consumer<T> tupleConsumer, Key_ indexKey,
+    private boolean visitEntry(Object indexKeys, Consumer<T> tupleConsumer, Key_ indexKey,
             Map.Entry<Key_, Indexer<T>> entry) {
         // Comparator matches the order of iteration of the map, so the boundary is always found from the bottom up.
         var comparison = keyComparator.compare(entry.getKey(), indexKey);

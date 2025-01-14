@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.common;
 
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexKeys;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.KeysExtractor;
@@ -67,7 +66,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
         initCounterLeft(counter);
     }
 
-    private void updateCounterRight(LeftTuple_ leftTuple, IndexKeys indexKeys, ExistsCounter<LeftTuple_> counter,
+    private void updateCounterRight(LeftTuple_ leftTuple, Object indexKeys, ExistsCounter<LeftTuple_> counter,
             ElementAwareListEntry<ExistsCounter<LeftTuple_>> counterEntry) {
         leftTuple.setStore(inputStoreIndexLeftCounterEntry, counterEntry);
         if (!isFiltering) {
@@ -82,7 +81,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
 
     @Override
     public final void updateLeft(LeftTuple_ leftTuple) {
-        IndexKeys oldIndexKeys = leftTuple.getStore(inputStoreIndexLeftKeys);
+        var oldIndexKeys = leftTuple.getStore(inputStoreIndexLeftKeys);
         if (oldIndexKeys == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             insertLeft(leftTuple);
@@ -118,7 +117,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
 
     @Override
     public final void retractLeft(LeftTuple_ leftTuple) {
-        IndexKeys indexKeys = leftTuple.removeStore(inputStoreIndexLeftKeys);
+        var indexKeys = leftTuple.removeStore(inputStoreIndexLeftKeys);
         if (indexKeys == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
@@ -129,8 +128,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
         killCounterLeft(counter);
     }
 
-    private void updateIndexerLeft(IndexKeys indexKeys,
-            ElementAwareListEntry<ExistsCounter<LeftTuple_>> counterEntry,
+    private void updateIndexerLeft(Object indexKeys, ElementAwareListEntry<ExistsCounter<LeftTuple_>> counterEntry,
             LeftTuple_ leftTuple) {
         indexerLeft.remove(indexKeys, counterEntry);
         if (isFiltering) {
@@ -153,7 +151,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
         updateCounterLeft(rightTuple, indexKeys);
     }
 
-    private void updateCounterLeft(UniTuple<Right_> rightTuple, IndexKeys indexKeys) {
+    private void updateCounterLeft(UniTuple<Right_> rightTuple, Object indexKeys) {
         if (!isFiltering) {
             indexerLeft.forEach(indexKeys, this::incrementCounterRight);
         } else {
@@ -165,14 +163,13 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
 
     @Override
     public final void updateRight(UniTuple<Right_> rightTuple) {
-        IndexKeys oldIndexKeys = rightTuple.getStore(inputStoreIndexRightKeys);
+        var oldIndexKeys = rightTuple.getStore(inputStoreIndexRightKeys);
         if (oldIndexKeys == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             insertRight(rightTuple);
             return;
         }
         var newIndexKeys = keysExtractorRight.apply(rightTuple);
-
         if (oldIndexKeys.equals(newIndexKeys)) {
             // No need for re-indexing because the index keys didn't change
             if (isFiltering) {
@@ -197,7 +194,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
 
     @Override
     public final void retractRight(UniTuple<Right_> rightTuple) {
-        IndexKeys indexKeys = rightTuple.removeStore(inputStoreIndexRightKeys);
+        var indexKeys = rightTuple.removeStore(inputStoreIndexRightKeys);
         if (indexKeys == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;

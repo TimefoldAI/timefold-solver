@@ -10,22 +10,22 @@ final class NoneIndexer<T> implements Indexer<T> {
     private final ElementAwareList<T> tupleList = new ElementAwareList<>();
 
     @Override
-    public ElementAwareListEntry<T> put(IndexKeys indexKeys, T tuple) {
+    public ElementAwareListEntry<T> put(Object indexKeys, T tuple) {
         return tupleList.add(tuple);
     }
 
     @Override
-    public void remove(IndexKeys indexKeys, ElementAwareListEntry<T> entry) {
+    public void remove(Object indexKeys, ElementAwareListEntry<T> entry) {
         entry.remove();
     }
 
     @Override
-    public int size(IndexKeys indexKeys) {
+    public int size(Object indexKeys) {
         return tupleList.size();
     }
 
     @Override
-    public void forEach(IndexKeys indexKeys, Consumer<T> tupleConsumer) {
+    public void forEach(Object indexKeys, Consumer<T> tupleConsumer) {
         tupleList.forEach(tupleConsumer);
     }
 

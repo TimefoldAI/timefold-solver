@@ -24,8 +24,8 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
     }
 
     @Override
-    public ElementAwareListEntry<T> put(IndexKeys indexKeys, T tuple) {
-        Key_ indexKey = indexKeys.get(keyIndex);
+    public ElementAwareListEntry<T> put(Object indexKeys, T tuple) {
+        Key_ indexKey = Indexer.of(indexKeys, keyIndex);
         // Avoids computeIfAbsent in order to not create lambdas on the hot path.
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
@@ -36,8 +36,8 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
     }
 
     @Override
-    public void remove(IndexKeys indexKeys, ElementAwareListEntry<T> entry) {
-        Key_ indexKey = indexKeys.get(keyIndex);
+    public void remove(Object indexKeys, ElementAwareListEntry<T> entry) {
+        Key_ indexKey = Indexer.of(indexKeys, keyIndex);
         Indexer<T> downstreamIndexer = getDownstreamIndexer(indexKeys, indexKey, entry);
         downstreamIndexer.remove(indexKeys, entry);
         if (downstreamIndexer.isEmpty()) {
@@ -45,7 +45,7 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
         }
     }
 
-    private Indexer<T> getDownstreamIndexer(IndexKeys indexKeys, Key_ indexerKey, ElementAwareListEntry<T> entry) {
+    private Indexer<T> getDownstreamIndexer(Object indexKeys, Key_ indexerKey, ElementAwareListEntry<T> entry) {
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexerKey);
         if (downstreamIndexer == null) {
             throw new IllegalStateException(
@@ -56,8 +56,8 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
     }
 
     @Override
-    public int size(IndexKeys indexKeys) {
-        Key_ indexKey = indexKeys.get(keyIndex);
+    public int size(Object indexKeys) {
+        Key_ indexKey = Indexer.of(indexKeys, keyIndex);
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
             return 0;
@@ -66,8 +66,8 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
     }
 
     @Override
-    public void forEach(IndexKeys indexKeys, Consumer<T> tupleConsumer) {
-        Key_ indexKey = indexKeys.get(keyIndex);
+    public void forEach(Object indexKeys, Consumer<T> tupleConsumer) {
+        Key_ indexKey = Indexer.of(indexKeys, keyIndex);
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
             return;

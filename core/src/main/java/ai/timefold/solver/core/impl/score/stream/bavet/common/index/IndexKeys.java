@@ -5,16 +5,31 @@ package ai.timefold.solver.core.impl.score.stream.bavet.common.index;
  * <p>
  * Instances are shallow immutable and implement {@link Object#equals(Object)} and {@link Object#hashCode()}.
  * If two instances contain elements which are equal, they must be equal.
+ * <p>
+ * Instances should be obtained using {@link IndexKeys#none()},
+ * {@link IndexKeys#of(Object)},
+ * {@link IndexKeys#of(Object, Object)},
+ * {@link IndexKeys#of(Object, Object, Object)}
+ * or {@link IndexKeys#ofMany(Object[])}.
  */
 public sealed interface IndexKeys
-        permits ManyIndexKeys, SingleIndexKeys, ThreeIndexKeys, TwoIndexKeys {
+        permits ManyIndexKeys, ThreeIndexKeys, TwoIndexKeys {
 
     static IndexKeys none() {
         return ManyIndexKeys.EMPTY;
     }
 
-    static <Key_> IndexKeys of(Key_ key) {
-        return key == null ? SingleIndexKeys.NULL : new SingleIndexKeys<>(key);
+    /**
+     * @param key may be null, typically in cases where the indexed property is a nullable planning variable.
+     * @return When the key is not {@code null}, returns the key itself,
+     *         as opposed to some wrapping instance of {@link IndexKeys}.
+     *         Wrapping is not necessary in this case,
+     *         as the wrapper would do nothing but delegate {@link Object#equals(Object)} and {@link Object#hashCode()}
+     *         to the wrapped key anyway.
+     *         Avoiding the wrapper saves considerable memory and gets rid of a level of indirection.
+     */
+    static Object of(Object key) {
+        return key == null ? ManyIndexKeys.SINGLE_NULL : key;
     }
 
     static <Key1_, Key2_> IndexKeys of(Key1_ key1, Key2_ key2) {

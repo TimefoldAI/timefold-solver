@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.common;
 
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexKeys;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.KeysExtractor;
@@ -60,7 +59,6 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
                     + ") was already added in the tupleStore.");
         }
         var indexKeys = keysExtractorLeft.apply(leftTuple);
-
         var outTupleListLeft = new ElementAwareList<OutTuple_>();
         leftTuple.setStore(inputStoreIndexLeftOutTupleList, outTupleListLeft);
         indexAndPropagateLeft(leftTuple, indexKeys);
@@ -68,7 +66,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
 
     @Override
     public final void updateLeft(LeftTuple_ leftTuple) {
-        IndexKeys oldIndexKeys = leftTuple.getStore(inputStoreIndexLeftKeys);
+        var oldIndexKeys = leftTuple.getStore(inputStoreIndexLeftKeys);
         if (oldIndexKeys == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             insertLeft(leftTuple);
@@ -90,7 +88,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
         }
     }
 
-    private void indexAndPropagateLeft(LeftTuple_ leftTuple, IndexKeys indexKeys) {
+    private void indexAndPropagateLeft(LeftTuple_ leftTuple, Object indexKeys) {
         leftTuple.setStore(inputStoreIndexLeftKeys, indexKeys);
         var leftEntry = indexerLeft.put(indexKeys, leftTuple);
         leftTuple.setStore(inputStoreIndexLeftEntry, leftEntry);
@@ -99,7 +97,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
 
     @Override
     public final void retractLeft(LeftTuple_ leftTuple) {
-        IndexKeys indexKeys = leftTuple.removeStore(inputStoreIndexLeftKeys);
+        var indexKeys = leftTuple.removeStore(inputStoreIndexLeftKeys);
         if (indexKeys == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
@@ -117,7 +115,6 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
                     + ") was already added in the tupleStore.");
         }
         var indexKeys = keysExtractorRight.apply(rightTuple);
-
         var outTupleListRight = new ElementAwareList<OutTuple_>();
         rightTuple.setStore(inputStoreIndexRightOutTupleList, outTupleListRight);
         indexAndPropagateRight(rightTuple, indexKeys);
@@ -125,7 +122,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
 
     @Override
     public final void updateRight(UniTuple<Right_> rightTuple) {
-        IndexKeys oldIndexKeys = rightTuple.getStore(inputStoreIndexRightKeys);
+        var oldIndexKeys = rightTuple.getStore(inputStoreIndexRightKeys);
         if (oldIndexKeys == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             insertRight(rightTuple);
@@ -147,7 +144,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
         }
     }
 
-    private void indexAndPropagateRight(UniTuple<Right_> rightTuple, IndexKeys indexKeys) {
+    private void indexAndPropagateRight(UniTuple<Right_> rightTuple, Object indexKeys) {
         rightTuple.setStore(inputStoreIndexRightKeys, indexKeys);
         var rightEntry = indexerRight.put(indexKeys, rightTuple);
         rightTuple.setStore(inputStoreIndexRightEntry, rightEntry);
@@ -156,7 +153,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
 
     @Override
     public final void retractRight(UniTuple<Right_> rightTuple) {
-        IndexKeys indexKeys = rightTuple.removeStore(inputStoreIndexRightKeys);
+        var indexKeys = rightTuple.removeStore(inputStoreIndexRightKeys);
         if (indexKeys == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;

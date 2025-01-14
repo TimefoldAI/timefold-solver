@@ -590,8 +590,13 @@ public final class IndexerFactory<Right_> {
         return downstreamIndexerSupplier.get();
     }
 
+    /**
+     * Represents a function which extracts index keys from a tuple.
+     *
+     * @param <Tuple_>
+     */
     @FunctionalInterface
-    public interface KeysExtractor<Tuple_ extends AbstractTuple> extends Function<Tuple_, IndexKeys> {
+    public interface KeysExtractor<Tuple_ extends AbstractTuple> extends Function<Tuple_, Object> {
     }
 
     @FunctionalInterface

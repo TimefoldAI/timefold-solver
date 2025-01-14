@@ -14,7 +14,7 @@ import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
  * calling {@code visit(room=A)} would visit lesson 1 and 3.
  * <p>
  * The fact X is wrapped in a Tuple, because the {@link TupleState} is needed by clients of
- * {@link #forEach(IndexKeys, Consumer)}.
+ * {@link #forEach(Object, Consumer)}.
  *
  * @param <T> The element type. Often a tuple.
  *        For example for {@code from(A).join(B)}, the tuple is {@code UniTuple<A>} xor {@code UniTuple<B>}.
@@ -22,13 +22,32 @@ import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
  */
 public sealed interface Indexer<T> permits ComparisonIndexer, EqualsIndexer, NoneIndexer {
 
-    ElementAwareListEntry<T> put(IndexKeys indexKeys, T tuple);
+    /**
+     * Retrieves the key at a given position.
+     *
+     * @param indexKeys The key(s) available to the indexer.
+     * @param id The position of the key.
+     * @return The key at the given position.
+     * @param <Key_> The type of the key.
+     * @see IndexKeys#of(Object) Description of why indexKeys sometimes isn't an instance of class IndexKeys.
+     */
+    static <Key_> Key_ of(Object indexKeys, int id) {
+        if (indexKeys instanceof IndexKeys keys) {
+            return keys.get(id);
+        } else if (id != 0) {
+            throw new IllegalArgumentException("Impossible state: the index is a single key (%s), yet the id is not zero (%d)."
+                    .formatted(indexKeys, id));
+        }
+        return (Key_) indexKeys;
+    }
 
-    void remove(IndexKeys indexKeys, ElementAwareListEntry<T> entry);
+    ElementAwareListEntry<T> put(Object indexKeys, T tuple);
 
-    int size(IndexKeys indexKeys);
+    void remove(Object indexKeys, ElementAwareListEntry<T> entry);
 
-    void forEach(IndexKeys indexKeys, Consumer<T> tupleConsumer);
+    int size(Object indexKeys);
+
+    void forEach(Object indexKeys, Consumer<T> tupleConsumer);
 
     boolean isEmpty();
 

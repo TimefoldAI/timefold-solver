@@ -5,6 +5,7 @@ import java.util.Arrays;
 record ManyIndexKeys(Object... properties) implements IndexKeys {
 
     static final ManyIndexKeys EMPTY = new ManyIndexKeys();
+    static final ManyIndexKeys SINGLE_NULL = new ManyIndexKeys((Object) null);
 
     @Override
     public <Type_> Type_ get(int id) {
@@ -13,7 +14,7 @@ record ManyIndexKeys(Object... properties) implements IndexKeys {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) { // Due to the use of ManyIndexKeys.EMPTY, this is possible.
+        if (this == o) { // Due to the use of SINGLE_NULL, this is possible.
             return true;
         }
         return o instanceof ManyIndexKeys other && Arrays.equals(properties, other.properties);
