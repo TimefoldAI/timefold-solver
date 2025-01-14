@@ -17,6 +17,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningLi
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhase;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhaseBuilder;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin.ListRuinRecreateMove;
@@ -219,6 +220,7 @@ class MoveDirectorTest {
         var moveDirector = new MoveDirector<TestdataListSolution>(innerScoreDirector);
         var listVariableStateSupply = mock(ListVariableStateSupply.class);
         var listVariableDescriptor = mock(ListVariableDescriptor.class);
+        var supplyManager = mock(SupplyManager.class);
         var ruinRecreateConstructionHeuristicPhaseBuilder = mock(RuinRecreateConstructionHeuristicPhaseBuilder.class);
         var constructionHeuristicPhase = mock(RuinRecreateConstructionHeuristicPhase.class);
 
@@ -233,6 +235,9 @@ class MoveDirectorTest {
         s1.setEntityList(List.of(e1, e2));
         s1.setValueList(List.of(v1, v2));
         when(innerScoreDirector.getWorkingSolution()).thenReturn(s1);
+        when(innerScoreDirector.isDerived()).thenReturn(false);
+        when(innerScoreDirector.getSupplyManager()).thenReturn(supplyManager);
+        when(supplyManager.demand(any())).thenReturn(listVariableStateSupply);
         // 1 - v1 is on e1 list
         // 2 - v1 moves to e2 list
         when(listVariableStateSupply.getLocationInList(any()))
@@ -246,13 +251,15 @@ class MoveDirectorTest {
                 .thenReturn(ruinRecreateConstructionHeuristicPhaseBuilder);
         when(ruinRecreateConstructionHeuristicPhaseBuilder.withElementsToRuin(any()))
                 .thenReturn(ruinRecreateConstructionHeuristicPhaseBuilder);
+        when(ruinRecreateConstructionHeuristicPhaseBuilder.ensureThreadSafe(any()))
+                .thenReturn(ruinRecreateConstructionHeuristicPhaseBuilder);
         when(ruinRecreateConstructionHeuristicPhaseBuilder.build())
                 .thenReturn(constructionHeuristicPhase);
         when(constructionHeuristicPhase.getMissingUpdatedElementsMap()).thenReturn(Map.of(e2, List.of(v2)));
 
         try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
             var scoreDirector = ephemeralMoveDirector.getScoreDirector();
-            var move = new ListRuinRecreateMove<TestdataListSolution>(listVariableStateSupply,
+            var move = new ListRuinRecreateMove<TestdataListSolution>(listVariableDescriptor,
                     ruinRecreateConstructionHeuristicPhaseBuilder, mock(SolverScope.class), Arrays.asList(v1), Set.of(e1));
             move.doMoveOnly(scoreDirector);
             var undoMove = (RecordedUndoMove<TestdataListSolution>) ephemeralMoveDirector.createUndoMove();

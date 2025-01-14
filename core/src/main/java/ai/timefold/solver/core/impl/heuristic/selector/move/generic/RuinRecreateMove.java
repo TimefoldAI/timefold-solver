@@ -10,6 +10,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
@@ -46,7 +47,9 @@ public final class RuinRecreateMove<Solution_> extends AbstractMove<Solution_> {
         }
         castScoreDirector.triggerVariableListeners();
 
-        var constructionHeuristicPhase = constructionHeuristicPhaseBuilder.withElementsToRecreate(ruinedEntityList)
+        var constructionHeuristicPhase = constructionHeuristicPhaseBuilder
+                .ensureThreadSafe((InnerScoreDirector<Solution_, ?>) scoreDirector)
+                .withElementsToRecreate(ruinedEntityList)
                 .build();
         constructionHeuristicPhase.setSolver(solverScope.getSolver());
         constructionHeuristicPhase.solvingStarted(solverScope);
