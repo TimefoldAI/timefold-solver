@@ -22,7 +22,7 @@ class AdaptiveScoreRingBufferTest {
                 });
         buffer.resize();
         var bufferState = buffer.getState();
-        assertThat(bufferState.readIndex()).isEqualTo(0);
+        assertThat(bufferState.readIndex()).isZero();
         assertThat(bufferState.writeIndex()).isEqualTo(2);
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(2, 3, 0, 0, 0, 0, 0, 0);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
@@ -49,7 +49,7 @@ class AdaptiveScoreRingBufferTest {
                 });
         buffer.resize();
         var bufferState = buffer.getState();
-        assertThat(bufferState.readIndex()).isEqualTo(0);
+        assertThat(bufferState.readIndex()).isZero();
         assertThat(bufferState.writeIndex()).isEqualTo(2);
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(2, 3, 0, 0, 0, 0, 0, 0);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
@@ -76,7 +76,7 @@ class AdaptiveScoreRingBufferTest {
                 });
         buffer.put(1, SimpleScore.of(1));
         var bufferState = buffer.getState();
-        assertThat(bufferState.readIndex()).isEqualTo(0);
+        assertThat(bufferState.readIndex()).isZero();
         assertThat(bufferState.writeIndex()).isEqualTo(1);
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(1, 0, 0, 0);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
@@ -87,7 +87,7 @@ class AdaptiveScoreRingBufferTest {
 
         buffer.put(3, SimpleScore.of(2));
         bufferState = buffer.getState();
-        assertThat(bufferState.readIndex()).isEqualTo(0);
+        assertThat(bufferState.readIndex()).isZero();
         assertThat(bufferState.writeIndex()).isEqualTo(2);
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(1, 3, 0, 0);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
@@ -98,7 +98,7 @@ class AdaptiveScoreRingBufferTest {
 
         buffer.put(5, SimpleScore.of(3));
         bufferState = buffer.getState();
-        assertThat(bufferState.readIndex()).isEqualTo(0);
+        assertThat(bufferState.readIndex()).isZero();
         assertThat(bufferState.writeIndex()).isEqualTo(3);
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(1, 3, 5, 0);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
@@ -109,8 +109,8 @@ class AdaptiveScoreRingBufferTest {
 
         buffer.put(7, SimpleScore.of(4));
         bufferState = buffer.getState();
-        assertThat(bufferState.readIndex()).isEqualTo(0);
-        assertThat(bufferState.writeIndex()).isEqualTo(0);
+        assertThat(bufferState.readIndex()).isZero();
+        assertThat(bufferState.writeIndex()).isZero();
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(1, 3, 5, 7);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
                 SimpleScore.of(1),
@@ -120,7 +120,7 @@ class AdaptiveScoreRingBufferTest {
 
         buffer.put(9, SimpleScore.of(5));
         bufferState = buffer.getState();
-        assertThat(bufferState.readIndex()).isEqualTo(0);
+        assertThat(bufferState.readIndex()).isZero();
         assertThat(bufferState.writeIndex()).isEqualTo(5);
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(1, 3, 5, 7, 9, 0, 0, 0);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
@@ -169,7 +169,7 @@ class AdaptiveScoreRingBufferTest {
 
         buffer.put(9, SimpleScore.of(5));
         bufferState = buffer.getState();
-        assertThat(bufferState.readIndex()).isEqualTo(0);
+        assertThat(bufferState.readIndex()).isZero();
         assertThat(bufferState.writeIndex()).isEqualTo(5);
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(1, 3, 5, 7, 9, 0, 0, 0);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
@@ -197,7 +197,7 @@ class AdaptiveScoreRingBufferTest {
         assertThat(buffer.peekFirst()).isEqualTo(SimpleScore.of(1));
         var bufferState = buffer.getState();
         assertThat(bufferState.readIndex()).isEqualTo(2);
-        assertThat(bufferState.writeIndex()).isEqualTo(0);
+        assertThat(bufferState.writeIndex()).isZero();
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(0, 0, 1, 3);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(SimpleScore.of(-1),
                 SimpleScore.of(0),
@@ -218,8 +218,8 @@ class AdaptiveScoreRingBufferTest {
                 });
         buffer.clear();
         var bufferState = buffer.getState();
-        assertThat(bufferState.readIndex()).isEqualTo(0);
-        assertThat(bufferState.writeIndex()).isEqualTo(0);
+        assertThat(bufferState.readIndex()).isZero();
+        assertThat(bufferState.writeIndex()).isZero();
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(0, 0, 0, 0);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(null,
                 null,
@@ -242,7 +242,7 @@ class AdaptiveScoreRingBufferTest {
 
         var bufferState = buffer.getState();
         assertThat(bufferState.readIndex()).isEqualTo(1);
-        assertThat(bufferState.writeIndex()).isEqualTo(0);
+        assertThat(bufferState.writeIndex()).isZero();
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(0, 2, 3, 4);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(null,
                 SimpleScore.of(2),
@@ -420,7 +420,7 @@ class AdaptiveScoreRingBufferTest {
                 });
         assertThat(buffer.pollLatestScoreBeforeTimeAndClearPrior(2)).isEqualTo(SimpleScore.of(2));
         var bufferState = buffer.getState();
-        assertThat(bufferState.readIndex()).isEqualTo(0);
+        assertThat(bufferState.readIndex()).isZero();
         assertThat(bufferState.writeIndex()).isEqualTo(3);
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(2, 3, 4, 0, 0);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
@@ -471,7 +471,7 @@ class AdaptiveScoreRingBufferTest {
         assertThat(buffer.pollLatestScoreBeforeTimeAndClearPrior(10)).isEqualTo(SimpleScore.of(2));
         var bufferState = buffer.getState();
         assertThat(bufferState.readIndex()).isEqualTo(4);
-        assertThat(bufferState.writeIndex()).isEqualTo(0);
+        assertThat(bufferState.writeIndex()).isZero();
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(0, 0, 0, 0, 2);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
                 null,
