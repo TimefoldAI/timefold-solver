@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.common;
 
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.KeysExtractor;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.UniKeysExtractor;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.Index;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexFactory;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexFactory.KeysExtractor;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexFactory.UniKeysExtractor;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.RightTupleLifecycle;
@@ -32,10 +32,10 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
     /**
      * Calls for example {@link AbstractScorer#insert(AbstractTuple)} and/or ...
      */
-    private final Indexer<LeftTuple_> indexerLeft;
-    private final Indexer<UniTuple<Right_>> indexerRight;
+    private final Index<LeftTuple_> indexerLeft;
+    private final Index<UniTuple<Right_>> indexerRight;
 
-    protected AbstractIndexedJoinNode(KeysExtractor<LeftTuple_> keysExtractorLeft, IndexerFactory<Right_> indexerFactory,
+    protected AbstractIndexedJoinNode(KeysExtractor<LeftTuple_> keysExtractorLeft, IndexFactory<Right_> indexFactory,
             int inputStoreIndexLeftKeys, int inputStoreIndexLeftEntry, int inputStoreIndexLeftOutTupleList,
             int inputStoreIndexRightKeys, int inputStoreIndexRightEntry, int inputStoreIndexRightOutTupleList,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, boolean isFiltering, int outputStoreIndexLeftOutEntry,
@@ -43,13 +43,13 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
         super(inputStoreIndexLeftOutTupleList, inputStoreIndexRightOutTupleList, nextNodesTupleLifecycle, isFiltering,
                 outputStoreIndexLeftOutEntry, outputStoreIndexRightOutEntry);
         this.keysExtractorLeft = keysExtractorLeft;
-        this.keysExtractorRight = indexerFactory.buildRightKeysExtractor();
+        this.keysExtractorRight = indexFactory.buildRightKeysExtractor();
         this.inputStoreIndexLeftKeys = inputStoreIndexLeftKeys;
         this.inputStoreIndexLeftEntry = inputStoreIndexLeftEntry;
         this.inputStoreIndexRightKeys = inputStoreIndexRightKeys;
         this.inputStoreIndexRightEntry = inputStoreIndexRightEntry;
-        this.indexerLeft = indexerFactory.buildIndexer(true);
-        this.indexerRight = indexerFactory.buildIndexer(false);
+        this.indexerLeft = indexFactory.buildIndex(true);
+        this.indexerRight = indexFactory.buildIndex(false);
     }
 
     @Override

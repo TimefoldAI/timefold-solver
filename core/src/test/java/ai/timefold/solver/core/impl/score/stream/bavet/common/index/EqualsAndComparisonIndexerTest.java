@@ -17,47 +17,47 @@ class EqualsAndComparisonIndexerTest extends AbstractIndexerTest {
 
     @Test
     void iEmpty() {
-        var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
-        assertThat(getTuples(indexer, "F", 40)).isEmpty();
+        var index = new IndexFactory<>(joiner).buildIndex(true);
+        assertThat(getTuples(index, "F", 40)).isEmpty();
     }
 
     @Test
     void put() {
-        var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
+        var index = new IndexFactory<>(joiner).buildIndex(true);
         var annTuple = newTuple("Ann-F-40");
-        assertThat(indexer.size(IndexKeys.ofMany("F", 40))).isEqualTo(0);
-        indexer.put(IndexKeys.ofMany("F", 40), annTuple);
-        assertThat(indexer.size(IndexKeys.ofMany("F", 40))).isEqualTo(1);
+        assertThat(index.size(IndexKeys.ofMany("F", 40))).isEqualTo(0);
+        index.put(IndexKeys.ofMany("F", 40), annTuple);
+        assertThat(index.size(IndexKeys.ofMany("F", 40))).isEqualTo(1);
     }
 
     @Test
     void removeTwice() {
-        var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
+        var index = new IndexFactory<>(joiner).buildIndex(true);
         var annTuple = newTuple("Ann-F-40");
-        var annEntry = indexer.put(IndexKeys.ofMany("F", 40), annTuple);
+        var annEntry = index.put(IndexKeys.ofMany("F", 40), annTuple);
 
-        indexer.remove(IndexKeys.ofMany("F", 40), annEntry);
-        assertThatThrownBy(() -> indexer.remove(IndexKeys.ofMany("F", 40), annEntry))
+        index.remove(IndexKeys.ofMany("F", 40), annEntry);
+        assertThatThrownBy(() -> index.remove(IndexKeys.ofMany("F", 40), annEntry))
                 .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void visit() {
-        var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
+        var index = new IndexFactory<>(joiner).buildIndex(true);
 
         var annTuple = newTuple("Ann-F-40");
-        indexer.put(IndexKeys.ofMany("F", 40), annTuple);
+        index.put(IndexKeys.ofMany("F", 40), annTuple);
         var bethTuple = newTuple("Beth-F-30");
-        indexer.put(IndexKeys.ofMany("F", 30), bethTuple);
-        indexer.put(IndexKeys.ofMany("M", 40), newTuple("Carl-M-40"));
-        indexer.put(IndexKeys.ofMany("M", 30), newTuple("Dan-M-30"));
+        index.put(IndexKeys.ofMany("F", 30), bethTuple);
+        index.put(IndexKeys.ofMany("M", 40), newTuple("Carl-M-40"));
+        index.put(IndexKeys.ofMany("M", 30), newTuple("Dan-M-30"));
         var ednaTuple = newTuple("Edna-F-40");
-        indexer.put(IndexKeys.ofMany("F", 40), ednaTuple);
+        index.put(IndexKeys.ofMany("F", 40), ednaTuple);
 
-        assertThat(getTuples(indexer, "F", 40)).containsOnly(annTuple, bethTuple, ednaTuple);
-        assertThat(getTuples(indexer, "F", 35)).containsOnly(bethTuple);
-        assertThat(getTuples(indexer, "F", 30)).containsOnly(bethTuple);
-        assertThat(getTuples(indexer, "F", 20)).isEmpty();
+        assertThat(getTuples(index, "F", 40)).containsOnly(annTuple, bethTuple, ednaTuple);
+        assertThat(getTuples(index, "F", 35)).containsOnly(bethTuple);
+        assertThat(getTuples(index, "F", 30)).containsOnly(bethTuple);
+        assertThat(getTuples(index, "F", 20)).isEmpty();
     }
 
     private static UniTuple<String> newTuple(String factA) {

@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetAbstractConst
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetIfExistsConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.common.penta.DefaultPentaJoiner;
@@ -63,15 +63,15 @@ final class BavetIfExistsQuadConstraintStream<Solution_, A, B, C, D, E>
     @Override
     public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
         TupleLifecycle<QuadTuple<A, B, C, D>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
-        IndexerFactory<E> indexerFactory = new IndexerFactory<>(joiner);
-        var node = indexerFactory.hasJoiners()
-                ? (filtering == null ? new IndexedIfExistsQuadNode<>(shouldExist, indexerFactory,
+        IndexFactory<E> indexFactory = new IndexFactory<>(joiner);
+        var node = indexFactory.hasJoiners()
+                ? (filtering == null ? new IndexedIfExistsQuadNode<>(shouldExist, indexFactory,
                         buildHelper.reserveTupleStoreIndex(parentABCD.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentABCD.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentBridgeE.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentBridgeE.getTupleSource()),
                         downstream)
-                        : new IndexedIfExistsQuadNode<>(shouldExist, indexerFactory,
+                        : new IndexedIfExistsQuadNode<>(shouldExist, indexFactory,
                                 buildHelper.reserveTupleStoreIndex(parentABCD.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentABCD.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentABCD.getTupleSource()),

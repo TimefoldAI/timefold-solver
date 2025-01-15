@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetAbstractConst
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetIfExistsConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.common.tri.DefaultTriJoiner;
@@ -63,15 +63,15 @@ final class BavetIfExistsBiConstraintStream<Solution_, A, B, C>
     @Override
     public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
         TupleLifecycle<BiTuple<A, B>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
-        IndexerFactory<C> indexerFactory = new IndexerFactory<>(joiner);
-        var node = indexerFactory.hasJoiners()
-                ? (filtering == null ? new IndexedIfExistsBiNode<>(shouldExist, indexerFactory,
+        IndexFactory<C> indexFactory = new IndexFactory<>(joiner);
+        var node = indexFactory.hasJoiners()
+                ? (filtering == null ? new IndexedIfExistsBiNode<>(shouldExist, indexFactory,
                         buildHelper.reserveTupleStoreIndex(parentAB.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentAB.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentBridgeC.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentBridgeC.getTupleSource()),
                         downstream)
-                        : new IndexedIfExistsBiNode<>(shouldExist, indexerFactory,
+                        : new IndexedIfExistsBiNode<>(shouldExist, indexFactory,
                                 buildHelper.reserveTupleStoreIndex(parentAB.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentAB.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentAB.getTupleSource()),

@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetAbstractConst
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetIfExistsConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.score.stream.common.bi.DefaultBiJoiner;
@@ -62,15 +62,15 @@ final class BavetIfExistsUniConstraintStream<Solution_, A, B>
     @Override
     public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
         TupleLifecycle<UniTuple<A>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
-        IndexerFactory<B> indexerFactory = new IndexerFactory<>(joiner);
-        var node = indexerFactory.hasJoiners()
-                ? (filtering == null ? new IndexedIfExistsUniNode<>(shouldExist, indexerFactory,
+        IndexFactory<B> indexFactory = new IndexFactory<>(joiner);
+        var node = indexFactory.hasJoiners()
+                ? (filtering == null ? new IndexedIfExistsUniNode<>(shouldExist, indexFactory,
                         buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
                         downstream)
-                        : new IndexedIfExistsUniNode<>(shouldExist, indexerFactory,
+                        : new IndexedIfExistsUniNode<>(shouldExist, indexFactory,
                                 buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
