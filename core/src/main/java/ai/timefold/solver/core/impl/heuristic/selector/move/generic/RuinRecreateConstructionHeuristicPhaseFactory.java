@@ -23,7 +23,7 @@ final class RuinRecreateConstructionHeuristicPhaseFactory<Solution_>
             Termination<Solution_> solverTermination, int phaseIndex, boolean triggerFirstInitializedSolutionEvent,
             EntityPlacer<Solution_> entityPlacer) {
         var phaseTermination = new PhaseToSolverTerminationBridge<>(new BasicPlumbingTermination<Solution_>(false));
-        return new RuinRecreateConstructionHeuristicPhaseBuilder<>(phaseTermination, entityPlacer,
+        return new RuinRecreateConstructionHeuristicPhaseBuilder<>(phaseConfigPolicy, this, phaseTermination, entityPlacer,
                 buildDecider(phaseConfigPolicy, phaseTermination));
 
     }

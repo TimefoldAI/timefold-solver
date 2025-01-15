@@ -33,4 +33,7 @@ final class RecordedUndoMove<Solution_> implements Move<Solution_> {
                 .toList());
     }
 
+    List<ChangeAction<Solution_>> getVariableChangeActionList() {
+        return variableChangeActionList;
+    }
 }

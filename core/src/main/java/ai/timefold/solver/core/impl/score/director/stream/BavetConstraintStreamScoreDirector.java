@@ -177,4 +177,8 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
         return session;
     }
 
+    @Override
+    public boolean isDerived() {
+        return derived;
+    }
 }

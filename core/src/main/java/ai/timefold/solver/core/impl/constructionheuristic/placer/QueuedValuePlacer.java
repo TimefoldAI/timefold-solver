@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.constructionheuristic.placer;
 import java.util.Collections;
 import java.util.Iterator;
 
+import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
@@ -16,8 +17,9 @@ public class QueuedValuePlacer<Solution_> extends AbstractEntityPlacer<Solution_
     protected final EntityIndependentValueSelector<Solution_> valueSelector;
     protected final MoveSelector<Solution_> moveSelector;
 
-    public QueuedValuePlacer(EntityIndependentValueSelector<Solution_> valueSelector,
-            MoveSelector<Solution_> moveSelector) {
+    public QueuedValuePlacer(EntityPlacerFactory<Solution_> factory, HeuristicConfigPolicy<Solution_> configPolicy,
+            EntityIndependentValueSelector<Solution_> valueSelector, MoveSelector<Solution_> moveSelector) {
+        super(factory, configPolicy);
         this.valueSelector = valueSelector;
         this.moveSelector = moveSelector;
         phaseLifecycleSupport.addEventListener(valueSelector);
@@ -59,7 +61,7 @@ public class QueuedValuePlacer<Solution_> extends AbstractEntityPlacer<Solution_
 
     @Override
     public EntityPlacer<Solution_> rebuildWithFilter(SelectionFilter<Solution_, Object> filter) {
-        return new QueuedValuePlacer<>(
+        return new QueuedValuePlacer<>(factory, configPolicy,
                 (EntityIndependentFilteringValueSelector<Solution_>) FilteringValueSelector.of(valueSelector, filter),
                 moveSelector);
     }

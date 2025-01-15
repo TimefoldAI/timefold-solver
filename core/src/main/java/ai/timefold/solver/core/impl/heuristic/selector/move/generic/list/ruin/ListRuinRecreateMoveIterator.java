@@ -68,8 +68,8 @@ final class ListRuinRecreateMoveIterator<Solution_> extends UpcomingSelectionIte
                 }
             }
         }
-        return new ListRuinRecreateMove<>(listVariableStateSupply, constructionHeuristicPhaseBuilder, solverScope,
-                selectedValueList, affectedEntitySet);
+        return new ListRuinRecreateMove<>(listVariableStateSupply.getSourceVariableDescriptor(),
+                constructionHeuristicPhaseBuilder, solverScope, selectedValueList, affectedEntitySet);
     }
 
 }

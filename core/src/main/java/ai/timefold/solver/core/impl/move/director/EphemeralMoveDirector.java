@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.move.director;
 
+import java.util.List;
+
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
@@ -21,15 +23,17 @@ public final class EphemeralMoveDirector<Solution_> extends MoveDirector<Solutio
         super(new VariableChangeRecordingScoreDirector<>(scoreDirector, false));
     }
 
+    @SuppressWarnings("unchecked")
     public Move<Solution_> createUndoMove() {
-        return new RecordedUndoMove<>(getVariableChangeRecordingScoreDirector().copyVariableChanges());
+        var changes = (List<ChangeAction<Solution_>>) getVariableChangeRecordingScoreDirector().copyChanges();
+        return new RecordedUndoMove<>(changes);
     }
 
     @Override
     public <Entity_, Value_> @NonNull ElementLocation getPositionOf(
             @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             @NonNull Value_ value) {
-        return getPositionOf(getVariableChangeRecordingScoreDirector().getDelegate(), variableMetaModel, value);
+        return getPositionOf(getVariableChangeRecordingScoreDirector().getBacking(), variableMetaModel, value);
 
     }
 

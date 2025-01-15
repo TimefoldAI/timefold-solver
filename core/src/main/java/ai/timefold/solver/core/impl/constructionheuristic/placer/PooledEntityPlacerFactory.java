@@ -69,7 +69,7 @@ public class PooledEntityPlacerFactory<Solution_>
 
         MoveSelector<Solution_> moveSelector = MoveSelectorFactory.<Solution_> create(moveSelectorConfig_)
                 .buildMoveSelector(configPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.ORIGINAL, false);
-        return new PooledEntityPlacer<>(moveSelector);
+        return new PooledEntityPlacer<>(this, configPolicy, moveSelector);
     }
 
     private MoveSelectorConfig buildMoveSelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy) {

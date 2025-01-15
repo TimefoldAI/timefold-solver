@@ -55,7 +55,8 @@ public class QueuedValuePlacerFactory<Solution_>
                     + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
 
         }
-        return new QueuedValuePlacer<>((EntityIndependentValueSelector<Solution_>) valueSelector, moveSelector);
+        return new QueuedValuePlacer<>(this, configPolicy, (EntityIndependentValueSelector<Solution_>) valueSelector,
+                moveSelector);
     }
 
     private ValueSelectorConfig buildValueSelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy,

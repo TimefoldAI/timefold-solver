@@ -101,7 +101,7 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
         return new ConstructionHeuristicPhaseScope<>(solverScope, phaseIndex);
     }
 
-    private void doStep(ConstructionHeuristicStepScope<Solution_> stepScope) {
+    protected void doStep(ConstructionHeuristicStepScope<Solution_> stepScope) {
         var step = stepScope.getStep();
         step.execute(stepScope.getMoveDirector());
         predictWorkingStepScore(stepScope, step);
