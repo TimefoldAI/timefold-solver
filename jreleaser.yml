@@ -41,6 +41,7 @@ deploy:
         authorization: BASIC
         # TODO Remove verifyPom tag, hack for https://github.com/jreleaser/jreleaser/issues/1397
         verifyPom: false
+        maxRetries: 180 # the timeout for Maven state verification is now 30 minutes: 180 retries * 10-second delay
         stagingRepositories:
           - "target/staging-deploy"
         artifactOverrides:
