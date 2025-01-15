@@ -164,7 +164,7 @@ public class AdaptiveTerminationConfig extends AbstractConfig<AdaptiveTerminatio
 
     @Override
     public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
-
+        // intentionally empty - no classes to visit
     }
 
     /** Check whether any gracePeriod... is non-null. */

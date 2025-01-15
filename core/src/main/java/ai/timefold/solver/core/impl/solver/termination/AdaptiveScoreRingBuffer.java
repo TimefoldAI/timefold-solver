@@ -9,7 +9,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 final class AdaptiveScoreRingBuffer<Score_ extends Score<Score_>> {
-    private final static int DEFAULT_CAPACITY = 4096;
+    private static final int DEFAULT_CAPACITY = 4096;
 
     int readIndex;
     int writeIndex;

@@ -37,29 +37,18 @@ public final class AdaptiveTermination<Solution_, Score_ extends Score<Score_>> 
     }
 
     /**
-     * An exception that is thrown to signal a hard score improvement.
-     * This is done since:
-     * <p/>
-     * <ul>
-     * <li/>Hard score improvements are significantly rarer than soft score improvements.
-     * <li/>Allows us to directly return a double in a method instead of using a
-     * carrier type/needing to box it so we can use null as a special value.
-     * <li/>Avoid branching in code on the hot path.
-     * </ul>
-     * <p/>
-     * This exception does not fill the stack trace to improve performance;
-     * it is a signal that should always be caught
-     * and handled appropriately.
+     * Returns the improvement in the softest level between the prior
+     * and current best scores as a double, or {@link Double#NaN} if
+     * there is a difference in any of their other levels.
+     *
+     * @param start the prior best score
+     * @param end the current best score
+     * @return the softest level difference between end and start, or
+     *         {@link Double#NaN} if a harder level changed
+     * @param <Score_> The score type
      */
-    private static final class HardLevelImprovedSignal extends Exception {
-        @Override
-        public synchronized Throwable fillInStackTrace() {
-            return this;
-        }
-    }
-
-    private static <Score_ extends Score<Score_>> double softImprovement(@NonNull Score_ start,
-            @NonNull Score_ end) throws HardLevelImprovedSignal {
+    private static <Score_ extends Score<Score_>> double softImprovementOrNaNForHarderChange(@NonNull Score_ start,
+            @NonNull Score_ end) {
         if (start.equals(end)) {
             // optimization: since most of the time the score the same,
             // we can use equals to avoid creating double arrays in the
@@ -70,7 +59,7 @@ public final class AdaptiveTermination<Solution_, Score_ extends Score<Score_>> 
         var softestLevel = scoreDiffs.length - 1;
         for (int i = 0; i < softestLevel; i++) {
             if (scoreDiffs[i] != 0.0) {
-                throw new HardLevelImprovedSignal();
+                return Double.NaN;
             }
         }
         return scoreDiffs[softestLevel];
@@ -96,28 +85,31 @@ public final class AdaptiveTermination<Solution_, Score_ extends Score<Score_>> 
     }
 
     public boolean isTerminated(long currentTime, Score_ endScore) {
-        try {
-            if (isGracePeriodActive) {
-                // first score in scoresByTime = first score in grace period window
-                var endpointDiff = softImprovement(scoresByTime.peekFirst(), endScore);
-                var timeElapsedNanos = currentTime - gracePeriodStartTimeNanos;
-                if (timeElapsedNanos >= gracePeriodNanos) {
-                    // grace period over, record the reference diff
-                    isGracePeriodActive = false;
-                    gracePeriodSoftestImprovementDouble = endpointDiff;
-                    return endpointDiff == 0.0;
-                }
+        if (isGracePeriodActive) {
+            // first score in scoresByTime = first score in grace period window
+            var endpointDiff = softImprovementOrNaNForHarderChange(scoresByTime.peekFirst(), endScore);
+            if (Double.isNaN(endpointDiff)) {
+                resetGracePeriod(currentTime, endScore);
                 return false;
             }
+            var timeElapsedNanos = currentTime - gracePeriodStartTimeNanos;
+            if (timeElapsedNanos >= gracePeriodNanos) {
+                // grace period over, record the reference diff
+                isGracePeriodActive = false;
+                gracePeriodSoftestImprovementDouble = endpointDiff;
+                return endpointDiff == 0.0;
+            }
+            return false;
+        }
 
-            var startScore = scoresByTime.pollLatestScoreBeforeTimeAndClearPrior(currentTime - gracePeriodNanos);
-            var scoreDiff = softImprovement(startScore, endScore);
-
-            return scoreDiff / gracePeriodSoftestImprovementDouble < minimumImprovementRatio;
-        } catch (HardLevelImprovedSignal signal) {
+        var startScore = scoresByTime.pollLatestScoreBeforeTimeAndClearPrior(currentTime - gracePeriodNanos);
+        var scoreDiff = softImprovementOrNaNForHarderChange(startScore, endScore);
+        if (Double.isNaN(scoreDiff)) {
             resetGracePeriod(currentTime, endScore);
             return false;
         }
+
+        return scoreDiff / gracePeriodSoftestImprovementDouble < minimumImprovementRatio;
     }
 
     @Override
@@ -149,12 +141,12 @@ public final class AdaptiveTermination<Solution_, Score_ extends Score<Score_>> 
 
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-
+        // intentionally empty - no work to do
     }
 
     @Override
     public void stepStarted(AbstractStepScope<Solution_> stepScope) {
-
+        // intentionally empty - no work to do
     }
 
     @Override
@@ -164,7 +156,7 @@ public final class AdaptiveTermination<Solution_, Score_ extends Score<Score_>> 
 
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
-
+        // intentionally empty - no work to do
     }
 
     @Override
