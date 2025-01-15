@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -10,7 +11,6 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class RuinRecreateConstructionHeuristicPhaseBuilderTest {
@@ -25,7 +25,7 @@ public class RuinRecreateConstructionHeuristicPhaseBuilderTest {
         var constructionHeuristicConfig = mock(ConstructionHeuristicPhaseConfig.class);
         var builder = RuinRecreateConstructionHeuristicPhaseBuilder.create(solverConfigPolicy, constructionHeuristicConfig);
         var phase = builder.build();
-        Assertions.assertThat(phase.getEntityPlacer()).isSameAs(builder.getEntityPlacer());
+        assertThat(phase.getEntityPlacer()).isSameAs(builder.getEntityPlacer());
     }
 
     @Test
@@ -43,6 +43,6 @@ public class RuinRecreateConstructionHeuristicPhaseBuilderTest {
         var phase = builder
                 .ensureThreadSafe(scoreDirector)
                 .build();
-        Assertions.assertThat(phase.getEntityPlacer()).isNotSameAs(builder.getEntityPlacer());
+        assertThat(phase.getEntityPlacer()).isNotSameAs(builder.getEntityPlacer());
     }
 }

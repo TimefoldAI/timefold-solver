@@ -43,8 +43,8 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         entityToNewPositionMap.clear();
-        var recordingScoreDirector = (VariableChangeRecordingScoreDirector<Solution_>) scoreDirector;
-        try (var listVariableStateSupply = recordingScoreDirector.getDelegate().getSupplyManager()
+        var variableChangeRecordingScoreDirector = (VariableChangeRecordingScoreDirector<Solution_>) scoreDirector;
+        try (var listVariableStateSupply = variableChangeRecordingScoreDirector.getDelegate().getSupplyManager()
                 .demand(listVariableDescriptor.getStateDemand())) {
             var entityToOriginalPositionMap =
                     CollectionUtils.<Object, NavigableSet<RuinedLocation>> newIdentityHashMap(affectedEntitySet.size());
@@ -55,20 +55,22 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
                         ignored -> new TreeSet<>()).add(new RuinedLocation(valueToRuin, location.index()));
             }
 
-            var nonRecordingScoreDirector = recordingScoreDirector.getDelegate();
+            var nonRecordingScoreDirector = variableChangeRecordingScoreDirector.getDelegate();
             for (var entry : entityToOriginalPositionMap.entrySet()) {
                 var entity = entry.getKey();
                 var originalPositionSet = entry.getValue();
 
                 // Only record before(), so we can restore the state.
                 // The after() is sent straight to the real score director.
-                recordingScoreDirector.beforeListVariableChanged(listVariableDescriptor, entity,
+                variableChangeRecordingScoreDirector.beforeListVariableChanged(listVariableDescriptor, entity,
                         listVariableDescriptor.getFirstUnpinnedIndex(entity),
                         listVariableDescriptor.getListSize(entity));
                 for (var position : originalPositionSet.descendingSet()) {
-                    recordingScoreDirector.beforeListVariableElementUnassigned(listVariableDescriptor, position.ruinedValue());
+                    variableChangeRecordingScoreDirector.beforeListVariableElementUnassigned(listVariableDescriptor,
+                            position.ruinedValue());
                     listVariableDescriptor.removeElement(entity, position.index());
-                    recordingScoreDirector.afterListVariableElementUnassigned(listVariableDescriptor, position.ruinedValue());
+                    variableChangeRecordingScoreDirector.afterListVariableElementUnassigned(listVariableDescriptor,
+                            position.ruinedValue());
                 }
                 nonRecordingScoreDirector.afterListVariableChanged(listVariableDescriptor, entity,
                         listVariableDescriptor.getFirstUnpinnedIndex(entity),
@@ -78,14 +80,14 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
 
             var constructionHeuristicPhase =
                     (RuinRecreateConstructionHeuristicPhase<Solution_>) constructionHeuristicPhaseBuilder
-                            .ensureThreadSafe(recordingScoreDirector.getDelegate())
+                            .ensureThreadSafe(variableChangeRecordingScoreDirector.getDelegate())
                             .withElementsToRuin(entityToOriginalPositionMap.keySet())
                             .withElementsToRecreate(ruinedValueList)
                             .build();
 
             var nestedSolverScope = new SolverScope<Solution_>();
             nestedSolverScope.setSolver(solverScope.getSolver());
-            nestedSolverScope.setScoreDirector(recordingScoreDirector.getDelegate());
+            nestedSolverScope.setScoreDirector(variableChangeRecordingScoreDirector.getDelegate());
             constructionHeuristicPhase.setSolver(nestedSolverScope.getSolver());
             constructionHeuristicPhase.solvingStarted(nestedSolverScope);
             constructionHeuristicPhase.solve(nestedSolverScope);
@@ -105,36 +107,41 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
                 entityToInsertedValuesMap.computeIfAbsent(location.entity(), ignored -> new ArrayList<>()).add(ruinedValue);
             }
 
+            var onlyRecordingChangesScoreDirector = variableChangeRecordingScoreDirector.getNonDelegating();
             for (var entry : entityToInsertedValuesMap.entrySet()) {
                 if (!entityToOriginalPositionMap.containsKey(entry.getKey())) {
                     // The entity has not been evaluated while creating the entityToOriginalPositionMap,
                     // meaning it is a new destination entity without a ListVariableBeforeChangeAction
                     // to restore the original elements.
                     // We need to ensure the before action is executed in order to restore the original elements.
-                    var beforeActionElementList =
+                    var originalElementList =
                             constructionHeuristicPhase.getMissingUpdatedElementsMap().get(entry.getKey());
-                    recordingScoreDirector
-                            .recordCustomAction(
-                                    recorder -> recorder.recordListVariableBeforeChangeAction(listVariableDescriptor,
-                                            entry.getKey(), beforeActionElementList, 0, beforeActionElementList.size()));
+                    var currentElementList = List.copyOf(listVariableDescriptor.getValue(entry.getKey()));
+                    // We need to first update the entity element list before tracking changes
+                    // and set it back to the one from the generated solution
+                    listVariableDescriptor.getValue(entry.getKey()).clear();
+                    listVariableDescriptor.getValue(entry.getKey()).addAll(originalElementList);
+                    onlyRecordingChangesScoreDirector.beforeListVariableChanged(listVariableDescriptor, entry.getKey(), 0,
+                            originalElementList.size());
+                    listVariableDescriptor.getValue(entry.getKey()).clear();
+                    listVariableDescriptor.getValue(entry.getKey()).addAll(currentElementList);
                 }
                 // Since the solution was generated through a nested phase,
                 // all actions taken to produce the solution are not accessible.
                 // Therefore, we need to replicate all the actions required to generate the solution
                 // while also allowing for restoring the original state.
-                recordingScoreDirector.recordCustomAction(recorder -> {
-                    for (var element : entry.getValue()) {
-                        recorder.recordListVariableBeforeAssignmentAction(listVariableDescriptor, element);
-                    }
-                    recorder.recordListVariableAfterChangeAction(listVariableDescriptor, entry.getKey(),
-                            listVariableDescriptor.getFirstUnpinnedIndex(entry.getKey()),
-                            listVariableDescriptor.getListSize(entry.getKey()));
-                    for (var element : entry.getValue()) {
-                        recorder.recordListVariableAfterAssignmentAction(listVariableDescriptor, element);
-                    }
-                });
+                for (var element : entry.getValue()) {
+                    onlyRecordingChangesScoreDirector.beforeListVariableElementAssigned(listVariableDescriptor, element);
+                }
+                onlyRecordingChangesScoreDirector.afterListVariableChanged(listVariableDescriptor, entry.getKey(),
+                        listVariableDescriptor.getFirstUnpinnedIndex(entry.getKey()),
+                        listVariableDescriptor.getListSize(entry.getKey()));
+                for (var element : entry.getValue()) {
+                    onlyRecordingChangesScoreDirector.afterListVariableElementAssigned(listVariableDescriptor, element);
+                }
             }
-            recordingScoreDirector.getDelegate().getSupplyManager().cancel(listVariableDescriptor.getStateDemand());
+            variableChangeRecordingScoreDirector.getDelegate().getSupplyManager()
+                    .cancel(listVariableDescriptor.getStateDemand());
         }
     }
 
