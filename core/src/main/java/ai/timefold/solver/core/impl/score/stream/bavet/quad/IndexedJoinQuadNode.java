@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.score.stream.bavet.quad;
 
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractIndexedJoinNode;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexFactory;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
@@ -14,12 +14,12 @@ final class IndexedJoinQuadNode<A, B, C, D>
     private final QuadPredicate<A, B, C, D> filtering;
     private final int outputStoreSize;
 
-    public IndexedJoinQuadNode(IndexFactory<D> indexFactory,
+    public IndexedJoinQuadNode(IndexerFactory<D> indexerFactory,
             int inputStoreIndexABC, int inputStoreIndexEntryABC, int inputStoreIndexOutTupleListABC,
             int inputStoreIndexD, int inputStoreIndexEntryD, int inputStoreIndexOutTupleListD,
             TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle, QuadPredicate<A, B, C, D> filtering,
             int outputStoreSize, int outputStoreIndexOutEntryABC, int outputStoreIndexOutEntryD) {
-        super(indexFactory.buildTriLeftKeysExtractor(), indexFactory,
+        super(indexerFactory.buildTriLeftKeysExtractor(), indexerFactory,
                 inputStoreIndexABC, inputStoreIndexEntryABC, inputStoreIndexOutTupleListABC,
                 inputStoreIndexD, inputStoreIndexEntryD, inputStoreIndexOutTupleListD,
                 nextNodesTupleLifecycle, filtering != null,

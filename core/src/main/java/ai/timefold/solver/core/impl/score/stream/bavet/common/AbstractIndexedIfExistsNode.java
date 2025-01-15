@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.common;
 
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.Index;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexFactory;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexFactory.KeysExtractor;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexFactory.UniKeysExtractor;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.KeysExtractor;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.UniKeysExtractor;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.RightTupleLifecycle;
@@ -29,11 +29,11 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
     private final int inputStoreIndexLeftCounterEntry;
     private final int inputStoreIndexRightKeys;
     private final int inputStoreIndexRightEntry;
-    private final Index<ExistsCounter<LeftTuple_>> indexerLeft;
-    private final Index<UniTuple<Right_>> indexerRight;
+    private final Indexer<ExistsCounter<LeftTuple_>> indexerLeft;
+    private final Indexer<UniTuple<Right_>> indexerRight;
 
     protected AbstractIndexedIfExistsNode(boolean shouldExist,
-            KeysExtractor<LeftTuple_> keysExtractorLeft, IndexFactory<Right_> indexFactory,
+            KeysExtractor<LeftTuple_> keysExtractorLeft, IndexerFactory<Right_> indexerFactory,
             int inputStoreIndexLeftKeys, int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList,
             int inputStoreIndexRightKeys, int inputStoreIndexRightEntry, int inputStoreIndexRightTrackerList,
             TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle,
@@ -42,13 +42,13 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
                 inputStoreIndexLeftTrackerList, inputStoreIndexRightTrackerList,
                 nextNodesTupleLifecycle, isFiltering);
         this.keysExtractorLeft = keysExtractorLeft;
-        this.keysExtractorRight = indexFactory.buildRightKeysExtractor();
+        this.keysExtractorRight = indexerFactory.buildRightKeysExtractor();
         this.inputStoreIndexLeftKeys = inputStoreIndexLeftKeys;
         this.inputStoreIndexLeftCounterEntry = inputStoreIndexLeftCounterEntry;
         this.inputStoreIndexRightKeys = inputStoreIndexRightKeys;
         this.inputStoreIndexRightEntry = inputStoreIndexRightEntry;
-        this.indexerLeft = indexFactory.buildIndex(true);
-        this.indexerRight = indexFactory.buildIndex(false);
+        this.indexerLeft = indexerFactory.buildIndexer(true);
+        this.indexerRight = indexerFactory.buildIndexer(false);
     }
 
     @Override

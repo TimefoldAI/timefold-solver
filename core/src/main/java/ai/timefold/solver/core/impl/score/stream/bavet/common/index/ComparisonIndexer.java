@@ -14,19 +14,11 @@ import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         implements Indexer<T> {
 
-    static <T> Index<T> buildIndex(JoinerType joinerType) {
-        return new IndexerBasedIndex<>(new ComparisonIndexer<>(joinerType));
-    }
-
-    static <T> Index<T> buildIndex(JoinerType joinerType, int keyId, Supplier<Index<T>> downstreamIndexSupplier) {
-        return new IndexerBasedIndex<>(new ComparisonIndexer<>(joinerType, keyId, downstreamIndexSupplier));
-    }
-
     private final KeyRetriever<Key_> keyRetriever;
-    private final Supplier<Index<T>> downstreamIndexSupplier;
+    private final Supplier<Indexer<T>> downstreamIndexerSupplier;
     private final Comparator<Key_> keyComparator;
     private final boolean hasOrEquals;
-    private final NavigableMap<Key_, Index<T>> comparisonMap;
+    private final NavigableMap<Key_, Indexer<T>> comparisonMap;
 
     /**
      * Construct an {@link ComparisonIndexer} which immediately ends in a {@link NoneIndexer}.
@@ -35,7 +27,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
      * @param comparisonJoinerType the type of comparison to use
      */
     public ComparisonIndexer(JoinerType comparisonJoinerType) {
-        this(comparisonJoinerType, new SingleKeyRetriever<>(), LinkedListBasedIndex::build);
+        this(comparisonJoinerType, new SingleKeyRetriever<>(), NoneIndexer::new);
     }
 
     /**
@@ -44,16 +36,16 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
      *
      * @param comparisonJoinerType the type of comparison to use
      * @param keyIndex the index of the key to use within {@link IndexKeys}.
-     * @param downstreamIndexSupplier the supplier of the downstream indexer
+     * @param downstreamIndexerSupplier the supplier of the downstream indexer
      */
-    public ComparisonIndexer(JoinerType comparisonJoinerType, int keyIndex, Supplier<Index<T>> downstreamIndexSupplier) {
-        this(comparisonJoinerType, new ManyKeyRetriever<>(keyIndex), downstreamIndexSupplier);
+    public ComparisonIndexer(JoinerType comparisonJoinerType, int keyIndex, Supplier<Indexer<T>> downstreamIndexerSupplier) {
+        this(comparisonJoinerType, new ManyKeyRetriever<>(keyIndex), downstreamIndexerSupplier);
     }
 
     private ComparisonIndexer(JoinerType comparisonJoinerType, KeyRetriever<Key_> keyRetriever,
-            Supplier<Index<T>> downstreamIndexSupplier) {
+            Supplier<Indexer<T>> downstreamIndexerSupplier) {
         this.keyRetriever = Objects.requireNonNull(keyRetriever);
-        this.downstreamIndexSupplier = Objects.requireNonNull(downstreamIndexSupplier);
+        this.downstreamIndexerSupplier = Objects.requireNonNull(downstreamIndexerSupplier);
         /*
          * For GT/GTE, the iteration order is reversed.
          * This allows us to iterate over the entire map, stopping when the threshold is reached.
@@ -72,32 +64,32 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     public ElementAwareListEntry<T> put(Object indexKeys, T tuple) {
         Key_ indexKey = keyRetriever.apply(indexKeys);
         // Avoids computeIfAbsent in order to not create lambdas on the hot path.
-        var downstreamStorage = comparisonMap.get(indexKey);
-        if (downstreamStorage == null) {
-            downstreamStorage = downstreamIndexSupplier.get();
-            comparisonMap.put(indexKey, downstreamStorage);
+        var downstreamIndexer = comparisonMap.get(indexKey);
+        if (downstreamIndexer == null) {
+            downstreamIndexer = downstreamIndexerSupplier.get();
+            comparisonMap.put(indexKey, downstreamIndexer);
         }
-        return downstreamStorage.put(indexKeys, tuple);
+        return downstreamIndexer.put(indexKeys, tuple);
     }
 
     @Override
     public void remove(Object indexKeys, ElementAwareListEntry<T> entry) {
         Key_ indexKey = keyRetriever.apply(indexKeys);
-        var downstreamStorage = getdownstreamStorage(indexKeys, indexKey, entry);
-        downstreamStorage.remove(indexKeys, entry);
-        if (downstreamStorage.isEmpty()) {
+        var downstreamIndexer = getDownstreamIndexer(indexKeys, indexKey, entry);
+        downstreamIndexer.remove(indexKeys, entry);
+        if (downstreamIndexer.isEmpty()) {
             comparisonMap.remove(indexKey);
         }
     }
 
-    private Index<T> getdownstreamStorage(Object indexKeys, Key_ indexerKey, ElementAwareListEntry<T> entry) {
-        var downstreamStorage = comparisonMap.get(indexerKey);
-        if (downstreamStorage == null) {
+    private Indexer<T> getDownstreamIndexer(Object indexKeys, Key_ indexerKey, ElementAwareListEntry<T> entry) {
+        var downstreamIndexer = comparisonMap.get(indexerKey);
+        if (downstreamIndexer == null) {
             throw new IllegalStateException(
                     "Impossible state: the tuple (%s) with indexKeys (%s) doesn't exist in the indexer %s."
                             .formatted(entry.getElement(), indexKeys, this));
         }
-        return downstreamStorage;
+        return downstreamIndexer;
     }
 
     // TODO clean up DRY
@@ -156,7 +148,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     private boolean visitEntry(Object indexKeys, Consumer<T> tupleConsumer, Key_ indexKey,
-            Map.Entry<Key_, Index<T>> entry) {
+            Map.Entry<Key_, Indexer<T>> entry) {
         // Comparator matches the order of iteration of the map, so the boundary is always found from the bottom up.
         var comparison = keyComparator.compare(entry.getKey(), indexKey);
         if (comparison >= 0) { // Possibility of reaching the boundary condition.

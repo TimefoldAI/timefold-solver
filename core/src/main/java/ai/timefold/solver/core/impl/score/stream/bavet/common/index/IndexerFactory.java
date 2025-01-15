@@ -70,12 +70,12 @@ import ai.timefold.solver.core.impl.util.Triple;
  *
  * @param <Right_>
  */
-public final class IndexFactory<Right_> {
+public final class IndexerFactory<Right_> {
 
     private final AbstractJoiner<Right_> joiner;
     private final NavigableMap<Integer, JoinerType> joinerTypeMap;
 
-    public IndexFactory(AbstractJoiner<Right_> joiner) {
+    public IndexerFactory(AbstractJoiner<Right_> joiner) {
         this.joiner = joiner;
         var joinerCount = joiner.getJoinerCount();
         if (joinerCount < 2) {
@@ -473,49 +473,48 @@ public final class IndexFactory<Right_> {
         return buildUniKeysExtractor(joiner::getRightMapping);
     }
 
-    public <T> Index<T> buildIndex(boolean isLeftBridge) {
-        // If creating index for a right bridge node, the joiner type has to be flipped.
-        //(<A, B> becomes <B, A>.)
-        if (!hasJoiners()) { // NoneJoiner results straight in LinkedListBasedIndex.
-            return LinkedListBasedIndex.build();
+    public <T> Indexer<T> buildIndexer(boolean isLeftBridge) {
+        /*
+         * Note that if creating indexer for a right bridge node, the joiner type has to be flipped.
+         * (<A, B> becomes <B, A>.)
+         */
+        if (!hasJoiners()) { // NoneJoiner results in NoneIndexer.
+            return new NoneIndexer<>();
         } else if (joiner.getJoinerCount() == 1) { // Single joiner maps directly to EqualsIndexer or ComparisonIndexer.
             var joinerType = joiner.getJoinerType(0);
             if (joinerType == JoinerType.EQUAL) {
-                return EqualsIndexer.buildIndex();
+                return new EqualsIndexer<>();
             } else {
-                return ComparisonIndexer.buildIndex(isLeftBridge ? joinerType : joinerType.flip());
+                return new ComparisonIndexer<>(isLeftBridge ? joinerType : joinerType.flip());
             }
         }
         // The following code builds the children first, so it needs to iterate over the joiners in reverse order.
         var descendingJoinerTypeMap = joinerTypeMap.descendingMap();
-        Supplier<Index<T>> downstreamIndexerSupplier = null;
-        var keyId = descendingJoinerTypeMap.size() - 1;
+        Supplier<Indexer<T>> noneIndexerSupplier = NoneIndexer::new;
+        Supplier<Indexer<T>> downstreamIndexerSupplier = noneIndexerSupplier;
+        var indexPropertyId = descendingJoinerTypeMap.size() - 1;
         for (var entry : descendingJoinerTypeMap.entrySet()) {
             var joinerType = entry.getValue();
-            if (downstreamIndexerSupplier == null && keyId == 0) {
+            if (downstreamIndexerSupplier == noneIndexerSupplier && indexPropertyId == 0) {
                 if (joinerType == JoinerType.EQUAL) {
-                    downstreamIndexerSupplier = EqualsIndexer::buildIndex;
+                    downstreamIndexerSupplier = EqualsIndexer::new;
                 } else {
                     var actualJoinerType = isLeftBridge ? joinerType : joinerType.flip();
-                    downstreamIndexerSupplier = () -> ComparisonIndexer.buildIndex(actualJoinerType);
+                    downstreamIndexerSupplier = () -> new ComparisonIndexer<>(actualJoinerType);
                 }
             } else {
-                var actualDownstreamIndexerSupplier =
-                        downstreamIndexerSupplier == null
-                                ? (Supplier<Index<T>>) LinkedListBasedIndex::build
-                                : downstreamIndexerSupplier;
-                var effectivelyFinalKeyId = keyId;
+                var actualDownstreamIndexerSupplier = downstreamIndexerSupplier;
+                var effectivelyFinalIndexPropertyId = indexPropertyId;
                 if (joinerType == JoinerType.EQUAL) {
                     downstreamIndexerSupplier =
-                            () -> EqualsIndexer.buildIndex(effectivelyFinalKeyId, actualDownstreamIndexerSupplier);
+                            () -> new EqualsIndexer<>(effectivelyFinalIndexPropertyId, actualDownstreamIndexerSupplier);
                 } else {
                     var actualJoinerType = isLeftBridge ? joinerType : joinerType.flip();
-                    downstreamIndexerSupplier =
-                            () -> ComparisonIndexer.buildIndex(actualJoinerType, effectivelyFinalKeyId,
-                                    actualDownstreamIndexerSupplier);
+                    downstreamIndexerSupplier = () -> new ComparisonIndexer<>(actualJoinerType, effectivelyFinalIndexPropertyId,
+                            actualDownstreamIndexerSupplier);
                 }
             }
-            keyId--;
+            indexPropertyId--;
         }
         return downstreamIndexerSupplier.get();
     }

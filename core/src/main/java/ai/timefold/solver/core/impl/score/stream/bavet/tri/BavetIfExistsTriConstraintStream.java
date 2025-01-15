@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetAbstractConst
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetIfExistsConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexFactory;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.common.quad.DefaultQuadJoiner;
@@ -63,15 +63,15 @@ final class BavetIfExistsTriConstraintStream<Solution_, A, B, C, D>
     @Override
     public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
         TupleLifecycle<TriTuple<A, B, C>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
-        IndexFactory<D> indexFactory = new IndexFactory<>(joiner);
-        var node = indexFactory.hasJoiners()
-                ? (filtering == null ? new IndexedIfExistsTriNode<>(shouldExist, indexFactory,
+        IndexerFactory<D> indexerFactory = new IndexerFactory<>(joiner);
+        var node = indexerFactory.hasJoiners()
+                ? (filtering == null ? new IndexedIfExistsTriNode<>(shouldExist, indexerFactory,
                         buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource()),
                         downstream)
-                        : new IndexedIfExistsTriNode<>(shouldExist, indexFactory,
+                        : new IndexedIfExistsTriNode<>(shouldExist, indexerFactory,
                                 buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
