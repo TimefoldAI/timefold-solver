@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 class RuinRecreateConstructionHeuristicPhaseBuilderTest {
 
     @Test
-    void buildSingleThread() {
+    void buildSingleThreaded() {
         var solverConfigPolicy = new HeuristicConfigPolicy.Builder<TestdataSolution>()
                 .withSolutionDescriptor(TestdataSolution.buildSolutionDescriptor())
                 .withInitializingScoreTrend(new InitializingScoreTrend(new InitializingScoreTrendLevel[] {
@@ -29,7 +29,7 @@ class RuinRecreateConstructionHeuristicPhaseBuilderTest {
     }
 
     @Test
-    void buildMultiThread() {
+    void buildMultiThreaded() {
         var solverConfigPolicy = new HeuristicConfigPolicy.Builder<TestdataSolution>()
                 .withSolutionDescriptor(TestdataSolution.buildSolutionDescriptor())
                 .withMoveThreadCount(2)

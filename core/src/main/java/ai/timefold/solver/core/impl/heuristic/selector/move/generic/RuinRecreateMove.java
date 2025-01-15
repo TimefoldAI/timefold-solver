@@ -47,7 +47,7 @@ public final class RuinRecreateMove<Solution_> extends AbstractMove<Solution_> {
         recordingScoreDirector.triggerVariableListeners();
 
         var constructionHeuristicPhase = constructionHeuristicPhaseBuilder
-                .ensureThreadSafe(recordingScoreDirector.getDelegate())
+                .ensureThreadSafe(recordingScoreDirector.getBacking())
                 .withElementsToRecreate(ruinedEntityList)
                 .build();
         constructionHeuristicPhase.setSolver(solverScope.getSolver());

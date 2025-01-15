@@ -44,7 +44,7 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         entityToNewPositionMap.clear();
         var variableChangeRecordingScoreDirector = (VariableChangeRecordingScoreDirector<Solution_>) scoreDirector;
-        try (var listVariableStateSupply = variableChangeRecordingScoreDirector.getDelegate().getSupplyManager()
+        try (var listVariableStateSupply = variableChangeRecordingScoreDirector.getBacking().getSupplyManager()
                 .demand(listVariableDescriptor.getStateDemand())) {
             var entityToOriginalPositionMap =
                     CollectionUtils.<Object, NavigableSet<RuinedLocation>> newIdentityHashMap(affectedEntitySet.size());
@@ -55,7 +55,7 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
                         ignored -> new TreeSet<>()).add(new RuinedLocation(valueToRuin, location.index()));
             }
 
-            var nonRecordingScoreDirector = variableChangeRecordingScoreDirector.getDelegate();
+            var nonRecordingScoreDirector = variableChangeRecordingScoreDirector.getBacking();
             for (var entry : entityToOriginalPositionMap.entrySet()) {
                 var entity = entry.getKey();
                 var originalPositionSet = entry.getValue();
@@ -80,14 +80,14 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
 
             var constructionHeuristicPhase =
                     (RuinRecreateConstructionHeuristicPhase<Solution_>) constructionHeuristicPhaseBuilder
-                            .ensureThreadSafe(variableChangeRecordingScoreDirector.getDelegate())
+                            .ensureThreadSafe(variableChangeRecordingScoreDirector.getBacking())
                             .withElementsToRuin(entityToOriginalPositionMap.keySet())
                             .withElementsToRecreate(ruinedValueList)
                             .build();
 
             var nestedSolverScope = new SolverScope<Solution_>();
             nestedSolverScope.setSolver(solverScope.getSolver());
-            nestedSolverScope.setScoreDirector(variableChangeRecordingScoreDirector.getDelegate());
+            nestedSolverScope.setScoreDirector(variableChangeRecordingScoreDirector.getBacking());
             constructionHeuristicPhase.setSolver(nestedSolverScope.getSolver());
             constructionHeuristicPhase.solvingStarted(nestedSolverScope);
             constructionHeuristicPhase.solve(nestedSolverScope);
@@ -140,7 +140,7 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
                     onlyRecordingChangesScoreDirector.afterListVariableElementAssigned(listVariableDescriptor, element);
                 }
             }
-            variableChangeRecordingScoreDirector.getDelegate().getSupplyManager()
+            variableChangeRecordingScoreDirector.getBacking().getSupplyManager()
                     .cancel(listVariableDescriptor.getStateDemand());
         }
     }

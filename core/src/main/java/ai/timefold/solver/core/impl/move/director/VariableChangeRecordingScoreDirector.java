@@ -4,6 +4,7 @@ import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -17,9 +18,8 @@ import ai.timefold.solver.core.impl.score.director.VariableDescriptorCache;
 public final class VariableChangeRecordingScoreDirector<Solution_>
         implements RevertableScoreDirector<Solution_> {
 
-    private final InnerScoreDirector<Solution_, ?> delegate;
+    private final InnerScoreDirector<Solution_, ?> backingScoreDirector;
     private final List<ChangeAction<Solution_>> variableChanges;
-    private boolean triggerDelegateActions = true;
 
     /*
      * The fromIndex of afterListVariableChanged must match the fromIndex of its beforeListVariableChanged call.
@@ -40,24 +40,23 @@ public final class VariableChangeRecordingScoreDirector<Solution_>
      */
     private final Map<Object, Integer> cache;
 
-    public VariableChangeRecordingScoreDirector(ScoreDirector<Solution_> delegate) {
-        this(delegate, true);
+    public VariableChangeRecordingScoreDirector(ScoreDirector<Solution_> backingScoreDirector) {
+        this(backingScoreDirector, true);
     }
 
-    public VariableChangeRecordingScoreDirector(ScoreDirector<Solution_> delegate, boolean requiresIndexCache) {
-        this.delegate = (InnerScoreDirector<Solution_, ?>) delegate;
+    public VariableChangeRecordingScoreDirector(ScoreDirector<Solution_> backingScoreDirector, boolean requiresIndexCache) {
+        this.backingScoreDirector = (InnerScoreDirector<Solution_, ?>) backingScoreDirector;
         this.cache = requiresIndexCache ? new IdentityHashMap<>() : null;
         // Intentional LinkedList; fast clear, no allocations upfront,
         // will most often only carry a small number of items.
         this.variableChanges = new LinkedList<>();
     }
 
-    private VariableChangeRecordingScoreDirector(InnerScoreDirector<Solution_, ?> delegate,
-            List<ChangeAction<Solution_>> variableChanges, Map<Object, Integer> cache, boolean triggerDelegateActions) {
-        this.delegate = delegate;
+    private VariableChangeRecordingScoreDirector(InnerScoreDirector<Solution_, ?> backingScoreDirector,
+            List<ChangeAction<Solution_>> variableChanges, Map<Object, Integer> cache) {
+        this.backingScoreDirector = backingScoreDirector;
         this.variableChanges = variableChanges;
         this.cache = cache;
-        this.triggerDelegateActions = triggerDelegateActions;
     }
 
     @Override
@@ -75,9 +74,9 @@ public final class VariableChangeRecordingScoreDirector<Solution_>
         var listIterator = variableChanges.listIterator(changeCount);
         while (listIterator.hasPrevious()) { // Iterate in reverse.
             var changeAction = listIterator.previous();
-            changeAction.undo(delegate);
+            changeAction.undo(backingScoreDirector);
         }
-        delegate.triggerVariableListeners();
+        Objects.requireNonNull(backingScoreDirector).triggerVariableListeners();
         variableChanges.clear();
         if (cache != null) {
             cache.clear();
@@ -87,15 +86,15 @@ public final class VariableChangeRecordingScoreDirector<Solution_>
     @Override
     public void beforeVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
         variableChanges.add(new VariableChangeAction<>(entity, variableDescriptor.getValue(entity), variableDescriptor));
-        if (triggerDelegateActions) {
-            delegate.beforeVariableChanged(variableDescriptor, entity);
+        if (backingScoreDirector != null) {
+            backingScoreDirector.beforeVariableChanged(variableDescriptor, entity);
         }
     }
 
     @Override
     public void afterVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
-        if (triggerDelegateActions) {
-            delegate.afterVariableChanged(variableDescriptor, entity);
+        if (backingScoreDirector != null) {
+            backingScoreDirector.afterVariableChanged(variableDescriptor, entity);
         }
     }
 
@@ -110,8 +109,8 @@ public final class VariableChangeRecordingScoreDirector<Solution_>
         variableChanges.add(new ListVariableBeforeChangeAction<>(entity,
                 List.copyOf(list.subList(fromIndex, toIndex)), fromIndex, toIndex,
                 variableDescriptor));
-        if (triggerDelegateActions) {
-            delegate.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
+        if (backingScoreDirector != null) {
+            backingScoreDirector.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
         }
     }
 
@@ -129,40 +128,40 @@ public final class VariableChangeRecordingScoreDirector<Solution_>
             }
         }
         variableChanges.add(new ListVariableAfterChangeAction<>(entity, fromIndex, toIndex, variableDescriptor));
-        if (triggerDelegateActions) {
-            delegate.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
+        if (backingScoreDirector != null) {
+            backingScoreDirector.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
         }
     }
 
     @Override
     public void beforeListVariableElementAssigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
         variableChanges.add(new ListVariableBeforeAssignmentAction<>(element, variableDescriptor));
-        if (triggerDelegateActions) {
-            delegate.beforeListVariableElementAssigned(variableDescriptor, element);
+        if (backingScoreDirector != null) {
+            backingScoreDirector.beforeListVariableElementAssigned(variableDescriptor, element);
         }
     }
 
     @Override
     public void afterListVariableElementAssigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
         variableChanges.add(new ListVariableAfterAssignmentAction<>(element, variableDescriptor));
-        if (triggerDelegateActions) {
-            delegate.afterListVariableElementAssigned(variableDescriptor, element);
+        if (backingScoreDirector != null) {
+            backingScoreDirector.afterListVariableElementAssigned(variableDescriptor, element);
         }
     }
 
     @Override
     public void beforeListVariableElementUnassigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
         variableChanges.add(new ListVariableBeforeUnassignmentAction<>(element, variableDescriptor));
-        if (triggerDelegateActions) {
-            delegate.beforeListVariableElementUnassigned(variableDescriptor, element);
+        if (backingScoreDirector != null) {
+            backingScoreDirector.beforeListVariableElementUnassigned(variableDescriptor, element);
         }
     }
 
     @Override
     public void afterListVariableElementUnassigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
         variableChanges.add(new ListVariableAfterUnassignmentAction<>(element, variableDescriptor));
-        if (triggerDelegateActions) {
-            delegate.afterListVariableElementUnassigned(variableDescriptor, element);
+        if (backingScoreDirector != null) {
+            backingScoreDirector.afterListVariableElementUnassigned(variableDescriptor, element);
         }
     }
 
@@ -170,14 +169,14 @@ public final class VariableChangeRecordingScoreDirector<Solution_>
 
     @Override
     public SolutionDescriptor<Solution_> getSolutionDescriptor() {
-        return delegate.getSolutionDescriptor();
+        return Objects.requireNonNull(backingScoreDirector).getSolutionDescriptor();
     }
 
     /**
      * Returns the score director to which events are delegated.
      */
-    public InnerScoreDirector<Solution_, ?> getDelegate() {
-        return delegate;
+    public InnerScoreDirector<Solution_, ?> getBacking() {
+        return backingScoreDirector;
     }
 
     /**
@@ -187,34 +186,34 @@ public final class VariableChangeRecordingScoreDirector<Solution_>
      * that only tracks variable changes without firing any delegated score director events.
      */
     public VariableChangeRecordingScoreDirector<Solution_> getNonDelegating() {
-        return new VariableChangeRecordingScoreDirector<>(delegate, variableChanges, cache, false);
+        return new VariableChangeRecordingScoreDirector<>(null, variableChanges, cache);
     }
 
     @Override
     public Solution_ getWorkingSolution() {
-        return delegate.getWorkingSolution();
+        return Objects.requireNonNull(backingScoreDirector).getWorkingSolution();
     }
 
     @Override
     public VariableDescriptorCache<Solution_> getVariableDescriptorCache() {
-        return delegate.getVariableDescriptorCache();
+        return Objects.requireNonNull(backingScoreDirector).getVariableDescriptorCache();
     }
 
     @Override
     public void triggerVariableListeners() {
-        if (triggerDelegateActions) {
-            delegate.triggerVariableListeners();
+        if (backingScoreDirector != null) {
+            backingScoreDirector.triggerVariableListeners();
         }
     }
 
     @Override
     public <E> E lookUpWorkingObject(E externalObject) {
-        return delegate.lookUpWorkingObject(externalObject);
+        return Objects.requireNonNull(backingScoreDirector).lookUpWorkingObject(externalObject);
     }
 
     @Override
     public <E> E lookUpWorkingObjectOrReturnNull(E externalObject) {
-        return delegate.lookUpWorkingObjectOrReturnNull(externalObject);
+        return Objects.requireNonNull(backingScoreDirector).lookUpWorkingObjectOrReturnNull(externalObject);
     }
 
     @Override

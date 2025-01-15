@@ -33,7 +33,7 @@ public final class EphemeralMoveDirector<Solution_> extends MoveDirector<Solutio
     public <Entity_, Value_> @NonNull ElementLocation getPositionOf(
             @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             @NonNull Value_ value) {
-        return getPositionOf(getVariableChangeRecordingScoreDirector().getDelegate(), variableMetaModel, value);
+        return getPositionOf(getVariableChangeRecordingScoreDirector().getBacking(), variableMetaModel, value);
 
     }
 
