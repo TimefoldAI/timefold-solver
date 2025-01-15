@@ -71,11 +71,6 @@
                 <imagesdir>${basedir}/src/modules/ROOT/images</imagesdir>
                 <source-highlighter>coderay</source-highlighter>
               </attributes>
-              <logHandler>
-                <failIf>
-                  <severity>WARN</severity>
-                </failIf>
-              </logHandler>
             </configuration>
           </execution>
           <execution>
@@ -95,11 +90,6 @@
                 <toc>left</toc>
                 <icons>font</icons>
               </attributes>
-              <logHandler>
-                <failIf>
-                  <severity>WARN</severity>
-                </failIf>
-              </logHandler>
             </configuration>
           </execution>
         </executions>
