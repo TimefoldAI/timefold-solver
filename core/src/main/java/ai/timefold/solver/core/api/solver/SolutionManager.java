@@ -142,7 +142,7 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * The difference will contain information about which entities's variables have changed,
      * which entities were added and which were removed.
      * <p>
-     * Two instances of a planning entity or a variable value are considered equal if they {@link Object#equals(Object) equal).
+     * Two instances of a planning entity or a variable value are considered equal if they {@link Object#equals(Object) equal}.
      * Instances of different classes are never considered equal, even if they share a common superclass.
      * For the correct operation of this method, make sure that
      * {@link Object#equals(Object) equals} and {@link Object#equals(Object) hashCode} honor their contract
