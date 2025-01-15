@@ -47,11 +47,9 @@ public final class RuinRecreateConstructionHeuristicPhase<Solution_>
                     .getListVariableDescriptor();
             var entity = stepScope.getStep().extractPlanningEntities().iterator().next();
             if (!elementsToRuinSet.contains(entity)) {
-                // Sometimes, the list of elements to be ruined does not include new destinations select by the CH.
-                // In these cases,
-                // we need to record the element list before making any move changes
-                // so that it can be referenced
-                // to restore the solution to its original state in the inner nodes.
+                // Sometimes, the list of elements to be ruined does not include new destinations selected by the CH.
+                // In these cases, we need to record the element list before making any move changes
+                // so that it can be referenced to restore the solution to its original state when undoing changes.
                 missingUpdatedElementsMap.computeIfAbsent(entity,
                         e -> List.copyOf(listVariableDescriptor.getValue(e)));
             }

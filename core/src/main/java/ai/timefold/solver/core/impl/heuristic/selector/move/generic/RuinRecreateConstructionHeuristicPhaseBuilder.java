@@ -31,7 +31,7 @@ public final class RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>
                 solverConfigPolicy, TerminationFactory.<Solution_> create(new TerminationConfig())
                         .buildTermination(solverConfigPolicy));
         if (solverConfigPolicy.getMoveThreadCount() != null && solverConfigPolicy.getMoveThreadCount() >= 1) {
-            builder.multiThread = true;
+            builder.multithreaded = true;
         }
         return builder;
     }
@@ -42,7 +42,7 @@ public final class RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>
 
     Set<Object> elementsToRuin;
     List<Object> elementsToRecreate;
-    private boolean multiThread = false;
+    private boolean multithreaded = false;
 
     RuinRecreateConstructionHeuristicPhaseBuilder(HeuristicConfigPolicy<Solution_> configPolicy,
             RuinRecreateConstructionHeuristicPhaseFactory<Solution_> constructionHeuristicPhaseFactory,
@@ -63,7 +63,7 @@ public final class RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>
      */
     public RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>
             ensureThreadSafe(InnerScoreDirector<Solution_, ?> scoreDirector) {
-        if (multiThread && scoreDirector.isDerived()) {
+        if (multithreaded && scoreDirector.isDerived()) {
             return new RuinRecreateConstructionHeuristicPhaseBuilder<>(configPolicy, constructionHeuristicPhaseFactory,
                     phaseTermination, super.getEntityPlacer().copy(),
                     constructionHeuristicPhaseFactory.buildDecider(configPolicy, phaseTermination));
@@ -78,11 +78,6 @@ public final class RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>
 
     public RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> withElementsToRuin(Set<Object> elements) {
         this.elementsToRuin = elements;
-        return this;
-    }
-
-    public RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> withCopyEntityPlacer(boolean multiThread) {
-        this.multiThread = multiThread;
         return this;
     }
 
