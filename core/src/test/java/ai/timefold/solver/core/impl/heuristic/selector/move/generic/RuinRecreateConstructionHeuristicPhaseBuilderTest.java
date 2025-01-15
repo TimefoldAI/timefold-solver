@@ -13,7 +13,7 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;
 
-public class RuinRecreateConstructionHeuristicPhaseBuilderTest {
+class RuinRecreateConstructionHeuristicPhaseBuilderTest {
 
     @Test
     void buildSingleThread() {

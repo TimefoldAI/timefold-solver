@@ -94,8 +94,9 @@ class PooledEntityPlacerTest {
                 .mockMoveSelector(new DummyMove("a1"), new DummyMove("a2"), new DummyMove("b1"));
         var factory = mock(EntityPlacerFactory.class);
         var configPolicy = mock(HeuristicConfigPolicy.class);
-        assertThatThrownBy(() -> new PooledEntityPlacer<>(null, null, moveSelector).copy());
-        var placer = new PooledEntityPlacer<>(factory, configPolicy, moveSelector);
+        assertThatThrownBy(() -> new PooledEntityPlacer<>(null, null, moveSelector).copy())
+                .hasMessage("The entity placer cannot be copied.");
+        var placer = new PooledEntityPlacer<TestdataSolution>(factory, configPolicy, moveSelector);
         placer.copy();
         verify(factory, times(1)).buildEntityPlacer(any());
     }

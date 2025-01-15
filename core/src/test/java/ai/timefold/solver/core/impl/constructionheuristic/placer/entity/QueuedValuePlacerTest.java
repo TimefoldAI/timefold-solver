@@ -14,7 +14,6 @@ import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacerFactory;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.Placement;
-import ai.timefold.solver.core.impl.constructionheuristic.placer.PooledEntityPlacer;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.QueuedValuePlacer;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
@@ -119,8 +118,9 @@ class QueuedValuePlacerTest {
                 new MimicReplayingValueSelector<>(recordingValueSelector), false);
         var factory = mock(EntityPlacerFactory.class);
         var configPolicy = mock(HeuristicConfigPolicy.class);
-        assertThatThrownBy(() -> new PooledEntityPlacer<>(null, null, moveSelector).copy());
-        var placer = new QueuedValuePlacer<>(factory, configPolicy, recordingValueSelector, moveSelector);
+        assertThatThrownBy(() -> new QueuedValuePlacer<>(null, null, recordingValueSelector, moveSelector).copy())
+                .hasMessage("The entity placer cannot be copied.");
+        var placer = new QueuedValuePlacer<TestdataSolution>(factory, configPolicy, recordingValueSelector, moveSelector);
         placer.copy();
         verify(factory, times(1)).buildEntityPlacer(any());
     }

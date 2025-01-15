@@ -17,7 +17,6 @@ import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacerFactory;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.Placement;
-import ai.timefold.solver.core.impl.constructionheuristic.placer.PooledEntityPlacer;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.QueuedEntityPlacer;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
@@ -260,8 +259,11 @@ class QueuedEntityPlacerTest {
         var moveSelector = new CartesianProductMoveSelector<>(moveSelectorList, true, false);
         var factory = mock(EntityPlacerFactory.class);
         var configPolicy = mock(HeuristicConfigPolicy.class);
-        assertThatThrownBy(() -> new PooledEntityPlacer<>(null, null, moveSelector).copy());
-        var placer = new QueuedEntityPlacer<>(factory, configPolicy, recordingEntitySelector,
+        assertThatThrownBy(
+                () -> new QueuedEntityPlacer<>(null, null, recordingEntitySelector, Collections.singletonList(moveSelector))
+                        .copy())
+                .hasMessage("The entity placer cannot be copied.");
+        var placer = new QueuedEntityPlacer<TestdataMultiVarSolution>(factory, configPolicy, recordingEntitySelector,
                 Collections.singletonList(moveSelector));
         placer.copy();
         verify(factory, times(1)).buildEntityPlacer(any());
