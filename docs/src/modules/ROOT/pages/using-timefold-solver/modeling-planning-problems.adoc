@@ -2660,7 +2660,7 @@ for example if the problem fact references a planning entity or the planning sol
 mark its class with a `@DeepPlanningClone` annotation:
 
 [tabs]
-===
+====
 Java::
 +
 [source,java,options="nowrap"]

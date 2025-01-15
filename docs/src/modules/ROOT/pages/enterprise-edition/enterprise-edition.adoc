@@ -866,7 +866,7 @@ image::enterprise-edition/nodeSharingValueProposition.png[align="center"]
 ==== Configuration
 
 [tabs]
-======
+====
 Plain Java::
 
 * Add `<constraintStreamAutomaticNodeSharing>true</constraintStreamAutomaticNodeSharing>` in your `solverConfig.xml`:
@@ -898,7 +898,7 @@ Set the property `quarkus.timefold.solver.constraint-stream-automatic-node-shari
 ----
 quarkus.timefold.solver.constraint-stream-automatic-node-sharing=true
 ----
-======
+====
 
 [IMPORTANT]
 ====
