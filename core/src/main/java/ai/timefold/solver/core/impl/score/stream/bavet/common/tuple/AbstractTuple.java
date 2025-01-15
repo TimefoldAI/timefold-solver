@@ -19,43 +19,26 @@ import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
  */
 public abstract sealed class AbstractTuple permits UniTuple, BiTuple, TriTuple, QuadTuple {
 
-    /*
-     * We create a lot of tuples, many of them having store size of 1.
-     * If an array of size 1 was created for each such tuple, memory would be wasted and indirection created.
-     * This trade-off of increased memory efficiency for marginally slower access time is proven beneficial.
-     */
-    private final boolean storeIsArray;
+    private static final Object[] EMPTY_STORE = new Object[0];
 
-    private Object store;
+    private final Object[] store;
     public TupleState state = TupleState.DEAD; // It's the node's job to mark a new tuple as CREATING.
 
     protected AbstractTuple(int storeSize) {
-        this.store = (storeSize < 2) ? null : new Object[storeSize];
-        this.storeIsArray = store != null;
+        this.store = storeSize == 0 ? EMPTY_STORE : new Object[storeSize];
     }
 
     public final <Value_> Value_ getStore(int index) {
-        return (Value_) (storeIsArray ? ((Object[]) store)[index] : store);
+        return (Value_) store[index];
     }
 
     public final void setStore(int index, Object value) {
-        if (storeIsArray) {
-            ((Object[]) store)[index] = value;
-        } else {
-            store = value;
-        }
+        store[index] = value;
     }
 
-    public <Value_> Value_ removeStore(int index) {
-        Value_ value;
-        if (storeIsArray) {
-            Object[] array = (Object[]) store;
-            value = (Value_) array[index];
-            array[index] = null;
-        } else {
-            value = (Value_) store;
-            store = null;
-        }
+    public final <Value_> Value_ removeStore(int index) {
+        Value_ value = getStore(index);
+        setStore(index, null);
         return value;
     }
 
