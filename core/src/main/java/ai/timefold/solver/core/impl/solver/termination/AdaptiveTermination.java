@@ -55,6 +55,10 @@ public final class AdaptiveTermination<Solution_, Score_ extends Score<Score_>> 
             // vast majority of comparisons
             return 0.0;
         }
+        if (start.initScore() != end.initScore()) {
+            // init score improved
+            return Double.NaN;
+        }
         var scoreDiffs = end.subtract(start).toLevelDoubles();
         var softestLevel = scoreDiffs.length - 1;
         for (int i = 0; i < softestLevel; i++) {
