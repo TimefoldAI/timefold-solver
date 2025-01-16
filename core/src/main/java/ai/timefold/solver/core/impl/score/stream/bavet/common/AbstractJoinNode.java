@@ -91,8 +91,8 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     private void doUpdateOutTuple(OutTuple_ outTuple) {
         var state = outTuple.state;
         if (!state.isActive()) { // Impossible because they shouldn't linger in the indexes.
-            throw new IllegalStateException("Impossible state: The tuple (" + outTuple.state + ") in node (" +
-                    this + ") is in an unexpected state (" + outTuple.state + ").");
+            throw new IllegalStateException("Impossible state: The tuple (%s) in node (%s) is in an unexpected state (%s)."
+                    .formatted(outTuple, this, outTuple.state));
         } else if (state != TupleState.OK) { // Already in the queue in the correct state.
             return;
         }
@@ -155,10 +155,9 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         ElementAwareListEntry<OutTuple_> outEntryRight = outTuple.removeStore(outputStoreIndexRightOutEntry);
         outEntryRight.remove();
         var state = outTuple.state;
-        if (!state.isActive()) {
-            // Impossible because they shouldn't linger in the indexes.
-            throw new IllegalStateException("Impossible state: The tuple (" + outTuple.state + ") in node (" + this
-                    + ") is in an unexpected state (" + outTuple.state + ").");
+        if (!state.isActive()) { // Impossible because they shouldn't linger in the indexes.
+            throw new IllegalStateException("Impossible state: The tuple (%s) in node (%s) is in an unexpected state (%s)."
+                    .formatted(outTuple, this, outTuple.state));
         }
         propagationQueue.retract(outTuple, state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
     }
