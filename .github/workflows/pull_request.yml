@@ -39,6 +39,21 @@ jobs:
           cache: 'maven'
 
       - name: Build and test timefold-solver
+        run: mvn -B verify
+  java_full:
+    name: "Java Solver (with flag -Dfull)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build and test timefold-solver using flag -Dfull
         run: mvn -Dfull -B verify
   python:
     name: "Python Solver"
