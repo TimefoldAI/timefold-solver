@@ -39,7 +39,7 @@ jobs:
           cache: 'maven'
 
       - name: Build and test timefold-solver
-        run: mvn -B verify
+        run: mvn -Dfull -B verify
   python:
     name: "Python Solver"
     concurrency:
