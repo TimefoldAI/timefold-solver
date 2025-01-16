@@ -59,8 +59,7 @@ public final class BavetJoinTriConstraintStream<Solution_, A, B, C>
         TupleLifecycle<TriTuple<A, B, C>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         IndexerFactory<C> indexerFactory = new IndexerFactory<>(joiner);
         var node = indexerFactory.hasJoiners()
-                ? new IndexedJoinTriNode<>(
-                        indexerFactory.buildBiLeftMapping(), indexerFactory.buildRightMapping(),
+                ? new IndexedJoinTriNode<>(indexerFactory,
                         buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
@@ -68,8 +67,7 @@ public final class BavetJoinTriConstraintStream<Solution_, A, B, C>
                         buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
                         downstream, filtering, outputStoreSize + 2,
-                        outputStoreSize, outputStoreSize + 1,
-                        indexerFactory.buildIndexer(true), indexerFactory.buildIndexer(false))
+                        outputStoreSize, outputStoreSize + 1)
                 : new UnindexedJoinTriNode<>(
                         buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),

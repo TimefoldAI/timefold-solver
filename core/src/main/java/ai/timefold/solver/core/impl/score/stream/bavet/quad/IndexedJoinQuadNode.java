@@ -1,12 +1,8 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.quad;
 
-import java.util.function.Function;
-
 import ai.timefold.solver.core.api.function.QuadPredicate;
-import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractIndexedJoinNode;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexProperties;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
@@ -15,32 +11,21 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.UniTuple;
 final class IndexedJoinQuadNode<A, B, C, D>
         extends AbstractIndexedJoinNode<TriTuple<A, B, C>, D, QuadTuple<A, B, C, D>> {
 
-    private final TriFunction<A, B, C, IndexProperties> mappingABC;
     private final QuadPredicate<A, B, C, D> filtering;
     private final int outputStoreSize;
 
-    public IndexedJoinQuadNode(TriFunction<A, B, C, IndexProperties> mappingABC, Function<D, IndexProperties> mappingD,
+    public IndexedJoinQuadNode(IndexerFactory<D> indexerFactory,
             int inputStoreIndexABC, int inputStoreIndexEntryABC, int inputStoreIndexOutTupleListABC,
             int inputStoreIndexD, int inputStoreIndexEntryD, int inputStoreIndexOutTupleListD,
             TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle, QuadPredicate<A, B, C, D> filtering,
-            int outputStoreSize,
-            int outputStoreIndexOutEntryABC, int outputStoreIndexOutEntryD,
-            Indexer<TriTuple<A, B, C>> indexerABC,
-            Indexer<UniTuple<D>> indexerD) {
-        super(mappingD,
+            int outputStoreSize, int outputStoreIndexOutEntryABC, int outputStoreIndexOutEntryD) {
+        super(indexerFactory.buildTriLeftKeysExtractor(), indexerFactory,
                 inputStoreIndexABC, inputStoreIndexEntryABC, inputStoreIndexOutTupleListABC,
                 inputStoreIndexD, inputStoreIndexEntryD, inputStoreIndexOutTupleListD,
                 nextNodesTupleLifecycle, filtering != null,
-                outputStoreIndexOutEntryABC, outputStoreIndexOutEntryD,
-                indexerABC, indexerD);
-        this.mappingABC = mappingABC;
+                outputStoreIndexOutEntryABC, outputStoreIndexOutEntryD);
         this.filtering = filtering;
         this.outputStoreSize = outputStoreSize;
-    }
-
-    @Override
-    protected IndexProperties createIndexPropertiesLeft(TriTuple<A, B, C> leftTuple) {
-        return mappingABC.apply(leftTuple.factA, leftTuple.factB, leftTuple.factC);
     }
 
     @Override

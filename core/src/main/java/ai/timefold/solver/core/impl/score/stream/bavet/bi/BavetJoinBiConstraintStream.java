@@ -56,8 +56,7 @@ public final class BavetJoinBiConstraintStream<Solution_, A, B> extends BavetAbs
         TupleLifecycle<BiTuple<A, B>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         IndexerFactory<B> indexerFactory = new IndexerFactory<>(joiner);
         var node = indexerFactory.hasJoiners()
-                ? new IndexedJoinBiNode<>(
-                        indexerFactory.buildUniLeftMapping(), indexerFactory.buildRightMapping(),
+                ? new IndexedJoinBiNode<>(indexerFactory,
                         buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
@@ -65,8 +64,7 @@ public final class BavetJoinBiConstraintStream<Solution_, A, B> extends BavetAbs
                         buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
                         downstream, filtering, outputStoreSize + 2,
-                        outputStoreSize, outputStoreSize + 1,
-                        indexerFactory.buildIndexer(true), indexerFactory.buildIndexer(false))
+                        outputStoreSize, outputStoreSize + 1)
                 : new UnindexedJoinBiNode<>(
                         buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),

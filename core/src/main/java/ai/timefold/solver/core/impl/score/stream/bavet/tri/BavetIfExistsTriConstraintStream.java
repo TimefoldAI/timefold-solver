@@ -65,23 +65,20 @@ final class BavetIfExistsTriConstraintStream<Solution_, A, B, C, D>
         TupleLifecycle<TriTuple<A, B, C>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         IndexerFactory<D> indexerFactory = new IndexerFactory<>(joiner);
         var node = indexerFactory.hasJoiners()
-                ? (filtering == null ? new IndexedIfExistsTriNode<>(shouldExist,
-                        indexerFactory.buildTriLeftMapping(), indexerFactory.buildRightMapping(),
+                ? (filtering == null ? new IndexedIfExistsTriNode<>(shouldExist, indexerFactory,
                         buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource()),
-                        downstream, indexerFactory.buildIndexer(true), indexerFactory.buildIndexer(false))
-                        : new IndexedIfExistsTriNode<>(shouldExist,
-                                indexerFactory.buildTriLeftMapping(), indexerFactory.buildRightMapping(),
+                        downstream)
+                        : new IndexedIfExistsTriNode<>(shouldExist, indexerFactory,
                                 buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource()),
                                 buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource()),
-                                downstream, indexerFactory.buildIndexer(true), indexerFactory.buildIndexer(false),
-                                filtering))
+                                downstream, filtering))
                 : (filtering == null ? new UnindexedIfExistsTriNode<>(shouldExist,
                         buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource()), downstream)

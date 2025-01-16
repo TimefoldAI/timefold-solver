@@ -52,7 +52,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
 
     protected final void updateUnchangedCounterLeft(ExistsCounter<LeftTuple_> counter) {
         if (counter.state != TupleState.OK) {
-            // Counter state does not change because the index properties didn't change
+            // Counter state does not change because the index keys didn't change
             return;
         }
         // Still needed to propagate the update for downstream filters, matchWeighers, ...
