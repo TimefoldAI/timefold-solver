@@ -46,15 +46,20 @@ public final class RuinRecreateMove<Solution_> extends AbstractMove<Solution_> {
         }
         recordingScoreDirector.triggerVariableListeners();
 
-        var constructionHeuristicPhase = constructionHeuristicPhaseBuilder
-                .ensureThreadSafe(recordingScoreDirector.getBacking())
-                .withElementsToRecreate(ruinedEntityList)
-                .build();
-        constructionHeuristicPhase.setSolver(solverScope.getSolver());
-        constructionHeuristicPhase.solvingStarted(solverScope);
-        constructionHeuristicPhase.solve(solverScope);
-        constructionHeuristicPhase.solvingEnded(solverScope);
-        recordingScoreDirector.triggerVariableListeners();
+        var constructionHeuristicPhase =
+                (RuinRecreateConstructionHeuristicPhase<Solution_>) constructionHeuristicPhaseBuilder
+                        .ensureThreadSafe(recordingScoreDirector.getBacking())
+                        .withElementsToRecreate(ruinedEntityList)
+                        .build();
+
+        var nestedSolverScope = new SolverScope<Solution_>();
+        nestedSolverScope.setSolver(solverScope.getSolver());
+        nestedSolverScope.setScoreDirector(recordingScoreDirector.getBacking());
+        constructionHeuristicPhase.setSolver(nestedSolverScope.getSolver());
+        constructionHeuristicPhase.solvingStarted(nestedSolverScope);
+        constructionHeuristicPhase.solve(nestedSolverScope);
+        constructionHeuristicPhase.solvingEnded(nestedSolverScope);
+        scoreDirector.triggerVariableListeners();
 
         for (var i = 0; i < ruinedEntityList.size(); i++) {
             recordedNewValues[i] = genuineVariableDescriptor.getValue(ruinedEntityList.get(i));
