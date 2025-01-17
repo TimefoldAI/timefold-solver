@@ -5,6 +5,7 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -16,10 +17,12 @@ import java.util.Set;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhase;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhaseBuilder;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin.ListRuinRecreateMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -282,6 +285,45 @@ class MoveDirectorTest {
                 }
                 return false;
             })).isTrue();
+        }
+    }
+
+    @Test
+    void testSolverScopeNestedPhase() {
+        var innerScoreDirector = mock(InnerScoreDirector.class);
+        var moveDirector = new MoveDirector<TestdataSolution>(innerScoreDirector);
+        var genuineVariableDescriptor = mock(GenuineVariableDescriptor.class);
+        var supplyManager = mock(SupplyManager.class);
+        var ruinRecreateConstructionHeuristicPhaseBuilder = mock(RuinRecreateConstructionHeuristicPhaseBuilder.class);
+        var constructionHeuristicPhase = mock(RuinRecreateConstructionHeuristicPhase.class);
+        var mainSolverScope = mock(SolverScope.class);
+
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var e1 = new TestdataEntity("e1", v1);
+        var e2 = new TestdataEntity("e2", v2);
+        var s1 = new TestdataSolution();
+        s1.setEntityList(List.of(e1, e2));
+        s1.setValueList(List.of(v1, v2));
+        when(innerScoreDirector.getWorkingSolution()).thenReturn(s1);
+        when(innerScoreDirector.isDerived()).thenReturn(false);
+        when(innerScoreDirector.getSupplyManager()).thenReturn(supplyManager);
+        when(ruinRecreateConstructionHeuristicPhaseBuilder.withElementsToRecreate(any()))
+                .thenReturn(ruinRecreateConstructionHeuristicPhaseBuilder);
+        when(ruinRecreateConstructionHeuristicPhaseBuilder.ensureThreadSafe(any()))
+                .thenReturn(ruinRecreateConstructionHeuristicPhaseBuilder);
+        when(ruinRecreateConstructionHeuristicPhaseBuilder.build())
+                .thenReturn(constructionHeuristicPhase);
+        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
+            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
+
+            var move = new RuinRecreateMove<TestdataSolution>(genuineVariableDescriptor,
+                    ruinRecreateConstructionHeuristicPhaseBuilder, mainSolverScope, List.of(v1), Set.of(e1));
+            move.doMoveOnly(scoreDirector);
+            // Not using the main solver scope
+            verify(constructionHeuristicPhase, times(0)).solve(mainSolverScope);
+            // Uses a new instance of SolverScope
+            verify(constructionHeuristicPhase, times(1)).solve(any());
         }
     }
 
