@@ -15,7 +15,7 @@ public final class SolverConfigBuildItem extends SimpleBuildItem {
      * Constructor for multiple solver configurations.
      */
     public SolverConfigBuildItem(Map<String, SolverConfig> solverConfig, GeneratedGizmoClasses generatedGizmoClasses) {
-        this.solverConfigurations = solverConfig;
+        this.solverConfigurations = Map.copyOf(solverConfig);
         this.generatedGizmoClasses = generatedGizmoClasses;
     }
 

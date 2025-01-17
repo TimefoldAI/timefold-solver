@@ -30,6 +30,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
+import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
@@ -39,11 +40,14 @@ import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
+import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
+import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 import ai.timefold.solver.quarkus.TimefoldRecorder;
 import ai.timefold.solver.quarkus.bean.DefaultTimefoldBeanProvider;
 import ai.timefold.solver.quarkus.bean.TimefoldSolverBannerBean;
 import ai.timefold.solver.quarkus.bean.UnavailableTimefoldBeanProvider;
 import ai.timefold.solver.quarkus.config.TimefoldRuntimeConfig;
+import ai.timefold.solver.quarkus.deployment.api.ConstraintMetaModelBuildItem;
 import ai.timefold.solver.quarkus.deployment.config.SolverBuildTimeConfig;
 import ai.timefold.solver.quarkus.deployment.config.TimefoldBuildTimeConfig;
 import ai.timefold.solver.quarkus.devui.DevUISolverConfig;
@@ -571,6 +575,43 @@ class TimefoldProcessor {
         // Register solver's specific custom classes
         registerCustomClassesFromSolverConfig(solverConfig, reflectiveClassSet);
         return solverConfig;
+    }
+
+    @BuildStep
+    void buildConstraintMetaModel(SolverConfigBuildItem solverConfigBuildItem,
+            BuildProducer<ConstraintMetaModelBuildItem> constraintMetaModelBuildItemBuildProducer) {
+        if (solverConfigBuildItem.getSolverConfigMap().isEmpty()) {
+            return;
+        }
+
+        Map<String, ConstraintMetaModel> constraintMetaModelsBySolverNames = new HashMap<>();
+        solverConfigBuildItem.getSolverConfigMap().forEach((solverName, solverConfig) -> {
+            // Gizmo-generated member accessors are not yet available at build time.
+            DomainAccessType originalDomainAccessType = solverConfig.getDomainAccessType();
+            solverConfig.setDomainAccessType(DomainAccessType.REFLECTION);
+
+            var solverFactory = (DefaultSolverFactory<?>) SolverFactory.create(solverConfig);
+            ConstraintMetaModel constraintMetaModel = buildConstraintMetaModel(solverFactory);
+            // Avoid changing the original solver config.
+            solverConfig.setDomainAccessType(originalDomainAccessType);
+            constraintMetaModelsBySolverNames.put(solverName, constraintMetaModel);
+        });
+
+        constraintMetaModelBuildItemBuildProducer.produce(new ConstraintMetaModelBuildItem(constraintMetaModelsBySolverNames));
+    }
+
+    private static ConstraintMetaModel buildConstraintMetaModel(DefaultSolverFactory<?> solverFactory) {
+        var scoreDirectorFactory = solverFactory.getScoreDirectorFactory();
+
+        ConstraintMetaModel constraintMetaModel;
+        if (scoreDirectorFactory instanceof AbstractConstraintStreamScoreDirectorFactory<?, ?> castScoreDirectorFactory) {
+            constraintMetaModel = castScoreDirectorFactory.getConstraintMetaModel();
+        } else {
+            throw new IllegalStateException(
+                    "Cannot provide %s because the score director does not use the Constraint Streams API."
+                            .formatted(ConstraintMetaModel.class.getSimpleName()));
+        }
+        return constraintMetaModel;
     }
 
     @BuildStep

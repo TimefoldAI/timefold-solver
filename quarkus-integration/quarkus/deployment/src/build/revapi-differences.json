@@ -1,0 +1,9 @@
+[
+  {
+    "extension": "revapi.differences",
+    "configuration": {
+      "differences": [
+      ]
+    }
+  }
+]
