@@ -1,6 +1,7 @@
 package ai.timefold.solver.spring.boot.autoconfigure.config;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
@@ -15,7 +16,19 @@ public enum TerminationProperty {
             value -> DurationStyle.detectAndParse((String) value)),
     UNIMPROVED_SPENT_LIMIT("unimproved-spent-limit", TerminationProperties::setUnimprovedSpentLimit,
             value -> DurationStyle.detectAndParse((String) value)),
-    BEST_SCORE_LIMIT("best-score-limit", TerminationProperties::setBestScoreLimit, Object::toString);
+    BEST_SCORE_LIMIT("best-score-limit", TerminationProperties::setBestScoreLimit, Object::toString),
+    DIMINISHED_RETURNS("diminished-returns", TerminationProperties::setDiminishedReturns,
+            value -> {
+                var out = new DiminishedReturnsProperties();
+                if (value instanceof Map<?, ?> map) {
+                    out.loadProperties((Map<String, Object>) map);
+                } else {
+                    throw new IllegalArgumentException("%s is a Map, not a %s."
+                            .formatted("timefold.solver.termination.diminished-returns",
+                                    value.getClass().getSimpleName()));
+                }
+                return out;
+            });
 
     private final String propertyName;
     private final BiConsumer<TerminationProperties, Object> propertyUpdater;

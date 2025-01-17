@@ -123,12 +123,12 @@ public class TerminationFactory<Solution_> {
         }
 
         if (terminationConfig.getDiminishedReturnsConfig() != null) {
-            var adaptiveTerminationConfig = terminationConfig.getDiminishedReturnsConfig();
-            var gracePeriodMillis = adaptiveTerminationConfig.calculateSlidingWindowMilliseconds();
+            var diminishedReturnsConfig = terminationConfig.getDiminishedReturnsConfig();
+            var gracePeriodMillis = diminishedReturnsConfig.calculateSlidingWindowMilliseconds();
             if (gracePeriodMillis == null) {
                 gracePeriodMillis = 30_000L;
             }
-            var minimumImprovementRatio = adaptiveTerminationConfig.getMinimumImprovementRatio();
+            var minimumImprovementRatio = diminishedReturnsConfig.getMinimumImprovementRatio();
             if (minimumImprovementRatio == null) {
                 minimumImprovementRatio = 0.0001;
             }
