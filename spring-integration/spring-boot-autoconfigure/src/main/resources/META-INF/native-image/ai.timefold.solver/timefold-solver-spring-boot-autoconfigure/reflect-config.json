@@ -648,7 +648,7 @@
     ]
   },
   {
-    "name": "ai.timefold.solver.core.config.solver.termination.AdaptiveTerminationConfig",
+    "name": "ai.timefold.solver.core.config.solver.termination.DiminishedReturnsTerminationConfig",
     "allDeclaredFields": true,
     "queryAllDeclaredMethods": true,
     "methods": [

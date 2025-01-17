@@ -20,7 +20,7 @@ import org.jspecify.annotations.Nullable;
 @XmlType(propOrder = {
         "terminationClass",
         "terminationCompositionStyle",
-        "adaptiveTerminationConfig",
+        "diminishedReturnsConfig",
         "spentLimit",
         "millisecondsSpentLimit",
         "secondsSpentLimit",
@@ -52,8 +52,8 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
 
     private TerminationCompositionStyle terminationCompositionStyle = null;
 
-    @XmlElement(name = "adaptive")
-    private AdaptiveTerminationConfig adaptiveTerminationConfig = null;
+    @XmlElement(name = "diminishedReturns")
+    private DiminishedReturnsTerminationConfig diminishedReturnsConfig = null;
 
     @XmlJavaTypeAdapter(JaxbDurationAdapter.class)
     private Duration spentLimit = null;
@@ -109,13 +109,13 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         this.terminationCompositionStyle = terminationCompositionStyle;
     }
 
-    public AdaptiveTerminationConfig getAdaptiveTerminationConfig() {
-        return adaptiveTerminationConfig;
+    public @Nullable DiminishedReturnsTerminationConfig getDiminishedReturnsConfig() {
+        return diminishedReturnsConfig;
     }
 
-    public void setAdaptiveTerminationConfig(
-            AdaptiveTerminationConfig adaptiveTerminationConfig) {
-        this.adaptiveTerminationConfig = adaptiveTerminationConfig;
+    public void setDiminishedReturnsConfig(
+            @Nullable DiminishedReturnsTerminationConfig diminishedReturnsConfig) {
+        this.diminishedReturnsConfig = diminishedReturnsConfig;
     }
 
     public @Nullable Duration getSpentLimit() {
@@ -298,8 +298,8 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
     }
 
     public @NonNull TerminationConfig
-            withAdaptiveTerminationConfig(@NonNull AdaptiveTerminationConfig adaptiveTerminationConfig) {
-        this.adaptiveTerminationConfig = adaptiveTerminationConfig;
+            withDiminishedReturnsConfig(@NonNull DiminishedReturnsTerminationConfig diminishedReturnsConfig) {
+        this.diminishedReturnsConfig = diminishedReturnsConfig;
         return this;
     }
 
@@ -504,7 +504,7 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         return terminationClass != null ||
                 timeSpentLimitIsSet() ||
                 unimprovedTimeSpentLimitIsSet() ||
-                adaptiveTerminationConfig != null ||
+                diminishedReturnsConfig != null ||
                 bestScoreLimit != null ||
                 bestScoreFeasible != null ||
                 stepCountLimit != null ||
@@ -533,8 +533,8 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         if (!unimprovedTimeSpentLimitIsSet()) {
             inheritUnimprovedTimeSpentLimit(inheritedConfig);
         }
-        adaptiveTerminationConfig = ConfigUtils.inheritConfig(adaptiveTerminationConfig,
-                inheritedConfig.getAdaptiveTerminationConfig());
+        diminishedReturnsConfig = ConfigUtils.inheritConfig(diminishedReturnsConfig,
+                inheritedConfig.getDiminishedReturnsConfig());
         terminationClass = ConfigUtils.inheritOverwritableProperty(terminationClass,
                 inheritedConfig.getTerminationClass());
         terminationCompositionStyle = ConfigUtils.inheritOverwritableProperty(terminationCompositionStyle,
@@ -569,8 +569,8 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         if (terminationConfigList != null) {
             terminationConfigList.forEach(tc -> tc.visitReferencedClasses(classVisitor));
         }
-        if (adaptiveTerminationConfig != null) {
-            adaptiveTerminationConfig.visitReferencedClasses(classVisitor);
+        if (diminishedReturnsConfig != null) {
+            diminishedReturnsConfig.visitReferencedClasses(classVisitor);
         }
     }
 

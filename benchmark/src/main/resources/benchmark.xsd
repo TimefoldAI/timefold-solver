@@ -533,7 +533,7 @@
           <xs:element minOccurs="0" name="terminationCompositionStyle" type="tns:terminationCompositionStyle"/>
                               
           
-          <xs:element minOccurs="0" name="adaptive" type="tns:adaptiveTerminationConfig"/>
+          <xs:element minOccurs="0" name="diminishedReturns" type="tns:diminishedReturnsTerminationConfig"/>
                               
           
           <xs:element minOccurs="0" name="spentLimit" type="xs:string"/>
@@ -608,7 +608,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="adaptiveTerminationConfig">
+  <xs:complexType name="diminishedReturnsTerminationConfig">
             
     
     <xs:complexContent>
@@ -620,22 +620,22 @@
         <xs:sequence>
                               
           
-          <xs:element minOccurs="0" name="gracePeriod" type="xs:string"/>
+          <xs:element minOccurs="0" name="slidingWindowDuration" type="xs:string"/>
                               
           
-          <xs:element minOccurs="0" name="gracePeriodMilliseconds" type="xs:long"/>
+          <xs:element minOccurs="0" name="slidingWindowMilliseconds" type="xs:long"/>
                               
           
-          <xs:element minOccurs="0" name="gracePeriodSeconds" type="xs:long"/>
+          <xs:element minOccurs="0" name="slidingWindowSeconds" type="xs:long"/>
                               
           
-          <xs:element minOccurs="0" name="gracePeriodMinutes" type="xs:long"/>
+          <xs:element minOccurs="0" name="slidingWindowMinutes" type="xs:long"/>
                               
           
-          <xs:element minOccurs="0" name="gracePeriodHours" type="xs:long"/>
+          <xs:element minOccurs="0" name="slidingWindowHours" type="xs:long"/>
                               
           
-          <xs:element minOccurs="0" name="gracePeriodDays" type="xs:long"/>
+          <xs:element minOccurs="0" name="slidingWindowDays" type="xs:long"/>
                               
           
           <xs:element minOccurs="0" name="minimumImprovementRatio" type="xs:double"/>

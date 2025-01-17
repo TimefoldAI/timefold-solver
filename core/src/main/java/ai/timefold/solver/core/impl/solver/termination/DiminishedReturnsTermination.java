@@ -8,28 +8,39 @@ import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
 import org.jspecify.annotations.NonNull;
 
-public final class AdaptiveTermination<Solution_, Score_ extends Score<Score_>> implements Termination<Solution_> {
+public final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>>
+        extends AbstractTermination<Solution_> {
     static final long NANOS_PER_MILLISECOND = 1_000_000;
 
-    private final long gracePeriodNanos;
+    private final long slidingWindowNanos;
     private final double minimumImprovementRatio;
 
     private boolean isGracePeriodActive;
     private long gracePeriodStartTimeNanos;
     private double gracePeriodSoftestImprovementDouble;
 
-    private final AdaptiveScoreRingBuffer<Score_> scoresByTime;
+    private final DiminishedReturnsScoreRingBuffer<Score_> scoresByTime;
 
-    public AdaptiveTermination(long gracePeriodMillis, double minimumImprovementRatio) {
+    public DiminishedReturnsTermination(long slidingWindowMillis, double minimumImprovementRatio) {
+        if (slidingWindowMillis < 0L) {
+            throw new IllegalArgumentException("The slidingWindowMillis (%d) cannot be negative."
+                    .formatted(slidingWindowMillis));
+        }
+
+        if (minimumImprovementRatio <= 0.0) {
+            throw new IllegalArgumentException("The minimumImprovementRatio (%f) must be positive."
+                    .formatted(minimumImprovementRatio));
+        }
+
         // convert to nanoseconds here so we don't need to do a
         // division in the hot loop
-        this.gracePeriodNanos = gracePeriodMillis * NANOS_PER_MILLISECOND;
+        this.slidingWindowNanos = slidingWindowMillis * NANOS_PER_MILLISECOND;
         this.minimumImprovementRatio = minimumImprovementRatio;
-        this.scoresByTime = new AdaptiveScoreRingBuffer<>();
+        this.scoresByTime = new DiminishedReturnsScoreRingBuffer<>();
     }
 
-    public long getGracePeriodNanos() {
-        return gracePeriodNanos;
+    public long getSlidingWindowNanos() {
+        return slidingWindowNanos;
     }
 
     public double getMinimumImprovementRatio() {
@@ -97,16 +108,23 @@ public final class AdaptiveTermination<Solution_, Score_ extends Score<Score_>> 
                 return false;
             }
             var timeElapsedNanos = currentTime - gracePeriodStartTimeNanos;
-            if (timeElapsedNanos >= gracePeriodNanos) {
+            if (timeElapsedNanos >= slidingWindowNanos) {
                 // grace period over, record the reference diff
                 isGracePeriodActive = false;
                 gracePeriodSoftestImprovementDouble = endpointDiff;
+                if (endpointDiff < 0.0) {
+                    // Should be impossible; the only cases where the best score improves
+                    // and have a lower softest level are if either a harder level or init score
+                    // improves, but if that happens, we reset the grace period.
+                    throw new IllegalStateException("The score deteriorated from (%s) to (%s) during the grace period."
+                            .formatted(scoresByTime.peekFirst(), endScore));
+                }
                 return endpointDiff == 0.0;
             }
             return false;
         }
 
-        var startScore = scoresByTime.pollLatestScoreBeforeTimeAndClearPrior(currentTime - gracePeriodNanos);
+        var startScore = scoresByTime.pollLatestScoreBeforeTimeAndClearPrior(currentTime - slidingWindowNanos);
         var scoreDiff = softImprovementOrNaNForHarderChange(startScore, endScore);
         if (Double.isNaN(scoreDiff)) {
             resetGracePeriod(currentTime, endScore);
@@ -117,9 +135,9 @@ public final class AdaptiveTermination<Solution_, Score_ extends Score<Score_>> 
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
-        return isTerminated(System.nanoTime(), (Score_) solverScope.getBestScore());
+        throw new UnsupportedOperationException(
+                getClass().getSimpleName() + " can only be used for phase termination.");
     }
 
     @Override
@@ -129,7 +147,8 @@ public final class AdaptiveTermination<Solution_, Score_ extends Score<Score_>> 
 
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
-        return -1.0;
+        throw new UnsupportedOperationException(
+                getClass().getSimpleName() + " can only be used for phase termination.");
     }
 
     @Override
@@ -140,37 +159,21 @@ public final class AdaptiveTermination<Solution_, Score_ extends Score<Score_>> 
     @Override
     public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
             ChildThreadType childThreadType) {
-        return new AdaptiveTermination<>(gracePeriodNanos, minimumImprovementRatio);
+        return new DiminishedReturnsTermination<>(slidingWindowNanos, minimumImprovementRatio);
     }
 
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        // intentionally empty - no work to do
+        start(System.nanoTime(), phaseScope.getBestScore());
     }
 
     @Override
-    public void stepStarted(AbstractStepScope<Solution_> stepScope) {
-        // intentionally empty - no work to do
+    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
+        scoresByTime.clear();
     }
 
     @Override
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
         step(System.nanoTime(), stepScope.getPhaseScope().getBestScore());
-    }
-
-    @Override
-    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
-        // intentionally empty - no work to do
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public void solvingStarted(SolverScope<Solution_> solverScope) {
-        start(System.nanoTime(), (Score_) solverScope.getBestScore());
-    }
-
-    @Override
-    public void solvingEnded(SolverScope<Solution_> solverScope) {
-        scoresByTime.clear();
     }
 }

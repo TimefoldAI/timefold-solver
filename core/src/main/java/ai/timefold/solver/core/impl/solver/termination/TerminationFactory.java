@@ -122,9 +122,9 @@ public class TerminationFactory<Solution_> {
                     + unimprovedTimeMillisSpentLimit + ") is used too.");
         }
 
-        if (terminationConfig.getAdaptiveTerminationConfig() != null) {
-            var adaptiveTerminationConfig = terminationConfig.getAdaptiveTerminationConfig();
-            var gracePeriodMillis = adaptiveTerminationConfig.calculateGracePeriodMilliseconds();
+        if (terminationConfig.getDiminishedReturnsConfig() != null) {
+            var adaptiveTerminationConfig = terminationConfig.getDiminishedReturnsConfig();
+            var gracePeriodMillis = adaptiveTerminationConfig.calculateSlidingWindowMilliseconds();
             if (gracePeriodMillis == null) {
                 gracePeriodMillis = 30_000L;
             }
@@ -132,7 +132,7 @@ public class TerminationFactory<Solution_> {
             if (minimumImprovementRatio == null) {
                 minimumImprovementRatio = 0.01;
             }
-            terminationList.add(new AdaptiveTermination<>(gracePeriodMillis, minimumImprovementRatio));
+            terminationList.add(new DiminishedReturnsTermination<>(gracePeriodMillis, minimumImprovementRatio));
         }
 
         return terminationList;

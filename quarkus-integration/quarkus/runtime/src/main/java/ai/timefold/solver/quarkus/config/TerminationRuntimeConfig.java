@@ -8,7 +8,7 @@ import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import io.quarkus.runtime.annotations.ConfigGroup;
 
 /**
- * During build time, this is translated into Timefold's {@link TerminationConfig}.
+ * Translated into Timefold's {@link TerminationConfig} at startup.
  */
 @ConfigGroup
 public interface TerminationRuntimeConfig {
@@ -35,4 +35,8 @@ public interface TerminationRuntimeConfig {
      */
     Optional<String> bestScoreLimit();
 
+    /**
+     * Configuration properties for the diminished returns termination.
+     */
+    Optional<DiminishedReturnsRuntimeConfig> diminishedReturns();
 }

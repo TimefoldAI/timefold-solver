@@ -7,11 +7,11 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 
 import org.junit.jupiter.api.Test;
 
-class AdaptiveScoreRingBufferTest {
+class DiminishedReturnsScoreRingBufferTest {
 
     @Test
     void testResizeBasic() {
-        var buffer = new AdaptiveScoreRingBuffer<>(
+        var buffer = new DiminishedReturnsScoreRingBuffer<>(
                 1, 3,
                 new long[] { 0, 2, 3, 0 },
                 new SimpleScore[] {
@@ -38,7 +38,7 @@ class AdaptiveScoreRingBufferTest {
 
     @Test
     void testResizeWrapped() {
-        var buffer = new AdaptiveScoreRingBuffer<>(
+        var buffer = new DiminishedReturnsScoreRingBuffer<>(
                 3, 1,
                 new long[] { 3, 0, 0, 2 },
                 new SimpleScore[] {
@@ -65,7 +65,7 @@ class AdaptiveScoreRingBufferTest {
 
     @Test
     void testPutEmpty() {
-        var buffer = new AdaptiveScoreRingBuffer<>(
+        var buffer = new DiminishedReturnsScoreRingBuffer<>(
                 0, 0,
                 new long[] { 0, 0, 0, 0 },
                 new SimpleScore[] {
@@ -136,7 +136,7 @@ class AdaptiveScoreRingBufferTest {
 
     @Test
     void testPutWrapped() {
-        var buffer = new AdaptiveScoreRingBuffer<>(
+        var buffer = new DiminishedReturnsScoreRingBuffer<>(
                 2, 0,
                 new long[] { 0, 0, 1, 3 },
                 new SimpleScore[] {
@@ -185,7 +185,7 @@ class AdaptiveScoreRingBufferTest {
 
     @Test
     void testPeek() {
-        var buffer = new AdaptiveScoreRingBuffer<>(
+        var buffer = new DiminishedReturnsScoreRingBuffer<>(
                 2, 0,
                 new long[] { 0, 0, 1, 3 },
                 new SimpleScore[] {
@@ -207,7 +207,7 @@ class AdaptiveScoreRingBufferTest {
 
     @Test
     void testClear() {
-        var buffer = new AdaptiveScoreRingBuffer<>(
+        var buffer = new DiminishedReturnsScoreRingBuffer<>(
                 2, 0,
                 new long[] { 0, 0, 1, 3 },
                 new SimpleScore[] {
@@ -229,7 +229,7 @@ class AdaptiveScoreRingBufferTest {
 
     @Test
     void testPollLatestScoreBeforeTimeAndClearPriorFull() {
-        var buffer = new AdaptiveScoreRingBuffer<>(
+        var buffer = new DiminishedReturnsScoreRingBuffer<>(
                 0, 0,
                 new long[] { 1, 2, 3, 4 },
                 new SimpleScore[] {
@@ -252,7 +252,7 @@ class AdaptiveScoreRingBufferTest {
 
     @Test
     void testPollLatestScoreBeforeTimeAndClearPriorEmpty() {
-        var buffer = new AdaptiveScoreRingBuffer<>(
+        var buffer = new DiminishedReturnsScoreRingBuffer<>(
                 0, 0,
                 new long[] { 0, 0, 0, 0 },
                 new SimpleScore[] {
@@ -267,7 +267,7 @@ class AdaptiveScoreRingBufferTest {
 
     @Test
     void testPollLatestScoreBeforeTimeAndClearPriorEqualNormal() {
-        var buffer = new AdaptiveScoreRingBuffer<>(
+        var buffer = new DiminishedReturnsScoreRingBuffer<>(
                 0, 3,
                 new long[] { 1, 2, 3, 0 },
                 new SimpleScore[] {
@@ -289,7 +289,7 @@ class AdaptiveScoreRingBufferTest {
 
     @Test
     void testPollLatestScoreBeforeTimeAndClearPriorLessThanNormal() {
-        var buffer = new AdaptiveScoreRingBuffer<>(
+        var buffer = new DiminishedReturnsScoreRingBuffer<>(
                 0, 3,
                 new long[] { 1, 2, 4, 0 },
                 new SimpleScore[] {
@@ -311,7 +311,7 @@ class AdaptiveScoreRingBufferTest {
 
     @Test
     void testPollLatestScoreBeforeTimeAndClearPriorOverflowNormal() {
-        var buffer = new AdaptiveScoreRingBuffer<>(
+        var buffer = new DiminishedReturnsScoreRingBuffer<>(
                 0, 3,
                 new long[] { 1, 2, 3, 0 },
                 new SimpleScore[] {
@@ -333,7 +333,7 @@ class AdaptiveScoreRingBufferTest {
 
     @Test
     void testPollLatestScoreBeforeTimeAndClearPriorEqualWrapped() {
-        var buffer = new AdaptiveScoreRingBuffer<>(
+        var buffer = new DiminishedReturnsScoreRingBuffer<>(
                 4, 3,
                 new long[] { 2, 3, 4, 0, 1 },
                 new SimpleScore[] {
@@ -358,7 +358,7 @@ class AdaptiveScoreRingBufferTest {
 
     @Test
     void testPollLatestScoreBeforeTimeAndClearPriorLessThanWrapped() {
-        var buffer = new AdaptiveScoreRingBuffer<>(
+        var buffer = new DiminishedReturnsScoreRingBuffer<>(
                 4, 3,
                 new long[] { 2, 3, 5, 0, 1 },
                 new SimpleScore[] {
@@ -383,7 +383,7 @@ class AdaptiveScoreRingBufferTest {
 
     @Test
     void testPollLatestScoreBeforeTimeAndClearPriorOverflowWrapped() {
-        var buffer = new AdaptiveScoreRingBuffer<>(
+        var buffer = new DiminishedReturnsScoreRingBuffer<>(
                 4, 3,
                 new long[] { 2, 3, 4, 0, 1 },
                 new SimpleScore[] {
@@ -408,7 +408,7 @@ class AdaptiveScoreRingBufferTest {
 
     @Test
     void testPollLatestScoreBeforeTimeAndClearPriorEqualWrappedZero() {
-        var buffer = new AdaptiveScoreRingBuffer<>(
+        var buffer = new DiminishedReturnsScoreRingBuffer<>(
                 4, 3,
                 new long[] { 2, 3, 4, 0, 1 },
                 new SimpleScore[] {
@@ -433,7 +433,7 @@ class AdaptiveScoreRingBufferTest {
 
     @Test
     void testPollLatestScoreBeforeTimeAndClearPriorLessThanWrappedZero() {
-        var buffer = new AdaptiveScoreRingBuffer<>(
+        var buffer = new DiminishedReturnsScoreRingBuffer<>(
                 4, 3,
                 new long[] { 3, 4, 5, 0, 1 },
                 new SimpleScore[] {
@@ -458,7 +458,7 @@ class AdaptiveScoreRingBufferTest {
 
     @Test
     void testPollLatestScoreBeforeTimeAndClearPriorOverflowWrappedZero() {
-        var buffer = new AdaptiveScoreRingBuffer<>(
+        var buffer = new DiminishedReturnsScoreRingBuffer<>(
                 3, 0,
                 new long[] { 0, 0, 0, 1, 2 },
                 new SimpleScore[] {

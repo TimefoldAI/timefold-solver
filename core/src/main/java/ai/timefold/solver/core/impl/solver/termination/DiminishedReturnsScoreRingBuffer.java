@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.solver.termination;
 
 import java.util.Arrays;
+import java.util.NavigableMap;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
@@ -8,7 +9,27 @@ import ai.timefold.solver.core.api.score.Score;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-final class AdaptiveScoreRingBuffer<Score_ extends Score<Score_>> {
+/**
+ * A heavily specialized pair of
+ * <a href="https://en.wikipedia.org/wiki/Circular_buffer">ring buffers</a>
+ * that acts as a {@link NavigableMap} for getting the scores at a prior time.
+ * <br/>
+ * The ring buffers operate with the following assumptions:
+ * <ul>
+ * <li>Keys (i.e. {@link System#nanoTime()} are inserted in ascending order</li>
+ * <li>Times are queried in ascending order</li>
+ * <li>The queried time is probably near the start of the ring buffer</li>
+ * </ul>
+ * <br/>
+ * {@link DiminishedReturnsScoreRingBuffer} automatically clear entries prior
+ * to the queried time when polled (if the queried time is not in the
+ * {@link DiminishedReturnsScoreRingBuffer}, then the largest entry prior
+ * to the queried time is kept and returned).
+ * The ring buffers will automatically resize when filled past their capacity.
+ * 
+ * @param <Score_> The score type
+ */
+final class DiminishedReturnsScoreRingBuffer<Score_ extends Score<Score_>> {
     private static final int DEFAULT_CAPACITY = 4096;
 
     int readIndex;
@@ -16,16 +37,16 @@ final class AdaptiveScoreRingBuffer<Score_ extends Score<Score_>> {
     private long[] nanoTimeRingBuffer;
     private Score_[] scoreRingBuffer;
 
-    AdaptiveScoreRingBuffer() {
+    DiminishedReturnsScoreRingBuffer() {
         this(DEFAULT_CAPACITY);
     }
 
     @SuppressWarnings("unchecked")
-    AdaptiveScoreRingBuffer(int capacity) {
+    DiminishedReturnsScoreRingBuffer(int capacity) {
         this(0, 0, new long[capacity], (Score_[]) new Score[capacity]);
     }
 
-    AdaptiveScoreRingBuffer(int readIndex, int writeIndex,
+    DiminishedReturnsScoreRingBuffer(int readIndex, int writeIndex,
             long[] nanoTimeRingBuffer, @Nullable Score_[] scoreRingBuffer) {
         this.nanoTimeRingBuffer = nanoTimeRingBuffer;
         this.scoreRingBuffer = scoreRingBuffer;
@@ -153,7 +174,7 @@ final class AdaptiveScoreRingBuffer<Score_ extends Score<Score_>> {
     }
 
     /**
-     * Returns the latest score prior to the given time, and removes
+     * Returns the latest score prior or at the given time, and removes
      * all time-score pairings prior to it.
      *
      * @param nanoTime the queried time in nanoseconds.

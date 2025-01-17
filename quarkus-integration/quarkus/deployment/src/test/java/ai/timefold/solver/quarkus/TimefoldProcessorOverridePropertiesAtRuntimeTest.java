@@ -48,6 +48,9 @@ class TimefoldProcessorOverridePropertiesAtRuntimeTest {
             .overrideConfigKey("quarkus.timefold.solver.termination.best-score-limit", "0")
             .overrideConfigKey("quarkus.timefold.solver.move-thread-count", "4")
             .overrideConfigKey("quarkus.timefold.solver-manager.parallel-solver-count", "1")
+            .overrideConfigKey("quarkus.timefold.solver.termination.diminished-returns.enabled", "false")
+            .overrideConfigKey("quarkus.timefold.solver.termination.diminished-returns.sliding-window-duration", "3h")
+            .overrideConfigKey("quarkus.timefold.solver.termination.diminished-returns.minimum-improvement-ratio", "0.25")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class,
                             TestdataQuarkusSolution.class,
@@ -61,6 +64,9 @@ class TimefoldProcessorOverridePropertiesAtRuntimeTest {
         out.put("quarkus.timefold.solver.termination.best-score-limit", "7");
         out.put("quarkus.timefold.solver.move-thread-count", "3");
         out.put("quarkus.timefold.solver-manager.parallel-solver-count", "10");
+        out.put("quarkus.timefold.solver.termination.diminished-returns.enabled", "true");
+        out.put("quarkus.timefold.solver.termination.diminished-returns.sliding-window-duration", "6h");
+        out.put("quarkus.timefold.solver.termination.diminished-returns.minimum-improvement-ratio", "0.5");
         return out;
     }
 
@@ -78,6 +84,12 @@ class TimefoldProcessorOverridePropertiesAtRuntimeTest {
         @Produces(MediaType.TEXT_PLAIN)
         public String getSolverConfig() {
             StringBuilder sb = new StringBuilder();
+            sb.append("termination.diminished-returns.sliding-window-duration=").append(solverConfig.getPhaseConfigList()
+                    .get(1).getTerminationConfig().getDiminishedReturnsConfig()
+                    .getSlidingWindowDuration().toHours()).append("h\n");
+            sb.append("termination.diminished-returns.minimum-improvement-ratio=").append(solverConfig.getPhaseConfigList()
+                    .get(1).getTerminationConfig().getDiminishedReturnsConfig()
+                    .getMinimumImprovementRatio()).append("\n");
             sb.append("termination.bestScoreLimit=").append(solverConfig.getTerminationConfig().getBestScoreLimit())
                     .append("\n");
             sb.append("moveThreadCount=").append(solverConfig.getMoveThreadCount()).append("\n");
@@ -103,6 +115,8 @@ class TimefoldProcessorOverridePropertiesAtRuntimeTest {
                 .when()
                 .get("/timefold/test/solver-config")
                 .asInputStream());
+        assertEquals("6h", solverConfigProperties.get("termination.diminished-returns.sliding-window-duration"));
+        assertEquals("0.5", solverConfigProperties.get("termination.diminished-returns.minimum-improvement-ratio"));
         assertEquals("7", solverConfigProperties.get("termination.bestScoreLimit"));
         assertEquals("3", solverConfigProperties.get("moveThreadCount"));
     }

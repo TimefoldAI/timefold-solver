@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.solver.termination;
 
-import static ai.timefold.solver.core.impl.solver.termination.AdaptiveTermination.NANOS_PER_MILLISECOND;
+import static ai.timefold.solver.core.impl.solver.termination.DiminishedReturnsTermination.NANOS_PER_MILLISECOND;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
@@ -8,18 +8,18 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 
 import org.junit.jupiter.api.Test;
 
-class AdaptiveTerminationTest {
+class DiminishedReturnsTerminationTest {
 
     @Test
     void testNoImprovementInGraceTerminates() {
-        var termination = new AdaptiveTermination<Object, SimpleScore>(10, 1);
+        var termination = new DiminishedReturnsTermination<Object, SimpleScore>(10, 1);
         termination.start(0L, SimpleScore.ZERO);
         assertThat(termination.isTerminated(10 * NANOS_PER_MILLISECOND, SimpleScore.ZERO)).isTrue();
     }
 
     @Test
     void testTerminatesWhenScoreDoesNotImprove() {
-        var termination = new AdaptiveTermination<Object, SimpleScore>(10, 1);
+        var termination = new DiminishedReturnsTermination<Object, SimpleScore>(10, 1);
         termination.start(0L, SimpleScore.ZERO);
         assertThat(termination.isTerminated(10 * NANOS_PER_MILLISECOND, SimpleScore.ONE)).isFalse();
 
@@ -41,7 +41,7 @@ class AdaptiveTerminationTest {
 
     @Test
     void testTerminatesWhenImprovementDoesNotMeetCriteria() {
-        var termination = new AdaptiveTermination<Object, SimpleScore>(10, 1);
+        var termination = new DiminishedReturnsTermination<Object, SimpleScore>(10, 1);
         termination.start(0L, SimpleScore.ZERO);
 
         var score = SimpleScore.of(2);
@@ -74,7 +74,7 @@ class AdaptiveTerminationTest {
 
     @Test
     void testImprovementInInitScoreResetsGrace() {
-        var termination = new AdaptiveTermination<Object, SimpleScore>(10, 1);
+        var termination = new DiminishedReturnsTermination<Object, SimpleScore>(10, 1);
 
         var score = SimpleScore.ofUninitialized(-1, 0);
         termination.start(0L, score);
@@ -117,7 +117,7 @@ class AdaptiveTerminationTest {
 
     @Test
     void testImprovementInHardScoreResetsGrace() {
-        var termination = new AdaptiveTermination<Object, HardSoftScore>(10, 1);
+        var termination = new DiminishedReturnsTermination<Object, HardSoftScore>(10, 1);
 
         var score = HardSoftScore.of(-1, 0);
         termination.start(0L, score);
@@ -160,7 +160,7 @@ class AdaptiveTerminationTest {
 
     @Test
     void testImprovementInHardScoreDuringGrace() {
-        var termination = new AdaptiveTermination<Object, HardSoftScore>(10, 1);
+        var termination = new DiminishedReturnsTermination<Object, HardSoftScore>(10, 1);
 
         var score = HardSoftScore.of(-1, 0);
         termination.start(0, score);
@@ -188,7 +188,7 @@ class AdaptiveTerminationTest {
 
     @Test
     void testImprovementInInitScoreDuringGrace() {
-        var termination = new AdaptiveTermination<Object, SimpleScore>(10, 1);
+        var termination = new DiminishedReturnsTermination<Object, SimpleScore>(10, 1);
 
         var score = SimpleScore.ofUninitialized(-1, 0);
         termination.start(0, score);
