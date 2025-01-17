@@ -2,6 +2,7 @@ package ai.timefold.solver.quarkus.config;
 
 import java.time.Duration;
 import java.util.Optional;
+import java.util.OptionalDouble;
 
 import io.quarkus.runtime.annotations.ConfigGroup;
 
@@ -38,7 +39,7 @@ public interface DiminishedReturnsRuntimeConfig {
      * the current best score and the best score from 30 seconds ago is less than
      * 25soft (= 0.25 * 100soft).
      * <br/>
-     * Defaults to 0.1.
+     * Defaults to 0.0001.
      */
-    Optional<Double> minimumImprovementRatio();
+    OptionalDouble minimumImprovementRatio();
 }

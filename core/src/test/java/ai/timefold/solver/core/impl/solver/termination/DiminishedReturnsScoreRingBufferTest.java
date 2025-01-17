@@ -206,6 +206,21 @@ class DiminishedReturnsScoreRingBufferTest {
     }
 
     @Test
+    void testPeekEmpty() {
+        var buffer = new DiminishedReturnsScoreRingBuffer<>(
+                0, 0,
+                new long[] { 0, 0, 0, 0 },
+                new SimpleScore[] {
+                        null,
+                        null,
+                        null,
+                        null
+                });
+        assertThatCode(buffer::peekFirst).isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("buffer is empty");
+    }
+
+    @Test
     void testClear() {
         var buffer = new DiminishedReturnsScoreRingBuffer<>(
                 2, 0,

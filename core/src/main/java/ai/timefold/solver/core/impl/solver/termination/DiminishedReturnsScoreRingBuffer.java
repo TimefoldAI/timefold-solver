@@ -30,6 +30,10 @@ import org.jspecify.annotations.Nullable;
  * @param <Score_> The score type
  */
 final class DiminishedReturnsScoreRingBuffer<Score_ extends Score<Score_>> {
+    /**
+     * Arbitrary; 4096 is a common buffer size and is
+     * the default page size in the linux kernel.
+     */
     private static final int DEFAULT_CAPACITY = 4096;
 
     int readIndex;
@@ -116,6 +120,9 @@ final class DiminishedReturnsScoreRingBuffer<Score_ extends Score<Score_>> {
         scoreRingBuffer = newScoreRingBuffer;
     }
 
+    /**
+     * Removes all elements in the buffer.
+     */
     public void clear() {
         readIndex = 0;
         writeIndex = 0;
@@ -126,11 +133,17 @@ final class DiminishedReturnsScoreRingBuffer<Score_ extends Score<Score_>> {
     /**
      * Returns the first element of the score ring buffer.
      * Does not remove the element.
+     * Raises an exception if the buffer is
+     * empty.
      *
      * @return the first element of the score ring buffer
      */
     public @NonNull Score_ peekFirst() {
-        return scoreRingBuffer[readIndex];
+        var out = scoreRingBuffer[readIndex];
+        if (out == null) {
+            throw new IllegalStateException("Impossible state: buffer is empty");
+        }
+        return out;
     }
 
     /**
@@ -182,7 +195,7 @@ final class DiminishedReturnsScoreRingBuffer<Score_ extends Score<Score_>> {
      */
     public @NonNull Score_ pollLatestScoreBeforeTimeAndClearPrior(long nanoTime) {
         if (readIndex == writeIndex && nanoTimeRingBuffer[writeIndex] == 0L) {
-            throw new IllegalStateException("Ring buffer is empty");
+            throw new IllegalStateException("Impossible state: buffer is empty");
         }
 
         // entries are [readIndex, CAPACITY) + [0, writeIndex)

@@ -216,7 +216,7 @@ class TerminationFactoryTest {
                 .isEqualTo(Duration.ofSeconds(30).toNanos());
         assertThat((DiminishedReturnsTermination<?, ?>) termination)
                 .extracting(DiminishedReturnsTermination::getMinimumImprovementRatio)
-                .isEqualTo(0.01);
+                .isEqualTo(0.0001);
     }
 
     @Test

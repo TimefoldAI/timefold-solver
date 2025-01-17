@@ -130,7 +130,7 @@ public class TerminationFactory<Solution_> {
             }
             var minimumImprovementRatio = adaptiveTerminationConfig.getMinimumImprovementRatio();
             if (minimumImprovementRatio == null) {
-                minimumImprovementRatio = 0.01;
+                minimumImprovementRatio = 0.0001;
             }
             terminationList.add(new DiminishedReturnsTermination<>(gracePeriodMillis, minimumImprovementRatio));
         }

@@ -116,8 +116,9 @@ public final class DiminishedReturnsTermination<Solution_, Score_ extends Score<
                     // Should be impossible; the only cases where the best score improves
                     // and have a lower softest level are if either a harder level or init score
                     // improves, but if that happens, we reset the grace period.
-                    throw new IllegalStateException("The score deteriorated from (%s) to (%s) during the grace period."
-                            .formatted(scoresByTime.peekFirst(), endScore));
+                    throw new IllegalStateException(
+                            "Impossible state: The score deteriorated from (%s) to (%s) during the grace period."
+                                    .formatted(scoresByTime.peekFirst(), endScore));
                 }
                 return endpointDiff == 0.0;
             }

@@ -145,12 +145,16 @@ public class TimefoldRecorder {
 
     private static void setDiminishedReturns(SolverConfig solverConfig,
             DiminishedReturnsRuntimeConfig diminishedReturnsRuntimeConfig) {
-        if (!diminishedReturnsRuntimeConfig.enabled().orElse(false)) {
+        // If we are here, at least one of enabled, sliding-window, or minimum-improvement-ratio
+        // is set.
+        if (!diminishedReturnsRuntimeConfig.enabled().orElse(
+                diminishedReturnsRuntimeConfig.minimumImprovementRatio().isPresent() ||
+                        diminishedReturnsRuntimeConfig.slidingWindowDuration().isPresent())) {
             return;
         }
         if (solverConfig.getPhaseConfigList() != null) {
-            throw new IllegalArgumentException("Property %s cannot be \"true\" when phases are configured."
-                    .formatted("quarkus.timefold.solver.termination.diminished-returns.enabled"));
+            throw new IllegalArgumentException("%s properties cannot be used when phases are configured."
+                    .formatted("quarkus.timefold.solver.termination.diminished-returns"));
         }
         var diminishedReturnsConfig = new DiminishedReturnsTerminationConfig();
         diminishedReturnsRuntimeConfig.slidingWindowDuration().ifPresent(
