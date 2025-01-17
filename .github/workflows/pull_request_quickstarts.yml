@@ -90,6 +90,7 @@ jobs:
 
       # Need to check for stale repo, since Github is not aware of the build chain and therefore doesn't automate it.
       - name: Checkout timefold-quickstarts (PR) # Checkout the PR branch first, if it exists
+        if: github.head_ref # Only true if this is a PR.
         id: checkout-quickstarts-pr
         uses: actions/checkout@v4
         continue-on-error: true
