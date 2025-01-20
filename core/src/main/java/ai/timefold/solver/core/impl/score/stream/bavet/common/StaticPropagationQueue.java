@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.score.stream.bavet.common;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
@@ -22,19 +21,14 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
     private final Deque<Tuple_> retractQueue;
     private final Deque<Tuple_> updateQueue;
     private final Deque<Tuple_> insertQueue;
-    private final Consumer<Tuple_> retractPropagator;
-    private final Consumer<Tuple_> updatePropagator;
-    private final Consumer<Tuple_> insertPropagator;
+    private final TupleLifecycle<Tuple_> nextNodesTupleLifecycle;
 
     public StaticPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle, int size) {
         // Guesstimate that updates are dominant.
         this.retractQueue = new ArrayDeque<>(size / 20);
         this.updateQueue = new ArrayDeque<>((size / 20) * 18);
         this.insertQueue = new ArrayDeque<>(size / 20);
-        // Don't create these lambdas over and over again.
-        this.retractPropagator = nextNodesTupleLifecycle::retract;
-        this.updatePropagator = nextNodesTupleLifecycle::update;
-        this.insertPropagator = nextNodesTupleLifecycle::insert;
+        this.nextNodesTupleLifecycle = nextNodesTupleLifecycle;
     }
 
     public StaticPropagationQueue(TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
@@ -44,7 +38,8 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
     @Override
     public void insert(Tuple_ carrier) {
         if (carrier.state == TupleState.CREATING) {
-            throw new IllegalStateException("Impossible state: The tuple (" + carrier + ") is already in the insert queue.");
+            throw new IllegalStateException("Impossible state: The tuple (%s) is already in the insert queue."
+                    .formatted(carrier));
         }
         carrier.state = TupleState.CREATING;
         insertQueue.add(carrier);
@@ -61,13 +56,16 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
 
     @Override
     public void retract(Tuple_ carrier, TupleState state) {
-        if (carrier.state == state) { // Skip double retracts.
+        var carrierState = carrier.state;
+        if (carrierState == state) { // Skip double retracts.
             return;
         }
         if (state.isActive() || state == TupleState.DEAD) {
-            throw new IllegalArgumentException("Impossible state: The state (" + state + ") is not a valid retract state.");
-        } else if (carrier.state == TupleState.ABORTING || carrier.state == TupleState.DYING) {
-            throw new IllegalStateException("Impossible state: The tuple (" + carrier + ") is already in the retract queue.");
+            throw new IllegalArgumentException("Impossible state: The state (%s) is not a valid retract state."
+                    .formatted(state));
+        } else if (carrierState == TupleState.ABORTING || carrierState == TupleState.DYING) {
+            throw new IllegalStateException("Impossible state: The tuple (%s) is already in the retract queue."
+                    .formatted(carrier));
         }
         carrier.state = state;
         retractQueue.add(carrier);
@@ -78,31 +76,29 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
         if (retractQueue.isEmpty()) {
             return;
         }
-        for (Tuple_ tuple : retractQueue) {
+        for (var tuple : retractQueue) {
             switch (tuple.state) {
-                case DYING -> propagate(tuple, retractPropagator, TupleState.DEAD);
+                case DYING -> {
+                    // Change state before propagation, so that the next node can't make decisions on the original state.
+                    tuple.state = TupleState.DEAD;
+                    nextNodesTupleLifecycle.retract(tuple);
+                }
                 case ABORTING -> tuple.state = TupleState.DEAD;
             }
         }
         retractQueue.clear();
     }
 
-    private void propagate(Tuple_ tuple, Consumer<Tuple_> propagator, TupleState tupleState) {
-        // Change state before propagation, so that the next node can't make decisions on the original state.
-        tuple.state = tupleState;
-        propagator.accept(tuple);
-    }
-
     @Override
     public void propagateUpdates() {
-        processAndClear(updateQueue, updatePropagator);
+        processAndClear(updateQueue);
     }
 
-    private void processAndClear(Deque<Tuple_> dirtyQueue, Consumer<Tuple_> propagator) {
+    private void processAndClear(Deque<Tuple_> dirtyQueue) {
         if (dirtyQueue.isEmpty()) {
             return;
         }
-        for (Tuple_ tuple : dirtyQueue) {
+        for (var tuple : dirtyQueue) {
             if (tuple.state == TupleState.DEAD) {
                 /*
                  * DEAD signifies the tuple was both in insert/update and retract queues.
@@ -113,18 +109,26 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
                  */
                 continue;
             }
-            propagate(tuple, propagator, TupleState.OK);
+            // Change state before propagation, so that the next node can't make decisions on the original state.
+            tuple.state = TupleState.OK;
+            if (dirtyQueue == updateQueue) {
+                nextNodesTupleLifecycle.update(tuple);
+            } else {
+                nextNodesTupleLifecycle.insert(tuple);
+            }
         }
         dirtyQueue.clear();
     }
 
     @Override
     public void propagateInserts() {
-        processAndClear(insertQueue, insertPropagator);
+        processAndClear(insertQueue);
         if (!retractQueue.isEmpty()) {
-            throw new IllegalStateException("Impossible state: The retract queue (" + retractQueue + ") is not empty.");
+            throw new IllegalStateException("Impossible state: The retract queue (%s) is not empty."
+                    .formatted(retractQueue));
         } else if (!updateQueue.isEmpty()) {
-            throw new IllegalStateException("Impossible state: The update queue (" + updateQueue + ") is not empty.");
+            throw new IllegalStateException("Impossible state: The update queue (%s) is not empty."
+                    .formatted(updateQueue));
         }
     }
 
