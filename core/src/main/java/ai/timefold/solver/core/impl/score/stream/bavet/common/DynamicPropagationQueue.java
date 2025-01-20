@@ -9,7 +9,6 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.AbstractTupl
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleState;
 
-
 /**
  * This implementation has the capability to move tuples between the individual propagation queues.
  * This is significantly less efficient than the {@link StaticPropagationQueue}.
