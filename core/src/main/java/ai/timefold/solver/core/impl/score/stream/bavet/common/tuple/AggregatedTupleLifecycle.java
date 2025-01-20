@@ -1,29 +1,30 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.common.tuple;
 
-final class AggregatedTupleLifecycle<Tuple_ extends AbstractTuple> implements TupleLifecycle<Tuple_> {
-    private final TupleLifecycle<Tuple_>[] lifecycles;
+record AggregatedTupleLifecycle<Tuple_ extends AbstractTuple>(TupleLifecycle<Tuple_>... lifecycles)
+        implements
+            TupleLifecycle<Tuple_> {
 
-    public AggregatedTupleLifecycle(TupleLifecycle<Tuple_>[] lifecycles) {
-        this.lifecycles = lifecycles;
+    @SafeVarargs
+    public AggregatedTupleLifecycle {
     }
 
     @Override
     public void insert(Tuple_ tuple) {
-        for (TupleLifecycle<Tuple_> lifecycle : lifecycles) {
+        for (var lifecycle : lifecycles) {
             lifecycle.insert(tuple);
         }
     }
 
     @Override
     public void update(Tuple_ tuple) {
-        for (TupleLifecycle<Tuple_> lifecycle : lifecycles) {
+        for (var lifecycle : lifecycles) {
             lifecycle.update(tuple);
         }
     }
 
     @Override
     public void retract(Tuple_ tuple) {
-        for (TupleLifecycle<Tuple_> lifecycle : lifecycles) {
+        for (var lifecycle : lifecycles) {
             lifecycle.retract(tuple);
         }
     }

@@ -1,8 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.common;
 
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.AbstractTuple;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.LeftTupleLifecycle;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.UniTuple;
@@ -19,8 +17,7 @@ import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
  * @param <Right_>
  */
 public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Right_>
-        extends AbstractNode
-        implements LeftTupleLifecycle<LeftTuple_>, RightTupleLifecycle<UniTuple<Right_>> {
+        extends AbstractTwoInputNode<LeftTuple_, UniTuple<Right_>> {
 
     protected final boolean shouldExist;
 
