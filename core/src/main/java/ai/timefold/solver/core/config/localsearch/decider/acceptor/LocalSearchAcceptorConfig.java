@@ -4,9 +4,28 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElements;
 import jakarta.xml.bind.annotation.XmlType;
 
 import ai.timefold.solver.core.config.AbstractConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.composite.CartesianProductMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveIteratorFactoryConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveListFactoryConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.RuinRecreateMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainSwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinRecreateMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.localsearch.decider.acceptor.stepcountinghillclimbing.StepCountingHillClimbingType;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
@@ -15,7 +34,8 @@ import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
         "acceptorTypeList",
-        "enableReconfiguration",
+        "perturbationSelectorConfig",
+        "maxPerturbationCount",
         "entityTabuSize",
         "entityTabuRatio",
         "fadingEntityTabuSize",
@@ -39,7 +59,34 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
 
     @XmlElement(name = "acceptorType")
     private List<AcceptorType> acceptorTypeList = null;
-    private Boolean enableReconfiguration = null;
+    @XmlElements(value = {
+            @XmlElement(name = CartesianProductMoveSelectorConfig.XML_ELEMENT_NAME,
+                    type = CartesianProductMoveSelectorConfig.class),
+            @XmlElement(name = ChangeMoveSelectorConfig.XML_ELEMENT_NAME, type = ChangeMoveSelectorConfig.class),
+            @XmlElement(name = ListChangeMoveSelectorConfig.XML_ELEMENT_NAME, type = ListChangeMoveSelectorConfig.class),
+            @XmlElement(name = ListSwapMoveSelectorConfig.XML_ELEMENT_NAME, type = ListSwapMoveSelectorConfig.class),
+            @XmlElement(name = MoveIteratorFactoryConfig.XML_ELEMENT_NAME, type = MoveIteratorFactoryConfig.class),
+            @XmlElement(name = MoveListFactoryConfig.XML_ELEMENT_NAME, type = MoveListFactoryConfig.class),
+            @XmlElement(name = PillarChangeMoveSelectorConfig.XML_ELEMENT_NAME,
+                    type = PillarChangeMoveSelectorConfig.class),
+            @XmlElement(name = PillarSwapMoveSelectorConfig.XML_ELEMENT_NAME, type = PillarSwapMoveSelectorConfig.class),
+            @XmlElement(name = RuinRecreateMoveSelectorConfig.XML_ELEMENT_NAME,
+                    type = RuinRecreateMoveSelectorConfig.class),
+            @XmlElement(name = ListRuinRecreateMoveSelectorConfig.XML_ELEMENT_NAME,
+                    type = ListRuinRecreateMoveSelectorConfig.class),
+            @XmlElement(name = SubChainChangeMoveSelectorConfig.XML_ELEMENT_NAME,
+                    type = SubChainChangeMoveSelectorConfig.class),
+            @XmlElement(name = SubChainSwapMoveSelectorConfig.XML_ELEMENT_NAME,
+                    type = SubChainSwapMoveSelectorConfig.class),
+            @XmlElement(name = SubListChangeMoveSelectorConfig.XML_ELEMENT_NAME, type = SubListChangeMoveSelectorConfig.class),
+            @XmlElement(name = SubListSwapMoveSelectorConfig.XML_ELEMENT_NAME, type = SubListSwapMoveSelectorConfig.class),
+            @XmlElement(name = SwapMoveSelectorConfig.XML_ELEMENT_NAME, type = SwapMoveSelectorConfig.class),
+            @XmlElement(name = TailChainSwapMoveSelectorConfig.XML_ELEMENT_NAME,
+                    type = TailChainSwapMoveSelectorConfig.class),
+            @XmlElement(name = UnionMoveSelectorConfig.XML_ELEMENT_NAME, type = UnionMoveSelectorConfig.class)
+    })
+    private MoveSelectorConfig perturbationSelectorConfig = null;
+    private Integer maxPerturbationCount = null;
 
     protected Integer entityTabuSize = null;
     protected Double entityTabuRatio = null;
@@ -80,12 +127,20 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
         this.acceptorTypeList = acceptorTypeList;
     }
 
-    public @Nullable Boolean getEnableReconfiguration() {
-        return enableReconfiguration;
+    public @Nullable MoveSelectorConfig getPerturbationSelectorConfig() {
+        return perturbationSelectorConfig;
     }
 
-    public void setEnableReconfiguration(@Nullable Boolean enableReconfiguration) {
-        this.enableReconfiguration = enableReconfiguration;
+    public void setPerturbationSelectorConfig(@Nullable MoveSelectorConfig perturbationSelectorConfig) {
+        this.perturbationSelectorConfig = perturbationSelectorConfig;
+    }
+
+    public @Nullable Integer getMaxPerturbationCount() {
+        return maxPerturbationCount;
+    }
+
+    public void setMaxPerturbationCount(@Nullable Integer maxPerturbationCount) {
+        this.maxPerturbationCount = maxPerturbationCount;
     }
 
     public @Nullable Integer getEntityTabuSize() {
@@ -273,8 +328,14 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
         return this;
     }
 
-    public @NonNull LocalSearchAcceptorConfig withEnableReconfiguration(@NonNull Boolean enableReconfiguration) {
-        this.enableReconfiguration = enableReconfiguration;
+    public @NonNull LocalSearchAcceptorConfig
+            withPerturbationSelectorConfig(@NonNull MoveSelectorConfig perturbationSelectorConfig) {
+        this.perturbationSelectorConfig = perturbationSelectorConfig;
+        return this;
+    }
+
+    public @NonNull LocalSearchAcceptorConfig withMaxPerturbationCount(@NonNull Integer maxPerturbationCount) {
+        this.maxPerturbationCount = maxPerturbationCount;
         return this;
     }
 
@@ -382,8 +443,11 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
                 }
             }
         }
-        enableReconfiguration =
-                ConfigUtils.inheritOverwritableProperty(enableReconfiguration, inheritedConfig.getEnableReconfiguration());
+        perturbationSelectorConfig =
+                ConfigUtils.inheritOverwritableProperty(perturbationSelectorConfig,
+                        inheritedConfig.getPerturbationSelectorConfig());
+        maxPerturbationCount =
+                ConfigUtils.inheritOverwritableProperty(maxPerturbationCount, inheritedConfig.getMaxPerturbationCount());
         entityTabuSize = ConfigUtils.inheritOverwritableProperty(entityTabuSize, inheritedConfig.getEntityTabuSize());
         entityTabuRatio = ConfigUtils.inheritOverwritableProperty(entityTabuRatio, inheritedConfig.getEntityTabuRatio());
         fadingEntityTabuSize = ConfigUtils.inheritOverwritableProperty(fadingEntityTabuSize,
@@ -425,7 +489,9 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
 
     @Override
     public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
-        // No referenced classes
+        if (perturbationSelectorConfig != null) {
+            perturbationSelectorConfig.visitReferencedClasses(classVisitor);
+        }
     }
 
 }

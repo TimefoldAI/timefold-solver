@@ -80,8 +80,6 @@ public class SolverScope<Solution_> {
         return value == -1 ? null : value;
     }
 
-    private boolean resetWorkingSolution = false;
-
     // ************************************************************************
     // Constructors and simple getters/setters
     // ************************************************************************
@@ -243,18 +241,6 @@ public class SolverScope<Solution_> {
         return moveEvaluationCountPerTypeMap;
     }
 
-    public void triggerResetWorkingSolution() {
-        resetWorkingSolution = true;
-    }
-
-    public void cancelResetWorkingSolution() {
-        resetWorkingSolution = false;
-    }
-
-    public boolean isResetWorkingSolution() {
-        return resetWorkingSolution;
-    }
-
     // ************************************************************************
     // Calculated methods
     // ************************************************************************
@@ -325,7 +311,6 @@ public class SolverScope<Solution_> {
     public void setWorkingSolutionFromBestSolution() {
         // The workingSolution must never be the same instance as the bestSolution.
         scoreDirector.setWorkingSolution(scoreDirector.cloneSolution(getBestSolution()));
-        resetWorkingSolution = false;
     }
 
     public SolverScope<Solution_> createChildThreadSolverScope(ChildThreadType childThreadType) {

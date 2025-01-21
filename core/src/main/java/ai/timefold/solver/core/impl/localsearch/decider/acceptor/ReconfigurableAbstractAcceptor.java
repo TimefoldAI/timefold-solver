@@ -11,10 +11,7 @@ import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
  */
 public abstract class ReconfigurableAbstractAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
 
-    private static final int MAX_PERTURBATIONS = 2;
     private final ReconfigurationStrategy<Solution_> reconfigurationStrategy;
-    private int currentPerturbationCount;
-    private int remainingPerturbations;
     private final boolean enabled;
 
     protected ReconfigurableAbstractAcceptor(ReconfigurationStrategy<Solution_> reconfigurationStrategy, boolean enabled) {
@@ -25,7 +22,6 @@ public abstract class ReconfigurableAbstractAcceptor<Solution_> extends Abstract
     @Override
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
-        init();
         reconfigurationStrategy.phaseStarted(phaseScope);
     }
 
@@ -50,37 +46,15 @@ public abstract class ReconfigurableAbstractAcceptor<Solution_> extends Abstract
     @Override
     @SuppressWarnings("unchecked")
     public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
-        if (enabled && remainingPerturbations > 0) {
-            remainingPerturbations--;
-            if (remainingPerturbations == 0) {
-                reconfigurationStrategy.reset();
-                reset(moveScope.getScore());
-            }
-            return true;
-        }
         if (enabled && reconfigurationStrategy.needReconfiguration(moveScope)) {
-            applyPerturbation(moveScope);
+            moveScope.getStepScope().getPhaseScope().triggerReconfiguration();
             return true;
         }
         var accepted = evaluate(moveScope);
         if (enabled && moveScope.getScore().compareTo(moveScope.getStepScope().getPhaseScope().getBestScore()) > 0) {
-            init();
             reconfigurationStrategy.reset();
         }
         return accepted;
-    }
-
-    private void applyPerturbation(LocalSearchMoveScope<Solution_> moveScope) {
-        remainingPerturbations = currentPerturbationCount;
-        if (currentPerturbationCount < MAX_PERTURBATIONS) {
-            currentPerturbationCount++;
-        }
-        moveScope.getStepScope().getPhaseScope().getSolverScope().triggerResetWorkingSolution();
-    }
-
-    private void init() {
-        this.currentPerturbationCount = 1;
-        this.remainingPerturbations = 0;
     }
 
     protected abstract boolean evaluate(LocalSearchMoveScope<Solution_> moveScope);

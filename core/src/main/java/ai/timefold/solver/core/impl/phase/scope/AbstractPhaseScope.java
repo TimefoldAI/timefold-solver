@@ -34,6 +34,7 @@ public abstract class AbstractPhaseScope<Solution_> {
     protected long childThreadsScoreCalculationCount = 0L;
 
     protected int bestSolutionStepIndex;
+    protected boolean reconfigurationTriggered = false;
 
     /**
      * As defined by #AbstractPhaseScope(SolverScope, int, boolean)
@@ -245,6 +246,18 @@ public abstract class AbstractPhaseScope<Solution_> {
 
     public int getNextStepIndex() {
         return getLastCompletedStepScope().getStepIndex() + 1;
+    }
+
+    public boolean isReconfigurationTriggered() {
+        return this.reconfigurationTriggered;
+    }
+
+    public void triggerReconfiguration() {
+        this.reconfigurationTriggered = true;
+    }
+
+    public void cancelReconfiguration() {
+        this.reconfigurationTriggered = false;
     }
 
     @Override

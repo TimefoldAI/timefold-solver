@@ -32,6 +32,9 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AcceptorFactory;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForagerFactory;
+import ai.timefold.solver.core.impl.localsearch.decider.perturbation.MoveSelectorPerturbationStrategy;
+import ai.timefold.solver.core.impl.localsearch.decider.perturbation.NoPerturbationStrategy;
+import ai.timefold.solver.core.impl.localsearch.decider.perturbation.PerturbationStrategy;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
@@ -58,6 +61,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
     private LocalSearchDecider<Solution_> buildDecider(HeuristicConfigPolicy<Solution_> configPolicy,
             PhaseTermination<Solution_> termination) {
         var moveSelector = buildMoveSelector(configPolicy);
+        var reconfigurationStrategy = buildPerturbationStrategy(configPolicy);
         var acceptor = buildAcceptor(configPolicy);
         var forager = buildForager(configPolicy);
         if (moveSelector.isNeverEnding() && !forager.supportsNeverEndingMoveSelector()) {
@@ -71,7 +75,8 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         var environmentMode = configPolicy.getEnvironmentMode();
         LocalSearchDecider<Solution_> decider;
         if (moveThreadCount == null) {
-            decider = new LocalSearchDecider<>(configPolicy.getLogIndentation(), termination, moveSelector, acceptor, forager);
+            decider = new LocalSearchDecider<>(configPolicy.getLogIndentation(), termination, moveSelector,
+                    reconfigurationStrategy, acceptor, forager);
         } else {
             decider = TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTITHREADED_SOLVING)
                     .buildLocalSearch(moveThreadCount, termination, moveSelector, acceptor, forager, environmentMode,
@@ -182,6 +187,23 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
             moveSelector = moveSelectorFactory.buildMoveSelector(configPolicy, defaultCacheType, defaultSelectionOrder, true);
         }
         return moveSelector;
+    }
+
+    private PerturbationStrategy<Solution_> buildPerturbationStrategy(HeuristicConfigPolicy<Solution_> configPolicy) {
+        var acceptorConfig = phaseConfig.getAcceptorConfig();
+        if (acceptorConfig != null) {
+            var reconfigurationSelectorConfig = acceptorConfig.getPerturbationSelectorConfig();
+            if (reconfigurationSelectorConfig != null) {
+                configPolicy.ensurePreviewFeature(PreviewFeature.ACCEPTOR_RECONFIGURATION);
+                AbstractMoveSelectorFactory<Solution_, ?> moveSelectorFactory =
+                        MoveSelectorFactory.create(reconfigurationSelectorConfig);
+                var moveSelector = moveSelectorFactory.buildMoveSelector(configPolicy, SelectionCacheType.JUST_IN_TIME,
+                        SelectionOrder.RANDOM, true);
+                var maxLevels = Objects.requireNonNullElse(acceptorConfig.getMaxPerturbationCount(), 3);
+                return new MoveSelectorPerturbationStrategy<>(moveSelector, maxLevels);
+            }
+        }
+        return new NoPerturbationStrategy<>();
     }
 
     private UnionMoveSelectorConfig determineDefaultMoveSelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy) {
