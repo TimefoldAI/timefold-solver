@@ -2,13 +2,12 @@ package ai.timefold.solver.core.impl.score.stream.bavet.common.tuple;
 
 import java.util.Objects;
 
-final class RightTupleLifecycleImpl<Tuple_ extends AbstractTuple>
-        implements TupleLifecycle<Tuple_> {
+record RightTupleLifecycleImpl<Tuple_ extends AbstractTuple>(RightTupleLifecycle<Tuple_> rightTupleLifecycle)
+        implements
+            TupleLifecycle<Tuple_> {
 
-    private final RightTupleLifecycle<Tuple_> rightTupleLifecycle;
-
-    RightTupleLifecycleImpl(RightTupleLifecycle<Tuple_> rightTupleLifecycle) {
-        this.rightTupleLifecycle = Objects.requireNonNull(rightTupleLifecycle);
+    RightTupleLifecycleImpl {
+        Objects.requireNonNull(rightTupleLifecycle);
     }
 
     @Override

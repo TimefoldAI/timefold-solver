@@ -3,8 +3,6 @@ package ai.timefold.solver.core.impl.score.stream.bavet.common;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.AbstractTuple;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.LeftTupleLifecycle;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.UniTuple;
@@ -21,8 +19,7 @@ import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
  * @param <Right_>
  */
 public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_, OutTuple_ extends AbstractTuple>
-        extends AbstractNode
-        implements LeftTupleLifecycle<LeftTuple_>, RightTupleLifecycle<UniTuple<Right_>> {
+        extends AbstractTwoInputNode<LeftTuple_, UniTuple<Right_>> {
 
     protected final int inputStoreIndexLeftOutTupleList;
     protected final int inputStoreIndexRightOutTupleList;

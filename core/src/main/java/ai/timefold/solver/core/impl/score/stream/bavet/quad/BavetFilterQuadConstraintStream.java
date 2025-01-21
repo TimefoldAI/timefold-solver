@@ -7,6 +7,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.QuadTuple;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
 
 final class BavetFilterQuadConstraintStream<Solution_, A, B, C, D>
         extends BavetAbstractQuadConstraintStream<Solution_, A, B, C, D> {
@@ -30,7 +31,7 @@ final class BavetFilterQuadConstraintStream<Solution_, A, B, C, D>
     @Override
     public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
         buildHelper.<QuadTuple<A, B, C, D>> putInsertUpdateRetract(this, childStreamList,
-                tupleLifecycle -> new ConditionalQuadTupleLifecycle<>(predicate, tupleLifecycle));
+                tupleLifecycle -> TupleLifecycle.conditionally(tupleLifecycle, predicate));
     }
 
     // ************************************************************************
@@ -46,7 +47,7 @@ final class BavetFilterQuadConstraintStream<Solution_, A, B, C, D>
     public boolean equals(Object o) {
         if (this == o) {
             return true;
-        } else if (o instanceof BavetFilterQuadConstraintStream other) {
+        } else if (o instanceof BavetFilterQuadConstraintStream<?, ?, ?, ?, ?> other) {
             return parent == other.parent
                     && predicate == other.predicate;
         } else {
