@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.TreeMap;
-import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.score.stream.JoinerType;
@@ -91,22 +90,29 @@ public final class IndexerFactory<Right_> {
     }
 
     public <A> UniKeysExtractor<A> buildUniLeftKeysExtractor() {
-        return buildUniKeysExtractor(value -> UniMappingFunction.of(joiner, value));
+        return buildUniKeysExtractor(UniMappingFunction::of);
     }
 
-    private <A> UniKeysExtractor<A> buildUniKeysExtractor(IntFunction<UniMappingFunction<A>> mappingExtractor) {
+    private <A> UniKeysExtractor<A> buildUniKeysExtractor(MappingExtractor<UniMappingFunction<A>> mappingExtractor) {
         var joinerCount = joiner.getJoinerCount();
         if (joinerCount == 0) {
             return (tuple, oldKeys) -> IndexKeys.none();
         } else if (joinerCount == 1) {
-            return buildUniKeysExtractor(new UniKeyFunction<>(mappingExtractor.apply(0)));
+            return buildUniKeysExtractor(new UniKeyFunction<>(mappingExtractor.apply(joiner, 0)));
         }
         var keyFunctions = extractKeyFunctions(mappingExtractor, UniKeyFunction::new);
         return buildUniKeysExtractor(keyFunctions);
     }
 
+    @FunctionalInterface
+    private interface MappingExtractor<MappingFunction_> {
+
+        MappingFunction_ apply(AbstractJoiner<?> joiner, int value);
+
+    }
+
     private <MappingFunction_, KeyFunction_ extends KeyFunction>
-            List<KeyFunction_> extractKeyFunctions(IntFunction<MappingFunction_> mappingExtractor,
+            List<KeyFunction_> extractKeyFunctions(MappingExtractor<MappingFunction_> mappingExtractor,
                     MappingToKeyFunction<MappingFunction_, KeyFunction_> constructor) {
         var joinerCount = joiner.getJoinerCount();
         var startIndexInclusive = 0;
@@ -116,20 +122,20 @@ public final class IndexerFactory<Right_> {
             var keyFunctionLength = endIndexExclusive - startIndexInclusive;
             // Consecutive EQUAL joiners are merged into a single composite keyFunction.
             var keyFunctions = switch (keyFunctionLength) {
-                case 1 -> Collections.singletonList(mappingExtractor.apply(startIndexInclusive));
-                case 2 -> List.of(mappingExtractor.apply(startIndexInclusive),
-                        mappingExtractor.apply(startIndexInclusive + 1));
-                case 3 -> List.of(mappingExtractor.apply(startIndexInclusive),
-                        mappingExtractor.apply(startIndexInclusive + 1),
-                        mappingExtractor.apply(startIndexInclusive + 2));
-                case 4 -> List.of(mappingExtractor.apply(startIndexInclusive),
-                        mappingExtractor.apply(startIndexInclusive + 1),
-                        mappingExtractor.apply(startIndexInclusive + 2),
-                        mappingExtractor.apply(startIndexInclusive + 3));
+                case 1 -> Collections.singletonList(mappingExtractor.apply(joiner, startIndexInclusive));
+                case 2 -> List.of(mappingExtractor.apply(joiner, startIndexInclusive),
+                        mappingExtractor.apply(joiner, startIndexInclusive + 1));
+                case 3 -> List.of(mappingExtractor.apply(joiner, startIndexInclusive),
+                        mappingExtractor.apply(joiner, startIndexInclusive + 1),
+                        mappingExtractor.apply(joiner, startIndexInclusive + 2));
+                case 4 -> List.of(mappingExtractor.apply(joiner, startIndexInclusive),
+                        mappingExtractor.apply(joiner, startIndexInclusive + 1),
+                        mappingExtractor.apply(joiner, startIndexInclusive + 2),
+                        mappingExtractor.apply(joiner, startIndexInclusive + 3));
                 default -> {
                     var result = new ArrayList<MappingFunction_>(keyFunctionLength);
                     for (var i = 0; i < joinerCount; i++) {
-                        var mapping = mappingExtractor.apply(i);
+                        var mapping = mappingExtractor.apply(joiner, i);
                         result.add(mapping);
                     }
                     yield result;
@@ -155,9 +161,7 @@ public final class IndexerFactory<Right_> {
         } else if (joinerCount == 1) {
             return buildBiKeysExtractor(new BiKeyFunction<>(BiMappingFunction.of(joiner, 0)));
         }
-        var keyFunctions = extractKeyFunctions(
-                value -> BiMappingFunction.<A, B> of(joiner, value),
-                BiKeyFunction::new);
+        var keyFunctions = extractKeyFunctions(BiMappingFunction::<A, B> of, BiKeyFunction::new);
         return buildBiKeysExtractor(keyFunctions);
     }
 
@@ -168,9 +172,7 @@ public final class IndexerFactory<Right_> {
         } else if (joinerCount == 1) {
             return buildTriKeysExtractor(new TriKeyFunction<>(TriMappingFunction.of(joiner, 0)));
         }
-        var keyFunctions = extractKeyFunctions(
-                value -> TriMappingFunction.<A, B, C> of(joiner, value),
-                TriKeyFunction::new);
+        var keyFunctions = extractKeyFunctions(TriMappingFunction::<A, B, C> of, TriKeyFunction::new);
         return buildTriKeysExtractor(keyFunctions);
     }
 
@@ -181,16 +183,14 @@ public final class IndexerFactory<Right_> {
         } else if (joinerCount == 1) {
             return buildQuadKeysExtractor(new QuadKeyFunction<>(QuadMappingFunction.of(joiner, 0)));
         }
-        var keyFunctions = extractKeyFunctions(
-                (value) -> QuadMappingFunction.<A, B, C, D> of(joiner, value),
-                QuadKeyFunction::new);
+        var keyFunctions = extractKeyFunctions(QuadMappingFunction::<A, B, C, D> of, QuadKeyFunction::new);
         return buildQuadKeysExtractor(keyFunctions);
     }
 
     public UniKeysExtractor<Right_> buildRightKeysExtractor() {
-        return buildUniKeysExtractor(value -> {
-            var mapping = joiner.getRightMapping(value);
-            return mapping::apply;
+        return buildUniKeysExtractor((joiner, value) -> {
+            var castJoiner = (AbstractJoiner<Right_>) joiner;
+            return castJoiner.getRightMapping(value)::apply;
         });
     }
 
