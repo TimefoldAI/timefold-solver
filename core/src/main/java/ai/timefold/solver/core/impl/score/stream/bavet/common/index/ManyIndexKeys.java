@@ -15,9 +15,6 @@ record ManyIndexKeys(Object... properties) implements IndexKeys {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) { // Due to the use of SINGLE_NULL, this is possible.
-            return true;
-        }
         return o instanceof ManyIndexKeys other && Arrays.equals(properties, other.properties);
     }
 

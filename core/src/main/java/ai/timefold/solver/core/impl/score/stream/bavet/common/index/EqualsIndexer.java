@@ -37,9 +37,9 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
 
     @Override
     public ElementAwareListEntry<T> put(Object indexKeys, T tuple) {
-        Key_ indexKey = keyRetriever.apply(indexKeys);
+        var indexKey = keyRetriever.apply(indexKeys);
         // Avoids computeIfAbsent in order to not create lambdas on the hot path.
-        Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
             downstreamIndexer = downstreamIndexerSupplier.get();
             downstreamIndexerMap.put(indexKey, downstreamIndexer);
@@ -49,8 +49,8 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
 
     @Override
     public void remove(Object indexKeys, ElementAwareListEntry<T> entry) {
-        Key_ indexKey = keyRetriever.apply(indexKeys);
-        Indexer<T> downstreamIndexer = getDownstreamIndexer(indexKeys, indexKey, entry);
+        var indexKey = keyRetriever.apply(indexKeys);
+        var downstreamIndexer = getDownstreamIndexer(indexKeys, indexKey, entry);
         downstreamIndexer.remove(indexKeys, entry);
         if (downstreamIndexer.isEmpty()) {
             downstreamIndexerMap.remove(indexKey);
@@ -58,7 +58,7 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
     }
 
     private Indexer<T> getDownstreamIndexer(Object indexKeys, Key_ indexerKey, ElementAwareListEntry<T> entry) {
-        Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexerKey);
+        var downstreamIndexer = downstreamIndexerMap.get(indexerKey);
         if (downstreamIndexer == null) {
             throw new IllegalStateException(
                     "Impossible state: the tuple (%s) with indexKey (%s) doesn't exist in the indexer %s."
@@ -69,8 +69,8 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
 
     @Override
     public int size(Object indexKeys) {
-        Key_ indexKey = keyRetriever.apply(indexKeys);
-        Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+        var indexKey = keyRetriever.apply(indexKeys);
+        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
             return 0;
         }
@@ -79,8 +79,8 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
 
     @Override
     public void forEach(Object indexKeys, Consumer<T> tupleConsumer) {
-        Key_ indexKey = keyRetriever.apply(indexKeys);
-        Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
+        var indexKey = keyRetriever.apply(indexKeys);
+        var downstreamIndexer = downstreamIndexerMap.get(indexKey);
         if (downstreamIndexer == null) {
             return;
         }

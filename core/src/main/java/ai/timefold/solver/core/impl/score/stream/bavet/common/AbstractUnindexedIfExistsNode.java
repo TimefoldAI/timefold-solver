@@ -94,7 +94,8 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
         var counter = counterEntry.getElement();
         counterEntry.remove();
         if (isFiltering) {
-            ElementAwareList<FilteringTracker<LeftTuple_>> leftTrackerList = leftTuple.getStore(inputStoreIndexLeftTrackerList);
+            ElementAwareList<FilteringTracker<LeftTuple_>> leftTrackerList =
+                    leftTuple.removeStore(inputStoreIndexLeftTrackerList);
             leftTrackerList.forEach(FilteringTracker::remove);
         }
         killCounterLeft(counter);

@@ -1,9 +1,11 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.common;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.KeysExtractor;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.UniKeysExtractor;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.KeysExtractor;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.UniKeysExtractor;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.RightTupleLifecycle;
@@ -58,7 +60,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
             throw new IllegalStateException("Impossible state: the input for the tuple (" + leftTuple
                     + ") was already added in the tupleStore.");
         }
-        var indexKeys = keysExtractorLeft.apply(leftTuple);
+        var indexKeys = keysExtractorLeft.apply(leftTuple, null);
         var outTupleListLeft = new ElementAwareList<OutTuple_>();
         leftTuple.setStore(inputStoreIndexLeftOutTupleList, outTupleListLeft);
         indexAndPropagateLeft(leftTuple, indexKeys);
@@ -72,8 +74,8 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
             insertLeft(leftTuple);
             return;
         }
-        var newIndexKeys = keysExtractorLeft.apply(leftTuple);
-        if (oldIndexKeys.equals(newIndexKeys)) {
+        var newIndexKeys = keysExtractorLeft.apply(leftTuple, oldIndexKeys);
+        if (Objects.equals(oldIndexKeys, newIndexKeys)) {
             // No need for re-indexing because the index keys didn't change
             // Prefer an update over retract-insert if possible
             innerUpdateLeft(leftTuple, consumer -> indexerRight.forEach(oldIndexKeys, consumer));
@@ -114,7 +116,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
             throw new IllegalStateException("Impossible state: the input for the tuple (" + rightTuple
                     + ") was already added in the tupleStore.");
         }
-        var indexKeys = keysExtractorRight.apply(rightTuple);
+        var indexKeys = keysExtractorRight.apply(rightTuple, null);
         var outTupleListRight = new ElementAwareList<OutTuple_>();
         rightTuple.setStore(inputStoreIndexRightOutTupleList, outTupleListRight);
         indexAndPropagateRight(rightTuple, indexKeys);
@@ -128,8 +130,8 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
             insertRight(rightTuple);
             return;
         }
-        var newIndexKeys = keysExtractorRight.apply(rightTuple);
-        if (oldIndexKeys.equals(newIndexKeys)) {
+        var newIndexKeys = keysExtractorRight.apply(rightTuple, oldIndexKeys);
+        if (Objects.equals(oldIndexKeys, newIndexKeys)) {
             // No need for re-indexing because the index keys didn't change
             // Prefer an update over retract-insert if possible
             innerUpdateRight(rightTuple, consumer -> indexerLeft.forEach(oldIndexKeys, consumer));

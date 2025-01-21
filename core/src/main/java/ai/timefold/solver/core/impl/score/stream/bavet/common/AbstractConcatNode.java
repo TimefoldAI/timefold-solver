@@ -1,8 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.common;
 
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.AbstractTuple;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.LeftTupleLifecycle;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleState;
 
@@ -27,8 +25,8 @@ import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleState;
  * have the same {@link TupleSource}), it creates another clone.
  */
 public abstract class AbstractConcatNode<LeftTuple_ extends AbstractTuple, RightTuple_ extends AbstractTuple, OutTuple_ extends AbstractTuple>
-        extends AbstractNode
-        implements LeftTupleLifecycle<LeftTuple_>, RightTupleLifecycle<RightTuple_> {
+        extends AbstractTwoInputNode<LeftTuple_, RightTuple_> {
+
     private final int leftSourceTupleCloneStoreIndex;
     private final int rightSourceTupleCloneStoreIndex;
     protected final int outputStoreSize;

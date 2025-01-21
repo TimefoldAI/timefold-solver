@@ -1,9 +1,11 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.common;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.Indexer;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.KeysExtractor;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory.UniKeysExtractor;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.KeysExtractor;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.index.UniKeysExtractor;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.RightTupleLifecycle;
@@ -57,7 +59,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
             throw new IllegalStateException("Impossible state: the input for the tuple (" + leftTuple
                     + ") was already added in the tupleStore.");
         }
-        var indexKeys = keysExtractorLeft.apply(leftTuple);
+        var indexKeys = keysExtractorLeft.apply(leftTuple, null);
         leftTuple.setStore(inputStoreIndexLeftKeys, indexKeys);
 
         var counter = new ExistsCounter<>(leftTuple);
@@ -87,11 +89,11 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
             insertLeft(leftTuple);
             return;
         }
-        var newIndexKeys = keysExtractorLeft.apply(leftTuple);
+        var newIndexKeys = keysExtractorLeft.apply(leftTuple, oldIndexKeys);
         ElementAwareListEntry<ExistsCounter<LeftTuple_>> counterEntry = leftTuple.getStore(inputStoreIndexLeftCounterEntry);
         var counter = counterEntry.getElement();
 
-        if (oldIndexKeys.equals(newIndexKeys)) {
+        if (Objects.equals(oldIndexKeys, newIndexKeys)) {
             // No need for re-indexing because the index keys didn't change
             // The indexers contain counters in the DEAD state, to track the rightCount.
             if (!isFiltering) {
@@ -143,7 +145,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
             throw new IllegalStateException("Impossible state: the input for the tuple (" + rightTuple
                     + ") was already added in the tupleStore.");
         }
-        var indexKeys = keysExtractorRight.apply(rightTuple);
+        var indexKeys = keysExtractorRight.apply(rightTuple, null);
         rightTuple.setStore(inputStoreIndexRightKeys, indexKeys);
 
         var rightEntry = indexerRight.put(indexKeys, rightTuple);
@@ -169,8 +171,8 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
             insertRight(rightTuple);
             return;
         }
-        var newIndexKeys = keysExtractorRight.apply(rightTuple);
-        if (oldIndexKeys.equals(newIndexKeys)) {
+        var newIndexKeys = keysExtractorRight.apply(rightTuple, oldIndexKeys);
+        if (Objects.equals(oldIndexKeys, newIndexKeys)) {
             // No need for re-indexing because the index keys didn't change
             if (isFiltering) {
                 var rightTrackerList = updateRightTrackerList(rightTuple);

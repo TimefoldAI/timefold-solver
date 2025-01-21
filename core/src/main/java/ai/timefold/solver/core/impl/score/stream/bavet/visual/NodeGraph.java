@@ -15,10 +15,9 @@ import java.util.stream.Stream;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraint;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractNode;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractTwoInputNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetStreamBinaryOperation;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.LeftTupleLifecycle;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.BavetForEachUniConstraintStream;
 
@@ -119,7 +118,7 @@ public record NodeGraph<Solution_>(Solution_ solution, List<AbstractNode> source
             metadata.put("style", "filled");
             metadata.put("fillcolor", "#3e00ff");
             metadata.put("fontcolor", "white");
-        } else if (node instanceof LeftTupleLifecycle<?> && node instanceof RightTupleLifecycle<?>) {
+        } else if (node instanceof AbstractTwoInputNode<?, ?>) {
             // Nodes that join get a different color.
             metadata.put("style", "filled");
             metadata.put("fillcolor", "#ff7700");

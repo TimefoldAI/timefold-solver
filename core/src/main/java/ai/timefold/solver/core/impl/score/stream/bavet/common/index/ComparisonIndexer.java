@@ -62,7 +62,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
 
     @Override
     public ElementAwareListEntry<T> put(Object indexKeys, T tuple) {
-        Key_ indexKey = keyRetriever.apply(indexKeys);
+        var indexKey = keyRetriever.apply(indexKeys);
         // Avoids computeIfAbsent in order to not create lambdas on the hot path.
         var downstreamIndexer = comparisonMap.get(indexKey);
         if (downstreamIndexer == null) {
@@ -74,7 +74,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
 
     @Override
     public void remove(Object indexKeys, ElementAwareListEntry<T> entry) {
-        Key_ indexKey = keyRetriever.apply(indexKeys);
+        var indexKey = keyRetriever.apply(indexKeys);
         var downstreamIndexer = getDownstreamIndexer(indexKeys, indexKey, entry);
         downstreamIndexer.remove(indexKeys, entry);
         if (downstreamIndexer.isEmpty()) {
@@ -99,7 +99,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         if (mapSize == 0) {
             return 0;
         }
-        Key_ indexKey = keyRetriever.apply(indexKeys);
+        var indexKey = keyRetriever.apply(indexKeys);
         if (mapSize == 1) { // Avoid creation of the entry set and iterator.
             var entry = comparisonMap.firstEntry();
             var comparison = keyComparator.compare(entry.getKey(), indexKey);
@@ -133,7 +133,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         if (size == 0) {
             return;
         }
-        Key_ indexKey = keyRetriever.apply(indexKeys);
+        var indexKey = keyRetriever.apply(indexKeys);
         if (size == 1) { // Avoid creation of the entry set and iterator.
             var entry = comparisonMap.firstEntry();
             visitEntry(indexKeys, tupleConsumer, indexKey, entry);

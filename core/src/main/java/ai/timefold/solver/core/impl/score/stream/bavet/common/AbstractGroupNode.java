@@ -126,7 +126,7 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
     }
 
     private Group<OutTuple_, ResultContainer_> getOrCreateGroup(GroupKey_ userSuppliedKey) {
-        var groupMapKey = useAssertingGroupKey ? new AssertingGroupKey(userSuppliedKey) : userSuppliedKey;
+        var groupMapKey = useAssertingGroupKey ? new AssertingGroupKey<>(userSuppliedKey) : userSuppliedKey;
         if (hasMultipleGroups) {
             // Avoids computeIfAbsent in order to not create lambdas on the hot path.
             var group = groupMap.get(groupMapKey);
@@ -167,8 +167,9 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
         return group;
     }
 
+    @SuppressWarnings("unchecked")
     private GroupKey_ extractUserSuppliedKey(Object groupMapKey) {
-        return useAssertingGroupKey ? ((AssertingGroupKey) groupMapKey).getKey() : (GroupKey_) groupMapKey;
+        return useAssertingGroupKey ? ((AssertingGroupKey<GroupKey_>) groupMapKey).key() : (GroupKey_) groupMapKey;
     }
 
     @Override
@@ -289,39 +290,23 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
      * Since this situation is far too frequent and users run into this,
      * we have this helper class that will optionally throw an exception when it detects this.
      */
-    private final class AssertingGroupKey {
-
-        private final GroupKey_ key;
-        private final int initialHashCode;
+    private record AssertingGroupKey<GroupKey_>(GroupKey_ key, int initialHashCode) {
 
         public AssertingGroupKey(GroupKey_ key) {
-            this.key = key;
-            this.initialHashCode = key == null ? 0 : key.hashCode();
+            this(key, key == null ? 0 : key.hashCode());
         }
 
-        public GroupKey_ getKey() {
+        public GroupKey_ key() {
             if (key != null && key.hashCode() != initialHashCode) {
-                throw new IllegalStateException("hashCode of object (" + key + ") of class (" + key.getClass()
-                        + ") has changed while it was being used as a group key within groupBy ("
-                        + AbstractGroupNode.this.getClass() + ").\n"
-                        + "Group key hashCode must consistently return the same integer, "
-                        + "as required by the general hashCode contract.");
+                throw new IllegalStateException(
+                        """
+                                hashCode of object (%s) of class (%s) has changed while it was being used as a group key.
+                                Group key hashCode must consistently return the same integer, as required by the general hashCode contract."""
+                                .formatted(key, key.getClass().getName()));
             }
             return key;
         }
 
-        @Override
-        public boolean equals(Object other) {
-            if (other == null || getClass() != other.getClass())
-                return false;
-            return Objects.equals(getKey(), ((AssertingGroupKey) other).getKey());
-        }
-
-        @Override
-        public int hashCode() {
-            var key = getKey();
-            return key == null ? 0 : key.hashCode();
-        }
     }
 
 }
