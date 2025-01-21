@@ -1,11 +1,15 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.common.tuple;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 record AggregatedTupleLifecycle<Tuple_ extends AbstractTuple>(TupleLifecycle<Tuple_>... lifecycles)
         implements
             TupleLifecycle<Tuple_> {
 
     @SafeVarargs
     public AggregatedTupleLifecycle {
+        // Exists so that we have something to put the @SafeVarargs annotation on.
     }
 
     @Override
@@ -30,8 +34,18 @@ record AggregatedTupleLifecycle<Tuple_ extends AbstractTuple>(TupleLifecycle<Tup
     }
 
     @Override
+    public boolean equals(Object o) {
+        return o instanceof AggregatedTupleLifecycle<?> that &&
+                Objects.deepEquals(lifecycles, that.lifecycles);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(lifecycles);
+    }
+
+    @Override
     public String toString() {
         return "size = " + lifecycles.length;
     }
-
 }

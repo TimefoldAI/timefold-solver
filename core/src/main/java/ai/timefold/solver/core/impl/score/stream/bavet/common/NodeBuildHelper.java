@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
@@ -75,7 +75,7 @@ public final class NodeBuildHelper<Score_ extends Score<Score_>> {
 
     public <Tuple_ extends AbstractTuple> void putInsertUpdateRetract(ConstraintStream stream,
             List<? extends AbstractConstraintStream<?>> childStreamList,
-            Function<TupleLifecycle<Tuple_>, TupleLifecycle<Tuple_>> tupleLifecycleFunction) {
+            UnaryOperator<TupleLifecycle<Tuple_>> tupleLifecycleFunction) {
         TupleLifecycle<Tuple_> tupleLifecycle = getAggregatedTupleLifecycle(childStreamList);
         putInsertUpdateRetract(stream, tupleLifecycleFunction.apply(tupleLifecycle));
     }
