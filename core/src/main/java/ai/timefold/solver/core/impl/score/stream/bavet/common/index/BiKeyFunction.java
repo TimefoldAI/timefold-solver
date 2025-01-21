@@ -5,9 +5,6 @@ import java.util.List;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.function.TriFunction;
-import ai.timefold.solver.core.impl.util.Pair;
-import ai.timefold.solver.core.impl.util.Quadruple;
-import ai.timefold.solver.core.impl.util.Triple;
 
 final class BiKeyFunction<A, B>
         implements TriFunction<A, B, Object, Object>, KeyFunction {
@@ -42,7 +39,7 @@ final class BiKeyFunction<A, B>
             case 2 -> apply2(a, b, oldKey);
             case 3 -> apply3(a, b, oldKey);
             case 4 -> apply4(a, b, oldKey);
-            default -> applyMany(a, b, oldKey);
+            default -> oldKey == null ? applyManyFresh(a, b) : applyMany(a, b, oldKey);
         };
     }
 
@@ -50,59 +47,46 @@ final class BiKeyFunction<A, B>
         return mappingFunction0.apply(a, b);
     }
 
-    @SuppressWarnings("unchecked")
     private Object apply2(A a, B b, Object oldKey) {
         var subkey1 = mappingFunction0.apply(a, b);
         var subkey2 = mappingFunction1.apply(a, b);
-        if (oldKey == null) {
-            return new Pair<>(subkey1, subkey2);
-        }
-        return ((Pair<Object, Object>) UniKeyFunction.extractSubkey(keyId, oldKey))
-                .newIfDifferent(subkey1, subkey2);
+        return KeyFunction.buildPair(keyId, oldKey, subkey1, subkey2);
     }
 
-    @SuppressWarnings("unchecked")
     private Object apply3(A a, B b, Object oldKey) {
         var subkey1 = mappingFunction0.apply(a, b);
         var subkey2 = mappingFunction1.apply(a, b);
         var subkey3 = mappingFunction2.apply(a, b);
-        if (oldKey == null) {
-            return new Triple<>(subkey1, subkey2, subkey3);
-        }
-        return ((Triple<Object, Object, Object>) UniKeyFunction.extractSubkey(keyId, oldKey))
-                .newIfDifferent(subkey1, subkey2, subkey3);
+        return KeyFunction.buildTriple(keyId, oldKey, subkey1, subkey2, subkey3);
     }
 
-    @SuppressWarnings("unchecked")
     private Object apply4(A a, B b, Object oldKey) {
         var subkey1 = mappingFunction0.apply(a, b);
         var subkey2 = mappingFunction1.apply(a, b);
         var subkey3 = mappingFunction2.apply(a, b);
         var subkey4 = mappingFunction3.apply(a, b);
-        if (oldKey == null) {
-            return new Quadruple<>(subkey1, subkey2, subkey3, subkey4);
+        return KeyFunction.buildQuadruple(keyId, oldKey, subkey1, subkey2, subkey3, subkey4);
+    }
+
+    private Object applyManyFresh(A a, B b) {
+        var result = new Object[mappingFunctionCount];
+        for (var i = 0; i < mappingFunctionCount; i++) {
+            result[i] = mappingFunctions[i].apply(a, b);
         }
-        return ((Quadruple<Object, Object, Object, Object>) UniKeyFunction.extractSubkey(keyId, oldKey))
-                .newIfDifferent(subkey1, subkey2, subkey3, subkey4);
+        return new IndexerKey(result);
     }
 
     private Object applyMany(A a, B b, Object oldKey) {
         var result = new Object[mappingFunctionCount];
-        if (oldKey == null) {
-            for (var i = 0; i < mappingFunctionCount; i++) {
-                result[i] = mappingFunctions[i].apply(a, b);
-            }
-        } else {
-            var oldArray = ((IndexerKey) UniKeyFunction.extractSubkey(keyId, oldKey)).properties();
-            var subKeysEqual = true;
-            for (var i = 0; i < mappingFunctionCount; i++) {
-                var subkey = mappingFunctions[i].apply(a, b);
-                subKeysEqual = subKeysEqual && Objects.equals(subkey, oldArray[i]);
-                result[i] = subkey;
-            }
-            if (subKeysEqual) {
-                return oldKey;
-            }
+        var oldArray = ((IndexerKey) KeyFunction.extractSubkey(keyId, oldKey)).properties();
+        var subKeysEqual = true;
+        for (var i = 0; i < mappingFunctionCount; i++) {
+            var subkey = mappingFunctions[i].apply(a, b);
+            subKeysEqual = subKeysEqual && Objects.equals(subkey, oldArray[i]);
+            result[i] = subkey;
+        }
+        if (subKeysEqual) {
+            return oldKey;
         }
         return new IndexerKey(result);
     }
