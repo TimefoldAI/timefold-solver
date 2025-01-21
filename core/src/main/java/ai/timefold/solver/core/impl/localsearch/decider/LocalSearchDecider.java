@@ -4,9 +4,11 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
+import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
+import ai.timefold.solver.core.impl.localsearch.decider.perturbation.PerturbationStrategy;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
@@ -30,7 +32,7 @@ public class LocalSearchDecider<Solution_> {
     protected final String logIndentation;
     protected final Termination<Solution_> termination;
     protected final MoveSelector<Solution_> moveSelector;
-    protected final MoveSelector<Solution_> perturbationMoveSelector;
+    protected final PerturbationStrategy<Solution_> perturbationStrategy;
     protected final Acceptor<Solution_> acceptor;
     protected final LocalSearchForager<Solution_> forager;
 
@@ -38,12 +40,12 @@ public class LocalSearchDecider<Solution_> {
     protected boolean assertExpectedUndoMoveScore = false;
 
     public LocalSearchDecider(String logIndentation, Termination<Solution_> termination,
-            MoveSelector<Solution_> moveSelector, MoveSelector<Solution_> perturbationMoveSelector,
+            MoveSelector<Solution_> moveSelector, PerturbationStrategy<Solution_> perturbationStrategy,
             Acceptor<Solution_> acceptor, LocalSearchForager<Solution_> forager) {
         this.logIndentation = logIndentation;
         this.termination = termination;
         this.moveSelector = moveSelector;
-        this.perturbationMoveSelector = perturbationMoveSelector;
+        this.perturbationStrategy = perturbationStrategy;
         this.acceptor = acceptor;
         this.forager = forager;
     }
@@ -75,18 +77,21 @@ public class LocalSearchDecider<Solution_> {
 
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         moveSelector.solvingStarted(solverScope);
+        perturbationStrategy.solvingStarted(solverScope);
         acceptor.solvingStarted(solverScope);
         forager.solvingStarted(solverScope);
     }
 
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
         moveSelector.phaseStarted(phaseScope);
+        perturbationStrategy.phaseStarted(phaseScope);
         acceptor.phaseStarted(phaseScope);
         forager.phaseStarted(phaseScope);
     }
 
     public void stepStarted(LocalSearchStepScope<Solution_> stepScope) {
         moveSelector.stepStarted(stepScope);
+        perturbationStrategy.stepStarted(stepScope);
         acceptor.stepStarted(stepScope);
         forager.stepStarted(stepScope);
     }
@@ -95,7 +100,13 @@ public class LocalSearchDecider<Solution_> {
         InnerScoreDirector<Solution_, ?> scoreDirector = stepScope.getScoreDirector();
         scoreDirector.setAllChangesWillBeUndoneBeforeStepEnds(true);
         int moveIndex = 0;
-        if (resetWorkingSolution(stepScope)) {
+        if (perturbationStrategy.isTriggered(stepScope)) {
+            var reconfigurationScore = perturbationStrategy.apply(stepScope);
+            // Generate a dummy move; so the LS phase continues the process
+            var adaptedMove = new LegacyMoveAdapter<Solution_>(NoChangeMove.getInstance());
+            stepScope.setStep(adaptedMove);
+            stepScope.setScore(reconfigurationScore);
+            scoreDirector.setAllChangesWillBeUndoneBeforeStepEnds(false);
             return;
         }
         for (var move : moveSelector) {
@@ -113,26 +124,6 @@ public class LocalSearchDecider<Solution_> {
         }
         scoreDirector.setAllChangesWillBeUndoneBeforeStepEnds(false);
         pickMove(stepScope);
-    }
-
-    private boolean resetWorkingSolution(LocalSearchStepScope<Solution_> stepScope) {
-        var solverScope = stepScope.getPhaseScope().getSolverScope();
-        var phaseScope = stepScope.getPhaseScope();
-        if (perturbationMoveSelector != null && solverScope.isResetWorkingSolution()) {
-            logger.debug("Working solution reset, score ({})", solverScope.getBestScore());
-            solverScope.setWorkingSolutionFromBestSolution();
-            perturbationMoveSelector.phaseStarted(phaseScope);
-            var perturbationMove = perturbationMoveSelector.iterator().next();
-            stepScope.setScore(perturbationMove);
-
-            logger.debug("Generating a new perturbation with Ruin and Recreate: old score ({}), new score ({})", solverScope.getBestScore());
-            moveSelector.phaseStarted(phaseScope);
-            return true;
-        } else if (solverScope.isResetWorkingSolution()) {
-            // Reset the flag
-            solverScope.cancelResetWorkingSolution();
-        }
-        return false;
     }
 
     @SuppressWarnings("unchecked")
@@ -173,18 +164,21 @@ public class LocalSearchDecider<Solution_> {
 
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
         moveSelector.stepEnded(stepScope);
+        perturbationStrategy.stepEnded(stepScope);
         acceptor.stepEnded(stepScope);
         forager.stepEnded(stepScope);
     }
 
     public void phaseEnded(LocalSearchPhaseScope<Solution_> phaseScope) {
         moveSelector.phaseEnded(phaseScope);
+        perturbationStrategy.phaseEnded(phaseScope);
         acceptor.phaseEnded(phaseScope);
         forager.phaseEnded(phaseScope);
     }
 
     public void solvingEnded(SolverScope<Solution_> solverScope) {
         moveSelector.solvingEnded(solverScope);
+        perturbationStrategy.solvingEnded(solverScope);
         acceptor.solvingEnded(solverScope);
         forager.solvingEnded(solverScope);
     }

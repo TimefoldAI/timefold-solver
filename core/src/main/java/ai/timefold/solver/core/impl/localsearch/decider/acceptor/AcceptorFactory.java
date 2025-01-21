@@ -220,7 +220,7 @@ public class AcceptorFactory<Solution_> {
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.LATE_ACCEPTANCE)
                 || (!acceptorTypeListsContainsAcceptorType(AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE)
                         && acceptorConfig.getLateAcceptanceSize() != null)) {
-            var enableReconfiguration = Objects.requireNonNullElse(acceptorConfig.getEnableReconfiguration(), false);
+            var enableReconfiguration = acceptorConfig.getPerturbationSelectorConfig() != null;
             if (enableReconfiguration) {
                 configPolicy.ensurePreviewFeature(PreviewFeature.ACCEPTOR_RECONFIGURATION);
             }
@@ -235,7 +235,7 @@ public class AcceptorFactory<Solution_> {
             buildDiversifiedLateAcceptanceAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE)) {
             configPolicy.ensurePreviewFeature(PreviewFeature.DIVERSIFIED_LATE_ACCEPTANCE);
-            var enableReconfiguration = Objects.requireNonNullElse(acceptorConfig.getEnableReconfiguration(), false);
+            var enableReconfiguration = acceptorConfig.getPerturbationSelectorConfig() != null;
             if (enableReconfiguration) {
                 configPolicy.ensurePreviewFeature(PreviewFeature.ACCEPTOR_RECONFIGURATION);
             }
