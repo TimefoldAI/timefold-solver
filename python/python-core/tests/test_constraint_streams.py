@@ -713,6 +713,49 @@ def test_custom_justifications():
     assert len(justifications) == 0
 
 
+def test_decimal_justifications():
+    @dataclass(unsafe_hash=True)
+    class MyJustification(ConstraintJustification):
+        code: str
+        score: SimpleDecimalScore
+
+    @constraint_provider
+    def define_constraints(constraint_factory: ConstraintFactory):
+        return [
+            constraint_factory.for_each(Entity)
+            .reward(SimpleDecimalScore.ONE, lambda e: e.value.number)
+            .justify_with(lambda e, score: MyJustification(e.code, score))
+            .as_constraint('Maximize value')
+        ]
+
+    score_manager = create_score_manager(define_constraints,
+                                         solution_class=DecimalSolution)
+    entity_a: Entity = Entity('A')
+    entity_b: Entity = Entity('B')
+
+    value_1 = Value(1)
+    value_2 = Value(2)
+    value_3 = Value(3)
+
+    entity_a.value = value_1
+    entity_b.value = value_3
+
+    problem = DecimalSolution([entity_a, entity_b], [value_1, value_2, value_3])
+
+    justifications = score_manager.explain(problem).get_justification_list()
+    assert len(justifications) == 2
+    assert MyJustification('A', SimpleDecimalScore.of(Decimal(1))) in justifications
+    assert MyJustification('B', SimpleDecimalScore.of(Decimal(3))) in justifications
+
+    justifications = score_manager.explain(problem).get_justification_list(MyJustification)
+    assert len(justifications) == 2
+    assert MyJustification('A', SimpleDecimalScore.of(Decimal(1))) in justifications
+    assert MyJustification('B', SimpleDecimalScore.of(Decimal(3))) in justifications
+
+    justifications = score_manager.explain(problem).get_justification_list(DefaultConstraintJustification)
+    assert len(justifications) == 0
+
+
 def test_long_scores():
     @constraint_provider
     def define_constraints(constraint_factory: ConstraintFactory):
