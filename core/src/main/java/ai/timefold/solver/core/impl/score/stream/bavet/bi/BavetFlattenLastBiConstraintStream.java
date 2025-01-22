@@ -4,11 +4,12 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.bavet.bi.FlattenLastBiNode;
+import ai.timefold.solver.core.impl.bavet.common.AbstractFlattenLastNode;
+import ai.timefold.solver.core.impl.bavet.common.NodeBuildHelper;
+import ai.timefold.solver.core.impl.bavet.common.bridge.BavetAftBridgeBiConstraintStream;
+import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractFlattenLastNode;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetAftBridgeBiConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.BiTuple;
 
 final class BavetFlattenLastBiConstraintStream<Solution_, A, B, NewB>
         extends BavetAbstractBiConstraintStream<Solution_, A, B> {

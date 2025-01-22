@@ -4,9 +4,10 @@ import java.util.Objects;
 import java.util.function.BiFunction;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.bavet.bi.MapBiToUniNode;
+import ai.timefold.solver.core.impl.bavet.common.NodeBuildHelper;
+import ai.timefold.solver.core.impl.bavet.common.bridge.BavetAftBridgeUniConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetAftBridgeUniConstraintStream;
 
 final class BavetUniMapBiConstraintStream<Solution_, A, B, NewA>
         extends BavetAbstractBiConstraintStream<Solution_, A, B> {

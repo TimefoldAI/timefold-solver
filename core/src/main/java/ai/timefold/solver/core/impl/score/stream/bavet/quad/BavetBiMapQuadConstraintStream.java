@@ -4,9 +4,10 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.bavet.common.NodeBuildHelper;
+import ai.timefold.solver.core.impl.bavet.common.bridge.BavetAftBridgeBiConstraintStream;
+import ai.timefold.solver.core.impl.bavet.quad.MapQuadToBiNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetAftBridgeBiConstraintStream;
 
 final class BavetBiMapQuadConstraintStream<Solution_, A, B, C, D, NewA, NewB>
         extends BavetAbstractQuadConstraintStream<Solution_, A, B, C, D> {

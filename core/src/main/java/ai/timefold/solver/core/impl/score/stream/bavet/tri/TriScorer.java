@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.tri;
 
 import ai.timefold.solver.core.api.function.QuadFunction;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractScorer;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TriTuple;
+import ai.timefold.solver.core.impl.bavet.common.AbstractScorer;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.UndoScoreImpacter;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.WeightedScoreImpacter;
 

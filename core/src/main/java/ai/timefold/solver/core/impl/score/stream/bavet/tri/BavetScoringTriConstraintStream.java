@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.tri;
 
-import static ai.timefold.solver.core.impl.score.stream.bavet.common.BavetScoringConstraintStream.impactWithConstraintMatchNoJustifications;
+import static ai.timefold.solver.core.impl.bavet.common.BavetScoringConstraintStream.impactWithConstraintMatchNoJustifications;
 
 import java.math.BigDecimal;
 
@@ -9,11 +9,11 @@ import ai.timefold.solver.core.api.function.ToIntTriFunction;
 import ai.timefold.solver.core.api.function.ToLongTriFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.bavet.common.BavetScoringConstraintStream;
+import ai.timefold.solver.core.impl.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraint;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetScoringConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.ConstraintMatchSupplier;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.UndoScoreImpacter;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.WeightedScoreImpacter;

@@ -4,10 +4,10 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.bavet.common.NodeBuildHelper;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TriTuple;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
 
 final class BavetFilterTriConstraintStream<Solution_, A, B, C>
         extends BavetAbstractTriConstraintStream<Solution_, A, B, C> {
