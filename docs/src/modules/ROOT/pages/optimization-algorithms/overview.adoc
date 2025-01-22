@@ -640,16 +640,23 @@ Switching xref:using-timefold-solver/running-the-solver.adoc#environmentMode[Env
 [#diminishedReturnsTermination]
 ==== `DiminishedReturnsTermination`
 
-Terminates when the rate of improvement is below a percentage of the initial rate of improvement.
-The rate of improvement is the score difference between the final best score and the initial best score in a window, divided by the duration of the window.
+To save on CPU costs, you might want to terminate the solver early if expected improvements are minimal.
+This is hard to configure with absolute terminations since:
+
+* For time-based absolute terminations, they depend on the hardware used for solving.
+A computer that is twice as powerful should be given half the time.
+
+* For score-based absolute terminations, they depend on the problem.
+A problem with many entities will have larger score improvements than a problem with few entities.
+
+For these situations, the diminished returns termination is desirable since it terminates based on the relative rate of improvement, and behaves similarly on different hardware and different problem instances.
+
+The diminished returns termination terminates when the rate of improvement is below a percentage of the initial rate of improvement.
+The rate of improvement is the softest score difference between the final best score and the initial best score in a window, divided by the duration of the window.
 The first window is called a grace period, which cannot trigger a termination.
+If the hard score improves, the grace period is reset and the initial rate of improvement is recalculated.
 
 image::optimization-algorithms/overview/diminishedReturnsTermination.png[align="center"]
-
-[NOTE]
-====
-If the hard score improves, the grace period is reset and the initial rate of improvement is recalculated.
-====
 
 [source,xml,options="nowrap"]
 ----
@@ -674,23 +681,8 @@ There are two properties that can optionally be configured:
     </termination>
   </localSearch>
 ----
-
-Alternatively to a `java.util.Duration` in ISO 8601 format, you can also use:
 +
-** Milliseconds
-+
-[source,xml,options="nowrap"]
-----
-  <localSearch>
-    <termination>
-      <diminishedReturns>
-        <slidingWindowMilliseconds>500</slidingWindowMilliseconds>
-      </diminishedReturns>
-    </termination>
-  </localSearch>
-----
-+
-** Seconds
+Alternatively to a `java.util.Duration` in ISO 8601 format, you can also use milliseconds, seconds, minutes, hours or days:
 +
 [source,xml,options="nowrap"]
 ----
@@ -698,45 +690,6 @@ Alternatively to a `java.util.Duration` in ISO 8601 format, you can also use:
     <termination>
       <diminishedReturns>
         <slidingWindowSeconds>500</slidingWindowSeconds>
-      </diminishedReturns>
-    </termination>
-  </localSearch>
-----
-+
-** Minutes
-+
-[source,xml,options="nowrap"]
-----
-  <localSearch>
-    <termination>
-      <diminishedReturns>
-        <slidingWindowMinutes>500</slidingWindowMinutes>
-      </diminishedReturns>
-    </termination>
-  </localSearch>
-----
-+
-** Hours
-+
-[source,xml,options="nowrap"]
-----
-  <localSearch>
-    <termination>
-      <diminishedReturns>
-        <slidingWindowHours>500</slidingWindowHours>
-      </diminishedReturns>
-    </termination>
-  </localSearch>
-----
-+
-** Days
-+
-[source,xml,options="nowrap"]
-----
-  <localSearch>
-    <termination>
-      <diminishedReturns>
-        <slidingWindowDays>500</slidingWindowDays>
       </diminishedReturns>
     </termination>
   </localSearch>

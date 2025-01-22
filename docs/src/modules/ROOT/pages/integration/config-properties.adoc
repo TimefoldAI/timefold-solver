@@ -74,6 +74,33 @@ For example: `0hard/-1000soft` terminates when the best score changes from `0har
 Wildcards are supported to replace numbers.
 For example: `0hard/*soft` to terminate when any feasible score is reached.
 
+{property_prefix}timefold.solver.{solver_name_prefix}termination.diminished-returns.enabled::
+If set to true, adds a termination to the local search phase that records the initial improvement after a duration, and terminates when the ratio new improvement/initial improvement is below a specified ratio.
+If left unspecified, it is enabled only if any
+{property_prefix}timefold.solver.{solver_name_prefix}termination.diminished-returns properties are defined.
+
+{property_prefix}timefold.solver.{solver_name_prefix}termination.diminished-returns.sliding-window-duration::
+Specify the best score from how long ago should the current best score be compared to.
+For `30s`, the current best score is compared against the best score from 30 seconds ago to calculate the improvement.
+`5m` is 5 minutes.
+`2h` is 2 hours.
+`1d` is 1 day.
+The https://www.digi.com/resources/documentation/digidocs/90001488-13/reference/r_iso_8601_duration_format.htm[ISO8601 format]
+is also supported, e.g., `PT30S` is 30 seconds.
+`PT5M` is 5 minutes.
+`PT2H` is 2 hours.
+`P1D` is 1 day.
++
+Default to `30s`.
+
+{property_prefix}timefold.solver.{solver_name_prefix}termination.diminished-returns.minimum-improvement-ratio::
+Specify the minimum ratio between the current improvement and the initial improvement.
+Must be positive.
++
+For example, if the {property_prefix}timefold.solver.{solver_name_prefix}termination.diminished-returns.sliding-window-duration is "30s", the {property_prefix}timefold.solver.{solver_name_prefix}termination.diminished-returns.minimum-improvement-ratio is 0.25, and the score improves by 100soft during the first 30 seconds of local search, then the local search phase will terminate when the difference between the current best score and the best score from 30 seconds ago is less than 25soft (= 0.25 100soft).
++
+Defaults to 0.0001.
+
 ifeval::["{solver_name_prefix}" == ""]
 {property_prefix}timefold.benchmark.solver-benchmark-config-xml::
 A classpath resource to read the benchmark configuration XML.

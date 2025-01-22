@@ -17,7 +17,7 @@ public interface DiminishedReturnsRuntimeConfig {
     Optional<Boolean> enabled();
 
     /**
-     * Specifies the best score from how long ago should the current best
+     * Specify the best score from how long ago should the current best
      * score be compared to.
      * For "30s", the current best score is compared against
      * the best score from 30 seconds ago to calculate the improvement.
@@ -29,7 +29,7 @@ public interface DiminishedReturnsRuntimeConfig {
     Optional<Duration> slidingWindowDuration();
 
     /**
-     * Specifies the minimum ratio between the current improvement and the
+     * Specify the minimum ratio between the current improvement and the
      * initial improvement. Must be positive.
      * <br/>
      * For example, if the {@link #slidingWindowDuration} is "30s",
