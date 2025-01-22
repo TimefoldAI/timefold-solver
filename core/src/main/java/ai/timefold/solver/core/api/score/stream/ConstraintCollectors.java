@@ -45,10 +45,10 @@ import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.collector.bi.InnerBiConstraintCollectors;
-import ai.timefold.solver.core.impl.score.stream.collector.quad.InnerQuadConstraintCollectors;
-import ai.timefold.solver.core.impl.score.stream.collector.tri.InnerTriConstraintCollectors;
-import ai.timefold.solver.core.impl.score.stream.collector.uni.InnerUniConstraintCollectors;
+import ai.timefold.solver.core.impl.bavet.bi.collector.InnerBiConstraintCollectors;
+import ai.timefold.solver.core.impl.bavet.quad.collector.InnerQuadConstraintCollectors;
+import ai.timefold.solver.core.impl.bavet.tri.collector.InnerTriConstraintCollectors;
+import ai.timefold.solver.core.impl.bavet.uni.collector.InnerUniConstraintCollectors;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 import org.jspecify.annotations.NonNull;

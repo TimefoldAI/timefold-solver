@@ -50,6 +50,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.bavet.tri.joiner.TriJoinerComber;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.quad.BavetAbstractQuadConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.quad.BavetBiConcatQuadConstraintStream;
@@ -61,7 +62,6 @@ import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
 import ai.timefold.solver.core.impl.score.stream.common.bi.BiConstraintBuilderImpl;
 import ai.timefold.solver.core.impl.score.stream.common.bi.InnerBiConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.common.tri.TriJoinerComber;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 import org.jspecify.annotations.NonNull;

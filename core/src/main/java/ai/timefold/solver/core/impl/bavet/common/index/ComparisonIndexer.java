@@ -8,7 +8,7 @@ import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.impl.score.stream.JoinerType;
+import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
 import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
 final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>

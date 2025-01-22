@@ -12,10 +12,10 @@ import ai.timefold.solver.core.impl.bavet.common.bridge.BavetForeBridgeUniConstr
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.penta.joiner.DefaultPentaJoiner;
 import ai.timefold.solver.core.impl.bavet.quad.IndexedIfExistsQuadNode;
 import ai.timefold.solver.core.impl.bavet.quad.UnindexedIfExistsQuadNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
-import ai.timefold.solver.core.impl.score.stream.common.penta.DefaultPentaJoiner;
 
 final class BavetIfExistsQuadConstraintStream<Solution_, A, B, C, D, E>
         extends BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>

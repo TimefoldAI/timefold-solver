@@ -7,6 +7,7 @@ import java.util.function.BiPredicate;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.bavet.bi.IndexedJoinBiNode;
 import ai.timefold.solver.core.impl.bavet.bi.UnindexedJoinBiNode;
+import ai.timefold.solver.core.impl.bavet.bi.joiner.DefaultBiJoiner;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.bavet.common.BavetJoinConstraintStream;
 import ai.timefold.solver.core.impl.bavet.common.NodeBuildHelper;
@@ -15,7 +16,6 @@ import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
-import ai.timefold.solver.core.impl.score.stream.common.bi.DefaultBiJoiner;
 
 public final class BavetJoinBiConstraintStream<Solution_, A, B> extends BavetAbstractBiConstraintStream<Solution_, A, B>
         implements BavetJoinConstraintStream<Solution_> {

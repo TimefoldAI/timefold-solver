@@ -15,8 +15,8 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.tri.IndexedJoinTriNode;
 import ai.timefold.solver.core.impl.bavet.tri.UnindexedJoinTriNode;
+import ai.timefold.solver.core.impl.bavet.tri.joiner.DefaultTriJoiner;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
-import ai.timefold.solver.core.impl.score.stream.common.tri.DefaultTriJoiner;
 
 public final class BavetJoinTriConstraintStream<Solution_, A, B, C>
         extends BavetAbstractTriConstraintStream<Solution_, A, B, C>

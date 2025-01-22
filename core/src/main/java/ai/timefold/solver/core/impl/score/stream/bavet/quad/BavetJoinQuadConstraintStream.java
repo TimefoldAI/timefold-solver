@@ -15,8 +15,8 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.quad.IndexedJoinQuadNode;
 import ai.timefold.solver.core.impl.bavet.quad.UnindexedJoinQuadNode;
+import ai.timefold.solver.core.impl.bavet.quad.joiner.DefaultQuadJoiner;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
-import ai.timefold.solver.core.impl.score.stream.common.quad.DefaultQuadJoiner;
 
 public final class BavetJoinQuadConstraintStream<Solution_, A, B, C, D>
         extends BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
