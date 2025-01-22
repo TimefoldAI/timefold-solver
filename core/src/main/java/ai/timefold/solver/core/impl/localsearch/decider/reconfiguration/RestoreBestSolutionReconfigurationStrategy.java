@@ -31,6 +31,8 @@ public final class RestoreBestSolutionReconfigurationStrategy<Solution_> impleme
         // 1 - The move selector will reset all cached lists using old solution entity references
         // 2 - The acceptor will restart its search from the updated working solution (last best solution)
         decider.phaseStarted((LocalSearchPhaseScope<Solution_>) stepScope.getPhaseScope());
+        // Reset it as the best solution is already restored
+        stepScope.getPhaseScope().resetReconfiguration();
         return (Score_) solverScope.getBestScore();
     }
 
