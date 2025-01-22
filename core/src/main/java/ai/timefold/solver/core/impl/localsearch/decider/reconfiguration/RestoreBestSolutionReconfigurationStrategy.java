@@ -3,7 +3,8 @@ package ai.timefold.solver.core.impl.localsearch.decider.reconfiguration;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider;
+import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
@@ -15,10 +16,12 @@ import org.slf4j.LoggerFactory;
 public final class RestoreBestSolutionReconfigurationStrategy<Solution_> implements ReconfigurationStrategy<Solution_> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private LocalSearchDecider<Solution_> decider;
+    private final MoveSelector<Solution_> moveSelector;
+    private final Acceptor<Solution_> acceptor;
 
-    public void setDecider(LocalSearchDecider<Solution_> decider) {
-        this.decider = decider;
+    public RestoreBestSolutionReconfigurationStrategy(MoveSelector<Solution_> moveSelector, Acceptor<Solution_> acceptor) {
+        this.moveSelector = moveSelector;
+        this.acceptor = acceptor;
     }
 
     @Override
@@ -29,8 +32,9 @@ public final class RestoreBestSolutionReconfigurationStrategy<Solution_> impleme
         solverScope.setWorkingSolutionFromBestSolution();
         // Changing the working solution requires reinitializing the move selector and acceptor
         // 1 - The move selector will reset all cached lists using old solution entity references
+        moveSelector.phaseStarted(stepScope.getPhaseScope());
         // 2 - The acceptor will restart its search from the updated working solution (last best solution)
-        decider.phaseStarted((LocalSearchPhaseScope<Solution_>) stepScope.getPhaseScope());
+        acceptor.phaseStarted((LocalSearchPhaseScope<Solution_>) stepScope.getPhaseScope());
         // Reset it as the best solution is already restored
         stepScope.getPhaseScope().resetReconfiguration();
         return (Score_) solverScope.getBestScore();
@@ -48,7 +52,8 @@ public final class RestoreBestSolutionReconfigurationStrategy<Solution_> impleme
 
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        Objects.requireNonNull(decider);
+        Objects.requireNonNull(moveSelector);
+        Objects.requireNonNull(acceptor);
     }
 
     @Override

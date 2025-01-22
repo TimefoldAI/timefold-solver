@@ -5,6 +5,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.Restart
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 /**
  * Base class designed to analyze whether the solving process needs to be restarted.
@@ -22,6 +23,12 @@ public abstract class ReconfigurableAcceptor<Solution_> extends AbstractAcceptor
 
     protected boolean isEnabled() {
         return enabled;
+    }
+
+    @Override
+    public void solvingStarted(SolverScope<Solution_> solverScope) {
+        super.solvingStarted(solverScope);
+        restartStrategy.solvingStarted(solverScope);
     }
 
     @Override
