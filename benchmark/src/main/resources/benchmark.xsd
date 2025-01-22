@@ -2414,69 +2414,9 @@
           <xs:element maxOccurs="unbounded" minOccurs="0" name="acceptorType" type="tns:acceptorType"/>
                               
           
-          <xs:choice minOccurs="0">
-
-
-            <xs:element name="cartesianProductMoveSelector" type="tns:cartesianProductMoveSelectorConfig"/>
-
-
-            <xs:element name="changeMoveSelector" type="tns:changeMoveSelectorConfig"/>
-
-
-            <xs:element name="listChangeMoveSelector" type="tns:listChangeMoveSelectorConfig"/>
-
-
-            <xs:element name="listSwapMoveSelector" type="tns:listSwapMoveSelectorConfig"/>
-
-
-            <xs:element name="moveIteratorFactory" type="tns:moveIteratorFactoryConfig"/>
-
-
-            <xs:element name="moveListFactory" type="tns:moveListFactoryConfig"/>
-
-
-            <xs:element name="pillarChangeMoveSelector" type="tns:pillarChangeMoveSelectorConfig"/>
-
-
-            <xs:element name="pillarSwapMoveSelector" type="tns:pillarSwapMoveSelectorConfig"/>
-
-
-            <xs:element name="ruinRecreateMoveSelector" type="tns:ruinRecreateMoveSelectorConfig"/>
-
-
-            <xs:element name="listRuinRecreateMoveSelector" type="tns:listRuinRecreateMoveSelectorConfig"/>
-
-
-            <xs:element name="subChainChangeMoveSelector" type="tns:subChainChangeMoveSelectorConfig"/>
-
-
-            <xs:element name="subChainSwapMoveSelector" type="tns:subChainSwapMoveSelectorConfig"/>
-
-
-            <xs:element name="subListChangeMoveSelector" type="tns:subListChangeMoveSelectorConfig"/>
-
-
-            <xs:element name="subListSwapMoveSelector" type="tns:subListSwapMoveSelectorConfig"/>
-
-
-            <xs:element name="swapMoveSelector" type="tns:swapMoveSelectorConfig"/>
-
-
-            <xs:element name="tailChainSwapMoveSelector" type="tns:tailChainSwapMoveSelectorConfig"/>
-
-
-            <xs:element name="unionMoveSelector" type="tns:unionMoveSelectorConfig"/>
-
-
-          </xs:choice>
-
-
-          <xs:element minOccurs="0" name="maxPerturbationCount" type="xs:int"/>
+          <xs:element minOccurs="0" name="enableReconfiguration" type="xs:boolean"/>
                               
           
-          <xs:element minOccurs="0" name="enableReconfiguration" type="xs:boolean"/>
-
-
           <xs:element minOccurs="0" name="entityTabuSize" type="xs:int"/>
                               
           
@@ -2664,13 +2604,13 @@
                   
       
       <xs:enumeration value="DIVERSIFIED_LATE_ACCEPTANCE"/>
-
-
-      <xs:enumeration value="ACCEPTOR_RECONFIGURATION"/>
-
-
+                  
+      
+      <xs:enumeration value="RECONFIGURATION"/>
+                  
+      
       <xs:enumeration value="PLANNING_SOLUTION_DIFF"/>
-
+                
     
     </xs:restriction>
           

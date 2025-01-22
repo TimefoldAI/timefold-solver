@@ -1,11 +1,11 @@
-package ai.timefold.solver.core.impl.localsearch.decider.perturbation;
+package ai.timefold.solver.core.impl.localsearch.decider.reconfiguration;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
-public class NoPerturbationStrategy<Solution_> implements PerturbationStrategy<Solution_> {
+public final class NoOpReconfigurationStrategy<Solution_> implements ReconfigurationStrategy<Solution_> {
     @Override
     public <Score_ extends Score<Score_>> Score_ apply(AbstractStepScope<Solution_> stepScope) {
         throw new IllegalStateException("Impossible state");

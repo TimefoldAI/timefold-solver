@@ -1,9 +1,13 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptorTest;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.NoOpRestartStrategy;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.RestartStrategy;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -14,7 +18,7 @@ class DiversifiedLateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
     @Test
     void acceptanceCriterion() {
-        var acceptor = new DiversifiedLateAcceptanceAcceptor<>(false);
+        var acceptor = new DiversifiedLateAcceptanceAcceptor<>(false, new NoOpRestartStrategy<>());
         acceptor.setLateAcceptanceSize(3);
 
         var solverScope = new SolverScope<>();
@@ -51,7 +55,7 @@ class DiversifiedLateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
     @Test
     void replacementCriterion() {
-        var acceptor = new DiversifiedLateAcceptanceAcceptor<>(false);
+        var acceptor = new DiversifiedLateAcceptanceAcceptor<>(false, new NoOpRestartStrategy<>());
         acceptor.setLateAcceptanceSize(3);
 
         var solverScope = new SolverScope<>();
@@ -141,5 +145,38 @@ class DiversifiedLateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         stepScope0.getPhaseScope().getLastCompletedStepScope().setScore(SimpleScore.of(-2000));
         acceptor.isAccepted(moveScope0);
         assertThat(acceptor.previousScores[0]).isEqualTo(SimpleScore.of(-2001));
+    }
+
+    @Test
+    void triggerReconfiguration() {
+        var restartStrategy = mock(RestartStrategy.class);
+        when(restartStrategy.isTriggered(any())).thenReturn(true);
+        var acceptor = new DiversifiedLateAcceptanceAcceptor<>(true, restartStrategy);
+        acceptor.setLateAcceptanceSize(3);
+        var solverScope = new SolverScope<>();
+        var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
+        var stepScope0 = new LocalSearchStepScope<>(phaseScope);
+        var moveScope0 = buildMoveScope(stepScope0, -2000);
+        assertThat(acceptor.isAccepted(moveScope0)).isTrue();
+        verify(restartStrategy, times(1)).isTriggered(any());
+        assertThat(phaseScope.isReconfigurationTriggered()).isTrue();
+    }
+
+    @Test
+    void resetReconfiguration() {
+        var restartStrategy = mock(RestartStrategy.class);
+        var acceptor = new DiversifiedLateAcceptanceAcceptor<>(true, restartStrategy);
+        acceptor.setLateAcceptanceSize(3);
+
+        var solverScope = new SolverScope<>();
+        solverScope.setBestScore(SimpleScore.of(-1000));
+        var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
+        acceptor.phaseStarted(phaseScope);
+        var stepScope0 = new LocalSearchStepScope<>(phaseScope);
+        stepScope0.setScore(SimpleScore.of(-999));
+        var moveScope0 = buildMoveScope(stepScope0, -999);
+        stepScope0.getPhaseScope().setLastCompletedStepScope(stepScope0);
+        assertThat(acceptor.isAccepted(moveScope0)).isTrue();
+        verify(restartStrategy, times(1)).reset();
     }
 }

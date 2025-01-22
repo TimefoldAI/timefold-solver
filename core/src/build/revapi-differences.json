@@ -149,8 +149,8 @@
           "annotationType": "jakarta.xml.bind.annotation.XmlType",
           "attribute": "propOrder",
           "oldValue": "{\"acceptorTypeList\", \"entityTabuSize\", \"entityTabuRatio\", \"fadingEntityTabuSize\", \"fadingEntityTabuRatio\", \"valueTabuSize\", \"valueTabuRatio\", \"fadingValueTabuSize\", \"fadingValueTabuRatio\", \"moveTabuSize\", \"fadingMoveTabuSize\", \"undoMoveTabuSize\", \"fadingUndoMoveTabuSize\", \"simulatedAnnealingStartingTemperature\", \"lateAcceptanceSize\", \"greatDelugeWaterLevelIncrementScore\", \"greatDelugeWaterLevelIncrementRatio\", \"stepCountingHillClimbingSize\", \"stepCountingHillClimbingType\"}",
-          "newValue": "{\"acceptorTypeList\", \"perturbationSelectorConfig\", \"maxPerturbationCount\", \"entityTabuSize\", \"entityTabuRatio\", \"fadingEntityTabuSize\", \"fadingEntityTabuRatio\", \"valueTabuSize\", \"valueTabuRatio\", \"fadingValueTabuSize\", \"fadingValueTabuRatio\", \"moveTabuSize\", \"fadingMoveTabuSize\", \"undoMoveTabuSize\", \"fadingUndoMoveTabuSize\", \"simulatedAnnealingStartingTemperature\", \"lateAcceptanceSize\", \"greatDelugeWaterLevelIncrementScore\", \"greatDelugeWaterLevelIncrementRatio\", \"stepCountingHillClimbingSize\", \"stepCountingHillClimbingType\"}",
-          "justification": "Add perturbation config"
+          "newValue": "{\"acceptorTypeList\", \"enableReconfiguration\", \"entityTabuSize\", \"entityTabuRatio\", \"fadingEntityTabuSize\", \"fadingEntityTabuRatio\", \"valueTabuSize\", \"valueTabuRatio\", \"fadingValueTabuSize\", \"fadingValueTabuRatio\", \"moveTabuSize\", \"fadingMoveTabuSize\", \"undoMoveTabuSize\", \"fadingUndoMoveTabuSize\", \"simulatedAnnealingStartingTemperature\", \"lateAcceptanceSize\", \"greatDelugeWaterLevelIncrementScore\", \"greatDelugeWaterLevelIncrementRatio\", \"stepCountingHillClimbingSize\", \"stepCountingHillClimbingType\"}",
+          "justification": "Add the acceptor reconfiguration setting"
         }
       ]
     }

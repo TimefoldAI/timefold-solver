@@ -1,10 +1,11 @@
-package ai.timefold.solver.core.impl.localsearch.decider.perturbation;
+package ai.timefold.solver.core.impl.localsearch.decider.reconfiguration;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 
-public interface PerturbationStrategy<Solution_> extends PhaseLifecycleListener<Solution_> {
+public sealed interface ReconfigurationStrategy<Solution_> extends PhaseLifecycleListener<Solution_>
+        permits NoOpReconfigurationStrategy, RestoreBestSolutionReconfigurationStrategy {
 
     <Score_ extends Score<Score_>> Score_ apply(AbstractStepScope<Solution_> stepScope);
 

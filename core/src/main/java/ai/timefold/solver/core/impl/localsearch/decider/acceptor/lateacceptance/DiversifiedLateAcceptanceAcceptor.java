@@ -3,12 +3,12 @@ package ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance
 import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.ReconfigurableAbstractAcceptor;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.reconfiguration.GeometricUnimprovedSolutionReconfigurationStrategy;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.ReconfigurableAcceptor;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.RestartStrategy;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 
-public class DiversifiedLateAcceptanceAcceptor<Solution_> extends ReconfigurableAbstractAcceptor<Solution_> {
+public class DiversifiedLateAcceptanceAcceptor<Solution_> extends ReconfigurableAcceptor<Solution_> {
 
     // The worst score in the late elements list
     protected Score<?> lateWorse;
@@ -20,8 +20,8 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends Reconfigurable
     protected Score<?>[] previousScores;
     protected int lateScoreIndex = -1;
 
-    public DiversifiedLateAcceptanceAcceptor(boolean enableReconfiguration) {
-        super(new GeometricUnimprovedSolutionReconfigurationStrategy<>(), enableReconfiguration);
+    public DiversifiedLateAcceptanceAcceptor(boolean enableReconfiguration, RestartStrategy<Solution_> restartStrategy) {
+        super(enableReconfiguration, restartStrategy);
     }
 
     public void setLateAcceptanceSize(int lateAcceptanceSize) {
