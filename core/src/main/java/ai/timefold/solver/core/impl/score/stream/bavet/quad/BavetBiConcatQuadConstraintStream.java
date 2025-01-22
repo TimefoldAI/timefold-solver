@@ -5,15 +5,17 @@ import java.util.Set;
 import java.util.function.BiFunction;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.bavet.common.AbstractConcatNode;
+import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
+import ai.timefold.solver.core.impl.bavet.common.BavetConcatConstraintStream;
+import ai.timefold.solver.core.impl.bavet.common.NodeBuildHelper;
+import ai.timefold.solver.core.impl.bavet.common.bridge.BavetForeBridgeBiConstraintStream;
+import ai.timefold.solver.core.impl.bavet.common.bridge.BavetForeBridgeQuadConstraintStream;
+import ai.timefold.solver.core.impl.bavet.common.tuple.QuadTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.quad.ConcatBiQuadNode;
+import ai.timefold.solver.core.impl.bavet.quad.ConcatQuadBiNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractConcatNode;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetAbstractConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetConcatConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetForeBridgeBiConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetForeBridgeQuadConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.QuadTuple;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
 
 public final class BavetBiConcatQuadConstraintStream<Solution_, A, B, C, D>
         extends BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>

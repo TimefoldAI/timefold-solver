@@ -5,14 +5,16 @@ import java.util.Set;
 
 import ai.timefold.solver.core.api.function.PentaPredicate;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
+import ai.timefold.solver.core.impl.bavet.common.BavetIfExistsConstraintStream;
+import ai.timefold.solver.core.impl.bavet.common.NodeBuildHelper;
+import ai.timefold.solver.core.impl.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
+import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
+import ai.timefold.solver.core.impl.bavet.common.tuple.QuadTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.quad.IndexedIfExistsQuadNode;
+import ai.timefold.solver.core.impl.bavet.quad.UnindexedIfExistsQuadNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetAbstractConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetIfExistsConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.index.IndexerFactory;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.QuadTuple;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.common.penta.DefaultPentaJoiner;
 
 final class BavetIfExistsQuadConstraintStream<Solution_, A, B, C, D, E>

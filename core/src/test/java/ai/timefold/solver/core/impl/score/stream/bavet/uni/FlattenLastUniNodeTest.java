@@ -12,10 +12,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import ai.timefold.solver.core.impl.score.stream.bavet.common.AbstractFlattenLastNode;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.Propagator;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.TupleLifecycle;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.bavet.common.AbstractFlattenLastNode;
+import ai.timefold.solver.core.impl.bavet.common.Propagator;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.bavet.uni.FlattenLastUniNode;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

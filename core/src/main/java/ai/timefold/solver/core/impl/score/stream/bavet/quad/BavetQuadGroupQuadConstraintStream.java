@@ -5,11 +5,11 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
+import ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor;
+import ai.timefold.solver.core.impl.bavet.common.NodeBuildHelper;
+import ai.timefold.solver.core.impl.bavet.common.bridge.BavetAftBridgeQuadConstraintStream;
+import ai.timefold.solver.core.impl.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.GroupNodeConstructor;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.NodeBuildHelper;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetAftBridgeQuadConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.tuple.QuadTuple;
 
 final class BavetQuadGroupQuadConstraintStream<Solution_, A, B, C, D, NewA, NewB, NewC, NewD>
         extends BavetAbstractQuadConstraintStream<Solution_, A, B, C, D> {

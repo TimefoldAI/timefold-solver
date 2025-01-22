@@ -6,10 +6,10 @@ import java.util.Map;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
+import ai.timefold.solver.core.impl.bavet.common.PropagationQueue;
+import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.PropagationQueue;
-import ai.timefold.solver.core.impl.score.stream.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 
 /**

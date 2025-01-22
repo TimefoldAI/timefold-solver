@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import ai.timefold.solver.core.impl.score.stream.bavet.common.Propagator;
-import ai.timefold.solver.core.impl.score.stream.bavet.uni.AbstractForEachUniNode;
+import ai.timefold.solver.core.impl.bavet.common.Propagator;
+import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
 
 /**
  * Represents Bavet's network of nodes, specific to a particular session.
