@@ -61,8 +61,8 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
     private LocalSearchDecider<Solution_> buildDecider(HeuristicConfigPolicy<Solution_> configPolicy,
             PhaseTermination<Solution_> termination) {
         var moveSelector = buildMoveSelector(configPolicy);
-        var reconfigurationStrategy = buildReconfigurationStrategy(configPolicy);
         var acceptor = buildAcceptor(configPolicy);
+        var reconfigurationStrategy = buildReconfigurationStrategy(configPolicy, moveSelector, acceptor);
         var forager = buildForager(configPolicy);
         if (moveSelector.isNeverEnding() && !forager.supportsNeverEndingMoveSelector()) {
             throw new IllegalStateException("The moveSelector (" + moveSelector
@@ -189,21 +189,18 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         return moveSelector;
     }
 
-    private PerturbationStrategy<Solution_> buildPerturbationStrategy(HeuristicConfigPolicy<Solution_> configPolicy) {
+    private ReconfigurationStrategy<Solution_> buildReconfigurationStrategy(HeuristicConfigPolicy<Solution_> configPolicy,
+            MoveSelector<Solution_> moveSelector, Acceptor<Solution_> acceptor) {
         var acceptorConfig = phaseConfig.getAcceptorConfig();
         if (acceptorConfig != null) {
-            var reconfigurationSelectorConfig = acceptorConfig.getPerturbationSelectorConfig();
-            if (reconfigurationSelectorConfig != null) {
-                configPolicy.ensurePreviewFeature(PreviewFeature.ACCEPTOR_RECONFIGURATION);
-                AbstractMoveSelectorFactory<Solution_, ?> moveSelectorFactory =
-                        MoveSelectorFactory.create(reconfigurationSelectorConfig);
-                var moveSelector = moveSelectorFactory.buildMoveSelector(configPolicy, SelectionCacheType.JUST_IN_TIME,
-                        SelectionOrder.RANDOM, true);
-                var maxLevels = Objects.requireNonNullElse(acceptorConfig.getMaxPerturbationCount(), 3);
-                return new MoveSelectorPerturbationStrategy<>(moveSelector, maxLevels);
+            var enableReconfiguration =
+                    acceptorConfig.getEnableReconfiguration() != null && acceptorConfig.getEnableReconfiguration();
+            if (enableReconfiguration) {
+                configPolicy.ensurePreviewFeature(PreviewFeature.RECONFIGURATION);
+                return new RestoreBestSolutionReconfigurationStrategy<>(moveSelector, acceptor);
             }
         }
-        return new NoPerturbationStrategy<>();
+        return new NoOpReconfigurationStrategy<>();
     }
 
     private UnionMoveSelectorConfig determineDefaultMoveSelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy) {

@@ -42,10 +42,10 @@ public class UnimprovedTimeGeometricRestartStrategy<Solution_> implements Restar
     @Override
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
         currentBestScore = phaseScope.getBestScore();
-        geometricGrowFactor = 1;
-        nextRestart = (long) (1_000 * SCALING_FACTOR);
+        if (lastImprovementMillis == 0) {
+            lastImprovementMillis = clock.millis();
+        }
         restartTriggered = false;
-        lastImprovementMillis = clock.millis();
     }
 
     @Override
@@ -69,7 +69,9 @@ public class UnimprovedTimeGeometricRestartStrategy<Solution_> implements Restar
 
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
-        // Do nothing
+        lastImprovementMillis = 0;
+        geometricGrowFactor = 1;
+        nextRestart = (long) (1_000 * SCALING_FACTOR);
     }
 
     @Override
