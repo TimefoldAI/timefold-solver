@@ -32,9 +32,9 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AcceptorFactory;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForagerFactory;
-import ai.timefold.solver.core.impl.localsearch.decider.perturbation.MoveSelectorPerturbationStrategy;
-import ai.timefold.solver.core.impl.localsearch.decider.perturbation.NoPerturbationStrategy;
-import ai.timefold.solver.core.impl.localsearch.decider.perturbation.PerturbationStrategy;
+import ai.timefold.solver.core.impl.localsearch.decider.reconfiguration.NoOpReconfigurationStrategy;
+import ai.timefold.solver.core.impl.localsearch.decider.reconfiguration.ReconfigurationStrategy;
+import ai.timefold.solver.core.impl.localsearch.decider.reconfiguration.RestoreBestSolutionReconfigurationStrategy;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
@@ -61,7 +61,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
     private LocalSearchDecider<Solution_> buildDecider(HeuristicConfigPolicy<Solution_> configPolicy,
             PhaseTermination<Solution_> termination) {
         var moveSelector = buildMoveSelector(configPolicy);
-        var reconfigurationStrategy = buildPerturbationStrategy(configPolicy);
+        var reconfigurationStrategy = buildReconfigurationStrategy(configPolicy);
         var acceptor = buildAcceptor(configPolicy);
         var forager = buildForager(configPolicy);
         if (moveSelector.isNeverEnding() && !forager.supportsNeverEndingMoveSelector()) {

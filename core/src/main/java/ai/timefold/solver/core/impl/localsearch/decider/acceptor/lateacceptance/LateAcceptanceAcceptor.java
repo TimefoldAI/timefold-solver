@@ -3,13 +3,13 @@ package ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance
 import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.ReconfigurableAbstractAcceptor;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.reconfiguration.GeometricUnimprovedSolutionReconfigurationStrategy;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.ReconfigurableAcceptor;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.RestartStrategy;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 
-public class LateAcceptanceAcceptor<Solution_> extends ReconfigurableAbstractAcceptor<Solution_> {
+public class LateAcceptanceAcceptor<Solution_> extends ReconfigurableAcceptor<Solution_> {
 
     protected int lateAcceptanceSize = -1;
     protected boolean hillClimbingEnabled = true;
@@ -17,8 +17,8 @@ public class LateAcceptanceAcceptor<Solution_> extends ReconfigurableAbstractAcc
     protected Score<?>[] previousScores;
     protected int lateScoreIndex = -1;
 
-    public LateAcceptanceAcceptor(boolean enableReconfiguration) {
-        super(new GeometricUnimprovedSolutionReconfigurationStrategy<>(), enableReconfiguration);
+    public LateAcceptanceAcceptor(boolean enableReconfiguration, RestartStrategy<Solution_> restartStrategy) {
+        super(enableReconfiguration, restartStrategy);
     }
 
     public void setLateAcceptanceSize(int lateAcceptanceSize) {

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.localsearch.decider.acceptor.reconfiguration;
+package ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart;
 
 import java.time.Clock;
 
@@ -11,25 +11,40 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GeometricUnimprovedSolutionReconfigurationStrategy<Solution_> implements ReconfigurationStrategy<Solution_> {
-    private static final double GEOMETRIC_FACTOR = 1.3;
+/**
+ * Restart strategy which exponentially increases the restart times.
+ * The first restart occurs after one second without improvement.
+ * Following that, the unimproved timeout increases exponentially: 1s, 1s, 2s, 3s, 4s, 5s, 8s...
+ * <p>
+ * The strategy is based on the work: Search in a Small World by Toby Walsh
+ */
+public class UnimprovedTimeGeometricRestartStrategy<Solution_> implements RestartStrategy<Solution_> {
+    private static final double GEOMETRIC_FACTOR = 1.4; // Value extracted from the cited paper
     private static final double SCALING_FACTOR = 1.0;
 
-    private final Logger logger = LoggerFactory.getLogger(GeometricUnimprovedSolutionReconfigurationStrategy.class);
-    private final Clock clock = Clock.systemUTC();
+    private final Logger logger = LoggerFactory.getLogger(UnimprovedTimeGeometricRestartStrategy.class);
+    private final Clock clock;
 
-    private long lastImprovementMillis;
+    protected long lastImprovementMillis;
     private Score<?> currentBestScore;
-    private boolean reconfigurationTriggered;
+    protected boolean restartTriggered;
     private double geometricGrowFactor;
-    private long nextReconfiguration;
+    protected long nextRestart;
+
+    public UnimprovedTimeGeometricRestartStrategy() {
+        this(Clock.systemUTC());
+    }
+
+    protected UnimprovedTimeGeometricRestartStrategy(Clock clock) {
+        this.clock = clock;
+    }
 
     @Override
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
         currentBestScore = phaseScope.getBestScore();
         geometricGrowFactor = 1;
-        nextReconfiguration = (long) (1_000 * SCALING_FACTOR);
-        reconfigurationTriggered = false;
+        nextRestart = (long) (1_000 * SCALING_FACTOR);
+        restartTriggered = false;
         lastImprovementMillis = clock.millis();
     }
 
@@ -63,22 +78,22 @@ public class GeometricUnimprovedSolutionReconfigurationStrategy<Solution_> imple
     }
 
     @Override
-    public boolean needReconfiguration(LocalSearchMoveScope<Solution_> moveScope) {
-        if (!reconfigurationTriggered && lastImprovementMillis > 0
-                && clock.millis() - lastImprovementMillis >= nextReconfiguration) {
-            logger.debug("Reconfiguration triggered with geometric factor {} and scaling factor of {}", geometricGrowFactor,
+    public boolean isTriggered(LocalSearchMoveScope<Solution_> moveScope) {
+        if (!restartTriggered && lastImprovementMillis > 0
+                && clock.millis() - lastImprovementMillis >= nextRestart) {
+            logger.debug("Restart triggered with geometric factor {} and scaling factor of {}", geometricGrowFactor,
                     SCALING_FACTOR);
-            nextReconfiguration = (long) Math.ceil(SCALING_FACTOR * geometricGrowFactor * 1_000);
+            nextRestart = (long) Math.ceil(SCALING_FACTOR * geometricGrowFactor * 1_000);
             geometricGrowFactor = Math.ceil(geometricGrowFactor * GEOMETRIC_FACTOR);
             lastImprovementMillis = clock.millis();
-            reconfigurationTriggered = true;
+            restartTriggered = true;
         }
-        return reconfigurationTriggered;
+        return restartTriggered;
     }
 
     @Override
     public void reset() {
-        reconfigurationTriggered = false;
+        restartTriggered = false;
         lastImprovementMillis = clock.millis();
     }
 }

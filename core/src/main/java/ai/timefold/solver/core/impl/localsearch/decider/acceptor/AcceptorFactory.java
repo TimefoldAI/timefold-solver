@@ -15,6 +15,9 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.greatdeluge.Gre
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.hillclimbing.HillClimbingAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance.DiversifiedLateAcceptanceAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance.LateAcceptanceAcceptor;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.NoOpRestartStrategy;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.RestartStrategy;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.UnimprovedTimeGeometricRestartStrategy;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.simulatedannealing.SimulatedAnnealingAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stepcountinghillclimbing.StepCountingHillClimbingAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.EntityTabuAcceptor;
@@ -46,7 +49,7 @@ public class AcceptorFactory<Solution_> {
                 buildValueTabuAcceptor(configPolicy),
                 buildMoveTabuAcceptor(configPolicy),
                 buildSimulatedAnnealingAcceptor(configPolicy),
-                buildLateAcceptanceAcceptor(configPolicy),
+                buildLateAcceptanceAcceptor(),
                 buildDiversifiedLateAcceptanceAcceptor(configPolicy),
                 buildGreatDelugeAcceptor(configPolicy))
                 .filter(Optional::isPresent)
@@ -216,15 +219,17 @@ public class AcceptorFactory<Solution_> {
     }
 
     private Optional<LateAcceptanceAcceptor<Solution_>>
-            buildLateAcceptanceAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
+            buildLateAcceptanceAcceptor() {
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.LATE_ACCEPTANCE)
                 || (!acceptorTypeListsContainsAcceptorType(AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE)
                         && acceptorConfig.getLateAcceptanceSize() != null)) {
-            var enableReconfiguration = acceptorConfig.getPerturbationSelectorConfig() != null;
+            RestartStrategy<Solution_> restartStrategy = new NoOpRestartStrategy<>();
+            var enableReconfiguration =
+                    acceptorConfig.getEnableReconfiguration() != null && acceptorConfig.getEnableReconfiguration();
             if (enableReconfiguration) {
-                configPolicy.ensurePreviewFeature(PreviewFeature.ACCEPTOR_RECONFIGURATION);
+                restartStrategy = new UnimprovedTimeGeometricRestartStrategy<>();
             }
-            var acceptor = new LateAcceptanceAcceptor<Solution_>(enableReconfiguration);
+            var acceptor = new LateAcceptanceAcceptor<>(enableReconfiguration, restartStrategy);
             acceptor.setLateAcceptanceSize(Objects.requireNonNullElse(acceptorConfig.getLateAcceptanceSize(), 400));
             return Optional.of(acceptor);
         }
@@ -235,11 +240,13 @@ public class AcceptorFactory<Solution_> {
             buildDiversifiedLateAcceptanceAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE)) {
             configPolicy.ensurePreviewFeature(PreviewFeature.DIVERSIFIED_LATE_ACCEPTANCE);
-            var enableReconfiguration = acceptorConfig.getPerturbationSelectorConfig() != null;
+            RestartStrategy<Solution_> restartStrategy = new NoOpRestartStrategy<>();
+            var enableReconfiguration =
+                    acceptorConfig.getEnableReconfiguration() != null && acceptorConfig.getEnableReconfiguration();
             if (enableReconfiguration) {
-                configPolicy.ensurePreviewFeature(PreviewFeature.ACCEPTOR_RECONFIGURATION);
+                restartStrategy = new UnimprovedTimeGeometricRestartStrategy<>();
             }
-            var acceptor = new DiversifiedLateAcceptanceAcceptor<Solution_>(enableReconfiguration);
+            var acceptor = new DiversifiedLateAcceptanceAcceptor<>(enableReconfiguration, restartStrategy);
             acceptor.setLateAcceptanceSize(Objects.requireNonNullElse(acceptorConfig.getLateAcceptanceSize(), 5));
             return Optional.of(acceptor);
         }
