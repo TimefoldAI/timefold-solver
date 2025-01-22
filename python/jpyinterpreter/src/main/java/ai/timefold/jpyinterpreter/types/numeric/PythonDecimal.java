@@ -119,6 +119,19 @@ public class PythonDecimal extends AbstractPythonLikeObject implements PythonNum
         return value.toPlainString();
     }
 
+    // Required since to_python_score expects a BigDecimal instance
+    // (which comes from the Java *BigDecimalScore)
+    // but the translator will automatically convert all BigDecimals
+    // into PythonDecimal instances.
+    // In particular, it expects a toPlainString method so it can
+    // create a Python decimal from a BigDecimal.
+    // The function can be called either untranslated (normally)
+    // or translated (when used in a justification function),
+    // hence why we define this method.
+    public PythonString $method$toPlainString() {
+        return PythonString.valueOf(value.toPlainString());
+    }
+
     public boolean equals(Object o) {
         if (o instanceof PythonNumber number) {
             return compareTo(number) == 0;
