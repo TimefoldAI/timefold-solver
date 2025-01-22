@@ -76,22 +76,22 @@ public class LocalSearchDecider<Solution_> {
     // ************************************************************************
 
     public void solvingStarted(SolverScope<Solution_> solverScope) {
-        moveSelector.solvingStarted(solverScope);
         perturbationStrategy.solvingStarted(solverScope);
+        moveSelector.solvingStarted(solverScope);
         acceptor.solvingStarted(solverScope);
         forager.solvingStarted(solverScope);
     }
 
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
-        moveSelector.phaseStarted(phaseScope);
         perturbationStrategy.phaseStarted(phaseScope);
+        moveSelector.phaseStarted(phaseScope);
         acceptor.phaseStarted(phaseScope);
         forager.phaseStarted(phaseScope);
     }
 
     public void stepStarted(LocalSearchStepScope<Solution_> stepScope) {
-        moveSelector.stepStarted(stepScope);
         perturbationStrategy.stepStarted(stepScope);
+        moveSelector.stepStarted(stepScope);
         acceptor.stepStarted(stepScope);
         forager.stepStarted(stepScope);
     }
@@ -102,6 +102,8 @@ public class LocalSearchDecider<Solution_> {
         int moveIndex = 0;
         if (perturbationStrategy.isTriggered(stepScope)) {
             var reconfigurationScore = perturbationStrategy.apply(stepScope);
+            // Need to update the cached entity list because the working solution was changed
+            moveSelector.phaseStarted(stepScope.getPhaseScope());
             // Generate a dummy move; so the LS phase continues the process
             var adaptedMove = new LegacyMoveAdapter<Solution_>(NoChangeMove.getInstance());
             stepScope.setStep(adaptedMove);
@@ -163,22 +165,22 @@ public class LocalSearchDecider<Solution_> {
     }
 
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
-        moveSelector.stepEnded(stepScope);
         perturbationStrategy.stepEnded(stepScope);
+        moveSelector.stepEnded(stepScope);
         acceptor.stepEnded(stepScope);
         forager.stepEnded(stepScope);
     }
 
     public void phaseEnded(LocalSearchPhaseScope<Solution_> phaseScope) {
-        moveSelector.phaseEnded(phaseScope);
         perturbationStrategy.phaseEnded(phaseScope);
+        moveSelector.phaseEnded(phaseScope);
         acceptor.phaseEnded(phaseScope);
         forager.phaseEnded(phaseScope);
     }
 
     public void solvingEnded(SolverScope<Solution_> solverScope) {
-        moveSelector.solvingEnded(solverScope);
         perturbationStrategy.solvingEnded(solverScope);
+        moveSelector.solvingEnded(solverScope);
         acceptor.solvingEnded(solverScope);
         forager.solvingEnded(solverScope);
     }
