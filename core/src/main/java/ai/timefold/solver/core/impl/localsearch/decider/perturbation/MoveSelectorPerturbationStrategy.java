@@ -28,9 +28,6 @@ public class MoveSelectorPerturbationStrategy<Solution_> implements Perturbation
     @Override
     public <Score_ extends Score<Score_>> Score_ apply(AbstractStepScope<Solution_> stepScope) {
         var phaseScope = stepScope.getPhaseScope();
-        var solverScope = phaseScope.getSolverScope();
-        logger.debug("Resetting working solution, score ({})", solverScope.getBestScore());
-        solverScope.setWorkingSolutionFromBestSolution();
         var perturbationMoveIterator = perturbationMoveSelector.iterator();
         InnerScoreDirector<Solution_, Score_> scoreDirector = phaseScope.getScoreDirector();
         MoveDirector<Solution_> moveDirector = stepScope.getMoveDirector();
@@ -40,6 +37,7 @@ public class MoveSelectorPerturbationStrategy<Solution_> implements Perturbation
                 if (!LegacyMoveAdapter.isDoable(moveDirector, perturbation)) {
                     continue;
                 }
+                //                var perturbationRebased = perturbation.rebase(moveDirector);
                 perturbation.execute(moveDirector);
                 logger.debug("Generating a perturbation: Move ({})", perturbation);
             }
@@ -50,11 +48,20 @@ public class MoveSelectorPerturbationStrategy<Solution_> implements Perturbation
         if (level + 1 < maxLevels) {
             level++;
         }
+        // Always cancel it at the end of the step as the perturbation is already applied
+        stepScope.getPhaseScope().cancelReconfiguration();
         return currentScore;
     }
 
     @Override
     public void stepStarted(AbstractStepScope<Solution_> stepScope) {
+        if (isTriggered(stepScope)) {
+            var solverScope = stepScope.getPhaseScope().getSolverScope();
+            logger.debug("Resetting working solution, score ({})", solverScope.getBestScore());
+            solverScope.setWorkingSolutionFromBestSolution();
+            // Need to update the cached entity list because the working solution was changed
+            perturbationMoveSelector.phaseStarted(stepScope.getPhaseScope());
+        }
         this.perturbationMoveSelector.stepStarted(stepScope);
         this.currentBestScore = stepScope.getPhaseScope().getBestScore();
     }
@@ -63,8 +70,6 @@ public class MoveSelectorPerturbationStrategy<Solution_> implements Perturbation
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
         this.perturbationMoveSelector.stepEnded(stepScope);
-        // Always cancel it at the end of the step as the perturbation is already applied
-        stepScope.getPhaseScope().cancelReconfiguration();
         if (((Score) stepScope.getScore()).compareTo(currentBestScore) > 0) {
             // Reset it if the best solution is improved
             this.level = 1;
