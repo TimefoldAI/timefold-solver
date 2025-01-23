@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor;
 
+import static ai.timefold.solver.core.config.localsearch.decider.acceptor.RestartType.UNIMPROVED_MOVE_COUNT;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -114,7 +115,7 @@ class AcceptorFactoryTest {
     <Solution_> void acceptorWithReconfiguration() {
         var localSearchAcceptorConfig = new LocalSearchAcceptorConfig()
                 .withAcceptorTypeList(List.of(AcceptorType.LATE_ACCEPTANCE))
-                .withEnableReconfiguration(true);
+                .withRestartType(UNIMPROVED_MOVE_COUNT);
         HeuristicConfigPolicy<Solution_> heuristicConfigPolicy = mock(HeuristicConfigPolicy.class);
         AcceptorFactory<Solution_> acceptorFactory = AcceptorFactory.create(localSearchAcceptorConfig);
         var acceptor = acceptorFactory.buildAcceptor(heuristicConfigPolicy);
@@ -122,7 +123,7 @@ class AcceptorFactoryTest {
 
         localSearchAcceptorConfig = new LocalSearchAcceptorConfig()
                 .withAcceptorTypeList(List.of(AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE))
-                .withEnableReconfiguration(true);
+                .withRestartType(UNIMPROVED_MOVE_COUNT);
         acceptorFactory = AcceptorFactory.create(localSearchAcceptorConfig);
         acceptor = acceptorFactory.buildAcceptor(heuristicConfigPolicy);
         assertThat(((DiversifiedLateAcceptanceAcceptor) acceptor).isEnabled()).isTrue();

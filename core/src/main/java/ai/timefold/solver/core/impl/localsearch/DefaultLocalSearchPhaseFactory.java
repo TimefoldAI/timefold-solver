@@ -194,7 +194,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         var acceptorConfig = phaseConfig.getAcceptorConfig();
         if (acceptorConfig != null) {
             var enableReconfiguration =
-                    acceptorConfig.getEnableReconfiguration() != null && acceptorConfig.getEnableReconfiguration();
+                    acceptorConfig.getReconfigurationRestartType() != null;
             if (enableReconfiguration) {
                 configPolicy.ensurePreviewFeature(PreviewFeature.RECONFIGURATION);
                 return new RestoreBestSolutionReconfigurationStrategy<>(moveSelector, acceptor);

@@ -15,7 +15,7 @@ import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
         "acceptorTypeList",
-        "enableReconfiguration",
+        "reconfigurationRestartType",
         "entityTabuSize",
         "entityTabuRatio",
         "fadingEntityTabuSize",
@@ -39,7 +39,7 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
 
     @XmlElement(name = "acceptorType")
     private List<AcceptorType> acceptorTypeList = null;
-    private Boolean enableReconfiguration;
+    private RestartType reconfigurationRestartType = null;
 
     protected Integer entityTabuSize = null;
     protected Double entityTabuRatio = null;
@@ -80,12 +80,12 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
         this.acceptorTypeList = acceptorTypeList;
     }
 
-    public @Nullable Boolean getEnableReconfiguration() {
-        return enableReconfiguration;
+    public @Nullable RestartType getReconfigurationRestartType() {
+        return reconfigurationRestartType;
     }
 
-    public void setEnableReconfiguration(@Nullable Boolean enableReconfiguration) {
-        this.enableReconfiguration = enableReconfiguration;
+    public void setReconfigurationRestartType(@Nullable RestartType reconfigurationRestartType) {
+        this.reconfigurationRestartType = reconfigurationRestartType;
     }
 
     public @Nullable Integer getEntityTabuSize() {
@@ -273,9 +273,8 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
         return this;
     }
 
-    public @NonNull LocalSearchAcceptorConfig
-            withEnableReconfiguration(@NonNull Boolean enableReconfiguration) {
-        this.enableReconfiguration = enableReconfiguration;
+    public @NonNull LocalSearchAcceptorConfig withRestartType(@NonNull RestartType restartType) {
+        this.reconfigurationRestartType = restartType;
         return this;
     }
 
@@ -383,8 +382,8 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
                 }
             }
         }
-        enableReconfiguration =
-                ConfigUtils.inheritOverwritableProperty(enableReconfiguration, inheritedConfig.getEnableReconfiguration());
+        reconfigurationRestartType = ConfigUtils.inheritOverwritableProperty(reconfigurationRestartType,
+                inheritedConfig.getReconfigurationRestartType());
         entityTabuSize = ConfigUtils.inheritOverwritableProperty(entityTabuSize, inheritedConfig.getEntityTabuSize());
         entityTabuRatio = ConfigUtils.inheritOverwritableProperty(entityTabuRatio, inheritedConfig.getEntityTabuRatio());
         fadingEntityTabuSize = ConfigUtils.inheritOverwritableProperty(fadingEntityTabuSize,

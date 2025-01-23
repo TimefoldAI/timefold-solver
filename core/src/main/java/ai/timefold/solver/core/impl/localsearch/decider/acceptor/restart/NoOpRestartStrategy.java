@@ -13,7 +13,7 @@ public class NoOpRestartStrategy<Solution_> implements RestartStrategy<Solution_
     }
 
     @Override
-    public void reset() {
+    public void reset(LocalSearchMoveScope<Solution_> moveScope) {
         // Do nothing
     }
 

@@ -287,6 +287,6 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         var moveScope0 = buildMoveScope(stepScope0, -999);
         stepScope0.getPhaseScope().setLastCompletedStepScope(stepScope0);
         assertThat(acceptor.isAccepted(moveScope0)).isTrue();
-        verify(restartStrategy, times(1)).reset();
+        verify(restartStrategy, times(1)).reset(moveScope0);
     }
 }

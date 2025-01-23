@@ -17,7 +17,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance.
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance.LateAcceptanceAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.NoOpRestartStrategy;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.RestartStrategy;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.UnimprovedTimeGeometricRestartStrategy;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.UnimprovedMoveCountRestartStrategy;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.simulatedannealing.SimulatedAnnealingAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stepcountinghillclimbing.StepCountingHillClimbingAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.EntityTabuAcceptor;
@@ -223,13 +223,9 @@ public class AcceptorFactory<Solution_> {
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.LATE_ACCEPTANCE)
                 || (!acceptorTypeListsContainsAcceptorType(AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE)
                         && acceptorConfig.getLateAcceptanceSize() != null)) {
-            RestartStrategy<Solution_> restartStrategy = new NoOpRestartStrategy<>();
-            var enableReconfiguration =
-                    acceptorConfig.getEnableReconfiguration() != null && acceptorConfig.getEnableReconfiguration();
-            if (enableReconfiguration) {
-                restartStrategy = new UnimprovedTimeGeometricRestartStrategy<>();
-            }
-            var acceptor = new LateAcceptanceAcceptor<>(enableReconfiguration, restartStrategy);
+            var restartStrategy = buildRestartStrategy();
+            var acceptor =
+                    new LateAcceptanceAcceptor<>(!(restartStrategy instanceof NoOpRestartStrategy<Solution_>), restartStrategy);
             acceptor.setLateAcceptanceSize(Objects.requireNonNullElse(acceptorConfig.getLateAcceptanceSize(), 400));
             return Optional.of(acceptor);
         }
@@ -240,17 +236,25 @@ public class AcceptorFactory<Solution_> {
             buildDiversifiedLateAcceptanceAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE)) {
             configPolicy.ensurePreviewFeature(PreviewFeature.DIVERSIFIED_LATE_ACCEPTANCE);
-            RestartStrategy<Solution_> restartStrategy = new NoOpRestartStrategy<>();
-            var enableReconfiguration =
-                    acceptorConfig.getEnableReconfiguration() != null && acceptorConfig.getEnableReconfiguration();
-            if (enableReconfiguration) {
-                restartStrategy = new UnimprovedTimeGeometricRestartStrategy<>();
-            }
-            var acceptor = new DiversifiedLateAcceptanceAcceptor<>(enableReconfiguration, restartStrategy);
+            var restartStrategy = buildRestartStrategy();
+            var acceptor = new DiversifiedLateAcceptanceAcceptor<>(!(restartStrategy instanceof NoOpRestartStrategy<Solution_>),
+                    restartStrategy);
             acceptor.setLateAcceptanceSize(Objects.requireNonNullElse(acceptorConfig.getLateAcceptanceSize(), 5));
             return Optional.of(acceptor);
         }
         return Optional.empty();
+    }
+
+    private RestartStrategy<Solution_> buildRestartStrategy() {
+        RestartStrategy<Solution_> restartStrategy = new NoOpRestartStrategy<>();
+        var enableReconfiguration = acceptorConfig.getReconfigurationRestartType() != null;
+        if (enableReconfiguration) {
+            return switch (acceptorConfig.getReconfigurationRestartType()) {
+                case UNIMPROVED_TIME -> new UnimprovedMoveCountRestartStrategy<>();
+                case UNIMPROVED_MOVE_COUNT -> new UnimprovedMoveCountRestartStrategy<>();
+            };
+        }
+        return restartStrategy;
     }
 
     private Optional<GreatDelugeAcceptor<Solution_>> buildGreatDelugeAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
