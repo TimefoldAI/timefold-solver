@@ -7,5 +7,5 @@ public interface RestartStrategy<Solution_> extends LocalSearchPhaseLifecycleLis
 
     boolean isTriggered(LocalSearchMoveScope<Solution_> moveScope);
 
-    void reset();
+    void reset(LocalSearchMoveScope<Solution_> moveScope);
 }

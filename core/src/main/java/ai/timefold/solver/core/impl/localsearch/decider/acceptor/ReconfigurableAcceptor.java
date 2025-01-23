@@ -65,7 +65,7 @@ public abstract class ReconfigurableAcceptor<Solution_> extends AbstractAcceptor
         var accepted = evaluate(moveScope);
         var improved = enabled && moveScope.getScore().compareTo(moveScope.getStepScope().getPhaseScope().getBestScore()) > 0;
         if (improved) {
-            restartStrategy.reset();
+            restartStrategy.reset(moveScope);
         }
         return accepted;
     }
