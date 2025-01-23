@@ -4,10 +4,10 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.bavet.common.NodeBuildHelper;
-import ai.timefold.solver.core.impl.bavet.common.bridge.BavetAftBridgeUniConstraintStream;
 import ai.timefold.solver.core.impl.bavet.uni.MapUniToUniNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetAftBridgeUniConstraintStream;
 
 final class BavetUniMapUniConstraintStream<Solution_, A, NewA>
         extends BavetAbstractUniConstraintStream<Solution_, A> {
@@ -35,7 +35,7 @@ final class BavetUniMapUniConstraintStream<Solution_, A, NewA>
     }
 
     @Override
-    public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
+    public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         assertEmptyChildStreamList();
         int inputStoreIndex = buildHelper.reserveTupleStoreIndex(parent.getTupleSource());
         int outputStoreSize = buildHelper.extractTupleStoreSize(aftStream);

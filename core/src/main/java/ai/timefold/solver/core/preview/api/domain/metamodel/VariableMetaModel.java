@@ -58,9 +58,7 @@ public sealed interface VariableMetaModel<Solution_, Entity_, Value_>
      *
      * @return true if this variable is a genuine @{@link PlanningListVariable}, false otherwise
      */
-    default boolean isList() {
-        return false;
-    }
+    boolean isList();
 
     /**
      * Whether this variable is a genuine variable.
@@ -70,8 +68,6 @@ public sealed interface VariableMetaModel<Solution_, Entity_, Value_>
      *
      * @return true if this variable is genuine, false otherwise
      */
-    default boolean isGenuine() {
-        return false;
-    }
+    boolean isGenuine();
 
 }

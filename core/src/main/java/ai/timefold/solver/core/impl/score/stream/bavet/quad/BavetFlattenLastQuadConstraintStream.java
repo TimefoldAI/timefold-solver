@@ -4,10 +4,10 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.bavet.common.NodeBuildHelper;
-import ai.timefold.solver.core.impl.bavet.common.bridge.BavetAftBridgeQuadConstraintStream;
 import ai.timefold.solver.core.impl.bavet.quad.FlattenLastQuadNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetAftBridgeQuadConstraintStream;
 
 final class BavetFlattenLastQuadConstraintStream<Solution_, A, B, C, D, NewD>
         extends BavetAbstractQuadConstraintStream<Solution_, A, B, C, D> {
@@ -36,7 +36,7 @@ final class BavetFlattenLastQuadConstraintStream<Solution_, A, B, C, D, NewD>
     }
 
     @Override
-    public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
+    public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         assertEmptyChildStreamList();
         int inputStoreIndex = buildHelper.reserveTupleStoreIndex(parent.getTupleSource());
         int outputStoreSize = buildHelper.extractTupleStoreSize(flattenLastStream);

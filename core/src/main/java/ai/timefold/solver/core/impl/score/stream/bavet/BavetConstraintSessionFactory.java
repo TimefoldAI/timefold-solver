@@ -14,22 +14,20 @@ import java.util.stream.Collectors;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
-import ai.timefold.solver.core.impl.bavet.common.AbstractConcatNode;
+import ai.timefold.solver.core.impl.bavet.NodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.AbstractIfExistsNode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractJoinNode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNode;
+import ai.timefold.solver.core.impl.bavet.common.AbstractTwoInputNode;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
-import ai.timefold.solver.core.impl.bavet.common.BavetConcatConstraintStream;
-import ai.timefold.solver.core.impl.bavet.common.BavetIfExistsConstraintStream;
-import ai.timefold.solver.core.impl.bavet.common.BavetJoinConstraintStream;
-import ai.timefold.solver.core.impl.bavet.common.BavetStreamBinaryOperation;
-import ai.timefold.solver.core.impl.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.core.impl.bavet.common.PropagationQueue;
 import ai.timefold.solver.core.impl.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.core.impl.bavet.visual.NodeGraph;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetStreamBinaryOperation;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
@@ -128,7 +126,7 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
     private static <Solution_, Score_ extends Score<Score_>> NodeNetwork buildNodeNetwork(Solution_ workingSolution,
             Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet, AbstractScoreInliner<Score_> scoreInliner,
             Consumer<String> nodeNetworkVisualizationConsumer) {
-        var buildHelper = new NodeBuildHelper<>(constraintStreamSet, scoreInliner);
+        var buildHelper = new ConstraintNodeBuildHelper<>(constraintStreamSet, scoreInliner);
         var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<AbstractForEachUniNode<?>>>();
         var nodeList = buildNodeList(constraintStreamSet, buildHelper, node -> {
             if (!(node instanceof AbstractForEachUniNode<?> forEachUniNode)) {
@@ -147,8 +145,9 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
         });
         if (nodeNetworkVisualizationConsumer != null) {
             var constraintSet = scoreInliner.getConstraints();
-            var visualisation = NodeGraph.of(workingSolution, nodeList, constraintSet, buildHelper::getNodeCreatingStream,
-                    buildHelper::findParentNode)
+            var visualisation = NodeGraph
+                    .of(workingSolution, nodeList, constraintSet, buildHelper::getNodeCreatingStream,
+                            buildHelper::findParentNode)
                     .buildGraphvizDOT();
             nodeNetworkVisualizationConsumer.accept(visualisation);
         }
@@ -167,8 +166,8 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
     }
 
     private static <Solution_, Score_ extends Score<Score_>> List<AbstractNode> buildNodeList(
-            Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet, NodeBuildHelper<Score_> buildHelper,
-            Consumer<AbstractNode> nodeProcessor) {
+            Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet,
+            ConstraintNodeBuildHelper<Solution_, Score_> buildHelper, Consumer<AbstractNode> nodeProcessor) {
         /*
          * Build constraintStreamSet in reverse order to create downstream nodes first
          * so every node only has final variables (some of which have downstream node method references).
@@ -207,33 +206,23 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
      * @param buildHelper never null
      * @return at least 0
      */
-    private static <Score_ extends Score<Score_>> long determineLayerIndex(AbstractNode node,
-            NodeBuildHelper<Score_> buildHelper) {
+    @SuppressWarnings("unchecked")
+    private static <Solution_, Score_ extends Score<Score_>> long determineLayerIndex(AbstractNode node,
+            ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         if (node instanceof AbstractForEachUniNode<?>) { // ForEach nodes, and only they, are in layer 0.
             return 0;
-        } else if (node instanceof AbstractJoinNode<?, ?, ?> joinNode) {
-            return determineLayerIndexOfBinaryOperation(
-                    (BavetJoinConstraintStream<?>) buildHelper.getNodeCreatingStream(joinNode), buildHelper);
-        } else if (node instanceof AbstractConcatNode<?, ?, ?> concatNode) {
-            return determineLayerIndexOfBinaryOperation(
-                    (BavetConcatConstraintStream<?>) buildHelper.getNodeCreatingStream(concatNode), buildHelper);
-        } else if (node instanceof AbstractIfExistsNode<?, ?> ifExistsNode) {
-            return determineLayerIndexOfBinaryOperation(
-                    (BavetIfExistsConstraintStream<?>) buildHelper.getNodeCreatingStream(ifExistsNode), buildHelper);
+        } else if (node instanceof AbstractTwoInputNode<?, ?> joinNode) {
+            var nodeCreator = (BavetStreamBinaryOperation<Solution_>) buildHelper.getNodeCreatingStream(joinNode);
+            var leftParent = nodeCreator.getLeftParent();
+            var rightParent = nodeCreator.getRightParent();
+            var leftParentNode = buildHelper.findParentNode(leftParent);
+            var rightParentNode = buildHelper.findParentNode(rightParent);
+            return Math.max(leftParentNode.getLayerIndex(), rightParentNode.getLayerIndex()) + 1;
         } else {
-            var nodeCreator = (BavetAbstractConstraintStream<?>) buildHelper.getNodeCreatingStream(node);
+            var nodeCreator = buildHelper.getNodeCreatingStream(node);
             var parentNode = buildHelper.findParentNode(nodeCreator.getParent());
             return parentNode.getLayerIndex() + 1;
         }
-    }
-
-    private static <Score_ extends Score<Score_>> long determineLayerIndexOfBinaryOperation(
-            BavetStreamBinaryOperation<?> nodeCreator, NodeBuildHelper<Score_> buildHelper) {
-        var leftParent = nodeCreator.getLeftParent();
-        var rightParent = nodeCreator.getRightParent();
-        var leftParentNode = buildHelper.findParentNode(leftParent);
-        var rightParentNode = buildHelper.findParentNode(rightParent);
-        return Math.max(leftParentNode.getLayerIndex(), rightParentNode.getLayerIndex()) + 1;
     }
 
 }

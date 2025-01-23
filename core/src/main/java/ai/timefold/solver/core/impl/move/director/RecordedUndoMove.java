@@ -10,9 +10,9 @@ import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 import org.jspecify.annotations.NonNull;
 
-final class RecordedUndoMove<Solution_> implements Move<Solution_> {
-
-    private final List<ChangeAction<Solution_>> variableChangeActionList;
+record RecordedUndoMove<Solution_>(List<ChangeAction<Solution_>> variableChangeActionList)
+        implements
+            Move<Solution_> {
 
     RecordedUndoMove(List<ChangeAction<Solution_>> variableChangeActionList) {
         this.variableChangeActionList = Objects.requireNonNull(variableChangeActionList);
@@ -31,9 +31,5 @@ final class RecordedUndoMove<Solution_> implements Move<Solution_> {
         return new RecordedUndoMove<>(variableChangeActionList.stream()
                 .map(changeAction -> changeAction.rebase(rebaser))
                 .toList());
-    }
-
-    List<ChangeAction<Solution_>> getVariableChangeActionList() {
-        return variableChangeActionList;
     }
 }

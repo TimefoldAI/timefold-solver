@@ -4,10 +4,10 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.core.impl.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
 
 final class BavetFilterQuadConstraintStream<Solution_, A, B, C, D>
         extends BavetAbstractQuadConstraintStream<Solution_, A, B, C, D> {
@@ -29,7 +29,7 @@ final class BavetFilterQuadConstraintStream<Solution_, A, B, C, D>
     // ************************************************************************
 
     @Override
-    public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
+    public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         buildHelper.<QuadTuple<A, B, C, D>> putInsertUpdateRetract(this, childStreamList,
                 tupleLifecycle -> TupleLifecycle.conditionally(tupleLifecycle, predicate));
     }

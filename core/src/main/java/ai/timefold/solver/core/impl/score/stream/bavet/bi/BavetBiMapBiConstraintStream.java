@@ -5,9 +5,9 @@ import java.util.function.BiFunction;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.bavet.bi.MapBiToBiNode;
-import ai.timefold.solver.core.impl.bavet.common.NodeBuildHelper;
-import ai.timefold.solver.core.impl.bavet.common.bridge.BavetAftBridgeBiConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetAftBridgeBiConstraintStream;
 
 final class BavetBiMapBiConstraintStream<Solution_, A, B, NewA, NewB>
         extends BavetAbstractBiConstraintStream<Solution_, A, B> {
@@ -38,7 +38,7 @@ final class BavetBiMapBiConstraintStream<Solution_, A, B, NewA, NewB>
     // ************************************************************************
 
     @Override
-    public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
+    public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         assertEmptyChildStreamList();
         int inputStoreIndex = buildHelper.reserveTupleStoreIndex(parent.getTupleSource());
         int outputStoreSize = buildHelper.extractTupleStoreSize(aftStream);

@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.uni;
 
-import static ai.timefold.solver.core.impl.bavet.common.BavetScoringConstraintStream.impactWithConstraintMatchNoJustifications;
+import static ai.timefold.solver.core.impl.score.stream.bavet.common.BavetScoringConstraintStream.impactWithConstraintMatchNoJustifications;
 
 import java.math.BigDecimal;
 import java.util.function.BiFunction;
@@ -9,11 +9,11 @@ import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.bavet.common.BavetScoringConstraintStream;
-import ai.timefold.solver.core.impl.bavet.common.NodeBuildHelper;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraint;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetScoringConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.ConstraintMatchSupplier;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.UndoScoreImpacter;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.WeightedScoreImpacter;
@@ -70,7 +70,7 @@ final class BavetScoringUniConstraintStream<Solution_, A>
     // ************************************************************************
 
     @Override
-    public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
+    public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         assertEmptyChildStreamList();
         var scoreImpacter = buildScoreImpacter(buildHelper.getScoreInliner().getConstraintMatchPolicy());
         var weightedScoreImpacter = buildHelper.getScoreInliner().buildWeightedScoreImpacter(constraint);
