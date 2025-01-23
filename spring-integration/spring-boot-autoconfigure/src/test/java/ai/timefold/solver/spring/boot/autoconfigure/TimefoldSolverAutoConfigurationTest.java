@@ -23,8 +23,12 @@ import ai.timefold.solver.core.api.solver.SolverConfigOverride;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverManager;
+import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
+import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
+import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.config.solver.termination.DiminishedReturnsTerminationConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.solver.DefaultSolutionManager;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
@@ -440,6 +444,101 @@ class TimefoldSolverAutoConfigurationTest {
                     TerminationConfig terminationConfig = context.getBean(SolverConfig.class).getTerminationConfig();
                     assertThat(terminationConfig.getBestScoreLimit()).isEqualTo(SimpleScore.of(6).toString());
                     assertThat(context.getBean(SolverFactory.class)).isNotNull();
+                });
+    }
+
+    @Test
+    void diminishedReturnsProperties() {
+        contextRunner
+                .run(context -> {
+                    var phases = context.getBean(SolverConfig.class).getPhaseConfigList();
+                    assertThat(phases).isNull();
+                });
+
+        contextRunner
+                .withPropertyValues("timefold.solver.termination.diminished-returns.enabled=true")
+                .run(context -> {
+                    var phases = context.getBean(SolverConfig.class).getPhaseConfigList();
+                    assertThat(phases).hasSize(2);
+                    assertThat(phases).element(0).isInstanceOf(ConstructionHeuristicPhaseConfig.class)
+                            .extracting(PhaseConfig::getTerminationConfig)
+                            .isNull();
+                    assertThat(phases).element(1).isInstanceOf(LocalSearchPhaseConfig.class)
+                            .extracting(PhaseConfig::getTerminationConfig)
+                            .isNotNull()
+                            .extracting(TerminationConfig::getDiminishedReturnsConfig)
+                            .isNotNull()
+                            .hasAllNullFieldsOrProperties();
+                });
+
+        contextRunner
+                .withPropertyValues("timefold.solver.termination.diminished-returns.sliding-window-duration=5m")
+                .run(context -> {
+                    var phases = context.getBean(SolverConfig.class).getPhaseConfigList();
+                    assertThat(phases).hasSize(2);
+                    assertThat(phases).element(0).isInstanceOf(ConstructionHeuristicPhaseConfig.class)
+                            .extracting(PhaseConfig::getTerminationConfig)
+                            .isNull();
+                    assertThat(phases).element(1).isInstanceOf(LocalSearchPhaseConfig.class)
+                            .extracting(PhaseConfig::getTerminationConfig)
+                            .isNotNull()
+                            .extracting(TerminationConfig::getDiminishedReturnsConfig)
+                            .isNotNull()
+                            .hasAllNullFieldsOrPropertiesExcept("slidingWindowDuration")
+                            .extracting(DiminishedReturnsTerminationConfig::getSlidingWindowDuration)
+                            .isEqualTo(Duration.ofMinutes(5));
+                });
+
+        contextRunner
+                .withPropertyValues("timefold.solver.termination.diminished-returns.minimum-improvement-ratio=2.5")
+                .run(context -> {
+                    var phases = context.getBean(SolverConfig.class).getPhaseConfigList();
+                    assertThat(phases).hasSize(2);
+                    assertThat(phases).element(0).isInstanceOf(ConstructionHeuristicPhaseConfig.class)
+                            .extracting(PhaseConfig::getTerminationConfig)
+                            .isNull();
+                    assertThat(phases).element(1).isInstanceOf(LocalSearchPhaseConfig.class)
+                            .extracting(PhaseConfig::getTerminationConfig)
+                            .isNotNull()
+                            .extracting(TerminationConfig::getDiminishedReturnsConfig)
+                            .isNotNull()
+                            .hasAllNullFieldsOrPropertiesExcept("minimumImprovementRatio")
+                            .extracting(DiminishedReturnsTerminationConfig::getMinimumImprovementRatio)
+                            .isEqualTo(2.5);
+                });
+
+        contextRunner
+                .withPropertyValues("timefold.solver.termination.diminished-returns.enabled=false")
+                .withPropertyValues("timefold.solver.termination.diminished-returns.minimum-improvement-ratio=2.5")
+                .run(context -> {
+                    var phases = context.getBean(SolverConfig.class).getPhaseConfigList();
+                    assertThat(phases).isNull();
+                });
+
+        contextRunner
+                .withPropertyValues("timefold.solver.termination.diminished-returns.enabled=true")
+                .withPropertyValues(
+                        "timefold.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/solverConfigWithPhases.xml")
+                .run(context -> {
+                    var failure = context.getStartupFailure();
+                    assertThat(failure).isNotNull()
+                            .isInstanceOf(IllegalArgumentException.class)
+                            .hasMessageContaining("timefold.solver.termination.diminished-returns")
+                            .hasMessageContaining("when phases are configured");
+                });
+
+        contextRunner
+                .withPropertyValues("timefold.solver.termination.diminished-returns.enabled=false")
+                .withPropertyValues("timefold.solver.termination.diminished-returns.minimum-improvement-ratio=2.5")
+                .withPropertyValues(
+                        "timefold.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/solverConfigWithPhases.xml")
+                .run(context -> {
+                    var phases = context.getBean(SolverConfig.class).getPhaseConfigList();
+                    assertThat(phases).hasSize(2);
+                    assertThat(phases).element(0).isInstanceOf(ConstructionHeuristicPhaseConfig.class)
+                            .extracting(PhaseConfig::getTerminationConfig).isNull();
+                    assertThat(phases).element(1).isInstanceOf(LocalSearchPhaseConfig.class)
+                            .extracting(PhaseConfig::getTerminationConfig).isNull();
                 });
     }
 

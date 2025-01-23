@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import ai.timefold.solver.core.config.solver.termination.DiminishedReturnsTerminationConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationCompositionStyle;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -200,5 +201,65 @@ class TerminationFactoryTest {
         assertThatIllegalStateException()
                 .isThrownBy(() -> terminationFactory.buildTermination(heuristicConfigPolicy))
                 .withMessageContaining("can only be used with a score type that has at least 1 feasible level");
+    }
+
+    @Test
+    void diminishedReturns_default() {
+        TerminationConfig terminationConfig = new TerminationConfig();
+        terminationConfig.setDiminishedReturnsConfig(new DiminishedReturnsTerminationConfig());
+        Termination<?> termination = TerminationFactory.create(terminationConfig)
+                .buildTermination(mock(HeuristicConfigPolicy.class));
+        assertThat(termination)
+                .isInstanceOf(DiminishedReturnsTermination.class);
+        assertThat((DiminishedReturnsTermination<?, ?>) termination)
+                .extracting(DiminishedReturnsTermination::getSlidingWindowNanos)
+                .isEqualTo(Duration.ofSeconds(30).toNanos());
+        assertThat((DiminishedReturnsTermination<?, ?>) termination)
+                .extracting(DiminishedReturnsTermination::getMinimumImprovementRatio)
+                .isEqualTo(0.0001);
+    }
+
+    @Test
+    void diminishedReturns_custom() {
+        TerminationConfig terminationConfig = new TerminationConfig();
+        terminationConfig.setDiminishedReturnsConfig(new DiminishedReturnsTerminationConfig()
+                .withSlidingWindowMilliseconds(1L)
+                .withSlidingWindowSeconds(2L)
+                .withSlidingWindowMinutes(3L)
+                .withSlidingWindowHours(4L)
+                .withSlidingWindowDays(5L)
+                .withMinimumImprovementRatio(0.5));
+        Termination<?> termination = TerminationFactory.create(terminationConfig)
+                .buildTermination(mock(HeuristicConfigPolicy.class));
+        assertThat(termination)
+                .isInstanceOf(DiminishedReturnsTermination.class);
+        assertThat((DiminishedReturnsTermination<?, ?>) termination)
+                .extracting(DiminishedReturnsTermination::getSlidingWindowNanos)
+                .isEqualTo(Duration.ofMillis(1)
+                        .plusSeconds(2)
+                        .plusMinutes(3)
+                        .plusHours(4)
+                        .plusDays(5).toNanos());
+        assertThat((DiminishedReturnsTermination<?, ?>) termination)
+                .extracting(DiminishedReturnsTermination::getMinimumImprovementRatio)
+                .isEqualTo(0.5);
+    }
+
+    @Test
+    void diminishedReturns_customDuration() {
+        TerminationConfig terminationConfig = new TerminationConfig();
+        terminationConfig.setDiminishedReturnsConfig(new DiminishedReturnsTerminationConfig()
+                .withSlidingWindowDuration(Duration.ofMinutes(123))
+                .withMinimumImprovementRatio(0.5));
+        Termination<?> termination = TerminationFactory.create(terminationConfig)
+                .buildTermination(mock(HeuristicConfigPolicy.class));
+        assertThat(termination)
+                .isInstanceOf(DiminishedReturnsTermination.class);
+        assertThat((DiminishedReturnsTermination<?, ?>) termination)
+                .extracting(DiminishedReturnsTermination::getSlidingWindowNanos)
+                .isEqualTo(Duration.ofMinutes(123).toNanos());
+        assertThat((DiminishedReturnsTermination<?, ?>) termination)
+                .extracting(DiminishedReturnsTermination::getMinimumImprovementRatio)
+                .isEqualTo(0.5);
     }
 }

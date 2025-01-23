@@ -1,7 +1,9 @@
 package ai.timefold.solver.quarkus;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
@@ -11,6 +13,8 @@ import jakarta.inject.Inject;
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
+import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.quarkus.testdata.dummy.DummyDistanceMeter;
@@ -38,6 +42,9 @@ class TimefoldProcessorSolverPropertiesTest {
             .overrideConfigKey("quarkus.timefold.solver.termination.spent-limit", "4h")
             .overrideConfigKey("quarkus.timefold.solver.termination.unimproved-spent-limit", "5h")
             .overrideConfigKey("quarkus.timefold.solver.termination.best-score-limit", "0")
+            .overrideConfigKey("quarkus.timefold.solver.termination.diminished-returns.enabled", "true")
+            .overrideConfigKey("quarkus.timefold.solver.termination.diminished-returns.sliding-window-duration", "6h")
+            .overrideConfigKey("quarkus.timefold.solver.termination.diminished-returns.minimum-improvement-ratio", "0.5")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
                             TestdataQuarkusConstraintProvider.class, DummyDistanceMeter.class));
@@ -64,5 +71,20 @@ class TimefoldProcessorSolverPropertiesTest {
         assertEquals(Duration.ofHours(4), solverConfig.getTerminationConfig().getSpentLimit());
         assertEquals(Duration.ofHours(5), solverConfig.getTerminationConfig().getUnimprovedSpentLimit());
         assertEquals(SimpleScore.of(0).toString(), solverConfig.getTerminationConfig().getBestScoreLimit());
+        var phaseList = solverConfig.getPhaseConfigList();
+        assertNotNull(phaseList);
+        assertEquals(2, phaseList.size());
+
+        var constructionHeuristic = phaseList.get(0);
+        assertInstanceOf(ConstructionHeuristicPhaseConfig.class, constructionHeuristic);
+        assertNull(constructionHeuristic.getTerminationConfig());
+
+        var localSearch = phaseList.get(1);
+        assertInstanceOf(LocalSearchPhaseConfig.class, localSearch);
+        var terminationConfig = localSearch.getTerminationConfig();
+        assertNotNull(terminationConfig);
+        assertNotNull(terminationConfig.getDiminishedReturnsConfig());
+        assertEquals(Duration.ofHours(6), terminationConfig.getDiminishedReturnsConfig().getSlidingWindowDuration());
+        assertEquals(0.5, terminationConfig.getDiminishedReturnsConfig().getMinimumImprovementRatio());
     }
 }

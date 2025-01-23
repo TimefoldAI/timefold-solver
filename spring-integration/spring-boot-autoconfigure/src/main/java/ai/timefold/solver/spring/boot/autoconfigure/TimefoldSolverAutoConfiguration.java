@@ -33,10 +33,14 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
+import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
+import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.config.solver.termination.DiminishedReturnsTerminationConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
+import ai.timefold.solver.spring.boot.autoconfigure.config.DiminishedReturnsProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.config.SolverProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TerminationProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TimefoldProperties;
@@ -326,7 +330,32 @@ public class TimefoldSolverAutoConfiguration
             if (terminationProperties.getBestScoreLimit() != null) {
                 terminationConfig.setBestScoreLimit(terminationProperties.getBestScoreLimit());
             }
+            if (terminationProperties.getDiminishedReturns() != null) {
+                applyDiminishedReturnsProperties(solverConfig, terminationProperties.getDiminishedReturns());
+            }
         }
+    }
+
+    static void applyDiminishedReturnsProperties(SolverConfig solverConfig,
+            DiminishedReturnsProperties diminishedReturnsProperties) {
+        if (Objects.equals(false, diminishedReturnsProperties.getEnabled())) {
+            // do nothing if explicitly disabled
+            return;
+        }
+
+        if (solverConfig.getPhaseConfigList() != null) {
+            throw new IllegalArgumentException("%s properties cannot be specified when phases are configured."
+                    .formatted("timefold.solver.termination.diminished-returns"));
+        }
+
+        solverConfig.setPhaseConfigList(List.of(
+                new ConstructionHeuristicPhaseConfig(),
+                new LocalSearchPhaseConfig().withTerminationConfig(
+                        new TerminationConfig().withDiminishedReturnsConfig(
+                                new DiminishedReturnsTerminationConfig()
+                                        .withSlidingWindowDuration(diminishedReturnsProperties.getSlidingWindowDuration())
+                                        .withMinimumImprovementRatio(
+                                                diminishedReturnsProperties.getMinimumImprovementRatio())))));
     }
 
     private static void assertNoMemberAnnotationWithoutClassAnnotation(IncludeAbstractClassesEntityScanner entityScanner) {

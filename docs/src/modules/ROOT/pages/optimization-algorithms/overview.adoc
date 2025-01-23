@@ -637,6 +637,79 @@ This is useful for benchmarking.
 
 Switching xref:using-timefold-solver/running-the-solver.adoc#environmentMode[EnvironmentMode] can heavily impact when this termination ends.
 
+[#diminishedReturnsTermination]
+==== `DiminishedReturnsTermination`
+
+To save on CPU costs, you might want to terminate the solver early if expected improvements are minimal.
+This is hard to configure with absolute terminations since:
+
+* For time-based absolute terminations, they depend on the hardware used for solving.
+A computer that is twice as powerful should be given half the time.
+
+* For score-based absolute terminations, they depend on the problem.
+A problem with many entities will have larger score improvements than a problem with few entities.
+
+For these situations, the diminished returns termination is desirable since it terminates based on the relative rate of improvement, and behaves similarly on different hardware and different problem instances.
+
+The diminished returns termination terminates when the rate of improvement is below a percentage of the initial rate of improvement.
+The rate of improvement is the softest score difference between the final best score and the initial best score in a window, divided by the duration of the window.
+The first window is called a grace period, which cannot trigger a termination.
+If the hard score improves, the grace period is reset and the initial rate of improvement is recalculated.
+
+image::optimization-algorithms/overview/diminishedReturnsTermination.png[align="center"]
+
+[source,xml,options="nowrap"]
+----
+  <localSearch>
+    <termination>
+      <diminishedReturns />
+    </termination>
+  </localSearch>
+----
+
+There are two properties that can optionally be configured:
+
+* `slidingWindowDuration`, which is the initial grace period and is the length of the window that is used for the rate of improvement calculation.
++
+[source,xml,options="nowrap"]
+----
+  <localSearch>
+    <termination>
+      <diminishedReturns>
+        <slidingWindowDuration>PT2M30S</slidingWindowDuration>
+      </diminishedReturns>
+    </termination>
+  </localSearch>
+----
++
+Alternatively to a `java.util.Duration` in ISO 8601 format, you can also use milliseconds, seconds, minutes, hours or days:
++
+[source,xml,options="nowrap"]
+----
+  <localSearch>
+    <termination>
+      <diminishedReturns>
+        <slidingWindowSeconds>500</slidingWindowSeconds>
+      </diminishedReturns>
+    </termination>
+  </localSearch>
+----
+
+* `minimumImprovementRatio`, which is the minimum value that the ratio between the current and the initial rate of change can be to prevent termination.
+For instance, if `minimumImprovementRatio` is `0.2`, then the current rate of change must be `20%` of the initial rate of change to prevent termination.
++
+[source,xml,options="nowrap"]
+----
+  <localSearch>
+    <termination>
+      <diminishedReturns>
+        <minimumImprovementRatio>0.2</minimumImprovementRatio>
+      </diminishedReturns>
+    </termination>
+  </localSearch>
+----
+
+This `Termination` can only be used for a `Phase` (such as ``<localSearch>``), not for the `Solver` itself.
 
 [#combiningMultipleTerminations]
 ==== Combining multiple terminations

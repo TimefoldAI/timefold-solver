@@ -122,6 +122,19 @@ public class TerminationFactory<Solution_> {
                     + unimprovedTimeMillisSpentLimit + ") is used too.");
         }
 
+        if (terminationConfig.getDiminishedReturnsConfig() != null) {
+            var diminishedReturnsConfig = terminationConfig.getDiminishedReturnsConfig();
+            var gracePeriodMillis = diminishedReturnsConfig.calculateSlidingWindowMilliseconds();
+            if (gracePeriodMillis == null) {
+                gracePeriodMillis = 30_000L;
+            }
+            var minimumImprovementRatio = diminishedReturnsConfig.getMinimumImprovementRatio();
+            if (minimumImprovementRatio == null) {
+                minimumImprovementRatio = 0.0001;
+            }
+            terminationList.add(new DiminishedReturnsTermination<>(gracePeriodMillis, minimumImprovementRatio));
+        }
+
         return terminationList;
     }
 

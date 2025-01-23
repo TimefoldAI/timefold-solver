@@ -648,6 +648,17 @@
     ]
   },
   {
+    "name": "ai.timefold.solver.core.config.solver.termination.DiminishedReturnsTerminationConfig",
+    "allDeclaredFields": true,
+    "queryAllDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
     "name": "ai.timefold.solver.core.impl.io.jaxb.adapter.JaxbCustomPropertiesAdapter",
     "methods": [
       {
