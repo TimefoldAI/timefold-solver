@@ -10,13 +10,17 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraint;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetScoringConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
 
 import org.jspecify.annotations.NonNull;
 
-public abstract class BavetAbstractConstraintStream<Solution_> extends AbstractConstraintStream<Solution_> {
+public abstract class BavetAbstractConstraintStream<Solution_>
+        extends AbstractConstraintStream<Solution_>
+        implements BavetStream {
 
     protected final BavetConstraintFactory<Solution_> constraintFactory;
     protected final BavetAbstractConstraintStream<Solution_> parent;
@@ -109,7 +113,7 @@ public abstract class BavetAbstractConstraintStream<Solution_> extends AbstractC
         return parent.getTupleSource();
     }
 
-    public abstract <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper);
+    public abstract <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper);
 
     // ************************************************************************
     // Helper methods
@@ -135,6 +139,7 @@ public abstract class BavetAbstractConstraintStream<Solution_> extends AbstractC
      * @return null for join/ifExists nodes, which have left and right parents instead;
      *         also null for forEach node, which has no parent.
      */
+    @Override
     public final BavetAbstractConstraintStream<Solution_> getParent() {
         return parent;
     }

@@ -43,11 +43,11 @@ public interface SolutionView<Solution_> {
      * @param variableMetaModel Describes the variable whose value is to be read.
      * @param entity The entity whose variable is to be read.
      * @param index >= 0
-     * @return maybe null; the value of the variable on the entity at the index
+     * @return The value at the given index in the list variable.
      * @throws NullPointerException if the value of the list variable is null
      * @throws IndexOutOfBoundsException if the index is out of bounds
      */
-    <Entity_, Value_> @Nullable Value_ getValueAtIndex(
+    <Entity_, Value_> @NonNull Value_ getValueAtIndex(
             @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, @NonNull Entity_ entity,
             int index);
 

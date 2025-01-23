@@ -136,7 +136,7 @@ public interface Move<Solution_> {
      *
      * @return A description of the move, ideally including the state of the planning entities being changed.
      */
-    @NonNull
+    @Override
     String toString();
 
 }

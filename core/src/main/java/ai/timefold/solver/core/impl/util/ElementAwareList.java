@@ -1,8 +1,13 @@
 package ai.timefold.solver.core.impl.util;
 
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Random;
 import java.util.function.Consumer;
 
 /**
@@ -16,8 +21,12 @@ public final class ElementAwareList<T> implements Iterable<T> {
     private int size = 0;
     private ElementAwareListEntry<T> first = null;
     private ElementAwareListEntry<T> last = null;
+    private List<T> copy = null; // Cached copy for randomized iterator.
 
     public ElementAwareListEntry<T> add(T tuple) {
+        if (copy != null) {
+            copy.add(tuple);
+        }
         ElementAwareListEntry<T> entry = new ElementAwareListEntry<>(this, tuple, last);
         if (first == null) {
             first = entry;
@@ -31,6 +40,7 @@ public final class ElementAwareList<T> implements Iterable<T> {
 
     public ElementAwareListEntry<T> addFirst(T tuple) {
         if (first != null) {
+            copy = null;
             ElementAwareListEntry<T> entry = new ElementAwareListEntry<>(this, tuple, null);
             first.previous = entry;
             entry.next = first;
@@ -47,6 +57,7 @@ public final class ElementAwareList<T> implements Iterable<T> {
         if (first == null || previous == last) {
             return add(tuple);
         } else {
+            copy = null;
             ElementAwareListEntry<T> entry = new ElementAwareListEntry<>(this, tuple, previous);
             ElementAwareListEntry<T> currentNext = previous.next;
             if (currentNext != null) {
@@ -62,6 +73,14 @@ public final class ElementAwareList<T> implements Iterable<T> {
     }
 
     public void remove(ElementAwareListEntry<T> entry) {
+        if (copy != null) {
+            if (entry == last) {
+                copy.remove(size - 1);
+            } else {
+                copy = null;
+            }
+        }
+
         if (first == entry) {
             first = entry.next;
         } else {
@@ -154,6 +173,25 @@ public final class ElementAwareList<T> implements Iterable<T> {
         return new ElementAwareListIterator<>(first);
     }
 
+    public Iterator<T> randomizedIterator(Random random) {
+        return switch (size) {
+            case 0 -> Collections.emptyIterator();
+            case 1 -> Collections.singleton(first.getElement()).iterator();
+            case 2 -> {
+                var list = random.nextBoolean() ? List.of(first.getElement(), last.getElement())
+                        : List.of(last.getElement(), first.getElement());
+                yield list.iterator();
+            }
+            default -> {
+                if (copy == null) { // Only copy the list if the existing copy is no longer up to date.
+                    copy = new ArrayList<>(size + 1); // Avoid resizing.
+                    forEach(copy::add);
+                }
+                yield new RandomElementAwareListIterator<>(copy, random);
+            }
+        };
+    }
+
     @Override
     public String toString() {
         switch (size) {
@@ -198,4 +236,47 @@ public final class ElementAwareList<T> implements Iterable<T> {
         }
 
     }
+
+    /**
+     * The idea of this iterator is that the list will rarely ever be iterated over in its entirety.
+     * In fact, move streams are likely to only use the first few elements.
+     * Therefore, shuffling the entire list would be a waste of time.
+     * Instead, we pick random index every time and keep a bitset of used elements.
+     *
+     * @param <T> The element type. Often a tuple.
+     */
+    private static final class RandomElementAwareListIterator<T> implements Iterator<T> {
+
+        private final List<T> list;
+        private final Random random;
+
+        private final BitSet usedElements;
+        private int unusedElements;
+
+        public RandomElementAwareListIterator(List<T> copiedList, Random random) {
+            this.random = random;
+            this.list = copiedList;
+            this.unusedElements = copiedList.size();
+            this.usedElements = new BitSet(unusedElements);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return unusedElements > 0;
+        }
+
+        @Override
+        public T next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            var randomIndex = random.nextInt(unusedElements);
+            var availableIndex = usedElements.nextClearBit(randomIndex);
+            usedElements.set(availableIndex);
+            unusedElements--;
+            return list.get(availableIndex);
+        }
+
+    }
+
 }
