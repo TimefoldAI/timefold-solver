@@ -6,7 +6,6 @@ import static org.mockito.Mockito.*;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptorTest;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.NoOpRestartStrategy;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.RestartStrategy;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
@@ -18,7 +17,9 @@ class DiversifiedLateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
     @Test
     void acceptanceCriterion() {
-        var acceptor = new DiversifiedLateAcceptanceAcceptor<>(false, new NoOpRestartStrategy<>());
+        var restartStrategy = mock(RestartStrategy.class);
+        when(restartStrategy.isTriggered(any())).thenReturn(false);
+        var acceptor = new DiversifiedLateAcceptanceAcceptor<>(restartStrategy);
         acceptor.setLateAcceptanceSize(3);
 
         var solverScope = new SolverScope<>();
@@ -55,7 +56,9 @@ class DiversifiedLateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
     @Test
     void replacementCriterion() {
-        var acceptor = new DiversifiedLateAcceptanceAcceptor<>(false, new NoOpRestartStrategy<>());
+        var restartStrategy = mock(RestartStrategy.class);
+        when(restartStrategy.isTriggered(any())).thenReturn(false);
+        var acceptor = new DiversifiedLateAcceptanceAcceptor<>(restartStrategy);
         acceptor.setLateAcceptanceSize(3);
 
         var solverScope = new SolverScope<>();
@@ -151,7 +154,7 @@ class DiversifiedLateAcceptanceAcceptorTest extends AbstractAcceptorTest {
     void triggerReconfiguration() {
         var restartStrategy = mock(RestartStrategy.class);
         when(restartStrategy.isTriggered(any())).thenReturn(true);
-        var acceptor = new DiversifiedLateAcceptanceAcceptor<>(true, restartStrategy);
+        var acceptor = new DiversifiedLateAcceptanceAcceptor<>(restartStrategy);
         acceptor.setLateAcceptanceSize(3);
         var solverScope = new SolverScope<>();
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
@@ -165,7 +168,7 @@ class DiversifiedLateAcceptanceAcceptorTest extends AbstractAcceptorTest {
     @Test
     void resetReconfiguration() {
         var restartStrategy = mock(RestartStrategy.class);
-        var acceptor = new DiversifiedLateAcceptanceAcceptor<>(true, restartStrategy);
+        var acceptor = new DiversifiedLateAcceptanceAcceptor<>(restartStrategy);
         acceptor.setLateAcceptanceSize(3);
 
         var solverScope = new SolverScope<>();

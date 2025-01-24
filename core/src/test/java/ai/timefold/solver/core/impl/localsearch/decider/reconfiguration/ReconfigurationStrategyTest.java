@@ -1,13 +1,10 @@
 package ai.timefold.solver.core.impl.localsearch.decider.reconfiguration;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.NoOpRestartStrategy;
-import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -15,12 +12,6 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import org.junit.jupiter.api.Test;
 
 class ReconfigurationStrategyTest {
-
-    @Test
-    void noOp() {
-        var strategy = new NoOpRestartStrategy<>();
-        assertThat(strategy.isTriggered(mock(LocalSearchMoveScope.class))).isFalse();
-    }
 
     @Test
     void restoreBestSolution() {

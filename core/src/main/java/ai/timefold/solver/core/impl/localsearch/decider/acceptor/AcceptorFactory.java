@@ -15,10 +15,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.greatdeluge.Gre
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.hillclimbing.HillClimbingAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance.DiversifiedLateAcceptanceAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance.LateAcceptanceAcceptor;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.NoOpRestartStrategy;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.RestartStrategy;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.UnimprovedMoveCountRestartStrategy;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.UnimprovedTimeRestartStrategy;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.simulatedannealing.SimulatedAnnealingAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stepcountinghillclimbing.StepCountingHillClimbingAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.EntityTabuAcceptor;
@@ -224,9 +221,7 @@ public class AcceptorFactory<Solution_> {
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.LATE_ACCEPTANCE)
                 || (!acceptorTypeListsContainsAcceptorType(AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE)
                         && acceptorConfig.getLateAcceptanceSize() != null)) {
-            var restartStrategy = buildRestartStrategy();
-            var acceptor =
-                    new LateAcceptanceAcceptor<>(!(restartStrategy instanceof NoOpRestartStrategy<Solution_>), restartStrategy);
+            var acceptor = new LateAcceptanceAcceptor<>(new UnimprovedMoveCountRestartStrategy<Solution_>());
             acceptor.setLateAcceptanceSize(Objects.requireNonNullElse(acceptorConfig.getLateAcceptanceSize(), 400));
             return Optional.of(acceptor);
         }
@@ -237,25 +232,11 @@ public class AcceptorFactory<Solution_> {
             buildDiversifiedLateAcceptanceAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE)) {
             configPolicy.ensurePreviewFeature(PreviewFeature.DIVERSIFIED_LATE_ACCEPTANCE);
-            var restartStrategy = buildRestartStrategy();
-            var acceptor = new DiversifiedLateAcceptanceAcceptor<>(!(restartStrategy instanceof NoOpRestartStrategy<Solution_>),
-                    restartStrategy);
+            var acceptor = new DiversifiedLateAcceptanceAcceptor<>(new UnimprovedMoveCountRestartStrategy<Solution_>());
             acceptor.setLateAcceptanceSize(Objects.requireNonNullElse(acceptorConfig.getLateAcceptanceSize(), 5));
             return Optional.of(acceptor);
         }
         return Optional.empty();
-    }
-
-    private RestartStrategy<Solution_> buildRestartStrategy() {
-        RestartStrategy<Solution_> restartStrategy = new NoOpRestartStrategy<>();
-        var enableReconfiguration = acceptorConfig.getReconfigurationRestartType() != null;
-        if (enableReconfiguration) {
-            return switch (acceptorConfig.getReconfigurationRestartType()) {
-                case UNIMPROVED_MOVE_COUNT -> new UnimprovedMoveCountRestartStrategy<>();
-                case UNIMPROVED_TIME -> new UnimprovedTimeRestartStrategy<>();
-            };
-        }
-        return restartStrategy;
     }
 
     private Optional<GreatDelugeAcceptor<Solution_>> buildGreatDelugeAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {

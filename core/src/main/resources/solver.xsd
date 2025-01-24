@@ -1415,8 +1415,6 @@
                     
           <xs:element maxOccurs="unbounded" minOccurs="0" name="acceptorType" type="tns:acceptorType"/>
                     
-          <xs:element minOccurs="0" name="reconfigurationRestartType" type="tns:restartType"/>
-                    
           <xs:element minOccurs="0" name="entityTabuSize" type="xs:int"/>
                     
           <xs:element minOccurs="0" name="entityTabuRatio" type="xs:double"/>
@@ -1930,18 +1928,6 @@
       <xs:enumeration value="GREAT_DELUGE"/>
             
       <xs:enumeration value="STEP_COUNTING_HILL_CLIMBING"/>
-          
-    </xs:restriction>
-      
-  </xs:simpleType>
-    
-  <xs:simpleType name="restartType">
-        
-    <xs:restriction base="xs:string">
-            
-      <xs:enumeration value="UNIMPROVED_TIME"/>
-            
-      <xs:enumeration value="UNIMPROVED_MOVE_COUNT"/>
           
     </xs:restriction>
       

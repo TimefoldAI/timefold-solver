@@ -32,8 +32,6 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AcceptorFactory;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForagerFactory;
-import ai.timefold.solver.core.impl.localsearch.decider.reconfiguration.NoOpReconfigurationStrategy;
-import ai.timefold.solver.core.impl.localsearch.decider.reconfiguration.ReconfigurationStrategy;
 import ai.timefold.solver.core.impl.localsearch.decider.reconfiguration.RestoreBestSolutionReconfigurationStrategy;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
@@ -62,7 +60,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
             PhaseTermination<Solution_> termination) {
         var moveSelector = buildMoveSelector(configPolicy);
         var acceptor = buildAcceptor(configPolicy);
-        var reconfigurationStrategy = buildReconfigurationStrategy(configPolicy, moveSelector, acceptor);
+        var reconfigurationStrategy = new RestoreBestSolutionReconfigurationStrategy<>(moveSelector, acceptor);
         var forager = buildForager(configPolicy);
         if (moveSelector.isNeverEnding() && !forager.supportsNeverEndingMoveSelector()) {
             throw new IllegalStateException("The moveSelector (" + moveSelector
@@ -187,20 +185,6 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
             moveSelector = moveSelectorFactory.buildMoveSelector(configPolicy, defaultCacheType, defaultSelectionOrder, true);
         }
         return moveSelector;
-    }
-
-    private ReconfigurationStrategy<Solution_> buildReconfigurationStrategy(HeuristicConfigPolicy<Solution_> configPolicy,
-            MoveSelector<Solution_> moveSelector, Acceptor<Solution_> acceptor) {
-        var acceptorConfig = phaseConfig.getAcceptorConfig();
-        if (acceptorConfig != null) {
-            var enableReconfiguration =
-                    acceptorConfig.getReconfigurationRestartType() != null;
-            if (enableReconfiguration) {
-                configPolicy.ensurePreviewFeature(PreviewFeature.RECONFIGURATION);
-                return new RestoreBestSolutionReconfigurationStrategy<>(moveSelector, acceptor);
-            }
-        }
-        return new NoOpReconfigurationStrategy<>();
     }
 
     private UnionMoveSelectorConfig determineDefaultMoveSelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy) {
