@@ -42,7 +42,7 @@ class ReconfigurationStrategyTest {
         // Restore the best solution
         verify(solverScope, times(1)).setWorkingSolutionFromBestSolution();
         // Restart the phase
-        verify(phaseScope, times(1)).resetReconfiguration();
+        verify(phaseScope, times(1)).cancelReconfiguration();
         verify(moveSelector, times(1)).phaseStarted(any());
         verify(acceptor, times(1)).phaseStarted(any());
     }
