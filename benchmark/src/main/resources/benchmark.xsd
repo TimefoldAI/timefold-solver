@@ -2603,9 +2603,6 @@
       <xs:enumeration value="DIVERSIFIED_LATE_ACCEPTANCE"/>
                   
       
-      <xs:enumeration value="RECONFIGURATION"/>
-                  
-      
       <xs:enumeration value="PLANNING_SOLUTION_DIFF"/>
                 
     
