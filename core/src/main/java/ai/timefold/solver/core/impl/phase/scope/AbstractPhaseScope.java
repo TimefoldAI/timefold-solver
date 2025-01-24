@@ -256,7 +256,7 @@ public abstract class AbstractPhaseScope<Solution_> {
         this.reconfigurationTriggered = true;
     }
 
-    public void resetReconfiguration() {
+    public void cancelReconfiguration() {
         this.reconfigurationTriggered = false;
     }
 
