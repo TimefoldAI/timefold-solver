@@ -16,8 +16,8 @@ class ReconfigurationStrategyTest {
     @Test
     void restoreBestSolution() {
         // Requires the decider
-        assertThatThrownBy(() -> new RestoreBestSolutionReconfigurationStrategy<>(null, null).phaseStarted(null))
-                .isInstanceOf(NullPointerException.class);
+        var badStrategy = new RestoreBestSolutionReconfigurationStrategy<>(null, null);
+        assertThatThrownBy(() -> badStrategy.phaseStarted(null)).isInstanceOf(NullPointerException.class);
 
         // Restore the best solution
         var moveSelector = mock(MoveSelector.class);
