@@ -18,6 +18,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance.
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.NoOpRestartStrategy;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.RestartStrategy;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.UnimprovedMoveCountRestartStrategy;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.UnimprovedTimeRestartStrategy;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.simulatedannealing.SimulatedAnnealingAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stepcountinghillclimbing.StepCountingHillClimbingAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.EntityTabuAcceptor;
@@ -250,8 +251,8 @@ public class AcceptorFactory<Solution_> {
         var enableReconfiguration = acceptorConfig.getReconfigurationRestartType() != null;
         if (enableReconfiguration) {
             return switch (acceptorConfig.getReconfigurationRestartType()) {
-                case UNIMPROVED_TIME -> new UnimprovedMoveCountRestartStrategy<>();
                 case UNIMPROVED_MOVE_COUNT -> new UnimprovedMoveCountRestartStrategy<>();
+                case UNIMPROVED_TIME -> new UnimprovedTimeRestartStrategy<>();
             };
         }
         return restartStrategy;
