@@ -14,15 +14,9 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 public abstract class ReconfigurableAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
 
     private final RestartStrategy<Solution_> restartStrategy;
-    private final boolean enabled;
 
-    protected ReconfigurableAcceptor(boolean enabled, RestartStrategy<Solution_> restartStrategy) {
-        this.enabled = enabled;
+    protected ReconfigurableAcceptor(RestartStrategy<Solution_> restartStrategy) {
         this.restartStrategy = restartStrategy;
-    }
-
-    protected boolean isEnabled() {
-        return enabled;
     }
 
     @Override
@@ -58,12 +52,12 @@ public abstract class ReconfigurableAcceptor<Solution_> extends AbstractAcceptor
     @Override
     @SuppressWarnings("unchecked")
     public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
-        if (enabled && restartStrategy.isTriggered(moveScope)) {
+        if (restartStrategy.isTriggered(moveScope)) {
             moveScope.getStepScope().getPhaseScope().triggerReconfiguration();
             return true;
         }
         var accepted = evaluate(moveScope);
-        var improved = enabled && moveScope.getScore().compareTo(moveScope.getStepScope().getPhaseScope().getBestScore()) > 0;
+        var improved = moveScope.getScore().compareTo(moveScope.getStepScope().getPhaseScope().getBestScore()) > 0;
         if (improved) {
             restartStrategy.reset(moveScope);
         }

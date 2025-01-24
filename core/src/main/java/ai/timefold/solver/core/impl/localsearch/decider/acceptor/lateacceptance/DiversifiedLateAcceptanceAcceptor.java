@@ -20,8 +20,8 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends Reconfigurable
     protected Score<?>[] previousScores;
     protected int lateScoreIndex = -1;
 
-    public DiversifiedLateAcceptanceAcceptor(boolean enableReconfiguration, RestartStrategy<Solution_> restartStrategy) {
-        super(enableReconfiguration, restartStrategy);
+    public DiversifiedLateAcceptanceAcceptor(RestartStrategy<Solution_> restartStrategy) {
+        super(restartStrategy);
     }
 
     public void setLateAcceptanceSize(int lateAcceptanceSize) {

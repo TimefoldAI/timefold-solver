@@ -15,7 +15,6 @@ import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
         "acceptorTypeList",
-        "reconfigurationRestartType",
         "entityTabuSize",
         "entityTabuRatio",
         "fadingEntityTabuSize",
@@ -39,7 +38,6 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
 
     @XmlElement(name = "acceptorType")
     private List<AcceptorType> acceptorTypeList = null;
-    private RestartType reconfigurationRestartType = null;
 
     protected Integer entityTabuSize = null;
     protected Double entityTabuRatio = null;
@@ -78,14 +76,6 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
 
     public void setAcceptorTypeList(@Nullable List<AcceptorType> acceptorTypeList) {
         this.acceptorTypeList = acceptorTypeList;
-    }
-
-    public @Nullable RestartType getReconfigurationRestartType() {
-        return reconfigurationRestartType;
-    }
-
-    public void setReconfigurationRestartType(@Nullable RestartType reconfigurationRestartType) {
-        this.reconfigurationRestartType = reconfigurationRestartType;
     }
 
     public @Nullable Integer getEntityTabuSize() {
@@ -273,11 +263,6 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
         return this;
     }
 
-    public @NonNull LocalSearchAcceptorConfig withRestartType(@NonNull RestartType restartType) {
-        this.reconfigurationRestartType = restartType;
-        return this;
-    }
-
     public @NonNull LocalSearchAcceptorConfig withEntityTabuSize(@NonNull Integer entityTabuSize) {
         this.entityTabuSize = entityTabuSize;
         return this;
@@ -382,8 +367,6 @@ public class LocalSearchAcceptorConfig extends AbstractConfig<LocalSearchAccepto
                 }
             }
         }
-        reconfigurationRestartType = ConfigUtils.inheritOverwritableProperty(reconfigurationRestartType,
-                inheritedConfig.getReconfigurationRestartType());
         entityTabuSize = ConfigUtils.inheritOverwritableProperty(entityTabuSize, inheritedConfig.getEntityTabuSize());
         entityTabuRatio = ConfigUtils.inheritOverwritableProperty(entityTabuRatio, inheritedConfig.getEntityTabuRatio());
         fadingEntityTabuSize = ConfigUtils.inheritOverwritableProperty(fadingEntityTabuSize,

@@ -17,8 +17,8 @@ public class LateAcceptanceAcceptor<Solution_> extends ReconfigurableAcceptor<So
     protected Score<?>[] previousScores;
     protected int lateScoreIndex = -1;
 
-    public LateAcceptanceAcceptor(boolean enableReconfiguration, RestartStrategy<Solution_> restartStrategy) {
-        super(enableReconfiguration, restartStrategy);
+    public LateAcceptanceAcceptor(RestartStrategy<Solution_> restartStrategy) {
+        super(restartStrategy);
     }
 
     public void setLateAcceptanceSize(int lateAcceptanceSize) {
