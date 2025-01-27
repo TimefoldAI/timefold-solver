@@ -25,10 +25,9 @@ public abstract class AbstractGeometricRestartStrategy<Solution_> implements Res
     protected final double scalingFactor;
 
     private boolean gracePeriodFinished;
-    private boolean restartTriggered;
     private long gracePeriodMillis;
     protected long nextRestart;
-    protected double currentGeometricGrowFactor;
+    private double currentGeometricGrowFactor;
 
     protected AbstractGeometricRestartStrategy(Clock clock, double scalingFactor) {
         this.clock = clock;
@@ -37,7 +36,6 @@ public abstract class AbstractGeometricRestartStrategy<Solution_> implements Res
 
     @Override
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
-        restartTriggered = false;
         if (gracePeriodMillis == 0) {
             // 10 seconds of grace period
             gracePeriodMillis = clock.millis() + 10_000;
@@ -54,7 +52,7 @@ public abstract class AbstractGeometricRestartStrategy<Solution_> implements Res
         currentGeometricGrowFactor = 1;
         gracePeriodMillis = 0;
         gracePeriodFinished = false;
-        nextRestart = (long) Math.ceil(currentGeometricGrowFactor * scalingFactor);
+        nextRestart = calculateNextRestart();
     }
 
     @Override
@@ -64,24 +62,29 @@ public abstract class AbstractGeometricRestartStrategy<Solution_> implements Res
 
     @Override
     public boolean isTriggered(LocalSearchMoveScope<Solution_> moveScope) {
-        if (!restartTriggered && (gracePeriodFinished || clock.millis() >= gracePeriodMillis)) {
-            gracePeriodFinished = true;
+        if (isGracePeriodFinished()) {
             var triggered = process(moveScope);
             if (triggered) {
+                logger.trace("Restart triggered with geometric factor {}, scaling factor of {}", currentGeometricGrowFactor,
+                        scalingFactor);
                 currentGeometricGrowFactor = Math.ceil(currentGeometricGrowFactor * GEOMETRIC_FACTOR);
-                nextRestart = (long) Math.ceil(currentGeometricGrowFactor * scalingFactor);
-                restartTriggered = true;
+                nextRestart = calculateNextRestart();
+                return true;
             }
         }
-        return restartTriggered;
+        return false;
     }
 
     protected boolean isGracePeriodFinished() {
+        if (gracePeriodFinished) {
+            return true;
+        }
+        gracePeriodFinished = clock.millis() >= gracePeriodMillis;
         return gracePeriodFinished;
     }
 
-    protected void disableTriggerFlag() {
-        restartTriggered = false;
+    private long calculateNextRestart() {
+        return (long) Math.ceil(currentGeometricGrowFactor * scalingFactor);
     }
 
     abstract boolean process(LocalSearchMoveScope<Solution_> moveScope);

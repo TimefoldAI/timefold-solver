@@ -36,7 +36,7 @@ class UnimprovedMoveCountRestartStrategyTest {
         strategy.solvingStarted(null);
         strategy.phaseStarted(phaseScope);
         assertThat(strategy.isTriggered(moveScope)).isFalse();
-        assertThat(strategy.lastImprovementMoveCount).isEqualTo(1000L);
+        assertThat(strategy.lastCheckpoint).isEqualTo(1000L);
         assertThat(strategy.nextRestart).isEqualTo(50000L);
 
         // First restart
@@ -44,9 +44,8 @@ class UnimprovedMoveCountRestartStrategyTest {
         var firstCount = 60000L;
         when(solverScope.getMoveEvaluationCount()).thenReturn(firstCount);
         assertThat(strategy.isTriggered(moveScope)).isTrue();
-        assertThat(strategy.lastImprovementMoveCount).isEqualTo(firstCount);
+        assertThat(strategy.lastCheckpoint).isEqualTo(firstCount);
         assertThat(strategy.nextRestart).isEqualTo(2L * 50000L);
-        strategy.reset(moveScope);
         assertThat(strategy.isTriggered(moveScope)).isFalse();
 
         // Second restart
@@ -54,9 +53,8 @@ class UnimprovedMoveCountRestartStrategyTest {
         var secondCount = 2L * 50000L + firstCount;
         when(solverScope.getMoveEvaluationCount()).thenReturn(secondCount);
         assertThat(strategy.isTriggered(moveScope)).isTrue();
-        assertThat(strategy.lastImprovementMoveCount).isEqualTo(secondCount);
+        assertThat(strategy.lastCheckpoint).isEqualTo(secondCount);
         assertThat(strategy.nextRestart).isEqualTo(3L * 50000L);
-        strategy.reset(moveScope);
         assertThat(strategy.isTriggered(moveScope)).isFalse();
 
         // Third restart
@@ -64,9 +62,8 @@ class UnimprovedMoveCountRestartStrategyTest {
         Mockito.reset(clock);
         when(solverScope.getMoveEvaluationCount()).thenReturn(thirdCount);
         assertThat(strategy.isTriggered(moveScope)).isTrue();
-        assertThat(strategy.lastImprovementMoveCount).isEqualTo(thirdCount);
+        assertThat(strategy.lastCheckpoint).isEqualTo(thirdCount);
         assertThat(strategy.nextRestart).isEqualTo(5L * 50000L);
-        strategy.reset(moveScope);
     }
 
     @Test
@@ -92,7 +89,7 @@ class UnimprovedMoveCountRestartStrategyTest {
         strategy.isTriggered(moveScope);
         // Update the last improvement
         strategy.stepEnded(stepScope);
-        assertThat(strategy.lastImprovementMoveCount).isEqualTo(1001L);
+        assertThat(strategy.lastCheckpoint).isEqualTo(1001L);
     }
 
     @Test
@@ -113,8 +110,6 @@ class UnimprovedMoveCountRestartStrategyTest {
         strategy.phaseStarted(mock(LocalSearchPhaseScope.class));
         // Trigger
         strategy.isTriggered(moveScope);
-        // Reset
-        strategy.reset(moveScope);
-        assertThat(strategy.lastImprovementMoveCount).isEqualTo(1000L);
+        assertThat(strategy.lastCheckpoint).isEqualTo(1000L);
     }
 }

@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.localsearch.decider.reconfiguration;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
@@ -21,14 +20,15 @@ public final class RestoreBestSolutionReconfigurationStrategy<Solution_> impleme
 
     public RestoreBestSolutionReconfigurationStrategy(MoveSelector<Solution_> moveSelector, Acceptor<Solution_> acceptor) {
         this.moveSelector = moveSelector;
+        Objects.requireNonNull(moveSelector);
         this.acceptor = acceptor;
+        Objects.requireNonNull(acceptor);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <Score_ extends Score<Score_>> Score_ apply(AbstractStepScope<Solution_> stepScope) {
+    public void apply(AbstractStepScope<Solution_> stepScope) {
         var solverScope = stepScope.getPhaseScope().getSolverScope();
-        logger.debug("Resetting working solution, score ({})", solverScope.getBestScore());
+        logger.trace("Resetting working solution, score ({})", solverScope.getBestScore());
         solverScope.setWorkingSolutionFromBestSolution();
         // Changing the working solution requires reinitializing the move selector and acceptor
         // 1 - The move selector will reset all cached lists using old solution entity references
@@ -37,7 +37,6 @@ public final class RestoreBestSolutionReconfigurationStrategy<Solution_> impleme
         acceptor.phaseStarted((LocalSearchPhaseScope<Solution_>) stepScope.getPhaseScope());
         // Cancel it as the best solution is already restored
         stepScope.getPhaseScope().cancelReconfiguration();
-        return (Score_) solverScope.getBestScore();
     }
 
     @Override
@@ -52,8 +51,7 @@ public final class RestoreBestSolutionReconfigurationStrategy<Solution_> impleme
 
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        Objects.requireNonNull(moveSelector);
-        Objects.requireNonNull(acceptor);
+        // Do nothing
     }
 
     @Override

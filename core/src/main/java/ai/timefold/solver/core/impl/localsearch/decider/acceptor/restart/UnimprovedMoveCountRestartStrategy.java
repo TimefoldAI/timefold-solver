@@ -13,7 +13,8 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
  */
 public class UnimprovedMoveCountRestartStrategy<Solution_> extends AbstractGeometricRestartStrategy<Solution_> {
 
-    protected long lastImprovementMoveCount;
+    // Last checkpoint of a solution improvement or the restart process
+    protected long lastCheckpoint;
     private Score<?> currentBestScore;
 
     public UnimprovedMoveCountRestartStrategy() {
@@ -41,38 +42,27 @@ public class UnimprovedMoveCountRestartStrategy<Solution_> extends AbstractGeome
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
         // Do not update it during the grace period
         if (isGracePeriodFinished() && ((Score) stepScope.getScore()).compareTo(currentBestScore) > 0) {
-            lastImprovementMoveCount = stepScope.getPhaseScope().getSolverScope().getMoveEvaluationCount();
+            lastCheckpoint = stepScope.getPhaseScope().getSolverScope().getMoveEvaluationCount();
         }
     }
 
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         super.solvingStarted(solverScope);
-        lastImprovementMoveCount = 0;
+        lastCheckpoint = 0;
     }
 
     @Override
     public boolean process(LocalSearchMoveScope<Solution_> moveScope) {
         var currentMoveCount = moveScope.getStepScope().getPhaseScope().getSolverScope().getMoveEvaluationCount();
-        if (lastImprovementMoveCount == 0) {
-            lastImprovementMoveCount = currentMoveCount;
+        if (lastCheckpoint == 0) {
+            lastCheckpoint = currentMoveCount;
             return false;
         }
-        if (currentMoveCount - lastImprovementMoveCount >= nextRestart) {
-            logger.debug("Restart triggered with geometric factor {}, scaling factor of {}, move count ({})",
-                    currentGeometricGrowFactor, scalingFactor, currentMoveCount);
-            lastImprovementMoveCount = currentMoveCount;
+        if (currentMoveCount - lastCheckpoint >= nextRestart) {
+            lastCheckpoint = currentMoveCount;
             return true;
         }
         return false;
-    }
-
-    @Override
-    public void reset(LocalSearchMoveScope<Solution_> moveScope) {
-        disableTriggerFlag();
-        // Do not update it during the grace period
-        if (isGracePeriodFinished()) {
-            lastImprovementMoveCount = moveScope.getStepScope().getPhaseScope().getSolverScope().getMoveEvaluationCount();
-        }
     }
 }

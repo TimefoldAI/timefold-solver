@@ -4,7 +4,6 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
-import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
@@ -100,15 +99,6 @@ public class LocalSearchDecider<Solution_> {
         InnerScoreDirector<Solution_, ?> scoreDirector = stepScope.getScoreDirector();
         scoreDirector.setAllChangesWillBeUndoneBeforeStepEnds(true);
         int moveIndex = 0;
-        if (reconfigurationStrategy.isTriggered(stepScope)) {
-            var reconfigurationScore = reconfigurationStrategy.apply(stepScope);
-            // Generate a dummy move; so the LS phase continues the process
-            var adaptedMove = new LegacyMoveAdapter<Solution_>(NoChangeMove.getInstance());
-            stepScope.setStep(adaptedMove);
-            stepScope.setScore(reconfigurationScore);
-            scoreDirector.setAllChangesWillBeUndoneBeforeStepEnds(false);
-            return;
-        }
         for (var move : moveSelector) {
             var adaptedMove = new LegacyMoveAdapter<>(move);
             LocalSearchMoveScope<Solution_> moveScope = new LocalSearchMoveScope<>(stepScope, moveIndex, adaptedMove);
@@ -163,6 +153,9 @@ public class LocalSearchDecider<Solution_> {
     }
 
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
+        if (reconfigurationStrategy.isTriggered(stepScope)) {
+            reconfigurationStrategy.apply(stepScope);
+        }
         reconfigurationStrategy.stepEnded(stepScope);
         moveSelector.stepEnded(stepScope);
         acceptor.stepEnded(stepScope);
