@@ -32,7 +32,6 @@ public abstract class AbstractPhaseScope<Solution_> {
     protected Long endingScoreCalculationCount;
     protected Long endingMoveEvaluationCount;
     protected long childThreadsScoreCalculationCount = 0L;
-    protected long childThreadsMoveEvaluationCount = 0L;
 
     protected int bestSolutionStepIndex;
 
@@ -140,11 +139,6 @@ public abstract class AbstractPhaseScope<Solution_> {
         childThreadsScoreCalculationCount += addition;
     }
 
-    public void addChildThreadsMoveEvaluationCount(long addition) {
-        solverScope.addChildThreadsMoveEvaluationCount(addition);
-        childThreadsMoveEvaluationCount += addition;
-    }
-
     public void addMoveEvaluationCount(Move<Solution_> move, long count) {
         solverScope.addMoveEvaluationCount(1);
         addMoveEvaluationCountPerType(move, count);
@@ -153,12 +147,6 @@ public abstract class AbstractPhaseScope<Solution_> {
     public void addMoveEvaluationCountPerType(Move<Solution_> move, long count) {
         if (solverScope.isMetricEnabled(SolverMetric.MOVE_COUNT_PER_TYPE)) {
             solverScope.addMoveEvaluationCountPerType(move.describe(), count);
-        }
-    }
-
-    public void addMoveEvaluationCountPerType(String moveDescription, long count) {
-        if (solverScope.isMetricEnabled(SolverMetric.MOVE_COUNT_PER_TYPE)) {
-            solverScope.addMoveEvaluationCountPerType(moveDescription, count);
         }
     }
 
@@ -171,7 +159,7 @@ public abstract class AbstractPhaseScope<Solution_> {
         if (endingMoveEvaluationCount == null) {
             currentMoveEvaluationCount = getSolverScope().getMoveEvaluationCount();
         }
-        return currentMoveEvaluationCount - startingMoveEvaluationCount + childThreadsMoveEvaluationCount;
+        return currentMoveEvaluationCount - startingMoveEvaluationCount;
     }
 
     /**

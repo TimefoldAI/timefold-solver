@@ -11,11 +11,6 @@ final class RuinRecreateConstructionHeuristicPhaseScope<Solution_> extends Const
     }
 
     @Override
-    public void addChildThreadsMoveEvaluationCount(long addition) {
-        // Nested phase does not count moves.
-    }
-
-    @Override
     public void addMoveEvaluationCount(Move<Solution_> move, long count) {
         // Nested phase does not count moves.
     }
