@@ -55,10 +55,10 @@ public abstract class ReconfigurableAcceptor<Solution_> extends AbstractAcceptor
             moveScope.getStepScope().getPhaseScope().triggerReconfiguration();
             return true;
         }
-        return evaluate(moveScope);
+        return applyAcceptanceCriteria(moveScope);
     }
 
-    protected abstract boolean evaluate(LocalSearchMoveScope<Solution_> moveScope);
+    protected abstract boolean applyAcceptanceCriteria(LocalSearchMoveScope<Solution_> moveScope);
 
-    protected abstract <Score_ extends Score<Score_>> void reset(Score_ score);
+    protected abstract <Score_ extends Score<Score_>> void applyReplacementCriteria(Score_ score);
 }

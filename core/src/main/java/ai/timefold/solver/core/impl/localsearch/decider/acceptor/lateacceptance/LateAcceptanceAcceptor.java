@@ -52,7 +52,7 @@ public class LateAcceptanceAcceptor<Solution_> extends ReconfigurableAcceptor<So
 
     @Override
     @SuppressWarnings("unchecked")
-    public boolean evaluate(LocalSearchMoveScope<Solution_> moveScope) {
+    public boolean applyAcceptanceCriteria(LocalSearchMoveScope<Solution_> moveScope) {
         var moveScore = moveScope.getScore();
         var lateScore = previousScores[lateScoreIndex];
         if (moveScore.compareTo(lateScore) >= 0) {
@@ -66,7 +66,7 @@ public class LateAcceptanceAcceptor<Solution_> extends ReconfigurableAcceptor<So
     }
 
     @Override
-    protected <Score_ extends Score<Score_>> void reset(Score_ score) {
+    protected <Score_ extends Score<Score_>> void applyReplacementCriteria(Score_ score) {
         previousScores[lateScoreIndex] = score;
     }
 
