@@ -2,9 +2,8 @@ package ai.timefold.solver.core.impl.localsearch.decider.reconfiguration;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
-import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
+import ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider;
+import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -15,27 +14,14 @@ import org.slf4j.LoggerFactory;
 public final class RestoreBestSolutionRestartStrategy<Solution_> implements RestartStrategy<Solution_> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final MoveSelector<Solution_> moveSelector;
-    private final Acceptor<Solution_> acceptor;
-
-    public RestoreBestSolutionRestartStrategy(MoveSelector<Solution_> moveSelector, Acceptor<Solution_> acceptor) {
-        this.moveSelector = moveSelector;
-        Objects.requireNonNull(moveSelector);
-        this.acceptor = acceptor;
-        Objects.requireNonNull(acceptor);
-    }
+    private LocalSearchDecider<Solution_> decider;
 
     @Override
     public void applyRestart(AbstractStepScope<Solution_> stepScope) {
         var solverScope = stepScope.getPhaseScope().getSolverScope();
         logger.trace("Resetting working solution, score ({})", solverScope.getBestScore());
-        solverScope.setWorkingSolutionFromBestSolution();
-        // Changing the working solution requires reinitializing the move selector and acceptor
-        // 1 - The move selector will reset all cached lists using old solution entity references
-        moveSelector.phaseStarted(stepScope.getPhaseScope());
-        // 2 - The acceptor will restart its search from the updated working solution (last best solution)
-        acceptor.phaseStarted((LocalSearchPhaseScope<Solution_>) stepScope.getPhaseScope());
-        // Cancel it as the best solution is already restored
+        decider.setWorkingSolutionFromBestSolution((LocalSearchStepScope<Solution_>) stepScope);
+        // Mark the solver as unstuck as the best solution is already restored
         stepScope.getPhaseScope().resetSolverStuck();
     }
 
@@ -61,7 +47,8 @@ public final class RestoreBestSolutionRestartStrategy<Solution_> implements Rest
 
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
-        // Do nothing
+        var castSolverScope = (AdaptedSolverScope<Solution_>) solverScope;
+        this.decider = Objects.requireNonNull(castSolverScope.getDecider());
     }
 
     @Override

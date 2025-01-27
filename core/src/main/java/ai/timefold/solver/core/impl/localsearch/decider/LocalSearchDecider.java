@@ -7,6 +7,7 @@ import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
+import ai.timefold.solver.core.impl.localsearch.decider.reconfiguration.AdaptedSolverScope;
 import ai.timefold.solver.core.impl.localsearch.decider.reconfiguration.RestartStrategy;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
@@ -76,7 +77,7 @@ public class LocalSearchDecider<Solution_> {
     // ************************************************************************
 
     public void solvingStarted(SolverScope<Solution_> solverScope) {
-        restartStrategy.solvingStarted(solverScope);
+        restartStrategy.solvingStarted(new AdaptedSolverScope<>(solverScope, this));
         moveSelector.solvingStarted(solverScope);
         acceptor.solvingStarted(solverScope);
         forager.solvingStarted(solverScope);
@@ -179,6 +180,15 @@ public class LocalSearchDecider<Solution_> {
         moveSelector.solvingEnded(solverScope);
         acceptor.solvingEnded(solverScope);
         forager.solvingEnded(solverScope);
+    }
+
+    public void setWorkingSolutionFromBestSolution(LocalSearchStepScope<Solution_> stepScope) {
+        stepScope.getPhaseScope().getSolverScope().setWorkingSolutionFromBestSolution();
+        // Changing the working solution requires reinitializing the move selector.
+        // The acceptor should not be restarted, as this may lead to an inconsistent state,
+        // such as changing the scores of all late elements in LA and DLAS.
+        // 1 - The move selector will reset all cached lists using old solution entity references
+        moveSelector.phaseStarted(stepScope.getPhaseScope());
     }
 
     public void solvingError(SolverScope<Solution_> solverScope, Exception exception) {

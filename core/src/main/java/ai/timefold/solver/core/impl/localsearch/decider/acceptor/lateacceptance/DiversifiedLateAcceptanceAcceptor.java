@@ -3,12 +3,13 @@ package ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance
 import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.ReconfigurableAcceptor;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.RestartableAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.StuckCriterion;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
+import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 
-public class DiversifiedLateAcceptanceAcceptor<Solution_> extends ReconfigurableAcceptor<Solution_> {
+public class DiversifiedLateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solution_> {
 
     // The worst score in the late elements list
     protected Score<?> lateWorse;
@@ -104,6 +105,16 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends Reconfigurable
                     lateWorseOccurrences++;
                 }
             }
+        }
+    }
+
+    @Override
+    public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
+        super.stepEnded(stepScope);
+        if (restartTriggered) {
+            // Update the current late score with the best score
+            previousScores[lateScoreIndex] = stepScope.getPhaseScope().getBestScore();
+            restartTriggered = false;
         }
     }
 
