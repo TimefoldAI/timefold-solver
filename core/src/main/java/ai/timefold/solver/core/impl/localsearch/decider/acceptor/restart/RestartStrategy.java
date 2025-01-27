@@ -6,6 +6,4 @@ import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 public interface RestartStrategy<Solution_> extends LocalSearchPhaseLifecycleListener<Solution_> {
 
     boolean isTriggered(LocalSearchMoveScope<Solution_> moveScope);
-
-    void reset(LocalSearchMoveScope<Solution_> moveScope);
 }

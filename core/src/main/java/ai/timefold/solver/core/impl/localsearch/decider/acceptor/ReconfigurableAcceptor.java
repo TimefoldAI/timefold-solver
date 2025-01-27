@@ -50,18 +50,12 @@ public abstract class ReconfigurableAcceptor<Solution_> extends AbstractAcceptor
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         if (restartStrategy.isTriggered(moveScope)) {
             moveScope.getStepScope().getPhaseScope().triggerReconfiguration();
             return true;
         }
-        var accepted = evaluate(moveScope);
-        var improved = moveScope.getScore().compareTo(moveScope.getStepScope().getPhaseScope().getBestScore()) > 0;
-        if (improved) {
-            restartStrategy.reset(moveScope);
-        }
-        return accepted;
+        return evaluate(moveScope);
     }
 
     protected abstract boolean evaluate(LocalSearchMoveScope<Solution_> moveScope);

@@ -164,22 +164,4 @@ class DiversifiedLateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         verify(restartStrategy, times(1)).isTriggered(any());
         assertThat(phaseScope.isReconfigurationTriggered()).isTrue();
     }
-
-    @Test
-    void resetReconfiguration() {
-        var restartStrategy = mock(RestartStrategy.class);
-        var acceptor = new DiversifiedLateAcceptanceAcceptor<>(restartStrategy);
-        acceptor.setLateAcceptanceSize(3);
-
-        var solverScope = new SolverScope<>();
-        solverScope.setBestScore(SimpleScore.of(-1000));
-        var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
-        acceptor.phaseStarted(phaseScope);
-        var stepScope0 = new LocalSearchStepScope<>(phaseScope);
-        stepScope0.setScore(SimpleScore.of(-999));
-        var moveScope0 = buildMoveScope(stepScope0, -999);
-        stepScope0.getPhaseScope().setLastCompletedStepScope(stepScope0);
-        assertThat(acceptor.isAccepted(moveScope0)).isTrue();
-        verify(restartStrategy, times(1)).reset(moveScope0);
-    }
 }

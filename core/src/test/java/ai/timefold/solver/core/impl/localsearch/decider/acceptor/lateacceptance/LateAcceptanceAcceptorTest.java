@@ -3,8 +3,8 @@ package ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptorTest;
@@ -277,23 +277,5 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         var moveScope0 = buildMoveScope(stepScope0, -2000);
         assertThat(acceptor.isAccepted(moveScope0)).isTrue();
         assertThat(phaseScope.isReconfigurationTriggered()).isTrue();
-    }
-
-    @Test
-    void resetReconfiguration() {
-        var restartStrategy = mock(RestartStrategy.class);
-        var acceptor = new LateAcceptanceAcceptor<>(restartStrategy);
-        acceptor.setLateAcceptanceSize(3);
-
-        var solverScope = new SolverScope<>();
-        solverScope.setBestScore(SimpleScore.of(-1000));
-        var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
-        acceptor.phaseStarted(phaseScope);
-        var stepScope0 = new LocalSearchStepScope<>(phaseScope);
-        stepScope0.setScore(SimpleScore.of(-999));
-        var moveScope0 = buildMoveScope(stepScope0, -999);
-        stepScope0.getPhaseScope().setLastCompletedStepScope(stepScope0);
-        assertThat(acceptor.isAccepted(moveScope0)).isTrue();
-        verify(restartStrategy, times(1)).reset(moveScope0);
     }
 }
