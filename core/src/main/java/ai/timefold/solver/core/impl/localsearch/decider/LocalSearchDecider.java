@@ -7,7 +7,7 @@ import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
-import ai.timefold.solver.core.impl.localsearch.decider.reconfiguration.ReconfigurationStrategy;
+import ai.timefold.solver.core.impl.localsearch.decider.reconfiguration.RestartStrategy;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
@@ -31,7 +31,7 @@ public class LocalSearchDecider<Solution_> {
     protected final String logIndentation;
     protected final Termination<Solution_> termination;
     protected final MoveSelector<Solution_> moveSelector;
-    protected final ReconfigurationStrategy<Solution_> reconfigurationStrategy;
+    protected final RestartStrategy<Solution_> restartStrategy;
     protected final Acceptor<Solution_> acceptor;
     protected final LocalSearchForager<Solution_> forager;
 
@@ -39,12 +39,12 @@ public class LocalSearchDecider<Solution_> {
     protected boolean assertExpectedUndoMoveScore = false;
 
     public LocalSearchDecider(String logIndentation, Termination<Solution_> termination,
-            MoveSelector<Solution_> moveSelector, ReconfigurationStrategy<Solution_> reconfigurationStrategy,
+            MoveSelector<Solution_> moveSelector, RestartStrategy<Solution_> restartStrategy,
             Acceptor<Solution_> acceptor, LocalSearchForager<Solution_> forager) {
         this.logIndentation = logIndentation;
         this.termination = termination;
         this.moveSelector = moveSelector;
-        this.reconfigurationStrategy = reconfigurationStrategy;
+        this.restartStrategy = restartStrategy;
         this.acceptor = acceptor;
         this.forager = forager;
     }
@@ -75,21 +75,21 @@ public class LocalSearchDecider<Solution_> {
     // ************************************************************************
 
     public void solvingStarted(SolverScope<Solution_> solverScope) {
-        reconfigurationStrategy.solvingStarted(solverScope);
+        restartStrategy.solvingStarted(solverScope);
         moveSelector.solvingStarted(solverScope);
         acceptor.solvingStarted(solverScope);
         forager.solvingStarted(solverScope);
     }
 
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
-        reconfigurationStrategy.phaseStarted(phaseScope);
+        restartStrategy.phaseStarted(phaseScope);
         moveSelector.phaseStarted(phaseScope);
         acceptor.phaseStarted(phaseScope);
         forager.phaseStarted(phaseScope);
     }
 
     public void stepStarted(LocalSearchStepScope<Solution_> stepScope) {
-        reconfigurationStrategy.stepStarted(stepScope);
+        restartStrategy.stepStarted(stepScope);
         moveSelector.stepStarted(stepScope);
         acceptor.stepStarted(stepScope);
         forager.stepStarted(stepScope);
@@ -153,24 +153,24 @@ public class LocalSearchDecider<Solution_> {
     }
 
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
-        if (reconfigurationStrategy.isTriggered(stepScope)) {
-            reconfigurationStrategy.apply(stepScope);
+        if (restartStrategy.isSolverStuck(stepScope)) {
+            restartStrategy.applyRestart(stepScope);
         }
-        reconfigurationStrategy.stepEnded(stepScope);
+        restartStrategy.stepEnded(stepScope);
         moveSelector.stepEnded(stepScope);
         acceptor.stepEnded(stepScope);
         forager.stepEnded(stepScope);
     }
 
     public void phaseEnded(LocalSearchPhaseScope<Solution_> phaseScope) {
-        reconfigurationStrategy.phaseEnded(phaseScope);
+        restartStrategy.phaseEnded(phaseScope);
         moveSelector.phaseEnded(phaseScope);
         acceptor.phaseEnded(phaseScope);
         forager.phaseEnded(phaseScope);
     }
 
     public void solvingEnded(SolverScope<Solution_> solverScope) {
-        reconfigurationStrategy.solvingEnded(solverScope);
+        restartStrategy.solvingEnded(solverScope);
         moveSelector.solvingEnded(solverScope);
         acceptor.solvingEnded(solverScope);
         forager.solvingEnded(solverScope);

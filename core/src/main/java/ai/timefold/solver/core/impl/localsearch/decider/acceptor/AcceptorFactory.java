@@ -15,8 +15,8 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.greatdeluge.Gre
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.hillclimbing.HillClimbingAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance.DiversifiedLateAcceptanceAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance.LateAcceptanceAcceptor;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.RestartStrategy;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.UnimprovedMoveCountRestartStrategy;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.StuckCriterion;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.UnimprovedMoveCountStuckCriterion;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.simulatedannealing.SimulatedAnnealingAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stepcountinghillclimbing.StepCountingHillClimbingAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.EntityTabuAcceptor;
@@ -222,7 +222,7 @@ public class AcceptorFactory<Solution_> {
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.LATE_ACCEPTANCE)
                 || (!acceptorTypeListsContainsAcceptorType(AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE)
                         && acceptorConfig.getLateAcceptanceSize() != null)) {
-            RestartStrategy<Solution_> strategy = new UnimprovedMoveCountRestartStrategy<>();
+            StuckCriterion<Solution_> strategy = new UnimprovedMoveCountStuckCriterion<>();
             var acceptor = new LateAcceptanceAcceptor<>(strategy);
             acceptor.setLateAcceptanceSize(Objects.requireNonNullElse(acceptorConfig.getLateAcceptanceSize(), 400));
             return Optional.of(acceptor);
@@ -234,7 +234,7 @@ public class AcceptorFactory<Solution_> {
             buildDiversifiedLateAcceptanceAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE)) {
             configPolicy.ensurePreviewFeature(PreviewFeature.DIVERSIFIED_LATE_ACCEPTANCE);
-            RestartStrategy<Solution_> strategy = new UnimprovedMoveCountRestartStrategy<>();
+            StuckCriterion<Solution_> strategy = new UnimprovedMoveCountStuckCriterion<>();
             var acceptor = new DiversifiedLateAcceptanceAcceptor<>(strategy);
             acceptor.setLateAcceptanceSize(Objects.requireNonNullElse(acceptorConfig.getLateAcceptanceSize(), 5));
             return Optional.of(acceptor);

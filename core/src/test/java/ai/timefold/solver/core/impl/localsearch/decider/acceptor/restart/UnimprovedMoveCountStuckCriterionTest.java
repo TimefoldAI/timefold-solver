@@ -1,10 +1,11 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart;
 
+import static ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.UnimprovedMoveCountStuckCriterion.UNIMPROVED_MOVE_COUNT_MULTIPLIER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.time.Clock;
+import java.time.Instant;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
@@ -15,11 +16,11 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-class UnimprovedMoveCountRestartStrategyTest {
+class UnimprovedMoveCountStuckCriterionTest {
 
     @Test
-    void isTriggered() {
-        var clock = mock(Clock.class);
+    void isSolverStuck() {
+        var instant = mock(Instant.class);
         var solverScope = mock(SolverScope.class);
         var phaseScope = mock(LocalSearchPhaseScope.class);
         var stepScope = mock(LocalSearchStepScope.class);
@@ -27,48 +28,48 @@ class UnimprovedMoveCountRestartStrategyTest {
         when(moveScope.getStepScope()).thenReturn(stepScope);
         when(stepScope.getPhaseScope()).thenReturn(phaseScope);
         when(phaseScope.getSolverScope()).thenReturn(solverScope);
-        when(clock.millis()).thenReturn(1000L, 11000L);
+        when(instant.toEpochMilli()).thenReturn(1000L, UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1000L);
         when(solverScope.getMoveEvaluationCount()).thenReturn(1000L);
         when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(1000));
 
         // Finish grace period
-        var strategy = new UnimprovedMoveCountRestartStrategy<>(clock);
+        var strategy = new UnimprovedMoveCountStuckCriterion<>(instant);
         strategy.solvingStarted(null);
         strategy.phaseStarted(phaseScope);
-        assertThat(strategy.isTriggered(moveScope)).isFalse();
+        assertThat(strategy.isSolverStuck(moveScope)).isFalse();
         assertThat(strategy.lastCheckpoint).isEqualTo(1000L);
-        assertThat(strategy.nextRestart).isEqualTo(50000L);
+        assertThat(strategy.nextRestart).isEqualTo(UNIMPROVED_MOVE_COUNT_MULTIPLIER);
 
         // First restart
-        Mockito.reset(clock);
-        var firstCount = 60000L;
+        Mockito.reset(instant);
+        var firstCount = UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1000L;
         when(solverScope.getMoveEvaluationCount()).thenReturn(firstCount);
-        assertThat(strategy.isTriggered(moveScope)).isTrue();
+        assertThat(strategy.isSolverStuck(moveScope)).isTrue();
         assertThat(strategy.lastCheckpoint).isEqualTo(firstCount);
-        assertThat(strategy.nextRestart).isEqualTo(2L * 50000L);
-        assertThat(strategy.isTriggered(moveScope)).isFalse();
+        assertThat(strategy.nextRestart).isEqualTo(2L * UNIMPROVED_MOVE_COUNT_MULTIPLIER);
+        assertThat(strategy.isSolverStuck(moveScope)).isFalse();
 
         // Second restart
-        Mockito.reset(clock);
-        var secondCount = 2L * 50000L + firstCount;
+        Mockito.reset(instant);
+        var secondCount = 2L * UNIMPROVED_MOVE_COUNT_MULTIPLIER + firstCount;
         when(solverScope.getMoveEvaluationCount()).thenReturn(secondCount);
-        assertThat(strategy.isTriggered(moveScope)).isTrue();
+        assertThat(strategy.isSolverStuck(moveScope)).isTrue();
         assertThat(strategy.lastCheckpoint).isEqualTo(secondCount);
-        assertThat(strategy.nextRestart).isEqualTo(3L * 50000L);
-        assertThat(strategy.isTriggered(moveScope)).isFalse();
+        assertThat(strategy.nextRestart).isEqualTo(3L * UNIMPROVED_MOVE_COUNT_MULTIPLIER);
+        assertThat(strategy.isSolverStuck(moveScope)).isFalse();
 
         // Third restart
-        var thirdCount = 3L * 50000L + secondCount;
-        Mockito.reset(clock);
+        var thirdCount = 3L * UNIMPROVED_MOVE_COUNT_MULTIPLIER + secondCount;
+        Mockito.reset(instant);
         when(solverScope.getMoveEvaluationCount()).thenReturn(thirdCount);
-        assertThat(strategy.isTriggered(moveScope)).isTrue();
+        assertThat(strategy.isSolverStuck(moveScope)).isTrue();
         assertThat(strategy.lastCheckpoint).isEqualTo(thirdCount);
-        assertThat(strategy.nextRestart).isEqualTo(5L * 50000L);
+        assertThat(strategy.nextRestart).isEqualTo(5L * UNIMPROVED_MOVE_COUNT_MULTIPLIER);
     }
 
     @Test
     void updateBestSolution() {
-        var clock = mock(Clock.class);
+        var instant = mock(Instant.class);
         var solverScope = mock(SolverScope.class);
         var phaseScope = mock(LocalSearchPhaseScope.class);
         var stepScope = mock(LocalSearchStepScope.class);
@@ -78,15 +79,15 @@ class UnimprovedMoveCountRestartStrategyTest {
         when(moveScope.getStepScope()).thenReturn(stepScope);
         when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(1000));
         when(stepScope.getScore()).thenReturn(SimpleScore.of(2000));
-        when(clock.millis()).thenReturn(1000L, 20000L, 20000L, 20001L);
+        when(instant.toEpochMilli()).thenReturn(1000L, UNIMPROVED_MOVE_COUNT_MULTIPLIER, UNIMPROVED_MOVE_COUNT_MULTIPLIER, UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1);
         when(solverScope.getMoveEvaluationCount()).thenReturn(1000L, 1001L);
 
-        var strategy = new UnimprovedMoveCountRestartStrategy<>(clock);
+        var strategy = new UnimprovedMoveCountStuckCriterion<>(instant);
         strategy.solvingStarted(mock(SolverScope.class));
         strategy.phaseStarted(phaseScope);
         strategy.stepStarted(stepScope);
         // Trigger
-        strategy.isTriggered(moveScope);
+        strategy.isSolverStuck(moveScope);
         // Update the last improvement
         strategy.stepEnded(stepScope);
         assertThat(strategy.lastCheckpoint).isEqualTo(1001L);
@@ -94,7 +95,7 @@ class UnimprovedMoveCountRestartStrategyTest {
 
     @Test
     void reset() {
-        var clock = mock(Clock.class);
+        var instant = mock(Instant.class);
         var solverScope = mock(SolverScope.class);
         var phaseScope = mock(LocalSearchPhaseScope.class);
         var stepScope = mock(LocalSearchStepScope.class);
@@ -102,14 +103,14 @@ class UnimprovedMoveCountRestartStrategyTest {
         when(moveScope.getStepScope()).thenReturn(stepScope);
         when(stepScope.getPhaseScope()).thenReturn(phaseScope);
         when(phaseScope.getSolverScope()).thenReturn(solverScope);
-        when(clock.millis()).thenReturn(1000L, 11000L);
+        when(instant.toEpochMilli()).thenReturn(1000L, UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1000L);
         when(solverScope.getMoveEvaluationCount()).thenReturn(1000L);
 
-        var strategy = new UnimprovedMoveCountRestartStrategy<>(clock);
+        var strategy = new UnimprovedMoveCountStuckCriterion<>(instant);
         strategy.solvingStarted(mock(SolverScope.class));
         strategy.phaseStarted(mock(LocalSearchPhaseScope.class));
         // Trigger
-        strategy.isTriggered(moveScope);
+        strategy.isSolverStuck(moveScope);
         assertThat(strategy.lastCheckpoint).isEqualTo(1000L);
     }
 }
