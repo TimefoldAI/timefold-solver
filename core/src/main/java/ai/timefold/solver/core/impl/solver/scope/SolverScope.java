@@ -55,7 +55,6 @@ public class SolverScope<Solution_> {
     private long childThreadsScoreCalculationCount = 0L;
 
     private long moveEvaluationCount = 0L;
-    private long childThreadsMoveEvaluationCount = 0L;
 
     private Score<?> startingInitializedScore;
 
@@ -200,12 +199,8 @@ public class SolverScope<Solution_> {
         moveEvaluationCount += addition;
     }
 
-    public void addChildThreadsMoveEvaluationCount(long addition) {
-        childThreadsMoveEvaluationCount += addition;
-    }
-
     public long getMoveEvaluationCount() {
-        return moveEvaluationCount + childThreadsMoveEvaluationCount;
+        return moveEvaluationCount;
     }
 
     public Solution_ getBestSolution() {
