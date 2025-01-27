@@ -79,7 +79,8 @@ class UnimprovedMoveCountStuckCriterionTest {
         when(moveScope.getStepScope()).thenReturn(stepScope);
         when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(1000));
         when(stepScope.getScore()).thenReturn(SimpleScore.of(2000));
-        when(instant.toEpochMilli()).thenReturn(1000L, UNIMPROVED_MOVE_COUNT_MULTIPLIER, UNIMPROVED_MOVE_COUNT_MULTIPLIER, UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1);
+        when(instant.toEpochMilli()).thenReturn(1000L, UNIMPROVED_MOVE_COUNT_MULTIPLIER, UNIMPROVED_MOVE_COUNT_MULTIPLIER,
+                UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1);
         when(solverScope.getMoveEvaluationCount()).thenReturn(1000L, 1001L);
 
         var strategy = new UnimprovedMoveCountStuckCriterion<>(instant);
