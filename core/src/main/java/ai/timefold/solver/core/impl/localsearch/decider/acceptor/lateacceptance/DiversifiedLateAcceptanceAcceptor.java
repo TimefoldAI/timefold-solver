@@ -53,7 +53,7 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends Reconfigurable
 
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected boolean evaluate(LocalSearchMoveScope<Solution_> moveScope) {
+    protected boolean applyAcceptanceCriteria(LocalSearchMoveScope<Solution_> moveScope) {
         // The acceptance and replacement strategies are based on the work:
         // Diversified Late Acceptance Search by M. Namazi, C. Sanderson, M. A. H. Newton, M. M. A. Polash, and A. Sattar
         var moveScore = moveScope.getScore();
@@ -77,7 +77,7 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends Reconfigurable
     }
 
     @Override
-    protected <Score_ extends Score<Score_>> void reset(Score_ score) {
+    protected <Score_ extends Score<Score_>> void applyReplacementCriteria(Score_ score) {
         previousScores[lateScoreIndex] = score;
     }
 
