@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptorTest;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.RestartStrategy;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.StuckCriterion;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -19,8 +19,8 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
     @Test
     void lateAcceptanceSize() {
-        var restartStrategy = mock(RestartStrategy.class);
-        when(restartStrategy.isTriggered(any())).thenReturn(false);
+        var restartStrategy = mock(StuckCriterion.class);
+        when(restartStrategy.isSolverStuck(any())).thenReturn(false);
         var acceptor = new LateAcceptanceAcceptor<>(restartStrategy);
         acceptor.setLateAcceptanceSize(3);
         acceptor.setHillClimbingEnabled(false);
@@ -134,8 +134,8 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
     @Test
     void hillClimbingEnabled() {
-        var restartStrategy = mock(RestartStrategy.class);
-        when(restartStrategy.isTriggered(any())).thenReturn(false);
+        var restartStrategy = mock(StuckCriterion.class);
+        when(restartStrategy.isSolverStuck(any())).thenReturn(false);
         var acceptor = new LateAcceptanceAcceptor<>(restartStrategy);
         acceptor.setLateAcceptanceSize(2);
         acceptor.setHillClimbingEnabled(true);
@@ -249,8 +249,8 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
     @Test
     void zeroLateAcceptanceSize() {
-        var restartStrategy = mock(RestartStrategy.class);
-        when(restartStrategy.isTriggered(any())).thenReturn(false);
+        var restartStrategy = mock(StuckCriterion.class);
+        when(restartStrategy.isSolverStuck(any())).thenReturn(false);
         var acceptor = new LateAcceptanceAcceptor<>(restartStrategy);
         acceptor.setLateAcceptanceSize(0);
         assertThatIllegalArgumentException().isThrownBy(() -> acceptor.phaseStarted(null));
@@ -258,8 +258,8 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
     @Test
     void negativeLateAcceptanceSize() {
-        var restartStrategy = mock(RestartStrategy.class);
-        when(restartStrategy.isTriggered(any())).thenReturn(false);
+        var restartStrategy = mock(StuckCriterion.class);
+        when(restartStrategy.isSolverStuck(any())).thenReturn(false);
         var acceptor = new LateAcceptanceAcceptor<>(restartStrategy);
         acceptor.setLateAcceptanceSize(-1);
         assertThatIllegalArgumentException().isThrownBy(() -> acceptor.phaseStarted(null));
@@ -267,8 +267,8 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
     @Test
     void triggerReconfiguration() {
-        var restartStrategy = mock(RestartStrategy.class);
-        when(restartStrategy.isTriggered(any())).thenReturn(true);
+        var restartStrategy = mock(StuckCriterion.class);
+        when(restartStrategy.isSolverStuck(any())).thenReturn(true);
         var acceptor = new LateAcceptanceAcceptor<>(restartStrategy);
         acceptor.setLateAcceptanceSize(3);
         var solverScope = new SolverScope<>();
@@ -276,6 +276,6 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         var stepScope0 = new LocalSearchStepScope<>(phaseScope);
         var moveScope0 = buildMoveScope(stepScope0, -2000);
         assertThat(acceptor.isAccepted(moveScope0)).isTrue();
-        assertThat(phaseScope.isReconfigurationTriggered()).isTrue();
+        assertThat(phaseScope.isSolverStuck()).isTrue();
     }
 }

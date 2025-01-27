@@ -11,29 +11,29 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.junit.jupiter.api.Test;
 
-class ReconfigurationStrategyTest {
+class RestartStrategyTest {
 
     @Test
     void restoreBestSolution() {
         // Requires the decider
-        var badStrategy = new RestoreBestSolutionReconfigurationStrategy<>(null, null);
+        var badStrategy = new RestoreBestSolutionRestartStrategy<>(null, null);
         assertThatThrownBy(() -> badStrategy.phaseStarted(null)).isInstanceOf(NullPointerException.class);
 
         // Restore the best solution
         var moveSelector = mock(MoveSelector.class);
         var acceptor = mock(Acceptor.class);
-        var strategy = new RestoreBestSolutionReconfigurationStrategy<>(moveSelector, acceptor);
+        var strategy = new RestoreBestSolutionRestartStrategy<>(moveSelector, acceptor);
 
         var solverScope = mock(SolverScope.class);
         var phaseScope = mock(LocalSearchPhaseScope.class);
         when(phaseScope.getSolverScope()).thenReturn(solverScope);
         var stepScope = mock(LocalSearchStepScope.class);
         when(stepScope.getPhaseScope()).thenReturn(phaseScope);
-        strategy.apply(stepScope);
+        strategy.applyRestart(stepScope);
         // Restore the best solution
         verify(solverScope, times(1)).setWorkingSolutionFromBestSolution();
         // Restart the phase
-        verify(phaseScope, times(1)).cancelReconfiguration();
+        verify(phaseScope, times(1)).resetSolverStuck();
         verify(moveSelector, times(1)).phaseStarted(any());
         verify(acceptor, times(1)).phaseStarted(any());
     }

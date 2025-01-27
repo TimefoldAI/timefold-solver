@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart;
 
-import java.time.Clock;
+import java.time.Instant;
 
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
@@ -18,19 +18,20 @@ import org.slf4j.LoggerFactory;
  * 
  * @param <Solution_> the solution type
  */
-public abstract class AbstractGeometricRestartStrategy<Solution_> implements RestartStrategy<Solution_> {
+public abstract class AbstractGeometricStuckCriterion<Solution_> implements StuckCriterion<Solution_> {
+    private static final Logger logger = LoggerFactory.getLogger(AbstractGeometricStuckCriterion.class);
     private static final double GEOMETRIC_FACTOR = 1.4; // Value extracted from the cited paper
-    protected final Clock clock;
-    protected final Logger logger = LoggerFactory.getLogger(AbstractGeometricRestartStrategy.class);
-    protected final double scalingFactor;
+    private static final long GRACE_PERIOD_MILLIS = 30_000; // Same value as DiminishedReturnsTermination
 
+    private final double scalingFactor;
+    private final Instant instant;
     private boolean gracePeriodFinished;
     private long gracePeriodMillis;
     protected long nextRestart;
     private double currentGeometricGrowFactor;
 
-    protected AbstractGeometricRestartStrategy(Clock clock, double scalingFactor) {
-        this.clock = clock;
+    protected AbstractGeometricStuckCriterion(Instant instant, double scalingFactor) {
+        this.instant = instant;
         this.scalingFactor = scalingFactor;
     }
 
@@ -38,7 +39,7 @@ public abstract class AbstractGeometricRestartStrategy<Solution_> implements Res
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
         if (gracePeriodMillis == 0) {
             // 10 seconds of grace period
-            gracePeriodMillis = clock.millis() + 10_000;
+            gracePeriodMillis = instant.toEpochMilli() + GRACE_PERIOD_MILLIS;
         }
     }
 
@@ -61,9 +62,9 @@ public abstract class AbstractGeometricRestartStrategy<Solution_> implements Res
     }
 
     @Override
-    public boolean isTriggered(LocalSearchMoveScope<Solution_> moveScope) {
+    public boolean isSolverStuck(LocalSearchMoveScope<Solution_> moveScope) {
         if (isGracePeriodFinished()) {
-            var triggered = process(moveScope);
+            var triggered = evaluateCriterion(moveScope);
             if (triggered) {
                 logger.trace("Restart triggered with geometric factor {}, scaling factor of {}", currentGeometricGrowFactor,
                         scalingFactor);
@@ -79,7 +80,7 @@ public abstract class AbstractGeometricRestartStrategy<Solution_> implements Res
         if (gracePeriodFinished) {
             return true;
         }
-        gracePeriodFinished = clock.millis() >= gracePeriodMillis;
+        gracePeriodFinished = instant.toEpochMilli() >= gracePeriodMillis;
         return gracePeriodFinished;
     }
 
@@ -87,6 +88,6 @@ public abstract class AbstractGeometricRestartStrategy<Solution_> implements Res
         return (long) Math.ceil(currentGeometricGrowFactor * scalingFactor);
     }
 
-    abstract boolean process(LocalSearchMoveScope<Solution_> moveScope);
+    abstract boolean evaluateCriterion(LocalSearchMoveScope<Solution_> moveScope);
 
 }

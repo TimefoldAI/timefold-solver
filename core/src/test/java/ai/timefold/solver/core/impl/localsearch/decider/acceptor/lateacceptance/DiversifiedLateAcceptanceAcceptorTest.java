@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptorTest;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.RestartStrategy;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.StuckCriterion;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -17,8 +17,8 @@ class DiversifiedLateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
     @Test
     void acceptanceCriterion() {
-        var restartStrategy = mock(RestartStrategy.class);
-        when(restartStrategy.isTriggered(any())).thenReturn(false);
+        var restartStrategy = mock(StuckCriterion.class);
+        when(restartStrategy.isSolverStuck(any())).thenReturn(false);
         var acceptor = new DiversifiedLateAcceptanceAcceptor<>(restartStrategy);
         acceptor.setLateAcceptanceSize(3);
 
@@ -56,8 +56,8 @@ class DiversifiedLateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
     @Test
     void replacementCriterion() {
-        var restartStrategy = mock(RestartStrategy.class);
-        when(restartStrategy.isTriggered(any())).thenReturn(false);
+        var restartStrategy = mock(StuckCriterion.class);
+        when(restartStrategy.isSolverStuck(any())).thenReturn(false);
         var acceptor = new DiversifiedLateAcceptanceAcceptor<>(restartStrategy);
         acceptor.setLateAcceptanceSize(3);
 
@@ -152,8 +152,8 @@ class DiversifiedLateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
     @Test
     void triggerReconfiguration() {
-        var restartStrategy = mock(RestartStrategy.class);
-        when(restartStrategy.isTriggered(any())).thenReturn(true);
+        var restartStrategy = mock(StuckCriterion.class);
+        when(restartStrategy.isSolverStuck(any())).thenReturn(true);
         var acceptor = new DiversifiedLateAcceptanceAcceptor<>(restartStrategy);
         acceptor.setLateAcceptanceSize(3);
         var solverScope = new SolverScope<>();
@@ -161,7 +161,7 @@ class DiversifiedLateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         var stepScope0 = new LocalSearchStepScope<>(phaseScope);
         var moveScope0 = buildMoveScope(stepScope0, -2000);
         assertThat(acceptor.isAccepted(moveScope0)).isTrue();
-        verify(restartStrategy, times(1)).isTriggered(any());
-        assertThat(phaseScope.isReconfigurationTriggered()).isTrue();
+        verify(restartStrategy, times(1)).isSolverStuck(any());
+        assertThat(phaseScope.isSolverStuck()).isTrue();
     }
 }

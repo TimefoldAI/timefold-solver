@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.ReconfigurableAcceptor;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.RestartStrategy;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.StuckCriterion;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 
@@ -20,8 +20,8 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends Reconfigurable
     protected Score<?>[] previousScores;
     protected int lateScoreIndex = -1;
 
-    public DiversifiedLateAcceptanceAcceptor(RestartStrategy<Solution_> restartStrategy) {
-        super(restartStrategy);
+    public DiversifiedLateAcceptanceAcceptor(StuckCriterion<Solution_> stuckCriterionDetection) {
+        super(stuckCriterionDetection);
     }
 
     public void setLateAcceptanceSize(int lateAcceptanceSize) {
@@ -74,11 +74,6 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends Reconfigurable
         }
         lateScoreIndex = (lateScoreIndex + 1) % lateAcceptanceSize;
         return accept;
-    }
-
-    @Override
-    protected <Score_ extends Score<Score_>> void applyReplacementCriteria(Score_ score) {
-        previousScores[lateScoreIndex] = score;
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
