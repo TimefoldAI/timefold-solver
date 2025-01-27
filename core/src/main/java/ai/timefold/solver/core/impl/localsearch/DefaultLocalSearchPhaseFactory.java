@@ -59,7 +59,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
             Termination<Solution_> termination) {
         var moveSelector = buildMoveSelector(configPolicy);
         var acceptor = buildAcceptor(configPolicy);
-        var restartStrategy = new RestoreBestSolutionRestartStrategy<>(moveSelector, acceptor);
+        var restartStrategy = new RestoreBestSolutionRestartStrategy<Solution_>();
         var forager = buildForager(configPolicy);
         if (moveSelector.isNeverEnding() && !forager.supportsNeverEndingMoveSelector()) {
             throw new IllegalStateException("The moveSelector (" + moveSelector

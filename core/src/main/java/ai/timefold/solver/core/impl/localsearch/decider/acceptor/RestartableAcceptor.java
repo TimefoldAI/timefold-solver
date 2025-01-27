@@ -10,11 +10,12 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
  * Base class designed to analyze whether the solving process needs to be restarted.
  * Additionally, it also calls a reconfiguration logic as a result of restarting the solving process.
  */
-public abstract class ReconfigurableAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
+public abstract class RestartableAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
 
     private final StuckCriterion<Solution_> stuckCriterionDetection;
+    protected boolean restartTriggered;
 
-    protected ReconfigurableAcceptor(StuckCriterion<Solution_> stuckCriterionDetection) {
+    protected RestartableAcceptor(StuckCriterion<Solution_> stuckCriterionDetection) {
         this.stuckCriterionDetection = stuckCriterionDetection;
     }
 
@@ -52,6 +53,7 @@ public abstract class ReconfigurableAcceptor<Solution_> extends AbstractAcceptor
     public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         if (stuckCriterionDetection.isSolverStuck(moveScope)) {
             moveScope.getStepScope().getPhaseScope().triggerSolverStuck();
+            restartTriggered = true;
             return true;
         }
         return applyAcceptanceCriteria(moveScope);

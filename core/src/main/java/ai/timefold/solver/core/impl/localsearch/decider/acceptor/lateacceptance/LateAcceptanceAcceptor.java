@@ -3,13 +3,13 @@ package ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance
 import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.ReconfigurableAcceptor;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.RestartableAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.StuckCriterion;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 
-public class LateAcceptanceAcceptor<Solution_> extends ReconfigurableAcceptor<Solution_> {
+public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solution_> {
 
     protected int lateAcceptanceSize = -1;
     protected boolean hillClimbingEnabled = true;
@@ -68,8 +68,14 @@ public class LateAcceptanceAcceptor<Solution_> extends ReconfigurableAcceptor<So
     @Override
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
         super.stepEnded(stepScope);
-        previousScores[lateScoreIndex] = stepScope.getScore();
-        lateScoreIndex = (lateScoreIndex + 1) % lateAcceptanceSize;
+        if (!restartTriggered) {
+            previousScores[lateScoreIndex] = stepScope.getScore();
+            lateScoreIndex = (lateScoreIndex + 1) % lateAcceptanceSize;
+        } else {
+            // Update the current late score with the best score, keeping the late score index the same
+            previousScores[lateScoreIndex] = stepScope.getPhaseScope().getBestScore();
+            restartTriggered = false;
+        }
     }
 
     @Override
