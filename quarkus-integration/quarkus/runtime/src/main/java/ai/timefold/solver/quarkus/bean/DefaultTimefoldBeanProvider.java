@@ -1,6 +1,5 @@
 package ai.timefold.solver.quarkus.bean;
 
-import io.quarkus.runtime.annotations.Recorder;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.inject.Produces;
