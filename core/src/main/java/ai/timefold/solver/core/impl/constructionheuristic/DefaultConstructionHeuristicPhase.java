@@ -6,6 +6,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
+import ai.timefold.solver.core.impl.phase.PossiblyInitializingPhase;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
@@ -25,7 +26,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
     protected final ConstructionHeuristicDecider<Solution_> decider;
     protected final EntityPlacer<Solution_> entityPlacer;
     private final boolean lastInitializingPhase;
-    private TerminationStatus terminationStatus = TerminationStatus.NOT_STARTED;
+    private TerminationStatus terminationStatus = TerminationStatus.NOT_TERMINATED;
 
     protected DefaultConstructionHeuristicPhase(DefaultConstructionHeuristicPhaseBuilder<Solution_> builder) {
         super(builder);
@@ -74,6 +75,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
         }
 
         var iterator = entityPlacer.iterator();
+        TerminationStatus earlyTerminationStatus = null;
         while (iterator.hasNext()) {
             var placement = iterator.next();
             var stepScope = new ConstructionHeuristicStepScope<>(phaseScope);
@@ -102,28 +104,23 @@ public class DefaultConstructionHeuristicPhase<Solution_>
                             + ") but failed to pick a nextStep (" + stepScope.getStep() + ").");
                 }
                 // Although stepStarted has been called, stepEnded is not called for this step.
-                terminationStatus = TerminationStatus.early(phaseScope.getNextStepIndex());
+                earlyTerminationStatus = TerminationStatus.early(phaseScope.getNextStepIndex());
                 break;
             }
             doStep(stepScope);
             stepEnded(stepScope);
             phaseScope.setLastCompletedStepScope(stepScope);
             if (hasListVariable && stepScope.getStepIndex() >= maxStepCount) {
-                terminationStatus = TerminationStatus.regular(phaseScope.getNextStepIndex());
+                earlyTerminationStatus = TerminationStatus.regular(phaseScope.getNextStepIndex());
                 break;
             } else if (phaseTermination.isPhaseTerminated(phaseScope)) {
-                terminationStatus = TerminationStatus.early(phaseScope.getNextStepIndex());
+                earlyTerminationStatus = TerminationStatus.early(phaseScope.getNextStepIndex());
                 break;
             }
         }
-        if (!terminationStatus.terminated() || !iterator.hasNext()) {
-            // We need to set the termination status to indicate that the phase has ended successfully.
-            // This happens in two situations:
-            // 1. The phase is over, and early termination did not happen.
-            // 2. Early termination happened at the end of the last step, meaning a success anyway.
-            //    This happens when BestScore termination is set to the same score that the last CH step ends with.
-            terminationStatus = TerminationStatus.regular(phaseScope.getNextStepIndex());
-        }
+        // We only store the termination status, which is exposed to the outside, when the phase has ended.
+        terminationStatus =
+                PossiblyInitializingPhase.translateEarlyTermination(phaseScope, earlyTerminationStatus, iterator.hasNext());
         phaseEnded(phaseScope);
     }
 
@@ -153,7 +150,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
 
     public void phaseStarted(ConstructionHeuristicPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
-        terminationStatus = TerminationStatus.NOT_STARTED;
+        terminationStatus = TerminationStatus.NOT_TERMINATED;
         entityPlacer.phaseStarted(phaseScope);
         decider.phaseStarted(phaseScope);
     }

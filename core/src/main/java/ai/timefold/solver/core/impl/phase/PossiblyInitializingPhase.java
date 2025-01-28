@@ -10,6 +10,7 @@ import ai.timefold.solver.core.impl.phase.custom.CustomPhase;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 /**
@@ -37,6 +38,20 @@ public interface PossiblyInitializingPhase<Solution_> extends Phase<Solution_> {
      */
     TerminationStatus getTerminationStatus();
 
+    static TerminationStatus translateEarlyTermination(AbstractPhaseScope<?> phaseScope,
+            @Nullable TerminationStatus earlyTerminationStatus, boolean hasMoreSteps) {
+        if (earlyTerminationStatus == null || !hasMoreSteps) {
+            // We need to set the termination status to indicate that the phase has ended successfully.
+            // This happens in two situations:
+            // 1. The phase is over, and early termination did not happen.
+            // 2. Early termination happened at the end of the last step, meaning a success anyway.
+            //    This happens when BestScore termination is set to the same score that the last step ends with.
+            return TerminationStatus.regular(phaseScope.getNextStepIndex());
+        } else {
+            return earlyTerminationStatus;
+        }
+    }
+
     default void ensureCorrectTermination(AbstractPhaseScope<Solution_> phaseScope, Logger logger) {
         var terminationStatus = getTerminationStatus();
         if (!terminationStatus.terminated()) {
@@ -63,7 +78,7 @@ public interface PossiblyInitializingPhase<Solution_> extends Phase<Solution_> {
      */
     record TerminationStatus(boolean terminated, boolean early, int stepCount) {
 
-        public static TerminationStatus NOT_STARTED = new TerminationStatus(false, false, -1);
+        public static TerminationStatus NOT_TERMINATED = new TerminationStatus(false, false, -1);
 
         public static TerminationStatus regular(int stepCount) {
             return new TerminationStatus(true, false, stepCount);

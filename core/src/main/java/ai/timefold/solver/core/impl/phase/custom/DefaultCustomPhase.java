@@ -1,9 +1,11 @@
 package ai.timefold.solver.core.impl.phase.custom;
 
+import java.util.Iterator;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
+import ai.timefold.solver.core.impl.phase.PossiblyInitializingPhase;
 import ai.timefold.solver.core.impl.phase.custom.scope.CustomPhaseScope;
 import ai.timefold.solver.core.impl.phase.custom.scope.CustomStepScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -25,7 +27,7 @@ public final class DefaultCustomPhase<Solution_>
 
     private final List<CustomPhaseCommand<Solution_>> customPhaseCommandList;
     private final boolean lastInitializingPhase;
-    private TerminationStatus terminationStatus = TerminationStatus.NOT_STARTED;
+    private TerminationStatus terminationStatus = TerminationStatus.NOT_TERMINATED;
 
     private DefaultCustomPhase(Builder<Solution_> builder) {
         super(builder);
@@ -56,10 +58,13 @@ public final class DefaultCustomPhase<Solution_>
     public void solve(SolverScope<Solution_> solverScope) {
         CustomPhaseScope<Solution_> phaseScope = new CustomPhaseScope<>(solverScope, phaseIndex);
         phaseStarted(phaseScope);
-        for (CustomPhaseCommand<Solution_> customPhaseCommand : customPhaseCommandList) {
+        TerminationStatus earlyTerminationStatus = null;
+        Iterator<CustomPhaseCommand<Solution_>> iterator = customPhaseCommandList.iterator();
+        while (iterator.hasNext()) {
+            var customPhaseCommand = iterator.next();
             solverScope.checkYielding();
             if (phaseTermination.isPhaseTerminated(phaseScope)) {
-                terminationStatus = TerminationStatus.early(phaseScope.getNextStepIndex());
+                earlyTerminationStatus = TerminationStatus.early(phaseScope.getNextStepIndex());
                 break;
             }
             CustomStepScope<Solution_> stepScope = new CustomStepScope<>(phaseScope);
@@ -68,16 +73,16 @@ public final class DefaultCustomPhase<Solution_>
             stepEnded(stepScope);
             phaseScope.setLastCompletedStepScope(stepScope);
         }
-        if (!terminationStatus.terminated()) {
-            terminationStatus = TerminationStatus.regular(phaseScope.getNextStepIndex());
-        }
+        // We only store the termination status, which is exposed to the outside, when the phase has ended.
+        terminationStatus =
+                PossiblyInitializingPhase.translateEarlyTermination(phaseScope, earlyTerminationStatus, iterator.hasNext());
         phaseEnded(phaseScope);
     }
 
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
-        terminationStatus = TerminationStatus.NOT_STARTED;
+        terminationStatus = TerminationStatus.NOT_TERMINATED;
     }
 
     private void doStep(CustomStepScope<Solution_> stepScope, CustomPhaseCommand<Solution_> customPhaseCommand) {
