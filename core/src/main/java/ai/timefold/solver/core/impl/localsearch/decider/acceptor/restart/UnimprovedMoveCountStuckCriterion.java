@@ -1,12 +1,10 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart;
 
 import java.time.Clock;
-import java.time.Instant;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.localsearch.decider.reconfiguration.RestartStrategy;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
-import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
@@ -17,24 +15,18 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
  */
 public class UnimprovedMoveCountStuckCriterion<Solution_> extends AbstractGeometricStuckCriterion<Solution_> {
 
-    // 50k moves multiplier defined through experiments
-    protected static final long UNIMPROVED_MOVE_COUNT_MULTIPLIER = 50_000;
+    // Multiplier defined through experiments
+    protected static final long UNIMPROVED_MOVE_COUNT_MULTIPLIER = 300_000;
     // Last checkpoint of a solution improvement or the restart process
     protected long lastCheckpoint;
     private Score<?> currentBestScore;
 
     public UnimprovedMoveCountStuckCriterion() {
-        this(Instant.now(Clock.systemUTC()));
+        this(Clock.systemUTC());
     }
 
-    protected UnimprovedMoveCountStuckCriterion(Instant instant) {
-        super(instant, UNIMPROVED_MOVE_COUNT_MULTIPLIER);
-    }
-
-    @Override
-    public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
-        super.phaseStarted(phaseScope);
-        currentBestScore = phaseScope.getBestScore();
+    protected UnimprovedMoveCountStuckCriterion(Clock clock) {
+        super(clock, UNIMPROVED_MOVE_COUNT_MULTIPLIER);
     }
 
     @Override

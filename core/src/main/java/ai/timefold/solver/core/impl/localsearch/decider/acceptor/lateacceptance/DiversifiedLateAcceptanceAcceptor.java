@@ -7,7 +7,6 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.RestartableAcce
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.StuckCriterion;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
-import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 
 public class DiversifiedLateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solution_> {
 
@@ -105,16 +104,6 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends RestartableAcc
                     lateWorseOccurrences++;
                 }
             }
-        }
-    }
-
-    @Override
-    public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
-        super.stepEnded(stepScope);
-        if (restartTriggered) {
-            // Update the current late score with the best score
-            previousScores[lateScoreIndex] = stepScope.getPhaseScope().getBestScore();
-            restartTriggered = false;
         }
     }
 
