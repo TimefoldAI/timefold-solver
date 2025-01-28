@@ -1,8 +1,10 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import ai.timefold.solver.core.impl.constructionheuristic.ConstructionHeuristicPhase;
@@ -11,6 +13,9 @@ import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeur
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 public final class RuinRecreateConstructionHeuristicPhase<Solution_>
         extends DefaultConstructionHeuristicPhase<Solution_>
         implements ConstructionHeuristicPhase<Solution_> {
@@ -21,7 +26,7 @@ public final class RuinRecreateConstructionHeuristicPhase<Solution_>
 
     RuinRecreateConstructionHeuristicPhase(RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> builder) {
         super(builder);
-        this.elementsToRuinSet = builder.elementsToRuin;
+        this.elementsToRuinSet = Objects.requireNonNullElse(builder.elementsToRuin, Collections.emptySet());
         this.missingUpdatedElementsMap = new IdentityHashMap<>();
     }
 
@@ -42,7 +47,7 @@ public final class RuinRecreateConstructionHeuristicPhase<Solution_>
 
     @Override
     protected void doStep(ConstructionHeuristicStepScope<Solution_> stepScope) {
-        if (elementsToRuinSet != null) {
+        if (!elementsToRuinSet.isEmpty()) {
             var listVariableDescriptor = stepScope.getPhaseScope().getSolverScope().getSolutionDescriptor()
                     .getListVariableDescriptor();
             var entity = stepScope.getStep().extractPlanningEntities().iterator().next();

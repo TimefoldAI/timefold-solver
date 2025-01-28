@@ -32,7 +32,6 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     protected final boolean assertStepScoreFromScratch;
     protected final boolean assertExpectedStepScore;
     protected final boolean assertShadowVariablesAreNotStaleAfterStep;
-    protected final boolean triggerFirstInitializedSolutionEvent;
 
     /** Used for {@link #addPhaseLifecycleListener(PhaseLifecycleListener)}. */
     protected PhaseLifecycleSupport<Solution_> phaseLifecycleSupport = new PhaseLifecycleSupport<>();
@@ -40,13 +39,16 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     protected AbstractSolver<Solution_> solver;
 
     protected AbstractPhase(Builder<Solution_> builder) {
+        if (builder.isLastInitializingPhase() && !(this instanceof PossiblyInitializingPhase)) {
+            throw new IllegalStateException("Impossible state: Phase (%s) cannot trigger the first initialized solution event."
+                    .formatted(getClass().getSimpleName()));
+        }
         phaseIndex = builder.phaseIndex;
         logIndentation = builder.logIndentation;
         phaseTermination = builder.phaseTermination;
         assertStepScoreFromScratch = builder.assertStepScoreFromScratch;
         assertExpectedStepScore = builder.assertExpectedStepScore;
         assertShadowVariablesAreNotStaleAfterStep = builder.assertShadowVariablesAreNotStaleAfterStep;
-        triggerFirstInitializedSolutionEvent = builder.triggerFirstInitializedSolutionEvent;
     }
 
     public int getPhaseIndex() {
@@ -78,11 +80,6 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     }
 
     public abstract String getPhaseTypeString();
-
-    @Override
-    public boolean triggersFirstInitializedSolutionEvent() {
-        return triggerFirstInitializedSolutionEvent;
-    }
 
     // ************************************************************************
     // Lifecycle methods
@@ -235,10 +232,10 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         }
     }
 
-    protected abstract static class Builder<Solution_> {
+    public abstract static class Builder<Solution_> {
 
         private final int phaseIndex;
-        private final boolean triggerFirstInitializedSolutionEvent;
+        private final boolean lastInitializingPhase;
         private final String logIndentation;
         private final Termination<Solution_> phaseTermination;
 
@@ -250,12 +247,16 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
             this(phaseIndex, false, logIndentation, phaseTermination);
         }
 
-        protected Builder(int phaseIndex, boolean triggerFirstInitializedSolutionEvent, String logIndentation,
+        protected Builder(int phaseIndex, boolean lastInitializingPhase, String logIndentation,
                 Termination<Solution_> phaseTermination) {
             this.phaseIndex = phaseIndex;
-            this.triggerFirstInitializedSolutionEvent = triggerFirstInitializedSolutionEvent;
+            this.lastInitializingPhase = lastInitializingPhase;
             this.logIndentation = logIndentation;
             this.phaseTermination = phaseTermination;
+        }
+
+        public boolean isLastInitializingPhase() {
+            return lastInitializingPhase;
         }
 
         public void setAssertStepScoreFromScratch(boolean assertStepScoreFromScratch) {

@@ -6,22 +6,41 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.phase.custom.scope.CustomPhaseScope;
 import ai.timefold.solver.core.impl.phase.custom.scope.CustomStepScope;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
+
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Default implementation of {@link CustomPhase}.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-final class DefaultCustomPhase<Solution_> extends AbstractPhase<Solution_> implements CustomPhase<Solution_> {
+@NullMarked
+public final class DefaultCustomPhase<Solution_>
+        extends AbstractPhase<Solution_>
+        implements CustomPhase<Solution_> {
 
     private final List<CustomPhaseCommand<Solution_>> customPhaseCommandList;
+    private final boolean lastInitializingPhase;
+    private TerminationStatus terminationStatus = TerminationStatus.NOT_STARTED;
 
     private DefaultCustomPhase(Builder<Solution_> builder) {
         super(builder);
-        customPhaseCommandList = builder.customPhaseCommandList;
+        this.customPhaseCommandList = builder.customPhaseCommandList;
+        this.lastInitializingPhase = builder.isLastInitializingPhase();
+    }
+
+    @Override
+    public boolean isLastInitializingPhase() {
+        return lastInitializingPhase;
+    }
+
+    @Override
+    public TerminationStatus getTerminationStatus() {
+        return terminationStatus;
     }
 
     @Override
@@ -40,6 +59,7 @@ final class DefaultCustomPhase<Solution_> extends AbstractPhase<Solution_> imple
         for (CustomPhaseCommand<Solution_> customPhaseCommand : customPhaseCommandList) {
             solverScope.checkYielding();
             if (phaseTermination.isPhaseTerminated(phaseScope)) {
+                terminationStatus = TerminationStatus.early(phaseScope.getNextStepIndex());
                 break;
             }
             CustomStepScope<Solution_> stepScope = new CustomStepScope<>(phaseScope);
@@ -48,7 +68,16 @@ final class DefaultCustomPhase<Solution_> extends AbstractPhase<Solution_> imple
             stepEnded(stepScope);
             phaseScope.setLastCompletedStepScope(stepScope);
         }
+        if (!terminationStatus.terminated()) {
+            terminationStatus = TerminationStatus.regular(phaseScope.getNextStepIndex());
+        }
         phaseEnded(phaseScope);
+    }
+
+    @Override
+    public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
+        super.phaseStarted(phaseScope);
+        terminationStatus = TerminationStatus.NOT_STARTED;
     }
 
     private void doStep(CustomStepScope<Solution_> stepScope, CustomPhaseCommand<Solution_> customPhaseCommand) {
@@ -74,6 +103,7 @@ final class DefaultCustomPhase<Solution_> extends AbstractPhase<Solution_> imple
 
     public void phaseEnded(CustomPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
+        ensureCorrectTermination(phaseScope, logger);
         phaseScope.endingNow();
         logger.info("{}Custom phase ({}) ended: time spent ({}), best score ({}),"
                 + " move evaluation speed ({}/sec), step total ({}).",

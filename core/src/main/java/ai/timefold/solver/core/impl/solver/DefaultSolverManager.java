@@ -76,7 +76,7 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
         return new DefaultSolverJobBuilder<>(this);
     }
 
-    protected SolverJob<Solution_, ProblemId_> solveAndListen(ProblemId_ problemId,
+    SolverJob<Solution_, ProblemId_> solveAndListen(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> bestSolutionConsumer,
             Consumer<? super Solution_> finalBestSolutionConsumer,
@@ -91,7 +91,7 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
                 initializedSolutionConsumer, solverJobStartedConsumer, exceptionHandler, solverConfigOverride);
     }
 
-    protected SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
+    SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> bestSolutionConsumer,
             Consumer<? super Solution_> finalBestSolutionConsumer,

@@ -77,9 +77,12 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
             withFinalBestSolutionConsumer(@NonNull Consumer<? super Solution_> finalBestSolutionConsumer);
 
     /**
-     * Sets the consumer of the first initialized solution. First initialized solution is the solution at the end of
-     * the last phase that immediately precedes the first local search phase. This solution marks the beginning of actual
-     * optimization process.
+     * Sets the consumer of the first initialized solution,
+     * the beginning of the actual optimization process.
+     * First initialized solution is the solution at the end of the last phase
+     * that immediately precedes the first local search phase.
+     * The consumer will not be called if this phase terminated prematurely,
+     * in which case the solution is not fully initialized.
      *
      * @param firstInitializedSolutionConsumer called only once before starting the first Local Search phase
      * @return this

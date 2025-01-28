@@ -20,6 +20,7 @@ import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+import ai.timefold.solver.core.impl.phase.PossiblyInitializingPhase;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
@@ -183,7 +184,7 @@ class SolverFactoryTest {
 
         var solverFactory =
                 (DefaultSolverFactory<TestdataSolution>) SolverFactory.<TestdataSolution> create(solverConfig);
-        Assertions.assertThatThrownBy(() -> solverFactory.buildSolver())
+        Assertions.assertThatThrownBy(solverFactory::buildSolver)
                 .hasMessageContaining("unreachable phase");
     }
 
@@ -194,8 +195,10 @@ class SolverFactoryTest {
                 .buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
         var solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
-        assertThat(solver.getPhaseList().get(0).triggersFirstInitializedSolutionEvent()).isTrue();
-        assertThat(solver.getPhaseList().get(1).triggersFirstInitializedSolutionEvent()).isFalse();
+        var firstPhase = (PossiblyInitializingPhase<TestdataSolution>) solver.getPhaseList().get(0);
+        assertThat(firstPhase.isLastInitializingPhase()).isTrue();
+        assertThat(solver.getPhaseList().get(1))
+                .isNotInstanceOf(PossiblyInitializingPhase.class);
 
         // Only CH
         solverConfig = PlannerTestUtils
@@ -203,7 +206,8 @@ class SolverFactoryTest {
                 .withPhases(new ConstructionHeuristicPhaseConfig());
         solverFactory = SolverFactory.create(solverConfig);
         solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
-        assertThat(solver.getPhaseList().get(0).triggersFirstInitializedSolutionEvent()).isFalse();
+        firstPhase = (PossiblyInitializingPhase<TestdataSolution>) solver.getPhaseList().get(0);
+        assertThat(firstPhase.isLastInitializingPhase()).isFalse();
 
         // Only CH
         solverConfig = PlannerTestUtils
@@ -211,7 +215,9 @@ class SolverFactoryTest {
                 .withPhases(new LocalSearchPhaseConfig());
         solverFactory = SolverFactory.create(solverConfig);
         solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
-        assertThat(solver.getPhaseList().get(0).triggersFirstInitializedSolutionEvent()).isFalse();
+        assertThat(solver.getPhaseList())
+                .first()
+                .isNotInstanceOf(PossiblyInitializingPhase.class);
 
         // CH - CH - LS
         solverConfig = PlannerTestUtils
@@ -220,11 +226,14 @@ class SolverFactoryTest {
                         new LocalSearchPhaseConfig());
         solverFactory = SolverFactory.create(solverConfig);
         solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
-        assertThat(solver.getPhaseList().get(0).triggersFirstInitializedSolutionEvent()).isFalse();
-        assertThat(solver.getPhaseList().get(1).triggersFirstInitializedSolutionEvent()).isTrue();
-        assertThat(solver.getPhaseList().get(2).triggersFirstInitializedSolutionEvent()).isFalse();
+        firstPhase = (PossiblyInitializingPhase<TestdataSolution>) solver.getPhaseList().get(0);
+        assertThat(firstPhase.isLastInitializingPhase()).isFalse();
+        var secondPhase = (PossiblyInitializingPhase<TestdataSolution>) solver.getPhaseList().get(1);
+        assertThat(secondPhase.isLastInitializingPhase()).isTrue();
+        assertThat(solver.getPhaseList().get(2))
+                .isNotInstanceOf(PossiblyInitializingPhase.class);
 
-        // CS - CH - LS
+        // CP - CH - LS
         solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new CustomPhaseConfig()
@@ -234,11 +243,14 @@ class SolverFactoryTest {
                         new LocalSearchPhaseConfig());
         solverFactory = SolverFactory.create(solverConfig);
         solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
-        assertThat(solver.getPhaseList().get(0).triggersFirstInitializedSolutionEvent()).isFalse();
-        assertThat(solver.getPhaseList().get(1).triggersFirstInitializedSolutionEvent()).isTrue();
-        assertThat(solver.getPhaseList().get(2).triggersFirstInitializedSolutionEvent()).isFalse();
+        firstPhase = (PossiblyInitializingPhase<TestdataSolution>) solver.getPhaseList().get(0);
+        assertThat(firstPhase.isLastInitializingPhase()).isFalse();
+        secondPhase = (PossiblyInitializingPhase<TestdataSolution>) solver.getPhaseList().get(1);
+        assertThat(secondPhase.isLastInitializingPhase()).isTrue();
+        assertThat(solver.getPhaseList().get(2))
+                .isNotInstanceOf(PossiblyInitializingPhase.class);
 
-        // CH - CS - LS
+        // CH - CP - LS
         solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig(),
@@ -248,11 +260,14 @@ class SolverFactoryTest {
                         new LocalSearchPhaseConfig());
         solverFactory = SolverFactory.create(solverConfig);
         solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
-        assertThat(solver.getPhaseList().get(0).triggersFirstInitializedSolutionEvent()).isFalse();
-        assertThat(solver.getPhaseList().get(1).triggersFirstInitializedSolutionEvent()).isTrue();
-        assertThat(solver.getPhaseList().get(2).triggersFirstInitializedSolutionEvent()).isFalse();
+        firstPhase = (PossiblyInitializingPhase<TestdataSolution>) solver.getPhaseList().get(0);
+        assertThat(firstPhase.isLastInitializingPhase()).isFalse();
+        secondPhase = (PossiblyInitializingPhase<TestdataSolution>) solver.getPhaseList().get(1);
+        assertThat(secondPhase.isLastInitializingPhase()).isTrue();
+        assertThat(solver.getPhaseList().get(2))
+                .isNotInstanceOf(PossiblyInitializingPhase.class);
 
-        // CS (CH) - CS (LS)
+        // CP (CH) - CP (LS)
         solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(
@@ -264,8 +279,10 @@ class SolverFactoryTest {
                                 })));
         solverFactory = SolverFactory.create(solverConfig);
         solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
-        assertThat(solver.getPhaseList().get(0).triggersFirstInitializedSolutionEvent()).isFalse();
-        assertThat(solver.getPhaseList().get(1).triggersFirstInitializedSolutionEvent()).isFalse();
+        firstPhase = (PossiblyInitializingPhase<TestdataSolution>) solver.getPhaseList().get(0);
+        assertThat(firstPhase.isLastInitializingPhase()).isFalse();
+        secondPhase = (PossiblyInitializingPhase<TestdataSolution>) solver.getPhaseList().get(1);
+        assertThat(secondPhase.isLastInitializingPhase()).isFalse();
     }
 
 }
