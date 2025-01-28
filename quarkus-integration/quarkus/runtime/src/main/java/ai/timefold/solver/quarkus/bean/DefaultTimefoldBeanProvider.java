@@ -24,8 +24,6 @@ import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
-import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
-import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Lock;
@@ -63,14 +61,8 @@ public class DefaultTimefoldBeanProvider {
     @Produces
     ConstraintMetaModel constraintProviderMetaModel(SolverFactory<?> solverFactory) {
         if (constraintMetaModel == null) {
-            var scoreDirectorFactory = ((DefaultSolverFactory<?>) solverFactory).getScoreDirectorFactory();
-            if (scoreDirectorFactory instanceof AbstractConstraintStreamScoreDirectorFactory<?, ?> castScoreDirectorFactory) {
-                constraintMetaModel = castScoreDirectorFactory.getConstraintMetaModel();
-            } else {
-                throw new IllegalStateException(
-                        "Cannot provide %s because the score director does not use the Constraint Streams API."
-                                .formatted(ConstraintMetaModel.class.getSimpleName()));
-            }
+            // The metamodel is not compatible with Quarkus code recording, thus we need to rebuild it at runtime.
+            constraintMetaModel = BeanUtil.buildConstraintMetaModel(solverFactory);
         }
         return constraintMetaModel;
     }

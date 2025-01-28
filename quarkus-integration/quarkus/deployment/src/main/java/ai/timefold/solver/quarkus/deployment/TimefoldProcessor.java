@@ -30,6 +30,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
+import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
@@ -40,10 +41,12 @@ import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 import ai.timefold.solver.quarkus.TimefoldRecorder;
+import ai.timefold.solver.quarkus.bean.BeanUtil;
 import ai.timefold.solver.quarkus.bean.DefaultTimefoldBeanProvider;
 import ai.timefold.solver.quarkus.bean.TimefoldSolverBannerBean;
 import ai.timefold.solver.quarkus.bean.UnavailableTimefoldBeanProvider;
 import ai.timefold.solver.quarkus.config.TimefoldRuntimeConfig;
+import ai.timefold.solver.quarkus.deployment.api.ConstraintMetaModelBuildItem;
 import ai.timefold.solver.quarkus.deployment.config.SolverBuildTimeConfig;
 import ai.timefold.solver.quarkus.deployment.config.TimefoldBuildTimeConfig;
 import ai.timefold.solver.quarkus.devui.DevUISolverConfig;
@@ -571,6 +574,29 @@ class TimefoldProcessor {
         // Register solver's specific custom classes
         registerCustomClassesFromSolverConfig(solverConfig, reflectiveClassSet);
         return solverConfig;
+    }
+
+    @BuildStep
+    void buildConstraintMetaModel(SolverConfigBuildItem solverConfigBuildItem,
+            BuildProducer<ConstraintMetaModelBuildItem> constraintMetaModelBuildItemBuildProducer) {
+        if (solverConfigBuildItem.getSolverConfigMap().isEmpty()) {
+            return;
+        }
+
+        Map<String, ConstraintMetaModel> constraintMetaModelsBySolverNames = new HashMap<>();
+        solverConfigBuildItem.getSolverConfigMap().forEach((solverName, solverConfig) -> {
+            // Gizmo-generated member accessors are not yet available at build time.
+            DomainAccessType originalDomainAccessType = solverConfig.getDomainAccessType();
+            solverConfig.setDomainAccessType(DomainAccessType.REFLECTION);
+
+            var solverFactory = SolverFactory.create(solverConfig);
+            ConstraintMetaModel constraintMetaModel = BeanUtil.buildConstraintMetaModel(solverFactory);
+            // Avoid changing the original solver config.
+            solverConfig.setDomainAccessType(originalDomainAccessType);
+            constraintMetaModelsBySolverNames.put(solverName, constraintMetaModel);
+        });
+
+        constraintMetaModelBuildItemBuildProducer.produce(new ConstraintMetaModelBuildItem(constraintMetaModelsBySolverNames));
     }
 
     @BuildStep
