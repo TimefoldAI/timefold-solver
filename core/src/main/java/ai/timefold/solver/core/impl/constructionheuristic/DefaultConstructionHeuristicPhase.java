@@ -73,7 +73,9 @@ public class DefaultConstructionHeuristicPhase<Solution_>
             maxStepCount = listVariableDescriptor.countUnassigned(workingSolution);
         }
 
-        for (var placement : entityPlacer) {
+        var iterator = entityPlacer.iterator();
+        while (iterator.hasNext()) {
+            var placement = iterator.next();
             var stepScope = new ConstructionHeuristicStepScope<>(phaseScope);
             stepStarted(stepScope);
             decider.decideNextStep(stepScope, placement);
@@ -114,9 +116,12 @@ public class DefaultConstructionHeuristicPhase<Solution_>
                 break;
             }
         }
-        if (!terminationStatus.terminated()) {
-            // The phase is over, yet status is not terminated yet.
-            // This means we need to set the termination status to indicate that the phase has ended successfully.
+        if (!terminationStatus.terminated() || !iterator.hasNext()) {
+            // We need to set the termination status to indicate that the phase has ended successfully.
+            // This happens in two situations:
+            // 1. The phase is over, and early termination did not happen.
+            // 2. Early termination happened at the end of the last step, meaning a success anyway.
+            //    This happens when BestScore termination is set to the same score that the last CH step ends with.
             terminationStatus = TerminationStatus.regular(phaseScope.getNextStepIndex());
         }
         phaseEnded(phaseScope);
