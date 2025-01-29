@@ -24,16 +24,21 @@ public abstract class AbstractGeometricStuckCriterion<Solution_> implements Stuc
     private static final double GEOMETRIC_FACTOR = 1.4; // Value extracted from the cited paper
     private static final long GRACE_PERIOD_MILLIS = 30_000; // 30s by default
 
-    private final double scalingFactor;
     private final Clock clock;
+    private double scalingFactor;
     private boolean gracePeriodFinished;
     private Instant gracePeriodEnd;
     protected long nextRestart;
     private double currentGeometricGrowFactor;
 
-    protected AbstractGeometricStuckCriterion(Clock clock, double scalingFactor) {
+    protected AbstractGeometricStuckCriterion(Clock clock) {
         this.clock = clock;
+        this.scalingFactor = -1;
+    }
+
+    protected void setScalingFactor(double scalingFactor) {
         this.scalingFactor = scalingFactor;
+        this.nextRestart = calculateNextRestart();
     }
 
     @Override
@@ -67,6 +72,9 @@ public abstract class AbstractGeometricStuckCriterion<Solution_> implements Stuc
         if (isGracePeriodFinished()) {
             var triggered = evaluateCriterion(moveScope);
             if (triggered) {
+                if (scalingFactor == -1) {
+                    throw new IllegalStateException("The scaling factor is not defined for this criterion.");
+                }
                 logger.trace(
                         "Restart triggered with geometric factor {}, scaling factor of {}, best score ({}), move count ({})",
                         currentGeometricGrowFactor,

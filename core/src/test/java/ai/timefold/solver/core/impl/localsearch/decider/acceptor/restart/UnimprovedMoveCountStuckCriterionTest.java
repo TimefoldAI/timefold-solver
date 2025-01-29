@@ -34,6 +34,7 @@ class UnimprovedMoveCountStuckCriterionTest {
         when(instant.plusMillis(anyLong())).thenReturn(Instant.ofEpochMilli(UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1000L));
         when(clock.millis()).thenReturn(UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1000L);
         when(solverScope.getMoveEvaluationCount()).thenReturn(1000L);
+        when(solverScope.getMoveEvaluationSpeed()).thenReturn(1L);
         when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(1000));
 
         // Finish grace period
