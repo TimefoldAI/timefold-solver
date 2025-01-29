@@ -12,52 +12,52 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
  */
 public abstract class RestartableAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
 
-    private final StuckCriterion<Solution_> stuckCriterionDetection;
+    private final StuckCriterion<Solution_> stuckCriterion;
     protected boolean restartTriggered;
 
-    protected RestartableAcceptor(StuckCriterion<Solution_> stuckCriterionDetection) {
-        this.stuckCriterionDetection = stuckCriterionDetection;
+    protected RestartableAcceptor(StuckCriterion<Solution_> stuckCriterion) {
+        this.stuckCriterion = stuckCriterion;
     }
 
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         super.solvingStarted(solverScope);
-        stuckCriterionDetection.solvingStarted(solverScope);
+        stuckCriterion.solvingStarted(solverScope);
     }
 
     @Override
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
-        stuckCriterionDetection.phaseStarted(phaseScope);
+        stuckCriterion.phaseStarted(phaseScope);
     }
 
     @Override
     public void phaseEnded(LocalSearchPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
-        stuckCriterionDetection.phaseEnded(phaseScope);
+        stuckCriterion.phaseEnded(phaseScope);
     }
 
     @Override
     public void stepStarted(LocalSearchStepScope<Solution_> stepScope) {
         super.stepStarted(stepScope);
-        stuckCriterionDetection.stepStarted(stepScope);
+        stuckCriterion.stepStarted(stepScope);
     }
 
     @Override
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
         super.stepEnded(stepScope);
-        stuckCriterionDetection.stepEnded(stepScope);
+        stuckCriterion.stepEnded(stepScope);
     }
 
     @Override
     public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
-        if (stuckCriterionDetection.isSolverStuck(moveScope)) {
-            moveScope.getStepScope().getPhaseScope().triggerSolverStuck();
+        if (stuckCriterion.isSolverStuck(moveScope)) {
+            moveScope.getStepScope().getPhaseScope().setSolverStuck(true);
             restartTriggered = true;
             return true;
         }
-        return applyAcceptanceCriteria(moveScope);
+        return accept(moveScope);
     }
 
-    protected abstract boolean applyAcceptanceCriteria(LocalSearchMoveScope<Solution_> moveScope);
+    protected abstract boolean accept(LocalSearchMoveScope<Solution_> moveScope);
 }

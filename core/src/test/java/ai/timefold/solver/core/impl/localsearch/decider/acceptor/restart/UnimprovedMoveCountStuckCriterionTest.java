@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart;
 
 import static ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.UnimprovedMoveCountStuckCriterion.UNIMPROVED_MOVE_COUNT_MULTIPLIER;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -15,7 +16,6 @@ import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 class UnimprovedMoveCountStuckCriterionTest {
 
@@ -31,7 +31,8 @@ class UnimprovedMoveCountStuckCriterionTest {
         when(moveScope.getStepScope()).thenReturn(stepScope);
         when(stepScope.getPhaseScope()).thenReturn(phaseScope);
         when(phaseScope.getSolverScope()).thenReturn(solverScope);
-        when(instant.toEpochMilli()).thenReturn(1000L, UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1000L);
+        when(instant.plusMillis(anyLong())).thenReturn(Instant.ofEpochMilli(UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1000L));
+        when(clock.millis()).thenReturn(UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1000L);
         when(solverScope.getMoveEvaluationCount()).thenReturn(1000L);
         when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(1000));
 
@@ -44,7 +45,6 @@ class UnimprovedMoveCountStuckCriterionTest {
         assertThat(strategy.nextRestart).isEqualTo(UNIMPROVED_MOVE_COUNT_MULTIPLIER);
 
         // First restart
-        Mockito.reset(instant);
         var firstCount = UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1000L;
         when(solverScope.getMoveEvaluationCount()).thenReturn(firstCount);
         assertThat(strategy.isSolverStuck(moveScope)).isTrue();
@@ -53,7 +53,6 @@ class UnimprovedMoveCountStuckCriterionTest {
         assertThat(strategy.isSolverStuck(moveScope)).isFalse();
 
         // Second restart
-        Mockito.reset(instant);
         var secondCount = 2L * UNIMPROVED_MOVE_COUNT_MULTIPLIER + firstCount + 1;
         when(solverScope.getMoveEvaluationCount()).thenReturn(secondCount);
         assertThat(strategy.isSolverStuck(moveScope)).isTrue();
@@ -63,7 +62,6 @@ class UnimprovedMoveCountStuckCriterionTest {
 
         // Third restart
         var thirdCount = 3L * UNIMPROVED_MOVE_COUNT_MULTIPLIER + secondCount + 1;
-        Mockito.reset(instant);
         when(solverScope.getMoveEvaluationCount()).thenReturn(thirdCount);
         assertThat(strategy.isSolverStuck(moveScope)).isTrue();
         assertThat(strategy.lastCheckpoint).isEqualTo(thirdCount);
@@ -84,8 +82,8 @@ class UnimprovedMoveCountStuckCriterionTest {
         when(moveScope.getStepScope()).thenReturn(stepScope);
         when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(1000));
         when(stepScope.getScore()).thenReturn(SimpleScore.of(2000));
-        when(instant.toEpochMilli()).thenReturn(1000L, UNIMPROVED_MOVE_COUNT_MULTIPLIER, UNIMPROVED_MOVE_COUNT_MULTIPLIER,
-                UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1);
+        when(instant.plusMillis(anyLong())).thenReturn(Instant.ofEpochMilli(UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1000L));
+        when(clock.millis()).thenReturn(UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1000L, UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1000L);
         when(solverScope.getMoveEvaluationCount()).thenReturn(1000L, 1001L);
 
         var strategy = new UnimprovedMoveCountStuckCriterion<>(clock);
@@ -111,7 +109,8 @@ class UnimprovedMoveCountStuckCriterionTest {
         when(moveScope.getStepScope()).thenReturn(stepScope);
         when(stepScope.getPhaseScope()).thenReturn(phaseScope);
         when(phaseScope.getSolverScope()).thenReturn(solverScope);
-        when(instant.toEpochMilli()).thenReturn(1000L, UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1000L);
+        when(instant.plusMillis(anyLong())).thenReturn(Instant.ofEpochMilli(UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1000L));
+        when(clock.millis()).thenReturn(UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1000L);
         when(solverScope.getMoveEvaluationCount()).thenReturn(1000L);
 
         var strategy = new UnimprovedMoveCountStuckCriterion<>(clock);

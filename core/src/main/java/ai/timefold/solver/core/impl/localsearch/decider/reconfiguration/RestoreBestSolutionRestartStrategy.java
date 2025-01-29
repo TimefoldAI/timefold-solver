@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.localsearch.decider.reconfiguration;
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider;
+import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
@@ -22,7 +23,7 @@ public final class RestoreBestSolutionRestartStrategy<Solution_> implements Rest
         logger.trace("Resetting working solution, score ({})", solverScope.getBestScore());
         decider.setWorkingSolutionFromBestSolution((LocalSearchStepScope<Solution_>) stepScope);
         // Mark the solver as unstuck as the best solution is already restored
-        stepScope.getPhaseScope().resetSolverStuck();
+        stepScope.getPhaseScope().setSolverStuck(false);
     }
 
     @Override
@@ -37,7 +38,7 @@ public final class RestoreBestSolutionRestartStrategy<Solution_> implements Rest
 
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        // Do nothing
+        this.decider = Objects.requireNonNull(((LocalSearchPhaseScope<Solution_>) phaseScope).getDecider());
     }
 
     @Override
@@ -47,8 +48,7 @@ public final class RestoreBestSolutionRestartStrategy<Solution_> implements Rest
 
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
-        var castSolverScope = (AdaptedSolverScope<Solution_>) solverScope;
-        this.decider = Objects.requireNonNull(castSolverScope.getDecider());
+        // Do nothing
     }
 
     @Override
