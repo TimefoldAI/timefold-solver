@@ -33,7 +33,7 @@ public class NoChangePhase<Solution_> extends AbstractPhase<Solution_> {
                 phaseIndex);
     }
 
-    public static class Builder<Solution_> extends AbstractPhase.Builder<Solution_> {
+    public static class Builder<Solution_> extends AbstractPhaseBuilder<Solution_> {
 
         public Builder(int phaseIndex, String logIndentation, Termination<Solution_> phaseTermination) {
             super(phaseIndex, logIndentation, phaseTermination);

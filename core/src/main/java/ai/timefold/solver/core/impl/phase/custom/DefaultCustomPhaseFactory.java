@@ -17,7 +17,7 @@ public class DefaultCustomPhaseFactory<Solution_> extends AbstractPhaseFactory<S
     }
 
     @Override
-    public CustomPhase<Solution_> buildPhase(int phaseIndex, boolean triggerFirstInitializedSolutionEvent,
+    public CustomPhase<Solution_> buildPhase(int phaseIndex, boolean lastInitializingPhase,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             Termination<Solution_> solverTermination) {
         var phaseConfigPolicy = solverConfigPolicy.createPhaseConfigPolicy();
@@ -44,7 +44,7 @@ public class DefaultCustomPhaseFactory<Solution_> extends AbstractPhaseFactory<S
         if (customPhaseCommandList != null) {
             customPhaseCommandList_.addAll((Collection) customPhaseCommandList);
         }
-        var builder = new DefaultCustomPhase.Builder<>(phaseIndex, triggerFirstInitializedSolutionEvent,
+        var builder = new DefaultCustomPhase.DefaultCustomPhaseBuilder<>(phaseIndex, lastInitializingPhase,
                 solverConfigPolicy.getLogIndentation(), buildPhaseTermination(phaseConfigPolicy, solverTermination),
                 customPhaseCommandList_);
         var environmentMode = phaseConfigPolicy.getEnvironmentMode();

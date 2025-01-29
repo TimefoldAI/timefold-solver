@@ -24,7 +24,7 @@ public final class DefaultSolverJobBuilder<Solution_, ProblemId_> implements Sol
     private Function<? super ProblemId_, ? extends Solution_> problemFinder;
     private Consumer<? super Solution_> bestSolutionConsumer;
     private Consumer<? super Solution_> finalBestSolutionConsumer;
-    private Consumer<? super Solution_> initializedSolutionConsumer;
+    private FirstInitializedSolutionConsumer<? super Solution_> initializedSolutionConsumer;
     private Consumer<? super Solution_> solverJobStartedConsumer;
     private BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler;
     private SolverConfigOverride<Solution_> solverConfigOverride;
@@ -64,7 +64,8 @@ public final class DefaultSolverJobBuilder<Solution_, ProblemId_> implements Sol
 
     @Override
     public @NonNull SolverJobBuilder<Solution_, ProblemId_>
-            withFirstInitializedSolutionConsumer(@NonNull Consumer<? super Solution_> firstInitializedSolutionConsumer) {
+            withFirstInitializedSolutionConsumer(
+                    @NonNull FirstInitializedSolutionConsumer<? super Solution_> firstInitializedSolutionConsumer) {
         this.initializedSolutionConsumer = Objects.requireNonNull(firstInitializedSolutionConsumer,
                 "Invalid initializedSolutionConsumer (null) given to SolverJobBuilder.");
         return this;

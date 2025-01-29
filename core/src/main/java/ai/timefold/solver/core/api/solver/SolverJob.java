@@ -35,9 +35,6 @@ public interface SolverJob<Solution_, ProblemId_> {
     @NonNull
     SolverStatus getSolverStatus();
 
-    // TODO Future features
-    //    void reloadProblem(Function<? super ProblemId_, Solution_> problemFinder);
-
     /**
      * Schedules a {@link ProblemChange} to be processed by the underlying {@link Solver} and returns immediately.
      * <p>

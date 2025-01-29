@@ -5,10 +5,11 @@ import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHe
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
-import ai.timefold.solver.core.impl.phase.AbstractPhase;
+import ai.timefold.solver.core.impl.phase.AbstractPossiblyInitializingPhase;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
+import org.jspecify.annotations.NullMarked;
 import org.slf4j.event.Level;
 
 /**
@@ -16,20 +17,28 @@ import org.slf4j.event.Level;
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<Solution_>
+@NullMarked
+public class DefaultConstructionHeuristicPhase<Solution_>
+        extends AbstractPossiblyInitializingPhase<Solution_>
         implements ConstructionHeuristicPhase<Solution_> {
 
     protected final ConstructionHeuristicDecider<Solution_> decider;
     protected final EntityPlacer<Solution_> entityPlacer;
+    private TerminationStatus terminationStatus = TerminationStatus.NOT_TERMINATED;
 
     protected DefaultConstructionHeuristicPhase(DefaultConstructionHeuristicPhaseBuilder<Solution_> builder) {
         super(builder);
-        decider = builder.decider;
-        entityPlacer = builder.getEntityPlacer();
+        this.decider = builder.decider;
+        this.entityPlacer = builder.getEntityPlacer();
     }
 
     public EntityPlacer<Solution_> getEntityPlacer() {
         return entityPlacer;
+    }
+
+    @Override
+    public TerminationStatus getTerminationStatus() {
+        return terminationStatus;
     }
 
     @Override
@@ -57,7 +66,10 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
             maxStepCount = listVariableDescriptor.countUnassigned(workingSolution);
         }
 
-        for (var placement : entityPlacer) {
+        var iterator = entityPlacer.iterator();
+        TerminationStatus earlyTerminationStatus = null;
+        while (iterator.hasNext()) {
+            var placement = iterator.next();
             var stepScope = new ConstructionHeuristicStepScope<>(phaseScope);
             stepStarted(stepScope);
             decider.decideNextStep(stepScope, placement);
@@ -83,17 +95,23 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
                             + ") has selected move count (" + stepScope.getSelectedMoveCount()
                             + ") but failed to pick a nextStep (" + stepScope.getStep() + ").");
                 }
-                // Although stepStarted has been called, stepEnded is not called for this step
+                // Although stepStarted has been called, stepEnded is not called for this step.
+                earlyTerminationStatus = TerminationStatus.early(phaseScope.getNextStepIndex());
                 break;
             }
             doStep(stepScope);
             stepEnded(stepScope);
             phaseScope.setLastCompletedStepScope(stepScope);
-            if (phaseTermination.isPhaseTerminated(phaseScope)
-                    || (hasListVariable && stepScope.getStepIndex() >= maxStepCount)) {
+            if (hasListVariable && stepScope.getStepIndex() >= maxStepCount) {
+                earlyTerminationStatus = TerminationStatus.regular(phaseScope.getNextStepIndex());
+                break;
+            } else if (phaseTermination.isPhaseTerminated(phaseScope)) {
+                earlyTerminationStatus = TerminationStatus.early(phaseScope.getNextStepIndex());
                 break;
             }
         }
+        // We only store the termination status, which is exposed to the outside, when the phase has ended.
+        terminationStatus = translateEarlyTermination(phaseScope, earlyTerminationStatus, iterator.hasNext());
         phaseEnded(phaseScope);
     }
 
@@ -123,6 +141,7 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
 
     public void phaseStarted(ConstructionHeuristicPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
+        terminationStatus = TerminationStatus.NOT_TERMINATED;
         entityPlacer.phaseStarted(phaseScope);
         decider.phaseStarted(phaseScope);
     }
@@ -150,6 +169,7 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
 
     public void phaseEnded(ConstructionHeuristicPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
+        ensureCorrectTermination(phaseScope, logger);
         updateBestSolutionAndFire(phaseScope);
         entityPlacer.phaseEnded(phaseScope);
         decider.phaseEnded(phaseScope);
@@ -187,15 +207,15 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
     }
 
     public static class DefaultConstructionHeuristicPhaseBuilder<Solution_>
-            extends AbstractPhase.Builder<Solution_> {
+            extends AbstractPossiblyInitializingPhaseBuilder<Solution_> {
 
         private final EntityPlacer<Solution_> entityPlacer;
         private final ConstructionHeuristicDecider<Solution_> decider;
 
-        public DefaultConstructionHeuristicPhaseBuilder(int phaseIndex, boolean triggerFirstInitializedSolutionEvent,
+        public DefaultConstructionHeuristicPhaseBuilder(int phaseIndex, boolean lastInitializingPhase,
                 String logIndentation, Termination<Solution_> phaseTermination, EntityPlacer<Solution_> entityPlacer,
                 ConstructionHeuristicDecider<Solution_> decider) {
-            super(phaseIndex, triggerFirstInitializedSolutionEvent, logIndentation, phaseTermination);
+            super(phaseIndex, lastInitializingPhase, logIndentation, phaseTermination);
             this.entityPlacer = entityPlacer;
             this.decider = decider;
         }
@@ -209,4 +229,5 @@ public class DefaultConstructionHeuristicPhase<Solution_> extends AbstractPhase<
             return new DefaultConstructionHeuristicPhase<>(this);
         }
     }
+
 }

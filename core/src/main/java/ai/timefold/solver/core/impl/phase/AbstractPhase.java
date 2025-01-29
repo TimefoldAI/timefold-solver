@@ -32,21 +32,19 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     protected final boolean assertStepScoreFromScratch;
     protected final boolean assertExpectedStepScore;
     protected final boolean assertShadowVariablesAreNotStaleAfterStep;
-    protected final boolean triggerFirstInitializedSolutionEvent;
 
     /** Used for {@link #addPhaseLifecycleListener(PhaseLifecycleListener)}. */
     protected PhaseLifecycleSupport<Solution_> phaseLifecycleSupport = new PhaseLifecycleSupport<>();
 
     protected AbstractSolver<Solution_> solver;
 
-    protected AbstractPhase(Builder<Solution_> builder) {
+    protected AbstractPhase(AbstractPhaseBuilder<Solution_> builder) {
         phaseIndex = builder.phaseIndex;
         logIndentation = builder.logIndentation;
         phaseTermination = builder.phaseTermination;
         assertStepScoreFromScratch = builder.assertStepScoreFromScratch;
         assertExpectedStepScore = builder.assertExpectedStepScore;
         assertShadowVariablesAreNotStaleAfterStep = builder.assertShadowVariablesAreNotStaleAfterStep;
-        triggerFirstInitializedSolutionEvent = builder.triggerFirstInitializedSolutionEvent;
     }
 
     public int getPhaseIndex() {
@@ -78,11 +76,6 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     }
 
     public abstract String getPhaseTypeString();
-
-    @Override
-    public boolean triggersFirstInitializedSolutionEvent() {
-        return triggerFirstInitializedSolutionEvent;
-    }
 
     // ************************************************************************
     // Lifecycle methods
@@ -148,10 +141,10 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         Score_ score = phaseScope.calculateScore();
         stepScope.setScore(score);
         if (assertStepScoreFromScratch) {
-            phaseScope.assertWorkingScoreFromScratch((Score_) stepScope.getScore(), completedAction);
+            phaseScope.assertWorkingScoreFromScratch(score, completedAction);
         }
         if (assertShadowVariablesAreNotStaleAfterStep) {
-            phaseScope.assertShadowVariablesAreNotStale((Score_) stepScope.getScore(), completedAction);
+            phaseScope.assertShadowVariablesAreNotStale(score, completedAction);
         }
     }
 
@@ -235,10 +228,9 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         }
     }
 
-    protected abstract static class Builder<Solution_> {
+    public abstract static class AbstractPhaseBuilder<Solution_> {
 
         private final int phaseIndex;
-        private final boolean triggerFirstInitializedSolutionEvent;
         private final String logIndentation;
         private final Termination<Solution_> phaseTermination;
 
@@ -246,14 +238,8 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         private boolean assertExpectedStepScore = false;
         private boolean assertShadowVariablesAreNotStaleAfterStep = false;
 
-        protected Builder(int phaseIndex, String logIndentation, Termination<Solution_> phaseTermination) {
-            this(phaseIndex, false, logIndentation, phaseTermination);
-        }
-
-        protected Builder(int phaseIndex, boolean triggerFirstInitializedSolutionEvent, String logIndentation,
-                Termination<Solution_> phaseTermination) {
+        protected AbstractPhaseBuilder(int phaseIndex, String logIndentation, Termination<Solution_> phaseTermination) {
             this.phaseIndex = phaseIndex;
-            this.triggerFirstInitializedSolutionEvent = triggerFirstInitializedSolutionEvent;
             this.logIndentation = logIndentation;
             this.phaseTermination = phaseTermination;
         }

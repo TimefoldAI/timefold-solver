@@ -3,6 +3,9 @@ package ai.timefold.solver.core.impl.phase.custom;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.phase.Phase;
+import ai.timefold.solver.core.impl.phase.PossiblyInitializingPhase;
+
+import org.jspecify.annotations.NullMarked;
 
 /**
  * A {@link CustomPhase} is a {@link Phase} which uses {@link CustomPhaseCommand}s.
@@ -12,6 +15,7 @@ import ai.timefold.solver.core.impl.phase.Phase;
  * @see AbstractPhase
  * @see DefaultCustomPhase
  */
-public interface CustomPhase<Solution_> extends Phase<Solution_> {
+@NullMarked
+public interface CustomPhase<Solution_> extends PossiblyInitializingPhase<Solution_> {
 
 }

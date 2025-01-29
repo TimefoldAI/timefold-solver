@@ -43,7 +43,7 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
     }
 
     public final DefaultConstructionHeuristicPhaseBuilder<Solution_> getBuilder(int phaseIndex,
-            boolean triggerFirstInitializedSolutionEvent, HeuristicConfigPolicy<Solution_> solverConfigPolicy,
+            boolean lastInitializingPhase, HeuristicConfigPolicy<Solution_> solverConfigPolicy,
             Termination<Solution_> solverTermination) {
         var constructionHeuristicType_ = Objects.requireNonNullElse(phaseConfig.getConstructionHeuristicType(),
                 ConstructionHeuristicType.ALLOCATE_ENTITY_FROM_QUEUE);
@@ -62,15 +62,14 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
                 .orElseGet(() -> buildDefaultEntityPlacerConfig(phaseConfigPolicy, constructionHeuristicType_));
         var entityPlacer = EntityPlacerFactory.<Solution_> create(entityPlacerConfig_)
                 .buildEntityPlacer(phaseConfigPolicy);
-        return createBuilder(phaseConfigPolicy, solverTermination, phaseIndex, triggerFirstInitializedSolutionEvent,
-                entityPlacer);
+        return createBuilder(phaseConfigPolicy, solverTermination, phaseIndex, lastInitializingPhase, entityPlacer);
     }
 
     protected DefaultConstructionHeuristicPhaseBuilder<Solution_> createBuilder(
             HeuristicConfigPolicy<Solution_> phaseConfigPolicy, Termination<Solution_> solverTermination, int phaseIndex,
-            boolean triggerFirstInitializedSolutionEvent, EntityPlacer<Solution_> entityPlacer) {
+            boolean lastInitializingPhase, EntityPlacer<Solution_> entityPlacer) {
         var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
-        var builder = new DefaultConstructionHeuristicPhaseBuilder<>(phaseIndex, triggerFirstInitializedSolutionEvent,
+        var builder = new DefaultConstructionHeuristicPhaseBuilder<>(phaseIndex, lastInitializingPhase,
                 phaseConfigPolicy.getLogIndentation(), phaseTermination, entityPlacer,
                 buildDecider(phaseConfigPolicy, phaseTermination));
         var environmentMode = phaseConfigPolicy.getEnvironmentMode();
@@ -85,10 +84,10 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
     }
 
     @Override
-    public ConstructionHeuristicPhase<Solution_> buildPhase(int phaseIndex, boolean triggerFirstInitializedSolutionEvent,
+    public ConstructionHeuristicPhase<Solution_> buildPhase(int phaseIndex, boolean lastInitializingPhase,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             Termination<Solution_> solverTermination) {
-        return getBuilder(phaseIndex, triggerFirstInitializedSolutionEvent, solverConfigPolicy, solverTermination)
+        return getBuilder(phaseIndex, lastInitializingPhase, solverConfigPolicy, solverTermination)
                 .build();
     }
 

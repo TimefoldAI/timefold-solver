@@ -85,7 +85,7 @@ public interface PhaseFactory<Solution_> {
         return (terminationConfig != null && terminationConfig.isConfigured());
     }
 
-    Phase<Solution_> buildPhase(int phaseIndex, boolean triggerFirstInitializedSolutionEvent,
+    Phase<Solution_> buildPhase(int phaseIndex, boolean lastInitializingPhase,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             Termination<Solution_> solverTermination);
 }

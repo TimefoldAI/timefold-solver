@@ -226,7 +226,7 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         decider.solvingEnded(solverScope);
     }
 
-    public static class Builder<Solution_> extends AbstractPhase.Builder<Solution_> {
+    public static class Builder<Solution_> extends AbstractPhaseBuilder<Solution_> {
 
         private final Comparator<ExhaustiveSearchNode> nodeComparator;
         private final EntitySelector<Solution_> entitySelector;

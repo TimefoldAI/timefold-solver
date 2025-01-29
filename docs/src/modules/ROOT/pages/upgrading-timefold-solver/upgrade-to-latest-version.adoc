@@ -57,6 +57,35 @@ Every upgrade note indicates how likely your code will be affected by that chang
 The upgrade recipe often lists the changes as they apply to Java code.
 We kindly ask Kotlin and Python users to translate the changes accordingly.
 
+=== Upgrade from 1.18.0 to 1.19.0
+
+.icon:info-circle[role=yellow] New argument to `FirstInitializedSolutionConsumer`
+[%collapsible%open]
+====
+The `FirstInitializedSolutionConsumer` of `SolverJob` gets an additional argument
+(`boolean isTerminatedEarly`),
+used to indicate that the solver terminated early and therefore the solution may not be fully initialized.
+
+Before in `*.java`:
+
+[source,java]
+----
+var solverJob = solverManager.solveBuilder()
+    .withFirstInitializedSolutionConsumer(solution -> {...})
+    ...
+----
+
+After in `*.java`:
+
+[source,java]
+----
+var solverJob = solverManager.solveBuilder()
+    .withFirstInitializedSolutionConsumer((solution, isTerminatedEarly) -> {...})
+    ...
+----
+====
+
+
 === Upgrade from 1.15.0 to 1.16.0
 
 .icon:info-circle[role=yellow] Undo tabu no longer supported
@@ -68,7 +97,7 @@ but they do not have any effect on the solver's behavior.
 
 Regular tabu search continues to be supported as before without any changes to its behavior.
 
-Before in `*.java`:
+Before in `solverConfig.xml`:
 
 [source,xml,options="nowrap"]
 ----
@@ -78,7 +107,7 @@ Before in `*.java`:
 </acceptor>
 ----
 
-After in `*.java`:
+After in `solverConfig.xml`:
 
 [source,xml,options="nowrap"]
 ----

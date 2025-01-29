@@ -19,10 +19,12 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverJob;
+import ai.timefold.solver.core.api.solver.SolverJobBuilder.FirstInitializedSolutionConsumer;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
+import ai.timefold.solver.core.impl.phase.PossiblyInitializingPhase;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -46,7 +48,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     private final Function<? super ProblemId_, ? extends Solution_> problemFinder;
     private final Consumer<? super Solution_> bestSolutionConsumer;
     private final Consumer<? super Solution_> finalBestSolutionConsumer;
-    private final Consumer<? super Solution_> firstInitializedSolutionConsumer;
+    private final FirstInitializedSolutionConsumer<? super Solution_> firstInitializedSolutionConsumer;
     private final Consumer<? super Solution_> solverJobStartedConsumer;
     private final BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler;
 
@@ -64,7 +66,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> bestSolutionConsumer,
             Consumer<? super Solution_> finalBestSolutionConsumer,
-            Consumer<? super Solution_> firstInitializedSolutionConsumer,
+            FirstInitializedSolutionConsumer<? super Solution_> firstInitializedSolutionConsumer,
             Consumer<? super Solution_> solverJobStartedConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
         this.solverManager = solverManager;
@@ -145,7 +147,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
 
     private void onBestSolutionChangedEvent(BestSolutionChangedEvent<Solution_> bestSolutionChangedEvent) {
         consumerSupport.consumeIntermediateBestSolution(bestSolutionChangedEvent.getNewBestSolution(),
-                () -> bestSolutionChangedEvent.isEveryProblemChangeProcessed());
+                bestSolutionChangedEvent::isEveryProblemChangeProcessed);
     }
 
     private void solvingTerminated() {
@@ -154,12 +156,6 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
         terminatedLatch.countDown();
         close();
     }
-
-    // TODO Future features
-    //    @Override
-    //    public void reloadProblem(Function<? super ProblemId_, Solution_> problemFinder) {
-    //        throw new UnsupportedOperationException("The solver is still solving and reloadProblem() is not yet supported.");
-    //    }
 
     @Override
     public @NonNull CompletableFuture<Void> addProblemChange(@NonNull ProblemChange<Solution_> problemChange) {
@@ -315,11 +311,15 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
                     .filter(phase -> ((AbstractPhase<Solution_>) phase).getPhaseIndex() == phaseScope.getPhaseIndex())
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException(
-                            "Solving failed for problemId (%s) because the phase id %d was not found.".formatted(problemId,
-                                    phaseScope.getPhaseIndex())));
-            if (eventPhase.triggersFirstInitializedSolutionEvent()) {
-                // The Solver thread calls the method, but the consumption is done asynchronously by the Consumer thread
-                consumerSupport.consumeFirstInitializedSolution(phaseScope.getWorkingSolution());
+                            "Impossible state: Solving failed for problemId (%s) because the phase id %d was not found."
+                                    .formatted(problemId, phaseScope.getPhaseIndex())));
+            if (eventPhase instanceof PossiblyInitializingPhase<Solution_> possiblyInitializingPhase
+                    && possiblyInitializingPhase.isLastInitializingPhase()) {
+                // The Solver thread calls the method,
+                // but the consumption is done asynchronously by the Consumer thread.
+                // Only happens if the phase initializes the solution.
+                consumerSupport.consumeFirstInitializedSolution(phaseScope.getWorkingSolution(),
+                        possiblyInitializingPhase.getTerminationStatus().early());
             }
         }
     }

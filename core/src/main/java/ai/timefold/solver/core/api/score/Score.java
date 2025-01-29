@@ -3,6 +3,8 @@ package ai.timefold.solver.core.api.score;
 import java.io.Serializable;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
@@ -30,15 +32,18 @@ public interface Score<Score_ extends Score<Score_>>
         extends Comparable<Score_>, Serializable {
 
     /**
-     * The init score is the negative of the number of uninitialized genuine planning variables.
-     * If it's 0 (which it usually is), the {@link PlanningSolution} is fully initialized
-     * and the score's {@link Object#toString()} does not mention it.
+     * The init score is the negative of the number of genuine planning variables set to null,
+     * unless null values are specifically allowed by {@link PlanningVariable#allowsUnassigned()}
+     * or {@link PlanningListVariable#allowsUnassignedValues()}
+     * Nulls are typically only allowed in over-constrained planning.
+     * In that case, there is no way how to tell a fully initialized solution with some values left unassigned,
+     * from a partially initialized solution where the initialization of some values wasn't yet attempted.
      * <p>
-     * During {@link #compareTo(Object)}, it's even more important than the hard score:
-     * if you don't want this behaviour, read about overconstrained planning in the reference manual.
+     * During {@link #compareTo(Object)}, init score is considered more important than the hard score.
+     * If the init score is 0 (which it usually is), the score's {@link Object#toString()} does not mention it.
      *
-     * @return higher is better, always negative (except in statistical calculations), 0 if all planning variables are
-     *         initialized
+     * @return higher is better, always negative (except in statistical calculations); 0 if all planning variables are
+     *         non-null, or if nulls are allowed.
      */
     default int initScore() {
         // TODO remove default implementation in 2.0; exists only for backwards compatibility
@@ -185,6 +190,16 @@ public interface Score<Score_ extends Score<Score_>>
 
     /**
      * Checks if the {@link PlanningSolution} of this score was fully initialized when it was calculated.
+     * This only works for solutions where:
+     * <ul>
+     * <li>{@link PlanningVariable basic variables} are used,
+     * and {@link PlanningVariable#allowsUnassigned() unassigning} is not allowed.</li>
+     * <li>{@link PlanningListVariable list variables} are used,
+     * and {@link PlanningListVariable#allowsUnassignedValues() unassigned values} are not allowed.</li>
+     * </ul>
+     *
+     * For solutions which do allow unassigning values,
+     * {@link #initScore()} is always zero and therefore this method always returns true.
      *
      * @return true if {@link #initScore()} is 0
      */
