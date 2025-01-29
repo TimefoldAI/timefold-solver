@@ -1,8 +1,5 @@
 package ai.timefold.solver.core.impl.phase;
 
-import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.impl.constructionheuristic.ConstructionHeuristicPhase;
-import ai.timefold.solver.core.impl.localsearch.LocalSearchPhase;
 import ai.timefold.solver.core.impl.phase.custom.CustomPhase;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
@@ -10,13 +7,6 @@ import ai.timefold.solver.core.impl.solver.termination.Termination;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-/**
- * Describes a phase that can be used to initialize a solution.
- * {@link ConstructionHeuristicPhase} is automatically an initializing phase.
- * {@link CustomPhase} can be an initializing phase, if it comes before the first {@link LocalSearchPhase}.
- *
- * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
- */
 public abstract class AbstractPossiblyInitializingPhase<Solution_>
         extends AbstractPhase<Solution_>
         implements PossiblyInitializingPhase<Solution_> {
