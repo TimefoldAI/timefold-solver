@@ -7,7 +7,6 @@ import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
-import ai.timefold.solver.core.impl.localsearch.decider.reconfiguration.AdaptedSolverScope;
 import ai.timefold.solver.core.impl.localsearch.decider.reconfiguration.RestartStrategy;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
@@ -77,7 +76,7 @@ public class LocalSearchDecider<Solution_> {
     // ************************************************************************
 
     public void solvingStarted(SolverScope<Solution_> solverScope) {
-        restartStrategy.solvingStarted(new AdaptedSolverScope<>(solverScope, this));
+        restartStrategy.solvingStarted(solverScope);
         moveSelector.solvingStarted(solverScope);
         acceptor.solvingStarted(solverScope);
         forager.solvingStarted(solverScope);
@@ -88,6 +87,7 @@ public class LocalSearchDecider<Solution_> {
     }
 
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
+        phaseScope.setDecider(this);
         restartStrategy.phaseStarted(phaseScope);
         moveSelectorPhaseStarted(phaseScope);
         acceptor.phaseStarted(phaseScope);

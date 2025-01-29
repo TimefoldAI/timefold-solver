@@ -52,7 +52,7 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
 
     @Override
     @SuppressWarnings("unchecked")
-    public boolean applyAcceptanceCriteria(LocalSearchMoveScope<Solution_> moveScope) {
+    public boolean accept(LocalSearchMoveScope<Solution_> moveScope) {
         var moveScore = moveScope.getScore();
         var lateScore = previousScores[lateScoreIndex];
         if (moveScore.compareTo(lateScore) >= 0) {

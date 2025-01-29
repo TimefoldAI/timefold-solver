@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart;
 
 import java.time.Clock;
+import java.time.Instant;
 
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
@@ -21,12 +22,12 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractGeometricStuckCriterion<Solution_> implements StuckCriterion<Solution_> {
     protected static final Logger logger = LoggerFactory.getLogger(AbstractGeometricStuckCriterion.class);
     private static final double GEOMETRIC_FACTOR = 1.4; // Value extracted from the cited paper
-    private static final long GRACE_PERIOD_MILLIS = 30_000; // Same value as DiminishedReturnsTermination
+    private static final long GRACE_PERIOD_MILLIS = 30_000; // 30s by default
 
     private final double scalingFactor;
     private final Clock clock;
     private boolean gracePeriodFinished;
-    private long gracePeriodMillis;
+    private Instant gracePeriodEnd;
     protected long nextRestart;
     private double currentGeometricGrowFactor;
 
@@ -37,9 +38,9 @@ public abstract class AbstractGeometricStuckCriterion<Solution_> implements Stuc
 
     @Override
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
-        if (gracePeriodMillis == 0) {
+        if (gracePeriodEnd == null) {
             // 30 seconds of grace period
-            gracePeriodMillis = clock.instant().toEpochMilli() + GRACE_PERIOD_MILLIS;
+            gracePeriodEnd = clock.instant().plusMillis(GRACE_PERIOD_MILLIS);
         }
     }
 
@@ -51,7 +52,7 @@ public abstract class AbstractGeometricStuckCriterion<Solution_> implements Stuc
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         currentGeometricGrowFactor = 1;
-        gracePeriodMillis = 0;
+        gracePeriodEnd = null;
         gracePeriodFinished = false;
         nextRestart = calculateNextRestart();
     }
@@ -83,7 +84,7 @@ public abstract class AbstractGeometricStuckCriterion<Solution_> implements Stuc
         if (gracePeriodFinished) {
             return true;
         }
-        gracePeriodFinished = clock.instant().toEpochMilli() >= gracePeriodMillis;
+        gracePeriodFinished = clock.millis() >= gracePeriodEnd.toEpochMilli();
         return gracePeriodFinished;
     }
 

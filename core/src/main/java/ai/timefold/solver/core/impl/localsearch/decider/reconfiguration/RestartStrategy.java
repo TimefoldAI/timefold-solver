@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.localsearch.decider.reconfiguration;
 
+import ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.StuckCriterion;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
@@ -7,7 +8,7 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 /**
  * Base contract for defining restart strategies.
  * The restart process is initiated
- * when the {@link ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider decider} identifies
+ * when the {@link LocalSearchDecider decider} identifies
  * that the solver is {@link StuckCriterion stuck}
  * and requires some logic to alter the current solving flow.
  *

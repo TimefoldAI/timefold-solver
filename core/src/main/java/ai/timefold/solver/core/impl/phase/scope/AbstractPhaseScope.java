@@ -252,12 +252,8 @@ public abstract class AbstractPhaseScope<Solution_> {
         return this.solverStuck;
     }
 
-    public void triggerSolverStuck() {
-        this.solverStuck = true;
-    }
-
-    public void resetSolverStuck() {
-        this.solverStuck = false;
+    public void setSolverStuck(boolean solverStuck) {
+        this.solverStuck = solverStuck;
     }
 
     @Override
