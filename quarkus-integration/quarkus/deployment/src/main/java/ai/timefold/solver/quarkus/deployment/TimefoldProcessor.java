@@ -8,6 +8,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -669,6 +670,18 @@ class TimefoldProcessor {
             RecorderContext recorderContext,
             SolverConfigBuildItem solverConfigBuildItem,
             BuildProducer<SyntheticBeanBuildItem> syntheticBeans) {
+        if (solverConfigBuildItem.getGeneratedGizmoClasses() == null) {
+            // Extension was skipped, so no solver configs
+            syntheticBeans.produce(SyntheticBeanBuildItem.configure(DevUISolverConfig.class)
+                    .scope(ApplicationScoped.class)
+                    .supplier(devUIRecorder.solverConfigSupplier(Collections.emptyMap(),
+                            Collections.emptyMap(),
+                            Collections.emptyMap()))
+                    .defaultBean()
+                    .setRuntimeInit()
+                    .done());
+            return;
+        }
         syntheticBeans.produce(SyntheticBeanBuildItem.configure(DevUISolverConfig.class)
                 .scope(ApplicationScoped.class)
                 .supplier(devUIRecorder.solverConfigSupplier(solverConfigBuildItem.getSolverConfigMap(),
