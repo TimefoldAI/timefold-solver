@@ -59,13 +59,30 @@ We kindly ask Kotlin and Python users to translate the changes accordingly.
 
 === Upgrade from 1.18.0 to 1.19.0
 
-.icon:info-circle[role=yellow] `FirstInitializedSolutionConsumer` only called on fully initialized solutions
+.icon:info-circle[role=yellow] New argument to `FirstInitializedSolutionConsumer`
 [%collapsible%open]
 ====
-Previously, `SolverJob` 's `FirstInitializedSolutionConsumer` was called on every solution initialization,
-even if the solver terminated prematurely and the solution was therefore not fully initialized.
-Starting with Timefold Solver 1.19.0, `FirstInitializedSolutionConsumer` is only called on fully initialized solutions,
-and a warning is logged if the solver terminates prematurely before the solution is fully initialized.
+`SolverJob` 's `FirstInitializedSolutionConsumer` gets an additional argument
+(`boolean isTerminatedEarly`),
+used to indicate that the solver terminated early and therefore the solution may not be fully initialized.
+
+Before in `*.java`:
+
+[source,java]
+----
+var solverJob = solverManager.solveBuilder()
+    .withFirstInitializedSolutionConsumer(solution -> {...})
+    ...
+----
+
+After in `*.java`:
+
+[source,java]
+----
+var solverJob = solverManager.solveBuilder()
+    .withFirstInitializedSolutionConsumer((solution, isTerminatedEarly) -> {...})
+    ...
+----
 ====
 
 
@@ -80,7 +97,7 @@ but they do not have any effect on the solver's behavior.
 
 Regular tabu search continues to be supported as before without any changes to its behavior.
 
-Before in `*.java`:
+Before in `solverConfig.xml`:
 
 [source,xml,options="nowrap"]
 ----
@@ -90,7 +107,7 @@ Before in `*.java`:
 </acceptor>
 ----
 
-After in `*.java`:
+After in `solverConfig.xml`:
 
 [source,xml,options="nowrap"]
 ----

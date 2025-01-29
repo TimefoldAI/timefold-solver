@@ -36,6 +36,8 @@ public interface Score<Score_ extends Score<Score_>>
      * unless null values are specifically allowed by {@link PlanningVariable#allowsUnassigned()}
      * or {@link PlanningListVariable#allowsUnassignedValues()}
      * Nulls are typically only allowed in over-constrained planning.
+     * In that case, there is no way how to tell a fully initialized solution with some values left unassigned,
+     * from a partially initialized solution where the initialization of some values wasn't yet attempted.
      * <p>
      * During {@link #compareTo(Object)}, init score is considered more important than the hard score.
      * If the init score is 0 (which it usually is), the score's {@link Object#toString()} does not mention it.

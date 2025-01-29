@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.api.solver.SolverJobBuilder.FirstInitializedSolutionConsumer;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.phase.PhaseConfig;
@@ -269,7 +270,8 @@ class SolverManagerTest {
     @Timeout(60)
     void firstInitializedSolutionConsumerWithDefaultPhases() throws ExecutionException, InterruptedException {
         MutableBoolean hasInitializedSolution = new MutableBoolean();
-        Consumer<Object> initializedSolutionConsumer = ignore -> hasInitializedSolution.setTrue();
+        FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer =
+                (ignore, isTerminatedEarly) -> hasInitializedSolution.setValue(!isTerminatedEarly);
 
         // Default configuration
         SolverConfig solverConfig = PlannerTestUtils
@@ -294,7 +296,8 @@ class SolverManagerTest {
     @Timeout(60)
     void firstInitializedSolutionConsumerWithSinglePhase() throws ExecutionException, InterruptedException {
         MutableBoolean hasInitializedSolution = new MutableBoolean();
-        Consumer<Object> initializedSolutionConsumer = ignore -> hasInitializedSolution.setTrue();
+        FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer =
+                (ignore, isTerminatedEarly) -> hasInitializedSolution.setValue(!isTerminatedEarly);
 
         // Only CH
         SolverConfig solverConfig = PlannerTestUtils
@@ -339,9 +342,37 @@ class SolverManagerTest {
 
     @Test
     @Timeout(60)
+    void firstInitializedSolutionConsumerEarlyTerminatedCH() throws ExecutionException, InterruptedException {
+        MutableBoolean hasInitializedSolution = new MutableBoolean();
+        FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer =
+                (ignore, isTerminatedEarly) -> hasInitializedSolution.setValue(isTerminatedEarly);
+
+        SolverConfig solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withTerminationConfig(new TerminationConfig()
+                                .withStepCountLimit(1)));
+        solverManager = SolverManager
+                .create(solverConfig, new SolverManagerConfig());
+        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
+                PlannerTestUtils.generateTestdataSolution("s1"));
+
+        SolverJob<TestdataSolution, Long> solverJob = solverManager.solveBuilder()
+                .withProblemId(1L)
+                .withProblemFinder(problemFinder)
+                .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                .run();
+        solverJob.getFinalBestSolution();
+        assertThat(hasInitializedSolution.booleanValue()).isFalse();
+        hasInitializedSolution.setFalse();
+    }
+
+    @Test
+    @Timeout(60)
     void firstInitializedSolutionConsumerWith2CHAndLS() throws ExecutionException, InterruptedException {
         MutableBoolean hasInitializedSolution = new MutableBoolean();
-        Consumer<Object> initializedSolutionConsumer = ignore -> hasInitializedSolution.setTrue();
+        FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer =
+                (ignore, isTerminatedEarly) -> hasInitializedSolution.setValue(!isTerminatedEarly);
 
         // CH - CH - LS
         SolverConfig solverConfig = PlannerTestUtils
@@ -369,7 +400,8 @@ class SolverManagerTest {
     @Timeout(60)
     void firstInitializedSolutionConsumerWithCustomAndCHAndLS() throws ExecutionException, InterruptedException {
         MutableBoolean hasInitializedSolution = new MutableBoolean();
-        Consumer<Object> initializedSolutionConsumer = ignore -> hasInitializedSolution.setTrue();
+        FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer =
+                (ignore, isTerminatedEarly) -> hasInitializedSolution.setValue(!isTerminatedEarly);
 
         // CS - CH - LS
         SolverConfig solverConfig = PlannerTestUtils
@@ -400,7 +432,8 @@ class SolverManagerTest {
     @Timeout(60)
     void firstInitializedSolutionConsumerWithCHAndCustomAndLS() throws ExecutionException, InterruptedException {
         MutableBoolean hasInitializedSolution = new MutableBoolean();
-        Consumer<Object> initializedSolutionConsumer = ignore -> hasInitializedSolution.setTrue();
+        FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer =
+                (ignore, isTerminatedEarly) -> hasInitializedSolution.setValue(!isTerminatedEarly);
 
         // CH - CS - LS
         SolverConfig solverConfig = PlannerTestUtils
@@ -432,7 +465,8 @@ class SolverManagerTest {
     @Timeout(60)
     void firstInitializedSolutionConsumerWith2Custom() throws ExecutionException, InterruptedException {
         MutableBoolean hasInitializedSolution = new MutableBoolean();
-        Consumer<Object> initializedSolutionConsumer = ignore -> hasInitializedSolution.setTrue();
+        FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer =
+                (ignore, isTerminatedEarly) -> hasInitializedSolution.setValue(!isTerminatedEarly);
 
         // CS (CH) - CS (LS)
         SolverConfig solverConfig = PlannerTestUtils

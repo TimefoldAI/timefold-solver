@@ -1,9 +1,8 @@
 package ai.timefold.solver.core.impl.phase;
 
-import java.util.function.Consumer;
-
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.SolverJobBuilder;
+import ai.timefold.solver.core.api.solver.SolverJobBuilder.FirstInitializedSolutionConsumer;
 import ai.timefold.solver.core.impl.constructionheuristic.ConstructionHeuristicPhase;
 import ai.timefold.solver.core.impl.localsearch.LocalSearchPhase;
 import ai.timefold.solver.core.impl.phase.custom.CustomPhase;
@@ -27,7 +26,7 @@ public interface PossiblyInitializingPhase<Solution_> extends Phase<Solution_> {
      * Check if a phase should trigger the first initialized solution event.
      * The first initialized solution immediately precedes the first {@link LocalSearchPhase}.
      *
-     * @see SolverJobBuilder#withFirstInitializedSolutionConsumer(Consumer)
+     * @see SolverJobBuilder#withFirstInitializedSolutionConsumer(FirstInitializedSolutionConsumer)
      *
      * @return true if the phase is the final phase before the first local search phase.
      */

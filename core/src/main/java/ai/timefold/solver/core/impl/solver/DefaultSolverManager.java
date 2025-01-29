@@ -19,6 +19,7 @@ import ai.timefold.solver.core.api.solver.SolverConfigOverride;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverJobBuilder;
+import ai.timefold.solver.core.api.solver.SolverJobBuilder.FirstInitializedSolutionConsumer;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
@@ -80,7 +81,7 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> bestSolutionConsumer,
             Consumer<? super Solution_> finalBestSolutionConsumer,
-            Consumer<? super Solution_> initializedSolutionConsumer,
+            FirstInitializedSolutionConsumer<? super Solution_> initializedSolutionConsumer,
             Consumer<? super Solution_> solverJobStartedConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
             SolverConfigOverride<Solution_> solverConfigOverride) {
@@ -95,7 +96,7 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
             Consumer<? super Solution_> bestSolutionConsumer,
             Consumer<? super Solution_> finalBestSolutionConsumer,
-            Consumer<? super Solution_> initializedSolutionConsumer,
+            FirstInitializedSolutionConsumer<? super Solution_> initializedSolutionConsumer,
             Consumer<? super Solution_> solverJobStartedConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
             SolverConfigOverride<Solution_> configOverride) {

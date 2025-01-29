@@ -8,12 +8,14 @@ import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
+import ai.timefold.solver.core.api.solver.SolverJobBuilder.FirstInitializedSolutionConsumer;
+
 final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
 
     private final ProblemId_ problemId;
     private final Consumer<? super Solution_> bestSolutionConsumer;
     private final Consumer<? super Solution_> finalBestSolutionConsumer;
-    private final Consumer<? super Solution_> firstInitializedSolutionConsumer;
+    private final FirstInitializedSolutionConsumer<? super Solution_> firstInitializedSolutionConsumer;
     private final Consumer<? super Solution_> solverJobStartedConsumer;
     private final BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler;
     private final Semaphore activeConsumption = new Semaphore(1);
@@ -25,7 +27,8 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
     private Solution_ initialSolution;
 
     public ConsumerSupport(ProblemId_ problemId, Consumer<? super Solution_> bestSolutionConsumer,
-            Consumer<? super Solution_> finalBestSolutionConsumer, Consumer<? super Solution_> firstInitializedSolutionConsumer,
+            Consumer<? super Solution_> finalBestSolutionConsumer,
+            FirstInitializedSolutionConsumer<? super Solution_> firstInitializedSolutionConsumer,
             Consumer<? super Solution_> solverJobStartedConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
             BestSolutionHolder<Solution_> bestSolutionHolder) {
@@ -33,7 +36,8 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         this.bestSolutionConsumer = bestSolutionConsumer;
         this.finalBestSolutionConsumer = finalBestSolutionConsumer == null ? finalBestSolution -> {
         } : finalBestSolutionConsumer;
-        this.firstInitializedSolutionConsumer = firstInitializedSolutionConsumer;
+        this.firstInitializedSolutionConsumer = firstInitializedSolutionConsumer == null ? (solution, isTerminatedEarly) -> {
+        } : firstInitializedSolutionConsumer;
         this.solverJobStartedConsumer = solverJobStartedConsumer;
         this.exceptionHandler = exceptionHandler;
         this.bestSolutionHolder = bestSolutionHolder;
@@ -54,7 +58,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
     }
 
     // Called on the Solver thread.
-    void consumeFirstInitializedSolution(Solution_ firstInitializedSolution) {
+    void consumeFirstInitializedSolution(Solution_ firstInitializedSolution, boolean isTerminatedEarly) {
         try {
             // Called on the solver thread
             // During the solving process, this lock is called once, and it won't block the Solver thread
@@ -65,7 +69,8 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
         }
         // called on the Consumer thread
         this.firstInitializedSolution = firstInitializedSolution;
-        scheduleFirstInitializedSolutionConsumption();
+        scheduleFirstInitializedSolutionConsumption(
+                solution -> firstInitializedSolutionConsumer.accept(solution, isTerminatedEarly));
     }
 
     // Called on the consumer thread
@@ -157,7 +162,7 @@ final class ConsumerSupport<Solution_, ProblemId_> implements AutoCloseable {
      * Don't call without locking firstSolutionConsumption,
      * because the consumption may not be executed before the final best solution is executed.
      */
-    private void scheduleFirstInitializedSolutionConsumption() {
+    private void scheduleFirstInitializedSolutionConsumption(Consumer<? super Solution_> firstInitializedSolutionConsumer) {
         scheduleConsumption(firstSolutionConsumption, firstInitializedSolutionConsumer, firstInitializedSolution);
     }
 
