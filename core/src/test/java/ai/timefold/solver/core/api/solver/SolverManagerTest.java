@@ -28,6 +28,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -47,10 +48,15 @@ import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.solver.DefaultSolverJob;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.impl.testdata.domain.TestdataConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListConstraintProvider;
+import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEntity;
+import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListValue;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -342,29 +348,98 @@ class SolverManagerTest {
 
     @Test
     @Timeout(60)
-    void firstInitializedSolutionConsumerEarlyTerminatedCH() throws ExecutionException, InterruptedException {
-        MutableBoolean hasInitializedSolution = new MutableBoolean();
-        FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer =
-                (ignore, isTerminatedEarly) -> hasInitializedSolution.setValue(isTerminatedEarly);
+    void firstInitializedSolutionConsumerEarlyTerminatedCH() throws InterruptedException {
+        AtomicBoolean consumerCalled = new AtomicBoolean();
+        AtomicBoolean hasInitializedSolution = new AtomicBoolean();
+        FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer = (ignore, isTerminatedEarly) -> {
+            consumerCalled.set(true);
+            hasInitializedSolution.set(!isTerminatedEarly);
+        };
 
-        SolverConfig solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+        SolverConfig solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withConstraintProviderClass(TestdataConstraintProvider.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig()
-                        .withTerminationConfig(new TerminationConfig()
-                                .withStepCountLimit(1)));
-        solverManager = SolverManager
-                .create(solverConfig, new SolverManagerConfig());
-        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
-                PlannerTestUtils.generateTestdataSolution("s1"));
+                        .withTerminationConfig(new TerminationConfig().withStepCountLimit(1)),
+                        new LocalSearchPhaseConfig());
+        solverManager = SolverManager.create(solverConfig, new SolverManagerConfig());
+
+        // The solution will produce a CH that takes 2 steps.
+        // The CH is configured to terminate after 1 step, guaranteeing uninitialized solution.
+        Function<Object, TestdataSolution> problemFinder = o -> {
+            var solution = TestdataSolution.generateSolution(2, 2);
+            // Uninitialize the solution.
+            solution.getEntityList().forEach(e -> e.setValue(null));
+            return solution;
+        };
 
         SolverJob<TestdataSolution, Long> solverJob = solverManager.solveBuilder()
                 .withProblemId(1L)
                 .withProblemFinder(problemFinder)
                 .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
                 .run();
-        solverJob.getFinalBestSolution();
-        assertThat(hasInitializedSolution.booleanValue()).isFalse();
-        hasInitializedSolution.setFalse();
+        try {
+            solverJob.getFinalBestSolution();
+        } catch (ExecutionException e) {
+            // The LS will attempt to start after the CH.
+            // It will fail, because LS expects an initialized solution.
+            // Ignore the failure, because there is no other way to test this,
+            // other than to use a time-based termination for the CH,
+            // which would make the test non-deterministic.
+            assertThat(e).rootCause()
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("needs to start from an initialized solution");
+        } finally {
+            assertThat(consumerCalled).isTrue();
+            assertThat(hasInitializedSolution).isFalse();
+        }
+    }
+
+    @Test
+    @Timeout(60)
+    void firstInitializedSolutionConsumerEarlyTerminatedCHListVar() throws InterruptedException, ExecutionException {
+        AtomicBoolean consumerCalled = new AtomicBoolean();
+        AtomicBoolean hasInitializedSolution = new AtomicBoolean();
+        FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer = (ignore, isTerminatedEarly) -> {
+            consumerCalled.set(true);
+            hasInitializedSolution.set(!isTerminatedEarly);
+        };
+
+        SolverConfig solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataAllowsUnassignedValuesListSolution.class)
+                .withEntityClasses(TestdataAllowsUnassignedValuesListEntity.class,
+                        TestdataAllowsUnassignedValuesListValue.class)
+                .withConstraintProviderClass(TestdataAllowsUnassignedValuesListConstraintProvider.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withTerminationConfig(new TerminationConfig().withStepCountLimit(1)),
+                        new LocalSearchPhaseConfig()
+                                .withTerminationConfig(new TerminationConfig().withStepCountLimit(0)));
+        try (var solverManager = SolverManager.<TestdataAllowsUnassignedValuesListSolution, Long> create(solverConfig,
+                new SolverManagerConfig())) {
+
+            // The solution will produce a CH that takes 2 steps.
+            // The CH is configured to terminate after 1 step, guaranteeing early termination.
+            Function<Object, TestdataAllowsUnassignedValuesListSolution> problemFinder = o -> {
+                var solution = new TestdataAllowsUnassignedValuesListSolution();
+                solution.setEntityList(IntStream.range(0, 2)
+                        .mapToObj(i -> new TestdataAllowsUnassignedValuesListEntity("Generated Entity " + i))
+                        .collect(Collectors.toList()));
+                solution.setValueList(IntStream.range(0, 2)
+                        .mapToObj(i -> new TestdataAllowsUnassignedValuesListValue("Generated Value " + i))
+                        .collect(Collectors.toList()));
+                return solution;
+            };
+
+            SolverJob<TestdataAllowsUnassignedValuesListSolution, Long> solverJob = solverManager.solveBuilder()
+                    .withProblemId(1L)
+                    .withProblemFinder(problemFinder)
+                    .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                    .run();
+            solverJob.getFinalBestSolution(); // LS will start, but terminate immediately.
+            assertThat(consumerCalled).isTrue();
+            assertThat(hasInitializedSolution).isFalse();
+        }
     }
 
     @Test
