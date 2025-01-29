@@ -157,7 +157,7 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
          *        and tripping a time-based termination condition.
          *        In that case, there will likely be no other phase after this one
          *        and the solver will terminate as well, without launching any optimizing phase.
-         *        Therefore the solution captured with {@link SolverJobBuilder#withBestSolutionConsumer(Consumer)}
+         *        Therefore, the solution captured with {@link SolverJobBuilder#withBestSolutionConsumer(Consumer)}
          *        will likely be unchanged from this one.
          * @see Score#initScore() Score Javadoc explains partial initialization and its consequences.
          */
