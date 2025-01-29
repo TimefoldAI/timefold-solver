@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
@@ -46,13 +45,13 @@ import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+import ai.timefold.solver.core.impl.phase.custom.CustomPhaseCommand;
 import ai.timefold.solver.core.impl.solver.DefaultSolverJob;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
@@ -63,27 +62,22 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
 class SolverManagerTest {
 
-    private SolverManager<TestdataSolution, Long> solverManager;
-
-    @AfterEach
-    void closeSolverManager() {
-        if (solverManager != null) {
-            solverManager.close();
-        }
-    }
+    private static final Function<Long, TestdataSolution> DEFAULT_PROBLEM_FINDER =
+            problemId -> PlannerTestUtils.generateTestdataSolution("Generated solution " + problemId);
+    private static final SolverManagerConfig SOLVER_MANAGER_CONFIG_WITH_1_PARALLEL_SOLVER =
+            new SolverManagerConfig().withParallelSolverCount("1");
 
     @Test
     void create() {
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         SolverManager.create(solverConfig).close();
-        SolverManagerConfig solverManagerConfig = new SolverManagerConfig();
+        var solverManagerConfig = new SolverManagerConfig();
         SolverManager.create(solverConfig, solverManagerConfig).close();
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
         SolverManager.create(solverFactory).close();
@@ -93,38 +87,49 @@ class SolverManagerTest {
     @Test
     @Timeout(60)
     void solveBatch_2InParallel() throws ExecutionException, InterruptedException {
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(createPhaseWithConcurrentSolvingStart(2), new ConstructionHeuristicPhaseConfig());
-        solverManager = SolverManager.create(
-                solverConfig, new SolverManagerConfig().withParallelSolverCount("2"));
-
-        SolverJob<TestdataSolution, Long> solverJob1 = solverManager.solve(1L,
-                PlannerTestUtils.generateTestdataSolution("s1"));
-        SolverJob<TestdataSolution, Long> solverJob2 = solverManager.solve(2L,
-                PlannerTestUtils.generateTestdataSolution("s2"));
-
-        assertSolutionInitialized(solverJob1.getFinalBestSolution());
-        assertSolutionInitialized(solverJob2.getFinalBestSolution());
+        try (var solverManager = createSolverManager(solverConfig, new SolverManagerConfig().withParallelSolverCount("2"))) {
+            var solverJob1 = solverManager.solve(1L, PlannerTestUtils.generateTestdataSolution("s1"));
+            var solverJob2 = solverManager.solve(2L, PlannerTestUtils.generateTestdataSolution("s2"));
+            assertSolutionInitialized(solverJob1.getFinalBestSolution());
+            assertSolutionInitialized(solverJob2.getFinalBestSolution());
+        }
     }
 
+    private static SolverManager<TestdataSolution, Long> createDefaultSolverManager(SolverConfig solverConfig) {
+        return SolverManager.create(solverConfig);
+    }
+
+    private static SolverManager<TestdataSolution, Long> createSolverManagerWithOneSolver(SolverConfig solverConfig) {
+        return createSolverManager(solverConfig, SOLVER_MANAGER_CONFIG_WITH_1_PARALLEL_SOLVER);
+    }
+
+    private static SolverManager<TestdataSolution, Long> createSolverManager(SolverConfig solverConfig,
+            SolverManagerConfig solverManagerConfig) {
+        return SolverManager.create(solverConfig, solverManagerConfig);
+    }
+
+    @SuppressWarnings("unchecked")
     private CustomPhaseConfig createPhaseWithConcurrentSolvingStart(int barrierPartiesCount) {
-        CyclicBarrier barrier = new CyclicBarrier(barrierPartiesCount);
-        return new CustomPhaseConfig().withCustomPhaseCommands(
-                scoreDirector -> {
-                    try {
-                        barrier.await();
-                    } catch (InterruptedException | BrokenBarrierException e) {
-                        fail("Cyclic barrier failed.");
-                    }
-                });
+        var barrier = new CyclicBarrier(barrierPartiesCount);
+        return new CustomPhaseConfig()
+                .withCustomPhaseCommands(
+                        (CustomPhaseCommand<TestdataSolution>) scoreDirector -> {
+                            try {
+                                barrier.await();
+                            } catch (InterruptedException | BrokenBarrierException e) {
+                                fail("Cyclic barrier failed.");
+                            }
+                        });
     }
 
     @Test
     @Timeout(60)
     void getSolverStatus() throws InterruptedException, BrokenBarrierException, ExecutionException {
-        CyclicBarrier solverThreadReadyBarrier = new CyclicBarrier(2);
-        CyclicBarrier mainThreadReadyBarrier = new CyclicBarrier(2);
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+        var solverThreadReadyBarrier = new CyclicBarrier(2);
+        var mainThreadReadyBarrier = new CyclicBarrier(2);
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new CustomPhaseConfig().withCustomPhaseCommands(
                         scoreDirector -> {
                             try {
@@ -139,274 +144,260 @@ class SolverManagerTest {
                             }
                         }), new ConstructionHeuristicPhaseConfig());
         // Only 1 solver can run at the same time to predict the solver status of each job.
-        solverManager = SolverManager.create(
-                solverConfig, new SolverManagerConfig().withParallelSolverCount("1"));
-
-        SolverJob<TestdataSolution, Long> solverJob1 = solverManager.solve(1L,
-                PlannerTestUtils.generateTestdataSolution("s1"));
-        solverThreadReadyBarrier.await();
-        SolverJob<TestdataSolution, Long> solverJob2 = solverManager.solve(2L,
-                PlannerTestUtils.generateTestdataSolution("s2"));
-        assertThat(solverManager.getSolverStatus(1L)).isEqualTo(SOLVING_ACTIVE);
-        assertThat(solverJob1.getSolverStatus()).isEqualTo(SOLVING_ACTIVE);
-        assertThat(solverManager.getSolverStatus(2L)).isEqualTo(SOLVING_SCHEDULED);
-        assertThat(solverJob2.getSolverStatus()).isEqualTo(SOLVING_SCHEDULED);
-        mainThreadReadyBarrier.await();
-        solverThreadReadyBarrier.await();
-        assertThat(solverManager.getSolverStatus(1L)).isEqualTo(NOT_SOLVING);
-        assertThat(solverJob1.getSolverStatus()).isEqualTo(NOT_SOLVING);
-        assertThat(solverManager.getSolverStatus(2L)).isEqualTo(SOLVING_ACTIVE);
-        assertThat(solverJob2.getSolverStatus()).isEqualTo(SOLVING_ACTIVE);
-        mainThreadReadyBarrier.await();
-        solverJob1.getFinalBestSolution();
-        solverJob2.getFinalBestSolution();
-        assertThat(solverManager.getSolverStatus(1L)).isEqualTo(NOT_SOLVING);
-        assertThat(solverJob1.getSolverStatus()).isEqualTo(NOT_SOLVING);
-        assertThat(solverManager.getSolverStatus(2L)).isEqualTo(NOT_SOLVING);
-        assertThat(solverJob2.getSolverStatus()).isEqualTo(NOT_SOLVING);
+        try (var solverManager = createSolverManagerWithOneSolver(solverConfig)) {
+            var solverJob1 = solverManager.solve(1L, PlannerTestUtils.generateTestdataSolution("s1"));
+            solverThreadReadyBarrier.await();
+            var solverJob2 = solverManager.solve(2L, PlannerTestUtils.generateTestdataSolution("s2"));
+            assertThat(solverManager.getSolverStatus(1L)).isEqualTo(SOLVING_ACTIVE);
+            assertThat(solverJob1.getSolverStatus()).isEqualTo(SOLVING_ACTIVE);
+            assertThat(solverManager.getSolverStatus(2L)).isEqualTo(SOLVING_SCHEDULED);
+            assertThat(solverJob2.getSolverStatus()).isEqualTo(SOLVING_SCHEDULED);
+            mainThreadReadyBarrier.await();
+            solverThreadReadyBarrier.await();
+            assertThat(solverManager.getSolverStatus(1L)).isEqualTo(NOT_SOLVING);
+            assertThat(solverJob1.getSolverStatus()).isEqualTo(NOT_SOLVING);
+            assertThat(solverManager.getSolverStatus(2L)).isEqualTo(SOLVING_ACTIVE);
+            assertThat(solverJob2.getSolverStatus()).isEqualTo(SOLVING_ACTIVE);
+            mainThreadReadyBarrier.await();
+            solverJob1.getFinalBestSolution();
+            solverJob2.getFinalBestSolution();
+            assertThat(solverManager.getSolverStatus(1L)).isEqualTo(NOT_SOLVING);
+            assertThat(solverJob1.getSolverStatus()).isEqualTo(NOT_SOLVING);
+            assertThat(solverManager.getSolverStatus(2L)).isEqualTo(NOT_SOLVING);
+            assertThat(solverJob2.getSolverStatus()).isEqualTo(NOT_SOLVING);
+        }
     }
 
     @Test
     @Timeout(60)
     void exceptionInSolver() {
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new CustomPhaseConfig().withCustomPhaseCommands(
                         scoreDirector -> {
                             throw new IllegalStateException("exceptionInSolver");
                         }));
-        solverManager = SolverManager.create(
-                solverConfig, new SolverManagerConfig().withParallelSolverCount("1"));
-
-        AtomicInteger exceptionCount = new AtomicInteger();
-        SolverJob<TestdataSolution, Long> solverJob1 = solverManager.solveBuilder()
-                .withProblemId(1L)
-                .withProblemFinder(problemId -> PlannerTestUtils.generateTestdataSolution("s1"))
-                .withExceptionHandler((problemId, throwable) -> exceptionCount.incrementAndGet())
-                .run();
-        assertThatThrownBy(solverJob1::getFinalBestSolution)
-                .isInstanceOf(ExecutionException.class)
-                .hasRootCauseMessage("exceptionInSolver");
-        assertThat(exceptionCount.get()).isEqualTo(1);
-        assertThat(solverManager.getSolverStatus(1L)).isEqualTo(NOT_SOLVING);
-        assertThat(solverJob1.getSolverStatus()).isEqualTo(NOT_SOLVING);
+        try (var solverManager = createSolverManagerWithOneSolver(solverConfig)) {
+            var exceptionCount = new AtomicInteger();
+            var solverJob = solverManager.solveBuilder()
+                    .withProblemId(1L)
+                    .withProblemFinder(DEFAULT_PROBLEM_FINDER)
+                    .withExceptionHandler((problemId, throwable) -> exceptionCount.incrementAndGet())
+                    .run();
+            assertThatThrownBy(solverJob::getFinalBestSolution)
+                    .isInstanceOf(ExecutionException.class)
+                    .hasRootCauseMessage("exceptionInSolver");
+            assertThat(exceptionCount.get()).isEqualTo(1);
+            assertThat(solverManager.getSolverStatus(1L)).isEqualTo(NOT_SOLVING);
+            assertThat(solverJob.getSolverStatus()).isEqualTo(NOT_SOLVING);
+        }
     }
 
     @Test
     @Timeout(60)
     void errorThrowableInSolver() {
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new CustomPhaseConfig().withCustomPhaseCommands(
                         scoreDirector -> {
                             throw new OutOfMemoryError("exceptionInSolver");
                         }));
-        solverManager = SolverManager.create(
-                solverConfig, new SolverManagerConfig().withParallelSolverCount("1"));
-
-        AtomicInteger exceptionCount = new AtomicInteger();
-        SolverJob<TestdataSolution, Long> solverJob1 = solverManager.solveBuilder()
-                .withProblemId(1L)
-                .withProblemFinder(problemId -> PlannerTestUtils.generateTestdataSolution("s1"))
-                .withExceptionHandler((problemId, throwable) -> exceptionCount.incrementAndGet())
-                .run();
-        assertThatThrownBy(solverJob1::getFinalBestSolution)
-                .isInstanceOf(ExecutionException.class)
-                .hasRootCauseMessage("exceptionInSolver");
-        assertThat(exceptionCount.get()).isEqualTo(1);
-        assertThat(solverManager.getSolverStatus(1L)).isEqualTo(NOT_SOLVING);
-        assertThat(solverJob1.getSolverStatus()).isEqualTo(NOT_SOLVING);
+        try (var solverManager = createSolverManagerWithOneSolver(solverConfig)) {
+            var exceptionCount = new AtomicInteger();
+            var solverJob = solverManager.solveBuilder()
+                    .withProblemId(1L)
+                    .withProblemFinder(DEFAULT_PROBLEM_FINDER)
+                    .withExceptionHandler((problemId, throwable) -> exceptionCount.incrementAndGet())
+                    .run();
+            assertThatThrownBy(solverJob::getFinalBestSolution)
+                    .isInstanceOf(ExecutionException.class)
+                    .hasRootCauseMessage("exceptionInSolver");
+            assertThat(exceptionCount.get()).isEqualTo(1);
+            assertThat(solverManager.getSolverStatus(1L)).isEqualTo(NOT_SOLVING);
+            assertThat(solverJob.getSolverStatus()).isEqualTo(NOT_SOLVING);
+        }
     }
 
     @Test
     @Timeout(60)
     void exceptionInConsumer() throws InterruptedException {
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig());
-        solverManager = SolverManager.create(
-                solverConfig, new SolverManagerConfig().withParallelSolverCount("1"));
+        try (var solverManager = createSolverManagerWithOneSolver(solverConfig)) {
+            var consumerInvoked = new CountDownLatch(1);
+            var errorInConsumer = new AtomicReference<Throwable>();
+            var solverJob1 = solverManager.solveBuilder()
+                    .withProblemId(1L)
+                    .withProblemFinder(DEFAULT_PROBLEM_FINDER)
+                    .withFinalBestSolutionConsumer(bestSolution -> {
+                        throw new IllegalStateException("exceptionInConsumer");
+                    })
+                    .withExceptionHandler((problemId, throwable) -> {
+                        errorInConsumer.set(throwable);
+                        consumerInvoked.countDown();
+                    })
+                    .run();
 
-        CountDownLatch consumerInvoked = new CountDownLatch(1);
-        AtomicReference<Throwable> errorInConsumer = new AtomicReference<>();
-        SolverJob<TestdataSolution, Long> solverJob1 = solverManager.solveBuilder()
-                .withProblemId(1L)
-                .withProblemFinder(problemId -> PlannerTestUtils.generateTestdataSolution("s1"))
-                .withFinalBestSolutionConsumer(bestSolution -> {
-                    throw new IllegalStateException("exceptionInConsumer");
-                })
-                .withExceptionHandler((problemId, throwable) -> {
-                    errorInConsumer.set(throwable);
-                    consumerInvoked.countDown();
-                })
-                .run();
-
-        consumerInvoked.await();
-        assertThat(errorInConsumer.get())
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("exceptionInConsumer");
-        // Accessing the job's final best solution is necessary to guarantee that the solver is no longer solving.
-        Assertions.assertThatCode(solverJob1::getFinalBestSolution).doesNotThrowAnyException();
-        // Otherwise, the following assertion could fail.
-        assertThat(solverManager.getSolverStatus(1L)).isEqualTo(NOT_SOLVING);
-        assertThat(solverJob1.getSolverStatus()).isEqualTo(NOT_SOLVING);
+            consumerInvoked.await();
+            assertThat(errorInConsumer.get())
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessage("exceptionInConsumer");
+            // Accessing the job's final best solution is necessary to guarantee that the solver is no longer solving.
+            Assertions.assertThatCode(solverJob1::getFinalBestSolution).doesNotThrowAnyException();
+            // Otherwise, the following assertion could fail.
+            assertThat(solverManager.getSolverStatus(1L)).isEqualTo(NOT_SOLVING);
+            assertThat(solverJob1.getSolverStatus()).isEqualTo(NOT_SOLVING);
+        }
     }
 
     @Test
     @Timeout(60)
     void solveGenerics() throws ExecutionException, InterruptedException {
-        SolverConfig solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
-        solverManager = SolverManager
-                .create(solverConfig, new SolverManagerConfig());
-
-        BiConsumer<Object, Object> exceptionHandler = (o1, o2) -> fail("Solving failed.");
-        Consumer<Object> finalBestSolutionConsumer = o -> {
-        };
-        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
-                PlannerTestUtils.generateTestdataSolution("s1"));
-
-        SolverJob<TestdataSolution, Long> solverJob = solverManager.solveBuilder()
-                .withProblemId(1L)
-                .withProblemFinder(problemFinder)
-                .withFinalBestSolutionConsumer(finalBestSolutionConsumer)
-                .withExceptionHandler(exceptionHandler)
-                .run();
-        solverJob.getFinalBestSolution();
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            BiConsumer<Object, Object> exceptionHandler = (o1, o2) -> fail("Solving failed.");
+            Consumer<Object> finalBestSolutionConsumer = o -> {
+            };
+            var solverJob = solverManager.solveBuilder()
+                    .withProblemId(1L)
+                    .withProblemFinder(DEFAULT_PROBLEM_FINDER)
+                    .withFinalBestSolutionConsumer(finalBestSolutionConsumer)
+                    .withExceptionHandler(exceptionHandler)
+                    .run();
+            solverJob.getFinalBestSolution();
+        }
     }
 
     @Test
     @Timeout(60)
     void firstInitializedSolutionConsumerWithDefaultPhases() throws ExecutionException, InterruptedException {
-        MutableBoolean hasInitializedSolution = new MutableBoolean();
+        var hasInitializedSolution = new MutableBoolean();
         FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer =
                 (ignore, isTerminatedEarly) -> hasInitializedSolution.setValue(!isTerminatedEarly);
 
         // Default configuration
-        SolverConfig solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withTerminationConfig(new TerminationConfig()
                         .withUnimprovedMillisecondsSpentLimit(1L));
-        solverManager = SolverManager
-                .create(solverConfig, new SolverManagerConfig());
-        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
-                PlannerTestUtils.generateTestdataSolution("s1"));
-
-        SolverJob<TestdataSolution, Long> solverJob = solverManager.solveBuilder()
-                .withProblemId(1L)
-                .withProblemFinder(problemFinder)
-                .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
-                .run();
-        solverJob.getFinalBestSolution();
-        assertThat(hasInitializedSolution.booleanValue()).isTrue();
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            var solverJob = solverManager.solveBuilder()
+                    .withProblemId(1L)
+                    .withProblemFinder(DEFAULT_PROBLEM_FINDER)
+                    .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                    .run();
+            solverJob.getFinalBestSolution();
+            assertThat(hasInitializedSolution.booleanValue()).isTrue();
+        }
     }
 
     @Test
     @Timeout(60)
-    void firstInitializedSolutionConsumerWithSinglePhase() throws ExecutionException, InterruptedException {
-        MutableBoolean hasInitializedSolution = new MutableBoolean();
+    void firstInitializedSolutionConsumerWithSingleCHPhase() throws ExecutionException, InterruptedException {
+        var hasInitializedSolution = new MutableBoolean();
         FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer =
                 (ignore, isTerminatedEarly) -> hasInitializedSolution.setValue(!isTerminatedEarly);
 
         // Only CH
-        SolverConfig solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig());
-        solverManager = SolverManager
-                .create(solverConfig, new SolverManagerConfig());
-        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
-                PlannerTestUtils.generateTestdataSolution("s1"));
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            var solverJob = solverManager.solveBuilder()
+                    .withProblemId(1L)
+                    .withProblemFinder(DEFAULT_PROBLEM_FINDER)
+                    .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                    .run();
+            solverJob.getFinalBestSolution();
+            assertThat(hasInitializedSolution.booleanValue()).isFalse();
+            hasInitializedSolution.setFalse();
+        }
+    }
 
-        SolverJob<TestdataSolution, Long> solverJob = solverManager.solveBuilder()
-                .withProblemId(1L)
-                .withProblemFinder(problemFinder)
-                .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
-                .run();
-        solverJob.getFinalBestSolution();
-        assertThat(hasInitializedSolution.booleanValue()).isFalse();
-        hasInitializedSolution.setFalse();
-
+    @Test
+    @Timeout(60)
+    void firstInitializedSolutionConsumerWithSingleLSPhase() throws ExecutionException, InterruptedException {
+        var hasInitializedSolution = new MutableBoolean();
+        FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer =
+                (ignore, isTerminatedEarly) -> hasInitializedSolution.setValue(!isTerminatedEarly);
         // Only LS
-        solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new LocalSearchPhaseConfig())
                 .withTerminationConfig(new TerminationConfig()
                         .withBestScoreLimit("0"));
-        solverManager = SolverManager
-                .create(solverConfig, new SolverManagerConfig());
-        TestdataUnannotatedExtendedSolution initializedSolution =
-                new TestdataUnannotatedExtendedSolution(PlannerTestUtils.generateTestdataSolution("s1"));
-        initializedSolution.getEntityList().forEach(e -> e.setValue(initializedSolution.getValueList().get(0)));
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            var initializedSolution = PlannerTestUtils.generateTestdataSolution("s1");
+            initializedSolution.getEntityList().forEach(e -> e.setValue(initializedSolution.getValueList().get(0)));
 
-        solverJob = solverManager.solveBuilder()
-                .withProblemId(1L)
-                .withProblemFinder(o -> initializedSolution)
-                .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
-                .withFinalBestSolutionConsumer(ignore -> {
-                })
-                .run();
-        solverJob.getFinalBestSolution();
-        assertThat(hasInitializedSolution.booleanValue()).isFalse();
+            var solverJob = solverManager.solveBuilder()
+                    .withProblemId(1L)
+                    .withProblemFinder(o -> initializedSolution)
+                    .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                    .withFinalBestSolutionConsumer(ignore -> {
+                    })
+                    .run();
+            solverJob.getFinalBestSolution();
+            assertThat(hasInitializedSolution.booleanValue()).isFalse();
+        }
     }
 
     @Test
     @Timeout(60)
     void firstInitializedSolutionConsumerEarlyTerminatedCH() throws InterruptedException {
-        AtomicBoolean consumerCalled = new AtomicBoolean();
-        AtomicBoolean hasInitializedSolution = new AtomicBoolean();
+        var consumerCalled = new AtomicBoolean();
+        var hasInitializedSolution = new AtomicBoolean();
         FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer = (ignore, isTerminatedEarly) -> {
             consumerCalled.set(true);
             hasInitializedSolution.set(!isTerminatedEarly);
         };
 
-        SolverConfig solverConfig = new SolverConfig()
+        var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
                 .withConstraintProviderClass(TestdataConstraintProvider.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig()
                         .withTerminationConfig(new TerminationConfig().withStepCountLimit(1)),
                         new LocalSearchPhaseConfig());
-        solverManager = SolverManager.create(solverConfig, new SolverManagerConfig());
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            // The solution will produce a CH that takes 2 steps.
+            // The CH is configured to terminate after 1 step, guaranteeing uninitialized solution.
+            Function<Object, TestdataSolution> problemFinder = o -> {
+                var solution = TestdataSolution.generateSolution(2, 2);
+                // Uninitialize the solution.
+                solution.getEntityList().forEach(e -> e.setValue(null));
+                return solution;
+            };
 
-        // The solution will produce a CH that takes 2 steps.
-        // The CH is configured to terminate after 1 step, guaranteeing uninitialized solution.
-        Function<Object, TestdataSolution> problemFinder = o -> {
-            var solution = TestdataSolution.generateSolution(2, 2);
-            // Uninitialize the solution.
-            solution.getEntityList().forEach(e -> e.setValue(null));
-            return solution;
-        };
-
-        SolverJob<TestdataSolution, Long> solverJob = solverManager.solveBuilder()
-                .withProblemId(1L)
-                .withProblemFinder(problemFinder)
-                .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
-                .run();
-        try {
-            solverJob.getFinalBestSolution();
-        } catch (ExecutionException e) {
-            // The LS will attempt to start after the CH.
-            // It will fail, because LS expects an initialized solution.
-            // Ignore the failure, because there is no other way to test this,
-            // other than to use a time-based termination for the CH,
-            // which would make the test non-deterministic.
-            assertThat(e).rootCause()
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("needs to start from an initialized solution");
-        } finally {
-            assertThat(consumerCalled).isTrue();
-            assertThat(hasInitializedSolution).isFalse();
+            var solverJob = solverManager.solveBuilder()
+                    .withProblemId(1L)
+                    .withProblemFinder(problemFinder)
+                    .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                    .run();
+            try {
+                solverJob.getFinalBestSolution();
+            } catch (ExecutionException e) {
+                // The LS will attempt to start after the CH.
+                // It will fail, because LS expects an initialized solution.
+                // Ignore the failure, because there is no other way to test this,
+                // other than to use a time-based termination for the CH,
+                // which would make the test non-deterministic.
+                assertThat(e).rootCause()
+                        .isInstanceOf(IllegalStateException.class)
+                        .hasMessageContaining("needs to start from an initialized solution");
+            } finally {
+                assertThat(consumerCalled).isTrue();
+                assertThat(hasInitializedSolution).isFalse();
+            }
         }
     }
 
     @Test
     @Timeout(60)
     void firstInitializedSolutionConsumerEarlyTerminatedCHListVar() throws InterruptedException, ExecutionException {
-        AtomicBoolean consumerCalled = new AtomicBoolean();
-        AtomicBoolean hasInitializedSolution = new AtomicBoolean();
+        var consumerCalled = new AtomicBoolean();
+        var hasInitializedSolution = new AtomicBoolean();
         FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer = (ignore, isTerminatedEarly) -> {
             consumerCalled.set(true);
             hasInitializedSolution.set(!isTerminatedEarly);
         };
 
-        SolverConfig solverConfig = new SolverConfig()
+        var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataAllowsUnassignedValuesListSolution.class)
                 .withEntityClasses(TestdataAllowsUnassignedValuesListEntity.class,
                         TestdataAllowsUnassignedValuesListValue.class)
@@ -415,9 +406,7 @@ class SolverManagerTest {
                         .withTerminationConfig(new TerminationConfig().withStepCountLimit(1)),
                         new LocalSearchPhaseConfig()
                                 .withTerminationConfig(new TerminationConfig().withStepCountLimit(0)));
-        try (var solverManager = SolverManager.<TestdataAllowsUnassignedValuesListSolution, Long> create(solverConfig,
-                new SolverManagerConfig())) {
-
+        try (var solverManager = SolverManager.<TestdataAllowsUnassignedValuesListSolution, Long> create(solverConfig)) {
             // The solution will produce a CH that takes 2 steps.
             // The CH is configured to terminate after 1 step, guaranteeing early termination.
             Function<Object, TestdataAllowsUnassignedValuesListSolution> problemFinder = o -> {
@@ -431,7 +420,7 @@ class SolverManagerTest {
                 return solution;
             };
 
-            SolverJob<TestdataAllowsUnassignedValuesListSolution, Long> solverJob = solverManager.solveBuilder()
+            var solverJob = solverManager.solveBuilder()
                     .withProblemId(1L)
                     .withProblemFinder(problemFinder)
                     .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
@@ -445,74 +434,64 @@ class SolverManagerTest {
     @Test
     @Timeout(60)
     void firstInitializedSolutionConsumerWith2CHAndLS() throws ExecutionException, InterruptedException {
-        MutableBoolean hasInitializedSolution = new MutableBoolean();
+        var hasInitializedSolution = new MutableBoolean();
         FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer =
                 (ignore, isTerminatedEarly) -> hasInitializedSolution.setValue(!isTerminatedEarly);
 
         // CH - CH - LS
-        SolverConfig solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig(), new ConstructionHeuristicPhaseConfig(),
                         new LocalSearchPhaseConfig())
                 .withTerminationConfig(new TerminationConfig()
                         .withUnimprovedMillisecondsSpentLimit(1L));
         hasInitializedSolution.setFalse();
-        solverManager = SolverManager
-                .create(solverConfig, new SolverManagerConfig());
-        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
-                PlannerTestUtils.generateTestdataSolution("s1"));
-
-        SolverJob<TestdataSolution, Long> solverJob = solverManager.solveBuilder()
-                .withProblemId(1L)
-                .withProblemFinder(problemFinder)
-                .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
-                .run();
-        solverJob.getFinalBestSolution();
-        assertThat(hasInitializedSolution.booleanValue()).isTrue();
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            var solverJob = solverManager.solveBuilder()
+                    .withProblemId(1L)
+                    .withProblemFinder(DEFAULT_PROBLEM_FINDER)
+                    .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                    .run();
+            solverJob.getFinalBestSolution();
+            assertThat(hasInitializedSolution.booleanValue()).isTrue();
+        }
     }
 
     @Test
     @Timeout(60)
     void firstInitializedSolutionConsumerWithCustomAndCHAndLS() throws ExecutionException, InterruptedException {
-        MutableBoolean hasInitializedSolution = new MutableBoolean();
+        var hasInitializedSolution = new MutableBoolean();
         FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer =
                 (ignore, isTerminatedEarly) -> hasInitializedSolution.setValue(!isTerminatedEarly);
 
         // CS - CH - LS
-        SolverConfig solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new CustomPhaseConfig()
-                        .withCustomPhaseCommandList(List.of(scoreDirector -> {
-                            assertThat(hasInitializedSolution.booleanValue()).isFalse();
-                        })),
+                        .withCustomPhaseCommandList(
+                                List.of(scoreDirector -> assertThat(hasInitializedSolution.booleanValue()).isFalse())),
                         new ConstructionHeuristicPhaseConfig(),
                         new LocalSearchPhaseConfig())
                 .withTerminationConfig(new TerminationConfig()
                         .withUnimprovedMillisecondsSpentLimit(1L));
-        solverManager = SolverManager
-                .create(solverConfig, new SolverManagerConfig());
-        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
-                PlannerTestUtils.generateTestdataSolution("s1"));
-
-        SolverJob<TestdataSolution, Long> solverJob = solverManager.solveBuilder()
-                .withProblemId(1L)
-                .withProblemFinder(problemFinder)
-                .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
-                .run();
-        solverJob.getFinalBestSolution();
-        assertThat(hasInitializedSolution.booleanValue()).isTrue();
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            var solverJob = solverManager.solveBuilder()
+                    .withProblemId(1L)
+                    .withProblemFinder(DEFAULT_PROBLEM_FINDER)
+                    .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                    .run();
+            solverJob.getFinalBestSolution();
+            assertThat(hasInitializedSolution.booleanValue()).isTrue();
+        }
     }
 
     @Test
     @Timeout(60)
     void firstInitializedSolutionConsumerWithCHAndCustomAndLS() throws ExecutionException, InterruptedException {
-        MutableBoolean hasInitializedSolution = new MutableBoolean();
+        var hasInitializedSolution = new MutableBoolean();
         FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer =
                 (ignore, isTerminatedEarly) -> hasInitializedSolution.setValue(!isTerminatedEarly);
 
         // CH - CS - LS
-        SolverConfig solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(
                         new ConstructionHeuristicPhaseConfig(),
                         new CustomPhaseConfig()
@@ -522,109 +501,88 @@ class SolverManagerTest {
                         new LocalSearchPhaseConfig())
                 .withTerminationConfig(new TerminationConfig()
                         .withUnimprovedMillisecondsSpentLimit(1L));
-        solverManager = SolverManager
-                .create(solverConfig, new SolverManagerConfig());
-        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
-                PlannerTestUtils.generateTestdataSolution("s1"));
-
-        SolverJob<TestdataSolution, Long> solverJob = solverManager.solveBuilder()
-                .withProblemId(1L)
-                .withProblemFinder(problemFinder)
-                .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
-                .run();
-        solverJob.getFinalBestSolution();
-        assertThat(hasInitializedSolution.booleanValue()).isTrue();
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            var solverJob = solverManager.solveBuilder()
+                    .withProblemId(1L)
+                    .withProblemFinder(DEFAULT_PROBLEM_FINDER)
+                    .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                    .run();
+            solverJob.getFinalBestSolution();
+            assertThat(hasInitializedSolution.booleanValue()).isTrue();
+        }
     }
 
     @Test
     @Timeout(60)
     void firstInitializedSolutionConsumerWith2Custom() throws ExecutionException, InterruptedException {
-        MutableBoolean hasInitializedSolution = new MutableBoolean();
+        var hasInitializedSolution = new MutableBoolean();
         FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer =
                 (ignore, isTerminatedEarly) -> hasInitializedSolution.setValue(!isTerminatedEarly);
 
         // CS (CH) - CS (LS)
-        SolverConfig solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(
-                        new CustomPhaseConfig()
-                                .withCustomPhaseCommandList(List.of(scoreDirector -> {
-                                    assertThat(hasInitializedSolution.booleanValue()).isFalse();
-                                })),
-                        new CustomPhaseConfig()
-                                .withCustomPhaseCommandList(List.of(scoreDirector -> {
-                                    assertThat(hasInitializedSolution.booleanValue()).isFalse();
-                                })))
+                        new CustomPhaseConfig().withCustomPhaseCommandList(
+                                List.of(scoreDirector -> assertThat(hasInitializedSolution.booleanValue()).isFalse())),
+                        new CustomPhaseConfig().withCustomPhaseCommandList(
+                                List.of(scoreDirector -> assertThat(hasInitializedSolution.booleanValue()).isFalse())))
                 .withTerminationConfig(new TerminationConfig()
                         .withUnimprovedMillisecondsSpentLimit(1L));
-        solverManager = SolverManager
-                .create(solverConfig, new SolverManagerConfig());
-        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
-                PlannerTestUtils.generateTestdataSolution("s1"));
-
-        SolverJob<TestdataSolution, Long> solverJob = solverManager.solveBuilder()
-                .withProblemId(1L)
-                .withProblemFinder(problemFinder)
-                .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
-                .run();
-        solverJob.getFinalBestSolution();
-        assertThat(hasInitializedSolution.booleanValue()).isFalse();
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            var solverJob = solverManager.solveBuilder()
+                    .withProblemId(1L)
+                    .withProblemFinder(DEFAULT_PROBLEM_FINDER)
+                    .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                    .run();
+            solverJob.getFinalBestSolution();
+            assertThat(hasInitializedSolution.booleanValue()).isFalse();
+        }
     }
 
     @Test
     @Timeout(60)
     void testStartJobConsumer() throws ExecutionException, InterruptedException {
-        SolverConfig solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
-        solverManager = SolverManager
-                .create(solverConfig, new SolverManagerConfig());
-
-        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
-                PlannerTestUtils.generateTestdataSolution("s1"));
-
-        MutableInt started = new MutableInt(0);
-
-        SolverJob<TestdataSolution, Long> solverJob = solverManager.solveBuilder()
-                .withProblemId(1L)
-                .withProblemFinder(problemFinder)
-                .withSolverJobStartedConsumer(solution -> started.increment())
-                .run();
-        solverJob.getFinalBestSolution();
-        assertThat(started.getValue()).isOne();
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            var started = new MutableInt(0);
+            var solverJob = solverManager.solveBuilder()
+                    .withProblemId(1L)
+                    .withProblemFinder(DEFAULT_PROBLEM_FINDER)
+                    .withSolverJobStartedConsumer(solution -> started.increment())
+                    .run();
+            solverJob.getFinalBestSolution();
+            assertThat(started.getValue()).isOne();
+        }
     }
 
     @Test
     void solveWithOverride() {
         // Default spent limit is 1L
-        TerminationConfig terminationConfig = new TerminationConfig()
+        var terminationConfig = new TerminationConfig()
                 .withSpentLimit(Duration.ofSeconds(1L));
-        SolverConfig solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withTerminationConfig(terminationConfig);
         solverConfig.withTerminationConfig(terminationConfig);
 
-        solverManager = SolverManager
-                .create(solverConfig, new SolverManagerConfig());
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            var problem = PlannerTestUtils.generateTestdataSolution("s1");
 
-        TestdataUnannotatedExtendedSolution problem =
-                new TestdataUnannotatedExtendedSolution(PlannerTestUtils.generateTestdataSolution("s1"));
+            SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+            doReturn(50L).when(solverScope).calculateTimeMillisSpentUpToNow();
 
-        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
-        doReturn(50L).when(solverScope).calculateTimeMillisSpentUpToNow();
+            var solverJob = (DefaultSolverJob<TestdataSolution, Long>) solverManager.solve(1L, problem);
+            assertThat(solverJob.getSolverTermination().calculateSolverTimeGradient(solverScope)).isEqualTo(0.05);
 
-        DefaultSolverJob<TestdataSolution, Long> solverJob =
-                (DefaultSolverJob<TestdataSolution, Long>) solverManager.solve(1L, problem);
-        assertThat(solverJob.getSolverTermination().calculateSolverTimeGradient(solverScope)).isEqualTo(0.05);
-
-        // Spent limit overridden by 100L
-        SolverConfigOverride<TestdataSolution> configOverride = new SolverConfigOverride<TestdataSolution>()
-                .withTerminationConfig(new TerminationConfig().withSpentLimit(Duration.ofMillis(100L)));
-        solverJob = (DefaultSolverJob<TestdataSolution, Long>) solverManager.solveBuilder()
-                .withProblemId(2L)
-                .withProblem(problem)
-                .withConfigOverride(configOverride)
-                .run();
-        assertThat(solverJob.getSolverTermination().calculateSolverTimeGradient(solverScope)).isEqualTo(0.5);
+            // Spent limit overridden by 100L
+            var configOverride = new SolverConfigOverride<TestdataSolution>()
+                    .withTerminationConfig(new TerminationConfig().withSpentLimit(Duration.ofMillis(100L)));
+            solverJob = (DefaultSolverJob<TestdataSolution, Long>) solverManager.solveBuilder()
+                    .withProblemId(2L)
+                    .withProblem(problem)
+                    .withConfigOverride(configOverride)
+                    .run();
+            assertThat(solverJob.getSolverTermination().calculateSolverTimeGradient(solverScope)).isEqualTo(0.5);
+        }
     }
 
     @Test
@@ -632,61 +590,57 @@ class SolverManagerTest {
         // Terminate after exactly 5 score calculations
         var terminationConfig = new TerminationConfig()
                 .withScoreCalculationCountLimit(5L);
-        var solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withTerminationConfig(terminationConfig);
 
-        solverManager = SolverManager
-                .create(solverConfig, new SolverManagerConfig());
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            var problem = PlannerTestUtils.generateTestdataSolution("s1");
+            var solverJob = solverManager.solveBuilder()
+                    .withProblemId(2L)
+                    .withProblem(problem)
+                    .run();
 
-        var problem = PlannerTestUtils.generateTestdataSolution("s1");
-        var solverJob = (DefaultSolverJob<TestdataSolution, Long>) solverManager.solveBuilder()
-                .withProblemId(2L)
-                .withProblem(problem)
-                .run();
+            solverJob.getFinalBestSolution();
+            // The score is calculated during the solving starting phase without applying any moves.
+            // This explains why the count has one more unit.
+            assertThat(solverJob.getScoreCalculationCount()).isEqualTo(5L);
+            assertThat(solverJob.getMoveEvaluationCount()).isEqualTo(4L);
 
-        solverJob.getFinalBestSolution();
-        // The score is calculated during the solving starting phase without applying any moves.
-        // This explains why the count has one more unit.
-        assertThat(solverJob.getScoreCalculationCount()).isEqualTo(5L);
-        assertThat(solverJob.getMoveEvaluationCount()).isEqualTo(4L);
-
-        // Score calculation speed and solve duration are non-deterministic.
-        // On an exceptionally fast machine, getSolvingDuration() can return Duration.ZERO.
-        // On an exceptionally slow machine, getScoreCalculationSpeed() can be 0 due to flooring
-        // (i.e. by taking more than 5 seconds to finish solving).
-        assertThat(solverJob.getSolvingDuration()).isGreaterThanOrEqualTo(Duration.ZERO);
-        assertThat(solverJob.getScoreCalculationSpeed()).isNotNegative();
-        assertThat(solverJob.getMoveEvaluationSpeed()).isNotNegative();
+            // Score calculation speed and solve duration are non-deterministic.
+            // On an exceptionally fast machine, getSolvingDuration() can return Duration.ZERO.
+            // On an exceptionally slow machine, getScoreCalculationSpeed() can be 0 due to flooring
+            // (i.e. by taking more than 5 seconds to finish solving).
+            assertThat(solverJob.getSolvingDuration()).isGreaterThanOrEqualTo(Duration.ZERO);
+            assertThat(solverJob.getScoreCalculationSpeed()).isNotNegative();
+            assertThat(solverJob.getMoveEvaluationSpeed()).isNotNegative();
+        }
     }
 
     @Test
     void testProblemSizeStatisticsForFinishedJob() throws ExecutionException, InterruptedException {
-        var solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
 
-        solverManager = SolverManager
-                .create(solverConfig, new SolverManagerConfig());
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            var problem = PlannerTestUtils.generateTestdataSolution("s1", 2);
+            var solverJob = solverManager.solveBuilder()
+                    .withProblemId(2L)
+                    .withProblem(problem)
+                    .run();
 
-        var problem = PlannerTestUtils.generateTestdataSolution("s1", 2);
-        var solverJob = (DefaultSolverJob<TestdataSolution, Long>) solverManager.solveBuilder()
-                .withProblemId(2L)
-                .withProblem(problem)
-                .run();
-
-        solverJob.getFinalBestSolution();
-        var problemSizeStatistics = solverJob.getProblemSizeStatistics();
-        assertThat(problemSizeStatistics.entityCount()).isEqualTo(2L);
-        assertThat(problemSizeStatistics.variableCount()).isEqualTo(2L);
-        assertThat(problemSizeStatistics.approximateValueCount()).isEqualTo(2L);
-        assertThat(problemSizeStatistics.approximateProblemScaleAsFormattedString()).isEqualTo("4");
+            solverJob.getFinalBestSolution();
+            var problemSizeStatistics = solverJob.getProblemSizeStatistics();
+            assertThat(problemSizeStatistics.entityCount()).isEqualTo(2L);
+            assertThat(problemSizeStatistics.variableCount()).isEqualTo(2L);
+            assertThat(problemSizeStatistics.approximateValueCount()).isEqualTo(2L);
+            assertThat(problemSizeStatistics.approximateProblemScaleAsFormattedString()).isEqualTo("4");
+        }
     }
 
     @Test
     @Timeout(60)
     void testProblemSizeStatisticsForWaitingJob() throws InterruptedException, ExecutionException {
-        CountDownLatch solvingPausedLatch = new CountDownLatch(1);
-        PhaseConfig<?> pausedPhaseConfig = new CustomPhaseConfig().withCustomPhaseCommands(
+        var solvingPausedLatch = new CountDownLatch(1);
+        var pausedPhaseConfig = new CustomPhaseConfig().withCustomPhaseCommands(
                 scoreDirector -> {
                     try {
                         solvingPausedLatch.await();
@@ -695,47 +649,46 @@ class SolverManagerTest {
                     }
                 });
 
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(pausedPhaseConfig, new ConstructionHeuristicPhaseConfig());
         // Allow only a single active solver.
-        SolverManagerConfig solverManagerConfig = new SolverManagerConfig().withParallelSolverCount("1");
-        solverManager = SolverManager.create(solverConfig, solverManagerConfig);
+        try (var solverManager = createSolverManagerWithOneSolver(solverConfig)) {
+            // The first solver waits until the test sends a problem change.
+            solverManager.solve(1L, PlannerTestUtils.generateTestdataSolution("s1", 4));
 
-        // The first solver waits until the test sends a problem change.
-        solverManager.solve(1L, PlannerTestUtils.generateTestdataSolution("s1", 4));
+            // The second solver is scheduled and waits for the fist solver to finish.
+            var secondProblemId = 2L;
+            var entityAndValueCount = 4;
+            var bestSolution = new AtomicReference<TestdataSolution>();
+            var waitingSolverJob = solverManager.solveBuilder()
+                    .withProblemId(secondProblemId)
+                    .withProblemFinder(id -> PlannerTestUtils.generateTestdataSolution("s2", entityAndValueCount))
+                    .withBestSolutionConsumer(bestSolution::set)
+                    .run();
 
-        // The second solver is scheduled and waits for the fist solver to finish.
-        final long secondProblemId = 2L;
-        final int entityAndValueCount = 4;
-        AtomicReference<TestdataSolution> bestSolution = new AtomicReference<>();
-        var waitingSolverJob = solverManager.solveBuilder()
-                .withProblemId(secondProblemId)
-                .withProblemFinder(id -> PlannerTestUtils.generateTestdataSolution("s2", entityAndValueCount))
-                .withBestSolutionConsumer(bestSolution::set)
-                .run();
+            var problemSizeStatistics = waitingSolverJob.getProblemSizeStatistics();
+            assertThat(problemSizeStatistics.entityCount()).isEqualTo(4L);
+            assertThat(problemSizeStatistics.variableCount()).isEqualTo(4L);
+            assertThat(problemSizeStatistics.approximateValueCount()).isEqualTo(4L);
+            assertThat(problemSizeStatistics.approximateProblemScaleAsFormattedString()).isEqualTo("256");
 
-        var problemSizeStatistics = waitingSolverJob.getProblemSizeStatistics();
-        assertThat(problemSizeStatistics.entityCount()).isEqualTo(4L);
-        assertThat(problemSizeStatistics.variableCount()).isEqualTo(4L);
-        assertThat(problemSizeStatistics.approximateValueCount()).isEqualTo(4L);
-        assertThat(problemSizeStatistics.approximateProblemScaleAsFormattedString()).isEqualTo("256");
+            var futureChange = solverManager
+                    .addProblemChange(secondProblemId, (workingSolution, problemChangeDirector) -> {
+                        problemChangeDirector.addProblemFact(new TestdataValue("addedValue"),
+                                workingSolution.getValueList()::add);
+                    });
 
-        CompletableFuture<Void> futureChange = solverManager
-                .addProblemChange(secondProblemId, (workingSolution, problemChangeDirector) -> {
-                    problemChangeDirector.addProblemFact(new TestdataValue("addedValue"),
-                            workingSolution.getValueList()::add);
-                });
-
-        // The first solver can proceed. When it finishes, the second solver starts solving and picks up the change.
-        solvingPausedLatch.countDown();
-        futureChange.get();
-        assertThat(futureChange).isCompleted();
-        assertThat(bestSolution.get().getValueList()).hasSize(entityAndValueCount + 1);
-        problemSizeStatistics = waitingSolverJob.getProblemSizeStatistics();
-        assertThat(problemSizeStatistics.entityCount()).isEqualTo(4L);
-        assertThat(problemSizeStatistics.variableCount()).isEqualTo(4L);
-        assertThat(problemSizeStatistics.approximateValueCount()).isEqualTo(5L);
-        assertThat(problemSizeStatistics.approximateProblemScaleAsFormattedString()).isEqualTo("625");
+            // The first solver can proceed. When it finishes, the second solver starts solving and picks up the change.
+            solvingPausedLatch.countDown();
+            futureChange.get();
+            assertThat(futureChange).isCompleted();
+            assertThat(bestSolution.get().getValueList()).hasSize(entityAndValueCount + 1);
+            problemSizeStatistics = waitingSolverJob.getProblemSizeStatistics();
+            assertThat(problemSizeStatistics.entityCount()).isEqualTo(4L);
+            assertThat(problemSizeStatistics.variableCount()).isEqualTo(4L);
+            assertThat(problemSizeStatistics.approximateValueCount()).isEqualTo(5L);
+            assertThat(problemSizeStatistics.approximateProblemScaleAsFormattedString()).isEqualTo("625");
+        }
     }
 
     @Test
@@ -762,156 +715,98 @@ class SolverManagerTest {
         verify(solverJobBuilder, times(2)).withProblem(any());
         verify(solverJobBuilder, times(1)).withFinalBestSolutionConsumer(any());
 
-        doCallRealMethod().when(solverManager).solve(any(Long.class), any(TestdataSolution.class), any(Consumer.class),
-                any(BiConsumer.class));
-        solverManager.solve(1L, mock(TestdataSolution.class), mock(Consumer.class), mock(BiConsumer.class));
-        verify(solverJobBuilder, times(3)).withProblemId(anyLong());
-        verify(solverJobBuilder, times(3)).withProblem(any());
-        verify(solverJobBuilder, times(2)).withFinalBestSolutionConsumer(any());
-        verify(solverJobBuilder, times(1)).withExceptionHandler(any());
-
-        doCallRealMethod().when(solverManager).solve(any(Long.class), any(Function.class), any(Consumer.class));
-        solverManager.solve(1L, mock(Function.class), mock(Consumer.class));
-        verify(solverJobBuilder, times(4)).withProblemId(anyLong());
-        verify(solverJobBuilder, times(1)).withProblemFinder(any());
-        verify(solverJobBuilder, times(3)).withFinalBestSolutionConsumer(any());
-
-        doCallRealMethod().when(solverManager).solve(any(Long.class), any(Function.class), any(Consumer.class),
-                any(BiConsumer.class));
-        solverManager.solve(1L, mock(Function.class), mock(Consumer.class), mock(BiConsumer.class));
-        verify(solverJobBuilder, times(5)).withProblemId(anyLong());
-        verify(solverJobBuilder, times(2)).withProblemFinder(any());
-        verify(solverJobBuilder, times(4)).withFinalBestSolutionConsumer(any());
-        verify(solverJobBuilder, times(2)).withExceptionHandler(any());
-
-        doCallRealMethod().when(solverManager).solveAndListen(any(Long.class), any(Function.class), any(Consumer.class));
-        solverManager.solveAndListen(1L, mock(Function.class), mock(Consumer.class));
-        verify(solverJobBuilder, times(6)).withProblemId(anyLong());
-        verify(solverJobBuilder, times(3)).withProblemFinder(any());
-        verify(solverJobBuilder, times(1)).withBestSolutionConsumer(any());
-
         doCallRealMethod().when(solverManager).solveAndListen(any(Long.class), any(TestdataSolution.class),
                 any(Consumer.class));
         solverManager.solveAndListen(1L, mock(TestdataSolution.class), mock(Consumer.class));
-        verify(solverJobBuilder, times(7)).withProblemId(anyLong());
-        verify(solverJobBuilder, times(4)).withProblem(any());
-        verify(solverJobBuilder, times(2)).withBestSolutionConsumer(any());
-
-        doCallRealMethod().when(solverManager).solveAndListen(any(Long.class), any(Function.class), any(Consumer.class),
-                any(BiConsumer.class));
-        solverManager.solveAndListen(1L, mock(Function.class), mock(Consumer.class), mock(BiConsumer.class));
-        verify(solverJobBuilder, times(8)).withProblemId(anyLong());
-        verify(solverJobBuilder, times(4)).withProblemFinder(any());
-        verify(solverJobBuilder, times(3)).withBestSolutionConsumer(any());
-        verify(solverJobBuilder, times(3)).withExceptionHandler(any());
-
-        doCallRealMethod().when(solverManager).solveAndListen(any(Long.class), any(Function.class), any(Consumer.class),
-                any(Consumer.class), any(BiConsumer.class));
-        solverManager.solveAndListen(1L, mock(Function.class), mock(Consumer.class), mock(Consumer.class),
-                mock(BiConsumer.class));
-        verify(solverJobBuilder, times(9)).withProblemId(anyLong());
-        verify(solverJobBuilder, times(5)).withProblemFinder(any());
-        verify(solverJobBuilder, times(4)).withBestSolutionConsumer(any());
-        verify(solverJobBuilder, times(5)).withFinalBestSolutionConsumer(any());
-        verify(solverJobBuilder, times(4)).withExceptionHandler(any());
+        verify(solverJobBuilder, times(3)).withProblemId(anyLong());
+        verify(solverJobBuilder, times(3)).withProblem(any());
+        verify(solverJobBuilder, times(1)).withBestSolutionConsumer(any());
     }
 
     @Test
     @Timeout(60)
     void solveWithBuilder() throws InterruptedException, BrokenBarrierException {
-        CyclicBarrier startedBarrier = new CyclicBarrier(2);
-        SolverConfig solverConfig = PlannerTestUtils
+        var startedBarrier = new CyclicBarrier(2);
+        var solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
-        solverManager = SolverManager
-                .create(solverConfig, new SolverManagerConfig());
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            BiConsumer<Object, Object> exceptionHandler = (o1, o2) -> fail("Solving failed.");
+            var finalBestSolution = new MutableObject<TestdataSolution>();
+            Consumer<TestdataSolution> finalBestConsumer = o -> {
+                finalBestSolution.setValue(o);
+                try {
+                    startedBarrier.await();
+                } catch (InterruptedException | BrokenBarrierException e) {
+                    throw new RuntimeException(e);
+                }
+            };
+            solverManager.solveBuilder()
+                    .withProblemId(1L)
+                    .withProblemFinder(DEFAULT_PROBLEM_FINDER)
+                    .withFinalBestSolutionConsumer(finalBestConsumer)
+                    .withExceptionHandler(exceptionHandler)
+                    .run();
 
-        BiConsumer<Object, Object> exceptionHandler = (o1, o2) -> fail("Solving failed.");
-        MutableObject finalBestSolution = new MutableObject();
-        Consumer<Object> finalBestConsumer = o -> {
-            finalBestSolution.setValue(o);
-            try {
-                startedBarrier.await();
-            } catch (InterruptedException | BrokenBarrierException e) {
-                throw new RuntimeException(e);
-            }
-        };
-        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
-                PlannerTestUtils.generateTestdataSolution("s1"));
-
-        solverManager.solveBuilder()
-                .withProblemId(1L)
-                .withProblemFinder(problemFinder)
-                .withFinalBestSolutionConsumer(finalBestConsumer)
-                .withExceptionHandler(exceptionHandler)
-                .run();
-
-        startedBarrier.await();
-        assertThat(finalBestSolution.getValue()).isNotNull();
+            startedBarrier.await();
+            assertThat(finalBestSolution.getValue()).isNotNull();
+        }
     }
 
     @Test
     @Timeout(60)
     void solveAndListenWithBuilder() throws InterruptedException, BrokenBarrierException {
-        CyclicBarrier startedBarrier = new CyclicBarrier(2);
-        SolverConfig solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
-        solverManager = SolverManager
-                .create(solverConfig, new SolverManagerConfig());
+        var startedBarrier = new CyclicBarrier(2);
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            BiConsumer<Object, Object> exceptionHandler = (o1, o2) -> fail("Solving failed.");
+            var finalBestSolution = new MutableObject<TestdataSolution>();
+            Consumer<TestdataSolution> finalBestConsumer = o -> {
+                finalBestSolution.setValue(o);
+                try {
+                    startedBarrier.await();
+                } catch (InterruptedException | BrokenBarrierException e) {
+                    throw new RuntimeException(e);
+                }
+            };
+            var bestSolution = new MutableObject<TestdataSolution>();
+            Consumer<TestdataSolution> bestConsumer = bestSolution::setValue;
+            solverManager.solveBuilder()
+                    .withProblemId(1L)
+                    .withProblemFinder(DEFAULT_PROBLEM_FINDER)
+                    .withFinalBestSolutionConsumer(finalBestConsumer)
+                    .withBestSolutionConsumer(bestConsumer)
+                    .withExceptionHandler(exceptionHandler)
+                    .run();
 
-        BiConsumer<Object, Object> exceptionHandler = (o1, o2) -> fail("Solving failed.");
-        MutableObject finalBestSolution = new MutableObject();
-        Consumer<Object> finalBestConsumer = o -> {
-            finalBestSolution.setValue(o);
-            try {
-                startedBarrier.await();
-            } catch (InterruptedException | BrokenBarrierException e) {
-                throw new RuntimeException(e);
-            }
-        };
-        MutableObject bestSolution = new MutableObject();
-        Consumer<Object> bestConsumer = o -> {
-            bestSolution.setValue(o);
-        };
-        Function<Object, TestdataUnannotatedExtendedSolution> problemFinder = o -> new TestdataUnannotatedExtendedSolution(
-                PlannerTestUtils.generateTestdataSolution("s1"));
-
-        solverManager.solveBuilder()
-                .withProblemId(1L)
-                .withProblemFinder(problemFinder)
-                .withFinalBestSolutionConsumer(finalBestConsumer)
-                .withBestSolutionConsumer(bestConsumer)
-                .withExceptionHandler(exceptionHandler)
-                .run();
-
-        startedBarrier.await();
-        assertThat(finalBestSolution.getValue()).isNotNull();
-        assertThat(bestSolution.getValue()).isNotNull();
+            startedBarrier.await();
+            assertThat(finalBestSolution.getValue()).isNotNull();
+            assertThat(bestSolution.getValue()).isNotNull();
+        }
     }
 
     @Test
     @Timeout(60)
     void skipAhead() throws ExecutionException, InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class,
-                TestdataEntity.class)
+        var latch = new CountDownLatch(1);
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new CustomPhaseConfig().withCustomPhaseCommands(
                         (ScoreDirector<TestdataSolution> scoreDirector) -> {
-                            TestdataSolution solution = scoreDirector.getWorkingSolution();
-                            TestdataEntity entity = solution.getEntityList().get(0);
+                            var solution = scoreDirector.getWorkingSolution();
+                            var entity = solution.getEntityList().get(0);
                             scoreDirector.beforeVariableChanged(entity, "value");
                             entity.setValue(solution.getValueList().get(0));
                             scoreDirector.afterVariableChanged(entity, "value");
                             scoreDirector.triggerVariableListeners();
                         }, (ScoreDirector<TestdataSolution> scoreDirector) -> {
-                            TestdataSolution solution = scoreDirector.getWorkingSolution();
-                            TestdataEntity entity = solution.getEntityList().get(1);
+                            var solution = scoreDirector.getWorkingSolution();
+                            var entity = solution.getEntityList().get(1);
                             scoreDirector.beforeVariableChanged(entity, "value");
                             entity.setValue(solution.getValueList().get(1));
                             scoreDirector.afterVariableChanged(entity, "value");
                             scoreDirector.triggerVariableListeners();
                         }, (ScoreDirector<TestdataSolution> scoreDirector) -> {
-                            TestdataSolution solution = scoreDirector.getWorkingSolution();
-                            TestdataEntity entity = solution.getEntityList().get(2);
+                            var solution = scoreDirector.getWorkingSolution();
+                            var entity = solution.getEntityList().get(2);
                             scoreDirector.beforeVariableChanged(entity, "value");
                             entity.setValue(solution.getValueList().get(2));
                             scoreDirector.afterVariableChanged(entity, "value");
@@ -919,57 +814,56 @@ class SolverManagerTest {
                         }, (ScoreDirector<TestdataSolution> scoreDirector) -> {
                             // In the next best solution event, both e1 and e2 are definitely not null (but e3 might be).
                             latch.countDown();
-                            TestdataSolution solution = scoreDirector.getWorkingSolution();
-                            TestdataEntity entity = solution.getEntityList().get(3);
+                            var solution = scoreDirector.getWorkingSolution();
+                            var entity = solution.getEntityList().get(3);
                             scoreDirector.beforeVariableChanged(entity, "value");
                             entity.setValue(solution.getValueList().get(3));
                             scoreDirector.afterVariableChanged(entity, "value");
                             scoreDirector.triggerVariableListeners();
                         }));
-        solverManager = SolverManager.create(
-                solverConfig, new SolverManagerConfig().withParallelSolverCount("1"));
-        AtomicInteger bestSolutionCount = new AtomicInteger();
-        AtomicInteger finalBestSolutionCount = new AtomicInteger();
-        AtomicReference<Throwable> consumptionError = new AtomicReference<>();
-        CountDownLatch finalBestSolutionConsumed = new CountDownLatch(1);
-        SolverJob<TestdataSolution, Long> solverJob1 = solverManager.solveBuilder()
-                .withProblemId(1L)
-                .withProblemFinder(problemId -> PlannerTestUtils.generateTestdataSolution("s1", 4))
-                .withBestSolutionConsumer(bestSolution -> {
-                    boolean isFirstReceivedSolution = bestSolutionCount.incrementAndGet() == 1;
-                    if (bestSolution.getEntityList().get(1).getValue() == null) {
-                        // This best solution may be skipped as well.
-                        try {
-                            latch.await();
-                        } catch (InterruptedException e) {
-                            fail("Latch failed.");
+        try (var solverManager = createSolverManagerWithOneSolver(solverConfig)) {
+            var bestSolutionCount = new AtomicInteger();
+            var finalBestSolutionCount = new AtomicInteger();
+            var consumptionError = new AtomicReference<Throwable>();
+            var finalBestSolutionConsumed = new CountDownLatch(1);
+            var solverJob = solverManager.solveBuilder()
+                    .withProblemId(1L)
+                    .withProblemFinder(problemId -> PlannerTestUtils.generateTestdataSolution("s1", 4))
+                    .withBestSolutionConsumer(bestSolution -> {
+                        var isFirstReceivedSolution = bestSolutionCount.incrementAndGet() == 1;
+                        if (bestSolution.getEntityList().get(1).getValue() == null) {
+                            // This best solution may be skipped as well.
+                            try {
+                                latch.await();
+                            } catch (InterruptedException e) {
+                                fail("Latch failed.");
+                            }
+                        } else if (bestSolution.getEntityList().get(2).getValue() == null && !isFirstReceivedSolution) {
+                            fail("No skip ahead occurred: both e2 and e3 are null in a best solution event.");
                         }
-                    } else if (bestSolution.getEntityList().get(2).getValue() == null && !isFirstReceivedSolution) {
-                        fail("No skip ahead occurred: both e2 and e3 are null in a best solution event.");
-                    }
-                })
-                .withFinalBestSolutionConsumer(finalBestSolution -> {
-                    finalBestSolutionCount.incrementAndGet();
-                    finalBestSolutionConsumed.countDown();
-                })
-                .withExceptionHandler((problemId, throwable) -> consumptionError.set(throwable))
-                .run();
-        assertSolutionInitialized(solverJob1.getFinalBestSolution());
-        // EventCount can be 2 or 3, depending on the race, but it can never be 4.
-        assertThat(bestSolutionCount).hasValueLessThan(4);
-        finalBestSolutionConsumed.await();
-        assertThat(finalBestSolutionCount.get()).isEqualTo(1);
-        if (consumptionError.get() != null) {
-            fail("Error in the best solution consumer.", consumptionError.get());
+                    })
+                    .withFinalBestSolutionConsumer(finalBestSolution -> {
+                        finalBestSolutionCount.incrementAndGet();
+                        finalBestSolutionConsumed.countDown();
+                    })
+                    .withExceptionHandler((problemId, throwable) -> consumptionError.set(throwable))
+                    .run();
+            assertSolutionInitialized(solverJob.getFinalBestSolution());
+            // EventCount can be 2 or 3, depending on the race, but it can never be 4.
+            assertThat(bestSolutionCount).hasValueLessThan(4);
+            finalBestSolutionConsumed.await();
+            assertThat(finalBestSolutionCount.get()).isEqualTo(1);
+            if (consumptionError.get() != null) {
+                fail("Error in the best solution consumer.", consumptionError.get());
+            }
         }
     }
 
     @Test
     @Timeout(600)
     void terminateEarly() throws InterruptedException, BrokenBarrierException {
-        CyclicBarrier startedBarrier = new CyclicBarrier(2);
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class,
-                TestdataEntity.class)
+        var startedBarrier = new CyclicBarrier(2);
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withTerminationConfig(new TerminationConfig())
                 .withPhases(new CustomPhaseConfig().withCustomPhaseCommands((scoreDirector) -> {
                     try {
@@ -981,78 +875,51 @@ class SolverManagerTest {
                         new ConstructionHeuristicPhaseConfig(),
                         new LocalSearchPhaseConfig());
 
-        solverManager = SolverManager.create(
-                solverConfig, new SolverManagerConfig().withParallelSolverCount("1"));
+        try (var solverManager = createSolverManagerWithOneSolver(solverConfig)) {
+            var solverJob1 = solverManager.solve(1L,
+                    PlannerTestUtils.generateTestdataSolution("s1", 4));
+            var solverJob2 = solverManager.solve(2L,
+                    PlannerTestUtils.generateTestdataSolution("s2", 4));
+            var solverJob3 = solverManager.solve(3L,
+                    PlannerTestUtils.generateTestdataSolution("s3", 4));
 
-        SolverJob<TestdataSolution, Long> solverJob1 = solverManager.solve(1L,
-                PlannerTestUtils.generateTestdataSolution("s1", 4));
-        SolverJob<TestdataSolution, Long> solverJob2 = solverManager.solve(2L,
-                PlannerTestUtils.generateTestdataSolution("s2", 4));
-        SolverJob<TestdataSolution, Long> solverJob3 = solverManager.solve(3L,
-                PlannerTestUtils.generateTestdataSolution("s3", 4));
+            // Give solver 1 enough time to start
+            startedBarrier.await();
+            assertThat(solverManager.getSolverStatus(1L)).isEqualTo(SOLVING_ACTIVE);
+            assertThat(solverJob1.getSolverStatus()).isEqualTo(SOLVING_ACTIVE);
+            assertThat(solverManager.getSolverStatus(2L)).isEqualTo(SOLVING_SCHEDULED);
+            assertThat(solverJob2.getSolverStatus()).isEqualTo(SOLVING_SCHEDULED);
+            assertThat(solverManager.getSolverStatus(3L)).isEqualTo(SOLVING_SCHEDULED);
+            assertThat(solverJob3.getSolverStatus()).isEqualTo(SOLVING_SCHEDULED);
 
-        // Give solver 1 enough time to start
-        startedBarrier.await();
-        assertThat(solverManager.getSolverStatus(1L)).isEqualTo(SOLVING_ACTIVE);
-        assertThat(solverJob1.getSolverStatus()).isEqualTo(SOLVING_ACTIVE);
-        assertThat(solverManager.getSolverStatus(2L)).isEqualTo(SOLVING_SCHEDULED);
-        assertThat(solverJob2.getSolverStatus()).isEqualTo(SOLVING_SCHEDULED);
-        assertThat(solverManager.getSolverStatus(3L)).isEqualTo(SOLVING_SCHEDULED);
-        assertThat(solverJob3.getSolverStatus()).isEqualTo(SOLVING_SCHEDULED);
+            // Terminate solver 2 before it begins
+            solverManager.terminateEarly(2L);
+            assertThat(solverManager.getSolverStatus(1L)).isEqualTo(SOLVING_ACTIVE);
+            assertThat(solverJob1.getSolverStatus()).isEqualTo(SOLVING_ACTIVE);
+            assertThat(solverManager.getSolverStatus(2L)).isEqualTo(NOT_SOLVING);
+            assertThat(solverJob2.getSolverStatus()).isEqualTo(NOT_SOLVING);
+            assertThat(solverManager.getSolverStatus(3L)).isEqualTo(SOLVING_SCHEDULED);
+            assertThat(solverJob3.getSolverStatus()).isEqualTo(SOLVING_SCHEDULED);
 
-        // Terminate solver 2 before it begins
-        solverManager.terminateEarly(2L);
-        assertThat(solverManager.getSolverStatus(1L)).isEqualTo(SOLVING_ACTIVE);
-        assertThat(solverJob1.getSolverStatus()).isEqualTo(SOLVING_ACTIVE);
-        assertThat(solverManager.getSolverStatus(2L)).isEqualTo(NOT_SOLVING);
-        assertThat(solverJob2.getSolverStatus()).isEqualTo(NOT_SOLVING);
-        assertThat(solverManager.getSolverStatus(3L)).isEqualTo(SOLVING_SCHEDULED);
-        assertThat(solverJob3.getSolverStatus()).isEqualTo(SOLVING_SCHEDULED);
+            // Terminate solver 1 while it is running, allowing solver 3 to start
+            solverManager.terminateEarly(1L);
+            assertThat(solverManager.getSolverStatus(1L)).isEqualTo(NOT_SOLVING);
+            assertThat(solverJob1.getSolverStatus()).isEqualTo(NOT_SOLVING);
+            // Give solver 3 enough time to start
+            startedBarrier.await();
+            assertThat(solverManager.getSolverStatus(3L)).isEqualTo(SOLVING_ACTIVE);
+            assertThat(solverJob3.getSolverStatus()).isEqualTo(SOLVING_ACTIVE);
 
-        // Terminate solver 1 while it is running, allowing solver 3 to start
-        solverManager.terminateEarly(1L);
-        assertThat(solverManager.getSolverStatus(1L)).isEqualTo(NOT_SOLVING);
-        assertThat(solverJob1.getSolverStatus()).isEqualTo(NOT_SOLVING);
-        // Give solver 3 enough time to start
-        startedBarrier.await();
-        assertThat(solverManager.getSolverStatus(3L)).isEqualTo(SOLVING_ACTIVE);
-        assertThat(solverJob3.getSolverStatus()).isEqualTo(SOLVING_ACTIVE);
-
-        // Terminate solver 3 while it is running
-        solverManager.terminateEarly(3L);
-        assertThat(solverManager.getSolverStatus(3L)).isEqualTo(NOT_SOLVING);
-        assertThat(solverJob3.getSolverStatus()).isEqualTo(NOT_SOLVING);
-    }
-
-    /**
-     * Tests whether SolverManager can solve on multiple threads problems that use multiple thread counts.
-     */
-    @Disabled("https://issues.redhat.com/browse/PLANNER-1837")
-    @Test
-    @Timeout(60)
-    void solveMultipleThreadedMovesWithSolverManager_allGetSolved() throws ExecutionException, InterruptedException {
-        int processCount = Runtime.getRuntime().availableProcessors();
-        SolverConfig solverConfig =
-                PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
-                        .withPhases(new ConstructionHeuristicPhaseConfig(), new LocalSearchPhaseConfig())
-                        //                .withTerminationConfig(new TerminationConfig().withSecondsSpentLimit(4L))
-                        // Adds moveThreadCount to the solver config.
-                        .withMoveThreadCount("AUTO");
-        // Creates solverManagerConfig with multiple threads.
-        solverManager =
-                SolverManager.create(solverConfig, new SolverManagerConfig());
-
-        List<SolverJob<TestdataSolution, Long>> jobs = new ArrayList<>();
-        for (long i = 0; i < processCount; i++) {
-            jobs.add(solverManager.solve(i, PlannerTestUtils.generateTestdataSolution("s" + i, 10)));
+            // Terminate solver 3 while it is running
+            solverManager.terminateEarly(3L);
+            assertThat(solverManager.getSolverStatus(3L)).isEqualTo(NOT_SOLVING);
+            assertThat(solverJob3.getSolverStatus()).isEqualTo(NOT_SOLVING);
         }
-
-        assertInitializedJobs(jobs);
     }
 
     private void assertInitializedJobs(List<SolverJob<TestdataSolution, Long>> jobs)
             throws InterruptedException, ExecutionException {
-        for (SolverJob<TestdataSolution, Long> job : jobs) {
+        for (var job : jobs) {
             // Method getFinalBestSolution() waits for the solving to finish, therefore it ensures synchronization.
             assertSolutionInitialized(job.getFinalBestSolution());
         }
@@ -1062,59 +929,51 @@ class SolverManagerTest {
     @Timeout(60)
     void submitMoreProblemsThanCpus_allGetSolved() throws InterruptedException, ExecutionException {
         // Use twice the amount of problems than available processors.
-        int problemCount = Runtime.getRuntime().availableProcessors() * 2;
-
-        solverManager = createSolverManagerTestableByDifferentConsumers();
-        assertSolveWithoutConsumer(problemCount, solverManager);
-        assertSolveWithConsumer(problemCount, solverManager, true);
-        assertSolveWithConsumer(problemCount, solverManager, false);
+        var problemCount = Runtime.getRuntime().availableProcessors() * 2;
+        try (var solverManager = createSolverManagerTestableByDifferentConsumers()) {
+            assertSolveWithoutConsumer(problemCount, solverManager);
+            assertSolveWithConsumer(problemCount, solverManager, true);
+            assertSolveWithConsumer(problemCount, solverManager, false);
+        }
     }
 
     private SolverManager<TestdataSolution, Long> createSolverManagerTestableByDifferentConsumers() {
-        List<PhaseConfig> phaseConfigList = IntStream.of(0, 1)
-                .mapToObj((x) -> new CustomPhaseConfig().withCustomPhaseCommands(
-                        (ScoreDirector<TestdataSolution> scoreDirector) -> {
-                            TestdataSolution solution = scoreDirector.getWorkingSolution();
-                            TestdataEntity entity = solution.getEntityList().get(x);
-                            scoreDirector.beforeVariableChanged(entity, "value");
-                            entity.setValue(solution.getValueList().get(x));
-                            scoreDirector.afterVariableChanged(entity, "value");
-                            scoreDirector.triggerVariableListeners();
-                        }))
-                .collect(Collectors.toList());
-
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class,
-                TestdataEntity.class)
-                .withPhases(phaseConfigList.toArray(new PhaseConfig[0]));
-
-        SolverManagerConfig solverManagerConfig = new SolverManagerConfig();
-
-        return SolverManager.create(solverConfig, solverManagerConfig);
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(IntStream.of(0, 1)
+                        .mapToObj((x) -> new CustomPhaseConfig().withCustomPhaseCommands(
+                                (ScoreDirector<TestdataSolution> scoreDirector) -> {
+                                    var solution = scoreDirector.getWorkingSolution();
+                                    var entity = solution.getEntityList().get(x);
+                                    scoreDirector.beforeVariableChanged(entity, "value");
+                                    entity.setValue(solution.getValueList().get(x));
+                                    scoreDirector.afterVariableChanged(entity, "value");
+                                    scoreDirector.triggerVariableListeners();
+                                }))
+                        .toArray(PhaseConfig[]::new));
+        return createDefaultSolverManager(solverConfig);
     }
 
     private void assertSolveWithoutConsumer(int problemCount, SolverManager<TestdataSolution, Long> solverManager)
             throws InterruptedException, ExecutionException {
-        List<SolverJob<TestdataSolution, Long>> jobs = new ArrayList<>(problemCount);
-
+        var jobs = new ArrayList<SolverJob<TestdataSolution, Long>>(problemCount);
         for (long id = 0; id < problemCount; id++) {
             jobs.add(solverManager.solve(id, PlannerTestUtils.generateTestdataSolution(String.format("s%d", id))));
         }
         assertInitializedJobs(jobs);
     }
 
-    private void assertSolveWithConsumer(
-            int problemCount, SolverManager<TestdataSolution, Long> solverManager, boolean listenWhileSolving)
+    private void assertSolveWithConsumer(int problemCount, SolverManager<TestdataSolution, Long> solverManager,
+            boolean listenWhileSolving)
             throws ExecutionException, InterruptedException {
 
         // Two solutions should be created for every problem.
-        Map<Long, List<TestdataSolution>> solutionMap = new HashMap<>(problemCount * 2);
+        var solutionMap = new HashMap<Long, List<TestdataSolution>>(problemCount * 2);
+        var finalBestSolutionConsumed = new CountDownLatch(problemCount);
+        var jobs = new ArrayList<SolverJob<TestdataSolution, Long>>(problemCount);
 
-        CountDownLatch finalBestSolutionConsumed = new CountDownLatch(problemCount);
-        List<SolverJob<TestdataSolution, Long>> jobs = new ArrayList<>(problemCount);
-
-        for (long id = 0; id < problemCount; id++) {
-            List<TestdataSolution> consumedBestSolutions = Collections.synchronizedList(new ArrayList<>());
-            String solutionName = String.format("s%d", id);
+        for (var id = 0L; id < problemCount; id++) {
+            var consumedBestSolutions = Collections.synchronizedList(new ArrayList<TestdataSolution>());
+            var solutionName = String.format("s%d", id);
             if (listenWhileSolving) {
                 jobs.add(solverManager.solveBuilder()
                         .withProblemId(id)
@@ -1147,7 +1006,7 @@ class SolverManagerTest {
     }
 
     private void assertConsumedSolutions(Map<Long, List<TestdataSolution>> consumedSolutions) {
-        for (List<TestdataSolution> consumedSolution : consumedSolutions.values()) {
+        for (var consumedSolution : consumedSolutions.values()) {
             assertThat(consumedSolution).hasSize(1);
             assertConsumedFinalBestSolution(consumedSolution.get(0));
         }
@@ -1168,7 +1027,7 @@ class SolverManagerTest {
     }
 
     private void assertConsumedFinalBestSolution(TestdataSolution solution) {
-        TestdataEntity entity = solution.getEntityList().get(0);
+        var entity = solution.getEntityList().get(0);
         assertThat(entity.getCode()).isEqualTo("e1");
         assertThat(entity.getValue().getCode()).isEqualTo("v1");
         entity = solution.getEntityList().get(1);
@@ -1177,7 +1036,7 @@ class SolverManagerTest {
     }
 
     private void assertConsumedFirstBestSolution(TestdataSolution solution) {
-        TestdataEntity entity = solution.getEntityList().get(0);
+        var entity = solution.getEntityList().get(0);
         assertThat(entity.getCode()).isEqualTo("e1");
         assertThat(entity.getValue().getCode()).isEqualTo("v1");
         entity = solution.getEntityList().get(1);
@@ -1188,74 +1047,71 @@ class SolverManagerTest {
     @Test
     @Timeout(60)
     void runSameIdProcesses_throwsIllegalStateException() {
-        SolverManagerConfig solverManagerConfig = new SolverManagerConfig();
-
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class,
-                TestdataEntity.class)
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(createPhaseWithConcurrentSolvingStart(2));
 
-        solverManager = SolverManager.create(solverConfig, solverManagerConfig);
-
-        solverManager.solve(1L, PlannerTestUtils.generateTestdataSolution("s1"));
-        assertThatThrownBy(() -> solverManager.solve(1L, PlannerTestUtils.generateTestdataSolution("s1")))
-                .isInstanceOf(IllegalStateException.class).hasMessageContaining("already solving");
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            solverManager.solve(1L, PlannerTestUtils.generateTestdataSolution("s1"));
+            assertThatThrownBy(() -> solverManager.solve(1L, PlannerTestUtils.generateTestdataSolution("s1")))
+                    .isInstanceOf(IllegalStateException.class).hasMessageContaining("already solving");
+        }
     }
 
     @Test
     @Timeout(60)
     void addProblemChange() throws InterruptedException, ExecutionException {
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         solverConfig.setDaemon(true);
-        solverManager = SolverManager.create(solverConfig);
-        final long problemId = 1L;
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            var problemId = 1L;
+            var entityAndValueCount = 4;
+            var bestSolution = new AtomicReference<TestdataSolution>();
+            solverManager.solveBuilder()
+                    .withProblemId(problemId)
+                    .withProblemFinder(id -> PlannerTestUtils.generateTestdataSolution("s1", entityAndValueCount))
+                    .withBestSolutionConsumer(bestSolution::set)
+                    .run();
 
-        final int entityAndValueCount = 4;
-        AtomicReference<TestdataSolution> bestSolution = new AtomicReference<>();
-        solverManager.solveBuilder()
-                .withProblemId(problemId)
-                .withProblemFinder(id -> PlannerTestUtils.generateTestdataSolution("s1", entityAndValueCount))
-                .withBestSolutionConsumer(bestSolution::set)
-                .run();
+            var futureChange = solverManager
+                    .addProblemChange(problemId, (workingSolution, problemChangeDirector) -> {
+                        problemChangeDirector.addProblemFact(new TestdataValue("addedValue"),
+                                workingSolution.getValueList()::add);
+                    });
 
-        CompletableFuture<Void> futureChange = solverManager
-                .addProblemChange(problemId, (workingSolution, problemChangeDirector) -> {
-                    problemChangeDirector.addProblemFact(new TestdataValue("addedValue"),
-                            workingSolution.getValueList()::add);
-                });
-
-        futureChange.get();
-        assertThat(futureChange).isCompleted();
-        assertThat(bestSolution.get().getValueList()).hasSize(entityAndValueCount + 1);
+            futureChange.get();
+            assertThat(futureChange).isCompleted();
+            assertThat(bestSolution.get().getValueList()).hasSize(entityAndValueCount + 1);
+        }
     }
 
     @Test
     @Timeout(60)
     void addProblemChangeToNonExistingProblem_failsFast() {
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
-        solverManager = SolverManager.create(solverConfig);
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            solverManager.solveBuilder()
+                    .withProblemId(1L)
+                    .withProblemFinder(id -> PlannerTestUtils.generateTestdataSolution("s1", 4))
+                    .withBestSolutionConsumer(testdataSolution -> {
+                    })
+                    .run();
 
-        solverManager.solveBuilder()
-                .withProblemId(1L)
-                .withProblemFinder(id -> PlannerTestUtils.generateTestdataSolution("s1", 4))
-                .withBestSolutionConsumer(testdataSolution -> {
-                })
-                .run();
-
-        final long nonExistingProblemId = 999L;
-        assertThatIllegalStateException()
-                .isThrownBy(() -> solverManager.addProblemChange(nonExistingProblemId,
-                        (workingSolution, problemChangeDirector) -> problemChangeDirector.addProblemFact(
-                                new TestdataValue("addedValue"),
-                                workingSolution.getValueList()::add)))
-                .withMessageContaining(String.valueOf(nonExistingProblemId));
+            var nonExistingProblemId = 999L;
+            assertThatIllegalStateException()
+                    .isThrownBy(() -> solverManager.addProblemChange(nonExistingProblemId,
+                            (workingSolution, problemChangeDirector) -> problemChangeDirector.addProblemFact(
+                                    new TestdataValue("addedValue"),
+                                    workingSolution.getValueList()::add)))
+                    .withMessageContaining(String.valueOf(nonExistingProblemId));
+        }
     }
 
     @Test
     @Timeout(60)
     void addProblemChangeToWaitingSolver() throws InterruptedException, ExecutionException {
-        CountDownLatch solvingPausedLatch = new CountDownLatch(1);
-        PhaseConfig<?> pausedPhaseConfig = new CustomPhaseConfig().withCustomPhaseCommands(
-                scoreDirector -> {
+        var solvingPausedLatch = new CountDownLatch(1);
+        var pausedPhaseConfig = new CustomPhaseConfig().withCustomPhaseCommands(
+                (ScoreDirector<TestdataSolution> scoreDirector) -> {
                     try {
                         solvingPausedLatch.await();
                     } catch (InterruptedException e) {
@@ -1263,65 +1119,62 @@ class SolverManagerTest {
                     }
                 });
 
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(pausedPhaseConfig, new ConstructionHeuristicPhaseConfig());
         // Allow only a single active solver.
-        SolverManagerConfig solverManagerConfig = new SolverManagerConfig().withParallelSolverCount("1");
-        solverManager = SolverManager.create(solverConfig, solverManagerConfig);
+        try (var solverManager = createSolverManagerWithOneSolver(solverConfig)) {
+            // The first solver waits until the test sends a problem change.
+            solverManager.solve(1L, PlannerTestUtils.generateTestdataSolution("s1", 4));
 
-        // The first solver waits until the test sends a problem change.
-        solverManager.solve(1L, PlannerTestUtils.generateTestdataSolution("s1", 4));
+            // The second solver is scheduled and waits for the fist solver to finish.
+            var secondProblemId = 2L;
+            var entityAndValueCount = 4;
+            var bestSolution = new AtomicReference<TestdataSolution>();
+            solverManager.solveBuilder()
+                    .withProblemId(secondProblemId)
+                    .withProblemFinder(id -> PlannerTestUtils.generateTestdataSolution("s2", entityAndValueCount))
+                    .withBestSolutionConsumer(bestSolution::set)
+                    .run();
 
-        // The second solver is scheduled and waits for the fist solver to finish.
-        final long secondProblemId = 2L;
-        final int entityAndValueCount = 4;
-        AtomicReference<TestdataSolution> bestSolution = new AtomicReference<>();
-        solverManager.solveBuilder()
-                .withProblemId(secondProblemId)
-                .withProblemFinder(id -> PlannerTestUtils.generateTestdataSolution("s2", entityAndValueCount))
-                .withBestSolutionConsumer(bestSolution::set)
-                .run();
+            var futureChange = solverManager
+                    .addProblemChange(secondProblemId, (workingSolution, problemChangeDirector) -> {
+                        problemChangeDirector.addProblemFact(new TestdataValue("addedValue"),
+                                workingSolution.getValueList()::add);
+                    });
 
-        CompletableFuture<Void> futureChange = solverManager
-                .addProblemChange(secondProblemId, (workingSolution, problemChangeDirector) -> {
-                    problemChangeDirector.addProblemFact(new TestdataValue("addedValue"),
-                            workingSolution.getValueList()::add);
-                });
-
-        // The first solver can proceed. When it finishes, the second solver starts solving and picks up the change.
-        solvingPausedLatch.countDown();
-        futureChange.get();
-        assertThat(futureChange).isCompleted();
-        assertThat(bestSolution.get().getValueList()).hasSize(entityAndValueCount + 1);
+            // The first solver can proceed. When it finishes, the second solver starts solving and picks up the change.
+            solvingPausedLatch.countDown();
+            futureChange.get();
+            assertThat(futureChange).isCompleted();
+            assertThat(bestSolution.get().getValueList()).hasSize(entityAndValueCount + 1);
+        }
     }
 
     @Test
     @Timeout(60)
     void terminateSolverJobEarly_stillReturnsBestSolution() throws ExecutionException, InterruptedException {
-        SolverManagerConfig solverManagerConfig = new SolverManagerConfig();
-        CountDownLatch solvingStartedLatch = new CountDownLatch(1);
-        PhaseConfig<?> pausedPhaseConfig = new CustomPhaseConfig().withCustomPhaseCommands(
-                scoreDirector -> solvingStartedLatch.countDown());
+        var solvingStartedLatch = new CountDownLatch(1);
+        var pausedPhaseConfig = new CustomPhaseConfig()
+                .withCustomPhaseCommands((ScoreDirector<TestdataSolution> scoreDirector) -> solvingStartedLatch.countDown());
 
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(pausedPhaseConfig, new ConstructionHeuristicPhaseConfig());
-        solverManager = SolverManager.create(solverConfig, solverManagerConfig);
-
-        SolverJob<TestdataSolution, Long> solverJob =
-                solverManager.solve(1L, PlannerTestUtils.generateTestdataSolution("s1"));
-        solvingStartedLatch.await();
-        solverJob.terminateEarly();
-        TestdataSolution result = solverJob.getFinalBestSolution();
-        assertThat(result).isNotNull();
-        assertThat(solverJob.isTerminatedEarly()).isTrue();
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            var solverJob = solverManager.solve(1L, PlannerTestUtils.generateTestdataSolution("s1"));
+            solvingStartedLatch.await();
+            solverJob.terminateEarly();
+            var result = solverJob.getFinalBestSolution();
+            assertThat(result).isNotNull();
+            assertThat(solverJob.isTerminatedEarly()).isTrue();
+        }
     }
 
     @Test
     @Timeout(60)
     void terminateScheduledSolverJobEarly_returnsInputProblem() throws ExecutionException, InterruptedException {
-        CountDownLatch solvingPausedLatch = new CountDownLatch(1);
-        PhaseConfig<?> pausedPhaseConfig = new CustomPhaseConfig().withCustomPhaseCommands(
-                scoreDirector -> {
+        var solvingPausedLatch = new CountDownLatch(1);
+        var pausedPhaseConfig = new CustomPhaseConfig().withCustomPhaseCommands(
+                (ScoreDirector<TestdataSolution> scoreDirector) -> {
                     try {
                         solvingPausedLatch.await();
                     } catch (InterruptedException e) {
@@ -1329,28 +1182,27 @@ class SolverManagerTest {
                     }
                 });
 
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(pausedPhaseConfig, new ConstructionHeuristicPhaseConfig());
         // Allow only a single active solver.
-        SolverManagerConfig solverManagerConfig = new SolverManagerConfig().withParallelSolverCount("1");
-        solverManager = SolverManager.create(solverConfig, solverManagerConfig);
+        try (var solverManager = createSolverManagerWithOneSolver(solverConfig)) {
+            // The first solver waits.
+            solverManager.solve(1L, PlannerTestUtils.generateTestdataSolution("s1", 4));
+            var inputProblem = PlannerTestUtils.generateTestdataSolution("s2", 4);
+            var solverJob = solverManager.solve(2L, inputProblem);
 
-        // The first solver waits.
-        solverManager.solve(1L, PlannerTestUtils.generateTestdataSolution("s1", 4));
-        TestdataSolution inputProblem = PlannerTestUtils.generateTestdataSolution("s2", 4);
-        SolverJob<TestdataSolution, Long> solverJob = solverManager.solve(2L, inputProblem);
-
-        solverJob.terminateEarly();
-        TestdataSolution result = solverJob.getFinalBestSolution();
-        assertThat(result).isSameAs(inputProblem);
-        assertThat(solverJob.isTerminatedEarly()).isTrue();
+            solverJob.terminateEarly();
+            var result = solverJob.getFinalBestSolution();
+            assertThat(result).isSameAs(inputProblem);
+            assertThat(solverJob.isTerminatedEarly()).isTrue();
+        }
     }
 
     public static class CustomThreadFactory implements ThreadFactory {
         private static final String CUSTOM_THREAD_NAME = "CustomThread";
 
         @Override
-        public Thread newThread(Runnable runnable) {
+        public Thread newThread(@NonNull Runnable runnable) {
             return new Thread(runnable, CUSTOM_THREAD_NAME);
         }
     }
@@ -1359,7 +1211,7 @@ class SolverManagerTest {
     @Timeout(60)
     void threadFactoryIsUsed() throws ExecutionException, InterruptedException {
         var threadCheckingPhaseConfig = new CustomPhaseConfig().withCustomPhaseCommands(
-                scoreDirector -> {
+                (ScoreDirector<TestdataSolution> scoreDirector) -> {
                     if (!Thread.currentThread().getName().equals(CustomThreadFactory.CUSTOM_THREAD_NAME)) {
                         fail("Custom thread factory not used");
                     }
@@ -1369,12 +1221,11 @@ class SolverManagerTest {
                 .withPhases(threadCheckingPhaseConfig, new ConstructionHeuristicPhaseConfig());
 
         var solverManagerConfig = new SolverManagerConfig().withThreadFactoryClass(CustomThreadFactory.class);
-        solverManager = SolverManager.create(solverConfig, solverManagerConfig);
-
-        var inputProblem = PlannerTestUtils.generateTestdataSolution("s1", 4);
-        var solverJob = solverManager.solve(1L, inputProblem);
-
-        TestdataSolution result = solverJob.getFinalBestSolution();
-        assertThat(result).isNotNull();
+        try (var solverManager = createSolverManager(solverConfig, solverManagerConfig)) {
+            var inputProblem = PlannerTestUtils.generateTestdataSolution("s1", 4);
+            var solverJob = solverManager.solve(1L, inputProblem);
+            var result = solverJob.getFinalBestSolution();
+            assertThat(result).isNotNull();
+        }
     }
 }
