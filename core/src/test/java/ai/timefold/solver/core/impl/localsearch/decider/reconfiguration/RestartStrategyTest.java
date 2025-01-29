@@ -16,7 +16,7 @@ class RestartStrategyTest {
     void restoreBestSolution() {
         // Requires the decider
         var badStrategy = new RestoreBestSolutionRestartStrategy<>();
-        assertThatThrownBy(() -> badStrategy.solvingStarted(null)).isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> badStrategy.phaseStarted(null)).isInstanceOf(NullPointerException.class);
 
         // Restore the best solution
         var strategy = new RestoreBestSolutionRestartStrategy<>();
@@ -25,9 +25,11 @@ class RestartStrategyTest {
         var solverScope = mock(SolverScope.class);
         var phaseScope = mock(LocalSearchPhaseScope.class);
         when(phaseScope.getSolverScope()).thenReturn(solverScope);
+        when(phaseScope.getDecider()).thenReturn(decider);
         var stepScope = mock(LocalSearchStepScope.class);
         when(stepScope.getPhaseScope()).thenReturn(phaseScope);
-        strategy.solvingStarted(new AdaptedSolverScope<>(solverScope, decider));
+        strategy.solvingStarted(solverScope);
+        strategy.phaseStarted(phaseScope);
         strategy.applyRestart(stepScope);
         // Restore the best solution
         verify(decider, times(1)).setWorkingSolutionFromBestSolution(any());
