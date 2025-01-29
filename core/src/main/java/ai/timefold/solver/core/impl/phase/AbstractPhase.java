@@ -38,11 +38,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
 
     protected AbstractSolver<Solution_> solver;
 
-    protected AbstractPhase(Builder<Solution_> builder) {
-        if (builder.isLastInitializingPhase() && !(this instanceof PossiblyInitializingPhase)) {
-            throw new IllegalStateException("Impossible state: Phase (%s) cannot trigger the first initialized solution event."
-                    .formatted(getClass().getSimpleName()));
-        }
+    protected AbstractPhase(AbstractPhaseBuilder<Solution_> builder) {
         phaseIndex = builder.phaseIndex;
         logIndentation = builder.logIndentation;
         phaseTermination = builder.phaseTermination;
@@ -145,10 +141,10 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         Score_ score = phaseScope.calculateScore();
         stepScope.setScore(score);
         if (assertStepScoreFromScratch) {
-            phaseScope.assertWorkingScoreFromScratch((Score_) stepScope.getScore(), completedAction);
+            phaseScope.assertWorkingScoreFromScratch(score, completedAction);
         }
         if (assertShadowVariablesAreNotStaleAfterStep) {
-            phaseScope.assertShadowVariablesAreNotStale((Score_) stepScope.getScore(), completedAction);
+            phaseScope.assertShadowVariablesAreNotStale(score, completedAction);
         }
     }
 
@@ -232,10 +228,9 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         }
     }
 
-    public abstract static class Builder<Solution_> {
+    public abstract static class AbstractPhaseBuilder<Solution_> {
 
         private final int phaseIndex;
-        private final boolean lastInitializingPhase;
         private final String logIndentation;
         private final Termination<Solution_> phaseTermination;
 
@@ -243,20 +238,10 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         private boolean assertExpectedStepScore = false;
         private boolean assertShadowVariablesAreNotStaleAfterStep = false;
 
-        protected Builder(int phaseIndex, String logIndentation, Termination<Solution_> phaseTermination) {
-            this(phaseIndex, false, logIndentation, phaseTermination);
-        }
-
-        protected Builder(int phaseIndex, boolean lastInitializingPhase, String logIndentation,
-                Termination<Solution_> phaseTermination) {
+        protected AbstractPhaseBuilder(int phaseIndex, String logIndentation, Termination<Solution_> phaseTermination) {
             this.phaseIndex = phaseIndex;
-            this.lastInitializingPhase = lastInitializingPhase;
             this.logIndentation = logIndentation;
             this.phaseTermination = phaseTermination;
-        }
-
-        public boolean isLastInitializingPhase() {
-            return lastInitializingPhase;
         }
 
         public void setAssertStepScoreFromScratch(boolean assertStepScoreFromScratch) {

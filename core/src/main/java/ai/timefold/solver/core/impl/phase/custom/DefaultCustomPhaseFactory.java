@@ -44,7 +44,7 @@ public class DefaultCustomPhaseFactory<Solution_> extends AbstractPhaseFactory<S
         if (customPhaseCommandList != null) {
             customPhaseCommandList_.addAll((Collection) customPhaseCommandList);
         }
-        var builder = new DefaultCustomPhase.Builder<>(phaseIndex, lastInitializingPhase,
+        var builder = new DefaultCustomPhase.DefaultCustomPhaseBuilder<>(phaseIndex, lastInitializingPhase,
                 solverConfigPolicy.getLogIndentation(), buildPhaseTermination(phaseConfigPolicy, solverTermination),
                 customPhaseCommandList_);
         var environmentMode = phaseConfigPolicy.getEnvironmentMode();

@@ -6,6 +6,7 @@ import java.util.Set;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhase;
+import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhase.DefaultConstructionHeuristicPhaseBuilder;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHeuristicDecider;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -14,7 +15,7 @@ import ai.timefold.solver.core.impl.solver.termination.Termination;
 import ai.timefold.solver.core.impl.solver.termination.TerminationFactory;
 
 public final class RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>
-        extends DefaultConstructionHeuristicPhase.DefaultConstructionHeuristicPhaseBuilder<Solution_> {
+        extends DefaultConstructionHeuristicPhaseBuilder<Solution_> {
 
     public static <Solution_> RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>
             create(HeuristicConfigPolicy<Solution_> solverConfigPolicy) {

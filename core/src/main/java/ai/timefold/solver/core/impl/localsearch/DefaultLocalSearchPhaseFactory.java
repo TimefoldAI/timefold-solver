@@ -48,10 +48,8 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
             Termination<Solution_> solverTermination) {
         var phaseConfigPolicy = solverConfigPolicy.createPhaseConfigPolicy();
         var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
-        var builder =
-                new DefaultLocalSearchPhase.Builder<Solution_>(phaseIndex, solverConfigPolicy.getLogIndentation(),
-                        phaseTermination,
-                        buildDecider(phaseConfigPolicy, phaseTermination));
+        var builder = new DefaultLocalSearchPhase.Builder<>(phaseIndex, solverConfigPolicy.getLogIndentation(),
+                phaseTermination, buildDecider(phaseConfigPolicy, phaseTermination));
         var environmentMode = phaseConfigPolicy.getEnvironmentMode();
         if (environmentMode.isNonIntrusiveFullAsserted()) {
             builder.setAssertStepScoreFromScratch(true);

@@ -5,8 +5,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHe
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
-import ai.timefold.solver.core.impl.phase.AbstractPhase;
-import ai.timefold.solver.core.impl.phase.PossiblyInitializingPhase;
+import ai.timefold.solver.core.impl.phase.AbstractPossiblyInitializingPhase;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
@@ -20,28 +19,21 @@ import org.slf4j.event.Level;
  */
 @NullMarked
 public class DefaultConstructionHeuristicPhase<Solution_>
-        extends AbstractPhase<Solution_>
+        extends AbstractPossiblyInitializingPhase<Solution_>
         implements ConstructionHeuristicPhase<Solution_> {
 
     protected final ConstructionHeuristicDecider<Solution_> decider;
     protected final EntityPlacer<Solution_> entityPlacer;
-    private final boolean lastInitializingPhase;
     private TerminationStatus terminationStatus = TerminationStatus.NOT_TERMINATED;
 
     protected DefaultConstructionHeuristicPhase(DefaultConstructionHeuristicPhaseBuilder<Solution_> builder) {
         super(builder);
         this.decider = builder.decider;
         this.entityPlacer = builder.getEntityPlacer();
-        this.lastInitializingPhase = builder.isLastInitializingPhase();
     }
 
     public EntityPlacer<Solution_> getEntityPlacer() {
         return entityPlacer;
-    }
-
-    @Override
-    public boolean isLastInitializingPhase() {
-        return lastInitializingPhase;
     }
 
     @Override
@@ -119,8 +111,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
             }
         }
         // We only store the termination status, which is exposed to the outside, when the phase has ended.
-        terminationStatus =
-                PossiblyInitializingPhase.translateEarlyTermination(phaseScope, earlyTerminationStatus, iterator.hasNext());
+        terminationStatus = translateEarlyTermination(phaseScope, earlyTerminationStatus, iterator.hasNext());
         phaseEnded(phaseScope);
     }
 
@@ -216,7 +207,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
     }
 
     public static class DefaultConstructionHeuristicPhaseBuilder<Solution_>
-            extends AbstractPhase.Builder<Solution_> {
+            extends AbstractPossiblyInitializingPhaseBuilder<Solution_> {
 
         private final EntityPlacer<Solution_> entityPlacer;
         private final ConstructionHeuristicDecider<Solution_> decider;

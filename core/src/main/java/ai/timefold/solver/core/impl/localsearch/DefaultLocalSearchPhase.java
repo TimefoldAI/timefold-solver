@@ -216,7 +216,7 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
         decider.solvingError(solverScope, exception);
     }
 
-    public static class Builder<Solution_> extends AbstractPhase.Builder<Solution_> {
+    public static class Builder<Solution_> extends AbstractPhaseBuilder<Solution_> {
 
         private final LocalSearchDecider<Solution_> decider;
 

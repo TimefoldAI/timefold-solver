@@ -4,8 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.impl.phase.AbstractPhase;
-import ai.timefold.solver.core.impl.phase.PossiblyInitializingPhase;
+import ai.timefold.solver.core.impl.phase.AbstractPossiblyInitializingPhase;
 import ai.timefold.solver.core.impl.phase.custom.scope.CustomPhaseScope;
 import ai.timefold.solver.core.impl.phase.custom.scope.CustomStepScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -22,22 +21,15 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public final class DefaultCustomPhase<Solution_>
-        extends AbstractPhase<Solution_>
+        extends AbstractPossiblyInitializingPhase<Solution_>
         implements CustomPhase<Solution_> {
 
     private final List<CustomPhaseCommand<Solution_>> customPhaseCommandList;
-    private final boolean lastInitializingPhase;
     private TerminationStatus terminationStatus = TerminationStatus.NOT_TERMINATED;
 
-    private DefaultCustomPhase(Builder<Solution_> builder) {
+    private DefaultCustomPhase(DefaultCustomPhaseBuilder<Solution_> builder) {
         super(builder);
         this.customPhaseCommandList = builder.customPhaseCommandList;
-        this.lastInitializingPhase = builder.isLastInitializingPhase();
-    }
-
-    @Override
-    public boolean isLastInitializingPhase() {
-        return lastInitializingPhase;
     }
 
     @Override
@@ -74,8 +66,7 @@ public final class DefaultCustomPhase<Solution_>
             phaseScope.setLastCompletedStepScope(stepScope);
         }
         // We only store the termination status, which is exposed to the outside, when the phase has ended.
-        terminationStatus =
-                PossiblyInitializingPhase.translateEarlyTermination(phaseScope, earlyTerminationStatus, iterator.hasNext());
+        terminationStatus = translateEarlyTermination(phaseScope, earlyTerminationStatus, iterator.hasNext());
         phaseEnded(phaseScope);
     }
 
@@ -120,14 +111,14 @@ public final class DefaultCustomPhase<Solution_>
                 phaseScope.getNextStepIndex());
     }
 
-    public static final class Builder<Solution_> extends AbstractPhase.Builder<Solution_> {
+    public static final class DefaultCustomPhaseBuilder<Solution_>
+            extends AbstractPossiblyInitializingPhaseBuilder<Solution_> {
 
         private final List<CustomPhaseCommand<Solution_>> customPhaseCommandList;
 
-        public Builder(int phaseIndex, boolean triggerFirstInitializedSolutionEvent, String logIndentation,
-                Termination<Solution_> phaseTermination,
-                List<CustomPhaseCommand<Solution_>> customPhaseCommandList) {
-            super(phaseIndex, triggerFirstInitializedSolutionEvent, logIndentation, phaseTermination);
+        public DefaultCustomPhaseBuilder(int phaseIndex, boolean lastInitializingPhase, String logIndentation,
+                Termination<Solution_> phaseTermination, List<CustomPhaseCommand<Solution_>> customPhaseCommandList) {
+            super(phaseIndex, lastInitializingPhase, logIndentation, phaseTermination);
             this.customPhaseCommandList = List.copyOf(customPhaseCommandList);
         }
 
