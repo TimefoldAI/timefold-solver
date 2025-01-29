@@ -62,7 +62,7 @@ We kindly ask Kotlin and Python users to translate the changes accordingly.
 .icon:info-circle[role=yellow] New argument to `FirstInitializedSolutionConsumer`
 [%collapsible%open]
 ====
-`SolverJob` 's `FirstInitializedSolutionConsumer` gets an additional argument
+The `FirstInitializedSolutionConsumer` of `SolverJob` gets an additional argument
 (`boolean isTerminatedEarly`),
 used to indicate that the solver terminated early and therefore the solution may not be fully initialized.
 
