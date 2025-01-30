@@ -315,14 +315,15 @@ public final class ReflectionHelper {
         return false;
     }
 
-    public static List<Object> transformArrayToList(Object arrayObject) {
+    @SuppressWarnings("unchecked")
+    public static <Value_> List<Value_> transformArrayToList(Object arrayObject) {
         if (arrayObject == null) {
             return null;
         }
-        int arrayLength = Array.getLength(arrayObject);
-        List<Object> list = new ArrayList<>(arrayLength);
-        for (int i = 0; i < arrayLength; i++) {
-            list.add(Array.get(arrayObject, i));
+        var arrayLength = Array.getLength(arrayObject);
+        var list = new ArrayList<Value_>(arrayLength);
+        for (var i = 0; i < arrayLength; i++) {
+            list.add((Value_) Array.get(arrayObject, i));
         }
         return list;
     }

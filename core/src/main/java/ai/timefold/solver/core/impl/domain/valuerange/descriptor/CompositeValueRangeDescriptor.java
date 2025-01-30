@@ -51,10 +51,11 @@ public class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRange
     }
 
     @Override
-    public ValueRange<?> extractValueRange(Solution_ solution, Object entity) {
+    public <Value_> ValueRange<Value_> extractValueRange(Solution_ solution, Object entity) {
         return innerExtractValueRange(solution, entity);
     }
 
+    @SuppressWarnings("unchecked")
     private <T> ValueRange<T> innerExtractValueRange(Solution_ solution, Object entity) {
         var childValueRangeList = new ArrayList<CountableValueRange<T>>(childValueRangeDescriptorList.size());
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
