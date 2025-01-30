@@ -56,16 +56,17 @@ public abstract class AbstractMove<Solution_> implements Move<Solution_> {
     }
 
     @SuppressWarnings("unchecked")
-    protected final VariableDescriptor<Solution_> getVariableDescriptor(VariableMetaModel<Solution_, ?, ?> variableMetaModel) {
+    protected static <Solution_> VariableDescriptor<Solution_>
+            getVariableDescriptor(VariableMetaModel<Solution_, ?, ?> variableMetaModel) {
         return ((InnerVariableMetaModel<Solution_>) variableMetaModel).variableDescriptor();
     }
 
-    protected final GenuineVariableDescriptor<Solution_>
+    protected static <Solution_> GenuineVariableDescriptor<Solution_>
             getVariableDescriptor(PlanningVariableMetaModel<Solution_, ?, ?> variableMetaModel) {
         return ((DefaultPlanningVariableMetaModel<Solution_, ?, ?>) variableMetaModel).variableDescriptor();
     }
 
-    protected final ListVariableDescriptor<Solution_>
+    protected static <Solution_> ListVariableDescriptor<Solution_>
             getVariableDescriptor(PlanningListVariableMetaModel<Solution_, ?, ?> variableMetaModel) {
         return ((DefaultPlanningListVariableMetaModel<Solution_, ?, ?>) variableMetaModel).variableDescriptor();
     }

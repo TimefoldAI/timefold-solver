@@ -26,7 +26,7 @@ public class FromEntityPropertyValueRangeDescriptor<Solution_>
     }
 
     @Override
-    public ValueRange<?> extractValueRange(Solution_ solution, Object entity) {
+    public <Value_> ValueRange<Value_> extractValueRange(Solution_ solution, Object entity) {
         return readValueRange(entity);
     }
 

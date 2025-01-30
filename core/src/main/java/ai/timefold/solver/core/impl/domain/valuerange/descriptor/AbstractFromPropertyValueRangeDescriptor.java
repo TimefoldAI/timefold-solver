@@ -102,7 +102,8 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
         return countable;
     }
 
-    protected ValueRange<?> readValueRange(Object bean) {
+    @SuppressWarnings("unchecked")
+    protected <Value_> ValueRange<Value_> readValueRange(Object bean) {
         Object valueRangeObject = memberAccessor.executeGetter(bean);
         if (valueRangeObject == null) {
             throw new IllegalStateException("The @" + ValueRangeProvider.class.getSimpleName()
@@ -110,9 +111,9 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
                     + ") called on bean (" + bean
                     + ") must not return a null valueRangeObject (" + valueRangeObject + ").");
         }
-        ValueRange<Object> valueRange;
+        ValueRange<Value_> valueRange;
         if (collectionWrapping || arrayWrapping) {
-            List<Object> list = collectionWrapping ? transformCollectionToList((Collection<Object>) valueRangeObject)
+            List<Value_> list = collectionWrapping ? transformCollectionToList((Collection<Value_>) valueRangeObject)
                     : ReflectionHelper.transformArrayToList(valueRangeObject);
             // Don't check the entire list for performance reasons, but do check common pitfalls
             if (!list.isEmpty() && (list.get(0) == null || list.get(list.size() - 1) == null)) {
@@ -129,7 +130,7 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
             }
             valueRange = new ListValueRange<>(list);
         } else {
-            valueRange = (ValueRange<Object>) valueRangeObject;
+            valueRange = (ValueRange<Value_>) valueRangeObject;
         }
         valueRange = doNullInValueRangeWrapping(valueRange);
         if (valueRange.isEmpty()) {

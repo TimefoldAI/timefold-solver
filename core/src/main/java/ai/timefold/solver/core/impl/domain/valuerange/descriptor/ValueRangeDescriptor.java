@@ -40,7 +40,7 @@ public interface ValueRangeDescriptor<Solution_> {
      *        use {@link EntityIndependentValueRangeDescriptor#extractValueRange} instead.
      * @return never null
      */
-    ValueRange<?> extractValueRange(Solution_ solution, Object entity);
+    <Value_> ValueRange<Value_> extractValueRange(Solution_ solution, Object entity);
 
     /**
      * @param solution never null
