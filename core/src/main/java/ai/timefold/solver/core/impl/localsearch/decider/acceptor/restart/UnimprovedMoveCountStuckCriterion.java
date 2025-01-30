@@ -18,7 +18,7 @@ public class UnimprovedMoveCountStuckCriterion<Solution_> extends AbstractGeomet
     // The multiplier will lead to an unimproved move count near a 10-second window without any improvements.
     // In this manner, the first restart will occur after approximately 10 seconds without any improvement,
     // then after 20 seconds, and so on.
-    protected static final int UNIMPROVED_MOVE_COUNT_MULTIPLIER = 10;
+    protected static final double UNIMPROVED_MOVE_COUNT_MULTIPLIER = 10.0;
     // Last checkpoint of a solution improvement or the restart process
     protected long lastCheckpoint;
     private Score<?> currentBestScore;
@@ -56,12 +56,6 @@ public class UnimprovedMoveCountStuckCriterion<Solution_> extends AbstractGeomet
         var currentMoveCount = moveScope.getStepScope().getPhaseScope().getSolverScope().getMoveEvaluationCount();
         if (lastCheckpoint == 0) {
             lastCheckpoint = currentMoveCount;
-            // Grace period is finished
-            // Now we use the current move evaluation speed to define the scaling factor
-            var scalingFactor = (double) (moveScope.getStepScope().getPhaseScope().getSolverScope().getMoveEvaluationSpeed()
-                    * UNIMPROVED_MOVE_COUNT_MULTIPLIER);
-            logger.trace("Scaling factor set to {}.", scalingFactor);
-            setScalingFactor(scalingFactor);
             return false;
         }
         if (currentMoveCount - lastCheckpoint >= nextRestart) {
@@ -69,5 +63,11 @@ public class UnimprovedMoveCountStuckCriterion<Solution_> extends AbstractGeomet
             return true;
         }
         return false;
+    }
+
+    @Override
+    double calculateScalingFactor(LocalSearchMoveScope<Solution_> moveScope) {
+        return moveScope.getStepScope().getPhaseScope().getSolverScope().getMoveEvaluationSpeed()
+                * UNIMPROVED_MOVE_COUNT_MULTIPLIER;
     }
 }

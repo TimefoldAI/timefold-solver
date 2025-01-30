@@ -70,17 +70,18 @@ public abstract class AbstractGeometricStuckCriterion<Solution_> implements Stuc
     @Override
     public boolean isSolverStuck(LocalSearchMoveScope<Solution_> moveScope) {
         if (isGracePeriodFinished()) {
+            if (scalingFactor == -1) {
+                scalingFactor = calculateScalingFactor(moveScope);
+            }
             var triggered = evaluateCriterion(moveScope);
             if (triggered) {
-                if (scalingFactor == -1) {
-                    throw new IllegalStateException("The scaling factor is not defined for this criterion.");
-                }
                 logger.trace(
                         "Restart triggered with geometric factor {}, scaling factor of {}, best score ({}), move count ({})",
                         currentGeometricGrowFactor,
                         scalingFactor, moveScope.getStepScope().getPhaseScope().getBestScore(),
                         moveScope.getStepScope().getPhaseScope().getSolverScope().getMoveEvaluationCount());
                 currentGeometricGrowFactor = Math.ceil(currentGeometricGrowFactor * GEOMETRIC_FACTOR);
+                scalingFactor = calculateScalingFactor(moveScope);
                 nextRestart = calculateNextRestart();
                 return true;
             }
@@ -102,4 +103,5 @@ public abstract class AbstractGeometricStuckCriterion<Solution_> implements Stuc
 
     abstract boolean evaluateCriterion(LocalSearchMoveScope<Solution_> moveScope);
 
+    abstract double calculateScalingFactor(LocalSearchMoveScope<Solution_> moveScope);
 }

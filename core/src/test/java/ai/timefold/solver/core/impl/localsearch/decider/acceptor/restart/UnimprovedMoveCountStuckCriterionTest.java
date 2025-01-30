@@ -31,8 +31,8 @@ class UnimprovedMoveCountStuckCriterionTest {
         when(moveScope.getStepScope()).thenReturn(stepScope);
         when(stepScope.getPhaseScope()).thenReturn(phaseScope);
         when(phaseScope.getSolverScope()).thenReturn(solverScope);
-        when(instant.plusMillis(anyLong())).thenReturn(Instant.ofEpochMilli(UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1000L));
-        when(clock.millis()).thenReturn(UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1000L);
+        when(instant.plusMillis(anyLong())).thenReturn(Instant.ofEpochMilli(((long) UNIMPROVED_MOVE_COUNT_MULTIPLIER) + 1000L));
+        when(clock.millis()).thenReturn(((long) UNIMPROVED_MOVE_COUNT_MULTIPLIER) + 1000L);
         when(solverScope.getMoveEvaluationCount()).thenReturn(1000L);
         when(solverScope.getMoveEvaluationSpeed()).thenReturn(1L);
         when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(1000));
@@ -43,30 +43,29 @@ class UnimprovedMoveCountStuckCriterionTest {
         strategy.phaseStarted(phaseScope);
         assertThat(strategy.isSolverStuck(moveScope)).isFalse();
         assertThat(strategy.lastCheckpoint).isEqualTo(1000L);
-        assertThat(strategy.nextRestart).isEqualTo(UNIMPROVED_MOVE_COUNT_MULTIPLIER);
 
         // First restart
-        var firstCount = UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1000L;
+        var firstCount = ((long) UNIMPROVED_MOVE_COUNT_MULTIPLIER) + 1000L;
         when(solverScope.getMoveEvaluationCount()).thenReturn(firstCount);
         assertThat(strategy.isSolverStuck(moveScope)).isTrue();
         assertThat(strategy.lastCheckpoint).isEqualTo(firstCount);
-        assertThat(strategy.nextRestart).isEqualTo(2L * UNIMPROVED_MOVE_COUNT_MULTIPLIER);
+        assertThat(strategy.nextRestart).isEqualTo(2L * ((long) UNIMPROVED_MOVE_COUNT_MULTIPLIER));
         assertThat(strategy.isSolverStuck(moveScope)).isFalse();
 
         // Second restart
-        var secondCount = 2L * UNIMPROVED_MOVE_COUNT_MULTIPLIER + firstCount + 1;
+        var secondCount = 2L * ((long) UNIMPROVED_MOVE_COUNT_MULTIPLIER) + firstCount + 1;
         when(solverScope.getMoveEvaluationCount()).thenReturn(secondCount);
         assertThat(strategy.isSolverStuck(moveScope)).isTrue();
         assertThat(strategy.lastCheckpoint).isEqualTo(secondCount);
-        assertThat(strategy.nextRestart).isEqualTo(3L * UNIMPROVED_MOVE_COUNT_MULTIPLIER);
+        assertThat(strategy.nextRestart).isEqualTo(3L * ((long) UNIMPROVED_MOVE_COUNT_MULTIPLIER));
         assertThat(strategy.isSolverStuck(moveScope)).isFalse();
 
         // Third restart
-        var thirdCount = 3L * UNIMPROVED_MOVE_COUNT_MULTIPLIER + secondCount + 1;
+        var thirdCount = 3L * ((long) UNIMPROVED_MOVE_COUNT_MULTIPLIER) + secondCount + 1;
         when(solverScope.getMoveEvaluationCount()).thenReturn(thirdCount);
         assertThat(strategy.isSolverStuck(moveScope)).isTrue();
         assertThat(strategy.lastCheckpoint).isEqualTo(thirdCount);
-        assertThat(strategy.nextRestart).isEqualTo(5L * UNIMPROVED_MOVE_COUNT_MULTIPLIER);
+        assertThat(strategy.nextRestart).isEqualTo(5L * ((long) UNIMPROVED_MOVE_COUNT_MULTIPLIER));
     }
 
     @Test
@@ -83,8 +82,9 @@ class UnimprovedMoveCountStuckCriterionTest {
         when(moveScope.getStepScope()).thenReturn(stepScope);
         when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(1000));
         when(stepScope.getScore()).thenReturn(SimpleScore.of(2000));
-        when(instant.plusMillis(anyLong())).thenReturn(Instant.ofEpochMilli(UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1000L));
-        when(clock.millis()).thenReturn(UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1000L, UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1000L);
+        when(instant.plusMillis(anyLong())).thenReturn(Instant.ofEpochMilli(((long) UNIMPROVED_MOVE_COUNT_MULTIPLIER) + 1000L));
+        when(clock.millis()).thenReturn(((long) UNIMPROVED_MOVE_COUNT_MULTIPLIER) + 1000L,
+                ((long) UNIMPROVED_MOVE_COUNT_MULTIPLIER) + 1000L);
         when(solverScope.getMoveEvaluationCount()).thenReturn(1000L, 1001L);
 
         var strategy = new UnimprovedMoveCountStuckCriterion<>(clock);
@@ -110,8 +110,8 @@ class UnimprovedMoveCountStuckCriterionTest {
         when(moveScope.getStepScope()).thenReturn(stepScope);
         when(stepScope.getPhaseScope()).thenReturn(phaseScope);
         when(phaseScope.getSolverScope()).thenReturn(solverScope);
-        when(instant.plusMillis(anyLong())).thenReturn(Instant.ofEpochMilli(UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1000L));
-        when(clock.millis()).thenReturn(UNIMPROVED_MOVE_COUNT_MULTIPLIER + 1000L);
+        when(instant.plusMillis(anyLong())).thenReturn(Instant.ofEpochMilli(((long) UNIMPROVED_MOVE_COUNT_MULTIPLIER) + 1000L));
+        when(clock.millis()).thenReturn(((long) UNIMPROVED_MOVE_COUNT_MULTIPLIER) + 1000L);
         when(solverScope.getMoveEvaluationCount()).thenReturn(1000L);
 
         var strategy = new UnimprovedMoveCountStuckCriterion<>(clock);
