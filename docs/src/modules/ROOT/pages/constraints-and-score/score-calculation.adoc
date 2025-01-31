@@ -1229,10 +1229,8 @@ Python::
 ----
 def multiple_consecutive_home_matches(factory: ConstraintFactory) -> Constraint:
     return (factory.for_each(Match)
-                   .join(Team,
-                         Joiners.equal(lambda match: match.home_team, lambda team: team))
-                   .group_by(lambda match, team: team,
-                             ConstraintCollectors.to_consecutive_sequences(lambda match, team: match.round, lambda match_round: match_round.index))
+                   .group_by(lambda match,
+                             ConstraintCollectors.to_consecutive_sequences(lambda match: match.homeTeam, lambda match: match.roundId))
                    .flatten_last(lambda chain: chain.getConsecutiveSequences())
                    .filter(lambda team, matches: matches.getCount() >= MAX_CONSECUTIVE_MATCHES)
                    .penalize(HardSoftScore.ONE_HARD, lambda team, matches: matches.getCount())
@@ -1243,7 +1241,6 @@ def multiple_consecutive_home_matches(factory: ConstraintFactory) -> Constraint:
 
 image::constraints-and-score/score-calculation/constraintStreamConsecutiveSequences.png[align="center"]
 
-
 Let's take a closer look at the crucial part of this constraint:
 
 [tabs]
@@ -1252,8 +1249,8 @@ Java::
 +
 [source,java,options="nowrap"]
 ----
-.groupBy((match, team) -> team,
-        ConstraintCollectors.toConsecutiveSequences((match, team) -> match.getRound(), Round::getIndex))
+.groupBy(match -> Match::getHomeTeam,
+        ConstraintCollectors.toConsecutiveSequences(Match::getRoundId))
 .flattenLast(SequenceChain::getConsecutiveSequences)
 .filter((team, matches) -> matches.getCount() >= MAX_CONSECUTIVE_MATCHES)
 ----
@@ -1262,8 +1259,8 @@ Python::
 +
 [source,python,options="nowrap"]
 ----
-.group_by(lambda match, team: team,
-        ConstraintCollectors.toConsecutiveSequences(lambda match, team: match.round, lambda match_round: match_round.index))
+.group_by(lambda match,
+         ConstraintCollectors.to_consecutive_sequences(lambda match: match.homeTeam, lambda match: match.roundId))
 .flatten_last(lambda chain: chain.getConsecutiveSequences())
 .filter(lambda team, matches: matches.getCount() >= MAX_CONSECUTIVE_MATCHES)
 ----
@@ -1280,6 +1277,9 @@ The `SequenceChain` then has several useful methods to not only get the list of 
 but also to get any and all breaks between those matches.
 In this case, we are only interested in the sequences of matches themselves,
 and we use <<constraintStreamsFlattening,flattening>> to convert each to its own tuple.
+
+image::constraints-and-score/score-calculation/constraintStreamConsecutiveSequencesFlatten.png[align="center"]
+
 
 Finally, if a league requires that a team can play at most 5 consecutive matches (`MAX_CONSECUTIVE_MATCHES`) in home,
 and `matches` contains 6 matches, then the `weight` penalty will be `6`.
