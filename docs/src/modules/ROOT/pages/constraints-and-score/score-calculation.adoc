@@ -1214,9 +1214,8 @@ Java::
 ----
 Constraint multipleConsecutiveHomeMatches(ConstraintFactory constraintFactory) {
         return constraintFactory.forEach(Match.class)
-                .join(Team.class, equal(Match::getHomeTeam, Function.identity()))
-                .groupBy((match, team) -> team,
-                        ConstraintCollectors.toConsecutiveSequences((match, team) -> match.getRound(), Round::getIndex))
+                .groupBy(match -> Match::getHomeTeam,
+                        ConstraintCollectors.toConsecutiveSequences(Match::getRoundId))
                 .flattenLast(SequenceChain::getConsecutiveSequences)
                 .filter((team, matches) -> matches.getCount() >= MAX_CONSECUTIVE_MATCHES)
                 .penalize(HardSoftScore.ONE_HARD, (team, matches) -> matches.getCount())
@@ -1241,6 +1240,9 @@ def multiple_consecutive_home_matches(factory: ConstraintFactory) -> Constraint:
     )
 ----
 ====
+
+image::constraints-and-score/score-calculation/constraintStreamConsecutiveSequences.png[align="center"]
+
 
 Let's take a closer look at the crucial part of this constraint:
 
