@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Restart strategy, which exponentially increases the metric that triggers the restart process.
- * The first restart occurs after the {@code grace period + 1 * scalingFactor} metric.
+ * The first restart occurs after the {@code (gracePeriod + scalingFactor) * GEOMETRIC_FACTOR^restartCount} metric.
  * Following that, the metric increases exponentially: 1, 2, 3, 5, 7, 10, 14...
  * <p>
  * The strategy is based on the work: Search in a Small World by Toby Walsh
