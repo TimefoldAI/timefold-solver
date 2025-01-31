@@ -12,15 +12,15 @@ import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
 /**
  * Concurrency notes:
- * Condition predicate on ({@link #problemFactChangeQueue} is not empty or {@link #terminatedEarly} is true).
+ * Condition predicate on ({@link #problemChangeQueue} is not empty or {@link #terminatedEarly} is true).
  */
 public final class BasicPlumbingTermination<Solution_> extends AbstractTermination<Solution_> {
 
     private final boolean daemon;
-    private final BlockingQueue<ProblemChangeAdapter<Solution_>> problemFactChangeQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<ProblemChangeAdapter<Solution_>> problemChangeQueue = new LinkedBlockingQueue<>();
 
     private boolean terminatedEarly = false;
-    private boolean problemFactChangesBeingProcessed = false;
+    private boolean problemChangesBeingProcessed = false;
 
     public BasicPlumbingTermination(boolean daemon) {
         this.daemon = daemon;
@@ -61,15 +61,15 @@ public final class BasicPlumbingTermination<Solution_> extends AbstractTerminati
     /**
      * If this returns true, then the problemFactChangeQueue is definitely not empty.
      * <p>
-     * Concurrency note: Blocks until {@link #problemFactChangeQueue} is not empty or {@link #terminatedEarly} is true.
+     * Concurrency note: Blocks until {@link #problemChangeQueue} is not empty or {@link #terminatedEarly} is true.
      *
      * @return true if the solver needs to be restarted
      */
     public synchronized boolean waitForRestartSolverDecision() {
         if (!daemon) {
-            return !problemFactChangeQueue.isEmpty() && !terminatedEarly;
+            return !problemChangeQueue.isEmpty() && !terminatedEarly;
         } else {
-            while (problemFactChangeQueue.isEmpty() && !terminatedEarly) {
+            while (problemChangeQueue.isEmpty() && !terminatedEarly) {
                 try {
                     wait();
                 } catch (InterruptedException e) {
@@ -88,7 +88,7 @@ public final class BasicPlumbingTermination<Solution_> extends AbstractTerminati
      * @return as specified by {@link Collection#add}
      */
     public synchronized boolean addProblemChange(ProblemChangeAdapter<Solution_> problemChange) {
-        boolean added = problemFactChangeQueue.add(problemChange);
+        boolean added = problemChangeQueue.add(problemChange);
         notifyAll();
         return added;
     }
@@ -100,22 +100,22 @@ public final class BasicPlumbingTermination<Solution_> extends AbstractTerminati
      * @return as specified by {@link Collection#add}
      */
     public synchronized boolean addProblemChanges(List<ProblemChangeAdapter<Solution_>> problemChangeList) {
-        boolean added = problemFactChangeQueue.addAll(problemChangeList);
+        boolean added = problemChangeQueue.addAll(problemChangeList);
         notifyAll();
         return added;
     }
 
-    public synchronized BlockingQueue<ProblemChangeAdapter<Solution_>> startProblemFactChangesProcessing() {
-        problemFactChangesBeingProcessed = true;
-        return problemFactChangeQueue;
+    public synchronized BlockingQueue<ProblemChangeAdapter<Solution_>> startProblemChangesProcessing() {
+        problemChangesBeingProcessed = true;
+        return problemChangeQueue;
     }
 
-    public synchronized void endProblemFactChangesProcessing() {
-        problemFactChangesBeingProcessed = false;
+    public synchronized void endProblemChangesProcessing() {
+        problemChangesBeingProcessed = false;
     }
 
-    public synchronized boolean isEveryProblemFactChangeProcessed() {
-        return problemFactChangeQueue.isEmpty() && !problemFactChangesBeingProcessed;
+    public synchronized boolean isEveryProblemChangeProcessed() {
+        return problemChangeQueue.isEmpty() && !problemChangesBeingProcessed;
     }
 
     // ************************************************************************
@@ -134,7 +134,7 @@ public final class BasicPlumbingTermination<Solution_> extends AbstractTerminati
             logger.info("The solver thread got interrupted, so this solver is terminating early.");
             terminatedEarly = true;
         }
-        return terminatedEarly || !problemFactChangeQueue.isEmpty();
+        return terminatedEarly || !problemChangeQueue.isEmpty();
     }
 
     @Override

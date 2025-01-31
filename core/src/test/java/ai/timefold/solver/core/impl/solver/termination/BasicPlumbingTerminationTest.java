@@ -28,7 +28,7 @@ class BasicPlumbingTerminationTest {
         assertThat(count).hasValue(0);
 
         SolverScope<TestdataSolution> solverScopeMock = mockSolverScope();
-        basicPlumbingTermination.startProblemFactChangesProcessing().removeIf(changeAdapter -> {
+        basicPlumbingTermination.startProblemChangesProcessing().removeIf(changeAdapter -> {
             changeAdapter.doProblemChange(solverScopeMock);
             return true;
         });
@@ -47,7 +47,7 @@ class BasicPlumbingTerminationTest {
         assertThat(basicPlumbingTermination.waitForRestartSolverDecision()).isTrue();
         assertThat(count).hasValue(0);
         SolverScope<TestdataSolution> solverScopeMock = mockSolverScope();
-        basicPlumbingTermination.startProblemFactChangesProcessing().removeIf(problemChangeAdapter -> {
+        basicPlumbingTermination.startProblemChangesProcessing().removeIf(problemChangeAdapter -> {
             problemChangeAdapter.doProblemChange(solverScopeMock);
             return true;
         });

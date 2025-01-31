@@ -2,8 +2,11 @@ package ai.timefold.solver.core.api.solver.change;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.variable.VariableListener;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
+import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
+import ai.timefold.solver.core.impl.heuristic.move.Move;
 
 import org.jspecify.annotations.NonNull;
 
@@ -11,20 +14,29 @@ import org.jspecify.annotations.NonNull;
  * A ProblemChange represents a change in one or more {@link PlanningEntity planning entities} or problem facts
  * of a {@link PlanningSolution}.
  * <p>
- * The {@link Solver} checks the presence of waiting problem changes after every
- * {@link ai.timefold.solver.core.impl.heuristic.move.Move} evaluation. If there are waiting problem changes,
- * the {@link Solver}:
+ * The {@link Solver} checks the presence of waiting problem changes after every {@link Move} evaluation.
+ * If there are waiting problem changes, the {@link Solver}:
  * <ol>
- * <li>clones the last {@link PlanningSolution best solution} and sets the clone
- * as the new {@link PlanningSolution working solution}</li>
+ * <li>clones the last {@link PlanningSolution best solution}
+ * and sets the clone as the new {@link PlanningSolution working solution}</li>
  * <li>applies every problem change keeping the order in which problem changes have been submitted;
- * after every problem change, {@link ai.timefold.solver.core.api.domain.variable.VariableListener variable listeners}
- * are triggered
+ * after every problem change, {@link VariableListener variable listeners} are triggered
  * <li>calculates the score and makes the {@link PlanningSolution updated working solution}
- * the new {@link PlanningSolution best solution}; note that this {@link PlanningSolution solution} is not published
- * via the {@link ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent}, as it hasn't been initialized yet</li>
+ * the new {@link PlanningSolution best solution};
+ * note that this {@link PlanningSolution solution} is not published via the {@link BestSolutionChangedEvent},
+ * as it hasn't been initialized yet</li>
  * <li>restarts solving to fill potential uninitialized {@link PlanningEntity planning entities}</li>
  * </ol>
+ * <p>
+ * From the above, it follows that the solver will require some time
+ * to restart solving and produce the next best solution.
+ * For that reason, it is recommended to submit problem changes in batches, rather than one by one.
+ * If there is not enough time between problem changes,
+ * the solver may not have enough time to produce a new best solution
+ * and the barrage of problem changes will have effectively caused the optimization process to stop.
+ * It is impossible to say with certainty how much time is needed between problem changes,
+ * as it depends on the problem size, complexity, and the speed of the {@link Score} calculation.
+ * But in general, problem changes should be separated by at least a few seconds, if not minutes.
  * <p>
  * Note that the {@link Solver} clones a {@link PlanningSolution} at will.
  * Any change must be done on the problem facts and planning entities referenced by the {@link PlanningSolution}.

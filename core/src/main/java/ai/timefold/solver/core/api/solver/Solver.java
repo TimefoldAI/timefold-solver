@@ -89,7 +89,8 @@ public interface Solver<Solution_> {
      * <p>
      * To learn more about problem change semantics, please refer to the {@link ProblemChange} Javadoc.
      *
-     * @see #addProblemChanges(List)
+     * @see ProblemChange Learn more about problem change semantics.
+     * @see #addProblemChanges(List) Submit multiple problem changes at once.
      */
     void addProblemChange(@NonNull ProblemChange<Solution_> problemChange);
 
@@ -105,7 +106,7 @@ public interface Solver<Solution_> {
      * <p>
      * To learn more about problem change semantics, please refer to the {@link ProblemChange} Javadoc.
      *
-     * @see #addProblemChange(ProblemChange)
+     * @see ProblemChange Learn more about problem change semantics.
      */
     void addProblemChanges(@NonNull List<ProblemChange<Solution_>> problemChangeList);
 
@@ -131,7 +132,7 @@ public interface Solver<Solution_> {
      *
      * @deprecated Prefer {@link #addProblemChange(ProblemChange)}.
      * @return true (as specified by {@link Collection#add})
-     * @see #addProblemFactChanges(List)
+     * @see #addProblemChanges(List)
      */
     @Deprecated(forRemoval = true)
     boolean addProblemFactChange(@NonNull ProblemFactChange<Solution_> problemFactChange);
@@ -149,7 +150,7 @@ public interface Solver<Solution_> {
      *
      * @deprecated Prefer {@link #addProblemChanges(List)}.
      * @return true (as specified by {@link Collection#add})
-     * @see #addProblemFactChange(ProblemFactChange)
+     * @see #addProblemChange(ProblemChange)
      */
     @Deprecated(forRemoval = true)
     boolean addProblemFactChanges(@NonNull List<ProblemFactChange<Solution_>> problemFactChangeList);
