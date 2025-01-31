@@ -245,8 +245,6 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
     }
 
     private void registerSolverSpecificMetrics() {
-        solverScope.setProblemSizeStatistics(
-                solverScope.getSolutionDescriptor().getProblemSizeStatistics(solverScope.getWorkingSolution()));
         solverScope.getSolverMetricSet().forEach(solverMetric -> solverMetric.register(this));
     }
 
