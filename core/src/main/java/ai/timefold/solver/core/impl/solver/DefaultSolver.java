@@ -158,12 +158,12 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
 
     @Override
     public boolean isEveryProblemChangeProcessed() {
-        return basicPlumbingTermination.isEveryProblemFactChangeProcessed();
+        return basicPlumbingTermination.isEveryProblemChangeProcessed();
     }
 
     @Override
     public boolean isEveryProblemFactChangeProcessed() {
-        return basicPlumbingTermination.isEveryProblemFactChangeProcessed();
+        return basicPlumbingTermination.isEveryProblemChangeProcessed();
     }
 
     public void setMonitorTagMap(Map<String, String> monitorTagMap) {
@@ -330,7 +330,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             return false;
         } else {
             BlockingQueue<ProblemChangeAdapter<Solution_>> problemFactChangeQueue = basicPlumbingTermination
-                    .startProblemFactChangesProcessing();
+                    .startProblemChangesProcessing();
             solverScope.setWorkingSolutionFromBestSolution();
 
             int stepIndex = 0;
@@ -346,7 +346,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             assertCorrectSolutionState();
             // Everything is fine, proceed.
             Score<?> score = scoreDirector.calculateScore();
-            basicPlumbingTermination.endProblemFactChangesProcessing();
+            basicPlumbingTermination.endProblemChangesProcessing();
             bestSolutionRecaller.updateBestSolutionAndFireIfInitialized(solverScope);
             logger.info("Real-time problem fact changes done: step total ({}), new best score ({}).",
                     stepIndex, score);

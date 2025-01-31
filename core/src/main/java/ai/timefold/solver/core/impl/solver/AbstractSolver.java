@@ -17,7 +17,6 @@ import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
-import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -138,12 +137,12 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     // ************************************************************************
 
     @Override
-    public void addEventListener(@NonNull SolverEventListener<Solution_> eventListener) {
+    public void addEventListener(SolverEventListener<Solution_> eventListener) {
         solverEventSupport.addEventListener(eventListener);
     }
 
     @Override
-    public void removeEventListener(@NonNull SolverEventListener<Solution_> eventListener) {
+    public void removeEventListener(SolverEventListener<Solution_> eventListener) {
         solverEventSupport.removeEventListener(eventListener);
     }
 
