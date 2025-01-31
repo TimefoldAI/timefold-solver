@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.solver;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -143,16 +144,16 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
     //    }
 
     @Override
-    public @NonNull CompletableFuture<Void> addProblemChange(@NonNull ProblemId_ problemId,
-            @NonNull ProblemChange<Solution_> problemChange) {
+    public @NonNull CompletableFuture<Void> addProblemChanges(@NonNull ProblemId_ problemId,
+            @NonNull List<ProblemChange<Solution_>> problemChangeList) {
         DefaultSolverJob<Solution_, ProblemId_> solverJob = getSolverJob(problemId);
         if (solverJob == null) {
             // We cannot distinguish between "already terminated" and "never solved" without causing a memory leak.
             throw new IllegalStateException(
-                    "Cannot add the problem change (" + problemChange + ") because there is no solver solving the problemId ("
-                            + problemId + ").");
+                    "Cannot add the problem changes (%s) because there is no solver solving the problemId (%s)."
+                            .formatted(problemChangeList, problemId));
         }
-        return solverJob.addProblemChange(problemChange);
+        return solverJob.addProblemChanges(problemChangeList);
     }
 
     @Override

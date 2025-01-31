@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.solver;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -158,14 +159,18 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     }
 
     @Override
-    public @NonNull CompletableFuture<Void> addProblemChange(@NonNull ProblemChange<Solution_> problemChange) {
-        Objects.requireNonNull(problemChange, () -> "A problem change (%s) must not be null.".formatted(problemId));
-        if (solverStatus == SolverStatus.NOT_SOLVING) {
-            throw new IllegalStateException("Cannot add the problem change (%s) because the solver job (%s) is not solving."
-                    .formatted(problemChange, solverStatus));
+    public @NonNull CompletableFuture<Void> addProblemChanges(@NonNull List<ProblemChange<Solution_>> problemChangeList) {
+        Objects.requireNonNull(problemChangeList, () -> "A problem change list for problem (%s) must not be null."
+                .formatted(problemId));
+        if (problemChangeList.isEmpty()) {
+            throw new IllegalArgumentException("The problem change list for problem (%s) must not be empty."
+                    .formatted(problemId));
+        } else if (solverStatus == SolverStatus.NOT_SOLVING) {
+            throw new IllegalStateException("Cannot add the problem changes (%s) because the solver job (%s) is not solving."
+                    .formatted(problemChangeList, solverStatus));
         }
 
-        return bestSolutionHolder.addProblemChange(solver, problemChange);
+        return bestSolutionHolder.addProblemChange(solver, problemChangeList);
     }
 
     @Override

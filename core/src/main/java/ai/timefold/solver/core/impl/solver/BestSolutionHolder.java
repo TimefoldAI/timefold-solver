@@ -129,14 +129,14 @@ final class BestSolutionHolder<Solution_> {
     }
 
     /**
-     * Adds a new problem change to a solver and registers the problem change
+     * Adds a batch of problem changes to a solver and registers them
      * to be later retrieved together with a relevant best solution by the {@link #take()} method.
      *
      * @return CompletableFuture that will be completed after the best solution containing this change is passed to
      *         a user-defined Consumer.
      */
     @NonNull
-    CompletableFuture<Void> addProblemChange(Solver<Solution_> solver, ProblemChange<Solution_> problemChange) {
+    CompletableFuture<Void> addProblemChange(Solver<Solution_> solver, List<ProblemChange<Solution_>> problemChangeList) {
         var futureProblemChange = new CompletableFuture<Void>();
         synchronized (this) {
             // This actually needs to be synchronized, 
@@ -144,7 +144,7 @@ final class BestSolutionHolder<Solution_> {
             var futureProblemChangeList =
                     problemChangesPerVersionRef.get().computeIfAbsent(currentVersion.get(), version -> new ArrayList<>());
             futureProblemChangeList.add(futureProblemChange);
-            solver.addProblemChange(problemChange);
+            solver.addProblemChanges(problemChangeList);
         }
         return futureProblemChange;
     }

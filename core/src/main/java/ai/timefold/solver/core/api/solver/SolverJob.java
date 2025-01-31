@@ -1,6 +1,8 @@
 package ai.timefold.solver.core.api.solver;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -36,16 +38,26 @@ public interface SolverJob<Solution_, ProblemId_> {
     SolverStatus getSolverStatus();
 
     /**
-     * Schedules a {@link ProblemChange} to be processed by the underlying {@link Solver} and returns immediately.
-     * <p>
-     * To learn more about problem change semantics, please refer to the {@link ProblemChange} Javadoc.
+     * As defined by {@link #addProblemChanges(List)}, only for a single problem change.
+     * Prefer to submit multiple {@link ProblemChange}s at once to reduce the considerable overhead of multiple calls.
+     */
+    @NonNull
+    default CompletableFuture<Void> addProblemChange(@NonNull ProblemChange<Solution_> problemChange) {
+        return addProblemChanges(Collections.singletonList(problemChange));
+    }
+
+    /**
+     * Schedules a batch of {@link ProblemChange problem changes} to be processed
+     * by the underlying {@link Solver} and returns immediately.
      *
+     * @param problemChangeList at least one problem change to be processed
      * @return completes after the best solution containing this change has been consumed.
      * @throws IllegalStateException if the underlying {@link Solver} is not in the {@link SolverStatus#SOLVING_ACTIVE}
      *         state
+     * @see ProblemChange Learn more about problem change semantics.
      */
     @NonNull
-    CompletableFuture<Void> addProblemChange(@NonNull ProblemChange<Solution_> problemChange);
+    CompletableFuture<Void> addProblemChanges(@NonNull List<ProblemChange<Solution_>> problemChangeList);
 
     /**
      * Terminates the solver or cancels the solver job if it hasn't (re)started yet.

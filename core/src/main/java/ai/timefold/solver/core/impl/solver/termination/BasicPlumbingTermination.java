@@ -84,18 +84,6 @@ public final class BasicPlumbingTermination<Solution_> extends AbstractTerminati
     /**
      * Concurrency note: unblocks {@link #waitForRestartSolverDecision()}.
      *
-     * @param problemChange never null
-     * @return as specified by {@link Collection#add}
-     */
-    public synchronized boolean addProblemChange(ProblemChangeAdapter<Solution_> problemChange) {
-        boolean added = problemChangeQueue.add(problemChange);
-        notifyAll();
-        return added;
-    }
-
-    /**
-     * Concurrency note: unblocks {@link #waitForRestartSolverDecision()}.
-     *
      * @param problemChangeList never null
      * @return as specified by {@link Collection#add}
      */

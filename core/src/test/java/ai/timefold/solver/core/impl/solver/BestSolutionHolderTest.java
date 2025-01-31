@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import ai.timefold.solver.core.api.solver.Solver;
@@ -12,6 +13,7 @@ import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class BestSolutionHolderTest {
 
@@ -78,8 +80,9 @@ class BestSolutionHolderTest {
     private CompletableFuture<Void> addProblemChange(BestSolutionHolder<TestdataSolution> bestSolutionHolder) {
         Solver<TestdataSolution> solver = mock(Solver.class);
         ProblemChange<TestdataSolution> problemChange = mock(ProblemChange.class);
-        CompletableFuture<Void> futureChange = bestSolutionHolder.addProblemChange(solver, problemChange);
-        verify(solver, times(1)).addProblemChange(problemChange);
+        CompletableFuture<Void> futureChange = bestSolutionHolder.addProblemChange(solver, List.of(problemChange));
+        verify(solver, times(1)).addProblemChanges(
+                Mockito.argThat(problemChanges -> problemChanges.size() == 1 && problemChanges.get(0) == problemChange));
         return futureChange;
     }
 }

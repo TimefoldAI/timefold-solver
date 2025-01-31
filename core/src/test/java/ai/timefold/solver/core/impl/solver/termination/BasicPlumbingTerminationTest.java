@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -23,7 +24,7 @@ class BasicPlumbingTerminationTest {
         assertThat(basicPlumbingTermination.waitForRestartSolverDecision()).isFalse();
         ProblemChangeAdapter<TestdataSolution> problemChangeAdapter =
                 ProblemChangeAdapter.create((workingSolution, problemChangeDirector) -> count.getAndIncrement());
-        basicPlumbingTermination.addProblemChange(problemChangeAdapter);
+        basicPlumbingTermination.addProblemChanges(Collections.singletonList(problemChangeAdapter));
         assertThat(basicPlumbingTermination.waitForRestartSolverDecision()).isTrue();
         assertThat(count).hasValue(0);
 

@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.api.solver;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
@@ -381,22 +383,32 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
     @NonNull
     SolverStatus getSolverStatus(@NonNull ProblemId_ problemId);
 
-    // TODO Future features
-    //    void reloadProblem(ProblemId_ problemId, Function<? super ProblemId_, Solution_> problemFinder);
+    /**
+     * As defined by {@link #addProblemChanges(Object, List)}, only with a single {@link ProblemChange}.
+     * Prefer to submit multiple {@link ProblemChange}s at once to reduce the considerable overhead of multiple calls.
+     */
+    @NonNull
+    default CompletableFuture<Void> addProblemChange(@NonNull ProblemId_ problemId,
+            @NonNull ProblemChange<Solution_> problemChange) {
+        return addProblemChanges(problemId, Collections.singletonList(problemChange));
+    }
 
     /**
-     * Schedules a {@link ProblemChange} to be processed by the underlying {@link Solver} and returns immediately.
+     * Schedules a batch of {@link ProblemChange problem changes} to be processed
+     * by the underlying {@link Solver} and returns immediately.
      * If the solver already terminated or the problemId was never added, throws an exception.
      * The same applies if the underlying {@link Solver} is not in the {@link SolverStatus#SOLVING_ACTIVE} state.
      *
      * @param problemId a value given to {@link #solve(Object, Object, Consumer)}
      *        or {@link #solveAndListen(Object, Object, Consumer)}
+     * @param problemChangeList a list of {@link ProblemChange}s to apply to the problem
      * @return completes after the best solution containing this change has been consumed.
      * @throws IllegalStateException if there is no solver actively solving the problem associated with the problemId
      * @see ProblemChange Learn more about problem change semantics.
      */
     @NonNull
-    CompletableFuture<Void> addProblemChange(@NonNull ProblemId_ problemId, @NonNull ProblemChange<Solution_> problemChange);
+    CompletableFuture<Void> addProblemChanges(@NonNull ProblemId_ problemId,
+            @NonNull List<ProblemChange<Solution_>> problemChangeList);
 
     /**
      * Terminates the solver or cancels the solver job if it hasn't (re)started yet.
