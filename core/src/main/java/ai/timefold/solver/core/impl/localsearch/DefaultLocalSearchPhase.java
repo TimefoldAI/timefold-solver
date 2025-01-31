@@ -54,6 +54,15 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
 
     @Override
     public void solve(SolverScope<Solution_> solverScope) {
+        var hasAnythingToImprove = solverScope.getProblemSizeStatistics().approximateProblemSizeLog() != 0.0;
+        if (!hasAnythingToImprove) {
+            // Reaching local search means that the solution is already fully initialized.
+            // Yet the problem size indicates there is only 1 possible solution.
+            // Therefore, this solution must be it and there is nothing to improve.
+            logger.info("{}Local Search phase ({}) has no entities or values to move.", logIndentation, phaseIndex);
+            return;
+        }
+
         LocalSearchPhaseScope<Solution_> phaseScope = new LocalSearchPhaseScope<>(solverScope, phaseIndex);
         phaseStarted(phaseScope);
 
