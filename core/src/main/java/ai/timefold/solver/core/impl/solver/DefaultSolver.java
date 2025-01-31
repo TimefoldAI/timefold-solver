@@ -131,29 +131,30 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
 
     @Override
     public boolean addProblemFactChange(@NonNull ProblemFactChange<Solution_> problemFactChange) {
-        return basicPlumbingTermination.addProblemChange(ProblemChangeAdapter.create(problemFactChange));
+        return addProblemFactChanges(Collections.singletonList(problemFactChange));
     }
 
     @Override
     public boolean addProblemFactChanges(@NonNull List<ProblemFactChange<Solution_>> problemFactChangeList) {
         Objects.requireNonNull(problemFactChangeList,
                 () -> "The list of problem fact changes (" + problemFactChangeList + ") cannot be null.");
-        List<ProblemChangeAdapter<Solution_>> problemChangeAdapterList = problemFactChangeList.stream()
+        return basicPlumbingTermination.addProblemChanges(problemFactChangeList.stream()
                 .map(ProblemChangeAdapter::create)
-                .collect(Collectors.toList());
-        return basicPlumbingTermination.addProblemChanges(problemChangeAdapterList);
+                .collect(Collectors.toList()));
     }
 
     @Override
     public void addProblemChange(@NonNull ProblemChange<Solution_> problemChange) {
-        basicPlumbingTermination.addProblemChange(ProblemChangeAdapter.create(problemChange));
+        addProblemChanges(Collections.singletonList(problemChange));
     }
 
     @Override
     public void addProblemChanges(@NonNull List<ProblemChange<Solution_>> problemChangeList) {
         Objects.requireNonNull(problemChangeList,
                 () -> "The list of problem changes (" + problemChangeList + ") cannot be null.");
-        problemChangeList.forEach(this::addProblemChange);
+        basicPlumbingTermination.addProblemChanges(problemChangeList.stream()
+                .map(ProblemChangeAdapter::create)
+                .toList());
     }
 
     @Override

@@ -655,6 +655,9 @@ _Therefore the ``__workingSolution__`` and the ``__bestSolution__`` share the sa
 Any problem fact or problem fact list changed by a `ProblemChange` must be problem cloned first (which can imply rerouting references in other problem facts and planning entities).
 Otherwise, if the `workingSolution` and `bestSolution` are used in different threads (for example a solver thread and a GUI event thread), a race condition can occur.
 
+. For performance reasons, it is recommended to submit problem changes in batches.
+To do that, use `addProblemChanges(List<ProblemChange>)` method instead of `addProblemChange(ProblemChange)`.
+
 [#cloningSolutionsToAvoidRaceConditions]
 ==== Cloning solutions to avoid race conditions in real-time planning
 

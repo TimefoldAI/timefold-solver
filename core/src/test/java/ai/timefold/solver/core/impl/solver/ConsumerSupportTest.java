@@ -132,7 +132,7 @@ class ConsumerSupportTest {
     }
 
     private CompletableFuture<Void> addProblemChange(BestSolutionHolder<TestdataSolution> bestSolutionHolder) {
-        return bestSolutionHolder.addProblemChange(mock(Solver.class), mock(ProblemChange.class));
+        return bestSolutionHolder.addProblemChange(mock(Solver.class), List.of(mock(ProblemChange.class)));
     }
 
     private void consumeIntermediateBestSolution(TestdataSolution bestSolution) {
