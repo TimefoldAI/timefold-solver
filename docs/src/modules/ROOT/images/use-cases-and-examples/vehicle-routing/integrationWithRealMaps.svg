@@ -6,11 +6,11 @@
    height="600"
    id="svg2"
    version="1.1"
-   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   inkscape:version="1.3.2 (091e20e, 2023-11-25)"
    sodipodi:docname="integrationWithRealMaps.svg"
    inkscape:export-filename="integrationWithRealMaps.png"
-   inkscape:export-xdpi="90"
-   inkscape:export-ydpi="90"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -978,7 +978,7 @@
      inkscape:cx="399.6063"
      inkscape:cy="300"
      inkscape:document-units="px"
-     inkscape:current-layer="layer3"
+     inkscape:current-layer="layer2"
      showgrid="true"
      width="800px"
      borderlayer="true"
@@ -1004,7 +1004,8 @@
      inkscape:snap-bbox-midpoints="false"
      inkscape:showpageshadow="2"
      inkscape:pagecheckerboard="0"
-     inkscape:deskcolor="#d1d1d1">
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:export-bgcolor="#ffffffff">
     <inkscape:grid
        empspacing="10"
        visible="true"
@@ -1016,7 +1017,8 @@
        type="xygrid"
        id="grid2845"
        originx="0"
-       originy="0" />
+       originy="0"
+       units="px" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -1065,7 +1067,7 @@
            y="150.00014"
            style="font-size:14px;text-align:center;text-anchor:middle" /></flowRegion><flowPara
          id="flowPara4308-6"
-         style="font-size:14px;line-height:1.25">Google Maps or GraphHopper (OpenStreetMap) calculate distances, Timefold optimizes the trips.</flowPara></flowRoot>
+         style="font-size:14px;line-height:1.25">The internal or external maps provider calculate distances, Timefold optimizes the trips.</flowPara></flowRoot>
     <g
        id="g3709"
        transform="translate(0,19.999997)" />
@@ -4051,70 +4053,34 @@
        style="display:inline"
        transform="translate(4.9999999,-702.36222)"
        id="g9575">
-      <path
-         style="fill:#eeeeec;stroke:#000000;stroke-width:0.99999982;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;display:inline"
-         d="m 265.5,942.86214 94.5,-0.5 0,-10 20,35.00002 -20,35.00004 0,-10.00002 -94.5,-0.5 c -2.76996,-0.015 -5,-2.23002 -5,-5.00002 l 0,-39.00002 c 0,-2.77 2.23003,-4.98675 5,-5 z"
-         id="path9577"
-         inkscape:connector-curvature="0"
-         sodipodi:nodetypes="scccccssss" />
-      <flowRoot
-         transform="translate(-79.99999,762.55249)"
-         xml:space="preserve"
-         id="flowRoot9579"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#000000;fill-opacity:1;stroke:none"><flowRegion
-           id="flowRegion9581"><rect
-             id="rect9583"
-             width="109.49999"
-             height="48.05883"
-             x="340.5"
-             y="184.27759"
-             style="font-size:18px" /></flowRegion><flowPara
-           id="flowPara9585"
-           style="font-size:18px;line-height:1.25">GraphHopper</flowPara><flowPara
-           id="flowPara9589"
-           style="font-size:14px;line-height:1.25">REST <flowSpan
-   style="font-style:italic"
-   id="flowSpan10517">or</flowSpan> local</flowPara></flowRoot>
-      <flowRoot
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#000000;fill-opacity:1;stroke:none"
-         id="flowRoot9591"
-         xml:space="preserve"
-         transform="translate(-109.72949,755.83298)"><flowRegion
-           id="flowRegion9593"><rect
-             style="font-size:10px"
-             y="164.27759"
-             x="340"
-             height="20.500004"
-             width="179.49998"
-             id="rect9595" /></flowRegion><flowPara
-           id="flowPara9597"
-           style="font-size:10px;line-height:1.25">or </flowPara><flowPara
-           id="flowPara9599"
-           style="font-size:10px;line-height:1.25" /></flowRoot>
-      <path
-         sodipodi:nodetypes="scccccssss"
-         inkscape:connector-curvature="0"
-         id="path9601"
-         d="m 265.5,862.86212 94.5,-0.5 0,-10 20,35.00004 -20,35 0,-10 -94.5,-0.5 c -2.76996,-0.015 -5,-2.23 -5,-5 l 0,-39.00004 c 0,-2.77 2.23003,-4.98675 5,-5 z"
-         style="fill:#eeeeec;stroke:#000000;stroke-width:0.99999982;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;display:inline" />
-      <flowRoot
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#000000;fill-opacity:1;stroke:none"
-         id="flowRoot9603"
-         xml:space="preserve"
-         transform="translate(-79.99999,682.55246)"><flowRegion
-           id="flowRegion9605"><rect
-             style="font-size:18px"
-             y="184.27759"
-             x="340.5"
-             height="48.05883"
-             width="109.49999"
-             id="rect9607" /></flowRegion><flowPara
-           id="flowPara9609"
-           style="font-size:18px;line-height:1.25">Google Maps</flowPara><flowPara
-           id="flowPara9611"
-           style="font-size:14px;line-height:1.25">REST Client </flowPara><flowPara
-           id="flowPara9613"
-           style="font-size:14px;line-height:1.25" /></flowRoot>
+      <g
+         id="g3"
+         transform="translate(0,39.78599)">
+        <path
+           sodipodi:nodetypes="scccccssss"
+           inkscape:connector-curvature="0"
+           id="path9601"
+           d="m 265.5,862.86212 94.5,-0.5 v -10 l 20,35.00004 -20,35 v -10 l -94.5,-0.5 c -2.76996,-0.015 -5,-2.23 -5,-5 v -39.00004 c 0,-2.77 2.23003,-4.98675 5,-5 z"
+           style="display:inline;fill:#eeeeec;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4" />
+        <flowRoot
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#000000;fill-opacity:1;stroke:none"
+           id="flowRoot9603"
+           xml:space="preserve"
+           transform="translate(-79.99999,691.52503)"><flowRegion
+             id="flowRegion9605"><rect
+               style="font-size:18px"
+               y="184.27759"
+               x="340.5"
+               height="48.05883"
+               width="109.49999"
+               id="rect9607" /></flowRegion><flowPara
+             id="flowPara9611"
+             style="font-size:14px;line-height:1.25"><flowSpan
+   id="flowSpan2"
+   style="font-size:18px;line-height:1.25">Maps</flowSpan> </flowPara><flowPara
+             id="flowPara9613"
+             style="font-size:14px;line-height:1.25" /></flowRoot>
+      </g>
     </g>
   </g>
   <g
@@ -8120,57 +8086,16 @@
          id="flowPara7827"
          style="font-size:16px;line-height:1.25">Render in browser</flowPara></flowRoot>
     <g
-       style="display:inline"
-       id="g9554"
-       transform="translate(5,-452.3622)">
+       id="g2"
+       transform="translate(0,39.786015)">
       <path
-         sodipodi:nodetypes="scccccssss"
-         inkscape:connector-curvature="0"
-         id="rect5673"
-         d="m 375,942.86214 -94.5,-0.5 0,-10 -20,35.00002 20,35.00004 0,-10.00002 94.5,-0.5 c 2.76996,-0.015 5,-2.23002 5,-5.00002 l 0,-39.00002 c 0,-2.77 -2.23003,-4.98675 -5,-5 z"
-         style="fill:#eeeeec;stroke:#000000;stroke-width:0.99999982;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;display:inline" />
-      <flowRoot
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#000000;fill-opacity:1;stroke:none"
-         id="flowRoot5675"
-         xml:space="preserve"
-         transform="translate(-70.000461,762.55249)"><flowRegion
-           id="flowRegion5677"><rect
-             style="font-size:18px"
-             y="184.27759"
-             x="340.5"
-             height="48.05883"
-             width="109.49999"
-             id="rect5679" /></flowRegion><flowPara
-           id="flowPara5681"
-           style="font-size:18px;line-height:1.25">Leaflet.js</flowPara><flowPara
-           id="flowPara9497"
-           style="font-size:14px;line-height:1.25">JavaScript </flowPara><flowPara
-           id="flowPara5683"
-           style="font-size:14px;line-height:1.25" /></flowRoot>
-      <flowRoot
-         transform="translate(-109.72949,755.83298)"
-         xml:space="preserve"
-         id="flowRoot3580"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#000000;fill-opacity:1;stroke:none"><flowRegion
-           id="flowRegion3582"><rect
-             id="rect3584"
-             width="179.49998"
-             height="20.500004"
-             x="340"
-             y="164.27759"
-             style="font-size:10px" /></flowRegion><flowPara
-           id="flowPara3586"
-           style="font-size:10px;line-height:1.25">or </flowPara><flowPara
-           id="flowPara3588"
-           style="font-size:10px;line-height:1.25" /></flowRoot>
-      <path
-         style="fill:#eeeeec;stroke:#000000;stroke-width:0.99999982;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;display:inline"
-         d="m 375,862.86212 -94.5,-0.5 0,-10 -20,35.00004 20,35 0,-10 94.5,-0.5 c 2.76996,-0.015 5,-2.23 5,-5 l 0,-39.00004 c 0,-2.77 -2.23003,-4.98675 -5,-5 z"
+         style="display:inline;fill:#eeeeec;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4"
+         d="m 380,410.49992 -94.5,-0.5 v -10 l -20,35.00004 20,35 v -10 l 94.5,-0.5 c 2.76996,-0.015 5,-2.23 5,-5 v -39.00004 c 0,-2.77 -2.23003,-4.98675 -5,-5 z"
          id="path9500"
          inkscape:connector-curvature="0"
          sodipodi:nodetypes="scccccssss" />
       <flowRoot
-         transform="translate(-70.000461,682.55246)"
+         transform="translate(-65.000461,239.05736)"
          xml:space="preserve"
          id="flowRoot9502"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0.01%;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#000000;fill-opacity:1;stroke:none"><flowRegion
@@ -8181,10 +8106,8 @@
              x="340.5"
              y="184.27759"
              style="font-size:18px" /></flowRegion><flowPara
-           id="flowPara9508"
-           style="font-size:18px;line-height:1.25">Google Maps</flowPara><flowPara
            id="flowPara9510"
-           style="font-size:14px;line-height:1.25">JavaScript </flowPara><flowPara
+           style="font-size:18px;line-height:1.25">Waypoints</flowPara><flowPara
            id="flowPara9512"
            style="font-size:14px;line-height:1.25" /></flowRoot>
     </g>
