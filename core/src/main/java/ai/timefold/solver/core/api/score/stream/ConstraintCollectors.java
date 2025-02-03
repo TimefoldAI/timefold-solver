@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.Period;
 import java.time.temporal.Temporal;
 import java.util.Collection;
@@ -1977,9 +1978,9 @@ public final class ConstraintCollectors {
      *
      * <pre>
      * {@code
-     * ConnectedRanges: [minOverlap: 1, maxOverlap: 2,
+     * ConnectedRanges: [mininumOverlap: 1, maximumOverlap: 2,
      *                  [Equipment fromInclusive=2, toExclusive=4] [Equipment fromInclusive=3, toExclusive=5]],
-     *                  [minConcurrentUsage: 1, maxConcurrentUsage: 1,
+     *                  [mininumOverlap: 1, maximumOverlap: 1,
      *                  [Equipment fromInclusive=6, toExclusive=7] [Equipment fromInclusive=7, toExclusive=8]]
      * Breaks: [[Break from=5, to=6, length=1]]
      * }
@@ -2009,9 +2010,16 @@ public final class ConstraintCollectors {
     /**
      * Specialized version of {@link #toConnectedRanges(Function,Function,BiFunction)} for
      * {@link Temporal} types.
+     * 
+     * <p>
+     * If you intend to use date-based {@link Temporal temporals} (such as {@link LocalDate}),
+     * convert them to their time-based equivalents using ({@code localDate.atStartOfDay()}.
+     * Alternatively, use {@link #toConnectedRanges(Function,Function,BiFunction) the non-specialized method}
+     * and provide {@code differenceFunction} which doesn't use `Duration`
+     * as the type to represent the difference.
      *
      * @param <A> type of the first mapped fact
-     * @param <PointType_> temporal type of the endpoints
+     * @param <PointType_> temporal type of the endpoints, needs to support seconds
      * @param startInclusiveMap Maps the fact to its start
      * @param endExclusiveMap Maps the fact to its end
      */
@@ -2068,7 +2076,7 @@ public final class ConstraintCollectors {
      * @param <A> type of the first mapped fact
      * @param <B> type of the second mapped fact
      * @param <IntervalType_> type of the item in the cluster
-     * @param <PointType_> temporal type of the endpoints
+     * @param <PointType_> temporal type of the endpoints, needs to support seconds
      */
     public static <A, B, IntervalType_, PointType_ extends Temporal & Comparable<PointType_>>
             @NonNull BiConstraintCollector<A, B, ?, ConnectedRangeChain<IntervalType_, PointType_, Duration>>
@@ -2131,7 +2139,7 @@ public final class ConstraintCollectors {
      * @param <B> type of the second mapped fact
      * @param <C> type of the third mapped fact
      * @param <IntervalType_> type of the item in the cluster
-     * @param <PointType_> temporal type of the endpoints
+     * @param <PointType_> temporal type of the endpoints, needs to support seconds
      */
     public static <A, B, C, IntervalType_, PointType_ extends Temporal & Comparable<PointType_>>
             @NonNull TriConstraintCollector<A, B, C, ?, ConnectedRangeChain<IntervalType_, PointType_, Duration>>
@@ -2197,7 +2205,7 @@ public final class ConstraintCollectors {
      * @param <C> type of the third mapped fact
      * @param <D> type of the fourth mapped fact
      * @param <IntervalType_> type of the item in the cluster
-     * @param <PointType_> temporal type of the endpoints
+     * @param <PointType_> temporal type of the endpoints, needs to support seconds
      */
     public static <A, B, C, D, IntervalType_, PointType_ extends Temporal & Comparable<PointType_>>
             @NonNull QuadConstraintCollector<A, B, C, D, ?, ConnectedRangeChain<IntervalType_, PointType_, Duration>>
