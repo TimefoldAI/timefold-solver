@@ -1280,7 +1280,6 @@ and we use <<constraintStreamsFlattening,flattening>> to convert each to its own
 
 image::constraints-and-score/score-calculation/constraintStreamConsecutiveSequencesFlatten.png[align="center"]
 
-
 Finally, if a league requires that a team can play at most 5 consecutive matches (`MAX_CONSECUTIVE_MATCHES`) in home,
 and `matches` contains 6 matches, then the `weight` penalty will be `6`.
 If the number of consecutive matches is `4`,
@@ -1291,7 +1290,7 @@ then the sequence is not violating the league requirement, and we can filter it 
 
 Certain constraints require tracking properties of connected ranges.
 For instance, to ensure equipment allocated to several timeslots across the same connected range is not allocated over its capacity.
-This can be achieved using the `ConstraintCollectors.toConnectedRanges(...)` collector:
+This can be achieved using the `ConstraintCollectors.toConnectedTemporalRanges(...)` or `ConstraintCollectors.toConnectedRanges(...)` (for non-temporal cases) collectors:
 
 [tabs]
 ====
@@ -1300,12 +1299,12 @@ Java::
 [source,java,options="nowrap"]
 ----
 Constraint doNotOverAssignEquipment(ConstraintFactory constraintFactory) {
-    return constraintFactory.forEach(Equipment.class)
-        .join(Job.class, Joiners.equal(Equipment::getId, Job::getRequiredEquipmentId))
-        .groupBy((equipment, job) -> equipment, ConstraintCollectors.toConnectedRanges((equipment, job) -> job,
-                          Job::getStart,
-                          Job::getEnd,
-                          (a, b) -> b - a))
+    return constraintFactory.forEach(Job.class)
+        .groupBy(Job::getEquipment,
+            ConstraintCollectors.toConnectedTemporalRanges(
+                          Job::getStartTime,
+                          Job::getEndTime)
+            )
         .flattenLast(ConnectedRangeChain::getConnectedRanges)
         .filter((equipment, connectedRange) -> connectedRange.getMaximumOverlap() > equipment.getCapacity())
         .penalize(HardSoftScore.ONE_HARD, (equipment, connectedRange) -> connectedRange.getMaximumOverlap() - equipment.getCapacity())
@@ -1318,13 +1317,12 @@ Python::
 [source,python,options="nowrap"]
 ----
 def do_not_over_assign_equipment(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Equipment)
-                   .join(Job, Joiners.equal(lambda equipment: equipment.id, lambda job: job.required_equipment_id))
-                   .group_by(lambda equipment, job: equipment,
-                             ConstraintCollectors.to_connected_ranges(lambda equipment, job: job,
-                                                                      lambda job: job.start,
-                                                                      lambda job: job.end,
-                                                                      lambda a, b: b - a))
+    return (factory.for_each(Job)
+                   .group_by(lambda job: job.equipment,
+                            ConstraintCollectors.to_connected_temporal_ranges(
+                                lambda job: job.startTime,
+                                lambda job: job.endTime)
+                            )
                    .flatten_last(lambda chain: chain.getConnectedRanges())
                    .filter(lambda equipment, connected_range: connected_range.getMaximumOverlap() > equipment.capacity)
                    .penalize(HardSoftScore.ONE_HARD, lambda equipment, connected_range: connected_range.getMaximumOverlap() - equipment.capacity)
@@ -1332,6 +1330,8 @@ def do_not_over_assign_equipment(factory: ConstraintFactory) -> Constraint:
     )
 ----
 ====
+
+image::constraints-and-score/score-calculation/constraintStreamConnectedRanges.png[align="center"]
 
 Let's take a closer look at the crucial part of this constraint:
 
@@ -1341,23 +1341,26 @@ Java::
 +
 [source,java,options="nowrap"]
 ----
-        .groupBy((equipment, job) -> equipment, ConstraintCollectors.toConnectedRanges((equipment, job) -> job,
-                          Job::getStart,
-                          Job::getEnd,
-                          (a, b) -> b - a))
-        .flattenLast((ConnectedRangeChain::getConnectedRanges)
-        .filter((equipment, connectedRange) -> connectedRange.getMaximumOverlap() > equipment.getCapacity())
+.groupBy(Job::getEquipment,
+        ConstraintCollectors.toConnectedTemporalRanges(
+                  Job::getStartTime,
+                  Job::getEndTime
+        )
+)
+.flattenLast(ConnectedRangeChain::getConnectedRanges)
+.filter((equipment, connectedRange) -> connectedRange.getMaximumOverlap() > equipment.getCapacity())
 ----
 
 Python::
 +
 [source,python,options="nowrap"]
 ----
-.group_by(lambda equipment, job: equipment,
-          ConstraintCollectors.to_connected_ranges(lambda equipment, job: job,
-                                                   lambda job: job.start,
-                                                   lambda job: job.end,
-                                                   lambda a, b: b - a))
+.group_by(lambda job: job.equipment,
+        ConstraintCollectors.to_connected_temporal_ranges(
+              lambda job: job.startTime,
+              lambda job: job.endTime
+        )
+)
 .flatten_last(lambda chain: chain.getConnectedRanges())
 .filter(lambda equipment, connected_range: connected_range.getMaximumOverlap() > equipment.capacity)
 ----
@@ -1372,6 +1375,36 @@ In this case, we are only interested in the resource usage, and we use <<constra
 Finally, we use <<constraintStreamsMappingTuples,mapping>> to calculate the violation amount for each concurrent usage.
 For example, if the equipment has a `capacity` of `3`, and the `maximumOverlap` of the `resource` is `5`, then `violationAmount` will be `2`.
 If the amount is `0`, then the equipment is not being used over its capacity and we can filter the tuple out.
+
+In case no temporal data is available, it's still possible to create connected ranges using the `ConstraintCollectors.toConnectedRanges(...)` collector.
+In this case the start and end of a range needs to be provided as well as a function to calculate the difference between the two.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+.groupBy(Job::getEquipment,
+    ConstraintCollectors.toConnectedRanges(
+                          Job::getStart,
+                          Job::getEnd,
+                          (a, b) -> b - a // difference calculator
+    )
+)
+----
+Python::
++
+[source,python,options="nowrap"]
+----
+.group_by(lambda job: job.equipment,
+          ConstraintCollectors.to_connected_ranges(
+                lambda job: job.start,
+                lambda job: job.end,
+                lambda a, b: b - a) #difference calculator
+)
+----
+====
 
 [#collectorsLoadBalance]
 ==== Load balancing collectors
