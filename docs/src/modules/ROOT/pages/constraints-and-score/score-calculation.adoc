@@ -1230,7 +1230,7 @@ Python::
 def multiple_consecutive_home_matches(factory: ConstraintFactory) -> Constraint:
     return (factory.for_each(Match)
                    .group_by(lambda match,
-                             ConstraintCollectors.to_consecutive_sequences(lambda match: match.homeTeam, lambda match: match.roundId))
+                             ConstraintCollectors.to_consecutive_sequences(lambda match: match.home_team, lambda match: match.round_id))
                    .flatten_last(lambda chain: chain.getConsecutiveSequences())
                    .filter(lambda team, matches: matches.getCount() >= MAX_CONSECUTIVE_MATCHES)
                    .penalize(HardSoftScore.ONE_HARD, lambda team, matches: matches.getCount())
@@ -1260,7 +1260,7 @@ Python::
 [source,python,options="nowrap"]
 ----
 .group_by(lambda match,
-         ConstraintCollectors.to_consecutive_sequences(lambda match: match.homeTeam, lambda match: match.roundId))
+         ConstraintCollectors.to_consecutive_sequences(lambda match: match.home_team, lambda match: match.round_id))
 .flatten_last(lambda chain: chain.getConsecutiveSequences())
 .filter(lambda team, matches: matches.getCount() >= MAX_CONSECUTIVE_MATCHES)
 ----
@@ -1320,8 +1320,8 @@ def do_not_over_assign_equipment(factory: ConstraintFactory) -> Constraint:
     return (factory.for_each(Job)
                    .group_by(lambda job: job.equipment,
                             ConstraintCollectors.to_connected_temporal_ranges(
-                                lambda job: job.startTime,
-                                lambda job: job.endTime)
+                                lambda job: job.start_time,
+                                lambda job: job.end_time)
                             )
                    .flatten_last(lambda chain: chain.getConnectedRanges())
                    .filter(lambda equipment, connected_range: connected_range.getMaximumOverlap() > equipment.capacity)
@@ -1357,8 +1357,8 @@ Python::
 ----
 .group_by(lambda job: job.equipment,
         ConstraintCollectors.to_connected_temporal_ranges(
-              lambda job: job.startTime,
-              lambda job: job.endTime
+              lambda job: job.start_time,
+              lambda job: job.end_time
         )
 )
 .flatten_last(lambda chain: chain.getConnectedRanges())
