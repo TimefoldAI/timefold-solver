@@ -1401,7 +1401,7 @@ Python::
           ConstraintCollectors.to_connected_ranges(
                 lambda job: job.start,
                 lambda job: job.end,
-                lambda a, b: b - a) #difference calculator
+                lambda a, b: b - a)  # Difference calculator
 )
 ----
 ====
