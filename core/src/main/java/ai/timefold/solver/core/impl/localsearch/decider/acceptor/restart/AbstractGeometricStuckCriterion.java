@@ -1,8 +1,5 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart;
 
-import java.time.Clock;
-import java.time.Instant;
-
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -12,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Restart strategy, which exponentially increases the metric that triggers the restart process.
- * The first restart occurs after the {@code (gracePeriod + scalingFactor) * GEOMETRIC_FACTOR^restartCount} metric.
+ * The first restart occurs after the {@code scalingFactor * GEOMETRIC_FACTOR^restartCount} metric.
  * Following that, the metric increases exponentially: 1, 2, 3, 5, 7, 10, 14...
  * <p>
  * The strategy is based on the work: Search in a Small World by Toby Walsh
@@ -22,31 +19,18 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractGeometricStuckCriterion<Solution_> implements StuckCriterion<Solution_> {
     protected static final Logger logger = LoggerFactory.getLogger(AbstractGeometricStuckCriterion.class);
     private static final double GEOMETRIC_FACTOR = 1.4; // Value extracted from the cited paper
-    private static final long GRACE_PERIOD_MILLIS = 30_000; // 30s by default
 
-    private final Clock clock;
-    private double scalingFactor;
-    private boolean gracePeriodFinished;
-    private Instant gracePeriodEnd;
+    private final double scalingFactor;
     protected long nextRestart;
     private double currentGeometricGrowFactor;
 
-    protected AbstractGeometricStuckCriterion(Clock clock) {
-        this.clock = clock;
-        this.scalingFactor = -1;
-    }
-
-    protected void setScalingFactor(double scalingFactor) {
+    protected AbstractGeometricStuckCriterion(double scalingFactor) {
         this.scalingFactor = scalingFactor;
-        this.nextRestart = calculateNextRestart();
     }
 
     @Override
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
-        if (gracePeriodEnd == null) {
-            // 30 seconds of grace period
-            gracePeriodEnd = clock.instant().plusMillis(GRACE_PERIOD_MILLIS);
-        }
+        // Do nothing
     }
 
     @Override
@@ -57,8 +41,6 @@ public abstract class AbstractGeometricStuckCriterion<Solution_> implements Stuc
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         currentGeometricGrowFactor = 1;
-        gracePeriodEnd = null;
-        gracePeriodFinished = false;
         nextRestart = calculateNextRestart();
     }
 
@@ -69,32 +51,17 @@ public abstract class AbstractGeometricStuckCriterion<Solution_> implements Stuc
 
     @Override
     public boolean isSolverStuck(LocalSearchMoveScope<Solution_> moveScope) {
-        if (isGracePeriodFinished()) {
-            if (scalingFactor == -1) {
-                scalingFactor = calculateScalingFactor(moveScope);
-            }
-            var triggered = evaluateCriterion(moveScope);
-            if (triggered) {
-                logger.trace(
-                        "Restart triggered with geometric factor {}, scaling factor of {}, best score ({}), move count ({})",
-                        currentGeometricGrowFactor,
-                        scalingFactor, moveScope.getStepScope().getPhaseScope().getBestScore(),
-                        moveScope.getStepScope().getPhaseScope().getSolverScope().getMoveEvaluationCount());
-                currentGeometricGrowFactor = Math.ceil(currentGeometricGrowFactor * GEOMETRIC_FACTOR);
-                scalingFactor = calculateScalingFactor(moveScope);
-                nextRestart = calculateNextRestart();
-                return true;
-            }
-        }
-        return false;
-    }
-
-    protected boolean isGracePeriodFinished() {
-        if (gracePeriodFinished) {
+        var triggered = evaluateCriterion(moveScope);
+        if (triggered) {
+            logger.trace(
+                    "Restart triggered with geometric factor {}, scaling factor of {}, best score ({})",
+                    currentGeometricGrowFactor,
+                    scalingFactor, moveScope.getStepScope().getPhaseScope().getBestScore());
+            currentGeometricGrowFactor = Math.ceil(currentGeometricGrowFactor * GEOMETRIC_FACTOR);
+            nextRestart = calculateNextRestart();
             return true;
         }
-        gracePeriodFinished = clock.millis() >= gracePeriodEnd.toEpochMilli();
-        return gracePeriodFinished;
+        return false;
     }
 
     private long calculateNextRestart() {
@@ -103,5 +70,4 @@ public abstract class AbstractGeometricStuckCriterion<Solution_> implements Stuc
 
     abstract boolean evaluateCriterion(LocalSearchMoveScope<Solution_> moveScope);
 
-    abstract double calculateScalingFactor(LocalSearchMoveScope<Solution_> moveScope);
 }
