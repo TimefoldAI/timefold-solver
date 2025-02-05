@@ -53,7 +53,7 @@ public abstract class AbstractGeometricStuckCriterion<Solution_> implements Stuc
     public boolean isSolverStuck(LocalSearchMoveScope<Solution_> moveScope) {
         var triggered = evaluateCriterion(moveScope);
         if (triggered) {
-            logger.trace(
+            logger.info(
                     "Restart triggered with geometric factor {}, scaling factor of {}, best score ({})",
                     currentGeometricGrowFactor,
                     scalingFactor, moveScope.getStepScope().getPhaseScope().getBestScore());
