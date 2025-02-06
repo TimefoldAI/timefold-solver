@@ -10,6 +10,7 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.move.director.MoveStreamSession;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 
@@ -29,9 +30,10 @@ public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
     private final EasyScoreCalculator<Solution_, Score_> easyScoreCalculator;
 
     public EasyScoreDirector(EasyScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
-            boolean lookUpEnabled, boolean expectShadowVariablesInCorrectState,
+            MoveStreamSession<Solution_> moveStreamSession, boolean lookUpEnabled, boolean expectShadowVariablesInCorrectState,
             EasyScoreCalculator<Solution_, Score_> easyScoreCalculator) {
-        super(scoreDirectorFactory, lookUpEnabled, ConstraintMatchPolicy.DISABLED, expectShadowVariablesInCorrectState);
+        super(scoreDirectorFactory, moveStreamSession, lookUpEnabled, ConstraintMatchPolicy.DISABLED,
+                expectShadowVariablesInCorrectState);
         this.easyScoreCalculator = easyScoreCalculator;
     }
 

@@ -21,9 +21,16 @@ public sealed class MoveDirector<Solution_>
         permits EphemeralMoveDirector {
 
     protected final VariableDescriptorAwareScoreDirector<Solution_> scoreDirector;
+    private final MoveStreamSession<Solution_> moveStreamSession;
 
     public MoveDirector(VariableDescriptorAwareScoreDirector<Solution_> scoreDirector) {
+        this(scoreDirector, null);
+    }
+
+    public MoveDirector(VariableDescriptorAwareScoreDirector<Solution_> scoreDirector,
+            MoveStreamSession<Solution_> moveStreamSession) {
         this.scoreDirector = Objects.requireNonNull(scoreDirector);
+        this.moveStreamSession = moveStreamSession;
     }
 
     @Override
@@ -47,6 +54,9 @@ public sealed class MoveDirector<Solution_>
         scoreDirector.beforeVariableChanged(variableDescriptor, entity);
         variableDescriptor.setValue(entity, newValue);
         scoreDirector.afterVariableChanged(variableDescriptor, entity);
+        if (moveStreamSession != null) {
+            moveStreamSession.update(entity);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -64,6 +74,11 @@ public sealed class MoveDirector<Solution_>
         scoreDirector.beforeListVariableChanged(variableDescriptor, destinationEntity, destinationIndex, destinationIndex);
         variableDescriptor.addElement(destinationEntity, destinationIndex, element);
         scoreDirector.afterListVariableChanged(variableDescriptor, destinationEntity, destinationIndex, destinationIndex + 1);
+
+        if (moveStreamSession != null) {
+            moveStreamSession.update(sourceEntity);
+            moveStreamSession.update(destinationEntity);
+        }
         return element;
     }
 
@@ -84,12 +99,24 @@ public sealed class MoveDirector<Solution_>
         var value = (Value_) variable.remove(sourceIndex);
         variable.add(destinationIndex, value);
         scoreDirector.afterListVariableChanged(variableDescriptor, entity, sourceIndex, toIndex);
+        if (moveStreamSession != null) {
+            moveStreamSession.update(entity);
+        }
         return value;
     }
 
     @Override
     public final void updateShadowVariables() {
-        scoreDirector.triggerVariableListeners();
+        updateShadowVariables(false); // Called by the move itself.
+    }
+
+    public final void updateShadowVariables(boolean comingFromScoreDirector) {
+        if (!comingFromScoreDirector) { // Prevent recursion.
+            scoreDirector.triggerVariableListeners();
+        }
+        if (moveStreamSession != null) {
+            moveStreamSession.settle();
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -148,6 +175,14 @@ public sealed class MoveDirector<Solution_>
     @Override
     public VariableDescriptorAwareScoreDirector<Solution_> getScoreDirector() {
         return scoreDirector;
+    }
+
+    public void resetWorkingSolution(Solution_ workingSolution) {
+        if (moveStreamSession == null) {
+            return;
+        }
+        moveStreamSession.resetWorkingSolution(workingSolution);
+        scoreDirector.getSolutionDescriptor().visitAll(workingSolution, moveStreamSession::insert);
     }
 
 }

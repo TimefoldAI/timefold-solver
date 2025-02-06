@@ -77,7 +77,7 @@ class PillarChangeMoveTest {
                 new EasyScoreDirectorFactory<>(TestdataEntityProvidingSolution.buildSolutionDescriptor(),
                         solution -> SimpleScore.ZERO);
         ScoreDirector<TestdataEntityProvidingSolution> scoreDirector =
-                scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED);
+                scoreDirectorFactory.buildScoreDirector(null, false, ConstraintMatchPolicy.DISABLED);
         GenuineVariableDescriptor<TestdataEntityProvidingSolution> variableDescriptor = TestdataEntityProvidingEntity
                 .buildVariableDescriptorForValue();
 
