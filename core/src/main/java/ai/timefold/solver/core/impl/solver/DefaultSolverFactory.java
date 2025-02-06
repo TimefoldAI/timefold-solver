@@ -109,7 +109,8 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                     metricsRequiringConstraintMatchSet);
         }
 
-        var castScoreDirector = scoreDirectorFactory.buildScoreDirector(true,
+        // TODO add the move stream session here
+        var castScoreDirector = scoreDirectorFactory.buildScoreDirector(null, true,
                 constraintMatchEnabled ? ConstraintMatchPolicy.ENABLED : ConstraintMatchPolicy.DISABLED);
         solverScope.setScoreDirector(castScoreDirector);
         solverScope.setProblemChangeDirector(new DefaultProblemChangeDirector<>(castScoreDirector));

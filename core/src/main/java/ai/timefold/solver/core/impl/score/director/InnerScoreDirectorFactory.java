@@ -5,6 +5,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.move.director.MoveStreamSession;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
@@ -27,19 +28,22 @@ public interface InnerScoreDirectorFactory<Solution_, Score_ extends Score<Score
     ScoreDefinition<Score_> getScoreDefinition();
 
     @Override
-    default InnerScoreDirector<Solution_, Score_> buildScoreDirector(boolean lookUpEnabled,
+    default InnerScoreDirector<Solution_, Score_> buildScoreDirector(MoveStreamSession<Solution_> moveStreamSession,
+            boolean lookUpEnabled,
             ConstraintMatchPolicy constraintMatchPolicy) {
-        return buildScoreDirector(lookUpEnabled, constraintMatchPolicy, true);
+        return buildScoreDirector(moveStreamSession, lookUpEnabled, constraintMatchPolicy, true);
     }
 
     @Override
-    InnerScoreDirector<Solution_, Score_> buildScoreDirector(boolean lookUpEnabled, ConstraintMatchPolicy constraintMatchPolicy,
-            boolean expectShadowVariablesInCorrectState);
+    InnerScoreDirector<Solution_, Score_> buildScoreDirector(MoveStreamSession<Solution_> moveStreamSession,
+            boolean lookUpEnabled, ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState);
 
     /**
-     * Like {@link #buildScoreDirector(boolean, ConstraintMatchPolicy)}, but makes the score director a derived one.
+     * Like {@link #buildScoreDirector(MoveStreamSession, boolean, ConstraintMatchPolicy)},
+     * but makes the score director a derived one.
      * Derived score directors may make choices which the main score director can not make, such as reducing logging.
      * Derived score directors are typically used for multithreaded solving, testing and assert modes.
+     * Derived score directors do not support move streams, as they are only used to calculate the score.
      *
      * @param lookUpEnabled true if a {@link ScoreDirector} implementation should track all working objects
      *        for {@link ScoreDirector#lookUpWorkingObject(Object)}
@@ -51,7 +55,7 @@ public interface InnerScoreDirectorFactory<Solution_, Score_ extends Score<Score
     default InnerScoreDirector<Solution_, Score_> buildDerivedScoreDirector(boolean lookUpEnabled,
             ConstraintMatchPolicy constraintMatchPolicy) {
         // Most score directors don't need derived status; CS will override this.
-        return buildScoreDirector(lookUpEnabled, constraintMatchPolicy);
+        return buildScoreDirector(null, lookUpEnabled, constraintMatchPolicy);
     }
 
     /**

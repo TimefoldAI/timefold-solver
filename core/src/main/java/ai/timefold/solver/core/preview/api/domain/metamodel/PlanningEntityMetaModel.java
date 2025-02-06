@@ -64,6 +64,24 @@ public interface PlanningEntityMetaModel<Solution_, Entity_> {
     }
 
     /**
+     * Returns a {@link PlanningVariableMetaModel} for a variable with the given name.
+     *
+     * @return A genuine variable declared by the entity.
+     * @throws IllegalArgumentException if the variable does not exist on the entity, or is not genuine
+     */
+    @SuppressWarnings("unchecked")
+    default <Value_> @NonNull GenuineVariableMetaModel<Solution_, Entity_, Value_>
+            genuineVariable(@NonNull String variableName) {
+        var variable = variable(variableName);
+        if (!variable.isGenuine()) {
+            throw new IllegalArgumentException(
+                    "The variableName (%s) exists among variables (%s) but is not genuine.".formatted(variableName,
+                            variables()));
+        }
+        return (GenuineVariableMetaModel<Solution_, Entity_, Value_>) variable;
+    }
+
+    /**
      * Returns a {@link VariableMetaModel} for a variable with the given name.
      *
      * @return A variable declared by the entity.

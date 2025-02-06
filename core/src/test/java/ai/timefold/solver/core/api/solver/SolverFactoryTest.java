@@ -164,7 +164,7 @@ class SolverFactoryTest {
         var solution = new TestdataSolution("s1");
         solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2"), new TestdataEntity("e3")));
         solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
-        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(null, false, ConstraintMatchPolicy.DISABLED)) {
             scoreDirector.setWorkingSolution(solution);
             var score = scoreDirector.calculateScore();
             assertThat(score).isNotNull();

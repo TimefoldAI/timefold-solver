@@ -7,6 +7,8 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorSemanticsTest;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
+import ai.timefold.solver.core.impl.testdata.domain.TestdataConstraintProvider;
+import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintConfigurationSolution;
 import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintWeightConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListConstraintProvider;
@@ -20,11 +22,21 @@ final class ConstraintStreamsBavetScoreDirectorSemanticsTest extends AbstractSco
     protected InnerScoreDirectorFactory<TestdataConstraintConfigurationSolution, SimpleScore>
             buildInnerScoreDirectorFactoryWithConstraintConfiguration(
                     SolutionDescriptor<TestdataConstraintConfigurationSolution> solutionDescriptor) {
-        ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
+        var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withConstraintProviderClass(TestdataConstraintWeightConstraintProvider.class);
-        ScoreDirectorFactoryFactory<TestdataConstraintConfigurationSolution, SimpleScore> scoreDirectorFactoryFactory =
-                new ScoreDirectorFactoryFactory<>(scoreDirectorFactoryConfig);
+        var scoreDirectorFactoryFactory = new ScoreDirectorFactoryFactory<TestdataConstraintConfigurationSolution, SimpleScore>(
+                scoreDirectorFactoryConfig);
         return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.PHASE_ASSERT, solutionDescriptor);
+    }
+
+    @Override
+    protected InnerScoreDirectorFactory<TestdataSolution, SimpleScore>
+            buildInnerScoreDirectorFactory(SolutionDescriptor<TestdataSolution> solutionDescriptor) {
+        var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
+                .withConstraintProviderClass(TestdataConstraintProvider.class);
+        var scoreDirectorFactoryFactory =
+                new ScoreDirectorFactoryFactory<TestdataSolution, SimpleScore>(scoreDirectorFactoryConfig);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
     }
 
     @Override

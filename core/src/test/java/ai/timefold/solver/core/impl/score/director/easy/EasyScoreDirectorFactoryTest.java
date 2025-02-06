@@ -26,7 +26,7 @@ class EasyScoreDirectorFactoryTest {
         EasyScoreDirectorFactory<TestdataSolution, SimpleScore> directorFactory = new EasyScoreDirectorFactory<>(
                 solutionDescriptor, scoreCalculator);
 
-        try (var director = directorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
+        try (var director = directorFactory.buildScoreDirector(null, false, ConstraintMatchPolicy.DISABLED)) {
             TestdataSolution solution = new TestdataSolution();
             solution.setValueList(Collections.emptyList());
             solution.setEntityList(Collections.emptyList());

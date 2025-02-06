@@ -33,6 +33,7 @@ import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableLis
 import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.SolutionTracker;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
+import ai.timefold.solver.core.impl.move.director.MoveStreamSession;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
@@ -84,13 +85,13 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     // Null when tracking disabled
     private final boolean trackingWorkingSolution;
     private final SolutionTracker<Solution_> solutionTracker;
-    private final MoveDirector<Solution_> moveDirector = new MoveDirector<>(this);
+    private final MoveDirector<Solution_> moveDirector;
 
     // Null when no list variable
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
 
-    protected AbstractScoreDirector(Factory_ scoreDirectorFactory, boolean lookUpEnabled,
-            ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState) {
+    protected AbstractScoreDirector(Factory_ scoreDirectorFactory, MoveStreamSession<Solution_> moveStreamSession,
+            boolean lookUpEnabled, ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState) {
         var solutionDescriptor = scoreDirectorFactory.getSolutionDescriptor();
         this.lookUpEnabled = lookUpEnabled;
         this.lookUpManager = lookUpEnabled
@@ -110,6 +111,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             this.solutionTracker = null;
             this.trackingWorkingSolution = false;
         }
+        this.moveDirector = new MoveDirector<>(this, moveStreamSession);
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         if (listVariableDescriptor == null) {
             this.listVariableStateSupply = null;
@@ -248,6 +250,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         assertInitScoreZeroOrLess();
         workingGenuineEntityCount = initializationStatistics.genuineEntityCount();
         variableListenerSupport.resetWorkingSolution();
+        moveDirector.resetWorkingSolution(workingSolution);
     }
 
     private void assertInitScoreZeroOrLess() {
@@ -322,11 +325,13 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public void triggerVariableListeners() {
         variableListenerSupport.triggerVariableListenersInNotificationQueues();
+        moveDirector.updateShadowVariables(true);
     }
 
     @Override
     public void forceTriggerVariableListeners() {
         variableListenerSupport.forceTriggerAllVariableListeners(getWorkingSolution());
+        moveDirector.updateShadowVariables(true);
     }
 
     protected void setCalculatedScore(Score_ score) {

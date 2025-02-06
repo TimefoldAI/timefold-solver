@@ -118,7 +118,8 @@ public final class PlannerTestUtils {
         scoreDirectorFactory.setInitializingScoreTrend(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_DOWN, 1));
         return mock(InnerScoreDirector.class,
-                AdditionalAnswers.delegatesTo(scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)));
+                AdditionalAnswers
+                        .delegatesTo(scoreDirectorFactory.buildScoreDirector(null, false, ConstraintMatchPolicy.DISABLED)));
     }
 
     public static <Solution_, Score_ extends Score<Score_>> InnerScoreDirector<Solution_, Score_>

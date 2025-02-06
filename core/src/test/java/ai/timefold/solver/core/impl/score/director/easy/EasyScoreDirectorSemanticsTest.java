@@ -15,6 +15,7 @@ import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorSemantic
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
+import ai.timefold.solver.core.impl.testdata.domain.TestdataEasyScoreCalculator;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintConfigurationSolution;
 import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintWeightEasyScoreCalculator;
@@ -32,10 +33,20 @@ final class EasyScoreDirectorSemanticsTest extends AbstractScoreDirectorSemantic
     protected InnerScoreDirectorFactory<TestdataConstraintConfigurationSolution, SimpleScore>
             buildInnerScoreDirectorFactoryWithConstraintConfiguration(
                     SolutionDescriptor<TestdataConstraintConfigurationSolution> solutionDescriptor) {
-        ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
+        var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withEasyScoreCalculatorClass(TestdataConstraintWeightEasyScoreCalculator.class);
-        ScoreDirectorFactoryFactory<TestdataConstraintConfigurationSolution, SimpleScore> scoreDirectorFactoryFactory =
-                new ScoreDirectorFactoryFactory<>(scoreDirectorFactoryConfig);
+        var scoreDirectorFactoryFactory = new ScoreDirectorFactoryFactory<TestdataConstraintConfigurationSolution, SimpleScore>(
+                scoreDirectorFactoryConfig);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.PHASE_ASSERT, solutionDescriptor);
+    }
+
+    @Override
+    protected InnerScoreDirectorFactory<TestdataSolution, SimpleScore>
+            buildInnerScoreDirectorFactory(SolutionDescriptor<TestdataSolution> solutionDescriptor) {
+        var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
+                .withEasyScoreCalculatorClass(TestdataEasyScoreCalculator.class);
+        var scoreDirectorFactoryFactory =
+                new ScoreDirectorFactoryFactory<TestdataSolution, SimpleScore>(scoreDirectorFactoryConfig);
         return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.PHASE_ASSERT, solutionDescriptor);
     }
 
@@ -63,17 +74,17 @@ final class EasyScoreDirectorSemanticsTest extends AbstractScoreDirectorSemantic
 
     @Test
     void easyScoreCalculatorWithCustomProperties() {
-        ScoreDirectorFactoryConfig config = new ScoreDirectorFactoryConfig();
+        var config = new ScoreDirectorFactoryConfig();
         config.setEasyScoreCalculatorClass(TestCustomPropertiesEasyScoreCalculator.class);
-        HashMap<String, String> customProperties = new HashMap<>();
+        var customProperties = new HashMap<String, String>();
         customProperties.put("stringProperty", "string 1");
         customProperties.put("intProperty", "7");
         config.setEasyScoreCalculatorCustomProperties(customProperties);
 
-        EasyScoreDirector<TestdataSolution, ?> scoreDirector =
+        var scoreDirector =
                 (EasyScoreDirector<TestdataSolution, ?>) buildTestdataScoreDirectoryFactory(config)
-                        .buildScoreDirector(false, ConstraintMatchPolicy.DISABLED);
-        TestCustomPropertiesEasyScoreCalculator scoreCalculator =
+                        .buildScoreDirector(null, false, ConstraintMatchPolicy.DISABLED);
+        var scoreCalculator =
                 (TestCustomPropertiesEasyScoreCalculator) scoreDirector
                         .getEasyScoreCalculator();
         assertThat(scoreCalculator.getStringProperty()).isEqualTo("string 1");

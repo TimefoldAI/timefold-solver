@@ -2,17 +2,24 @@ package ai.timefold.solver.core.impl.score.director;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
 
 import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.move.director.MoveStreamSession;
+import ai.timefold.solver.core.impl.move.generic.ChangeMove;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintConfiguration;
+import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintConfigurationSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListSolution;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
@@ -30,6 +37,9 @@ public abstract class AbstractScoreDirectorSemanticsTest {
             buildInnerScoreDirectorFactoryWithConstraintConfiguration(
                     SolutionDescriptor<TestdataConstraintConfigurationSolution> solutionDescriptor);
 
+    protected abstract InnerScoreDirectorFactory<TestdataSolution, SimpleScore>
+            buildInnerScoreDirectorFactory(SolutionDescriptor<TestdataSolution> solutionDescriptor);
+
     protected abstract InnerScoreDirectorFactory<TestdataPinnedListSolution, SimpleScore>
             buildInnerScoreDirectorFactoryWithListVariableEntityPin(
                     SolutionDescriptor<TestdataPinnedListSolution> solutionDescriptor);
@@ -40,100 +50,96 @@ public abstract class AbstractScoreDirectorSemanticsTest {
 
     @Test
     void independentScoreDirectors() {
-        InnerScoreDirectorFactory<TestdataConstraintConfigurationSolution, SimpleScore> scoreDirectorFactory =
+        var scoreDirectorFactory =
                 buildInnerScoreDirectorFactoryWithConstraintConfiguration(constraintConfigurationSolutionDescriptor);
 
         // Create first score director, calculate score.
-        TestdataConstraintConfigurationSolution solution1 =
-                TestdataConstraintConfigurationSolution.generateSolution(1, 1);
-        InnerScoreDirector<TestdataConstraintConfigurationSolution, SimpleScore> scoreDirector1 =
-                scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED);
-        scoreDirector1.setWorkingSolution(solution1);
-        SimpleScore score1 = scoreDirector1.calculateScore();
-        assertThat(score1).isEqualTo(SimpleScore.of(1));
+        var solution1 = TestdataConstraintConfigurationSolution.generateSolution(1, 1);
+        try (var scoreDirector1 = scoreDirectorFactory.buildScoreDirector(null, false, ConstraintMatchPolicy.DISABLED)) {
+            scoreDirector1.setWorkingSolution(solution1);
+            var score1 = scoreDirector1.calculateScore();
+            assertThat(score1).isEqualTo(SimpleScore.of(1));
 
-        // Create second score director, calculate score.
-        TestdataConstraintConfigurationSolution solution2 =
-                TestdataConstraintConfigurationSolution.generateSolution(2, 2);
-        InnerScoreDirector<TestdataConstraintConfigurationSolution, SimpleScore> scoreDirector2 =
-                scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED);
-        scoreDirector2.setWorkingSolution(solution2);
-        SimpleScore score2 = scoreDirector2.calculateScore();
-        assertThat(score2).isEqualTo(SimpleScore.of(2));
+            // Create second score director, calculate score.
+            var solution2 = TestdataConstraintConfigurationSolution.generateSolution(2, 2);
+            try (var scoreDirector2 = scoreDirectorFactory.buildScoreDirector(null, false, ConstraintMatchPolicy.DISABLED)) {
+                scoreDirector2.setWorkingSolution(solution2);
+                var score2 = scoreDirector2.calculateScore();
+                assertThat(score2).isEqualTo(SimpleScore.of(2));
 
-        // Ensure that the second score director did not influence the first.
-        assertThat(scoreDirector1.calculateScore()).isEqualTo(SimpleScore.of(1));
+                // Ensure that the second score director did not influence the first.
+                assertThat(scoreDirector1.calculateScore()).isEqualTo(SimpleScore.of(1));
 
-        // Make a change on the second score director, ensure it did not affect the first.
-        TestdataEntity entity = solution2.getEntityList().get(1);
-        scoreDirector2.beforeEntityRemoved(entity);
-        solution2.getEntityList().remove(entity);
-        scoreDirector2.afterEntityRemoved(entity);
-        scoreDirector2.triggerVariableListeners();
-        assertThat(scoreDirector2.calculateScore()).isEqualTo(SimpleScore.of(1));
-        assertThat(scoreDirector1.calculateScore()).isEqualTo(SimpleScore.of(1));
+                // Make a change on the second score director, ensure it did not affect the first.
+                var entity = solution2.getEntityList().get(1);
+                scoreDirector2.beforeEntityRemoved(entity);
+                solution2.getEntityList().remove(entity);
+                scoreDirector2.afterEntityRemoved(entity);
+                scoreDirector2.triggerVariableListeners();
+                assertThat(scoreDirector2.calculateScore()).isEqualTo(SimpleScore.of(1));
+                assertThat(scoreDirector1.calculateScore()).isEqualTo(SimpleScore.of(1));
 
-        // Add the same entity to the first score director, ensure it did not affect the second.
-        scoreDirector1.beforeEntityAdded(entity);
-        solution1.getEntityList().add(entity);
-        scoreDirector1.afterEntityAdded(entity);
-        scoreDirector1.triggerVariableListeners();
-        assertThat(scoreDirector1.calculateScore()).isEqualTo(SimpleScore.of(2));
-        assertThat(scoreDirector2.calculateScore()).isEqualTo(SimpleScore.of(1));
+                // Add the same entity to the first score director, ensure it did not affect the second.
+                scoreDirector1.beforeEntityAdded(entity);
+                solution1.getEntityList().add(entity);
+                scoreDirector1.afterEntityAdded(entity);
+                scoreDirector1.triggerVariableListeners();
+                assertThat(scoreDirector1.calculateScore()).isEqualTo(SimpleScore.of(2));
+                assertThat(scoreDirector2.calculateScore()).isEqualTo(SimpleScore.of(1));
+            }
+        }
     }
 
     @Test
     void solutionBasedScoreWeights() {
-        InnerScoreDirectorFactory<TestdataConstraintConfigurationSolution, SimpleScore> scoreDirectorFactory =
+        var scoreDirectorFactory =
                 buildInnerScoreDirectorFactoryWithConstraintConfiguration(constraintConfigurationSolutionDescriptor);
 
         // Create score director, calculate score.
-        TestdataConstraintConfigurationSolution solution1 =
-                TestdataConstraintConfigurationSolution.generateSolution(1, 1);
-        InnerScoreDirector<TestdataConstraintConfigurationSolution, SimpleScore> scoreDirector =
-                scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED);
-        scoreDirector.setWorkingSolution(solution1);
-        SimpleScore score1 = scoreDirector.calculateScore();
-        assertThat(score1).isEqualTo(SimpleScore.of(1));
+        var solution1 = TestdataConstraintConfigurationSolution.generateSolution(1, 1);
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(null, false, ConstraintMatchPolicy.DISABLED)) {
+            scoreDirector.setWorkingSolution(solution1);
+            var score1 = scoreDirector.calculateScore();
+            assertThat(score1).isEqualTo(SimpleScore.of(1));
 
-        // Set new solution with a different constraint weight, calculate score.
-        TestdataConstraintConfigurationSolution solution2 =
-                TestdataConstraintConfigurationSolution.generateSolution(1, 1);
-        TestdataConstraintConfiguration constraintConfiguration = solution2.getConstraintConfiguration();
-        constraintConfiguration.setFirstWeight(SimpleScore.of(2));
-        scoreDirector.setWorkingSolution(solution2);
-        SimpleScore score2 = scoreDirector.calculateScore();
-        assertThat(score2).isEqualTo(SimpleScore.of(2));
+            // Set new solution with a different constraint weight, calculate score.
+            var solution2 =
+                    TestdataConstraintConfigurationSolution.generateSolution(1, 1);
+            var constraintConfiguration = solution2.getConstraintConfiguration();
+            constraintConfiguration.setFirstWeight(SimpleScore.of(2));
+            scoreDirector.setWorkingSolution(solution2);
+            var score2 = scoreDirector.calculateScore();
+            assertThat(score2).isEqualTo(SimpleScore.of(2));
 
-        // Set new solution with a disabled constraint, calculate score.
-        constraintConfiguration.setFirstWeight(SimpleScore.ZERO);
-        scoreDirector.setWorkingSolution(solution2);
-        SimpleScore score3 = scoreDirector.calculateScore();
-        assertThat(score3).isEqualTo(SimpleScore.ZERO);
+            // Set new solution with a disabled constraint, calculate score.
+            constraintConfiguration.setFirstWeight(SimpleScore.ZERO);
+            scoreDirector.setWorkingSolution(solution2);
+            var score3 = scoreDirector.calculateScore();
+            assertThat(score3).isEqualTo(SimpleScore.ZERO);
+        }
 
     }
 
     @Test
     void mutableConstraintConfiguration() {
-        InnerScoreDirectorFactory<TestdataConstraintConfigurationSolution, SimpleScore> scoreDirectorFactory =
+        var scoreDirectorFactory =
                 buildInnerScoreDirectorFactoryWithConstraintConfiguration(constraintConfigurationSolutionDescriptor);
 
         // Create score director, calculate score with a given constraint configuration.
-        TestdataConstraintConfigurationSolution solution =
-                TestdataConstraintConfigurationSolution.generateSolution(1, 1);
-        InnerScoreDirector<TestdataConstraintConfigurationSolution, SimpleScore> scoreDirector =
-                scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED);
-        scoreDirector.setWorkingSolution(solution);
-        SimpleScore score1 = scoreDirector.calculateScore();
-        assertThat(score1).isEqualTo(SimpleScore.of(1));
+        var solution = TestdataConstraintConfigurationSolution.generateSolution(1, 1);
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(null, false, ConstraintMatchPolicy.DISABLED)) {
+            scoreDirector.setWorkingSolution(solution);
+            var score1 = scoreDirector.calculateScore();
+            assertThat(score1).isEqualTo(SimpleScore.of(1));
 
-        // Change constraint configuration on the current working solution.
-        TestdataConstraintConfiguration constraintConfiguration = solution.getConstraintConfiguration();
-        scoreDirector.beforeProblemPropertyChanged(constraintConfiguration);
-        constraintConfiguration.setFirstWeight(SimpleScore.of(2));
-        scoreDirector.afterProblemPropertyChanged(constraintConfiguration);
-        SimpleScore score2 = scoreDirector.calculateScore();
-        assertThat(score2).isEqualTo(SimpleScore.of(2));
+            // Change constraint configuration on the current working solution.
+            var constraintConfiguration = solution.getConstraintConfiguration();
+            scoreDirector.beforeProblemPropertyChanged(constraintConfiguration);
+            constraintConfiguration.setFirstWeight(SimpleScore.of(2));
+            scoreDirector.afterProblemPropertyChanged(constraintConfiguration);
+            var score2 = scoreDirector.calculateScore();
+            assertThat(score2).isEqualTo(SimpleScore.of(2));
+        }
     }
 
     @Test
@@ -145,7 +151,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
 
         // Create score director, calculate score with a given constraint configuration.
         var solution = TestdataConstraintConfigurationSolution.generateSolution(1, 1);
-        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.ENABLED)) {
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(null, false, ConstraintMatchPolicy.ENABLED)) {
             scoreDirector.setWorkingSolution(solution);
             var score1 = scoreDirector.calculateScore();
             assertSoftly(softly -> {
@@ -178,7 +184,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
         firstEntity.setValueList(List.of(solution.getValueList().get(0)));
         firstEntity.setPinned(true);
 
-        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(null, false, ConstraintMatchPolicy.DISABLED)) {
             scoreDirector.setWorkingSolution(solution);
             var score1 = scoreDirector.calculateScore();
             assertThat(score1).isEqualTo(SimpleScore.ofUninitialized(-1, -2));
@@ -206,7 +212,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
         secondEntity.setValueList(List.of(solution.getValueList().get(1)));
         secondEntity.setPlanningPinToIndex(1);
 
-        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(null, false, ConstraintMatchPolicy.DISABLED)) {
             scoreDirector.setWorkingSolution(solution);
             var score1 = scoreDirector.calculateScore();
             assertThat(score1).isEqualTo(SimpleScore.ofUninitialized(-1, -3));
@@ -219,6 +225,43 @@ public abstract class AbstractScoreDirectorSemanticsTest {
             scoreDirector.triggerVariableListeners();
             var score2 = scoreDirector.calculateScore();
             assertThat(score2).isEqualTo(SimpleScore.of(-3));
+        }
+    }
+
+    @Test
+    void ephemeralMovesDoNotTriggerMoveStreams() {
+        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+        var variableMetaModel = solutionDescriptor.getMetaModel()
+                .entity(TestdataEntity.class)
+                .genuineVariable("value");
+
+        var moveStreamSession = (MoveStreamSession<TestdataSolution>) mock(MoveStreamSession.class);
+        var solution1 = TestdataSolution.generateSolution(1, 1);
+        var entity = solution1.getEntityList().get(0);
+
+        var scoreDirectorFactory = buildInnerScoreDirectorFactory(solutionDescriptor);
+        try (var scoreDirector =
+                scoreDirectorFactory.buildScoreDirector(moveStreamSession, false, ConstraintMatchPolicy.DISABLED)) {
+            scoreDirector.setWorkingSolution(solution1);
+            verify(moveStreamSession).resetWorkingSolution(same(scoreDirector.getWorkingSolution()));
+            reset(moveStreamSession);
+
+            // Create a move that does not trigger move streams, because it is immediately undone.
+            var move = new ChangeMove<>((PlanningVariableMetaModel<TestdataSolution, TestdataEntity, Object>) variableMetaModel,
+                    entity, null);
+            var score = scoreDirector.doAndProcessMove(move, false);
+            assertThat(score).isNotNull();
+            verify(moveStreamSession).settle(); // Nothing will be done here, because the move was undone.
+            reset(moveStreamSession);
+
+            // When executed directly, the move does trigger move streams.
+            move.execute(scoreDirector.getMoveDirector());
+            verify(moveStreamSession).update(same(entity));
+
+            // Variable listeners need to trigger settling of the move stream session,
+            // to keep the Bavet nodes in sync with the working solution.
+            scoreDirector.triggerVariableListeners();
+            verify(moveStreamSession).settle();
         }
     }
 
