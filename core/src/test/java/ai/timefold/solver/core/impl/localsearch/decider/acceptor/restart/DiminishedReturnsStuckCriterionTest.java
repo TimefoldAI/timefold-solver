@@ -47,4 +47,33 @@ class DiminishedReturnsStuckCriterionTest {
         assertThat(strategy.isSolverStuck(moveScope)).isTrue();
         assertThat(strategy.nextRestart).isEqualTo(3L * TIME_WINDOW_MILLIS);
     }
+
+    @Test
+    void reset() {
+        var solverScope = mock(SolverScope.class);
+        var phaseScope = mock(LocalSearchPhaseScope.class);
+        var stepScope = mock(LocalSearchStepScope.class);
+        var moveScope = mock(LocalSearchMoveScope.class);
+        var termination = mock(DiminishedReturnsTermination.class);
+
+        when(moveScope.getStepScope()).thenReturn(stepScope);
+        when(stepScope.getPhaseScope()).thenReturn(phaseScope);
+        when(phaseScope.getSolverScope()).thenReturn(solverScope);
+        when(moveScope.getScore()).thenReturn(SimpleScore.of(1));
+        when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(1));
+        when(termination.isTerminated(anyLong(), any())).thenReturn(true);
+
+        // Restart
+        var strategy = new DiminishedReturnsStuckCriterion<>(termination);
+        strategy.solvingStarted(null);
+        strategy.phaseStarted(phaseScope);
+        assertThat(strategy.isSolverStuck(moveScope)).isTrue();
+        assertThat(strategy.nextRestart).isEqualTo(2L * TIME_WINDOW_MILLIS);
+
+        // Reset
+        strategy.stepStarted(stepScope);
+        when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(2));
+        strategy.stepEnded(stepScope);
+        assertThat(strategy.nextRestart).isEqualTo(TIME_WINDOW_MILLIS);
+    }
 }
