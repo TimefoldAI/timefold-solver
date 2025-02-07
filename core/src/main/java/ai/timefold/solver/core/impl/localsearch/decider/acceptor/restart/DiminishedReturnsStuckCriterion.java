@@ -15,6 +15,7 @@ public class DiminishedReturnsStuckCriterion<Solution_, Score_ extends Score<Sco
     private DiminishedReturnsTermination<Solution_, Score_> diminishedReturnsCriterion;
 
     private boolean triggered;
+    private Score_ currentBestScore;
 
     public DiminishedReturnsStuckCriterion() {
         this(new DiminishedReturnsTermination<>(TIME_WINDOW_MILLIS, MINIMAL_IMPROVEMENT));
@@ -38,6 +39,7 @@ public class DiminishedReturnsStuckCriterion<Solution_, Score_ extends Score<Sco
 
     @Override
     public void stepStarted(LocalSearchStepScope<Solution_> stepScope) {
+        currentBestScore = stepScope.getPhaseScope().getBestScore();
         if (triggered) {
             // We need to recreate the termination criterion as the time window has changed
             diminishedReturnsCriterion = new DiminishedReturnsTermination<>(nextRestart, MINIMAL_IMPROVEMENT);
@@ -49,6 +51,15 @@ public class DiminishedReturnsStuckCriterion<Solution_, Score_ extends Score<Sco
     @Override
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
         diminishedReturnsCriterion.stepEnded(stepScope);
+        if (currentBestScore.compareTo(stepScope.getPhaseScope().getBestScore()) < 0 && nextRestart > TIME_WINDOW_MILLIS) {
+            // If the solution has been improved after a restart,
+            // we reset the criterion and restart the evaluation of the metric
+            super.solvingStarted(stepScope.getPhaseScope().getSolverScope());
+            diminishedReturnsCriterion = new DiminishedReturnsTermination<>(nextRestart, MINIMAL_IMPROVEMENT);
+            diminishedReturnsCriterion.start(System.nanoTime(), stepScope.getPhaseScope().getBestScore());
+            logger.info("Stuck criterion reset, next restart ({}), previous best score({}), new best score ({})", nextRestart,
+                    currentBestScore, stepScope.getPhaseScope().getBestScore());
+        }
     }
 
     @Override

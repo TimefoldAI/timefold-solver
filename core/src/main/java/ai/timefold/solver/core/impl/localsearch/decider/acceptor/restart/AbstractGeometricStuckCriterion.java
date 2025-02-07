@@ -54,9 +54,9 @@ public abstract class AbstractGeometricStuckCriterion<Solution_> implements Stuc
         var triggered = evaluateCriterion(moveScope);
         if (triggered) {
             logger.info(
-                    "Restart triggered with geometric factor {}, scaling factor of {}, best score ({})",
-                    currentGeometricGrowFactor,
-                    scalingFactor, moveScope.getStepScope().getPhaseScope().getBestScore());
+                    "Restart triggered with geometric factor ({}), scaling factor of ({}), nextRestart ({}), best score ({})",
+                    currentGeometricGrowFactor, scalingFactor, nextRestart,
+                    moveScope.getStepScope().getPhaseScope().getBestScore());
             currentGeometricGrowFactor = Math.ceil(currentGeometricGrowFactor * GEOMETRIC_FACTOR);
             nextRestart = calculateNextRestart();
             return true;
