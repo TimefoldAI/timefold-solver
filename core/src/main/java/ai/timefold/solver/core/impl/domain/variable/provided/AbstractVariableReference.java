@@ -11,7 +11,7 @@ public abstract sealed class AbstractVariableReference<Entity_, Value_> implemen
 
     abstract @Nullable Value_ getValue(@NonNull Object entity);
 
-    abstract @Nullable Value_ getValueFromParent(@NonNull Object parent);
+    abstract @Nullable Object getSingleValueFromSingleParent(@NonNull Object parent);
 
     abstract @Nullable AbstractVariableReference<Entity_, ?> getParent();
 

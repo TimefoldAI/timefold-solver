@@ -60,6 +60,7 @@ import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDes
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.provided.InvalidityMarkerVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.provided.ProvidedShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
@@ -67,6 +68,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
+import ai.timefold.solver.core.preview.api.variable.provided.InvalidityMarker;
 import ai.timefold.solver.core.preview.api.variable.provided.ProvidedShadowVariable;
 
 import org.jspecify.annotations.NonNull;
@@ -92,7 +94,8 @@ public class EntityDescriptor<Solution_> {
             PiggybackShadowVariable.class,
             CustomShadowVariable.class,
             CascadingUpdateShadowVariable.class,
-            ProvidedShadowVariable.class
+            ProvidedShadowVariable.class,
+            InvalidityMarker.class
     };
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityDescriptor.class);
@@ -102,6 +105,8 @@ public class EntityDescriptor<Solution_> {
     private final Class<?> entityClass;
     private final Predicate<Object> isInitializedPredicate;
     private final List<MemberAccessor> declaredPlanningPinIndexMemberAccessorList = new ArrayList<>();
+    @Nullable
+    private InvalidityMarkerVariableDescriptor<Solution_> invalidityMarkerVariableDescriptor;
 
     private Predicate<Object> hasNoNullVariablesBasicVar;
     private Predicate<Object> hasNoNullVariablesListVar;
@@ -292,6 +297,7 @@ public class EntityDescriptor<Solution_> {
             if (variableAnnotationClass.equals(CustomShadowVariable.class)
                     || variableAnnotationClass.equals(ShadowVariable.class)
                     || variableAnnotationClass.equals(ProvidedShadowVariable.class)
+                    || variableAnnotationClass.equals(InvalidityMarker.class)
                     || variableAnnotationClass.equals(ShadowVariable.List.class)
                     || variableAnnotationClass.equals(PiggybackShadowVariable.class)
                     || variableAnnotationClass.equals(CascadingUpdateShadowVariable.class)) {
@@ -378,6 +384,11 @@ public class EntityDescriptor<Solution_> {
         } else if (variableAnnotationClass.equals(ProvidedShadowVariable.class)) {
             var variableDescriptor = new ProvidedShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this,
                     memberAccessor);
+            declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
+        } else if (variableAnnotationClass.equals(InvalidityMarker.class)) {
+            var variableDescriptor = new InvalidityMarkerVariableDescriptor<>(nextVariableDescriptorOrdinal, this,
+                    memberAccessor);
+            invalidityMarkerVariableDescriptor = variableDescriptor;
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(PiggybackShadowVariable.class)) {
             var variableDescriptor =
@@ -599,6 +610,10 @@ public class EntityDescriptor<Solution_> {
 
     public GenuineVariableDescriptor<Solution_> getGenuineVariableDescriptor(String variableName) {
         return effectiveGenuineVariableDescriptorMap.get(variableName);
+    }
+
+    public @Nullable InvalidityMarkerVariableDescriptor<Solution_> getInvalidityMarkerVariableDescriptor() {
+        return invalidityMarkerVariableDescriptor;
     }
 
     public boolean hasAnyGenuineVariables() {

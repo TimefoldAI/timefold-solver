@@ -6,6 +6,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public final class ShadowVariableCalculation<Entity_, Value_> {
+    final DefaultShadowVariableFactory<?> shadowVariableFactory;
     @Nullable
     private final ShadowVariableCalculation<Entity_, Value_> fallback;
     private final AbstractVariableReference<Entity_, ?>[] inputs;
@@ -15,6 +16,7 @@ public final class ShadowVariableCalculation<Entity_, Value_> {
     public ShadowVariableCalculation(DefaultShadowVariableFactory<?> shadowVariableFactory,
             AbstractVariableReference<Entity_, ?>[] inputs, Method calculatorMethod,
             Object calculator) {
+        this.shadowVariableFactory = shadowVariableFactory;
         this.fallback = null;
         this.inputs = inputs;
         this.calculatorMethod = calculatorMethod;
@@ -26,6 +28,7 @@ public final class ShadowVariableCalculation<Entity_, Value_> {
 
     public ShadowVariableCalculation(@NonNull ShadowVariableCalculation<Entity_, Value_> fallback,
             AbstractVariableReference<Entity_, ?>[] inputs, Method calculatorMethod, Object calculator) {
+        this.shadowVariableFactory = fallback.shadowVariableFactory;
         this.fallback = fallback;
         this.inputs = inputs;
         this.calculatorMethod = calculatorMethod;
@@ -81,7 +84,8 @@ public final class ShadowVariableCalculation<Entity_, Value_> {
             fallback.visitEntity(shadowVariable, graph, entity);
         } else {
             graph.addFixedEdge(graph.addVariableReferenceEntity(VariableId.entity(shadowVariableId.entityClass()), entity,
-                    DefaultSingleVariableReference.entity(shadowVariable.solutionDescriptor,
+                    DefaultSingleVariableReference.entity(shadowVariableFactory,
+                            shadowVariable.solutionDescriptor,
                             shadowVariable.supplyManager,
                             shadowVariable.getVariableId().entityClass())),
                     graph.addVariableReferenceEntity(shadowVariableId, entity, shadowVariable));
