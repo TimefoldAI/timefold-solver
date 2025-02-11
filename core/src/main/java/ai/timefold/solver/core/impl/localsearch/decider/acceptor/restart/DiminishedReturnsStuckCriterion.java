@@ -9,7 +9,7 @@ import ai.timefold.solver.core.impl.solver.termination.DiminishedReturnsTerminat
 
 public class DiminishedReturnsStuckCriterion<Solution_, Score_ extends Score<Score_>>
         extends AbstractGeometricStuckCriterion<Solution_> {
-    protected static final long TIME_WINDOW_MILLIS = 25_000;
+    protected static final long TIME_WINDOW_MILLIS = 60_000;
     private static final double MINIMAL_IMPROVEMENT = 0.0001;
 
     private DiminishedReturnsTermination<Solution_, Score_> diminishedReturnsCriterion;
