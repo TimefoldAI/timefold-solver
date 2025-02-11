@@ -37,7 +37,10 @@ public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentVal
     @NonNull
     Class<? extends Value_> valueType;
 
+    DefaultShadowVariableFactory<?> shadowVariableFactory;
+
     public DefaultSingleVariableReference(
+            @NonNull DefaultShadowVariableFactory<?> shadowVariableFactory,
             @NonNull SolutionDescriptor<Solution_> solutionDescriptor,
             @NonNull SupplyManager supplyManager,
             @Nullable DefaultSingleVariableReference<Solution_, Entity_, ?, ParentValue_> parent,
@@ -52,12 +55,14 @@ public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentVal
         this.entityClass = entityClass;
         this.parentType = parentType;
         this.valueType = valueType;
+        this.shadowVariableFactory = shadowVariableFactory;
     }
 
     public static <Solution_, Entity_> @NonNull DefaultSingleVariableReference<Solution_, Entity_, Entity_, Entity_>
-            entity(@NonNull SolutionDescriptor<Solution_> solutionDescriptor, @NonNull SupplyManager supplyManager,
+            entity(@NonNull DefaultShadowVariableFactory<?> shadowVariableFactory,
+                    @NonNull SolutionDescriptor<Solution_> solutionDescriptor, @NonNull SupplyManager supplyManager,
                     Class<? extends Entity_> entityType) {
-        return new DefaultSingleVariableReference<>(solutionDescriptor, supplyManager,
+        return new DefaultSingleVariableReference<>(shadowVariableFactory, solutionDescriptor, supplyManager,
                 null, new IdGraphNavigator<>(entityType),
                 entityType, entityType, entityType);
     }
@@ -66,7 +71,7 @@ public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentVal
     public <NewValue_> @NonNull DefaultSingleVariableReference<Solution_, Entity_, Value_, NewValue_> child(
             Class<? extends NewValue_> newValueType,
             GraphNavigator<Value_, NewValue_> function) {
-        return new DefaultSingleVariableReference(solutionDescriptor, supplyManager, this,
+        return new DefaultSingleVariableReference(shadowVariableFactory, solutionDescriptor, supplyManager, this,
                 function, entityClass, valueType, newValueType);
     }
 
@@ -109,10 +114,13 @@ public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentVal
     @Override
     public <Element_> @NonNull GroupVariableReference<Entity_, Element_> group(Class<? extends Element_> element,
             Function<Value_, List<Element_>> groupFunction) {
-        return new DefaultGroupVariableReference(solutionDescriptor, supplyManager,
+        if (parent != null) {
+            throw new IllegalArgumentException("group() must be the first method called.");
+        }
+        return new DefaultGroupVariableReference(shadowVariableFactory, solutionDescriptor, supplyManager,
                 this, new GroupGraphNavigator<>(element, groupFunction),
                 entityClass, valueType,
-                element);
+                element, shadowVariableFactory.nextGroupId());
     }
 
     @Override
@@ -134,9 +142,9 @@ public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentVal
     }
 
     @Override
-    @Nullable
     @SuppressWarnings("unchecked")
-    Value_ getValueFromParent(@NonNull Object parentValue) {
+    @Nullable
+    Object getSingleValueFromSingleParent(@NonNull Object parentValue) {
         if (parentValue == null) {
             return null;
         }
