@@ -2,10 +2,12 @@ package ai.timefold.solver.core.impl.domain.variable.provided;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
+import ai.timefold.solver.core.preview.api.variable.provided.GroupVariableReference;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -14,6 +16,7 @@ public final class ShadowVariableReference<Solution_, Entity_, Value_>
         extends DefaultSingleVariableReference<Solution_, Entity_, Entity_, Value_> {
     final ShadowVariableCalculation<Entity_, Value_> calculation;
     final VariableDescriptor<Solution_> variableDescriptor;
+    final VariableDescriptor<Solution_> invalidDescriptor;
     final List<AbstractVariableReference<?, ?>> shadowVariableReferences;
 
     public ShadowVariableReference(
@@ -24,7 +27,8 @@ public final class ShadowVariableReference<Solution_, Entity_, Value_>
             @NonNull List<AbstractVariableReference<?, ?>> shadowVariableReferences,
             @NonNull Class<? extends Entity_> entityClass,
             @NonNull Class<? extends Value_> valueType) {
-        super(solutionDescriptor, supplyManager, null,
+        super(calculation.shadowVariableFactory,
+                solutionDescriptor, supplyManager, null,
                 new VariableGraphNavigator<>(VariableId.entity(entityClass),
                         variableDescriptor),
                 entityClass,
@@ -32,6 +36,8 @@ public final class ShadowVariableReference<Solution_, Entity_, Value_>
         this.variableDescriptor = variableDescriptor;
         this.calculation = calculation;
         this.shadowVariableReferences = shadowVariableReferences;
+        this.invalidDescriptor = solutionDescriptor.getEntityDescriptorStrict(entityClass)
+                .getInvalidityMarkerVariableDescriptor();
     }
 
     public void invalidateShadowVariable(ChangedVariableNotifier changedVariableNotifier, Object entity) {
@@ -41,19 +47,31 @@ public final class ShadowVariableReference<Solution_, Entity_, Value_>
             variableDescriptor.setValue(entity, null);
             changedVariableNotifier.afterVariableChanged(variableDescriptor, entity);
         }
+        if (invalidDescriptor != null && !Objects.equals(true, invalidDescriptor.getValue(entity))) {
+            changedVariableNotifier.beforeVariableChanged(invalidDescriptor, entity);
+            invalidDescriptor.setValue(entity, true);
+            changedVariableNotifier.afterVariableChanged(invalidDescriptor, entity);
+        }
     }
 
     public boolean updateShadowVariable(ChangedVariableNotifier changedVariableNotifier, Object object) {
         var entity = (Entity_) object;
         var oldValue = variableDescriptor.getValue(entity);
         var newValue = calculation.calculate(entity);
-        if (oldValue != newValue) {
+        var changed = false;
+        if (!Objects.equals(oldValue, newValue)) {
             changedVariableNotifier.beforeVariableChanged(variableDescriptor, entity);
             variableDescriptor.setValue(entity, newValue);
             changedVariableNotifier.afterVariableChanged(variableDescriptor, entity);
-            return true;
+            changed = true;
         }
-        return false;
+        if (invalidDescriptor != null && !Objects.equals(false, invalidDescriptor.getValue(entity))) {
+            changedVariableNotifier.beforeVariableChanged(invalidDescriptor, entity);
+            invalidDescriptor.setValue(entity, false);
+            changedVariableNotifier.afterVariableChanged(invalidDescriptor, entity);
+            changed = true;
+        }
+        return changed;
     }
 
     public void visitGraph(VariableReferenceGraph variableReferenceGraph) {
@@ -82,11 +100,17 @@ public final class ShadowVariableReference<Solution_, Entity_, Value_>
         // edge in the graph from the source to the alias.
         //
         // Path is the minimum pathway from the alias reference to the source.
+        if (!(path.get(0) instanceof GroupVariableReference<?, ?>)
+                && (path.get(path.size() - 1) instanceof GroupVariableReference<?, ?>)) {
+            // A mix of group and single variable paths; we only add listeners for the group parts
+            return;
+        }
+
         variableReferenceGraph.addBeforeProcessor(path.get(0).getVariableId().rootId(),
                 (g, alias) -> {
                     var aliasSource = alias;
                     for (var ref : path) {
-                        aliasSource = ref.getValueFromParent(aliasSource);
+                        aliasSource = ref.getSingleValueFromSingleParent(aliasSource);
                         if (aliasSource == null) {
                             return;
                         }
@@ -99,7 +123,7 @@ public final class ShadowVariableReference<Solution_, Entity_, Value_>
                 (g, alias) -> {
                     var aliasSource = alias;
                     for (var ref : path) {
-                        aliasSource = ref.getValueFromParent(aliasSource);
+                        aliasSource = ref.getSingleValueFromSingleParent(aliasSource);
                         if (aliasSource == null) {
                             return;
                         }

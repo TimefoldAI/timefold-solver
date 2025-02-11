@@ -25,7 +25,7 @@ public abstract class ShadowVariableDescriptor<Solution_> extends VariableDescri
 
     protected ShadowVariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
-        super(ordinal, entityDescriptor, variableMemberAccessor);
+        super(ordinal, entityDescriptor, variableMemberAccessor, true);
     }
 
     public int getGlobalShadowOrder() {

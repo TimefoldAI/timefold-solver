@@ -22,6 +22,11 @@ public class DefaultShadowVariableSessionFactory<Solution_> implements ShadowVar
                 new MockSupplyManager(stateSupply));
         var variableReferenceGraph = new VariableReferenceGraph(ChangedVariableNotifier.empty());
         shadowVariableProvider.defineVariables(shadowVariableFactory);
+        for (var groupReference : shadowVariableFactory.getGroupVariableReferenceList()) {
+            for (var entity : entities) {
+                groupReference.processGroupElements(variableReferenceGraph, groupReference, entity);
+            }
+        }
         for (var shadowVariable : shadowVariableFactory.getShadowVariableReferenceList()) {
             shadowVariable.visitGraph(variableReferenceGraph);
         }
