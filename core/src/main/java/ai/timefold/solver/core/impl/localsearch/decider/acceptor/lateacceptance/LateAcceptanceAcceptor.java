@@ -72,9 +72,6 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
             previousScores[lateScoreIndex] = stepScope.getScore();
             lateScoreIndex = (lateScoreIndex + 1) % lateAcceptanceSize;
         } else {
-            // We only modify the current late element to raise the intensification phase,
-            // while ensuring that the other elements remain unchanged to maintain diversity.
-            previousScores[lateScoreIndex] = stepScope.getPhaseScope().getBestScore();
             restartTriggered = false;
         }
     }
