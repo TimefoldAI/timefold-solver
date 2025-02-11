@@ -62,12 +62,16 @@ import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDes
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.provided.ProvidedShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
+import ai.timefold.solver.core.preview.api.variable.provided.ProvidedShadowVariable;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,7 +92,9 @@ public class EntityDescriptor<Solution_> {
             ShadowVariable.List.class,
             PiggybackShadowVariable.class,
             CustomShadowVariable.class,
-            CascadingUpdateShadowVariable.class };
+            CascadingUpdateShadowVariable.class,
+            ProvidedShadowVariable.class
+    };
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityDescriptor.class);
 
@@ -307,6 +313,7 @@ public class EntityDescriptor<Solution_> {
             MemberAccessorFactory.MemberAccessorType memberAccessorType;
             if (variableAnnotationClass.equals(CustomShadowVariable.class)
                     || variableAnnotationClass.equals(ShadowVariable.class)
+                    || variableAnnotationClass.equals(ProvidedShadowVariable.class)
                     || variableAnnotationClass.equals(ShadowVariable.List.class)
                     || variableAnnotationClass.equals(PiggybackShadowVariable.class)
                     || variableAnnotationClass.equals(CascadingUpdateShadowVariable.class)) {
@@ -389,6 +396,10 @@ public class EntityDescriptor<Solution_> {
                 declaredCascadingUpdateShadowVariableDecriptorMap.put(variableDescriptor.getTargetMethodName(),
                         variableDescriptor);
             }
+        } else if (variableAnnotationClass.equals(ProvidedShadowVariable.class)) {
+            var variableDescriptor = new ProvidedShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this,
+                    memberAccessor);
+            declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(PiggybackShadowVariable.class)) {
             var variableDescriptor =
                     new PiggybackShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
@@ -678,8 +689,19 @@ public class EntityDescriptor<Solution_> {
         return effectiveVariableDescriptorMap.containsKey(variableName);
     }
 
-    public VariableDescriptor<Solution_> getVariableDescriptor(String variableName) {
+    public @Nullable VariableDescriptor<Solution_> getVariableDescriptor(String variableName) {
         return effectiveVariableDescriptorMap.get(variableName);
+    }
+
+    public @NonNull VariableDescriptor<Solution_> getVariableDescriptorOrFail(String variableName) {
+        var variableDescriptor = effectiveVariableDescriptorMap.get(variableName);
+        if (variableDescriptor == null) {
+            throw new IllegalArgumentException(
+                    "Entity class %s does not hava a \"%s\" genuine or shadow variable. Maybe you meant one of %s?"
+                            .formatted(entityClass.getSimpleName(),
+                                    variableName, effectiveVariableDescriptorMap.keySet()));
+        }
+        return variableDescriptor;
     }
 
     public boolean hasAnyDeclaredGenuineVariableDescriptor() {
