@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptorTest;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.StuckCriterion;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.StuckCriterion;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;

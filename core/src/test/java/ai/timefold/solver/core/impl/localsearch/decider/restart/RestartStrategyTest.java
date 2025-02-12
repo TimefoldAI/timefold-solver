@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.localsearch.decider.reconfiguration;
+package ai.timefold.solver.core.impl.localsearch.decider.restart;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;

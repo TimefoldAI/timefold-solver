@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor;
 
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.StuckCriterion;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.StuckCriterion;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
