@@ -1,7 +1,7 @@
-package ai.timefold.solver.core.impl.localsearch.decider.reconfiguration;
+package ai.timefold.solver.core.impl.localsearch.decider.restart;
 
 import ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart.StuckCriterion;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.StuckCriterion;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 

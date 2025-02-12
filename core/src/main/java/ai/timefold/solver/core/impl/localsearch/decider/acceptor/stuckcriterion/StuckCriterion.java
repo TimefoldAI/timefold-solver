@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.localsearch.decider.acceptor.restart;
+package ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion;
 
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.impl.localsearch.event.LocalSearchPhaseLifecycleListener;
