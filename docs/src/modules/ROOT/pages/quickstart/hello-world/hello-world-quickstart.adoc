@@ -710,7 +710,7 @@ def generate_demo_data() -> Timetable:
     lessons.append(Lesson(next(ids), "English", "P. Cruz", "10th grade"))
     lessons.append(Lesson(next(ids), "Spanish", "P. Cruz", "10th grade"))
 
-    return Timetable(demo_data.name, timeslots, rooms, lessons)
+    return Timetable("DEMO_DATA", timeslots, rooms, lessons)
 
 
 def print_timetable(time_table: Timetable) -> None:
