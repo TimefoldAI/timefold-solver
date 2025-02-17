@@ -563,12 +563,10 @@ class SolutionDescriptorTest {
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
-            softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution)).isEqualTo(valueCount + 1); // one value + one unassignment
-            softly.assertThat(solutionDescriptor.getApproximateValueCount(solution)).isEqualTo(valueCount + 1);
+            softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution)).isEqualTo(valueCount);
+            softly.assertThat(solutionDescriptor.getApproximateValueCount(solution)).isEqualTo(valueCount);
             softly.assertThat(solutionDescriptor.getProblemScale(solution))
-                    .isCloseTo(MathUtils.getPossibleArrangementsScaledApproximateLog(MathUtils.LOG_PRECISION, 2, 2, 2)
-                            / (double) MathUtils.LOG_PRECISION / MathUtils.getLogInBase(2, 10d),
-                            Percentage.withPercentage(1.0));
+                    .isCloseTo(Math.log10(2), Percentage.withPercentage(1.0));
         });
     }
 

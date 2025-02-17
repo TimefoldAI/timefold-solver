@@ -1111,6 +1111,10 @@ public class SolutionDescriptor<Solution_> {
      */
     public double getProblemScale(Solution_ solution) {
         long logBase = getMaximumValueRangeSize(solution);
+        if (logBase == 1 && getListVariableDescriptor() != null && getListVariableDescriptor().allowsUnassignedValues()) {
+            // List variable allowing unassigned values must be increased; otherwise, the scale will be zero.
+            logBase++;
+        }
         ProblemScaleTracker problemScaleTracker = new ProblemScaleTracker(logBase);
         visitAllEntities(solution, entity -> {
             var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
