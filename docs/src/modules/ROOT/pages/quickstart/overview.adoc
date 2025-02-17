@@ -6,8 +6,11 @@
     overview-quickstarts.adoc
 :imagesdir: ../..
 
-IMPORTANT: The https://github.com/TimefoldAI/timefold-quickstarts[timefold-quickstarts] repository
-contains the source code for all these guides and more.
+[TIP]
+====
+This documentation covers our Open Source solver to build a model from scratch.
+We also provide off-the-shelf models to solve common planning problems. https://docs.timefold.ai/[These can be found here.]
+====
 
 Each _quick start guide_ gets you up and running with Timefold Solver quickly.
 Pick one that aligns with your requirements:
@@ -22,6 +25,8 @@ Pick one that aligns with your requirements:
 ** https://spring.io[Spring Boot] is a popular platform in the Java ecosystem that supports native compilation.
 
 All three quick starts use Timefold Solver to optimize a school timetable for student and teachers:
+
+IMPORTANT: The https://github.com/TimefoldAI/timefold-quickstarts[timefold-quickstarts] repository contains the source code for all these guides and more.
 
 image::quickstart/school-timetabling/schoolTimetablingInputOutput.png[]
 

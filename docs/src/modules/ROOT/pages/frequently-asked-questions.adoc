@@ -14,6 +14,13 @@ that offers xref:enterprise-edition/enterprise-edition.adoc#enterpriseEditionFea
 to scale out to very large datasets.
 To find out more, see xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition section] of this documentation.
 
+== Does Timefold offer pre-built models?
+
+Timefold offers a suite of pre-built PlanningAI models designed to expedite development by addressing complex scheduling and routing challenges across various industries.
+These models are built upon Timefold Solver Enterprise Edition technology and are accessible through a REST API, facilitating seamless integration into your applications.
+
+See all available models on https://app.timefold.ai/[our platform].
+
 == Can Timefold Solver be included in a (GraalVM) native application?
 
 Yes. Timefold Solver has been tested with Quarkus and Spring Boot plugins to create native executables.

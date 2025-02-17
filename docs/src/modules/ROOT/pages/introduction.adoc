@@ -10,7 +10,13 @@
 Every organization faces planning problems: providing products or services with a limited set of _constrained_ resources (employees, assets, time, and money).
 Timefold Solver’s xref:planning-ai-concepts.adoc[PlanningAI] optimizes these problems to do more business with fewer resources using Constraint Satisfaction Programming.
 
-> Want to dive right into it? Follow our xref:quickstart/overview.adoc[Quickstart Example] to tackle your first planning problem in minutes.
+[TIP]
+====
+This documentation provides guidance on using our open-source solver to build custom models from scratch.
+For common planning problems, we also offer ready-made models that can be seamlessly integrated via our REST API.
+
+Explore our documentation and available models https://docs.timefold.ai/[here]
+====
 
 https://timefold.ai[Timefold Solver] is a lightweight, embeddable constraint satisfaction engine which optimizes planning problems.
 Example usecases include:
