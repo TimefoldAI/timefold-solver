@@ -29,6 +29,7 @@ import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataAnnotatedEx
 import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
+import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.reflect.generic.TestdataGenericEntity;
 import ai.timefold.solver.core.impl.testdata.domain.reflect.generic.TestdataGenericSolution;
 import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.TestdataNoProblemFactPropertySolution;
@@ -468,6 +469,26 @@ class SolutionDescriptorTest {
     }
 
     @Test
+    void problemScaleSingleEntityProvidingSingleValueRange() {
+        var solutionDescriptor = TestdataEntityProvidingSolution.buildSolutionDescriptor();
+        var solution = new TestdataEntityProvidingSolution("Solution");
+        TestdataValue v1 = new TestdataValue("1");
+        solution.setEntityList(List.of(
+                new TestdataEntityProvidingEntity("A",
+                        List.of(v1))));
+        assertSoftly(softly -> {
+            softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(1L);
+            softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(1L);
+
+            // Add 1 to the value range sizes, since the value range allows unassigned
+            softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution)).isEqualTo(2L);
+            softly.assertThat(solutionDescriptor.getApproximateValueCount(solution)).isEqualTo(2L);
+            softly.assertThat(solutionDescriptor.getProblemScale(solution))
+                    .isCloseTo(Math.log10(2), Percentage.withPercentage(1.0));
+        });
+    }
+
+    @Test
     void problemScaleChained() {
         int anchorCount = 20;
         int entityCount = 500;
@@ -513,6 +534,41 @@ class SolutionDescriptorTest {
             softly.assertThat(solutionDescriptor.getProblemScale(solution))
                     .isCloseTo(MathUtils.getPossibleArrangementsScaledApproximateLog(MathUtils.LOG_PRECISION, 10, 500, 20)
                             / (double) MathUtils.LOG_PRECISION, Percentage.withPercentage(1.0));
+        });
+    }
+
+    @Test
+    void problemScaleSingleEntityWithAssignedValues() {
+        int valueCount = 1;
+        int entityCount = 1;
+        SolutionDescriptor<TestdataListSolution> solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
+        TestdataListSolution solution = TestdataListSolution.generateUninitializedSolution(valueCount, entityCount);
+        assertSoftly(softly -> {
+            softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
+            softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
+            softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution)).isEqualTo(valueCount);
+            softly.assertThat(solutionDescriptor.getApproximateValueCount(solution)).isEqualTo(valueCount);
+            softly.assertThat(solutionDescriptor.getProblemScale(solution)).isEqualTo(0.0);
+        });
+    }
+
+    @Test
+    void problemScaleSingleEntityWithUnassignedValues() {
+        int valueCount = 1;
+        int entityCount = 1;
+        SolutionDescriptor<TestdataAllowsUnassignedValuesListSolution> solutionDescriptor =
+                TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor();
+        TestdataAllowsUnassignedValuesListSolution solution =
+                TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(valueCount, entityCount);
+        assertSoftly(softly -> {
+            softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
+            softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
+            softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution)).isEqualTo(valueCount + 1); // one value + one unassignment
+            softly.assertThat(solutionDescriptor.getApproximateValueCount(solution)).isEqualTo(valueCount + 1);
+            softly.assertThat(solutionDescriptor.getProblemScale(solution))
+                    .isCloseTo(MathUtils.getPossibleArrangementsScaledApproximateLog(MathUtils.LOG_PRECISION, 2, 2, 2)
+                            / (double) MathUtils.LOG_PRECISION / MathUtils.getLogInBase(2, 10d),
+                            Percentage.withPercentage(1.0));
         });
     }
 

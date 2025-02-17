@@ -75,9 +75,13 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
         var valueRangeDescriptorList =
                 new ArrayList<ValueRangeDescriptor<Solution_>>(valueRangeProviderMemberAccessors.length);
         var addNullInValueRange =
-                this instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
+                // Basic variables that allow unassigned values
+                (this instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
                         && basicVariableDescriptor.allowsUnassigned()
-                        && valueRangeProviderMemberAccessors.length == 1;
+                        && valueRangeProviderMemberAccessors.length == 1) ||
+                // List variables that allow unassigned values
+                        (this instanceof ListVariableDescriptor<Solution_> listVariableDescriptor
+                                && listVariableDescriptor.allowsUnassignedValues());
         for (var valueRangeProviderMemberAccessor : valueRangeProviderMemberAccessors) {
             valueRangeDescriptorList
                     .add(buildValueRangeDescriptor(descriptorPolicy, valueRangeProviderMemberAccessor, addNullInValueRange));
