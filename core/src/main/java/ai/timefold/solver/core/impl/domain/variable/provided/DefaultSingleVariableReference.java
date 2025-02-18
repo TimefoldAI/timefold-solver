@@ -13,7 +13,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentValue_, Value_>
-        extends AbstractVariableReference<Entity_, Value_>
+        extends AbstractVariableReference<Solution_, Entity_, Value_>
         implements
         SingleVariableReference<Entity_, Value_> permits ShadowVariableReference {
     @NonNull
@@ -59,7 +59,7 @@ public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentVal
     }
 
     public static <Solution_, Entity_> @NonNull DefaultSingleVariableReference<Solution_, Entity_, Entity_, Entity_>
-            entity(@NonNull DefaultShadowVariableFactory<?> shadowVariableFactory,
+            entity(@NonNull DefaultShadowVariableFactory<Solution_> shadowVariableFactory,
                     @NonNull SolutionDescriptor<Solution_> solutionDescriptor, @NonNull SupplyManager supplyManager,
                     Class<? extends Entity_> entityType) {
         return new DefaultSingleVariableReference<>(shadowVariableFactory, solutionDescriptor, supplyManager,
@@ -117,7 +117,7 @@ public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentVal
         if (parent != null) {
             throw new IllegalArgumentException("group() must be the first method called.");
         }
-        return new DefaultGroupVariableReference(shadowVariableFactory, solutionDescriptor, supplyManager,
+        return new DefaultGroupVariableReference<>(shadowVariableFactory, solutionDescriptor, supplyManager,
                 this, new GroupGraphNavigator<>(element, groupFunction),
                 entityClass, valueType,
                 element, shadowVariableFactory.nextGroupId());
@@ -153,19 +153,19 @@ public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentVal
 
     @Override
     @Nullable
-    AbstractVariableReference<Entity_, ?> getParent() {
+    AbstractVariableReference<Solution_, Entity_, ?> getParent() {
         return parent;
     }
 
     @Override
-    void processVariableReference(@NonNull VariableReferenceGraph graph) {
+    void processVariableReference(@NonNull VariableReferenceGraph<Solution_> graph) {
         if (parent != null) {
             parent.processVariableReference(graph);
         }
     }
 
     @Override
-    void processObject(@NonNull VariableReferenceGraph graph, @NonNull Object object) {
+    void processObject(@NonNull VariableReferenceGraph<Solution_> graph, @NonNull Object object) {
         if (entityClass.isInstance(object)) {
             var variableId = navigator.getVariableId();
             var toEdge = graph.addVariableReferenceEntity(variableId, object, this);
@@ -181,7 +181,7 @@ public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentVal
     }
 
     @Override
-    void addReferences(@NonNull DefaultShadowVariableFactory<?> factory) {
+    void addReferences(@NonNull DefaultShadowVariableFactory<Solution_> factory) {
         if (navigator instanceof VariableGraphNavigator<?, ?> variableGraphNavigator) {
             factory.addShadowVariableReference(variableGraphNavigator.variableDescriptor.getVariableName(), this);
         }
@@ -189,9 +189,6 @@ public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentVal
 
     @Override
     public String toString() {
-        if (parent == null) {
-            return parentType.getSimpleName();
-        }
-        return navigator.getVariableId().variableName();
+        return entityClass.getSimpleName() + "." + navigator.getVariableId().variableName();
     }
 }

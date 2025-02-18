@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.domain.variable.provided;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -12,7 +13,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue_, Value_>
-        extends AbstractVariableReference<Entity_, List<Value_>>
+        extends AbstractVariableReference<Solution_, Entity_, List<Value_>>
         implements GroupVariableReference<Entity_, Value_> {
     @NonNull
     DefaultShadowVariableFactory<?> shadowVariableFactory;
@@ -24,7 +25,7 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
     SupplyManager supplyManager;
 
     @NonNull
-    AbstractVariableReference<Entity_, ParentValue_> parent;
+    AbstractVariableReference<Solution_, Entity_, ParentValue_> parent;
 
     @NonNull
     Class<? extends Entity_> entityClass;
@@ -56,7 +57,7 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
         this.shadowVariableFactory = shadowVariableFactory;
         this.solutionDescriptor = solutionDescriptor;
         this.supplyManager = supplyManager;
-        this.parent = (AbstractVariableReference<Entity_, ParentValue_>) parent;
+        this.parent = (AbstractVariableReference<Solution_, Entity_, ParentValue_>) parent;
         this.navigator = navigator;
         this.entityClass = entityClass;
         this.parentType = parentType;
@@ -149,7 +150,8 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
             if (parentList == null) {
                 return null;
             }
-            return parentList.stream().map(navigator::getValueEdge).toList();
+            return parentList.stream().map(navigator::getValueEdge)
+                    .filter(Objects::nonNull).toList();
         }
     }
 
@@ -172,17 +174,17 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
 
     @Override
     @Nullable
-    AbstractVariableReference<Entity_, ?> getParent() {
+    AbstractVariableReference<Solution_, Entity_, ?> getParent() {
         return parent;
     }
 
     @Override
-    void processVariableReference(@NonNull VariableReferenceGraph graph) {
+    void processVariableReference(@NonNull VariableReferenceGraph<Solution_> graph) {
         parent.processVariableReference(graph);
     }
 
     @Override
-    void processObject(@NonNull VariableReferenceGraph graph, @NonNull Object object) {
+    void processObject(@NonNull VariableReferenceGraph<Solution_> graph, @NonNull Object object) {
         if (entityClass.isInstance(object)) {
             var variableId = getVariableId();
             var toEdge = graph.addVariableReferenceEntity(variableId, object, this);
@@ -194,8 +196,8 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    void processGroupElements(@NonNull VariableReferenceGraph graph,
-            @NonNull DefaultGroupVariableReference<?, ?, ?, ?> source, @NonNull Object object) {
+    void processGroupElements(@NonNull VariableReferenceGraph<Solution_> graph,
+            @NonNull DefaultGroupVariableReference<Solution_, ?, ?, ?> source, @NonNull Object object) {
         if (!entityClass.isInstance(object)) {
             return;
         }
@@ -207,7 +209,8 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
                         graph.addFixedEdge(
                                 graph.addVariableReferenceEntity(source.getVariableId().rootId(),
                                         groupElement,
-                                        (AbstractVariableReference<?, ?>) shadowVariableFactory.entity(source.entityClass)
+                                        (AbstractVariableReference<Solution_, ?, ?>) shadowVariableFactory
+                                                .entity(source.entityClass)
                                                 .variable(variableGraphNavigator.variableDescriptor.getVariablePropertyType(),
                                                         variableGraphNavigator.variableDescriptor.getVariableName())),
                                 graph.addVariableReferenceEntity(source.getVariableId(),
@@ -223,10 +226,10 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
 
     @Override
     @SuppressWarnings("unchecked")
-    void addReferences(@NonNull DefaultShadowVariableFactory<?> factory) {
+    void addReferences(@NonNull DefaultShadowVariableFactory<Solution_> factory) {
         if (navigator instanceof VariableGraphNavigator<?, ?> variableGraphNavigator) {
             factory.addShadowVariableReference(variableGraphNavigator.variableDescriptor.getVariableName(), this);
-            ((DefaultShadowVariableFactory<Solution_>) factory).addGroupVariableReference(this);
+            factory.addGroupVariableReference(this);
         }
     }
 
@@ -235,7 +238,7 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
         if (grouper != null) {
             return "%s.group(%d)".formatted(parent, groupId);
         } else {
-            return "%s.%s".formatted(parent, navigator.getVariableId().variableName());
+            return "%s.%s".formatted(entityClass.getSimpleName(), navigator.getVariableId().variableName());
         }
     }
 }

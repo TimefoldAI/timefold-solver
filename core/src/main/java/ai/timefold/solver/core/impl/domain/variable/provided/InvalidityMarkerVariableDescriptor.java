@@ -42,7 +42,7 @@ public class InvalidityMarkerVariableDescriptor<Solution_> extends ShadowVariabl
 
     @Override
     public Iterable<VariableListenerWithSources<Solution_>> buildVariableListeners(SupplyManager supplyManager) {
-        return null;
+        return List.of();
     }
 
     @Override

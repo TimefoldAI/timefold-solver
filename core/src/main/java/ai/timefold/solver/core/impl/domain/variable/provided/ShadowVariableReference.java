@@ -14,17 +14,17 @@ import org.jspecify.annotations.Nullable;
 
 public final class ShadowVariableReference<Solution_, Entity_, Value_>
         extends DefaultSingleVariableReference<Solution_, Entity_, Entity_, Value_> {
-    final ShadowVariableCalculation<Entity_, Value_> calculation;
+    final ShadowVariableCalculation<Solution_, Entity_, Value_> calculation;
     final VariableDescriptor<Solution_> variableDescriptor;
     final VariableDescriptor<Solution_> invalidDescriptor;
-    final List<AbstractVariableReference<?, ?>> shadowVariableReferences;
+    final List<AbstractVariableReference<Solution_, ?, ?>> shadowVariableReferences;
 
     public ShadowVariableReference(
             @NonNull SolutionDescriptor<Solution_> solutionDescriptor,
             @NonNull SupplyManager supplyManager,
             @NonNull VariableDescriptor<Solution_> variableDescriptor,
-            @NonNull ShadowVariableCalculation<Entity_, Value_> calculation,
-            @NonNull List<AbstractVariableReference<?, ?>> shadowVariableReferences,
+            @NonNull ShadowVariableCalculation<Solution_, Entity_, Value_> calculation,
+            @NonNull List<AbstractVariableReference<Solution_, ?, ?>> shadowVariableReferences,
             @NonNull Class<? extends Entity_> entityClass,
             @NonNull Class<? extends Value_> valueType) {
         super(calculation.shadowVariableFactory,
@@ -40,7 +40,7 @@ public final class ShadowVariableReference<Solution_, Entity_, Value_>
                 .getInvalidityMarkerVariableDescriptor();
     }
 
-    public void invalidateShadowVariable(ChangedVariableNotifier changedVariableNotifier, Object entity) {
+    public void invalidateShadowVariable(ChangedVariableNotifier<Solution_> changedVariableNotifier, Object entity) {
         var oldValue = variableDescriptor.getValue(entity);
         if (oldValue != null) {
             changedVariableNotifier.beforeVariableChanged(variableDescriptor, entity);
@@ -54,10 +54,12 @@ public final class ShadowVariableReference<Solution_, Entity_, Value_>
         }
     }
 
-    public boolean updateShadowVariable(ChangedVariableNotifier changedVariableNotifier, Object object) {
+    public boolean updateShadowVariable(ChangedVariableNotifier<Solution_> changedVariableNotifier, Object object) {
         var entity = (Entity_) object;
         var oldValue = variableDescriptor.getValue(entity);
+
         var newValue = calculation.calculate(entity);
+
         var changed = false;
         if (!Objects.equals(oldValue, newValue)) {
             changedVariableNotifier.beforeVariableChanged(variableDescriptor, entity);
@@ -74,15 +76,15 @@ public final class ShadowVariableReference<Solution_, Entity_, Value_>
         return changed;
     }
 
-    public void visitGraph(VariableReferenceGraph variableReferenceGraph) {
+    public void visitGraph(VariableReferenceGraph<Solution_> variableReferenceGraph) {
         variableReferenceGraph.addShadowVariable(this);
         for (var shadowVariableReference : shadowVariableReferences) {
-            List<AbstractVariableReference<Entity_, ?>> path = new ArrayList<>();
+            List<AbstractVariableReference<Solution_, Entity_, ?>> path = new ArrayList<>();
             var parent = shadowVariableReference.getParent();
             while (parent != null && !parent.getVariableId().variableName().equals(DefaultShadowVariableFactory.IDENTITY)) {
-                path.add(0, (AbstractVariableReference<Entity_, ?>) parent);
+                path.add(0, (AbstractVariableReference<Solution_, Entity_, ?>) parent);
                 addChangeProcessor(variableReferenceGraph,
-                        (AbstractVariableReference<Entity_, ?>) shadowVariableReference,
+                        (AbstractVariableReference<Solution_, Entity_, ?>) shadowVariableReference,
                         path);
                 parent = parent.getParent();
             }
@@ -90,9 +92,9 @@ public final class ShadowVariableReference<Solution_, Entity_, Value_>
         calculation.visitGraph(variableReferenceGraph);
     }
 
-    private void addChangeProcessor(VariableReferenceGraph variableReferenceGraph,
-            AbstractVariableReference<Entity_, ?> aliasReference,
-            List<AbstractVariableReference<Entity_, ?>> path) {
+    private void addChangeProcessor(VariableReferenceGraph<Solution_> variableReferenceGraph,
+            AbstractVariableReference<Solution_, Entity_, ?> aliasReference,
+            List<AbstractVariableReference<Solution_, Entity_, ?>> path) {
         // Alias is a reference to this shadow variable by a different name.
         // For instance, if first is the previous object before second, then
         // second:#id.#previous.shadow is an alias for first:#id.shadow.
@@ -115,6 +117,7 @@ public final class ShadowVariableReference<Solution_, Entity_, Value_>
                             return;
                         }
                     }
+
                     g.removeEdge(
                             g.lookup(getVariableId(), aliasSource),
                             g.lookup(aliasReference.getVariableId(), alias));
@@ -134,7 +137,7 @@ public final class ShadowVariableReference<Solution_, Entity_, Value_>
                 });
     }
 
-    public void visitEntity(VariableReferenceGraph variableReferenceGraph, Object entity) {
+    public void visitEntity(VariableReferenceGraph<Solution_> variableReferenceGraph, Object entity) {
         calculation.visitEntity(this, variableReferenceGraph, entity);
     }
 
@@ -145,18 +148,18 @@ public final class ShadowVariableReference<Solution_, Entity_, Value_>
     }
 
     @Override
-    void processVariableReference(@NonNull VariableReferenceGraph graph) {
+    void processVariableReference(@NonNull VariableReferenceGraph<Solution_> graph) {
         super.processVariableReference(graph);
         calculation.visitGraph(graph);
     }
 
     @Override
-    void processObject(@NonNull VariableReferenceGraph graph, @NonNull Object object) {
+    void processObject(@NonNull VariableReferenceGraph<Solution_> graph, @NonNull Object object) {
         super.processObject(graph, object);
         calculation.visitEntity(this, graph, object);
     }
 
     @Override
-    void addReferences(@NonNull DefaultShadowVariableFactory<?> factory) {
+    void addReferences(@NonNull DefaultShadowVariableFactory<Solution_> factory) {
     }
 }

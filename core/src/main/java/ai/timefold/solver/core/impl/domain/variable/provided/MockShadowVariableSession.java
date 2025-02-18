@@ -5,10 +5,10 @@ import ai.timefold.solver.core.preview.api.variable.provided.ShadowVariableSessi
 
 public class MockShadowVariableSession<Solution_> implements ShadowVariableSession {
     final SolutionDescriptor<Solution_> solutionDescriptor;
-    final VariableReferenceGraph graph;
+    final VariableReferenceGraph<Solution_> graph;
     final MockListStateSupply<Solution_> mockListStateSupply;
 
-    public MockShadowVariableSession(SolutionDescriptor<Solution_> solutionDescriptor, VariableReferenceGraph graph,
+    public MockShadowVariableSession(SolutionDescriptor<Solution_> solutionDescriptor, VariableReferenceGraph<Solution_> graph,
             MockListStateSupply<Solution_> mockListStateSupply) {
         this.solutionDescriptor = solutionDescriptor;
         this.graph = graph;

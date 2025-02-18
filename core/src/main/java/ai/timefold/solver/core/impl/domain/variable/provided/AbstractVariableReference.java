@@ -5,7 +5,7 @@ import ai.timefold.solver.core.preview.api.variable.provided.VariableReference;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-public abstract sealed class AbstractVariableReference<Entity_, Value_> implements VariableReference<Entity_, Value_>
+public abstract sealed class AbstractVariableReference<Solution_, Entity_, Value_> implements VariableReference<Entity_, Value_>
         permits DefaultGroupVariableReference, DefaultSingleVariableReference {
     abstract VariableId getVariableId();
 
@@ -13,11 +13,11 @@ public abstract sealed class AbstractVariableReference<Entity_, Value_> implemen
 
     abstract @Nullable Object getSingleValueFromSingleParent(@NonNull Object parent);
 
-    abstract @Nullable AbstractVariableReference<Entity_, ?> getParent();
+    abstract @Nullable AbstractVariableReference<Solution_, Entity_, ?> getParent();
 
-    abstract void processVariableReference(@NonNull VariableReferenceGraph graph);
+    abstract void processVariableReference(@NonNull VariableReferenceGraph<Solution_> graph);
 
-    abstract void processObject(@NonNull VariableReferenceGraph graph, @NonNull Object object);
+    abstract void processObject(@NonNull VariableReferenceGraph<Solution_> graph, @NonNull Object object);
 
-    abstract void addReferences(@NonNull DefaultShadowVariableFactory<?> factory);
+    abstract void addReferences(@NonNull DefaultShadowVariableFactory<Solution_> factory);
 }

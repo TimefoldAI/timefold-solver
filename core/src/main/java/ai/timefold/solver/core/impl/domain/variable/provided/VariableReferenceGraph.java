@@ -8,23 +8,22 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.function.IntConsumer;
 import java.util.function.IntFunction;
 
-public class VariableReferenceGraph {
-    private final Map<VariableId, Map<Object, EntityVariableOrFactReference>> variableReferenceToInstanceMap;
-    private final List<EntityVariableOrFactReference> instanceList;
-    private final ChangedVariableNotifier changedVariableNotifier;
+public class VariableReferenceGraph<Solution_> {
+    private final Map<VariableId, Map<Object, EntityVariableOrFactReference<Solution_>>> variableReferenceToInstanceMap;
+    private final List<EntityVariableOrFactReference<Solution_>> instanceList;
+    private final ChangedVariableNotifier<Solution_> changedVariableNotifier;
 
-    private final Map<VariableId, List<BiConsumer<VariableReferenceGraph, Object>>> variableReferenceToBeforeProcessor;
-    private final Map<VariableId, List<BiConsumer<VariableReferenceGraph, Object>>> variableReferenceToAfterProcessor;
-    private final Map<VariableId, ShadowVariableReference<?, ?, ?>> variableIdToShadowVariable;
-    private final Map<EntityVariableOrFactReference, List<EntityVariableOrFactReference>> fixedEdges;
+    private final Map<VariableId, List<BiConsumer<VariableReferenceGraph<Solution_>, Object>>> variableReferenceToBeforeProcessor;
+    private final Map<VariableId, List<BiConsumer<VariableReferenceGraph<Solution_>, Object>>> variableReferenceToAfterProcessor;
+    private final Map<VariableId, ShadowVariableReference<Solution_, ?, ?>> variableIdToShadowVariable;
+    private final Map<EntityVariableOrFactReference<Solution_>, List<EntityVariableOrFactReference<Solution_>>> fixedEdges;
     private int[][] counts;
     private TopologicalOrderGraph graph;
     private BitSet changed;
 
-    public VariableReferenceGraph(ChangedVariableNotifier changedVariableNotifier) {
+    public VariableReferenceGraph(ChangedVariableNotifier<Solution_> changedVariableNotifier) {
         this.changedVariableNotifier = changedVariableNotifier;
         variableReferenceToInstanceMap = new HashMap<>();
         instanceList = new ArrayList<>();
@@ -34,12 +33,12 @@ public class VariableReferenceGraph {
         fixedEdges = new HashMap<>();
     }
 
-    public void addShadowVariable(ShadowVariableReference<?, ?, ?> shadowVariable) {
+    public void addShadowVariable(ShadowVariableReference<Solution_, ?, ?> shadowVariable) {
         variableIdToShadowVariable.put(shadowVariable.getVariableId(), shadowVariable);
     }
 
-    public EntityVariableOrFactReference addVariableReferenceEntity(VariableId variableId, Object entity,
-            AbstractVariableReference<?, ?> variableReference) {
+    public EntityVariableOrFactReference<Solution_> addVariableReferenceEntity(VariableId variableId, Object entity,
+            AbstractVariableReference<Solution_, ?, ?> variableReference) {
         if (!variableId.entityClass().isInstance(entity)) {
             throw new IllegalArgumentException(variableId + " " + entity);
         }
@@ -50,7 +49,7 @@ public class VariableReferenceGraph {
                 variableReferenceToInstanceMap.get(variableId).containsKey(entity)) {
             return variableReferenceToInstanceMap.get(variableId).get(entity);
         }
-        var node = new EntityVariableOrFactReference(variableId, entity, variableReference, instanceList.size());
+        var node = new EntityVariableOrFactReference<>(variableId, entity, variableReference, instanceList.size());
         variableReferenceToInstanceMap.computeIfAbsent(variableId, k -> new IdentityHashMap<>())
                 .put(entity, node);
         instanceList.add(node);
@@ -58,13 +57,13 @@ public class VariableReferenceGraph {
     }
 
     public void addBeforeProcessor(VariableId parentVariableId,
-            BiConsumer<VariableReferenceGraph, Object> consumer) {
+            BiConsumer<VariableReferenceGraph<Solution_>, Object> consumer) {
         variableReferenceToBeforeProcessor.computeIfAbsent(parentVariableId, k -> new ArrayList<>())
                 .add(consumer);
     }
 
     public void addAfterProcessor(VariableId parentVariableId,
-            BiConsumer<VariableReferenceGraph, Object> consumer) {
+            BiConsumer<VariableReferenceGraph<Solution_>, Object> consumer) {
         variableReferenceToAfterProcessor.computeIfAbsent(parentVariableId, k -> new ArrayList<>())
                 .add(consumer);
     }
@@ -83,18 +82,21 @@ public class VariableReferenceGraph {
         }
     }
 
-    public EntityVariableOrFactReference lookup(VariableId variableReference, Object entity) {
+    public EntityVariableOrFactReference<Solution_> lookup(VariableId variableReference, Object entity) {
         return variableReferenceToInstanceMap.getOrDefault(variableReference, Collections.emptyMap()).get(entity);
     }
 
-    public void addFixedEdge(EntityVariableOrFactReference from, EntityVariableOrFactReference to) {
+    public void addFixedEdge(EntityVariableOrFactReference<Solution_> from, EntityVariableOrFactReference<Solution_> to) {
         if (from.id() == to.id()) {
             return;
         }
         fixedEdges.computeIfAbsent(from, k -> new ArrayList<>()).add(to);
     }
 
-    public void addEdge(EntityVariableOrFactReference from, EntityVariableOrFactReference to) {
+    public void addEdge(EntityVariableOrFactReference<Solution_> from, EntityVariableOrFactReference<Solution_> to) {
+        if (from.id() == to.id()) {
+            return;
+        }
         if (changed.isEmpty()) {
             graph.startBatchChange();
         }
@@ -105,8 +107,8 @@ public class VariableReferenceGraph {
         markChanged(to);
     }
 
-    public void removeEdge(EntityVariableOrFactReference from, EntityVariableOrFactReference to) {
-        if (from == null || to == null) {
+    public void removeEdge(EntityVariableOrFactReference<Solution_> from, EntityVariableOrFactReference<Solution_> to) {
+        if (from.id() == to.id()) {
             return;
         }
         if (changed.isEmpty()) {
@@ -119,7 +121,7 @@ public class VariableReferenceGraph {
         markChanged(to);
     }
 
-    public void markChanged(EntityVariableOrFactReference node) {
+    public void markChanged(EntityVariableOrFactReference<Solution_> node) {
         if (changed.isEmpty()) {
             graph.startBatchChange();
         }
@@ -162,15 +164,17 @@ public class VariableReferenceGraph {
             }
 
             if (isChanged) {
-                graph.componentForwardEdges(minNode).forEachRemaining((IntConsumer) changed::set);
+                graph.componentForwardEdges(minNode).forEachRemaining((int node) -> {
+                    changed.set(node);
+                });
             }
         }
     }
 
     public void beforeVariableChanged(VariableId variableReference, Object entity) {
         if (variableReference.entityClass().isInstance(entity)) {
-            var node = variableReferenceToBeforeProcessor.getOrDefault(variableReference, Collections.emptyList());
-            for (var consumer : node) {
+            var updaterList = variableReferenceToBeforeProcessor.getOrDefault(variableReference, Collections.emptyList());
+            for (var consumer : updaterList) {
                 consumer.accept(this, entity);
             }
         }
@@ -178,8 +182,12 @@ public class VariableReferenceGraph {
 
     public void afterVariableChanged(VariableId variableReference, Object entity) {
         if (variableReference.entityClass().isInstance(entity)) {
-            var node = variableReferenceToAfterProcessor.getOrDefault(variableReference, Collections.emptyList());
-            for (var consumer : node) {
+            var updaterList = variableReferenceToAfterProcessor.getOrDefault(variableReference, Collections.emptyList());
+            var node = lookup(variableReference, entity);
+            if (node != null) {
+                markChanged(node);
+            }
+            for (var consumer : updaterList) {
                 consumer.accept(this, entity);
             }
         }

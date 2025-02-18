@@ -34,7 +34,7 @@ public class DefaultShadowCalculationBuilderFactory<Solution_, Entity_> implemen
             return new DefaultShadowCalculationBuilder<>(variableFactory, solutionDescriptor, supplyManager, entityClass,
                     new ShadowVariableCalculation<>(variableFactory,
                             new AbstractVariableReference[] {
-                                    (AbstractVariableReference) a
+                                    (AbstractVariableReference<?, ?, ?>) a
                             }, BiFunction.class.getMethod("apply", Object.class, Object.class), function));
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
@@ -48,8 +48,8 @@ public class DefaultShadowCalculationBuilderFactory<Solution_, Entity_> implemen
             return new DefaultShadowCalculationBuilder<>(variableFactory, solutionDescriptor, supplyManager, entityClass,
                     new ShadowVariableCalculation<>(variableFactory,
                             new AbstractVariableReference[] {
-                                    (AbstractVariableReference) a,
-                                    (AbstractVariableReference) b,
+                                    (AbstractVariableReference<?, ?, ?>) a,
+                                    (AbstractVariableReference<?, ?, ?>) b,
                             }, TriFunction.class.getMethod("apply", Object.class, Object.class, Object.class),
                             function));
         } catch (NoSuchMethodException e) {
@@ -64,9 +64,9 @@ public class DefaultShadowCalculationBuilderFactory<Solution_, Entity_> implemen
             return new DefaultShadowCalculationBuilder<>(variableFactory, solutionDescriptor, supplyManager, entityClass,
                     new ShadowVariableCalculation<>(variableFactory,
                             new AbstractVariableReference[] {
-                                    (AbstractVariableReference) a,
-                                    (AbstractVariableReference) b,
-                                    (AbstractVariableReference) c,
+                                    (AbstractVariableReference<?, ?, ?>) a,
+                                    (AbstractVariableReference<?, ?, ?>) b,
+                                    (AbstractVariableReference<?, ?, ?>) c,
                             }, QuadFunction.class.getMethod("apply", Object.class, Object.class, Object.class, Object.class),
                             function));
         } catch (NoSuchMethodException e) {
@@ -82,10 +82,10 @@ public class DefaultShadowCalculationBuilderFactory<Solution_, Entity_> implemen
             return new DefaultShadowCalculationBuilder<>(variableFactory, solutionDescriptor, supplyManager, entityClass,
                     new ShadowVariableCalculation<>(variableFactory,
                             new AbstractVariableReference[] {
-                                    (AbstractVariableReference) a,
-                                    (AbstractVariableReference) b,
-                                    (AbstractVariableReference) c,
-                                    (AbstractVariableReference) d
+                                    (AbstractVariableReference<?, ?, ?>) a,
+                                    (AbstractVariableReference<?, ?, ?>) b,
+                                    (AbstractVariableReference<?, ?, ?>) c,
+                                    (AbstractVariableReference<?, ?, ?>) d
                             }, PentaFunction.class.getMethod("apply", Object.class, Object.class, Object.class, Object.class,
                                     Object.class),
                             function));

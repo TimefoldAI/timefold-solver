@@ -12,8 +12,12 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescripto
 import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWithSources;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
+import ai.timefold.solver.core.preview.api.variable.provided.ProvidedShadowVariable;
+import ai.timefold.solver.core.preview.api.variable.provided.ShadowVariableProvider;
 
 public class ProvidedShadowVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
+    private Class<? extends ShadowVariableProvider> shadowVariableProviderClass;
+
     public ProvidedShadowVariableDescriptor(int ordinal,
             EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
@@ -22,7 +26,8 @@ public class ProvidedShadowVariableDescriptor<Solution_> extends ShadowVariableD
 
     @Override
     public void processAnnotations(DescriptorPolicy descriptorPolicy) {
-
+        shadowVariableProviderClass = variableMemberAccessor.getAnnotation(ProvidedShadowVariable.class)
+                .value();
     }
 
     @Override
@@ -42,11 +47,15 @@ public class ProvidedShadowVariableDescriptor<Solution_> extends ShadowVariableD
 
     @Override
     public Iterable<VariableListenerWithSources<Solution_>> buildVariableListeners(SupplyManager supplyManager) {
-        return null;
+        return List.of();
     }
 
     @Override
     public void linkVariableDescriptors(DescriptorPolicy descriptorPolicy) {
 
+    }
+
+    public Class<? extends ShadowVariableProvider> getShadowVariableProviderClass() {
+        return shadowVariableProviderClass;
     }
 }

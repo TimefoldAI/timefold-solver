@@ -22,7 +22,7 @@ public class TestShadowVariableProvider implements ShadowVariableProvider {
                         .entity(Visit.class)
                         .group(Visit.class, Visit::getVisitGroup)
                         .variables(LocalDateTime.class, "serviceReadyTime"),
-                        (visit, groupReadyTimes) -> Collections.max(groupReadyTimes))
+                        (visit, groupReadyTimes) -> groupReadyTimes.isEmpty() ? null : Collections.max(groupReadyTimes))
                 .orCompute(serviceReadyTime, (visit, readyTime) -> readyTime)
                 .as("serviceStartTime");
 

@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.domain.variable.provided;
 
+import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
+
 import org.jspecify.annotations.Nullable;
 
 public record VariableId(Class<?> entityClass, String variableName, @Nullable VariableId parentVariableId) {
@@ -9,6 +11,11 @@ public record VariableId(Class<?> entityClass, String variableName, @Nullable Va
 
     public static VariableId entity(Class<?> entityClass) {
         return new VariableId(entityClass, DefaultShadowVariableFactory.IDENTITY, null);
+    }
+
+    public static <Solution_> VariableId of(VariableDescriptor<Solution_> variableDescriptor) {
+        var entityClass = variableDescriptor.getEntityDescriptor().getEntityClass();
+        return entity(entityClass).child(entityClass, variableDescriptor.getVariableName());
     }
 
     public VariableId rootId() {

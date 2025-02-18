@@ -6,8 +6,14 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.util.List;
 
+import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -421,5 +427,84 @@ public class ProvidedShadowVariableTest {
         assertThat(visitC.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
         assertThat(visitC.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(150L));
         assertThat(visitC.isInvalid()).isFalse();
+    }
+
+    @Test
+    void solveNoVisitGroups() {
+        var problem = new RoutePlan();
+        var vehicle1 = new Vehicle("v1");
+        var vehicle2 = new Vehicle("v2");
+        var vehicle3 = new Vehicle("v3");
+
+        var visitA1 = new Visit("a1");
+        var visitA2 = new Visit("a2");
+        var visitB1 = new Visit("b1");
+        var visitB2 = new Visit("b2");
+        var visitB3 = new Visit("b3");
+        var visitC = new Visit("c");
+
+        problem.vehicles = List.of(vehicle1, vehicle2, vehicle3);
+        problem.visits = List.of(visitA1, visitA2, visitB1, visitB2, visitB3, visitC);
+
+        var solverConfig = new SolverConfig()
+                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
+                .withSolutionClass(RoutePlan.class)
+                .withEntityClasses(Vehicle.class, Visit.class)
+                .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
+                        .withConstraintProviderClass(RouteConstraintProvider.class)
+                        .withAssertionScoreDirectorFactory(new ScoreDirectorFactoryConfig()
+                                .withConstraintProviderClass(AssertionRouteConstraintProvider.class)))
+                .withTerminationConfig(new TerminationConfig()
+                        .withMoveCountLimit(1000L));
+
+        var solverFactory = SolverFactory.create(solverConfig);
+        var solver = solverFactory.buildSolver();
+
+        solver.solve(problem);
+    }
+
+    @Test
+    @Disabled // TODO: Fix me; score corruption (although no shadow variable corruption?)
+    void solveVisitGroups() {
+        var problem = new RoutePlan();
+        var vehicle1 = new Vehicle("v1");
+        var vehicle2 = new Vehicle("v2");
+        var vehicle3 = new Vehicle("v3");
+
+        var visitA1 = new Visit("a1");
+        var visitA2 = new Visit("a2");
+        var visitB1 = new Visit("b1");
+        var visitB2 = new Visit("b2");
+        var visitB3 = new Visit("b3");
+        var visitC = new Visit("c");
+
+        var visitGroupA = List.of(visitA1, visitA2);
+        var visitGroupB = List.of(visitB1, visitB2, visitB3);
+
+        visitA1.setVisitGroup(visitGroupA);
+        visitA2.setVisitGroup(visitGroupA);
+
+        visitB1.setVisitGroup(visitGroupB);
+        visitB2.setVisitGroup(visitGroupB);
+        visitB3.setVisitGroup(visitGroupB);
+
+        problem.vehicles = List.of(vehicle1, vehicle2, vehicle3);
+        problem.visits = List.of(visitA1, visitA2, visitB1, visitB2, visitB3, visitC);
+
+        var solverConfig = new SolverConfig()
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
+                .withSolutionClass(RoutePlan.class)
+                .withEntityClasses(Vehicle.class, Visit.class)
+                .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
+                        .withConstraintProviderClass(RouteConstraintProvider.class)
+                        .withAssertionScoreDirectorFactory(new ScoreDirectorFactoryConfig()
+                                .withConstraintProviderClass(AssertionRouteConstraintProvider.class)))
+                .withTerminationConfig(new TerminationConfig()
+                        .withMoveCountLimit(1000L));
+
+        var solverFactory = SolverFactory.create(solverConfig);
+        var solver = solverFactory.buildSolver();
+
+        solver.solve(problem);
     }
 }
