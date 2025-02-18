@@ -21,7 +21,10 @@ Follow the guidelines listed in this section to create a well thought-out model 
 
 .. Create sample instances for each class. For example, in the employee rostering `Employee` class, create `Ann`, `Bert`, and `Carl`.
 
-. *Determine which relationships (or fields) change during planning and color them orange.* One side of these relationships will become a planning variable later on. For example, in employee rostering, the `Shift` to `Employee` relationship changes during planning, so it is orange. However, other relationships, such as from `Employee` to `Skill`, are immutable during planning
+. *Determine which relationships (or fields) change during planning and color them orange.*
+One side of these relationships will become a planning variable later on.
+For example, in employee rostering, the `Shift` to `Employee` relationship changes during planning, so it is orange.
+However, other relationships, such as from `Employee` to `Skill`, are immutable during planning
 because Timefold Solver cannot assign an extra skill to an employee.
 
 . *If there are multiple relationships (or fields), check for xref:using-timefold-solver/modeling-planning-problems.adoc#shadowVariable[shadow variables]*.
@@ -30,24 +33,29 @@ A shadow variable changes during planning, but its value can be calculated based
 [NOTE]
 ====
 Only one side of a bi-directional relationship can be a genuine planning variable.
-The other side will become an xref:using-timefold-solver/modeling-planning-problems.adoc#bidirectionalVariable[inverse relation shadow variable] later on. Keep bi-directional relationships orange.
+The other side will become an xref:using-timefold-solver/modeling-planning-problems.adoc#bidirectionalVariable[inverse relation shadow variable] later on.
+Keep bi-directional relationships orange.
 ====
 
 . *If the goal is to find an optimal order of elements*, use the <<chainedThroughTimePattern,Chained Through Time pattern>>.
 
 . *If there is an orange many-to-many relationship, replace it
 with a one-to-many and a many-to-one relationship to a new intermediate class.*
+
++
+The following figure illustrates introducing a `ShiftAssignment` class
+to represent the many-to-many relationship between `Shift` and `Employee`.
+`Shift` contains every shift time that needs to be filled with an employee.
++
+image::design-patterns/employeeShiftRosteringModelingGuideA.png[align="center"]
+
 +
 [NOTE]
 ====
 Timefold Solver does not currently support a `@PlanningVariable` annotation on a collection.
+xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[Planning list variable] is not a means of achieving a many-to-one relationship;
+it serves to indicate that these values happen in a sequence one after another.
 ====
-
-+
-For example, in the Employee Rostering starter application the `ShiftAssignment` class is the many-to-many relationship between `Shift` and `Employee`.
-`Shift` contains every shift time that needs to be filled with an employee.
-+
-image::design-patterns/employeeShiftRosteringModelingGuideA.png[align="center"]
 
 . *Annotate a many-to-one relationship with a `@PlanningEntity` annotation.* Usually the _many_ side of the relationship is the planning entity class that contains the planning variable. If the relationship is bi-directional, both sides are a planning entity class but usually the _many_ side has the planning variable and the _one_ side has the shadow variable. For example, in employee rostering, the `ShiftAssignment` class has an `@PlanningEntity` annotation.
 
