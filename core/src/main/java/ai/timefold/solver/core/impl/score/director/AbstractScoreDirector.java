@@ -410,6 +410,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (variableDescriptor.isGenuineAndUninitialized(entity)) {
             workingInitScore--;
         }
+        variableListenerSupport.afterVariableChanged(variableDescriptor, entity);
     }
 
     @Override
@@ -421,7 +422,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void beforeListVariableElementAssigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        // Do nothing
+        variableListenerSupport.beforeElementAssigned(variableDescriptor, element);
     }
 
     @Override
@@ -434,7 +435,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void beforeListVariableElementUnassigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        // Do nothing
+        variableListenerSupport.beforeElementUnassigned(variableDescriptor, element);
     }
 
     @Override
