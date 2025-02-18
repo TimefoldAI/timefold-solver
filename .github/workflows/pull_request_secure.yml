@@ -21,7 +21,6 @@ on:
       - 'LICENSE*'
       - '.gitignore'
       - '**.md'
-      - '**.adoc'
       - '*.txt'
 
 jobs:
