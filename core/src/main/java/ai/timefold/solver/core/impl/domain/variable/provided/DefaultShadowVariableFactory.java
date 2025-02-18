@@ -23,7 +23,7 @@ public class DefaultShadowVariableFactory<Solution_> implements ShadowVariableFa
     final SupplyManager supplyManager;
     final List<ShadowVariableReference<Solution_, ?, ?>> shadowVariableReferenceList;
     final List<DefaultGroupVariableReference<Solution_, ?, ?, ?>> groupVariableReferenceList;
-    final Map<String, List<AbstractVariableReference<?, ?>>> shadowVariableToReferencesMap;
+    final Map<String, List<AbstractVariableReference<Solution_, ?, ?>>> shadowVariableToReferencesMap;
     final AtomicInteger groupCounter;
 
     public DefaultShadowVariableFactory(SolutionDescriptor<Solution_> solutionDescriptor, SupplyManager supplyManager) {
@@ -53,7 +53,7 @@ public class DefaultShadowVariableFactory<Solution_> implements ShadowVariableFa
         return shadowVariableReferenceList;
     }
 
-    public void addShadowVariableReference(String variableName, AbstractVariableReference<?, ?> reference) {
+    public void addShadowVariableReference(String variableName, AbstractVariableReference<Solution_, ?, ?> reference) {
         shadowVariableToReferencesMap.computeIfAbsent(variableName, (ignored) -> new ArrayList<>())
                 .add(reference);
     }
@@ -62,7 +62,7 @@ public class DefaultShadowVariableFactory<Solution_> implements ShadowVariableFa
         groupVariableReferenceList.add(reference);
     }
 
-    public List<AbstractVariableReference<?, ?>> getShadowVariableReferences(String variableName) {
+    public List<AbstractVariableReference<Solution_, ?, ?>> getShadowVariableReferences(String variableName) {
         return shadowVariableToReferencesMap.computeIfAbsent(variableName, (ignored) -> new ArrayList<>());
     }
 
