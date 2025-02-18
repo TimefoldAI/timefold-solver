@@ -5,16 +5,16 @@ import java.lang.reflect.Method;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-public final class ShadowVariableCalculation<Entity_, Value_> {
-    final DefaultShadowVariableFactory<?> shadowVariableFactory;
+public final class ShadowVariableCalculation<Solution_, Entity_, Value_> {
+    final DefaultShadowVariableFactory<Solution_> shadowVariableFactory;
     @Nullable
-    private final ShadowVariableCalculation<Entity_, Value_> fallback;
-    private final AbstractVariableReference<Entity_, ?>[] inputs;
+    private final ShadowVariableCalculation<Solution_, Entity_, Value_> fallback;
+    private final AbstractVariableReference<Solution_, Entity_, ?>[] inputs;
     private final Method calculatorMethod;
     private final Object calculator;
 
-    public ShadowVariableCalculation(DefaultShadowVariableFactory<?> shadowVariableFactory,
-            AbstractVariableReference<Entity_, ?>[] inputs, Method calculatorMethod,
+    public ShadowVariableCalculation(DefaultShadowVariableFactory<Solution_> shadowVariableFactory,
+            AbstractVariableReference<Solution_, Entity_, ?>[] inputs, Method calculatorMethod,
             Object calculator) {
         this.shadowVariableFactory = shadowVariableFactory;
         this.fallback = null;
@@ -26,8 +26,8 @@ public final class ShadowVariableCalculation<Entity_, Value_> {
         }
     }
 
-    public ShadowVariableCalculation(@NonNull ShadowVariableCalculation<Entity_, Value_> fallback,
-            AbstractVariableReference<Entity_, ?>[] inputs, Method calculatorMethod, Object calculator) {
+    public ShadowVariableCalculation(@NonNull ShadowVariableCalculation<Solution_, Entity_, Value_> fallback,
+            AbstractVariableReference<Solution_, Entity_, ?>[] inputs, Method calculatorMethod, Object calculator) {
         this.shadowVariableFactory = fallback.shadowVariableFactory;
         this.fallback = fallback;
         this.inputs = inputs;
@@ -35,7 +35,8 @@ public final class ShadowVariableCalculation<Entity_, Value_> {
         this.calculator = calculator;
     }
 
-    public ShadowVariableCalculation<Entity_, Value_> withFallback(ShadowVariableCalculation<Entity_, Value_> fallback) {
+    public ShadowVariableCalculation<Solution_, Entity_, Value_>
+            withFallback(ShadowVariableCalculation<Solution_, Entity_, Value_> fallback) {
         return new ShadowVariableCalculation<>(fallback, inputs, calculatorMethod, calculator);
     }
 
@@ -59,7 +60,7 @@ public final class ShadowVariableCalculation<Entity_, Value_> {
         }
     }
 
-    public void visitGraph(VariableReferenceGraph graph) {
+    public void visitGraph(VariableReferenceGraph<Solution_> graph) {
         for (var input : inputs) {
             input.processVariableReference(graph);
         }
@@ -68,7 +69,8 @@ public final class ShadowVariableCalculation<Entity_, Value_> {
         }
     }
 
-    public void visitEntity(ShadowVariableReference<?, Entity_, Value_> shadowVariable, VariableReferenceGraph graph,
+    public void visitEntity(ShadowVariableReference<Solution_, Entity_, Value_> shadowVariable,
+            VariableReferenceGraph<Solution_> graph,
             Object entity) {
         var shadowVariableId = shadowVariable.getVariableId();
         if (!shadowVariableId.entityClass().isInstance(entity)) {
