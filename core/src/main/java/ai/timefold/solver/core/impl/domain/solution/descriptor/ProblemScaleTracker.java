@@ -70,6 +70,11 @@ public class ProblemScaleTracker {
     }
 
     public void addBasicProblemScale(long count) {
+        if (count == 0) {
+            // Log(0) = -infinity; also an invalid problem (since there are no
+            // valid values for the variable, including null)
+            return;
+        }
         basicProblemScaleLog += MathUtils.getScaledApproximateLog(MathUtils.LOG_PRECISION, logBase, count);
     }
 }

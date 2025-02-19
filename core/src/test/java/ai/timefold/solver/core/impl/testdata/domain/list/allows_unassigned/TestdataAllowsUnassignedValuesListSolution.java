@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
@@ -17,6 +18,23 @@ public class TestdataAllowsUnassignedValuesListSolution {
                 TestdataAllowsUnassignedValuesListSolution.class,
                 TestdataAllowsUnassignedValuesListEntity.class,
                 TestdataAllowsUnassignedValuesListValue.class);
+    }
+
+    public static TestdataAllowsUnassignedValuesListSolution generateUninitializedSolution(int valueCount, int entityCount) {
+        return generateSolution(valueCount, entityCount);
+    }
+
+    private static TestdataAllowsUnassignedValuesListSolution generateSolution(int valueCount, int entityCount) {
+        List<TestdataAllowsUnassignedValuesListEntity> entityList = IntStream.range(0, entityCount)
+                .mapToObj(i -> new TestdataAllowsUnassignedValuesListEntity("Generated Entity " + i))
+                .toList();
+        List<TestdataAllowsUnassignedValuesListValue> valueList = IntStream.range(0, valueCount)
+                .mapToObj(i -> new TestdataAllowsUnassignedValuesListValue("Generated Value " + i))
+                .toList();
+        TestdataAllowsUnassignedValuesListSolution solution = new TestdataAllowsUnassignedValuesListSolution();
+        solution.setValueList(valueList);
+        solution.setEntityList(entityList);
+        return solution;
     }
 
     private List<TestdataAllowsUnassignedValuesListValue> valueList;

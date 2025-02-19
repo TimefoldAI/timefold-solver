@@ -1110,7 +1110,7 @@ public class SolutionDescriptor<Solution_> {
      * @return {@code >= 0}
      */
     public double getProblemScale(Solution_ solution) {
-        long logBase = getMaximumValueRangeSize(solution);
+        var logBase = Math.max(2, getMaximumValueRangeSize(solution));
         ProblemScaleTracker problemScaleTracker = new ProblemScaleTracker(logBase);
         visitAllEntities(solution, entity -> {
             var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
