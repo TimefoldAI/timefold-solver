@@ -54,6 +54,24 @@ public class DefaultShadowVariableSession<Solution_> implements ShadowVariableSe
     }
 
     public void afterListElementUnassigned(Object entity) {
+        var entityClass = entity.getClass();
+        var entityRootId = VariableId.entity(entityClass);
+        var inverseVariableId = graph.lookup(entityRootId.child(entityClass, DefaultShadowVariableFactory.INVERSE),
+                entity);
+        var previousVariableId = graph.lookup(entityRootId.child(entityClass, DefaultShadowVariableFactory.PREVIOUS),
+                entity);
+        var nextVariableId = graph.lookup(entityRootId.child(entityClass, DefaultShadowVariableFactory.NEXT),
+                entity);
+
+        if (inverseVariableId != null) {
+            graph.markChanged(inverseVariableId);
+        }
+        if (previousVariableId != null) {
+            graph.markChanged(previousVariableId);
+        }
+        if (nextVariableId != null) {
+            graph.markChanged(nextVariableId);
+        }
     }
 
     @Override
