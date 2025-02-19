@@ -121,6 +121,7 @@ class TimefoldProcessorOverridePropertiesAtRuntimeTest {
         assertEquals("0.5", solverConfigProperties.get("termination.diminished-returns.minimum-improvement-ratio"));
         assertEquals("7", solverConfigProperties.get("termination.bestScoreLimit"));
         assertEquals("3", solverConfigProperties.get("moveThreadCount"));
+        assertEquals("123", solverConfigProperties.get("randomSeed"));
     }
 
     @Test
