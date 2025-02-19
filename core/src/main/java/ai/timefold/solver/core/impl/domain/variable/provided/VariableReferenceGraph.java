@@ -132,6 +132,8 @@ public class VariableReferenceGraph<Solution_> {
         graph.endBatchChange();
         var visited = new boolean[instanceList.size()];
         var loopedTracker = new LoopedTracker(visited.length);
+        // TODO: Find out what isn't being marked as changed
+        changed.set(0, visited.length);
         while (!changed.isEmpty()) {
             int minTopologicalOrder = Integer.MAX_VALUE;
             int minNode = 0;

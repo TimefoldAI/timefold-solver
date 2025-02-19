@@ -13,7 +13,6 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -453,7 +452,7 @@ public class ProvidedShadowVariableTest {
                 .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
                         .withConstraintProviderClass(RouteConstraintProvider.class)
                         .withAssertionScoreDirectorFactory(new ScoreDirectorFactoryConfig()
-                                .withConstraintProviderClass(AssertionRouteConstraintProvider.class)))
+                                .withEasyScoreCalculatorClass(AssertionRouteEasyScoreCalculator.class)))
                 .withTerminationConfig(new TerminationConfig()
                         .withMoveCountLimit(1000L));
 
@@ -464,7 +463,6 @@ public class ProvidedShadowVariableTest {
     }
 
     @Test
-    @Disabled // TODO: Fix me; score corruption (although no shadow variable corruption?)
     void solveVisitGroups() {
         var problem = new RoutePlan();
         var vehicle1 = new Vehicle("v1");
@@ -492,13 +490,15 @@ public class ProvidedShadowVariableTest {
         problem.visits = List.of(visitA1, visitA2, visitB1, visitB2, visitB3, visitC);
 
         var solverConfig = new SolverConfig()
-                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
+                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
                 .withSolutionClass(RoutePlan.class)
                 .withEntityClasses(Vehicle.class, Visit.class)
                 .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
-                        .withConstraintProviderClass(RouteConstraintProvider.class)
+                        .withEasyScoreCalculatorClass(RouteEasyScoreCalculator.class)
                         .withAssertionScoreDirectorFactory(new ScoreDirectorFactoryConfig()
-                                .withConstraintProviderClass(AssertionRouteConstraintProvider.class)))
+                                .withEasyScoreCalculatorClass(AssertionRouteEasyScoreCalculator.class))
+                //
+                )
                 .withTerminationConfig(new TerminationConfig()
                         .withMoveCountLimit(1000L));
 

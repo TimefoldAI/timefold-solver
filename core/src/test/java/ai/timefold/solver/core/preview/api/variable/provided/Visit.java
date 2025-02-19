@@ -2,7 +2,9 @@ package ai.timefold.solver.core.preview.api.variable.provided;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -85,61 +87,113 @@ public class Visit {
     }
 
     public boolean getExpectedInvalid() {
-        if (previousVisit != null && previousVisit.getExpectedInvalid()) {
+        return getExpectedInvalid(new IdentityHashMap<>());
+    }
+
+    boolean getExpectedInvalid(Map<Visit, Boolean> cache) {
+        if (cache.containsKey(this)) {
+            return cache.get(this);
+        }
+        cache.put(this, true);
+        if (previousVisit != null && previousVisit.getExpectedInvalid(cache)) {
             return true;
         }
-        if (visitGroup == null) {
-            return false;
-        }
-        for (var visit : visitGroup) {
-            if (visit.nextVisit != null && visit.nextVisit.getExpectedInvalid(visitGroup)) {
-                return true;
+        if (visitGroup != null) {
+            var vehicles = Collections.newSetFromMap(new IdentityHashMap<>());
+            for (var visit : visitGroup) {
+                if (visit.vehicle != null && !vehicles.add(visit.vehicle)) {
+                    return true;
+                }
+                if (visit != this) {
+                    if (visit.previousVisit != null && visit.previousVisit.getExpectedInvalid(cache)) {
+                        return true;
+                    }
+                }
             }
         }
+        cache.put(this, false);
         return false;
     }
 
-    public boolean getExpectedInvalid(List<Visit> toCheck) {
-        if (visitGroup != null && !Collections.disjoint(visitGroup, toCheck)) {
-            return true;
+    record TimeCache(Map<Visit, LocalDateTime> readyTimeCache, Map<Visit, LocalDateTime> startTimeCache,
+            Map<Visit, LocalDateTime> endTimeCache) {
+        static TimeCache create() {
+            return new TimeCache(new IdentityHashMap<>(), new IdentityHashMap<>(), new IdentityHashMap<>());
         }
-        if (nextVisit != null) {
-            return nextVisit.getExpectedInvalid(toCheck);
-        }
-        return false;
     }
 
     public LocalDateTime getExpectedServiceReadyTime() {
+        return getExpectedServiceReadyTime(TimeCache.create());
+    }
+
+    LocalDateTime getExpectedServiceReadyTime(TimeCache cache) {
         if (getExpectedInvalid()) {
             return null;
         }
+        if (cache.readyTimeCache.containsKey(this)) {
+            return cache.readyTimeCache.get(this);
+        }
+        cache.readyTimeCache.put(this, null);
         if (previousVisit == null) {
             if (vehicle == null) {
                 return null;
             }
+            cache.readyTimeCache.put(this, TestShadowVariableProvider.BASE_START_TIME);
             return TestShadowVariableProvider.BASE_START_TIME;
         }
-        return previousVisit.getExpectedServiceFinishTime().plusMinutes(30L);
+        var out = previousVisit.getExpectedServiceFinishTime(cache);
+        if (out == null) {
+            return null;
+        }
+        out = out.plusMinutes(30L);
+        cache.readyTimeCache.put(this, out);
+        return out;
     }
 
     public LocalDateTime getExpectedServiceStartTime() {
+        return getExpectedServiceStartTime(TimeCache.create());
+    }
+
+    LocalDateTime getExpectedServiceStartTime(TimeCache cache) {
         if (getExpectedInvalid()) {
             return null;
         }
+        if (cache.startTimeCache.containsKey(this)) {
+            return cache.startTimeCache.get(this);
+        }
+        cache.startTimeCache.put(this, null);
         if (visitGroup == null) {
-            return getExpectedServiceReadyTime();
+            var out = getExpectedServiceReadyTime(cache);
+            cache.startTimeCache.put(this, out);
+            return out;
         } else {
-            return visitGroup.stream().map(Visit::getExpectedServiceReadyTime)
-                    .filter(Objects::nonNull).min(LocalDateTime::compareTo)
+            var out = visitGroup.stream().map(visit -> visit.getExpectedServiceReadyTime(cache))
+                    .filter(Objects::nonNull).max(LocalDateTime::compareTo)
                     .orElse(null);
+            cache.startTimeCache.put(this, out);
+            return out;
         }
     }
 
     public LocalDateTime getExpectedServiceFinishTime() {
+        return getExpectedServiceFinishTime(TimeCache.create());
+    }
+
+    LocalDateTime getExpectedServiceFinishTime(TimeCache cache) {
         if (getExpectedInvalid()) {
             return null;
         }
-        return getExpectedServiceStartTime().plusMinutes(30L);
+        if (cache.endTimeCache.containsKey(this)) {
+            return cache.endTimeCache.get(this);
+        }
+        cache.endTimeCache.put(this, null);
+        var out = getExpectedServiceStartTime(cache);
+        if (out == null) {
+            return null;
+        }
+        out = out.plusMinutes(30L);
+        cache.endTimeCache.put(this, out);
+        return out;
     }
 
     public boolean isAssigned() {
