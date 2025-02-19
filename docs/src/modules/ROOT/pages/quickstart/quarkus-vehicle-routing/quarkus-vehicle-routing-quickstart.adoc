@@ -15,6 +15,11 @@ include::../../_attributes.adoc[]
 This guide walks you through the process of creating a Vehicle Routing application
 with https://quarkus.io/[Quarkus] and https://timefold.ai[Timefold]'s constraint solving Artificial Intelligence (AI).
 
+[TIP]
+====
+https://docs.timefold.ai/field-service-routing/latest/introduction[Check out our off-the-shelf model for Field Service Routing] (REST API)
+====
+
 == What you will build
 
 You will build a REST application that optimizes a Vehicle Route Problem (VRP):

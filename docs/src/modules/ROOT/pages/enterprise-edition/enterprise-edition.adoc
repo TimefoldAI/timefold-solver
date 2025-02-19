@@ -13,9 +13,10 @@ You are allowed to use Timefold Solver Enterprise Edition for evaluation and dev
 Please contact https://timefold.ai/contact[contact Timefold]
 to obtain the credentials necessary to start your evaluation.
 
+TIP: All our https://docs.timefold.ai/field-service-routing/latest/introduction[pre-built PlanningAI models] are backed by the Timefold Solver Enterprise Edition at no extra cost.
+
 For a high-level overview of the differences between Timefold offerings,
 see https://timefold.ai/pricing[Timefold Pricing].
-
 
 [#switchToEnterpriseEdition]
 == Switch to Enterprise Edition

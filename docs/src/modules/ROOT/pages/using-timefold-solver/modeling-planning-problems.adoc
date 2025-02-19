@@ -5,6 +5,14 @@
 :sectnums:
 :icons: font
 
+[TIP]
+====
+While we've simplified model creation with our constraint solver, it can still be complex and time-consuming.
+If rapid deployment is crucial, consider our pre-built models.
+Designed to tackle common optimization challenges, they integrate seamlessly through our REST API, enabling faster time-to-market.
+
+Explore our documentation and available models https://docs.timefold.ai/[here].
+====
 
 [#isThisClassAProblemFactOrPlanningEntity]
 == Is this class a problem fact or planning entity?
