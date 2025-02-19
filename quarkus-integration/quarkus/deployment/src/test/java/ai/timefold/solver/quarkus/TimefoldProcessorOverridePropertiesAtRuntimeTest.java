@@ -62,6 +62,7 @@ class TimefoldProcessorOverridePropertiesAtRuntimeTest {
     private static Map<String, String> getRuntimeProperties() {
         Map<String, String> out = new HashMap<>();
         out.put("quarkus.timefold.solver.termination.best-score-limit", "7");
+        out.put("quarkus.timefold.solver.random-seed", "123");
         out.put("quarkus.timefold.solver.move-thread-count", "3");
         out.put("quarkus.timefold.solver-manager.parallel-solver-count", "10");
         out.put("quarkus.timefold.solver.termination.diminished-returns.enabled", "true");
@@ -83,18 +84,18 @@ class TimefoldProcessorOverridePropertiesAtRuntimeTest {
         @Path("/solver-config")
         @Produces(MediaType.TEXT_PLAIN)
         public String getSolverConfig() {
-            var diminishedReturnsConfig = solverConfig.getTerminationConfig()
-                    .getDiminishedReturnsConfig();
-            return """
-                    termination.diminished-returns.sliding-window-duration=%sh
-                    termination.diminished-returns.minimum-improvement-ratio=%s
-                    termination.bestScoreLimit=%s
-                    moveThreadCount=%s
-                    """
-                    .formatted(diminishedReturnsConfig.getSlidingWindowDuration().toHours(),
-                            diminishedReturnsConfig.getMinimumImprovementRatio(),
-                            solverConfig.getTerminationConfig().getBestScoreLimit(),
-                            solverConfig.getMoveThreadCount());
+            StringBuilder sb = new StringBuilder();
+            sb.append("termination.diminished-returns.sliding-window-duration=").append(solverConfig.getPhaseConfigList()
+                    .get(1).getTerminationConfig().getDiminishedReturnsConfig()
+                    .getSlidingWindowDuration().toHours()).append("h\n");
+            sb.append("termination.diminished-returns.minimum-improvement-ratio=").append(solverConfig.getPhaseConfigList()
+                    .get(1).getTerminationConfig().getDiminishedReturnsConfig()
+                    .getMinimumImprovementRatio()).append("\n");
+            sb.append("termination.bestScoreLimit=").append(solverConfig.getTerminationConfig().getBestScoreLimit())
+                    .append("\n");
+            sb.append("moveThreadCount=").append(solverConfig.getMoveThreadCount()).append("\n");
+            sb.append("randomSeed=").append(solverConfig.getRandomSeed()).append("\n");
+            return sb.toString();
         }
 
         @GET
