@@ -14,13 +14,14 @@ public class RouteEasyScoreCalculator implements EasyScoreCalculator<RoutePlan, 
         var softScore = 0;
 
         for (var visit : routePlan.visits) {
-            if (visit.isInvalid()) {
-                hardScore--;
-            }
-            if (!visit.isInvalid() && visit.isAssigned()) {
-                softScore -= (int) Duration
-                        .between(TestShadowVariableProvider.BASE_START_TIME, visit.getServiceFinishTime())
-                        .toMinutes();
+            if (visit.isAssigned()) {
+                if (visit.isInvalid()) {
+                    hardScore--;
+                } else {
+                    softScore -= (int) Duration
+                            .between(TestShadowVariableProvider.BASE_START_TIME, visit.getServiceFinishTime())
+                            .toMinutes();
+                }
             }
         }
         return HardSoftScore.of(hardScore, softScore);

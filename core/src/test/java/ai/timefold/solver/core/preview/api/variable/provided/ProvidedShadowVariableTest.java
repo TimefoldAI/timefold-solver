@@ -494,7 +494,7 @@ public class ProvidedShadowVariableTest {
                 .withSolutionClass(RoutePlan.class)
                 .withEntityClasses(Vehicle.class, Visit.class)
                 .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
-                        .withEasyScoreCalculatorClass(RouteEasyScoreCalculator.class)
+                        .withConstraintProviderClass(RouteConstraintProvider.class)
                         .withAssertionScoreDirectorFactory(new ScoreDirectorFactoryConfig()
                                 .withEasyScoreCalculatorClass(AssertionRouteEasyScoreCalculator.class))
                 //
