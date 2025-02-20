@@ -27,7 +27,7 @@ import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 {testannotation}
 class TimetableConstraintProviderTest {
 
-    private static final Room ROOM = new Room("Room1");
+    private static final Room ROOM1 = new Room("Room1");
     private static final Timeslot TIMESLOT1 = new Timeslot(DayOfWeek.MONDAY, LocalTime.of(9,0), LocalTime.NOON);
     private static final Timeslot TIMESLOT2 = new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(9,0), LocalTime.NOON);
 
