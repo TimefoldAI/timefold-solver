@@ -302,6 +302,9 @@ import io.quarkus.jackson.ObjectMapperCustomizer;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 
+import java.io.IOException;
+import java.io.File;
+
 @QuarkusTest
 class TimetableResourceTest {
 
