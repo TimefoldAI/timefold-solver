@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.variable.provided;
+package ai.timefold.solver.core.preview.api.variable.provided.fsr;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.spy;
@@ -12,6 +12,13 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.testdata.domain.fsr.TestShadowVariableProvider;
+import ai.timefold.solver.core.impl.testdata.domain.fsr.TestdataFSRAssertionEasyScoreCalculator;
+import ai.timefold.solver.core.impl.testdata.domain.fsr.TestdataFSRConstraintProvider;
+import ai.timefold.solver.core.impl.testdata.domain.fsr.TestdataFSRRoutePlan;
+import ai.timefold.solver.core.impl.testdata.domain.fsr.TestdataFSRVehicle;
+import ai.timefold.solver.core.impl.testdata.domain.fsr.TestdataFSRVisit;
+import ai.timefold.solver.core.preview.api.variable.provided.ShadowVariableSessionFactory;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -20,14 +27,14 @@ public class ProvidedShadowVariableTest {
     @Test
     public void simpleChain() {
         var sessionFactory = ShadowVariableSessionFactory.create(
-                SolutionDescriptor.buildSolutionDescriptor(RoutePlan.class,
-                        Vehicle.class, Visit.class),
+                SolutionDescriptor.buildSolutionDescriptor(TestdataFSRRoutePlan.class,
+                        TestdataFSRVehicle.class, TestdataFSRVisit.class),
                 new TestShadowVariableProvider());
 
-        var vehicle = spy(new Vehicle("v1"));
-        var visit1 = spy(new Visit("c1"));
-        var visit2 = spy(new Visit("c2"));
-        var visit3 = spy(new Visit("c3"));
+        var vehicle = spy(new TestdataFSRVehicle("v1"));
+        var visit1 = spy(new TestdataFSRVisit("c1"));
+        var visit2 = spy(new TestdataFSRVisit("c2"));
+        var visit3 = spy(new TestdataFSRVisit("c3"));
 
         var session = sessionFactory.forEntities(vehicle, visit1, visit2, visit3);
         session.setInverse(visit1, vehicle);
@@ -79,20 +86,20 @@ public class ProvidedShadowVariableTest {
     @Test
     public void groupChain() {
         var sessionFactory = ShadowVariableSessionFactory.create(
-                SolutionDescriptor.buildSolutionDescriptor(RoutePlan.class,
-                        Vehicle.class, Visit.class),
+                SolutionDescriptor.buildSolutionDescriptor(TestdataFSRRoutePlan.class,
+                        TestdataFSRVehicle.class, TestdataFSRVisit.class),
                 new TestShadowVariableProvider());
 
-        var vehicle1 = new Vehicle("v1");
-        var vehicle2 = new Vehicle("v2");
-        var vehicle3 = new Vehicle("v3");
+        var vehicle1 = new TestdataFSRVehicle("v1");
+        var vehicle2 = new TestdataFSRVehicle("v2");
+        var vehicle3 = new TestdataFSRVehicle("v3");
 
-        var visitA1 = new Visit("a1");
-        var visitA2 = new Visit("a2");
-        var visitB1 = new Visit("b1");
-        var visitB2 = new Visit("b2");
-        var visitB3 = new Visit("b3");
-        var visitC = new Visit("c");
+        var visitA1 = new TestdataFSRVisit("a1");
+        var visitA2 = new TestdataFSRVisit("a2");
+        var visitB1 = new TestdataFSRVisit("b1");
+        var visitB2 = new TestdataFSRVisit("b2");
+        var visitB3 = new TestdataFSRVisit("b3");
+        var visitC = new TestdataFSRVisit("c");
 
         var visitGroupA = List.of(visitA1, visitA2);
         var visitGroupB = List.of(visitB1, visitB2, visitB3);
@@ -185,20 +192,20 @@ public class ProvidedShadowVariableTest {
     @Test
     public void groupChainValidToInvalid() {
         var sessionFactory = ShadowVariableSessionFactory.create(
-                SolutionDescriptor.buildSolutionDescriptor(RoutePlan.class,
-                        Vehicle.class, Visit.class),
+                SolutionDescriptor.buildSolutionDescriptor(TestdataFSRRoutePlan.class,
+                        TestdataFSRVehicle.class, TestdataFSRVisit.class),
                 new TestShadowVariableProvider());
 
-        var vehicle1 = new Vehicle("v1");
-        var vehicle2 = new Vehicle("v2");
-        var vehicle3 = new Vehicle("v3");
+        var vehicle1 = new TestdataFSRVehicle("v1");
+        var vehicle2 = new TestdataFSRVehicle("v2");
+        var vehicle3 = new TestdataFSRVehicle("v3");
 
-        var visitA1 = new Visit("a1");
-        var visitA2 = new Visit("a2");
-        var visitB1 = new Visit("b1");
-        var visitB2 = new Visit("b2");
-        var visitB3 = new Visit("b3");
-        var visitC = new Visit("c");
+        var visitA1 = new TestdataFSRVisit("a1");
+        var visitA2 = new TestdataFSRVisit("a2");
+        var visitB1 = new TestdataFSRVisit("b1");
+        var visitB2 = new TestdataFSRVisit("b2");
+        var visitB3 = new TestdataFSRVisit("b3");
+        var visitC = new TestdataFSRVisit("c");
 
         var visitGroupA = List.of(visitA1, visitA2);
         var visitGroupB = List.of(visitB1, visitB2, visitB3);
@@ -325,20 +332,20 @@ public class ProvidedShadowVariableTest {
     @Test
     public void groupChainInvalidToValid() {
         var sessionFactory = ShadowVariableSessionFactory.create(
-                SolutionDescriptor.buildSolutionDescriptor(RoutePlan.class,
-                        Vehicle.class, Visit.class),
+                SolutionDescriptor.buildSolutionDescriptor(TestdataFSRRoutePlan.class,
+                        TestdataFSRVehicle.class, TestdataFSRVisit.class),
                 new TestShadowVariableProvider());
 
-        var vehicle1 = new Vehicle("v1");
-        var vehicle2 = new Vehicle("v2");
-        var vehicle3 = new Vehicle("v3");
+        var vehicle1 = new TestdataFSRVehicle("v1");
+        var vehicle2 = new TestdataFSRVehicle("v2");
+        var vehicle3 = new TestdataFSRVehicle("v3");
 
-        var visitA1 = new Visit("a1");
-        var visitA2 = new Visit("a2");
-        var visitB1 = new Visit("b1");
-        var visitB2 = new Visit("b2");
-        var visitB3 = new Visit("b3");
-        var visitC = new Visit("c");
+        var visitA1 = new TestdataFSRVisit("a1");
+        var visitA2 = new TestdataFSRVisit("a2");
+        var visitB1 = new TestdataFSRVisit("b1");
+        var visitB2 = new TestdataFSRVisit("b2");
+        var visitB3 = new TestdataFSRVisit("b3");
+        var visitC = new TestdataFSRVisit("c");
 
         var visitGroupA = List.of(visitA1, visitA2);
         var visitGroupB = List.of(visitB1, visitB2, visitB3);
@@ -430,29 +437,29 @@ public class ProvidedShadowVariableTest {
 
     @Test
     void solveNoVisitGroups() {
-        var problem = new RoutePlan();
-        var vehicle1 = new Vehicle("v1");
-        var vehicle2 = new Vehicle("v2");
-        var vehicle3 = new Vehicle("v3");
+        var problem = new TestdataFSRRoutePlan();
+        var vehicle1 = new TestdataFSRVehicle("v1");
+        var vehicle2 = new TestdataFSRVehicle("v2");
+        var vehicle3 = new TestdataFSRVehicle("v3");
 
-        var visitA1 = new Visit("a1");
-        var visitA2 = new Visit("a2");
-        var visitB1 = new Visit("b1");
-        var visitB2 = new Visit("b2");
-        var visitB3 = new Visit("b3");
-        var visitC = new Visit("c");
+        var visitA1 = new TestdataFSRVisit("a1");
+        var visitA2 = new TestdataFSRVisit("a2");
+        var visitB1 = new TestdataFSRVisit("b1");
+        var visitB2 = new TestdataFSRVisit("b2");
+        var visitB3 = new TestdataFSRVisit("b3");
+        var visitC = new TestdataFSRVisit("c");
 
-        problem.vehicles = List.of(vehicle1, vehicle2, vehicle3);
-        problem.visits = List.of(visitA1, visitA2, visitB1, visitB2, visitB3, visitC);
+        problem.setVehicles(List.of(vehicle1, vehicle2, vehicle3));
+        problem.setVisits(List.of(visitA1, visitA2, visitB1, visitB2, visitB3, visitC));
 
         var solverConfig = new SolverConfig()
                 .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
-                .withSolutionClass(RoutePlan.class)
-                .withEntityClasses(Vehicle.class, Visit.class)
+                .withSolutionClass(TestdataFSRRoutePlan.class)
+                .withEntityClasses(TestdataFSRVehicle.class, TestdataFSRVisit.class)
                 .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
-                        .withConstraintProviderClass(RouteConstraintProvider.class)
+                        .withConstraintProviderClass(TestdataFSRConstraintProvider.class)
                         .withAssertionScoreDirectorFactory(new ScoreDirectorFactoryConfig()
-                                .withEasyScoreCalculatorClass(AssertionRouteEasyScoreCalculator.class)))
+                                .withEasyScoreCalculatorClass(TestdataFSRAssertionEasyScoreCalculator.class)))
                 .withTerminationConfig(new TerminationConfig()
                         .withMoveCountLimit(1000L));
 
@@ -464,17 +471,17 @@ public class ProvidedShadowVariableTest {
 
     @Test
     void solveVisitGroups() {
-        var problem = new RoutePlan();
-        var vehicle1 = new Vehicle("v1");
-        var vehicle2 = new Vehicle("v2");
-        var vehicle3 = new Vehicle("v3");
+        var problem = new TestdataFSRRoutePlan();
+        var vehicle1 = new TestdataFSRVehicle("v1");
+        var vehicle2 = new TestdataFSRVehicle("v2");
+        var vehicle3 = new TestdataFSRVehicle("v3");
 
-        var visitA1 = new Visit("a1");
-        var visitA2 = new Visit("a2");
-        var visitB1 = new Visit("b1");
-        var visitB2 = new Visit("b2");
-        var visitB3 = new Visit("b3");
-        var visitC = new Visit("c");
+        var visitA1 = new TestdataFSRVisit("a1");
+        var visitA2 = new TestdataFSRVisit("a2");
+        var visitB1 = new TestdataFSRVisit("b1");
+        var visitB2 = new TestdataFSRVisit("b2");
+        var visitB3 = new TestdataFSRVisit("b3");
+        var visitC = new TestdataFSRVisit("c");
 
         var visitGroupA = List.of(visitA1, visitA2);
         var visitGroupB = List.of(visitB1, visitB2, visitB3);
@@ -486,17 +493,17 @@ public class ProvidedShadowVariableTest {
         visitB2.setVisitGroup(visitGroupB);
         visitB3.setVisitGroup(visitGroupB);
 
-        problem.vehicles = List.of(vehicle1, vehicle2, vehicle3);
-        problem.visits = List.of(visitA1, visitA2, visitB1, visitB2, visitB3, visitC);
+        problem.setVehicles(List.of(vehicle1, vehicle2, vehicle3));
+        problem.setVisits(List.of(visitA1, visitA2, visitB1, visitB2, visitB3, visitC));
 
         var solverConfig = new SolverConfig()
                 .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
-                .withSolutionClass(RoutePlan.class)
-                .withEntityClasses(Vehicle.class, Visit.class)
+                .withSolutionClass(TestdataFSRRoutePlan.class)
+                .withEntityClasses(TestdataFSRVehicle.class, TestdataFSRVisit.class)
                 .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
-                        .withConstraintProviderClass(RouteConstraintProvider.class)
+                        .withConstraintProviderClass(TestdataFSRConstraintProvider.class)
                         .withAssertionScoreDirectorFactory(new ScoreDirectorFactoryConfig()
-                                .withEasyScoreCalculatorClass(AssertionRouteEasyScoreCalculator.class))
+                                .withEasyScoreCalculatorClass(TestdataFSRAssertionEasyScoreCalculator.class))
                 //
                 )
                 .withTerminationConfig(new TerminationConfig()
