@@ -42,6 +42,7 @@ import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristi
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
@@ -591,6 +592,7 @@ class SolverManagerTest {
         var terminationConfig = new TerminationConfig()
                 .withScoreCalculationCountLimit(5L);
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withEnvironmentMode(EnvironmentMode.REPRODUCIBLE_UNGUARDED)
                 .withTerminationConfig(terminationConfig);
 
         try (var solverManager = createDefaultSolverManager(solverConfig)) {

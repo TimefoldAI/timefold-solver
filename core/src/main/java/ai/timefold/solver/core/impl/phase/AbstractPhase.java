@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.phase;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.localsearch.DefaultLocalSearchPhase;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
@@ -9,6 +10,8 @@ import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleSupport;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.AbstractSolver;
+import ai.timefold.solver.core.impl.solver.exception.ScoreCorruptionException;
+import ai.timefold.solver.core.impl.solver.exception.VariableCorruptionException;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
@@ -29,6 +32,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     // Called "phaseTermination" to clearly distinguish from "solverTermination" inside AbstractSolver.
     protected final Termination<Solution_> phaseTermination;
 
+    protected final boolean assertPhaseScoreFromScratch;
     protected final boolean assertStepScoreFromScratch;
     protected final boolean assertExpectedStepScore;
     protected final boolean assertShadowVariablesAreNotStaleAfterStep;
@@ -42,6 +46,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         phaseIndex = builder.phaseIndex;
         logIndentation = builder.logIndentation;
         phaseTermination = builder.phaseTermination;
+        assertPhaseScoreFromScratch = builder.assertPhaseScoreFromScratch;
         assertStepScoreFromScratch = builder.assertStepScoreFromScratch;
         assertExpectedStepScore = builder.assertExpectedStepScore;
         assertShadowVariablesAreNotStaleAfterStep = builder.assertShadowVariablesAreNotStaleAfterStep;
@@ -124,6 +129,24 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         }
         phaseTermination.phaseEnded(phaseScope);
         phaseLifecycleSupport.firePhaseEnded(phaseScope);
+        if (assertPhaseScoreFromScratch) {
+            var score = phaseScope.getSolverScope().calculateScore();
+            try {
+                phaseScope.assertWorkingScoreFromScratch(score, getPhaseTypeString() + " phase ended");
+            } catch (ScoreCorruptionException | VariableCorruptionException e) {
+                throw new IllegalStateException("""
+                        Solver corruption was detected. Solutions provided by this solver can not be trusted.
+                        Corruptions typically arise from a bug in either your constraints or your variable listeners,
+                        but they may also be caused by a rare solver bug.
+                        Run your solver with %s %s to find out more information about the error \
+                        and if you are convinced that the problem is not in your code, please report a bug to Timefold.
+                        At your own risk, you may run your solver with %s or %s instead to ignore this error."""
+                        .formatted(EnvironmentMode.class.getSimpleName(),
+                                EnvironmentMode.FULL_ASSERT, EnvironmentMode.REPRODUCIBLE_UNGUARDED,
+                                EnvironmentMode.NON_REPRODUCIBLE),
+                        e);
+            }
+        }
     }
 
     @Override
@@ -234,6 +257,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         private final String logIndentation;
         private final Termination<Solution_> phaseTermination;
 
+        private boolean assertPhaseScoreFromScratch = false;
         private boolean assertStepScoreFromScratch = false;
         private boolean assertExpectedStepScore = false;
         private boolean assertShadowVariablesAreNotStaleAfterStep = false;
@@ -244,16 +268,12 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
             this.phaseTermination = phaseTermination;
         }
 
-        public void setAssertStepScoreFromScratch(boolean assertStepScoreFromScratch) {
-            this.assertStepScoreFromScratch = assertStepScoreFromScratch;
-        }
-
-        public void setAssertExpectedStepScore(boolean assertExpectedStepScore) {
-            this.assertExpectedStepScore = assertExpectedStepScore;
-        }
-
-        public void setAssertShadowVariablesAreNotStaleAfterStep(boolean assertShadowVariablesAreNotStaleAfterStep) {
-            this.assertShadowVariablesAreNotStaleAfterStep = assertShadowVariablesAreNotStaleAfterStep;
+        public AbstractPhaseBuilder<Solution_> enableAssertions(EnvironmentMode environmentMode) {
+            assertPhaseScoreFromScratch = environmentMode.isGuarded() && !environmentMode.isAsserted();
+            assertStepScoreFromScratch = environmentMode.isNonIntrusiveFullAsserted();
+            assertExpectedStepScore = environmentMode.isIntrusiveFastAsserted();
+            assertShadowVariablesAreNotStaleAfterStep = environmentMode.isIntrusiveFastAsserted();
+            return this;
         }
 
         protected abstract AbstractPhase<Solution_> build();

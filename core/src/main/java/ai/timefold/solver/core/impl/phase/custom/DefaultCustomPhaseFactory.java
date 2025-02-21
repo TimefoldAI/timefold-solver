@@ -44,14 +44,11 @@ public class DefaultCustomPhaseFactory<Solution_> extends AbstractPhaseFactory<S
         if (customPhaseCommandList != null) {
             customPhaseCommandList_.addAll((Collection) customPhaseCommandList);
         }
-        var builder = new DefaultCustomPhase.DefaultCustomPhaseBuilder<>(phaseIndex, lastInitializingPhase,
+        return new DefaultCustomPhase.DefaultCustomPhaseBuilder<>(phaseIndex, lastInitializingPhase,
                 solverConfigPolicy.getLogIndentation(), buildPhaseTermination(phaseConfigPolicy, solverTermination),
-                customPhaseCommandList_);
-        var environmentMode = phaseConfigPolicy.getEnvironmentMode();
-        if (environmentMode.isNonIntrusiveFullAsserted()) {
-            builder.setAssertStepScoreFromScratch(true);
-        }
-        return builder.build();
+                customPhaseCommandList_)
+                .enableAssertions(phaseConfigPolicy.getEnvironmentMode())
+                .build();
     }
 
     private CustomPhaseCommand<Solution_>

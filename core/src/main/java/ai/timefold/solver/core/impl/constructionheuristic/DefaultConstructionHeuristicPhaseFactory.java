@@ -69,18 +69,10 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
             HeuristicConfigPolicy<Solution_> phaseConfigPolicy, Termination<Solution_> solverTermination, int phaseIndex,
             boolean lastInitializingPhase, EntityPlacer<Solution_> entityPlacer) {
         var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
-        var builder = new DefaultConstructionHeuristicPhaseBuilder<>(phaseIndex, lastInitializingPhase,
+        return new DefaultConstructionHeuristicPhaseBuilder<>(phaseIndex, lastInitializingPhase,
                 phaseConfigPolicy.getLogIndentation(), phaseTermination, entityPlacer,
-                buildDecider(phaseConfigPolicy, phaseTermination));
-        var environmentMode = phaseConfigPolicy.getEnvironmentMode();
-        if (environmentMode.isNonIntrusiveFullAsserted()) {
-            builder.setAssertStepScoreFromScratch(true);
-        }
-        if (environmentMode.isIntrusiveFastAsserted()) {
-            builder.setAssertExpectedStepScore(true);
-            builder.setAssertShadowVariablesAreNotStaleAfterStep(true);
-        }
-        return builder;
+                buildDecider(phaseConfigPolicy, phaseTermination))
+                .enableAssertions(phaseConfigPolicy.getEnvironmentMode());
     }
 
     @Override

@@ -84,16 +84,15 @@ class EnvironmentModeTest {
         Solver<TestdataSolution> solver2 = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
 
         switch (environmentMode) {
-            case NON_REPRODUCIBLE -> {
-                assertNonReproducibility(solver1, solver2);
-            }
+            case NON_REPRODUCIBLE -> assertNonReproducibility(solver1, solver2);
             case TRACKED_FULL_ASSERT,
                     FULL_ASSERT,
                     FAST_ASSERT,
                     NON_INTRUSIVE_FULL_ASSERT,
-                    REPRODUCIBLE -> {
+                    REPRODUCIBLE_UNGUARDED,
+                    REPRODUCIBLE ->
                 assertReproducibility(solver1, solver2);
-            }
+            default -> throw new IllegalStateException("Unexpected value: " + environmentMode);
         }
     }
 
@@ -131,8 +130,7 @@ class EnvironmentModeTest {
                                 "Variables that are different between before and undo",
                                 "Actual value (v2) of variable valueClone on CorruptedUndoShadowEntity entity (CorruptedUndoShadowEntity) differs from expected (v1)");
             }
-            case FULL_ASSERT,
-                    FAST_ASSERT -> {
+            case FULL_ASSERT, FAST_ASSERT -> {
                 // FAST_ASSERT does not create snapshots since it is not intrusive, and hence it can only
                 // detect the undo corruption and not what caused it
                 var e1 = new CorruptedUndoShadowEntity("e1");
@@ -153,11 +151,10 @@ class EnvironmentModeTest {
                                         List.of(v1, v2))))
                         .withMessageContainingAll("corrupted undoMove");
             }
-            case REPRODUCIBLE,
-                    NON_REPRODUCIBLE,
-                    NON_INTRUSIVE_FULL_ASSERT -> {
+            case REPRODUCIBLE, REPRODUCIBLE_UNGUARDED, NON_REPRODUCIBLE, NON_INTRUSIVE_FULL_ASSERT -> {
                 // No exception expected
             }
+            default -> throw new IllegalStateException("Unexpected value: " + environmentMode);
         }
     }
 
@@ -169,24 +166,13 @@ class EnvironmentModeTest {
         setSolverConfigCalculatorClass(solverConfig, TestdataCorruptedDifferentValuesCalculator.class);
 
         switch (environmentMode) {
-            case TRACKED_FULL_ASSERT -> {
-                assertIllegalStateExceptionWhileSolving(
-                        solverConfig,
-                        "not the uncorruptedScore");
-            }
-            case FULL_ASSERT,
-                    NON_INTRUSIVE_FULL_ASSERT -> {
-                assertIllegalStateExceptionWhileSolving(
-                        solverConfig,
-                        "not the uncorruptedScore");
-            }
-            case FAST_ASSERT -> {
-                assertIllegalStateExceptionWhileSolving(
-                        solverConfig,
-                        "Score corruption analysis could not be generated ");
-            }
-            case REPRODUCIBLE,
-                    NON_REPRODUCIBLE -> {
+            case TRACKED_FULL_ASSERT ->
+                assertIllegalStateExceptionWhileSolving(solverConfig, "not the uncorruptedScore");
+            case FULL_ASSERT, NON_INTRUSIVE_FULL_ASSERT ->
+                assertIllegalStateExceptionWhileSolving(solverConfig, "not the uncorruptedScore");
+            case FAST_ASSERT ->
+                assertIllegalStateExceptionWhileSolving(solverConfig, "Score corruption analysis could not be generated ");
+            case REPRODUCIBLE, REPRODUCIBLE_UNGUARDED, NON_REPRODUCIBLE -> {
                 // No exception expected
             }
         }

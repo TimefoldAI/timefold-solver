@@ -1569,6 +1569,8 @@
             
       <xs:enumeration value="REPRODUCIBLE"/>
             
+      <xs:enumeration value="REPRODUCIBLE_UNGUARDED"/>
+            
       <xs:enumeration value="NON_REPRODUCIBLE"/>
           
     </xs:restriction>

@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.localsearch.decider;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
@@ -60,12 +61,9 @@ public class LocalSearchDecider<Solution_> {
         return forager;
     }
 
-    public void setAssertMoveScoreFromScratch(boolean assertMoveScoreFromScratch) {
-        this.assertMoveScoreFromScratch = assertMoveScoreFromScratch;
-    }
-
-    public void setAssertExpectedUndoMoveScore(boolean assertExpectedUndoMoveScore) {
-        this.assertExpectedUndoMoveScore = assertExpectedUndoMoveScore;
+    public void enableAssertions(EnvironmentMode environmentMode) {
+        assertMoveScoreFromScratch = environmentMode.isNonIntrusiveFullAsserted();
+        assertExpectedUndoMoveScore = environmentMode.isIntrusiveFastAsserted();
     }
 
     // ************************************************************************

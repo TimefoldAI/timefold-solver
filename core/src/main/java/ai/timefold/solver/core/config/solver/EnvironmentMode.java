@@ -89,21 +89,39 @@ public enum EnvironmentMode {
      */
     REPRODUCIBLE(false),
     /**
-     * The non reproducible mode is equally fast or slightly faster than {@link #REPRODUCIBLE}.
+     * As defined by {@link #REPRODUCIBLE}, but it also disables certain bug detection mechanisms.
+     * This mode will run marginally faster than {@link #REPRODUCIBLE},
+     * but will allow some bugs in user code (such as score corruptions) to go unnoticed.
+     * Use this mode during development when you are confident that your code is bug-free,
+     * or when you want to ignore a known bug temporarily.
+     */
+    REPRODUCIBLE_UNGUARDED(false, false),
+    /**
+     * The non-reproducible mode is equally fast or slightly faster than {@link #REPRODUCIBLE_UNGUARDED}.
      * <p>
      * The random seed is different on every run, which makes it more robust against an unlucky random seed.
      * An unlucky random seed gives a bad result on a certain data set with a certain solver configuration.
-     * Note that in most use cases the impact of the random seed is relatively low on the result.
+     * Note that in most use cases, the impact of the random seed is relatively low on the result.
      * An occasional bad result is far more likely to be caused by another issue (such as a score trap).
      * <p>
-     * In multithreaded scenarios, this mode allows the use of work stealing and other non deterministic speed tricks.
+     * In multithreaded scenarios, this mode allows the use of work stealing and other non-deterministic speed tricks.
      */
-    NON_REPRODUCIBLE(false);
+    NON_REPRODUCIBLE(false, false);
 
     private final boolean asserted;
+    private final boolean guarded;
 
     EnvironmentMode(boolean asserted) {
+        this(asserted, true);
+    }
+
+    EnvironmentMode(boolean asserted, boolean guarded) {
         this.asserted = asserted;
+        this.guarded = guarded;
+    }
+
+    public boolean isGuarded() {
+        return guarded;
     }
 
     public boolean isAsserted() {

@@ -9,6 +9,7 @@ import java.util.TreeSet;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.exhaustivesearch.decider.ExhaustiveSearchDecider;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchLayer;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
@@ -244,12 +245,12 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
             this.decider = decider;
         }
 
-        public void setAssertWorkingSolutionScoreFromScratch(boolean assertWorkingSolutionScoreFromScratch) {
-            this.assertWorkingSolutionScoreFromScratch = assertWorkingSolutionScoreFromScratch;
-        }
-
-        public void setAssertExpectedWorkingSolutionScore(boolean assertExpectedWorkingSolutionScore) {
-            this.assertExpectedWorkingSolutionScore = assertExpectedWorkingSolutionScore;
+        @Override
+        public Builder<Solution_> enableAssertions(EnvironmentMode environmentMode) {
+            super.enableAssertions(environmentMode);
+            assertWorkingSolutionScoreFromScratch = environmentMode.isNonIntrusiveFullAsserted();
+            assertExpectedWorkingSolutionScore = environmentMode.isIntrusiveFastAsserted();
+            return this;
         }
 
         @Override

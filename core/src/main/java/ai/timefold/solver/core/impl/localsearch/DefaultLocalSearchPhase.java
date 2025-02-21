@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider;
 import ai.timefold.solver.core.impl.localsearch.event.LocalSearchPhaseLifecycleListener;
@@ -233,6 +234,12 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
                 LocalSearchDecider<Solution_> decider) {
             super(phaseIndex, logIndentation, phaseTermination);
             this.decider = decider;
+        }
+
+        @Override
+        public Builder<Solution_> enableAssertions(EnvironmentMode environmentMode) {
+            super.enableAssertions(environmentMode);
+            return this;
         }
 
         @Override

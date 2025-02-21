@@ -128,6 +128,36 @@ class DefaultSolverTest {
     }
 
     @Test
+    void solveCorruptedEasyGuarded() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withEnvironmentMode(EnvironmentMode.REPRODUCIBLE)
+                .withEasyScoreCalculatorClass(CorruptedEasyScoreCalculator.class);
+
+        var solution = new TestdataSolution("s1");
+        solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
+        solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2")));
+
+        Assertions.assertThatThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution, false))
+                .hasMessageContaining("corruption")
+                .hasMessageContaining(EnvironmentMode.FULL_ASSERT.name())
+                .hasMessageContaining(EnvironmentMode.REPRODUCIBLE_UNGUARDED.name());
+    }
+
+    @Test
+    void solveCorruptedEasyUnguarded() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withEnvironmentMode(EnvironmentMode.REPRODUCIBLE_UNGUARDED)
+                .withEasyScoreCalculatorClass(CorruptedEasyScoreCalculator.class);
+
+        var solution = new TestdataSolution("s1");
+        solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
+        solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2")));
+
+        Assertions.assertThatNoException()
+                .isThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution, true));
+    }
+
+    @Test
     void solveCorruptedEasyUninitialized() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
