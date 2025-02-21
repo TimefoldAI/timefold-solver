@@ -269,6 +269,12 @@ public class Lesson {
         this.studentGroup = studentGroup;
     }
 
+    public Lesson(String id, String subject, String teacher, String studentGroup, Timeslot timeslot, Room room) {
+        this(id, subject, teacher, studentGroup);
+        this.timeslot = timeslot;
+        this.room = room;
+    }
+
     public String getId() {
         return id;
     }
