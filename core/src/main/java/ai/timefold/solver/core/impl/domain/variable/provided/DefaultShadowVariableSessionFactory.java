@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.variable.provided;
 
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.function.IntFunction;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
@@ -14,18 +15,22 @@ public class DefaultShadowVariableSessionFactory<Solution_> implements ShadowVar
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final InnerScoreDirector<Solution_, ?> scoreDirector;
     private final SupplyManager supplyManager;
+    private final IntFunction<TopologicalOrderGraph> graphCreator;
 
     public DefaultShadowVariableSessionFactory(Set<ShadowVariableProvider> shadowVariableProviderSet,
             SolutionDescriptor<Solution_> solutionDescriptor,
-            InnerScoreDirector<Solution_, ?> scoreDirector, SupplyManager supplyManager) {
+            InnerScoreDirector<Solution_, ?> scoreDirector, SupplyManager supplyManager,
+            IntFunction<TopologicalOrderGraph> graphCreator) {
         this.shadowVariableProviderSet = shadowVariableProviderSet;
         this.solutionDescriptor = solutionDescriptor;
         this.scoreDirector = scoreDirector;
         this.supplyManager = supplyManager;
+        this.graphCreator = graphCreator;
     }
 
     static <Solution_> void visitGraph(DefaultShadowVariableFactory<Solution_> shadowVariableFactory,
-            VariableReferenceGraph<Solution_> variableReferenceGraph, Object[] entities) {
+            VariableReferenceGraph<Solution_> variableReferenceGraph, Object[] entities,
+            IntFunction<TopologicalOrderGraph> graphCreator) {
         for (var groupReference : shadowVariableFactory.getGroupVariableReferenceList()) {
             for (var entity : entities) {
                 groupReference.processGroupElements(variableReferenceGraph, groupReference, entity);
@@ -39,7 +44,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> implements ShadowVar
                 shadowVariable.visitEntity(variableReferenceGraph, entity);
             }
         }
-        variableReferenceGraph.createGraph(DefaultTopologicalOrderGraph::new);
+        variableReferenceGraph.createGraph(graphCreator);
     }
 
     public DefaultShadowVariableSession<Solution_> forSolution(Solution_ solution) {
@@ -56,7 +61,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> implements ShadowVar
             shadowVariableProvider.defineVariables(shadowVariableFactory);
         }
 
-        visitGraph(shadowVariableFactory, variableReferenceGraph, entities);
+        visitGraph(shadowVariableFactory, variableReferenceGraph, entities, graphCreator);
 
         return new DefaultShadowVariableSession<>(variableReferenceGraph);
     }

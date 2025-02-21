@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.variable.provided;
+package ai.timefold.solver.core.impl.testdata.domain.fsr;
 
 import java.time.Duration;
 
@@ -7,9 +7,9 @@ import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 
 import org.jspecify.annotations.NonNull;
 
-public class RouteEasyScoreCalculator implements EasyScoreCalculator<RoutePlan, HardSoftScore> {
+public class TestdataFSREasyScoreCalculator implements EasyScoreCalculator<TestdataFSRRoutePlan, HardSoftScore> {
     @Override
-    public @NonNull HardSoftScore calculateScore(@NonNull RoutePlan routePlan) {
+    public @NonNull HardSoftScore calculateScore(@NonNull TestdataFSRRoutePlan routePlan) {
         var hardScore = 0;
         var softScore = 0;
 

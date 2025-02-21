@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.variable.provided;
+package ai.timefold.solver.core.impl.testdata.domain.fsr;
 
 import java.time.Duration;
 
@@ -9,16 +9,16 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 
 import org.jspecify.annotations.NonNull;
 
-public class AssertionRouteConstraintProvider implements ConstraintProvider {
+public class TestdataFSRAssertionConstraintProvider implements ConstraintProvider {
     @Override
     public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
         return new Constraint[] {
-                constraintFactory.forEach(Visit.class)
-                        .filter(Visit::getExpectedInvalid)
+                constraintFactory.forEach(TestdataFSRVisit.class)
+                        .filter(TestdataFSRVisit::getExpectedInvalid)
                         .penalize(HardSoftScore.ONE_HARD)
                         .asConstraint("Invalid visit"),
 
-                constraintFactory.forEach(Visit.class)
+                constraintFactory.forEach(TestdataFSRVisit.class)
                         .filter(visit -> !visit.getExpectedInvalid() && visit.isAssigned())
                         .penalize(HardSoftScore.ONE_SOFT, visit -> (int) Duration
                                 .between(TestShadowVariableProvider.BASE_START_TIME, visit.getExpectedServiceFinishTime())

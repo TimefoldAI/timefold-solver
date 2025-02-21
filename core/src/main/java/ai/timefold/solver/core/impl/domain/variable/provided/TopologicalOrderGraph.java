@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable.provided;
 
+import java.util.List;
 import java.util.PrimitiveIterator;
 
 public interface TopologicalOrderGraph {
@@ -7,6 +8,9 @@ public interface TopologicalOrderGraph {
     }
 
     default void endBatchChange() {
+    }
+
+    default <Solution_> void withNodeData(List<EntityVariableOrFactReference<Solution_>> nodes) {
     }
 
     void addEdge(int from, int to);

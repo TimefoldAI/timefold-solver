@@ -26,6 +26,22 @@ public record VariableId(Class<?> entityClass, String variableName, @Nullable Va
         return new VariableId(entityClass, variableName + "." + childVariableName, this);
     }
 
+    public VariableId group(Class<?> elementClass, int group) {
+        return new VariableId(elementClass, variableName + ".group(%d)".formatted(group), this);
+    }
+
+    public VariableId previous() {
+        return child(entityClass, DefaultShadowVariableFactory.PREVIOUS);
+    }
+
+    public VariableId next() {
+        return child(entityClass, DefaultShadowVariableFactory.NEXT);
+    }
+
+    public VariableId inverse() {
+        return child(entityClass, DefaultShadowVariableFactory.INVERSE);
+    }
+
     @Override
     public String toString() {
         return entityClass.getSimpleName() + "." + variableName;
