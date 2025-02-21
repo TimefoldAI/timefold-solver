@@ -136,7 +136,7 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
         if (navigator != null) {
             return navigator.getVariableId();
         }
-        return grouper.getVariableId().child(entityClass, "group(" + groupId + ")");
+        return grouper.getVariableId().group(entityClass, groupId);
     }
 
     @Override

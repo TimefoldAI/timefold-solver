@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.variable.provided;
+package ai.timefold.solver.core.impl.testdata.domain.fsr;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -11,13 +11,15 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
+import ai.timefold.solver.core.preview.api.variable.provided.InvalidityMarker;
+import ai.timefold.solver.core.preview.api.variable.provided.ProvidedShadowVariable;
 
 @PlanningEntity
-public class Visit {
+public class TestdataFSRVisit {
     String id;
 
     @InverseRelationShadowVariable(sourceVariableName = "visits")
-    Vehicle vehicle;
+    TestdataFSRVehicle vehicle;
 
     @ProvidedShadowVariable(TestShadowVariableProvider.class)
     LocalDateTime serviceReadyTime;
@@ -29,21 +31,53 @@ public class Visit {
     LocalDateTime serviceFinishTime;
 
     @PreviousElementShadowVariable(sourceVariableName = "visits")
-    Visit previousVisit;
+    TestdataFSRVisit previousVisit;
 
     @NextElementShadowVariable(sourceVariableName = "visits")
-    Visit nextVisit;
+    TestdataFSRVisit nextVisit;
 
-    List<Visit> visitGroup;
+    List<TestdataFSRVisit> visitGroup;
 
     @InvalidityMarker
     boolean isInvalid;
 
-    public Visit() {
+    public TestdataFSRVisit() {
     }
 
-    public Visit(String id) {
+    public TestdataFSRVisit(String id) {
         this.id = id;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public TestdataFSRVehicle getVehicle() {
+        return vehicle;
+    }
+
+    public void setVehicle(TestdataFSRVehicle vehicle) {
+        this.vehicle = vehicle;
+    }
+
+    public TestdataFSRVisit getPreviousVisit() {
+        return previousVisit;
+    }
+
+    public void setPreviousVisit(TestdataFSRVisit previousVisit) {
+        this.previousVisit = previousVisit;
+    }
+
+    public TestdataFSRVisit getNextVisit() {
+        return nextVisit;
+    }
+
+    public void setNextVisit(TestdataFSRVisit nextVisit) {
+        this.nextVisit = nextVisit;
     }
 
     public LocalDateTime getServiceReadyTime() {
@@ -70,11 +104,11 @@ public class Visit {
         this.serviceFinishTime = serviceFinishTime;
     }
 
-    public List<Visit> getVisitGroup() {
+    public List<TestdataFSRVisit> getVisitGroup() {
         return visitGroup;
     }
 
-    public void setVisitGroup(List<Visit> visitGroup) {
+    public void setVisitGroup(List<TestdataFSRVisit> visitGroup) {
         this.visitGroup = visitGroup;
     }
 
@@ -90,7 +124,7 @@ public class Visit {
         return getExpectedInvalid(new IdentityHashMap<>());
     }
 
-    boolean getExpectedInvalid(Map<Visit, Boolean> cache) {
+    boolean getExpectedInvalid(Map<TestdataFSRVisit, Boolean> cache) {
         if (cache.containsKey(this)) {
             return cache.get(this);
         }
@@ -115,8 +149,8 @@ public class Visit {
         return false;
     }
 
-    record TimeCache(Map<Visit, LocalDateTime> readyTimeCache, Map<Visit, LocalDateTime> startTimeCache,
-            Map<Visit, LocalDateTime> endTimeCache) {
+    record TimeCache(Map<TestdataFSRVisit, LocalDateTime> readyTimeCache, Map<TestdataFSRVisit, LocalDateTime> startTimeCache,
+            Map<TestdataFSRVisit, LocalDateTime> endTimeCache) {
         static TimeCache create() {
             return new TimeCache(new IdentityHashMap<>(), new IdentityHashMap<>(), new IdentityHashMap<>());
         }
@@ -126,7 +160,7 @@ public class Visit {
         return getExpectedServiceReadyTime(TimeCache.create());
     }
 
-    LocalDateTime getExpectedServiceReadyTime(TimeCache cache) {
+    public LocalDateTime getExpectedServiceReadyTime(TimeCache cache) {
         if (getExpectedInvalid()) {
             return null;
         }
@@ -154,7 +188,7 @@ public class Visit {
         return getExpectedServiceStartTime(TimeCache.create());
     }
 
-    LocalDateTime getExpectedServiceStartTime(TimeCache cache) {
+    public LocalDateTime getExpectedServiceStartTime(TimeCache cache) {
         if (getExpectedInvalid()) {
             return null;
         }
@@ -179,7 +213,7 @@ public class Visit {
         return getExpectedServiceFinishTime(TimeCache.create());
     }
 
-    LocalDateTime getExpectedServiceFinishTime(TimeCache cache) {
+    public LocalDateTime getExpectedServiceFinishTime(TimeCache cache) {
         if (getExpectedInvalid()) {
             return null;
         }
