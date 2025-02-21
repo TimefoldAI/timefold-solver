@@ -77,7 +77,7 @@ public class TimetableController {
     @Autowired
     private SolverManager<Timetable, UUID> solverManager;
 
-    @PostMapping("/solve")
+    @PostMapping
     public Timetable solve(@RequestBody Timetable problem) {
         UUID problemId = UUID.randomUUID();
         // Submit the problem to start solving
@@ -119,7 +119,7 @@ class TimetableController {
     @Autowired
     private val solverManager: SolverManager<Timetable, UUID>? = null
 
-    @PostMapping("/solve")
+    @PostMapping
     fun solve(@RequestBody problem: Timetable): Timetable {
         val problemId = UUID.randomUUID()
         // Submit the problem to start solving
@@ -223,7 +223,7 @@ The following example uses the Linux command `curl` to send a POST request:
 
 [source,shell]
 ----
-$ curl -i -X POST http://localhost:8080/timetable/solve -H "Content-Type:application/json" -d '{"timeslots":[{"dayOfWeek":"MONDAY","startTime":"08:30:00","endTime":"09:30:00"},{"dayOfWeek":"MONDAY","startTime":"09:30:00","endTime":"10:30:00"}],"rooms":[{"name":"Room A"},{"name":"Room B"}],"lessons":[{"id":1,"subject":"Math","teacher":"A. Turing","studentGroup":"9th grade"},{"id":2,"subject":"Chemistry","teacher":"M. Curie","studentGroup":"9th grade"},{"id":3,"subject":"French","teacher":"M. Curie","studentGroup":"10th grade"},{"id":4,"subject":"History","teacher":"I. Jones","studentGroup":"10th grade"}]}'
+$ curl -i -X POST http://localhost:8080/timetable -H "Content-Type:application/json" -d '{"timeslots":[{"dayOfWeek":"MONDAY","startTime":"08:30:00","endTime":"09:30:00"},{"dayOfWeek":"MONDAY","startTime":"09:30:00","endTime":"10:30:00"}],"rooms":[{"name":"Room A"},{"name":"Room B"}],"lessons":[{"id":1,"subject":"Math","teacher":"A. Turing","studentGroup":"9th grade"},{"id":2,"subject":"Chemistry","teacher":"M. Curie","studentGroup":"9th grade"},{"id":3,"subject":"French","teacher":"M. Curie","studentGroup":"10th grade"},{"id":4,"subject":"History","teacher":"I. Jones","studentGroup":"10th grade"}]}'
 ----
 
 After about five seconds, according to the termination spent time defined in your `application.properties`,
@@ -276,7 +276,7 @@ Maven::
 +
 --
 Add the folllowing dependencies to your `pom.xml`:
-[source,xml]
+[source,xml,subs=attributes+]
 ----
     <dependency>
         <groupId>org.springframework.boot</groupId>
@@ -286,6 +286,7 @@ Add the folllowing dependencies to your `pom.xml`:
     <dependency>
         <groupId>ai.timefold.solver</groupId>
         <artifactId>timefold-solver-test</artifactId>
+        <version>{timefold-solver-version}</version>
         <scope>test</scope>
     </dependency>
 ----
@@ -297,7 +298,7 @@ Add the subsequent dependencies to your `build.gradle`:
 [source,groovy,subs=attributes+]
 ----
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("ai.timefold.solver:timefold-solver-test")
+    testImplementation("ai.timefold.solver:timefold-solver-test:{timefold-solver-version}")
 ----
 --
 ====
