@@ -475,7 +475,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void beforeListVariableElementUnassigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        variableListenerSupport.beforeElementUnassigned(variableDescriptor, element);
+        // Do nothing
     }
 
     @Override

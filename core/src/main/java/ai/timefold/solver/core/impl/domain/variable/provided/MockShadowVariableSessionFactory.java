@@ -23,7 +23,8 @@ public class MockShadowVariableSessionFactory<Solution_> implements ShadowVariab
         var variableReferenceGraph = new VariableReferenceGraph<Solution_>(ChangedVariableNotifier.empty());
         shadowVariableProvider.defineVariables(shadowVariableFactory);
 
-        DefaultShadowVariableSessionFactory.visitGraph(shadowVariableFactory, variableReferenceGraph, entities);
+        DefaultShadowVariableSessionFactory.visitGraph(shadowVariableFactory, variableReferenceGraph, entities,
+                DefaultTopologicalOrderGraph::new);
 
         return new MockShadowVariableSession<>(solutionDescriptor, variableReferenceGraph, stateSupply);
     }
