@@ -242,6 +242,11 @@ Add a `timefold-solver-test` dependency in your `pom.xml`:
       <scope>test</scope>
     </dependency>
     <dependency>
+        <groupId>io.rest-assured</groupId>
+        <artifactId>rest-assured</artifactId>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>ai.timefold.solver</groupId>
       <artifactId>timefold-solver-test</artifactId>
       <version>1.19.0</version>
