@@ -71,6 +71,7 @@ public class VariableReferenceGraph<Solution_> {
     public void createGraph(IntFunction<TopologicalOrderGraph> graphCreator) {
         counts = new int[instanceList.size()][instanceList.size()];
         graph = graphCreator.apply(instanceList.size());
+        graph.withNodeData(instanceList);
         changed = new BitSet(instanceList.size());
         for (var instance : instanceList) {
             afterVariableChanged(instance.variableId(), instance.entity());

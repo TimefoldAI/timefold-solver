@@ -8,11 +8,13 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.util.ConfigUtils;
+import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
@@ -27,13 +29,16 @@ import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVa
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.provided.DefaultShadowVariableSession;
 import ai.timefold.solver.core.impl.domain.variable.provided.DefaultShadowVariableSessionFactory;
+import ai.timefold.solver.core.impl.domain.variable.provided.DefaultTopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.provided.ProvidedShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.provided.TopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.variable.provided.ShadowVariableProvider;
 
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -44,7 +49,9 @@ import org.jspecify.annotations.Nullable;
 public final class VariableListenerSupport<Solution_> implements SupplyManager {
 
     public static <Solution_> VariableListenerSupport<Solution_> create(InnerScoreDirector<Solution_, ?> scoreDirector) {
-        return new VariableListenerSupport<>(scoreDirector, new NotifiableRegistry<>(scoreDirector.getSolutionDescriptor()));
+        return new VariableListenerSupport<>(scoreDirector, new NotifiableRegistry<>(scoreDirector.getSolutionDescriptor()),
+                TimefoldSolverEnterpriseService.buildOrDefault(service -> service::buildTopologyGraph,
+                        () -> DefaultTopologicalOrderGraph::new));
     }
 
     private static final int SHADOW_VARIABLE_VIOLATION_DISPLAY_LIMIT = 3;
@@ -55,7 +62,10 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     private final List<ListVariableEvent> listVariableEventList;
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final List<CascadingUpdateShadowVariableDescriptor<Solution_>> cascadingUpdateShadowVarDescriptorList;
+    @NonNull
     private final Set<Class<? extends ShadowVariableProvider>> shadowVariableProviderSet;
+    @NonNull
+    private final IntFunction<TopologicalOrderGraph> shadowVariableGraphCreator;
 
     private boolean notificationQueuesAreEmpty = true;
     private int nextGlobalOrder = 0;
@@ -64,7 +74,8 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     @Nullable
     private ListVariableStateSupply<Solution_> listVariableStateSupply = null;
 
-    VariableListenerSupport(InnerScoreDirector<Solution_, ?> scoreDirector, NotifiableRegistry<Solution_> notifiableRegistry) {
+    VariableListenerSupport(InnerScoreDirector<Solution_, ?> scoreDirector, NotifiableRegistry<Solution_> notifiableRegistry,
+            @NonNull IntFunction<TopologicalOrderGraph> shadowVariableGraphCreator) {
         this.scoreDirector = scoreDirector;
         this.notifiableRegistry = notifiableRegistry;
         this.cascadingUpdateShadowVarDescriptorList = scoreDirector.getSolutionDescriptor().getEntityDescriptors().stream()
@@ -73,6 +84,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         this.listVariableDescriptor = scoreDirector.getSolutionDescriptor().getListVariableDescriptor();
         this.listVariableEventList = new ArrayList<>();
         this.shadowVariableProviderSet = new LinkedHashSet<>();
+        this.shadowVariableGraphCreator = shadowVariableGraphCreator;
     }
 
     public void linkVariableListeners() {
@@ -200,7 +212,8 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                             .collect(Collectors.toSet()),
                     scoreDirector.getSolutionDescriptor(),
                     scoreDirector,
-                    this);
+                    this,
+                    shadowVariableGraphCreator);
             shadowVariableSession = shadowVariableSessionFactory.forSolution(scoreDirector.getWorkingSolution());
             shadowVariableSession.updateVariables();
         }
@@ -258,9 +271,6 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         if (shadowVariableSession != null) {
             shadowVariableSession.beforeListElementChanged(element);
         }
-    }
-
-    public void beforeElementUnassigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
     }
 
     public void afterElementUnassigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
