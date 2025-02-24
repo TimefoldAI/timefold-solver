@@ -1,9 +1,12 @@
 package ai.timefold.solver.core.config.solver;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Random;
 
 import jakarta.xml.bind.annotation.XmlEnum;
 
+import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -27,7 +30,7 @@ public enum EnvironmentMode {
      * Because it tracks genuine and shadow variables, it is able to report precisely what variables caused the corruption and
      * report any missed {@link ai.timefold.solver.core.api.domain.variable.VariableListener} events.
      * <p>
-     * This mode is reproducible (see {@link #REPRODUCIBLE} mode).
+     * This mode is reproducible (see {@link #PHASE_ASSERT} mode).
      * <p>
      * This mode is intrusive because it calls the {@link InnerScoreDirector#calculateScore()} more frequently than a non assert
      * mode.
@@ -35,13 +38,12 @@ public enum EnvironmentMode {
      * This mode is by far the slowest of all the modes.
      */
     TRACKED_FULL_ASSERT(true),
-
     /**
      * This mode turns on all assertions
      * to fail-fast on a bug in a {@link Move} implementation, a constraint, the engine itself or something else
      * at a horrible performance cost.
      * <p>
-     * This mode is reproducible (see {@link #REPRODUCIBLE} mode).
+     * This mode is reproducible (see {@link #PHASE_ASSERT} mode).
      * <p>
      * This mode is intrusive because it calls the {@link InnerScoreDirector#calculateScore()} more frequently
      * than a non assert mode.
@@ -54,50 +56,64 @@ public enum EnvironmentMode {
      * to fail-fast on a bug in a {@link Move} implementation, a constraint, the engine itself or something else
      * at an overwhelming performance cost.
      * <p>
-     * This mode is reproducible (see {@link #REPRODUCIBLE} mode).
+     * This mode is reproducible (see {@link #PHASE_ASSERT} mode).
      * <p>
-     * This mode is non-intrusive, unlike {@link #FULL_ASSERT} and {@link #FAST_ASSERT}.
+     * This mode is non-intrusive, unlike {@link #FULL_ASSERT} and {@link #STEP_ASSERT}.
      * <p>
      * This mode is horribly slow.
      */
     NON_INTRUSIVE_FULL_ASSERT(true),
     /**
-     * This mode turns on several assertions (but not all of them)
-     * to fail-fast on a bug in a {@link Move} implementation, a constraint rule, the engine itself or something else
+     * This mode turns on several assertions to fail-fast
+     * on a bug in a {@link Move} implementation, a constraint rule, the engine itself or something else
      * at a reasonable performance cost (in development at least).
      * <p>
-     * This mode is reproducible (see {@link #REPRODUCIBLE} mode).
+     * This mode is reproducible (see {@link #PHASE_ASSERT} mode).
      * <p>
      * This mode is intrusive because it calls the {@link InnerScoreDirector#calculateScore()} more frequently
-     * than a non assert mode.
+     * than a non-assert mode.
      * <p>
      * This mode is slow.
      */
+    STEP_ASSERT(true),
+    /**
+     * @deprecated Prefer {@link #STEP_ASSERT}.
+     */
+    @Deprecated(forRemoval = true, since = "1.20.0")
     FAST_ASSERT(true),
     /**
-     * The reproducible mode is the default mode because it is recommended during development.
-     * In this mode, 2 runs on the same computer will execute the same code in the same order.
+     * This is the default mode as it is recommended during development,
+     * and runs minimal correctness checks that serve to quickly identify score corruption bugs.
+     * <p>
+     * In this mode, two runs on the same computer will execute the same code in the same order.
      * They will also yield the same result, except if they use a time based termination
      * and they have a sufficiently large difference in allocated CPU time.
      * This allows you to benchmark new optimizations (such as a new {@link Move} implementation) fairly
      * and reproduce bugs in your code reliably.
      * <p>
-     * Warning: some code can disrupt reproducibility regardless of this mode. See the reference manual for more info.
+     * Warning: some code can disrupt reproducibility regardless of this mode.
+     * This typically happens when user code serves data such as {@link PlanningEntity planning entities}
+     * from collections without defined iteration order, such as {@link HashSet} or {@link HashMap}.
      * <p>
      * In practice, this mode uses the default random seed,
-     * and it also disables certain concurrency optimizations (such as work stealing).
+     * and it also disables certain concurrency optimizations, such as work stealing.
      */
+    PHASE_ASSERT(true),
+    /**
+     * @deprecated Prefer {@link #NO_ASSERT}.
+     */
+    @Deprecated(forRemoval = true, since = "1.20.0")
     REPRODUCIBLE(false),
     /**
-     * As defined by {@link #REPRODUCIBLE}, but it also disables certain bug detection mechanisms.
-     * This mode will run marginally faster than {@link #REPRODUCIBLE},
+     * As defined by {@link #PHASE_ASSERT}, but disables every single bug detection mechanism.
+     * This mode will run negligibly faster than {@link #PHASE_ASSERT},
      * but will allow some bugs in user code (such as score corruptions) to go unnoticed.
-     * Use this mode during development when you are confident that your code is bug-free,
+     * Use this mode when you are confident that your code is bug-free,
      * or when you want to ignore a known bug temporarily.
      */
-    REPRODUCIBLE_UNGUARDED(false, false),
+    NO_ASSERT(false),
     /**
-     * The non-reproducible mode is equally fast or slightly faster than {@link #REPRODUCIBLE_UNGUARDED}.
+     * The non-reproducible mode is equally fast or slightly faster than {@link #NO_ASSERT}.
      * <p>
      * The random seed is different on every run, which makes it more robust against an unlucky random seed.
      * An unlucky random seed gives a bad result on a certain data set with a certain solver configuration.
@@ -106,22 +122,22 @@ public enum EnvironmentMode {
      * <p>
      * In multithreaded scenarios, this mode allows the use of work stealing and other non-deterministic speed tricks.
      */
-    NON_REPRODUCIBLE(false, false);
+    NON_REPRODUCIBLE(false);
 
     private final boolean asserted;
-    private final boolean guarded;
 
     EnvironmentMode(boolean asserted) {
-        this(asserted, true);
-    }
-
-    EnvironmentMode(boolean asserted, boolean guarded) {
         this.asserted = asserted;
-        this.guarded = guarded;
     }
 
-    public boolean isGuarded() {
-        return guarded;
+    public boolean isStepAssertOrMore() {
+        return switch (this) {
+            case NON_REPRODUCIBLE, NO_ASSERT, PHASE_ASSERT, STEP_ASSERT, NON_INTRUSIVE_FULL_ASSERT, FULL_ASSERT,
+                    TRACKED_FULL_ASSERT ->
+                isAsserted() && this != PHASE_ASSERT;
+            case REPRODUCIBLE -> PHASE_ASSERT.isAsserted();
+            case FAST_ASSERT -> STEP_ASSERT.isAsserted();
+        };
     }
 
     public boolean isAsserted() {
@@ -129,17 +145,31 @@ public enum EnvironmentMode {
     }
 
     public boolean isNonIntrusiveFullAsserted() {
-        if (!isAsserted()) {
-            return false;
-        }
-        return this != FAST_ASSERT;
+        return switch (this) {
+            case NON_REPRODUCIBLE, NO_ASSERT, PHASE_ASSERT, STEP_ASSERT, NON_INTRUSIVE_FULL_ASSERT, FULL_ASSERT,
+                    TRACKED_FULL_ASSERT -> {
+                if (!isStepAssertOrMore()) {
+                    yield false;
+                }
+                yield this != STEP_ASSERT;
+            }
+            case REPRODUCIBLE -> PHASE_ASSERT.isNonIntrusiveFullAsserted();
+            case FAST_ASSERT -> STEP_ASSERT.isNonIntrusiveFullAsserted();
+        };
     }
 
-    public boolean isIntrusiveFastAsserted() {
-        if (!isAsserted()) {
-            return false;
-        }
-        return this != NON_INTRUSIVE_FULL_ASSERT;
+    public boolean isIntrusiveStepAsserted() {
+        return switch (this) {
+            case NON_REPRODUCIBLE, NO_ASSERT, PHASE_ASSERT, STEP_ASSERT, NON_INTRUSIVE_FULL_ASSERT, FULL_ASSERT,
+                    TRACKED_FULL_ASSERT -> {
+                if (!isStepAssertOrMore()) {
+                    yield false;
+                }
+                yield this != NON_INTRUSIVE_FULL_ASSERT;
+            }
+            case REPRODUCIBLE -> PHASE_ASSERT.isIntrusiveStepAsserted();
+            case FAST_ASSERT -> STEP_ASSERT.isIntrusiveStepAsserted();
+        };
     }
 
     public boolean isReproducible() {
@@ -149,4 +179,5 @@ public enum EnvironmentMode {
     public boolean isTracking() {
         return this == TRACKED_FULL_ASSERT;
     }
+
 }

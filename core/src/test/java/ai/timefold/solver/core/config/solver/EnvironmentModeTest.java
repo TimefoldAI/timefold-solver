@@ -87,9 +87,11 @@ class EnvironmentModeTest {
             case NON_REPRODUCIBLE -> assertNonReproducibility(solver1, solver2);
             case TRACKED_FULL_ASSERT,
                     FULL_ASSERT,
-                    FAST_ASSERT,
+                    STEP_ASSERT,
                     NON_INTRUSIVE_FULL_ASSERT,
-                    REPRODUCIBLE_UNGUARDED,
+                    NO_ASSERT,
+                    PHASE_ASSERT,
+                    FAST_ASSERT,
                     REPRODUCIBLE ->
                 assertReproducibility(solver1, solver2);
             default -> throw new IllegalStateException("Unexpected value: " + environmentMode);
@@ -130,8 +132,8 @@ class EnvironmentModeTest {
                                 "Variables that are different between before and undo",
                                 "Actual value (v2) of variable valueClone on CorruptedUndoShadowEntity entity (CorruptedUndoShadowEntity) differs from expected (v1)");
             }
-            case FULL_ASSERT, FAST_ASSERT -> {
-                // FAST_ASSERT does not create snapshots since it is not intrusive, and hence it can only
+            case FULL_ASSERT, STEP_ASSERT, FAST_ASSERT -> {
+                // STEP_ASSERT does not create snapshots since it is not intrusive, and hence it can only
                 // detect the undo corruption and not what caused it
                 var e1 = new CorruptedUndoShadowEntity("e1");
                 var e2 = new CorruptedUndoShadowEntity("e2");
@@ -151,7 +153,7 @@ class EnvironmentModeTest {
                                         List.of(v1, v2))))
                         .withMessageContainingAll("corrupted undoMove");
             }
-            case REPRODUCIBLE, REPRODUCIBLE_UNGUARDED, NON_REPRODUCIBLE, NON_INTRUSIVE_FULL_ASSERT -> {
+            case PHASE_ASSERT, NO_ASSERT, NON_REPRODUCIBLE, NON_INTRUSIVE_FULL_ASSERT, REPRODUCIBLE -> {
                 // No exception expected
             }
             default -> throw new IllegalStateException("Unexpected value: " + environmentMode);
@@ -170,9 +172,9 @@ class EnvironmentModeTest {
                 assertIllegalStateExceptionWhileSolving(solverConfig, "not the uncorruptedScore");
             case FULL_ASSERT, NON_INTRUSIVE_FULL_ASSERT ->
                 assertIllegalStateExceptionWhileSolving(solverConfig, "not the uncorruptedScore");
-            case FAST_ASSERT ->
+            case STEP_ASSERT ->
                 assertIllegalStateExceptionWhileSolving(solverConfig, "Score corruption analysis could not be generated ");
-            case REPRODUCIBLE, REPRODUCIBLE_UNGUARDED, NON_REPRODUCIBLE -> {
+            case PHASE_ASSERT, NO_ASSERT, NON_REPRODUCIBLE -> {
                 // No exception expected
             }
         }

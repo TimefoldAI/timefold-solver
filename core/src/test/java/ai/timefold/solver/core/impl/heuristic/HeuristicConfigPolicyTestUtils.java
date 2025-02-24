@@ -23,7 +23,7 @@ public final class HeuristicConfigPolicyTestUtils {
             buildHeuristicConfigPolicy(SolutionDescriptor<Solution_> solutionDescriptor,
                     EntitySorterManner entitySorterManner) {
         return new HeuristicConfigPolicy.Builder<Solution_>()
-                .withEnvironmentMode(EnvironmentMode.REPRODUCIBLE)
+                .withEnvironmentMode(EnvironmentMode.PHASE_ASSERT)
                 .withRandom(new Random())
                 .withSolutionDescriptor(solutionDescriptor)
                 .withClassInstanceCache(ClassInstanceCache.create())

@@ -24,7 +24,7 @@ final class IncrementalScoreDirectorSemanticsTest extends AbstractScoreDirectorS
                 .withIncrementalScoreCalculatorClass(TestdataConstraintWeighIncrementalScoreCalculator.class);
         var scoreDirectorFactoryFactory = new ScoreDirectorFactoryFactory<TestdataConstraintConfigurationSolution, SimpleScore>(
                 scoreDirectorFactoryConfig);
-        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.PHASE_ASSERT, solutionDescriptor);
     }
 
     @Override
@@ -35,7 +35,7 @@ final class IncrementalScoreDirectorSemanticsTest extends AbstractScoreDirectorS
                 .withIncrementalScoreCalculatorClass(TestdataPinnedListIncrementalScoreCalculator.class);
         var scoreDirectorFactoryFactory =
                 new ScoreDirectorFactoryFactory<TestdataPinnedListSolution, SimpleScore>(scoreDirectorFactoryConfig);
-        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.PHASE_ASSERT, solutionDescriptor);
     }
 
     @Override
@@ -46,7 +46,7 @@ final class IncrementalScoreDirectorSemanticsTest extends AbstractScoreDirectorS
                 .withIncrementalScoreCalculatorClass(TestdataPinnedWithIndexListIncrementalScoreCalculator.class);
         var scoreDirectorFactoryFactory =
                 new ScoreDirectorFactoryFactory<TestdataPinnedWithIndexListSolution, SimpleScore>(scoreDirectorFactoryConfig);
-        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.PHASE_ASSERT, solutionDescriptor);
     }
 
 }

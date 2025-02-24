@@ -30,7 +30,7 @@ class TimefoldProcessorMultipleSolversInvalidConstraintClassTest {
     @RegisterExtension
     static final QuarkusUnitTest config = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.timefold.solver.\"solver1\".environment-mode", "FULL_ASSERT")
-            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".environment-mode", "REPRODUCIBLE")
+            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".environment-mode", "PHASE_ASSERT")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class))
             .assertException(t -> assertThat(t)
@@ -42,7 +42,7 @@ class TimefoldProcessorMultipleSolversInvalidConstraintClassTest {
     @RegisterExtension
     static final QuarkusUnitTest config2 = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.timefold.solver.\"solver1\".environment-mode", "FULL_ASSERT")
-            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".environment-mode", "REPRODUCIBLE")
+            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".environment-mode", "PHASE_ASSERT")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
                             DummyTestdataQuarkusEasyScoreCalculator.class)
@@ -64,7 +64,7 @@ class TimefoldProcessorMultipleSolversInvalidConstraintClassTest {
             .overrideConfigKey("quarkus.timefold.solver.\"solver1\".environment-mode", "FULL_ASSERT")
             .overrideConfigKey("quarkus.timefold.solver.\"solver1\".solver-config-xml",
                     "ai/timefold/solver/quarkus/customSolverConfig.xml")
-            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".environment-mode", "REPRODUCIBLE")
+            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".environment-mode", "PHASE_ASSERT")
             .overrideConfigKey("quarkus.timefold.solver.\"solver2\".solver-config-xml",
                     "ai/timefold/solver/quarkus/customSolverConfig.xml")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
@@ -88,7 +88,7 @@ class TimefoldProcessorMultipleSolversInvalidConstraintClassTest {
     @RegisterExtension
     static final QuarkusUnitTest config4 = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.timefold.solver.\"solver1\".environment-mode", "FULL_ASSERT")
-            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".environment-mode", "REPRODUCIBLE")
+            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".environment-mode", "PHASE_ASSERT")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
                             TestdataQuarkusConstraintProvider.class)
@@ -111,7 +111,7 @@ class TimefoldProcessorMultipleSolversInvalidConstraintClassTest {
             .overrideConfigKey("quarkus.timefold.solver.\"solver1\".environment-mode", "FULL_ASSERT")
             .overrideConfigKey("quarkus.timefold.solver.\"solver1\".solver-config-xml",
                     "ai/timefold/solver/quarkus/customSolverConfigWithoutScore.xml")
-            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".environment-mode", "REPRODUCIBLE")
+            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".environment-mode", "PHASE_ASSERT")
             .overrideConfigKey("quarkus.timefold.solver.\"solver2\".solver-config-xml",
                     "ai/timefold/solver/quarkus/customSolverConfigWithoutScore.xml")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
@@ -134,7 +134,7 @@ class TimefoldProcessorMultipleSolversInvalidConstraintClassTest {
     @RegisterExtension
     static final QuarkusUnitTest config6 = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.timefold.solver.\"solver1\".environment-mode", "FULL_ASSERT")
-            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".environment-mode", "REPRODUCIBLE")
+            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".environment-mode", "PHASE_ASSERT")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
                             DummyTestdataQuarkusIncrementalScoreCalculator.class)
@@ -157,7 +157,7 @@ class TimefoldProcessorMultipleSolversInvalidConstraintClassTest {
             .overrideConfigKey("quarkus.timefold.solver.\"solver1\".environment-mode", "FULL_ASSERT")
             .overrideConfigKey("quarkus.timefold.solver.\"solver1\".solver-config-xml",
                     "ai/timefold/solver/quarkus/customSolverConfigWithoutScore.xml")
-            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".environment-mode", "REPRODUCIBLE")
+            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".environment-mode", "PHASE_ASSERT")
             .overrideConfigKey("quarkus.timefold.solver.\"solver2\".solver-config-xml",
                     "ai/timefold/solver/quarkus/customSolverConfigWithoutScore.xml")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)

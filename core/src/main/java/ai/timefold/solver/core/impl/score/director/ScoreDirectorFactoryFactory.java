@@ -32,10 +32,10 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
                                 .formatted(assertionScoreDirectorFactory,
                                         assertionScoreDirectorFactory.getAssertionScoreDirectorFactory()));
             }
-            if (environmentMode.compareTo(EnvironmentMode.FAST_ASSERT) > 0) {
+            if (environmentMode.compareTo(EnvironmentMode.STEP_ASSERT) > 0) {
                 throw new IllegalArgumentException(
                         "A non-null assertionScoreDirectorFactory (%s) requires an environmentMode (%s) of %s or lower."
-                                .formatted(assertionScoreDirectorFactory, environmentMode, EnvironmentMode.FAST_ASSERT));
+                                .formatted(assertionScoreDirectorFactory, environmentMode, EnvironmentMode.STEP_ASSERT));
             }
             var assertionScoreDirectorFactoryFactory =
                     new ScoreDirectorFactoryFactory<Solution_, Score_>(assertionScoreDirectorFactory);

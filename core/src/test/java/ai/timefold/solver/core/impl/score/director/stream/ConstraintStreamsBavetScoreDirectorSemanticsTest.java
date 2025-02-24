@@ -24,7 +24,7 @@ final class ConstraintStreamsBavetScoreDirectorSemanticsTest extends AbstractSco
                 .withConstraintProviderClass(TestdataConstraintWeightConstraintProvider.class);
         ScoreDirectorFactoryFactory<TestdataConstraintConfigurationSolution, SimpleScore> scoreDirectorFactoryFactory =
                 new ScoreDirectorFactoryFactory<>(scoreDirectorFactoryConfig);
-        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.PHASE_ASSERT, solutionDescriptor);
     }
 
     @Override
@@ -35,7 +35,7 @@ final class ConstraintStreamsBavetScoreDirectorSemanticsTest extends AbstractSco
                 .withConstraintProviderClass(TestdataPinnedListConstraintProvider.class);
         var scoreDirectorFactoryFactory =
                 new ScoreDirectorFactoryFactory<TestdataPinnedListSolution, SimpleScore>(scoreDirectorFactoryConfig);
-        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.PHASE_ASSERT, solutionDescriptor);
     }
 
     @Override
@@ -46,7 +46,7 @@ final class ConstraintStreamsBavetScoreDirectorSemanticsTest extends AbstractSco
                 .withConstraintProviderClass(TestdataPinnedWithIndexListConstraintProvider.class);
         var scoreDirectorFactoryFactory =
                 new ScoreDirectorFactoryFactory<TestdataPinnedWithIndexListSolution, SimpleScore>(scoreDirectorFactoryConfig);
-        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.PHASE_ASSERT, solutionDescriptor);
     }
 
 }

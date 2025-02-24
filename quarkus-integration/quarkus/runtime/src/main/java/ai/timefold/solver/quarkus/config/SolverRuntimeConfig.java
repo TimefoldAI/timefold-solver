@@ -16,7 +16,7 @@ import io.quarkus.runtime.annotations.ConfigGroup;
 public interface SolverRuntimeConfig {
     /**
      * Enable runtime assertions to detect common bugs in your implementation during development.
-     * Defaults to {@link EnvironmentMode#REPRODUCIBLE}.
+     * Defaults to {@link EnvironmentMode#PHASE_ASSERT}.
      */
     Optional<EnvironmentMode> environmentMode();
 

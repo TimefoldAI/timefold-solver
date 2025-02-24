@@ -55,7 +55,7 @@ class ScoreDirectorFactoryFactoryTest {
 
         AbstractScoreDirectorFactory<TestdataSolution, ?> scoreDirectorFactory =
                 (AbstractScoreDirectorFactory<TestdataSolution, ?>) buildTestdataScoreDirectoryFactory(config,
-                        EnvironmentMode.FAST_ASSERT);
+                        EnvironmentMode.STEP_ASSERT);
 
         ScoreDirectorFactory<TestdataSolution> assertionScoreDirectorFactory =
                 scoreDirectorFactory.getAssertionScoreDirectorFactory();
@@ -86,7 +86,7 @@ class ScoreDirectorFactoryFactoryTest {
     }
 
     private ScoreDirectorFactory<TestdataSolution> buildTestdataScoreDirectoryFactory(ScoreDirectorFactoryConfig config) {
-        return buildTestdataScoreDirectoryFactory(config, EnvironmentMode.REPRODUCIBLE);
+        return buildTestdataScoreDirectoryFactory(config, EnvironmentMode.PHASE_ASSERT);
     }
 
     @Test
@@ -95,7 +95,7 @@ class ScoreDirectorFactoryFactoryTest {
                 .withConstraintProviderClass(TestdataConstraintProvider.class);
         var scoreDirectorFactory =
                 BavetConstraintStreamScoreDirectorFactory.buildScoreDirectorFactory(TestdataSolution.buildSolutionDescriptor(),
-                        config, EnvironmentMode.REPRODUCIBLE);
+                        config, EnvironmentMode.PHASE_ASSERT);
         assertThat(scoreDirectorFactory).isInstanceOf(BavetConstraintStreamScoreDirectorFactory.class);
     }
 

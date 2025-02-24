@@ -80,7 +80,7 @@ class ConstraintWeightOverridesTest {
         try (var scoreDirector = BavetConstraintStreamScoreDirectorFactory.buildScoreDirectorFactory(solutionDescriptor,
                 new ScoreDirectorFactoryConfig()
                         .withConstraintProviderClass(TestdataConstraintWeightOverridesConstraintProvider.class),
-                EnvironmentMode.REPRODUCIBLE)
+                EnvironmentMode.PHASE_ASSERT)
                 .buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
             // Default weights
             scoreDirector.setWorkingSolution(solution);

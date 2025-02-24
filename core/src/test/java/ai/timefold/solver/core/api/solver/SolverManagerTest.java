@@ -592,7 +592,7 @@ class SolverManagerTest {
         var terminationConfig = new TerminationConfig()
                 .withScoreCalculationCountLimit(5L);
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
-                .withEnvironmentMode(EnvironmentMode.REPRODUCIBLE_UNGUARDED)
+                .withEnvironmentMode(EnvironmentMode.NO_ASSERT)
                 .withTerminationConfig(terminationConfig);
 
         try (var solverManager = createDefaultSolverManager(solverConfig)) {

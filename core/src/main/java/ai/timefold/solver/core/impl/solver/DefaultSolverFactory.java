@@ -100,8 +100,9 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         }
 
         var environmentMode = solverConfig.determineEnvironmentMode();
-        var constraintMatchEnabled = !metricsRequiringConstraintMatchSet.isEmpty() || environmentMode.isAsserted();
-        if (constraintMatchEnabled && !environmentMode.isAsserted()) {
+        var isStepAssertOrMore = environmentMode.isStepAssertOrMore();
+        var constraintMatchEnabled = !metricsRequiringConstraintMatchSet.isEmpty() || isStepAssertOrMore;
+        if (constraintMatchEnabled && !isStepAssertOrMore) {
             LOGGER.info(
                     "Enabling constraint matching as required by the enabled metrics ({}). This will impact solver performance.",
                     metricsRequiringConstraintMatchSet);
@@ -178,7 +179,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                         solverConfig.getGizmoSolutionClonerMap(),
                         solverConfig.getEntityClassList());
         EnvironmentMode environmentMode = solverConfig.determineEnvironmentMode();
-        if (environmentMode.isAsserted()) {
+        if (environmentMode.isStepAssertOrMore()) {
             solutionDescriptor.setAssertModelForCloning(true);
         }
 

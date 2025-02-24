@@ -26,7 +26,7 @@ class TimefoldProcessorMultipleSolversXMLPropertyTest {
             .overrideConfigKey("quarkus.timefold.solver.\"solver1\".environment-mode", "FULL_ASSERT")
             .overrideConfigKey("quarkus.timefold.solver.\"solver1\".solver-config-xml",
                     "ai/timefold/solver/quarkus/customSolverQuarkusConfig.xml")
-            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".environment-mode", "REPRODUCIBLE")
+            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".environment-mode", "PHASE_ASSERT")
             .overrideConfigKey("quarkus.timefold.solver.\"solver2\".solver-config-xml",
                     "ai/timefold/solver/quarkus/customSolverQuarkusShadowVariableConfig.xml")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)

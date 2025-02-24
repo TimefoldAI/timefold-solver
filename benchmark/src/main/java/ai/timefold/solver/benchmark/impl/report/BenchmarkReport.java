@@ -316,10 +316,11 @@ public class BenchmarkReport {
                     + " Maybe reduce the parallelBenchmarkCount.");
         }
         EnvironmentMode environmentMode = plannerBenchmarkResult.getEnvironmentMode();
-        if (environmentMode != null && environmentMode.isAsserted()) {
+        if (environmentMode != null && environmentMode.isStepAssertOrMore()) {
+            // Phase assert performance impact is negligible.
             warningList.add("The environmentMode (" + environmentMode + ") is asserting."
                     + " This decreases performance."
-                    + " Maybe set the environmentMode to " + EnvironmentMode.REPRODUCIBLE + ".");
+                    + " Maybe set the environmentMode to " + EnvironmentMode.PHASE_ASSERT + ".");
         }
         LoggingLevel loggingLevelTimefoldCore = plannerBenchmarkResult.getLoggingLevelTimefoldSolverCore();
         if (loggingLevelTimefoldCore == LoggingLevel.TRACE) {

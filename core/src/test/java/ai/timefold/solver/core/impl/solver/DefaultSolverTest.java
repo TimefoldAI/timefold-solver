@@ -130,7 +130,7 @@ class DefaultSolverTest {
     @Test
     void solveCorruptedEasyGuarded() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
-                .withEnvironmentMode(EnvironmentMode.REPRODUCIBLE)
+                .withEnvironmentMode(EnvironmentMode.PHASE_ASSERT)
                 .withEasyScoreCalculatorClass(CorruptedEasyScoreCalculator.class);
 
         var solution = new TestdataSolution("s1");
@@ -140,13 +140,13 @@ class DefaultSolverTest {
         Assertions.assertThatThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution, false))
                 .hasMessageContaining("corruption")
                 .hasMessageContaining(EnvironmentMode.FULL_ASSERT.name())
-                .hasMessageContaining(EnvironmentMode.REPRODUCIBLE_UNGUARDED.name());
+                .hasMessageContaining(EnvironmentMode.NO_ASSERT.name());
     }
 
     @Test
     void solveCorruptedEasyUnguarded() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
-                .withEnvironmentMode(EnvironmentMode.REPRODUCIBLE_UNGUARDED)
+                .withEnvironmentMode(EnvironmentMode.NO_ASSERT)
                 .withEasyScoreCalculatorClass(CorruptedEasyScoreCalculator.class);
 
         var solution = new TestdataSolution("s1");

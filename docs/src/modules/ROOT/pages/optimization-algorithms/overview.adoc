@@ -377,7 +377,7 @@ Or use a combination that sums up to 150 minutes:
 
 [NOTE]
 ====
-This `Termination` will most likely sacrifice perfect reproducibility (even with `environmentMode` `REPRODUCIBLE`)
+This `Termination` will most likely sacrifice perfect reproducibility (even with `environmentMode` `NO_ASSERT`)
 because the available CPU time differs frequently between runs:
 
 * The available CPU time influences the number of steps that can be taken, which might be a few more or less.
@@ -472,7 +472,7 @@ the termination will only trigger if the local search phase does not improve the
 
 [NOTE]
 ====
-This `Termination` will most likely sacrifice perfect reproducibility (even with `environmentMode` ``REPRODUCIBLE``)
+This `Termination` will most likely sacrifice perfect reproducibility (even with `environmentMode` ``NO_ASSERT``)
 as the available CPU time differs frequently between runs:
 
 * The available CPU time influences the number of steps that can be taken, which might be a few more or less.

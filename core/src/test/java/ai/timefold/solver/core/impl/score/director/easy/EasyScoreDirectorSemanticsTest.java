@@ -36,7 +36,7 @@ final class EasyScoreDirectorSemanticsTest extends AbstractScoreDirectorSemantic
                 .withEasyScoreCalculatorClass(TestdataConstraintWeightEasyScoreCalculator.class);
         ScoreDirectorFactoryFactory<TestdataConstraintConfigurationSolution, SimpleScore> scoreDirectorFactoryFactory =
                 new ScoreDirectorFactoryFactory<>(scoreDirectorFactoryConfig);
-        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.PHASE_ASSERT, solutionDescriptor);
     }
 
     @Override
@@ -47,7 +47,7 @@ final class EasyScoreDirectorSemanticsTest extends AbstractScoreDirectorSemantic
                 .withEasyScoreCalculatorClass(TestdataPinnedListEasyScoreCalculator.class);
         var scoreDirectorFactoryFactory =
                 new ScoreDirectorFactoryFactory<TestdataPinnedListSolution, SimpleScore>(scoreDirectorFactoryConfig);
-        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.PHASE_ASSERT, solutionDescriptor);
     }
 
     @Override
@@ -58,7 +58,7 @@ final class EasyScoreDirectorSemanticsTest extends AbstractScoreDirectorSemantic
                 .withEasyScoreCalculatorClass(TestdataPinnedWithIndexListEasyScoreCalculator.class);
         var scoreDirectorFactoryFactory =
                 new ScoreDirectorFactoryFactory<TestdataPinnedWithIndexListSolution, SimpleScore>(scoreDirectorFactoryConfig);
-        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
+        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.PHASE_ASSERT, solutionDescriptor);
     }
 
     @Test
@@ -87,7 +87,7 @@ final class EasyScoreDirectorSemanticsTest extends AbstractScoreDirectorSemantic
     }
 
     private ScoreDirectorFactory<TestdataSolution> buildTestdataScoreDirectoryFactory(ScoreDirectorFactoryConfig config) {
-        return buildTestdataScoreDirectoryFactory(config, EnvironmentMode.REPRODUCIBLE);
+        return buildTestdataScoreDirectoryFactory(config, EnvironmentMode.PHASE_ASSERT);
     }
 
     public static class TestCustomPropertiesEasyScoreCalculator

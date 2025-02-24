@@ -19,7 +19,7 @@ public class SolverProperties {
 
     /**
      * Enable runtime assertions to detect common bugs in your implementation during development.
-     * Defaults to "REPRODUCIBLE".
+     * Defaults to {@link EnvironmentMode#PHASE_ASSERT}.
      */
     private EnvironmentMode environmentMode;
 

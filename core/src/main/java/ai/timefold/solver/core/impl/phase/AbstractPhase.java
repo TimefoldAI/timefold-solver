@@ -142,7 +142,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
                         and if you are convinced that the problem is not in your code, please report a bug to Timefold.
                         At your own risk, you may run your solver with %s or %s instead to ignore this error."""
                         .formatted(EnvironmentMode.class.getSimpleName(),
-                                EnvironmentMode.FULL_ASSERT, EnvironmentMode.REPRODUCIBLE_UNGUARDED,
+                                EnvironmentMode.FULL_ASSERT, EnvironmentMode.NO_ASSERT,
                                 EnvironmentMode.NON_REPRODUCIBLE),
                         e);
             }
@@ -269,10 +269,10 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         }
 
         public AbstractPhaseBuilder<Solution_> enableAssertions(EnvironmentMode environmentMode) {
-            assertPhaseScoreFromScratch = environmentMode.isGuarded() && !environmentMode.isAsserted();
+            assertPhaseScoreFromScratch = environmentMode.isAsserted();
             assertStepScoreFromScratch = environmentMode.isNonIntrusiveFullAsserted();
-            assertExpectedStepScore = environmentMode.isIntrusiveFastAsserted();
-            assertShadowVariablesAreNotStaleAfterStep = environmentMode.isIntrusiveFastAsserted();
+            assertExpectedStepScore = environmentMode.isIntrusiveStepAsserted();
+            assertShadowVariablesAreNotStaleAfterStep = environmentMode.isIntrusiveStepAsserted();
             return this;
         }
 

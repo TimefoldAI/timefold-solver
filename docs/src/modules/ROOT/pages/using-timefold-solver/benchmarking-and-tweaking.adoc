@@ -1123,7 +1123,7 @@ The `subSingleCount` defaults to `1` (so no statistical benchmarking).
 ====
 If `subSingleCount` is higher than ``1``,
 the benchmarker will automatically use a _different_ xref:using-timefold-solver/running-the-solver.adoc#randomNumberGenerator[`Random` seed] for every sub single run,
-without losing reproducibility (for each sub single index) in xref:using-timefold-solver/running-the-solver.adoc#environmentMode[EnvironmentMode] ``REPRODUCIBLE`` and lower.
+without losing reproducibility (for each sub single index) in xref:using-timefold-solver/running-the-solver.adoc#environmentMode[EnvironmentMode] ``NO_ASSERT`` and lower.
 ====
 
 

@@ -18,12 +18,12 @@ public record BavetConstraintStreamImplSupport(ConstraintMatchPolicy constraintM
     public <Score_ extends Score<Score_>, Solution_> InnerScoreDirector<Solution_, Score_> buildScoreDirector(
             SolutionDescriptor<Solution_> solutionDescriptorSupplier, ConstraintProvider constraintProvider) {
         return (InnerScoreDirector<Solution_, Score_>) new BavetConstraintStreamScoreDirectorFactory<>(
-                solutionDescriptorSupplier, constraintProvider, EnvironmentMode.REPRODUCIBLE)
+                solutionDescriptorSupplier, constraintProvider, EnvironmentMode.PHASE_ASSERT)
                 .buildScoreDirector(false, constraintMatchPolicy);
     }
 
     @Override
     public <Solution_> ConstraintFactory buildConstraintFactory(SolutionDescriptor<Solution_> solutionDescriptorSupplier) {
-        return new BavetConstraintFactory<>(solutionDescriptorSupplier, EnvironmentMode.REPRODUCIBLE);
+        return new BavetConstraintFactory<>(solutionDescriptorSupplier, EnvironmentMode.PHASE_ASSERT);
     }
 }

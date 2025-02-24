@@ -146,7 +146,7 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
         if (environmentMode.isNonIntrusiveFullAsserted()) {
             decider.setAssertMoveScoreFromScratch(true);
         }
-        if (environmentMode.isIntrusiveFastAsserted()) {
+        if (environmentMode.isIntrusiveStepAsserted()) {
             decider.setAssertExpectedUndoMoveScore(true);
         }
         return decider;
