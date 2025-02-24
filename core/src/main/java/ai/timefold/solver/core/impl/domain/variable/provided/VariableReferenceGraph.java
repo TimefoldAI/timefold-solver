@@ -165,7 +165,7 @@ public class VariableReferenceGraph<Solution_> {
             }
 
             if (isChanged) {
-                graph.componentForwardEdges(minNode).forEachRemaining((int node) -> {
+                graph.nodeForwardEdges(minNode).forEachRemaining((int node) -> {
                     changed.set(node);
                 });
             }

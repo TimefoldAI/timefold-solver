@@ -40,7 +40,7 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
     }
 
     @Override
-    public PrimitiveIterator.OfInt componentForwardEdges(int from) {
+    public PrimitiveIterator.OfInt nodeForwardEdges(int from) {
         return forwardEdges[from].stream().mapToInt(Integer::intValue).iterator();
     }
 

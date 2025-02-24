@@ -17,7 +17,7 @@ public interface TopologicalOrderGraph {
 
     void removeEdge(int from, int to);
 
-    PrimitiveIterator.OfInt componentForwardEdges(int from);
+    PrimitiveIterator.OfInt nodeForwardEdges(int from);
 
     boolean isLooped(LoopedTracker loopedTracker, int node);
 
