@@ -9,13 +9,13 @@ import ai.timefold.solver.core.impl.bavet.bi.ConcatBiUniNode;
 import ai.timefold.solver.core.impl.bavet.bi.ConcatUniBiNode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractConcatNode;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
-import ai.timefold.solver.core.impl.bavet.common.BavetConcatConstraintStream;
-import ai.timefold.solver.core.impl.bavet.common.NodeBuildHelper;
-import ai.timefold.solver.core.impl.bavet.common.bridge.BavetForeBridgeBiConstraintStream;
-import ai.timefold.solver.core.impl.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetConcatConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetForeBridgeBiConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
 
 public final class BavetUniConcatBiConstraintStream<Solution_, A, B> extends BavetAbstractBiConstraintStream<Solution_, A, B>
         implements BavetConcatConstraintStream<Solution_> {
@@ -69,7 +69,7 @@ public final class BavetUniConcatBiConstraintStream<Solution_, A, B> extends Bav
     }
 
     @Override
-    public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
+    public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         TupleLifecycle<BiTuple<A, B>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         var leftCloneStoreIndex = buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource());
         var rightCloneStoreIndex = buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource());

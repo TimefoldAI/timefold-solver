@@ -61,7 +61,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_>
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<?> copyChanges() {
+    public List<ChangeAction<Solution_>> copyChanges() {
         return List.copyOf(variableChanges);
     }
 

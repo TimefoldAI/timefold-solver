@@ -27,4 +27,14 @@ import ai.timefold.solver.core.api.domain.variable.VariableListener;
 public non-sealed interface ShadowVariableMetaModel<Solution_, Entity_, Value_>
         extends VariableMetaModel<Solution_, Entity_, Value_> {
 
+    @Override
+    default boolean isList() {
+        return false;
+    }
+
+    @Override
+    default boolean isGenuine() {
+        return false;
+    }
+
 }

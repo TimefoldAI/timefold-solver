@@ -6,7 +6,6 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -35,13 +34,13 @@ public interface Rebaser {
      * Matching uses a {@link PlanningId} by default.
      *
      * @param problemFactOrPlanningEntity The fact or entity to rebase.
-     * @return null if externalObject is null
+     * @return null if problemFactOrPlanningEntity is null
      * @throws IllegalArgumentException if there is no working object for the fact or entity,
      *         if it cannot be looked up,
      *         or if its class is not supported.
      * @throws IllegalStateException if it cannot be looked up
      * @param <T>
      */
-    <T> @Nullable T rebase(@NonNull T problemFactOrPlanningEntity);
+    <T> @Nullable T rebase(@Nullable T problemFactOrPlanningEntity);
 
 }

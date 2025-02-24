@@ -71,7 +71,8 @@ public final class BavetConstraintFactory<Solution_>
      * {@link BavetAbstractConstraintStream} implement equals/hashcode ignoring child streams.
      * <p>
      * {@link BavetConstraintSessionFactory#buildSession(Object, ConstraintMatchPolicy, boolean, Consumer)} needs this to happen
-     * for all streams.
+     * for all
+     * streams.
      * <p>
      * This must be called before the stream receives child streams.
      *

@@ -211,10 +211,12 @@ class MoveDirectorTest {
     @Test
     void updateShadowVariables() {
         var mockScoreDirector = mock(InnerScoreDirector.class);
-        var moveDirector = new MoveDirector<TestdataSolution>(mockScoreDirector);
+        var mockMoveStreamSession = mock(MoveStreamSession.class);
+        var moveDirector = new MoveDirector<TestdataSolution>(mockScoreDirector, mockMoveStreamSession);
 
         moveDirector.updateShadowVariables();
         verify(mockScoreDirector).triggerVariableListeners();
+        verify(mockMoveStreamSession).settle();
     }
 
     @Test
@@ -267,7 +269,7 @@ class MoveDirectorTest {
             move.doMoveOnly(scoreDirector);
             var undoMove = (RecordedUndoMove<TestdataListSolution>) ephemeralMoveDirector.createUndoMove();
             // e1 must be analyzed at the beginning of the move execution
-            assertThat(undoMove.getVariableChangeActionList().stream().anyMatch(action -> {
+            assertThat(undoMove.variableChangeActionList().stream().anyMatch(action -> {
                 if (action instanceof ListVariableBeforeChangeAction<?, ?, ?> beforeChangeAction) {
                     return beforeChangeAction.entity() == e1 && beforeChangeAction.fromIndex() == 0
                             && beforeChangeAction.toIndex() == 1 && beforeChangeAction.oldValue().size() == 1
@@ -277,7 +279,7 @@ class MoveDirectorTest {
             })).isTrue();
             // e2 is not analyzed at the beginning of move execution,
             // but it must have a before list change event to restore the original elements.
-            assertThat(undoMove.getVariableChangeActionList().stream().anyMatch(action -> {
+            assertThat(undoMove.variableChangeActionList().stream().anyMatch(action -> {
                 if (action instanceof ListVariableBeforeChangeAction<?, ?, ?> beforeChangeAction) {
                     return beforeChangeAction.entity() == e2 && beforeChangeAction.fromIndex() == 0
                             && beforeChangeAction.toIndex() == 1 && beforeChangeAction.oldValue().size() == 1
