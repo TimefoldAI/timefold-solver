@@ -4,7 +4,7 @@
  * <br/>
  * The nodes in the graph are paths to each shadow variable, bound to a
  * particular entity instance.
- * <ul/>
+ * <ul>
  * <li>
  * The path `e1:Entity.#id.a` is the source path for the shadow variable `a` on entity e1.
  * </li>
