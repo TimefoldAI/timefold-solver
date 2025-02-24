@@ -210,7 +210,7 @@ class VariableListenerSupportTest {
         }
 
         @Override
-        public PrimitiveIterator.OfInt componentForwardEdges(int from) {
+        public PrimitiveIterator.OfInt nodeForwardEdges(int from) {
             return IntStream.empty().iterator();
         }
 
