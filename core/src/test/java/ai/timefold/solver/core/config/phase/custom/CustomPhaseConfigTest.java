@@ -5,8 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.Collections;
 
 import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.impl.phase.custom.CustomPhaseCommand;
 
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +27,7 @@ class CustomPhaseConfigTest {
     void nullCustomPhaseCommands() {
         SolverConfig solverConfig = SolverConfig.createFromXmlResource(SOLVER_CONFIG_RESOURCE);
         assertThatThrownBy(() -> ((CustomPhaseConfig) solverConfig.getPhaseConfigList().get(0))
-                .withCustomPhaseCommands(new CustomPhaseCommand[] { null }))
+                .withCustomPhaseCommands(new PhaseCommand[] { null }))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Custom phase commands");
     }

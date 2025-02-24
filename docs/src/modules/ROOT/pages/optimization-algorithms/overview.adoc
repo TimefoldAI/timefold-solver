@@ -839,37 +839,38 @@ For example, to implement a custom Construction Heuristic without implementing a
 
 [NOTE]
 ====
-Most of the time, a custom solver phase is not worth the development time investment.
-xref:optimization-algorithms/construction-heuristics.adoc#constructionHeuristics[Construction Heuristics] are configurable,
-`Termination`-aware and support partially initialized solutions too.
+Most of the time, a custom solver phase is not worth the investment of development time.
+xref:optimization-algorithms/construction-heuristics.adoc#constructionHeuristics[Construction Heuristics] are configurable and support partially initialized solutions too.
 You can use the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to tweak them.
 ====
 
-The `CustomPhaseCommand` interface appears as follows:
+The `PhaseCommand` interface appears as follows:
 
 [source,java,options="nowrap"]
 ----
-public interface CustomPhaseCommand<Solution_> {
-    ...
+public interface PhaseCommand<Solution_> {
 
-    void changeWorkingSolution(ScoreDirector<Solution_> scoreDirector);
+    void changeWorkingSolution(ScoreDirector<Solution_> scoreDirector, BooleanSupplier isPhaseTerminated);
 
 }
 ----
 
+Any change on the planning entities in a `PhaseCommand` must be notified to the ``ScoreDirector``.
+
+Long-running commands may want to periodically check `isPhaseTerminated`
+and return when it returns true.
+The solver will only terminate after the command returns.
+
 [WARNING]
 ====
-Any change on the planning entities in a `CustomPhaseCommand` must be notified to the ``ScoreDirector``.
+Do not change any of the problem facts in a `PhaseCommand`,
+it will corrupt the `Solver` because any previous score or solution was for a different problem.
+To change problem facts,
+read about xref:responding-to-change/responding-to-change.adoc[repeated planning]
+and use xref:responding-to-change/responding-to-change.adoc#problemChange[ProblemChange] instead.
 ====
 
-[NOTE]
-====
-Do not change any of the problem facts in a `CustomPhaseCommand`.
-That will corrupt the `Solver` because any previous score or solution was for a different problem.
-To do that, read about xref:responding-to-change/responding-to-change.adoc[repeated planning] and do it with a xref:responding-to-change/responding-to-change.adoc#problemChange[ProblemChange] instead.
-====
-
-Configure the `CustomPhaseCommand` in the solver configuration:
+Configure the `PhaseCommand` in the solver configuration:
 
 [source,xml,options="nowrap"]
 ----
@@ -887,19 +888,12 @@ Configure multiple `customPhaseCommandClass` instances to run them in sequence.
 
 [IMPORTANT]
 ====
-If the changes of a `CustomPhaseCommand` do not result in a better score, the best solution will not be changed
-(so effectively nothing will have changed for the next `Phase` or `CustomPhaseCommand`).
+If the changes performed in a `PhaseCommand` do not result in a better score,
+the best solution will not be changed.
+Effectively nothing will have changed for the next `Phase` or `PhaseCommand`.
 ====
 
-[NOTE]
-====
-If the `Solver` or a `Phase` wants to terminate while a `CustomPhaseCommand` is still running,
-it waits to terminate until the `CustomPhaseCommand` is complete.
-This may take a significant amount of time.
-The built-in solver phases do not have this issue.
-====
-
-To configure values of a `CustomPhaseCommand` dynamically in the solver configuration
+To configure values of a `PhaseCommand` dynamically in the solver configuration
 (so the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] can tweak those parameters),
 add the `customProperties` element and use xref:using-timefold-solver/configuration.adoc#customPropertiesConfiguration[custom properties]:
 
@@ -911,23 +905,6 @@ add the `customProperties` element and use xref:using-timefold-solver/configurat
       <property name="mySelectionSize" value="5"/>
     </customProperties>
   </customPhase>
-----
-
-
-[#noChangeSolverPhase]
-=== No change solver phase
-
-In rare cases, it's useful not to run any solver phases.
-But by default, configuring no phase will trigger running the default phases.
-To avoid those, configure a `NoChangePhase`:
-
-[source,xml,options="nowrap"]
-----
-<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
-  ...
-  <noChangePhase/>
-</solver>
 ----
 
 

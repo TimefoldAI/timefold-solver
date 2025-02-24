@@ -102,6 +102,44 @@
           "oldValue": "{\"terminationClass\", \"terminationCompositionStyle\", \"spentLimit\", \"millisecondsSpentLimit\", \"secondsSpentLimit\", \"minutesSpentLimit\", \"hoursSpentLimit\", \"daysSpentLimit\", \"unimprovedSpentLimit\", \"unimprovedMillisecondsSpentLimit\", \"unimprovedSecondsSpentLimit\", \"unimprovedMinutesSpentLimit\", \"unimprovedHoursSpentLimit\", \"unimprovedDaysSpentLimit\", \"unimprovedScoreDifferenceThreshold\", \"bestScoreLimit\", \"bestScoreFeasible\", \"stepCountLimit\", \"unimprovedStepCountLimit\", \"scoreCalculationCountLimit\", \"terminationConfigList\"}",
           "newValue": "{\"terminationClass\", \"terminationCompositionStyle\", \"diminishedReturnsConfig\", \"spentLimit\", \"millisecondsSpentLimit\", \"secondsSpentLimit\", \"minutesSpentLimit\", \"hoursSpentLimit\", \"daysSpentLimit\", \"unimprovedSpentLimit\", \"unimprovedMillisecondsSpentLimit\", \"unimprovedSecondsSpentLimit\", \"unimprovedMinutesSpentLimit\", \"unimprovedHoursSpentLimit\", \"unimprovedDaysSpentLimit\", \"unimprovedScoreDifferenceThreshold\", \"bestScoreLimit\", \"bestScoreFeasible\", \"stepCountLimit\", \"unimprovedStepCountLimit\", \"scoreCalculationCountLimit\", \"moveCountLimit\", \"terminationConfigList\"}",
           "justification": "Added support for the new diminished returns termination type"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.returnTypeTypeParametersChanged",
+          "old": "method java.util.List<java.lang.Class<? extends ai.timefold.solver.core.impl.phase.custom.CustomPhaseCommand>> ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig::getCustomPhaseCommandClassList()",
+          "new": "method java.util.List<java.lang.Class<? extends ai.timefold.solver.core.api.solver.phase.PhaseCommand>> ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig::getCustomPhaseCommandClassList()",
+          "justification": "PhaseCommand is the new interface for custom phase commands, CustomPhaseCommand is deprecated and extends it"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.returnTypeTypeParametersChanged",
+          "old": "method java.util.List<ai.timefold.solver.core.impl.phase.custom.CustomPhaseCommand> ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig::getCustomPhaseCommandList()",
+          "new": "method java.util.List<? extends ai.timefold.solver.core.api.solver.phase.PhaseCommand> ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig::getCustomPhaseCommandList()",
+          "justification": "PhaseCommand is the new interface for custom phase commands, CustomPhaseCommand is deprecated and extends it"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.parameterTypeParameterChanged",
+          "old": "parameter void ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig::setCustomPhaseCommandClassList(===java.util.List<java.lang.Class<? extends ai.timefold.solver.core.impl.phase.custom.CustomPhaseCommand>>===)",
+          "new": "parameter void ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig::setCustomPhaseCommandClassList(===java.util.List<java.lang.Class<? extends ai.timefold.solver.core.api.solver.phase.PhaseCommand>>===)",
+          "parameterIndex": "0",
+          "justification": "PhaseCommand is the new interface for custom phase commands, CustomPhaseCommand is deprecated and extends it"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.parameterTypeParameterChanged",
+          "old": "parameter void ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig::setCustomPhaseCommandList(===java.util.List<ai.timefold.solver.core.impl.phase.custom.CustomPhaseCommand>===)",
+          "new": "parameter void ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig::setCustomPhaseCommandList(===java.util.List<? extends ai.timefold.solver.core.api.solver.phase.PhaseCommand>===)",
+          "parameterIndex": "0",
+          "justification": "PhaseCommand is the new interface for custom phase commands, CustomPhaseCommand is deprecated and extends it"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "class ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig",
+          "new": "class ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "Less verbose nullability, no practical impact."
         }
       ]
     }

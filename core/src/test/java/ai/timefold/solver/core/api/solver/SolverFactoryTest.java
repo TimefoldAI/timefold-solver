@@ -13,7 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.List;
 
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
@@ -29,6 +28,7 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
+import ai.timefold.solver.core.impl.testutil.NoChangeCustomPhaseCommand;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -237,8 +237,7 @@ class SolverFactoryTest {
         solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new CustomPhaseConfig()
-                        .withCustomPhaseCommandList(List.of(scoreDirector -> {
-                        })),
+                        .withCustomPhaseCommands(new NoChangeCustomPhaseCommand()),
                         new ConstructionHeuristicPhaseConfig(),
                         new LocalSearchPhaseConfig());
         solverFactory = SolverFactory.create(solverConfig);
@@ -255,8 +254,7 @@ class SolverFactoryTest {
                 .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig(),
                         new CustomPhaseConfig()
-                                .withCustomPhaseCommandList(List.of(scoreDirector -> {
-                                })),
+                                .withCustomPhaseCommands(new NoChangeCustomPhaseCommand()),
                         new LocalSearchPhaseConfig());
         solverFactory = SolverFactory.create(solverConfig);
         solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
@@ -272,11 +270,9 @@ class SolverFactoryTest {
                 .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(
                         new CustomPhaseConfig()
-                                .withCustomPhaseCommandList(List.of(scoreDirector -> {
-                                })),
+                                .withCustomPhaseCommands(new NoChangeCustomPhaseCommand()),
                         new CustomPhaseConfig()
-                                .withCustomPhaseCommandList(List.of(scoreDirector -> {
-                                })));
+                                .withCustomPhaseCommands(new NoChangeCustomPhaseCommand()));
         solverFactory = SolverFactory.create(solverConfig);
         solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
         firstPhase = (PossiblyInitializingPhase<TestdataSolution>) solver.getPhaseList().get(0);

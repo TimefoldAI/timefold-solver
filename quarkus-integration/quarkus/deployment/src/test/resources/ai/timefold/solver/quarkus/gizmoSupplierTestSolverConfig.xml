@@ -56,7 +56,7 @@
         </forager>
     </constructionHeuristic>
     <customPhase>
-        <customPhaseCommandClass>ai.timefold.solver.core.impl.phase.custom.CustomPhaseCommand</customPhaseCommandClass>
+        <customPhaseCommandClass>ai.timefold.solver.core.api.solver.phase.PhaseCommand</customPhaseCommandClass>
     </customPhase>
     <exhaustiveSearch>
         <exhaustiveSearchType>BRANCH_AND_BOUND</exhaustiveSearchType>
