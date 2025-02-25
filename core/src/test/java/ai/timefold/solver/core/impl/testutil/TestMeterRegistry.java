@@ -6,9 +6,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import ai.timefold.solver.core.api.solver.Solver;
-import ai.timefold.solver.core.impl.solver.DefaultSolver;
-
 import io.micrometer.core.instrument.MockClock;
 import io.micrometer.core.instrument.config.NamingConvention;
 import io.micrometer.core.instrument.simple.SimpleConfig;
@@ -42,9 +39,8 @@ public class TestMeterRegistry extends SimpleMeterRegistry {
         }
     }
 
-    public void publish(Solver solver) {
-        DefaultSolver defaultSolver = (DefaultSolver) solver;
-        this.getMeters().stream().forEach(meter -> {
+    public void publish() {
+        this.getMeters().forEach(meter -> {
             final Map<String, BigDecimal> meterMeasurementMap = new HashMap<>();
             String meterTags = "";
             if (meter.getId().getTags().size() > 1) {

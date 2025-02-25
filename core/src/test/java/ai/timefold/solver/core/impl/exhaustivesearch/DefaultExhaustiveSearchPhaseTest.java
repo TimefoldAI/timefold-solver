@@ -180,7 +180,7 @@ class DefaultExhaustiveSearchPhaseTest {
 
         SolverMetric.MOVE_EVALUATION_COUNT.register(solver);
         SolverMetric.SCORE_CALCULATION_COUNT.register(solver);
-        meterRegistry.publish(solver);
+        meterRegistry.publish();
         var scoreCount = meterRegistry.getMeasurement(SolverMetric.SCORE_CALCULATION_COUNT.getMeterId(), "VALUE");
         var moveCount = meterRegistry.getMeasurement(SolverMetric.MOVE_EVALUATION_COUNT.getMeterId(), "VALUE");
         assertThat(scoreCount).isPositive();
@@ -213,7 +213,7 @@ class DefaultExhaustiveSearchPhaseTest {
         ((DefaultSolver<TestdataSolution>) solver).addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
             @Override
             public void solvingEnded(SolverScope<TestdataSolution> solverScope) {
-                meterRegistry.publish(solver);
+                meterRegistry.publish();
                 var changeMoveKey = "ChangeMove(TestdataEntity.value)";
                 if (solverScope.getMoveCountTypes().contains(changeMoveKey)) {
                     var counter = meterRegistry

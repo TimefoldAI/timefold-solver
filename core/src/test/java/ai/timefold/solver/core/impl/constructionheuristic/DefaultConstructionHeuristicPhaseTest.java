@@ -120,7 +120,7 @@ class DefaultConstructionHeuristicPhaseTest {
         ((DefaultSolver<TestdataSolution>) solver).addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
             @Override
             public void solvingEnded(SolverScope<TestdataSolution> solverScope) {
-                meterRegistry.publish(solver);
+                meterRegistry.publish();
                 var changeMoveKey = "ChangeMove(TestdataEntity.value)";
                 if (solverScope.getMoveCountTypes().contains(changeMoveKey)) {
                     var counter = meterRegistry
@@ -156,7 +156,7 @@ class DefaultConstructionHeuristicPhaseTest {
         ((DefaultSolver<TestdataListSolution>) solver).addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
             @Override
             public void solvingEnded(SolverScope<TestdataListSolution> solverScope) {
-                meterRegistry.publish(solver);
+                meterRegistry.publish();
                 var changeMoveKey = "ListAssignMove(TestdataListEntity.valueList)";
                 if (solverScope.getMoveCountTypes().contains(changeMoveKey)) {
                     var counter = meterRegistry

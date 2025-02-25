@@ -94,6 +94,7 @@ import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -251,7 +252,7 @@ class DefaultSolverTest {
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
 
         var solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
-        meterRegistry.publish(solver);
+        meterRegistry.publish();
         assertThat(meterRegistry.getMeters().stream().map(Meter::getId)).isEmpty();
 
         var solution = new TestdataSolution("s1");
@@ -338,7 +339,7 @@ class DefaultSolverTest {
 
         var solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
         solver.setMonitorTagMap(Map.of("tag.key", "tag.value"));
-        meterRegistry.publish(solver);
+        meterRegistry.publish();
         assertThat(meterRegistry.getMeters().stream().map(Meter::getId)).isEmpty();
 
         var solution = new TestdataSolution("s1");
@@ -425,7 +426,7 @@ class DefaultSolverTest {
 
         var solver = solverFactory.buildSolver();
         ((DefaultSolver<TestdataSolution>) solver).setMonitorTagMap(Map.of("solver.id", "solveMetrics"));
-        meterRegistry.publish(solver);
+        meterRegistry.publish();
 
         var solution = new TestdataSolution("s1");
         solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
@@ -435,7 +436,7 @@ class DefaultSolverTest {
         solver.addEventListener(event -> {
             if (!updatedTime.get()) {
                 meterRegistry.getClock().addSeconds(2);
-                meterRegistry.publish(solver);
+                meterRegistry.publish();
                 assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "ACTIVE_TASKS")).isOne();
                 assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "DURATION").longValue())
                         .isEqualTo(2L);
@@ -454,7 +455,7 @@ class DefaultSolverTest {
         });
         solution = solver.solve(solution);
 
-        meterRegistry.publish(solver);
+        meterRegistry.publish();
         assertThat(solution).isNotNull();
         assertThat(solution.getScore().isSolutionInitialized()).isTrue();
 
@@ -475,7 +476,7 @@ class DefaultSolverTest {
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
 
         var solver = solverFactory.buildSolver();
-        meterRegistry.publish(solver);
+        meterRegistry.publish();
 
         final var solution = new TestdataSolution("s1");
         solution.setValueList(new ArrayList<>(List.of(new TestdataValue("v1"), new TestdataValue("v2"))));
@@ -485,7 +486,7 @@ class DefaultSolverTest {
         solver.addEventListener(bestSolutionChangedEvent -> {
             try {
                 latch.await();
-                meterRegistry.publish(solver);
+                meterRegistry.publish();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -565,14 +566,14 @@ class DefaultSolverTest {
 
         var solver = solverFactory.buildSolver();
         ((DefaultSolver<TestdataHardSoftScoreSolution>) solver).setMonitorTagMap(Map.of("solver.id", "solveMetrics"));
-        meterRegistry.publish(solver);
+        meterRegistry.publish();
         var solution = new TestdataHardSoftScoreSolution("s1");
         solution.setValueList(Arrays.asList(new TestdataValue("none"), new TestdataValue("reward")));
         solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2")));
         var step = new AtomicInteger(-1);
 
         solver.addEventListener(event -> {
-            meterRegistry.publish(solver);
+            meterRegistry.publish();
 
             // This event listener is added before the best score event listener
             // so it is one step behind
@@ -599,7 +600,7 @@ class DefaultSolverTest {
         solution = solver.solve(solution);
 
         assertThat(step.get()).isEqualTo(2);
-        meterRegistry.publish(solver);
+        meterRegistry.publish();
         assertThat(solution).isNotNull();
         assertThat(meterRegistry.getMeasurement(SolverMetric.BEST_SCORE.getMeterId() + ".hard.score", "VALUE").intValue())
                 .isEqualTo(0);
@@ -676,7 +677,7 @@ class DefaultSolverTest {
                     @Override
                     public void stepEnded(AbstractStepScope<TestdataHardSoftScoreSolution> stepScope) {
                         super.stepEnded(stepScope);
-                        meterRegistry.publish(solver);
+                        meterRegistry.publish();
 
                         // first 3 steps are construction heuristic steps and don't have a step score since it uninitialized
                         if (step.get() < 2) {
@@ -721,7 +722,7 @@ class DefaultSolverTest {
         solution = solver.solve(solution);
 
         assertThat(step.get()).isEqualTo(7);
-        meterRegistry.publish(solver);
+        meterRegistry.publish();
         assertThat(solution).isNotNull();
         assertThat(meterRegistry.getMeasurement(SolverMetric.STEP_SCORE.getMeterId() + ".hard.score", "VALUE").intValue())
                 .isEqualTo(0);
@@ -749,20 +750,20 @@ class DefaultSolverTest {
 
         var solver = solverFactory.buildSolver();
         ((DefaultSolver<TestdataSolution>) solver).setMonitorTagMap(Map.of("solver.id", "solveMetricsError"));
-        meterRegistry.publish(solver);
+        meterRegistry.publish();
 
         var solution = new TestdataSolution("s1");
         solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
         solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2")));
 
-        meterRegistry.publish(solver);
+        meterRegistry.publish();
 
         assertThatCode(() -> {
             solver.solve(solution);
         }).hasStackTraceContaining("Thrown exception in constraint provider");
 
         meterRegistry.getClock().addSeconds(1);
-        meterRegistry.publish(solver);
+        meterRegistry.publish();
         assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "ACTIVE_TASKS")).isZero();
         assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "DURATION")).isZero();
         assertThat(meterRegistry.getMeasurement(SolverMetric.ERROR_COUNT.getMeterId(), "COUNT")).isOne();

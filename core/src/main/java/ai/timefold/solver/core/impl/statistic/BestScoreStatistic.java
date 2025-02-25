@@ -15,8 +15,8 @@ import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import io.micrometer.core.instrument.Tags;
 
 public class BestScoreStatistic<Solution_> implements SolverStatistic<Solution_> {
-    private final Map<Tags, List<AtomicReference<Number>>> tagsToBestScoreMap = new ConcurrentHashMap<>();
 
+    private final Map<Tags, List<AtomicReference<Number>>> tagsToBestScoreMap = new ConcurrentHashMap<>();
     private final Map<Solver<Solution_>, SolverEventListener<Solution_>> solverToEventListenerMap = new WeakHashMap<>();
 
     @Override
@@ -25,6 +25,7 @@ public class BestScoreStatistic<Solution_> implements SolverStatistic<Solution_>
         if (listener != null) {
             solver.removeEventListener(listener);
         }
+        tagsToBestScoreMap.clear();
     }
 
     @Override
