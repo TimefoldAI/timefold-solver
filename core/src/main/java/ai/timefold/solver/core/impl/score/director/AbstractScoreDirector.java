@@ -583,7 +583,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                     "assertShadowVariablesAreNotStale(" + expectedWorkingScore + ", " + completedAction + ")");
             throw new VariableCorruptionException("""
                     Impossible %s corruption (%s): the expectedWorkingScore (%s) is not the workingScore (%s) \
-                    after all %ss were triggered without changes to the genuine variables after completedAction (%s).
+                    after all %s were triggered without changes to the genuine variables after completedAction (%s).
                     All the shadow variable values are still the same, so this is impossible.
                     Maybe run with %s if you haven't already, to fail earlier."""
                     .formatted(VariableListener.class.getSimpleName(),
