@@ -4,6 +4,7 @@ import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertCod
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -37,11 +38,23 @@ import ai.timefold.solver.core.impl.testdata.domain.pinned.allows_unassigned.Tes
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 import ai.timefold.solver.core.impl.testutil.TestMeterRegistry;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Metrics;
 
 class DefaultLocalSearchPhaseTest {
+
+    @BeforeEach
+    @AfterEach
+    void resetGlobalRegistry() {
+        Metrics.globalRegistry.clear();
+        List<MeterRegistry> meterRegistryList = new ArrayList<>();
+        meterRegistryList.addAll(Metrics.globalRegistry.getRegistries());
+        meterRegistryList.forEach(Metrics.globalRegistry::remove);
+    }
 
     @Test
     void solveWithInitializedEntities() {

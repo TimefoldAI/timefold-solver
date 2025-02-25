@@ -93,6 +93,7 @@ import org.assertj.core.api.SoftAssertions;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -107,6 +108,7 @@ import io.micrometer.core.instrument.Tags;
 class DefaultSolverTest {
 
     @BeforeEach
+    @AfterEach
     void resetGlobalRegistry() {
         Metrics.globalRegistry.clear();
         List<MeterRegistry> meterRegistryList = new ArrayList<>();

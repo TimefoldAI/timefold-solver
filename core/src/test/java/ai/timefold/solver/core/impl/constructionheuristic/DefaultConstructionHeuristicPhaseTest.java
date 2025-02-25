@@ -41,11 +41,23 @@ import ai.timefold.solver.core.impl.testdata.domain.pinned.allows_unassigned.Tes
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 import ai.timefold.solver.core.impl.testutil.TestMeterRegistry;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Metrics;
 
 class DefaultConstructionHeuristicPhaseTest {
+
+    @BeforeEach
+    @AfterEach
+    void resetGlobalRegistry() {
+        Metrics.globalRegistry.clear();
+        List<MeterRegistry> meterRegistryList = new ArrayList<>();
+        meterRegistryList.addAll(Metrics.globalRegistry.getRegistries());
+        meterRegistryList.forEach(Metrics.globalRegistry::remove);
+    }
 
     @Test
     void solveWithInitializedEntities() {

@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
@@ -32,13 +33,13 @@ import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.Testd
 import ai.timefold.solver.core.impl.testutil.TestMeterRegistry;
 
 import org.jspecify.annotations.NonNull;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Metrics;
 
-@Execution(ExecutionMode.CONCURRENT)
 class ListRuinRecreateMoveSelectorTest {
 
     public static final class TestdataListConstraintProvider implements ConstraintProvider {
@@ -54,6 +55,15 @@ class ListRuinRecreateMoveSelectorTest {
                             .asConstraint("Hash constraint")
             };
         }
+    }
+
+    @BeforeEach
+    @AfterEach
+    void resetGlobalRegistry() {
+        Metrics.globalRegistry.clear();
+        List<MeterRegistry> meterRegistryList = new ArrayList<>();
+        meterRegistryList.addAll(Metrics.globalRegistry.getRegistries());
+        meterRegistryList.forEach(Metrics.globalRegistry::remove);
     }
 
     @Test
