@@ -60,4 +60,6 @@ public abstract class RestartableAcceptor<Solution_> extends AbstractAcceptor<So
     }
 
     protected abstract boolean accept(LocalSearchMoveScope<Solution_> moveScope);
+
+    public abstract void restart(LocalSearchStepScope<Solution_> stepScope);
 }

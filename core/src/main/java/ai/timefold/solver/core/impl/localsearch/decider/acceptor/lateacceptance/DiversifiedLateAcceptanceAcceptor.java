@@ -7,6 +7,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.RestartableAcce
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.StuckCriterion;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
+import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 
 public class DiversifiedLateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solution_> {
 
@@ -105,6 +106,11 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends RestartableAcc
                 }
             }
         }
+    }
+
+    @Override
+    public void restart(LocalSearchStepScope<Solution_> stepScope) {
+        logger.warn("Restarting DiversifiedLateAcceptanceAcceptor is not supported.");
     }
 
     @Override
