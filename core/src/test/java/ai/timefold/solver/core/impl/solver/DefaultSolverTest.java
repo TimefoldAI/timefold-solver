@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -426,7 +427,7 @@ class DefaultSolverTest {
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
 
         var solver = solverFactory.buildSolver();
-        ((DefaultSolver<TestdataSolution>) solver).setMonitorTagMap(Map.of("solver.id", "solveMetrics"));
+        ((DefaultSolver<TestdataSolution>) solver).setMonitorTagMap(Map.of("solver.id", UUID.randomUUID().toString()));
         meterRegistry.publish();
 
         var solution = new TestdataSolution("s1");
@@ -566,7 +567,7 @@ class DefaultSolverTest {
         SolverFactory<TestdataHardSoftScoreSolution> solverFactory = SolverFactory.create(solverConfig);
 
         var solver = solverFactory.buildSolver();
-        ((DefaultSolver<TestdataHardSoftScoreSolution>) solver).setMonitorTagMap(Map.of("solver.id", "solveMetrics"));
+        ((DefaultSolver<TestdataHardSoftScoreSolution>) solver).setMonitorTagMap(Map.of("solver.id", UUID.randomUUID().toString()));
         meterRegistry.publish();
         var solution = new TestdataHardSoftScoreSolution("s1");
         solution.setValueList(Arrays.asList(new TestdataValue("none"), new TestdataValue("reward")));
@@ -670,7 +671,7 @@ class DefaultSolverTest {
         SolverFactory<TestdataHardSoftScoreSolution> solverFactory = SolverFactory.create(solverConfig);
 
         var solver = solverFactory.buildSolver();
-        ((DefaultSolver<TestdataHardSoftScoreSolution>) solver).setMonitorTagMap(Map.of("solver.id", "solveMetrics"));
+        ((DefaultSolver<TestdataHardSoftScoreSolution>) solver).setMonitorTagMap(Map.of("solver.id", UUID.randomUUID().toString()));
         var step = new AtomicInteger(-1);
 
         ((DefaultSolver<TestdataHardSoftScoreSolution>) solver)
@@ -750,7 +751,7 @@ class DefaultSolverTest {
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
 
         var solver = solverFactory.buildSolver();
-        ((DefaultSolver<TestdataSolution>) solver).setMonitorTagMap(Map.of("solver.id", "solveMetricsError"));
+        ((DefaultSolver<TestdataSolution>) solver).setMonitorTagMap(Map.of("solver.id", UUID.randomUUID().toString()));
         meterRegistry.publish();
 
         var solution = new TestdataSolution("s1");
@@ -759,9 +760,8 @@ class DefaultSolverTest {
 
         meterRegistry.publish();
 
-        assertThatCode(() -> {
-            solver.solve(solution);
-        }).hasStackTraceContaining("Thrown exception in constraint provider");
+        assertThatCode(() -> solver.solve(solution))
+                .hasStackTraceContaining("Thrown exception in constraint provider");
 
         meterRegistry.getClock().addSeconds(1);
         meterRegistry.publish();

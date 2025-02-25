@@ -24,7 +24,6 @@ import ai.timefold.solver.core.impl.testutil.TestMeterRegistry;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import io.micrometer.core.instrument.MeterRegistry;
@@ -59,7 +58,7 @@ class RuinRecreateMoveSelectorTest {
         assertDoesNotThrow(() -> solver.solve(problem));
     }
 
-    @RepeatedTest(2)
+    @Test
     void testRuiningWithMetric() {
         var meterRegistry = new TestMeterRegistry();
         Metrics.addRegistry(meterRegistry);
