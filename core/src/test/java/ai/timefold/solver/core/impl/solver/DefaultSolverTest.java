@@ -15,6 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -262,6 +263,7 @@ class DefaultSolverTest {
         solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2")));
 
         var updatedTime = new AtomicBoolean();
+        var latch = new CountDownLatch(1);
         solver.addEventListener(event -> {
             if (!updatedTime.get()) {
                 assertThat(meterRegistry.getMeters().stream().map(Meter::getId))
@@ -308,8 +310,15 @@ class DefaultSolverTest {
                                         Meter.Type.GAUGE));
                 updatedTime.set(true);
             }
+            latch.countDown();
         });
         solver.solve(solution);
+
+        try {
+            latch.await(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Assertions.fail("Failed waiting for the event to happen.", e);
+        }
 
         // Score calculation and problem scale counts should be removed
         // since registering multiple gauges with the same id
@@ -349,6 +358,7 @@ class DefaultSolverTest {
         solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2")));
 
         var updatedTime = new AtomicBoolean();
+        var latch = new CountDownLatch(1);
         solver.addEventListener(event -> {
             if (!updatedTime.get()) {
                 assertThat(meterRegistry.getMeters().stream().map(Meter::getId))
@@ -395,8 +405,15 @@ class DefaultSolverTest {
                                         Meter.Type.GAUGE));
                 updatedTime.set(true);
             }
+            latch.countDown();
         });
         solver.solve(solution);
+
+        try {
+            latch.await(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Assertions.fail("Failed waiting for the event to happen.", e);
+        }
 
         // Score calculation and problem scale counts should be removed
         // since registering multiple gauges with the same id
@@ -434,6 +451,7 @@ class DefaultSolverTest {
         solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
         solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2")));
 
+        var latch = new CountDownLatch(1);
         var updatedTime = new AtomicBoolean();
         solver.addEventListener(event -> {
             if (!updatedTime.get()) {
@@ -454,9 +472,15 @@ class DefaultSolverTest {
                         .isEqualTo(2L);
                 updatedTime.set(true);
             }
+            latch.countDown();
         });
         solution = solver.solve(solution);
 
+        try {
+            latch.await(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Assertions.fail("Failed waiting for the event to happen.", e);
+        }
         meterRegistry.publish();
         assertThat(solution).isNotNull();
         assertThat(solution.getScore().isSolutionInitialized()).isTrue();
@@ -575,6 +599,7 @@ class DefaultSolverTest {
         solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2")));
         var step = new AtomicInteger(-1);
 
+        var latch = new CountDownLatch(1);
         solver.addEventListener(event -> {
             meterRegistry.publish();
 
@@ -599,9 +624,15 @@ class DefaultSolverTest {
                         .isEqualTo(2);
             }
             step.incrementAndGet();
+            latch.countDown();
         });
         solution = solver.solve(solution);
 
+        try {
+            latch.await(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            fail("Failed waiting for the event to happen.", e);
+        }
         assertThat(step.get()).isEqualTo(2);
         meterRegistry.publish();
         assertThat(solution).isNotNull();
