@@ -567,7 +567,8 @@ class DefaultSolverTest {
         SolverFactory<TestdataHardSoftScoreSolution> solverFactory = SolverFactory.create(solverConfig);
 
         var solver = solverFactory.buildSolver();
-        ((DefaultSolver<TestdataHardSoftScoreSolution>) solver).setMonitorTagMap(Map.of("solver.id", UUID.randomUUID().toString()));
+        ((DefaultSolver<TestdataHardSoftScoreSolution>) solver)
+                .setMonitorTagMap(Map.of("solver.id", UUID.randomUUID().toString()));
         meterRegistry.publish();
         var solution = new TestdataHardSoftScoreSolution("s1");
         solution.setValueList(Arrays.asList(new TestdataValue("none"), new TestdataValue("reward")));
@@ -671,7 +672,8 @@ class DefaultSolverTest {
         SolverFactory<TestdataHardSoftScoreSolution> solverFactory = SolverFactory.create(solverConfig);
 
         var solver = solverFactory.buildSolver();
-        ((DefaultSolver<TestdataHardSoftScoreSolution>) solver).setMonitorTagMap(Map.of("solver.id", UUID.randomUUID().toString()));
+        ((DefaultSolver<TestdataHardSoftScoreSolution>) solver)
+                .setMonitorTagMap(Map.of("solver.id", UUID.randomUUID().toString()));
         var step = new AtomicInteger(-1);
 
         ((DefaultSolver<TestdataHardSoftScoreSolution>) solver)
