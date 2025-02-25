@@ -83,22 +83,12 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
                 EntitySelectorFactory.<Solution_> create(entitySelectorConfig_)
                         .buildEntitySelector(phaseConfigPolicy, SelectionCacheType.PHASE, SelectionOrder.ORIGINAL);
 
-        DefaultExhaustiveSearchPhase.Builder<Solution_> builder = new DefaultExhaustiveSearchPhase.Builder<>(phaseIndex,
+        return new DefaultExhaustiveSearchPhase.Builder<>(phaseIndex,
                 solverConfigPolicy.getLogIndentation(), phaseTermination,
                 nodeExplorationType_.buildNodeComparator(scoreBounderEnabled), entitySelector, buildDecider(phaseConfigPolicy,
-                        entitySelector, bestSolutionRecaller, phaseTermination, scoreBounderEnabled));
-
-        EnvironmentMode environmentMode = phaseConfigPolicy.getEnvironmentMode();
-        if (environmentMode.isNonIntrusiveFullAsserted()) {
-            builder.setAssertWorkingSolutionScoreFromScratch(true);
-            builder.setAssertStepScoreFromScratch(true); // Does nothing because ES doesn't use predictStepScore()
-        }
-        if (environmentMode.isIntrusiveFastAsserted()) {
-            builder.setAssertExpectedWorkingSolutionScore(true);
-            builder.setAssertExpectedStepScore(true); // Does nothing because ES doesn't use predictStepScore()
-            builder.setAssertShadowVariablesAreNotStaleAfterStep(true); // Does nothing because ES doesn't use predictStepScore()
-        }
-        return builder.build();
+                        entitySelector, bestSolutionRecaller, phaseTermination, scoreBounderEnabled))
+                .enableAssertions(phaseConfigPolicy.getEnvironmentMode())
+                .build();
     }
 
     private EntitySelectorConfig buildEntitySelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy) {
@@ -150,13 +140,12 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
                 ? new TrendBasedScoreBounder(configPolicy.getScoreDefinition(), configPolicy.getInitializingScoreTrend())
                 : null;
         ExhaustiveSearchDecider<Solution_> decider = new ExhaustiveSearchDecider<>(configPolicy.getLogIndentation(),
-                bestSolutionRecaller, termination,
-                manualEntityMimicRecorder, moveSelector, scoreBounderEnabled, scoreBounder);
+                bestSolutionRecaller, termination, manualEntityMimicRecorder, moveSelector, scoreBounderEnabled, scoreBounder);
         EnvironmentMode environmentMode = configPolicy.getEnvironmentMode();
-        if (environmentMode.isNonIntrusiveFullAsserted()) {
+        if (environmentMode.isFullyAsserted()) {
             decider.setAssertMoveScoreFromScratch(true);
         }
-        if (environmentMode.isIntrusiveFastAsserted()) {
+        if (environmentMode.isIntrusivelyAsserted()) {
             decider.setAssertExpectedUndoMoveScore(true);
         }
         return decider;

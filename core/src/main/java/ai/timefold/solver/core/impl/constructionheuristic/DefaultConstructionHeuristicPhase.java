@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.constructionheuristic;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHeuristicDecider;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
@@ -218,6 +219,12 @@ public class DefaultConstructionHeuristicPhase<Solution_>
             super(phaseIndex, lastInitializingPhase, logIndentation, phaseTermination);
             this.entityPlacer = entityPlacer;
             this.decider = decider;
+        }
+
+        @Override
+        public DefaultConstructionHeuristicPhaseBuilder<Solution_> enableAssertions(EnvironmentMode environmentMode) {
+            super.enableAssertions(environmentMode);
+            return this;
         }
 
         public EntityPlacer<Solution_> getEntityPlacer() {

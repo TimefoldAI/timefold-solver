@@ -130,7 +130,7 @@ You can set the environment mode in the solver configuration XML file:
 ----
 <solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
-  <environmentMode>FAST_ASSERT</environmentMode>
+  <environmentMode>STEP_ASSERT</environmentMode>
   ...
 </solver>
 ----
@@ -194,30 +194,30 @@ The `NON_INTRUSIVE_FULL_ASSERT` turns on several assertions to fail-fast on a bu
 a constraint, the engine itself, ...
 
 This mode is <<environmentModeReproducible,reproducible>>.
-It is non-intrusive because it does not call the method `calculateScore()` more frequently than a non assert mode.
+It is non-intrusive because it does not call the method `calculateScore()` more frequently than a non-assert mode.
 
 The `NON_INTRUSIVE_FULL_ASSERT` mode is horribly slow,
 because it does not rely on incremental score calculation.
 
 
-[#environmentModeFastAssert]
-=== `FAST_ASSERT`
+[#environmentModeStepAssert]
+=== `STEP_ASSERT`
 
-The `FAST_ASSERT` mode turns on most assertions (such as assert that an undoMove's score is the same as before the Move)
+The `STEP_ASSERT` mode turns on most assertions (such as assert that an undoMove's score is the same as before the Move)
 to fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
 
 This mode is <<environmentModeReproducible,reproducible>>.
 It is also intrusive because it calls the method `calculateScore()` more frequently than a non-assert mode.
 
-The `FAST_ASSERT` mode is slow.
+The `STEP_ASSERT` mode is slow.
 
-It is recommended to write a test case that does a short run of your planning problem with the `FAST_ASSERT` mode on.
+It is recommended to write a test case that does a short run of your planning problem with the `STEP_ASSERT` mode on.
 
 
-[#environmentModeReproducible]
-=== `REPRODUCIBLE` (default)
+[#environmentModePhaseAssert]
+=== `PHASE_ASSERT` (default)
 
-The reproducible mode is the default mode because it is recommended during development.
+The `PHASE_ASSERT` is the default mode because it is recommended during development.
 In this mode, two runs in the same Timefold Solver version will execute the same code in the same order.
 **Those two runs will have the same result at every step**, except if the note below applies.
 This enables you to reproduce bugs consistently.
@@ -233,15 +233,18 @@ especially in the solution implementation. Replace it with ``LinkedHashSet``.
 * Combining a time gradient dependent algorithms (most notably Simulated Annealing) together with time spent termination.
 A sufficiently large difference in allocated CPU time will influence the time gradient values.
 Replace Simulated Annealing with Late Acceptance, or replace time spent termination with step count termination.
-
 ====
 
-The reproducible mode can be slightly slower than the non-reproducible mode.
+The `PHASE_ASSERT` mode can be slightly slower than the `NON_REPRODUCIBLE` mode.
 If your production environment can benefit from reproducibility, use this mode in production.
 
 In practice, this mode uses the default, fixed <<randomNumberGenerator,random seed>> if no seed is specified,
 and it also disables certain concurrency optimizations, such as work stealing.
 
+The `PHASE_ASSERT` mode is negligibly slower than the `NO_ASSERT` mode,
+but it gives you the benefit of quickly checking for score corruptions.
+If you can guarantee that your code is and will remain bug-free,
+you can switch to the `NO_ASSERT` mode for a marginal performance gain.
 
 [#environmentModeProduction]
 === `NON_REPRODUCIBLE`
@@ -292,7 +295,7 @@ For example, set it to `debug` logging, to see when the phases end and how fast 
 
 [source,options="nowrap"]
 ----
-INFO  Solving started: time spent (31), best score (-8init/0hard/0soft), environment mode (REPRODUCIBLE), move thread count (NONE), random (JDK with seed 0).
+INFO  Solving started: time spent (31), best score (-8init/0hard/0soft), environment mode (PHASE_ASSERT), move thread count (NONE), random (JDK with seed 0).
 INFO  Problem scale: entity count (4), variable count (8), approximate value count (4), approximate problem scale (256).
 DEBUG     CH step (0), time spent (47), score (-6init/0hard/0soft), selected move count (4), picked move ([Math(0) {null -> Room A}, Math(0) {null -> MONDAY 08:30}]).
 DEBUG     CH step (1), time spent (50), score (-4init/0hard/0soft), selected move count (4), picked move ([Physics(1) {null -> Room A}, Physics(1) {null -> MONDAY 09:30}]).
@@ -304,7 +307,7 @@ DEBUG     LS step (1), time spent (60), score (-2hard/1soft), new best score (-2
 DEBUG     LS step (2), time spent (60), score (-2hard/0soft),     best score (-2hard/1soft), accepted/selected move count (1/1), picked move (Math(0) {Room B, MONDAY 08:30} <-> Physics(1) {Room A, MONDAY 08:30}).
 ...
 INFO  Local Search phase (1) ended: time spent (100), best score (0hard/1soft), move evaluation speed (2021/sec), step total (59).
-INFO  Solving ended: time spent (100), best score (0hard/1soft), move evaluation speed (1100/sec), phase total (2), environment mode (REPRODUCIBLE), move thread count (NONE).
+INFO  Solving ended: time spent (100), best score (0hard/1soft), move evaluation speed (1100/sec), phase total (2), environment mode (PHASE_ASSERT), move thread count (NONE).
 ----
 All time spent values are in milliseconds.
 

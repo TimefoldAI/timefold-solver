@@ -65,7 +65,7 @@ public interface MoveIteratorFactory<Solution_, Move_ extends Move<Solution_>> {
      * @param scoreDirector never null, the {@link ScoreDirector}
      *        which has the {@link ScoreDirector#getWorkingSolution()} of which the {@link Move}s need to be generated
      * @param workingRandom never null, the {@link Random} to use when any random number is needed,
-     *        so {@link EnvironmentMode#REPRODUCIBLE} works correctly
+     *        so {@link EnvironmentMode#PHASE_ASSERT} works correctly
      * @return never null, an {@link Iterator} that is allowed (or even presumed) to be never ending
      * @throws UnsupportedOperationException if only {@link #createOriginalMoveIterator(ScoreDirector)} is supported
      */

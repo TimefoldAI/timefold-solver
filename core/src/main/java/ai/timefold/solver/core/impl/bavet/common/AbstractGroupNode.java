@@ -81,7 +81,7 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
                         updateOutTupleToFinisher(outTuple, group.getResultContainer());
                     }
                 }) : new DynamicPropagationQueue<>(nextNodesTupleLifecycle);
-        this.useAssertingGroupKey = environmentMode.isAsserted();
+        this.useAssertingGroupKey = environmentMode.isStepAssertOrMore();
     }
 
     protected AbstractGroupNode(int groupStoreIndex,

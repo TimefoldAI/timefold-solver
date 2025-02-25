@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.config.solver;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.util.ArrayList;
@@ -38,14 +39,17 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
+@Execution(ExecutionMode.CONCURRENT)
 class EnvironmentModeTest {
 
     private static final int NUMBER_OF_RANDOM_NUMBERS_GENERATED = 1000;
     private static final int NUMBER_OF_TIMES_RUN = 10;
-    private static final int NUMBER_OF_TERMINATION_STEP_COUNT_LIMIT = 20;
+    private static final long NUMBER_OF_TERMINATION_MOVE_COUNT_LIMIT = 1_000L;
 
     private static TestdataSolution inputProblem;
 
@@ -65,7 +69,7 @@ class EnvironmentModeTest {
         LocalSearchPhaseConfig localSearchPhaseConfig = new LocalSearchPhaseConfig();
         localSearchPhaseConfig
                 .setTerminationConfig(
-                        new TerminationConfig().withStepCountLimit(NUMBER_OF_TERMINATION_STEP_COUNT_LIMIT));
+                        new TerminationConfig().withMoveCountLimit(NUMBER_OF_TERMINATION_MOVE_COUNT_LIMIT));
 
         return new SolverConfig()
                 .withSolutionClass(TestdataSolution.class)
@@ -83,17 +87,10 @@ class EnvironmentModeTest {
         Solver<TestdataSolution> solver1 = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
         Solver<TestdataSolution> solver2 = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
 
-        switch (environmentMode) {
-            case NON_REPRODUCIBLE -> {
-                assertNonReproducibility(solver1, solver2);
-            }
-            case TRACKED_FULL_ASSERT,
-                    FULL_ASSERT,
-                    FAST_ASSERT,
-                    NON_INTRUSIVE_FULL_ASSERT,
-                    REPRODUCIBLE -> {
-                assertReproducibility(solver1, solver2);
-            }
+        if (environmentMode.isReproducible()) {
+            assertReproducibility(solver1, solver2);
+        } else {
+            assertNonReproducibility(solver1, solver2);
         }
     }
 
@@ -131,9 +128,8 @@ class EnvironmentModeTest {
                                 "Variables that are different between before and undo",
                                 "Actual value (v2) of variable valueClone on CorruptedUndoShadowEntity entity (CorruptedUndoShadowEntity) differs from expected (v1)");
             }
-            case FULL_ASSERT,
-                    FAST_ASSERT -> {
-                // FAST_ASSERT does not create snapshots since it is not intrusive, and hence it can only
+            case FULL_ASSERT, STEP_ASSERT, FAST_ASSERT -> {
+                // STEP_ASSERT does not create snapshots since it is not intrusive, and hence it can only
                 // detect the undo corruption and not what caused it
                 var e1 = new CorruptedUndoShadowEntity("e1");
                 var e2 = new CorruptedUndoShadowEntity("e2");
@@ -153,10 +149,22 @@ class EnvironmentModeTest {
                                         List.of(v1, v2))))
                         .withMessageContainingAll("corrupted undoMove");
             }
-            case REPRODUCIBLE,
-                    NON_REPRODUCIBLE,
-                    NON_INTRUSIVE_FULL_ASSERT -> {
-                // No exception expected
+            case PHASE_ASSERT, NO_ASSERT, NON_REPRODUCIBLE, NON_INTRUSIVE_FULL_ASSERT, REPRODUCIBLE -> {
+                var e1 = new CorruptedUndoShadowEntity("e1");
+                var e2 = new CorruptedUndoShadowEntity("e2");
+                var v1 = new CorruptedUndoShadowValue("v1");
+                var v2 = new CorruptedUndoShadowValue("v2");
+
+                e1.setValue(v1);
+                e1.setValueClone(v1);
+                v1.setEntities(new ArrayList<>(List.of(e1)));
+
+                e2.setValue(v2);
+                e2.setValueClone(v2);
+                v2.setEntities(new ArrayList<>(List.of(e2)));
+                assertThatNoException()
+                        .isThrownBy(() -> PlannerTestUtils.solve(solverConfig,
+                                new CorruptedUndoShadowSolution(List.of(e1, e2), List.of(v1, v2)), false));
             }
         }
     }
@@ -169,26 +177,14 @@ class EnvironmentModeTest {
         setSolverConfigCalculatorClass(solverConfig, TestdataCorruptedDifferentValuesCalculator.class);
 
         switch (environmentMode) {
-            case TRACKED_FULL_ASSERT -> {
-                assertIllegalStateExceptionWhileSolving(
-                        solverConfig,
-                        "not the uncorruptedScore");
-            }
-            case FULL_ASSERT,
-                    NON_INTRUSIVE_FULL_ASSERT -> {
-                assertIllegalStateExceptionWhileSolving(
-                        solverConfig,
-                        "not the uncorruptedScore");
-            }
-            case FAST_ASSERT -> {
-                assertIllegalStateExceptionWhileSolving(
-                        solverConfig,
-                        "Score corruption analysis could not be generated ");
-            }
-            case REPRODUCIBLE,
-                    NON_REPRODUCIBLE -> {
-                // No exception expected
-            }
+            case TRACKED_FULL_ASSERT, FULL_ASSERT, NON_INTRUSIVE_FULL_ASSERT ->
+                assertIllegalStateExceptionWhileSolving(solverConfig, "not the uncorruptedScore");
+            case STEP_ASSERT ->
+                assertIllegalStateExceptionWhileSolving(solverConfig, "Score corruption analysis could not be generated ");
+            case PHASE_ASSERT ->
+                assertIllegalStateExceptionWhileSolving(solverConfig, "Solver corruption was detected.");
+            case NO_ASSERT, NON_REPRODUCIBLE -> assertThatNoException()
+                    .isThrownBy(() -> PlannerTestUtils.solve(solverConfig, inputProblem));
         }
     }
 

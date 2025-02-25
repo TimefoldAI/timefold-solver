@@ -35,13 +35,13 @@ import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedSolutio
 import ai.timefold.solver.core.impl.testdata.domain.pinned.allows_unassigned.TestdataPinnedAllowsUnassignedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.pinned.allows_unassigned.TestdataPinnedAllowsUnassignedSolution;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
-import ai.timefold.solver.core.impl.testutil.TestMeterRegistry;
+import ai.timefold.solver.core.impl.testutil.AbstractMeterTest;
 
 import org.junit.jupiter.api.Test;
 
 import io.micrometer.core.instrument.Metrics;
 
-class DefaultLocalSearchPhaseTest {
+class DefaultLocalSearchPhaseTest extends AbstractMeterTest {
 
     @Test
     void solveWithInitializedEntities() {
@@ -101,7 +101,7 @@ class DefaultLocalSearchPhaseTest {
         ((DefaultSolver<TestdataSolution>) solver).addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
             @Override
             public void solvingEnded(SolverScope<TestdataSolution> solverScope) {
-                meterRegistry.publish(solver);
+                meterRegistry.publish();
                 var changeMoveKey = "ChangeMove(TestdataEntity.value)";
                 if (solverScope.getMoveCountTypes().contains(changeMoveKey)) {
                     var counter = meterRegistry
@@ -148,7 +148,7 @@ class DefaultLocalSearchPhaseTest {
         ((DefaultSolver<TestdataListSolution>) solver).addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
             @Override
             public void solvingEnded(SolverScope<TestdataListSolution> solverScope) {
-                meterRegistry.publish(solver);
+                meterRegistry.publish();
                 var changeMoveKey = "ListChangeMove(TestdataListEntity.valueList)";
                 if (solverScope.getMoveCountTypes().contains(changeMoveKey)) {
                     var counter = meterRegistry

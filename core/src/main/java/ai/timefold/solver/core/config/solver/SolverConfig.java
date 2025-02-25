@@ -633,7 +633,7 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
     }
 
     public @NonNull EnvironmentMode determineEnvironmentMode() {
-        return Objects.requireNonNullElse(environmentMode, EnvironmentMode.REPRODUCIBLE);
+        return Objects.requireNonNullElse(environmentMode, EnvironmentMode.PHASE_ASSERT);
     }
 
     public @NonNull DomainAccessType determineDomainAccessType() {

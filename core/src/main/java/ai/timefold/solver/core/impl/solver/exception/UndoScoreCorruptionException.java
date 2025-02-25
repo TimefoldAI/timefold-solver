@@ -1,12 +1,16 @@
 package ai.timefold.solver.core.impl.solver.exception;
 
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
+
 /**
- * An exception that is thrown in {@link ai.timefold.solver.core.config.solver.EnvironmentMode#TRACKED_FULL_ASSERT} when
- * undo score corruption is detected. It contains the working solution before the move, after the move, and after the undo move,
- * as well as the move that caused the corruption. You can catch this exception to create a reproducer of the corruption.
+ * An exception that is thrown in {@link EnvironmentMode#TRACKED_FULL_ASSERT} when undo score corruption is detected.
+ * It contains the working solution before the move, after the move, and after the undo move,
+ * as well as the move that caused the corruption.
+ * You can catch this exception to create a reproducer of the corruption.
  * The API for this exception is currently unstable.
  */
-public class UndoScoreCorruptionException extends IllegalStateException {
+public final class UndoScoreCorruptionException extends ScoreCorruptionException {
+
     private final Object beforeMoveSolution;
     private final Object afterMoveSolution;
     private final Object afterUndoSolution;

@@ -30,7 +30,7 @@ class TimefoldProcessorMultipleSolversInvalidSolutionClassTest {
     @RegisterExtension
     static final QuarkusUnitTest config1 = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.timefold.solver.\"solver1\".environment-mode", "FULL_ASSERT")
-            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".environment-mode", "REPRODUCIBLE")
+            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".environment-mode", "PHASE_ASSERT")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class).addClasses(TestdataQuarkusEntity.class))
             .assertException(t -> assertThat(t)
                     .isInstanceOf(IllegalStateException.class)
@@ -41,7 +41,7 @@ class TimefoldProcessorMultipleSolversInvalidSolutionClassTest {
     @RegisterExtension
     static final QuarkusUnitTest config2 = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.timefold.solver.\"solver1\".environment-mode", "FULL_ASSERT")
-            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".environment-mode", "REPRODUCIBLE")
+            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".environment-mode", "PHASE_ASSERT")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
                             TestdataQuarkusConstraintProvider.class)

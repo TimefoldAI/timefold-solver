@@ -48,17 +48,10 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
             Termination<Solution_> solverTermination) {
         var phaseConfigPolicy = solverConfigPolicy.createPhaseConfigPolicy();
         var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
-        var builder = new DefaultLocalSearchPhase.Builder<>(phaseIndex, solverConfigPolicy.getLogIndentation(),
-                phaseTermination, buildDecider(phaseConfigPolicy, phaseTermination));
-        var environmentMode = phaseConfigPolicy.getEnvironmentMode();
-        if (environmentMode.isNonIntrusiveFullAsserted()) {
-            builder.setAssertStepScoreFromScratch(true);
-        }
-        if (environmentMode.isIntrusiveFastAsserted()) {
-            builder.setAssertExpectedStepScore(true);
-            builder.setAssertShadowVariablesAreNotStaleAfterStep(true);
-        }
-        return builder.build();
+        return new DefaultLocalSearchPhase.Builder<>(phaseIndex, solverConfigPolicy.getLogIndentation(),
+                phaseTermination, buildDecider(phaseConfigPolicy, phaseTermination))
+                .enableAssertions(phaseConfigPolicy.getEnvironmentMode())
+                .build();
     }
 
     private LocalSearchDecider<Solution_> buildDecider(HeuristicConfigPolicy<Solution_> configPolicy,
@@ -83,12 +76,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                     .buildLocalSearch(moveThreadCount, termination, moveSelector, acceptor, forager, environmentMode,
                             configPolicy);
         }
-        if (environmentMode.isNonIntrusiveFullAsserted()) {
-            decider.setAssertMoveScoreFromScratch(true);
-        }
-        if (environmentMode.isIntrusiveFastAsserted()) {
-            decider.setAssertExpectedUndoMoveScore(true);
-        }
+        decider.enableAssertions(environmentMode);
         return decider;
     }
 

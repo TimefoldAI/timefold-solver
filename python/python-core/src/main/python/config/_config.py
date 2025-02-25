@@ -78,7 +78,7 @@ class EnvironmentMode(Enum):
 
     NON_REPRODUCIBLE = 'NON_REPRODUCIBLE'
     """
-    The non reproducible mode is equally fast or slightly faster than REPRODUCIBLE.
+    The non reproducible mode is equally fast or slightly faster than NO_ASSERT.
     The random seed is different on every run,
     which makes it more robust against an unlucky random seed.
     An unlucky random seed gives a bad result on a certain data set with a certain solver configuration.
@@ -87,9 +87,15 @@ class EnvironmentMode(Enum):
     In multithreaded scenarios, this mode allows the use of work stealing and other non deterministic speed tricks.
     """
 
-    REPRODUCIBLE = 'REPRODUCIBLE'
+    NO_ASSERT = 'NO_ASSERT'
     """
-    The reproducible mode is the default mode because it is recommended during development.
+    As defined by REPRODUCIBLE,
+    but negligibly faster on account of disabling all error detection.
+    """
+
+    PHASE_ASSERT = 'PHASE_ASSERT'
+    """
+    The is the default mode because it is recommended during development.
     In this mode, 2 runs on the same computer will execute the same code in the same order.
     They will also yield the same result,
     except if they use a time based termination and they have a sufficiently large difference in allocated CPU time.
@@ -102,11 +108,11 @@ class EnvironmentMode(Enum):
     and it also disables certain concurrency optimizations (such as work stealing).
     """
 
-    FAST_ASSERT = 'FAST_ASSERT'
+    STEP_ASSERT = 'STEP_ASSERT'
     """
     This mode turns on several assertions (but not all of them) to fail-fast on a bug in a Move implementation,
     a constraint rule, the engine itself or something else at a reasonable performance cost (in development at least).
-    This mode is reproducible (see REPRODUCIBLE mode).
+    This mode is reproducible (see PHASE_ASSERT mode).
     This mode is intrusive because it calls calculate_score more frequently than a non assert mode.
     This mode is slow.
     """
@@ -115,8 +121,8 @@ class EnvironmentMode(Enum):
     """
     This mode turns on several assertions (but not all of them) to fail-fast on a bug in a Move implementation,
     a constraint, the engine itself or something else at an overwhelming performance cost.
-    This mode is reproducible (see REPRODUCIBLE mode).
-    This mode is non-intrusive, unlike FULL_ASSERT and FAST_ASSERT.
+    This mode is reproducible (see PHASE_ASSERT mode).
+    This mode is non-intrusive, unlike FULL_ASSERT and STEP_ASSERT.
     This mode is horribly slow.
     """
 
@@ -124,7 +130,7 @@ class EnvironmentMode(Enum):
     """
     This mode turns on all assertions to fail-fast on a bug in a Move implementation,
     a constraint, the engine itself or something else at a horrible performance cost.
-    This mode is reproducible (see REPRODUCIBLE mode).
+    This mode is reproducible (see PHASE_ASSERT mode).
     This mode is intrusive because it calls calculate_score more frequently than a non assert mode.
     This mode is horribly slow.
     """
@@ -135,7 +141,7 @@ class EnvironmentMode(Enum):
     a constraint, the engine itself or something else at the highest performance cost.
     Because it tracks genuine and shadow variables,
     it is able to report precisely what variables caused the corruption and report any missed VariableListener events.
-    This mode is reproducible (see REPRODUCIBLE mode).
+    This mode is reproducible (see PHASE_ASSERT mode).
     This mode is intrusive because it calls calculate_score more frequently than a non assert mode.
     This mode is by far the slowest of all the modes.
     """
@@ -184,7 +190,7 @@ class SolverConfig(Generic[Solution_]):
     """
     solution_class: Optional[type[Solution_]] = field(default=None)
     entity_class_list: Optional[list[type]] = field(default=None)
-    environment_mode: Optional[EnvironmentMode] = field(default=EnvironmentMode.REPRODUCIBLE)
+    environment_mode: Optional[EnvironmentMode] = field(default=EnvironmentMode.PHASE_ASSERT)
     random_seed: Optional[int] = field(default=None)
     move_thread_count: int | MoveThreadCount = field(default=MoveThreadCount.NONE)
     nearby_distance_meter_function: Optional[Callable[[Any, Any], float]] = field(default=None)

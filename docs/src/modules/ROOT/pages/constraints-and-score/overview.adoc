@@ -563,7 +563,7 @@ Alternatively, you can also specify the trend for each score level separately:
 [#invalidScoreDetection]
 === Invalid score detection
 
-When you put the xref:using-timefold-solver/running-the-solver.adoc#environmentMode[`environmentMode`] in `FULL_ASSERT` (or ``FAST_ASSERT``),
+When you put the xref:using-timefold-solver/running-the-solver.adoc#environmentMode[`environmentMode`] in `FULL_ASSERT` (or ``STEP_ASSERT``),
 it will detect score corruption in the xref:constraints-and-score/performance.adoc#incrementalScoreCalculationPerformance[incremental score calculation].
 However, that will not verify that your score calculator actually implements your score constraints as your business desires.
 For example, one constraint might consistently match the wrong pattern.
@@ -571,7 +571,7 @@ To verify the constraints against an independent implementation, configure a ``a
 
 [source,xml,options="nowrap"]
 ----
-  <environmentMode>FAST_ASSERT</environmentMode>
+  <environmentMode>STEP_ASSERT</environmentMode>
   ...
   <scoreDirectorFactory>
     <constraintProviderClass>...ConstraintProvider</constraintProviderClass>

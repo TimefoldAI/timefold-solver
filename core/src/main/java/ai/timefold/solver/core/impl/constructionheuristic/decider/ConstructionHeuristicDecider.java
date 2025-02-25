@@ -50,8 +50,8 @@ public class ConstructionHeuristicDecider<Solution_> {
     }
 
     public void enableAssertions(EnvironmentMode environmentMode) {
-        this.assertMoveScoreFromScratch = environmentMode.isNonIntrusiveFullAsserted();
-        this.assertExpectedUndoMoveScore = environmentMode.isIntrusiveFastAsserted();
+        this.assertMoveScoreFromScratch = environmentMode.isFullyAsserted();
+        this.assertExpectedUndoMoveScore = environmentMode.isIntrusivelyAsserted();
     }
 
     // ************************************************************************

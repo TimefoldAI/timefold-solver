@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.phase.AbstractPossiblyInitializingPhase;
 import ai.timefold.solver.core.impl.phase.custom.scope.CustomPhaseScope;
 import ai.timefold.solver.core.impl.phase.custom.scope.CustomStepScope;
@@ -120,6 +121,12 @@ public final class DefaultCustomPhase<Solution_>
                 Termination<Solution_> phaseTermination, List<CustomPhaseCommand<Solution_>> customPhaseCommandList) {
             super(phaseIndex, lastInitializingPhase, logIndentation, phaseTermination);
             this.customPhaseCommandList = List.copyOf(customPhaseCommandList);
+        }
+
+        @Override
+        public DefaultCustomPhaseBuilder<Solution_> enableAssertions(EnvironmentMode environmentMode) {
+            super.enableAssertions(environmentMode);
+            return this;
         }
 
         @Override

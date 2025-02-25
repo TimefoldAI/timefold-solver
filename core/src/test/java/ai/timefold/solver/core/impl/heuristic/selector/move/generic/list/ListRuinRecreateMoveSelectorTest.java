@@ -29,17 +29,14 @@ import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListValue;
-import ai.timefold.solver.core.impl.testutil.TestMeterRegistry;
+import ai.timefold.solver.core.impl.testutil.AbstractMeterTest;
 
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import io.micrometer.core.instrument.Metrics;
 
-@Execution(ExecutionMode.CONCURRENT)
-class ListRuinRecreateMoveSelectorTest {
+class ListRuinRecreateMoveSelectorTest extends AbstractMeterTest {
 
     public static final class TestdataListConstraintProvider implements ConstraintProvider {
 
@@ -92,12 +89,12 @@ class ListRuinRecreateMoveSelectorTest {
                                 .withMoveSelectorConfig(new ListRuinRecreateMoveSelectorConfig())));
         var problem = TestdataListSolution.generateUninitializedSolution(10, 3);
         var solver = SolverFactory.create(solverConfig).buildSolver();
-        solver.addEventListener(event -> meterRegistry.publish(solver));
+        solver.addEventListener(event -> meterRegistry.publish());
         solver.solve(problem);
 
         SolverMetric.MOVE_EVALUATION_COUNT.register(solver);
         SolverMetric.SCORE_CALCULATION_COUNT.register(solver);
-        meterRegistry.publish(solver);
+        meterRegistry.publish();
         var scoreCount = meterRegistry.getMeasurement(SolverMetric.SCORE_CALCULATION_COUNT.getMeterId(), "VALUE");
         var moveCount = meterRegistry.getMeasurement(SolverMetric.MOVE_EVALUATION_COUNT.getMeterId(), "VALUE");
         assertThat(scoreCount).isPositive();

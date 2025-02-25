@@ -36,7 +36,10 @@ import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.solver.exception.CloningCorruptionException;
+import ai.timefold.solver.core.impl.solver.exception.ScoreCorruptionException;
 import ai.timefold.solver.core.impl.solver.exception.UndoScoreCorruptionException;
+import ai.timefold.solver.core.impl.solver.exception.VariableCorruptionException;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -295,22 +298,21 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         Score_ cloneScore = solutionDescriptor.getScore(cloneSolution);
         if (scoreDirectorFactory.isAssertClonedSolution()) {
             if (!Objects.equals(originalScore, cloneScore)) {
-                throw new IllegalStateException("Cloning corruption: "
-                        + "the original's score (" + originalScore
-                        + ") is different from the clone's score (" + cloneScore + ").\n"
-                        + "Check the " + SolutionCloner.class.getSimpleName() + ".");
+                throw new CloningCorruptionException("""
+                        Cloning corruption: the original's score (%s) is different from the clone's score (%s).
+                        Check the %s."""
+                        .formatted(originalScore, cloneScore, SolutionCloner.class.getSimpleName()));
             }
             Map<Object, Object> originalEntityMap = new IdentityHashMap<>();
             solutionDescriptor.visitAllEntities(originalSolution,
                     originalEntity -> originalEntityMap.put(originalEntity, null));
             solutionDescriptor.visitAllEntities(cloneSolution, cloneEntity -> {
                 if (originalEntityMap.containsKey(cloneEntity)) {
-                    throw new IllegalStateException("Cloning corruption: "
-                            + "the same entity (" + cloneEntity
-                            + ") is present in both the original and the clone.\n"
-                            + "So when a planning variable in the original solution changes, "
-                            + "the cloned solution will change too.\n"
-                            + "Check the " + SolutionCloner.class.getSimpleName() + ".");
+                    throw new CloningCorruptionException("""
+                            Cloning corruption: the same entity (%s) is present in both the original and the clone.
+                            So when a planning variable in the original solution changes, the cloned solution will change too.
+                            Check the %s."""
+                            .formatted(cloneEntity, SolutionCloner.class.getSimpleName()));
                 }
             });
         }
@@ -557,11 +559,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     public void assertExpectedWorkingScore(Score_ expectedWorkingScore, Object completedAction) {
         Score_ workingScore = calculateScore();
         if (!expectedWorkingScore.equals(workingScore)) {
-            throw new IllegalStateException(
-                    "Score corruption (" + expectedWorkingScore.subtract(workingScore).toShortString()
-                            + "): the expectedWorkingScore (" + expectedWorkingScore
-                            + ") is not the workingScore (" + workingScore
-                            + ") after completedAction (" + completedAction + ").");
+            throw new ScoreCorruptionException("""
+                    Score corruption (%s): the expectedWorkingScore (%s) is not the workingScore (%s) \
+                    after completedAction (%s)."""
+                    .formatted(expectedWorkingScore.subtract(workingScore).toShortString(),
+                            expectedWorkingScore, workingScore, completedAction));
         }
     }
 
@@ -569,26 +571,25 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     public void assertShadowVariablesAreNotStale(Score_ expectedWorkingScore, Object completedAction) {
         String violationMessage = variableListenerSupport.createShadowVariablesViolationMessage();
         if (violationMessage != null) {
-            throw new IllegalStateException(
-                    VariableListener.class.getSimpleName() + " corruption after completedAction ("
-                            + completedAction + "):\n"
-                            + violationMessage);
+            throw new VariableCorruptionException("""
+                    %s corruption after completedAction (%s):
+                    %s"""
+                    .formatted(VariableListener.class.getSimpleName(), completedAction, violationMessage));
         }
 
         Score_ workingScore = calculateScore();
         if (!expectedWorkingScore.equals(workingScore)) {
             assertWorkingScoreFromScratch(workingScore,
                     "assertShadowVariablesAreNotStale(" + expectedWorkingScore + ", " + completedAction + ")");
-            throw new IllegalStateException("Impossible " + VariableListener.class.getSimpleName() + " corruption ("
-                    + expectedWorkingScore.subtract(workingScore).toShortString() + "):"
-                    + " the expectedWorkingScore (" + expectedWorkingScore
-                    + ") is not the workingScore (" + workingScore
-                    + ") after all " + VariableListener.class.getSimpleName()
-                    + "s were triggered without changes to the genuine variables"
-                    + " after completedAction (" + completedAction + ").\n"
-                    + "But all the shadow variable values are still the same, so this is impossible.\n"
-                    + "Maybe run with " + EnvironmentMode.TRACKED_FULL_ASSERT
-                    + " if you aren't already, to fail earlier.");
+            throw new VariableCorruptionException("""
+                    Impossible %s corruption (%s): the expectedWorkingScore (%s) is not the workingScore (%s) \
+                    after all %s were triggered without changes to the genuine variables after completedAction (%s).
+                    All the shadow variable values are still the same, so this is impossible.
+                    Maybe run with %s if you haven't already, to fail earlier."""
+                    .formatted(VariableListener.class.getSimpleName(),
+                            expectedWorkingScore.subtract(workingScore).toShortString(),
+                            expectedWorkingScore, workingScore, VariableListener.class.getSimpleName(), completedAction,
+                            EnvironmentMode.TRACKED_FULL_ASSERT));
         }
     }
 
@@ -600,13 +601,16 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         String violationMessage = variableListenerSupport.createShadowVariablesViolationMessage();
         String workingLabel = predicted ? "working" : "corrupted";
         if (violationMessage == null) {
-            return "Shadow variable corruption in the " + workingLabel + " scoreDirector:\n"
-                    + "  None";
+            return """
+                    Shadow variable corruption in the %s scoreDirector:
+                      None"""
+                    .formatted(workingLabel);
         }
-        return "Shadow variable corruption in the " + workingLabel + " scoreDirector:\n"
-                + violationMessage
-                + "  Maybe there is a bug in the " + VariableListener.class.getSimpleName()
-                + " of those shadow variable(s).";
+        return """
+                Shadow variable corruption in the %s scoreDirector:
+                %s
+                  Maybe there is a bug in the %s of those shadow variable(s)."""
+                .formatted(workingLabel, violationMessage, VariableListener.class.getSimpleName());
     }
 
     @Override
@@ -632,13 +636,13 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             if (!score.equals(uncorruptedScore)) {
                 String scoreCorruptionAnalysis = buildScoreCorruptionAnalysis(uncorruptedScoreDirector, predicted);
                 String shadowVariableAnalysis = buildShadowVariableAnalysis(predicted);
-                throw new IllegalStateException(
-                        "Score corruption (" + score.subtract(uncorruptedScore).toShortString()
-                                + "): the " + (predicted ? "predictedScore" : "workingScore") + " (" + score
-                                + ") is not the uncorruptedScore (" + uncorruptedScore
-                                + ") after completedAction (" + completedAction + "):\n"
-                                + scoreCorruptionAnalysis + "\n"
-                                + shadowVariableAnalysis);
+                throw new ScoreCorruptionException("""
+                        Score corruption (%s): the %s (%s) is not the uncorruptedScore (%s) after completedAction (%s):
+                        %s
+                        %s"""
+                        .formatted(score.subtract(uncorruptedScore).toShortString(),
+                                predicted ? "predictedScore" : "workingScore", score, uncorruptedScore, completedAction,
+                                scoreCorruptionAnalysis, shadowVariableAnalysis));
             }
         }
     }
@@ -707,7 +711,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                         solutionTracker.getAfterMoveSolution(),
                         solutionTracker.getAfterUndoSolution());
             } else {
-                throw new IllegalStateException(corruptionMessage);
+                throw new ScoreCorruptionException(corruptionMessage);
             }
         }
     }
