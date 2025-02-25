@@ -57,6 +57,43 @@ Every upgrade note indicates how likely your code will be affected by that chang
 The upgrade recipe often lists the changes as they apply to Java code.
 We kindly ask Kotlin and Python users to translate the changes accordingly.
 
+=== Upgrade from 1.19.0 to 1.20.0
+
+.icon:info-circle[role=yellow] New values for `EnvironmentMode`
+[%collapsible%open]
+====
+We've made the following changes to the `EnvironmentMode` enum:
+
+- `EnvironmentMode.REPRODUCIBLE` became `EnvironmentMode.NO_ASSERT`,
+- `EnvironmentMode.FAST_ASSERT` became `EnvironmentMode.STEP_ASSERT`,
+- and `EnvironmentMode.PHASE_ASSERT` was added.
+
+`EnvironmentMode.PHASE_ASSERT` is the new default mode,
+and it performs minimal assertions at the end of each phase.
+To restore the original entirely unasserted behavior,
+use `EnvironmentMode.NO_ASSERT`,
+but we strongly recommend using the new default mode instead.
+
+Before in `*.java`:
+
+[source,java]
+----
+var solverConfig = new SolverConfig()
+    .withEnvironmentMode(EnvironmentMode.REPRODUCIBLE);
+    ...
+----
+
+After in `*.java`:
+
+[source,java]
+----
+var solverConfig = new SolverConfig()
+    .withEnvironmentMode(EnvironmentMode.NO_ASSERT);
+    ...
+----
+====
+
+
 === Upgrade from 1.18.0 to 1.19.0
 
 .icon:info-circle[role=yellow] New argument to `FirstInitializedSolutionConsumer`

@@ -7,6 +7,7 @@ import java.util.Random;
 import jakarta.xml.bind.annotation.XmlEnum;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.variable.VariableListener;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -28,7 +29,7 @@ public enum EnvironmentMode {
      * a constraint, the engine itself or something else at the highest performance cost.
      * <p>
      * Because it tracks genuine and shadow variables, it is able to report precisely what variables caused the corruption and
-     * report any missed {@link ai.timefold.solver.core.api.domain.variable.VariableListener} events.
+     * report any missed {@link VariableListener} events.
      * <p>
      * This mode is reproducible (see {@link #PHASE_ASSERT} mode).
      * <p>
