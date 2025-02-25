@@ -4,7 +4,6 @@ import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertCod
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -36,25 +35,13 @@ import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedSolutio
 import ai.timefold.solver.core.impl.testdata.domain.pinned.allows_unassigned.TestdataPinnedAllowsUnassignedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.pinned.allows_unassigned.TestdataPinnedAllowsUnassignedSolution;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
-import ai.timefold.solver.core.impl.testutil.TestMeterRegistry;
+import ai.timefold.solver.core.impl.testutil.AbstractMeterTest;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Metrics;
 
-class DefaultLocalSearchPhaseTest {
-
-    @BeforeEach
-    @AfterEach
-    void resetGlobalRegistry() {
-        Metrics.globalRegistry.clear();
-        List<MeterRegistry> meterRegistryList = new ArrayList<>();
-        meterRegistryList.addAll(Metrics.globalRegistry.getRegistries());
-        meterRegistryList.forEach(Metrics.globalRegistry::remove);
-    }
+class DefaultLocalSearchPhaseTest extends AbstractMeterTest {
 
     @Test
     void solveWithInitializedEntities() {

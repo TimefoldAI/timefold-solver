@@ -88,35 +88,23 @@ import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.score.TestdataHardSoftScoreSolution;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
-import ai.timefold.solver.core.impl.testutil.TestMeterRegistry;
+import ai.timefold.solver.core.impl.testutil.AbstractMeterTest;
 
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import io.micrometer.core.instrument.Meter;
-import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
 
 @ExtendWith(SoftAssertionsExtension.class)
-class DefaultSolverTest {
-
-    @BeforeEach
-    @AfterEach
-    void resetGlobalRegistry() {
-        Metrics.globalRegistry.clear();
-        List<MeterRegistry> meterRegistryList = new ArrayList<>();
-        meterRegistryList.addAll(Metrics.globalRegistry.getRegistries());
-        meterRegistryList.forEach(Metrics.globalRegistry::remove);
-    }
+class DefaultSolverTest extends AbstractMeterTest {
 
     @Test
     void solve() {
@@ -344,8 +332,7 @@ class DefaultSolverTest {
         var meterRegistry = new TestMeterRegistry();
         Metrics.addRegistry(meterRegistry);
 
-        var solverConfig = PlannerTestUtils.buildSolverConfig(
-                TestdataSolution.class, TestdataEntity.class);
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
 
         var solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();

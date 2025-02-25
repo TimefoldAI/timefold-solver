@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import ai.timefold.solver.core.api.solver.SolverFactory;
@@ -20,25 +19,13 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEasyScoreCalculator;
 import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedSolution;
-import ai.timefold.solver.core.impl.testutil.TestMeterRegistry;
+import ai.timefold.solver.core.impl.testutil.AbstractMeterTest;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Metrics;
 
-class RuinRecreateMoveSelectorTest {
-
-    @BeforeEach
-    @AfterEach
-    void resetGlobalRegistry() {
-        Metrics.globalRegistry.clear();
-        List<MeterRegistry> meterRegistryList = new ArrayList<>();
-        meterRegistryList.addAll(Metrics.globalRegistry.getRegistries());
-        meterRegistryList.forEach(Metrics.globalRegistry::remove);
-    }
+class RuinRecreateMoveSelectorTest extends AbstractMeterTest {
 
     @Test
     void testRuining() {
