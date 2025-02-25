@@ -15,7 +15,7 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
  * @param <Solution_> the solution type
  */
 public sealed interface RestartStrategy<Solution_> extends PhaseLifecycleListener<Solution_>
-        permits RestoreBestSolutionRestartStrategy {
+        permits AcceptorRestartStrategy {
 
     /**
      * Restarts the solver to help it to get unstuck and discover new better solutions.

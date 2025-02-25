@@ -1,28 +1,26 @@
 package ai.timefold.solver.core.impl.localsearch.decider.restart;
 
-import java.util.Objects;
-
-import ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider;
-import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.RestartableAcceptor;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+public final class AcceptorRestartStrategy<Solution_> implements RestartStrategy<Solution_> {
 
-public final class RestoreBestSolutionRestartStrategy<Solution_> implements RestartStrategy<Solution_> {
+    private final Acceptor<Solution_> acceptor;
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-    private LocalSearchDecider<Solution_> decider;
+    public AcceptorRestartStrategy(Acceptor<Solution_> acceptor) {
+        this.acceptor = acceptor;
+    }
 
     @Override
     public void applyRestart(AbstractStepScope<Solution_> stepScope) {
-        var solverScope = stepScope.getPhaseScope().getSolverScope();
-        logger.trace("Resetting working solution, score ({})", solverScope.getBestScore());
-        decider.setWorkingSolutionFromBestSolution((LocalSearchStepScope<Solution_>) stepScope);
-        // Mark the solver as unstuck as the best solution is already restored
+        if (acceptor instanceof RestartableAcceptor<Solution_> restartableAcceptor) {
+            restartableAcceptor.restart((LocalSearchStepScope<Solution_>) stepScope);
+        }
+        // Mark the solver as unstuck as the acceptor restart logic was triggered
         stepScope.getPhaseScope().setSolverStuck(false);
     }
 
@@ -38,7 +36,7 @@ public final class RestoreBestSolutionRestartStrategy<Solution_> implements Rest
 
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        this.decider = Objects.requireNonNull(((LocalSearchPhaseScope<Solution_>) phaseScope).getDecider());
+        // Do nothing
     }
 
     @Override
