@@ -46,7 +46,7 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
                 config.getInitializingScoreTrend() == null ? InitializingScoreTrendLevel.ANY.name()
                         : config.getInitializingScoreTrend(),
                 solutionDescriptor.getScoreDefinition().getLevelsSize()));
-        if (environmentMode.isNonIntrusiveFullAsserted()) {
+        if (environmentMode.isFullyAsserted()) {
             scoreDirectorFactory.setAssertClonedSolution(true);
         }
         if (environmentMode.isTracking()) {

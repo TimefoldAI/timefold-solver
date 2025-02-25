@@ -123,7 +123,7 @@ public class AcceptorFactory<Solution_> {
                 acceptor.setFadingTabuSizeStrategy(
                         new EntityRatioTabuSizeStrategy<>(acceptorConfig.getFadingEntityTabuRatio()));
             }
-            if (configPolicy.getEnvironmentMode().isNonIntrusiveFullAsserted()) {
+            if (configPolicy.getEnvironmentMode().isFullyAsserted()) {
                 acceptor.setAssertTabuHashCodeCorrectness(true);
             }
             return Optional.of(acceptor);
@@ -171,7 +171,7 @@ public class AcceptorFactory<Solution_> {
             if (acceptorConfig.getFadingValueTabuSize() != null) {
                 acceptor.setFadingTabuSizeStrategy(new FixedTabuSizeStrategy<>(acceptorConfig.getFadingValueTabuSize()));
             }
-            if (configPolicy.getEnvironmentMode().isNonIntrusiveFullAsserted()) {
+            if (configPolicy.getEnvironmentMode().isFullyAsserted()) {
                 acceptor.setAssertTabuHashCodeCorrectness(true);
             }
             return Optional.of(acceptor);
@@ -189,7 +189,7 @@ public class AcceptorFactory<Solution_> {
             if (acceptorConfig.getFadingMoveTabuSize() != null) {
                 acceptor.setFadingTabuSizeStrategy(new FixedTabuSizeStrategy<>(acceptorConfig.getFadingMoveTabuSize()));
             }
-            if (configPolicy.getEnvironmentMode().isNonIntrusiveFullAsserted()) {
+            if (configPolicy.getEnvironmentMode().isFullyAsserted()) {
                 acceptor.setAssertTabuHashCodeCorrectness(true);
             }
             return Optional.of(acceptor);

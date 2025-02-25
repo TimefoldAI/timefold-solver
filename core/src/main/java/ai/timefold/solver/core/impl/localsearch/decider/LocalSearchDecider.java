@@ -62,8 +62,8 @@ public class LocalSearchDecider<Solution_> {
     }
 
     public void enableAssertions(EnvironmentMode environmentMode) {
-        assertMoveScoreFromScratch = environmentMode.isNonIntrusiveFullAsserted();
-        assertExpectedUndoMoveScore = environmentMode.isIntrusiveStepAsserted();
+        assertMoveScoreFromScratch = environmentMode.isFullyAsserted();
+        assertExpectedUndoMoveScore = environmentMode.isIntrusivelyAsserted();
     }
 
     // ************************************************************************

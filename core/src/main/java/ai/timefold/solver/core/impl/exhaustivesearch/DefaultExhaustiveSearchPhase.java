@@ -248,8 +248,8 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         @Override
         public Builder<Solution_> enableAssertions(EnvironmentMode environmentMode) {
             super.enableAssertions(environmentMode);
-            assertWorkingSolutionScoreFromScratch = environmentMode.isNonIntrusiveFullAsserted();
-            assertExpectedWorkingSolutionScore = environmentMode.isIntrusiveStepAsserted();
+            assertWorkingSolutionScoreFromScratch = environmentMode.isFullyAsserted();
+            assertExpectedWorkingSolutionScore = environmentMode.isIntrusivelyAsserted();
             return this;
         }
 

@@ -10,7 +10,7 @@ public class BestSolutionRecallerFactory {
 
     public <Solution_> BestSolutionRecaller<Solution_> buildBestSolutionRecaller(EnvironmentMode environmentMode) {
         BestSolutionRecaller<Solution_> bestSolutionRecaller = new BestSolutionRecaller<>();
-        if (environmentMode.isNonIntrusiveFullAsserted()) {
+        if (environmentMode.isFullyAsserted()) {
             bestSolutionRecaller.setAssertInitialScoreFromScratch(true);
             bestSolutionRecaller.setAssertShadowVariablesAreNotStale(true);
             bestSolutionRecaller.setAssertBestScoreIsUnmodified(true);

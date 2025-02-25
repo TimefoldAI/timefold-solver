@@ -270,9 +270,9 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
 
         public AbstractPhaseBuilder<Solution_> enableAssertions(EnvironmentMode environmentMode) {
             assertPhaseScoreFromScratch = environmentMode.isAsserted();
-            assertStepScoreFromScratch = environmentMode.isNonIntrusiveFullAsserted();
-            assertExpectedStepScore = environmentMode.isIntrusiveStepAsserted();
-            assertShadowVariablesAreNotStaleAfterStep = environmentMode.isIntrusiveStepAsserted();
+            assertStepScoreFromScratch = environmentMode.isFullyAsserted();
+            assertExpectedStepScore = environmentMode.isIntrusivelyAsserted();
+            assertShadowVariablesAreNotStaleAfterStep = environmentMode.isIntrusivelyAsserted();
             return this;
         }
 

@@ -140,13 +140,12 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
                 ? new TrendBasedScoreBounder(configPolicy.getScoreDefinition(), configPolicy.getInitializingScoreTrend())
                 : null;
         ExhaustiveSearchDecider<Solution_> decider = new ExhaustiveSearchDecider<>(configPolicy.getLogIndentation(),
-                bestSolutionRecaller, termination,
-                manualEntityMimicRecorder, moveSelector, scoreBounderEnabled, scoreBounder);
+                bestSolutionRecaller, termination, manualEntityMimicRecorder, moveSelector, scoreBounderEnabled, scoreBounder);
         EnvironmentMode environmentMode = configPolicy.getEnvironmentMode();
-        if (environmentMode.isNonIntrusiveFullAsserted()) {
+        if (environmentMode.isFullyAsserted()) {
             decider.setAssertMoveScoreFromScratch(true);
         }
-        if (environmentMode.isIntrusiveStepAsserted()) {
+        if (environmentMode.isIntrusivelyAsserted()) {
             decider.setAssertExpectedUndoMoveScore(true);
         }
         return decider;

@@ -131,45 +131,46 @@ public enum EnvironmentMode {
     }
 
     public boolean isStepAssertOrMore() {
-        return switch (this) {
-            case NON_REPRODUCIBLE, NO_ASSERT, PHASE_ASSERT, STEP_ASSERT, NON_INTRUSIVE_FULL_ASSERT, FULL_ASSERT,
-                    TRACKED_FULL_ASSERT ->
-                isAsserted() && this != PHASE_ASSERT;
-            case REPRODUCIBLE -> PHASE_ASSERT.isAsserted();
-            case FAST_ASSERT -> STEP_ASSERT.isAsserted();
-        };
+        if (!isAsserted()) {
+            return false;
+        }
+        return this != PHASE_ASSERT;
     }
 
     public boolean isAsserted() {
         return asserted;
     }
 
-    public boolean isNonIntrusiveFullAsserted() {
+    public boolean isFullyAsserted() {
         return switch (this) {
-            case NON_REPRODUCIBLE, NO_ASSERT, PHASE_ASSERT, STEP_ASSERT, NON_INTRUSIVE_FULL_ASSERT, FULL_ASSERT,
-                    TRACKED_FULL_ASSERT -> {
-                if (!isStepAssertOrMore()) {
-                    yield false;
-                }
-                yield this != STEP_ASSERT;
-            }
-            case REPRODUCIBLE -> PHASE_ASSERT.isNonIntrusiveFullAsserted();
-            case FAST_ASSERT -> STEP_ASSERT.isNonIntrusiveFullAsserted();
+            case TRACKED_FULL_ASSERT, FULL_ASSERT, NON_INTRUSIVE_FULL_ASSERT -> true;
+            case STEP_ASSERT, FAST_ASSERT, PHASE_ASSERT, REPRODUCIBLE, NO_ASSERT, NON_REPRODUCIBLE -> false;
         };
     }
 
-    public boolean isIntrusiveStepAsserted() {
+    /**
+     * @deprecated Use {@link #isFullyAsserted()} instead.
+     */
+    @Deprecated(forRemoval = true, since = "1.20.0")
+    public boolean isNonIntrusiveFullAsserted() {
+        return isFullyAsserted();
+    }
+
+    public boolean isIntrusivelyAsserted() {
         return switch (this) {
-            case NON_REPRODUCIBLE, NO_ASSERT, PHASE_ASSERT, STEP_ASSERT, NON_INTRUSIVE_FULL_ASSERT, FULL_ASSERT,
-                    TRACKED_FULL_ASSERT -> {
-                if (!isStepAssertOrMore()) {
-                    yield false;
-                }
-                yield this != NON_INTRUSIVE_FULL_ASSERT;
-            }
-            case REPRODUCIBLE -> PHASE_ASSERT.isIntrusiveStepAsserted();
-            case FAST_ASSERT -> STEP_ASSERT.isIntrusiveStepAsserted();
+            // STEP_ASSERT = former FAST_ASSERT
+            case TRACKED_FULL_ASSERT, FULL_ASSERT, STEP_ASSERT, FAST_ASSERT -> true;
+            // NO_ASSERT = former REPRODUCIBLE
+            case NON_INTRUSIVE_FULL_ASSERT, PHASE_ASSERT, NO_ASSERT, NON_REPRODUCIBLE, REPRODUCIBLE -> false;
         };
+    }
+
+    /**
+     * @deprecated Use {@link #isIntrusivelyAsserted()} instead.
+     */
+    @Deprecated(forRemoval = true, since = "1.20.0")
+    public boolean isIntrusiveFastAsserted() {
+        return isIntrusivelyAsserted();
     }
 
     public boolean isReproducible() {

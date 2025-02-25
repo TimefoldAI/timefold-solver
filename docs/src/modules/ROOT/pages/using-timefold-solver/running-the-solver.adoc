@@ -194,7 +194,7 @@ The `NON_INTRUSIVE_FULL_ASSERT` turns on several assertions to fail-fast on a bu
 a constraint, the engine itself, ...
 
 This mode is <<environmentModeReproducible,reproducible>>.
-It is non-intrusive because it does not call the method `calculateScore()` more frequently than a non assert mode.
+It is non-intrusive because it does not call the method `calculateScore()` more frequently than a non-assert mode.
 
 The `NON_INTRUSIVE_FULL_ASSERT` mode is horribly slow,
 because it does not rely on incremental score calculation.
