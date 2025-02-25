@@ -65,6 +65,11 @@ public enum EnvironmentMode {
      */
     NON_INTRUSIVE_FULL_ASSERT(true),
     /**
+     * @deprecated Prefer {@link #STEP_ASSERT}.
+     */
+    @Deprecated(forRemoval = true, since = "1.20.0")
+    FAST_ASSERT(true),
+    /**
      * This mode turns on several assertions to fail-fast
      * on a bug in a {@link Move} implementation, a constraint rule, the engine itself or something else
      * at a reasonable performance cost (in development at least).
@@ -77,11 +82,6 @@ public enum EnvironmentMode {
      * This mode is slow.
      */
     STEP_ASSERT(true),
-    /**
-     * @deprecated Prefer {@link #STEP_ASSERT}.
-     */
-    @Deprecated(forRemoval = true, since = "1.20.0")
-    FAST_ASSERT(true),
     /**
      * This is the default mode as it is recommended during development,
      * and runs minimal correctness checks that serve to quickly identify score corruption bugs.

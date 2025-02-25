@@ -128,7 +128,7 @@ class DefaultSolverTest {
     }
 
     @Test
-    void solveCorruptedEasyGuarded() {
+    void solveCorruptedEasyPhaseAsserted() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withEnvironmentMode(EnvironmentMode.PHASE_ASSERT)
                 .withEasyScoreCalculatorClass(CorruptedEasyScoreCalculator.class);
@@ -144,7 +144,7 @@ class DefaultSolverTest {
     }
 
     @Test
-    void solveCorruptedEasyUnguarded() {
+    void solveCorruptedEasyUnasserted() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withEnvironmentMode(EnvironmentMode.NO_ASSERT)
                 .withEasyScoreCalculatorClass(CorruptedEasyScoreCalculator.class);
