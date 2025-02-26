@@ -128,7 +128,9 @@ public class SolutionDescriptor<Solution_> {
         solutionClonerMap = Objects.requireNonNullElse(solutionClonerMap, Collections.emptyMap());
         var solutionDescriptor = new SolutionDescriptor<>(solutionClass, memberAccessorMap);
         var descriptorPolicy = new DescriptorPolicy();
-        descriptorPolicy.setEnabledPreviewFeatureSet(enabledPreviewFeatureSet);
+        if (enabledPreviewFeatureSet != null) {
+            descriptorPolicy.setEnabledPreviewFeatureSet(enabledPreviewFeatureSet);
+        }
         descriptorPolicy.setDomainAccessType(domainAccessType);
         descriptorPolicy.setGeneratedSolutionClonerMap(solutionClonerMap);
         descriptorPolicy.setMemberAccessorFactory(solutionDescriptor.getMemberAccessorFactory());
