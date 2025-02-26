@@ -14,8 +14,6 @@ import ai.timefold.solver.core.impl.util.MutableInt;
 
 public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solution_> {
 
-    // This aims to delay the first restart event in approximately 10 minutes
-    protected static final int MAX_RESTART_WITHOUT_IMPROVEMENT = 2;
     protected static final double MIN_DIVERSITY_RATIO = 0.05;
     // The goal is to increase from hundreds to thousands in the first restart event and then increment it linearly
     protected static final int SCALING_FACTOR = 10;
@@ -27,6 +25,7 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
     protected int lateScoreIndex = -1;
 
     private int maxBestScoreSize;
+    private Score<?> bestStepScore;
     private Score<?> currentBestScore;
     // Keep track of the best scores accumulated so far. This list will be used to reseed the later elements list.
     private Deque<Score<?>> bestScoreQueue;
@@ -54,6 +53,7 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
     public void stepStarted(LocalSearchStepScope<Solution_> stepScope) {
         super.stepStarted(stepScope);
         currentBestScore = stepScope.getPhaseScope().getBestScore();
+        bestStepScore = null;
     }
 
     @Override
@@ -84,6 +84,10 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
     @SuppressWarnings("unchecked")
     public boolean accept(LocalSearchMoveScope<Solution_> moveScope) {
         var moveScore = moveScope.getScore();
+        if (moveScore.compareTo(moveScope.getStepScope().getPhaseScope().getBestScore()) != 0
+                && (bestStepScore == null || moveScore.compareTo(bestStepScore) > 0)) {
+            bestStepScore = moveScore;
+        }
         var lateScore = previousScores[lateScoreIndex];
         if (moveScore.compareTo(lateScore) >= 0) {
             return true;
@@ -125,11 +129,13 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
         countRestartWithoutImprovement++;
         var distinctElements = Arrays.stream(previousScores).distinct().count();
         var diversity = distinctElements == 1 ? 0 : distinctElements / (double) lateAcceptanceSize;
-        if (countRestartWithoutImprovement < MAX_RESTART_WITHOUT_IMPROVEMENT && diversity > MIN_DIVERSITY_RATIO) {
-            // We prefer not to restart until an initial time window of at least 5 minutes has passed.
+        if (coefficient == 0 && (diversity > MIN_DIVERSITY_RATIO || bestScoreQueue.size() == 1)) {
+            // We prefer not to restart until the first event has passed (about 10:30 minutes).
             // We have observed that this approach works better for more complex datasets.
             // However, when the diversity is zero, it indicates that the LA may be stuck in a local minimum,
-            // and in such cases, we should restart before the initial five minutes.
+            // and in such cases, we should restart before the first event.
+            // Additionally, when there is only one best score,
+            // it does not make sense to restart at the first event as nothing would change.
             logger.info("Restart event delayed. Diversity ({}), Distinct Elements ({}), Restart without Improvement ({})",
                     diversity, distinctElements, countRestartWithoutImprovement);
             return;
@@ -161,16 +167,24 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
      */
     private void rebuildLateElementsList(int newLateAcceptanceSize) {
         var newPreviousScores = new Score[newLateAcceptanceSize];
-        var countPerScore = newLateAcceptanceSize / bestScoreQueue.size() + 1;
-        var count = new MutableInt(newLateAcceptanceSize - 1);
-        var iterator = bestScoreQueue.descendingIterator();
-        while (count.intValue() >= 0 && iterator.hasNext()) {
-            var score = iterator.next();
-            for (var i = 0; i < countPerScore; i++) {
-                newPreviousScores[count.intValue()] = score;
-                count.decrement();
-                if (count.intValue() < 0) {
-                    break;
+        if (bestScoreQueue.size() == 1) {
+            logger.info("No diversity. Using {} and {}", bestStepScore, bestScoreQueue.getFirst());
+            // There is only one best score, which is the one found by the previous phase.
+            Arrays.fill(newPreviousScores, 0, newLateAcceptanceSize / 2, bestStepScore);
+            Arrays.fill(newPreviousScores, newLateAcceptanceSize / 2, newLateAcceptanceSize, bestScoreQueue.getFirst());
+        } else {
+            // It is possible to add some variability
+            var countPerScore = newLateAcceptanceSize / bestScoreQueue.size() + 1;
+            var count = new MutableInt(newLateAcceptanceSize - 1);
+            var iterator = bestScoreQueue.descendingIterator();
+            while (count.intValue() >= 0 && iterator.hasNext()) {
+                var score = iterator.next();
+                for (var i = 0; i < countPerScore; i++) {
+                    newPreviousScores[count.intValue()] = score;
+                    count.decrement();
+                    if (count.intValue() < 0) {
+                        break;
+                    }
                 }
             }
         }
