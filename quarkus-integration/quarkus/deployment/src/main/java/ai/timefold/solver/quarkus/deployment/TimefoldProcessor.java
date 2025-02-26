@@ -503,6 +503,15 @@ class TimefoldProcessor {
         }
     }
 
+    private void assertTargetClasses(List<AnnotationTarget> targetList, DotName dotName) {
+        if (targetList.stream().anyMatch(target -> target.kind() != AnnotationTarget.Kind.CLASS)) {
+            throw new IllegalStateException(
+                    "All classes ([%s]) annotated with @%s must be a class.".formatted(
+                            targetList.stream().map(t -> t.asClass().name().toString()).collect(Collectors.joining(", ")),
+                            dotName.local()));
+        }
+    }
+
     private SolverConfig createSolverConfig(ClassLoader classLoader, String solverName) {
         // 1 - The solver configuration takes precedence over root and default settings
         Optional<String> solverConfigXml = this.timefoldBuildTimeConfig.getSolverConfig(solverName)
@@ -1025,7 +1034,8 @@ class TimefoldProcessor {
             }
             // Using REFLECTION domain access type so Timefold doesn't try to generate GIZMO code
             solverConfigMap.values().forEach(c -> {
-                var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(DomainAccessType.REFLECTION,
+                var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
+                        c.getEnablePreviewFeatureSet(), DomainAccessType.REFLECTION,
                         c.getSolutionClass(), null, null, c.getEntityClassList());
                 gizmoSolutionClonerClassNameSet
                         .add(entityEnhancer.generateSolutionCloner(solutionDescriptor, classOutput, indexView, transformers));

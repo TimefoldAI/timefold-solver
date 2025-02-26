@@ -1587,6 +1587,8 @@
         
     <xs:restriction base="xs:string">
             
+      <xs:enumeration value="DECLARATIVE_SHADOW_VARIABLES"/>
+            
       <xs:enumeration value="DIVERSIFIED_LATE_ACCEPTANCE"/>
             
       <xs:enumeration value="PLANNING_SOLUTION_DIFF"/>

@@ -11,8 +11,8 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
-import ai.timefold.solver.core.preview.api.variable.provided.InvalidityMarker;
-import ai.timefold.solver.core.preview.api.variable.provided.ProvidedShadowVariable;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.DeclarativeShadowVariable;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.InvalidityMarker;
 
 @PlanningEntity
 public class TestdataFSRVisit {
@@ -21,13 +21,13 @@ public class TestdataFSRVisit {
     @InverseRelationShadowVariable(sourceVariableName = "visits")
     TestdataFSRVehicle vehicle;
 
-    @ProvidedShadowVariable(TestShadowVariableProvider.class)
+    @DeclarativeShadowVariable(TestShadowVariableProvider.class)
     LocalDateTime serviceReadyTime;
 
-    @ProvidedShadowVariable(TestShadowVariableProvider.class)
+    @DeclarativeShadowVariable(TestShadowVariableProvider.class)
     LocalDateTime serviceStartTime;
 
-    @ProvidedShadowVariable(TestShadowVariableProvider.class)
+    @DeclarativeShadowVariable(TestShadowVariableProvider.class)
     LocalDateTime serviceFinishTime;
 
     @PreviousElementShadowVariable(sourceVariableName = "visits")

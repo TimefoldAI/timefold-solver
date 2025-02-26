@@ -4,14 +4,16 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Collections;
 
-import ai.timefold.solver.core.preview.api.variable.provided.ShadowVariableFactory;
-import ai.timefold.solver.core.preview.api.variable.provided.ShadowVariableProvider;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableFactory;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableProvider;
+
+import org.jspecify.annotations.NonNull;
 
 public class TestShadowVariableProvider implements ShadowVariableProvider {
     public static LocalDateTime BASE_START_TIME = LocalDateTime.ofEpochSecond(0, 0, ZoneOffset.UTC);
 
     @Override
-    public void defineVariables(ShadowVariableFactory variableFactory) {
+    public void defineVariables(@NonNull ShadowVariableFactory variableFactory) {
         var serviceReadyTime = variableFactory.newShadow(TestdataFSRVisit.class)
                 .compute(variableFactory.entity(TestdataFSRVisit.class).previous()
                         .variable(LocalDateTime.class, "serviceFinishTime"),

@@ -9,16 +9,16 @@ import java.util.List;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.testdata.domain.fsr.TestShadowVariableProvider;
 import ai.timefold.solver.core.impl.testdata.domain.fsr.TestdataFSRAssertionEasyScoreCalculator;
 import ai.timefold.solver.core.impl.testdata.domain.fsr.TestdataFSRConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.fsr.TestdataFSRRoutePlan;
 import ai.timefold.solver.core.impl.testdata.domain.fsr.TestdataFSRVehicle;
 import ai.timefold.solver.core.impl.testdata.domain.fsr.TestdataFSRVisit;
-import ai.timefold.solver.core.preview.api.variable.provided.ShadowVariableSessionFactory;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableSessionFactory;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -27,8 +27,7 @@ public class ProvidedShadowVariableTest {
     @Test
     public void simpleChain() {
         var sessionFactory = ShadowVariableSessionFactory.create(
-                SolutionDescriptor.buildSolutionDescriptor(TestdataFSRRoutePlan.class,
-                        TestdataFSRVehicle.class, TestdataFSRVisit.class),
+                TestdataFSRRoutePlan.buildSolutionDescriptor(),
                 new TestShadowVariableProvider());
 
         var vehicle = spy(new TestdataFSRVehicle("v1"));
@@ -86,8 +85,7 @@ public class ProvidedShadowVariableTest {
     @Test
     public void groupChain() {
         var sessionFactory = ShadowVariableSessionFactory.create(
-                SolutionDescriptor.buildSolutionDescriptor(TestdataFSRRoutePlan.class,
-                        TestdataFSRVehicle.class, TestdataFSRVisit.class),
+                TestdataFSRRoutePlan.buildSolutionDescriptor(),
                 new TestShadowVariableProvider());
 
         var vehicle1 = new TestdataFSRVehicle("v1");
@@ -192,8 +190,7 @@ public class ProvidedShadowVariableTest {
     @Test
     public void groupChainValidToInvalid() {
         var sessionFactory = ShadowVariableSessionFactory.create(
-                SolutionDescriptor.buildSolutionDescriptor(TestdataFSRRoutePlan.class,
-                        TestdataFSRVehicle.class, TestdataFSRVisit.class),
+                TestdataFSRRoutePlan.buildSolutionDescriptor(),
                 new TestShadowVariableProvider());
 
         var vehicle1 = new TestdataFSRVehicle("v1");
@@ -332,8 +329,7 @@ public class ProvidedShadowVariableTest {
     @Test
     public void groupChainInvalidToValid() {
         var sessionFactory = ShadowVariableSessionFactory.create(
-                SolutionDescriptor.buildSolutionDescriptor(TestdataFSRRoutePlan.class,
-                        TestdataFSRVehicle.class, TestdataFSRVisit.class),
+                TestdataFSRRoutePlan.buildSolutionDescriptor(),
                 new TestShadowVariableProvider());
 
         var vehicle1 = new TestdataFSRVehicle("v1");
@@ -454,6 +450,7 @@ public class ProvidedShadowVariableTest {
 
         var solverConfig = new SolverConfig()
                 .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
+                .withPreviewFeature(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES)
                 .withSolutionClass(TestdataFSRRoutePlan.class)
                 .withEntityClasses(TestdataFSRVehicle.class, TestdataFSRVisit.class)
                 .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
@@ -498,6 +495,7 @@ public class ProvidedShadowVariableTest {
 
         var solverConfig = new SolverConfig()
                 .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
+                .withPreviewFeature(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES)
                 .withSolutionClass(TestdataFSRRoutePlan.class)
                 .withEntityClasses(TestdataFSRVehicle.class, TestdataFSRVisit.class)
                 .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
