@@ -14,6 +14,13 @@ import ai.timefold.solver.core.impl.util.MutableInt;
 
 public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solution_> {
 
+    // Using a start window of 30 seconds and a geometric factor of 1.4,
+    // five restarts will result in 300 seconds without improvement.
+    protected static final int MAX_RESTART_WITHOUT_IMPROVEMENT = 4;
+    protected static final double MIN_DIVERSITY_RATIO = 0.05;
+    // The goal is to increase from hundreds to thousands in the first restart event and then increment it linearly
+    protected static final int SCALING_FACTOR = 10;
+
     protected int lateAcceptanceSize = -1;
     protected boolean hillClimbingEnabled = true;
 
@@ -22,10 +29,11 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
 
     private int maxBestScoreSize;
     private Score<?> currentBestScore;
+    // Keep track of the best scores accumulated so far. This list will be used to reseed the later elements list.
     private Deque<Score<?>> bestScoreQueue;
-    protected static final int SCALING_FACTOR = 10;
     protected int defaultLateAcceptanceSize;
     protected int coefficient;
+    protected int countRestartWithoutImprovement;
 
     public LateAcceptanceAcceptor(StuckCriterion<Solution_> stuckCriterionDetection) {
         super(stuckCriterionDetection);
@@ -58,7 +66,9 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
         Arrays.fill(previousScores, initialScore);
         lateScoreIndex = 0;
         coefficient = 0;
+        countRestartWithoutImprovement = 0;
         defaultLateAcceptanceSize = lateAcceptanceSize;
+        // The maximum size is three times the size of the initial element list
         maxBestScoreSize = defaultLateAcceptanceSize * 3 * SCALING_FACTOR;
         bestScoreQueue = new ArrayDeque<>(maxBestScoreSize);
         bestScoreQueue.addLast(initialScore);
@@ -90,30 +100,72 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
         super.stepEnded(stepScope);
-        previousScores[lateScoreIndex] = stepScope.getScore();
-        lateScoreIndex = (lateScoreIndex + 1) % lateAcceptanceSize;
+        updateLateElement(stepScope);
         if (((Score) currentBestScore).compareTo(stepScope.getScore()) < 0) {
+            if (countRestartWithoutImprovement > 0 && coefficient > 0) {
+                // We decrease the coefficient
+                // if there is an improvement
+                // to avoid altering the late element size in the next restart event.
+                // This action is performed only once after a restart event
+                coefficient--;
+            }
+            countRestartWithoutImprovement = 0;
             if (bestScoreQueue.size() < maxBestScoreSize) {
                 bestScoreQueue.addLast(stepScope.getScore());
             } else {
+                // // When the collection is full, we remove the lowest score and add the new best value.
                 bestScoreQueue.poll();
                 bestScoreQueue.addLast(stepScope.getScore());
             }
         }
     }
 
+    private void updateLateElement(LocalSearchStepScope<Solution_> stepScope) {
+        previousScores[lateScoreIndex] = stepScope.getScore();
+        lateScoreIndex = (lateScoreIndex + 1) % lateAcceptanceSize;
+    }
+
     @Override
     public void restart(LocalSearchStepScope<Solution_> stepScope) {
+        countRestartWithoutImprovement++;
+        var distinctElements = Arrays.stream(previousScores).distinct().count();
+        var diversity = distinctElements == 1 ? 0 : distinctElements / (double) lateAcceptanceSize;
+        if (countRestartWithoutImprovement <= MAX_RESTART_WITHOUT_IMPROVEMENT && diversity > MIN_DIVERSITY_RATIO) {
+            // We prefer not to restart until an initial time window of at least 5 minutes has passed.
+            // We have observed that this approach works better for more complex datasets.
+            // However, when the diversity is zero, it indicates that the LA may be stuck in a local minimum,
+            // and in such cases, we should restart before the initial five minutes.
+            logger.info("Restart event delayed. Diversity ({}), Distinct Elements ({}), Restart without Improvement ({})",
+                    diversity, distinctElements, countRestartWithoutImprovement);
+            return;
+        }
         coefficient++;
         var newLateAcceptanceSize = defaultLateAcceptanceSize * coefficient * SCALING_FACTOR;
+        if (logger.isInfoEnabled()) {
+            if (lateAcceptanceSize == newLateAcceptanceSize) {
+                logger.info("Keeping the lateAcceptanceSize as {}. Diversity ({}), Distinct Elements ({})", lateAcceptanceSize,
+                        diversity, distinctElements);
+            } else {
+                logger.info(
+                        "Changing the lateAcceptanceSize from {} to {}. Diversity ({}), Distinct Elements ({})",
+                        lateAcceptanceSize, newLateAcceptanceSize, diversity, distinctElements);
+            }
+        }
         rebuildLateElementsList(newLateAcceptanceSize);
     }
 
+    /**
+     * The method recreates the late elements list with the new size {@code newLateAcceptanceSize}.
+     * The aim is to recreate elements using previous best scores.
+     * This method provides diversity
+     * while avoiding the initialization phase
+     * that occurs when the later elements are set to the most recent best score.
+     * <p>
+     * The approach is based on the work:
+     * Parameter-less Late Acceptance Hill-climbing: Foundations & Applications by Mosab Bazargani.
+     */
     private void rebuildLateElementsList(int newLateAcceptanceSize) {
         var newPreviousScores = new Score[newLateAcceptanceSize];
-        if (logger.isInfoEnabled()) {
-            logger.info("Changing the lateAcceptanceSize from %d to %d.".formatted(lateAcceptanceSize, newLateAcceptanceSize));
-        }
         var countPerScore = newLateAcceptanceSize / bestScoreQueue.size() + 1;
         var count = new MutableInt(newLateAcceptanceSize - 1);
         var iterator = bestScoreQueue.descendingIterator();

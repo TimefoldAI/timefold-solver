@@ -9,7 +9,8 @@ import ai.timefold.solver.core.impl.solver.termination.DiminishedReturnsTerminat
 
 public class DiminishedReturnsStuckCriterion<Solution_, Score_ extends Score<Score_>>
         extends AbstractGeometricStuckCriterion<Solution_> {
-    protected static final long TIME_WINDOW_MILLIS = 300_000;
+    protected static final long START_TIME_WINDOW_MILLIS = 30_000;
+    protected static final long REGULAR_TIME_WINDOW_MILLIS = 300_000;
     private static final double MINIMAL_IMPROVEMENT = 0.0001;
 
     private DiminishedReturnsTermination<Solution_, Score_> diminishedReturnsCriterion;
@@ -18,11 +19,11 @@ public class DiminishedReturnsStuckCriterion<Solution_, Score_ extends Score<Sco
     private Score_ currentBestScore;
 
     public DiminishedReturnsStuckCriterion() {
-        this(new DiminishedReturnsTermination<>(TIME_WINDOW_MILLIS, MINIMAL_IMPROVEMENT));
+        this(new DiminishedReturnsTermination<>(START_TIME_WINDOW_MILLIS, MINIMAL_IMPROVEMENT));
     }
 
     protected DiminishedReturnsStuckCriterion(DiminishedReturnsTermination<Solution_, Score_> diminishedReturnsCriterion) {
-        super(TIME_WINDOW_MILLIS);
+        super(START_TIME_WINDOW_MILLIS);
         this.diminishedReturnsCriterion = diminishedReturnsCriterion;
     }
 
@@ -42,6 +43,8 @@ public class DiminishedReturnsStuckCriterion<Solution_, Score_ extends Score<Sco
         currentBestScore = stepScope.getPhaseScope().getBestScore();
         if (triggered) {
             // We need to recreate the termination criterion as the time window has changed
+            // After the first restart we use a higher time window
+            setScalingFactor(REGULAR_TIME_WINDOW_MILLIS);
             diminishedReturnsCriterion = new DiminishedReturnsTermination<>(nextRestart, MINIMAL_IMPROVEMENT);
             diminishedReturnsCriterion.start(System.nanoTime(), stepScope.getPhaseScope().getBestScore());
             triggered = false;
@@ -51,9 +54,11 @@ public class DiminishedReturnsStuckCriterion<Solution_, Score_ extends Score<Sco
     @Override
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
         diminishedReturnsCriterion.stepEnded(stepScope);
-        if (currentBestScore.compareTo(stepScope.getPhaseScope().getBestScore()) < 0 && nextRestart > TIME_WINDOW_MILLIS) {
+        if (currentBestScore.compareTo(stepScope.getPhaseScope().getBestScore()) < 0
+                && nextRestart > START_TIME_WINDOW_MILLIS) {
             // If the solution has been improved after a restart,
             // we reset the criterion and restart the evaluation of the metric
+            setScalingFactor(START_TIME_WINDOW_MILLIS);
             super.solvingStarted(stepScope.getPhaseScope().getSolverScope());
             diminishedReturnsCriterion = new DiminishedReturnsTermination<>(nextRestart, MINIMAL_IMPROVEMENT);
             diminishedReturnsCriterion.start(System.nanoTime(), stepScope.getPhaseScope().getBestScore());
