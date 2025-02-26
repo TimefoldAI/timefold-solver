@@ -20,7 +20,7 @@ public abstract class AbstractGeometricStuckCriterion<Solution_> implements Stuc
     protected static final Logger logger = LoggerFactory.getLogger(AbstractGeometricStuckCriterion.class);
     private static final double GEOMETRIC_FACTOR = 1.4; // Value extracted from the cited paper
 
-    private final double scalingFactor;
+    private double scalingFactor;
     protected long nextRestart;
     private double currentGeometricGrowFactor;
 
@@ -49,13 +49,18 @@ public abstract class AbstractGeometricStuckCriterion<Solution_> implements Stuc
         // Do nothing
     }
 
+    public void setScalingFactor(double scalingFactor) {
+        this.scalingFactor = scalingFactor;
+        nextRestart = calculateNextRestart();
+    }
+
     @Override
     public boolean isSolverStuck(LocalSearchMoveScope<Solution_> moveScope) {
         var triggered = evaluateCriterion(moveScope);
         if (triggered) {
             logger.info(
-                    "Restart triggered with geometric factor ({}), scaling factor of ({}), nextRestart ({}), best score ({})",
-                    currentGeometricGrowFactor, scalingFactor, nextRestart,
+                    "Restart triggered with geometric factor ({}), scaling factor of ({}), best score ({})",
+                    currentGeometricGrowFactor, scalingFactor,
                     moveScope.getStepScope().getPhaseScope().getBestScore());
             currentGeometricGrowFactor = Math.ceil(currentGeometricGrowFactor * GEOMETRIC_FACTOR);
             nextRestart = calculateNextRestart();
