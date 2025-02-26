@@ -31,6 +31,7 @@ import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.impl.heuristic.move.DummyMove;
@@ -42,7 +43,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
 import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
 import ai.timefold.solver.core.impl.io.jaxb.TimefoldXmlSerializationException;
 import ai.timefold.solver.core.impl.partitionedsearch.partitioner.SolutionPartitioner;
-import ai.timefold.solver.core.impl.phase.custom.CustomPhaseCommand;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
@@ -227,7 +227,7 @@ class SolverConfigTest {
         verify(classVisitor, atLeastOnce()).accept(DummyChangeMoveFilter.class);
         verify(classVisitor, atLeastOnce()).accept(DummyMoveIteratorFactory.class);
         verify(classVisitor, atLeastOnce()).accept(DummyMoveListFactory.class);
-        verify(classVisitor, atLeastOnce()).accept(CustomPhaseCommand.class);
+        verify(classVisitor, atLeastOnce()).accept(PhaseCommand.class);
     }
 
     @Test

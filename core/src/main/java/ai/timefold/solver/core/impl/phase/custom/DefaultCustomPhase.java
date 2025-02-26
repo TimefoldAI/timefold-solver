@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.phase.AbstractPossiblyInitializingPhase;
 import ai.timefold.solver.core.impl.phase.custom.scope.CustomPhaseScope;
@@ -25,7 +26,7 @@ public final class DefaultCustomPhase<Solution_>
         extends AbstractPossiblyInitializingPhase<Solution_>
         implements CustomPhase<Solution_> {
 
-    private final List<CustomPhaseCommand<Solution_>> customPhaseCommandList;
+    private final List<PhaseCommand<Solution_>> customPhaseCommandList;
     private TerminationStatus terminationStatus = TerminationStatus.NOT_TERMINATED;
 
     private DefaultCustomPhase(DefaultCustomPhaseBuilder<Solution_> builder) {
@@ -52,7 +53,7 @@ public final class DefaultCustomPhase<Solution_>
         CustomPhaseScope<Solution_> phaseScope = new CustomPhaseScope<>(solverScope, phaseIndex);
         phaseStarted(phaseScope);
         TerminationStatus earlyTerminationStatus = null;
-        Iterator<CustomPhaseCommand<Solution_>> iterator = customPhaseCommandList.iterator();
+        Iterator<PhaseCommand<Solution_>> iterator = customPhaseCommandList.iterator();
         while (iterator.hasNext()) {
             var customPhaseCommand = iterator.next();
             solverScope.checkYielding();
@@ -77,9 +78,10 @@ public final class DefaultCustomPhase<Solution_>
         terminationStatus = TerminationStatus.NOT_TERMINATED;
     }
 
-    private void doStep(CustomStepScope<Solution_> stepScope, CustomPhaseCommand<Solution_> customPhaseCommand) {
+    private void doStep(CustomStepScope<Solution_> stepScope, PhaseCommand<Solution_> customPhaseCommand) {
         InnerScoreDirector<Solution_, ?> scoreDirector = stepScope.getScoreDirector();
-        customPhaseCommand.changeWorkingSolution(scoreDirector);
+        customPhaseCommand.changeWorkingSolution(scoreDirector,
+                () -> phaseTermination.isPhaseTerminated(stepScope.getPhaseScope()));
         calculateWorkingStepScore(stepScope, customPhaseCommand);
         solver.getBestSolutionRecaller().processWorkingSolutionDuringStep(stepScope);
     }
@@ -115,10 +117,10 @@ public final class DefaultCustomPhase<Solution_>
     public static final class DefaultCustomPhaseBuilder<Solution_>
             extends AbstractPossiblyInitializingPhaseBuilder<Solution_> {
 
-        private final List<CustomPhaseCommand<Solution_>> customPhaseCommandList;
+        private final List<PhaseCommand<Solution_>> customPhaseCommandList;
 
         public DefaultCustomPhaseBuilder(int phaseIndex, boolean lastInitializingPhase, String logIndentation,
-                Termination<Solution_> phaseTermination, List<CustomPhaseCommand<Solution_>> customPhaseCommandList) {
+                Termination<Solution_> phaseTermination, List<PhaseCommand<Solution_>> customPhaseCommandList) {
             super(phaseIndex, lastInitializingPhase, logIndentation, phaseTermination);
             this.customPhaseCommandList = List.copyOf(customPhaseCommandList);
         }

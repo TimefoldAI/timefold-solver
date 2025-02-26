@@ -93,6 +93,48 @@ var solverConfig = new SolverConfig()
 ----
 ====
 
+'''
+
+.icon:info-circle[role=yellow] `PhaseCommand` becomes public API
+[%collapsible%open]
+====
+The internal `CustomPhaseCommand` interface becomes a `PhaseCommand`, part of our stable API.
+It also receives a new argument, `BooleanSupplier isPhaseTerminated`.
+The old interface is now deprecated for removal.
+
+Before in `MyPhaseCommand.java`:
+
+[source,java]
+----
+public class MyPhaseCommand implements CustomPhaseCommand {
+
+    @Override
+    public void changeWorkingSolution(ScoreDirector scoreDirector) {
+        ...
+    }
+
+}
+----
+
+After in `MyPhaseCommand.java`:
+
+[source,java]
+----
+public class MyPhaseCommand implements PhaseCommand {
+
+    @Override
+    public void changeWorkingSolution(ScoreDirector scoreDirector, BooleanSupplier isPhaseTerminated) {
+        ...
+    }
+
+}
+----
+
+For more about phase commands,
+see xref:optimization-algorithms/overview.adoc#customSolverPhase[Custom solver phase].
+
+====
+
 
 === Upgrade from 1.18.0 to 1.19.0
 

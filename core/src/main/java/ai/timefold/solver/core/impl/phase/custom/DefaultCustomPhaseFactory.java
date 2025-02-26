@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.phase.custom;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -29,7 +30,7 @@ public class DefaultCustomPhaseFactory<Solution_> extends AbstractPhaseFactory<S
                     "Configure at least 1 <customPhaseCommandClass> in the <customPhase> configuration.");
         }
 
-        var customPhaseCommandList_ = new ArrayList<CustomPhaseCommand<Solution_>>(getCustomPhaseCommandListSize());
+        var customPhaseCommandList_ = new ArrayList<PhaseCommand<Solution_>>(getCustomPhaseCommandListSize());
         if (customPhaseCommandClassList != null) {
             for (var customPhaseCommandClass : customPhaseCommandClassList) {
                 if (customPhaseCommandClass == null) {
@@ -51,10 +52,9 @@ public class DefaultCustomPhaseFactory<Solution_> extends AbstractPhaseFactory<S
                 .build();
     }
 
-    private CustomPhaseCommand<Solution_>
-            createCustomPhaseCommand(Class<? extends CustomPhaseCommand> customPhaseCommandClass) {
-        CustomPhaseCommand<Solution_> customPhaseCommand = ConfigUtils.newInstance(phaseConfig,
-                "customPhaseCommandClass", customPhaseCommandClass);
+    private PhaseCommand<Solution_> createCustomPhaseCommand(Class<? extends PhaseCommand> customPhaseCommandClass) {
+        PhaseCommand<Solution_> customPhaseCommand =
+                ConfigUtils.newInstance(phaseConfig, "customPhaseCommandClass", customPhaseCommandClass);
         ConfigUtils.applyCustomProperties(customPhaseCommand, "customPhaseCommandClass", phaseConfig.getCustomProperties(),
                 "customProperties");
         return customPhaseCommand;

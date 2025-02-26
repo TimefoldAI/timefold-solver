@@ -8,9 +8,9 @@ import ai.timefold.solver.core.impl.solver.termination.Termination;
  * A {@link NoChangePhase} is a {@link Phase} which does nothing.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
- * @see Phase
- * @see AbstractPhase
+ * @deprecated Deprecated on account of having no use.
  */
+@Deprecated(forRemoval = true, since = "1.20.0")
 public class NoChangePhase<Solution_> extends AbstractPhase<Solution_> {
 
     private NoChangePhase(Builder<Solution_> builder) {

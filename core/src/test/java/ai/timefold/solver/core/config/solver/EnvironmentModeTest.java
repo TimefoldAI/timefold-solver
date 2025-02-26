@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.function.BooleanSupplier;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.Score;
@@ -17,6 +18,7 @@ import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
@@ -27,7 +29,6 @@ import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.Corrup
 import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.CorruptedUndoShadowEntity;
 import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.CorruptedUndoShadowSolution;
 import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.CorruptedUndoShadowValue;
-import ai.timefold.solver.core.impl.phase.custom.CustomPhaseCommand;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -273,10 +274,10 @@ class EnvironmentModeTest {
                 .withEasyScoreCalculatorClass(easyScoreCalculatorClass));
     }
 
-    public static class TestdataFirstValueInitializer implements CustomPhaseCommand<TestdataSolution> {
+    public static class TestdataFirstValueInitializer implements PhaseCommand<TestdataSolution> {
 
         @Override
-        public void changeWorkingSolution(ScoreDirector<TestdataSolution> scoreDirector) {
+        public void changeWorkingSolution(ScoreDirector<TestdataSolution> scoreDirector, BooleanSupplier isPhaseTerminated) {
             TestdataSolution solution = scoreDirector.getWorkingSolution();
             TestdataValue firstValue = solution.getValueList().get(0);
 

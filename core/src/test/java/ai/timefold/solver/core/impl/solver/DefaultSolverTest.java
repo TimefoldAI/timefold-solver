@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -32,6 +33,7 @@ import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicType;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
@@ -51,8 +53,6 @@ import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
-import ai.timefold.solver.core.impl.phase.custom.CustomPhaseCommand;
-import ai.timefold.solver.core.impl.phase.custom.NoChangeCustomPhaseCommand;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
@@ -89,6 +89,7 @@ import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedSolutio
 import ai.timefold.solver.core.impl.testdata.domain.score.TestdataHardSoftScoreSolution;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 import ai.timefold.solver.core.impl.testutil.AbstractMeterTest;
+import ai.timefold.solver.core.impl.testutil.NoChangeCustomPhaseCommand;
 
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
@@ -629,7 +630,7 @@ class DefaultSolverTest extends AbstractMeterTest {
                 .isEqualTo(2);
     }
 
-    private static class SetTestdataEntityValueCustomPhaseCommand implements CustomPhaseCommand<TestdataHardSoftScoreSolution> {
+    private static class SetTestdataEntityValueCustomPhaseCommand implements PhaseCommand<TestdataHardSoftScoreSolution> {
         final TestdataEntity entity;
         final TestdataValue value;
 
@@ -639,7 +640,8 @@ class DefaultSolverTest extends AbstractMeterTest {
         }
 
         @Override
-        public void changeWorkingSolution(ScoreDirector<TestdataHardSoftScoreSolution> scoreDirector) {
+        public void changeWorkingSolution(ScoreDirector<TestdataHardSoftScoreSolution> scoreDirector,
+                BooleanSupplier isPhaseTerminated) {
             var workingEntity = scoreDirector.lookUpWorkingObject(entity);
             var workingValue = scoreDirector.lookUpWorkingObject(value);
 
@@ -793,8 +795,8 @@ class DefaultSolverTest extends AbstractMeterTest {
     @Test
     void solveEmptyEntityList() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
-                .withPhases(new CustomPhaseConfig().withCustomPhaseCommands(
-                        scoreDirector -> fail("All phases should be skipped because there are no movable entities.")));
+                .withPhases(new CustomPhaseConfig()
+                        .withCustomPhaseCommands(new FailCommand()));
 
         var solution = new TestdataSolution("s1");
         solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
@@ -805,12 +807,20 @@ class DefaultSolverTest extends AbstractMeterTest {
         assertThat(solution.getScore().isSolutionInitialized()).isTrue();
     }
 
+    private static final class FailCommand implements PhaseCommand<Object> {
+
+        @Override
+        public void changeWorkingSolution(ScoreDirector<Object> scoreDirector, BooleanSupplier isPhaseTerminated) {
+            fail("All phases should be skipped because there are no movable entities.");
+        }
+    }
+
     @Test
     void solveChainedEmptyEntityList() {
         var solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataChainedSolution.class, TestdataChainedEntity.class)
-                .withPhases(new CustomPhaseConfig().withCustomPhaseCommands(
-                        scoreDirector -> fail("All phases should be skipped because there are no movable entities.")));
+                .withPhases(new CustomPhaseConfig()
+                        .withCustomPhaseCommands(new FailCommand()));
 
         var solution = new TestdataChainedSolution("s1");
         solution.setChainedAnchorList(Arrays.asList(new TestdataChainedAnchor("v1"), new TestdataChainedAnchor("v2")));
@@ -824,8 +834,8 @@ class DefaultSolverTest extends AbstractMeterTest {
     @Test
     void solveEmptyEntityListAndEmptyValueList() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
-                .withPhases(new CustomPhaseConfig().withCustomPhaseCommands(
-                        scoreDirector -> fail("All phases should be skipped because there are no movable entities.")));
+                .withPhases(new CustomPhaseConfig()
+                        .withCustomPhaseCommands(new FailCommand()));
 
         var solution = new TestdataSolution("s1");
         solution.setValueList(Collections.emptyList());
@@ -840,8 +850,8 @@ class DefaultSolverTest extends AbstractMeterTest {
     void solvePinnedEntityList() {
         var solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataPinnedSolution.class, TestdataPinnedEntity.class)
-                .withPhases(new CustomPhaseConfig().withCustomPhaseCommands(
-                        scoreDirector -> fail("All phases should be skipped because there are no movable entities.")));
+                .withPhases(new CustomPhaseConfig()
+                        .withCustomPhaseCommands(new FailCommand()));
 
         var solution = new TestdataPinnedSolution("s1");
         var v1 = new TestdataValue("v1");
