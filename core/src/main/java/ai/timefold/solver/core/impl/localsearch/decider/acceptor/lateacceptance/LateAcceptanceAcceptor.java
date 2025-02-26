@@ -99,7 +99,8 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
         super.stepEnded(stepScope);
-        updateLateElement(stepScope);
+        previousScores[lateScoreIndex] = stepScope.getScore();
+        lateScoreIndex = (lateScoreIndex + 1) % lateAcceptanceSize;
         if (((Score) currentBestScore).compareTo(stepScope.getScore()) < 0) {
             if (countRestartWithoutImprovement > 0 && coefficient > 0) {
                 // We decrease the coefficient
@@ -117,11 +118,6 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
                 bestScoreQueue.addLast(stepScope.getScore());
             }
         }
-    }
-
-    private void updateLateElement(LocalSearchStepScope<Solution_> stepScope) {
-        previousScores[lateScoreIndex] = stepScope.getScore();
-        lateScoreIndex = (lateScoreIndex + 1) % lateAcceptanceSize;
     }
 
     @Override
