@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.policy;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -11,9 +12,14 @@ import java.util.Set;
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
+import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
 public class DescriptorPolicy {
     private Map<String, SolutionCloner> generatedSolutionClonerMap = new LinkedHashMap<>();
     private final Map<String, MemberAccessor> fromSolutionValueRangeProviderMap = new LinkedHashMap<>();
@@ -21,6 +27,8 @@ public class DescriptorPolicy {
     private final Map<String, MemberAccessor> fromEntityValueRangeProviderMap = new LinkedHashMap<>();
     private final Set<MemberAccessor> anonymousFromEntityValueRangeProviderSet = new LinkedHashSet<>();
     private DomainAccessType domainAccessType = DomainAccessType.REFLECTION;
+    private Set<PreviewFeature> enabledPreviewFeatureSet = EnumSet.noneOf(PreviewFeature.class);
+    @Nullable
     private MemberAccessorFactory memberAccessorFactory;
 
     public void addFromSolutionValueRangeProvider(MemberAccessor memberAccessor) {
@@ -71,15 +79,20 @@ public class DescriptorPolicy {
         return anonymousFromEntityValueRangeProviderSet;
     }
 
-    /**
-     * @return never null
-     */
     public DomainAccessType getDomainAccessType() {
         return domainAccessType;
     }
 
     public void setDomainAccessType(DomainAccessType domainAccessType) {
         this.domainAccessType = domainAccessType;
+    }
+
+    public Set<PreviewFeature> getEnabledPreviewFeatureSet() {
+        return enabledPreviewFeatureSet;
+    }
+
+    public void setEnabledPreviewFeatureSet(Set<PreviewFeature> enabledPreviewFeatureSet) {
+        this.enabledPreviewFeatureSet = enabledPreviewFeatureSet;
     }
 
     /**
@@ -105,7 +118,11 @@ public class DescriptorPolicy {
         return fromEntityValueRangeProviderMap.get(id);
     }
 
-    private String extractValueRangeProviderId(MemberAccessor memberAccessor) {
+    public boolean isPreviewFeatureEnabled(PreviewFeature previewFeature) {
+        return enabledPreviewFeatureSet.contains(previewFeature);
+    }
+
+    private @Nullable String extractValueRangeProviderId(MemberAccessor memberAccessor) {
         ValueRangeProvider annotation = memberAccessor.getAnnotation(ValueRangeProvider.class);
         String id = annotation.id();
         if (id == null || id.isEmpty()) {

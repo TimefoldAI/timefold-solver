@@ -20,6 +20,11 @@ import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableSession;
+import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableSessionFactory;
+import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultTopologicalOrderGraph;
+import ai.timefold.solver.core.impl.domain.variable.declarative.TopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -39,7 +44,7 @@ import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.util.LinkedIdentityHashSet;
-import ai.timefold.solver.core.preview.api.variable.provided.ShadowVariableProvider;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableProvider;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
@@ -135,7 +140,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
 
     private void
             processShadowVariableDescriptorWithoutListVariable(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        if (shadowVariableDescriptor instanceof ProvidedShadowVariableDescriptor<Solution_> providedShadowVariableDescriptor) {
+        if (shadowVariableDescriptor instanceof DeclarativeShadowVariableDescriptor<Solution_> providedShadowVariableDescriptor) {
             shadowVariableProviderSet.add(providedShadowVariableDescriptor.getShadowVariableProviderClass());
         }
         for (var listenerWithSources : shadowVariableDescriptor.buildVariableListeners(this)) {
