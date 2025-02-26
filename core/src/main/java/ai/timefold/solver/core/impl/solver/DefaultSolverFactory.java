@@ -171,7 +171,8 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                     "it should have been filled in already.");
         }
         SolutionDescriptor<Solution_> solutionDescriptor =
-                SolutionDescriptor.buildSolutionDescriptor(solverConfig.determineDomainAccessType(),
+                SolutionDescriptor.buildSolutionDescriptor(solverConfig.getEnablePreviewFeatureSet(),
+                        solverConfig.determineDomainAccessType(),
                         (Class<Solution_>) solverConfig.getSolutionClass(),
                         solverConfig.getGizmoMemberAccessorMap(),
                         solverConfig.getGizmoSolutionClonerMap(),
