@@ -51,6 +51,8 @@ import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShado
 import ai.timefold.solver.core.impl.domain.variable.custom.CustomShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.custom.LegacyCustomShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.custom.PiggybackShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.declarative.InvalidityMarkerVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -60,16 +62,14 @@ import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDes
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.provided.InvalidityMarkerVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.provided.ProvidedShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
-import ai.timefold.solver.core.preview.api.variable.provided.InvalidityMarker;
-import ai.timefold.solver.core.preview.api.variable.provided.ProvidedShadowVariable;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.DeclarativeShadowVariable;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.InvalidityMarker;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -94,7 +94,7 @@ public class EntityDescriptor<Solution_> {
             PiggybackShadowVariable.class,
             CustomShadowVariable.class,
             CascadingUpdateShadowVariable.class,
-            ProvidedShadowVariable.class,
+            DeclarativeShadowVariable.class,
             InvalidityMarker.class
     };
 
@@ -296,7 +296,7 @@ public class EntityDescriptor<Solution_> {
             MemberAccessorFactory.MemberAccessorType memberAccessorType;
             if (variableAnnotationClass.equals(CustomShadowVariable.class)
                     || variableAnnotationClass.equals(ShadowVariable.class)
-                    || variableAnnotationClass.equals(ProvidedShadowVariable.class)
+                    || variableAnnotationClass.equals(DeclarativeShadowVariable.class)
                     || variableAnnotationClass.equals(InvalidityMarker.class)
                     || variableAnnotationClass.equals(ShadowVariable.List.class)
                     || variableAnnotationClass.equals(PiggybackShadowVariable.class)
@@ -381,8 +381,8 @@ public class EntityDescriptor<Solution_> {
                 declaredCascadingUpdateShadowVariableDecriptorMap.put(variableDescriptor.getTargetMethodName(),
                         variableDescriptor);
             }
-        } else if (variableAnnotationClass.equals(ProvidedShadowVariable.class)) {
-            var variableDescriptor = new ProvidedShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this,
+        } else if (variableAnnotationClass.equals(DeclarativeShadowVariable.class)) {
+            var variableDescriptor = new DeclarativeShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this,
                     memberAccessor);
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(InvalidityMarker.class)) {
@@ -670,10 +670,11 @@ public class EntityDescriptor<Solution_> {
     public @NonNull VariableDescriptor<Solution_> getVariableDescriptorOrFail(String variableName) {
         var variableDescriptor = effectiveVariableDescriptorMap.get(variableName);
         if (variableDescriptor == null) {
-            throw new IllegalArgumentException(
-                    "Entity class %s does not hava a \"%s\" genuine or shadow variable. Maybe you meant one of %s?"
-                            .formatted(entityClass.getSimpleName(),
-                                    variableName, effectiveVariableDescriptorMap.keySet()));
+            throw new IllegalArgumentException("""
+                    Entity class %s does not hava a "%s" genuine or shadow variable.
+                    Maybe you meant one of %s?"""
+                    .formatted(entityClass.getSimpleName(),
+                            variableName, effectiveVariableDescriptorMap.keySet()));
         }
         return variableDescriptor;
     }

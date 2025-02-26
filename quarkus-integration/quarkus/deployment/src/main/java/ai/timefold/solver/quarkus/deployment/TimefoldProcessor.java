@@ -1002,7 +1002,8 @@ class TimefoldProcessor {
             }
             // Using REFLECTION domain access type so Timefold doesn't try to generate GIZMO code
             solverConfigMap.values().forEach(c -> {
-                SolutionDescriptor solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(DomainAccessType.REFLECTION,
+                SolutionDescriptor solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
+                        c.getEnablePreviewFeatureSet(), DomainAccessType.REFLECTION,
                         c.getSolutionClass(), null, null, c.getEntityClassList());
                 gizmoSolutionClonerClassNameSet
                         .add(entityEnhancer.generateSolutionCloner(solutionDescriptor, classOutput, indexView, transformers));
