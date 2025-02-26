@@ -14,9 +14,8 @@ import ai.timefold.solver.core.impl.util.MutableInt;
 
 public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solution_> {
 
-    // Using a start window of 30 seconds and a geometric factor of 1.4,
-    // five restarts will result in 300 seconds without improvement.
-    protected static final int MAX_RESTART_WITHOUT_IMPROVEMENT = 4;
+    // This aims to delay the first restart event in approximately 10 minutes
+    protected static final int MAX_RESTART_WITHOUT_IMPROVEMENT = 2;
     protected static final double MIN_DIVERSITY_RATIO = 0.05;
     // The goal is to increase from hundreds to thousands in the first restart event and then increment it linearly
     protected static final int SCALING_FACTOR = 10;
@@ -130,7 +129,7 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
         countRestartWithoutImprovement++;
         var distinctElements = Arrays.stream(previousScores).distinct().count();
         var diversity = distinctElements == 1 ? 0 : distinctElements / (double) lateAcceptanceSize;
-        if (countRestartWithoutImprovement <= MAX_RESTART_WITHOUT_IMPROVEMENT && diversity > MIN_DIVERSITY_RATIO) {
+        if (countRestartWithoutImprovement < MAX_RESTART_WITHOUT_IMPROVEMENT && diversity > MIN_DIVERSITY_RATIO) {
             // We prefer not to restart until an initial time window of at least 5 minutes has passed.
             // We have observed that this approach works better for more complex datasets.
             // However, when the diversity is zero, it indicates that the LA may be stuck in a local minimum,
