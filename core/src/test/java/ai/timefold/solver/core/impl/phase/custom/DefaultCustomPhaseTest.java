@@ -28,7 +28,7 @@ class DefaultCustomPhaseTest {
                 .withTerminationConfig(new TerminationConfig().withSpentLimit(RUN_TIME))
                 .withPhases(
                         new CustomPhaseConfig()
-                                .withCustomPhaseCommands(new NeverendingPhaseCommand()))
+                                .withCustomPhaseCommands(new LoopingPhaseCommand()))
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
                 .withConstraintProviderClass(TestdataConstraintProvider.class);
@@ -45,7 +45,7 @@ class DefaultCustomPhaseTest {
                         new CustomPhaseConfig()
                                 .withTerminationConfig(new TerminationConfig()
                                         .withSpentLimit(RUN_TIME))
-                                .withCustomPhaseCommands(new NeverendingPhaseCommand()))
+                                .withCustomPhaseCommands(new LoopingPhaseCommand()))
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
                 .withConstraintProviderClass(TestdataConstraintProvider.class);
@@ -62,7 +62,7 @@ class DefaultCustomPhaseTest {
     }
 
     @NullMarked
-    private static final class NeverendingPhaseCommand implements PhaseCommand<TestdataSolution> {
+    private static final class LoopingPhaseCommand implements PhaseCommand<TestdataSolution> {
 
         @Override
         public void changeWorkingSolution(ScoreDirector<TestdataSolution> scoreDirector, BooleanSupplier isPhaseTerminated) {

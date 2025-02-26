@@ -857,8 +857,8 @@ public interface PhaseCommand<Solution_> {
 
 Any change on the planning entities in a `PhaseCommand` must be notified to the ``ScoreDirector``.
 
-Long-running commands may want to periodically check `isPhaseTerminated`
-and return when it returns true.
+Long-running commands may want to periodically check `isPhaseTerminated` and when it returns `true`,
+terminate the command by returning.
 The solver will only terminate after the command returns.
 
 [WARNING]
