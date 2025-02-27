@@ -28,10 +28,10 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
     private Score<?> bestStepScore;
     private Score<?> currentBestScore;
     // Keep track of the best scores accumulated so far. This list will be used to reseed the later elements list.
-    private Deque<Score<?>> bestScoreQueue;
-    protected int defaultLateAcceptanceSize;
+    protected Deque<Score<?>> bestScoreQueue;
+    private int defaultLateAcceptanceSize;
     protected int coefficient;
-    protected int countRestartWithoutImprovement;
+    private int countRestartWithoutImprovement;
 
     public LateAcceptanceAcceptor(StuckCriterion<Solution_> stuckCriterionDetection) {
         super(stuckCriterionDetection);
@@ -169,24 +169,16 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
      */
     private void rebuildLateElementsList(int newLateAcceptanceSize) {
         var newPreviousScores = new Score[newLateAcceptanceSize];
-        if (bestScoreQueue.size() == 1) {
-            logger.info("No diversity. Using {} and {}", bestStepScore, bestScoreQueue.getFirst());
-            // There is only one best score, which is the one found by the previous phase.
-            Arrays.fill(newPreviousScores, 0, newLateAcceptanceSize / 2, bestStepScore);
-            Arrays.fill(newPreviousScores, newLateAcceptanceSize / 2, newLateAcceptanceSize, bestScoreQueue.getFirst());
-        } else {
-            // It is possible to add some variability
-            var countPerScore = newLateAcceptanceSize / bestScoreQueue.size() + 1;
-            var count = new MutableInt(newLateAcceptanceSize - 1);
-            var iterator = bestScoreQueue.descendingIterator();
-            while (count.intValue() >= 0 && iterator.hasNext()) {
-                var score = iterator.next();
-                for (var i = 0; i < countPerScore; i++) {
-                    newPreviousScores[count.intValue()] = score;
-                    count.decrement();
-                    if (count.intValue() < 0) {
-                        break;
-                    }
+        var countPerScore = newLateAcceptanceSize / bestScoreQueue.size() + 1;
+        var count = new MutableInt(newLateAcceptanceSize - 1);
+        var iterator = bestScoreQueue.descendingIterator();
+        while (count.intValue() >= 0 && iterator.hasNext()) {
+            var score = iterator.next();
+            for (var i = 0; i < countPerScore; i++) {
+                newPreviousScores[count.intValue()] = score;
+                count.decrement();
+                if (count.intValue() < 0) {
+                    break;
                 }
             }
         }

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptorTest;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.StuckCriterion;
+import ai.timefold.solver.core.impl.localsearch.decider.restart.AcceptorRestartStrategy;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -269,9 +270,9 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
     @Test
     void triggerRestart() {
-        var restartStrategy = mock(StuckCriterion.class);
-        when(restartStrategy.isSolverStuck(any())).thenReturn(true);
-        var acceptor = new LateAcceptanceAcceptor<>(restartStrategy);
+        var stuckCriterion = mock(StuckCriterion.class);
+        when(stuckCriterion.isSolverStuck(any())).thenReturn(true);
+        var acceptor = new LateAcceptanceAcceptor<>(stuckCriterion);
         acceptor.setLateAcceptanceSize(3);
         var solverScope = new SolverScope<>();
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
@@ -279,5 +280,142 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         var moveScope0 = buildMoveScope(stepScope0, -2000);
         assertThat(acceptor.isAccepted(moveScope0)).isTrue();
         assertThat(phaseScope.isSolverStuck()).isTrue();
+    }
+
+    @Test
+    void delayRestart() {
+        var stuckCriterion = mock(StuckCriterion.class);
+        var acceptor = new LateAcceptanceAcceptor<>(stuckCriterion);
+        var restartStrategy = new AcceptorRestartStrategy(acceptor);
+        acceptor.setLateAcceptanceSize(5);
+        var solverScope = new SolverScope<>();
+        var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
+        var stepScope0 = new LocalSearchStepScope<>(phaseScope);
+        stepScope0.setScore(SimpleScore.of(-1000));
+        var moveScope0 = buildMoveScope(stepScope0, -3000);
+        phaseScope.setLastCompletedStepScope(stepScope0);
+        solverScope.setBestScore(SimpleScore.of(-1000));
+        acceptor.solvingStarted(solverScope);
+        acceptor.phaseStarted(phaseScope);
+        acceptor.stepStarted(stepScope0);
+        assertThat(acceptor.isAccepted(moveScope0)).isFalse();
+
+        // Delay because there aren't enough top scores in the queue
+        assertThat(acceptor.bestScoreQueue.size()).isOne();
+        restartStrategy.applyRestart(stepScope0);
+        assertThat(acceptor.coefficient).isZero();
+
+        // Delay because the diversity is still high on the first event
+        acceptor.bestScoreQueue.addLast(SimpleScore.of(-999));
+        acceptor.bestScoreQueue.addLast(SimpleScore.of(-998));
+        acceptor.previousScores[0] = SimpleScore.of(-1002);
+        acceptor.previousScores[1] = SimpleScore.of(-1001);
+        acceptor.previousScores[2] = SimpleScore.of(-1000);
+        acceptor.previousScores[3] = SimpleScore.of(-999);
+        acceptor.previousScores[4] = SimpleScore.of(-998);
+        restartStrategy.applyRestart(stepScope0);
+        assertThat(acceptor.coefficient).isZero();
+    }
+
+    @Test
+    void delayOnlyFirstRestart() {
+        var stuckCriterion = mock(StuckCriterion.class);
+        var acceptor = new LateAcceptanceAcceptor<>(stuckCriterion);
+        var restartStrategy = new AcceptorRestartStrategy(acceptor);
+        acceptor.setLateAcceptanceSize(5);
+        var solverScope = new SolverScope<>();
+        var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
+        var stepScope0 = new LocalSearchStepScope<>(phaseScope);
+        stepScope0.setScore(SimpleScore.of(-1000));
+        var moveScope0 = buildMoveScope(stepScope0, -3000);
+        phaseScope.setLastCompletedStepScope(stepScope0);
+        solverScope.setBestScore(SimpleScore.of(-1000));
+        acceptor.solvingStarted(solverScope);
+        acceptor.phaseStarted(phaseScope);
+        acceptor.stepStarted(stepScope0);
+        assertThat(acceptor.isAccepted(moveScope0)).isFalse();
+
+        // Delay because the diversity is still high on the first event
+        acceptor.bestScoreQueue.addLast(SimpleScore.of(-999));
+        acceptor.bestScoreQueue.addLast(SimpleScore.of(-998));
+        acceptor.previousScores[0] = SimpleScore.of(-1002);
+        acceptor.previousScores[1] = SimpleScore.of(-1001);
+        acceptor.previousScores[2] = SimpleScore.of(-1000);
+        acceptor.previousScores[3] = SimpleScore.of(-999);
+        acceptor.previousScores[4] = SimpleScore.of(-998);
+        restartStrategy.applyRestart(stepScope0);
+        assertThat(acceptor.coefficient).isZero();
+
+        // Trigger the restart event as the diversity dropped
+        acceptor.previousScores[0] = SimpleScore.of(-1002);
+        acceptor.previousScores[1] = SimpleScore.of(-1002);
+        acceptor.previousScores[2] = SimpleScore.of(-1002);
+        acceptor.previousScores[3] = SimpleScore.of(-1002);
+        acceptor.previousScores[4] = SimpleScore.of(-1002);
+        restartStrategy.applyRestart(stepScope0);
+        assertThat(acceptor.coefficient).isOne();
+    }
+
+    @Test
+    void ensureDiversity() {
+        var stuckCriterion = mock(StuckCriterion.class);
+        var acceptor = new LateAcceptanceAcceptor<>(stuckCriterion);
+        var restartStrategy = new AcceptorRestartStrategy(acceptor);
+        acceptor.setLateAcceptanceSize(5);
+        var solverScope = new SolverScope<>();
+        var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
+        var stepScope0 = new LocalSearchStepScope<>(phaseScope);
+        stepScope0.setScore(SimpleScore.of(-1000));
+        var moveScope0 = buildMoveScope(stepScope0, -3000);
+        phaseScope.setLastCompletedStepScope(stepScope0);
+        solverScope.setBestScore(SimpleScore.of(-1000));
+        acceptor.solvingStarted(solverScope);
+        acceptor.phaseStarted(phaseScope);
+        acceptor.stepStarted(stepScope0);
+        assertThat(acceptor.isAccepted(moveScope0)).isFalse();
+
+        acceptor.bestScoreQueue.addLast(SimpleScore.of(-999));
+        acceptor.bestScoreQueue.addLast(SimpleScore.of(-998));
+        acceptor.bestScoreQueue.addLast(SimpleScore.of(-997));
+        acceptor.bestScoreQueue.addLast(SimpleScore.of(-996));
+        acceptor.bestScoreQueue.addLast(SimpleScore.of(-995));
+        restartStrategy.applyRestart(stepScope0);
+        assertThat(acceptor.previousScores.length).isGreaterThan(5);
+        assertThat(acceptor.previousScores).containsAnyOf(SimpleScore.of(-1000), SimpleScore.of(-999),
+                SimpleScore.of(-998), SimpleScore.of(997), SimpleScore.of(-996), SimpleScore.of(-995));
+    }
+
+    @Test
+    void reconfigureAfterImprovement() {
+        var stuckCriterion = mock(StuckCriterion.class);
+        var acceptor = new LateAcceptanceAcceptor<>(stuckCriterion);
+        var restartStrategy = new AcceptorRestartStrategy(acceptor);
+        acceptor.setLateAcceptanceSize(5);
+        var solverScope = new SolverScope<>();
+        var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
+        var stepScope0 = new LocalSearchStepScope<>(phaseScope);
+        stepScope0.setScore(SimpleScore.of(-1000));
+        var moveScope0 = buildMoveScope(stepScope0, -3000);
+        phaseScope.setLastCompletedStepScope(stepScope0);
+        solverScope.setBestScore(SimpleScore.of(-1000));
+        acceptor.solvingStarted(solverScope);
+        acceptor.phaseStarted(phaseScope);
+        acceptor.stepStarted(stepScope0);
+        assertThat(acceptor.isAccepted(moveScope0)).isFalse();
+
+        // Apply restart
+        acceptor.bestScoreQueue.addLast(SimpleScore.of(-999));
+        acceptor.bestScoreQueue.addLast(SimpleScore.of(-998));
+        acceptor.bestScoreQueue.addLast(SimpleScore.of(-997));
+        acceptor.bestScoreQueue.addLast(SimpleScore.of(-996));
+        acceptor.bestScoreQueue.addLast(SimpleScore.of(-995));
+        restartStrategy.applyRestart(stepScope0);
+        assertThat(acceptor.coefficient).isOne();
+
+        // Step that improves the best solution should not change the late elements list in the next restart
+        var stepScope1 = new LocalSearchStepScope<>(phaseScope);
+        stepScope1.setScore(SimpleScore.of(-900));
+        acceptor.stepEnded(stepScope1);
+        assertThat(acceptor.coefficient).isZero();
     }
 }
