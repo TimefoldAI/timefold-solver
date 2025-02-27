@@ -268,7 +268,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
     }
 
     @Test
-    void triggerReconfiguration() {
+    void triggerRestart() {
         var restartStrategy = mock(StuckCriterion.class);
         when(restartStrategy.isSolverStuck(any())).thenReturn(true);
         var acceptor = new LateAcceptanceAcceptor<>(restartStrategy);

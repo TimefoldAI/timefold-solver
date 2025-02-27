@@ -7,7 +7,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAccepto
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 
-public class DiversifiedLateAcceptanceAcceptor<Solution_>  extends AbstractAcceptor<Solution_> {
+public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
 
     // The worst score in the late elements list
     protected Score<?> lateWorse;

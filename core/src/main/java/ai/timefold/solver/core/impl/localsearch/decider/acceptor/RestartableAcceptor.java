@@ -8,7 +8,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 /**
  * Base class designed to analyze whether the solving process needs to be restarted.
- * Additionally, it also calls a reconfiguration logic as a result of restarting the solving process.
+ * Additionally, it also calls a restart logic as a result of restarting the solving process.
  */
 public abstract class RestartableAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
 
