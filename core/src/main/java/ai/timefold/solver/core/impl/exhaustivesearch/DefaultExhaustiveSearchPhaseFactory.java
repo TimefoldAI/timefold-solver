@@ -34,6 +34,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelectorFactory;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
+import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
 public class DefaultExhaustiveSearchPhaseFactory<Solution_>
@@ -46,7 +47,7 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
     @Override
     public ExhaustiveSearchPhase<Solution_> buildPhase(int phaseIndex, boolean lastInitializingPhase,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
-            Termination<Solution_> solverTermination) {
+            SolverTermination<Solution_> solverTermination) {
         ExhaustiveSearchType exhaustiveSearchType_ = Objects.requireNonNullElse(
                 phaseConfig.getExhaustiveSearchType(),
                 ExhaustiveSearchType.BRANCH_AND_BOUND);

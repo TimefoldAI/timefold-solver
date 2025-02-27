@@ -9,6 +9,7 @@ import java.util.Arrays;
 
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;
 
@@ -16,12 +17,10 @@ class AndCompositeTerminationTest {
 
     @Test
     void solveTermination() {
-        Termination termination1 = mock(Termination.class);
-        Termination termination2 = mock(Termination.class);
-
-        Termination compositeTermination = new AndCompositeTermination(termination1, termination2);
-
-        SolverScope solverScope = mock(SolverScope.class);
+        SolverTermination<TestdataSolution> termination1 = mock(MockableSolverTermination.class);
+        SolverTermination<TestdataSolution> termination2 = mock(MockableSolverTermination.class);
+        SolverTermination<TestdataSolution> compositeTermination = new AndCompositeTermination<>(termination1, termination2);
+        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
 
         when(termination1.isSolverTerminated(solverScope)).thenReturn(false);
         when(termination2.isSolverTerminated(solverScope)).thenReturn(false);
@@ -42,12 +41,11 @@ class AndCompositeTerminationTest {
 
     @Test
     void phaseTermination() {
-        Termination termination1 = mock(Termination.class);
-        Termination termination2 = mock(Termination.class);
-
-        Termination compositeTermination = new AndCompositeTermination(Arrays.asList(termination1, termination2));
-
-        AbstractPhaseScope phaseScope = mock(AbstractPhaseScope.class);
+        Termination<TestdataSolution> termination1 = mock(MockableTermination.class);
+        Termination<TestdataSolution> termination2 = mock(MockableTermination.class);
+        SolverTermination<TestdataSolution> compositeTermination =
+                new AndCompositeTermination<>(Arrays.asList(termination1, termination2));
+        AbstractPhaseScope<TestdataSolution> phaseScope = mock(AbstractPhaseScope.class);
 
         when(termination1.isPhaseTerminated(phaseScope)).thenReturn(false);
         when(termination2.isPhaseTerminated(phaseScope)).thenReturn(false);
@@ -68,12 +66,10 @@ class AndCompositeTerminationTest {
 
     @Test
     void calculateSolverTimeGradientTest() {
-        Termination termination1 = mock(Termination.class);
-        Termination termination2 = mock(Termination.class);
-
-        Termination compositeTermination = new AndCompositeTermination(Arrays.asList(termination1, termination2));
-
-        SolverScope solverScope = mock(SolverScope.class);
+        SolverTermination<TestdataSolution> termination1 = mock(MockableSolverTermination.class);
+        SolverTermination<TestdataSolution> termination2 = mock(MockableSolverTermination.class);
+        SolverTermination<TestdataSolution> compositeTermination = new AndCompositeTermination<>(termination1, termination2);
+        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
 
         when(termination1.calculateSolverTimeGradient(solverScope)).thenReturn(0.0);
         when(termination2.calculateSolverTimeGradient(solverScope)).thenReturn(0.0);
@@ -108,12 +104,11 @@ class AndCompositeTerminationTest {
 
     @Test
     void calculatePhaseTimeGradientTest() {
-        Termination termination1 = mock(Termination.class);
-        Termination termination2 = mock(Termination.class);
-
-        Termination compositeTermination = new AndCompositeTermination(Arrays.asList(termination1, termination2));
-
-        AbstractPhaseScope phaseScope = mock(AbstractPhaseScope.class);
+        Termination<TestdataSolution> termination1 = mock(MockableTermination.class);
+        Termination<TestdataSolution> termination2 = mock(MockableTermination.class);
+        SolverTermination<TestdataSolution> compositeTermination =
+                new AndCompositeTermination<>(Arrays.asList(termination1, termination2));
+        AbstractPhaseScope<TestdataSolution> phaseScope = mock(AbstractPhaseScope.class);
 
         when(termination1.calculatePhaseTimeGradient(phaseScope)).thenReturn(0.0);
         when(termination2.calculatePhaseTimeGradient(phaseScope)).thenReturn(0.0);
@@ -145,4 +140,5 @@ class AndCompositeTerminationTest {
         // Negative time gradient values are unsupported and ignored, min(unsupported,0.5) = 0.5
         assertThat(compositeTermination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.5, offset(0.0));
     }
+
 }

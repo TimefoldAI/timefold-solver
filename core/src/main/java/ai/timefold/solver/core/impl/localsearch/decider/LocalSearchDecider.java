@@ -36,8 +36,8 @@ public class LocalSearchDecider<Solution_> {
     protected boolean assertMoveScoreFromScratch = false;
     protected boolean assertExpectedUndoMoveScore = false;
 
-    public LocalSearchDecider(String logIndentation, Termination<Solution_> termination,
-            MoveSelector<Solution_> moveSelector, Acceptor<Solution_> acceptor, LocalSearchForager<Solution_> forager) {
+    public LocalSearchDecider(String logIndentation, Termination<Solution_> termination, MoveSelector<Solution_> moveSelector,
+            Acceptor<Solution_> acceptor, LocalSearchForager<Solution_> forager) {
         this.logIndentation = logIndentation;
         this.termination = termination;
         this.moveSelector = moveSelector;

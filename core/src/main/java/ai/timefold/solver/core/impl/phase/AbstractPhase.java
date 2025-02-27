@@ -88,13 +88,11 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
 
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
-        phaseTermination.solvingStarted(solverScope);
         phaseLifecycleSupport.fireSolvingStarted(solverScope);
     }
 
     @Override
     public void solvingEnded(SolverScope<Solution_> solverScope) {
-        phaseTermination.solvingEnded(solverScope);
         phaseLifecycleSupport.fireSolvingEnded(solverScope);
     }
 

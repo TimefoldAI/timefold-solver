@@ -7,7 +7,8 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
-public final class BestScoreFeasibleTermination<Solution_> extends AbstractTermination<Solution_> {
+final class BestScoreFeasibleTermination<Solution_>
+        extends AbstractSolverTermination<Solution_> {
 
     private final int feasibleLevelsSize;
     private final double[] timeGradientWeightFeasibleNumbers;
@@ -62,10 +63,6 @@ public final class BestScoreFeasibleTermination<Solution_> extends AbstractTermi
         return BestScoreTermination.calculateTimeGradient(totalDiffNumbers, scoreDiffNumbers,
                 timeGradientWeightFeasibleNumbers, feasibleLevelsSize);
     }
-
-    // ************************************************************************
-    // Other methods
-    // ************************************************************************
 
     @Override
     public String toString() {

@@ -151,23 +151,14 @@ public class TerminationFactory<Solution_> {
                 .collect(Collectors.toList());
     }
 
+    @SuppressWarnings("unchecked")
     protected Termination<Solution_> buildTerminationFromList(List<Termination<Solution_>> terminationList) {
-        if (terminationList.isEmpty()) {
-            return null;
-        } else if (terminationList.size() == 1) {
-            return terminationList.get(0);
-        } else {
-            AbstractCompositeTermination<Solution_> compositeTermination;
-            if (terminationConfig.getTerminationCompositionStyle() == null
-                    || terminationConfig.getTerminationCompositionStyle() == TerminationCompositionStyle.OR) {
-                compositeTermination = new OrCompositeTermination<>(terminationList);
-            } else if (terminationConfig.getTerminationCompositionStyle() == TerminationCompositionStyle.AND) {
-                compositeTermination = new AndCompositeTermination<>(terminationList);
-            } else {
-                throw new IllegalStateException("The terminationCompositionStyle ("
-                        + terminationConfig.getTerminationCompositionStyle() + ") is not implemented.");
-            }
-            return compositeTermination;
-        }
+        var terminationArray = terminationList.toArray(new Termination[0]);
+        var compositionStyle =
+                Objects.requireNonNullElse(terminationConfig.getTerminationCompositionStyle(), TerminationCompositionStyle.OR);
+        return switch (compositionStyle) {
+            case AND -> SolverTermination.and(terminationArray);
+            case OR -> SolverTermination.or(terminationArray);
+        };
     }
 }

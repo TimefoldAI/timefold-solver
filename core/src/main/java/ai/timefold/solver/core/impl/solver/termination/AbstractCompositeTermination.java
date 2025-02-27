@@ -15,8 +15,8 @@ import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
  * @see AndCompositeTermination
  * @see OrCompositeTermination
  */
-public abstract sealed class AbstractCompositeTermination<Solution_>
-        extends AbstractTermination<Solution_>
+abstract sealed class AbstractCompositeTermination<Solution_>
+        extends AbstractSolverTermination<Solution_>
         permits AndCompositeTermination, OrCompositeTermination {
 
     protected final List<Termination<Solution_>> terminationList;
@@ -29,55 +29,47 @@ public abstract sealed class AbstractCompositeTermination<Solution_>
         this(Arrays.asList(terminations));
     }
 
-    // ************************************************************************
-    // Lifecycle methods
-    // ************************************************************************
-
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         for (Termination<Solution_> termination : terminationList) {
-            termination.solvingStarted(solverScope);
+            solvingStarted(termination, solverScope);
         }
     }
 
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         for (Termination<Solution_> termination : terminationList) {
-            termination.phaseStarted(phaseScope);
+            phaseStarted(termination, phaseScope);
         }
     }
 
     @Override
     public void stepStarted(AbstractStepScope<Solution_> stepScope) {
         for (Termination<Solution_> termination : terminationList) {
-            termination.stepStarted(stepScope);
+            stepStarted(termination, stepScope);
         }
     }
 
     @Override
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
         for (Termination<Solution_> termination : terminationList) {
-            termination.stepEnded(stepScope);
+            stepEnded(termination, stepScope);
         }
     }
 
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         for (Termination<Solution_> termination : terminationList) {
-            termination.phaseEnded(phaseScope);
+            phaseEnded(termination, phaseScope);
         }
     }
 
     @Override
     public void solvingEnded(SolverScope<Solution_> solverScope) {
         for (Termination<Solution_> termination : terminationList) {
-            termination.solvingEnded(solverScope);
+            solvingEnded(termination, solverScope);
         }
     }
-
-    // ************************************************************************
-    // Other methods
-    // ************************************************************************
 
     protected List<Termination<Solution_>> createChildThreadTerminationList(SolverScope<Solution_> solverScope,
             ChildThreadType childThreadType) {

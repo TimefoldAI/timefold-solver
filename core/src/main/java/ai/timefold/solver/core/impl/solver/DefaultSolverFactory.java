@@ -41,7 +41,7 @@ import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecallerFactory;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.BasicPlumbingTermination;
-import ai.timefold.solver.core.impl.solver.termination.Termination;
+import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 import ai.timefold.solver.core.impl.solver.termination.TerminationFactory;
 
 import org.jspecify.annotations.NonNull;
@@ -149,14 +149,13 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         }
     }
 
-    private Termination<Solution_> buildTerminationConfig(BasicPlumbingTermination<Solution_> basicPlumbingTermination,
-            HeuristicConfigPolicy<Solution_> configPolicy,
-            SolverConfigOverride<Solution_> solverConfigOverride) {
+    private SolverTermination<Solution_> buildTerminationConfig(BasicPlumbingTermination<Solution_> basicPlumbingTermination,
+            HeuristicConfigPolicy<Solution_> configPolicy, SolverConfigOverride<Solution_> solverConfigOverride) {
         var terminationConfig = Objects.requireNonNullElseGet(solverConfig.getTerminationConfig(), TerminationConfig::new);
         if (solverConfigOverride.getTerminationConfig() != null) {
             terminationConfig = solverConfigOverride.getTerminationConfig();
         }
-        return TerminationFactory.<Solution_> create(terminationConfig)
+        return (SolverTermination<Solution_>) TerminationFactory.<Solution_> create(terminationConfig)
                 .buildTermination(configPolicy, basicPlumbingTermination);
     }
 
@@ -218,7 +217,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     }
 
     public List<Phase<Solution_>> buildPhaseList(HeuristicConfigPolicy<Solution_> configPolicy,
-            BestSolutionRecaller<Solution_> bestSolutionRecaller, Termination<Solution_> termination) {
+            BestSolutionRecaller<Solution_> bestSolutionRecaller, SolverTermination<Solution_> termination) {
         var phaseConfigList = solverConfig.getPhaseConfigList();
         if (ConfigUtils.isEmptyCollection(phaseConfigList)) {
             var genuineEntityDescriptorCollection = configPolicy.getSolutionDescriptor().getGenuineEntityDescriptors();

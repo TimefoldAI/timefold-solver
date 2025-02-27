@@ -15,7 +15,7 @@ class TimeMillisSpentTerminationTest {
 
     @Test
     void solveTermination() {
-        Termination<TestdataSolution> termination = new TimeMillisSpentTermination<>(1000L);
+        SolverTermination<TestdataSolution> termination = new TimeMillisSpentTermination<>(1000L);
         SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
 
         when(solverScope.calculateTimeMillisSpentUpToNow()).thenReturn(0L);
@@ -40,7 +40,7 @@ class TimeMillisSpentTerminationTest {
 
     @Test
     void phaseTermination() {
-        Termination<TestdataSolution> termination = new TimeMillisSpentTermination<>(1000L);
+        SolverTermination<TestdataSolution> termination = new TimeMillisSpentTermination<>(1000L);
         AbstractPhaseScope<TestdataSolution> phaseScope = mock(AbstractPhaseScope.class);
 
         when(phaseScope.calculatePhaseTimeMillisSpentUpToNow()).thenReturn(0L);

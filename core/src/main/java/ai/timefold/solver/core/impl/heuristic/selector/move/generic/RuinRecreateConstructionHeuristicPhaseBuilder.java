@@ -11,6 +11,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHe
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 import ai.timefold.solver.core.impl.solver.termination.TerminationFactory;
 
@@ -29,8 +30,8 @@ public final class RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>
                 new RuinRecreateConstructionHeuristicPhaseFactory<Solution_>(constructionHeuristicConfig);
         var builder = (RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>) constructionHeuristicPhaseFactory.getBuilder(0,
                 false,
-                solverConfigPolicy, TerminationFactory.<Solution_> create(new TerminationConfig())
-                        .buildTermination(solverConfigPolicy));
+                solverConfigPolicy, (SolverTermination<Solution_>) TerminationFactory
+                        .<Solution_> create(new TerminationConfig()).buildTermination(solverConfigPolicy));
         if (solverConfigPolicy.getMoveThreadCount() != null && solverConfigPolicy.getMoveThreadCount() >= 1) {
             builder.multithreaded = true;
         }

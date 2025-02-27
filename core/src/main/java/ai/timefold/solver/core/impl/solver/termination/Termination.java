@@ -1,28 +1,17 @@
 package ai.timefold.solver.core.impl.solver.termination;
 
-import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.simulatedannealing.SimulatedAnnealingAcceptor;
 import ai.timefold.solver.core.impl.phase.Phase;
-import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 
 /**
- * A Termination determines when a {@link Solver} or a {@link Phase} should stop.
- * <p>
- * An implementation must extend {@link AbstractTermination} to ensure backwards compatibility in future versions.
- *
- * @see AbstractTermination
+ * Determines when a {@link Phase} should stop.
+ * See {@link SolverTermination} for the termination that also supports stopping the solver.
+ * Many terminations are used at both solver-level and phase-level.
  */
-public interface Termination<Solution_> extends PhaseLifecycleListener<Solution_> {
-
-    /**
-     * Called by the {@link Solver} after every phase to determine if the search should stop.
-     *
-     * @param solverScope never null
-     * @return true if the search should terminate.
-     */
-    boolean isSolverTerminated(SolverScope<Solution_> solverScope);
+public sealed interface Termination<Solution_>
+        permits AbstractTermination, MockableTermination, SolverTermination {
 
     /**
      * Called by the {@link Phase} after every step and every move to determine if the search should stop.
@@ -44,19 +33,18 @@ public interface Termination<Solution_> extends PhaseLifecycleListener<Solution_
      * A Termination's timeGradient can be requested after they are terminated, so implementations
      * should be careful not to return a timeGradient above 1.0.
      *
-     * @param solverScope never null
+     * @param phaseScope never null
      * @return timeGradient t for which {@code 0.0 <= t <= 1.0 or -1.0} when it is not supported.
      *         At the start of a solver t is 0.0 and at the end t would be 1.0.
      */
-    double calculateSolverTimeGradient(SolverScope<Solution_> solverScope);
-
-    /**
-     * See {@link #calculateSolverTimeGradient(SolverScope)}.
-     *
-     * @param phaseScope never null
-     * @return timeGradient t for which {@code 0.0 <= t <= 1.0 or -1.0} when it is not supported.
-     *         At the start of a phase t is 0.0 and at the end t would be 1.0.
-     */
     double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope);
+
+    void phaseStarted(AbstractPhaseScope<Solution_> phaseScope);
+
+    void stepStarted(AbstractStepScope<Solution_> stepScope);
+
+    void stepEnded(AbstractStepScope<Solution_> stepScope);
+
+    void phaseEnded(AbstractPhaseScope<Solution_> phaseScope);
 
 }

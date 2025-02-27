@@ -15,7 +15,7 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.event.SolverEventSupport;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.solver.termination.Termination;
+import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,14 +40,14 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     protected final BestSolutionRecaller<Solution_> bestSolutionRecaller;
     // Note that the DefaultSolver.basicPlumbingTermination is a component of this termination.
     // Called "solverTermination" to clearly distinguish from "phaseTermination" inside AbstractPhase.
-    protected final Termination<Solution_> solverTermination;
+    protected final SolverTermination<Solution_> solverTermination;
     protected final List<Phase<Solution_>> phaseList;
 
     // ************************************************************************
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public AbstractSolver(BestSolutionRecaller<Solution_> bestSolutionRecaller, Termination<Solution_> solverTermination,
+    public AbstractSolver(BestSolutionRecaller<Solution_> bestSolutionRecaller, SolverTermination<Solution_> solverTermination,
             List<Phase<Solution_>> phaseList) {
         this.bestSolutionRecaller = bestSolutionRecaller;
         this.solverTermination = solverTermination;

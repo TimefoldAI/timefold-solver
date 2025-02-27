@@ -7,7 +7,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHe
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.solver.termination.BasicPlumbingTermination;
-import ai.timefold.solver.core.impl.solver.termination.PhaseToSolverTerminationBridge;
+import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
 final class RuinRecreateConstructionHeuristicPhaseFactory<Solution_>
@@ -19,10 +19,9 @@ final class RuinRecreateConstructionHeuristicPhaseFactory<Solution_>
 
     @Override
     protected DefaultConstructionHeuristicPhaseBuilder<Solution_> createBuilder(
-            HeuristicConfigPolicy<Solution_> phaseConfigPolicy,
-            Termination<Solution_> solverTermination, int phaseIndex, boolean lastInitializingPhase,
-            EntityPlacer<Solution_> entityPlacer) {
-        var phaseTermination = new PhaseToSolverTerminationBridge<>(new BasicPlumbingTermination<Solution_>(false));
+            HeuristicConfigPolicy<Solution_> phaseConfigPolicy, SolverTermination<Solution_> solverTermination, int phaseIndex,
+            boolean lastInitializingPhase, EntityPlacer<Solution_> entityPlacer) {
+        var phaseTermination = SolverTermination.bridge(new BasicPlumbingTermination<Solution_>(false));
         return new RuinRecreateConstructionHeuristicPhaseBuilder<>(phaseConfigPolicy, this, phaseTermination, entityPlacer,
                 buildDecider(phaseConfigPolicy, phaseTermination));
 

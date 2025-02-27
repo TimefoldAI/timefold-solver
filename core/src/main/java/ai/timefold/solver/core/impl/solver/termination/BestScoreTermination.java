@@ -7,7 +7,8 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
-public final class BestScoreTermination<Solution_> extends AbstractTermination<Solution_> {
+final class BestScoreTermination<Solution_>
+        extends AbstractSolverTermination<Solution_> {
 
     private final int levelsSize;
     private final Score bestScoreLimit;
@@ -29,10 +30,6 @@ public final class BestScoreTermination<Solution_> extends AbstractTermination<S
         }
     }
 
-    // ************************************************************************
-    // Terminated methods
-    // ************************************************************************
-
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
         return isTerminated(solverScope.isBestSolutionInitialized(), solverScope.getBestScore());
@@ -46,10 +43,6 @@ public final class BestScoreTermination<Solution_> extends AbstractTermination<S
     private boolean isTerminated(boolean bestSolutionInitialized, Score bestScore) {
         return bestSolutionInitialized && bestScore.compareTo(bestScoreLimit) >= 0;
     }
-
-    // ************************************************************************
-    // Time gradient methods
-    // ************************************************************************
 
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
@@ -127,10 +120,6 @@ public final class BestScoreTermination<Solution_> extends AbstractTermination<S
         }
         return timeGradient;
     }
-
-    // ************************************************************************
-    // Other methods
-    // ************************************************************************
 
     @Override
     public String toString() {

@@ -5,14 +5,10 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
 public final class ChildThreadPlumbingTermination<Solution_>
-        extends AbstractTermination<Solution_>
+        extends AbstractSolverTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private boolean terminateChildren = false;
-
-    // ************************************************************************
-    // Plumbing worker methods
-    // ************************************************************************
 
     /**
      * This method is thread-safe.
@@ -24,10 +20,6 @@ public final class ChildThreadPlumbingTermination<Solution_>
         terminateChildren = true;
         return terminationEarlySuccessful;
     }
-
-    // ************************************************************************
-    // Termination worker methods
-    // ************************************************************************
 
     @Override
     public synchronized boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
@@ -57,10 +49,6 @@ public final class ChildThreadPlumbingTermination<Solution_>
                 + " configured only as solver termination."
                 + " It is always bridged to phase termination.");
     }
-
-    // ************************************************************************
-    // Other methods
-    // ************************************************************************
 
     @Override
     public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,

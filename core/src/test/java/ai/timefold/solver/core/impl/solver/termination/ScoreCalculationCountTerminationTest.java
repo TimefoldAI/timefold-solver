@@ -2,12 +2,15 @@ package ai.timefold.solver.core.impl.solver.termination;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.Offset.offset;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;
 
@@ -15,10 +18,10 @@ class ScoreCalculationCountTerminationTest {
 
     @Test
     void solveTermination() {
-        Termination termination = new ScoreCalculationCountTermination(1000L);
-        SolverScope solverScope = mock(SolverScope.class);
-        InnerScoreDirector scoreDirector = mock(InnerScoreDirector.class);
-        when(solverScope.getScoreDirector()).thenReturn(scoreDirector);
+        SolverTermination<TestdataSolution> termination = new ScoreCalculationCountTermination<>(1000L);
+        SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+        InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector = mock(InnerScoreDirector.class);
+        doReturn(scoreDirector).when(solverScope).getScoreDirector();
 
         when(scoreDirector.getCalculationCount()).thenReturn(0L);
         assertThat(termination.isSolverTerminated(solverScope)).isFalse();
@@ -42,10 +45,10 @@ class ScoreCalculationCountTerminationTest {
 
     @Test
     void phaseTermination() {
-        Termination termination = new ScoreCalculationCountTermination(1000L);
-        AbstractPhaseScope phaseScope = mock(AbstractPhaseScope.class);
-        InnerScoreDirector scoreDirector = mock(InnerScoreDirector.class);
-        when(phaseScope.getScoreDirector()).thenReturn(scoreDirector);
+        Termination<TestdataSolution> termination = new ScoreCalculationCountTermination<>(1000L);
+        AbstractPhaseScope<TestdataSolution> phaseScope = mock(AbstractPhaseScope.class);
+        InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector = mock(InnerScoreDirector.class);
+        doReturn(scoreDirector).when(phaseScope).getScoreDirector();
 
         when(scoreDirector.getCalculationCount()).thenReturn(0L);
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();

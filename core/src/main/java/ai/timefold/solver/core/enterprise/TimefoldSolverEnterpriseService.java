@@ -30,6 +30,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
 import ai.timefold.solver.core.impl.partitionedsearch.PartitionedSearchPhase;
+import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
 public interface TimefoldSolverEnterpriseService {
@@ -105,8 +106,8 @@ public interface TimefoldSolverEnterpriseService {
 
     <Solution_> PartitionedSearchPhase<Solution_> buildPartitionedSearch(int phaseIndex,
             PartitionedSearchPhaseConfig phaseConfig, HeuristicConfigPolicy<Solution_> solverConfigPolicy,
-            Termination<Solution_> solverTermination,
-            BiFunction<HeuristicConfigPolicy<Solution_>, Termination<Solution_>, Termination<Solution_>> phaseTerminationFunction);
+            SolverTermination<Solution_> solverTermination,
+            BiFunction<HeuristicConfigPolicy<Solution_>, SolverTermination<Solution_>, Termination<Solution_>> phaseTerminationFunction);
 
     <Solution_> EntitySelector<Solution_> applyNearbySelection(EntitySelectorConfig entitySelectorConfig,
             HeuristicConfigPolicy<Solution_> configPolicy, NearbySelectionConfig nearbySelectionConfig,

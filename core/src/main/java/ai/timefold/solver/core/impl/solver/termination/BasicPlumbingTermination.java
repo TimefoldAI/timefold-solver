@@ -15,7 +15,7 @@ import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
  * Condition predicate on ({@link #problemChangeQueue} is not empty or {@link #terminatedEarly} is true).
  */
 public final class BasicPlumbingTermination<Solution_>
-        extends AbstractTermination<Solution_>
+        extends AbstractSolverTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private final boolean daemon;
@@ -27,10 +27,6 @@ public final class BasicPlumbingTermination<Solution_>
     public BasicPlumbingTermination(boolean daemon) {
         this.daemon = daemon;
     }
-
-    // ************************************************************************
-    // Plumbing worker methods
-    // ************************************************************************
 
     /**
      * This method is thread-safe.
@@ -108,10 +104,6 @@ public final class BasicPlumbingTermination<Solution_>
         return problemChangeQueue.isEmpty() && !problemChangesBeingProcessed;
     }
 
-    // ************************************************************************
-    // Termination worker methods
-    // ************************************************************************
-
     @Override
     public synchronized boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
         // Destroying a thread pool with solver threads will only cause it to interrupt those solver threads,
@@ -145,10 +137,6 @@ public final class BasicPlumbingTermination<Solution_>
                 + " configured only as solver termination."
                 + " It is always bridged to phase termination.");
     }
-
-    // ************************************************************************
-    // Other methods
-    // ************************************************************************
 
     @Override
     public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,

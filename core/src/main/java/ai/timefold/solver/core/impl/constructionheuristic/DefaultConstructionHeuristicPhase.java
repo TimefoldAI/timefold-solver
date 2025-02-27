@@ -213,8 +213,8 @@ public class DefaultConstructionHeuristicPhase<Solution_>
         private final EntityPlacer<Solution_> entityPlacer;
         private final ConstructionHeuristicDecider<Solution_> decider;
 
-        public DefaultConstructionHeuristicPhaseBuilder(int phaseIndex, boolean lastInitializingPhase,
-                String logIndentation, Termination<Solution_> phaseTermination, EntityPlacer<Solution_> entityPlacer,
+        public DefaultConstructionHeuristicPhaseBuilder(int phaseIndex, boolean lastInitializingPhase, String logIndentation,
+                Termination<Solution_> phaseTermination, EntityPlacer<Solution_> entityPlacer,
                 ConstructionHeuristicDecider<Solution_> decider) {
             super(phaseIndex, lastInitializingPhase, logIndentation, phaseTermination);
             this.entityPlacer = entityPlacer;

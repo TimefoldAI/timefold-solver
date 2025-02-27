@@ -5,8 +5,8 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-public final class ScoreCalculationCountTermination<Solution_>
-        extends AbstractTermination<Solution_>
+final class ScoreCalculationCountTermination<Solution_>
+        extends AbstractSolverTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private final long scoreCalculationCountLimit;
@@ -19,10 +19,6 @@ public final class ScoreCalculationCountTermination<Solution_>
                             .formatted(scoreCalculationCountLimit));
         }
     }
-
-    // ************************************************************************
-    // Terminated methods
-    // ************************************************************************
 
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
@@ -38,10 +34,6 @@ public final class ScoreCalculationCountTermination<Solution_>
         var scoreCalculationCount = scoreDirector.getCalculationCount();
         return scoreCalculationCount >= scoreCalculationCountLimit;
     }
-
-    // ************************************************************************
-    // Time gradient methods
-    // ************************************************************************
 
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
@@ -59,12 +51,8 @@ public final class ScoreCalculationCountTermination<Solution_>
         return Math.min(timeGradient, 1.0);
     }
 
-    // ************************************************************************
-    // Other methods
-    // ************************************************************************
-
     @Override
-    public ScoreCalculationCountTermination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
+    public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
             ChildThreadType childThreadType) {
         if (childThreadType == ChildThreadType.PART_THREAD) {
             // The ScoreDirector.calculationCount of partitions is maxed, not summed.

@@ -6,7 +6,7 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-public final class OrCompositeTermination<Solution_>
+final class OrCompositeTermination<Solution_>
         extends AbstractCompositeTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
@@ -18,10 +18,6 @@ public final class OrCompositeTermination<Solution_>
         super(terminations);
     }
 
-    // ************************************************************************
-    // Terminated methods
-    // ************************************************************************
-
     /**
      * @param solverScope never null
      * @return true if any of the Termination is terminated.
@@ -29,7 +25,8 @@ public final class OrCompositeTermination<Solution_>
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
         for (Termination<Solution_> termination : terminationList) {
-            if (termination.isSolverTerminated(solverScope)) {
+            if (termination instanceof SolverTermination<Solution_> solverTermination
+                    && solverTermination.isSolverTerminated(solverScope)) {
                 return true;
             }
         }
@@ -50,10 +47,6 @@ public final class OrCompositeTermination<Solution_>
         return false;
     }
 
-    // ************************************************************************
-    // Time gradient methods
-    // ************************************************************************
-
     /**
      * Calculates the maximum timeGradient of all Terminations.
      * Not supported timeGradients (-1.0) are ignored.
@@ -65,7 +58,10 @@ public final class OrCompositeTermination<Solution_>
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
         double timeGradient = 0.0;
         for (Termination<Solution_> termination : terminationList) {
-            double nextTimeGradient = termination.calculateSolverTimeGradient(solverScope);
+            if (!(termination instanceof SolverTermination<Solution_> solverTermination)) {
+                continue;
+            }
+            double nextTimeGradient = solverTermination.calculateSolverTimeGradient(solverScope);
             if (nextTimeGradient >= 0.0) {
                 timeGradient = Math.max(timeGradient, nextTimeGradient);
             }
@@ -92,12 +88,8 @@ public final class OrCompositeTermination<Solution_>
         return timeGradient;
     }
 
-    // ************************************************************************
-    // Other methods
-    // ************************************************************************
-
     @Override
-    public OrCompositeTermination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
+    public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
             ChildThreadType childThreadType) {
         return new OrCompositeTermination<>(createChildThreadTerminationList(solverScope, childThreadType));
     }

@@ -6,8 +6,8 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-public final class UnimprovedTimeMillisSpentTermination<Solution_>
-        extends AbstractTermination<Solution_>
+final class UnimprovedTimeMillisSpentTermination<Solution_>
+        extends AbstractSolverTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private final long unimprovedTimeMillisSpentLimit;
@@ -48,10 +48,6 @@ public final class UnimprovedTimeMillisSpentTermination<Solution_>
         phaseStartedTimeMillis = clock.millis();
     }
 
-    // ************************************************************************
-    // Terminated methods
-    // ************************************************************************
-
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
         long bestSolutionTimeMillis = solverScope.getBestSolutionTimeMillis();
@@ -76,10 +72,6 @@ public final class UnimprovedTimeMillisSpentTermination<Solution_>
         return now - Math.max(bestSolutionTimeMillis, phaseStartedTimeMillis);
     }
 
-    // ************************************************************************
-    // Time gradient methods
-    // ************************************************************************
-
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
         long bestSolutionTimeMillis = solverScope.getBestSolutionTimeMillis();
@@ -100,13 +92,9 @@ public final class UnimprovedTimeMillisSpentTermination<Solution_>
         return Math.min(timeGradient, 1.0);
     }
 
-    // ************************************************************************
-    // Other methods
-    // ************************************************************************
-
     @Override
-    public UnimprovedTimeMillisSpentTermination<Solution_> createChildThreadTermination(
-            SolverScope<Solution_> solverScope, ChildThreadType childThreadType) {
+    public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
+            ChildThreadType childThreadType) {
         return new UnimprovedTimeMillisSpentTermination<>(unimprovedTimeMillisSpentLimit);
     }
 

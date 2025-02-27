@@ -8,7 +8,7 @@ import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
 import org.jspecify.annotations.NonNull;
 
-public final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>>
+final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>>
         extends AbstractTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
@@ -138,20 +138,8 @@ public final class DiminishedReturnsTermination<Solution_, Score_ extends Score<
     }
 
     @Override
-    public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
-        throw new UnsupportedOperationException(
-                getClass().getSimpleName() + " can only be used for phase termination.");
-    }
-
-    @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
         return isTerminated(System.nanoTime(), phaseScope.getBestScore());
-    }
-
-    @Override
-    public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
-        throw new UnsupportedOperationException(
-                getClass().getSimpleName() + " can only be used for phase termination.");
     }
 
     @Override
