@@ -46,6 +46,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         stepScope0.setStep(moveScope0.getMove());
         stepScope0.setScore(moveScope0.getScore());
         solverScope.setBestScore(moveScope0.getScore());
+        acceptor.stepStarted(stepScope0);
         acceptor.stepEnded(stepScope0);
         phaseScope.setLastCompletedStepScope(stepScope0);
 
@@ -161,6 +162,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         stepScope0.setStep(moveScope0.getMove());
         stepScope0.setScore(moveScope0.getScore());
         solverScope.setBestScore(moveScope0.getScore());
+        acceptor.stepStarted(stepScope0);
         acceptor.stepEnded(stepScope0);
         phaseScope.setLastCompletedStepScope(stepScope0);
 

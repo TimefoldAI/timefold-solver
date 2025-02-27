@@ -3,13 +3,11 @@ package ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance
 import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.RestartableAcceptor;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.StuckCriterion;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptor;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
-import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 
-public class DiversifiedLateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solution_> {
+public class DiversifiedLateAcceptanceAcceptor<Solution_>  extends AbstractAcceptor<Solution_> {
 
     // The worst score in the late elements list
     protected Score<?> lateWorse;
@@ -20,10 +18,6 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends RestartableAcc
 
     protected Score<?>[] previousScores;
     protected int lateScoreIndex = -1;
-
-    public DiversifiedLateAcceptanceAcceptor(StuckCriterion<Solution_> stuckCriterionDetection) {
-        super(stuckCriterionDetection);
-    }
 
     public void setLateAcceptanceSize(int lateAcceptanceSize) {
         this.lateAcceptanceSize = lateAcceptanceSize;
@@ -54,7 +48,7 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends RestartableAcc
 
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected boolean accept(LocalSearchMoveScope<Solution_> moveScope) {
+    public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         // The acceptance and replacement strategies are based on the work:
         // Diversified Late Acceptance Search by M. Namazi, C. Sanderson, M. A. H. Newton, M. M. A. Polash, and A. Sattar
         var moveScore = moveScope.getScore();
@@ -106,11 +100,6 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends RestartableAcc
                 }
             }
         }
-    }
-
-    @Override
-    public void restart(LocalSearchStepScope<Solution_> stepScope) {
-        logger.warn("Restarting DiversifiedLateAcceptanceAcceptor is not supported.");
     }
 
     @Override

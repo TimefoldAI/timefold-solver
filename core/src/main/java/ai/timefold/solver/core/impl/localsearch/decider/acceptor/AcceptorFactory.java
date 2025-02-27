@@ -234,8 +234,7 @@ public class AcceptorFactory<Solution_> {
             buildDiversifiedLateAcceptanceAcceptor(HeuristicConfigPolicy<Solution_> configPolicy) {
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE)) {
             configPolicy.ensurePreviewFeature(PreviewFeature.DIVERSIFIED_LATE_ACCEPTANCE);
-            StuckCriterion<Solution_> strategy = new DiminishedReturnsStuckCriterion<>();
-            var acceptor = new DiversifiedLateAcceptanceAcceptor<>(strategy);
+            var acceptor = new DiversifiedLateAcceptanceAcceptor<Solution_>();
             acceptor.setLateAcceptanceSize(Objects.requireNonNullElse(acceptorConfig.getLateAcceptanceSize(), 5));
             return Optional.of(acceptor);
         }

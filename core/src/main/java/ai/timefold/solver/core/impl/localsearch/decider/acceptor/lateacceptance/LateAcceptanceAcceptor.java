@@ -136,8 +136,8 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
             // and in such cases, we should restart before the first event.
             // Additionally, when there is only one best score,
             // it does not make sense to restart at the first event as nothing would change.
-            logger.info("Restart event delayed. Diversity ({}), Distinct Elements ({}), Restart without Improvement ({})",
-                    diversity, distinctElements, countRestartWithoutImprovement);
+            logger.info("Restart event delayed. Diversity ({}), Count best scores ({}), Distinct Elements ({}), Restart without Improvement ({})",
+                    bestScoreQueue.size(), diversity, distinctElements, countRestartWithoutImprovement);
             return;
         }
         coefficient++;
