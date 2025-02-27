@@ -117,7 +117,7 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
             if (bestScoreQueue.size() < maxBestScoreSize) {
                 bestScoreQueue.addLast(stepScope.getScore());
             } else {
-                // // When the collection is full, we remove the lowest score and add the new best value.
+                // When the collection is full, we remove the lowest score and add the new best value.
                 bestScoreQueue.poll();
                 bestScoreQueue.addLast(stepScope.getScore());
             }
@@ -135,8 +135,10 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
             // However, when the diversity is zero, it indicates that the LA may be stuck in a local minimum,
             // and in such cases, we should restart before the first event.
             // Additionally, when there is only one best score,
-            // it does not make sense to restart at the first event as nothing would change.
-            logger.info("Restart event delayed. Diversity ({}), Count best scores ({}), Distinct Elements ({}), Restart without Improvement ({})",
+            // it does not make sense to restart as nothing would change
+            // and the proposed approach requires some diversity to reseed the scores.
+            logger.info(
+                    "Restart event delayed. Diversity ({}), Count best scores ({}), Distinct Elements ({}), Restart without Improvement ({})",
                     bestScoreQueue.size(), diversity, distinctElements, countRestartWithoutImprovement);
             return;
         }
