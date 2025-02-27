@@ -14,7 +14,9 @@ import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
  * Concurrency notes:
  * Condition predicate on ({@link #problemChangeQueue} is not empty or {@link #terminatedEarly} is true).
  */
-public final class BasicPlumbingTermination<Solution_> extends AbstractTermination<Solution_> {
+public final class BasicPlumbingTermination<Solution_>
+        extends AbstractTermination<Solution_>
+        implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private final boolean daemon;
     private final BlockingQueue<ProblemChangeAdapter<Solution_>> problemChangeQueue = new LinkedBlockingQueue<>();

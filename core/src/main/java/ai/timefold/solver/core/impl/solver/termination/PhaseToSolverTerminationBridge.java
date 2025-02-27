@@ -4,7 +4,9 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-public final class PhaseToSolverTerminationBridge<Solution_> extends AbstractTermination<Solution_> {
+public final class PhaseToSolverTerminationBridge<Solution_>
+        extends AbstractTermination<Solution_>
+        implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private final Termination<Solution_> solverTermination;
 
@@ -59,7 +61,8 @@ public final class PhaseToSolverTerminationBridge<Solution_> extends AbstractTer
             ChildThreadType childThreadType) {
         if (childThreadType == ChildThreadType.PART_THREAD) {
             // Remove of the bridge (which is nested if there's a phase termination), PhaseConfig will add it again
-            return solverTermination.createChildThreadTermination(solverScope, childThreadType);
+            var childThreadSupportingTermination = ChildThreadSupportingTermination.assertChildThreadSupport(solverTermination);
+            return childThreadSupportingTermination.createChildThreadTermination(solverScope, childThreadType);
         } else {
             throw new IllegalStateException("The childThreadType (" + childThreadType + ") is not implemented.");
         }

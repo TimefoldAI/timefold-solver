@@ -83,7 +83,9 @@ public abstract sealed class AbstractCompositeTermination<Solution_>
             ChildThreadType childThreadType) {
         List<Termination<Solution_>> childThreadTerminationList = new ArrayList<>(terminationList.size());
         for (Termination<Solution_> termination : terminationList) {
-            childThreadTerminationList.add(termination.createChildThreadTermination(solverScope, childThreadType));
+            var childThreadSupportingTermination = ChildThreadSupportingTermination.assertChildThreadSupport(termination);
+            childThreadTerminationList
+                    .add(childThreadSupportingTermination.createChildThreadTermination(solverScope, childThreadType));
         }
         return childThreadTerminationList;
     }

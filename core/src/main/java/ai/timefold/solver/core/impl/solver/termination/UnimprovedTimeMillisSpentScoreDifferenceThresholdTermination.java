@@ -12,7 +12,8 @@ import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import ai.timefold.solver.core.impl.util.Pair;
 
 public final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<Solution_>
-        extends AbstractTermination<Solution_> {
+        extends AbstractTermination<Solution_>
+        implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private final long unimprovedTimeMillisSpentLimit;
     private final Score unimprovedScoreDifferenceThreshold;

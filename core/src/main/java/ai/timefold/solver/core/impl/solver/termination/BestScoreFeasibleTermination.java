@@ -6,7 +6,6 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
 public final class BestScoreFeasibleTermination<Solution_> extends AbstractTermination<Solution_> {
 
@@ -67,14 +66,6 @@ public final class BestScoreFeasibleTermination<Solution_> extends AbstractTermi
     // ************************************************************************
     // Other methods
     // ************************************************************************
-
-    @Override
-    public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
-            ChildThreadType childThreadType) {
-        // TODO FIXME through some sort of solverlistener and async behaviour...
-        throw new UnsupportedOperationException("This terminationClass (" + getClass()
-                + ") does not yet support being used in child threads of type (" + childThreadType + ").");
-    }
 
     @Override
     public String toString() {

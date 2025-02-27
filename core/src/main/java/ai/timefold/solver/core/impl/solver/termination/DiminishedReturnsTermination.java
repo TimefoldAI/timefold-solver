@@ -9,7 +9,9 @@ import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import org.jspecify.annotations.NonNull;
 
 public final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>>
-        extends AbstractTermination<Solution_> {
+        extends AbstractTermination<Solution_>
+        implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
+
     static final long NANOS_PER_MILLISECOND = 1_000_000;
 
     private final long slidingWindowNanos;

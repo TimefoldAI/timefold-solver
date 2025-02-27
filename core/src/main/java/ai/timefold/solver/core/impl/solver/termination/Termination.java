@@ -6,7 +6,6 @@ import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
 /**
  * A Termination determines when a {@link Solver} or a {@link Phase} should stop.
@@ -59,15 +58,5 @@ public interface Termination<Solution_> extends PhaseLifecycleListener<Solution_
      *         At the start of a phase t is 0.0 and at the end t would be 1.0.
      */
     double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope);
-
-    /**
-     * Create a {@link Termination} for a child {@link Thread} of the {@link Solver}.
-     *
-     * @param solverScope never null
-     * @param childThreadType never null
-     * @return not null
-     * @throws UnsupportedOperationException if not supported by this termination
-     */
-    Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope, ChildThreadType childThreadType);
 
 }

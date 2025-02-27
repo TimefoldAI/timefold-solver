@@ -5,7 +5,9 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-public final class ScoreCalculationCountTermination<Solution_> extends AbstractTermination<Solution_> {
+public final class ScoreCalculationCountTermination<Solution_>
+        extends AbstractTermination<Solution_>
+        implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private final long scoreCalculationCountLimit;
 

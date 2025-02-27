@@ -6,7 +6,9 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-public final class OrCompositeTermination<Solution_> extends AbstractCompositeTermination<Solution_> {
+public final class OrCompositeTermination<Solution_>
+        extends AbstractCompositeTermination<Solution_>
+        implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     public OrCompositeTermination(List<Termination<Solution_>> terminationList) {
         super(terminationList);
