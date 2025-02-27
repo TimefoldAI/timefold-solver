@@ -14,7 +14,11 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 
-public class TerminationFactory<Solution_> {
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
+public final class TerminationFactory<Solution_> {
 
     public static <Solution_> TerminationFactory<Solution_> create(TerminationConfig terminationConfig) {
         return new TerminationFactory<>(terminationConfig);
@@ -39,7 +43,8 @@ public class TerminationFactory<Solution_> {
      * @param configPolicy never null
      * @return sometimes null
      */
-    public <Score_ extends Score<Score_>> Termination<Solution_> buildTermination(
+    @SuppressWarnings("unchecked")
+    public <Score_ extends Score<Score_>> @Nullable Termination<Solution_> buildTermination(
             HeuristicConfigPolicy<Solution_> configPolicy) {
         List<Termination<Solution_>> terminationList = new ArrayList<>();
         if (terminationConfig.getTerminationClass() != null) {
@@ -92,7 +97,8 @@ public class TerminationFactory<Solution_> {
         return buildTerminationFromList(terminationList);
     }
 
-    protected <Score_ extends Score<Score_>> List<Termination<Solution_>>
+    @SuppressWarnings("unchecked")
+    <Score_ extends Score<Score_>> List<Termination<Solution_>>
             buildTimeBasedTermination(HeuristicConfigPolicy<Solution_> configPolicy) {
         List<Termination<Solution_>> terminationList = new ArrayList<>();
         Long timeMillisSpentLimit = terminationConfig.calculateTimeMillisSpentLimit();
@@ -138,7 +144,7 @@ public class TerminationFactory<Solution_> {
         return terminationList;
     }
 
-    protected List<Termination<Solution_>> buildInnerTermination(HeuristicConfigPolicy<Solution_> configPolicy) {
+    List<Termination<Solution_>> buildInnerTermination(HeuristicConfigPolicy<Solution_> configPolicy) {
         var terminationConfigList = terminationConfig.getTerminationConfigList();
         if (ConfigUtils.isEmptyCollection(terminationConfigList)) {
             return Collections.emptyList();
@@ -152,7 +158,8 @@ public class TerminationFactory<Solution_> {
     }
 
     @SuppressWarnings("unchecked")
-    protected Termination<Solution_> buildTerminationFromList(List<Termination<Solution_>> terminationList) {
+    @Nullable
+    Termination<Solution_> buildTerminationFromList(List<Termination<Solution_>> terminationList) {
         var terminationArray = terminationList.toArray(new Termination[0]);
         var compositionStyle =
                 Objects.requireNonNullElse(terminationConfig.getTerminationCompositionStyle(), TerminationCompositionStyle.OR);

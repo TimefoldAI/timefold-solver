@@ -11,15 +11,19 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import ai.timefold.solver.core.impl.util.Pair;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
 final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<Solution_>
         extends AbstractSolverTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private final long unimprovedTimeMillisSpentLimit;
-    private final Score unimprovedScoreDifferenceThreshold;
+    private final Score<?> unimprovedScoreDifferenceThreshold;
     private final Clock clock;
 
-    private Queue<Pair<Long, Score>> bestScoreImprovementHistoryQueue;
+    private @Nullable Queue<Pair<Long, Score<?>>> bestScoreImprovementHistoryQueue;
     // safeTimeMillis is until when we're safe from termination
     private long solverSafeTimeMillis = -1L;
     private long phaseSafeTimeMillis = -1L;
@@ -80,6 +84,7 @@ final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<Solutio
         }
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
         if (stepScope.getBestScoreImproved()) {

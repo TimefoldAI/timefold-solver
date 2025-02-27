@@ -1,9 +1,10 @@
 package ai.timefold.solver.core.impl.solver.termination;
 
-import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
-import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 abstract sealed class AbstractSolverTermination<Solution_>
         extends AbstractTermination<Solution_>
         implements SolverTermination<Solution_>
@@ -13,7 +14,7 @@ abstract sealed class AbstractSolverTermination<Solution_>
 
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
-
+        // Override if needed.
     }
 
     protected static <Solution_> void solvingStarted(Termination<Solution_> termination, SolverScope<Solution_> scope) {
@@ -24,33 +25,13 @@ abstract sealed class AbstractSolverTermination<Solution_>
 
     @Override
     public void solvingEnded(SolverScope<Solution_> solverScope) {
-
+        // Override if needed.
     }
 
     protected static <Solution_> void solvingEnded(Termination<Solution_> termination, SolverScope<Solution_> scope) {
         if (termination instanceof SolverTermination<Solution_> solverTermination) {
             solverTermination.solvingEnded(scope);
         }
-    }
-
-    @Override
-    public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-
-    }
-
-    @Override
-    public void stepStarted(AbstractStepScope<Solution_> stepScope) {
-
-    }
-
-    @Override
-    public void stepEnded(AbstractStepScope<Solution_> stepScope) {
-
-    }
-
-    @Override
-    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
-
     }
 
 }

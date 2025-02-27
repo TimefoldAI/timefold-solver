@@ -6,8 +6,9 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>>
         extends AbstractTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
@@ -60,8 +61,7 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
      *         {@link Double#NaN} if a harder level changed
      * @param <Score_> The score type
      */
-    private static <Score_ extends Score<Score_>> double softImprovementOrNaNForHarderChange(@NonNull Score_ start,
-            @NonNull Score_ end) {
+    private static <Score_ extends Score<Score_>> double softImprovementOrNaNForHarderChange(Score_ start, Score_ end) {
         if (start.equals(end)) {
             // optimization: since most of the time the score the same,
             // we can use equals to avoid creating double arrays in the

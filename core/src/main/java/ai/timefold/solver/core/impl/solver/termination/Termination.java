@@ -5,18 +5,20 @@ import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * Determines when a {@link Phase} should stop.
  * See {@link SolverTermination} for the termination that also supports stopping the solver.
  * Many terminations are used at both solver-level and phase-level.
  */
+@NullMarked
 public sealed interface Termination<Solution_>
         permits AbstractTermination, MockableTermination, SolverTermination {
 
     /**
      * Called by the {@link Phase} after every step and every move to determine if the search should stop.
      *
-     * @param phaseScope never null
      * @return true if the search should terminate.
      */
     boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope);
@@ -33,7 +35,6 @@ public sealed interface Termination<Solution_>
      * A Termination's timeGradient can be requested after they are terminated, so implementations
      * should be careful not to return a timeGradient above 1.0.
      *
-     * @param phaseScope never null
      * @return timeGradient t for which {@code 0.0 <= t <= 1.0 or -1.0} when it is not supported.
      *         At the start of a solver t is 0.0 and at the end t would be 1.0.
      */

@@ -10,10 +10,13 @@ import ai.timefold.solver.core.impl.solver.change.ProblemChangeAdapter;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * Concurrency notes:
  * Condition predicate on ({@link #problemChangeQueue} is not empty or {@link #terminatedEarly} is true).
  */
+@NullMarked
 public final class BasicPlumbingTermination<Solution_>
         extends AbstractSolverTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {

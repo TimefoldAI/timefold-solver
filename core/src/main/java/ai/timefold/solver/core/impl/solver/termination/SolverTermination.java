@@ -6,9 +6,13 @@ import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 /**
  * Determines when a {@link Solver} or a {@link Phase} should stop.
  */
+@NullMarked
 public sealed interface SolverTermination<Solution_>
         extends Termination<Solution_>, PhaseLifecycleListener<Solution_>
         permits AbstractSolverTermination, MockableSolverTermination {
@@ -16,7 +20,6 @@ public sealed interface SolverTermination<Solution_>
     /**
      * Called by the {@link Solver} after every phase to determine if the search should stop.
      *
-     * @param solverScope never null
      * @return true if the search should terminate.
      */
     boolean isSolverTerminated(SolverScope<Solution_> solverScope);
@@ -33,13 +36,13 @@ public sealed interface SolverTermination<Solution_>
      * A Termination's timeGradient can be requested after they are terminated, so implementations
      * should be careful not to return a timeGradient above 1.0.
      *
-     * @param solverScope never null
      * @return timeGradient t for which {@code 0.0 <= t <= 1.0 or -1.0} when it is not supported.
      *         At the start of a solver t is 0.0 and at the end t would be 1.0.
      */
     double calculateSolverTimeGradient(SolverScope<Solution_> solverScope);
 
-    static <Solution_> Termination<Solution_> or(Termination<Solution_>... terminations) {
+    @SafeVarargs
+    static <Solution_> @Nullable Termination<Solution_> or(Termination<Solution_>... terminations) {
         return switch (terminations.length) {
             case 0 -> null;
             case 1 -> terminations[0];
@@ -47,7 +50,8 @@ public sealed interface SolverTermination<Solution_>
         };
     }
 
-    static <Solution_> Termination<Solution_> and(Termination<Solution_>... terminations) {
+    @SafeVarargs
+    static <Solution_> @Nullable Termination<Solution_> and(Termination<Solution_>... terminations) {
         return switch (terminations.length) {
             case 0 -> null;
             case 1 -> terminations[0];

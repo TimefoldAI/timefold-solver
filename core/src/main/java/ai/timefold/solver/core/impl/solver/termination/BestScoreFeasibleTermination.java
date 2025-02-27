@@ -7,6 +7,10 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
 final class BestScoreFeasibleTermination<Solution_>
         extends AbstractSolverTermination<Solution_> {
 
@@ -38,17 +42,19 @@ final class BestScoreFeasibleTermination<Solution_>
         return bestScore.isFeasible();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
         return calculateFeasibilityTimeGradient(solverScope.getStartingInitializedScore(), solverScope.getBestScore());
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
         return calculateFeasibilityTimeGradient((Score) phaseScope.getStartingScore(), (Score) phaseScope.getBestScore());
     }
 
-    <Score_ extends Score<Score_>> double calculateFeasibilityTimeGradient(Score_ startScore, Score_ score) {
+    <Score_ extends Score<Score_>> double calculateFeasibilityTimeGradient(@Nullable Score_ startScore, Score_ score) {
         if (startScore == null || !startScore.isSolutionInitialized()) {
             return 0.0;
         }

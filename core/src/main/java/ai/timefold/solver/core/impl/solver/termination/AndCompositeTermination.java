@@ -6,6 +6,9 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 final class AndCompositeTermination<Solution_>
         extends AbstractCompositeTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
@@ -14,6 +17,7 @@ final class AndCompositeTermination<Solution_>
         super(terminationList);
     }
 
+    @SafeVarargs
     public AndCompositeTermination(Termination<Solution_>... terminations) {
         super(terminations);
     }
@@ -24,7 +28,7 @@ final class AndCompositeTermination<Solution_>
      */
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
-        for (Termination<Solution_> termination : terminationList) {
+        for (var termination : terminationList) {
             if (termination instanceof SolverTermination<Solution_> solverTermination
                     && !solverTermination.isSolverTerminated(solverScope)) {
                 return false;
@@ -39,7 +43,7 @@ final class AndCompositeTermination<Solution_>
      */
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
-        for (Termination<Solution_> termination : terminationList) {
+        for (var termination : terminationList) {
             if (!termination.isPhaseTerminated(phaseScope)) {
                 return false;
             }
@@ -56,12 +60,12 @@ final class AndCompositeTermination<Solution_>
      */
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
-        double timeGradient = 1.0;
-        for (Termination<Solution_> termination : terminationList) {
+        var timeGradient = 1.0;
+        for (var termination : terminationList) {
             if (!(termination instanceof SolverTermination<Solution_> solverTermination)) {
                 continue;
             }
-            double nextTimeGradient = solverTermination.calculateSolverTimeGradient(solverScope);
+            var nextTimeGradient = solverTermination.calculateSolverTimeGradient(solverScope);
             if (nextTimeGradient >= 0.0) {
                 timeGradient = Math.min(timeGradient, nextTimeGradient);
             }
@@ -78,9 +82,9 @@ final class AndCompositeTermination<Solution_>
      */
     @Override
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
-        double timeGradient = 1.0;
-        for (Termination<Solution_> termination : terminationList) {
-            double nextTimeGradient = termination.calculatePhaseTimeGradient(phaseScope);
+        var timeGradient = 1.0;
+        for (var termination : terminationList) {
+            var nextTimeGradient = termination.calculatePhaseTimeGradient(phaseScope);
             if (nextTimeGradient >= 0.0) {
                 timeGradient = Math.min(timeGradient, nextTimeGradient);
             }

@@ -4,6 +4,9 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 public final class ChildThreadPlumbingTermination<Solution_>
         extends AbstractSolverTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
