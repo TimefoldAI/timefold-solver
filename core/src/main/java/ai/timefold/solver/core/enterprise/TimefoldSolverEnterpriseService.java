@@ -29,6 +29,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
+import ai.timefold.solver.core.impl.localsearch.decider.restart.RestartStrategy;
 import ai.timefold.solver.core.impl.partitionedsearch.PartitionedSearchPhase;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
@@ -100,7 +101,8 @@ public interface TimefoldSolverEnterpriseService {
             ConstructionHeuristicForager<Solution_> forager, HeuristicConfigPolicy<Solution_> configPolicy);
 
     <Solution_> LocalSearchDecider<Solution_> buildLocalSearch(int moveThreadCount, Termination<Solution_> termination,
-            MoveSelector<Solution_> moveSelector, Acceptor<Solution_> acceptor, LocalSearchForager<Solution_> forager,
+            MoveSelector<Solution_> moveSelector, RestartStrategy<Solution_> restartStrategy,
+            Acceptor<Solution_> acceptor, LocalSearchForager<Solution_> forager,
             EnvironmentMode environmentMode, HeuristicConfigPolicy<Solution_> configPolicy);
 
     <Solution_> PartitionedSearchPhase<Solution_> buildPartitionedSearch(int phaseIndex,
