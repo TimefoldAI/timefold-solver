@@ -86,4 +86,30 @@ abstract sealed class AbstractCompositeTermination<Solution_>
         return childThreadTerminationList;
     }
 
+    @Override
+    public List<PhaseTermination<Solution_>> getPhaseTerminationList() {
+        var phaseTerminationList = new ArrayList<PhaseTermination<Solution_>>();
+        for (var termination : terminationList) {
+            if (termination instanceof UniversalTermination<Solution_> universalTermination) {
+                phaseTerminationList.addAll(universalTermination.getPhaseTerminationList());
+            } else if (termination instanceof PhaseTermination<Solution_> phaseTermination) {
+                phaseTerminationList.add(phaseTermination);
+            }
+        }
+        return List.copyOf(phaseTerminationList);
+    }
+
+    @Override
+    public List<PhaseTermination<Solution_>> getUnsupportedPhaseTerminationList(AbstractPhaseScope<Solution_> phaseScope) {
+        var phaseTerminationList = new ArrayList<PhaseTermination<Solution_>>();
+        for (var termination : terminationList) {
+            if (termination instanceof UniversalTermination<Solution_> universalTermination) {
+                phaseTerminationList.addAll(universalTermination.getUnsupportedPhaseTerminationList(phaseScope));
+            } else if (termination instanceof PhaseTermination<Solution_> phaseTermination
+                    && !phaseTermination.isSupported(phaseScope)) {
+                phaseTerminationList.add(phaseTermination);
+            }
+        }
+        return List.copyOf(phaseTerminationList);
+    }
 }

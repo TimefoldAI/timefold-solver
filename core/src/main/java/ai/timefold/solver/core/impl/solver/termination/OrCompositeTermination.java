@@ -24,7 +24,7 @@ final class OrCompositeTermination<Solution_>
 
     /**
      * @param solverScope never null
-     * @return true if any of the Termination is terminated.
+     * @return true if any one of the terminations is terminated.
      */
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
@@ -38,13 +38,13 @@ final class OrCompositeTermination<Solution_>
     }
 
     /**
-     * @param phaseScope never null
-     * @return true if any of the Termination is terminated.
+     * @return true if any one of the supported terminations is terminated.
      */
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
         for (var termination : terminationList) {
             if (termination instanceof PhaseTermination<Solution_> phaseTermination
+                    && phaseTermination.isSupported(phaseScope)
                     && phaseTermination.isPhaseTerminated(phaseScope)) {
                 return true;
             }
@@ -56,8 +56,7 @@ final class OrCompositeTermination<Solution_>
      * Calculates the maximum timeGradient of all Terminations.
      * Not supported timeGradients (-1.0) are ignored.
      *
-     * @param solverScope never null
-     * @return the maximum timeGradient of the Terminations.
+     * @return the maximum timeGradient of the terminations.
      */
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
@@ -78,14 +77,15 @@ final class OrCompositeTermination<Solution_>
      * Calculates the maximum timeGradient of all Terminations.
      * Not supported timeGradients (-1.0) are ignored.
      *
-     * @param phaseScope never null
-     * @return the maximum timeGradient of the Terminations.
+     * @return the maximum timeGradient of the supported terminations.
      */
     @Override
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
         var timeGradient = 0.0;
         for (var termination : terminationList) {
             if (!(termination instanceof PhaseTermination<Solution_> phaseTermination)) {
+                continue;
+            } else if (!phaseTermination.isSupported(phaseScope)) {
                 continue;
             }
             var nextTimeGradient = phaseTermination.calculatePhaseTimeGradient(phaseScope);

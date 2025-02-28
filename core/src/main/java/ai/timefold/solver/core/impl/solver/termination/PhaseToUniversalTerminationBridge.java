@@ -37,4 +37,8 @@ final class PhaseToUniversalTerminationBridge<Solution_>
         return -1.0;
     }
 
+    @Override
+    public String toString() {
+        return phaseTermination.toString();
+    }
 }

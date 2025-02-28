@@ -15,6 +15,7 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.event.SolverEventSupport;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.UniversalTermination;
 
 import org.slf4j.Logger;
@@ -52,14 +53,18 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
             List<Phase<Solution_>> phaseList) {
         this.bestSolutionRecaller = bestSolutionRecaller;
         this.solverTermination = solverTermination;
+        var phaseTerminationList = solverTermination.getPhaseTerminationList();
+        if (!phaseTerminationList.isEmpty()) {
+            logger.trace("""
+                    The solver-level termination ({}) includes phase-level terminations ({}), \
+                    which will not be used to terminate the solver.
+                    These phase-level terminations will only take effect within each solver phase.""",
+                    solverTermination, phaseTerminationList);
+        }
         bestSolutionRecaller.setSolverEventSupport(solverEventSupport);
         this.phaseList = phaseList;
         phaseList.forEach(phase -> ((AbstractPhase<Solution_>) phase).setSolver(this));
     }
-
-    // ************************************************************************
-    // Lifecycle methods
-    // ************************************************************************
 
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         solverScope.setWorkingSolutionFromBestSolution();
@@ -108,6 +113,15 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     }
 
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
+        var unsupportedPhaseTerminationList = solverTermination.getUnsupportedPhaseTerminationList(phaseScope);
+        if (!unsupportedPhaseTerminationList.isEmpty()) {
+            logger.trace("""
+                    The solver-level termination ({}) includes phase-level terminations \
+                    which are not supported by the solver phase ({}).
+                    These phase-level terminations will not take effect in this phase.""",
+                    solverTermination, unsupportedPhaseTerminationList);
+        }
+
         bestSolutionRecaller.phaseStarted(phaseScope);
         phaseLifecycleSupport.firePhaseStarted(phaseScope);
         solverTermination.phaseStarted(phaseScope);
@@ -134,10 +148,6 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
         solverTermination.stepEnded(stepScope);
         // Do not propagate to phases; the active phase does that for itself and they should not propagate further.
     }
-
-    // ************************************************************************
-    // Event listeners
-    // ************************************************************************
 
     @Override
     public void addEventListener(SolverEventListener<Solution_> eventListener) {
@@ -171,9 +181,9 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
         phaseLifecycleSupport.removeEventListener(phaseLifecycleListener);
     }
 
-    // ************************************************************************
-    // Simple getters and setters
-    // ************************************************************************
+    public boolean isTerminationSameAsSolverTermination(PhaseTermination<Solution_> phaseTermination) {
+        return phaseTermination == solverTermination;
+    }
 
     public BestSolutionRecaller<Solution_> getBestSolutionRecaller() {
         return bestSolutionRecaller;

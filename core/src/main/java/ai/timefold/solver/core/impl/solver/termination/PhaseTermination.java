@@ -16,6 +16,14 @@ public sealed interface PhaseTermination<Solution_>
         permits AbstractPhaseTermination, MockablePhaseTermination, UniversalTermination {
 
     /**
+     * @return false if the termination should be skipped on the given phase,
+     *         when used as part of {@link AbstractCompositeTermination}.
+     */
+    default boolean isSupported(AbstractPhaseScope<Solution_> phaseScope) {
+        return true;
+    }
+
+    /**
      * Called by the {@link Phase} after every step and every move to determine if the search should stop.
      *
      * @return true if the search should terminate.

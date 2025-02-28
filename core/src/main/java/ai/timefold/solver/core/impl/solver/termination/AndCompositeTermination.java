@@ -23,8 +23,7 @@ final class AndCompositeTermination<Solution_>
     }
 
     /**
-     * @param solverScope never null
-     * @return true if all the Terminations are terminated.
+     * @return true if all terminations are terminated.
      */
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
@@ -38,13 +37,13 @@ final class AndCompositeTermination<Solution_>
     }
 
     /**
-     * @param phaseScope never null
-     * @return true if all the Terminations are terminated.
+     * @return true if all supported terminations are terminated.
      */
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
         for (var termination : terminationList) {
             if (termination instanceof PhaseTermination<Solution_> phaseTermination
+                    && phaseTermination.isSupported(phaseScope)
                     && !phaseTermination.isPhaseTerminated(phaseScope)) {
                 return false;
             }
@@ -56,7 +55,6 @@ final class AndCompositeTermination<Solution_>
      * Calculates the minimum timeGradient of all Terminations.
      * Not supported timeGradients (-1.0) are ignored.
      *
-     * @param solverScope never null
      * @return the minimum timeGradient of the Terminations.
      */
     @Override
@@ -78,7 +76,6 @@ final class AndCompositeTermination<Solution_>
      * Calculates the minimum timeGradient of all Terminations.
      * Not supported timeGradients (-1.0) are ignored.
      *
-     * @param phaseScope never null
      * @return the minimum timeGradient of the Terminations.
      */
     @Override
@@ -86,6 +83,8 @@ final class AndCompositeTermination<Solution_>
         var timeGradient = 1.0;
         for (var termination : terminationList) {
             if (!(termination instanceof PhaseTermination<Solution_> phaseTermination)) {
+                continue;
+            } else if (!phaseTermination.isSupported(phaseScope)) {
                 continue;
             }
             var nextTimeGradient = phaseTermination.calculatePhaseTimeGradient(phaseScope);

@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.solver.termination;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -138,6 +139,11 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
     }
 
     @Override
+    public boolean isSupported(AbstractPhaseScope<Solution_> phaseScope) {
+        return phaseScope instanceof LocalSearchPhaseScope;
+    }
+
+    @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
         return isTerminated(System.nanoTime(), phaseScope.getBestScore());
     }
@@ -166,5 +172,10 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
     @Override
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
         step(System.nanoTime(), stepScope.getPhaseScope().getBestScore());
+    }
+
+    @Override
+    public String toString() {
+        return "DiminishedReturns()";
     }
 }

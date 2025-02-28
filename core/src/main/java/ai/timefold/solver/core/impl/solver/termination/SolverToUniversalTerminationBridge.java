@@ -45,4 +45,8 @@ final class SolverToUniversalTerminationBridge<Solution_>
                 .createChildThreadTermination(scope, childThreadType);
     }
 
+    @Override
+    public String toString() {
+        return solverTermination.toString();
+    }
 }
