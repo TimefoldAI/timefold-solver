@@ -32,7 +32,7 @@ class UnimprovedTimeMillisSpentTerminationTest {
         AbstractPhaseScope<TestdataSolution> phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         Clock clock = mock(Clock.class);
 
-        SolverTermination<TestdataSolution> termination = new UnimprovedTimeMillisSpentTermination<>(1000L, clock);
+        UniversalTermination<TestdataSolution> termination = new UnimprovedTimeMillisSpentTermination<>(1000L, clock);
         termination.solvingStarted(solverScope);
         termination.phaseStarted(phaseScope);
 
@@ -53,7 +53,7 @@ class UnimprovedTimeMillisSpentTerminationTest {
         AbstractPhaseScope<TestdataSolution> phaseScope = spy(new LocalSearchPhaseScope<>(solverScope, 0));
         Clock clock = mock(Clock.class);
 
-        SolverTermination<TestdataSolution> termination = new UnimprovedTimeMillisSpentTermination<>(1000L, clock);
+        UniversalTermination<TestdataSolution> termination = new UnimprovedTimeMillisSpentTermination<>(1000L, clock);
         termination.solvingStarted(solverScope);
         termination.phaseStarted(phaseScope);
 
@@ -73,7 +73,7 @@ class UnimprovedTimeMillisSpentTerminationTest {
         SolverScope<TestdataSolution> solverScope = spy(new SolverScope<>());
         Clock clock = mock(Clock.class);
 
-        SolverTermination<TestdataSolution> termination = new UnimprovedTimeMillisSpentTermination<>(1000L, clock);
+        UniversalTermination<TestdataSolution> termination = new UnimprovedTimeMillisSpentTermination<>(1000L, clock);
         termination.solvingStarted(solverScope);
 
         AbstractPhaseScope<TestdataSolution> chPhaseScope = new ConstructionHeuristicPhaseScope<>(solverScope, 0);
@@ -117,7 +117,7 @@ class UnimprovedTimeMillisSpentTerminationTest {
         AbstractPhaseScope<TestdataSolution> phaseScope = spy(new ConstructionHeuristicPhaseScope<>(solverScope, 0));
         Clock clock = mock(Clock.class);
 
-        SolverTermination<TestdataSolution> termination = new UnimprovedTimeMillisSpentTermination<>(1000L, clock);
+        UniversalTermination<TestdataSolution> termination = new UnimprovedTimeMillisSpentTermination<>(1000L, clock);
         termination.solvingStarted(solverScope);
         termination.phaseStarted(phaseScope);
 

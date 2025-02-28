@@ -10,7 +10,7 @@ import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 final class UnimprovedTimeMillisSpentTermination<Solution_>
-        extends AbstractSolverTermination<Solution_>
+        extends AbstractUniversalTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private final long unimprovedTimeMillisSpentLimit;

@@ -19,7 +19,7 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 abstract sealed class AbstractCompositeTermination<Solution_>
-        extends AbstractSolverTermination<Solution_>
+        extends AbstractUniversalTermination<Solution_>
         permits AndCompositeTermination, OrCompositeTermination {
 
     protected final List<Termination<Solution_>> terminationList;

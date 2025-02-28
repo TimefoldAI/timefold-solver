@@ -34,8 +34,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelectorFactory;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
+import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
-import ai.timefold.solver.core.impl.solver.termination.Termination;
 
 public class DefaultExhaustiveSearchPhaseFactory<Solution_>
         extends AbstractPhaseFactory<Solution_, ExhaustiveSearchPhaseConfig> {
@@ -63,7 +63,7 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
                 .withEntitySorterManner(entitySorterManner)
                 .withValueSorterManner(valueSorterManner)
                 .build();
-        Termination<Solution_> phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
+        PhaseTermination<Solution_> phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
         boolean scoreBounderEnabled = exhaustiveSearchType_.isScoreBounderEnabled();
         NodeExplorationType nodeExplorationType_;
         if (exhaustiveSearchType_ == ExhaustiveSearchType.BRUTE_FORCE) {
@@ -128,7 +128,7 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
 
     private ExhaustiveSearchDecider<Solution_> buildDecider(HeuristicConfigPolicy<Solution_> configPolicy,
             EntitySelector<Solution_> sourceEntitySelector, BestSolutionRecaller<Solution_> bestSolutionRecaller,
-            Termination<Solution_> termination, boolean scoreBounderEnabled) {
+            PhaseTermination<Solution_> termination, boolean scoreBounderEnabled) {
         ManualEntityMimicRecorder<Solution_> manualEntityMimicRecorder =
                 new ManualEntityMimicRecorder<>(sourceEntitySelector);
         String mimicSelectorId = sourceEntitySelector.getEntityDescriptor().getEntityClass().getName(); // TODO mimicSelectorId must be a field

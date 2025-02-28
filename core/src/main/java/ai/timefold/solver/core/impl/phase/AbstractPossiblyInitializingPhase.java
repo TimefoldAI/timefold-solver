@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.phase;
 
 import ai.timefold.solver.core.impl.phase.custom.CustomPhase;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
-import ai.timefold.solver.core.impl.solver.termination.Termination;
+import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -59,7 +59,7 @@ public abstract class AbstractPossiblyInitializingPhase<Solution_>
         private final boolean lastInitializingPhase;
 
         protected AbstractPossiblyInitializingPhaseBuilder(int phaseIndex, boolean lastInitializingPhase, String phaseName,
-                Termination<Solution_> phaseTermination) {
+                PhaseTermination<Solution_> phaseTermination) {
             super(phaseIndex, phaseName, phaseTermination);
             this.lastInitializingPhase = lastInitializingPhase;
         }

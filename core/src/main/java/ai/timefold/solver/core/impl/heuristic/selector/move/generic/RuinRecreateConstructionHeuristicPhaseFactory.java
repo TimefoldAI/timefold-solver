@@ -7,8 +7,9 @@ import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHe
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.solver.termination.BasicPlumbingTermination;
+import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
-import ai.timefold.solver.core.impl.solver.termination.Termination;
+import ai.timefold.solver.core.impl.solver.termination.UniversalTermination;
 
 final class RuinRecreateConstructionHeuristicPhaseFactory<Solution_>
         extends DefaultConstructionHeuristicPhaseFactory<Solution_> {
@@ -21,7 +22,7 @@ final class RuinRecreateConstructionHeuristicPhaseFactory<Solution_>
     protected DefaultConstructionHeuristicPhaseBuilder<Solution_> createBuilder(
             HeuristicConfigPolicy<Solution_> phaseConfigPolicy, SolverTermination<Solution_> solverTermination, int phaseIndex,
             boolean lastInitializingPhase, EntityPlacer<Solution_> entityPlacer) {
-        var phaseTermination = SolverTermination.bridge(new BasicPlumbingTermination<Solution_>(false));
+        var phaseTermination = UniversalTermination.bridge(new BasicPlumbingTermination<Solution_>(false));
         return new RuinRecreateConstructionHeuristicPhaseBuilder<>(phaseConfigPolicy, this, phaseTermination, entityPlacer,
                 buildDecider(phaseConfigPolicy, phaseTermination));
 
@@ -29,7 +30,7 @@ final class RuinRecreateConstructionHeuristicPhaseFactory<Solution_>
 
     @Override
     protected ConstructionHeuristicDecider<Solution_> buildDecider(HeuristicConfigPolicy<Solution_> configPolicy,
-            Termination<Solution_> termination) {
+            PhaseTermination<Solution_> termination) {
         return new RuinRecreateConstructionHeuristicDecider<>(termination, buildForager(configPolicy));
     }
 

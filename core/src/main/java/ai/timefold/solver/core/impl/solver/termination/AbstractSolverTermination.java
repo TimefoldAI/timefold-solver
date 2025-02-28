@@ -7,10 +7,7 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 abstract sealed class AbstractSolverTermination<Solution_>
         extends AbstractTermination<Solution_>
-        implements SolverTermination<Solution_>
-        permits AbstractCompositeTermination, BasicPlumbingTermination, BestScoreFeasibleTermination, BestScoreTermination,
-        ChildThreadPlumbingTermination, MoveCountTermination, ScoreCalculationCountTermination, TimeMillisSpentTermination,
-        UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination, UnimprovedTimeMillisSpentTermination {
+        implements SolverTermination<Solution_> permits BasicPlumbingTermination, ChildThreadPlumbingTermination {
 
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {

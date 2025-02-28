@@ -13,6 +13,7 @@ import ai.timefold.solver.core.impl.solver.AbstractSolver;
 import ai.timefold.solver.core.impl.solver.exception.ScoreCorruptionException;
 import ai.timefold.solver.core.impl.solver.exception.VariableCorruptionException;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
 
 import org.slf4j.Logger;
@@ -30,7 +31,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     protected final String logIndentation;
 
     // Called "phaseTermination" to clearly distinguish from "solverTermination" inside AbstractSolver.
-    protected final Termination<Solution_> phaseTermination;
+    protected final PhaseTermination<Solution_> phaseTermination;
 
     protected final boolean assertPhaseScoreFromScratch;
     protected final boolean assertStepScoreFromScratch;
@@ -253,14 +254,14 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
 
         private final int phaseIndex;
         private final String logIndentation;
-        private final Termination<Solution_> phaseTermination;
+        private final PhaseTermination<Solution_> phaseTermination;
 
         private boolean assertPhaseScoreFromScratch = false;
         private boolean assertStepScoreFromScratch = false;
         private boolean assertExpectedStepScore = false;
         private boolean assertShadowVariablesAreNotStaleAfterStep = false;
 
-        protected AbstractPhaseBuilder(int phaseIndex, String logIndentation, Termination<Solution_> phaseTermination) {
+        protected AbstractPhaseBuilder(int phaseIndex, String logIndentation, PhaseTermination<Solution_> phaseTermination) {
             this.phaseIndex = phaseIndex;
             this.logIndentation = logIndentation;
             this.phaseTermination = phaseTermination;

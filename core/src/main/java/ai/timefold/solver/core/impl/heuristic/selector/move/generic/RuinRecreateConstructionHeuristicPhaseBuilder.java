@@ -11,8 +11,8 @@ import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHe
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
-import ai.timefold.solver.core.impl.solver.termination.Termination;
 import ai.timefold.solver.core.impl.solver.termination.TerminationFactory;
 
 public final class RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>
@@ -40,7 +40,7 @@ public final class RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>
 
     private final HeuristicConfigPolicy<Solution_> configPolicy;
     private final RuinRecreateConstructionHeuristicPhaseFactory<Solution_> constructionHeuristicPhaseFactory;
-    private final Termination<Solution_> phaseTermination;
+    private final PhaseTermination<Solution_> phaseTermination;
 
     Set<Object> elementsToRuin;
     List<Object> elementsToRecreate;
@@ -48,7 +48,7 @@ public final class RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>
 
     RuinRecreateConstructionHeuristicPhaseBuilder(HeuristicConfigPolicy<Solution_> configPolicy,
             RuinRecreateConstructionHeuristicPhaseFactory<Solution_> constructionHeuristicPhaseFactory,
-            Termination<Solution_> phaseTermination, EntityPlacer<Solution_> entityPlacer,
+            PhaseTermination<Solution_> phaseTermination, EntityPlacer<Solution_> entityPlacer,
             ConstructionHeuristicDecider<Solution_> decider) {
         super(0, false, "", phaseTermination, entityPlacer, decider);
         this.configPolicy = configPolicy;

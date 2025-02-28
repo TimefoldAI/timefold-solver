@@ -21,7 +21,7 @@ import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.solver.termination.Termination;
+import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 /**
@@ -236,7 +236,7 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         private boolean assertWorkingSolutionScoreFromScratch = false;
         private boolean assertExpectedWorkingSolutionScore = false;
 
-        public Builder(int phaseIndex, String logIndentation, Termination<Solution_> phaseTermination,
+        public Builder(int phaseIndex, String logIndentation, PhaseTermination<Solution_> phaseTermination,
                 Comparator<ExhaustiveSearchNode> nodeComparator, EntitySelector<Solution_> entitySelector,
                 ExhaustiveSearchDecider<Solution_> decider) {
             super(phaseIndex, logIndentation, phaseTermination);

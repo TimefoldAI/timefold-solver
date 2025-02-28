@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.solver.termination;
 
-import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
@@ -35,22 +34,8 @@ public final class ChildThreadPlumbingTermination<Solution_>
     }
 
     @Override
-    public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
-        throw new IllegalStateException(ChildThreadPlumbingTermination.class.getSimpleName()
-                + " configured only as solver termination."
-                + " It is always bridged to phase termination.");
-    }
-
-    @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
         return -1.0; // Not supported
-    }
-
-    @Override
-    public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
-        throw new IllegalStateException(ChildThreadPlumbingTermination.class.getSimpleName()
-                + " configured only as solver termination."
-                + " It is always bridged to phase termination.");
     }
 
     @Override

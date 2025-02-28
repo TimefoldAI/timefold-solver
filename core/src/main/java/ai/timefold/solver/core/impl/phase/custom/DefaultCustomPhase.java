@@ -12,7 +12,7 @@ import ai.timefold.solver.core.impl.phase.custom.scope.CustomStepScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.solver.termination.Termination;
+import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -120,7 +120,7 @@ public final class DefaultCustomPhase<Solution_>
         private final List<PhaseCommand<Solution_>> customPhaseCommandList;
 
         public DefaultCustomPhaseBuilder(int phaseIndex, boolean lastInitializingPhase, String logIndentation,
-                Termination<Solution_> phaseTermination, List<PhaseCommand<Solution_>> customPhaseCommandList) {
+                PhaseTermination<Solution_> phaseTermination, List<PhaseCommand<Solution_>> customPhaseCommandList) {
             super(phaseIndex, lastInitializingPhase, logIndentation, phaseTermination);
             this.customPhaseCommandList = List.copyOf(customPhaseCommandList);
         }

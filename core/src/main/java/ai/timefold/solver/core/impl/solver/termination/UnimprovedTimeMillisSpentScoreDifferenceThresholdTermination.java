@@ -16,7 +16,7 @@ import org.jspecify.annotations.Nullable;
 
 @NullMarked
 final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<Solution_>
-        extends AbstractSolverTermination<Solution_>
+        extends AbstractUniversalTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private final long unimprovedTimeMillisSpentLimit;

@@ -45,7 +45,7 @@ class ScoreCalculationCountTerminationTest {
 
     @Test
     void phaseTermination() {
-        Termination<TestdataSolution> termination = new ScoreCalculationCountTermination<>(1000L);
+        PhaseTermination<TestdataSolution> termination = new ScoreCalculationCountTermination<>(1000L);
         AbstractPhaseScope<TestdataSolution> phaseScope = mock(AbstractPhaseScope.class);
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector = mock(InnerScoreDirector.class);
         doReturn(scoreDirector).when(phaseScope).getScoreDirector();

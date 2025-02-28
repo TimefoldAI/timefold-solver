@@ -12,7 +12,7 @@ import org.jspecify.annotations.Nullable;
 
 @NullMarked
 final class BestScoreFeasibleTermination<Solution_>
-        extends AbstractSolverTermination<Solution_> {
+        extends AbstractUniversalTermination<Solution_> {
 
     private final int feasibleLevelsSize;
     private final double[] timeGradientWeightFeasibleNumbers;

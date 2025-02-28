@@ -30,8 +30,8 @@ public final class TerminationFactory<Solution_> {
         this.terminationConfig = terminationConfig;
     }
 
-    public Termination<Solution_> buildTermination(HeuristicConfigPolicy<Solution_> configPolicy,
-            Termination<Solution_> chainedTermination) {
+    public SolverTermination<Solution_> buildTermination(HeuristicConfigPolicy<Solution_> configPolicy,
+            SolverTermination<Solution_> chainedTermination) {
         Termination<Solution_> termination = buildTermination(configPolicy);
         if (termination == null) {
             return chainedTermination;
@@ -160,12 +160,15 @@ public final class TerminationFactory<Solution_> {
     @SuppressWarnings("unchecked")
     @Nullable
     Termination<Solution_> buildTerminationFromList(List<Termination<Solution_>> terminationList) {
+        if (terminationList.size() == 1) {
+            return terminationList.get(0);
+        }
         var terminationArray = terminationList.toArray(new Termination[0]);
         var compositionStyle =
                 Objects.requireNonNullElse(terminationConfig.getTerminationCompositionStyle(), TerminationCompositionStyle.OR);
         return switch (compositionStyle) {
-            case AND -> SolverTermination.and(terminationArray);
-            case OR -> SolverTermination.or(terminationArray);
+            case AND -> UniversalTermination.and(terminationArray);
+            case OR -> UniversalTermination.or(terminationArray);
         };
     }
 }

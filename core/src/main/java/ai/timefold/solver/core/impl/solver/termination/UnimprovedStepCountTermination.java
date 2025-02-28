@@ -8,7 +8,7 @@ import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 final class UnimprovedStepCountTermination<Solution_>
-        extends AbstractTermination<Solution_>
+        extends AbstractPhaseTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private final int unimprovedStepCountLimit;

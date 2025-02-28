@@ -25,7 +25,7 @@ import ai.timefold.solver.core.impl.solver.random.RandomFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.BasicPlumbingTermination;
-import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
+import ai.timefold.solver.core.impl.solver.termination.UniversalTermination;
 
 import org.jspecify.annotations.NonNull;
 
@@ -60,8 +60,8 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
 
     public DefaultSolver(EnvironmentMode environmentMode, RandomFactory randomFactory,
             BestSolutionRecaller<Solution_> bestSolutionRecaller, BasicPlumbingTermination<Solution_> basicPlumbingTermination,
-            SolverTermination<Solution_> termination, List<Phase<Solution_>> phaseList, SolverScope<Solution_> solverScope,
-            String moveThreadCountDescription) {
+            UniversalTermination<Solution_> termination, List<Phase<Solution_>> phaseList,
+            SolverScope<Solution_> solverScope, String moveThreadCountDescription) {
         super(bestSolutionRecaller, termination, phaseList);
         this.environmentMode = environmentMode;
         this.randomFactory = randomFactory;

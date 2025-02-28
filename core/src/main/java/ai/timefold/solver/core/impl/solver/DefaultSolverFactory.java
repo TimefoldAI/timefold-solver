@@ -43,6 +43,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.BasicPlumbingTermination;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 import ai.timefold.solver.core.impl.solver.termination.TerminationFactory;
+import ai.timefold.solver.core.impl.solver.termination.UniversalTermination;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -149,14 +150,14 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         }
     }
 
-    private SolverTermination<Solution_> buildTerminationConfig(BasicPlumbingTermination<Solution_> basicPlumbingTermination,
+    private UniversalTermination<Solution_> buildTerminationConfig(BasicPlumbingTermination<Solution_> basicPlumbingTermination,
             HeuristicConfigPolicy<Solution_> configPolicy, SolverConfigOverride<Solution_> solverConfigOverride) {
         var terminationConfig = Objects.requireNonNullElseGet(solverConfig.getTerminationConfig(), TerminationConfig::new);
         if (solverConfigOverride.getTerminationConfig() != null) {
             terminationConfig = solverConfigOverride.getTerminationConfig();
         }
-        return (SolverTermination<Solution_>) TerminationFactory.<Solution_> create(terminationConfig)
-                .buildTermination(configPolicy, basicPlumbingTermination);
+        return UniversalTermination.bridge(TerminationFactory.<Solution_> create(terminationConfig)
+                .buildTermination(configPolicy, basicPlumbingTermination));
     }
 
     private SolutionDescriptor<Solution_> buildSolutionDescriptor() {

@@ -12,7 +12,7 @@ import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 final class BestScoreTermination<Solution_>
-        extends AbstractSolverTermination<Solution_> {
+        extends AbstractUniversalTermination<Solution_> {
 
     private final int levelsSize;
     private final Score<?> bestScoreLimit;

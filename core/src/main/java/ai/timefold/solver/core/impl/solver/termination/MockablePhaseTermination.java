@@ -9,6 +9,6 @@ import org.jspecify.annotations.NullMarked;
  * @param <Solution_>
  */
 @NullMarked
-non-sealed interface MockableTermination<Solution_> extends Termination<Solution_> {
+non-sealed interface MockablePhaseTermination<Solution_> extends PhaseTermination<Solution_> {
 
 }

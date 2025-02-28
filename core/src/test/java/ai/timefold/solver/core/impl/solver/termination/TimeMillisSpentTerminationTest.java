@@ -40,7 +40,7 @@ class TimeMillisSpentTerminationTest {
 
     @Test
     void phaseTermination() {
-        SolverTermination<TestdataSolution> termination = new TimeMillisSpentTermination<>(1000L);
+        UniversalTermination<TestdataSolution> termination = new TimeMillisSpentTermination<>(1000L);
         AbstractPhaseScope<TestdataSolution> phaseScope = mock(AbstractPhaseScope.class);
 
         when(phaseScope.calculatePhaseTimeMillisSpentUpToNow()).thenReturn(0L);

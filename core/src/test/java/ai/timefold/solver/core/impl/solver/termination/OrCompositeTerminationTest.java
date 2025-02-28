@@ -42,9 +42,9 @@ class OrCompositeTerminationTest {
 
     @Test
     void phaseTermination() {
-        Termination<TestdataSolution> termination1 = mock(MockableTermination.class);
-        Termination<TestdataSolution> termination2 = mock(MockableTermination.class);
-        SolverTermination<TestdataSolution> compositeTermination =
+        PhaseTermination<TestdataSolution> termination1 = mock(MockablePhaseTermination.class);
+        PhaseTermination<TestdataSolution> termination2 = mock(MockablePhaseTermination.class);
+        UniversalTermination<TestdataSolution> compositeTermination =
                 new OrCompositeTermination<>(Arrays.asList(termination1, termination2));
         AbstractPhaseScope<TestdataSolution> phaseScope = mock(AbstractPhaseScope.class);
 
@@ -106,9 +106,9 @@ class OrCompositeTerminationTest {
 
     @Test
     void calculatePhaseTimeGradientTest() {
-        Termination<TestdataSolution> termination1 = mock(MockableTermination.class);
-        Termination<TestdataSolution> termination2 = mock(MockableTermination.class);
-        SolverTermination<TestdataSolution> compositeTermination =
+        PhaseTermination<TestdataSolution> termination1 = mock(MockablePhaseTermination.class);
+        PhaseTermination<TestdataSolution> termination2 = mock(MockablePhaseTermination.class);
+        UniversalTermination<TestdataSolution> compositeTermination =
                 new OrCompositeTermination<>(Arrays.asList(termination1, termination2));
         AbstractPhaseScope<TestdataSolution> phaseScope = mock(AbstractPhaseScope.class);
 

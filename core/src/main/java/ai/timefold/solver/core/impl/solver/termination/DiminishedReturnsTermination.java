@@ -10,7 +10,7 @@ import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>>
-        extends AbstractTermination<Solution_>
+        extends AbstractPhaseTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     static final long NANOS_PER_MILLISECOND = 1_000_000;

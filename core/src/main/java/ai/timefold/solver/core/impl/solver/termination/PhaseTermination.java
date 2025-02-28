@@ -1,26 +1,26 @@
 package ai.timefold.solver.core.impl.solver.termination;
 
-import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.simulatedannealing.SimulatedAnnealingAcceptor;
-import ai.timefold.solver.core.impl.solver.event.SolverLifecycleListener;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.impl.phase.Phase;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
+import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Determines when a {@link Solver} should stop.
+ * Determines when a {@link Phase} should stop.
  */
 @NullMarked
-public sealed interface SolverTermination<Solution_>
-        extends Termination<Solution_>, SolverLifecycleListener<Solution_>
-        permits AbstractSolverTermination, MockableSolverTermination, UniversalTermination {
+public sealed interface PhaseTermination<Solution_>
+        extends Termination<Solution_>
+        permits AbstractPhaseTermination, MockablePhaseTermination, UniversalTermination {
 
     /**
-     * Called by the {@link Solver} after every phase to determine if the search should stop.
+     * Called by the {@link Phase} after every step and every move to determine if the search should stop.
      *
      * @return true if the search should terminate.
      */
-    boolean isSolverTerminated(SolverScope<Solution_> solverScope);
+    boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope);
 
     /**
      * A timeGradient is a relative estimate of how long the search will continue.
@@ -37,6 +37,14 @@ public sealed interface SolverTermination<Solution_>
      * @return timeGradient t for which {@code 0.0 <= t <= 1.0 or -1.0} when it is not supported.
      *         At the start of a solver t is 0.0 and at the end t would be 1.0.
      */
-    double calculateSolverTimeGradient(SolverScope<Solution_> solverScope);
+    double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope);
+
+    void phaseStarted(AbstractPhaseScope<Solution_> phaseScope);
+
+    void stepStarted(AbstractStepScope<Solution_> stepScope);
+
+    void stepEnded(AbstractStepScope<Solution_> stepScope);
+
+    void phaseEnded(AbstractPhaseScope<Solution_> phaseScope);
 
 }

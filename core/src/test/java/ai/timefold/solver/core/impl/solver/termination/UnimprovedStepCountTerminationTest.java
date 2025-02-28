@@ -15,7 +15,7 @@ class UnimprovedStepCountTerminationTest {
 
     @Test
     void phaseTermination() {
-        Termination<TestdataSolution> termination = new UnimprovedStepCountTermination<>(4);
+        PhaseTermination<TestdataSolution> termination = new UnimprovedStepCountTermination<>(4);
         AbstractPhaseScope<TestdataSolution> phaseScope = mock(AbstractPhaseScope.class);
         AbstractStepScope<TestdataSolution> lastCompletedStepScope = mock(AbstractStepScope.class);
         when(phaseScope.getLastCompletedStepScope()).thenReturn(lastCompletedStepScope);
