@@ -380,7 +380,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         acceptor.bestScoreQueue.addLast(SimpleScore.of(-996));
         acceptor.bestScoreQueue.addLast(SimpleScore.of(-995));
         restartStrategy.applyRestart(stepScope0);
-        assertThat(acceptor.previousScores.length).isGreaterThan(5);
+        assertThat(acceptor.previousScores).hasSizeGreaterThan(5);
         assertThat(acceptor.previousScores).containsAnyOf(SimpleScore.of(-1000), SimpleScore.of(-999),
                 SimpleScore.of(-998), SimpleScore.of(997), SimpleScore.of(-996), SimpleScore.of(-995));
     }
