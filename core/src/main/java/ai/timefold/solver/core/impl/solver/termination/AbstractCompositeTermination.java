@@ -23,9 +23,19 @@ abstract sealed class AbstractCompositeTermination<Solution_>
         permits AndCompositeTermination, OrCompositeTermination {
 
     protected final List<Termination<Solution_>> terminationList;
+    protected final List<PhaseTermination<Solution_>> phaseTerminationList;
+    protected final List<SolverTermination<Solution_>> solverTerminationList;
 
     protected AbstractCompositeTermination(List<Termination<Solution_>> terminationList) {
         this.terminationList = terminationList;
+        this.phaseTerminationList = terminationList.stream()
+                .filter(PhaseTermination.class::isInstance)
+                .map(t -> (PhaseTermination<Solution_>) t)
+                .toList();
+        this.solverTerminationList = terminationList.stream()
+                .filter(SolverTermination.class::isInstance)
+                .map(t -> (SolverTermination<Solution_>) t)
+                .toList();
     }
 
     @SafeVarargs
@@ -34,48 +44,48 @@ abstract sealed class AbstractCompositeTermination<Solution_>
     }
 
     @Override
-    public void solvingStarted(SolverScope<Solution_> solverScope) {
-        for (var termination : terminationList) {
-            solvingStarted(termination, solverScope);
+    public final void solvingStarted(SolverScope<Solution_> solverScope) {
+        for (var termination : solverTerminationList) {
+            termination.solvingStarted(solverScope);
         }
     }
 
     @Override
-    public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        for (var termination : terminationList) {
-            phaseStarted(termination, phaseScope);
+    public final void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
+        for (var termination : phaseTerminationList) {
+            termination.phaseStarted(phaseScope);
         }
     }
 
     @Override
-    public void stepStarted(AbstractStepScope<Solution_> stepScope) {
-        for (var termination : terminationList) {
-            stepStarted(termination, stepScope);
+    public final void stepStarted(AbstractStepScope<Solution_> stepScope) {
+        for (var termination : phaseTerminationList) {
+            termination.stepStarted(stepScope);
         }
     }
 
     @Override
-    public void stepEnded(AbstractStepScope<Solution_> stepScope) {
-        for (var termination : terminationList) {
-            stepEnded(termination, stepScope);
+    public final void stepEnded(AbstractStepScope<Solution_> stepScope) {
+        for (var termination : phaseTerminationList) {
+            termination.stepEnded(stepScope);
         }
     }
 
     @Override
-    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
-        for (var termination : terminationList) {
-            phaseEnded(termination, phaseScope);
+    public final void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
+        for (var termination : phaseTerminationList) {
+            termination.phaseEnded(phaseScope);
         }
     }
 
     @Override
-    public void solvingEnded(SolverScope<Solution_> solverScope) {
-        for (var termination : terminationList) {
-            solvingEnded(termination, solverScope);
+    public final void solvingEnded(SolverScope<Solution_> solverScope) {
+        for (var termination : solverTerminationList) {
+            termination.solvingEnded(solverScope);
         }
     }
 
-    protected List<Termination<Solution_>> createChildThreadTerminationList(SolverScope<Solution_> solverScope,
+    protected final List<Termination<Solution_>> createChildThreadTerminationList(SolverScope<Solution_> solverScope,
             ChildThreadType childThreadType) {
         List<Termination<Solution_>> childThreadTerminationList = new ArrayList<>(terminationList.size());
         for (var termination : terminationList) {
@@ -87,27 +97,27 @@ abstract sealed class AbstractCompositeTermination<Solution_>
     }
 
     @Override
-    public List<PhaseTermination<Solution_>> getPhaseTerminationList() {
+    public final List<PhaseTermination<Solution_>> getPhaseTerminationList() {
         var phaseTerminationList = new ArrayList<PhaseTermination<Solution_>>();
-        for (var termination : terminationList) {
+        for (var termination : this.phaseTerminationList) {
             if (termination instanceof UniversalTermination<Solution_> universalTermination) {
                 phaseTerminationList.addAll(universalTermination.getPhaseTerminationList());
-            } else if (termination instanceof PhaseTermination<Solution_> phaseTermination) {
-                phaseTerminationList.add(phaseTermination);
+            } else {
+                phaseTerminationList.add(termination);
             }
         }
         return List.copyOf(phaseTerminationList);
     }
 
     @Override
-    public List<PhaseTermination<Solution_>> getUnsupportedPhaseTerminationList(AbstractPhaseScope<Solution_> phaseScope) {
+    public final List<PhaseTermination<Solution_>>
+            getUnsupportedPhaseTerminationList(AbstractPhaseScope<Solution_> phaseScope) {
         var phaseTerminationList = new ArrayList<PhaseTermination<Solution_>>();
-        for (var termination : terminationList) {
+        for (var termination : this.phaseTerminationList) {
             if (termination instanceof UniversalTermination<Solution_> universalTermination) {
                 phaseTerminationList.addAll(universalTermination.getUnsupportedPhaseTerminationList(phaseScope));
-            } else if (termination instanceof PhaseTermination<Solution_> phaseTermination
-                    && !phaseTermination.isSupported(phaseScope)) {
-                phaseTerminationList.add(phaseTermination);
+            } else if (!termination.isSupported(phaseScope)) {
+                phaseTerminationList.add(termination);
             }
         }
         return List.copyOf(phaseTerminationList);

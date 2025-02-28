@@ -28,9 +28,8 @@ final class OrCompositeTermination<Solution_>
      */
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
-        for (var termination : terminationList) {
-            if (termination instanceof SolverTermination<Solution_> solverTermination
-                    && solverTermination.isSolverTerminated(solverScope)) {
+        for (var termination : solverTerminationList) {
+            if (termination.isSolverTerminated(solverScope)) {
                 return true;
             }
         }
@@ -42,10 +41,8 @@ final class OrCompositeTermination<Solution_>
      */
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
-        for (var termination : terminationList) {
-            if (termination instanceof PhaseTermination<Solution_> phaseTermination
-                    && phaseTermination.isSupported(phaseScope)
-                    && phaseTermination.isPhaseTerminated(phaseScope)) {
+        for (var termination : phaseTerminationList) {
+            if (termination.isSupported(phaseScope) && termination.isPhaseTerminated(phaseScope)) {
                 return true;
             }
         }
@@ -61,11 +58,8 @@ final class OrCompositeTermination<Solution_>
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
         var timeGradient = 0.0;
-        for (var termination : terminationList) {
-            if (!(termination instanceof SolverTermination<Solution_> solverTermination)) {
-                continue;
-            }
-            var nextTimeGradient = solverTermination.calculateSolverTimeGradient(solverScope);
+        for (var termination : solverTerminationList) {
+            var nextTimeGradient = termination.calculateSolverTimeGradient(solverScope);
             if (nextTimeGradient >= 0.0) {
                 timeGradient = Math.max(timeGradient, nextTimeGradient);
             }
@@ -82,13 +76,11 @@ final class OrCompositeTermination<Solution_>
     @Override
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
         var timeGradient = 0.0;
-        for (var termination : terminationList) {
-            if (!(termination instanceof PhaseTermination<Solution_> phaseTermination)) {
-                continue;
-            } else if (!phaseTermination.isSupported(phaseScope)) {
+        for (var termination : phaseTerminationList) {
+            if (!termination.isSupported(phaseScope)) {
                 continue;
             }
-            var nextTimeGradient = phaseTermination.calculatePhaseTimeGradient(phaseScope);
+            var nextTimeGradient = termination.calculatePhaseTimeGradient(phaseScope);
             if (nextTimeGradient >= 0.0) {
                 timeGradient = Math.max(timeGradient, nextTimeGradient);
             }

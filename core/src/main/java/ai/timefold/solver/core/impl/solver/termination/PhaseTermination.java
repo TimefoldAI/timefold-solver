@@ -55,4 +55,15 @@ public sealed interface PhaseTermination<Solution_>
 
     void phaseEnded(AbstractPhaseScope<Solution_> phaseScope);
 
+    static <Solution_> PhaseTermination<Solution_> bridge(Termination<Solution_> termination) {
+        if (termination instanceof UniversalTermination<Solution_> universalTermination) {
+            return universalTermination;
+        } else if (termination instanceof SolverTermination<Solution_> solverTermination) {
+            return new SolverToPhaseBridgeTermination<>(solverTermination);
+        } else {
+            throw new UnsupportedOperationException("Impossible state: The termination (%s) is not supported."
+                    .formatted(termination.getClass().getSimpleName()));
+        }
+    }
+
 }

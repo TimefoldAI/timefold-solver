@@ -9,7 +9,6 @@ import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.solver.termination.BasicPlumbingTermination;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
-import ai.timefold.solver.core.impl.solver.termination.UniversalTermination;
 
 final class RuinRecreateConstructionHeuristicPhaseFactory<Solution_>
         extends DefaultConstructionHeuristicPhaseFactory<Solution_> {
@@ -22,7 +21,7 @@ final class RuinRecreateConstructionHeuristicPhaseFactory<Solution_>
     protected DefaultConstructionHeuristicPhaseBuilder<Solution_> createBuilder(
             HeuristicConfigPolicy<Solution_> phaseConfigPolicy, SolverTermination<Solution_> solverTermination, int phaseIndex,
             boolean lastInitializingPhase, EntityPlacer<Solution_> entityPlacer) {
-        var phaseTermination = UniversalTermination.bridge(new BasicPlumbingTermination<Solution_>(false));
+        var phaseTermination = PhaseTermination.bridge(new BasicPlumbingTermination<Solution_>(false));
         return new RuinRecreateConstructionHeuristicPhaseBuilder<>(phaseConfigPolicy, this, phaseTermination, entityPlacer,
                 buildDecider(phaseConfigPolicy, phaseTermination));
 
