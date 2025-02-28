@@ -82,7 +82,6 @@ public class LocalSearchDecider<Solution_> {
     }
 
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
-        phaseScope.setDecider(this);
         restartStrategy.phaseStarted(phaseScope);
         moveSelector.phaseStarted(phaseScope);
         acceptor.phaseStarted(phaseScope);
