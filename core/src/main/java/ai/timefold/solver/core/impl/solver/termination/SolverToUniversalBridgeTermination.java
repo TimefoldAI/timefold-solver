@@ -9,13 +9,13 @@ import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-final class SolverToUniversalTerminationBridge<Solution_>
+final class SolverToUniversalBridgeTermination<Solution_>
         extends AbstractUniversalTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private final SolverTermination<Solution_> solverTermination;
 
-    public SolverToUniversalTerminationBridge(SolverTermination<Solution_> solverTermination) {
+    public SolverToUniversalBridgeTermination(SolverTermination<Solution_> solverTermination) {
         this.solverTermination = Objects.requireNonNull(solverTermination);
     }
 

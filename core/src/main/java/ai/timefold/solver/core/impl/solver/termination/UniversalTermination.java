@@ -58,11 +58,10 @@ public sealed interface UniversalTermination<Solution_>
         if (termination instanceof UniversalTermination<Solution_> universalTermination) {
             return universalTermination;
         } else if (termination instanceof SolverTermination<Solution_> solverTermination) {
-            return new SolverToUniversalTerminationBridge<>(solverTermination);
+            return new SolverToUniversalBridgeTermination<>(solverTermination);
         } else {
-            throw new IllegalArgumentException("Impossible state: The termination (%s) is neither %s nor %s."
-                    .formatted(termination, UniversalTermination.class.getSimpleName(),
-                            SolverTermination.class.getSimpleName()));
+            throw new UnsupportedOperationException("Impossible state: The termination (%s) is not supported."
+                    .formatted(termination.getClass().getSimpleName()));
         }
     }
 
