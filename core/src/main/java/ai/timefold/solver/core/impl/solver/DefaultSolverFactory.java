@@ -136,7 +136,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         var phaseList = buildPhaseList(configPolicy, bestSolutionRecaller, termination);
 
         return new DefaultSolver<>(environmentMode, randomFactory, bestSolutionRecaller, basicPlumbingTermination,
-                termination, phaseList, solverScope,
+                UniversalTermination.bridge(termination), phaseList, solverScope,
                 moveThreadCount == null ? SolverConfig.MOVE_THREAD_COUNT_NONE : Integer.toString(moveThreadCount));
     }
 
@@ -150,14 +150,14 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         }
     }
 
-    private UniversalTermination<Solution_> buildTerminationConfig(BasicPlumbingTermination<Solution_> basicPlumbingTermination,
+    private SolverTermination<Solution_> buildTerminationConfig(BasicPlumbingTermination<Solution_> basicPlumbingTermination,
             HeuristicConfigPolicy<Solution_> configPolicy, SolverConfigOverride<Solution_> solverConfigOverride) {
         var terminationConfig = Objects.requireNonNullElseGet(solverConfig.getTerminationConfig(), TerminationConfig::new);
         if (solverConfigOverride.getTerminationConfig() != null) {
             terminationConfig = solverConfigOverride.getTerminationConfig();
         }
-        return UniversalTermination.bridge(TerminationFactory.<Solution_> create(terminationConfig)
-                .buildTermination(configPolicy, basicPlumbingTermination));
+        return TerminationFactory.<Solution_> create(terminationConfig)
+                .buildTermination(configPolicy, basicPlumbingTermination);
     }
 
     private SolutionDescriptor<Solution_> buildSolutionDescriptor() {
