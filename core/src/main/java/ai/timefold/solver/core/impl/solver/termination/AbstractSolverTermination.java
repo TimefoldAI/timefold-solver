@@ -14,21 +14,9 @@ abstract sealed class AbstractSolverTermination<Solution_>
         // Override if needed.
     }
 
-    protected static <Solution_> void solvingStarted(Termination<Solution_> termination, SolverScope<Solution_> scope) {
-        if (termination instanceof SolverTermination<Solution_> solverTermination) {
-            solverTermination.solvingStarted(scope);
-        }
-    }
-
     @Override
     public void solvingEnded(SolverScope<Solution_> solverScope) {
         // Override if needed.
-    }
-
-    protected static <Solution_> void solvingEnded(Termination<Solution_> termination, SolverScope<Solution_> scope) {
-        if (termination instanceof SolverTermination<Solution_> solverTermination) {
-            solverTermination.solvingEnded(scope);
-        }
     }
 
 }
