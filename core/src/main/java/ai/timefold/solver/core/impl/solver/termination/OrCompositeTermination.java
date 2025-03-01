@@ -89,7 +89,7 @@ final class OrCompositeTermination<Solution_>
     }
 
     @Override
-    public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
+    public OrCompositeTermination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
             ChildThreadType childThreadType) {
         return new OrCompositeTermination<>(createChildThreadTerminationList(solverScope, childThreadType));
     }

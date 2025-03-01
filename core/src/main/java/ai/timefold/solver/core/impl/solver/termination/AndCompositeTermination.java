@@ -88,7 +88,7 @@ final class AndCompositeTermination<Solution_>
     }
 
     @Override
-    public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
+    public AndCompositeTermination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
             ChildThreadType childThreadType) {
         return new AndCompositeTermination<>(createChildThreadTerminationList(solverScope, childThreadType));
     }

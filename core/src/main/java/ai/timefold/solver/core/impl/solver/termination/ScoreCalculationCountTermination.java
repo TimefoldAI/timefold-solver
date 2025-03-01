@@ -55,13 +55,13 @@ final class ScoreCalculationCountTermination<Solution_>
     }
 
     @Override
-    public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
+    public ScoreCalculationCountTermination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
             ChildThreadType childThreadType) {
         if (childThreadType == ChildThreadType.PART_THREAD) {
             // The ScoreDirector.calculationCount of partitions is maxed, not summed.
             return new ScoreCalculationCountTermination<>(scoreCalculationCountLimit);
         } else {
-            throw new IllegalStateException("The childThreadType (%s) is not implemented."
+            throw new UnsupportedOperationException("The childThreadType (%s) is not implemented."
                     .formatted(childThreadType));
         }
     }
