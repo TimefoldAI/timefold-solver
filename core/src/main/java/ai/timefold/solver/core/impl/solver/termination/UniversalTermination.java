@@ -57,4 +57,12 @@ public sealed interface UniversalTermination<Solution_>
         return new AndCompositeTermination<>(terminations);
     }
 
+    static <Solution_> UniversalTermination<Solution_> bridge(SolverTermination<Solution_> termination) {
+        if (termination instanceof UniversalTermination<Solution_> universalTermination) {
+            return universalTermination;
+        } else {
+            return new SolverToUniversalBridgeTermination<>(termination);
+        }
+    }
+
 }

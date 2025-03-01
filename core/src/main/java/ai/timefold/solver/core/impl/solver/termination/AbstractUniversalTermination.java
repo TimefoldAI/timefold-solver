@@ -11,7 +11,7 @@ abstract sealed class AbstractUniversalTermination<Solution_>
         extends AbstractTermination<Solution_>
         implements UniversalTermination<Solution_>
         permits AbstractCompositeTermination, BestScoreFeasibleTermination, BestScoreTermination, MoveCountTermination,
-        ScoreCalculationCountTermination, TimeMillisSpentTermination,
+        ScoreCalculationCountTermination, SolverToUniversalBridgeTermination, TimeMillisSpentTermination,
         UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination, UnimprovedTimeMillisSpentTermination {
 
     @Override

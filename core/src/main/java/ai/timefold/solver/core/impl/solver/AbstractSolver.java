@@ -16,7 +16,6 @@ import ai.timefold.solver.core.impl.solver.event.SolverEventSupport;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
-import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 import ai.timefold.solver.core.impl.solver.termination.UniversalTermination;
 
 import org.slf4j.Logger;
@@ -42,7 +41,7 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     protected final BestSolutionRecaller<Solution_> bestSolutionRecaller;
     // Note that the DefaultSolver.basicPlumbingTermination is a component of this termination.
     // Called "solverTermination" to clearly distinguish from "phaseTermination" inside AbstractPhase.
-    protected final SolverTermination<Solution_> solverTermination;
+    protected final UniversalTermination<Solution_> solverTermination;
     protected final List<Phase<Solution_>> phaseList;
 
     // ************************************************************************
@@ -50,18 +49,16 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     // ************************************************************************
 
     protected AbstractSolver(BestSolutionRecaller<Solution_> bestSolutionRecaller,
-            SolverTermination<Solution_> solverTermination, List<Phase<Solution_>> phaseList) {
+            UniversalTermination<Solution_> solverTermination, List<Phase<Solution_>> phaseList) {
         this.bestSolutionRecaller = bestSolutionRecaller;
         this.solverTermination = solverTermination;
-        if (solverTermination instanceof UniversalTermination<Solution_> universalTermination) {
-            var phaseTerminationList = universalTermination.getPhaseTerminationList();
-            if (!phaseTerminationList.isEmpty()) {
-                logger.trace("""
-                        The solver-level termination ({}) includes phase-level terminations ({}), \
-                        which will not be used to terminate the solver.
-                        These phase-level terminations will only take effect within each solver phase.""",
-                        solverTermination, phaseTerminationList);
-            }
+        var phaseTerminationList = solverTermination.getPhaseTerminationList();
+        if (!phaseTerminationList.isEmpty()) {
+            logger.trace("""
+                    The solver-level termination ({}) includes phase-level terminations ({}), \
+                    which will not be used to terminate the solver.
+                    These phase-level terminations will only take effect within each solver phase.""",
+                    solverTermination, phaseTerminationList);
         }
         bestSolutionRecaller.setSolverEventSupport(solverEventSupport);
         this.phaseList = phaseList;
@@ -115,37 +112,39 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     }
 
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        if (solverTermination instanceof UniversalTermination<Solution_> universalTermination) {
-            var unsupportedPhaseTerminationList = universalTermination.getUnsupportedTerminationList(phaseScope);
-            if (!unsupportedPhaseTerminationList.isEmpty()) {
-                logger.trace("""
-                        The solver-level termination ({}) includes phase-level terminations \
-                        which are not supported by the solver phase ({}).
-                        These phase-level terminations will not take effect in this phase.""",
-                        solverTermination, unsupportedPhaseTerminationList);
-            }
+        var unsupportedPhaseTerminationList = solverTermination.getUnsupportedTerminationList(phaseScope);
+        if (!unsupportedPhaseTerminationList.isEmpty()) {
+            logger.trace("""
+                    The solver-level termination ({}) includes phase-level terminations \
+                    which are not supported by the solver phase ({}).
+                    These phase-level terminations will not take effect in this phase.""",
+                    solverTermination, unsupportedPhaseTerminationList);
         }
 
         bestSolutionRecaller.phaseStarted(phaseScope);
         phaseLifecycleSupport.firePhaseStarted(phaseScope);
+        solverTermination.phaseStarted(phaseScope);
         // Do not propagate to phases; the active phase does that for itself and they should not propagate further.
     }
 
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         bestSolutionRecaller.phaseEnded(phaseScope);
         phaseLifecycleSupport.firePhaseEnded(phaseScope);
+        solverTermination.phaseEnded(phaseScope);
         // Do not propagate to phases; the active phase does that for itself and they should not propagate further.
     }
 
     public void stepStarted(AbstractStepScope<Solution_> stepScope) {
         bestSolutionRecaller.stepStarted(stepScope);
         phaseLifecycleSupport.fireStepStarted(stepScope);
+        solverTermination.stepStarted(stepScope);
         // Do not propagate to phases; the active phase does that for itself and they should not propagate further.
     }
 
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
         bestSolutionRecaller.stepEnded(stepScope);
         phaseLifecycleSupport.fireStepEnded(stepScope);
+        solverTermination.stepEnded(stepScope);
         // Do not propagate to phases; the active phase does that for itself and they should not propagate further.
     }
 
