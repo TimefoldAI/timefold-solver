@@ -24,4 +24,5 @@ public abstract class AbstractPhaseFactory<Solution_, PhaseConfig_ extends Phase
         return PhaseTermination.bridge(TerminationFactory.<Solution_> create(terminationConfig_)
                 .buildTermination(configPolicy, solverTermination));
     }
+
 }

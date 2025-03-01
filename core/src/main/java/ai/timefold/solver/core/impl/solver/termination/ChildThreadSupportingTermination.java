@@ -22,7 +22,7 @@ public interface ChildThreadSupportingTermination<Solution_, Scope_> {
     static <Solution_, Scope_> ChildThreadSupportingTermination<Solution_, Scope_>
             assertChildThreadSupport(Termination<Solution_> termination) {
         if (termination instanceof ChildThreadSupportingTermination childThreadSupportingTermination) {
-            return (ChildThreadSupportingTermination<Solution_, Scope_>) childThreadSupportingTermination;
+            return childThreadSupportingTermination;
         }
         throw new UnsupportedOperationException(
                 "This terminationClass (%s) does not yet support being used in child threads."

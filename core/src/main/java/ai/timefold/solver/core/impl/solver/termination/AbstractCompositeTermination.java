@@ -98,14 +98,14 @@ abstract sealed class AbstractCompositeTermination<Solution_>
 
     @Override
     public final List<PhaseTermination<Solution_>> getPhaseTerminationList() {
-        var phaseTerminationList = new ArrayList<PhaseTermination<Solution_>>();
-        for (var termination : this.phaseTerminationList) {
-            phaseTerminationList.add(termination);
+        var result = new ArrayList<PhaseTermination<Solution_>>();
+        for (var termination : phaseTerminationList) {
+            result.add(termination);
             if (termination instanceof UniversalTermination<Solution_> universalTermination) {
-                phaseTerminationList.addAll(universalTermination.getPhaseTerminationList());
+                result.addAll(universalTermination.getPhaseTerminationList());
             }
         }
-        return List.copyOf(phaseTerminationList);
+        return List.copyOf(result);
     }
 
 }

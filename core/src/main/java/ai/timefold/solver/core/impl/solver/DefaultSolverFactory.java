@@ -152,10 +152,8 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
 
     private SolverTermination<Solution_> buildTerminationConfig(BasicPlumbingTermination<Solution_> basicPlumbingTermination,
             HeuristicConfigPolicy<Solution_> configPolicy, SolverConfigOverride<Solution_> solverConfigOverride) {
-        var terminationConfig = Objects.requireNonNullElseGet(solverConfig.getTerminationConfig(), TerminationConfig::new);
-        if (solverConfigOverride.getTerminationConfig() != null) {
-            terminationConfig = solverConfigOverride.getTerminationConfig();
-        }
+        var terminationConfig = Objects.requireNonNullElseGet(solverConfigOverride.getTerminationConfig(),
+                () -> Objects.requireNonNullElseGet(solverConfig.getTerminationConfig(), TerminationConfig::new));
         return TerminationFactory.<Solution_> create(terminationConfig)
                 .buildTermination(configPolicy, basicPlumbingTermination);
     }

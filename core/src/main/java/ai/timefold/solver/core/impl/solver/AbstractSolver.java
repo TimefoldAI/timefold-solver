@@ -48,9 +48,8 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public AbstractSolver(BestSolutionRecaller<Solution_> bestSolutionRecaller,
-            UniversalTermination<Solution_> solverTermination,
-            List<Phase<Solution_>> phaseList) {
+    protected AbstractSolver(BestSolutionRecaller<Solution_> bestSolutionRecaller,
+            UniversalTermination<Solution_> solverTermination, List<Phase<Solution_>> phaseList) {
         this.bestSolutionRecaller = bestSolutionRecaller;
         this.solverTermination = solverTermination;
         var phaseTerminationList = solverTermination.getPhaseTerminationList();
