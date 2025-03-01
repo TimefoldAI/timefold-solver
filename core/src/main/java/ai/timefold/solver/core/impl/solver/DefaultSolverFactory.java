@@ -43,7 +43,6 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.BasicPlumbingTermination;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 import ai.timefold.solver.core.impl.solver.termination.TerminationFactory;
-import ai.timefold.solver.core.impl.solver.termination.UniversalTermination;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -136,7 +135,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         var phaseList = buildPhaseList(configPolicy, bestSolutionRecaller, termination);
 
         return new DefaultSolver<>(environmentMode, randomFactory, bestSolutionRecaller, basicPlumbingTermination,
-                UniversalTermination.bridge(termination), phaseList, solverScope,
+                termination, phaseList, solverScope,
                 moveThreadCount == null ? SolverConfig.MOVE_THREAD_COUNT_NONE : Integer.toString(moveThreadCount));
     }
 
