@@ -100,26 +100,12 @@ abstract sealed class AbstractCompositeTermination<Solution_>
     public final List<PhaseTermination<Solution_>> getPhaseTerminationList() {
         var phaseTerminationList = new ArrayList<PhaseTermination<Solution_>>();
         for (var termination : this.phaseTerminationList) {
+            phaseTerminationList.add(termination);
             if (termination instanceof UniversalTermination<Solution_> universalTermination) {
                 phaseTerminationList.addAll(universalTermination.getPhaseTerminationList());
-            } else {
-                phaseTerminationList.add(termination);
             }
         }
         return List.copyOf(phaseTerminationList);
     }
 
-    @Override
-    public final List<PhaseTermination<Solution_>>
-            getUnsupportedPhaseTerminationList(AbstractPhaseScope<Solution_> phaseScope) {
-        var phaseTerminationList = new ArrayList<PhaseTermination<Solution_>>();
-        for (var termination : this.phaseTerminationList) {
-            if (termination instanceof UniversalTermination<Solution_> universalTermination) {
-                phaseTerminationList.addAll(universalTermination.getUnsupportedPhaseTerminationList(phaseScope));
-            } else if (!termination.isSupported(phaseScope)) {
-                phaseTerminationList.add(termination);
-            }
-        }
-        return List.copyOf(phaseTerminationList);
-    }
 }

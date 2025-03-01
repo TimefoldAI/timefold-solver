@@ -5,6 +5,8 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
+import ai.timefold.solver.core.impl.phase.custom.scope.CustomPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -157,6 +159,12 @@ final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<Solutio
             ChildThreadType childThreadType) {
         return new UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<>(unimprovedTimeMillisSpentLimit,
                 unimprovedScoreDifferenceThreshold);
+    }
+
+    @Override
+    public boolean isSupported(AbstractPhaseScope<Solution_> phaseScope) {
+        return !(phaseScope instanceof ConstructionHeuristicPhaseScope<Solution_>
+                || phaseScope instanceof CustomPhaseScope<Solution_>);
     }
 
     @Override

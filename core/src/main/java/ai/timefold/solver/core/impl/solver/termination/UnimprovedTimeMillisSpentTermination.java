@@ -2,6 +2,8 @@ package ai.timefold.solver.core.impl.solver.termination;
 
 import java.time.Clock;
 
+import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
+import ai.timefold.solver.core.impl.phase.custom.scope.CustomPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
@@ -99,6 +101,12 @@ final class UnimprovedTimeMillisSpentTermination<Solution_>
     public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
             ChildThreadType childThreadType) {
         return new UnimprovedTimeMillisSpentTermination<>(unimprovedTimeMillisSpentLimit);
+    }
+
+    @Override
+    public boolean isSupported(AbstractPhaseScope<Solution_> phaseScope) {
+        return !(phaseScope instanceof ConstructionHeuristicPhaseScope<Solution_>
+                || phaseScope instanceof CustomPhaseScope<Solution_>);
     }
 
     @Override

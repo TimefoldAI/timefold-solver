@@ -113,7 +113,7 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     }
 
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        var unsupportedPhaseTerminationList = solverTermination.getUnsupportedPhaseTerminationList(phaseScope);
+        var unsupportedPhaseTerminationList = solverTermination.getUnsupportedTerminationList(phaseScope);
         if (!unsupportedPhaseTerminationList.isEmpty()) {
             logger.trace("""
                     The solver-level termination ({}) includes phase-level terminations \

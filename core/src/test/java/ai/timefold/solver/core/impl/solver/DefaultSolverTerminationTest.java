@@ -91,4 +91,42 @@ class DefaultSolverTerminationTest {
                 .hasMessageContaining("DiminishedReturns");
     }
 
+    @Test
+    void unimprovedStepCountTerminationUnsupportedAtPhaseLevel() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withEasyScoreCalculatorClass(TestdataEasyScoreCalculator.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withTerminationConfig(new TerminationConfig()
+                                .withUnimprovedStepCountLimit(1)));
+        var solution = TestdataSolution.generateSolution(2, 2);
+        solution.getEntityList().forEach(entity -> entity.setValue(null)); // Uninitialize.
+        var solver = SolverFactory.<TestdataSolution> create(solverConfig)
+                .buildSolver();
+        Assertions.assertThatThrownBy(() -> solver.solve(solution))
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining("includes some terminations which are not supported")
+                .hasMessageContaining("UnimprovedStepCount");
+    }
+
+    @Test
+    void unimprovedTimeSpentTerminationUnsupportedAtPhaseLevel() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withEasyScoreCalculatorClass(TestdataEasyScoreCalculator.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withTerminationConfig(new TerminationConfig()
+                                .withUnimprovedMillisecondsSpentLimit(1L)));
+        var solution = TestdataSolution.generateSolution(2, 2);
+        solution.getEntityList().forEach(entity -> entity.setValue(null)); // Uninitialize.
+        var solver = SolverFactory.<TestdataSolution> create(solverConfig)
+                .buildSolver();
+        Assertions.assertThatThrownBy(() -> solver.solve(solution))
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining("includes some terminations which are not supported")
+                .hasMessageContaining("UnimprovedTimeMillisSpent");
+    }
+
 }

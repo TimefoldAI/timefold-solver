@@ -108,7 +108,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
             // Otherwise you would only be able to configure a global phase-level termination on the solver
             // if it was supported by all phases.
             var unsupportedTerminationList = phaseTermination instanceof UniversalTermination<Solution_> universalTermination
-                    ? universalTermination.getUnsupportedPhaseTerminationList(phaseScope)
+                    ? universalTermination.getUnsupportedTerminationList(phaseScope)
                     : Collections.emptyList();
             if (!unsupportedTerminationList.isEmpty()) {
                 throw new UnsupportedOperationException(
