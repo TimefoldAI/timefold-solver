@@ -32,7 +32,7 @@ final class SolverBridgePhaseTermination<Solution_>
     @Override
     public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> scope, ChildThreadType childThreadType) {
         if (childThreadType == ChildThreadType.PART_THREAD) {
-            // Remove of the bridge (which is nested if there's a phase termination), PhaseConfig will add it again
+            // This strips the bridge, but the partitioned phase factory will add it back.
             return ChildThreadSupportingTermination.assertChildThreadSupport(solverTermination)
                     .createChildThreadTermination(scope, childThreadType);
         } else {
