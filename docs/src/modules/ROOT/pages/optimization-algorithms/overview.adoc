@@ -287,7 +287,8 @@ Finding the best solution in the available time is the most important outcome.
 
 [IMPORTANT]
 ====
-If no termination is configured (and a metaheuristic algorithm is used), the `Solver` will run forever, until <<asynchronousTermination,terminateEarly()>> is called from another thread.
+If no termination is configured (and a metaheuristic algorithm is used),
+the `Solver` will run forever unless <<asynchronousTermination,terminateEarly()>> is called from another thread.
 This is especially common during xref:responding-to-change/responding-to-change.adoc#realTimePlanning[real-time planning].
 ====
 
@@ -296,8 +297,106 @@ Every `Termination` can calculate a _time gradient_ (needed for some optimizatio
 which is a ratio between the time already spent solving and the estimated entire solving time of the `Solver` or `Phase`.
 
 
+[#choosingTheRightTermination]
+==== Choosing the right termination
+
+There are several aspects to consider when choosing a termination,
+such as the problem size, the hardware used, and the desired quality of the solution.
+In general:
+
+- Time-based terminations (such as <<unimprovedTimeMillisSpentTermination,unimproved time spent>>)
+are hardware-specific.
+Running the solver for 5 minutes on a laptop will yield very different results,
+compared to running the same solver for the same 5 minutes on a supercomputer.
+- Counting terminations (such as <<stepCountTermination,step count>>) are useful for debugging,
+but in the real world they do not scale well with the problem size.
+The solver will need many more steps to solve a large problem than it needs to solve a small problem.
+- Score-based terminations (such as <<bestScoreTermination,best score>>) assume you know the target score ahead of time,
+which is typically not the case.
+And even when you do, this score is dependent on the dataset and on the constraint weights configured.
+
+For the best experience overall, we recommend using the <<diminishedReturnsTermination,Diminished Returns termination>>.
+It is based on the rate of improvement of the solver,
+and should therefore be mostly independent of the factors listed above.
+
+
+[#combiningMultipleTerminations]
+==== Combining multiple terminations
+
+Terminations can be combined.
+The following example will terminate the solver when the <<diminishedReturnsTermination,rate of improvement drops off>>
+or after the solver has already run for 5 minutes,
+whichever comes first:
+
+[source,xml,options="nowrap"]
+----
+  <termination>
+    <terminationCompositionStyle>OR</terminationCompositionStyle>
+    <diminishedReturns />
+    <minutesSpentLimit>5</minutesSpentLimit>
+  </termination>
+----
+
+Alternatively you can use `AND`.
+The following example will terminate after reaching a feasible score of at least `-100` and no improvements in `5` steps:
+
+[source,xml,options="nowrap"]
+----
+  <termination>
+    <terminationCompositionStyle>AND</terminationCompositionStyle>
+    <bestScoreLimit>-100</bestScoreLimit>
+    <unimprovedStepCountLimit>5</unimprovedStepCountLimit>
+  </termination>
+----
+
+This example ensures it does not just terminate after finding a feasible solution,
+but also completes any obvious improvements on that solution before terminating.
+
+
+[#asynchronousTermination]
+==== Asynchronous termination from another thread
+
+Asynchronous termination cannot be configured by a `Termination` as it is impossible to predict when and if it will occur.
+For example, a user action or a server restart could require a solver to terminate earlier than predicted.
+
+To terminate a solver from another thread asynchronously
+call the `terminateEarly()` method from another thread:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+solver.terminateEarly();
+----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+solver.terminate_early()
+----
+====
+
+The solver then terminates at its earliest convenience.
+After termination,
+the `Solver.solve(Solution)` method returns in the solver thread (which is the original thread that called it).
+
+[NOTE]
+====
+When an `ExecutorService` shuts down, it interrupts all threads in its thread pool.
+
+To guarantee a graceful shutdown of a thread pool that contains solver threads,
+an _interrupt_ of a solver thread has the same effect as calling `Solver.terminateEarly()` explicitly.
+====
+
+
+[#availableTerminations]
+==== Available terminations
+
 [#timeMillisSpentTermination]
-==== Time spent termination
+===== Time spent termination
 
 Terminates when an amount of time has been used.
 
@@ -387,7 +486,7 @@ which will send time gradient-based algorithms (such as Simulated Annealing) on 
 
 
 [#unimprovedTimeMillisSpentTermination]
-==== Unimproved time spent termination
+===== Unimproved time spent termination
 
 Terminates when the best score has not improved in a specified amount of time.
 Each time a new best solution is found, the timer basically resets.
@@ -517,7 +616,7 @@ This effectively implies a threshold of `1hard/-2147483648soft`, because it reli
 
 
 [#bestScoreTermination]
-==== `BestScoreTermination`
+===== `BestScoreTermination`
 
 `BestScoreTermination` terminates when a certain score has been reached.
 Use this `Termination` where the perfect score is known,
@@ -552,7 +651,7 @@ In this instance, `Termination` once a feasible solution has been reached is not
 
 
 [#bestScoreFeasibleTermination]
-==== `BestScoreFeasibleTermination`
+===== `BestScoreFeasibleTermination`
 
 Terminates as soon as a feasible solution has been discovered.
 
@@ -567,7 +666,7 @@ This `Termination` is usually combined with other terminations.
 
 
 [#stepCountTermination]
-==== `StepCountTermination`
+===== `StepCountTermination`
 
 Terminates when a number of steps has been reached.
 This is useful for hardware performance independent runs.
@@ -585,7 +684,7 @@ This `Termination` can only be used for a `Phase` (such as ``<localSearch>``), n
 
 
 [#unimprovedStepCountTermination]
-==== `UnimprovedStepCountTermination`
+===== `UnimprovedStepCountTermination`
 
 Terminates when the best score has not improved in a number of steps.
 This is useful for hardware performance independent runs.
@@ -607,7 +706,7 @@ This `Termination` can only be used for a `Phase` (such as ``<localSearch>``), n
 
 
 [#scoreCalculationCountTermination]
-==== `ScoreCalculationCountTermination`
+===== `ScoreCalculationCountTermination`
 
 `ScoreCalculationCountTermination` terminates when a number of score calculations have been reached.
 This is often the sum of the number of moves and the number of steps.
@@ -623,7 +722,7 @@ This is useful for benchmarking.
 Switching xref:using-timefold-solver/running-the-solver.adoc#environmentMode[EnvironmentMode] can heavily impact when this termination ends.
 
 [#moveCountTermination]
-==== `MoveCountTermination`
+===== `MoveCountTermination`
 
 `MoveCountTermination` terminates when a number of evaluated moves have been reached.
 This is useful for benchmarking.
@@ -638,7 +737,7 @@ This is useful for benchmarking.
 Switching xref:using-timefold-solver/running-the-solver.adoc#environmentMode[EnvironmentMode] can heavily impact when this termination ends.
 
 [#diminishedReturnsTermination]
-==== `DiminishedReturnsTermination`
+===== `DiminishedReturnsTermination`
 
 To save on CPU costs, you might want to terminate the solver early if expected improvements are minimal.
 This is hard to configure with absolute terminations since:
@@ -710,72 +809,6 @@ For instance, if `minimumImprovementRatio` is `0.2`, then the current rate of ch
 ----
 
 This `Termination` can only be used for a `Phase` (such as ``<localSearch>``), not for the `Solver` itself.
-
-[#combiningMultipleTerminations]
-==== Combining multiple terminations
-
-Terminations can be combined, for example: terminate after `100` steps or if a score of `0` has been reached:
-
-[source,xml,options="nowrap"]
-----
-  <termination>
-    <terminationCompositionStyle>OR</terminationCompositionStyle>
-    <bestScoreLimit>0</bestScoreLimit>
-    <stepCountLimit>100</stepCountLimit>
-  </termination>
-----
-
-Alternatively you can use `AND`, for example: terminate after reaching a feasible score of at least `-100` and no improvements in `5` steps:
-
-[source,xml,options="nowrap"]
-----
-  <termination>
-    <terminationCompositionStyle>AND</terminationCompositionStyle>
-    <bestScoreLimit>-100</bestScoreLimit>
-    <unimprovedStepCountLimit>5</unimprovedStepCountLimit>
-  </termination>
-----
-
-This example ensures it does not just terminate after finding a feasible solution, but also completes any obvious improvements on that solution before terminating.
-
-
-[#asynchronousTermination]
-==== Asynchronous termination from another thread
-
-Asynchronous termination cannot be configured by a `Termination` as it is impossible to predict when and if it will occur.
-For example, a user action or a server restart could require a solver to terminate earlier than predicted.
-
-To terminate a solver from another thread asynchronously
-call the `terminateEarly()` method from another thread:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-solver.terminateEarly();
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-solver.terminate_early()
-----
-====
-
-The solver then terminates at its earliest convenience.
-After termination, the `Solver.solve(Solution)` method returns in the solver thread (which is the original thread that called it).
-
-[NOTE]
-====
-When an `ExecutorService` shuts down, it interrupts all threads in its thread pool.
-
-To guarantee a graceful shutdown of a thread pool that contains solver threads,
-an _interrupt_ of a solver thread has the same effect as calling `Solver.terminateEarly()` explicitly.
-====
-
 
 [#SolverEventListener]
 === `SolverEventListener`

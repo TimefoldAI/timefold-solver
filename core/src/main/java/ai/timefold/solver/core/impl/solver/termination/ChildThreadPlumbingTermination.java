@@ -1,16 +1,16 @@
 package ai.timefold.solver.core.impl.solver.termination;
 
-import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-public final class ChildThreadPlumbingTermination<Solution_> extends AbstractTermination<Solution_> {
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
+public final class ChildThreadPlumbingTermination<Solution_>
+        extends AbstractSolverTermination<Solution_>
+        implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private boolean terminateChildren = false;
-
-    // ************************************************************************
-    // Plumbing worker methods
-    // ************************************************************************
 
     /**
      * This method is thread-safe.
@@ -23,10 +23,6 @@ public final class ChildThreadPlumbingTermination<Solution_> extends AbstractTer
         return terminationEarlySuccessful;
     }
 
-    // ************************************************************************
-    // Termination worker methods
-    // ************************************************************************
-
     @Override
     public synchronized boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
         // Destroying a thread pool with solver threads will only cause it to interrupt those child solver threads
@@ -38,27 +34,9 @@ public final class ChildThreadPlumbingTermination<Solution_> extends AbstractTer
     }
 
     @Override
-    public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
-        throw new IllegalStateException(ChildThreadPlumbingTermination.class.getSimpleName()
-                + " configured only as solver termination."
-                + " It is always bridged to phase termination.");
-    }
-
-    @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
         return -1.0; // Not supported
     }
-
-    @Override
-    public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
-        throw new IllegalStateException(ChildThreadPlumbingTermination.class.getSimpleName()
-                + " configured only as solver termination."
-                + " It is always bridged to phase termination.");
-    }
-
-    // ************************************************************************
-    // Other methods
-    // ************************************************************************
 
     @Override
     public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,

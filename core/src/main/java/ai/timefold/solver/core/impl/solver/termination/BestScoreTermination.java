@@ -1,26 +1,27 @@
 package ai.timefold.solver.core.impl.solver.termination;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-public final class BestScoreTermination<Solution_> extends AbstractTermination<Solution_> {
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
+final class BestScoreTermination<Solution_>
+        extends AbstractUniversalTermination<Solution_> {
 
     private final int levelsSize;
-    private final Score bestScoreLimit;
+    private final Score<?> bestScoreLimit;
     private final double[] timeGradientWeightNumbers;
 
     public BestScoreTermination(ScoreDefinition<?> scoreDefinition, Score<?> bestScoreLimit,
             double[] timeGradientWeightNumbers) {
         levelsSize = scoreDefinition.getLevelsSize();
-        this.bestScoreLimit = bestScoreLimit;
-        if (bestScoreLimit == null) {
-            throw new IllegalArgumentException("The bestScoreLimit cannot be null.");
-        }
+        this.bestScoreLimit = Objects.requireNonNull(bestScoreLimit, "The bestScoreLimit cannot be null.");
         this.timeGradientWeightNumbers = timeGradientWeightNumbers;
         if (timeGradientWeightNumbers.length != levelsSize - 1) {
             throw new IllegalStateException(
@@ -30,10 +31,6 @@ public final class BestScoreTermination<Solution_> extends AbstractTermination<S
         }
     }
 
-    // ************************************************************************
-    // Terminated methods
-    // ************************************************************************
-
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
         return isTerminated(solverScope.isBestSolutionInitialized(), solverScope.getBestScore());
@@ -41,29 +38,28 @@ public final class BestScoreTermination<Solution_> extends AbstractTermination<S
 
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
-        return isTerminated(phaseScope.isBestSolutionInitialized(), (Score) phaseScope.getBestScore());
+        return isTerminated(phaseScope.isBestSolutionInitialized(), phaseScope.getBestScore());
     }
 
-    private boolean isTerminated(boolean bestSolutionInitialized, Score bestScore) {
-        return bestSolutionInitialized && bestScore.compareTo(bestScoreLimit) >= 0;
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private boolean isTerminated(boolean bestSolutionInitialized, Score<?> bestScore) {
+        return bestSolutionInitialized && ((Score) bestScore).compareTo(bestScoreLimit) >= 0;
     }
 
-    // ************************************************************************
-    // Time gradient methods
-    // ************************************************************************
-
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
         var startingInitializedScore = solverScope.getStartingInitializedScore();
         var bestScore = solverScope.getBestScore();
-        return calculateTimeGradient(startingInitializedScore, bestScoreLimit, bestScore);
+        return calculateTimeGradient(startingInitializedScore, (Score) bestScoreLimit, bestScore);
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
-        Score startingInitializedScore = phaseScope.getStartingScore();
-        Score bestScore = phaseScope.getBestScore();
-        return calculateTimeGradient(startingInitializedScore, bestScoreLimit, bestScore);
+        var startingInitializedScore = phaseScope.getStartingScore();
+        var bestScore = phaseScope.getBestScore();
+        return calculateTimeGradient((Score) startingInitializedScore, (Score) bestScoreLimit, (Score) bestScore);
     }
 
     <Score_ extends Score<Score_>> double calculateTimeGradient(Score_ startScore, Score_ endScore, Score_ score) {
@@ -127,18 +123,6 @@ public final class BestScoreTermination<Solution_> extends AbstractTermination<S
             timeGradient = 1.0;
         }
         return timeGradient;
-    }
-
-    // ************************************************************************
-    // Other methods
-    // ************************************************************************
-
-    @Override
-    public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
-            ChildThreadType childThreadType) {
-        // TODO FIXME through some sort of solverlistener and async behaviour...
-        throw new UnsupportedOperationException("This terminationClass (" + getClass()
-                + ") does not yet support being used in child threads of type (" + childThreadType + ").");
     }
 
     @Override

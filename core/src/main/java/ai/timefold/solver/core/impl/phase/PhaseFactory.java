@@ -18,7 +18,7 @@ import ai.timefold.solver.core.impl.localsearch.DefaultLocalSearchPhaseFactory;
 import ai.timefold.solver.core.impl.partitionedsearch.DefaultPartitionedSearchPhaseFactory;
 import ai.timefold.solver.core.impl.phase.custom.DefaultCustomPhaseFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
-import ai.timefold.solver.core.impl.solver.termination.Termination;
+import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 
 public interface PhaseFactory<Solution_> {
 
@@ -43,7 +43,7 @@ public interface PhaseFactory<Solution_> {
 
     static <Solution_> List<Phase<Solution_>> buildPhases(List<PhaseConfig> phaseConfigList,
             HeuristicConfigPolicy<Solution_> configPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
-            Termination<Solution_> termination) {
+            SolverTermination<Solution_> termination) {
         List<Phase<Solution_>> phaseList = new ArrayList<>(phaseConfigList.size());
         boolean isPhaseSelected = false;
         for (int phaseIndex = 0; phaseIndex < phaseConfigList.size(); phaseIndex++) {
@@ -87,5 +87,5 @@ public interface PhaseFactory<Solution_> {
 
     Phase<Solution_> buildPhase(int phaseIndex, boolean lastInitializingPhase,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
-            Termination<Solution_> solverTermination);
+            SolverTermination<Solution_> solverTermination);
 }

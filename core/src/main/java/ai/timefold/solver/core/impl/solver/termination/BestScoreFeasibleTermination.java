@@ -6,9 +6,13 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-public final class BestScoreFeasibleTermination<Solution_> extends AbstractTermination<Solution_> {
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
+final class BestScoreFeasibleTermination<Solution_>
+        extends AbstractUniversalTermination<Solution_> {
 
     private final int feasibleLevelsSize;
     private final double[] timeGradientWeightFeasibleNumbers;
@@ -38,17 +42,19 @@ public final class BestScoreFeasibleTermination<Solution_> extends AbstractTermi
         return bestScore.isFeasible();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
         return calculateFeasibilityTimeGradient(solverScope.getStartingInitializedScore(), solverScope.getBestScore());
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
         return calculateFeasibilityTimeGradient((Score) phaseScope.getStartingScore(), (Score) phaseScope.getBestScore());
     }
 
-    <Score_ extends Score<Score_>> double calculateFeasibilityTimeGradient(Score_ startScore, Score_ score) {
+    <Score_ extends Score<Score_>> double calculateFeasibilityTimeGradient(@Nullable Score_ startScore, Score_ score) {
         if (startScore == null || !startScore.isSolutionInitialized()) {
             return 0.0;
         }
@@ -62,18 +68,6 @@ public final class BestScoreFeasibleTermination<Solution_> extends AbstractTermi
         }
         return BestScoreTermination.calculateTimeGradient(totalDiffNumbers, scoreDiffNumbers,
                 timeGradientWeightFeasibleNumbers, feasibleLevelsSize);
-    }
-
-    // ************************************************************************
-    // Other methods
-    // ************************************************************************
-
-    @Override
-    public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
-            ChildThreadType childThreadType) {
-        // TODO FIXME through some sort of solverlistener and async behaviour...
-        throw new UnsupportedOperationException("This terminationClass (" + getClass()
-                + ") does not yet support being used in child threads of type (" + childThreadType + ").");
     }
 
     @Override

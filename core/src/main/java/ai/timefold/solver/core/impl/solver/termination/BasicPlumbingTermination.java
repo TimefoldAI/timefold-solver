@@ -5,16 +5,20 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.change.ProblemChangeAdapter;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
+
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Concurrency notes:
  * Condition predicate on ({@link #problemChangeQueue} is not empty or {@link #terminatedEarly} is true).
  */
-public final class BasicPlumbingTermination<Solution_> extends AbstractTermination<Solution_> {
+@NullMarked
+public final class BasicPlumbingTermination<Solution_>
+        extends AbstractSolverTermination<Solution_>
+        implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private final boolean daemon;
     private final BlockingQueue<ProblemChangeAdapter<Solution_>> problemChangeQueue = new LinkedBlockingQueue<>();
@@ -25,10 +29,6 @@ public final class BasicPlumbingTermination<Solution_> extends AbstractTerminati
     public BasicPlumbingTermination(boolean daemon) {
         this.daemon = daemon;
     }
-
-    // ************************************************************************
-    // Plumbing worker methods
-    // ************************************************************************
 
     /**
      * This method is thread-safe.
@@ -106,10 +106,6 @@ public final class BasicPlumbingTermination<Solution_> extends AbstractTerminati
         return problemChangeQueue.isEmpty() && !problemChangesBeingProcessed;
     }
 
-    // ************************************************************************
-    // Termination worker methods
-    // ************************************************************************
-
     @Override
     public synchronized boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
         // Destroying a thread pool with solver threads will only cause it to interrupt those solver threads,
@@ -126,27 +122,9 @@ public final class BasicPlumbingTermination<Solution_> extends AbstractTerminati
     }
 
     @Override
-    public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
-        throw new IllegalStateException(BasicPlumbingTermination.class.getSimpleName()
-                + " configured only as solver termination."
-                + " It is always bridged to phase termination.");
-    }
-
-    @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
         return -1.0; // Not supported
     }
-
-    @Override
-    public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
-        throw new IllegalStateException(BasicPlumbingTermination.class.getSimpleName()
-                + " configured only as solver termination."
-                + " It is always bridged to phase termination.");
-    }
-
-    // ************************************************************************
-    // Other methods
-    // ************************************************************************
 
     @Override
     public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
