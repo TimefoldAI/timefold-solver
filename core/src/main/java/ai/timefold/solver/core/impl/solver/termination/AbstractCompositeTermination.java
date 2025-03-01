@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.solver.termination;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
@@ -27,7 +28,7 @@ abstract sealed class AbstractCompositeTermination<Solution_>
     protected final List<SolverTermination<Solution_>> solverTerminationList;
 
     protected AbstractCompositeTermination(List<Termination<Solution_>> terminationList) {
-        this.terminationList = terminationList;
+        this.terminationList = Objects.requireNonNull(terminationList);
         this.phaseTerminationList = terminationList.stream()
                 .filter(PhaseTermination.class::isInstance)
                 .map(t -> (PhaseTermination<Solution_>) t)

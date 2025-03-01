@@ -21,8 +21,9 @@ public abstract class AbstractPhaseFactory<Solution_, PhaseConfig_ extends Phase
     protected PhaseTermination<Solution_> buildPhaseTermination(HeuristicConfigPolicy<Solution_> configPolicy,
             SolverTermination<Solution_> solverTermination) {
         var terminationConfig_ = Objects.requireNonNullElseGet(phaseConfig.getTerminationConfig(), TerminationConfig::new);
-        return PhaseTermination.bridge(TerminationFactory.<Solution_> create(terminationConfig_)
-                .buildTermination(configPolicy, solverTermination));
+        var phaseTermination = PhaseTermination.bridge(solverTermination);
+        return TerminationFactory.<Solution_> create(terminationConfig_)
+                .buildTermination(configPolicy, phaseTermination);
     }
 
 }

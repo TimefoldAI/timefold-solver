@@ -9,13 +9,13 @@ import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-final class SolverToPhaseBridgeTermination<Solution_>
+final class SolverBridgePhaseTermination<Solution_>
         extends AbstractPhaseTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private final SolverTermination<Solution_> solverTermination;
 
-    public SolverToPhaseBridgeTermination(SolverTermination<Solution_> solverTermination) {
+    public SolverBridgePhaseTermination(SolverTermination<Solution_> solverTermination) {
         this.solverTermination = Objects.requireNonNull(solverTermination);
     }
 
@@ -37,6 +37,6 @@ final class SolverToPhaseBridgeTermination<Solution_>
 
     @Override
     public String toString() {
-        return solverTermination.toString();
+        return "Bridge(" + solverTermination + ")";
     }
 }

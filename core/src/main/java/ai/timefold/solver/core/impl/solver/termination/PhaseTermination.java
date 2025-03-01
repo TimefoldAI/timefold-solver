@@ -59,7 +59,7 @@ public sealed interface PhaseTermination<Solution_>
         if (termination instanceof UniversalTermination<Solution_> universalTermination) {
             return universalTermination;
         } else if (termination instanceof SolverTermination<Solution_> solverTermination) {
-            return new SolverToPhaseBridgeTermination<>(solverTermination);
+            return new SolverBridgePhaseTermination<>(solverTermination);
         } else {
             throw new UnsupportedOperationException("Impossible state: The termination (%s) is not supported."
                     .formatted(termination.getClass().getSimpleName()));

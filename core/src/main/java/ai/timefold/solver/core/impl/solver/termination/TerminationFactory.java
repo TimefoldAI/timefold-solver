@@ -30,13 +30,16 @@ public final class TerminationFactory<Solution_> {
         this.terminationConfig = terminationConfig;
     }
 
-    public SolverTermination<Solution_> buildTermination(HeuristicConfigPolicy<Solution_> configPolicy,
-            SolverTermination<Solution_> chainedTermination) {
-        Termination<Solution_> termination = buildTermination(configPolicy);
+    @SuppressWarnings("unchecked")
+    public <Termination_ extends Termination<Solution_>> Termination_
+            buildTermination(HeuristicConfigPolicy<Solution_> configPolicy, Termination_ chainedTermination) {
+        var termination = buildTermination(configPolicy);
         if (termination == null) {
             return chainedTermination;
         }
-        return new OrCompositeTermination<>(chainedTermination, termination);
+        // This cast works, because composite termination is Universal, 
+        // and therefore extends both SolverTermination and PhaseTermination.
+        return (Termination_) new OrCompositeTermination<>(chainedTermination, termination);
     }
 
     /**

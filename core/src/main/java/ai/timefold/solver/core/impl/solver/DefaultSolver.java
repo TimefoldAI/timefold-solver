@@ -164,7 +164,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
 
     @Override
     public boolean isEveryProblemFactChangeProcessed() {
-        return basicPlumbingTermination.isEveryProblemChangeProcessed();
+        return isEveryProblemChangeProcessed();
     }
 
     public void setMonitorTagMap(Map<String, String> monitorTagMap) {

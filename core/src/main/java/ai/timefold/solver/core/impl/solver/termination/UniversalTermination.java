@@ -57,14 +57,11 @@ public sealed interface UniversalTermination<Solution_>
         return new AndCompositeTermination<>(terminations);
     }
 
-    static <Solution_> UniversalTermination<Solution_> bridge(Termination<Solution_> termination) {
+    static <Solution_> UniversalTermination<Solution_> bridge(SolverTermination<Solution_> termination) {
         if (termination instanceof UniversalTermination<Solution_> universalTermination) {
             return universalTermination;
-        } else if (termination instanceof SolverTermination<Solution_> solverTermination) {
-            return new SolverToUniversalBridgeTermination<>(solverTermination);
         } else {
-            throw new UnsupportedOperationException("Impossible state: The termination (%s) is not supported."
-                    .formatted(termination.getClass().getSimpleName()));
+            return new SolverToUniversalBridgeTermination<>(termination);
         }
     }
 

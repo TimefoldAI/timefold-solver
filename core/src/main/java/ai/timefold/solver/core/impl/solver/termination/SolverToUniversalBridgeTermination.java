@@ -47,6 +47,6 @@ final class SolverToUniversalBridgeTermination<Solution_>
 
     @Override
     public String toString() {
-        return solverTermination.toString();
+        return "Bridge(" + solverTermination + ")";
     }
 }
