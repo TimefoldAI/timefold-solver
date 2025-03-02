@@ -15,7 +15,7 @@ abstract class AbstractCompositeTerminationTest {
     abstract void phaseTermination();
 
     @Test
-    abstract void phaseTerminationUnsupported();
+    abstract void phaseTerminationInapplicable();
 
     @Test
     abstract void calculateSolverTimeGradientTest();
@@ -24,15 +24,15 @@ abstract class AbstractCompositeTerminationTest {
     abstract void calculatePhaseTimeGradientTest();
 
     @Test
-    abstract void calculatePhaseTimeGradientUnsupportedTest();
+    abstract void calculatePhaseTimeGradientInapplicableTest();
 
     protected static <Solution_> PhaseTermination<Solution_> mockPhaseTermination() {
         return mockPhaseTermination(true);
     }
 
-    protected static <Solution_> PhaseTermination<Solution_> mockPhaseTermination(boolean isPhaseSupported) {
+    protected static <Solution_> PhaseTermination<Solution_> mockPhaseTermination(boolean isApplicableToPhase) {
         PhaseTermination<Solution_> termination = mock(MockablePhaseTermination.class);
-        doReturn(isPhaseSupported).when(termination).isSupported(any());
+        doReturn(isApplicableToPhase).when(termination).isApplicableTo(any());
         return termination;
     }
 

@@ -69,26 +69,26 @@ class OrCompositeTerminationTest extends AbstractCompositeTerminationTest {
 
     @Test
     @Override
-    void phaseTerminationUnsupported() {
-        PhaseTermination<TestdataSolution> unsupportedTermination = mockPhaseTermination(false);
+    void phaseTerminationInapplicable() {
+        PhaseTermination<TestdataSolution> inapplicableTermination = mockPhaseTermination(false);
         PhaseTermination<TestdataSolution> supportedTermination = mockPhaseTermination(true);
         UniversalTermination<TestdataSolution> compositeTermination =
-                new OrCompositeTermination<>(Arrays.asList(unsupportedTermination, supportedTermination));
+                new OrCompositeTermination<>(Arrays.asList(inapplicableTermination, supportedTermination));
         AbstractPhaseScope<TestdataSolution> phaseScope = mock(AbstractPhaseScope.class);
 
-        when(unsupportedTermination.isPhaseTerminated(phaseScope)).thenReturn(false);
+        when(inapplicableTermination.isPhaseTerminated(phaseScope)).thenReturn(false);
         when(supportedTermination.isPhaseTerminated(phaseScope)).thenReturn(false);
         assertThat(compositeTermination.isPhaseTerminated(phaseScope)).isFalse();
 
-        when(unsupportedTermination.isPhaseTerminated(phaseScope)).thenReturn(true);
+        when(inapplicableTermination.isPhaseTerminated(phaseScope)).thenReturn(true);
         when(supportedTermination.isPhaseTerminated(phaseScope)).thenReturn(false);
         assertThat(compositeTermination.isPhaseTerminated(phaseScope)).isFalse();
 
-        when(unsupportedTermination.isPhaseTerminated(phaseScope)).thenReturn(false);
+        when(inapplicableTermination.isPhaseTerminated(phaseScope)).thenReturn(false);
         when(supportedTermination.isPhaseTerminated(phaseScope)).thenReturn(true);
         assertThat(compositeTermination.isPhaseTerminated(phaseScope)).isTrue();
 
-        when(unsupportedTermination.isPhaseTerminated(phaseScope)).thenReturn(true);
+        when(inapplicableTermination.isPhaseTerminated(phaseScope)).thenReturn(true);
         when(supportedTermination.isPhaseTerminated(phaseScope)).thenReturn(true);
         assertThat(compositeTermination.isPhaseTerminated(phaseScope)).isTrue();
     }
@@ -175,39 +175,39 @@ class OrCompositeTerminationTest extends AbstractCompositeTerminationTest {
 
     @Test
     @Override
-    void calculatePhaseTimeGradientUnsupportedTest() {
-        PhaseTermination<TestdataSolution> unsupportedTermination = mockPhaseTermination(false);
+    void calculatePhaseTimeGradientInapplicableTest() {
+        PhaseTermination<TestdataSolution> inapplicableTermination = mockPhaseTermination(false);
         PhaseTermination<TestdataSolution> supportedTermination = mockPhaseTermination(true);
         UniversalTermination<TestdataSolution> compositeTermination =
-                new OrCompositeTermination<>(Arrays.asList(unsupportedTermination, supportedTermination));
+                new OrCompositeTermination<>(Arrays.asList(inapplicableTermination, supportedTermination));
         AbstractPhaseScope<TestdataSolution> phaseScope = mock(AbstractPhaseScope.class);
 
-        when(unsupportedTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(0.0);
+        when(inapplicableTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(0.0);
         when(supportedTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(0.0);
         // max(0.0,0.0) = 0.0
         assertThat(compositeTermination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.0, offset(0.0));
 
-        when(unsupportedTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(0.5);
+        when(inapplicableTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(0.5);
         when(supportedTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(0.0);
         // max(0.5,0.0) = 0.5
         assertThat(compositeTermination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.0, offset(0.0));
 
-        when(unsupportedTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(0.0);
+        when(inapplicableTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(0.0);
         when(supportedTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(0.5);
         // max(0.0,0.5) = 0.5
         assertThat(compositeTermination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.5, offset(0.0));
 
-        when(unsupportedTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(-1.0);
+        when(inapplicableTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(-1.0);
         when(supportedTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(-1.0);
         // Negative time gradient values are unsupported and ignored
         assertThat(compositeTermination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.0, offset(0.0));
 
-        when(unsupportedTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(0.5);
+        when(inapplicableTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(0.5);
         when(supportedTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(-1.0);
         // Negative time gradient values are unsupported and ignored
         assertThat(compositeTermination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.0, offset(0.0));
 
-        when(unsupportedTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(-1.0);
+        when(inapplicableTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(-1.0);
         when(supportedTermination.calculatePhaseTimeGradient(phaseScope)).thenReturn(0.5);
         // Negative time gradient values are unsupported and ignored, max(unsupported,0.5) = 0.5
         assertThat(compositeTermination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.5, offset(0.0));

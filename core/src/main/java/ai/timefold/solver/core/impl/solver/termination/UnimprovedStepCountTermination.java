@@ -49,7 +49,7 @@ final class UnimprovedStepCountTermination<Solution_>
     }
 
     @Override
-    public boolean isSupported(AbstractPhaseScope<Solution_> phaseScope) {
+    public boolean isApplicableTo(AbstractPhaseScope<Solution_> phaseScope) {
         return !(phaseScope instanceof ConstructionHeuristicPhaseScope<Solution_>
                 || phaseScope instanceof CustomPhaseScope<Solution_>);
     }

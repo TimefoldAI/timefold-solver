@@ -20,8 +20,7 @@ public sealed interface UniversalTermination<Solution_>
         permits AbstractUniversalTermination {
 
     /**
-     * @return List of {@link PhaseTermination}s that are part of this termination.
-     *         The list is never null and is unmodifiable.
+     * @return Unmodifiable list of {@link PhaseTermination}s that are part of this termination.
      *         If this termination is not a {@link AbstractCompositeTermination}, it returns an empty list.
      */
     default List<PhaseTermination<Solution_>> getPhaseTerminationList() {
@@ -29,14 +28,14 @@ public sealed interface UniversalTermination<Solution_>
     }
 
     /**
-     * @return List of {@link Termination}s that are part of this termination,
-     *         which are not supported by the given phase type.
+     * @return Unmodifiable list of {@link Termination}s that are part of this termination,
+     *         which are not applicable to the given phase type
+     *         as defined by {@link PhaseTermination#isApplicableTo(AbstractPhaseScope)}.
      *         If this termination is not a {@link AbstractCompositeTermination}, it returns an empty list.
-     *         The list is unmodifiable.
      */
-    default List<Termination<Solution_>> getUnsupportedTerminationList(AbstractPhaseScope<Solution_> phaseScope) {
+    default List<Termination<Solution_>> getPhasesTerminationsInapplicableTo(AbstractPhaseScope<Solution_> phaseScope) {
         return getPhaseTerminationList().stream()
-                .filter(f -> !f.isSupported(phaseScope))
+                .filter(f -> !f.isApplicableTo(phaseScope))
                 .map(t -> (Termination<Solution_>) t)
                 .toList();
     }

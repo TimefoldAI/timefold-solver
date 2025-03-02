@@ -112,13 +112,13 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     }
 
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        var unsupportedPhaseTerminationList = solverTermination.getUnsupportedTerminationList(phaseScope);
-        if (!unsupportedPhaseTerminationList.isEmpty()) {
+        var inapplicablePhaseTerminationList = solverTermination.getPhasesTerminationsInapplicableTo(phaseScope);
+        if (!inapplicablePhaseTerminationList.isEmpty()) {
             logger.trace("""
                     The solver-level termination ({}) includes phase-level terminations \
-                    which are not supported by the solver phase ({}).
+                    which are not applicable to the solver phase ({}).
                     These phase-level terminations will not take effect in this phase.""",
-                    solverTermination, unsupportedPhaseTerminationList);
+                    solverTermination, inapplicablePhaseTerminationList);
         }
 
         bestSolutionRecaller.phaseStarted(phaseScope);

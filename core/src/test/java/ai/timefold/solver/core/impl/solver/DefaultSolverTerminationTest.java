@@ -73,7 +73,7 @@ class DefaultSolverTerminationTest {
     }
 
     @Test
-    void diminishedReturnsTerminationUnsupportedAtPhaseLevel() {
+    void diminishedReturnsTerminationInapplicableAtPhaseLevel() {
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
@@ -86,13 +86,13 @@ class DefaultSolverTerminationTest {
         var solver = SolverFactory.<TestdataSolution> create(solverConfig)
                 .buildSolver();
         Assertions.assertThatThrownBy(() -> solver.solve(solution))
-                .isInstanceOf(UnsupportedOperationException.class)
-                .hasMessageContaining("includes some terminations which are not supported")
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("includes some terminations which are not applicable")
                 .hasMessageContaining("DiminishedReturns");
     }
 
     @Test
-    void unimprovedStepCountTerminationUnsupportedAtPhaseLevel() {
+    void unimprovedStepCountTerminationInapplicableAtPhaseLevel() {
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
@@ -105,13 +105,13 @@ class DefaultSolverTerminationTest {
         var solver = SolverFactory.<TestdataSolution> create(solverConfig)
                 .buildSolver();
         Assertions.assertThatThrownBy(() -> solver.solve(solution))
-                .isInstanceOf(UnsupportedOperationException.class)
-                .hasMessageContaining("includes some terminations which are not supported")
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("includes some terminations which are not applicable")
                 .hasMessageContaining("UnimprovedStepCount");
     }
 
     @Test
-    void unimprovedTimeSpentTerminationUnsupportedAtPhaseLevel() {
+    void unimprovedTimeSpentTerminationInapplicableAtPhaseLevel() {
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
@@ -124,8 +124,8 @@ class DefaultSolverTerminationTest {
         var solver = SolverFactory.<TestdataSolution> create(solverConfig)
                 .buildSolver();
         Assertions.assertThatThrownBy(() -> solver.solve(solution))
-                .isInstanceOf(UnsupportedOperationException.class)
-                .hasMessageContaining("includes some terminations which are not supported")
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("includes some terminations which are not applicable")
                 .hasMessageContaining("UnimprovedTimeMillisSpent");
     }
 

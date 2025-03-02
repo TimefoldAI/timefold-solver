@@ -103,17 +103,17 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         if (!solver.isTerminationSameAsSolverTermination(phaseTermination)) {
-            // Only fail if the user put the unsupported termination on the phase, not on the solver.
-            // On the solver level, unsupported phase terminations are skipped.
+            // Only fail if the user put the inapplicable termination on the phase, not on the solver.
+            // On the solver level, inapplicable phase terminations are skipped.
             // Otherwise you would only be able to configure a global phase-level termination on the solver
-            // if it was supported by all phases.
+            // if it was applicable to all phases.
             var unsupportedTerminationList = phaseTermination instanceof UniversalTermination<Solution_> universalTermination
-                    ? universalTermination.getUnsupportedTerminationList(phaseScope)
+                    ? universalTermination.getPhasesTerminationsInapplicableTo(phaseScope)
                     : Collections.emptyList();
             if (!unsupportedTerminationList.isEmpty()) {
-                throw new UnsupportedOperationException(
+                throw new IllegalStateException(
                         """
-                                The phase (%s) configured with terminations (%s) includes some terminations which are not supported by it (%s).
+                                The phase (%s) configured with terminations (%s) includes some terminations which are not applicable to it (%s).
                                 Maybe remove these terminations from the phase's configuration."""
                                 .formatted(this, phaseTermination, unsupportedTerminationList));
             }
