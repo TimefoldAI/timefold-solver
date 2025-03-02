@@ -8,7 +8,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeur
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
 import ai.timefold.solver.core.impl.phase.AbstractPossiblyInitializingPhase;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.solver.termination.Termination;
+import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 
 import org.jspecify.annotations.NullMarked;
 import org.slf4j.event.Level;
@@ -213,8 +213,8 @@ public class DefaultConstructionHeuristicPhase<Solution_>
         private final EntityPlacer<Solution_> entityPlacer;
         private final ConstructionHeuristicDecider<Solution_> decider;
 
-        public DefaultConstructionHeuristicPhaseBuilder(int phaseIndex, boolean lastInitializingPhase,
-                String logIndentation, Termination<Solution_> phaseTermination, EntityPlacer<Solution_> entityPlacer,
+        public DefaultConstructionHeuristicPhaseBuilder(int phaseIndex, boolean lastInitializingPhase, String logIndentation,
+                PhaseTermination<Solution_> phaseTermination, EntityPlacer<Solution_> entityPlacer,
                 ConstructionHeuristicDecider<Solution_> decider) {
             super(phaseIndex, lastInitializingPhase, logIndentation, phaseTermination);
             this.entityPlacer = entityPlacer;

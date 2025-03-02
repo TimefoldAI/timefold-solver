@@ -14,7 +14,7 @@ import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.solver.termination.Termination;
+import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.slf4j.Logger;
@@ -26,7 +26,7 @@ public final class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearc
 
     private final String logIndentation;
     private final BestSolutionRecaller<Solution_> bestSolutionRecaller;
-    private final Termination<Solution_> termination;
+    private final PhaseTermination<Solution_> termination;
     private final ManualEntityMimicRecorder<Solution_> manualEntityMimicRecorder;
     private final MoveSelector<Solution_> moveSelector;
     private final boolean scoreBounderEnabled;
@@ -36,7 +36,7 @@ public final class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearc
     private boolean assertExpectedUndoMoveScore = false;
 
     public ExhaustiveSearchDecider(String logIndentation, BestSolutionRecaller<Solution_> bestSolutionRecaller,
-            Termination<Solution_> termination, ManualEntityMimicRecorder<Solution_> manualEntityMimicRecorder,
+            PhaseTermination<Solution_> termination, ManualEntityMimicRecorder<Solution_> manualEntityMimicRecorder,
             MoveSelector<Solution_> moveSelector, boolean scoreBounderEnabled, ScoreBounder scoreBounder) {
         this.logIndentation = logIndentation;
         this.bestSolutionRecaller = bestSolutionRecaller;

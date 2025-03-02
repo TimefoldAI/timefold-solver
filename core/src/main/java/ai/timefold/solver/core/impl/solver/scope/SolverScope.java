@@ -23,7 +23,7 @@ import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.AbstractSolver;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
-import ai.timefold.solver.core.impl.solver.termination.Termination;
+import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
 import io.micrometer.core.instrument.Tags;
@@ -348,7 +348,7 @@ public class SolverScope<Solution_> {
      * at less than the CPU processor count, so other threads (for example servlet threads that handle REST calls)
      * and other processes (such as SSH) have access to uncontested CPUs and don't suffer any latency.
      * <p>
-     * Needs to be called <b>before</b> {@link Termination#isPhaseTerminated(AbstractPhaseScope)},
+     * Needs to be called <b>before</b> {@link PhaseTermination#isPhaseTerminated(AbstractPhaseScope)},
      * so the decision to start a new iteration is after any yield waiting time has been consumed
      * (so {@link Solver#terminateEarly()} reacts immediately).
      */

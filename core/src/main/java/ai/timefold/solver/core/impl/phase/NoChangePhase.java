@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.phase;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.solver.termination.Termination;
+import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 
 /**
  * A {@link NoChangePhase} is a {@link Phase} which does nothing.
@@ -35,7 +35,7 @@ public class NoChangePhase<Solution_> extends AbstractPhase<Solution_> {
 
     public static class Builder<Solution_> extends AbstractPhaseBuilder<Solution_> {
 
-        public Builder(int phaseIndex, String logIndentation, Termination<Solution_> phaseTermination) {
+        public Builder(int phaseIndex, String logIndentation, PhaseTermination<Solution_> phaseTermination) {
             super(phaseIndex, logIndentation, phaseTermination);
         }
 

@@ -5,7 +5,12 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-public final class ScoreCalculationCountTermination<Solution_> extends AbstractTermination<Solution_> {
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
+final class ScoreCalculationCountTermination<Solution_>
+        extends AbstractUniversalTermination<Solution_>
+        implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private final long scoreCalculationCountLimit;
 
@@ -17,10 +22,6 @@ public final class ScoreCalculationCountTermination<Solution_> extends AbstractT
                             .formatted(scoreCalculationCountLimit));
         }
     }
-
-    // ************************************************************************
-    // Terminated methods
-    // ************************************************************************
 
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
@@ -36,10 +37,6 @@ public final class ScoreCalculationCountTermination<Solution_> extends AbstractT
         var scoreCalculationCount = scoreDirector.getCalculationCount();
         return scoreCalculationCount >= scoreCalculationCountLimit;
     }
-
-    // ************************************************************************
-    // Time gradient methods
-    // ************************************************************************
 
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
@@ -57,10 +54,6 @@ public final class ScoreCalculationCountTermination<Solution_> extends AbstractT
         return Math.min(timeGradient, 1.0);
     }
 
-    // ************************************************************************
-    // Other methods
-    // ************************************************************************
-
     @Override
     public ScoreCalculationCountTermination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
             ChildThreadType childThreadType) {
@@ -68,7 +61,7 @@ public final class ScoreCalculationCountTermination<Solution_> extends AbstractT
             // The ScoreDirector.calculationCount of partitions is maxed, not summed.
             return new ScoreCalculationCountTermination<>(scoreCalculationCountLimit);
         } else {
-            throw new IllegalStateException("The childThreadType (%s) is not implemented."
+            throw new UnsupportedOperationException("The childThreadType (%s) is not implemented."
                     .formatted(childThreadType));
         }
     }
