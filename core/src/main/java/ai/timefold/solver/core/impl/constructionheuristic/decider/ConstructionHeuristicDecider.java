@@ -14,7 +14,7 @@ import ai.timefold.solver.core.impl.move.generic.NoChangeMove;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.solver.termination.Termination;
+import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.slf4j.Logger;
@@ -28,13 +28,13 @@ public class ConstructionHeuristicDecider<Solution_> {
     protected final transient Logger logger = LoggerFactory.getLogger(getClass());
 
     protected final String logIndentation;
-    protected final Termination<Solution_> termination;
+    protected final PhaseTermination<Solution_> termination;
     protected final ConstructionHeuristicForager<Solution_> forager;
 
     protected boolean assertMoveScoreFromScratch = false;
     protected boolean assertExpectedUndoMoveScore = false;
 
-    public ConstructionHeuristicDecider(String logIndentation, Termination<Solution_> termination,
+    public ConstructionHeuristicDecider(String logIndentation, PhaseTermination<Solution_> termination,
             ConstructionHeuristicForager<Solution_> forager) {
         this.logIndentation = logIndentation;
         this.termination = termination;

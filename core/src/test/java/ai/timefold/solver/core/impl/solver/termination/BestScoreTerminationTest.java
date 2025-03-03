@@ -24,9 +24,9 @@ class BestScoreTerminationTest {
 
     @Test
     void solveTermination() {
-        ScoreDefinition scoreDefinition = mock(ScoreDefinition.class);
+        ScoreDefinition<?> scoreDefinition = mock(ScoreDefinition.class);
         when(scoreDefinition.getLevelsSize()).thenReturn(1);
-        Termination<TestdataSolution> termination =
+        SolverTermination<TestdataSolution> termination =
                 new BestScoreTermination<>(scoreDefinition, SimpleScore.of(-1000), new double[] {});
         SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
         when(solverScope.getScoreDefinition()).thenReturn(new SimpleScoreDefinition());
@@ -55,9 +55,9 @@ class BestScoreTerminationTest {
 
     @Test
     void phaseTermination() {
-        ScoreDefinition scoreDefinition = mock(ScoreDefinition.class);
+        ScoreDefinition<?> scoreDefinition = mock(ScoreDefinition.class);
         when(scoreDefinition.getLevelsSize()).thenReturn(1);
-        Termination<TestdataSolution> termination =
+        PhaseTermination<TestdataSolution> termination =
                 new BestScoreTermination<>(scoreDefinition, SimpleScore.of(-1000), new double[] {});
         AbstractPhaseScope<TestdataSolution> phaseScope = mock(AbstractPhaseScope.class);
         when(phaseScope.isBestSolutionInitialized()).thenReturn(true);

@@ -19,9 +19,9 @@ class BestScoreFeasibleTerminationTest {
 
     @Test
     void solveTermination() {
-        ScoreDefinition scoreDefinition = mock(ScoreDefinition.class);
+        ScoreDefinition<?> scoreDefinition = mock(ScoreDefinition.class);
         when(scoreDefinition.getFeasibleLevelsSize()).thenReturn(1);
-        Termination<TestdataSolution> termination = new BestScoreFeasibleTermination<>(scoreDefinition, new double[] {});
+        SolverTermination<TestdataSolution> termination = new BestScoreFeasibleTermination<>(scoreDefinition, new double[] {});
         SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
         when(solverScope.getScoreDefinition()).thenReturn(new HardSoftScoreDefinition());
         when(solverScope.getStartingInitializedScore()).thenReturn(HardSoftScore.of(-100, -100));
@@ -49,9 +49,10 @@ class BestScoreFeasibleTerminationTest {
 
     @Test
     void phaseTermination() {
-        ScoreDefinition scoreDefinition = mock(ScoreDefinition.class);
+        ScoreDefinition<?> scoreDefinition = mock(ScoreDefinition.class);
         when(scoreDefinition.getFeasibleLevelsSize()).thenReturn(1);
-        Termination<TestdataSolution> termination = new BestScoreFeasibleTermination<>(scoreDefinition, new double[] {});
+        UniversalTermination<TestdataSolution> termination =
+                new BestScoreFeasibleTermination<>(scoreDefinition, new double[] {});
         AbstractPhaseScope<TestdataSolution> phaseScope = mock(AbstractPhaseScope.class);
         when(phaseScope.getStartingScore()).thenReturn(HardSoftScore.of(-100, -100));
         when(phaseScope.isBestSolutionInitialized()).thenReturn(true);
@@ -78,7 +79,7 @@ class BestScoreFeasibleTerminationTest {
 
     @Test
     void calculateTimeGradientBendableScoreHHSSS() {
-        ScoreDefinition scoreDefinition = mock(ScoreDefinition.class);
+        ScoreDefinition<?> scoreDefinition = mock(ScoreDefinition.class);
         when(scoreDefinition.getFeasibleLevelsSize()).thenReturn(2);
         BestScoreFeasibleTermination<TestdataSolution> termination = new BestScoreFeasibleTermination<>(scoreDefinition,
                 new double[] { 0.75 });

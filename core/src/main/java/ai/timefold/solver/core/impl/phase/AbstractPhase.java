@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.phase;
 
+import java.util.Collections;
+
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -13,7 +15,9 @@ import ai.timefold.solver.core.impl.solver.AbstractSolver;
 import ai.timefold.solver.core.impl.solver.exception.ScoreCorruptionException;
 import ai.timefold.solver.core.impl.solver.exception.VariableCorruptionException;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
+import ai.timefold.solver.core.impl.solver.termination.UniversalTermination;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +34,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     protected final String logIndentation;
 
     // Called "phaseTermination" to clearly distinguish from "solverTermination" inside AbstractSolver.
-    protected final Termination<Solution_> phaseTermination;
+    protected final PhaseTermination<Solution_> phaseTermination;
 
     protected final boolean assertPhaseScoreFromScratch;
     protected final boolean assertStepScoreFromScratch;
@@ -88,18 +92,32 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
 
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
-        phaseTermination.solvingStarted(solverScope);
         phaseLifecycleSupport.fireSolvingStarted(solverScope);
     }
 
     @Override
     public void solvingEnded(SolverScope<Solution_> solverScope) {
-        phaseTermination.solvingEnded(solverScope);
         phaseLifecycleSupport.fireSolvingEnded(solverScope);
     }
 
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
+        if (!solver.isTerminationSameAsSolverTermination(phaseTermination)) {
+            // Only fail if the user put the inapplicable termination on the phase, not on the solver.
+            // On the solver level, inapplicable phase terminations are skipped.
+            // Otherwise you would only be able to configure a global phase-level termination on the solver
+            // if it was applicable to all phases.
+            var unsupportedTerminationList = phaseTermination instanceof UniversalTermination<Solution_> universalTermination
+                    ? universalTermination.getPhasesTerminationsInapplicableTo(phaseScope)
+                    : Collections.emptyList();
+            if (!unsupportedTerminationList.isEmpty()) {
+                throw new IllegalStateException(
+                        """
+                                The phase (%s) configured with terminations (%s) includes some terminations which are not applicable to it (%s).
+                                Maybe remove these terminations from the phase's configuration."""
+                                .formatted(this, phaseTermination, unsupportedTerminationList));
+            }
+        }
         phaseScope.startingNow();
         phaseScope.reset();
         if (!isNested()) {
@@ -255,14 +273,14 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
 
         private final int phaseIndex;
         private final String logIndentation;
-        private final Termination<Solution_> phaseTermination;
+        private final PhaseTermination<Solution_> phaseTermination;
 
         private boolean assertPhaseScoreFromScratch = false;
         private boolean assertStepScoreFromScratch = false;
         private boolean assertExpectedStepScore = false;
         private boolean assertShadowVariablesAreNotStaleAfterStep = false;
 
-        protected AbstractPhaseBuilder(int phaseIndex, String logIndentation, Termination<Solution_> phaseTermination) {
+        protected AbstractPhaseBuilder(int phaseIndex, String logIndentation, PhaseTermination<Solution_> phaseTermination) {
             this.phaseIndex = phaseIndex;
             this.logIndentation = logIndentation;
             this.phaseTermination = phaseTermination;

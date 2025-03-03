@@ -4,7 +4,12 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-public final class MoveCountTermination<Solution_> extends AbstractTermination<Solution_> {
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
+final class MoveCountTermination<Solution_>
+        extends AbstractUniversalTermination<Solution_>
+        implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private final long moveCountLimit;
 
@@ -14,14 +19,6 @@ public final class MoveCountTermination<Solution_> extends AbstractTermination<S
             throw new IllegalArgumentException("The moveCountLimit (%d) cannot be negative.".formatted(moveCountLimit));
         }
     }
-
-    public long getMoveCountLimit() {
-        return moveCountLimit;
-    }
-
-    // ************************************************************************
-    // Terminated methods
-    // ************************************************************************
 
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
@@ -38,10 +35,6 @@ public final class MoveCountTermination<Solution_> extends AbstractTermination<S
         return moveEvaluationCount >= moveCountLimit;
     }
 
-    // ************************************************************************
-    // Time gradient methods
-    // ************************************************************************
-
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
         return calculateTimeGradient(solverScope);
@@ -57,12 +50,9 @@ public final class MoveCountTermination<Solution_> extends AbstractTermination<S
         var timeGradient = moveEvaluationCount / ((double) moveCountLimit);
         return Math.min(timeGradient, 1.0);
     }
-    // ************************************************************************
-    // Other methods
-    // ************************************************************************
 
     @Override
-    public MoveCountTermination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
+    public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
             ChildThreadType childThreadType) {
         return new MoveCountTermination<>(moveCountLimit);
     }
