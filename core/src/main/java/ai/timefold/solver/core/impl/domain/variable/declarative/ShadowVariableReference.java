@@ -27,13 +27,14 @@ public final class ShadowVariableReference<Solution_, Entity_, Value_>
             ShadowVariableCalculation<Solution_, Entity_, Value_> calculation,
             List<InnerVariableReference<Solution_, ?, ?>> shadowVariableReferences,
             Class<? extends Entity_> entityClass,
-            Class<? extends Value_> valueType) {
+            Class<? extends Value_> valueType,
+            boolean allowsNulls) {
         super(calculation.shadowVariableFactory,
                 solutionDescriptor, supplyManager, null,
                 new VariableGraphNavigator<>(VariableId.entity(entityClass),
                         variableDescriptor),
                 entityClass,
-                entityClass, valueType);
+                entityClass, valueType, allowsNulls);
         this.variableDescriptor = variableDescriptor;
         this.calculation = calculation;
         this.shadowVariableReferences = shadowVariableReferences;
