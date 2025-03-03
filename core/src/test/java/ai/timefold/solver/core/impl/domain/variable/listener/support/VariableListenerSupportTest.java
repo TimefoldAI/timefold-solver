@@ -39,9 +39,9 @@ import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntit
 import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.fsr.TestdataFSRRoutePlan;
-import ai.timefold.solver.core.impl.testdata.domain.fsr.TestdataFSRVehicle;
-import ai.timefold.solver.core.impl.testdata.domain.fsr.TestdataFSRVisit;
+import ai.timefold.solver.core.impl.testdata.domain.declarative.fsr.TestdataFSRRoutePlan;
+import ai.timefold.solver.core.impl.testdata.domain.declarative.fsr.TestdataFSRVehicle;
+import ai.timefold.solver.core.impl.testdata.domain.declarative.fsr.TestdataFSRVisit;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.order.TestdataShadowVariableOrderEntity;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.order.TestdataShadowVariableOrderSolution;
 
@@ -286,13 +286,13 @@ class VariableListenerSupportTest {
         var previous = root.previous();
         var inverse = root.inverse();
 
-        var serviceReadyTime = root.child(TestdataFSRVisit.class, "serviceReadyTime");
-        var serviceStartTime = root.child(TestdataFSRVisit.class, "serviceStartTime");
-        var serviceFinishTime = root.child(TestdataFSRVisit.class, "serviceFinishTime");
+        var serviceReadyTime = root.child("serviceReadyTime");
+        var serviceStartTime = root.child("serviceStartTime");
+        var serviceFinishTime = root.child("serviceFinishTime");
 
         var group = root.group(TestdataFSRVisit.class, 0);
-        var groupReadyTime = group.child(TestdataFSRVisit.class, "serviceReadyTime");
-        var previousFinishTime = previous.child(TestdataFSRVisit.class, "serviceFinishTime");
+        var groupReadyTime = group.child("serviceReadyTime");
+        var previousFinishTime = previous.child("serviceFinishTime");
 
         var expectedAddCount = new AtomicInteger(0);
         var expectedRemoveCount = new AtomicInteger(0);

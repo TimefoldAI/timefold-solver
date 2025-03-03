@@ -17,22 +17,22 @@ public class DefaultShadowVariableSession<Solution_> implements ShadowVariableSe
 
     public void beforeVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
         var entityClass = variableDescriptor.getEntityDescriptor().getEntityClass();
-        graph.beforeVariableChanged(VariableId.entity(entityClass).child(entityClass, variableDescriptor.getVariableName()),
+        graph.beforeVariableChanged(VariableId.entity(entityClass).child(variableDescriptor.getVariableName()),
                 entity);
     }
 
     public void afterVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
         var entityClass = variableDescriptor.getEntityDescriptor().getEntityClass();
-        graph.afterVariableChanged(VariableId.entity(entityClass).child(entityClass, variableDescriptor.getVariableName()),
+        graph.afterVariableChanged(VariableId.entity(entityClass).child(variableDescriptor.getVariableName()),
                 entity);
     }
 
     public void beforeListElementChanged(Object entity) {
         var entityClass = entity.getClass();
         var entityRootId = VariableId.entity(entityClass);
-        var inverseVariableId = entityRootId.child(entityClass, DefaultShadowVariableFactory.INVERSE);
-        var previousVariableId = entityRootId.child(entityClass, DefaultShadowVariableFactory.PREVIOUS);
-        var nextVariableId = entityRootId.child(entityClass, DefaultShadowVariableFactory.NEXT);
+        var inverseVariableId = entityRootId.child(DefaultShadowVariableFactory.INVERSE);
+        var previousVariableId = entityRootId.child(DefaultShadowVariableFactory.PREVIOUS);
+        var nextVariableId = entityRootId.child(DefaultShadowVariableFactory.NEXT);
 
         graph.beforeVariableChanged(inverseVariableId,
                 entity);
@@ -45,9 +45,9 @@ public class DefaultShadowVariableSession<Solution_> implements ShadowVariableSe
     public void afterListElementChanged(Object entity) {
         var entityClass = entity.getClass();
         var entityRootId = VariableId.entity(entityClass);
-        var inverseVariableId = entityRootId.child(entityClass, DefaultShadowVariableFactory.INVERSE);
-        var previousVariableId = entityRootId.child(entityClass, DefaultShadowVariableFactory.PREVIOUS);
-        var nextVariableId = entityRootId.child(entityClass, DefaultShadowVariableFactory.NEXT);
+        var inverseVariableId = entityRootId.child(DefaultShadowVariableFactory.INVERSE);
+        var previousVariableId = entityRootId.child(DefaultShadowVariableFactory.PREVIOUS);
+        var nextVariableId = entityRootId.child(DefaultShadowVariableFactory.NEXT);
 
         graph.afterVariableChanged(inverseVariableId,
                 entity);
@@ -60,11 +60,11 @@ public class DefaultShadowVariableSession<Solution_> implements ShadowVariableSe
     public void afterListElementUnassigned(Object entity) {
         var entityClass = entity.getClass();
         var entityRootId = VariableId.entity(entityClass);
-        var inverseVariableId = graph.lookup(entityRootId.child(entityClass, DefaultShadowVariableFactory.INVERSE),
+        var inverseVariableId = graph.lookup(entityRootId.child(DefaultShadowVariableFactory.INVERSE),
                 entity);
-        var previousVariableId = graph.lookup(entityRootId.child(entityClass, DefaultShadowVariableFactory.PREVIOUS),
+        var previousVariableId = graph.lookup(entityRootId.child(DefaultShadowVariableFactory.PREVIOUS),
                 entity);
-        var nextVariableId = graph.lookup(entityRootId.child(entityClass, DefaultShadowVariableFactory.NEXT),
+        var nextVariableId = graph.lookup(entityRootId.child(DefaultShadowVariableFactory.NEXT),
                 entity);
 
         if (inverseVariableId != null) {

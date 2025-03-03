@@ -21,7 +21,7 @@ public class MockShadowVariableSession<Solution_> implements ShadowVariableSessi
 
     @Override
     public void setVariable(Object entity, String variableName, @Nullable Object value) {
-        var variableId = VariableId.entity(entity.getClass()).child(entity.getClass(), variableName);
+        var variableId = VariableId.entity(entity.getClass()).child(variableName);
         graph.beforeVariableChanged(variableId, entity);
         solutionDescriptor.getEntityDescriptorStrict(entity.getClass()).getVariableDescriptor(variableName)
                 .setValue(entity, value);
@@ -30,9 +30,9 @@ public class MockShadowVariableSession<Solution_> implements ShadowVariableSessi
 
     @Override
     public void setPrevious(Object entity, @Nullable Object previousValue) {
-        var variableId = VariableId.entity(entity.getClass()).child(entity.getClass(), DefaultShadowVariableFactory.PREVIOUS);
+        var variableId = VariableId.entity(entity.getClass()).child(DefaultShadowVariableFactory.PREVIOUS);
         var inverseVariableId =
-                VariableId.entity(entity.getClass()).child(entity.getClass(), DefaultShadowVariableFactory.NEXT);
+                VariableId.entity(entity.getClass()).child(DefaultShadowVariableFactory.NEXT);
         var oldPrevious = mockListStateSupply.getPreviousElement(entity);
         graph.beforeVariableChanged(variableId, entity);
         graph.beforeVariableChanged(inverseVariableId, previousValue);
@@ -49,9 +49,9 @@ public class MockShadowVariableSession<Solution_> implements ShadowVariableSessi
 
     @Override
     public void setNext(Object entity, @Nullable Object nextValue) {
-        var variableId = VariableId.entity(entity.getClass()).child(entity.getClass(), DefaultShadowVariableFactory.NEXT);
+        var variableId = VariableId.entity(entity.getClass()).child(DefaultShadowVariableFactory.NEXT);
         var inverseVariableId =
-                VariableId.entity(entity.getClass()).child(entity.getClass(), DefaultShadowVariableFactory.PREVIOUS);
+                VariableId.entity(entity.getClass()).child(DefaultShadowVariableFactory.PREVIOUS);
         var oldNext = mockListStateSupply.getNextElement(entity);
         graph.beforeVariableChanged(variableId, entity);
         graph.beforeVariableChanged(inverseVariableId, nextValue);
@@ -68,7 +68,7 @@ public class MockShadowVariableSession<Solution_> implements ShadowVariableSessi
 
     @Override
     public void setInverse(Object entity, @Nullable Object inverseValue) {
-        var variableId = VariableId.entity(entity.getClass()).child(entity.getClass(), DefaultShadowVariableFactory.INVERSE);
+        var variableId = VariableId.entity(entity.getClass()).child(DefaultShadowVariableFactory.INVERSE);
         graph.beforeVariableChanged(variableId, entity);
         mockListStateSupply.setInverse(entity, inverseValue);
         graph.afterVariableChanged(variableId, entity);

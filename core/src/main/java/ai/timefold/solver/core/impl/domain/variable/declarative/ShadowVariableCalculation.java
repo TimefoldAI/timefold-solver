@@ -36,6 +36,9 @@ public final class ShadowVariableCalculation<Solution_, Entity_, Value_> {
 
     public ShadowVariableCalculation<Solution_, Entity_, Value_>
             withFallback(ShadowVariableCalculation<Solution_, Entity_, Value_> fallback) {
+        if (this.fallback != null) {
+            fallback = this.fallback.withFallback(fallback);
+        }
         return new ShadowVariableCalculation<>(fallback, inputs, calculatorMethod, calculator);
     }
 
@@ -45,7 +48,7 @@ public final class ShadowVariableCalculation<Solution_, Entity_, Value_> {
             inputValues[0] = entity;
             for (int i = 1; i < inputs.length + 1; i++) {
                 inputValues[i] = inputs[i - 1].getValue(entity);
-                if (inputValues[i] == null) {
+                if (inputValues[i] == null && !inputs[i - 1].isNullValueValid()) {
                     if (fallback != null) {
                         return fallback.calculate(entity);
                     } else {

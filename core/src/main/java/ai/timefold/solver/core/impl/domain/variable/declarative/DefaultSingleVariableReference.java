@@ -24,6 +24,7 @@ public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentVal
     Class<? extends ParentValue_> parentType;
     Class<? extends Value_> valueType;
     DefaultShadowVariableFactory<?> shadowVariableFactory;
+    boolean allowsNullValues;
 
     @Nullable
     DefaultSingleVariableReference<Solution_, Entity_, ?, ParentValue_> parent;
@@ -36,7 +37,8 @@ public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentVal
             GraphNavigator<ParentValue_, Value_> navigator,
             Class<? extends Entity_> entityClass,
             Class<? extends ParentValue_> parentType,
-            Class<? extends Value_> valueType) {
+            Class<? extends Value_> valueType,
+            boolean allowsNullValues) {
         this.solutionDescriptor = solutionDescriptor;
         this.supplyManager = supplyManager;
         this.parent = parent;
@@ -45,6 +47,7 @@ public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentVal
         this.parentType = parentType;
         this.valueType = valueType;
         this.shadowVariableFactory = shadowVariableFactory;
+        this.allowsNullValues = allowsNullValues;
     }
 
     public static <Solution_, Entity_> DefaultSingleVariableReference<Solution_, Entity_, Entity_, Entity_>
@@ -53,7 +56,7 @@ public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentVal
                     Class<? extends Entity_> entityType) {
         return new DefaultSingleVariableReference<>(shadowVariableFactory, solutionDescriptor, supplyManager,
                 null, new IdGraphNavigator<>(entityType),
-                entityType, entityType, entityType);
+                entityType, entityType, entityType, false);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -61,7 +64,14 @@ public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentVal
             Class<? extends NewValue_> newValueType,
             GraphNavigator<Value_, NewValue_> function) {
         return new DefaultSingleVariableReference(shadowVariableFactory, solutionDescriptor, supplyManager, this,
-                function, entityClass, valueType, newValueType);
+                function, entityClass, valueType, newValueType, allowsNullValues);
+    }
+
+    private <NewValue_> DefaultSingleVariableReference<Solution_, Entity_, Value_, NewValue_> nullableChild(
+            Class<? extends NewValue_> newValueType,
+            GraphNavigator<Value_, NewValue_> function) {
+        return new DefaultSingleVariableReference(shadowVariableFactory, solutionDescriptor, supplyManager, this,
+                function, entityClass, valueType, newValueType, true);
     }
 
     @Override
@@ -155,8 +165,8 @@ public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentVal
 
     @Override
     public void processObject(VariableReferenceGraph<Solution_> graph, Object object) {
-        if (entityClass.isInstance(object)) {
-            var variableId = navigator.getVariableId();
+        var variableId = navigator.getVariableId();
+        if (variableId.entityClass().isInstance(object)) {
             var toEdge = graph.addVariableReferenceEntity(variableId, object, this);
             if (parent != null) {
                 graph.addFixedEdge(
@@ -173,6 +183,21 @@ public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentVal
     public void addReferences(DefaultShadowVariableFactory<Solution_> factory) {
         if (navigator instanceof VariableGraphNavigator<?, ?> variableGraphNavigator) {
             factory.addShadowVariableReference(variableGraphNavigator.variableDescriptor.getVariableName(), this);
+        }
+    }
+
+    @Override
+    public boolean isNullValueValid() {
+        return false;
+    }
+
+    @Override
+    public SingleVariableReference<Entity_, Value_> allowNullValue() {
+        if (parent != null) {
+            return parent.nullableChild(valueType, navigator);
+        } else {
+            // It is impossible for identity to return null
+            return this;
         }
     }
 
