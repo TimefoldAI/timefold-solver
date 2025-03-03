@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.function.QuadFunction;
@@ -33,7 +34,7 @@ public class DefaultShadowCalculationBuilder<Solution_, Entity_, Value_> impleme
     }
 
     @Override
-    public <A> ShadowCalculationBuilder<Entity_, Value_> orCompute(VariableReference<Entity_, A> a,
+    public <A> ShadowCalculationBuilder<Entity_, Value_> elseComputeIfHasAll(VariableReference<Entity_, A> a,
             BiFunction<Entity_, A, Value_> function) {
         try {
             return new DefaultShadowCalculationBuilder<>(variableFactory, solutionDescriptor, supplyManager, entityClass,
@@ -48,7 +49,7 @@ public class DefaultShadowCalculationBuilder<Solution_, Entity_, Value_> impleme
     }
 
     @Override
-    public <A, B> ShadowCalculationBuilder<Entity_, Value_> orCompute(VariableReference<Entity_, A> a,
+    public <A, B> ShadowCalculationBuilder<Entity_, Value_> elseComputeIfHasAll(VariableReference<Entity_, A> a,
             VariableReference<Entity_, B> b, TriFunction<Entity_, A, B, Value_> function) {
         try {
             return new DefaultShadowCalculationBuilder<>(variableFactory, solutionDescriptor, supplyManager, entityClass,
@@ -64,7 +65,7 @@ public class DefaultShadowCalculationBuilder<Solution_, Entity_, Value_> impleme
     }
 
     @Override
-    public <A, B, C> ShadowCalculationBuilder<Entity_, Value_> orCompute(VariableReference<Entity_, A> a,
+    public <A, B, C> ShadowCalculationBuilder<Entity_, Value_> elseComputeIfHasAll(VariableReference<Entity_, A> a,
             VariableReference<Entity_, B> b, VariableReference<Entity_, C> c, QuadFunction<Entity_, A, B, C, Value_> function) {
         try {
             return new DefaultShadowCalculationBuilder<>(variableFactory, solutionDescriptor, supplyManager, entityClass,
@@ -81,7 +82,7 @@ public class DefaultShadowCalculationBuilder<Solution_, Entity_, Value_> impleme
     }
 
     @Override
-    public <A, B, C, D> ShadowCalculationBuilder<Entity_, Value_> orCompute(VariableReference<Entity_, A> a,
+    public <A, B, C, D> ShadowCalculationBuilder<Entity_, Value_> elseComputeIfHasAll(VariableReference<Entity_, A> a,
             VariableReference<Entity_, B> b, VariableReference<Entity_, C> c, VariableReference<Entity_, D> d,
             PentaFunction<Entity_, A, B, C, D, Value_> function) {
         try {
@@ -101,6 +102,18 @@ public class DefaultShadowCalculationBuilder<Solution_, Entity_, Value_> impleme
     }
 
     @Override
+    public ShadowCalculationBuilder<Entity_, Value_> elseDefaultTo(Function<Entity_, Value_> function) {
+        try {
+            return new DefaultShadowCalculationBuilder<>(variableFactory, solutionDescriptor, supplyManager, entityClass,
+                    calculation.withFallback(new ShadowVariableCalculation<>(variableFactory,
+                            new InnerVariableReference[] {}, Function.class.getMethod("apply", Object.class),
+                            function)));
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public SingleVariableReference<Entity_, Value_> as(String variableName) {
         var out = new ShadowVariableReference<>(
                 solutionDescriptor,
@@ -110,7 +123,24 @@ public class DefaultShadowCalculationBuilder<Solution_, Entity_, Value_> impleme
                 calculation,
                 variableFactory.getShadowVariableReferences(variableName),
                 entityClass,
-                (Class<? extends Value_>) Object.class);
+                (Class<? extends Value_>) Object.class,
+                false);
+        variableFactory.addShadowVariable(out);
+        return out;
+    }
+
+    @Override
+    public SingleVariableReference<Entity_, Value_> asNullable(String variableName) {
+        var out = new ShadowVariableReference<>(
+                solutionDescriptor,
+                supplyManager,
+                solutionDescriptor.getEntityDescriptorStrict(entityClass)
+                        .getVariableDescriptor(variableName),
+                calculation,
+                variableFactory.getShadowVariableReferences(variableName),
+                entityClass,
+                (Class<? extends Value_>) Object.class,
+                true);
         variableFactory.addShadowVariable(out);
         return out;
     }
