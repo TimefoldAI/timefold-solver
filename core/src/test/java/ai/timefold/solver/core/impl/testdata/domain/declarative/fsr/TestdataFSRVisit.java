@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.fsr;
+package ai.timefold.solver.core.impl.testdata.domain.declarative.fsr;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -21,13 +21,13 @@ public class TestdataFSRVisit {
     @InverseRelationShadowVariable(sourceVariableName = "visits")
     TestdataFSRVehicle vehicle;
 
-    @DeclarativeShadowVariable(TestShadowVariableProvider.class)
+    @DeclarativeShadowVariable(TestdataFSRShadowVariableProvider.class)
     LocalDateTime serviceReadyTime;
 
-    @DeclarativeShadowVariable(TestShadowVariableProvider.class)
+    @DeclarativeShadowVariable(TestdataFSRShadowVariableProvider.class)
     LocalDateTime serviceStartTime;
 
-    @DeclarativeShadowVariable(TestShadowVariableProvider.class)
+    @DeclarativeShadowVariable(TestdataFSRShadowVariableProvider.class)
     LocalDateTime serviceFinishTime;
 
     @PreviousElementShadowVariable(sourceVariableName = "visits")
@@ -172,8 +172,8 @@ public class TestdataFSRVisit {
             if (vehicle == null) {
                 return null;
             }
-            cache.readyTimeCache.put(this, TestShadowVariableProvider.BASE_START_TIME);
-            return TestShadowVariableProvider.BASE_START_TIME;
+            cache.readyTimeCache.put(this, TestdataFSRShadowVariableProvider.BASE_START_TIME);
+            return TestdataFSRShadowVariableProvider.BASE_START_TIME;
         }
         var out = previousVisit.getExpectedServiceFinishTime(cache);
         if (out == null) {

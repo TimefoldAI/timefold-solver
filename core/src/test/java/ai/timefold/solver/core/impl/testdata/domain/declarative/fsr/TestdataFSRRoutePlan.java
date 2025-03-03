@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.fsr;
+package ai.timefold.solver.core.impl.testdata.domain.declarative.fsr;
 
 import java.util.EnumSet;
 import java.util.List;

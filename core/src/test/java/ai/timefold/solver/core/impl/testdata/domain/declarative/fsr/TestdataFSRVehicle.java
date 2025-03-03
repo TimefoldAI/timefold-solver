@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.fsr;
+package ai.timefold.solver.core.impl.testdata.domain.declarative.fsr;
 
 import java.util.ArrayList;
 import java.util.List;

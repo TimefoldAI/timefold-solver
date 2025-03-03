@@ -42,9 +42,6 @@ public class VariableReferenceGraph<Solution_> {
         if (!variableId.entityClass().isInstance(entity)) {
             throw new IllegalArgumentException(variableId + " " + entity);
         }
-        if (variableReference.getVariableId().variableName().contains("#fact")) {
-            throw new IllegalArgumentException(variableId + " " + variableReference);
-        }
         if (variableReferenceToInstanceMap.containsKey(variableId) &&
                 variableReferenceToInstanceMap.get(variableId).containsKey(entity)) {
             return variableReferenceToInstanceMap.get(variableId).get(entity);

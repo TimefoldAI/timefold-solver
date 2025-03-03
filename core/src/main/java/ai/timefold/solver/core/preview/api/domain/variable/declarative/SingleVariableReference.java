@@ -23,4 +23,6 @@ public interface SingleVariableReference<Entity_, Value_> extends VariableRefere
 
     <Element_> GroupVariableReference<Entity_, Element_> group(Class<? extends Element_> element,
             Function<Value_, List<Element_>> groupFunction);
+
+    SingleVariableReference<Entity_, Value_> allowNullValue();
 }

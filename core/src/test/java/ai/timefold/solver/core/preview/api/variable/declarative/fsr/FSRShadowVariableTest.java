@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.variable.provided.fsr;
+package ai.timefold.solver.core.preview.api.variable.declarative.fsr;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.spy;
@@ -12,23 +12,23 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.impl.testdata.domain.fsr.TestShadowVariableProvider;
-import ai.timefold.solver.core.impl.testdata.domain.fsr.TestdataFSRAssertionEasyScoreCalculator;
-import ai.timefold.solver.core.impl.testdata.domain.fsr.TestdataFSRConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.fsr.TestdataFSRRoutePlan;
-import ai.timefold.solver.core.impl.testdata.domain.fsr.TestdataFSRVehicle;
-import ai.timefold.solver.core.impl.testdata.domain.fsr.TestdataFSRVisit;
+import ai.timefold.solver.core.impl.testdata.domain.declarative.fsr.TestdataFSRAssertionEasyScoreCalculator;
+import ai.timefold.solver.core.impl.testdata.domain.declarative.fsr.TestdataFSRConstraintProvider;
+import ai.timefold.solver.core.impl.testdata.domain.declarative.fsr.TestdataFSRRoutePlan;
+import ai.timefold.solver.core.impl.testdata.domain.declarative.fsr.TestdataFSRShadowVariableProvider;
+import ai.timefold.solver.core.impl.testdata.domain.declarative.fsr.TestdataFSRVehicle;
+import ai.timefold.solver.core.impl.testdata.domain.declarative.fsr.TestdataFSRVisit;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableSessionFactory;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class ProvidedShadowVariableTest {
+public class FSRShadowVariableTest {
     @Test
     public void simpleChain() {
         var sessionFactory = ShadowVariableSessionFactory.create(
                 TestdataFSRRoutePlan.buildSolutionDescriptor(),
-                new TestShadowVariableProvider());
+                new TestdataFSRShadowVariableProvider());
 
         var vehicle = spy(new TestdataFSRVehicle("v1"));
         var visit1 = spy(new TestdataFSRVisit("c1"));
@@ -43,19 +43,20 @@ public class ProvidedShadowVariableTest {
         Mockito.reset(vehicle, visit1, visit2, visit3);
         session.updateVariables();
 
-        assertThat(visit1.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visit1.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visit1.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(30L));
+        assertThat(visit1.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visit1.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visit1.getServiceFinishTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(30L));
         assertThat(visit1.isInvalid()).isFalse();
 
-        assertThat(visit2.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
-        assertThat(visit2.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
-        assertThat(visit2.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
+        assertThat(visit2.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
+        assertThat(visit2.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
+        assertThat(visit2.getServiceFinishTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
         assertThat(visit2.isInvalid()).isFalse();
 
-        assertThat(visit3.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
-        assertThat(visit3.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
-        assertThat(visit3.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(150L));
+        assertThat(visit3.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
+        assertThat(visit3.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
+        assertThat(visit3.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(150L));
         assertThat(visit3.isInvalid()).isFalse();
 
         session.setPrevious(visit2, visit3);
@@ -66,19 +67,20 @@ public class ProvidedShadowVariableTest {
 
         verifyNoInteractions(visit1);
 
-        assertThat(visit1.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visit1.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visit1.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(30L));
+        assertThat(visit1.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visit1.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visit1.getServiceFinishTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(30L));
         assertThat(visit1.isInvalid()).isFalse();
 
-        assertThat(visit3.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
-        assertThat(visit3.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
-        assertThat(visit3.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
+        assertThat(visit3.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
+        assertThat(visit3.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
+        assertThat(visit3.getServiceFinishTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
         assertThat(visit2.isInvalid()).isFalse();
 
-        assertThat(visit2.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
-        assertThat(visit2.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
-        assertThat(visit2.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(150L));
+        assertThat(visit2.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
+        assertThat(visit2.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
+        assertThat(visit2.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(150L));
         assertThat(visit3.isInvalid()).isFalse();
     }
 
@@ -86,7 +88,7 @@ public class ProvidedShadowVariableTest {
     public void groupChain() {
         var sessionFactory = ShadowVariableSessionFactory.create(
                 TestdataFSRRoutePlan.buildSolutionDescriptor(),
-                new TestShadowVariableProvider());
+                new TestdataFSRShadowVariableProvider());
 
         var vehicle1 = new TestdataFSRVehicle("v1");
         var vehicle2 = new TestdataFSRVehicle("v2");
@@ -120,34 +122,40 @@ public class ProvidedShadowVariableTest {
 
         session.updateVariables();
 
-        assertThat(visitA1.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visitA1.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visitA1.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(30L));
+        assertThat(visitA1.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitA1.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitA1.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(30L));
         assertThat(visitA1.isInvalid()).isFalse();
 
-        assertThat(visitA2.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visitA2.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visitA2.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(30L));
+        assertThat(visitA2.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitA2.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitA2.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(30L));
         assertThat(visitA2.isInvalid()).isFalse();
 
-        assertThat(visitB1.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visitB1.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
-        assertThat(visitB1.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
+        assertThat(visitB1.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitB1.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
+        assertThat(visitB1.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
         assertThat(visitB1.isInvalid()).isFalse();
 
-        assertThat(visitB2.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
-        assertThat(visitB2.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
-        assertThat(visitB2.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
+        assertThat(visitB2.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
+        assertThat(visitB2.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
+        assertThat(visitB2.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
         assertThat(visitB2.isInvalid()).isFalse();
 
-        assertThat(visitB3.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
-        assertThat(visitB3.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
-        assertThat(visitB3.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
+        assertThat(visitB3.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
+        assertThat(visitB3.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
+        assertThat(visitB3.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
         assertThat(visitB3.isInvalid()).isFalse();
 
-        assertThat(visitC.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
-        assertThat(visitC.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
-        assertThat(visitC.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(150L));
+        assertThat(visitC.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
+        assertThat(visitC.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
+        assertThat(visitC.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(150L));
         assertThat(visitC.isInvalid()).isFalse();
 
         session.setPrevious(visitC, null);
@@ -156,34 +164,44 @@ public class ProvidedShadowVariableTest {
 
         session.updateVariables();
 
-        assertThat(visitA1.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
-        assertThat(visitA1.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
-        assertThat(visitA1.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
+        assertThat(visitA1.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
+        assertThat(visitA1.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
+        assertThat(visitA1.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
         assertThat(visitA1.isInvalid()).isFalse();
 
-        assertThat(visitA2.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visitA2.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
-        assertThat(visitA2.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
+        assertThat(visitA2.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitA2.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
+        assertThat(visitA2.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
         assertThat(visitA2.isInvalid()).isFalse();
 
-        assertThat(visitB1.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visitB1.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
-        assertThat(visitB1.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(150L));
+        assertThat(visitB1.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitB1.getServiceStartTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
+        assertThat(visitB1.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(150L));
         assertThat(visitB1.isInvalid()).isFalse();
 
-        assertThat(visitB2.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
-        assertThat(visitB2.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
-        assertThat(visitB2.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(150L));
+        assertThat(visitB2.getServiceReadyTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
+        assertThat(visitB2.getServiceStartTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
+        assertThat(visitB2.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(150L));
         assertThat(visitB2.isInvalid()).isFalse();
 
-        assertThat(visitB3.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
-        assertThat(visitB3.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
-        assertThat(visitB3.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(150L));
+        assertThat(visitB3.getServiceReadyTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
+        assertThat(visitB3.getServiceStartTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
+        assertThat(visitB3.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(150L));
         assertThat(visitB3.isInvalid()).isFalse();
 
-        assertThat(visitC.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visitC.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visitC.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(30L));
+        assertThat(visitC.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitC.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitC.getServiceFinishTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(30L));
         assertThat(visitC.isInvalid()).isFalse();
     }
 
@@ -191,7 +209,7 @@ public class ProvidedShadowVariableTest {
     public void groupChainValidToInvalid() {
         var sessionFactory = ShadowVariableSessionFactory.create(
                 TestdataFSRRoutePlan.buildSolutionDescriptor(),
-                new TestShadowVariableProvider());
+                new TestdataFSRShadowVariableProvider());
 
         var vehicle1 = new TestdataFSRVehicle("v1");
         var vehicle2 = new TestdataFSRVehicle("v2");
@@ -225,34 +243,40 @@ public class ProvidedShadowVariableTest {
 
         session.updateVariables();
 
-        assertThat(visitA1.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visitA1.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visitA1.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(30L));
+        assertThat(visitA1.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitA1.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitA1.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(30L));
         assertThat(visitA1.isInvalid()).isFalse();
 
-        assertThat(visitA2.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visitA2.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visitA2.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(30L));
+        assertThat(visitA2.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitA2.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitA2.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(30L));
         assertThat(visitA2.isInvalid()).isFalse();
 
-        assertThat(visitB1.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visitB1.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
-        assertThat(visitB1.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
+        assertThat(visitB1.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitB1.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
+        assertThat(visitB1.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
         assertThat(visitB1.isInvalid()).isFalse();
 
-        assertThat(visitB2.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
-        assertThat(visitB2.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
-        assertThat(visitB2.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
+        assertThat(visitB2.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
+        assertThat(visitB2.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
+        assertThat(visitB2.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
         assertThat(visitB2.isInvalid()).isFalse();
 
-        assertThat(visitB3.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
-        assertThat(visitB3.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
-        assertThat(visitB3.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
+        assertThat(visitB3.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
+        assertThat(visitB3.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
+        assertThat(visitB3.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
         assertThat(visitB3.isInvalid()).isFalse();
 
-        assertThat(visitC.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
-        assertThat(visitC.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
-        assertThat(visitC.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(150L));
+        assertThat(visitC.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
+        assertThat(visitC.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
+        assertThat(visitC.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(150L));
         assertThat(visitC.isInvalid()).isFalse();
 
         session.setPrevious(visitA1, visitB2);
@@ -264,12 +288,12 @@ public class ProvidedShadowVariableTest {
         assertThat(visitA1.getServiceFinishTime()).isNull();
         assertThat(visitA1.isInvalid()).isTrue();
 
-        assertThat(visitA2.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitA2.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
         assertThat(visitA2.getServiceStartTime()).isNull();
         assertThat(visitA2.getServiceFinishTime()).isNull();
         assertThat(visitA2.isInvalid()).isTrue();
 
-        assertThat(visitB1.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitB1.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
         assertThat(visitB1.getServiceStartTime()).isNull();
         assertThat(visitB1.getServiceFinishTime()).isNull();
         assertThat(visitB1.isInvalid()).isTrue();
@@ -300,12 +324,12 @@ public class ProvidedShadowVariableTest {
         assertThat(visitA1.getServiceFinishTime()).isNull();
         assertThat(visitA1.isInvalid()).isTrue();
 
-        assertThat(visitA2.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
+        assertThat(visitA2.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
         assertThat(visitA2.getServiceStartTime()).isNull();
         assertThat(visitA2.getServiceFinishTime()).isNull();
         assertThat(visitA2.isInvalid()).isTrue();
 
-        assertThat(visitB1.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitB1.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
         assertThat(visitB1.getServiceStartTime()).isNull();
         assertThat(visitB1.getServiceFinishTime()).isNull();
         assertThat(visitB1.isInvalid()).isTrue();
@@ -320,9 +344,9 @@ public class ProvidedShadowVariableTest {
         assertThat(visitB3.getServiceFinishTime()).isNull();
         assertThat(visitB3.isInvalid()).isTrue();
 
-        assertThat(visitC.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visitC.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visitC.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(30L));
+        assertThat(visitC.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitC.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitC.getServiceFinishTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(30L));
         assertThat(visitC.isInvalid()).isFalse();
     }
 
@@ -330,7 +354,7 @@ public class ProvidedShadowVariableTest {
     public void groupChainInvalidToValid() {
         var sessionFactory = ShadowVariableSessionFactory.create(
                 TestdataFSRRoutePlan.buildSolutionDescriptor(),
-                new TestShadowVariableProvider());
+                new TestdataFSRShadowVariableProvider());
 
         var vehicle1 = new TestdataFSRVehicle("v1");
         var vehicle2 = new TestdataFSRVehicle("v2");
@@ -370,12 +394,12 @@ public class ProvidedShadowVariableTest {
         assertThat(visitA1.getServiceFinishTime()).isNull();
         assertThat(visitA1.isInvalid()).isTrue();
 
-        assertThat(visitA2.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitA2.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
         assertThat(visitA2.getServiceStartTime()).isNull();
         assertThat(visitA2.getServiceFinishTime()).isNull();
         assertThat(visitA2.isInvalid()).isTrue();
 
-        assertThat(visitB1.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitB1.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
         assertThat(visitB1.getServiceStartTime()).isNull();
         assertThat(visitB1.getServiceFinishTime()).isNull();
         assertThat(visitB1.isInvalid()).isTrue();
@@ -400,34 +424,40 @@ public class ProvidedShadowVariableTest {
 
         session.updateVariables();
 
-        assertThat(visitA1.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visitA1.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visitA1.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(30L));
+        assertThat(visitA1.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitA1.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitA1.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(30L));
         assertThat(visitA1.isInvalid()).isFalse();
 
-        assertThat(visitA2.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visitA2.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visitA2.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(30L));
+        assertThat(visitA2.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitA2.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitA2.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(30L));
         assertThat(visitA2.isInvalid()).isFalse();
 
-        assertThat(visitB1.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME);
-        assertThat(visitB1.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
-        assertThat(visitB1.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
+        assertThat(visitB1.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME);
+        assertThat(visitB1.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
+        assertThat(visitB1.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
         assertThat(visitB1.isInvalid()).isFalse();
 
-        assertThat(visitB2.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
-        assertThat(visitB2.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
-        assertThat(visitB2.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
+        assertThat(visitB2.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
+        assertThat(visitB2.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
+        assertThat(visitB2.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
         assertThat(visitB2.isInvalid()).isFalse();
 
-        assertThat(visitB3.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
-        assertThat(visitB3.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
-        assertThat(visitB3.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
+        assertThat(visitB3.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
+        assertThat(visitB3.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(60L));
+        assertThat(visitB3.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(90L));
         assertThat(visitB3.isInvalid()).isFalse();
 
-        assertThat(visitC.getServiceReadyTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
-        assertThat(visitC.getServiceStartTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
-        assertThat(visitC.getServiceFinishTime()).isEqualTo(TestShadowVariableProvider.BASE_START_TIME.plusMinutes(150L));
+        assertThat(visitC.getServiceReadyTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
+        assertThat(visitC.getServiceStartTime()).isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(120L));
+        assertThat(visitC.getServiceFinishTime())
+                .isEqualTo(TestdataFSRShadowVariableProvider.BASE_START_TIME.plusMinutes(150L));
         assertThat(visitC.isInvalid()).isFalse();
     }
 

@@ -27,6 +27,7 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
     GraphNavigator<ParentValue_, Value_> navigator;
     @Nullable
     GraphNavigator<ParentValue_, List<Value_>> grouper;
+    boolean allowNullValues;
 
     final int groupId;
 
@@ -50,6 +51,7 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
         this.valueType = valueType;
         this.grouper = null;
         this.groupId = groupId;
+        this.allowNullValues = parent.allowNullValues;
     }
 
     public DefaultGroupVariableReference(
@@ -72,6 +74,32 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
         this.valueType = valueType;
         this.navigator = null;
         this.groupId = groupId;
+        this.allowNullValues = parent.allowsNullValues;
+    }
+
+    public DefaultGroupVariableReference(
+            DefaultShadowVariableFactory<?> shadowVariableFactory,
+            SolutionDescriptor<Solution_> solutionDescriptor,
+            SupplyManager supplyManager,
+            InnerVariableReference<Solution_, Entity_, ParentValue_> parent,
+            @Nullable GraphNavigator<ParentValue_, List<Value_>> grouper,
+            @Nullable GraphNavigator<ParentValue_, Value_> navigator,
+            Class<? extends Entity_> entityClass,
+            Class<? extends ParentValue_> parentType,
+            Class<? extends Value_> valueType,
+            int groupId,
+            boolean allowNullValues) {
+        this.shadowVariableFactory = shadowVariableFactory;
+        this.solutionDescriptor = solutionDescriptor;
+        this.supplyManager = supplyManager;
+        this.parent = parent;
+        this.grouper = grouper;
+        this.navigator = navigator;
+        this.entityClass = entityClass;
+        this.parentType = parentType;
+        this.valueType = valueType;
+        this.groupId = groupId;
+        this.allowNullValues = allowNullValues;
     }
 
     public <NewValue_> DefaultGroupVariableReference<Solution_, Entity_, Value_, NewValue_> child(
@@ -118,6 +146,22 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
     }
 
     @Override
+    public GroupVariableReference<Entity_, Value_> allowNullValues() {
+        return new DefaultGroupVariableReference<>(
+                shadowVariableFactory,
+                solutionDescriptor,
+                supplyManager,
+                parent,
+                grouper,
+                navigator,
+                entityClass,
+                parentType,
+                valueType,
+                groupId,
+                true);
+    }
+
+    @Override
     public VariableId getVariableId() {
         if (navigator != null) {
             return navigator.getVariableId();
@@ -136,8 +180,12 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
             if (parentList == null) {
                 return null;
             }
-            return parentList.stream().map(navigator::getValueEdge)
-                    .filter(Objects::nonNull).toList();
+            if (allowNullValues) {
+                return parentList.stream().map(navigator::getValueEdge).toList();
+            } else {
+                return parentList.stream().map(navigator::getValueEdge)
+                        .filter(Objects::nonNull).toList();
+            }
         }
     }
 
@@ -216,6 +264,11 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
             factory.addShadowVariableReference(variableGraphNavigator.variableDescriptor.getVariableName(), this);
             factory.addGroupVariableReference(this);
         }
+    }
+
+    @Override
+    public boolean isNullValueValid() {
+        return parent.isNullValueValid();
     }
 
     @Override

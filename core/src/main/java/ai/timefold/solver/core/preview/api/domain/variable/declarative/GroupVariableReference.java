@@ -19,4 +19,6 @@ public interface GroupVariableReference<Entity_, Value_> extends VariableReferen
     GroupVariableReference<Entity_, Value_> next();
 
     <Inverse_> GroupVariableReference<Entity_, Inverse_> inverses(Class<? extends Inverse_> inverseClass);
+
+    GroupVariableReference<Entity_, Value_> allowNullValues();
 }
