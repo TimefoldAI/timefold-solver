@@ -4,14 +4,25 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.IntFunction;
+import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.config.util.ConfigUtils;
+import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableSession;
+import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableSessionFactory;
+import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultTopologicalOrderGraph;
+import ai.timefold.solver.core.impl.domain.variable.declarative.TopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -25,6 +36,10 @@ import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableProvider;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * This class is not thread-safe.
@@ -34,7 +49,9 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 public final class VariableListenerSupport<Solution_> implements SupplyManager {
 
     public static <Solution_> VariableListenerSupport<Solution_> create(InnerScoreDirector<Solution_, ?> scoreDirector) {
-        return new VariableListenerSupport<>(scoreDirector, new NotifiableRegistry<>(scoreDirector.getSolutionDescriptor()));
+        return new VariableListenerSupport<>(scoreDirector, new NotifiableRegistry<>(scoreDirector.getSolutionDescriptor()),
+                TimefoldSolverEnterpriseService.buildOrDefault(service -> service::buildTopologyGraph,
+                        () -> DefaultTopologicalOrderGraph::new));
     }
 
     private static final int SHADOW_VARIABLE_VIOLATION_DISPLAY_LIMIT = 3;
@@ -45,11 +62,20 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     private final List<ListVariableEvent> listVariableEventList;
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final List<CascadingUpdateShadowVariableDescriptor<Solution_>> cascadingUpdateShadowVarDescriptorList;
+    @NonNull
+    private final Set<Class<? extends ShadowVariableProvider>> shadowVariableProviderSet;
+    @NonNull
+    private final IntFunction<TopologicalOrderGraph> shadowVariableGraphCreator;
 
     private boolean notificationQueuesAreEmpty = true;
     private int nextGlobalOrder = 0;
+    @Nullable
+    private DefaultShadowVariableSession<Solution_> shadowVariableSession = null;
+    @Nullable
+    private ListVariableStateSupply<Solution_> listVariableStateSupply = null;
 
-    VariableListenerSupport(InnerScoreDirector<Solution_, ?> scoreDirector, NotifiableRegistry<Solution_> notifiableRegistry) {
+    VariableListenerSupport(InnerScoreDirector<Solution_, ?> scoreDirector, NotifiableRegistry<Solution_> notifiableRegistry,
+            @NonNull IntFunction<TopologicalOrderGraph> shadowVariableGraphCreator) {
         this.scoreDirector = scoreDirector;
         this.notifiableRegistry = notifiableRegistry;
         this.cascadingUpdateShadowVarDescriptorList = scoreDirector.getSolutionDescriptor().getEntityDescriptors().stream()
@@ -57,10 +83,12 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                 .toList();
         this.listVariableDescriptor = scoreDirector.getSolutionDescriptor().getListVariableDescriptor();
         this.listVariableEventList = new ArrayList<>();
+        this.shadowVariableProviderSet = new LinkedHashSet<>();
+        this.shadowVariableGraphCreator = shadowVariableGraphCreator;
     }
 
     public void linkVariableListeners() {
-        var listVariableStateSupply = listVariableDescriptor == null ? null : demand(listVariableDescriptor.getStateDemand());
+        listVariableStateSupply = listVariableDescriptor == null ? null : demand(listVariableDescriptor.getStateDemand());
         scoreDirector.getSolutionDescriptor().getEntityDescriptors().stream()
                 .map(EntityDescriptor::getDeclaredShadowVariableDescriptors)
                 .flatMap(Collection::stream)
@@ -95,6 +123,9 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
 
     private void
             processShadowVariableDescriptorWithoutListVariable(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
+        if (shadowVariableDescriptor instanceof DeclarativeShadowVariableDescriptor<Solution_> providedShadowVariableDescriptor) {
+            shadowVariableProviderSet.add(providedShadowVariableDescriptor.getShadowVariableProviderClass());
+        }
         for (var listenerWithSources : shadowVariableDescriptor.buildVariableListeners(this)) {
             var variableListener = listenerWithSources.getVariableListener();
             if (variableListener instanceof Supply supply) {
@@ -173,6 +204,19 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         for (Notifiable notifiable : notifiableRegistry.getAll()) {
             notifiable.resetWorkingSolution();
         }
+        if (!shadowVariableProviderSet.isEmpty()) {
+            var shadowVariableSessionFactory = new DefaultShadowVariableSessionFactory<>(
+                    shadowVariableProviderSet.stream().map(
+                            clazz -> ConfigUtils.newInstance(this::toString,
+                                    "variableProviderClass", clazz))
+                            .collect(Collectors.toSet()),
+                    scoreDirector.getSolutionDescriptor(),
+                    scoreDirector,
+                    this,
+                    shadowVariableGraphCreator);
+            shadowVariableSession = shadowVariableSessionFactory.forSolution(scoreDirector.getWorkingSolution());
+            shadowVariableSession.updateVariables();
+        }
     }
 
     public void close() {
@@ -212,6 +256,21 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
             }
             notificationQueuesAreEmpty = false;
         }
+        if (shadowVariableSession != null) {
+            shadowVariableSession.beforeVariableChanged(variableDescriptor, entity);
+        }
+    }
+
+    public void afterVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
+        if (shadowVariableSession != null) {
+            shadowVariableSession.afterVariableChanged(variableDescriptor, entity);
+        }
+    }
+
+    public void beforeElementAssigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
+        if (shadowVariableSession != null) {
+            shadowVariableSession.beforeListElementChanged(element);
+        }
     }
 
     public void afterElementUnassigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
@@ -222,6 +281,9 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                 notifiable.notifyAfter(notification);
             }
             notificationQueuesAreEmpty = false;
+        }
+        if (shadowVariableSession != null) {
+            shadowVariableSession.afterListElementUnassigned(element);
         }
     }
 
@@ -234,6 +296,14 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                 notifiable.notifyBefore(notification);
             }
             notificationQueuesAreEmpty = false;
+        }
+        if (shadowVariableSession != null) {
+            var elementList = variableDescriptor.getValue(entity);
+            int changeStart = Math.max(0, fromIndex - 1);
+            int changeEnd = Math.min(elementList.size(), toIndex + 1);
+            for (int i = changeStart; i < changeEnd; i++) {
+                shadowVariableSession.beforeListElementChanged(elementList.get(i));
+            }
         }
     }
 
@@ -250,12 +320,30 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         listVariableEventList.add(new ListVariableEvent(entity, fromIndex, toIndex));
     }
 
+    public InnerScoreDirector<Solution_, ?> getScoreDirector() {
+        return scoreDirector;
+    }
+
     public void triggerVariableListenersInNotificationQueues() {
         for (var notifiable : notifiableRegistry.getAll()) {
             notifiable.triggerAllNotifications();
         }
-        if (listVariableDescriptor != null && !cascadingUpdateShadowVarDescriptorList.isEmpty()) {
+        if (listVariableDescriptor != null) {
+            if (shadowVariableSession != null) {
+                for (var change : listVariableEventList) {
+                    var entity = change.entity();
+                    var elementList = listVariableDescriptor.getValue(entity);
+                    int changeStart = Math.max(0, change.fromIndex() - 1);
+                    int changeEnd = Math.min(elementList.size(), change.toIndex() + 1);
+                    for (int i = changeStart; i < changeEnd; i++) {
+                        shadowVariableSession.afterListElementChanged(elementList.get(i));
+                    }
+                }
+            }
             triggerCascadingUpdateShadowVariableUpdate();
+        }
+        if (shadowVariableSession != null) {
+            shadowVariableSession.updateVariables();
         }
         notificationQueuesAreEmpty = true;
         listVariableEventList.clear();
