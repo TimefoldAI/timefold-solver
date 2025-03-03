@@ -13,7 +13,7 @@ public class VariableGraphNavigator<Entity_, Value_> implements GraphNavigator<E
     public VariableGraphNavigator(@Nullable final VariableId parentVariableId,
             VariableDescriptor<?> variableDescriptor) {
         if (parentVariableId != null) {
-            variableId = parentVariableId.child(variableDescriptor.getEntityDescriptor().getEntityClass(),
+            variableId = parentVariableId.child(
                     variableDescriptor.getVariableName());
         } else {
             variableId = new VariableId(variableDescriptor.getEntityDescriptor().getEntityClass(),

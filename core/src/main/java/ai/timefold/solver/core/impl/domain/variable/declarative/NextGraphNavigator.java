@@ -15,7 +15,7 @@ public class NextGraphNavigator<Entity_> implements GraphNavigator<Entity_, Enti
 
     public NextGraphNavigator(final VariableId parentVariableId,
             ListVariableStateSupply<?> stateSupply) {
-        this.variableId = parentVariableId.child(stateSupply.getSourceVariableDescriptor().getElementType(),
+        this.variableId = parentVariableId.child(
                 DefaultShadowVariableFactory.NEXT);
         this.stateSupply = stateSupply;
     }
@@ -49,7 +49,7 @@ public class NextGraphNavigator<Entity_> implements GraphNavigator<Entity_, Enti
     @Override
     public VariableId getParentVariableId() {
         return VariableId.entity(stateSupply.getSourceVariableDescriptor().getElementType())
-                .child(stateSupply.getSourceVariableDescriptor().getElementType(),
+                .child(
                         DefaultShadowVariableFactory.PREVIOUS);
     }
 }

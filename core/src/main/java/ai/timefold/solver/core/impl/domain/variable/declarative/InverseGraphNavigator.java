@@ -14,7 +14,7 @@ public class InverseGraphNavigator<Entity_, Inverse_> implements GraphNavigator<
 
     public InverseGraphNavigator(VariableId parentVariableId,
             ListVariableStateSupply<?> stateSupply) {
-        this.variableId = parentVariableId.child(stateSupply.getSourceVariableDescriptor().getElementType(),
+        this.variableId = parentVariableId.child(
                 DefaultShadowVariableFactory.INVERSE);
         this.stateSupply = stateSupply;
     }
@@ -44,7 +44,7 @@ public class InverseGraphNavigator<Entity_, Inverse_> implements GraphNavigator<
     @Override
     public VariableId getParentVariableId() {
         return VariableId.entity(stateSupply.getSourceVariableDescriptor().getEntityDescriptor().getEntityClass())
-                .child(stateSupply.getSourceVariableDescriptor().getEntityDescriptor().getEntityClass(),
+                .child(
                         stateSupply.getSourceVariableDescriptor().getVariableName());
     }
 }

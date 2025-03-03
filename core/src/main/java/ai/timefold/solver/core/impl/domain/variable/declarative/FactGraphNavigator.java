@@ -14,7 +14,7 @@ public class FactGraphNavigator<Entity_, Value_> implements GraphNavigator<Entit
     public FactGraphNavigator(VariableId parentVariableId,
             Class<?> entityClass,
             Function<Entity_, Value_> factMapper) {
-        this.variableId = parentVariableId.child(entityClass,
+        this.variableId = parentVariableId.child(
                 DefaultShadowVariableFactory.FACT);
         this.entityClass = entityClass;
         this.factMapper = factMapper;

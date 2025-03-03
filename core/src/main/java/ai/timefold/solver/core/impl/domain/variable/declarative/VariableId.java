@@ -15,14 +15,14 @@ public record VariableId(Class<?> entityClass, String variableName, @Nullable Va
 
     public static <Solution_> VariableId of(VariableDescriptor<Solution_> variableDescriptor) {
         var entityClass = variableDescriptor.getEntityDescriptor().getEntityClass();
-        return entity(entityClass).child(entityClass, variableDescriptor.getVariableName());
+        return entity(entityClass).child(variableDescriptor.getVariableName());
     }
 
     public VariableId rootId() {
-        return entity(entityClass).child(entityClass, variableName.substring(variableName.lastIndexOf('.') + 1));
+        return entity(entityClass).child(variableName.substring(variableName.lastIndexOf('.') + 1));
     }
 
-    public VariableId child(Class<?> entityClass, String childVariableName) {
+    public VariableId child(String childVariableName) {
         return new VariableId(entityClass, variableName + "." + childVariableName, this);
     }
 
@@ -31,15 +31,15 @@ public record VariableId(Class<?> entityClass, String variableName, @Nullable Va
     }
 
     public VariableId previous() {
-        return child(entityClass, DefaultShadowVariableFactory.PREVIOUS);
+        return child(DefaultShadowVariableFactory.PREVIOUS);
     }
 
     public VariableId next() {
-        return child(entityClass, DefaultShadowVariableFactory.NEXT);
+        return child(DefaultShadowVariableFactory.NEXT);
     }
 
     public VariableId inverse() {
-        return child(entityClass, DefaultShadowVariableFactory.INVERSE);
+        return child(DefaultShadowVariableFactory.INVERSE);
     }
 
     @Override
