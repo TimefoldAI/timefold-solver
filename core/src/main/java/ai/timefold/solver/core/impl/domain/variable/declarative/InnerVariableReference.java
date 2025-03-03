@@ -22,4 +22,6 @@ public interface InnerVariableReference<Solution_, Entity_, Value_> extends Vari
     void processObject(VariableReferenceGraph<Solution_> graph, Object object);
 
     void addReferences(DefaultShadowVariableFactory<Solution_> factory);
+
+    boolean isNullValueValid();
 }
