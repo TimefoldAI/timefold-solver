@@ -62,6 +62,7 @@ class TimefoldProcessorOverridePropertiesAtRuntimeTest {
     private static Map<String, String> getRuntimeProperties() {
         Map<String, String> out = new HashMap<>();
         out.put("quarkus.timefold.solver.termination.best-score-limit", "7");
+        out.put("quarkus.timefold.solver.random-seed", "123");
         out.put("quarkus.timefold.solver.move-thread-count", "3");
         out.put("quarkus.timefold.solver-manager.parallel-solver-count", "10");
         out.put("quarkus.timefold.solver.termination.diminished-returns.enabled", "true");
@@ -93,6 +94,7 @@ class TimefoldProcessorOverridePropertiesAtRuntimeTest {
             sb.append("termination.bestScoreLimit=").append(solverConfig.getTerminationConfig().getBestScoreLimit())
                     .append("\n");
             sb.append("moveThreadCount=").append(solverConfig.getMoveThreadCount()).append("\n");
+            sb.append("randomSeed=").append(solverConfig.getRandomSeed()).append("\n");
             return sb.toString();
         }
 
@@ -119,6 +121,7 @@ class TimefoldProcessorOverridePropertiesAtRuntimeTest {
         assertEquals("0.5", solverConfigProperties.get("termination.diminished-returns.minimum-improvement-ratio"));
         assertEquals("7", solverConfigProperties.get("termination.bestScoreLimit"));
         assertEquals("3", solverConfigProperties.get("moveThreadCount"));
+        assertEquals("123", solverConfigProperties.get("randomSeed"));
     }
 
     @Test
