@@ -1,19 +1,20 @@
 package ai.timefold.solver.core.impl.move.director;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.SoftAssertions.assertSoftly;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveListFactoryConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
@@ -32,9 +33,23 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.full.TestdataShadowedFullEasyScoreCalculator;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.full.TestdataShadowedFullEntity;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.full.TestdataShadowedFullMoveListFactory;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.full.TestdataShadowedFullSolution;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.full.TestdataShadowedFullValue;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
 
 import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class MoveDirectorTest {
 
@@ -325,6 +340,32 @@ class MoveDirectorTest {
             // Uses a new instance of SolverScope
             verify(constructionHeuristicPhase, times(1)).solve(any());
         }
+    }
+
+    @Test
+    void variableListenersAreTriggeredWhenSolutionIsConsistent() {
+        var solverConfig = new SolverConfig()
+                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
+                .withSolutionClass(TestdataShadowedFullSolution.class)
+                .withEntityClasses(TestdataShadowedFullEntity.class,
+                        TestdataShadowedFullValue.class)
+                .withEasyScoreCalculatorClass(TestdataShadowedFullEasyScoreCalculator.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig()
+                                .withTerminationConfig(new TerminationConfig()
+                                        .withMoveCountLimit(1000L))
+                                .withMoveSelectorConfig(new UnionMoveSelectorConfig()
+                                        .withMoveSelectors(
+                                                new ListChangeMoveSelectorConfig(),
+                                                new ListSwapMoveSelectorConfig(),
+                                                new MoveListFactoryConfig()
+                                                        .withMoveListFactoryClass(TestdataShadowedFullMoveListFactory.class))));
+
+        var solverFactory = SolverFactory.create(solverConfig);
+        var solver = solverFactory.buildSolver();
+
+        var problem = TestdataShadowedFullSolution.ofUninitializedSolution(4, 10);
+        solver.solve(problem);
     }
 
 }
