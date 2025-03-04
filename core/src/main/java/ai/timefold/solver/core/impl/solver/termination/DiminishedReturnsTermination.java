@@ -170,10 +170,11 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
         step(System.nanoTime(), stepScope.getPhaseScope().getBestScore());
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
-    public boolean isApplicableTo(AbstractPhaseScope<Solution_> phaseScope) {
-        return !(phaseScope instanceof ConstructionHeuristicPhaseScope<Solution_>
-                || phaseScope instanceof CustomPhaseScope<Solution_>);
+    public boolean isApplicableTo(Class<? extends AbstractPhaseScope> phaseScopeClass) {
+        return !(phaseScopeClass == ConstructionHeuristicPhaseScope.class
+                || phaseScopeClass == CustomPhaseScope.class);
     }
 
     @Override

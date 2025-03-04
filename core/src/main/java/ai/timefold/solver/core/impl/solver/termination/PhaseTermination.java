@@ -19,7 +19,8 @@ public sealed interface PhaseTermination<Solution_>
      * @return false if the termination should be skipped on the given phase,
      *         when used as part of {@link AbstractCompositeTermination}.
      */
-    default boolean isApplicableTo(AbstractPhaseScope<Solution_> phaseScope) {
+    @SuppressWarnings("rawtypes")
+    default boolean isApplicableTo(Class<? extends AbstractPhaseScope> phaseScopeClass) {
         return true;
     }
 

@@ -30,12 +30,14 @@ public sealed interface UniversalTermination<Solution_>
     /**
      * @return Unmodifiable list of {@link Termination}s that are part of this termination,
      *         which are not applicable to the given phase type
-     *         as defined by {@link PhaseTermination#isApplicableTo(AbstractPhaseScope)}.
+     *         as defined by {@link PhaseTermination#isApplicableTo(Class)}.
      *         If this termination is not a {@link AbstractCompositeTermination}, it returns an empty list.
      */
-    default List<Termination<Solution_>> getPhasesTerminationsInapplicableTo(AbstractPhaseScope<Solution_> phaseScope) {
+    @SuppressWarnings("rawtypes")
+    default List<Termination<Solution_>>
+            getPhaseTerminationsInapplicableTo(Class<? extends AbstractPhaseScope> phaseScopeClass) {
         return getPhaseTerminationList().stream()
-                .filter(f -> !f.isApplicableTo(phaseScope))
+                .filter(f -> !f.isApplicableTo(phaseScopeClass))
                 .map(t -> (Termination<Solution_>) t)
                 .toList();
     }

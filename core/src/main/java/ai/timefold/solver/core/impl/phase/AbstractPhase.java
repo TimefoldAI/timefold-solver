@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.phase;
 
-import java.util.Collections;
-
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -17,7 +15,6 @@ import ai.timefold.solver.core.impl.solver.exception.VariableCorruptionException
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
-import ai.timefold.solver.core.impl.solver.termination.UniversalTermination;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,22 +99,6 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
 
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        if (!solver.isTerminationSameAsSolverTermination(phaseTermination)) {
-            // Only fail if the user put the inapplicable termination on the phase, not on the solver.
-            // On the solver level, inapplicable phase terminations are skipped.
-            // Otherwise you would only be able to configure a global phase-level termination on the solver
-            // if it was applicable to all phases.
-            var unsupportedTerminationList = phaseTermination instanceof UniversalTermination<Solution_> universalTermination
-                    ? universalTermination.getPhasesTerminationsInapplicableTo(phaseScope)
-                    : Collections.emptyList();
-            if (!unsupportedTerminationList.isEmpty()) {
-                throw new IllegalStateException(
-                        """
-                                The phase (%s) configured with terminations (%s) includes some terminations which are not applicable to it (%s).
-                                Maybe remove these terminations from the phase's configuration."""
-                                .formatted(this, phaseTermination, unsupportedTerminationList));
-            }
-        }
         phaseScope.startingNow();
         phaseScope.reset();
         if (!isNested()) {

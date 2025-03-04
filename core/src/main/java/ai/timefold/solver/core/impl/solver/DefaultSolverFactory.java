@@ -132,7 +132,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 .withClassInstanceCache(ClassInstanceCache.create())
                 .build();
         var basicPlumbingTermination = new BasicPlumbingTermination<Solution_>(isDaemon);
-        var termination = buildTerminationConfig(basicPlumbingTermination, configPolicy, configOverride);
+        var termination = buildTermination(basicPlumbingTermination, configPolicy, configOverride);
         var phaseList = buildPhaseList(configPolicy, bestSolutionRecaller, termination);
 
         return new DefaultSolver<>(environmentMode, randomFactory, bestSolutionRecaller, basicPlumbingTermination,
@@ -150,7 +150,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         }
     }
 
-    private SolverTermination<Solution_> buildTerminationConfig(BasicPlumbingTermination<Solution_> basicPlumbingTermination,
+    private SolverTermination<Solution_> buildTermination(BasicPlumbingTermination<Solution_> basicPlumbingTermination,
             HeuristicConfigPolicy<Solution_> configPolicy, SolverConfigOverride<Solution_> solverConfigOverride) {
         var terminationConfig = Objects.requireNonNullElseGet(solverConfigOverride.getTerminationConfig(),
                 () -> Objects.requireNonNullElseGet(solverConfig.getTerminationConfig(), TerminationConfig::new));

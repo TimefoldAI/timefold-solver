@@ -79,11 +79,8 @@ class DefaultSolverTerminationTest {
                 .withPhases(new ConstructionHeuristicPhaseConfig()
                         .withTerminationConfig(new TerminationConfig()
                                 .withDiminishedReturnsConfig(new DiminishedReturnsTerminationConfig())));
-        var solution = TestdataSolution.generateSolution(2, 2);
-        solution.getEntityList().forEach(entity -> entity.setValue(null)); // Uninitialize.
-        var solver = SolverFactory.<TestdataSolution> create(solverConfig)
-                .buildSolver();
-        Assertions.assertThatThrownBy(() -> solver.solve(solution))
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        Assertions.assertThatThrownBy(solverFactory::buildSolver)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("includes some terminations which are not applicable")
                 .hasMessageContaining("DiminishedReturns");
@@ -98,11 +95,8 @@ class DefaultSolverTerminationTest {
                 .withPhases(new ConstructionHeuristicPhaseConfig()
                         .withTerminationConfig(new TerminationConfig()
                                 .withUnimprovedStepCountLimit(1)));
-        var solution = TestdataSolution.generateSolution(2, 2);
-        solution.getEntityList().forEach(entity -> entity.setValue(null)); // Uninitialize.
-        var solver = SolverFactory.<TestdataSolution> create(solverConfig)
-                .buildSolver();
-        Assertions.assertThatThrownBy(() -> solver.solve(solution))
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        Assertions.assertThatThrownBy(solverFactory::buildSolver)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("includes some terminations which are not applicable")
                 .hasMessageContaining("UnimprovedStepCount");
@@ -117,11 +111,8 @@ class DefaultSolverTerminationTest {
                 .withPhases(new ConstructionHeuristicPhaseConfig()
                         .withTerminationConfig(new TerminationConfig()
                                 .withUnimprovedMillisecondsSpentLimit(1L)));
-        var solution = TestdataSolution.generateSolution(2, 2);
-        solution.getEntityList().forEach(entity -> entity.setValue(null)); // Uninitialize.
-        var solver = SolverFactory.<TestdataSolution> create(solverConfig)
-                .buildSolver();
-        Assertions.assertThatThrownBy(() -> solver.solve(solution))
+        var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
+        Assertions.assertThatThrownBy(solverFactory::buildSolver)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("includes some terminations which are not applicable")
                 .hasMessageContaining("UnimprovedTimeMillisSpent");

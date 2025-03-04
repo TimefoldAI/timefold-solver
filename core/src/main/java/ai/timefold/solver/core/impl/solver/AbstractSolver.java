@@ -52,14 +52,6 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
             UniversalTermination<Solution_> globalTermination, List<Phase<Solution_>> phaseList) {
         this.bestSolutionRecaller = bestSolutionRecaller;
         this.globalTermination = globalTermination;
-        var phaseTerminationList = globalTermination.getPhaseTerminationList();
-        if (!phaseTerminationList.isEmpty()) {
-            logger.trace("""
-                    The solver-level termination ({}) includes phase-level terminations ({}), \
-                    which will not be used to terminate the solver.
-                    These phase-level terminations will only take effect within each solver phase.""",
-                    globalTermination, phaseTerminationList);
-        }
         bestSolutionRecaller.setSolverEventSupport(solverEventSupport);
         this.phaseList = phaseList;
         phaseList.forEach(phase -> ((AbstractPhase<Solution_>) phase).setSolver(this));
@@ -112,15 +104,6 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     }
 
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        var inapplicablePhaseTerminationList = globalTermination.getPhasesTerminationsInapplicableTo(phaseScope);
-        if (!inapplicablePhaseTerminationList.isEmpty()) {
-            logger.trace("""
-                    The solver-level termination ({}) includes phase-level terminations \
-                    which are not applicable to the solver phase ({}).
-                    These phase-level terminations will not take effect in this phase.""",
-                    globalTermination, inapplicablePhaseTerminationList);
-        }
-
         bestSolutionRecaller.phaseStarted(phaseScope);
         phaseLifecycleSupport.firePhaseStarted(phaseScope);
         globalTermination.phaseStarted(phaseScope);

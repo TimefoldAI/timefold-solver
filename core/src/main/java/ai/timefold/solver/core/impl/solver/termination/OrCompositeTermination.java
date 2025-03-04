@@ -42,7 +42,7 @@ final class OrCompositeTermination<Solution_>
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
         for (var termination : phaseTerminationList) {
-            if (termination.isApplicableTo(phaseScope) && termination.isPhaseTerminated(phaseScope)) {
+            if (termination.isApplicableTo(phaseScope.getClass()) && termination.isPhaseTerminated(phaseScope)) {
                 return true;
             }
         }
@@ -77,7 +77,7 @@ final class OrCompositeTermination<Solution_>
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
         var timeGradient = 0.0;
         for (var termination : phaseTerminationList) {
-            if (!termination.isApplicableTo(phaseScope)) {
+            if (!termination.isApplicableTo(phaseScope.getClass())) {
                 continue;
             }
             var nextTimeGradient = termination.calculatePhaseTimeGradient(phaseScope);
