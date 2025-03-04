@@ -297,7 +297,7 @@ public class TerminationConfig extends AbstractConfig<TerminationConfig> {
         return this;
     }
 
-    public @NonNull TerminationConfig withDiminishedReturnsConfig() {
+    public @NonNull TerminationConfig withDiminishedReturns() {
         return withDiminishedReturnsConfig(new DiminishedReturnsTerminationConfig());
     }
 

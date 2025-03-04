@@ -67,8 +67,6 @@ class DefaultSolverTerminationTest {
         var solver = SolverFactory.<TestdataSolution> create(solverConfig)
                 .buildSolver();
         var bestSolution = solver.solve(solution);
-        // 2 entities means 2 steps, but the step count limit is 1.
-        // Therefore the best solution is uninitialized.
         Assertions.assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.ZERO);
     }
 

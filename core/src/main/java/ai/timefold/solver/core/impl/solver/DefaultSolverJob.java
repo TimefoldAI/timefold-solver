@@ -258,7 +258,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     }
 
     public SolverTermination<Solution_> getSolverTermination() {
-        return solver.solverTermination;
+        return solver.globalTermination;
     }
 
     void close() {

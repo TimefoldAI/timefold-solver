@@ -1,9 +1,7 @@
 package ai.timefold.solver.quarkus;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
@@ -13,8 +11,6 @@ import jakarta.inject.Inject;
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
-import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.quarkus.testdata.dummy.DummyDistanceMeter;
@@ -71,17 +67,8 @@ class TimefoldProcessorSolverPropertiesTest {
         assertEquals(Duration.ofHours(4), solverConfig.getTerminationConfig().getSpentLimit());
         assertEquals(Duration.ofHours(5), solverConfig.getTerminationConfig().getUnimprovedSpentLimit());
         assertEquals(SimpleScore.of(0).toString(), solverConfig.getTerminationConfig().getBestScoreLimit());
-        var phaseList = solverConfig.getPhaseConfigList();
-        assertNotNull(phaseList);
-        assertEquals(2, phaseList.size());
 
-        var constructionHeuristic = phaseList.get(0);
-        assertInstanceOf(ConstructionHeuristicPhaseConfig.class, constructionHeuristic);
-        assertNull(constructionHeuristic.getTerminationConfig());
-
-        var localSearch = phaseList.get(1);
-        assertInstanceOf(LocalSearchPhaseConfig.class, localSearch);
-        var terminationConfig = localSearch.getTerminationConfig();
+        var terminationConfig = solverConfig.getTerminationConfig();
         assertNotNull(terminationConfig);
         assertNotNull(terminationConfig.getDiminishedReturnsConfig());
         assertEquals(Duration.ofHours(6), terminationConfig.getDiminishedReturnsConfig().getSlidingWindowDuration());

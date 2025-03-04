@@ -1,7 +1,6 @@
 package ai.timefold.solver.quarkus;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.time.Duration;
 import java.util.List;
@@ -10,7 +9,6 @@ import java.util.OptionalDouble;
 
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
-import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.quarkus.config.DiminishedReturnsRuntimeConfig;
@@ -50,18 +48,7 @@ class TimefoldRecorderDiminishedReturnsTest {
 
     void assertDiminishedReturns(SolverConfig solverConfig,
             Duration slidingWindowDuration, Double minimumImprovementRatio) {
-        assertThat(solverConfig.getTerminationConfig().getDiminishedReturnsConfig()).isNull();
-        assertThat(solverConfig.getPhaseConfigList()).isNotNull();
-        assertThat(solverConfig.getPhaseConfigList()).hasSize(2);
-        assertThat(solverConfig.getPhaseConfigList()).element(0)
-                .isInstanceOf(ConstructionHeuristicPhaseConfig.class)
-                .extracting(PhaseConfig::getTerminationConfig)
-                .isNull();
-
-        assertThat(solverConfig.getPhaseConfigList()).element(1)
-                .isInstanceOf(LocalSearchPhaseConfig.class)
-                .extracting(PhaseConfig::getTerminationConfig)
-                .isNotNull()
+        assertThat(solverConfig.getTerminationConfig())
                 .extracting(TerminationConfig::getDiminishedReturnsConfig)
                 .isNotNull()
                 .hasFieldOrPropertyWithValue("minimumImprovementRatio", minimumImprovementRatio)
@@ -116,19 +103,6 @@ class TimefoldRecorderDiminishedReturnsTest {
                 OptionalDouble.of(123.0));
         TimefoldRecorder.updateSolverConfigWithRuntimeProperties(solverConfig, solverRuntimeConfig);
         assertNoDiminishedReturns(solverConfig);
-    }
-
-    @Test
-    void enabledAndPhasesConfigured() {
-        solverConfig.setPhaseConfigList(List.of(
-                new ConstructionHeuristicPhaseConfig(),
-                new LocalSearchPhaseConfig()));
-        Mockito.when(diminishedReturnsRuntimeConfig.enabled()).thenReturn(Optional.of(true));
-
-        assertThatCode(() -> TimefoldRecorder.updateSolverConfigWithRuntimeProperties(solverConfig, solverRuntimeConfig))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("quarkus.timefold.solver.termination.diminished-returns")
-                .hasMessageContaining("properties cannot be used when phases are configured");
     }
 
     @Test

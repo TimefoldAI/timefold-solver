@@ -83,17 +83,18 @@ class TimefoldProcessorOverridePropertiesAtRuntimeTest {
         @Path("/solver-config")
         @Produces(MediaType.TEXT_PLAIN)
         public String getSolverConfig() {
-            StringBuilder sb = new StringBuilder();
-            sb.append("termination.diminished-returns.sliding-window-duration=").append(solverConfig.getPhaseConfigList()
-                    .get(1).getTerminationConfig().getDiminishedReturnsConfig()
-                    .getSlidingWindowDuration().toHours()).append("h\n");
-            sb.append("termination.diminished-returns.minimum-improvement-ratio=").append(solverConfig.getPhaseConfigList()
-                    .get(1).getTerminationConfig().getDiminishedReturnsConfig()
-                    .getMinimumImprovementRatio()).append("\n");
-            sb.append("termination.bestScoreLimit=").append(solverConfig.getTerminationConfig().getBestScoreLimit())
-                    .append("\n");
-            sb.append("moveThreadCount=").append(solverConfig.getMoveThreadCount()).append("\n");
-            return sb.toString();
+            var diminishedReturnsConfig = solverConfig.getTerminationConfig()
+                    .getDiminishedReturnsConfig();
+            return """
+                    termination.diminished-returns.sliding-window-duration=%sh
+                    termination.diminished-returns.minimum-improvement-ratio=%s
+                    termination.bestScoreLimit=%s
+                    moveThreadCount=%s
+                    """
+                    .formatted(diminishedReturnsConfig.getSlidingWindowDuration().toHours(),
+                            diminishedReturnsConfig.getMinimumImprovementRatio(),
+                            solverConfig.getTerminationConfig().getBestScoreLimit(),
+                            solverConfig.getMoveThreadCount());
         }
 
         @GET

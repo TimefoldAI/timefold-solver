@@ -40,8 +40,8 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
 
     protected final BestSolutionRecaller<Solution_> bestSolutionRecaller;
     // Note that the DefaultSolver.basicPlumbingTermination is a component of this termination.
-    // Called "solverTermination" to clearly distinguish from "phaseTermination" inside AbstractPhase.
-    protected final UniversalTermination<Solution_> solverTermination;
+    // Called "globalTermination" to clearly distinguish from "phaseTermination" inside AbstractPhase.
+    protected final UniversalTermination<Solution_> globalTermination;
     protected final List<Phase<Solution_>> phaseList;
 
     // ************************************************************************
@@ -49,16 +49,16 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     // ************************************************************************
 
     protected AbstractSolver(BestSolutionRecaller<Solution_> bestSolutionRecaller,
-            UniversalTermination<Solution_> solverTermination, List<Phase<Solution_>> phaseList) {
+            UniversalTermination<Solution_> globalTermination, List<Phase<Solution_>> phaseList) {
         this.bestSolutionRecaller = bestSolutionRecaller;
-        this.solverTermination = solverTermination;
-        var phaseTerminationList = solverTermination.getPhaseTerminationList();
+        this.globalTermination = globalTermination;
+        var phaseTerminationList = globalTermination.getPhaseTerminationList();
         if (!phaseTerminationList.isEmpty()) {
             logger.trace("""
                     The solver-level termination ({}) includes phase-level terminations ({}), \
                     which will not be used to terminate the solver.
                     These phase-level terminations will only take effect within each solver phase.""",
-                    solverTermination, phaseTerminationList);
+                    globalTermination, phaseTerminationList);
         }
         bestSolutionRecaller.setSolverEventSupport(solverEventSupport);
         this.phaseList = phaseList;
@@ -68,7 +68,7 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         solverScope.setWorkingSolutionFromBestSolution();
         bestSolutionRecaller.solvingStarted(solverScope);
-        solverTermination.solvingStarted(solverScope);
+        globalTermination.solvingStarted(solverScope);
         phaseLifecycleSupport.fireSolvingStarted(solverScope);
         solverScope.setProblemSizeStatistics(
                 solverScope.getSolutionDescriptor().getProblemSizeStatistics(solverScope.getWorkingSolution()));
@@ -84,7 +84,7 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
             return;
         }
         Iterator<Phase<Solution_>> it = phaseList.iterator();
-        while (!solverTermination.isSolverTerminated(solverScope) && it.hasNext()) {
+        while (!globalTermination.isSolverTerminated(solverScope) && it.hasNext()) {
             Phase<Solution_> phase = it.next();
             phase.solve(solverScope);
             // If there is a next phase, it starts from the best solution, which might differ from the working solution.
@@ -100,7 +100,7 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
             phase.solvingEnded(solverScope);
         }
         bestSolutionRecaller.solvingEnded(solverScope);
-        solverTermination.solvingEnded(solverScope);
+        globalTermination.solvingEnded(solverScope);
         phaseLifecycleSupport.fireSolvingEnded(solverScope);
     }
 
@@ -112,39 +112,39 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     }
 
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        var inapplicablePhaseTerminationList = solverTermination.getPhasesTerminationsInapplicableTo(phaseScope);
+        var inapplicablePhaseTerminationList = globalTermination.getPhasesTerminationsInapplicableTo(phaseScope);
         if (!inapplicablePhaseTerminationList.isEmpty()) {
             logger.trace("""
                     The solver-level termination ({}) includes phase-level terminations \
                     which are not applicable to the solver phase ({}).
                     These phase-level terminations will not take effect in this phase.""",
-                    solverTermination, inapplicablePhaseTerminationList);
+                    globalTermination, inapplicablePhaseTerminationList);
         }
 
         bestSolutionRecaller.phaseStarted(phaseScope);
         phaseLifecycleSupport.firePhaseStarted(phaseScope);
-        solverTermination.phaseStarted(phaseScope);
+        globalTermination.phaseStarted(phaseScope);
         // Do not propagate to phases; the active phase does that for itself and they should not propagate further.
     }
 
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         bestSolutionRecaller.phaseEnded(phaseScope);
         phaseLifecycleSupport.firePhaseEnded(phaseScope);
-        solverTermination.phaseEnded(phaseScope);
+        globalTermination.phaseEnded(phaseScope);
         // Do not propagate to phases; the active phase does that for itself and they should not propagate further.
     }
 
     public void stepStarted(AbstractStepScope<Solution_> stepScope) {
         bestSolutionRecaller.stepStarted(stepScope);
         phaseLifecycleSupport.fireStepStarted(stepScope);
-        solverTermination.stepStarted(stepScope);
+        globalTermination.stepStarted(stepScope);
         // Do not propagate to phases; the active phase does that for itself and they should not propagate further.
     }
 
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
         bestSolutionRecaller.stepEnded(stepScope);
         phaseLifecycleSupport.fireStepEnded(stepScope);
-        solverTermination.stepEnded(stepScope);
+        globalTermination.stepEnded(stepScope);
         // Do not propagate to phases; the active phase does that for itself and they should not propagate further.
     }
 
@@ -181,7 +181,7 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     }
 
     public boolean isTerminationSameAsSolverTermination(PhaseTermination<Solution_> phaseTermination) {
-        return phaseTermination == solverTermination;
+        return phaseTermination == globalTermination;
     }
 
     public BestSolutionRecaller<Solution_> getBestSolutionRecaller() {
