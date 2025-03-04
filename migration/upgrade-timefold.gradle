@@ -1,0 +1,44 @@
+initscript {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+        mavenLocal()
+    }
+
+    dependencies {
+        classpath("org.openrewrite:plugin:latest.release")
+    }
+}
+
+def timefoldSolverVersion = System.getProperty("timefoldSolverVersion")
+
+addListener(new BuildInfoPluginListener())
+
+allprojects {
+    project.afterEvaluate {
+        if (!project.plugins.hasPlugin(org.openrewrite.gradle.RewritePlugin)) {
+            project.plugins.apply(org.openrewrite.gradle.RewritePlugin)
+        }
+    }
+    dependencies {
+        rewrite("ai.timefold.solver:timefold-solver-migration:${timefoldSolverVersion}")
+    }
+    rewrite {
+        activeRecipe("ai.timefold.solver.migration.ToLatest")
+    }
+}
+
+class BuildInfoPluginListener extends BuildAdapter {
+
+    def void projectsLoaded(Gradle gradle) {
+        Project root = gradle.getRootProject()
+        if (!"buildSrc".equals(root.name)) {
+            root.allprojects {
+                apply {
+                    apply plugin: org.openrewrite.gradle.RewritePlugin
+                }
+            }
+        }
+    }
+}
+
