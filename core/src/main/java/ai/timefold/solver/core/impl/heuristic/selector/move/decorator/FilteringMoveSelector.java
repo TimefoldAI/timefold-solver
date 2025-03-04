@@ -112,17 +112,16 @@ public final class FilteringMoveSelector<Solution_> extends AbstractMoveSelector
         try {
             return childMoveSelector.getSize() * 10L;
         } catch (Exception ex) {
-            /*
-             * Some move selectors throw an exception when getSize() is called.
-             * In this case, we choose to disregard it and pick a large-enough bail-out size anyway.
-             * The ${bailOutSize+1}th move could in theory show up where previous ${bailOutSize} moves did not,
-             * but we consider this to be an acceptable risk,
-             * outweighed by the benefit of the solver never running into an endless loop.
-             */
+            // Some move selectors throw an exception when getSize() is called.
+            // In this case, we choose to disregard it and pick a large-enough bail-out size anyway.
+            // The ${bailOutSize+1}th move could in theory show up where previous ${bailOutSize} moves did not,
+            // but we consider this to be an acceptable risk,
+            // outweighed by the benefit of the solver never running into an endless loop.
+            // The exception itself is swallowed, as it doesn't bring any useful information.
             long bailOutSize = Short.MAX_VALUE * 10L;
             logger.trace(
                     "        Never-ending move selector ({}) failed to provide size, choosing a bail-out size of ({}) attempts.",
-                    childMoveSelector, bailOutSize, ex);
+                    childMoveSelector, bailOutSize);
             return bailOutSize;
         }
     }
