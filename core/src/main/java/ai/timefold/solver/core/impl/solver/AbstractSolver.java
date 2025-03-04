@@ -15,7 +15,8 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.event.SolverEventSupport;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.solver.termination.Termination;
+import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
+import ai.timefold.solver.core.impl.solver.termination.UniversalTermination;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,31 +40,27 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
 
     protected final BestSolutionRecaller<Solution_> bestSolutionRecaller;
     // Note that the DefaultSolver.basicPlumbingTermination is a component of this termination.
-    // Called "solverTermination" to clearly distinguish from "phaseTermination" inside AbstractPhase.
-    protected final Termination<Solution_> solverTermination;
+    // Called "globalTermination" to clearly distinguish from "phaseTermination" inside AbstractPhase.
+    protected final UniversalTermination<Solution_> globalTermination;
     protected final List<Phase<Solution_>> phaseList;
 
     // ************************************************************************
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public AbstractSolver(BestSolutionRecaller<Solution_> bestSolutionRecaller, Termination<Solution_> solverTermination,
-            List<Phase<Solution_>> phaseList) {
+    protected AbstractSolver(BestSolutionRecaller<Solution_> bestSolutionRecaller,
+            UniversalTermination<Solution_> globalTermination, List<Phase<Solution_>> phaseList) {
         this.bestSolutionRecaller = bestSolutionRecaller;
-        this.solverTermination = solverTermination;
+        this.globalTermination = globalTermination;
         bestSolutionRecaller.setSolverEventSupport(solverEventSupport);
         this.phaseList = phaseList;
         phaseList.forEach(phase -> ((AbstractPhase<Solution_>) phase).setSolver(this));
     }
 
-    // ************************************************************************
-    // Lifecycle methods
-    // ************************************************************************
-
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         solverScope.setWorkingSolutionFromBestSolution();
         bestSolutionRecaller.solvingStarted(solverScope);
-        solverTermination.solvingStarted(solverScope);
+        globalTermination.solvingStarted(solverScope);
         phaseLifecycleSupport.fireSolvingStarted(solverScope);
         solverScope.setProblemSizeStatistics(
                 solverScope.getSolutionDescriptor().getProblemSizeStatistics(solverScope.getWorkingSolution()));
@@ -79,7 +76,7 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
             return;
         }
         Iterator<Phase<Solution_>> it = phaseList.iterator();
-        while (!solverTermination.isSolverTerminated(solverScope) && it.hasNext()) {
+        while (!globalTermination.isSolverTerminated(solverScope) && it.hasNext()) {
             Phase<Solution_> phase = it.next();
             phase.solve(solverScope);
             // If there is a next phase, it starts from the best solution, which might differ from the working solution.
@@ -95,7 +92,7 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
             phase.solvingEnded(solverScope);
         }
         bestSolutionRecaller.solvingEnded(solverScope);
-        solverTermination.solvingEnded(solverScope);
+        globalTermination.solvingEnded(solverScope);
         phaseLifecycleSupport.fireSolvingEnded(solverScope);
     }
 
@@ -109,34 +106,30 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         bestSolutionRecaller.phaseStarted(phaseScope);
         phaseLifecycleSupport.firePhaseStarted(phaseScope);
-        solverTermination.phaseStarted(phaseScope);
+        globalTermination.phaseStarted(phaseScope);
         // Do not propagate to phases; the active phase does that for itself and they should not propagate further.
     }
 
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         bestSolutionRecaller.phaseEnded(phaseScope);
         phaseLifecycleSupport.firePhaseEnded(phaseScope);
-        solverTermination.phaseEnded(phaseScope);
+        globalTermination.phaseEnded(phaseScope);
         // Do not propagate to phases; the active phase does that for itself and they should not propagate further.
     }
 
     public void stepStarted(AbstractStepScope<Solution_> stepScope) {
         bestSolutionRecaller.stepStarted(stepScope);
         phaseLifecycleSupport.fireStepStarted(stepScope);
-        solverTermination.stepStarted(stepScope);
+        globalTermination.stepStarted(stepScope);
         // Do not propagate to phases; the active phase does that for itself and they should not propagate further.
     }
 
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
         bestSolutionRecaller.stepEnded(stepScope);
         phaseLifecycleSupport.fireStepEnded(stepScope);
-        solverTermination.stepEnded(stepScope);
+        globalTermination.stepEnded(stepScope);
         // Do not propagate to phases; the active phase does that for itself and they should not propagate further.
     }
-
-    // ************************************************************************
-    // Event listeners
-    // ************************************************************************
 
     @Override
     public void addEventListener(SolverEventListener<Solution_> eventListener) {
@@ -170,9 +163,9 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
         phaseLifecycleSupport.removeEventListener(phaseLifecycleListener);
     }
 
-    // ************************************************************************
-    // Simple getters and setters
-    // ************************************************************************
+    public boolean isTerminationSameAsSolverTermination(PhaseTermination<Solution_> phaseTermination) {
+        return phaseTermination == globalTermination;
+    }
 
     public BestSolutionRecaller<Solution_> getBestSolutionRecaller() {
         return bestSolutionRecaller;

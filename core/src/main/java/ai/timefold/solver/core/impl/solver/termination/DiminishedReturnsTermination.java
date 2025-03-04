@@ -1,15 +1,20 @@
 package ai.timefold.solver.core.impl.solver.termination;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
+import ai.timefold.solver.core.impl.phase.custom.scope.CustomPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
-public final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>>
-        extends AbstractTermination<Solution_> {
+@NullMarked
+final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>>
+        extends AbstractPhaseTermination<Solution_>
+        implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
+
     static final long NANOS_PER_MILLISECOND = 1_000_000;
 
     private final long slidingWindowNanos;
@@ -58,8 +63,7 @@ public final class DiminishedReturnsTermination<Solution_, Score_ extends Score<
      *         {@link Double#NaN} if a harder level changed
      * @param <Score_> The score type
      */
-    private static <Score_ extends Score<Score_>> double softImprovementOrNaNForHarderChange(@NonNull Score_ start,
-            @NonNull Score_ end) {
+    private static <Score_ extends Score<Score_>> double softImprovementOrNaNForHarderChange(Score_ start, Score_ end) {
         if (start.equals(end)) {
             // optimization: since most of the time the score the same,
             // we can use equals to avoid creating double arrays in the
@@ -136,20 +140,8 @@ public final class DiminishedReturnsTermination<Solution_, Score_ extends Score<
     }
 
     @Override
-    public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
-        throw new UnsupportedOperationException(
-                getClass().getSimpleName() + " can only be used for phase termination.");
-    }
-
-    @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
         return isTerminated(System.nanoTime(), phaseScope.getBestScore());
-    }
-
-    @Override
-    public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
-        throw new UnsupportedOperationException(
-                getClass().getSimpleName() + " can only be used for phase termination.");
     }
 
     @Override
@@ -176,5 +168,17 @@ public final class DiminishedReturnsTermination<Solution_, Score_ extends Score<
     @Override
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
         step(System.nanoTime(), stepScope.getPhaseScope().getBestScore());
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    public boolean isApplicableTo(Class<? extends AbstractPhaseScope> phaseScopeClass) {
+        return !(phaseScopeClass == ConstructionHeuristicPhaseScope.class
+                || phaseScopeClass == CustomPhaseScope.class);
+    }
+
+    @Override
+    public String toString() {
+        return "DiminishedReturns()";
     }
 }

@@ -2,7 +2,6 @@ package ai.timefold.solver.quarkus;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -14,8 +13,6 @@ import jakarta.inject.Named;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
-import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
-import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.config.solver.termination.DiminishedReturnsTerminationConfig;
@@ -145,27 +142,24 @@ public class TimefoldRecorder {
 
     private static void setDiminishedReturns(SolverConfig solverConfig,
             DiminishedReturnsRuntimeConfig diminishedReturnsRuntimeConfig) {
-        // If we are here, at least one of enabled, sliding-window, or minimum-improvement-ratio
-        // is set.
+        // If we are here, at least one of enabled, sliding-window, or minimum-improvement-ratio is set.
         if (!diminishedReturnsRuntimeConfig.enabled().orElse(
                 diminishedReturnsRuntimeConfig.minimumImprovementRatio().isPresent() ||
                         diminishedReturnsRuntimeConfig.slidingWindowDuration().isPresent())) {
             return;
         }
-        if (solverConfig.getPhaseConfigList() != null) {
-            throw new IllegalArgumentException("%s properties cannot be used when phases are configured."
-                    .formatted("quarkus.timefold.solver.termination.diminished-returns"));
+
+        var terminationConfig = solverConfig.getTerminationConfig();
+        if (terminationConfig == null) {
+            terminationConfig = new TerminationConfig();
+            solverConfig.setTerminationConfig(terminationConfig);
         }
         var diminishedReturnsConfig = new DiminishedReturnsTerminationConfig();
-        diminishedReturnsRuntimeConfig.slidingWindowDuration().ifPresent(
-                diminishedReturnsConfig::setSlidingWindowDuration);
-        diminishedReturnsRuntimeConfig.minimumImprovementRatio().ifPresent(
-                diminishedReturnsConfig::setMinimumImprovementRatio);
-        solverConfig.setPhaseConfigList(List.of(
-                new ConstructionHeuristicPhaseConfig(),
-                new LocalSearchPhaseConfig().withTerminationConfig(
-                        new TerminationConfig()
-                                .withDiminishedReturnsConfig(diminishedReturnsConfig))));
+        diminishedReturnsRuntimeConfig.slidingWindowDuration()
+                .ifPresent(diminishedReturnsConfig::setSlidingWindowDuration);
+        diminishedReturnsRuntimeConfig.minimumImprovementRatio()
+                .ifPresent(diminishedReturnsConfig::setMinimumImprovementRatio);
+        terminationConfig.setDiminishedReturnsConfig(diminishedReturnsConfig);
     }
 
     private void updateSolverManagerConfigWithRuntimeProperties(SolverManagerConfig solverManagerConfig) {

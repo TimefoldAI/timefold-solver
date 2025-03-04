@@ -2,11 +2,18 @@ package ai.timefold.solver.core.impl.solver.termination;
 
 import java.time.Clock;
 
+import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
+import ai.timefold.solver.core.impl.phase.custom.scope.CustomPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-public final class UnimprovedTimeMillisSpentTermination<Solution_> extends AbstractTermination<Solution_> {
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
+final class UnimprovedTimeMillisSpentTermination<Solution_>
+        extends AbstractUniversalTermination<Solution_>
+        implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private final long unimprovedTimeMillisSpentLimit;
     private final Clock clock;
@@ -46,10 +53,6 @@ public final class UnimprovedTimeMillisSpentTermination<Solution_> extends Abstr
         phaseStartedTimeMillis = clock.millis();
     }
 
-    // ************************************************************************
-    // Terminated methods
-    // ************************************************************************
-
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
         long bestSolutionTimeMillis = solverScope.getBestSolutionTimeMillis();
@@ -74,10 +77,6 @@ public final class UnimprovedTimeMillisSpentTermination<Solution_> extends Abstr
         return now - Math.max(bestSolutionTimeMillis, phaseStartedTimeMillis);
     }
 
-    // ************************************************************************
-    // Time gradient methods
-    // ************************************************************************
-
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
         long bestSolutionTimeMillis = solverScope.getBestSolutionTimeMillis();
@@ -98,14 +97,16 @@ public final class UnimprovedTimeMillisSpentTermination<Solution_> extends Abstr
         return Math.min(timeGradient, 1.0);
     }
 
-    // ************************************************************************
-    // Other methods
-    // ************************************************************************
+    @Override
+    public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
+            ChildThreadType childThreadType) {
+        return new UnimprovedTimeMillisSpentTermination<>(unimprovedTimeMillisSpentLimit);
+    }
 
     @Override
-    public UnimprovedTimeMillisSpentTermination<Solution_> createChildThreadTermination(
-            SolverScope<Solution_> solverScope, ChildThreadType childThreadType) {
-        return new UnimprovedTimeMillisSpentTermination<>(unimprovedTimeMillisSpentLimit);
+    public boolean isApplicableTo(Class<? extends AbstractPhaseScope> phaseScopeClass) {
+        return !(phaseScopeClass == ConstructionHeuristicPhaseScope.class
+                || phaseScopeClass == CustomPhaseScope.class);
     }
 
     @Override

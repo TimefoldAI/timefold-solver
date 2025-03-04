@@ -33,8 +33,6 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
-import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
-import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.DiminishedReturnsTerminationConfig;
@@ -343,19 +341,14 @@ public class TimefoldSolverAutoConfiguration
             return;
         }
 
-        if (solverConfig.getPhaseConfigList() != null) {
-            throw new IllegalArgumentException("%s properties cannot be specified when phases are configured."
-                    .formatted("timefold.solver.termination.diminished-returns"));
+        var terminationConfig = solverConfig.getTerminationConfig();
+        if (terminationConfig == null) {
+            terminationConfig = new TerminationConfig();
+            solverConfig.setTerminationConfig(terminationConfig);
         }
-
-        solverConfig.setPhaseConfigList(List.of(
-                new ConstructionHeuristicPhaseConfig(),
-                new LocalSearchPhaseConfig().withTerminationConfig(
-                        new TerminationConfig().withDiminishedReturnsConfig(
-                                new DiminishedReturnsTerminationConfig()
-                                        .withSlidingWindowDuration(diminishedReturnsProperties.getSlidingWindowDuration())
-                                        .withMinimumImprovementRatio(
-                                                diminishedReturnsProperties.getMinimumImprovementRatio())))));
+        terminationConfig.setDiminishedReturnsConfig(new DiminishedReturnsTerminationConfig()
+                .withSlidingWindowDuration(diminishedReturnsProperties.getSlidingWindowDuration())
+                .withMinimumImprovementRatio(diminishedReturnsProperties.getMinimumImprovementRatio()));
     }
 
     private static void assertNoMemberAnnotationWithoutClassAnnotation(IncludeAbstractClassesEntityScanner entityScanner) {

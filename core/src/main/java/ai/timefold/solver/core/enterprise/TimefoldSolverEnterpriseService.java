@@ -30,7 +30,8 @@ import ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
 import ai.timefold.solver.core.impl.partitionedsearch.PartitionedSearchPhase;
-import ai.timefold.solver.core.impl.solver.termination.Termination;
+import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
+import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 
 public interface TimefoldSolverEnterpriseService {
 
@@ -96,17 +97,17 @@ public interface TimefoldSolverEnterpriseService {
     Class<? extends ConstraintProvider>
             buildLambdaSharedConstraintProvider(Class<? extends ConstraintProvider> originalConstraintProvider);
 
-    <Solution_> ConstructionHeuristicDecider<Solution_> buildConstructionHeuristic(Termination<Solution_> termination,
+    <Solution_> ConstructionHeuristicDecider<Solution_> buildConstructionHeuristic(PhaseTermination<Solution_> termination,
             ConstructionHeuristicForager<Solution_> forager, HeuristicConfigPolicy<Solution_> configPolicy);
 
-    <Solution_> LocalSearchDecider<Solution_> buildLocalSearch(int moveThreadCount, Termination<Solution_> termination,
+    <Solution_> LocalSearchDecider<Solution_> buildLocalSearch(int moveThreadCount, PhaseTermination<Solution_> termination,
             MoveSelector<Solution_> moveSelector, Acceptor<Solution_> acceptor, LocalSearchForager<Solution_> forager,
             EnvironmentMode environmentMode, HeuristicConfigPolicy<Solution_> configPolicy);
 
     <Solution_> PartitionedSearchPhase<Solution_> buildPartitionedSearch(int phaseIndex,
             PartitionedSearchPhaseConfig phaseConfig, HeuristicConfigPolicy<Solution_> solverConfigPolicy,
-            Termination<Solution_> solverTermination,
-            BiFunction<HeuristicConfigPolicy<Solution_>, Termination<Solution_>, Termination<Solution_>> phaseTerminationFunction);
+            SolverTermination<Solution_> solverTermination,
+            BiFunction<HeuristicConfigPolicy<Solution_>, SolverTermination<Solution_>, PhaseTermination<Solution_>> phaseTerminationFunction);
 
     <Solution_> EntitySelector<Solution_> applyNearbySelection(EntitySelectorConfig entitySelectorConfig,
             HeuristicConfigPolicy<Solution_> configPolicy, NearbySelectionConfig nearbySelectionConfig,

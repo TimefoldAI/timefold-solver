@@ -41,8 +41,9 @@ import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecallerFactory;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.BasicPlumbingTermination;
-import ai.timefold.solver.core.impl.solver.termination.Termination;
+import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 import ai.timefold.solver.core.impl.solver.termination.TerminationFactory;
+import ai.timefold.solver.core.impl.solver.termination.UniversalTermination;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -131,11 +132,11 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 .withClassInstanceCache(ClassInstanceCache.create())
                 .build();
         var basicPlumbingTermination = new BasicPlumbingTermination<Solution_>(isDaemon);
-        var termination = buildTerminationConfig(basicPlumbingTermination, configPolicy, configOverride);
+        var termination = buildTermination(basicPlumbingTermination, configPolicy, configOverride);
         var phaseList = buildPhaseList(configPolicy, bestSolutionRecaller, termination);
 
         return new DefaultSolver<>(environmentMode, randomFactory, bestSolutionRecaller, basicPlumbingTermination,
-                termination, phaseList, solverScope,
+                UniversalTermination.bridge(termination), phaseList, solverScope,
                 moveThreadCount == null ? SolverConfig.MOVE_THREAD_COUNT_NONE : Integer.toString(moveThreadCount));
     }
 
@@ -149,13 +150,10 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         }
     }
 
-    private Termination<Solution_> buildTerminationConfig(BasicPlumbingTermination<Solution_> basicPlumbingTermination,
-            HeuristicConfigPolicy<Solution_> configPolicy,
-            SolverConfigOverride<Solution_> solverConfigOverride) {
-        var terminationConfig = Objects.requireNonNullElseGet(solverConfig.getTerminationConfig(), TerminationConfig::new);
-        if (solverConfigOverride.getTerminationConfig() != null) {
-            terminationConfig = solverConfigOverride.getTerminationConfig();
-        }
+    private SolverTermination<Solution_> buildTermination(BasicPlumbingTermination<Solution_> basicPlumbingTermination,
+            HeuristicConfigPolicy<Solution_> configPolicy, SolverConfigOverride<Solution_> solverConfigOverride) {
+        var terminationConfig = Objects.requireNonNullElseGet(solverConfigOverride.getTerminationConfig(),
+                () -> Objects.requireNonNullElseGet(solverConfig.getTerminationConfig(), TerminationConfig::new));
         return TerminationFactory.<Solution_> create(terminationConfig)
                 .buildTermination(configPolicy, basicPlumbingTermination);
     }
@@ -218,7 +216,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     }
 
     public List<Phase<Solution_>> buildPhaseList(HeuristicConfigPolicy<Solution_> configPolicy,
-            BestSolutionRecaller<Solution_> bestSolutionRecaller, Termination<Solution_> termination) {
+            BestSolutionRecaller<Solution_> bestSolutionRecaller, SolverTermination<Solution_> termination) {
         var phaseConfigList = solverConfig.getPhaseConfigList();
         if (ConfigUtils.isEmptyCollection(phaseConfigList)) {
             var genuineEntityDescriptorCollection = configPolicy.getSolutionDescriptor().getGenuineEntityDescriptors();

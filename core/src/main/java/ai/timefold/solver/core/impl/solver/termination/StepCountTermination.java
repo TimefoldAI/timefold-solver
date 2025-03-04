@@ -4,7 +4,12 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-public final class StepCountTermination<Solution_> extends AbstractTermination<Solution_> {
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
+final class StepCountTermination<Solution_>
+        extends AbstractPhaseTermination<Solution_>
+        implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private final int stepCountLimit;
 
@@ -20,30 +25,10 @@ public final class StepCountTermination<Solution_> extends AbstractTermination<S
         return stepCountLimit;
     }
 
-    // ************************************************************************
-    // Terminated methods
-    // ************************************************************************
-
-    @Override
-    public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
-        throw new UnsupportedOperationException(
-                getClass().getSimpleName() + " can only be used for phase termination.");
-    }
-
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
         int nextStepIndex = phaseScope.getNextStepIndex();
         return nextStepIndex >= stepCountLimit;
-    }
-
-    // ************************************************************************
-    // Time gradient methods
-    // ************************************************************************
-
-    @Override
-    public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
-        throw new UnsupportedOperationException(
-                getClass().getSimpleName() + " can only be used for phase termination.");
     }
 
     @Override
@@ -53,12 +38,8 @@ public final class StepCountTermination<Solution_> extends AbstractTermination<S
         return Math.min(timeGradient, 1.0);
     }
 
-    // ************************************************************************
-    // Other methods
-    // ************************************************************************
-
     @Override
-    public StepCountTermination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
+    public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
             ChildThreadType childThreadType) {
         return new StepCountTermination<>(stepCountLimit);
     }

@@ -5,7 +5,7 @@ import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
-import ai.timefold.solver.core.impl.solver.termination.Termination;
+import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 
 public class DefaultPartitionedSearchPhaseFactory<Solution_>
         extends AbstractPhaseFactory<Solution_, PartitionedSearchPhaseConfig> {
@@ -17,7 +17,7 @@ public class DefaultPartitionedSearchPhaseFactory<Solution_>
     @Override
     public PartitionedSearchPhase<Solution_> buildPhase(int phaseIndex, boolean lastInitializingPhase,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
-            Termination<Solution_> solverTermination) {
+            SolverTermination<Solution_> solverTermination) {
         return TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.PARTITIONED_SEARCH)
                 .buildPartitionedSearch(phaseIndex, phaseConfig, solverConfigPolicy, solverTermination,
                         this::buildPhaseTermination);

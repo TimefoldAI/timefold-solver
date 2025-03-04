@@ -5,20 +5,27 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
+import ai.timefold.solver.core.impl.phase.custom.scope.CustomPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import ai.timefold.solver.core.impl.util.Pair;
 
-public final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<Solution_>
-        extends AbstractTermination<Solution_> {
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
+final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<Solution_>
+        extends AbstractUniversalTermination<Solution_>
+        implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private final long unimprovedTimeMillisSpentLimit;
-    private final Score unimprovedScoreDifferenceThreshold;
+    private final Score<?> unimprovedScoreDifferenceThreshold;
     private final Clock clock;
 
-    private Queue<Pair<Long, Score>> bestScoreImprovementHistoryQueue;
+    private @Nullable Queue<Pair<Long, Score<?>>> bestScoreImprovementHistoryQueue;
     // safeTimeMillis is until when we're safe from termination
     private long solverSafeTimeMillis = -1L;
     private long phaseSafeTimeMillis = -1L;
@@ -79,6 +86,7 @@ public final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<
         }
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
         if (stepScope.getBestScoreImproved()) {
@@ -104,10 +112,6 @@ public final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<
         }
     }
 
-    // ************************************************************************
-    // Terminated methods
-    // ************************************************************************
-
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
         return isTerminated(solverSafeTimeMillis);
@@ -130,10 +134,6 @@ public final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<
         return now > safeTimeMillis;
     }
 
-    // ************************************************************************
-    // Time gradient methods
-    // ************************************************************************
-
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
         return calculateTimeGradient(solverSafeTimeMillis);
@@ -154,15 +154,17 @@ public final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<
         return Math.min(timeGradient, 1.0);
     }
 
-    // ************************************************************************
-    // Other methods
-    // ************************************************************************
-
     @Override
-    public UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<Solution_> createChildThreadTermination(
-            SolverScope<Solution_> solverScope, ChildThreadType childThreadType) {
+    public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
+            ChildThreadType childThreadType) {
         return new UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<>(unimprovedTimeMillisSpentLimit,
                 unimprovedScoreDifferenceThreshold);
+    }
+
+    @Override
+    public boolean isApplicableTo(Class<? extends AbstractPhaseScope> phaseScopeClass) {
+        return !(phaseScopeClass == ConstructionHeuristicPhaseScope.class
+                || phaseScopeClass == CustomPhaseScope.class);
     }
 
     @Override

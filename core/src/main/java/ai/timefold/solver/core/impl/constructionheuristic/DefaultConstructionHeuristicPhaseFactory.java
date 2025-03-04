@@ -33,7 +33,8 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
-import ai.timefold.solver.core.impl.solver.termination.Termination;
+import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
+import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 
 public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         extends AbstractPhaseFactory<Solution_, ConstructionHeuristicPhaseConfig> {
@@ -44,7 +45,7 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
 
     public final DefaultConstructionHeuristicPhaseBuilder<Solution_> getBuilder(int phaseIndex,
             boolean lastInitializingPhase, HeuristicConfigPolicy<Solution_> solverConfigPolicy,
-            Termination<Solution_> solverTermination) {
+            SolverTermination<Solution_> solverTermination) {
         var constructionHeuristicType_ = Objects.requireNonNullElse(phaseConfig.getConstructionHeuristicType(),
                 ConstructionHeuristicType.ALLOCATE_ENTITY_FROM_QUEUE);
         var entitySorterManner = Objects.requireNonNullElse(phaseConfig.getEntitySorterManner(),
@@ -66,7 +67,7 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
     }
 
     protected DefaultConstructionHeuristicPhaseBuilder<Solution_> createBuilder(
-            HeuristicConfigPolicy<Solution_> phaseConfigPolicy, Termination<Solution_> solverTermination, int phaseIndex,
+            HeuristicConfigPolicy<Solution_> phaseConfigPolicy, SolverTermination<Solution_> solverTermination, int phaseIndex,
             boolean lastInitializingPhase, EntityPlacer<Solution_> entityPlacer) {
         var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
         return new DefaultConstructionHeuristicPhaseBuilder<>(phaseIndex, lastInitializingPhase,
@@ -78,7 +79,7 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
     @Override
     public ConstructionHeuristicPhase<Solution_> buildPhase(int phaseIndex, boolean lastInitializingPhase,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
-            Termination<Solution_> solverTermination) {
+            SolverTermination<Solution_> solverTermination) {
         return getBuilder(phaseIndex, lastInitializingPhase, solverConfigPolicy, solverTermination)
                 .build();
     }
@@ -157,7 +158,7 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
     }
 
     protected ConstructionHeuristicDecider<Solution_> buildDecider(HeuristicConfigPolicy<Solution_> configPolicy,
-            Termination<Solution_> termination) {
+            PhaseTermination<Solution_> termination) {
         var forager = buildForager(configPolicy);
         var moveThreadCount = configPolicy.getMoveThreadCount();
         var decider = (moveThreadCount == null)

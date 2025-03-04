@@ -14,7 +14,11 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 
-public class TerminationFactory<Solution_> {
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
+public final class TerminationFactory<Solution_> {
 
     public static <Solution_> TerminationFactory<Solution_> create(TerminationConfig terminationConfig) {
         return new TerminationFactory<>(terminationConfig);
@@ -26,20 +30,24 @@ public class TerminationFactory<Solution_> {
         this.terminationConfig = terminationConfig;
     }
 
-    public Termination<Solution_> buildTermination(HeuristicConfigPolicy<Solution_> configPolicy,
-            Termination<Solution_> chainedTermination) {
-        Termination<Solution_> termination = buildTermination(configPolicy);
+    @SuppressWarnings("unchecked")
+    public <Termination_ extends Termination<Solution_>> Termination_
+            buildTermination(HeuristicConfigPolicy<Solution_> configPolicy, Termination_ chainedTermination) {
+        var termination = buildTermination(configPolicy);
         if (termination == null) {
             return chainedTermination;
         }
-        return new OrCompositeTermination<>(chainedTermination, termination);
+        // This cast works, because composite termination is Universal, 
+        // and therefore extends both SolverTermination and PhaseTermination.
+        return (Termination_) new OrCompositeTermination<>(chainedTermination, termination);
     }
 
     /**
      * @param configPolicy never null
      * @return sometimes null
      */
-    public <Score_ extends Score<Score_>> Termination<Solution_> buildTermination(
+    @SuppressWarnings("unchecked")
+    public <Score_ extends Score<Score_>> @Nullable Termination<Solution_> buildTermination(
             HeuristicConfigPolicy<Solution_> configPolicy) {
         List<Termination<Solution_>> terminationList = new ArrayList<>();
         if (terminationConfig.getTerminationClass() != null) {
@@ -92,7 +100,8 @@ public class TerminationFactory<Solution_> {
         return buildTerminationFromList(terminationList);
     }
 
-    protected <Score_ extends Score<Score_>> List<Termination<Solution_>>
+    @SuppressWarnings("unchecked")
+    <Score_ extends Score<Score_>> List<Termination<Solution_>>
             buildTimeBasedTermination(HeuristicConfigPolicy<Solution_> configPolicy) {
         List<Termination<Solution_>> terminationList = new ArrayList<>();
         Long timeMillisSpentLimit = terminationConfig.calculateTimeMillisSpentLimit();
@@ -138,7 +147,7 @@ public class TerminationFactory<Solution_> {
         return terminationList;
     }
 
-    protected List<Termination<Solution_>> buildInnerTermination(HeuristicConfigPolicy<Solution_> configPolicy) {
+    List<Termination<Solution_>> buildInnerTermination(HeuristicConfigPolicy<Solution_> configPolicy) {
         var terminationConfigList = terminationConfig.getTerminationConfigList();
         if (ConfigUtils.isEmptyCollection(terminationConfigList)) {
             return Collections.emptyList();
@@ -151,23 +160,18 @@ public class TerminationFactory<Solution_> {
                 .collect(Collectors.toList());
     }
 
-    protected Termination<Solution_> buildTerminationFromList(List<Termination<Solution_>> terminationList) {
-        if (terminationList.isEmpty()) {
-            return null;
-        } else if (terminationList.size() == 1) {
+    @SuppressWarnings("unchecked")
+    @Nullable
+    Termination<Solution_> buildTerminationFromList(List<Termination<Solution_>> terminationList) {
+        if (terminationList.size() == 1) {
             return terminationList.get(0);
-        } else {
-            AbstractCompositeTermination<Solution_> compositeTermination;
-            if (terminationConfig.getTerminationCompositionStyle() == null
-                    || terminationConfig.getTerminationCompositionStyle() == TerminationCompositionStyle.OR) {
-                compositeTermination = new OrCompositeTermination<>(terminationList);
-            } else if (terminationConfig.getTerminationCompositionStyle() == TerminationCompositionStyle.AND) {
-                compositeTermination = new AndCompositeTermination<>(terminationList);
-            } else {
-                throw new IllegalStateException("The terminationCompositionStyle ("
-                        + terminationConfig.getTerminationCompositionStyle() + ") is not implemented.");
-            }
-            return compositeTermination;
         }
+        var terminationArray = terminationList.toArray(new Termination[0]);
+        var compositionStyle =
+                Objects.requireNonNullElse(terminationConfig.getTerminationCompositionStyle(), TerminationCompositionStyle.OR);
+        return switch (compositionStyle) {
+            case AND -> UniversalTermination.and(terminationArray);
+            case OR -> UniversalTermination.or(terminationArray);
+        };
     }
 }

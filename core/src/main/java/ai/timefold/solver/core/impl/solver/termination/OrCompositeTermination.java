@@ -6,27 +6,29 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-public final class OrCompositeTermination<Solution_> extends AbstractCompositeTermination<Solution_> {
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
+final class OrCompositeTermination<Solution_>
+        extends AbstractCompositeTermination<Solution_>
+        implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     public OrCompositeTermination(List<Termination<Solution_>> terminationList) {
         super(terminationList);
     }
 
+    @SafeVarargs
     public OrCompositeTermination(Termination<Solution_>... terminations) {
         super(terminations);
     }
 
-    // ************************************************************************
-    // Terminated methods
-    // ************************************************************************
-
     /**
      * @param solverScope never null
-     * @return true if any of the Termination is terminated.
+     * @return true if any one of the terminations is terminated.
      */
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
-        for (Termination<Solution_> termination : terminationList) {
+        for (var termination : solverTerminationList) {
             if (termination.isSolverTerminated(solverScope)) {
                 return true;
             }
@@ -35,35 +37,29 @@ public final class OrCompositeTermination<Solution_> extends AbstractCompositeTe
     }
 
     /**
-     * @param phaseScope never null
-     * @return true if any of the Termination is terminated.
+     * @return true if any one of the supported terminations is terminated.
      */
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
-        for (Termination<Solution_> termination : terminationList) {
-            if (termination.isPhaseTerminated(phaseScope)) {
+        for (var termination : phaseTerminationList) {
+            if (termination.isApplicableTo(phaseScope.getClass()) && termination.isPhaseTerminated(phaseScope)) {
                 return true;
             }
         }
         return false;
     }
 
-    // ************************************************************************
-    // Time gradient methods
-    // ************************************************************************
-
     /**
      * Calculates the maximum timeGradient of all Terminations.
      * Not supported timeGradients (-1.0) are ignored.
      *
-     * @param solverScope never null
-     * @return the maximum timeGradient of the Terminations.
+     * @return the maximum timeGradient of the terminations.
      */
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
-        double timeGradient = 0.0;
-        for (Termination<Solution_> termination : terminationList) {
-            double nextTimeGradient = termination.calculateSolverTimeGradient(solverScope);
+        var timeGradient = 0.0;
+        for (var termination : solverTerminationList) {
+            var nextTimeGradient = termination.calculateSolverTimeGradient(solverScope);
             if (nextTimeGradient >= 0.0) {
                 timeGradient = Math.max(timeGradient, nextTimeGradient);
             }
@@ -75,24 +71,22 @@ public final class OrCompositeTermination<Solution_> extends AbstractCompositeTe
      * Calculates the maximum timeGradient of all Terminations.
      * Not supported timeGradients (-1.0) are ignored.
      *
-     * @param phaseScope never null
-     * @return the maximum timeGradient of the Terminations.
+     * @return the maximum timeGradient of the supported terminations.
      */
     @Override
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
-        double timeGradient = 0.0;
-        for (Termination<Solution_> termination : terminationList) {
-            double nextTimeGradient = termination.calculatePhaseTimeGradient(phaseScope);
+        var timeGradient = 0.0;
+        for (var termination : phaseTerminationList) {
+            if (!termination.isApplicableTo(phaseScope.getClass())) {
+                continue;
+            }
+            var nextTimeGradient = termination.calculatePhaseTimeGradient(phaseScope);
             if (nextTimeGradient >= 0.0) {
                 timeGradient = Math.max(timeGradient, nextTimeGradient);
             }
         }
         return timeGradient;
     }
-
-    // ************************************************************************
-    // Other methods
-    // ************************************************************************
 
     @Override
     public OrCompositeTermination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,

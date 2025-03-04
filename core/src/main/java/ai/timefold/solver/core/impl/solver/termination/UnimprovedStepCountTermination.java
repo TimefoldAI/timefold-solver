@@ -1,10 +1,17 @@
 package ai.timefold.solver.core.impl.solver.termination;
 
+import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
+import ai.timefold.solver.core.impl.phase.custom.scope.CustomPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
-public final class UnimprovedStepCountTermination<Solution_> extends AbstractTermination<Solution_> {
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
+final class UnimprovedStepCountTermination<Solution_>
+        extends AbstractPhaseTermination<Solution_>
+        implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private final int unimprovedStepCountLimit;
 
@@ -14,16 +21,6 @@ public final class UnimprovedStepCountTermination<Solution_> extends AbstractTer
             throw new IllegalArgumentException("The unimprovedStepCountLimit (%d) cannot be negative."
                     .formatted(unimprovedStepCountLimit));
         }
-    }
-
-    // ************************************************************************
-    // Terminated methods
-    // ************************************************************************
-
-    @Override
-    public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
-        throw new UnsupportedOperationException(
-                getClass().getSimpleName() + " can only be used for phase termination.");
     }
 
     @Override
@@ -38,16 +35,6 @@ public final class UnimprovedStepCountTermination<Solution_> extends AbstractTer
         return lastStepIndex - bestStepIndex;
     }
 
-    // ************************************************************************
-    // Time gradient methods
-    // ************************************************************************
-
-    @Override
-    public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
-        throw new UnsupportedOperationException(
-                getClass().getSimpleName() + " can only be used for phase termination.");
-    }
-
     @Override
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
         var unimprovedStepCount = calculateUnimprovedStepCount(phaseScope);
@@ -55,14 +42,16 @@ public final class UnimprovedStepCountTermination<Solution_> extends AbstractTer
         return Math.min(timeGradient, 1.0);
     }
 
-    // ************************************************************************
-    // Other methods
-    // ************************************************************************
-
     @Override
-    public UnimprovedStepCountTermination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
+    public Termination<Solution_> createChildThreadTermination(SolverScope<Solution_> solverScope,
             ChildThreadType childThreadType) {
         return new UnimprovedStepCountTermination<>(unimprovedStepCountLimit);
+    }
+
+    @Override
+    public boolean isApplicableTo(Class<? extends AbstractPhaseScope> phaseScopeClass) {
+        return !(phaseScopeClass == ConstructionHeuristicPhaseScope.class
+                || phaseScopeClass == CustomPhaseScope.class);
     }
 
     @Override
