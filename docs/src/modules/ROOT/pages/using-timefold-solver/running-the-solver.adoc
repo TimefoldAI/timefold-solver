@@ -144,7 +144,7 @@ The environment mode influences the seed of that `Random` instance.
 === Reproducibility
 
 For the environment mode to be reproducible,
-any two runs of the same dataset with the same solver configuration will must have the same result at every step.
+any two runs of the same dataset with the same solver configuration must have the same result at every step.
 Choosing a reproducible environment mode enables you to reproduce bugs consistently.
 It also allows you to benchmark certain refactorings (such as a score constraint performance optimization) fairly across runs.
 
