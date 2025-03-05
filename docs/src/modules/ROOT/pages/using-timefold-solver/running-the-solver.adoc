@@ -291,7 +291,7 @@ Unlike all the other modes,
 this mode doesn't use any fixed <<randomNumberGenerator,random seed>> unless one is provided.
 
 
-[#environmentModeRecommendations]
+[#environmentModeBestPractices]
 === Best practices
 
 There are several best practices to follow throughout the lifecycle of your application:
