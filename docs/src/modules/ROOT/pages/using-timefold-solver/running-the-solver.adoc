@@ -140,6 +140,7 @@ Some solver configurations use the `Random` instance a lot more than others.
 For example, Simulated Annealing depends highly on random numbers, while Tabu Search only depends on it to deal with score ties.
 The environment mode influences the seed of that `Random` instance.
 
+
 [#environmentModeReproducibility]
 === Reproducibility
 
@@ -156,8 +157,8 @@ for collections of planning entities or planning values (but not normal problem 
 especially in the solution implementation.
 Replace it with ``LinkedHashSet``.
 ** This also applies to `HashMap`, which can be replaced by `LinkedHashMap`.
-* Combining a time gradient dependent algorithms (most notably Simulated Annealing) together with time spent termination.
-A sufficiently large difference in allocated CPU time will influence the time gradient values.
+* Combining a time gradient dependent algorithm (most notably Simulated Annealing) together with <<timeMillisSpentTermination,time spent termination>>.
+A large enough difference in allocated CPU time will influence the time gradient values.
 Replace Simulated Annealing with Late Acceptance,
 or replace time spent termination with step count termination.
 
