@@ -219,26 +219,29 @@ because it clones solutions before and after each move.
 [#environmentModeFullAssert]
 ==== `FULL_ASSERT`
 
-The `FULL_ASSERT` mode turns on all assertions and will fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
+The `FULL_ASSERT` mode turns on all assertions and will fail-fast on a bug in a Move implementation,
+a constraint, the engine itself, ...
+It is also intrusive
+because it calls the method `calculateScore()` more frequently than a `<<environmentModeNoAssert,NO_ASSERT>>` mode,
+making the `FULL_ASSERT` mode very slow.
 
 This mode is <<environmentModeReproducibility,reproducible>>.
-It is also intrusive because it calls the method `calculateScore()` more frequently than a non-assert mode, making the `FULL_ASSERT` mode very slow.
 
-The `FULL_ASSERT` mode is horribly slow,
-because it does not rely on incremental score calculation.
+NOTE: This mode is neither better nor worse than `<<environmentModeNonIntrusiveFullAssert,NON_INTRUSIVE_FULL_ASSERT>>` - each can catch different types of errors, on account of performing score calculations at different times.
 
 
 [#environmentModeNonIntrusiveFullAssert]
 ==== `NON_INTRUSIVE_FULL_ASSERT`
 
-The `NON_INTRUSIVE_FULL_ASSERT` turns on several assertions to fail-fast on a bug in a Move implementation,
+The `NON_INTRUSIVE_FULL_ASSERT` mode turns on most assertions and will fail-fast on a bug in a Move implementation,
 a constraint, the engine itself, ...
+It is not intrusive,
+as it does not call the method `calculateScore()` more frequently than a `<<environmentModeNoAssert,NO_ASSERT>>` mode.
 
 This mode is <<environmentModeReproducibility,reproducible>>.
-It is non-intrusive because it does not call the method `calculateScore()` more frequently than a non-assert mode.
+This mode is also very slow, on account of all the additional checks performed.
 
-The `NON_INTRUSIVE_FULL_ASSERT` mode is horribly slow,
-because it does not rely on incremental score calculation.
+NOTE: This mode is neither better nor worse than `<<environmentModeFullAssert,FULL_ASSERT>>` - each can catch different types of errors, on account of performing score calculations at different times.
 
 
 [#environmentModeStepAssert]
@@ -251,7 +254,7 @@ This makes it slow.
 This mode is <<environmentModeReproducibility,reproducible>>.
 It is also intrusive because it calls the method `calculateScore()` more frequently than a non-assert mode.
 
-We recommend that you write a test case that does a short run of your planning problem with the `STEP_ASSERT` mode on.
+TIP: We recommend that you write a test case that does a short run of your planning problem with the `STEP_ASSERT` mode on.
 
 
 [#environmentModePhaseAssert]
@@ -259,13 +262,11 @@ We recommend that you write a test case that does a short run of your planning p
 
 The `PHASE_ASSERT` is the default mode because it is recommended during development.
 This mode is <<environmentModeReproducibility,reproducible>>
-and is negligibly slower than the `NO_ASSERT` mode.
-However, it gives you the benefit of quickly checking for score corruptions.
+and it gives you the benefit of quickly checking for score corruptions.
 If you can guarantee that your code is and will remain bug-free,
 you can switch to the `NO_ASSERT` mode for a marginal performance gain.
 
-In practice, this mode uses the default, fixed <<randomNumberGenerator,random seed>> if no seed is specified,
-and it also disables certain concurrency optimizations, such as work stealing.
+In practice, this mode disables certain concurrency optimizations, such as work stealing.
 
 
 [#environmentModeNoAssert]
@@ -284,7 +285,20 @@ but it is not <<environmentModeReproducibility,reproducible>>.
 Avoid using it during development as it makes debugging and bug fixing painful.
 If your production environment doesn't care about reproducibility, use this mode in production.
 
-In practice, this mode uses no fixed <<randomNumberGenerator,random seed>> if no seed is specified.
+Unlike all the other modes,
+this mode doesn't use any fixed <<randomNumberGenerator,random seed>> unless one is provided.
+
+
+[#environmentModeRecommendations]
+=== Best practices
+
+There are several best practices to follow throughout the lifecycle of your application:
+
+**In production**:: Use the `PHASE_ASSERT` mode if you need <<environmentModeReproducibility,reproducibility>>, otherwise use `NON_REPRODUCIBLE`.
+**In development**::
+ - Use the `PHASE_ASSERT` mode to catch bugs early.
+ - Write a test case that does a short run of your planning problem in `STEP_ASSERT` mode.
+ - Have nightly builds that run for several minutes in `FULL_ASSERT` and `NON_INTRUSIVE_FULL_ASSERT` modes.
 
 
 [#logging]
