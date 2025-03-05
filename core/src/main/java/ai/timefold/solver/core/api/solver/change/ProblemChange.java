@@ -8,7 +8,7 @@ import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * A ProblemChange represents a change in one or more {@link PlanningEntity planning entities} or problem facts
@@ -77,6 +77,7 @@ import org.jspecify.annotations.NonNull;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 @FunctionalInterface
+@NullMarked
 public interface ProblemChange<Solution_> {
 
     /**
@@ -87,5 +88,5 @@ public interface ProblemChange<Solution_> {
      *        (and {@link PlanningEntity planning entities}) to change
      * @param problemChangeDirector {@link ProblemChangeDirector} to perform the change through
      */
-    void doChange(@NonNull Solution_ workingSolution, @NonNull ProblemChangeDirector problemChangeDirector);
+    void doChange(Solution_ workingSolution, ProblemChangeDirector problemChangeDirector);
 }

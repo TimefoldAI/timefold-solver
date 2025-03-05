@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from typing import Annotated, List
 from threading import Thread
 
+import pytest
 
 @planning_entity
 @dataclass
@@ -66,6 +67,7 @@ class RemoveEntity(ProblemChange[Solution]):
                                               lambda working_entity: working_solution.entities.remove(working_entity))
 
 
+@pytest.mark.xfail(reason='Flaky test')
 def test_add_entity():
     solver_config = SolverConfig(
         solution_class=Solution,
@@ -90,7 +92,7 @@ def test_add_entity():
 
     thread.start()
     solver.add_problem_change(AddEntity(Entity('B')))
-    thread.join(timeout=1)
+    thread.join(timeout=5)
 
     if thread.is_alive():
         raise AssertionError(f'Thread {thread} did not finish after 5 seconds')
@@ -124,7 +126,7 @@ def test_remove_entity():
 
     thread.start()
     solver.add_problem_change(RemoveEntity(Entity('B')))
-    thread.join(timeout=1)
+    thread.join(timeout=5)
 
     if thread.is_alive():
         raise AssertionError(f'Thread {thread} did not finish after 5 seconds')

@@ -10,6 +10,7 @@ import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
+import java.util.function.UnaryOperator;
 
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
@@ -20,7 +21,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * The goal of this class is to register problem changes and best solutions in a thread-safe way.
- * Problem changes are {@link #addProblemChange(Solver, ProblemChange) put in a queue}
+ * Problem changes are {@link #addProblemChange(Solver, List) put in a queue}
  * and later associated with the best solution which contains them.
  * The best solution is associated with a version number
  * that is incremented each time a {@link #set new best solution is set}.
@@ -29,26 +30,24 @@ import org.jspecify.annotations.Nullable;
  * 
  * <p>
  * This class needs to be thread-safe.
- * Due to complicated interactions between the solver, solver manager and problem changes,
- * it is best if we avoid explicit locking here,
- * reducing cognitive complexity of the whole system.
- * The core idea being to never modify the same data structure from multiple threads;
- * instead, we replace the data structure with a new one atomically.
- * The code contains comments throughout the class that explain the reasoning behind the design.
  * 
  * @param <Solution_>
  */
 @NullMarked
 final class BestSolutionHolder<Solution_> {
 
-    private final AtomicReference<@Nullable VersionedBestSolution<Solution_>> versionedBestSolutionRef =
-            new AtomicReference<>();
-    private final AtomicReference<SortedMap<BigInteger, List<CompletableFuture<Void>>>> problemChangesPerVersionRef =
-            new AtomicReference<>(createNewProblemChangesMap());
+    private final AtomicReference<BigInteger> lastProcessedVersion = new AtomicReference<>(BigInteger.valueOf(-1));
+
+    // These references are non-final and being accessed from multiple threads, 
+    // therefore they need to be volatile and all access synchronized.
+    // Both the map and the best solution are based on the current version,
+    // and therefore access to both needs to be guarded by the same lock.
     // The version is BigInteger to avoid long overflow.
     // The solver can run potentially forever, so long overflow is a (remote) possibility.
-    private final AtomicReference<BigInteger> currentVersion = new AtomicReference<>(BigInteger.ZERO);
-    private final AtomicReference<BigInteger> lastProcessedVersion = new AtomicReference<>(BigInteger.valueOf(-1));
+    private volatile SortedMap<BigInteger, List<CompletableFuture<Void>>> problemChangesPerVersionMap =
+            createNewProblemChangesMap();
+    private volatile @Nullable VersionedBestSolution<Solution_> versionedBestSolution = null;
+    private volatile BigInteger currentVersion = BigInteger.ZERO;
 
     private static SortedMap<BigInteger, List<CompletableFuture<Void>>> createNewProblemChangesMap() {
         return createNewProblemChangesMap(Collections.emptySortedMap());
@@ -59,8 +58,8 @@ final class BestSolutionHolder<Solution_> {
         return new TreeMap<>(map);
     }
 
-    boolean isEmpty() {
-        return versionedBestSolutionRef.get() == null;
+    synchronized boolean isEmpty() {
+        return this.versionedBestSolution == null;
     }
 
     /**
@@ -69,12 +68,12 @@ final class BestSolutionHolder<Solution_> {
      */
     @Nullable
     BestSolutionContainingProblemChanges<Solution_> take() {
-        var versionedBestSolution = versionedBestSolutionRef.getAndSet(null);
-        if (versionedBestSolution == null) {
+        var latestVersionedBestSolution = resetVersionedBestSolution();
+        if (latestVersionedBestSolution == null) {
             return null;
         }
 
-        var bestSolutionVersion = versionedBestSolution.version();
+        var bestSolutionVersion = latestVersionedBestSolution.version();
         var latestProcessedVersion = this.lastProcessedVersion.getAndUpdate(bestSolutionVersion::max);
         if (latestProcessedVersion.compareTo(bestSolutionVersion) > 0) {
             // Corner case: The best solution has already been taken,
@@ -84,7 +83,7 @@ final class BestSolutionHolder<Solution_> {
             return null;
         }
         // The map is replaced by a map containing only the problem changes that are not contained in the best solution.
-        // This is done atomically, so no other thread can access the old map anymore.
+        // This is fully synchronized, so no other thread can access the old map anymore.
         // The old map can then be processed by the current thread without synchronization.
         // The copying of maps is possibly expensive, but due to the nature of problem changes,
         // we do not expect the map to ever get too big.
@@ -93,7 +92,7 @@ final class BestSolutionHolder<Solution_> {
         // The solver also finds new best solutions, which regularly trims the size of the map as well.
         var boundaryVersion = bestSolutionVersion.add(BigInteger.ONE);
         var oldProblemChangesPerVersion =
-                problemChangesPerVersionRef.getAndUpdate(map -> createNewProblemChangesMap(map.tailMap(boundaryVersion)));
+                replaceMapSynchronized(map -> createNewProblemChangesMap(map.tailMap(boundaryVersion)));
         // At this point, the old map is not accessible to any other thread.
         // We also do not need to clear it, because this being the only reference, 
         // garbage collector will do it for us.
@@ -102,29 +101,41 @@ final class BestSolutionHolder<Solution_> {
                 .stream()
                 .flatMap(Collection::stream)
                 .toList();
-        return new BestSolutionContainingProblemChanges<>(versionedBestSolution.bestSolution(), containedProblemChanges);
+        return new BestSolutionContainingProblemChanges<>(latestVersionedBestSolution.bestSolution(), containedProblemChanges);
+    }
+
+    private synchronized @Nullable VersionedBestSolution<Solution_> resetVersionedBestSolution() {
+        var oldVersionedBestSolution = this.versionedBestSolution;
+        this.versionedBestSolution = null;
+        return oldVersionedBestSolution;
+    }
+
+    private synchronized SortedMap<BigInteger, List<CompletableFuture<Void>>> replaceMapSynchronized(
+            UnaryOperator<SortedMap<BigInteger, List<CompletableFuture<Void>>>> replaceFunction) {
+        var oldMap = problemChangesPerVersionMap;
+        problemChangesPerVersionMap = replaceFunction.apply(oldMap);
+        return oldMap;
     }
 
     /**
-     * Sets the new best solution if all known problem changes have been processed and thus are contained in this
-     * best solution.
+     * Sets the new best solution if all known problem changes have been processed
+     * and thus are contained in this best solution.
      *
      * @param bestSolution the new best solution that replaces the previous one if there is any
      * @param isEveryProblemChangeProcessed a supplier that tells if all problem changes have been processed
      */
     void set(Solution_ bestSolution, BooleanSupplier isEveryProblemChangeProcessed) {
-        /*
-         * The new best solution can be accepted only if there are no pending problem changes
-         * nor any additional changes may come during this operation.
-         * Otherwise, a race condition might occur
-         * that leads to associating problem changes with a solution that was created later,
-         * but does not contain them yet.
-         * As a result, CompletableFutures representing these changes would be completed too early.
-         */
+        // The new best solution can be accepted only if there are no pending problem changes
+        // nor any additional changes may come during this operation.
+        // Otherwise, a race condition might occur
+        // that leads to associating problem changes with a solution that was created later,
+        // but does not contain them yet.
+        // As a result, CompletableFutures representing these changes would be completed too early.
         if (isEveryProblemChangeProcessed.getAsBoolean()) {
-            // This field is atomic, so we can safely set the new best solution without synchronization.
-            versionedBestSolutionRef.set(
-                    new VersionedBestSolution<>(bestSolution, currentVersion.getAndUpdate(old -> old.add(BigInteger.ONE))));
+            synchronized (this) {
+                versionedBestSolution = new VersionedBestSolution<>(bestSolution, currentVersion);
+                currentVersion = currentVersion.add(BigInteger.ONE);
+            }
         }
     }
 
@@ -139,10 +150,8 @@ final class BestSolutionHolder<Solution_> {
     CompletableFuture<Void> addProblemChange(Solver<Solution_> solver, List<ProblemChange<Solution_>> problemChangeList) {
         var futureProblemChange = new CompletableFuture<Void>();
         synchronized (this) {
-            // This actually needs to be synchronized, 
-            // as we want the new problem change and its version to be linked.  
-            var futureProblemChangeList =
-                    problemChangesPerVersionRef.get().computeIfAbsent(currentVersion.get(), version -> new ArrayList<>());
+            var futureProblemChangeList = problemChangesPerVersionMap.computeIfAbsent(currentVersion,
+                    version -> new ArrayList<>());
             futureProblemChangeList.add(futureProblemChange);
             solver.addProblemChanges(problemChangeList);
         }
@@ -150,12 +159,11 @@ final class BestSolutionHolder<Solution_> {
     }
 
     void cancelPendingChanges() {
-        // The map is an atomic reference. 
-        // We first replace the reference with a new map atomically, avoiding synchronization issues.
-        // Then we process the old map, which is safe because no one can access it anymore.
+        // We first replace the reference with a new map, fully synchronized.
+        // Then we process the old map unsynchronized, which is safe because no one can access it anymore.
         // We do not need to clear it, because this being the only reference,
         // the garbage collector will do it for us.
-        problemChangesPerVersionRef.getAndSet(createNewProblemChangesMap())
+        replaceMapSynchronized(map -> createNewProblemChangesMap())
                 .values()
                 .stream()
                 .flatMap(Collection::stream)
