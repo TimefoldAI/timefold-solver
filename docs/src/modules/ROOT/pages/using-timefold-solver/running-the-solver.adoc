@@ -140,22 +140,53 @@ Some solver configurations use the `Random` instance a lot more than others.
 For example, Simulated Annealing depends highly on random numbers, while Tabu Search only depends on it to deal with score ties.
 The environment mode influences the seed of that `Random` instance.
 
-These are the environment modes:
+
+[#environmentModeReproducibility]
+=== Reproducibility
+
+For the environment mode to be reproducible,
+any two runs of the same dataset with the same solver configuration must have the same result at every step.
+Choosing a reproducible environment mode enables you to reproduce bugs consistently.
+It also allows you to benchmark certain refactorings (such as a score constraint performance optimization) fairly across runs.
+
+Regardless of whether the chosen environment mode itself is reproducible,
+your application might still not be fully reproducible because of:
+
+* Use of `HashSet` (or another `Collection` which has an undefined iteration order between JVM runs)
+for collections of planning entities or planning values (but not normal problem facts),
+especially in the solution implementation.
+Replace it with ``LinkedHashSet``.
+** This also applies to `HashMap`, which can be replaced by `LinkedHashMap`.
+* Combining a time gradient-dependent algorithm (most notably xref:optimization-algorithms/local-search.adoc#simulatedAnnealing[Simulated Annealing]) together with
+xref:optimization-algorithms/overview.adoc#timeMillisSpentTermination[time spent termination].
+A large enough difference in allocated CPU time will influence the time gradient values.
+Replace Simulated Annealing with Late Acceptance,
+or replace time spent termination with step count termination.
 
 
-[#environmentModeFullAssert]
-=== `FULL_ASSERT`
+[#environmentModeAvailableModes]
+=== Available environment modes
 
-The `FULL_ASSERT` mode turns on all assertions (such as assert that the incremental score calculation is uncorrupted for each move) to fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
+The following environment modes are available,
+in the order from least strict to most strict:
 
-This mode is <<environmentModeReproducible,reproducible>>.
-It is also intrusive because it calls the method `calculateScore()` more frequently than a non-assert mode.
+- `<<environmentModeNonReproducible,NON_REPRODUCIBLE>>`
+- `<<environmentModeNoAssert,NO_ASSERT>>`
+- `<<environmentModePhaseAssert,PHASE_ASSERT>>` (default)
+- `<<environmentModeStepAssert,STEP_ASSERT>>`
+- `<<environmentModeNonIntrusiveFullAssert,NON_INTRUSIVE_FULL_ASSERT>>`
+- `<<environmentModeFullAssert,FULL_ASSERT>>`
+- `<<environmentModeTrackedFullAssert,TRACKED_FULL_ASSERT>>`
 
-The `FULL_ASSERT` mode is horribly slow,
-because it does not rely on incremental score calculation.
+As the environment mode becomes stricter,
+the solver becomes slower, but gains more error-detection capabilities.
+`STEP_ASSERT` is already slow enough to prevent its use in production.
+
+All modes other than `NON_REPRODUCIBLE` are <<environmentModeReproducibility,reproducible>>.
+
 
 [#environmentModeTrackedFullAssert]
-=== `TRACKED_FULL_ASSERT`
+==== `TRACKED_FULL_ASSERT`
 
 The `TRACKED_FULL_ASSERT` mode turns on all the <<environmentModeFullAssert, `FULL_ASSERT`>> assertions
 and additionally tracks changes to the working solution.
@@ -180,80 +211,96 @@ Any variable that changed between the "before move" solution and the "after move
 Any variable that changed between the "after move" solution and "after undo move" solution without either a
 `beforeVariableChanged` or `afterVariableChanged` would be reported here.
 
-This mode is <<environmentModeReproducible,reproducible>> (see the reproducible mode).
+This mode is <<environmentModeReproducibility,reproducible>> (see the reproducible mode).
 It is also intrusive because it calls the method `calculateScore()` more frequently than a non-assert mode.
 
 The `TRACKED_FULL_ASSERT` mode is by far the slowest mode,
 because it clones solutions before and after each move.
 
 
-[#environmentModeNonIntrusiveFullAssert]
-=== `NON_INTRUSIVE_FULL_ASSERT`
+[#environmentModeFullAssert]
+==== `FULL_ASSERT`
 
-The `NON_INTRUSIVE_FULL_ASSERT` turns on several assertions to fail-fast on a bug in a Move implementation,
+The `FULL_ASSERT` mode turns on all assertions and will fail-fast on a bug in a Move implementation,
 a constraint, the engine itself, ...
+It is also intrusive
+because it calls the method `calculateScore()` more frequently than a `<<environmentModeNoAssert,NO_ASSERT>>` mode,
+making the `FULL_ASSERT` mode very slow.
 
-This mode is <<environmentModeReproducible,reproducible>>.
-It is non-intrusive because it does not call the method `calculateScore()` more frequently than a non-assert mode.
+This mode is <<environmentModeReproducibility,reproducible>>.
 
-The `NON_INTRUSIVE_FULL_ASSERT` mode is horribly slow,
-because it does not rely on incremental score calculation.
+NOTE: This mode is neither better nor worse than `<<environmentModeNonIntrusiveFullAssert,NON_INTRUSIVE_FULL_ASSERT>>` - each can catch different types of errors, on account of performing score calculations at different times.
+
+
+[#environmentModeNonIntrusiveFullAssert]
+==== `NON_INTRUSIVE_FULL_ASSERT`
+
+The `NON_INTRUSIVE_FULL_ASSERT` mode turns on most assertions and will fail-fast on a bug in a Move implementation,
+a constraint, the engine itself, ...
+It is not intrusive,
+as it does not call the method `calculateScore()` more frequently than a `<<environmentModeNoAssert,NO_ASSERT>>` mode.
+
+This mode is <<environmentModeReproducibility,reproducible>>.
+This mode is also very slow, on account of all the additional checks performed.
+
+NOTE: This mode is neither better nor worse than `<<environmentModeFullAssert,FULL_ASSERT>>` - each can catch different types of errors, on account of performing score calculations at different times.
 
 
 [#environmentModeStepAssert]
-=== `STEP_ASSERT`
+==== `STEP_ASSERT`
 
 The `STEP_ASSERT` mode turns on most assertions (such as assert that an undoMove's score is the same as before the Move)
 to fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
+This makes it slow.
 
-This mode is <<environmentModeReproducible,reproducible>>.
+This mode is <<environmentModeReproducibility,reproducible>>.
 It is also intrusive because it calls the method `calculateScore()` more frequently than a non-assert mode.
 
-The `STEP_ASSERT` mode is slow.
-
-It is recommended to write a test case that does a short run of your planning problem with the `STEP_ASSERT` mode on.
+TIP: We recommend that you write a test case that does a short run of your planning problem with the `STEP_ASSERT` mode on.
 
 
 [#environmentModePhaseAssert]
-=== `PHASE_ASSERT` (default)
+==== `PHASE_ASSERT` (default)
 
 The `PHASE_ASSERT` is the default mode because it is recommended during development.
-In this mode, two runs in the same Timefold Solver version will execute the same code in the same order.
-**Those two runs will have the same result at every step**, except if the note below applies.
-This enables you to reproduce bugs consistently.
-It also allows you to benchmark certain refactorings (such as a score constraint performance optimization) fairly across runs.
-
-[NOTE]
-====
-Despite the reproducible mode, your application might still not be fully reproducible because of:
-
-* Use of `HashSet` (or another `Collection` which has an inconsistent order between JVM runs)
-for collections of planning entities or planning values (but not normal problem facts),
-especially in the solution implementation. Replace it with ``LinkedHashSet``.
-* Combining a time gradient dependent algorithms (most notably Simulated Annealing) together with time spent termination.
-A sufficiently large difference in allocated CPU time will influence the time gradient values.
-Replace Simulated Annealing with Late Acceptance, or replace time spent termination with step count termination.
-====
-
-The `PHASE_ASSERT` mode can be slightly slower than the `NON_REPRODUCIBLE` mode.
-If your production environment can benefit from reproducibility, use this mode in production.
-
-In practice, this mode uses the default, fixed <<randomNumberGenerator,random seed>> if no seed is specified,
-and it also disables certain concurrency optimizations, such as work stealing.
-
-The `PHASE_ASSERT` mode is negligibly slower than the `NO_ASSERT` mode,
-but it gives you the benefit of quickly checking for score corruptions.
+This mode is <<environmentModeReproducibility,reproducible>>
+and it gives you the benefit of quickly checking for score corruptions.
 If you can guarantee that your code is and will remain bug-free,
 you can switch to the `NO_ASSERT` mode for a marginal performance gain.
 
-[#environmentModeProduction]
-=== `NON_REPRODUCIBLE`
+In practice, this mode disables certain concurrency optimizations, such as work stealing.
 
-The non-reproducible mode can be slightly faster than the reproducible mode.
+
+[#environmentModeNoAssert]
+==== `NO_ASSERT`
+
+The `NO_ASSERT` environment mode behaves in all aspects like the default `<<environmentModePhaseAssert,PHASE_ASSERT>>` mode,
+except that it does not give you any protection against score corruption bugs.
+As such, it can be negligibly faster.
+
+
+[#environmentModeNonReproducible]
+==== `NON_REPRODUCIBLE`
+
+This mode can be slightly faster than any of the other modes,
+but it is not <<environmentModeReproducibility,reproducible>>.
 Avoid using it during development as it makes debugging and bug fixing painful.
 If your production environment doesn't care about reproducibility, use this mode in production.
 
-In practice, this mode uses no fixed <<randomNumberGenerator,random seed>> if no seed is specified.
+Unlike all the other modes,
+this mode doesn't use any fixed <<randomNumberGenerator,random seed>> unless one is provided.
+
+
+[#environmentModeBestPractices]
+=== Best practices
+
+There are several best practices to follow throughout the lifecycle of your application:
+
+**In production**:: Use the `PHASE_ASSERT` mode if you need <<environmentModeReproducibility,reproducibility>>, otherwise use `NON_REPRODUCIBLE`.
+**In development**::
+ - Use the `PHASE_ASSERT` mode to catch bugs early.
+ - Write a test case that does a short run of your planning problem in `STEP_ASSERT` mode.
+ - Have nightly builds that run for several minutes in `FULL_ASSERT` and `NON_INTRUSIVE_FULL_ASSERT` modes.
 
 
 [#logging]
