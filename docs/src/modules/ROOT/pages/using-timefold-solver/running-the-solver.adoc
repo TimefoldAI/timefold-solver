@@ -219,7 +219,7 @@ because it clones solutions before and after each move.
 [#environmentModeFullAssert]
 ==== `FULL_ASSERT`
 
-The `FULL_ASSERT` mode turns on all assertions (such as assert that the incremental score calculation is uncorrupted for each move) to fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
+The `FULL_ASSERT` mode turns on all assertions and will fail-fast on a bug in a Move implementation, a constraint, the engine itself, ...
 
 This mode is <<environmentModeReproducibility,reproducible>>.
 It is also intrusive because it calls the method `calculateScore()` more frequently than a non-assert mode.
