@@ -157,7 +157,8 @@ for collections of planning entities or planning values (but not normal problem 
 especially in the solution implementation.
 Replace it with ``LinkedHashSet``.
 ** This also applies to `HashMap`, which can be replaced by `LinkedHashMap`.
-* Combining a time gradient dependent algorithm (most notably Simulated Annealing) together with <<timeMillisSpentTermination,time spent termination>>.
+* Combining a time gradient-dependent algorithm (most notably xref:optimization-algorithms/local-search.adoc#simulatedAnnealing[Simulated Annealing]) together with
+xref:optimization-algorithms/overview.adoc#timeMillisSpentTermination[time spent termination].
 A large enough difference in allocated CPU time will influence the time gradient values.
 Replace Simulated Annealing with Late Acceptance,
 or replace time spent termination with step count termination.
