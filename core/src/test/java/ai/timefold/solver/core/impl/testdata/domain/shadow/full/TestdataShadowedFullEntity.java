@@ -5,12 +5,17 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
+import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
 
 @PlanningEntity
 public class TestdataShadowedFullEntity extends TestdataObject {
     @PlanningListVariable
     List<TestdataShadowedFullValue> valueList;
+
+    @ShadowVariable(variableListenerClass = TestdataShadowedFullConsistencyListVariableListener.class,
+            sourceVariableName = "valueList")
+    Boolean isConsistent;
 
     public TestdataShadowedFullEntity() {
         this.valueList = new ArrayList<>();

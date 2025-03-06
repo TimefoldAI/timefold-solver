@@ -3,21 +3,15 @@ package ai.timefold.solver.core.impl.move.director;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
@@ -31,7 +25,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreate
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin.ListRuinRecreateMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.score.director.VariableDescriptorCache;
+import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirector;
+import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
@@ -39,6 +34,7 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.full.TestdataShadowedFullEasyScoreCalculator;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.full.TestdataShadowedFullEntity;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.full.TestdataShadowedFullMultiSwapListMove;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.full.TestdataShadowedFullSolution;
@@ -340,9 +336,14 @@ class MoveDirectorTest {
 
     @Test
     void variableListenersAreTriggeredWhenSolutionIsConsistent() {
-        var innerScoreDirector = mock(InnerScoreDirector.class);
         var solutionDescriptor = TestdataShadowedFullSolution.buildSolutionDescriptor();
-        var moveDirector = new MoveDirector<TestdataShadowedFullSolution>(innerScoreDirector);
+        var scoreCalculator = new TestdataShadowedFullEasyScoreCalculator();
+        var innerScoreDirector = new EasyScoreDirector<>(
+                new EasyScoreDirectorFactory<>(solutionDescriptor, scoreCalculator),
+                true,
+                true,
+                scoreCalculator);
+        var moveDirector = new MoveDirector<>(innerScoreDirector);
 
         var entityA = new TestdataShadowedFullEntity("Entity A");
         var entityB = new TestdataShadowedFullEntity("Entity B");
@@ -365,92 +366,11 @@ class MoveDirectorTest {
         valueF.updateShadows(entityB, 2);
 
         var workingSolution = new TestdataShadowedFullSolution();
+        workingSolution.setCode("Solution");
         workingSolution.setEntityList(List.of(entityA, entityB));
         workingSolution.setValueList(List.of(valueA, valueB, valueC, valueD, valueE, valueF));
 
-        record RecordedListAfterCall(TestdataShadowedFullEntity entity, int from, int to) {
-        }
-        List<RecordedListAfterCall> recordedListAfterCallList = new ArrayList<>();
-
-        when(innerScoreDirector.getWorkingSolution()).thenReturn(workingSolution);
-        when(innerScoreDirector.getVariableDescriptorCache()).thenReturn(new VariableDescriptorCache<>(solutionDescriptor));
-        doAnswer(invocation -> {
-            recordedListAfterCallList.add(new RecordedListAfterCall(
-                    invocation.getArgument(1),
-                    invocation.getArgument(2),
-                    invocation.getArgument(3)));
-            return null;
-        }).when(innerScoreDirector).afterListVariableChanged(any(), (Object) any(), anyInt(), anyInt());
-        doAnswer(invocation -> {
-            for (var recordedAfterCall : recordedListAfterCallList) {
-                if (recordedAfterCall.from < 0 || recordedAfterCall.to > recordedAfterCall.entity.getValueList().size()) {
-                    throw new IllegalStateException("Change range [%s, %s) went past bounds of entity list %s"
-                            .formatted(recordedAfterCall.from, recordedAfterCall.to,
-                                    recordedAfterCall.entity().getValueList()));
-                }
-
-                // need to update shadows manually
-                for (int i = Math.max(0, recordedAfterCall.from - 1); i < Math.min(recordedAfterCall.to,
-                        recordedAfterCall.entity.getValueList().size()); i++) {
-                    recordedAfterCall.entity.getValueList().get(i).updateShadows(
-                            recordedAfterCall.entity, i);
-                }
-            }
-            recordedListAfterCallList.clear();
-            Set<TestdataShadowedFullValue> visitedValues = Collections.newSetFromMap(new IdentityHashMap<>());
-            for (var entity : workingSolution.getEntityList()) {
-                var currentSize = visitedValues.size();
-                var valueList = entity.getValueList();
-                visitedValues.addAll(valueList);
-                if (visitedValues.size() != currentSize + valueList.size()) {
-                    throw new IllegalStateException("Inconsistent solution: values appear in multiple lists");
-                }
-                for (int i = 0; i < valueList.size(); i++) {
-                    var currentValue = valueList.get(i);
-                    var previousValue = (i != 0) ? valueList.get(i - 1) : null;
-                    var nextValue = (i < valueList.size() - 1) ? valueList.get(i + 1) : null;
-
-                    if (currentValue.getEntity() != entity) {
-                        throw new IllegalStateException(
-                                """
-                                        Inconsistent solution: incorrect inverse for (%s).
-                                        Expected (%s) but was (%s).
-                                        Found on entity (%s)'s valueList (%s).
-                                        """
-                                        .formatted(currentValue, entity, currentValue.getEntity(), entity, valueList));
-                    }
-                    if (currentValue.getPreviousValue() != previousValue) {
-                        throw new IllegalStateException(
-                                """
-                                        Inconsistent solution: incorrect previous value for (%s).
-                                        Expected (%s) but was (%s).
-                                        Found on entity (%s)'s valueList (%s).
-                                        """
-                                        .formatted(currentValue, previousValue, currentValue.getPreviousValue(), entity,
-                                                valueList));
-                    }
-                    if (currentValue.getNextValue() != nextValue) {
-                        throw new IllegalStateException(
-                                """
-                                        Inconsistent solution: incorrect next value for (%s).
-                                        Expected (%s) but got (%s).
-                                        Found on entity (%s)'s valueList (%s).
-                                        """
-                                        .formatted(currentValue, nextValue, currentValue.getNextValue(), entity, valueList));
-                    }
-                    if (!Objects.equals(currentValue.getIndex(), i)) {
-                        throw new IllegalStateException(
-                                """
-                                        Inconsistent solution: incorrect index for (%s).
-                                        Expected (%s) but got (%s).
-                                        Found on entity (%s)'s valueList (%s).
-                                        """
-                                        .formatted(currentValue, i, currentValue.getIndex(), entity, valueList));
-                    }
-                }
-            }
-            return null;
-        }).when(innerScoreDirector).triggerVariableListeners();
+        innerScoreDirector.setWorkingSolution(workingSolution);
 
         try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
             var scoreDirector = ephemeralMoveDirector.getScoreDirector();
