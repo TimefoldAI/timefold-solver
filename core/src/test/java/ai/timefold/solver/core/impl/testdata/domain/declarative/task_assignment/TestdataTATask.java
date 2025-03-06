@@ -6,7 +6,6 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.DeclarativeShadowVariable;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.InvalidityMarker;
 
@@ -26,10 +25,6 @@ public class TestdataTATask {
 
     @InverseRelationShadowVariable(sourceVariableName = "tasks")
     TestdataTAEmployee employee;
-
-    // TODO: Note should not be needed; ListVariableState throws an IndexOutOfBounds without it
-    @PreviousElementShadowVariable(sourceVariableName = "tasks")
-    TestdataTATask previousTask;
 
     Duration duration;
 
