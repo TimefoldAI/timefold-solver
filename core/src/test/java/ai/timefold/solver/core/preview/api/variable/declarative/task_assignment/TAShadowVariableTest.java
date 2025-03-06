@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.preview.api.variable.declarative.task_assignment;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -59,6 +61,12 @@ public class TAShadowVariableTest {
         var solver = solverFactory.buildSolver();
         var solution = solver.solve(schedule);
 
-        solution.getEmployees().forEach(System.out::println);
+        for (var task : solution.getTasks()) {
+            if (task.getDependencies() != null) {
+                for (var dependency : task.getDependencies()) {
+                    assertThat(task.getStartTime()).isAfterOrEqualTo(dependency.getEndTime());
+                }
+            }
+        }
     }
 }
