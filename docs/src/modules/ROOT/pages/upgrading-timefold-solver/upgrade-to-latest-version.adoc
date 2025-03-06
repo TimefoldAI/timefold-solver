@@ -38,6 +38,8 @@ curl https://raw.githubusercontent.com/TimefoldAI/timefold-solver/refs/tags/v{ti
 --
 ====
 
+include::framework-version-warning.adoc[leveloffset=+1]
+
 Having done that, you can check the local changes and commit them.
 Note that none of the upgrade steps could be automatically applied,
 and it may still be worth your while to read the rest the upgrade recipe below.

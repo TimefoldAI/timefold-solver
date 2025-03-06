@@ -32,6 +32,8 @@ curl https://raw.githubusercontent.com/TimefoldAI/timefold-solver/refs/tags/v{ti
 --
 ====
 
+include::framework-version-warning.adoc[leveloffset=+1]
+
 Having done that, do a test run of the solver and commit the changes.
 If it doesn't work, just revert it instead and
 https://github.com/timefoldai/timefold-solver/issues[submit an issue].
