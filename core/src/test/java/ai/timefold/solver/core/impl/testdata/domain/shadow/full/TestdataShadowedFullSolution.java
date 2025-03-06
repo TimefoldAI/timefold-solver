@@ -23,7 +23,7 @@ public class TestdataShadowedFullSolution extends TestdataObject {
     @PlanningScore
     SimpleScore score;
 
-    public SolutionDescriptor<TestdataShadowedFullSolution> buildSolutionDescriptor() {
+    public static SolutionDescriptor<TestdataShadowedFullSolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(TestdataShadowedFullSolution.class,
                 TestdataShadowedFullEntity.class, TestdataShadowedFullValue.class);
     }
