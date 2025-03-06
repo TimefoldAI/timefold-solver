@@ -6,7 +6,7 @@ import ai.timefold.solver.core.preview.api.move.Rebaser;
 sealed interface ChangeAction<Solution_>
         permits ListVariableAfterAssignmentAction, ListVariableAfterChangeAction, ListVariableAfterUnassignmentAction,
         ListVariableBeforeAssignmentAction, ListVariableBeforeChangeAction, ListVariableBeforeUnassignmentAction,
-        VariableChangeAction {
+        TriggerVariableListenersAction, VariableChangeAction {
 
     void undo(VariableDescriptorAwareScoreDirector<Solution_> scoreDirector);
 

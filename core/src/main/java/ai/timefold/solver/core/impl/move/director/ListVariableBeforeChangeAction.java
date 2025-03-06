@@ -13,10 +13,6 @@ record ListVariableBeforeChangeAction<Solution_, Entity_, Value_>(Entity_ entity
     public void undo(VariableDescriptorAwareScoreDirector<Solution_> scoreDirector) {
         variableDescriptor.getValue(entity).addAll(fromIndex, oldValue);
         scoreDirector.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
-
-        // List variable listeners get confused if there are two pairs of before/after calls
-        // before variable listeners are triggered
-        scoreDirector.triggerVariableListeners();
     }
 
     @Override

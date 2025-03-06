@@ -25,6 +25,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreate
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin.ListRuinRecreateMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirector;
+import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
@@ -32,6 +34,11 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.full.TestdataShadowedFullEasyScoreCalculator;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.full.TestdataShadowedFullEntity;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.full.TestdataShadowedFullMultiSwapListMove;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.full.TestdataShadowedFullSolution;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.full.TestdataShadowedFullValue;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
 
 import org.junit.jupiter.api.Test;
@@ -324,6 +331,59 @@ class MoveDirectorTest {
             verify(constructionHeuristicPhase, times(0)).solve(mainSolverScope);
             // Uses a new instance of SolverScope
             verify(constructionHeuristicPhase, times(1)).solve(any());
+        }
+    }
+
+    @Test
+    void variableListenersAreTriggeredWhenSolutionIsConsistent() {
+        var solutionDescriptor = TestdataShadowedFullSolution.buildSolutionDescriptor();
+        var scoreCalculator = new TestdataShadowedFullEasyScoreCalculator();
+        var innerScoreDirector = new EasyScoreDirector<>(
+                new EasyScoreDirectorFactory<>(solutionDescriptor, scoreCalculator),
+                true,
+                true,
+                scoreCalculator);
+        var moveDirector = new MoveDirector<>(innerScoreDirector);
+
+        var entityA = new TestdataShadowedFullEntity("Entity A");
+        var entityB = new TestdataShadowedFullEntity("Entity B");
+
+        var valueA = new TestdataShadowedFullValue("Value A");
+        var valueB = new TestdataShadowedFullValue("Value B");
+        var valueC = new TestdataShadowedFullValue("Value C");
+        var valueD = new TestdataShadowedFullValue("Value D");
+        var valueE = new TestdataShadowedFullValue("Value E");
+        var valueF = new TestdataShadowedFullValue("Value F");
+
+        entityA.getValueList().addAll(List.of(valueA, valueB, valueC));
+        valueA.updateShadows(entityA, 0);
+        valueB.updateShadows(entityA, 1);
+        valueC.updateShadows(entityA, 2);
+
+        entityB.getValueList().addAll(List.of(valueD, valueE, valueF));
+        valueD.updateShadows(entityB, 0);
+        valueE.updateShadows(entityB, 1);
+        valueF.updateShadows(entityB, 2);
+
+        var workingSolution = new TestdataShadowedFullSolution();
+        workingSolution.setCode("Solution");
+        workingSolution.setEntityList(List.of(entityA, entityB));
+        workingSolution.setValueList(List.of(valueA, valueB, valueC, valueD, valueE, valueF));
+
+        innerScoreDirector.setWorkingSolution(workingSolution);
+
+        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
+            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
+
+            var move = new TestdataShadowedFullMultiSwapListMove(entityA, entityB,
+                    List.of(
+                            List.of(valueE, valueF),
+                            List.of(valueA, valueB, valueC, valueD)),
+                    List.of(
+                            List.of(valueA, valueB, valueC, valueD),
+                            List.of(valueE, valueF)));
+            move.doMoveOnly(scoreDirector);
+            scoreDirector.triggerVariableListeners();
         }
     }
 
