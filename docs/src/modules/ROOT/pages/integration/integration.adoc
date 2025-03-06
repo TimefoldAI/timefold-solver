@@ -769,6 +769,11 @@ class Resource {
 To use Timefold Solver on Spring Boot, add the `timefold-solver-spring-boot-starter` dependency
 and read the xref:quickstart/spring-boot/spring-boot-quickstart.adoc#springBootQuickStart[Spring Boot Java quick start].
 
+[NOTE]
+====
+Timefold Solver Spring Boot Starter only supports Spring Boot version 3.2.x and up.
+====
+
 [#integrationWithSpringBootProperties]
 === Available configuration properties
 

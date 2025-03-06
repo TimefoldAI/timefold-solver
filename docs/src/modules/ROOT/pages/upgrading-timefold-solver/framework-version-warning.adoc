@@ -1,0 +1,5 @@
+[NOTE]
+====
+Our automatic migrations will not change the version of your frameworks.
+If you run into compatibility issues, please consult the integration guides for xref:../integration/integration.adoc#integrationWithSpringBoot[Spring] or xref:../integration/integration.adoc#integrationWithQuarkus[Quarkus].
+====
