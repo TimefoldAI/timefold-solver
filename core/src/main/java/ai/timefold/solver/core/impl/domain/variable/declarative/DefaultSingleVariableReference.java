@@ -16,7 +16,8 @@ import org.jspecify.annotations.Nullable;
 public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentValue_, Value_>
         implements
         InnerVariableReference<Solution_, Entity_, Value_>,
-        SingleVariableReference<Entity_, Value_> permits ShadowVariableReference {
+        SingleVariableReference<Entity_, Value_>
+        permits AbstractShadowVariableReference {
     SolutionDescriptor<Solution_> solutionDescriptor;
     SupplyManager supplyManager;
     GraphNavigator<ParentValue_, Value_> navigator;
@@ -87,6 +88,16 @@ public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentVal
         return child(variableClass,
                 new VariableGraphNavigator<>(navigator.getVariableId(), solutionDescriptor.getEntityDescriptorStrict(valueType)
                         .getVariableDescriptorOrFail(variableName)));
+    }
+
+    @Override
+    public <Variable_> SingleVariableReference<Entity_, Variable_> intermediate(Class<? extends Variable_> intermediateClass,
+            String intermediateName) {
+        return child(intermediateClass,
+                new IntermediateGraphNavigator<>(navigator.getVariableId(),
+                        intermediateClass,
+                        intermediateName,
+                        shadowVariableFactory.getIntermediateValueMap(intermediateName)));
     }
 
     @Override
@@ -183,6 +194,9 @@ public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentVal
     public void addReferences(DefaultShadowVariableFactory<Solution_> factory) {
         if (navigator instanceof VariableGraphNavigator<?, ?> variableGraphNavigator) {
             factory.addShadowVariableReference(variableGraphNavigator.variableDescriptor.getVariableName(), this);
+        }
+        if (navigator instanceof IntermediateGraphNavigator<?, ?> intermediateGraphNavigator) {
+            factory.addShadowVariableReference(intermediateGraphNavigator.variableId.getLastComponent(), this);
         }
     }
 

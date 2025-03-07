@@ -15,6 +15,10 @@ public interface SingleVariableReference<Entity_, Value_> extends VariableRefere
             Class<? extends Variable_> variableClass,
             String variableName);
 
+    <Variable_> SingleVariableReference<Entity_, Variable_> intermediate(
+            Class<? extends Variable_> intermediateClass,
+            String intermediateName);
+
     SingleVariableReference<Entity_, Value_> previous();
 
     SingleVariableReference<Entity_, Value_> next();

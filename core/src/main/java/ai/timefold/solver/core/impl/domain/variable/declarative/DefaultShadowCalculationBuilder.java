@@ -144,4 +144,34 @@ public class DefaultShadowCalculationBuilder<Solution_, Entity_, Value_> impleme
         variableFactory.addShadowVariable(out);
         return out;
     }
+
+    @Override
+    public SingleVariableReference<Entity_, Value_> asIntermediate(String intermediateName) {
+        var out = new IntermediateShadowVariableReference<>(
+                solutionDescriptor,
+                supplyManager,
+                intermediateName,
+                calculation,
+                variableFactory.getIntermediateShadowVariableReferences(intermediateName),
+                entityClass,
+                (Class<? extends Value_>) Object.class,
+                false);
+        variableFactory.addShadowVariable(out);
+        return out;
+    }
+
+    @Override
+    public SingleVariableReference<Entity_, Value_> asIntermediateNullable(String intermediateName) {
+        var out = new IntermediateShadowVariableReference<>(
+                solutionDescriptor,
+                supplyManager,
+                intermediateName,
+                calculation,
+                variableFactory.getIntermediateShadowVariableReferences(intermediateName),
+                entityClass,
+                (Class<? extends Value_>) Object.class,
+                true);
+        variableFactory.addShadowVariable(out);
+        return out;
+    }
 }

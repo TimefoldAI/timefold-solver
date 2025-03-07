@@ -22,9 +22,6 @@ public class TestdataFSRVisit {
     TestdataFSRVehicle vehicle;
 
     @DeclarativeShadowVariable(TestdataFSRShadowVariableProvider.class)
-    LocalDateTime serviceReadyTime;
-
-    @DeclarativeShadowVariable(TestdataFSRShadowVariableProvider.class)
     LocalDateTime serviceStartTime;
 
     @DeclarativeShadowVariable(TestdataFSRShadowVariableProvider.class)
@@ -78,14 +75,6 @@ public class TestdataFSRVisit {
 
     public void setNextVisit(TestdataFSRVisit nextVisit) {
         this.nextVisit = nextVisit;
-    }
-
-    public LocalDateTime getServiceReadyTime() {
-        return serviceReadyTime;
-    }
-
-    public void setServiceReadyTime(LocalDateTime serviceReadyTime) {
-        this.serviceReadyTime = serviceReadyTime;
     }
 
     public LocalDateTime getServiceStartTime() {
