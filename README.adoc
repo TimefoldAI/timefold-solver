@@ -8,10 +8,7 @@ image::docs/src/modules/ROOT/images/shared/timefold-logo.png[link="https://timef
 _Planning optimization made easy._ +
 https://timefold.ai[timefold.ai]
 
-image:https://img.shields.io/badge/stackoverflow-ask_question-orange.svg?logo=stackoverflow&style=for-the-badge["Stackoverflow", link="https://stackoverflow.com/questions/tagged/timefold"]
 image:https://img.shields.io/github/discussions/TimefoldAI/timefold-solver?style=for-the-badge&logo=github["GitHub Discussions", link="https://github.com/TimefoldAI/timefold-solver/discussions"]
-
-
 image:https://img.shields.io/github/commit-activity/m/TimefoldAI/timefold-solver?label=commits&style=for-the-badge["Commit Activity", link="https://github.com/TimefoldAI/timefold-solver/pulse"]
 image:https://img.shields.io/github/issues/TimefoldAI/timefold-solver?style=for-the-badge&logo=github["GitHub Issues", link="https://github.com/TimefoldAI/timefold-solver/issues"]
 

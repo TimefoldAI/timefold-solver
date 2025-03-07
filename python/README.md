@@ -3,9 +3,7 @@
 _Planning optimization made easy._  
 [timefold.ai](https://timefold.ai)
 
-[![Stackoverflow](https://img.shields.io/badge/stackoverflow-ask_question-orange.svg?logo=stackoverflow&style=for-the-badge)](https://stackoverflow.com/questions/tagged/timefold) 
 [![GitHub Discussions](https://img.shields.io/github/discussions/TimefoldAI/timefold-solver?style=for-the-badge&logo=github)](https://github.com/TimefoldAI/timefold-solver/discussions)
-
 [![PyPI](https://img.shields.io/pypi/v/timefold?style=for-the-badge& "PyPI")](https://pypi.org/project/timefold/) 
 [![Python support](https://img.shields.io/badge/Python-3.10+-brightgreen.svg?style=for-the-badge)](https://www.python.org/downloads)
 [![License](https://img.shields.io/github/license/TimefoldAI/timefold-solver?style=for-the-badge&logo=apache)](https://www.apache.org/licenses/LICENSE-2.0)
