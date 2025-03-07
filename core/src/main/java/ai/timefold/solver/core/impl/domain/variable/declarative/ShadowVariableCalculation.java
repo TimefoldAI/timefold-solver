@@ -71,7 +71,7 @@ public final class ShadowVariableCalculation<Solution_, Entity_, Value_> {
         }
     }
 
-    public void visitEntity(ShadowVariableReference<Solution_, Entity_, Value_> shadowVariable,
+    public void visitEntity(AbstractShadowVariableReference<Solution_, Entity_, Value_> shadowVariable,
             VariableReferenceGraph<Solution_> graph,
             Object entity) {
         var shadowVariableId = shadowVariable.getVariableId();

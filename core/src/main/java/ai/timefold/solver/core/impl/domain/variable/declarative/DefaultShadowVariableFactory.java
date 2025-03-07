@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -21,12 +22,14 @@ public class DefaultShadowVariableFactory<Solution_> implements ShadowVariableFa
     static final String NEXT = "#next";
     static final String PREVIOUS = "#previous";
     static final String INVERSE = "#inverse";
+    static final String INTERMEDIATE_PREFIX = "#intermediate";
 
     final SolutionDescriptor<Solution_> solutionDescriptor;
     final SupplyManager supplyManager;
-    final List<ShadowVariableReference<Solution_, ?, ?>> shadowVariableReferenceList;
+    final List<AbstractShadowVariableReference<Solution_, ?, ?>> shadowVariableReferenceList;
     final List<DefaultGroupVariableReference<Solution_, ?, ?, ?>> groupVariableReferenceList;
     final Map<String, List<InnerVariableReference<Solution_, ?, ?>>> shadowVariableToReferencesMap;
+    final Map<String, IdentityHashMap<Object, Object>> intermediateNameToValueMap;
     final AtomicInteger groupCounter;
 
     public DefaultShadowVariableFactory(SolutionDescriptor<Solution_> solutionDescriptor, SupplyManager supplyManager) {
@@ -35,6 +38,7 @@ public class DefaultShadowVariableFactory<Solution_> implements ShadowVariableFa
         this.shadowVariableReferenceList = new ArrayList<>();
         this.groupVariableReferenceList = new ArrayList<>();
         this.shadowVariableToReferencesMap = new HashMap<>();
+        this.intermediateNameToValueMap = new HashMap<>();
         this.groupCounter = new AtomicInteger(0);
     }
 
@@ -48,11 +52,11 @@ public class DefaultShadowVariableFactory<Solution_> implements ShadowVariableFa
         return new DefaultShadowCalculationBuilderFactory<>(this, solutionDescriptor, supplyManager, entityClass);
     }
 
-    void addShadowVariable(ShadowVariableReference<Solution_, ?, ?> shadowVariableReference) {
+    void addShadowVariable(AbstractShadowVariableReference<Solution_, ?, ?> shadowVariableReference) {
         shadowVariableReferenceList.add(shadowVariableReference);
     }
 
-    List<ShadowVariableReference<Solution_, ?, ?>> getShadowVariableReferenceList() {
+    List<AbstractShadowVariableReference<Solution_, ?, ?>> getShadowVariableReferenceList() {
         return shadowVariableReferenceList;
     }
 
@@ -69,11 +73,26 @@ public class DefaultShadowVariableFactory<Solution_> implements ShadowVariableFa
         return shadowVariableToReferencesMap.computeIfAbsent(variableName, (ignored) -> new ArrayList<>());
     }
 
+    public List<InnerVariableReference<Solution_, ?, ?>> getIntermediateShadowVariableReferences(String variableName) {
+        return shadowVariableToReferencesMap.computeIfAbsent(getIntermediateVariableName(variableName),
+                (ignored) -> new ArrayList<>());
+    }
+
     public List<DefaultGroupVariableReference<Solution_, ?, ?, ?>> getGroupVariableReferenceList() {
         return groupVariableReferenceList;
     }
 
     public int nextGroupId() {
         return groupCounter.getAndIncrement();
+    }
+
+    @SuppressWarnings("unchecked")
+    public <Entity_, Value_> IdentityHashMap<Entity_, Value_> getIntermediateValueMap(String intermediateName) {
+        return (IdentityHashMap<Entity_, Value_>) intermediateNameToValueMap.computeIfAbsent(intermediateName,
+                ignored -> new IdentityHashMap<>());
+    }
+
+    public static String getIntermediateVariableName(String intermediateName) {
+        return INTERMEDIATE_PREFIX + "_" + intermediateName;
     }
 }

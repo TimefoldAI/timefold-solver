@@ -21,6 +21,7 @@ import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableFactory;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultTopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.declarative.EntityVariableOrFactReference;
 import ai.timefold.solver.core.impl.domain.variable.declarative.LoopedTracker;
@@ -286,12 +287,12 @@ class VariableListenerSupportTest {
         var previous = root.previous();
         var inverse = root.inverse();
 
-        var serviceReadyTime = root.child("serviceReadyTime");
+        var serviceReadyTime = root.child(DefaultShadowVariableFactory.getIntermediateVariableName("serviceReadyTime"));
         var serviceStartTime = root.child("serviceStartTime");
         var serviceFinishTime = root.child("serviceFinishTime");
 
         var group = root.group(TestdataFSRVisit.class, 0);
-        var groupReadyTime = group.child("serviceReadyTime");
+        var groupReadyTime = group.child(DefaultShadowVariableFactory.getIntermediateVariableName("serviceReadyTime"));
         var previousFinishTime = previous.child("serviceFinishTime");
 
         var expectedAddCount = new AtomicInteger(0);

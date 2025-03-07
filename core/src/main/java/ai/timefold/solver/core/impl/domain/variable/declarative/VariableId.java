@@ -18,8 +18,12 @@ public record VariableId(Class<?> entityClass, String variableName, @Nullable Va
         return entity(entityClass).child(variableDescriptor.getVariableName());
     }
 
+    public String getLastComponent() {
+        return variableName.substring(variableName.lastIndexOf('.') + 1);
+    }
+
     public VariableId rootId() {
-        return entity(entityClass).child(variableName.substring(variableName.lastIndexOf('.') + 1));
+        return entity(entityClass).child(getLastComponent());
     }
 
     public VariableId child(String childVariableName) {

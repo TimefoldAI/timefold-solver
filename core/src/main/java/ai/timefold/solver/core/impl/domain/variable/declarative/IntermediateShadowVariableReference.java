@@ -1,23 +1,23 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public final class ShadowVariableReference<Solution_, Entity_, Value_>
+public final class IntermediateShadowVariableReference<Solution_, Entity_, Value_>
         extends AbstractShadowVariableReference<Solution_, Entity_, Value_> {
-    final VariableDescriptor<Solution_> variableDescriptor;
+    final IdentityHashMap<Entity_, Value_> intermediateValueMap;
 
-    public ShadowVariableReference(
+    public IntermediateShadowVariableReference(
             SolutionDescriptor<Solution_> solutionDescriptor,
             SupplyManager supplyManager,
-            VariableDescriptor<Solution_> variableDescriptor,
+            String intermediateName,
             ShadowVariableCalculation<Solution_, Entity_, Value_> calculation,
             List<InnerVariableReference<Solution_, ?, ?>> shadowVariableReferences,
             Class<? extends Entity_> entityClass,
@@ -25,27 +25,27 @@ public final class ShadowVariableReference<Solution_, Entity_, Value_>
             boolean allowsNulls) {
         super(calculation.shadowVariableFactory,
                 solutionDescriptor, supplyManager, null,
-                new VariableGraphNavigator<>(VariableId.entity(entityClass),
-                        variableDescriptor),
+                new IntermediateGraphNavigator<>(VariableId.entity(entityClass),
+                        valueType,
+                        intermediateName,
+                        calculation.shadowVariableFactory.getIntermediateValueMap(intermediateName)),
                 entityClass,
                 entityClass, valueType, allowsNulls,
-                calculation, shadowVariableReferences);
-        this.variableDescriptor = variableDescriptor;
+                calculation,
+                shadowVariableReferences);
+        this.intermediateValueMap = calculation.shadowVariableFactory.getIntermediateValueMap(intermediateName);
     }
 
     @Override
     boolean update(ChangedVariableNotifier<Solution_> changedVariableNotifier, Object object) {
         @SuppressWarnings("unchecked")
         var entity = (Entity_) object;
-        var oldValue = variableDescriptor.getValue(entity);
-
+        var oldValue = intermediateValueMap.get(entity);
         var newValue = calculation.calculate(entity);
 
         var changed = false;
         if (!Objects.equals(oldValue, newValue)) {
-            changedVariableNotifier.beforeVariableChanged(variableDescriptor, entity);
-            variableDescriptor.setValue(entity, newValue);
-            changedVariableNotifier.afterVariableChanged(variableDescriptor, entity);
+            intermediateValueMap.put(entity, newValue);
             changed = true;
         }
         changed |= markValid(changedVariableNotifier, entity);
@@ -53,12 +53,12 @@ public final class ShadowVariableReference<Solution_, Entity_, Value_>
     }
 
     @Override
-    void invalidate(ChangedVariableNotifier<Solution_> changedVariableNotifier, Object entity) {
-        var oldValue = variableDescriptor.getValue(entity);
+    void invalidate(ChangedVariableNotifier<Solution_> changedVariableNotifier, Object object) {
+        @SuppressWarnings("unchecked")
+        var entity = (Entity_) object;
+        var oldValue = intermediateValueMap.get(entity);
         if (oldValue != null) {
-            changedVariableNotifier.beforeVariableChanged(variableDescriptor, entity);
-            variableDescriptor.setValue(entity, null);
-            changedVariableNotifier.afterVariableChanged(variableDescriptor, entity);
+            intermediateValueMap.put(entity, null);
         }
         markInvalid(changedVariableNotifier, entity);
     }
