@@ -126,6 +126,16 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
     }
 
     @Override
+    public <Variable_> GroupVariableReference<Entity_, Variable_> intermediates(Class<? extends Variable_> intermediateClass,
+            String intermediateName) {
+        return child(intermediateClass,
+                new IntermediateGraphNavigator<>(getVariableId(),
+                        intermediateClass,
+                        intermediateName,
+                        shadowVariableFactory.getIntermediateValueMap(intermediateName)));
+    }
+
+    @Override
     public GroupVariableReference<Entity_, Value_> previous() {
         return child(valueType,
                 new PreviousGraphNavigator<>(getVariableId(), supplyManager.demand(new ListVariableStateDemand<>(
@@ -251,6 +261,18 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
                                         object,
                                         source));
                     }
+                    if (source.navigator instanceof IntermediateGraphNavigator<?, ?> intermediateGraphNavigator) {
+                        graph.addFixedEdge(
+                                graph.addVariableReferenceEntity(source.getVariableId().rootId(),
+                                        groupElement,
+                                        (InnerVariableReference<Solution_, ?, ?>) shadowVariableFactory
+                                                .entity(source.entityClass)
+                                                .intermediate(intermediateGraphNavigator.getType(),
+                                                        intermediateGraphNavigator.getIntermediateName())),
+                                graph.addVariableReferenceEntity(source.getVariableId(),
+                                        object,
+                                        source));
+                    }
                 }
             }
         } else {
@@ -262,6 +284,10 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
     public void addReferences(DefaultShadowVariableFactory<Solution_> factory) {
         if (navigator instanceof VariableGraphNavigator<?, ?> variableGraphNavigator) {
             factory.addShadowVariableReference(variableGraphNavigator.variableDescriptor.getVariableName(), this);
+            factory.addGroupVariableReference(this);
+        }
+        if (navigator instanceof IntermediateGraphNavigator<?, ?> intermediateGraphNavigator) {
+            factory.addShadowVariableReference(intermediateGraphNavigator.variableId.getLastComponent(), this);
             factory.addGroupVariableReference(this);
         }
     }
