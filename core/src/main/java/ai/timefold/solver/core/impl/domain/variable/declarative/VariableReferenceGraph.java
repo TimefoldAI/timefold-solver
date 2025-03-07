@@ -17,7 +17,7 @@ public class VariableReferenceGraph<Solution_> {
 
     private final Map<VariableId, List<BiConsumer<VariableReferenceGraph<Solution_>, Object>>> variableReferenceToBeforeProcessor;
     private final Map<VariableId, List<BiConsumer<VariableReferenceGraph<Solution_>, Object>>> variableReferenceToAfterProcessor;
-    private final Map<VariableId, ShadowVariableReference<Solution_, ?, ?>> variableIdToShadowVariable;
+    private final Map<VariableId, AbstractShadowVariableReference<Solution_, ?, ?>> variableIdToShadowVariable;
     private final Map<EntityVariableOrFactReference<Solution_>, List<EntityVariableOrFactReference<Solution_>>> fixedEdges;
     private int[][] counts;
     private TopologicalOrderGraph graph;
@@ -33,7 +33,7 @@ public class VariableReferenceGraph<Solution_> {
         fixedEdges = new HashMap<>();
     }
 
-    public void addShadowVariable(ShadowVariableReference<Solution_, ?, ?> shadowVariable) {
+    public void addShadowVariable(AbstractShadowVariableReference<Solution_, ?, ?> shadowVariable) {
         variableIdToShadowVariable.put(shadowVariable.getVariableId(), shadowVariable);
     }
 
@@ -70,6 +70,7 @@ public class VariableReferenceGraph<Solution_> {
         graph = graphCreator.apply(instanceList.size());
         graph.withNodeData(instanceList);
         changed = new BitSet(instanceList.size());
+
         for (var instance : instanceList) {
             afterVariableChanged(instance.variableId(), instance.entity());
         }
@@ -128,6 +129,7 @@ public class VariableReferenceGraph<Solution_> {
 
     public void updateChanged() {
         graph.endBatchChange();
+
         var visited = new boolean[instanceList.size()];
         var loopedTracker = new LoopedTracker(visited.length);
         while (!changed.isEmpty()) {
@@ -151,12 +153,13 @@ public class VariableReferenceGraph<Solution_> {
             var isChanged = true;
 
             var shadowVariable = variableIdToShadowVariable.get(instanceList.get(minNode).variableId());
+
             if (shadowVariable != null) {
                 if (graph.isLooped(loopedTracker, minNode)) {
-                    shadowVariable.invalidateShadowVariable(changedVariableNotifier,
+                    shadowVariable.invalidate(changedVariableNotifier,
                             instanceList.get(minNode).entity());
                 } else {
-                    isChanged = shadowVariable.updateShadowVariable(changedVariableNotifier,
+                    isChanged = shadowVariable.update(changedVariableNotifier,
                             instanceList.get(minNode).entity());
                 }
             }

@@ -38,4 +38,8 @@ public interface ShadowCalculationBuilder<Entity_, Value_> {
     SingleVariableReference<Entity_, Value_> as(String variableName);
 
     SingleVariableReference<Entity_, Value_> asNullable(String variableName);
+
+    SingleVariableReference<Entity_, Value_> asIntermediate(String intermediateName);
+
+    SingleVariableReference<Entity_, Value_> asIntermediateNullable(String intermediateName);
 }
