@@ -14,6 +14,10 @@ public interface GroupVariableReference<Entity_, Value_> extends VariableReferen
     <Variable_> GroupVariableReference<Entity_, Variable_> variables(Class<? extends Variable_> variableClass,
             String variableName);
 
+    <Variable_> GroupVariableReference<Entity_, Variable_> intermediates(
+            Class<? extends Variable_> intermediateClass,
+            String intermediateName);
+
     GroupVariableReference<Entity_, Value_> previous();
 
     GroupVariableReference<Entity_, Value_> next();
