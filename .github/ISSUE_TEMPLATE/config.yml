@@ -1,8 +1,5 @@
 blank_issues_enabled: true
 contact_links:
-  - name: Question
-    url: https://stackoverflow.com/questions/ask?tags=timefold
-    about: Ask a question about how to use Timefold Solver.
-  - name: Discussions
+  - name: Questions and ideas
     url: https://github.com/TimefoldAI/timefold-solver/discussions/new?category=general
     about: Open Community discussions related to Timefold Solver.
