@@ -638,6 +638,120 @@ public class SolutionManagerTest {
 
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
+    void recommendAssignmentWithUnassignedMatchCount(SolutionManagerSource SolutionManagerSource) {
+        int valueSize = 3;
+        var solution = TestdataAllowsUnassignedSolution.generateSolution(valueSize, 3);
+        var uninitializedEntity = solution.getEntityList().get(2);
+        uninitializedEntity.setValue(null);
+
+        // At this point, entity 0 and entity 2 are unassigned.
+        // Entity 1 is assigned to value #1.
+        // But only entity2 should be processed for recommendations.
+        var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_UNASSIGNED);
+        assertThat(solutionManager).isNotNull();
+        var recommendationList =
+                solutionManager.recommendAssignment(solution, uninitializedEntity, TestdataAllowsUnassignedEntity::getValue,
+                        ScoreAnalysisFetchPolicy.FETCH_MATCH_COUNT);
+
+        // Three values means there need to be four recommendations, one extra for unassigned.
+        assertThat(recommendationList).hasSize(valueSize + 1);
+        /*
+         * The calculator penalizes how many entities have the same value as another entity.
+         * Therefore the recommendation to assign value 0 and value 2 need to come first and in the order of the placer,
+         * as it means two entities no longer share a value, improving the score.
+         */
+        var recommendation1 = recommendationList.get(0);
+        assertSoftly(softly -> {
+            softly.assertThat(recommendation1.proposition()).isEqualTo(solution.getValueList().get(0));
+            // Two entities no longer share null value; two less matches.
+            softly.assertThat(recommendation1.scoreAnalysisDiff()
+                    .score()).isEqualTo(SimpleScore.of(2));
+            softly.assertThat(recommendation1.scoreAnalysisDiff().constraintMap())
+                    .extractingFromEntries(e -> e.getValue().matchCount())
+                    .first()
+                    .isEqualTo(-2);
+        });
+        var recommendation2 = recommendationList.get(1);
+        assertSoftly(softly -> {
+            softly.assertThat(recommendation2.proposition()).isEqualTo(solution.getValueList().get(2));
+            softly.assertThat(recommendation2.scoreAnalysisDiff()
+                    .score()).isEqualTo(SimpleScore.of(2));
+        });
+        // The other two recommendations need to come in order of the placer; so null, then value #1.
+        var recommendation3 = recommendationList.get(2);
+        assertSoftly(softly -> {
+            softly.assertThat(recommendation3.proposition()).isEqualTo(null);
+            softly.assertThat(recommendation3.scoreAnalysisDiff()
+                    .score()).isEqualTo(SimpleScore.ZERO);
+        });
+        var recommendation4 = recommendationList.get(3);
+        assertSoftly(softly -> {
+            softly.assertThat(recommendation4.proposition()).isEqualTo(solution.getValueList().get(1));
+            softly.assertThat(recommendation4.scoreAnalysisDiff()
+                    .score()).isEqualTo(SimpleScore.ZERO);
+        });
+        // Ensure the original solution is in its original state.
+        assertSoftly(softly -> {
+            softly.assertThat(uninitializedEntity.getValue()).isNull();
+            softly.assertThat(solution.getEntityList().get(0).getValue()).isNull();
+            softly.assertThat(solution.getEntityList().get(1).getValue()).isEqualTo(solution.getValueList().get(1));
+            softly.assertThat(solution.getEntityList().get(2).getValue()).isNull();
+            softly.assertThat(solution.getScore()).isNull();
+        });
+    }
+
+    @ParameterizedTest
+    @EnumSource(SolutionManagerSource.class)
+    void recommendAssignmentWithUnassignedFetchAllVsFetchMatchCount(SolutionManagerSource SolutionManagerSource) {
+        int valueSize = 3;
+        var solution = TestdataAllowsUnassignedSolution.generateSolution(valueSize, 3);
+        var uninitializedEntity = solution.getEntityList().get(2);
+        uninitializedEntity.setValue(null);
+
+        // At this point, entity 0 and entity 2 are unassigned.
+        // Entity 1 is assigned to value #1.
+        // But only entity2 should be processed for recommendations.
+        var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_UNASSIGNED);
+        assertThat(solutionManager).isNotNull();
+        var matchCountRecommendationList =
+                solutionManager.recommendAssignment(solution, uninitializedEntity, TestdataAllowsUnassignedEntity::getValue,
+                        ScoreAnalysisFetchPolicy.FETCH_MATCH_COUNT);
+
+        var justificationsRecommendationList =
+                solutionManager.recommendAssignment(solution, uninitializedEntity, TestdataAllowsUnassignedEntity::getValue,
+                        ScoreAnalysisFetchPolicy.FETCH_ALL);
+
+        // Three values means there need to be four recommendations, one extra for unassigned.
+        assertThat(matchCountRecommendationList).hasSize(valueSize + 1);
+        assertThat(justificationsRecommendationList).hasSize(valueSize + 1);
+        /*
+         * The calculator penalizes how many entities have the same value as another entity.
+         * Therefore the recommendation to assign value 0 and value 2 need to come first and in the order of the placer,
+         * as it means two entities no longer share a value, improving the score.
+         */
+        var matchCountRecommendation1 = matchCountRecommendationList.get(0);
+        var justificationsRecommendation1 = justificationsRecommendationList.get(0);
+
+        assertSoftly(softly -> {
+            softly.assertThat(matchCountRecommendation1.proposition()).isEqualTo(solution.getValueList().get(0));
+            softly.assertThat(justificationsRecommendation1.proposition()).isEqualTo(solution.getValueList().get(0));
+
+            softly.assertThat(matchCountRecommendation1.scoreAnalysisDiff()
+                    .score()).isEqualTo(SimpleScore.of(2)); // Two entities no longer share null value.
+            softly.assertThat(justificationsRecommendation1.scoreAnalysisDiff()
+                    .score()).isEqualTo(SimpleScore.of(2)); // Two entities no longer share null value.
+
+            // The matchCount is expected to be the same in the case of both FETCH_ALL and FETCH_MATCH_COUNT
+            int matchCountForFetchMatchCount = matchCountRecommendation1.scoreAnalysisDiff()
+                    .constraintMap().values().iterator().next().matchCount();
+            int matchCountForFetchAll = justificationsRecommendation1.scoreAnalysisDiff()
+                    .constraintMap().values().iterator().next().matchCount();
+            softly.assertThat(matchCountForFetchMatchCount).isEqualTo(matchCountForFetchAll);
+        });
+    }
+
+    @ParameterizedTest
+    @EnumSource(SolutionManagerSource.class)
     void recommendAssignmentWithAllAssigned(SolutionManagerSource SolutionManagerSource) {
         int valueSize = 3;
         var solution = TestdataAllowsUnassignedSolution.generateSolution(valueSize, 3);
