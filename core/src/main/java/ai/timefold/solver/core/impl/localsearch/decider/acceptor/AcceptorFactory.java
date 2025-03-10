@@ -17,8 +17,8 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance.
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance.LateAcceptanceAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.simulatedannealing.SimulatedAnnealingAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stepcountinghillclimbing.StepCountingHillClimbingAcceptor;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.DiminishedReturnsStuckCriterion;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.StuckCriterion;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.UnimprovedTimeStuckCriterion;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.EntityTabuAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.MoveTabuAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.ValueTabuAcceptor;
@@ -222,7 +222,7 @@ public class AcceptorFactory<Solution_> {
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.LATE_ACCEPTANCE)
                 || (!acceptorTypeListsContainsAcceptorType(AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE)
                         && acceptorConfig.getLateAcceptanceSize() != null)) {
-            StuckCriterion<Solution_> strategy = new DiminishedReturnsStuckCriterion<>();
+            StuckCriterion<Solution_> strategy = new UnimprovedTimeStuckCriterion<>();
             var acceptor = new LateAcceptanceAcceptor<>(strategy);
             acceptor.setLateAcceptanceSize(Objects.requireNonNullElse(acceptorConfig.getLateAcceptanceSize(), 400));
             return Optional.of(acceptor);
