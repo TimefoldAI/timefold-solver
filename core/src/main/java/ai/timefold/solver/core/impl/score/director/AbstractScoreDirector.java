@@ -85,6 +85,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     // Null when tracking disabled
     private final boolean trackingWorkingSolution;
     private final SolutionTracker<Solution_> solutionTracker;
+    // Fact/entity insert/retract happen on the session in this class.
+    // The updates which will be undone should not be done in the first place.
+    // Therefore updates happen in the move director, as only it knows if the change will be undone.
+    // The session is null if legacy move selectors are used.
+    private final MoveStreamSession<Solution_> moveStreamSession;
     private final MoveDirector<Solution_> moveDirector;
 
     // Null when no list variable
@@ -111,6 +116,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             this.solutionTracker = null;
             this.trackingWorkingSolution = false;
         }
+        this.moveStreamSession = moveStreamSession;
         this.moveDirector = new MoveDirector<>(this, moveStreamSession);
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         if (listVariableDescriptor == null) {
@@ -393,6 +399,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (entityDescriptor.isGenuine()) {
             workingGenuineEntityCount++;
         }
+        if (moveStreamSession != null) {
+            moveStreamSession.insert(entity);
+        }
         if (lookUpEnabled) {
             lookUpManager.addWorkingObject(entity);
         }
@@ -482,6 +491,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (entityDescriptor.isGenuine()) {
             workingGenuineEntityCount--;
         }
+        if (moveStreamSession != null) {
+            moveStreamSession.retract(entity);
+        }
         if (lookUpEnabled) {
             lookUpManager.removeWorkingObject(entity);
         }
@@ -501,6 +513,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void afterProblemFactAdded(Object problemFact) {
+        if (moveStreamSession != null) {
+            moveStreamSession.insert(problemFact);
+        }
         if (lookUpEnabled) {
             lookUpManager.addWorkingObject(problemFact);
         }
@@ -515,9 +530,14 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public void afterProblemPropertyChanged(Object problemFactOrEntity) {
         if (isConstraintConfiguration(problemFactOrEntity)) {
-            setWorkingSolution(workingSolution); // Nuke everything and recalculate, constraint weights have changed.
+            // Nuke everything and recalculate, constraint weights have changed.
+            setWorkingSolution(workingSolution);
         } else {
-            variableListenerSupport.resetWorkingSolution(); // TODO do not nuke the variable listeners
+            if (moveStreamSession != null) {
+                // Exception to the rule: these changes do not come through a move.
+                moveStreamSession.update(problemFactOrEntity);
+            }
+            variableListenerSupport.resetWorkingSolution();
         }
     }
 
@@ -532,6 +552,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void afterProblemFactRemoved(Object problemFact) {
+        if (moveStreamSession != null) {
+            moveStreamSession.retract(problemFact);
+        }
         if (lookUpEnabled) {
             lookUpManager.removeWorkingObject(problemFact);
         }
@@ -850,7 +873,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
     }
 
-    protected boolean isConstraintConfiguration(Object problemFactOrEntity) {
+    private boolean isConstraintConfiguration(Object problemFactOrEntity) {
         SolutionDescriptor<Solution_> solutionDescriptor = scoreDirectorFactory.getSolutionDescriptor();
         ConstraintWeightSupplier<Solution_, Score_> constraintWeightSupplier = solutionDescriptor.getConstraintWeightSupplier();
         if (constraintWeightSupplier == null) {

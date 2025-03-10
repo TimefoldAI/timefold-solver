@@ -18,7 +18,8 @@ public final class EphemeralMoveDirector<Solution_> extends MoveDirector<Solutio
 
     EphemeralMoveDirector(VariableDescriptorAwareScoreDirector<Solution_> scoreDirector) {
         // Doesn't require the index cache, because we maintain the invariant in this class.
-        super(new VariableChangeRecordingScoreDirector<>(scoreDirector, false));
+        // Also doesn't require the move stream sesion; moves will be undone, therefore no need to track them.
+        super(new VariableChangeRecordingScoreDirector<>(scoreDirector, false), null);
     }
 
     public Move<Solution_> createUndoMove() {
