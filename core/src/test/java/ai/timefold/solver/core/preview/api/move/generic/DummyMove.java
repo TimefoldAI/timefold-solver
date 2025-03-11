@@ -2,6 +2,7 @@ package ai.timefold.solver.core.preview.api.move.generic;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.util.CodeAssertable;
@@ -9,11 +10,13 @@ import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 import ai.timefold.solver.core.preview.api.move.Rebaser;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public final class DummyMove implements Move<TestdataSolution>, CodeAssertable {
 
-    private String code;
+    private @Nullable String code;
 
     public DummyMove() {
     }
@@ -23,7 +26,7 @@ public final class DummyMove implements Move<TestdataSolution>, CodeAssertable {
     }
 
     @Override
-    public String getCode() {
+    public @Nullable String getCode() {
         return code;
     }
 
@@ -32,28 +35,28 @@ public final class DummyMove implements Move<TestdataSolution>, CodeAssertable {
     // ************************************************************************
 
     @Override
-    public void execute(@NonNull MutableSolutionView<TestdataSolution> solutionView) {
+    public void execute(MutableSolutionView<TestdataSolution> solutionView) {
         // do nothing
     }
 
     @Override
-    public @NonNull Move<TestdataSolution> rebase(@NonNull Rebaser rebaser) {
-        return null;
+    public Move<TestdataSolution> rebase(Rebaser rebaser) {
+        return this;
     }
 
     @Override
-    public @NonNull Collection<? extends TestdataSolution> extractPlanningEntities() {
+    public Collection<? extends TestdataSolution> extractPlanningEntities() {
         return Collections.emptyList();
     }
 
     @Override
-    public @NonNull Collection<? extends TestdataSolution> extractPlanningValues() {
+    public Collection<? extends TestdataSolution> extractPlanningValues() {
         return Collections.emptyList();
     }
 
     @Override
-    public @NonNull String toString() {
-        return code;
+    public String toString() {
+        return Objects.requireNonNull(code, "null");
     }
 
 }

@@ -12,7 +12,7 @@ import ai.timefold.solver.core.api.domain.solution.ProblemFactProperty;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * A Move represents a change of 1 or more {@link PlanningVariable}s of 1 or more {@link PlanningEntity}s
@@ -38,6 +38,7 @@ import org.jspecify.annotations.NonNull;
  * 
  * @param <Solution_>
  */
+@NullMarked
 public interface Move<Solution_> {
 
     /**
@@ -49,7 +50,7 @@ public interface Move<Solution_> {
      *        when the solver needs to undo the move.
      *        Do not store this parameter in a field.
      */
-    void execute(@NonNull MutableSolutionView<Solution_> solutionView);
+    void execute(MutableSolutionView<Solution_> solutionView);
 
     /**
      * Rebases a move from an origin {@link ScoreDirector} to another destination {@link ScoreDirector}
@@ -82,8 +83,7 @@ public interface Move<Solution_> {
      * @param rebaser Do not store this parameter in a field
      * @return New move that does the same change as this move on another solution instance
      */
-    @NonNull
-    Move<Solution_> rebase(@NonNull Rebaser rebaser);
+    Move<Solution_> rebase(Rebaser rebaser);
 
     /**
      * Returns all planning entities that this move is changing.
@@ -97,7 +97,7 @@ public interface Move<Solution_> {
      *
      * @return Each entity only once.
      */
-    default @NonNull Collection<?> extractPlanningEntities() {
+    default Collection<?> extractPlanningEntities() {
         throw new UnsupportedOperationException("The move (" + this + ") does not support tabu search.");
     }
 
@@ -113,7 +113,7 @@ public interface Move<Solution_> {
      *
      * @return Each value only once.
      */
-    default @NonNull Collection<?> extractPlanningValues() {
+    default Collection<?> extractPlanningValues() {
         throw new UnsupportedOperationException("The move (" + this + ") does not support tabu search.");
     }
 
@@ -127,7 +127,7 @@ public interface Move<Solution_> {
      *
      * @return Non-empty {@link String} that describes the move type.
      */
-    default @NonNull String describe() {
+    default String describe() {
         return getClass().getSimpleName();
     }
 

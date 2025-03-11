@@ -18,15 +18,16 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMeta
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public abstract class AbstractMove<Solution_> implements Move<Solution_> {
 
     private static final char OPENING_PARENTHESES = '(';
     private static final char CLOSING_PARENTHESES = ')';
 
     @Override
-    public final @NonNull String describe() {
+    public final String describe() {
         var metaModels = getVariableMetaModels();
         var substring = switch (metaModels.size()) {
             case 0 -> "";
@@ -50,6 +51,8 @@ public abstract class AbstractMove<Solution_> implements Move<Solution_> {
         };
         return getClass().getSimpleName() + substring;
     }
+
+    public abstract String toString();
 
     protected List<VariableMetaModel<Solution_, ?, ?>> getVariableMetaModels() {
         return Collections.emptyList();
