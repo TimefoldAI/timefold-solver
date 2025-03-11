@@ -32,13 +32,26 @@ public sealed class MoveDirector<Solution_>
     @Override
     public <Entity_, Value_> void assignValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Value_ planningValue, Entity_ destinationEntity, int destinationIndex) {
-
+        var variableDescriptor =
+                ((DefaultPlanningListVariableMetaModel<Solution_, Entity_, Value_>) variableMetaModel).variableDescriptor();
+        scoreDirector.beforeListVariableElementAssigned(variableDescriptor, planningValue);
+        scoreDirector.beforeListVariableChanged(variableDescriptor, destinationEntity, destinationIndex, destinationIndex);
+        variableDescriptor.addElement(destinationEntity, destinationIndex, planningValue);
+        scoreDirector.afterListVariableChanged(variableDescriptor, destinationEntity, destinationIndex, destinationIndex + 1);
+        scoreDirector.afterListVariableElementAssigned(variableDescriptor, planningValue);
     }
 
     @Override
     public <Entity_, Value_> void unassignValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Value_ movedValue, Entity_ sourceEntity, int sourceIndex) {
-
+        var variableDescriptor =
+                ((DefaultPlanningListVariableMetaModel<Solution_, Entity_, Value_>) variableMetaModel).variableDescriptor();
+        scoreDirector.beforeListVariableElementUnassigned(variableDescriptor, movedValue);
+        scoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex + 1);
+        ((List<Value_>) variableDescriptor.getValue(sourceEntity))
+                .remove(sourceIndex);
+        scoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex);
+        scoreDirector.afterListVariableElementUnassigned(variableDescriptor, movedValue);
     }
 
     public final <Entity_, Value_> void changeVariable(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
