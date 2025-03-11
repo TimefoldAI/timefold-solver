@@ -810,6 +810,19 @@ For instance, if `minimumImprovementRatio` is `0.2`, then the current rate of ch
 
 This `Termination` can only be used for a `Phase` (such as ``<localSearch>``), not for the `Solver` itself.
 
+[WARNING]
+====
+We advise against using the termination with the xref:constraints-and-score/overview.adoc#bendableScore[Bendable] score that has multiple soft levels.
+The diminished returns termination calculates a solution's improvement based solely on the lowest score level,
+which could lead to misunderstandings when using multiple soft levels.
+
+For example, consider a score consisting of one hard level and three soft levels,
+represented as `[-10]hard/[-5000/-300/-55]soft`.
+We measure the improvement of the solution based on the latest level, given by the value `-55`.
+Therefore, the termination prioritizes only a single soft level in such cases,
+meaning that changes on the first two soft levels will be evaluated as changes on the hard level.
+====
+
 [#SolverEventListener]
 === `SolverEventListener`
 
