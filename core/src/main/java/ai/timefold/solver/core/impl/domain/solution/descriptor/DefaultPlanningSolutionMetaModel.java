@@ -8,8 +8,10 @@ import java.util.Objects;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public final class DefaultPlanningSolutionMetaModel<Solution_> implements PlanningSolutionMetaModel<Solution_> {
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
@@ -26,12 +28,12 @@ public final class DefaultPlanningSolutionMetaModel<Solution_> implements Planni
     }
 
     @Override
-    public @NonNull Class<Solution_> type() {
+    public Class<Solution_> type() {
         return type;
     }
 
     @Override
-    public @NonNull List<PlanningEntityMetaModel<Solution_, ?>> entities() {
+    public List<PlanningEntityMetaModel<Solution_, ?>> entities() {
         return Collections.unmodifiableList(entities);
     }
 
@@ -44,7 +46,7 @@ public final class DefaultPlanningSolutionMetaModel<Solution_> implements Planni
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (this == o)
             return true;
         if (!(o instanceof DefaultPlanningSolutionMetaModel<?> that))

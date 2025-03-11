@@ -6,7 +6,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Represents the meta-model of an entity.
@@ -26,6 +26,7 @@ import org.jspecify.annotations.NonNull;
  * @param <Solution_> The solution type.
  * @param <Entity_> The entity type.
  */
+@NullMarked
 public interface PlanningEntityMetaModel<Solution_, Entity_> {
 
     /**
@@ -33,7 +34,6 @@ public interface PlanningEntityMetaModel<Solution_, Entity_> {
      *
      * @return never null, the solution meta-model.
      */
-    @NonNull
     PlanningSolutionMetaModel<Solution_> solution();
 
     /**
@@ -41,7 +41,6 @@ public interface PlanningEntityMetaModel<Solution_, Entity_> {
      *
      * @return The entity type.
      */
-    @NonNull
     Class<Entity_> type();
 
     /**
@@ -49,7 +48,6 @@ public interface PlanningEntityMetaModel<Solution_, Entity_> {
      *
      * @return Variables declared by the entity.
      */
-    @NonNull
     List<VariableMetaModel<Solution_, Entity_, ?>> variables();
 
     /**
@@ -57,7 +55,7 @@ public interface PlanningEntityMetaModel<Solution_, Entity_> {
      *
      * @return Genuine variables declared by the entity.
      */
-    default @NonNull List<VariableMetaModel<Solution_, Entity_, ?>> genuineVariables() {
+    default List<VariableMetaModel<Solution_, Entity_, ?>> genuineVariables() {
         return variables().stream()
                 .filter(VariableMetaModel::isGenuine)
                 .toList();
@@ -70,8 +68,7 @@ public interface PlanningEntityMetaModel<Solution_, Entity_> {
      * @throws IllegalArgumentException if the variable does not exist on the entity, or is not genuine
      */
     @SuppressWarnings("unchecked")
-    default <Value_> @NonNull GenuineVariableMetaModel<Solution_, Entity_, Value_>
-            genuineVariable(@NonNull String variableName) {
+    default <Value_> GenuineVariableMetaModel<Solution_, Entity_, Value_> genuineVariable(String variableName) {
         var variable = variable(variableName);
         if (!variable.isGenuine()) {
             throw new IllegalArgumentException(
@@ -88,7 +85,7 @@ public interface PlanningEntityMetaModel<Solution_, Entity_> {
      * @throws IllegalArgumentException if the variable does not exist on the entity
      */
     @SuppressWarnings("unchecked")
-    default <Value_> @NonNull VariableMetaModel<Solution_, Entity_, Value_> variable(@NonNull String variableName) {
+    default <Value_> VariableMetaModel<Solution_, Entity_, Value_> variable(String variableName) {
         for (var variableMetaModel : variables()) {
             if (variableMetaModel.name().equals(variableName)) {
                 return (VariableMetaModel<Solution_, Entity_, Value_>) variableMetaModel;
@@ -103,8 +100,7 @@ public interface PlanningEntityMetaModel<Solution_, Entity_> {
      * but only succeeds if the variable is a {@link PlanningVariable basic planning variable}.
      */
     @SuppressWarnings("unchecked")
-    default <Value_> @NonNull PlanningVariableMetaModel<Solution_, Entity_, Value_>
-            planningVariable(@NonNull String variableName) {
+    default <Value_> PlanningVariableMetaModel<Solution_, Entity_, Value_> planningVariable(String variableName) {
         return (PlanningVariableMetaModel<Solution_, Entity_, Value_>) variable(variableName);
     }
 
@@ -113,8 +109,7 @@ public interface PlanningEntityMetaModel<Solution_, Entity_> {
      * but only succeeds if the variable is a {@link PlanningListVariable planning list variable}.
      */
     @SuppressWarnings("unchecked")
-    default <Value_> @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_>
-            planningListVariable(@NonNull String variableName) {
+    default <Value_> PlanningListVariableMetaModel<Solution_, Entity_, Value_> planningListVariable(String variableName) {
         return (PlanningListVariableMetaModel<Solution_, Entity_, Value_>) variable(variableName);
     }
 

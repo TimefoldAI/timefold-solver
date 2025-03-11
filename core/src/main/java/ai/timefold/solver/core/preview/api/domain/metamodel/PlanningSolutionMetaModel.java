@@ -5,7 +5,7 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Represents the meta-model of a {@link PlanningSolution}.
@@ -24,6 +24,7 @@ import org.jspecify.annotations.NonNull;
  *
  * @param <Solution_> the type of the solution
  */
+@NullMarked
 public interface PlanningSolutionMetaModel<Solution_> {
 
     /**
@@ -31,7 +32,6 @@ public interface PlanningSolutionMetaModel<Solution_> {
      * 
      * @return never null, the type of the solution
      */
-    @NonNull
     Class<Solution_> type();
 
     /**
@@ -39,7 +39,6 @@ public interface PlanningSolutionMetaModel<Solution_> {
      * 
      * @return Entities declared by the solution.
      */
-    @NonNull
     List<PlanningEntityMetaModel<Solution_, ?>> entities();
 
     /**
@@ -47,7 +46,7 @@ public interface PlanningSolutionMetaModel<Solution_> {
      *
      * @return Entities declared by the solution, which declare some genuine variables.
      */
-    default @NonNull List<PlanningEntityMetaModel<Solution_, ?>> genuineEntities() {
+    default List<PlanningEntityMetaModel<Solution_, ?>> genuineEntities() {
         return entities().stream()
                 .filter(PlanningEntityMetaModel::isGenuine)
                 .toList();
@@ -61,7 +60,7 @@ public interface PlanningSolutionMetaModel<Solution_> {
      * @throws IllegalArgumentException if the entity class is not known to the solution
      */
     @SuppressWarnings("unchecked")
-    default <Entity_> @NonNull PlanningEntityMetaModel<Solution_, Entity_> entity(@NonNull Class<Entity_> entityClass) {
+    default <Entity_> PlanningEntityMetaModel<Solution_, Entity_> entity(Class<Entity_> entityClass) {
         for (var entityMetaModel : entities()) {
             if (entityMetaModel.type().equals(entityClass)) {
                 return (PlanningEntityMetaModel<Solution_, Entity_>) entityMetaModel;

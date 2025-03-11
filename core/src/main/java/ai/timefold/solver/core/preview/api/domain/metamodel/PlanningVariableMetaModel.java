@@ -2,6 +2,8 @@ package ai.timefold.solver.core.preview.api.domain.metamodel;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * A {@link VariableMetaModel} that represents a @{@link PlanningVariable basic planning variable}.
  *
@@ -21,6 +23,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
  * @param <Entity_> the entity type
  * @param <Value_> the value type
  */
+@NullMarked
 public non-sealed interface PlanningVariableMetaModel<Solution_, Entity_, Value_>
         extends GenuineVariableMetaModel<Solution_, Entity_, Value_> {
 

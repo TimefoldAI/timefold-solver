@@ -6,6 +6,10 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningEntityDiff;
 import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningVariableDiff;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
 record DefaultPlanningVariableDiff<Solution_, Entity_, Value_>(PlanningEntityDiff<Solution_, Entity_> entityDiff,
         VariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ oldValue, Value_ newValue)
         implements
@@ -28,7 +32,7 @@ record DefaultPlanningVariableDiff<Solution_, Entity_, Value_>(PlanningEntityDif
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (!(o instanceof DefaultPlanningVariableDiff<?, ?, ?> that)) {
             return false;
         }

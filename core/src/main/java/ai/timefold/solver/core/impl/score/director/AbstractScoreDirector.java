@@ -84,7 +84,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     // Null when tracking disabled
     private final boolean trackingWorkingSolution;
     private final SolutionTracker<Solution_> solutionTracker;
-    private final MoveDirector<Solution_> moveDirector;
+    private final MoveDirector<Solution_> moveDirector = new MoveDirector<>(this);
 
     // Null when no list variable
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
@@ -110,7 +110,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             this.solutionTracker = null;
             this.trackingWorkingSolution = false;
         }
-        this.moveDirector = new MoveDirector<>(this);
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         if (listVariableDescriptor == null) {
             this.listVariableStateSupply = null;
@@ -249,7 +248,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         assertInitScoreZeroOrLess();
         workingGenuineEntityCount = initializationStatistics.genuineEntityCount();
         variableListenerSupport.resetWorkingSolution();
-        moveDirector.resetWorkingSolution(workingSolution);
     }
 
     private void assertInitScoreZeroOrLess() {
@@ -324,13 +322,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public void triggerVariableListeners() {
         variableListenerSupport.triggerVariableListenersInNotificationQueues();
-        moveDirector.updateShadowVariables(true);
     }
 
     @Override
     public void forceTriggerVariableListeners() {
         variableListenerSupport.forceTriggerAllVariableListeners(getWorkingSolution());
-        moveDirector.updateShadowVariables(true);
     }
 
     protected void setCalculatedScore(Score_ score) {
@@ -514,10 +510,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public void afterProblemPropertyChanged(Object problemFactOrEntity) {
         if (isConstraintConfiguration(problemFactOrEntity)) {
-            // Nuke everything and recalculate, constraint weights have changed.
-            setWorkingSolution(workingSolution);
+            setWorkingSolution(workingSolution); // Nuke everything and recalculate, constraint weights have changed.
         } else {
-            variableListenerSupport.resetWorkingSolution();
+            variableListenerSupport.resetWorkingSolution(); // TODO do not nuke the variable listeners
         }
     }
 
@@ -850,7 +845,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
     }
 
-    private boolean isConstraintConfiguration(Object problemFactOrEntity) {
+    protected boolean isConstraintConfiguration(Object problemFactOrEntity) {
         SolutionDescriptor<Solution_> solutionDescriptor = scoreDirectorFactory.getSolutionDescriptor();
         ConstraintWeightSupplier<Solution_, Score_> constraintWeightSupplier = solutionDescriptor.getConstraintWeightSupplier();
         if (constraintWeightSupplier == null) {
