@@ -148,7 +148,12 @@ class BestSolutionHolderTest {
             // A best solution should have been produced for all the processed changes.
             // Any incomplete futures here means some problem change was "lost".
             var lostFutureList = futureList.stream()
-                    .filter(future -> !future.isDone())
+                    .filter(future -> {
+                        await().atMost(Duration.ofSeconds(1))
+                                .pollInterval(Duration.ofMillis(1))
+                                .until(future::isDone);
+                        return !future.isDone();
+                    })
                     .toList();
             var lostFutureCount = lostFutureList.size();
             if (lostFutureCount == 0) {
