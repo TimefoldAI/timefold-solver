@@ -813,7 +813,7 @@ This `Termination` can only be used for a `Phase` (such as ``<localSearch>``), n
 [WARNING]
 ====
 We advise against using the termination with the xref:constraints-and-score/overview.adoc#bendableScore[Bendable] score that has multiple soft levels.
-The diminished returns termination calculates a solution's improvement based solely on the lowest score level,
+The diminished returns termination calculates a solution's improvement based solely on the softest level,
 which could lead to misunderstandings when using multiple soft levels.
 
 For example, consider a score consisting of one hard level and three soft levels,
@@ -821,6 +821,10 @@ represented as `[-10]hard/[-5000/-300/-55]soft`.
 We measure the improvement of the solution based on the latest level, given by the value `-55`.
 Therefore, the termination prioritizes only a single soft level in such cases,
 meaning that changes on the first two soft levels will be evaluated as changes on the hard level.
+
+Finally, based on the previous example,
+the interruption of the solving process requires no changes to the hard level and the first two soft levels.
+Additionally, the improvement of the third soft level must be below of `minimumImprovementRatio`.
 ====
 
 [#SolverEventListener]
