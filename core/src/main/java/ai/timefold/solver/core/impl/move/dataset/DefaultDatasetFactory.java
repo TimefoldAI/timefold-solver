@@ -112,7 +112,7 @@ public final class DefaultDatasetFactory<Solution_> implements DatasetFactory<So
      * If a stream already exists in this factory, it replaces it with the old copy.
      * {@link AbstractDataStream} implement equals/hashcode ignoring child streams.
      * <p>
-     * {@link DatasetSessionFactory#buildSession(Object)} needs this to happen for all streams.
+     * {@link DatasetSessionFactory#buildSession()} needs this to happen for all streams.
      * <p>
      * This must be called before the stream receives child streams.
      *
