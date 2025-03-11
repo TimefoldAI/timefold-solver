@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.move.director;
 
+import java.util.List;
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
@@ -14,55 +15,44 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariable
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Rebaser;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public sealed class MoveDirector<Solution_>
         implements InnerMutableSolutionView<Solution_>, Rebaser
         permits EphemeralMoveDirector {
 
     protected final VariableDescriptorAwareScoreDirector<Solution_> scoreDirector;
-    private final MoveStreamSession<Solution_> moveStreamSession;
 
     public MoveDirector(VariableDescriptorAwareScoreDirector<Solution_> scoreDirector) {
-        this(scoreDirector, null);
-    }
-
-    public MoveDirector(VariableDescriptorAwareScoreDirector<Solution_> scoreDirector,
-            MoveStreamSession<Solution_> moveStreamSession) {
         this.scoreDirector = Objects.requireNonNull(scoreDirector);
-        this.moveStreamSession = moveStreamSession;
     }
 
     @Override
-    public <Entity_, Value_> void assignValue(
-            @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, @NonNull Value_ planningValue,
-            @NonNull Entity_ destinationEntity, int destinationIndex) {
+    public <Entity_, Value_> void assignValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Value_ planningValue, Entity_ destinationEntity, int destinationIndex) {
 
     }
 
     @Override
-    public <Entity_, Value_> void unassignValue(
-            @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, @NonNull Value_ movedValue,
-            @NonNull Entity_ sourceEntity, int sourceIndex) {
+    public <Entity_, Value_> void unassignValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Value_ movedValue, Entity_ sourceEntity, int sourceIndex) {
 
     }
 
-    public final <Entity_, Value_> void changeVariable(
-            @NonNull PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            @NonNull Entity_ entity, Value_ newValue) {
+    public final <Entity_, Value_> void changeVariable(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Entity_ entity, @Nullable Value_ newValue) {
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
         scoreDirector.beforeVariableChanged(variableDescriptor, entity);
         variableDescriptor.setValue(entity, newValue);
         scoreDirector.afterVariableChanged(variableDescriptor, entity);
-        if (moveStreamSession != null) {
-            moveStreamSession.update(entity);
-        }
     }
 
     @SuppressWarnings("unchecked")
-    public final <Entity_, Value_> Value_ moveValueBetweenLists(
-            @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            @NonNull Entity_ sourceEntity, int sourceIndex, @NonNull Entity_ destinationEntity, int destinationIndex) {
+    public final <Entity_, Value_> @Nullable Value_ moveValueBetweenLists(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ sourceEntity, int sourceIndex,
+            Entity_ destinationEntity, int destinationIndex) {
         if (sourceEntity == destinationEntity) {
             return moveValueInList(variableMetaModel, sourceEntity, sourceIndex, destinationIndex);
         }
@@ -75,18 +65,14 @@ public sealed class MoveDirector<Solution_>
         variableDescriptor.addElement(destinationEntity, destinationIndex, element);
         scoreDirector.afterListVariableChanged(variableDescriptor, destinationEntity, destinationIndex, destinationIndex + 1);
 
-        if (moveStreamSession != null) {
-            moveStreamSession.update(sourceEntity);
-            moveStreamSession.update(destinationEntity);
-        }
         return element;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public final <Entity_, Value_> Value_ moveValueInList(
-            @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            @NonNull Entity_ entity, int sourceIndex, int destinationIndex) {
+    public final <Entity_, Value_> @Nullable Value_ moveValueInList(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity, int sourceIndex,
+            int destinationIndex) {
         if (sourceIndex == destinationIndex) {
             return null;
         } else if (sourceIndex > destinationIndex) { // Always start from the lower index.
@@ -95,13 +81,10 @@ public sealed class MoveDirector<Solution_>
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
         var toIndex = destinationIndex + 1;
         scoreDirector.beforeListVariableChanged(variableDescriptor, entity, sourceIndex, toIndex);
-        var variable = variableDescriptor.getValue(entity);
-        var value = (Value_) variable.remove(sourceIndex);
+        var variable = (List<Value_>) variableDescriptor.getValue(entity);
+        var value = variable.remove(sourceIndex);
         variable.add(destinationIndex, value);
         scoreDirector.afterListVariableChanged(variableDescriptor, entity, sourceIndex, toIndex);
-        if (moveStreamSession != null) {
-            moveStreamSession.update(entity);
-        }
         return value;
     }
 
@@ -114,31 +97,24 @@ public sealed class MoveDirector<Solution_>
         if (!comingFromScoreDirector) { // Prevent recursion.
             scoreDirector.triggerVariableListeners();
         }
-        if (moveStreamSession != null) {
-            moveStreamSession.settle();
-        }
+    }
+
+    @Override
+    public final <Entity_, Value_> Value_ getValue(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Entity_ entity) {
+        return extractVariableDescriptor(variableMetaModel).getValue(entity);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public final <Entity_, Value_> Value_ getValue(
-            @NonNull PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            @NonNull Entity_ entity) {
-        return (Value_) extractVariableDescriptor(variableMetaModel).getValue(entity);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public final <Entity_, Value_> @NonNull Value_ getValueAtIndex(
-            @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            @NonNull Entity_ entity, int index) {
+    public final <Entity_, Value_> Value_ getValueAtIndex(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity, int index) {
         return (Value_) extractVariableDescriptor(variableMetaModel).getValue(entity).get(index);
     }
 
     @Override
-    public <Entity_, Value_> @NonNull ElementLocation getPositionOf(
-            @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            @NonNull Value_ value) {
+    public <Entity_, Value_> ElementLocation
+            getPositionOf(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value) {
         return getPositionOf((InnerScoreDirector<Solution_, ?>) scoreDirector, variableMetaModel, value);
     }
 
@@ -149,7 +125,7 @@ public sealed class MoveDirector<Solution_>
     }
 
     @Override
-    public final <T> T rebase(@NonNull T problemFactOrPlanningEntity) {
+    public final <T> @Nullable T rebase(@Nullable T problemFactOrPlanningEntity) {
         return scoreDirector.lookUpWorkingObject(problemFactOrPlanningEntity);
     }
 
@@ -178,11 +154,7 @@ public sealed class MoveDirector<Solution_>
     }
 
     public void resetWorkingSolution(Solution_ workingSolution) {
-        if (moveStreamSession == null) {
-            return;
-        }
-        moveStreamSession.resetWorkingSolution(workingSolution);
-        scoreDirector.getSolutionDescriptor().visitAll(workingSolution, moveStreamSession::insert);
+
     }
 
 }

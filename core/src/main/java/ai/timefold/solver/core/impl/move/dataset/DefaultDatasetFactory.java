@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -129,6 +131,17 @@ public final class DefaultDatasetFactory<Solution_> implements DatasetFactory<So
 
     public SolutionDescriptor<Solution_> getSolutionDescriptor() {
         return solutionDescriptor;
+    }
+
+    public List<AbstractDataset<Solution_, ?>> getDatasets() {
+        return sharingStreamMap.values().stream()
+                .flatMap(s -> {
+                    if (s instanceof TerminalUniDataStream<Solution_, ?> terminalStream) {
+                        return Stream.of(terminalStream.getDataset());
+                    }
+                    return Stream.empty();
+                })
+                .collect(Collectors.toList());
     }
 
 }

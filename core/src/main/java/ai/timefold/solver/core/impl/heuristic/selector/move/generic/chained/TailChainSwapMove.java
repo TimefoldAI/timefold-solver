@@ -278,7 +278,7 @@ public class TailChainSwapMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     @Override
-    public Collection<? extends Object> getPlanningEntities() {
+    public Collection<?> getPlanningEntities() {
         if (rightEntity == null) {
             return Collections.singleton(leftEntity);
         }
@@ -286,7 +286,7 @@ public class TailChainSwapMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     @Override
-    public Collection<? extends Object> getPlanningValues() {
+    public Collection<?> getPlanningValues() {
         Object leftValue = variableDescriptor.getValue(leftEntity);
         return Arrays.asList(leftValue, rightValue);
     }

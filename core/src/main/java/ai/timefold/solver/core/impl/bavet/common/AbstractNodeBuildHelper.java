@@ -6,13 +6,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
+import ai.timefold.solver.core.impl.bavet.NodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetStreamBinaryOperation;
 
 public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
 
@@ -137,6 +142,81 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
         // Otherwise recurse to the parent node creator;
         // this happens for bridges, filters and other streams that do not create nodes.
         return findParentNode(childNodeCreator.getParent());
+    }
+
+    public static NodeNetwork buildNodeNetwork(List<AbstractNode> nodeList,
+            Map<Class<?>, List<AbstractForEachUniNode<?>>> declaredClassToNodeMap) {
+        var layerMap = new TreeMap<Long, List<Propagator>>();
+        for (var node : nodeList) {
+            layerMap.computeIfAbsent(node.getLayerIndex(), k -> new ArrayList<>())
+                    .add(node.getPropagator());
+        }
+        var layerCount = layerMap.size();
+        var layeredNodes = new Propagator[layerCount][];
+        for (var i = 0; i < layerCount; i++) {
+            var layer = layerMap.get((long) i);
+            layeredNodes[i] = layer.toArray(new Propagator[0]);
+        }
+        return new NodeNetwork(declaredClassToNodeMap, layeredNodes);
+    }
+
+    public <BuildHelper_ extends AbstractNodeBuildHelper<Stream_>> List<AbstractNode> buildNodeList(Set<Stream_> streamSet,
+            BuildHelper_ buildHelper, BiConsumer<Stream_, BuildHelper_> nodeBuilder, Consumer<AbstractNode> nodeProcessor) {
+        /*
+         * Build streamSet in reverse order to create downstream nodes first
+         * so every node only has final variables (some of which have downstream node method references).
+         */
+        var reversedStreamList = new ArrayList<>(streamSet);
+        Collections.reverse(reversedStreamList);
+        for (var constraintStream : reversedStreamList) {
+            nodeBuilder.accept(constraintStream, buildHelper);
+        }
+        var nodeList = buildHelper.destroyAndGetNodeList();
+        var nextNodeId = 0L;
+        for (var node : nodeList) {
+            /*
+             * Nodes are iterated first to last, starting with forEach(), the ultimate parent.
+             * Parents are guaranteed to come before children.
+             */
+            node.setId(nextNodeId++);
+            node.setLayerIndex(determineLayerIndex(node, buildHelper));
+            nodeProcessor.accept(node);
+        }
+        return nodeList;
+    }
+
+    /**
+     * Nodes are propagated in layers.
+     * See {@link PropagationQueue} and {@link AbstractNode} for details.
+     * This method determines the layer of each node.
+     * It does so by reverse-engineering the parent nodes of each node.
+     * Nodes without parents (forEach nodes) are in layer 0.
+     * Nodes with parents are one layer above their parents.
+     * Some nodes have multiple parents, such as {@link AbstractJoinNode} and {@link AbstractIfExistsNode}.
+     * These are one layer above the highest parent.
+     * This is done to ensure that, when a child node starts propagating, all its parents have already propagated.
+     *
+     * @param node never null
+     * @param buildHelper never null
+     * @return at least 0
+     */
+    @SuppressWarnings("unchecked")
+    private static <Stream_ extends BavetStream> long determineLayerIndex(AbstractNode node,
+            AbstractNodeBuildHelper<Stream_> buildHelper) {
+        if (node instanceof AbstractForEachUniNode<?>) { // ForEach nodes, and only they, are in layer 0.
+            return 0;
+        } else if (node instanceof AbstractTwoInputNode<?, ?> joinNode) {
+            var nodeCreator = (BavetStreamBinaryOperation<?>) buildHelper.getNodeCreatingStream(joinNode);
+            var leftParent = (Stream_) nodeCreator.getLeftParent();
+            var rightParent = (Stream_) nodeCreator.getRightParent();
+            var leftParentNode = buildHelper.findParentNode(leftParent);
+            var rightParentNode = buildHelper.findParentNode(rightParent);
+            return Math.max(leftParentNode.getLayerIndex(), rightParentNode.getLayerIndex()) + 1;
+        } else {
+            var nodeCreator = buildHelper.getNodeCreatingStream(node);
+            var parentNode = buildHelper.findParentNode(nodeCreator.getParent());
+            return parentNode.getLayerIndex() + 1;
+        }
     }
 
 }

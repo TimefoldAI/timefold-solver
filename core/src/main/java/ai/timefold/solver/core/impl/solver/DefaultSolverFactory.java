@@ -110,7 +110,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         }
 
         // TODO add the move stream session here
-        var castScoreDirector = scoreDirectorFactory.buildScoreDirector(null, true,
+        var castScoreDirector = scoreDirectorFactory.buildScoreDirector(true,
                 constraintMatchEnabled ? ConstraintMatchPolicy.ENABLED : ConstraintMatchPolicy.DISABLED);
         solverScope.setScoreDirector(castScoreDirector);
         solverScope.setProblemChangeDirector(new DefaultProblemChangeDirector<>(castScoreDirector));

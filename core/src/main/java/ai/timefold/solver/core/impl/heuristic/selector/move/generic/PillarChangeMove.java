@@ -123,7 +123,7 @@ public class PillarChangeMove<Solution_> extends AbstractMove<Solution_> {
     @Override
     public String toString() {
         Object oldValue = variableDescriptor.getValue(pillar.get(0));
-        return pillar.toString() + " {" + oldValue + " -> " + toPlanningValue + "}";
+        return pillar + " {" + oldValue + " -> " + toPlanningValue + "}";
     }
 
 }

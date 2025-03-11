@@ -12,13 +12,17 @@ import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 public final class DatasetInstance<Solution_, Tuple_ extends AbstractTuple>
         implements TupleLifecycle<Tuple_> {
 
-    private final Dataset<Solution_, Tuple_> parent;
+    private final AbstractDataset<Solution_, Tuple_> parent;
     private final int inputStoreIndex;
     private final ElementAwareList<Tuple_> tupleList = new ElementAwareList<>();
 
-    public DatasetInstance(Dataset<Solution_, Tuple_> parent, int inputStoreIndex) {
+    public DatasetInstance(AbstractDataset<Solution_, Tuple_> parent, int inputStoreIndex) {
         this.parent = Objects.requireNonNull(parent);
         this.inputStoreIndex = inputStoreIndex;
+    }
+
+    public AbstractDataset<Solution_, Tuple_> getParent() {
+        return parent;
     }
 
     @Override

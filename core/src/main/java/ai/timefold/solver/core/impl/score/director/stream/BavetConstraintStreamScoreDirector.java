@@ -11,7 +11,6 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.move.director.MoveStreamSession;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSession;
@@ -34,22 +33,6 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
      * Builds a standard {@link BavetConstraintStreamScoreDirector}.
      *
      * @param scoreDirectorFactory
-     * @param moveStreamSession
-     * @param lookUpEnabled
-     * @param constraintMatchPolicy
-     * @param expectShadowVariablesInCorrectState
-     */
-    public BavetConstraintStreamScoreDirector(BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
-            MoveStreamSession<Solution_> moveStreamSession, boolean lookUpEnabled, ConstraintMatchPolicy constraintMatchPolicy,
-            boolean expectShadowVariablesInCorrectState) {
-        this(scoreDirectorFactory, moveStreamSession, lookUpEnabled, constraintMatchPolicy, expectShadowVariablesInCorrectState,
-                false);
-    }
-
-    /**
-     * Builds a derived {@link BavetConstraintStreamScoreDirector}.
-     *
-     * @param scoreDirectorFactory
      * @param lookUpEnabled
      * @param constraintMatchPolicy
      * @param expectShadowVariablesInCorrectState
@@ -57,14 +40,14 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     public BavetConstraintStreamScoreDirector(BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
             boolean lookUpEnabled, ConstraintMatchPolicy constraintMatchPolicy,
             boolean expectShadowVariablesInCorrectState) {
-        this(scoreDirectorFactory, null, lookUpEnabled, constraintMatchPolicy, expectShadowVariablesInCorrectState, true);
+        this(scoreDirectorFactory, lookUpEnabled, constraintMatchPolicy, expectShadowVariablesInCorrectState,
+                false);
     }
 
-    private BavetConstraintStreamScoreDirector(
-            BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
-            MoveStreamSession<Solution_> moveStreamSession, boolean lookUpEnabled, ConstraintMatchPolicy constraintMatchPolicy,
-            boolean expectShadowVariablesInCorrectState, boolean derived) {
-        super(scoreDirectorFactory, moveStreamSession, lookUpEnabled, constraintMatchPolicy,
+    public BavetConstraintStreamScoreDirector(
+            BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory, boolean lookUpEnabled,
+            ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState, boolean derived) {
+        super(scoreDirectorFactory, lookUpEnabled, constraintMatchPolicy,
                 expectShadowVariablesInCorrectState);
         this.derived = derived;
     }

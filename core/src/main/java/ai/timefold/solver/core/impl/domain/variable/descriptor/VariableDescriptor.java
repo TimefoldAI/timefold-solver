@@ -116,8 +116,9 @@ public abstract class VariableDescriptor<Solution_> {
     // Extraction methods
     // ************************************************************************
 
-    public Object getValue(Object entity) {
-        return variableMemberAccessor.executeGetter(entity);
+    @SuppressWarnings("unchecked")
+    public <Value_> Value_ getValue(Object entity) {
+        return (Value_) variableMemberAccessor.executeGetter(entity);
     }
 
     public void setValue(Object entity, Object value) {

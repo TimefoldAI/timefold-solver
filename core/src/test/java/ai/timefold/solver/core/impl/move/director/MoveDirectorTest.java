@@ -218,12 +218,10 @@ class MoveDirectorTest {
     @Test
     void updateShadowVariables() {
         var mockScoreDirector = mock(InnerScoreDirector.class);
-        var mockMoveStreamSession = mock(MoveStreamSession.class);
-        var moveDirector = new MoveDirector<TestdataSolution>(mockScoreDirector, mockMoveStreamSession);
+        var moveDirector = new MoveDirector<TestdataSolution>(mockScoreDirector);
 
         moveDirector.updateShadowVariables();
         verify(mockScoreDirector).triggerVariableListeners();
-        verify(mockMoveStreamSession).settle();
     }
 
     @Test
@@ -342,7 +340,6 @@ class MoveDirectorTest {
         var scoreCalculator = new TestdataShadowedFullEasyScoreCalculator();
         var innerScoreDirector = new EasyScoreDirector<>(
                 new EasyScoreDirectorFactory<>(solutionDescriptor, scoreCalculator),
-                null,
                 true,
                 true,
                 scoreCalculator);

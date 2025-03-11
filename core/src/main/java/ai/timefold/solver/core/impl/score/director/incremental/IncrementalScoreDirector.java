@@ -18,7 +18,6 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.move.director.MoveStreamSession;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
@@ -38,10 +37,9 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
     private final IncrementalScoreCalculator<Solution_, Score_> incrementalScoreCalculator;
 
     public IncrementalScoreDirector(IncrementalScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
-            MoveStreamSession<Solution_> moveStreamSession, boolean lookUpEnabled, ConstraintMatchPolicy constraintMatchPolicy,
-            boolean expectShadowVariablesInCorrectState,
+            boolean lookUpEnabled, ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState,
             IncrementalScoreCalculator<Solution_, Score_> incrementalScoreCalculator) {
-        super(scoreDirectorFactory, moveStreamSession, lookUpEnabled,
+        super(scoreDirectorFactory, lookUpEnabled,
                 determineCorrectPolicy(constraintMatchPolicy, incrementalScoreCalculator),
                 expectShadowVariablesInCorrectState);
         this.incrementalScoreCalculator = incrementalScoreCalculator;

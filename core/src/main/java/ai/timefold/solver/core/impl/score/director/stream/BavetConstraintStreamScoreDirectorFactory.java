@@ -11,7 +11,6 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.move.director.MoveStreamSession;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
@@ -63,17 +62,16 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
     }
 
     @Override
-    public BavetConstraintStreamScoreDirector<Solution_, Score_> buildScoreDirector(
-            MoveStreamSession<Solution_> moveStreamSession, boolean lookUpEnabled,
+    public BavetConstraintStreamScoreDirector<Solution_, Score_> buildScoreDirector(boolean lookUpEnabled,
             ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState) {
-        return new BavetConstraintStreamScoreDirector<>(this, moveStreamSession, lookUpEnabled, constraintMatchPolicy,
+        return new BavetConstraintStreamScoreDirector<>(this, lookUpEnabled, constraintMatchPolicy,
                 expectShadowVariablesInCorrectState);
     }
 
     @Override
     public InnerScoreDirector<Solution_, Score_> buildDerivedScoreDirector(boolean lookUpEnabled,
             ConstraintMatchPolicy constraintMatchPolicy) {
-        return new BavetConstraintStreamScoreDirector<>(this, lookUpEnabled, constraintMatchPolicy, true);
+        return new BavetConstraintStreamScoreDirector<>(this, lookUpEnabled, constraintMatchPolicy, true, true);
     }
 
     public BavetConstraintSession<Score_> newSession(Solution_ workingSolution, ConstraintMatchPolicy constraintMatchPolicy,

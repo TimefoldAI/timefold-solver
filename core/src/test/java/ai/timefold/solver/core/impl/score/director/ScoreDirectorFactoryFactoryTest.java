@@ -36,7 +36,7 @@ class ScoreDirectorFactoryFactoryTest {
 
         ScoreDirectorFactory<TestdataSolution> scoreDirectorFactory = buildTestdataScoreDirectoryFactory(config);
         IncrementalScoreDirector<TestdataSolution, ?> scoreDirector =
-                (IncrementalScoreDirector<TestdataSolution, ?>) scoreDirectorFactory.buildScoreDirector(null, false,
+                (IncrementalScoreDirector<TestdataSolution, ?>) scoreDirectorFactory.buildScoreDirector(false,
                         ConstraintMatchPolicy.DISABLED);
         TestCustomPropertiesIncrementalScoreCalculator scoreCalculator =
                 (TestCustomPropertiesIncrementalScoreCalculator) scoreDirector
@@ -60,7 +60,7 @@ class ScoreDirectorFactoryFactoryTest {
         ScoreDirectorFactory<TestdataSolution> assertionScoreDirectorFactory =
                 scoreDirectorFactory.getAssertionScoreDirectorFactory();
         IncrementalScoreDirector<TestdataSolution, ?> assertionScoreDirector =
-                (IncrementalScoreDirector<TestdataSolution, ?>) assertionScoreDirectorFactory.buildScoreDirector(null, false,
+                (IncrementalScoreDirector<TestdataSolution, ?>) assertionScoreDirectorFactory.buildScoreDirector(false,
                         ConstraintMatchPolicy.DISABLED);
         IncrementalScoreCalculator<TestdataSolution, ?> assertionScoreCalculator =
                 assertionScoreDirector.getIncrementalScoreCalculator();

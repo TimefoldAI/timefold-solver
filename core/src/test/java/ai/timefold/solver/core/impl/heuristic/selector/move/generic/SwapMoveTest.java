@@ -106,7 +106,7 @@ class SwapMoveTest {
                 new EasyScoreDirectorFactory<>(TestdataEntityProvidingSolution.buildSolutionDescriptor(),
                         solution -> SimpleScore.ZERO);
         ScoreDirector<TestdataEntityProvidingSolution> scoreDirector =
-                scoreDirectorFactory.buildScoreDirector(null, false, ConstraintMatchPolicy.DISABLED);
+                scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED);
         EntityDescriptor<TestdataEntityProvidingSolution> entityDescriptor = TestdataEntityProvidingEntity
                 .buildEntityDescriptor();
 

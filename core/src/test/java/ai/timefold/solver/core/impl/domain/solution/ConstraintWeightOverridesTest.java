@@ -81,7 +81,7 @@ class ConstraintWeightOverridesTest {
                 new ScoreDirectorFactoryConfig()
                         .withConstraintProviderClass(TestdataConstraintWeightOverridesConstraintProvider.class),
                 EnvironmentMode.PHASE_ASSERT)
-                .buildScoreDirector(null, false, ConstraintMatchPolicy.DISABLED)) {
+                .buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
             // Default weights
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.triggerVariableListeners();

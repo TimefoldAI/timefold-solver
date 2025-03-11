@@ -83,7 +83,7 @@ final class EasyScoreDirectorSemanticsTest extends AbstractScoreDirectorSemantic
 
         var scoreDirector =
                 (EasyScoreDirector<TestdataSolution, ?>) buildTestdataScoreDirectoryFactory(config)
-                        .buildScoreDirector(null, false, ConstraintMatchPolicy.DISABLED);
+                        .buildScoreDirector(false, ConstraintMatchPolicy.DISABLED);
         var scoreCalculator =
                 (TestCustomPropertiesEasyScoreCalculator) scoreDirector
                         .getEasyScoreCalculator();

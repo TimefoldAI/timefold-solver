@@ -55,9 +55,8 @@ class IncrementalScoreDirectorTest {
         IncrementalScoreCalculator<TestdataShadowingChainedSolution, SimpleScore> incrementalScoreCalculator =
                 mock(IncrementalScoreCalculator.class);
         when(incrementalScoreCalculator.calculateScore()).thenReturn(SimpleScore.of(100));
-        try (var scoreDirector =
-                new IncrementalScoreDirector<>(scoreDirectorFactory, null, false, ConstraintMatchPolicy.DISABLED, true,
-                        incrementalScoreCalculator)) {
+        try (var scoreDirector = new IncrementalScoreDirector<>(scoreDirectorFactory, false, ConstraintMatchPolicy.DISABLED,
+                true, incrementalScoreCalculator)) {
             scoreDirector.setWorkingSolution(solution);
             reset(incrementalScoreCalculator);
 
@@ -80,9 +79,8 @@ class IncrementalScoreDirectorTest {
 
     @Test
     void illegalStateExceptionThrownWhenConstraintMatchNotEnabled() {
-        try (var director = new IncrementalScoreDirector<>(mockIncrementalScoreDirectorFactory(), null, false,
-                ConstraintMatchPolicy.DISABLED, true,
-                mockIncrementalScoreCalculator(false))) {
+        try (var director = new IncrementalScoreDirector<>(mockIncrementalScoreDirectorFactory(), false,
+                ConstraintMatchPolicy.DISABLED, true, mockIncrementalScoreCalculator(false))) {
             director.setWorkingSolution(new Object());
             assertThatIllegalStateException()
                     .isThrownBy(director::getConstraintMatchTotalMap)
@@ -92,9 +90,8 @@ class IncrementalScoreDirectorTest {
 
     @Test
     void constraintMatchTotalsNeverNull() {
-        try (var director = new IncrementalScoreDirector<>(mockIncrementalScoreDirectorFactory(), null, false,
-                ConstraintMatchPolicy.ENABLED, true,
-                mockIncrementalScoreCalculator(true))) {
+        try (var director = new IncrementalScoreDirector<>(mockIncrementalScoreDirectorFactory(), false,
+                ConstraintMatchPolicy.ENABLED, true, mockIncrementalScoreCalculator(true))) {
             director.setWorkingSolution(new Object());
             assertThat(director.getConstraintMatchTotalMap()).isNotNull();
         }
@@ -102,9 +99,8 @@ class IncrementalScoreDirectorTest {
 
     @Test
     void constraintMatchIsNotEnabledWhenScoreCalculatorNotConstraintMatchAware() {
-        try (var director = new IncrementalScoreDirector<>(mockIncrementalScoreDirectorFactory(), null, false,
-                ConstraintMatchPolicy.ENABLED, true,
-                mockIncrementalScoreCalculator(false))) {
+        try (var director = new IncrementalScoreDirector<>(mockIncrementalScoreDirectorFactory(), false,
+                ConstraintMatchPolicy.ENABLED, true, mockIncrementalScoreCalculator(false))) {
             assertThat(director.getConstraintMatchPolicy()).isEqualTo(ConstraintMatchPolicy.DISABLED);
         }
     }

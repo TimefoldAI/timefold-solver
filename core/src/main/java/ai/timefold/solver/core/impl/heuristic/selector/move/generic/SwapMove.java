@@ -156,7 +156,8 @@ public class SwapMove<Solution_> extends AbstractMove<Solution_> {
             if (!first) {
                 s.append(", ");
             }
-            s.append(variableDescriptor.getValue(entity));
+            var value = variableDescriptor.getValue(entity);
+            s.append(value == null ? null : value.toString());
             first = false;
         }
     }

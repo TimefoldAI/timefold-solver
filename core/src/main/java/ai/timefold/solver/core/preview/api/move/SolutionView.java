@@ -6,7 +6,7 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -25,6 +25,7 @@ import org.jspecify.annotations.Nullable;
  * 
  * @param <Solution_>
  */
+@NullMarked
 public interface SolutionView<Solution_> {
 
     /**
@@ -35,7 +36,7 @@ public interface SolutionView<Solution_> {
      * @return The value of the variable on the entity.
      */
     <Entity_, Value_> @Nullable Value_
-            getValue(@NonNull PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, @NonNull Entity_ entity);
+            getValue(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity);
 
     /**
      * Reads the value of a @{@link PlanningListVariable list planning variable} of a given entity at a specific index.
@@ -47,18 +48,17 @@ public interface SolutionView<Solution_> {
      * @throws NullPointerException if the value of the list variable is null
      * @throws IndexOutOfBoundsException if the index is out of bounds
      */
-    <Entity_, Value_> @NonNull Value_ getValueAtIndex(
-            @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, @NonNull Entity_ entity,
-            int index);
+    <Entity_, Value_> Value_ getValueAtIndex(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Entity_ entity, int index);
 
     /**
      * Locates a given value in any @{@link PlanningListVariable list planning variable}.
      *
      * @param variableMetaModel Describes the variable whose value is to be read.
      * @param value The value to locate.
-     * @return never null; the location of the value in the variable
+     * @return the location of the value in the variable
      */
-    <Entity_, Value_> @NonNull ElementLocation getPositionOf(
-            @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, @NonNull Value_ value);
+    <Entity_, Value_> ElementLocation getPositionOf(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Value_ value);
 
 }

@@ -5,12 +5,12 @@ import java.util.Set;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 
-public final class Dataset<Solution_, Tuple_ extends AbstractTuple> {
+public abstract class AbstractDataset<Solution_, Tuple_ extends AbstractTuple> {
 
     private final DefaultDatasetFactory<Solution_> defaultDatasetFactory;
     private final AbstractDataStream<Solution_> parent;
 
-    public Dataset(DefaultDatasetFactory<Solution_> defaultDatasetFactory,
+    public AbstractDataset(DefaultDatasetFactory<Solution_> defaultDatasetFactory,
             AbstractDataStream<Solution_> parent) {
         this.defaultDatasetFactory = Objects.requireNonNull(defaultDatasetFactory);
         this.parent = Objects.requireNonNull(parent);
@@ -20,13 +20,13 @@ public final class Dataset<Solution_, Tuple_ extends AbstractTuple> {
         parent.collectActiveDataStreams(dataStreamSet);
     }
 
-    public DatasetInstance<Solution_, Tuple_> instantiate(int inputStoreIndex) {
-        return new DatasetInstance<>(this, inputStoreIndex);
+    public DatasetInstance<Solution_, Tuple_> instantiate(int storeIndex) {
+        return new DatasetInstance<>(this, storeIndex);
     }
 
     @Override
     public boolean equals(Object entity) {
-        if (!(entity instanceof Dataset<?, ?> dataset)) {
+        if (!(entity instanceof AbstractDataset<?, ?> dataset)) {
             return false;
         }
         return Objects.equals(defaultDatasetFactory, dataset.defaultDatasetFactory) && Objects.equals(parent, dataset.parent);
@@ -35,5 +35,10 @@ public final class Dataset<Solution_, Tuple_ extends AbstractTuple> {
     @Override
     public int hashCode() {
         return Objects.hash(defaultDatasetFactory, parent);
+    }
+
+    @Override
+    public String toString() {
+        return "%s for %s".formatted(getClass().getSimpleName(), parent);
     }
 }

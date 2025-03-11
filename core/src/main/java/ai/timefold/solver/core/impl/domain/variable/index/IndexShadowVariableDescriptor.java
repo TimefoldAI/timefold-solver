@@ -114,6 +114,6 @@ public final class IndexShadowVariableDescriptor<Solution_> extends ShadowVariab
 
     @Override
     public Integer getValue(Object entity) {
-        return (Integer) super.getValue(entity);
+        return super.getValue(entity);
     }
 }
