@@ -52,7 +52,7 @@ public final class TestRandom extends Random {
     @Override
     public int nextInt(int bound) {
         lastRequestedIntBound = bound;
-        return getNextValue().intValue();
+        return Math.min(getNextValue().intValue(), bound - 1);
     }
 
     private BigDecimal getNextValue() {

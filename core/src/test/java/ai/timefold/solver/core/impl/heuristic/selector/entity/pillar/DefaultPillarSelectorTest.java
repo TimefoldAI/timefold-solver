@@ -310,7 +310,7 @@ class DefaultPillarSelectorTest {
         Random workingRandom = new TestRandom(
                 1, 1, // [b, d]
                 2, 2, // [c, e, f]
-                2, 1, 1, // [c, e, f]
+                2, 1, 1, // [c, e]
                 0, 0 // [a]
         );
 
@@ -323,7 +323,7 @@ class DefaultPillarSelectorTest {
 
         AbstractStepScope stepScopeA1 = PlannerTestUtils.delegatingStepScope(phaseScopeA);
         pillarSelector.stepStarted(stepScopeA1);
-        assertCodesOfNeverEndingPillarSelector(pillarSelector, "[b, d]", "[c, e, f]", "[e, f]", "[a]");
+        assertCodesOfNeverEndingPillarSelector(pillarSelector, "[b, d]", "[c, e, f]", "[c, e]", "[a]");
         pillarSelector.stepEnded(stepScopeA1);
 
         pillarSelector.phaseEnded(phaseScopeA);

@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.util;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -21,12 +20,8 @@ public final class ElementAwareList<T> implements Iterable<T> {
     private int size = 0;
     private ElementAwareListEntry<T> first = null;
     private ElementAwareListEntry<T> last = null;
-    private List<T> copy = null; // Cached copy for randomized iterator.
 
     public ElementAwareListEntry<T> add(T tuple) {
-        if (copy != null) {
-            copy.add(tuple);
-        }
         ElementAwareListEntry<T> entry = new ElementAwareListEntry<>(this, tuple, last);
         if (first == null) {
             first = entry;
@@ -40,7 +35,6 @@ public final class ElementAwareList<T> implements Iterable<T> {
 
     public ElementAwareListEntry<T> addFirst(T tuple) {
         if (first != null) {
-            copy = null;
             ElementAwareListEntry<T> entry = new ElementAwareListEntry<>(this, tuple, null);
             first.previous = entry;
             entry.next = first;
@@ -57,7 +51,6 @@ public final class ElementAwareList<T> implements Iterable<T> {
         if (first == null || previous == last) {
             return add(tuple);
         } else {
-            copy = null;
             ElementAwareListEntry<T> entry = new ElementAwareListEntry<>(this, tuple, previous);
             ElementAwareListEntry<T> currentNext = previous.next;
             if (currentNext != null) {
@@ -73,14 +66,6 @@ public final class ElementAwareList<T> implements Iterable<T> {
     }
 
     public void remove(ElementAwareListEntry<T> entry) {
-        if (copy != null) {
-            if (entry == last) {
-                copy.remove(size - 1);
-            } else {
-                copy = null;
-            }
-        }
-
         if (first == entry) {
             first = entry.next;
         } else {
@@ -173,6 +158,15 @@ public final class ElementAwareList<T> implements Iterable<T> {
         return new ElementAwareListIterator<>(first);
     }
 
+    /**
+     * Returns an iterator that will randomly iterate over the elements.
+     * This iterator is exhaustive; once every element has been once iterated over,
+     * the iterator returns false for every subsequent {@link Iterator#hasNext()}.
+     * The iterator does not support the {@link Iterator#remove()} operation.
+     *
+     * @param random The random instance to use for shuffling.
+     * @return never null
+     */
     public Iterator<T> randomizedIterator(Random random) {
         return switch (size) {
             case 0 -> Collections.emptyIterator();
@@ -183,11 +177,13 @@ public final class ElementAwareList<T> implements Iterable<T> {
                 yield list.iterator();
             }
             default -> {
-                if (copy == null) { // Only copy the list if the existing copy is no longer up to date.
-                    copy = new ArrayList<>(size + 1); // Avoid resizing.
-                    forEach(copy::add);
-                }
-                yield new RandomElementAwareListIterator<>(copy, random);
+                var copy = new ArrayList<T>(size);
+                var indexList = new ArrayList<Integer>(size);
+                forEach(e -> { // Two lists, single iteration.
+                    copy.add(e);
+                    indexList.add(copy.size() - 1);
+                });
+                yield new RandomElementAwareListIterator<>(copy, indexList, random);
             }
         };
     }
@@ -241,28 +237,25 @@ public final class ElementAwareList<T> implements Iterable<T> {
      * The idea of this iterator is that the list will rarely ever be iterated over in its entirety.
      * In fact, move streams are likely to only use the first few elements.
      * Therefore, shuffling the entire list would be a waste of time.
-     * Instead, we pick random index every time and keep a bitset of used elements.
+     * Instead, we pick random index every time and keep a list of unused indexes.
      *
      * @param <T> The element type. Often a tuple.
      */
     private static final class RandomElementAwareListIterator<T> implements Iterator<T> {
 
-        private final List<T> list;
+        private final List<T> elementList;
+        private final List<Integer> unusedIndexList;
         private final Random random;
 
-        private final BitSet usedElements;
-        private int unusedElements;
-
-        public RandomElementAwareListIterator(List<T> copiedList, Random random) {
+        public RandomElementAwareListIterator(List<T> copiedList, List<Integer> unusedIndexList, Random random) {
             this.random = random;
-            this.list = copiedList;
-            this.unusedElements = copiedList.size();
-            this.usedElements = new BitSet(unusedElements);
+            this.elementList = copiedList;
+            this.unusedIndexList = unusedIndexList;
         }
 
         @Override
         public boolean hasNext() {
-            return unusedElements > 0;
+            return !unusedIndexList.isEmpty();
         }
 
         @Override
@@ -270,11 +263,9 @@ public final class ElementAwareList<T> implements Iterable<T> {
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
-            var randomIndex = random.nextInt(unusedElements);
-            var availableIndex = usedElements.nextClearBit(randomIndex);
-            usedElements.set(availableIndex);
-            unusedElements--;
-            return list.get(availableIndex);
+            var randomUnusedIndex = random.nextInt(unusedIndexList.size());
+            var elementIndex = unusedIndexList.remove(randomUnusedIndex);
+            return elementList.get(elementIndex);
         }
 
     }
