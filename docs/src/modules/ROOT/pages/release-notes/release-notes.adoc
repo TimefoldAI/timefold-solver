@@ -3,26 +3,4 @@
 
 == Upgrade to the latest version
 
-Quickly upgrade your source code to the latest and greatest version of Timefold,
-run this command:
-
-Maven:
-
-[source,shell,subs=attributes+]
-----
-$ mvn org.openrewrite.maven:rewrite-maven-plugin:LATEST:run \
-  -Drewrite.recipeArtifactCoordinates=ai.timefold.solver:timefold-solver-migration:{project-version} \
-  -Drewrite.activeRecipes=ai.timefold.solver.migration.ToLatest
-----
-
-Gradle:
-
-[source,shell,subs=attributes+]
-----
-$ curl https://raw.githubusercontent.com/TimefoldAI/timefold-solver/refs/tags/v{timefold-solver-version}/migration/upgrade-timefold.gradle > upgrade-timefold.gradle
-$ gradle -Dorg.gradle.jvmargs=-Xmx2G --init-script upgrade-timefold.gradle rewriteRun -DtimefoldSolverVersion={timefold-solver-version}
-$ rm upgrade-timefold.gradle
-----
-
-It automatically replaces deprecated methods with better alternatives.
-Run your tests and commit the changes.
+For the most up-to-date upgrade instructions, please refer to the xref:https://docs.timefold.ai/timefold-solver/latest/upgrading-timefold-solver/upgrade-to-latest-version#automaticUpgradeToLatestVersion[latest Timefold Solver documentation].
