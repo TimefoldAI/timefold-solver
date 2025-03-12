@@ -19,22 +19,4 @@ public interface UniMoveStream<Solution_, A> extends MoveStream<Solution_> {
 
     <B> BiMoveStream<Solution_, A, B> pick(Function<A, UniDataStream<Solution_, B>> uniDataStreamFunction);
 
-    default BiMoveStream<Solution_, A, A> pickOther(Class<A> clz) {
-        return pickOther(getMoveFactory().enumerate(clz));
-    }
-
-    default BiMoveStream<Solution_, A, A> pickOther(Class<A> clz, BiPredicate<A, A> filter) {
-        return pickOther(getMoveFactory().enumerate(clz), filter);
-    }
-
-    // TODO identity or equality?
-    default BiMoveStream<Solution_, A, A> pickOther(UniDataStream<Solution_, A> uniDataStream) {
-        return pick(uniDataStream, (a, b) -> !a.equals(b));
-    }
-
-    // TODO identity or equality?
-    default BiMoveStream<Solution_, A, A> pickOther(UniDataStream<Solution_, A> uniDataStream, BiPredicate<A, A> filter) {
-        return pick(uniDataStream, filter);
-    }
-
 }
