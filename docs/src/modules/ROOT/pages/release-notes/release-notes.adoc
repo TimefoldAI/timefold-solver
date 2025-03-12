@@ -10,7 +10,9 @@ Maven:
 
 [source,shell,subs=attributes+]
 ----
-$ mvn org.openrewrite.maven:rewrite-maven-plugin:6.2.3:run -Drewrite.recipeArtifactCoordinates=ai.timefold.solver:timefold-solver-migration:1.20.0 -Drewrite.activeRecipes=ai.timefold.solver.migration.ToLatest
+$ mvn org.openrewrite.maven:rewrite-maven-plugin:LATEST:run \
+  -Drewrite.recipeArtifactCoordinates=ai.timefold.solver:timefold-solver-migration:{project-version} \
+  -Drewrite.activeRecipes=ai.timefold.solver.migration.ToLatest
 ----
 
 Gradle:
