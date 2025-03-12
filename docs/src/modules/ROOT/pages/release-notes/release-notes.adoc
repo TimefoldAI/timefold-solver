@@ -3,4 +3,4 @@
 
 == Upgrade to the latest version
 
-For the most up-to-date upgrade instructions, please refer to the xref:https://docs.timefold.ai/timefold-solver/latest/upgrading-timefold-solver/upgrade-to-latest-version#automaticUpgradeToLatestVersion[latest Timefold Solver documentation].
+For the most up-to-date upgrade instructions, please refer to the https://docs.timefold.ai/timefold-solver/latest/upgrading-timefold-solver/upgrade-to-latest-version#automaticUpgradeToLatestVersion[latest Timefold Solver documentation].
