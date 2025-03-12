@@ -10,17 +10,15 @@ Maven:
 
 [source,shell,subs=attributes+]
 ----
-$ mvn org.openrewrite.maven:rewrite-maven-plugin:LATEST:run \
-  -Drewrite.recipeArtifactCoordinates=ai.timefold.solver:timefold-solver-migration:{project-version} \
-  -Drewrite.activeRecipes=ai.timefold.solver.migration.ToLatest
+$ mvn org.openrewrite.maven:rewrite-maven-plugin:6.2.3:run -Drewrite.recipeArtifactCoordinates=ai.timefold.solver:timefold-solver-migration:1.20.0 -Drewrite.activeRecipes=ai.timefold.solver.migration.ToLatest
 ----
 
 Gradle:
 
 [source,shell,subs=attributes+]
 ----
-$ curl https://timefold.ai/product/upgrade/upgrade-timefold.gradle > upgrade-timefold.gradle
-$ gradle -Dorg.gradle.jvmargs=-Xmx2G --init-script upgrade-timefold.gradle rewriteRun -DtimefoldSolverVersion={timefold-solver-version}
+$ curl https://raw.githubusercontent.com/TimefoldAI/timefold-solver/refs/tags/v1.20.0/migration/upgrade-timefold.gradle > upgrade-timefold.gradle
+$ gradle -Dorg.gradle.jvmargs=-Xmx2G --init-script upgrade-timefold.gradle rewriteRun -DtimefoldSolverVersion=1.20.0
 $ rm upgrade-timefold.gradle
 ----
 
