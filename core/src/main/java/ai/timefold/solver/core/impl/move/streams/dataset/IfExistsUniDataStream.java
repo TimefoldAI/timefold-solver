@@ -25,12 +25,10 @@ final class IfExistsUniDataStream<Solution_, A, B>
     private final DefaultBiJoiner<A, B> joiner;
     private final BiPredicate<A, B> filtering;
 
-    public IfExistsUniDataStream(DefaultDatasetFactory<Solution_> datasetFactory,
-            AbstractUniDataStream<Solution_, A> parentA,
-            ForeBridgeUniDataStream<Solution_, B> parentBridgeB,
-            boolean shouldExist,
-            DefaultBiJoiner<A, B> joiner, BiPredicate<A, B> filtering) {
-        super(datasetFactory);
+    public IfExistsUniDataStream(DefaultDataStreamFactory<Solution_> dataStreamFactory,
+            AbstractUniDataStream<Solution_, A> parentA, ForeBridgeUniDataStream<Solution_, B> parentBridgeB,
+            boolean shouldExist, DefaultBiJoiner<A, B> joiner, BiPredicate<A, B> filtering) {
+        super(dataStreamFactory);
         this.parentA = parentA;
         this.parentBridgeB = parentBridgeB;
         this.shouldExist = shouldExist;

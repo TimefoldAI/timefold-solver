@@ -3,9 +3,9 @@ package ai.timefold.solver.core.impl.move.streams.maybeapi.provider;
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.move.streams.generic.ChangeMove;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.MoveConstructor;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveConstructor;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProvider;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreams;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamFactory;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
 public class ChangeMoveProvider<Solution_, Entity_, Value_>
@@ -18,13 +18,13 @@ public class ChangeMoveProvider<Solution_, Entity_, Value_>
     }
 
     @Override
-    public MoveConstructor<Solution_> apply(MoveStreams<Solution_> solutionMoveStreams) {
-        var valueStream = solutionMoveStreams.enumeratePossibleValues(variableMetaModel)
+    public MoveConstructor<Solution_> apply(MoveStreamFactory<Solution_> moveStreamFactory) {
+        var valueStream = moveStreamFactory.enumeratePossibleValues(variableMetaModel)
                 .filter(this::acceptValue);
         if (variableMetaModel.allowsUnassigned()) {
             valueStream = valueStream.addNull();
         }
-        return solutionMoveStreams.pick(solutionMoveStreams.enumerateEntities(variableMetaModel.entity())
+        return moveStreamFactory.pick(moveStreamFactory.enumerateEntities(variableMetaModel.entity())
                 .filter(this::acceptEntity))
                 .pick(valueStream, this::acceptEntityValuePair)
                 .asMove((solution, entity, value) -> new ChangeMove<>(variableMetaModel, entity, value));

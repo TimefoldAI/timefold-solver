@@ -1,10 +1,10 @@
-package ai.timefold.solver.core.impl.move.streams.maybeapi;
+package ai.timefold.solver.core.impl.move.streams.maybeapi.stream;
 
 import java.util.Collection;
 
 import org.jspecify.annotations.NonNull;
 
-public interface DatasetFactory<Solution_> {
+public interface DataStreamFactory<Solution_> {
 
     /**
      * Create a cached stream of all possible values of a class.

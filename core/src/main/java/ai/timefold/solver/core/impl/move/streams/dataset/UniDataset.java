@@ -4,9 +4,8 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 public final class UniDataset<Solution_, A> extends AbstractDataset<Solution_, UniTuple<A>> {
 
-    public UniDataset(DefaultDatasetFactory<Solution_> defaultDatasetFactory,
-            AbstractUniDataStream<Solution_, A> parent) {
-        super(defaultDatasetFactory, parent);
+    public UniDataset(DefaultDataStreamFactory<Solution_> dataStreamFactory, AbstractUniDataStream<Solution_, A> parent) {
+        super(dataStreamFactory, parent);
     }
 
 }

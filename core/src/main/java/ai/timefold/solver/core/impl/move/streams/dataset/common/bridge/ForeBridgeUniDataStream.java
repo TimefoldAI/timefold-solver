@@ -2,17 +2,17 @@ package ai.timefold.solver.core.impl.move.streams.dataset.common.bridge;
 
 import ai.timefold.solver.core.impl.move.streams.dataset.AbstractDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.AbstractUniDataStream;
-import ai.timefold.solver.core.impl.move.streams.dataset.DefaultDatasetFactory;
+import ai.timefold.solver.core.impl.move.streams.dataset.DefaultDataStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.UniDataStream;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 
 public final class ForeBridgeUniDataStream<Solution_, A>
         extends AbstractUniDataStream<Solution_, A>
         implements UniDataStream<Solution_, A> {
 
-    public ForeBridgeUniDataStream(DefaultDatasetFactory<Solution_> datasetFactory,
+    public ForeBridgeUniDataStream(DefaultDataStreamFactory<Solution_> dataStreamFactory,
             AbstractDataStream<Solution_> parent) {
-        super(datasetFactory, parent);
+        super(dataStreamFactory, parent);
     }
 
     @Override

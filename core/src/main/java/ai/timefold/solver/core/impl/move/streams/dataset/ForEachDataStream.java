@@ -14,7 +14,7 @@ import ai.timefold.solver.core.impl.bavet.uni.ForEachFromSolutionUniNode;
 import ai.timefold.solver.core.impl.bavet.uni.ForEachStaticUniNode;
 import ai.timefold.solver.core.impl.bavet.uni.ForEachUniNode;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.SolutionExtractor;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.SolutionExtractor;
 
 public final class ForEachDataStream<Solution_, A>
         extends AbstractUniDataStream<Solution_, A>
@@ -25,12 +25,13 @@ public final class ForEachDataStream<Solution_, A>
     private final SolutionExtractor<Solution_, A> extractor;
     private final Collection<A> source;
 
-    public ForEachDataStream(DefaultDatasetFactory<Solution_> datasetFactory, Class<A> forEachClass) {
-        this(datasetFactory, forEachClass, (Predicate<A>) null);
+    public ForEachDataStream(DefaultDataStreamFactory<Solution_> dataStreamFactory, Class<A> forEachClass) {
+        this(dataStreamFactory, forEachClass, (Predicate<A>) null);
     }
 
-    public ForEachDataStream(DefaultDatasetFactory<Solution_> datasetFactory, Class<A> forEachClass, Predicate<A> filter) {
-        super(datasetFactory, null);
+    public ForEachDataStream(DefaultDataStreamFactory<Solution_> dataStreamFactory, Class<A> forEachClass,
+            Predicate<A> filter) {
+        super(dataStreamFactory, null);
         this.forEachClass = forEachClass;
         if (forEachClass == null) {
             throw new IllegalArgumentException("The forEachClass (null) cannot be null.");
@@ -40,17 +41,18 @@ public final class ForEachDataStream<Solution_, A>
         this.source = null;
     }
 
-    public ForEachDataStream(DefaultDatasetFactory<Solution_> datasetFactory, Class<A> forEachClass,
+    public ForEachDataStream(DefaultDataStreamFactory<Solution_> dataStreamFactory, Class<A> forEachClass,
             SolutionExtractor<Solution_, A> extractor) {
-        super(datasetFactory, null);
+        super(dataStreamFactory, null);
         this.forEachClass = forEachClass;
         this.filter = null;
         this.extractor = Objects.requireNonNull(extractor);
         this.source = null;
     }
 
-    public ForEachDataStream(DefaultDatasetFactory<Solution_> datasetFactory, Class<A> forEachClass, Collection<A> source) {
-        super(datasetFactory, null);
+    public ForEachDataStream(DefaultDataStreamFactory<Solution_> dataStreamFactory, Class<A> forEachClass,
+            Collection<A> source) {
+        super(dataStreamFactory, null);
         this.forEachClass = forEachClass;
         this.filter = null;
         this.extractor = null;

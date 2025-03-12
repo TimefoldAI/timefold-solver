@@ -19,13 +19,13 @@ class UniDatasetStreamTest {
 
     @Test
     void forEach() {
-        var datasetFactory = new DefaultDatasetFactory<>(TestdataListSolution.buildSolutionDescriptor());
-        var uniDataset = ((AbstractUniDataStream<TestdataListSolution, TestdataListEntity>) datasetFactory
+        var dataStreamFactory = new DefaultDataStreamFactory<>(TestdataListSolution.buildSolutionDescriptor());
+        var uniDataset = ((AbstractUniDataStream<TestdataListSolution, TestdataListEntity>) dataStreamFactory
                 .forEach(TestdataListEntity.class))
                 .createDataset();
 
         var solution = TestdataListSolution.generateInitializedSolution(2, 2);
-        var datasetSession = createSession(datasetFactory, solution);
+        var datasetSession = createSession(dataStreamFactory, solution);
         var uniDatasetInstance = datasetSession.getInstance(uniDataset);
 
         var entity1 = solution.getEntityList().get(0);
@@ -48,15 +48,15 @@ class UniDatasetStreamTest {
                 .containsExactly(entity1, entity3);
     }
 
-    private DatasetSession<TestdataListSolution> createSession(DefaultDatasetFactory<TestdataListSolution> datasetFactory,
+    private DatasetSession<TestdataListSolution> createSession(DefaultDataStreamFactory<TestdataListSolution> dataStreamFactory,
             TestdataListSolution solution) {
-        var datasetSessionFactory = new DatasetSessionFactory<>(datasetFactory);
+        var datasetSessionFactory = new DatasetSessionFactory<>(dataStreamFactory);
         var datasetSession = datasetSessionFactory.buildSession();
         var solutionView = new TestdataListSolutionView(solution);
         datasetSession.initialize();
         datasetSession.updateWorkingSolution(solutionView, solution);
 
-        var solutionDescriptor = datasetFactory.getSolutionDescriptor();
+        var solutionDescriptor = dataStreamFactory.getSolutionDescriptor();
         solutionDescriptor.visitAll(solution, datasetSession::insert);
 
         datasetSession.settle();

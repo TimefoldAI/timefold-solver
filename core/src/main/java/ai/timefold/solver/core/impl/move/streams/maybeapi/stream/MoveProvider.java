@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.move.streams.maybeapi.stream;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.MoveConstructor;
 
 /**
  * Implement this to provide a definition for one move type.
@@ -12,5 +11,5 @@ import ai.timefold.solver.core.impl.move.streams.maybeapi.MoveConstructor;
  */
 @FunctionalInterface
 public interface MoveProvider<Solution_>
-        extends Function<MoveStreams<Solution_>, MoveConstructor<Solution_>> {
+        extends Function<MoveStreamFactory<Solution_>, MoveConstructor<Solution_>> {
 }

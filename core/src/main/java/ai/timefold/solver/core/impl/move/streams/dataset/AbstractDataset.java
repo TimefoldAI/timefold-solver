@@ -7,12 +7,11 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 
 public abstract class AbstractDataset<Solution_, Tuple_ extends AbstractTuple> {
 
-    private final DefaultDatasetFactory<Solution_> defaultDatasetFactory;
+    private final DefaultDataStreamFactory<Solution_> dataStreamFactory;
     private final AbstractDataStream<Solution_> parent;
 
-    public AbstractDataset(DefaultDatasetFactory<Solution_> defaultDatasetFactory,
-            AbstractDataStream<Solution_> parent) {
-        this.defaultDatasetFactory = Objects.requireNonNull(defaultDatasetFactory);
+    public AbstractDataset(DefaultDataStreamFactory<Solution_> dataStreamFactory, AbstractDataStream<Solution_> parent) {
+        this.dataStreamFactory = Objects.requireNonNull(dataStreamFactory);
         this.parent = Objects.requireNonNull(parent);
     }
 
@@ -29,12 +28,12 @@ public abstract class AbstractDataset<Solution_, Tuple_ extends AbstractTuple> {
         if (!(entity instanceof AbstractDataset<?, ?> dataset)) {
             return false;
         }
-        return Objects.equals(defaultDatasetFactory, dataset.defaultDatasetFactory) && Objects.equals(parent, dataset.parent);
+        return Objects.equals(dataStreamFactory, dataset.dataStreamFactory) && Objects.equals(parent, dataset.parent);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(defaultDatasetFactory, parent);
+        return Objects.hash(dataStreamFactory, parent);
     }
 
     @Override

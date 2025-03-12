@@ -12,9 +12,9 @@ final class FilterUniDataStream<Solution_, A>
 
     private final Predicate<A> predicate;
 
-    public FilterUniDataStream(DefaultDatasetFactory<Solution_> datasetFactory,
+    public FilterUniDataStream(DefaultDataStreamFactory<Solution_> dataStreamFactory,
             AbstractUniDataStream<Solution_, A> parent, Predicate<A> predicate) {
-        super(datasetFactory, parent);
+        super(dataStreamFactory, parent);
         this.predicate = predicate;
         if (predicate == null) {
             throw new IllegalArgumentException("The predicate (null) cannot be null.");

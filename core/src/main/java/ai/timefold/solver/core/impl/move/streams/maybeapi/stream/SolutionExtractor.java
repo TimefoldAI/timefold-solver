@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.move.streams.maybeapi;
+package ai.timefold.solver.core.impl.move.streams.maybeapi.stream;
 
 import java.util.function.BiFunction;
 import java.util.stream.Stream;

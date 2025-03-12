@@ -5,15 +5,15 @@ import java.util.Objects;
 import ai.timefold.solver.core.impl.bavet.common.TupleSource;
 import ai.timefold.solver.core.impl.move.streams.dataset.AbstractDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.AbstractUniDataStream;
-import ai.timefold.solver.core.impl.move.streams.dataset.DefaultDatasetFactory;
+import ai.timefold.solver.core.impl.move.streams.dataset.DefaultDataStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
 
 public final class AftBridgeUniDataStream<Solution_, A>
         extends AbstractUniDataStream<Solution_, A>
         implements TupleSource {
 
-    public AftBridgeUniDataStream(DefaultDatasetFactory<Solution_> datasetFactory, AbstractDataStream<Solution_> parent) {
-        super(datasetFactory, parent);
+    public AftBridgeUniDataStream(DefaultDataStreamFactory<Solution_> dataStreamFactory, AbstractDataStream<Solution_> parent) {
+        super(dataStreamFactory, parent);
     }
 
     @Override

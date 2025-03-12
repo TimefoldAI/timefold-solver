@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.move.streams.maybeapi;
+package ai.timefold.solver.core.impl.move.streams.maybeapi.stream;
 
 import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.notEquals;
 
@@ -167,5 +167,7 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
                 .toArray(BiJoiner[]::new);
         return ifNotExistsIncludingUnassigned(otherClass, allJoiners);
     }
+
+    UniDataStream<Solution_, A> addNull();
 
 }

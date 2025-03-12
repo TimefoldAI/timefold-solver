@@ -11,18 +11,18 @@ import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.DatasetFactory;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.SolutionExtractor;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.UniDataStream;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.DataStreamFactory;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.SolutionExtractor;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 
 import org.jspecify.annotations.NonNull;
 
-public final class DefaultDatasetFactory<Solution_> implements DatasetFactory<Solution_> {
+public final class DefaultDataStreamFactory<Solution_> implements DataStreamFactory<Solution_> {
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final Map<AbstractDataStream<Solution_>, AbstractDataStream<Solution_>> sharingStreamMap = new HashMap<>(256);
 
-    public DefaultDatasetFactory(SolutionDescriptor<Solution_> solutionDescriptor) {
+    public DefaultDataStreamFactory(SolutionDescriptor<Solution_> solutionDescriptor) {
         this.solutionDescriptor = solutionDescriptor;
     }
 

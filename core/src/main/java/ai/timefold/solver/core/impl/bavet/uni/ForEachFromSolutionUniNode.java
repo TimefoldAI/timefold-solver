@@ -6,7 +6,7 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.SolutionExtractor;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.SolutionExtractor;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 public final class ForEachFromSolutionUniNode<Solution_, A>

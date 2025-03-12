@@ -14,15 +14,15 @@ import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHel
 
 public final class DatasetSessionFactory<Solution_> {
 
-    private final DefaultDatasetFactory<Solution_> datasetFactory;
+    private final DefaultDataStreamFactory<Solution_> dataStreamFactory;
 
-    public DatasetSessionFactory(DefaultDatasetFactory<Solution_> datasetFactory) {
-        this.datasetFactory = datasetFactory;
+    public DatasetSessionFactory(DefaultDataStreamFactory<Solution_> dataStreamFactory) {
+        this.dataStreamFactory = dataStreamFactory;
     }
 
     public DatasetSession<Solution_> buildSession() {
         var activeDataStreamSet = new LinkedHashSet<AbstractDataStream<Solution_>>();
-        var datasets = datasetFactory.getDatasets();
+        var datasets = dataStreamFactory.getDatasets();
         for (var dataset : datasets) {
             dataset.collectActiveDataStreams(activeDataStreamSet);
         }
