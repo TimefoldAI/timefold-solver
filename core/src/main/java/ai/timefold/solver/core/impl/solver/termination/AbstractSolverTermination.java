@@ -24,5 +24,5 @@ abstract sealed class AbstractSolverTermination<Solution_>
         return solverScope.isTerminateEarly() || isSolverTerminateConditionMet(solverScope);
     }
 
-    abstract protected boolean isSolverTerminateConditionMet(SolverScope<Solution_> solverScope);
+    protected abstract boolean isSolverTerminateConditionMet(SolverScope<Solution_> solverScope);
 }

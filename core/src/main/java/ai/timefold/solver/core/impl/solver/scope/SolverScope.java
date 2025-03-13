@@ -319,6 +319,7 @@ public class SolverScope<Solution_> {
 
     public SolverScope<Solution_> createChildThreadSolverScope(ChildThreadType childThreadType) {
         SolverScope<Solution_> childThreadSolverScope = new SolverScope<>();
+        childThreadSolverScope.solver = solver;
         childThreadSolverScope.bestSolution.set(null);
         childThreadSolverScope.bestScore.set(null);
         childThreadSolverScope.monitoringTags = monitoringTags;

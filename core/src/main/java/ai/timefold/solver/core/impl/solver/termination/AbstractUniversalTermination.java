@@ -54,7 +54,7 @@ abstract sealed class AbstractUniversalTermination<Solution_>
         return phaseScope.isTerminateEarly() || isPhaseTerminateConditionMet(phaseScope);
     }
 
-    abstract protected boolean isSolverTerminateConditionMet(SolverScope<Solution_> solverScope);
+    protected abstract boolean isSolverTerminateConditionMet(SolverScope<Solution_> solverScope);
 
-    abstract protected boolean isPhaseTerminateConditionMet(AbstractPhaseScope<Solution_> phaseScope);
+    protected abstract boolean isPhaseTerminateConditionMet(AbstractPhaseScope<Solution_> phaseScope);
 }
