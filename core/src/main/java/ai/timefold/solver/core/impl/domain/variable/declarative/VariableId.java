@@ -22,7 +22,7 @@ public record VariableId(Class<?> entityClass, String variableName, @Nullable Va
         return variableName.substring(variableName.lastIndexOf('.') + 1);
     }
 
-    public VariableId rootId() {
+    public VariableId rootId(Class<?> entityClass) {
         return entity(entityClass).child(getLastComponent());
     }
 

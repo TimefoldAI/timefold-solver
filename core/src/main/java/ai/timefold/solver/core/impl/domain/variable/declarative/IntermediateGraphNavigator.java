@@ -7,18 +7,21 @@ import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class IntermediateGraphNavigator<Entity_, Value_> implements GraphNavigator<Entity_, Value_> {
-    final Class<? extends Value_> type;
+    final Class<? extends Entity_> entityType;
+    final Class<? extends Value_> valueType;
     final String intermediateName;
     final VariableId variableId;
     final IdentityHashMap<Entity_, Value_> intermediateValueMap;
 
     public IntermediateGraphNavigator(VariableId parentVariableId,
-            Class<? extends Value_> type,
+            Class<? extends Entity_> entityType,
+            Class<? extends Value_> valueType,
             String intermediateName,
             IdentityHashMap<Entity_, Value_> intermediateValueMap) {
         this.variableId = parentVariableId.child(
                 DefaultShadowVariableFactory.getIntermediateVariableName(intermediateName));
-        this.type = type;
+        this.entityType = entityType;
+        this.valueType = valueType;
         this.intermediateName = intermediateName;
         this.intermediateValueMap = intermediateValueMap;
     }
@@ -33,8 +36,16 @@ public class IntermediateGraphNavigator<Entity_, Value_> implements GraphNavigat
         return variableId;
     }
 
-    public Class<? extends Value_> getType() {
-        return type;
+    public VariableId getRootVariableId() {
+        return new VariableId(entityType, DefaultShadowVariableFactory.getIntermediateVariableName(intermediateName));
+    }
+
+    public Class<? extends Entity_> getEntityType() {
+        return entityType;
+    }
+
+    public Class<? extends Value_> getValueType() {
+        return valueType;
     }
 
     public String getIntermediateName() {
