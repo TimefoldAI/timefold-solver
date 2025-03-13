@@ -113,12 +113,12 @@ final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<Solutio
     }
 
     @Override
-    public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
+    public boolean isSolverTerminateConditionMet(SolverScope<Solution_> solverScope) {
         return isTerminated(solverSafeTimeMillis);
     }
 
     @Override
-    public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
+    public boolean isPhaseTerminateConditionMet(AbstractPhaseScope<Solution_> phaseScope) {
         return isTerminated(phaseSafeTimeMillis);
     }
 

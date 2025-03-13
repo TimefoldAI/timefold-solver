@@ -26,7 +26,7 @@ final class AndCompositeTermination<Solution_>
      * @return true if all terminations are terminated.
      */
     @Override
-    public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
+    public boolean isSolverTerminateConditionMet(SolverScope<Solution_> solverScope) {
         for (var termination : solverTerminationList) {
             if (!termination.isSolverTerminated(solverScope)) {
                 return false;
@@ -39,7 +39,7 @@ final class AndCompositeTermination<Solution_>
      * @return true if all supported terminations are terminated.
      */
     @Override
-    public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
+    public boolean isPhaseTerminateConditionMet(AbstractPhaseScope<Solution_> phaseScope) {
         for (var termination : phaseTerminationList) {
             if (termination.isApplicableTo(phaseScope.getClass()) && !termination.isPhaseTerminated(phaseScope)) {
                 return false;

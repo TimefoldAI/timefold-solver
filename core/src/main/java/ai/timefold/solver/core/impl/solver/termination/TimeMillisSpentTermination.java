@@ -26,13 +26,13 @@ final class TimeMillisSpentTermination<Solution_>
     }
 
     @Override
-    public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
+    public boolean isSolverTerminateConditionMet(SolverScope<Solution_> solverScope) {
         var solverTimeMillisSpent = solverScope.calculateTimeMillisSpentUpToNow();
         return isTerminated(solverTimeMillisSpent);
     }
 
     @Override
-    public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
+    public boolean isPhaseTerminateConditionMet(AbstractPhaseScope<Solution_> phaseScope) {
         var phaseTimeMillisSpent = phaseScope.calculatePhaseTimeMillisSpentUpToNow();
         return isTerminated(phaseTimeMillisSpent);
     }

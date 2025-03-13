@@ -140,7 +140,7 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
     }
 
     @Override
-    public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
+    public boolean isPhaseTerminateConditionMet(AbstractPhaseScope<Solution_> phaseScope) {
         return isTerminated(System.nanoTime(), phaseScope.getBestScore());
     }
 

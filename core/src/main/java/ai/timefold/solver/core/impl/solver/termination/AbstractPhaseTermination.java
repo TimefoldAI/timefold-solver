@@ -32,4 +32,10 @@ abstract sealed class AbstractPhaseTermination<Solution_>
         // Override if needed.
     }
 
+    @Override
+    public final boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
+        return phaseScope.isTerminateEarly() || isPhaseTerminateConditionMet(phaseScope);
+    }
+
+    abstract protected boolean isPhaseTerminateConditionMet(AbstractPhaseScope<Solution_> phaseScope);
 }

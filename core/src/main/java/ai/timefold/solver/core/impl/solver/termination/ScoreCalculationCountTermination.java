@@ -24,12 +24,12 @@ final class ScoreCalculationCountTermination<Solution_>
     }
 
     @Override
-    public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
+    public boolean isSolverTerminateConditionMet(SolverScope<Solution_> solverScope) {
         return isTerminated(solverScope.getScoreDirector());
     }
 
     @Override
-    public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
+    public boolean isPhaseTerminateConditionMet(AbstractPhaseScope<Solution_> phaseScope) {
         return isTerminated(phaseScope.getScoreDirector());
     }
 

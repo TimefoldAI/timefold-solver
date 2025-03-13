@@ -19,4 +19,10 @@ abstract sealed class AbstractSolverTermination<Solution_>
         // Override if needed.
     }
 
+    @Override
+    public final boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
+        return solverScope.isTerminateEarly() || isSolverTerminateConditionMet(solverScope);
+    }
+
+    abstract protected boolean isSolverTerminateConditionMet(SolverScope<Solution_> solverScope);
 }

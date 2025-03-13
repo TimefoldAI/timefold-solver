@@ -54,13 +54,13 @@ final class UnimprovedTimeMillisSpentTermination<Solution_>
     }
 
     @Override
-    public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
+    public boolean isSolverTerminateConditionMet(SolverScope<Solution_> solverScope) {
         long bestSolutionTimeMillis = solverScope.getBestSolutionTimeMillis();
         return isTerminated(bestSolutionTimeMillis);
     }
 
     @Override
-    public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
+    public boolean isPhaseTerminateConditionMet(AbstractPhaseScope<Solution_> phaseScope) {
         var bestSolutionTimeMillis = phaseScope.getPhaseBestSolutionTimeMillis();
         return isTerminated(bestSolutionTimeMillis);
     }

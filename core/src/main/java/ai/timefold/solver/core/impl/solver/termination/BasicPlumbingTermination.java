@@ -107,7 +107,7 @@ public final class BasicPlumbingTermination<Solution_>
     }
 
     @Override
-    public synchronized boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
+    public synchronized boolean isSolverTerminateConditionMet(SolverScope<Solution_> solverScope) {
         // Destroying a thread pool with solver threads will only cause it to interrupt those solver threads,
         // it won't call Solver.terminateEarly()
         if (Thread.currentThread().isInterrupted() // Does not clear the interrupted flag

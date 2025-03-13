@@ -66,6 +66,10 @@ public abstract class AbstractPhaseScope<Solution_> {
         return phaseIndex;
     }
 
+    public boolean isTerminateEarly() {
+        return solverScope.isTerminateEarly();
+    }
+
     public boolean isPhaseSendingBestSolutionEvents() {
         return phaseSendingBestSolutionEvents;
     }

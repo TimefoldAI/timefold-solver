@@ -20,7 +20,7 @@ final class SolverToUniversalBridgeTermination<Solution_>
     }
 
     @Override
-    public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
+    public boolean isPhaseTerminateConditionMet(AbstractPhaseScope<Solution_> phaseScope) {
         return false;
     }
 
@@ -30,7 +30,7 @@ final class SolverToUniversalBridgeTermination<Solution_>
     }
 
     @Override
-    public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
+    public boolean isSolverTerminateConditionMet(SolverScope<Solution_> solverScope) {
         return solverTermination.isSolverTerminated(solverScope);
     }
 

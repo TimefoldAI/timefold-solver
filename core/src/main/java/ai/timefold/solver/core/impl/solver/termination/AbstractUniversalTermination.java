@@ -44,4 +44,17 @@ abstract sealed class AbstractUniversalTermination<Solution_>
         // Override if needed.
     }
 
+    @Override
+    public final boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
+        return solverScope.isTerminateEarly() || isSolverTerminateConditionMet(solverScope);
+    }
+
+    @Override
+    public final boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
+        return phaseScope.isTerminateEarly() || isPhaseTerminateConditionMet(phaseScope);
+    }
+
+    abstract protected boolean isSolverTerminateConditionMet(SolverScope<Solution_> solverScope);
+
+    abstract protected boolean isPhaseTerminateConditionMet(AbstractPhaseScope<Solution_> phaseScope);
 }

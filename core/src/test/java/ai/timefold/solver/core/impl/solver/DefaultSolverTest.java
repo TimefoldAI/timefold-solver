@@ -22,7 +22,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.ConstraintMatchAwareIncrementalScoreCalculator;
@@ -32,6 +34,7 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.SolutionManager;
+import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
@@ -50,6 +53,7 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.monitoring.MonitoringConfig;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
+import ai.timefold.solver.core.config.solver.termination.TerminationCompositionStyle;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
@@ -99,6 +103,11 @@ import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Metrics;
@@ -1307,6 +1316,129 @@ class DefaultSolverTest extends AbstractMeterTest {
                         solution.getValueList().get(3));
         assertThat(solution.getEntityList().get(2).getValueList())
                 .isEmpty();
+    }
+
+    static class TerminationArgumentSource implements ArgumentsProvider {
+
+        @Override
+        public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+            return Stream.of(
+                    Arguments.of(new TerminationConfig().withStepCountLimit(10000)),
+                    Arguments.of(new TerminationConfig().withScoreCalculationCountLimit(10000L)),
+                    Arguments.of(new TerminationConfig().withBestScoreLimit("1000")),
+                    Arguments.of(new TerminationConfig().withDaysSpentLimit(10L)),
+                    Arguments.of(new TerminationConfig().withDiminishedReturns()),
+                    Arguments.of(new TerminationConfig().withUnimprovedDaysSpentLimit(10L)),
+                    Arguments.of(new TerminationConfig().withUnimprovedStepCountLimit(10000)),
+                    Arguments.of(new TerminationConfig().withMoveCountLimit(10000L)),
+                    Arguments.of(new TerminationConfig()
+                            .withStepCountLimit(10000)
+                            .withMoveCountLimit(10000L)
+                            .withTerminationCompositionStyle(TerminationCompositionStyle.OR)),
+                    Arguments.of(new TerminationConfig()
+                            .withStepCountLimit(10000)
+                            .withMoveCountLimit(10000L)
+                            .withTerminationCompositionStyle(TerminationCompositionStyle.AND)));
+        }
+    }
+
+    @PlanningSolution
+    public static class TestdataSolutionWithSolver extends TestdataSolution {
+        private Solver<TestdataSolutionWithSolver> solver;
+
+        public static TestdataSolutionWithSolver generateUninitializedSolution() {
+            var out = new TestdataSolutionWithSolver();
+            out.setEntityList(List.of(new TestdataEntity("e1"), new TestdataEntity("e2")));
+            out.setValueList(List.of(new TestdataValue("v1")));
+            return out;
+        }
+
+        public Solver<TestdataSolutionWithSolver> getSolver() {
+            return solver;
+        }
+
+        public void setSolver(
+                Solver<TestdataSolutionWithSolver> solver) {
+            this.solver = solver;
+        }
+    }
+
+    public static class DummySimpleScoreThrowingEasyScoreCalculator
+            implements EasyScoreCalculator<TestdataSolutionWithSolver, SimpleScore> {
+
+        @Override
+        public @NonNull SimpleScore calculateScore(@NonNull TestdataSolutionWithSolver solution) {
+            var anyUnassigned = false;
+
+            for (var entity : solution.getEntityList()) {
+                if (entity.getValue() == null) {
+                    anyUnassigned = true;
+                    break;
+                }
+            }
+
+            if (anyUnassigned) {
+                solution.getSolver().terminateEarly();
+                return SimpleScore.ZERO;
+            }
+            throw new AssertionError("Expected Construction Heuristic to terminate early");
+        }
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(TerminationArgumentSource.class)
+    void solveTerminateConstructionHeuristicEarly(TerminationConfig terminationConfig) {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataSolution.class, TestdataEntity.class);
+        solverConfig.withEasyScoreCalculatorClass(DummySimpleScoreThrowingEasyScoreCalculator.class)
+                .withTerminationConfig(terminationConfig)
+                .withPhases(new ConstructionHeuristicPhaseConfig());
+
+        var solution = TestdataSolutionWithSolver.generateUninitializedSolution();
+        SolverFactory<TestdataSolutionWithSolver> solverFactory = SolverFactory.create(solverConfig);
+
+        var solver = solverFactory.buildSolver();
+        solution.setSolver(solver);
+
+        solution = solver.solve(solution);
+        assertThat(solution).isNotNull();
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(TerminationArgumentSource.class)
+    void solveTerminateLocalSearchEarly(TerminationConfig terminationConfig) {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataSolution.class, TestdataEntity.class);
+        solverConfig.withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class)
+                .withTerminationConfig(terminationConfig)
+                .withPhases(
+                        new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig());
+
+        final var entityCount = 5;
+        var solution = TestdataSolution.generateSolution(entityCount, entityCount);
+        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
+
+        var solver = solverFactory.buildSolver();
+        var step = new AtomicInteger(-1);
+
+        ((DefaultSolver<TestdataSolution>) solver)
+                .addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
+                    @Override
+                    public void stepEnded(AbstractStepScope<TestdataSolution> stepScope) {
+                        super.stepEnded(stepScope);
+
+                        var stepCount = step.getAndIncrement();
+
+                        // terminate after 3 LS steps
+                        // (stepEnded does not trigger for CH step)
+                        if (stepCount == 3) {
+                            solver.terminateEarly();
+                        }
+                    }
+                });
+        solution = solver.solve(solution);
+        assertThat(solution).isNotNull();
     }
 
     public static final class MinimizeUnusedEntitiesEasyScoreCalculator

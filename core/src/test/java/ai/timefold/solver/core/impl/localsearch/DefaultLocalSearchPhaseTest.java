@@ -404,5 +404,4 @@ class DefaultLocalSearchPhaseTest extends AbstractMeterTest {
                 .hasMessageContaining("planning list variable")
                 .hasMessageContaining("unexpected unassigned values");
     }
-
 }

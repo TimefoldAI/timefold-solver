@@ -6,12 +6,14 @@ import static org.assertj.core.api.Assertions.withPrecision;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.time.Clock;
 
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
+import ai.timefold.solver.core.impl.solver.AbstractSolver;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
@@ -30,6 +32,9 @@ class UnimprovedTimeMillisSpentTerminationTest {
     void solverTermination() {
         SolverScope<TestdataSolution> solverScope = spy(new SolverScope<>());
         AbstractPhaseScope<TestdataSolution> phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
+        var solver = mock(AbstractSolver.class);
+        when(solver.isTerminateEarly()).thenReturn(false);
+        solverScope.setSolver(solver);
         Clock clock = mock(Clock.class);
 
         UniversalTermination<TestdataSolution> termination = new UnimprovedTimeMillisSpentTermination<>(1000L, clock);
@@ -51,6 +56,9 @@ class UnimprovedTimeMillisSpentTerminationTest {
     void phaseTermination() {
         SolverScope<TestdataSolution> solverScope = new SolverScope<>();
         AbstractPhaseScope<TestdataSolution> phaseScope = spy(new LocalSearchPhaseScope<>(solverScope, 0));
+        var solver = mock(AbstractSolver.class);
+        when(solver.isTerminateEarly()).thenReturn(false);
+        solverScope.setSolver(solver);
         Clock clock = mock(Clock.class);
 
         UniversalTermination<TestdataSolution> termination = new UnimprovedTimeMillisSpentTermination<>(1000L, clock);
@@ -71,6 +79,9 @@ class UnimprovedTimeMillisSpentTerminationTest {
     @Test
     void solverTerminationWithConstructionHeuristic() { // CH ignores unimproved time spent termination.
         SolverScope<TestdataSolution> solverScope = spy(new SolverScope<>());
+        var solver = mock(AbstractSolver.class);
+        when(solver.isTerminateEarly()).thenReturn(false);
+        solverScope.setSolver(solver);
         Clock clock = mock(Clock.class);
 
         UniversalTermination<TestdataSolution> termination = new UnimprovedTimeMillisSpentTermination<>(1000L, clock);
@@ -115,6 +126,9 @@ class UnimprovedTimeMillisSpentTerminationTest {
     void phaseTerminationWithConstructionHeuristic() { // CH ignores unimproved time spent termination.
         SolverScope<TestdataSolution> solverScope = new SolverScope<>();
         AbstractPhaseScope<TestdataSolution> phaseScope = spy(new ConstructionHeuristicPhaseScope<>(solverScope, 0));
+        var solver = mock(AbstractSolver.class);
+        when(solver.isTerminateEarly()).thenReturn(false);
+        solverScope.setSolver(solver);
         Clock clock = mock(Clock.class);
 
         UniversalTermination<TestdataSolution> termination = new UnimprovedTimeMillisSpentTermination<>(1000L, clock);

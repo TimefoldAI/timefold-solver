@@ -20,7 +20,7 @@ final class SolverBridgePhaseTermination<Solution_>
     }
 
     @Override
-    public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
+    public boolean isPhaseTerminateConditionMet(AbstractPhaseScope<Solution_> phaseScope) {
         return solverTermination.isSolverTerminated(phaseScope.getSolverScope());
     }
 

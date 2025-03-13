@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.withPrecision;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.time.Clock;
 
@@ -14,6 +15,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeur
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.solver.AbstractSolver;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
@@ -37,6 +39,9 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
         var solverScope = spy(new SolverScope<TestdataSolution>());
         var phaseScope = spy(new LocalSearchPhaseScope<>(solverScope, 0));
         var stepScope = spy(new LocalSearchStepScope<>(phaseScope));
+        var solver = mock(AbstractSolver.class);
+        when(solver.isTerminateEarly()).thenReturn(false);
+        solverScope.setSolver(solver);
         var clock = mock(Clock.class);
 
         var termination = new UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<TestdataSolution>(1000L,
@@ -85,6 +90,10 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
         var solverScope = spy(new SolverScope<TestdataSolution>());
         var phaseScope = spy(new LocalSearchPhaseScope<>(solverScope, 0));
         var stepScope = spy(new LocalSearchStepScope<>(phaseScope));
+        var solver = mock(AbstractSolver.class);
+        when(solver.isTerminateEarly()).thenReturn(false);
+        solverScope.setSolver(solver);
+
         var clock = mock(Clock.class);
 
         var termination = new UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<TestdataSolution>(1000L,
@@ -137,6 +146,9 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
         var solverScope = spy(new SolverScope<TestdataSolution>());
         var phaseScope = spy(new ConstructionHeuristicPhaseScope<>(solverScope, 0));
         var stepScope = spy(new ConstructionHeuristicStepScope<>(phaseScope));
+        var solver = mock(AbstractSolver.class);
+        when(solver.isTerminateEarly()).thenReturn(false);
+        solverScope.setSolver(solver);
         var clock = mock(Clock.class);
 
         var termination = new UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<TestdataSolution>(1000L,
@@ -175,6 +187,9 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
         var solverScope = spy(new SolverScope<TestdataSolution>());
         var phaseScope = spy(new ConstructionHeuristicPhaseScope<>(solverScope, 0));
         var stepScope = spy(new ConstructionHeuristicStepScope<>(phaseScope));
+        var solver = mock(AbstractSolver.class);
+        when(solver.isTerminateEarly()).thenReturn(false);
+        solverScope.setSolver(solver);
         var clock = mock(Clock.class);
 
         var termination = new UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<TestdataSolution>(1000L,

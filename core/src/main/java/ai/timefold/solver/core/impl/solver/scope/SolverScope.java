@@ -245,6 +245,10 @@ public class SolverScope<Solution_> {
     // Calculated methods
     // ************************************************************************
 
+    public boolean isTerminateEarly() {
+        return solver.isTerminateEarly();
+    }
+
     public boolean isMetricEnabled(SolverMetric solverMetric) {
         return solverMetricSet.contains(solverMetric);
     }
