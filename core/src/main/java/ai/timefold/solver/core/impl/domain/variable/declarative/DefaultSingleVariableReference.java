@@ -95,6 +95,7 @@ public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentVal
             String intermediateName) {
         return child(intermediateClass,
                 new IntermediateGraphNavigator<>(navigator.getVariableId(),
+                        valueType,
                         intermediateClass,
                         intermediateName,
                         shadowVariableFactory.getIntermediateValueMap(intermediateName)));

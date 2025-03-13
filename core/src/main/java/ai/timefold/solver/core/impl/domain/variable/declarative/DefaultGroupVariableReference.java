@@ -130,6 +130,7 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
             String intermediateName) {
         return child(intermediateClass,
                 new IntermediateGraphNavigator<>(getVariableId(),
+                        valueType,
                         intermediateClass,
                         intermediateName,
                         shadowVariableFactory.getIntermediateValueMap(intermediateName)));
@@ -250,11 +251,13 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
             if (group != null) {
                 for (var groupElement : group) {
                     if (source.navigator instanceof VariableGraphNavigator<?, ?> variableGraphNavigator) {
+                        var variableEntityClass = variableGraphNavigator.variableDescriptor.getEntityDescriptor()
+                                .getEntityClass();
                         graph.addFixedEdge(
-                                graph.addVariableReferenceEntity(source.getVariableId().rootId(),
+                                graph.addVariableReferenceEntity(source.getVariableId().rootId(variableEntityClass),
                                         groupElement,
                                         (InnerVariableReference<Solution_, ?, ?>) shadowVariableFactory
-                                                .entity(source.entityClass)
+                                                .entity(variableEntityClass)
                                                 .variable(variableGraphNavigator.variableDescriptor.getVariablePropertyType(),
                                                         variableGraphNavigator.variableDescriptor.getVariableName())),
                                 graph.addVariableReferenceEntity(source.getVariableId(),
@@ -262,12 +265,13 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
                                         source));
                     }
                     if (source.navigator instanceof IntermediateGraphNavigator<?, ?> intermediateGraphNavigator) {
+                        var variableEntityClass = intermediateGraphNavigator.getEntityType();
                         graph.addFixedEdge(
-                                graph.addVariableReferenceEntity(source.getVariableId().rootId(),
+                                graph.addVariableReferenceEntity(source.getVariableId().rootId(variableEntityClass),
                                         groupElement,
                                         (InnerVariableReference<Solution_, ?, ?>) shadowVariableFactory
-                                                .entity(source.entityClass)
-                                                .intermediate(intermediateGraphNavigator.getType(),
+                                                .entity(variableEntityClass)
+                                                .intermediate(intermediateGraphNavigator.getValueType(),
                                                         intermediateGraphNavigator.getIntermediateName())),
                                 graph.addVariableReferenceEntity(source.getVariableId(),
                                         object,

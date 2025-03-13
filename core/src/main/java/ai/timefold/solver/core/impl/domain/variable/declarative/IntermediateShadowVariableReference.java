@@ -26,6 +26,7 @@ public final class IntermediateShadowVariableReference<Solution_, Entity_, Value
         super(calculation.shadowVariableFactory,
                 solutionDescriptor, supplyManager, null,
                 new IntermediateGraphNavigator<>(VariableId.entity(entityClass),
+                        entityClass,
                         valueType,
                         intermediateName,
                         calculation.shadowVariableFactory.getIntermediateValueMap(intermediateName)),
