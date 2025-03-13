@@ -67,7 +67,7 @@ public sealed abstract class AbstractShadowVariableReference<Solution_, Entity_,
             return;
         }
 
-        variableReferenceGraph.addBeforeProcessor(path.get(0).getVariableId().rootId(),
+        variableReferenceGraph.addBeforeProcessor(path.get(0).getVariableId(),
                 (g, alias) -> {
                     var aliasSource = alias;
                     for (var ref : path) {
@@ -81,7 +81,7 @@ public sealed abstract class AbstractShadowVariableReference<Solution_, Entity_,
                             g.lookup(getVariableId(), aliasSource),
                             g.lookup(aliasReference.getVariableId(), alias));
                 });
-        variableReferenceGraph.addAfterProcessor(path.get(0).getVariableId().rootId(),
+        variableReferenceGraph.addAfterProcessor(path.get(0).getVariableId(),
                 (g, alias) -> {
                     var aliasSource = alias;
                     for (var ref : path) {

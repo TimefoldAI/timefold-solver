@@ -32,4 +32,8 @@ public class VariableGraphNavigator<Entity_, Value_> implements GraphNavigator<E
     public VariableId getVariableId() {
         return variableId;
     }
+
+    public VariableId getRootVariableId() {
+        return new VariableId(variableDescriptor.getEntityDescriptor().getEntityClass(), variableId.variableName());
+    }
 }
