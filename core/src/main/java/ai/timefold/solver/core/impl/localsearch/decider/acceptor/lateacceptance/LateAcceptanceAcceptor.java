@@ -125,33 +125,35 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
     }
 
     @Override
-    public void restart(LocalSearchStepScope<Solution_> stepScope) {
-        countRestartWithoutImprovement++;
+    public boolean rejectRestartEvent() {
         var distinctElements = Arrays.stream(previousScores).distinct().count();
         var diversity = distinctElements == 1 ? 0 : distinctElements / (double) lateAcceptanceSize;
-        if (coefficient == 0 && (diversity > MIN_DIVERSITY_RATIO || bestScoreQueue.size() == 1)) {
-            // We prefer not to restart until the first event has passed (about 10:30 minutes).
-            // We have observed that this approach works better for more complex datasets.
-            // However, when the diversity is zero, it indicates that the LA may be stuck in a local minimum,
-            // and in such cases, we should restart before the first event.
-            // Additionally, when there is only one best score,
-            // it does not make sense to restart as nothing would change
-            // and the proposed approach requires some diversity to reseed the scores.
+        // We prefer not to restart until it is really necessary to keep the default behavior,
+        // and we have observed that this approach works better for more complex datasets.
+        // However, when the diversity is low, it indicates that the LA may be stuck in a local minimum,
+        // and in such cases, we should not reject the event.
+        // Additionally, when there is only one best score,
+        // it does not make sense to restart as nothing would change
+        // and the proposed approach requires some diversity to reseed the scores.
+        var reject = diversity > MIN_DIVERSITY_RATIO || bestScoreQueue.size() == 1;
+        if (reject) {
             logger.info(
                     "Restart event delayed. Diversity ({}), Count best scores ({}), Distinct Elements ({}), Restart without Improvement ({})",
-                    bestScoreQueue.size(), diversity, distinctElements, countRestartWithoutImprovement);
-            return;
+                    diversity, bestScoreQueue.size(), distinctElements, countRestartWithoutImprovement);
         }
+        return reject;
+    }
+
+    @Override
+    public void restart(LocalSearchStepScope<Solution_> stepScope) {
+        countRestartWithoutImprovement++;
         coefficient++;
         var newLateAcceptanceSize = defaultLateAcceptanceSize * coefficient * SCALING_FACTOR;
         if (logger.isInfoEnabled()) {
             if (lateAcceptanceSize == newLateAcceptanceSize) {
-                logger.info("Keeping the lateAcceptanceSize as {}. Diversity ({}), Distinct Elements ({})", lateAcceptanceSize,
-                        diversity, distinctElements);
+                logger.info("Keeping the lateAcceptanceSize as {}.", lateAcceptanceSize);
             } else {
-                logger.info(
-                        "Changing the lateAcceptanceSize from {} to {}. Diversity ({}), Distinct Elements ({})",
-                        lateAcceptanceSize, newLateAcceptanceSize, diversity, distinctElements);
+                logger.info("Changing the lateAcceptanceSize from {} to {}.", lateAcceptanceSize, newLateAcceptanceSize);
             }
         }
         rebuildLateElementsList(newLateAcceptanceSize);

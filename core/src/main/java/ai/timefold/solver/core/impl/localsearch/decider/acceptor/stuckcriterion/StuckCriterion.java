@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion
 
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.impl.localsearch.event.LocalSearchPhaseLifecycleListener;
-import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
+import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 
 /**
  * Allow defining strategies that identify when the {@link Solver solver} is stuck.
@@ -14,8 +14,9 @@ public interface StuckCriterion<Solution_> extends LocalSearchPhaseLifecycleList
     /**
      * Main logic that applies a specific metric to determine if a solver is stuck in a local optimum.
      * 
-     * @param moveScope cannot be null
-     * @return
+     * @param stepScope cannot be null
      */
-    boolean isSolverStuck(LocalSearchMoveScope<Solution_> moveScope);
+    boolean isSolverStuck(LocalSearchStepScope<Solution_> stepScope);
+
+    void reset(LocalSearchStepScope<Solution_> stepScope);
 }

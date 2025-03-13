@@ -46,20 +46,36 @@ public abstract class RestartableAcceptor<Solution_> extends AbstractAcceptor<So
     @Override
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
         super.stepEnded(stepScope);
+        if (stuckCriterion.isSolverStuck(stepScope)) {
+            if (rejectRestartEvent()) {
+                // We need to reset the criterion,
+                // or it will trigger the restart event in the next evaluation
+                stuckCriterion.reset(stepScope);
+                restartTriggered = false;
+            } else {
+                stepScope.getPhaseScope().setSolverStuck(true);
+                restartTriggered = true;
+            }
+        }
         stuckCriterion.stepEnded(stepScope);
     }
 
     @Override
     public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
-        if (stuckCriterion.isSolverStuck(moveScope)) {
-            moveScope.getStepScope().getPhaseScope().setSolverStuck(true);
-            restartTriggered = true;
-            return true;
-        }
+
         return accept(moveScope);
     }
 
     protected abstract boolean accept(LocalSearchMoveScope<Solution_> moveScope);
 
+    /**
+     * The stuck criterion may trigger a restart event, but the acceptor might choose to delay it.
+     * This method rechecks the restart event condition on the acceptor side.
+     */
+    public abstract boolean rejectRestartEvent();
+
+    /**
+     * Run the restart event logic on the acceptor side.
+     */
     public abstract void restart(LocalSearchStepScope<Solution_> stepScope);
 }

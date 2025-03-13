@@ -37,14 +37,14 @@ class DiminishedReturnsStuckCriterionTest {
         var strategy = new DiminishedReturnsStuckCriterion<>(termination);
         strategy.solvingStarted(null);
         strategy.phaseStarted(phaseScope);
-        assertThat(strategy.isSolverStuck(moveScope)).isFalse();
+        assertThat(strategy.isSolverStuck(stepScope)).isFalse();
 
         // First restart
-        assertThat(strategy.isSolverStuck(moveScope)).isTrue();
+        assertThat(strategy.isSolverStuck(stepScope)).isTrue();
         assertThat(strategy.nextRestart).isEqualTo(2L * START_TIME_WINDOW_MILLIS);
 
         // Second restart
-        assertThat(strategy.isSolverStuck(moveScope)).isTrue();
+        assertThat(strategy.isSolverStuck(stepScope)).isTrue();
         assertThat(strategy.nextRestart).isEqualTo(3L * START_TIME_WINDOW_MILLIS);
     }
 
@@ -67,7 +67,7 @@ class DiminishedReturnsStuckCriterionTest {
         var strategy = new DiminishedReturnsStuckCriterion<>(termination);
         strategy.solvingStarted(null);
         strategy.phaseStarted(phaseScope);
-        assertThat(strategy.isSolverStuck(moveScope)).isTrue();
+        assertThat(strategy.isSolverStuck(stepScope)).isTrue();
         assertThat(strategy.nextRestart).isEqualTo(2L * START_TIME_WINDOW_MILLIS);
 
         // Reset
