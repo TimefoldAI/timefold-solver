@@ -36,7 +36,7 @@ public record ConditionalTupleLifecycle<Tuple_ extends AbstractTuple>(TupleLifec
 
     @Override
     public String toString() {
-        return "Conditional " + downstreamLifecycle;
+        return "Conditional %s".formatted(downstreamLifecycle);
     }
 
     @FunctionalInterface

@@ -36,8 +36,8 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
         this.memberAccessor = memberAccessor;
         ValueRangeProvider valueRangeProviderAnnotation = memberAccessor.getAnnotation(ValueRangeProvider.class);
         if (valueRangeProviderAnnotation == null) {
-            throw new IllegalStateException("The member (" + memberAccessor
-                    + ") must have a valueRangeProviderAnnotation (" + valueRangeProviderAnnotation + ").");
+            throw new IllegalStateException("The member (%s) must have a valueRangeProviderAnnotation (%s)."
+                    .formatted(memberAccessor, valueRangeProviderAnnotation));
         }
         processValueRangeProviderAnnotation(valueRangeProviderAnnotation);
         if (addNullInValueRange && !countable) {
@@ -54,48 +54,41 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
         collectionWrapping = Collection.class.isAssignableFrom(type);
         arrayWrapping = type.isArray();
         if (!collectionWrapping && !arrayWrapping && !ValueRange.class.isAssignableFrom(type)) {
-            throw new IllegalArgumentException("The entityClass (" + entityDescriptor.getEntityClass()
-                    + ") has a @" + PlanningVariable.class.getSimpleName()
-                    + " annotated property (" + variableDescriptor.getVariableName()
-                    + ") that refers to a @" + ValueRangeProvider.class.getSimpleName()
-                    + " annotated member (" + memberAccessor
-                    + ") that does not return a " + Collection.class.getSimpleName()
-                    + ", an array or a " + ValueRange.class.getSimpleName() + ".");
+            throw new IllegalArgumentException("""
+                    The entityClass (%s) has a @%s-annotated property (%s) that refers to a @%s-annotated member \
+                    (%s) that does not return a %s, an array or a %s."""
+                    .formatted(entityDescriptor.getEntityClass(), PlanningVariable.class.getSimpleName(),
+                            variableDescriptor.getVariableName(), ValueRangeProvider.class.getSimpleName(),
+                            memberAccessor, Collection.class.getSimpleName(), ValueRange.class.getSimpleName()));
         }
         if (collectionWrapping) {
             Class<?> collectionElementClass = ConfigUtils.extractGenericTypeParameterOrFail("solutionClass or entityClass",
                     memberAccessor.getDeclaringClass(), memberAccessor.getType(), memberAccessor.getGenericType(),
                     ValueRangeProvider.class, memberAccessor.getName());
             if (!variableDescriptor.acceptsValueType(collectionElementClass)) {
-                throw new IllegalArgumentException("The entityClass (" + entityDescriptor.getEntityClass()
-                        + ") has a @" + PlanningVariable.class.getSimpleName()
-                        + " annotated property (" + variableDescriptor.getVariableName()
-                        + ") that refers to a @" + ValueRangeProvider.class.getSimpleName()
-                        + " annotated member (" + memberAccessor
-                        + ") that returns a " + Collection.class.getSimpleName()
-                        + " with elements of type (" + collectionElementClass
-                        + ") which cannot be assigned to the @" + PlanningVariable.class.getSimpleName()
-                        + "'s type (" + variableDescriptor.getVariablePropertyType() + ").");
+                throw new IllegalArgumentException("""
+                        The entityClass (%s) has a @%s-annotated property (%s) that refers to a @%s-annotated member (%s) \
+                        that returns a %s with elements of type (%s) which cannot be assigned to the type of %s (%s)."""
+                        .formatted(entityDescriptor.getEntityClass(), PlanningVariable.class.getSimpleName(),
+                                variableDescriptor.getVariableName(), ValueRangeProvider.class.getSimpleName(),
+                                memberAccessor, Collection.class.getSimpleName(), collectionElementClass,
+                                PlanningVariable.class.getSimpleName(), variableDescriptor.getVariablePropertyType()));
             }
         } else if (arrayWrapping) {
             Class<?> arrayElementClass = type.getComponentType();
             if (!variableDescriptor.acceptsValueType(arrayElementClass)) {
-                throw new IllegalArgumentException("The entityClass (" + entityDescriptor.getEntityClass()
-                        + ") has a @" + PlanningVariable.class.getSimpleName()
-                        + " annotated property (" + variableDescriptor.getVariableName()
-                        + ") that refers to a @" + ValueRangeProvider.class.getSimpleName()
-                        + " annotated member (" + memberAccessor
-                        + ") that returns an array with elements of type (" + arrayElementClass
-                        + ") which cannot be assigned to the @" + PlanningVariable.class.getSimpleName()
-                        + "'s type (" + variableDescriptor.getVariablePropertyType() + ").");
+                throw new IllegalArgumentException(
+                        """
+                                The entityClass (%s) has a @%s-annotated property (%s) that refers to a @%s-annotated member (%s) \
+                                that returns an array with elements of type (%s) which cannot be assigned to the type of the @%s (%s);"""
+                                .formatted(entityDescriptor.getEntityClass(), PlanningVariable.class.getSimpleName(),
+                                        variableDescriptor.getVariableName(), ValueRangeProvider.class.getSimpleName(),
+                                        memberAccessor, arrayElementClass, PlanningVariable.class.getSimpleName(),
+                                        variableDescriptor.getVariablePropertyType()));
             }
         }
         countable = collectionWrapping || arrayWrapping || CountableValueRange.class.isAssignableFrom(type);
     }
-
-    // ************************************************************************
-    // Worker methods
-    // ************************************************************************
 
     @Override
     public boolean isCountable() {
@@ -106,10 +99,9 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
     protected <Value_> ValueRange<Value_> readValueRange(Object bean) {
         Object valueRangeObject = memberAccessor.executeGetter(bean);
         if (valueRangeObject == null) {
-            throw new IllegalStateException("The @" + ValueRangeProvider.class.getSimpleName()
-                    + " annotated member (" + memberAccessor
-                    + ") called on bean (" + bean
-                    + ") must not return a null valueRangeObject (" + valueRangeObject + ").");
+            throw new IllegalStateException(
+                    "The @%s-annotated member (%s) called on bean (%s) must not return a null valueRangeObject (%s)."
+                            .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, valueRangeObject));
         }
         ValueRange<Value_> valueRange;
         if (collectionWrapping || arrayWrapping) {
@@ -134,43 +126,40 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
         }
         valueRange = doNullInValueRangeWrapping(valueRange);
         if (valueRange.isEmpty()) {
-            throw new IllegalStateException("The @" + ValueRangeProvider.class.getSimpleName()
-                    + " annotated member (" + memberAccessor
-                    + ") called on bean (" + bean
-                    + ") must not return an empty valueRange (" + valueRangeObject + ").\n"
-                    + "Maybe apply overconstrained planning as described in the documentation.");
+            throw new IllegalStateException("""
+                    The @%s-annotated member (%s) called on bean (%s) must not return an empty valueRange (%s).
+                    Maybe apply over-constrained planning as described in the documentation."""
+                    .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, valueRangeObject));
         }
         return valueRange;
     }
 
+    @SuppressWarnings("unchecked")
     protected long readValueRangeSize(Object bean) {
-        Object valueRangeObject = memberAccessor.executeGetter(bean);
+        var valueRangeObject = memberAccessor.executeGetter(bean);
         if (valueRangeObject == null) {
-            throw new IllegalStateException("The @" + ValueRangeProvider.class.getSimpleName()
-                    + " annotated member (" + memberAccessor
-                    + ") called on bean (" + bean
-                    + ") must not return a null valueRangeObject (" + valueRangeObject + ").");
+            throw new IllegalStateException(
+                    "The @%s-annotated member (%s) called on bean (%s) must not return a null valueRangeObject (%s)."
+                            .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, valueRangeObject));
         }
-        long size = addNullInValueRange ? 1 : 0;
+        var size = addNullInValueRange ? 1 : 0;
         if (collectionWrapping) {
             return size + ((Collection<Object>) valueRangeObject).size();
         } else if (arrayWrapping) {
             return size + Array.getLength(valueRangeObject);
         }
-        ValueRange<Object> valueRange = (ValueRange<Object>) valueRangeObject;
+        var valueRange = (ValueRange<Object>) valueRangeObject;
         if (valueRange.isEmpty()) {
-            throw new IllegalStateException("The @" + ValueRangeProvider.class.getSimpleName()
-                    + " annotated member (" + memberAccessor
-                    + ") called on bean (" + bean
-                    + ") must not return an empty valueRange (" + valueRangeObject + ").\n"
-                    + "Maybe apply overconstrained planning as described in the documentation.");
+            throw new IllegalStateException("""
+                    The @%s-annotated member (%s) called on bean (%s) must not return an empty valueRange (%s).
+                    Maybe apply over-constrained planning as described in the documentation."""
+                    .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, valueRangeObject));
         } else if (valueRange instanceof CountableValueRange<Object> countableValueRange) {
             return size + countableValueRange.getSize();
         } else {
-            throw new UnsupportedOperationException("The @" + ValueRangeProvider.class.getSimpleName()
-                    + " annotated member (" + memberAccessor
-                    + ") called on bean (" + bean
-                    + ") is not countable and therefore does not support getSize().");
+            throw new UnsupportedOperationException(
+                    "The @%s-annotated member (%s) called on bean (%s) is not countable and therefore does not support getSize()."
+                            .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean));
         }
     }
 

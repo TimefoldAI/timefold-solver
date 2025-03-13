@@ -48,10 +48,6 @@ public final class FromEntityPropertyValueSelector<Solution_>
         workingSolution = null;
     }
 
-    // ************************************************************************
-    // Worker methods
-    // ************************************************************************
-
     @Override
     public boolean isCountable() {
         return valueRangeDescriptor.isCountable();

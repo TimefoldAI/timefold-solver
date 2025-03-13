@@ -49,7 +49,7 @@ public abstract class AbstractSession {
         }
     }
 
-    protected void settle() {
+    public void settle() {
         nodeNetwork.settle();
     }
 

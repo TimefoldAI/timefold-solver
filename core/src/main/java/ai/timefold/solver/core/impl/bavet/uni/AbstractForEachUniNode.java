@@ -38,7 +38,8 @@ public abstract sealed class AbstractForEachUniNode<A>
         var tuple = new UniTuple<>(a, outputStoreSize);
         var old = tupleMap.put(a, tuple);
         if (old != null) {
-            throw new IllegalStateException("The fact (" + a + ") was already inserted, so it cannot insert again.");
+            throw new IllegalStateException("The fact (%s) was already inserted, so it cannot insert again."
+                    .formatted(a));
         }
         propagationQueue.insert(tuple);
     }
@@ -49,7 +50,8 @@ public abstract sealed class AbstractForEachUniNode<A>
         var state = tuple.state;
         if (state.isDirty()) {
             if (state == TupleState.DYING || state == TupleState.ABORTING) {
-                throw new IllegalStateException("The fact (" + a + ") was retracted, so it cannot update.");
+                throw new IllegalStateException("The fact (%s) was retracted, so it cannot update."
+                        .formatted(a));
             }
             // CREATING or UPDATING is ignored; it's already in the queue.
         } else {
@@ -60,7 +62,8 @@ public abstract sealed class AbstractForEachUniNode<A>
     public void retract(A a) {
         var tuple = tupleMap.remove(a);
         if (tuple == null) {
-            throw new IllegalStateException("The fact (" + a + ") was never inserted, so it cannot retract.");
+            throw new IllegalStateException("The fact (%s) was never inserted, so it cannot retract."
+                    .formatted(a));
         }
         retractExisting(a, tuple);
     }
@@ -69,7 +72,8 @@ public abstract sealed class AbstractForEachUniNode<A>
         var state = tuple.state;
         if (state.isDirty()) {
             if (state == TupleState.DYING || state == TupleState.ABORTING) {
-                throw new IllegalStateException("The fact (" + a + ") was already retracted, so it cannot retract.");
+                throw new IllegalStateException("The fact (%s) was already retracted, so it cannot retract."
+                        .formatted(a));
             }
             propagationQueue.retract(tuple, state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
         } else {
@@ -92,7 +96,8 @@ public abstract sealed class AbstractForEachUniNode<A>
 
     @Override
     public final String toString() {
-        return super.toString() + "(" + forEachClass.getSimpleName() + ")";
+        return "%s(%s)"
+                .formatted(getClass().getSimpleName(), forEachClass.getSimpleName());
     }
 
 }

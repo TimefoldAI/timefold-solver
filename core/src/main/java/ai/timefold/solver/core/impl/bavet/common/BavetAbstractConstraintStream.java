@@ -55,11 +55,6 @@ public abstract class BavetAbstractConstraintStream<Solution_>
         }
     }
 
-    // ************************************************************************
-    // Penalize/reward
-    // ************************************************************************
-
-    @SuppressWarnings("unchecked")
     protected <Score_ extends Score<Score_>> Constraint buildConstraint(String constraintPackage, String constraintName,
             String description, String constraintGroup, Score_ constraintWeight, ScoreImpactType impactType,
             Object justificationFunction, Object indictedObjectsMapping, BavetScoringConstraintStream<Solution_> stream) {
@@ -78,21 +73,14 @@ public abstract class BavetAbstractConstraintStream<Solution_>
         return constraint;
     }
 
-    // ************************************************************************
-    // Stream builder methods
-    // ************************************************************************
-
     public final <Stream_ extends BavetAbstractConstraintStream<Solution_>> Stream_ shareAndAddChild(Stream_ stream) {
         return constraintFactory.share(stream, childStreamList::add);
     }
 
-    // ************************************************************************
-    // Node creation
-    // ************************************************************************
-
     public void collectActiveConstraintStreams(Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet) {
         if (parent == null) { // Maybe a join/ifExists/forEach forgot to override this?
-            throw new IllegalStateException("Impossible state: the stream (" + this + ") does not have a parent.");
+            throw new IllegalStateException("Impossible state: the stream (%s) does not have a parent."
+                    .formatted(this));
         }
         parent.collectActiveConstraintStreams(constraintStreamSet);
         constraintStreamSet.add(this);
@@ -108,27 +96,21 @@ public abstract class BavetAbstractConstraintStream<Solution_>
         if (this instanceof TupleSource) {
             return this;
         } else if (parent == null) { // Maybe some stream forgot to override this?
-            throw new IllegalStateException("Impossible state: the stream (" + this + ") does not have a parent.");
+            throw new IllegalStateException("Impossible state: the stream (%s) does not have a parent."
+                    .formatted(this));
         }
         return parent.getTupleSource();
     }
 
     public abstract <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper);
 
-    // ************************************************************************
-    // Helper methods
-    // ************************************************************************
-
     protected void assertEmptyChildStreamList() {
         if (!childStreamList.isEmpty()) {
             throw new IllegalStateException(
-                    "Impossible state: the stream (" + this + ") has a non-empty childStreamList (" + childStreamList + ").");
+                    "Impossible state: the stream (%s) has a non-empty childStreamList (%s)."
+                            .formatted(this, childStreamList));
         }
     }
-
-    // ************************************************************************
-    // Getters/setters
-    // ************************************************************************
 
     @Override
     public @NonNull BavetConstraintFactory<Solution_> getConstraintFactory() {
@@ -139,6 +121,7 @@ public abstract class BavetAbstractConstraintStream<Solution_>
      * @return null for join/ifExists nodes, which have left and right parents instead;
      *         also null for forEach node, which has no parent.
      */
+    @SuppressWarnings("unchecked")
     @Override
     public final BavetAbstractConstraintStream<Solution_> getParent() {
         return parent;

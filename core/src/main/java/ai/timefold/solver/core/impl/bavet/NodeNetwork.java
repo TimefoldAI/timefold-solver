@@ -84,7 +84,8 @@ public record NodeNetwork(Map<Class<?>, List<AbstractForEachUniNode<?>>> declare
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + " with " + forEachNodeCount() + " forEach nodes.";
+        return "%s with %d forEach nodes."
+                .formatted(getClass().getSimpleName(), forEachNodeCount());
     }
 
 }

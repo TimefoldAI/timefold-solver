@@ -65,10 +65,6 @@ public abstract class VariableDescriptor<Solution_> {
         return variableName;
     }
 
-    // ************************************************************************
-    // Worker methods
-    // ************************************************************************
-
     public String getSimpleEntityAndVariableName() {
         return simpleEntityAndVariableName;
     }
@@ -86,10 +82,6 @@ public abstract class VariableDescriptor<Solution_> {
     public boolean canBeUsedAsSource() {
         return true;
     }
-
-    // ************************************************************************
-    // Shadows
-    // ************************************************************************
 
     public void registerSinkVariableDescriptor(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
         sinkVariableDescriptorList.add(shadowVariableDescriptor);
@@ -111,10 +103,6 @@ public abstract class VariableDescriptor<Solution_> {
     public boolean isValuePotentialAnchor(Object value) {
         return !entityDescriptor.getEntityClass().isAssignableFrom(value.getClass());
     }
-
-    // ************************************************************************
-    // Extraction methods
-    // ************************************************************************
 
     @SuppressWarnings("unchecked")
     public <Value_> Value_ getValue(Object entity) {

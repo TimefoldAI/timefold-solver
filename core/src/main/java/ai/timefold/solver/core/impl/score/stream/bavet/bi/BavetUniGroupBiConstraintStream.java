@@ -38,7 +38,7 @@ final class BavetUniGroupBiConstraintStream<Solution_, A, B, NewA>
     @Override
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         var aftStreamChildList = aftStream.getChildStreamList();
-        nodeConstructor.build(buildHelper, parent.getTupleSource(), aftStream, aftStreamChildList, this, childStreamList,
+        nodeConstructor.build(buildHelper, parent.getTupleSource(), aftStream, aftStreamChildList, this,
                 constraintFactory.getEnvironmentMode());
     }
 

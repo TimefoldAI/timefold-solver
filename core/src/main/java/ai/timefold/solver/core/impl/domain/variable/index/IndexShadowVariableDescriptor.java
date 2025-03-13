@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.domain.variable.index;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.variable.AbstractVariableListener;
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
@@ -27,13 +26,13 @@ public final class IndexShadowVariableDescriptor<Solution_> extends ShadowVariab
             MemberAccessor variableMemberAccessor) {
         super(ordinal, entityDescriptor, variableMemberAccessor);
         if (!variableMemberAccessor.getType().equals(Integer.class) && !variableMemberAccessor.getType().equals(Long.class)) {
-            throw new IllegalStateException("The entityClass (" + entityDescriptor.getEntityClass()
-                    + ") has an @" + IndexShadowVariable.class.getSimpleName()
-                    + " annotated member (" + variableMemberAccessor
-                    + ") of type (" + variableMemberAccessor.getType()
-                    + ") which cannot represent an index in a list.\n"
-                    + "The @" + IndexShadowVariable.class.getSimpleName() + " annotated member type must be "
-                    + Integer.class + " or " + Long.class + ".");
+            throw new IllegalStateException(
+                    """
+                            The entityClass (%s) has an @%s-annotated member (%s) of type (%s) which cannot represent an index in a list.
+                            The @%s-annotated member type must be %s or %s."""
+                            .formatted(entityDescriptor.getEntityClass().getName(), IndexShadowVariable.class.getSimpleName(),
+                                    variableMemberAccessor, variableMemberAccessor.getType(),
+                                    IndexShadowVariable.class.getSimpleName(), Integer.class, Long.class));
         }
     }
 
@@ -52,38 +51,36 @@ public final class IndexShadowVariableDescriptor<Solution_> extends ShadowVariab
         List<EntityDescriptor<Solution_>> entitiesWithSourceVariable =
                 entityDescriptor.getSolutionDescriptor().getEntityDescriptors().stream()
                         .filter(entityDescriptor -> entityDescriptor.hasVariableDescriptor(sourceVariableName))
-                        .collect(Collectors.toList());
+                        .toList();
         if (entitiesWithSourceVariable.isEmpty()) {
-            throw new IllegalArgumentException("The entityClass (" + entityDescriptor.getEntityClass()
-                    + ") has an @" + IndexShadowVariable.class.getSimpleName()
-                    + " annotated property (" + variableMemberAccessor.getName()
-                    + ") with sourceVariableName (" + sourceVariableName
-                    + ") which is not a valid planning variable on any of the entity classes ("
-                    + entityDescriptor.getSolutionDescriptor().getEntityDescriptors() + ").");
+            throw new IllegalArgumentException("""
+                    The entityClass (%s) has an @%s-annotated property (%s) with sourceVariableName (%s) \
+                    which is not a valid planning variable on any of the entity classes (%s)."""
+                    .formatted(entityDescriptor.getEntityClass(), IndexShadowVariable.class.getSimpleName(),
+                            variableMemberAccessor, sourceVariableName,
+                            entityDescriptor.getSolutionDescriptor().getEntityDescriptors()));
         }
         if (entitiesWithSourceVariable.size() > 1) {
-            throw new IllegalArgumentException("The entityClass (" + entityDescriptor.getEntityClass()
-                    + ") has an @" + IndexShadowVariable.class.getSimpleName()
-                    + " annotated property (" + variableMemberAccessor.getName()
-                    + ") with sourceVariableName (" + sourceVariableName
-                    + ") which is not a unique planning variable."
-                    + " A planning variable with the name (" + sourceVariableName + ") exists on multiple entity classes ("
-                    + entitiesWithSourceVariable + ").");
+            throw new IllegalArgumentException("""
+                    The entityClass (%s) has an @%s-annotated property (%s) with sourceVariableName (%s) \
+                    which is not a unique planning variable.
+                    A planning variable with the name (%s) exists on multiple entity classes (%s)."""
+                    .formatted(entityDescriptor.getEntityClass(), IndexShadowVariable.class.getSimpleName(),
+                            variableMemberAccessor, sourceVariableName, sourceVariableName, entitiesWithSourceVariable));
         }
         VariableDescriptor<Solution_> variableDescriptor =
                 entitiesWithSourceVariable.get(0).getVariableDescriptor(sourceVariableName);
         if (variableDescriptor == null) {
-            throw new IllegalStateException(
-                    "Impossible state: variableDescriptor (" + variableDescriptor + ") is null"
-                            + " but previous checks indicate that the entityClass (" + entitiesWithSourceVariable.get(0)
-                            + ") has a planning variable with sourceVariableName (" + sourceVariableName + ").");
+            throw new IllegalStateException("""
+                    Impossible state: variableDescriptor (%s) is null but previous checks indicate that \
+                    the entityClass (%s) has a planning variable with sourceVariableName (%s)."""
+                    .formatted(variableDescriptor, entityDescriptor.getEntityClass(), sourceVariableName));
         }
         if (!(variableDescriptor instanceof ListVariableDescriptor)) {
-            throw new IllegalArgumentException("The entityClass (" + entityDescriptor.getEntityClass()
-                    + ") has an @" + IndexShadowVariable.class.getSimpleName()
-                    + " annotated property (" + variableMemberAccessor.getName()
-                    + ") with sourceVariableName (" + sourceVariableName
-                    + ") which is not a @" + PlanningListVariable.class.getSimpleName() + ".");
+            throw new IllegalArgumentException(
+                    "The entityClass (%s) has an @%s-annotated property (%s) with sourceVariableName (%s) which is not a @%s."
+                            .formatted(entityDescriptor.getEntityClass(), IndexShadowVariable.class.getSimpleName(),
+                                    variableMemberAccessor, sourceVariableName, PlanningListVariable.class.getSimpleName()));
         }
         sourceVariableDescriptor = (ListVariableDescriptor<Solution_>) variableDescriptor;
         sourceVariableDescriptor.registerSinkVariableDescriptor(this);
@@ -112,6 +109,7 @@ public final class IndexShadowVariableDescriptor<Solution_> extends ShadowVariab
                 .formatted(ListVariableStateSupply.class.getSimpleName()));
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Integer getValue(Object entity) {
         return super.getValue(entity);

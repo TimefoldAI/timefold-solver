@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.util.Quadruple;
 import ai.timefold.solver.core.impl.util.Triple;
 
 public sealed interface GroupNodeConstructor<Tuple_ extends AbstractTuple>
-        permits GroupNodeConstructorWithAccumulate, GroupNodeConstructorWithoutAccumulate {
+        permits AbstractGroupNodeConstructor {
     // Although Tuple_ is unused in GroupNodeConstructor,
     // it is used in its two implementations: GroupNodeConstructorWithAccumulate
     // and GroupNodeConstructorWithoutAccumulate. The Tuple_ here serves as a type hint
@@ -312,7 +312,6 @@ public sealed interface GroupNodeConstructor<Tuple_ extends AbstractTuple>
     }
 
     <Stream_ extends BavetStream> void build(AbstractNodeBuildHelper<Stream_> buildHelper, Stream_ parentTupleSource,
-            Stream_ aftStream, List<Stream_> aftStreamChildList, Stream_ thisStream, List<Stream_> thisStreamChildList,
-            EnvironmentMode environmentMode);
+            Stream_ aftStream, List<Stream_> aftStreamChildList, Stream_ thisStream, EnvironmentMode environmentMode);
 
 }

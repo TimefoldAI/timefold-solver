@@ -7,7 +7,7 @@ public sealed class ForEachIncludingUnassignedUniNode<A>
         extends AbstractForEachUniNode<A> permits ForEachFromSolutionUniNode {
 
     public ForEachIncludingUnassignedUniNode(Class<A> forEachClass, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
-                                             int outputStoreSize) {
+            int outputStoreSize) {
         super(forEachClass, nextNodesTupleLifecycle, outputStoreSize);
     }
 
@@ -15,7 +15,8 @@ public sealed class ForEachIncludingUnassignedUniNode<A>
     public void update(A a) {
         var tuple = tupleMap.get(a);
         if (tuple == null) {
-            throw new IllegalStateException("The fact (" + a + ") was never inserted, so it cannot update.");
+            throw new IllegalStateException("The fact (%s) was never inserted, so it cannot update."
+                    .formatted(a));
         }
         updateExisting(a, tuple);
     }

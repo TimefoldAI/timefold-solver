@@ -38,7 +38,7 @@ final class BavetTriGroupTriConstraintStream<Solution_, A, B, C, NewA, NewB, New
     @Override
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         var aftStreamChildList = aftStream.getChildStreamList();
-        nodeConstructor.build(buildHelper, parent.getTupleSource(), aftStream, aftStreamChildList, this, childStreamList,
+        nodeConstructor.build(buildHelper, parent.getTupleSource(), aftStream, aftStreamChildList, this,
                 constraintFactory.getEnvironmentMode());
     }
 

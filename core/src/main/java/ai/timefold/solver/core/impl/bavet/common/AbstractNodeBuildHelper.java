@@ -50,7 +50,8 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
         nodeCreatorMap.put(node, creator);
         if (!(node instanceof AbstractForEachUniNode<?>)) {
             if (parent == null) {
-                throw new IllegalStateException("Impossible state: The node (" + node + ") has no parent (" + parent + ").");
+                throw new IllegalStateException("Impossible state: The node (%s) has no parent (%s)."
+                        .formatted(node, parent));
             }
             putInsertUpdateRetract(parent, (TupleLifecycle<? extends AbstractTuple>) node);
         }
@@ -83,7 +84,8 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
                 .toArray(TupleLifecycle[]::new);
         return switch (tupleLifecycles.length) {
             case 0 ->
-                throw new IllegalStateException("Impossible state: None of the streamList (" + streamList + ") are active.");
+                throw new IllegalStateException("Impossible state: None of the streamList (%s) are active."
+                        .formatted(streamList));
             case 1 -> tupleLifecycles[0];
             default -> TupleLifecycle.aggregate(tupleLifecycles);
         };
@@ -94,7 +96,8 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
             Map<Stream_, TupleLifecycle<? extends AbstractTuple>> tupleLifecycleMap) {
         var tupleLifecycle = (TupleLifecycle<Tuple_>) tupleLifecycleMap.get(stream);
         if (tupleLifecycle == null) {
-            throw new IllegalStateException("Impossible state: the stream (" + stream + ") hasn't built a node yet.");
+            throw new IllegalStateException("Impossible state: the stream (%s) hasn't built a node yet."
+                    .formatted(stream));
         }
         return tupleLifecycle;
     }
@@ -104,8 +107,9 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
             if (index == null) {
                 return 0;
             } else if (index < 0) {
-                throw new IllegalStateException("Impossible state: the tupleSourceStream (" + k
-                        + ") is reserving a store after it has been extracted.");
+                throw new IllegalStateException(
+                        "Impossible state: the tupleSourceStream (%s) is reserving a store after it has been extracted."
+                                .formatted(tupleSourceStream));
             } else {
                 return index + 1;
             }
@@ -130,8 +134,8 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
 
     public AbstractNode findParentNode(Stream_ childNodeCreator) {
         if (childNodeCreator == null) { // We've recursed to the bottom without finding a parent node.
-            throw new IllegalStateException(
-                    "Impossible state: node-creating stream (" + childNodeCreator + ") has no parent node.");
+            throw new IllegalStateException("Impossible state: node-creating stream (%s) has no parent node."
+                    .formatted(childNodeCreator));
         }
         // Look the stream up among node creators and if found, the node is the parent node.
         for (Map.Entry<AbstractNode, Stream_> entry : this.nodeCreatorMap.entrySet()) {

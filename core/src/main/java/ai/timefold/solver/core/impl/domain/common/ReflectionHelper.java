@@ -22,13 +22,9 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public final class ReflectionHelper {
 
@@ -109,16 +105,16 @@ public final class ReflectionHelper {
      * @return sometimes null
      */
     public static Method getGetterMethod(Class<?> containingClass, String propertyName) {
-        String getterName = PROPERTY_ACCESSOR_PREFIX_GET
-                + (propertyName.isEmpty() ? "" : propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1));
+        String capitalizedPropertyName = capitalizePropertyName(propertyName);
+        String getterName = PROPERTY_ACCESSOR_PREFIX_GET + capitalizedPropertyName;
         try {
             return containingClass.getMethod(getterName);
         } catch (NoSuchMethodException e) {
             // intentionally empty
         }
-        String isserName = PROPERTY_ACCESSOR_PREFIX_IS
-                + (propertyName.isEmpty() ? "" : propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1));
+        String isserName = PROPERTY_ACCESSOR_PREFIX_IS + capitalizedPropertyName;
         try {
+
             Method method = containingClass.getMethod(isserName);
             if (method.getReturnType() == boolean.class) {
                 return method;
@@ -127,6 +123,14 @@ public final class ReflectionHelper {
             // intentionally empty
         }
         return null;
+    }
+
+    private static String capitalizePropertyName(String propertyName) {
+        if (propertyName.isEmpty() || Character.isUpperCase(propertyName.charAt(0))) {
+            return propertyName;
+        } else {
+            return propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
+        }
     }
 
     /**
@@ -158,8 +162,7 @@ public final class ReflectionHelper {
      * @return null if it doesn't exist
      */
     public static Method getSetterMethod(Class<?> containingClass, Class<?> propertyType, String propertyName) {
-        String setterName = PROPERTY_MUTATOR_PREFIX
-                + (propertyName.isEmpty() ? "" : propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1));
+        String setterName = PROPERTY_MUTATOR_PREFIX + capitalizePropertyName(propertyName);
         try {
             return containingClass.getMethod(setterName, propertyType);
         } catch (NoSuchMethodException e) {
@@ -173,8 +176,7 @@ public final class ReflectionHelper {
      * @return null if it doesn't exist
      */
     public static Method getSetterMethod(Class<?> containingClass, String propertyName) {
-        String setterName = PROPERTY_MUTATOR_PREFIX
-                + (propertyName.isEmpty() ? "" : propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1));
+        String setterName = PROPERTY_MUTATOR_PREFIX + capitalizePropertyName(propertyName);
         Method[] methods = Arrays.stream(containingClass.getMethods())
                 .filter(method -> method.getName().equals(setterName))
                 .toArray(Method[]::new);
@@ -277,42 +279,6 @@ public final class ReflectionHelper {
             throw new IllegalStateException("The readMethod (%s) with a %s annotation must have a non-void return type (%s)."
                     .formatted(readMethod, annotationClass.getSimpleName(), readMethod.getReturnType()));
         }
-    }
-
-    /**
-     * @param type never null
-     * @return true if it is a {@link Map}
-     */
-    public static boolean isMap(Type type) {
-        if (type instanceof Class class1 && Map.class.isAssignableFrom(class1)) {
-            return true;
-        }
-        if (type instanceof ParameterizedType parameterizedType) {
-            return isMap(parameterizedType.getRawType());
-        }
-        if (type instanceof WildcardType wildcardType) {
-            Type[] upperBounds = wildcardType.getUpperBounds();
-            return upperBounds.length != 0 && isMap(upperBounds[0]);
-        }
-        return false;
-    }
-
-    /**
-     * @param type never null
-     * @return true if it is a {@link List}
-     */
-    public static boolean isList(Type type) {
-        if (type instanceof Class class1 && List.class.isAssignableFrom(class1)) {
-            return true;
-        }
-        if (type instanceof ParameterizedType parameterizedType) {
-            return isList(parameterizedType.getRawType());
-        }
-        if (type instanceof WildcardType wildcardType) {
-            Type[] upperBounds = wildcardType.getUpperBounds();
-            return upperBounds.length != 0 && isList(upperBounds[0]);
-        }
-        return false;
     }
 
     @SuppressWarnings("unchecked")

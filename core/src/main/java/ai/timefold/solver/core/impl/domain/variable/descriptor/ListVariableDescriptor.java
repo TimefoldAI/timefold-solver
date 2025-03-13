@@ -23,15 +23,11 @@ import ai.timefold.solver.core.impl.util.MutableLong;
 public final class ListVariableDescriptor<Solution_> extends GenuineVariableDescriptor<Solution_> {
 
     private final ListVariableStateDemand<Solution_> stateDemand = new ListVariableStateDemand<>(this);
-    private final BiPredicate inListPredicate = (element, entity) -> {
+    private final BiPredicate<Object, Object> inListPredicate = (element, entity) -> {
         var list = getValue(entity);
         return list.contains(element);
     };
     private boolean allowsUnassignedValues = true;
-
-    // ************************************************************************
-    // Constructors and simple getters/setters
-    // ************************************************************************
 
     public ListVariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
@@ -42,17 +38,14 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
         return stateDemand;
     }
 
+    @SuppressWarnings("unchecked")
     public <A> BiPredicate<A, Object> getInListPredicate() {
-        return inListPredicate;
+        return (BiPredicate<A, Object>) inListPredicate;
     }
 
     public boolean allowsUnassignedValues() {
         return allowsUnassignedValues;
     }
-
-    // ************************************************************************
-    // Lifecycle methods
-    // ************************************************************************
 
     @Override
     protected void processPropertyAnnotations(DescriptorPolicy descriptorPolicy) {
@@ -67,19 +60,14 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
                 .filter(descriptorPolicy::hasFromEntityValueRangeProvider)
                 .toList();
         if (!fromEntityValueRangeProviderRefs.isEmpty()) {
-            throw new IllegalArgumentException("@" + ValueRangeProvider.class.getSimpleName()
-                    + " on a @" + PlanningEntity.class.getSimpleName()
-                    + " is not supported with a list variable (" + this + ").\n"
-                    + "Maybe move the valueRangeProvider" + (fromEntityValueRangeProviderRefs.size() > 1 ? "s" : "")
-                    + " (" + fromEntityValueRangeProviderRefs
-                    + ") from the entity class to the @" + PlanningSolution.class.getSimpleName() + " class.");
+            throw new IllegalArgumentException("""
+                    @%s on a @%s is not supported with a list variable (%s).
+                    Maybe move the valueRangeProvider(s) (%s) from the entity class to the @%s class."""
+                    .formatted(ValueRangeProvider.class.getSimpleName(), PlanningEntity.class.getSimpleName(), this,
+                            fromEntityValueRangeProviderRefs, PlanningSolution.class.getSimpleName()));
         }
         super.processValueRangeRefs(descriptorPolicy, valueRangeProviderRefs);
     }
-
-    // ************************************************************************
-    // Worker methods
-    // ************************************************************************
 
     @Override
     public boolean acceptsValueType(Class<?> valueType) {
@@ -140,10 +128,7 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
         }
     }
 
-    // ************************************************************************
-    // Extraction methods
-    // ************************************************************************
-
+    @SuppressWarnings("unchecked")
     @Override
     public List<Object> getValue(Object entity) {
         Object value = super.getValue(entity);
@@ -181,10 +166,6 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
     public int getListSize(Object entity) {
         return getValue(entity).size();
     }
-
-    // ************************************************************************
-    // Pinning support
-    // ************************************************************************
 
     public boolean supportsPinning() {
         return entityDescriptor.supportsPinning();
