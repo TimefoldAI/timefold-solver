@@ -166,8 +166,4 @@ public sealed class MoveDirector<Solution_>
         return scoreDirector;
     }
 
-    public void resetWorkingSolution(Solution_ workingSolution) {
-
-    }
-
 }

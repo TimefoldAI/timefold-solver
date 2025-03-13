@@ -68,9 +68,4 @@ public final class DatasetSession<Solution_> extends AbstractSession {
         }
     }
 
-    @Override
-    public void settle() {
-        super.settle();
-    }
-
 }

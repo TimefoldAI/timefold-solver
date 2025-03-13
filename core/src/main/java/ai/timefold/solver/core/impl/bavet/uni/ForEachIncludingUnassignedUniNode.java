@@ -3,11 +3,11 @@ package ai.timefold.solver.core.impl.bavet.uni;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
-public sealed class ForEachUniNode<A>
+public sealed class ForEachIncludingUnassignedUniNode<A>
         extends AbstractForEachUniNode<A> permits ForEachFromSolutionUniNode {
 
-    public ForEachUniNode(Class<A> forEachClass, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
-            int outputStoreSize) {
+    public ForEachIncludingUnassignedUniNode(Class<A> forEachClass, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
+                                             int outputStoreSize) {
         super(forEachClass, nextNodesTupleLifecycle, outputStoreSize);
     }
 

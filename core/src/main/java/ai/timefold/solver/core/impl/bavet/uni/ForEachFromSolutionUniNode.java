@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.SolutionExtract
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 public final class ForEachFromSolutionUniNode<Solution_, A>
-        extends ForEachUniNode<A> {
+        extends ForEachIncludingUnassignedUniNode<A> {
 
     private final SolutionExtractor<Solution_, A> solutionExtractor;
 

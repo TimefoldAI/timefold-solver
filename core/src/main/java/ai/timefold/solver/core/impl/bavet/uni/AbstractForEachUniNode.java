@@ -14,13 +14,13 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
  * Filtering nodes are expensive.
  * Considering that most streams start with a nullity check on genuine planning variables,
  * it makes sense to create a specialized version of the node for this case ({@link ForEachExcludingUnassignedUniNode}),
- * as opposed to forcing an extra filter node on the generic case ({@link ForEachUniNode}).
+ * as opposed to forcing an extra filter node on the generic case ({@link ForEachIncludingUnassignedUniNode}).
  *
  * @param <A>
  */
 public abstract sealed class AbstractForEachUniNode<A>
         extends AbstractNode
-        permits ForEachExcludingUnassignedUniNode, ForEachUniNode, ForEachStaticUniNode {
+        permits ForEachExcludingUnassignedUniNode, ForEachIncludingUnassignedUniNode, ForEachStaticUniNode {
 
     private final Class<A> forEachClass;
     private final int outputStoreSize;

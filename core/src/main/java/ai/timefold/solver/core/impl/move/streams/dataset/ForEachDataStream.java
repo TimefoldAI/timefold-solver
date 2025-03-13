@@ -11,8 +11,8 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.core.impl.bavet.uni.ForEachExcludingUnassignedUniNode;
 import ai.timefold.solver.core.impl.bavet.uni.ForEachFromSolutionUniNode;
+import ai.timefold.solver.core.impl.bavet.uni.ForEachIncludingUnassignedUniNode;
 import ai.timefold.solver.core.impl.bavet.uni.ForEachStaticUniNode;
-import ai.timefold.solver.core.impl.bavet.uni.ForEachUniNode;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.SolutionExtractor;
 
@@ -78,7 +78,7 @@ public final class ForEachDataStream<Solution_, A>
         } else if (extractor != null) {
             return new ForEachFromSolutionUniNode<>(forEachClass, extractor, tupleLifecycle, outputStoreSize);
         } else if (filter == null) {
-            return new ForEachUniNode<>(forEachClass, tupleLifecycle, outputStoreSize);
+            return new ForEachIncludingUnassignedUniNode<>(forEachClass, tupleLifecycle, outputStoreSize);
         } else {
             return new ForEachExcludingUnassignedUniNode<>(forEachClass, filter, tupleLifecycle, outputStoreSize);
         }

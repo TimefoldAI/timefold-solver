@@ -23,14 +23,7 @@ public final class AftBridgeUniDataStream<Solution_, A>
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        AftBridgeUniDataStream<?, ?> that = (AftBridgeUniDataStream<?, ?>) o;
-        return Objects.equals(parent, that.parent);
+        return o instanceof AftBridgeUniDataStream<?, ?> that && Objects.equals(parent, that.parent);
     }
 
     @Override
