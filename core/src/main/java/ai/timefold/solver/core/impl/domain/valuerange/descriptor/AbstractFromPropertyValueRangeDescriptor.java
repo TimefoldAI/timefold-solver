@@ -142,7 +142,7 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
                     "The @%s-annotated member (%s) called on bean (%s) must not return a null valueRangeObject (%s)."
                             .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, valueRangeObject));
         }
-        var size = addNullInValueRange ? 1 : 0;
+        var size = addNullInValueRange ? 1L : 0L;
         if (collectionWrapping) {
             return size + ((Collection<Object>) valueRangeObject).size();
         } else if (arrayWrapping) {

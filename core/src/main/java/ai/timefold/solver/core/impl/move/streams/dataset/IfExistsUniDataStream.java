@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.function.BiPredicate;
 
 import ai.timefold.solver.core.impl.bavet.bi.joiner.DefaultBiJoiner;
-import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
+import ai.timefold.solver.core.impl.bavet.common.AbstractIfExistsNode;
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
@@ -47,41 +47,52 @@ final class IfExistsUniDataStream<Solution_, A, B>
     public void buildNode(DataNodeBuildHelper<Solution_> buildHelper) {
         TupleLifecycle<UniTuple<A>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         var indexerFactory = new IndexerFactory<>(joiner);
-        var node = indexerFactory.hasJoiners()
-                ? (filtering == null ? new IndexedIfExistsUniNode<>(shouldExist, indexerFactory,
-                        buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
-                        downstream)
-                        : new IndexedIfExistsUniNode<>(shouldExist, indexerFactory,
-                                buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
-                                downstream, filtering))
-                : (filtering == null ? new UnindexedIfExistsUniNode<>(shouldExist,
-                        buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()), downstream)
-                        : new UnindexedIfExistsUniNode<>(shouldExist,
-                                buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
-                                downstream, filtering));
+        var node = getNode(indexerFactory, buildHelper, downstream);
         buildHelper.addNode(node, this, this, parentBridgeB);
+    }
+
+    private AbstractIfExistsNode<UniTuple<A>, B> getNode(IndexerFactory<B> indexerFactory,
+            DataNodeBuildHelper<Solution_> buildHelper, TupleLifecycle<UniTuple<A>> downstream) {
+        var isFiltering = filtering != null;
+        if (indexerFactory.hasJoiners()) {
+            if (isFiltering) {
+                return new IndexedIfExistsUniNode<>(shouldExist, indexerFactory,
+                        buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
+                        buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
+                        buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
+                        buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
+                        buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
+                        buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
+                        downstream, filtering);
+            } else {
+                return new IndexedIfExistsUniNode<>(shouldExist, indexerFactory,
+                        buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
+                        buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
+                        buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
+                        buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
+                        downstream);
+            }
+        } else if (isFiltering) {
+            return new UnindexedIfExistsUniNode<>(shouldExist,
+                    buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
+                    buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
+                    buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
+                    buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
+                    downstream, filtering);
+        } else {
+            return new UnindexedIfExistsUniNode<>(shouldExist,
+                    buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
+                    buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()), downstream);
+        }
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof IfExistsUniDataStream<?, ?, ?> that))
-            return false;
-        return shouldExist == that.shouldExist && Objects.equals(parentA, that.parentA)
-                && Objects.equals(parentBridgeB, that.parentBridgeB) && Objects.equals(joiner, that.joiner)
+        return o instanceof IfExistsUniDataStream<?, ?, ?> that
+                && shouldExist == that.shouldExist
+                && Objects.equals(parentA, that.parentA)
+                && Objects.equals(parentBridgeB, that.parentBridgeB)
+                && Objects.equals(joiner, that.joiner)
                 && Objects.equals(filtering, that.filtering);
     }
 
@@ -101,12 +112,12 @@ final class IfExistsUniDataStream<Solution_, A, B>
     }
 
     @Override
-    public BavetAbstractConstraintStream<AbstractDataStream<Solution_>> getLeftParent() {
-        return null;
+    public AbstractDataStream<Solution_> getLeftParent() {
+        return parentA;
     }
 
     @Override
-    public BavetAbstractConstraintStream<AbstractDataStream<Solution_>> getRightParent() {
-        return null;
+    public AbstractDataStream<Solution_> getRightParent() {
+        return parentBridgeB;
     }
 }

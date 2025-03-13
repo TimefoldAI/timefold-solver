@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -64,18 +63,17 @@ public final class DefaultDataStreamFactory<Solution_> implements DataStreamFact
     }
 
     public <A> void assertValidForEachType(Class<A> fromType) {
-        SolutionDescriptor<Solution_> solutionDescriptor = getSolutionDescriptor();
-        Set<Class<?>> problemFactOrEntityClassSet = solutionDescriptor.getProblemFactOrEntityClassSet();
+        var problemFactOrEntityClassSet = solutionDescriptor.getProblemFactOrEntityClassSet();
         /*
          * Need to support the following situations:
          * 1/ FactType == FromType; querying for the declared type.
          * 2/ FromType extends/implements FactType; querying for impl type where declared type is its interface.
          * 3/ FromType super FactType; querying for interface where declared type is its implementation.
          */
-        boolean hasMatchingType = problemFactOrEntityClassSet.stream()
+        var hasMatchingType = problemFactOrEntityClassSet.stream()
                 .anyMatch(factType -> fromType.isAssignableFrom(factType) || factType.isAssignableFrom(fromType));
         if (!hasMatchingType) {
-            List<String> canonicalClassNameList = problemFactOrEntityClassSet.stream()
+            var canonicalClassNameList = problemFactOrEntityClassSet.stream()
                     .map(Class::getCanonicalName)
                     .sorted()
                     .toList();

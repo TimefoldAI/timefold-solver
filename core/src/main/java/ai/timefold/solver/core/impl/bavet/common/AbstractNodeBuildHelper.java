@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import ai.timefold.solver.core.impl.bavet.NodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
@@ -17,7 +17,6 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetStreamBinaryOperation;
 
 public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
 
@@ -28,7 +27,7 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
 
     private List<AbstractNode> reversedNodeList;
 
-    public AbstractNodeBuildHelper(Set<Stream_> activeStreamSet) {
+    protected AbstractNodeBuildHelper(Set<Stream_> activeStreamSet) {
         this.activeStreamSet = activeStreamSet;
         int activeStreamSetSize = activeStreamSet.size();
         this.nodeCreatorMap = new HashMap<>(Math.max(16, activeStreamSetSize));
@@ -70,7 +69,7 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
     }
 
     public <Tuple_ extends AbstractTuple> void putInsertUpdateRetract(Stream_ stream, List<? extends Stream_> childStreamList,
-            Function<TupleLifecycle<Tuple_>, TupleLifecycle<Tuple_>> tupleLifecycleFunction) {
+            UnaryOperator<TupleLifecycle<Tuple_>> tupleLifecycleFunction) {
         TupleLifecycle<Tuple_> tupleLifecycle = getAggregatedTupleLifecycle(childStreamList);
         putInsertUpdateRetract(stream, tupleLifecycleFunction.apply(tupleLifecycle));
     }

@@ -10,21 +10,19 @@ abstract sealed class AbstractGroupNodeConstructor<Tuple_ extends AbstractTuple>
 
     private final Object equalityKey;
 
-    public AbstractGroupNodeConstructor(Object equalityKey) {
+    protected AbstractGroupNodeConstructor(Object equalityKey) {
         this.equalityKey = equalityKey;
     }
 
     @Override
-    public final boolean equals(Object o) {
-        if (!Objects.equals(this.getClass(), o.getClass())) {
-            return false;
-        }
-        var that = (AbstractGroupNodeConstructor<?>) o;
-        return Objects.equals(equalityKey, that.equalityKey);
+    public boolean equals(Object o) {
+        return o instanceof AbstractGroupNodeConstructor<?> that
+                && Objects.equals(getClass(), that.getClass())
+                && Objects.equals(equalityKey, that.equalityKey);
     }
 
     @Override
-    public final int hashCode() {
+    public int hashCode() {
         return Objects.hashCode(equalityKey);
     }
 }
