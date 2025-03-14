@@ -10,8 +10,8 @@ import org.jspecify.annotations.NullMarked;
 abstract sealed class AbstractUniversalTermination<Solution_>
         extends AbstractTermination<Solution_>
         implements UniversalTermination<Solution_>
-        permits AbstractCompositeTermination, BestScoreFeasibleTermination, BestScoreTermination, MoveCountTermination,
-        ScoreCalculationCountTermination, SolverToUniversalBridgeTermination, TimeMillisSpentTermination,
+        permits AbstractCompositeTermination, BasicPlumbingTermination, BestScoreFeasibleTermination, BestScoreTermination,
+        ChildThreadPlumbingTermination, MoveCountTermination, ScoreCalculationCountTermination, TimeMillisSpentTermination,
         UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination, UnimprovedTimeMillisSpentTermination {
 
     @Override

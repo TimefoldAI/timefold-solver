@@ -13,7 +13,7 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public sealed interface SolverTermination<Solution_>
         extends Termination<Solution_>, SolverLifecycleListener<Solution_>
-        permits AbstractSolverTermination, MockableSolverTermination, UniversalTermination {
+        permits MockableSolverTermination, UniversalTermination {
 
     /**
      * Called by the {@link Solver} after every phase to determine if the search should stop.

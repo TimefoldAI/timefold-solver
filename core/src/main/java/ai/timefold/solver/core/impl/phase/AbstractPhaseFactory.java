@@ -40,9 +40,10 @@ public abstract class AbstractPhaseFactory<Solution_, PhaseConfig_ extends Phase
         var phaseTermination = PhaseTermination.bridge(solverTermination);
         var resultingTermination = TerminationFactory.<Solution_> create(terminationConfig_)
                 .buildTermination(configPolicy, phaseTermination);
-        var inapplicableTerminationList = resultingTermination instanceof UniversalTermination<Solution_> universalTermination
-                ? universalTermination.getPhaseTerminationsInapplicableTo(getPhaseScopeClass())
-                : Collections.emptyList();
+        var inapplicableTerminationList = !(this instanceof NoChangePhaseFactory<?>) &&
+                resultingTermination instanceof UniversalTermination<Solution_> universalTermination
+                        ? universalTermination.getPhaseTerminationsInapplicableTo(getPhaseScopeClass())
+                        : Collections.emptyList();
         var phaseName = this.getClass().getSimpleName()
                 .replace("PhaseFactory", "")
                 .replace("Default", "");
