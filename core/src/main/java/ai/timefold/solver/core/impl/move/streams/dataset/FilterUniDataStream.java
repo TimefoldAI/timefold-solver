@@ -15,10 +15,7 @@ final class FilterUniDataStream<Solution_, A>
     public FilterUniDataStream(DefaultDataStreamFactory<Solution_> dataStreamFactory,
             AbstractUniDataStream<Solution_, A> parent, Predicate<A> predicate) {
         super(dataStreamFactory, parent);
-        this.predicate = predicate;
-        if (predicate == null) {
-            throw new IllegalArgumentException("The predicate (null) cannot be null.");
-        }
+        this.predicate = Objects.requireNonNull(predicate, "The predicate cannot be null.");
     }
 
     @Override

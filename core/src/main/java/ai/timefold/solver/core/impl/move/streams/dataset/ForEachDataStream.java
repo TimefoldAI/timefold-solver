@@ -32,10 +32,7 @@ public final class ForEachDataStream<Solution_, A>
     public ForEachDataStream(DefaultDataStreamFactory<Solution_> dataStreamFactory, Class<A> forEachClass,
             Predicate<A> filter) {
         super(dataStreamFactory, null);
-        this.forEachClass = forEachClass;
-        if (forEachClass == null) {
-            throw new IllegalArgumentException("The forEachClass (null) cannot be null.");
-        }
+        this.forEachClass = Objects.requireNonNull(forEachClass, "The forEachClass cannot be null.");
         this.filter = filter;
         this.extractor = null;
         this.source = null;
@@ -44,19 +41,19 @@ public final class ForEachDataStream<Solution_, A>
     public ForEachDataStream(DefaultDataStreamFactory<Solution_> dataStreamFactory, Class<A> forEachClass,
             SolutionExtractor<Solution_, A> extractor) {
         super(dataStreamFactory, null);
-        this.forEachClass = forEachClass;
+        this.forEachClass = Objects.requireNonNull(forEachClass, "The forEachClass cannot be null.");
         this.filter = null;
-        this.extractor = Objects.requireNonNull(extractor);
+        this.extractor = Objects.requireNonNull(extractor, "The extractor cannot be null.");
         this.source = null;
     }
 
     public ForEachDataStream(DefaultDataStreamFactory<Solution_> dataStreamFactory, Class<A> forEachClass,
             Collection<A> source) {
         super(dataStreamFactory, null);
-        this.forEachClass = forEachClass;
+        this.forEachClass = Objects.requireNonNull(forEachClass, "The forEachClass cannot be null.");
         this.filter = null;
         this.extractor = null;
-        this.source = Objects.requireNonNull(source);
+        this.source = Objects.requireNonNull(source, "The source cannot be null.");
     }
 
     @Override

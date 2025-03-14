@@ -77,13 +77,13 @@ public final class DefaultDataStreamFactory<Solution_> implements DataStreamFact
                     .map(Class::getCanonicalName)
                     .sorted()
                     .toList();
-            throw new IllegalArgumentException("Cannot use class (" + fromType.getCanonicalName()
-                    + ") in a data stream as it is neither the same as, nor a superclass or superinterface of "
-                    + "one of planning entities or problem facts.\n"
-                    + "Ensure that all forEach(), join(), ifExists() and ifNotExists() building blocks only reference "
-                    + "classes assignable from planning entities or problem facts (" + canonicalClassNameList + ") "
-                    + "annotated on the planning solution (" + solutionDescriptor.getSolutionClass().getCanonicalName()
-                    + ").");
+            throw new IllegalArgumentException("""
+                    Cannot use class (%s) in a data stream as it is neither the same as, \
+                    nor a superclass or superinterface of one of planning entities or problem facts.
+                    Ensure that all forEach(), join(), ifExists() and ifNotExists() building blocks only reference classes \
+                    assignable from planning entities or problem facts (%s) annotated on the planning solution (%s)."""
+                    .formatted(fromType.getCanonicalName(), canonicalClassNameList,
+                            solutionDescriptor.getSolutionClass().getCanonicalName()));
         }
     }
 
