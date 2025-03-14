@@ -3,7 +3,7 @@ package ai.timefold.solver.core.preview.api.domain.metamodel;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Describes a variable in the domain model.
@@ -24,6 +24,7 @@ import org.jspecify.annotations.NonNull;
  * @param <Entity_>
  * @param <Value_>
  */
+@NullMarked
 public sealed interface VariableMetaModel<Solution_, Entity_, Value_>
         permits GenuineVariableMetaModel, ShadowVariableMetaModel {
 
@@ -32,7 +33,6 @@ public sealed interface VariableMetaModel<Solution_, Entity_, Value_>
      *
      * @return never null
      */
-    @NonNull
     PlanningEntityMetaModel<Solution_, Entity_> entity();
 
     /**
@@ -40,7 +40,6 @@ public sealed interface VariableMetaModel<Solution_, Entity_, Value_>
      *
      * @return never null
      */
-    @NonNull
     Class<Value_> type();
 
     /**
@@ -48,7 +47,6 @@ public sealed interface VariableMetaModel<Solution_, Entity_, Value_>
      *
      * @return never null
      */
-    @NonNull
     String name();
 
     /**
@@ -58,9 +56,7 @@ public sealed interface VariableMetaModel<Solution_, Entity_, Value_>
      *
      * @return true if this variable is a genuine @{@link PlanningListVariable}, false otherwise
      */
-    default boolean isList() {
-        return false;
-    }
+    boolean isList();
 
     /**
      * Whether this variable is a genuine variable.
@@ -70,8 +66,6 @@ public sealed interface VariableMetaModel<Solution_, Entity_, Value_>
      *
      * @return true if this variable is genuine, false otherwise
      */
-    default boolean isGenuine() {
-        return false;
-    }
+    boolean isGenuine();
 
 }

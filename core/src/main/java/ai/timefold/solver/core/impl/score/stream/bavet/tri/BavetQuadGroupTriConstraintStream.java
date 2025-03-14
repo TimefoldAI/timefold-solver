@@ -1,15 +1,13 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.tri;
 
-import java.util.List;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.score.stream.ConstraintStream;
 import ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor;
-import ai.timefold.solver.core.impl.bavet.common.NodeBuildHelper;
-import ai.timefold.solver.core.impl.bavet.common.bridge.BavetAftBridgeQuadConstraintStream;
 import ai.timefold.solver.core.impl.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetAftBridgeQuadConstraintStream;
 
 final class BavetQuadGroupTriConstraintStream<Solution_, A, B, C, NewA, NewB, NewC, NewD>
         extends BavetAbstractTriConstraintStream<Solution_, A, B, C> {
@@ -38,9 +36,9 @@ final class BavetQuadGroupTriConstraintStream<Solution_, A, B, C, NewA, NewB, Ne
     // ************************************************************************
 
     @Override
-    public <Score_ extends Score<Score_>> void buildNode(NodeBuildHelper<Score_> buildHelper) {
-        List<? extends ConstraintStream> aftStreamChildList = aftStream.getChildStreamList();
-        nodeConstructor.build(buildHelper, parent.getTupleSource(), aftStream, aftStreamChildList, this, childStreamList,
+    public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
+        var aftStreamChildList = aftStream.getChildStreamList();
+        nodeConstructor.build(buildHelper, parent.getTupleSource(), aftStream, aftStreamChildList, this,
                 constraintFactory.getEnvironmentMode());
     }
 

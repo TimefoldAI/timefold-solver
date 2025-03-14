@@ -1,8 +1,12 @@
 package ai.timefold.solver.core.impl.util;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Random;
 import java.util.function.Consumer;
 
 /**
@@ -154,6 +158,36 @@ public final class ElementAwareList<T> implements Iterable<T> {
         return new ElementAwareListIterator<>(first);
     }
 
+    /**
+     * Returns an iterator that will randomly iterate over the elements.
+     * This iterator is exhaustive; once every element has been once iterated over,
+     * the iterator returns false for every subsequent {@link Iterator#hasNext()}.
+     * The iterator does not support the {@link Iterator#remove()} operation.
+     *
+     * @param random The random instance to use for shuffling.
+     * @return never null
+     */
+    public Iterator<T> randomizedIterator(Random random) {
+        return switch (size) {
+            case 0 -> Collections.emptyIterator();
+            case 1 -> Collections.singleton(first.getElement()).iterator();
+            case 2 -> {
+                var list = random.nextBoolean() ? List.of(first.getElement(), last.getElement())
+                        : List.of(last.getElement(), first.getElement());
+                yield list.iterator();
+            }
+            default -> {
+                var copy = new ArrayList<T>(size);
+                var indexList = new ArrayList<Integer>(size);
+                forEach(e -> { // Two lists, single iteration.
+                    copy.add(e);
+                    indexList.add(copy.size() - 1);
+                });
+                yield new RandomElementAwareListIterator<>(copy, indexList, random);
+            }
+        };
+    }
+
     @Override
     public String toString() {
         switch (size) {
@@ -198,4 +232,42 @@ public final class ElementAwareList<T> implements Iterable<T> {
         }
 
     }
+
+    /**
+     * The idea of this iterator is that the list will rarely ever be iterated over in its entirety.
+     * In fact, move streams are likely to only use the first few elements.
+     * Therefore, shuffling the entire list would be a waste of time.
+     * Instead, we pick random index every time and keep a list of unused indexes.
+     *
+     * @param <T> The element type. Often a tuple.
+     */
+    private static final class RandomElementAwareListIterator<T> implements Iterator<T> {
+
+        private final List<T> elementList;
+        private final List<Integer> unusedIndexList;
+        private final Random random;
+
+        public RandomElementAwareListIterator(List<T> copiedList, List<Integer> unusedIndexList, Random random) {
+            this.random = random;
+            this.elementList = copiedList;
+            this.unusedIndexList = unusedIndexList;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return !unusedIndexList.isEmpty();
+        }
+
+        @Override
+        public T next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            var randomUnusedIndex = random.nextInt(unusedIndexList.size());
+            var elementIndex = unusedIndexList.remove(randomUnusedIndex);
+            return elementList.get(elementIndex);
+        }
+
+    }
+
 }

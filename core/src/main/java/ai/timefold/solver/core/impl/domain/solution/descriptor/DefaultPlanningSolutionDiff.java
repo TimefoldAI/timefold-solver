@@ -160,7 +160,7 @@ final class DefaultPlanningSolutionDiff<Solution_> implements PlanningSolutionDi
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (!(o instanceof DefaultPlanningSolutionDiff<?> that)) {
             return false;
         }

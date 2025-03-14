@@ -20,14 +20,14 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
  */
 public abstract sealed class AbstractForEachUniNode<A>
         extends AbstractNode
-        permits ForEachExcludingUnassignedUniNode, ForEachIncludingUnassignedUniNode {
+        permits ForEachExcludingUnassignedUniNode, ForEachIncludingUnassignedUniNode, ForEachStaticUniNode {
 
     private final Class<A> forEachClass;
     private final int outputStoreSize;
     private final StaticPropagationQueue<UniTuple<A>> propagationQueue;
     protected final Map<A, UniTuple<A>> tupleMap = new IdentityHashMap<>(1000);
 
-    public AbstractForEachUniNode(Class<A> forEachClass, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
+    protected AbstractForEachUniNode(Class<A> forEachClass, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
             int outputStoreSize) {
         this.forEachClass = forEachClass;
         this.outputStoreSize = outputStoreSize;
@@ -35,21 +35,23 @@ public abstract sealed class AbstractForEachUniNode<A>
     }
 
     public void insert(A a) {
-        UniTuple<A> tuple = new UniTuple<>(a, outputStoreSize);
-        UniTuple<A> old = tupleMap.put(a, tuple);
+        var tuple = new UniTuple<>(a, outputStoreSize);
+        var old = tupleMap.put(a, tuple);
         if (old != null) {
-            throw new IllegalStateException("The fact (" + a + ") was already inserted, so it cannot insert again.");
+            throw new IllegalStateException("The fact (%s) was already inserted, so it cannot insert again."
+                    .formatted(a));
         }
         propagationQueue.insert(tuple);
     }
 
     public abstract void update(A a);
 
-    protected final void innerUpdate(A a, UniTuple<A> tuple) {
-        TupleState state = tuple.state;
+    protected final void updateExisting(A a, UniTuple<A> tuple) {
+        var state = tuple.state;
         if (state.isDirty()) {
             if (state == TupleState.DYING || state == TupleState.ABORTING) {
-                throw new IllegalStateException("The fact (" + a + ") was retracted, so it cannot update.");
+                throw new IllegalStateException("The fact (%s) was retracted, so it cannot update."
+                        .formatted(a));
             }
             // CREATING or UPDATING is ignored; it's already in the queue.
         } else {
@@ -58,14 +60,20 @@ public abstract sealed class AbstractForEachUniNode<A>
     }
 
     public void retract(A a) {
-        UniTuple<A> tuple = tupleMap.remove(a);
+        var tuple = tupleMap.remove(a);
         if (tuple == null) {
-            throw new IllegalStateException("The fact (" + a + ") was never inserted, so it cannot retract.");
+            throw new IllegalStateException("The fact (%s) was never inserted, so it cannot retract."
+                    .formatted(a));
         }
-        TupleState state = tuple.state;
+        retractExisting(a, tuple);
+    }
+
+    protected void retractExisting(A a, UniTuple<A> tuple) {
+        var state = tuple.state;
         if (state.isDirty()) {
             if (state == TupleState.DYING || state == TupleState.ABORTING) {
-                throw new IllegalStateException("The fact (" + a + ") was already retracted, so it cannot retract.");
+                throw new IllegalStateException("The fact (%s) was already retracted, so it cannot retract."
+                        .formatted(a));
             }
             propagationQueue.retract(tuple, state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
         } else {
@@ -82,9 +90,14 @@ public abstract sealed class AbstractForEachUniNode<A>
         return forEachClass;
     }
 
+    public boolean supportsIndividualUpdates() {
+        return true;
+    }
+
     @Override
     public final String toString() {
-        return super.toString() + "(" + forEachClass.getSimpleName() + ")";
+        return "%s(%s)"
+                .formatted(getClass().getSimpleName(), forEachClass.getSimpleName());
     }
 
 }

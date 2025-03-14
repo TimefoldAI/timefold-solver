@@ -54,27 +54,26 @@ public class CollectionInverseVariableListener<Solution_>
     protected void insert(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity) {
         Object shadowEntity = sourceVariableDescriptor.getValue(entity);
         if (shadowEntity != null) {
-            Collection shadowCollection = (Collection) shadowVariableDescriptor.getValue(shadowEntity);
+            Collection<Object> shadowCollection = shadowVariableDescriptor.getValue(shadowEntity);
             if (scoreDirector.expectShadowVariablesInCorrectState() && shadowCollection == null) {
-                throw new IllegalStateException("The entity (" + entity
-                        + ") has a variable (" + sourceVariableDescriptor.getVariableName()
-                        + ") with value (" + shadowEntity
-                        + ") which has a sourceVariableName variable (" + shadowVariableDescriptor.getVariableName()
-                        + ") with a value (" + shadowCollection + ") which is null.\n"
-                        + "Verify the consistency of your input problem for that bi-directional relationship.\n"
-                        + "Every non-singleton inverse variable can never be null. It should at least be an empty "
-                        + Collection.class.getSimpleName() + " instead.");
+                throw new IllegalStateException("""
+                        The entity (%s) has a variable (%s) with value (%s) which has a sourceVariableName variable (%s) \
+                        with a value (%s) which is null.
+                        Verify the consistency of your input problem for that bi-directional relationship.
+                        Non-singleton inverse variable can never be null, at the very least it should be an empty %s."""
+                        .formatted(entity, sourceVariableDescriptor.getVariableName(), shadowEntity,
+                                shadowVariableDescriptor.getVariableName(), shadowCollection,
+                                Collection.class.getSimpleName()));
             }
             scoreDirector.beforeVariableChanged(shadowVariableDescriptor, shadowEntity);
             boolean added = shadowCollection.add(entity);
             if (scoreDirector.expectShadowVariablesInCorrectState() && !added) {
-                throw new IllegalStateException("The entity (" + entity
-                        + ") has a variable (" + sourceVariableDescriptor.getVariableName()
-                        + ") with value (" + shadowEntity
-                        + ") which has a sourceVariableName variable (" + shadowVariableDescriptor.getVariableName()
-                        + ") with a value (" + shadowCollection
-                        + ") which already contained the entity (" + entity + ").\n"
-                        + "Verify the consistency of your input problem for that bi-directional relationship.");
+                throw new IllegalStateException("""
+                        The entity (%s) has a variable (%s) with value (%s) which has a sourceVariableName variable (%s) \
+                        with a value (%s) which already contained the entity (%s).
+                        Verify the consistency of your input problem for that bi-directional relationship."""
+                        .formatted(entity, sourceVariableDescriptor.getVariableName(), shadowEntity,
+                                shadowVariableDescriptor.getVariableName(), shadowCollection, entity));
             }
             scoreDirector.afterVariableChanged(shadowVariableDescriptor, shadowEntity);
         }
@@ -83,27 +82,26 @@ public class CollectionInverseVariableListener<Solution_>
     protected void retract(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity) {
         Object shadowEntity = sourceVariableDescriptor.getValue(entity);
         if (shadowEntity != null) {
-            Collection shadowCollection = (Collection) shadowVariableDescriptor.getValue(shadowEntity);
+            Collection<Object> shadowCollection = shadowVariableDescriptor.getValue(shadowEntity);
             if (scoreDirector.expectShadowVariablesInCorrectState() && shadowCollection == null) {
-                throw new IllegalStateException("The entity (" + entity
-                        + ") has a variable (" + sourceVariableDescriptor.getVariableName()
-                        + ") with value (" + shadowEntity
-                        + ") which has a sourceVariableName variable (" + shadowVariableDescriptor.getVariableName()
-                        + ") with a value (" + shadowCollection + ") which is null.\n"
-                        + "Verify the consistency of your input problem for that bi-directional relationship.\n"
-                        + "Every non-singleton inverse variable can never be null. It should at least be an empty "
-                        + Collection.class.getSimpleName() + " instead.");
+                throw new IllegalStateException("""
+                        The entity (%s) has a variable (%s) with value (%s) which has a sourceVariableName variable (%s) \
+                        with a value (%s) which is null.
+                        Verify the consistency of your input problem for that bi-directional relationship.
+                        Non-singleton inverse variable can never be null, at the very least it should be an empty %s."""
+                        .formatted(entity, sourceVariableDescriptor.getVariableName(), shadowEntity,
+                                shadowVariableDescriptor.getVariableName(), shadowCollection,
+                                Collection.class.getSimpleName()));
             }
             scoreDirector.beforeVariableChanged(shadowVariableDescriptor, shadowEntity);
             boolean removed = shadowCollection.remove(entity);
             if (scoreDirector.expectShadowVariablesInCorrectState() && !removed) {
-                throw new IllegalStateException("The entity (" + entity
-                        + ") has a variable (" + sourceVariableDescriptor.getVariableName()
-                        + ") with value (" + shadowEntity
-                        + ") which has a sourceVariableName variable (" + shadowVariableDescriptor.getVariableName()
-                        + ") with a value (" + shadowCollection
-                        + ") which did not contain the entity (" + entity + ").\n"
-                        + "Verify the consistency of your input problem for that bi-directional relationship.");
+                throw new IllegalStateException("""
+                        The entity (%s) has a variable (%s) with value (%s) which has a sourceVariableName variable (%s) \
+                        with a value (%s) which did not contain the entity (%s)
+                        Verify the consistency of your input problem for that bi-directional relationship."""
+                        .formatted(entity, sourceVariableDescriptor.getVariableName(), shadowEntity,
+                                shadowVariableDescriptor.getVariableName(), shadowCollection, entity));
             }
             scoreDirector.afterVariableChanged(shadowVariableDescriptor, shadowEntity);
         }
@@ -111,7 +109,7 @@ public class CollectionInverseVariableListener<Solution_>
 
     @Override
     public Collection<?> getInverseCollection(Object planningValue) {
-        return (Collection<?>) shadowVariableDescriptor.getValue(planningValue);
+        return shadowVariableDescriptor.getValue(planningValue);
     }
 
 }

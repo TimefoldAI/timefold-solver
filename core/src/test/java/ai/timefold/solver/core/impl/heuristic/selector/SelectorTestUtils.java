@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
@@ -181,7 +180,7 @@ public class SelectorTestUtils {
         List<Object> distinctValueList = subListList.stream()
                 .map(subList -> variableDescriptor.getElement(subList.entity(), subList.fromIndex()))
                 .distinct()
-                .collect(Collectors.toList());
+                .toList();
         when(subListSelector.endingValueIterator()).thenAnswer(invocation -> distinctValueList.iterator());
         return subListSelector;
     }

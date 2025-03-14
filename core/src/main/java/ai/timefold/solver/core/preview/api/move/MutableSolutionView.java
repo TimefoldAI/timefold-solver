@@ -7,7 +7,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -27,7 +27,69 @@ import org.jspecify.annotations.Nullable;
  * 
  * @param <Solution_>
  */
+@NullMarked
 public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> {
+
+    /**
+     * Puts a given value at a particular index in a given entity's {@link PlanningListVariable planning list variable}.
+     * Moves all values at or after the index to the right.
+     *
+     * @param variableMetaModel Describes the variable to be changed.
+     * @param value The value to be assigned to a list variable.
+     * @param destinationEntity The entity whose list variable is to be changed.
+     * @param destinationIndex The index at which the value is to be assigned.
+     */
+    <Entity_, Value_> void assignValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Value_ value, Entity_ destinationEntity, int destinationIndex);
+
+    /**
+     * Removes a given value from the {@link PlanningListVariable planning list variable} that it's part of.
+     * Shifts any later values to the left.
+     *
+     * @param variableMetaModel Describes the variable to be changed.
+     * @param value The value to be removed from a list variable.
+     * @throws IllegalStateException if the value is not assigned to a list variable
+     */
+    default <Entity_, Value_> void unassignValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Value_ value) {
+        var locationInList = getPositionOf(variableMetaModel, value)
+                .ensureAssigned(() -> """
+                        The value (%s) is not assigned to a list variable.
+                        This may indicate score corruption or a problem with the move's implementation."""
+                        .formatted(value));
+        unassignValue(variableMetaModel, value, locationInList.entity(), locationInList.index());
+    }
+
+    /**
+     * Removes a value from a given entity's {@link PlanningListVariable planning list variable} at a given index.
+     * Shifts any later values to the left.
+     *
+     * @param variableMetaModel Describes the variable to be changed.
+     * @param entity The entity whose element is to be removed from a list variable.
+     * @param index >= 0
+     * @return the removed value
+     * @throws IllegalArgumentException if the index is out of bounds
+     */
+    default <Entity_, Value_> Value_ unassignValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Entity_ entity, int index) {
+        var value = getValueAtIndex(variableMetaModel, entity, index);
+        unassignValue(variableMetaModel, value, entity, index);
+        return value;
+    }
+
+    /**
+     * Removes a given value from a given entity's {@link PlanningListVariable planning list variable} at a given index.
+     * Shifts any later values to the left.
+     *
+     * @param variableMetaModel Describes the variable to be changed.
+     * @param value The value to be unassigned from a list variable.
+     * @param entity The entity whose value is to be unassigned from a list variable.
+     * @param index >= 0
+     * @throws IllegalArgumentException if the index is out of bounds
+     * @throws IllegalStateException if the actual value at the given index is not the given value
+     */
+    <Entity_, Value_> void unassignValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Value_ value, Entity_ entity, int index);
 
     /**
      * Reads the value of a @{@link PlanningVariable basic planning variable} of a given entity.
@@ -36,8 +98,8 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
      * @param entity The entity whose variable value is to be changed.
      * @param newValue maybe null, if unassigning the variable
      */
-    <Entity_, Value_> void changeVariable(@NonNull PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            @NonNull Entity_ entity, @Nullable Value_ newValue);
+    <Entity_, Value_> void changeVariable(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Entity_ entity, @Nullable Value_ newValue);
 
     /**
      * Moves a value from one entity's {@link PlanningListVariable planning list variable} to another.
@@ -47,11 +109,12 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
      * @param sourceIndex >= 0
      * @param destinationEntity The second entity whose variable value is to be changed.
      * @param destinationIndex >= 0
+     * @return the value that was moved; null if nothing was moved
      * @throws IndexOutOfBoundsException if the index is out of bounds
      */
-    <Entity_, Value_> void moveValueBetweenLists(
-            @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            @NonNull Entity_ sourceEntity, int sourceIndex, @NonNull Entity_ destinationEntity, int destinationIndex);
+    <Entity_, Value_> @Nullable Value_ moveValueBetweenLists(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ sourceEntity, int sourceIndex,
+            Entity_ destinationEntity, int destinationIndex);
 
     /**
      * Moves a value within one entity's {@link PlanningListVariable planning list variable}.
@@ -60,10 +123,12 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
      * @param entity The entity whose variable value is to be changed.
      * @param sourceIndex >= 0
      * @param destinationIndex >= 0
+     * @return the value that was moved; null if nothing was moved
      * @throws IndexOutOfBoundsException if the index is out of bounds
      */
-    <Entity_, Value_> void moveValueInList(@NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            @NonNull Entity_ entity, int sourceIndex, int destinationIndex);
+    <Entity_, Value_> @Nullable Value_ moveValueInList(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity, int sourceIndex,
+            int destinationIndex);
 
     /**
      * Tells the underlying {@link ScoreDirector}

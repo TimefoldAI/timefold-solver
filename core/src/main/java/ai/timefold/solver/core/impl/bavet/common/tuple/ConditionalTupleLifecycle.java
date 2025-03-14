@@ -3,12 +3,12 @@ package ai.timefold.solver.core.impl.bavet.common.tuple;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-record ConditionalTupleLifecycle<Tuple_ extends AbstractTuple>(TupleLifecycle<Tuple_> downstreamLifecycle,
+public record ConditionalTupleLifecycle<Tuple_ extends AbstractTuple>(TupleLifecycle<Tuple_> downstreamLifecycle,
         TuplePredicate<Tuple_> predicate)
         implements
             TupleLifecycle<Tuple_> {
 
-    ConditionalTupleLifecycle {
+    public ConditionalTupleLifecycle {
         Objects.requireNonNull(downstreamLifecycle);
         Objects.requireNonNull(predicate);
     }
@@ -36,7 +36,7 @@ record ConditionalTupleLifecycle<Tuple_ extends AbstractTuple>(TupleLifecycle<Tu
 
     @Override
     public String toString() {
-        return "Conditional " + downstreamLifecycle;
+        return "Conditional %s".formatted(downstreamLifecycle);
     }
 
     @FunctionalInterface

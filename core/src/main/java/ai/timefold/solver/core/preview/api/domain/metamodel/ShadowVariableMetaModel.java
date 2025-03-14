@@ -2,6 +2,8 @@ package ai.timefold.solver.core.preview.api.domain.metamodel;
 
 import ai.timefold.solver.core.api.domain.variable.VariableListener;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * A {@link VariableMetaModel} that represents a shadow planning variable.
  * The solver doesn't directly modify a shadow variable;
@@ -24,7 +26,18 @@ import ai.timefold.solver.core.api.domain.variable.VariableListener;
  * @param <Entity_> the entity type
  * @param <Value_> the value type
  */
+@NullMarked
 public non-sealed interface ShadowVariableMetaModel<Solution_, Entity_, Value_>
         extends VariableMetaModel<Solution_, Entity_, Value_> {
+
+    @Override
+    default boolean isList() {
+        return false;
+    }
+
+    @Override
+    default boolean isGenuine() {
+        return false;
+    }
 
 }

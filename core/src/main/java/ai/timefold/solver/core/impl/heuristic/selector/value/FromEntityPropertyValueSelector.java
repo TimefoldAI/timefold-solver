@@ -48,10 +48,6 @@ public final class FromEntityPropertyValueSelector<Solution_>
         workingSolution = null;
     }
 
-    // ************************************************************************
-    // Worker methods
-    // ************************************************************************
-
     @Override
     public boolean isCountable() {
         return valueRangeDescriptor.isCountable();
@@ -69,7 +65,7 @@ public final class FromEntityPropertyValueSelector<Solution_>
 
     @Override
     public Iterator<Object> iterator(Object entity) {
-        ValueRange<Object> valueRange = (ValueRange<Object>) valueRangeDescriptor.extractValueRange(workingSolution, entity);
+        ValueRange<Object> valueRange = valueRangeDescriptor.extractValueRange(workingSolution, entity);
         if (!randomSelection) {
             return ((CountableValueRange<Object>) valueRange).createOriginalIterator();
         } else {
@@ -79,7 +75,7 @@ public final class FromEntityPropertyValueSelector<Solution_>
 
     @Override
     public Iterator<Object> endingIterator(Object entity) {
-        ValueRange<Object> valueRange = (ValueRange<Object>) valueRangeDescriptor.extractValueRange(workingSolution, entity);
+        ValueRange<Object> valueRange = valueRangeDescriptor.extractValueRange(workingSolution, entity);
         return ((CountableValueRange<Object>) valueRange).createOriginalIterator();
     }
 

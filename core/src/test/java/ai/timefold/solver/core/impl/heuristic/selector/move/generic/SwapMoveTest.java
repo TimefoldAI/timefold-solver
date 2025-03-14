@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
@@ -228,7 +229,7 @@ class SwapMoveTest {
                 .buildVariableDescriptorForPrimaryValue();
         GenuineVariableDescriptor<TestdataMultiVarSolution> secondaryDescriptor = TestdataMultiVarEntity
                 .buildVariableDescriptorForSecondaryValue();
-        SwapMove move = new SwapMove<>(Arrays.asList(primaryDescriptor),
+        SwapMove move = new SwapMove<>(Collections.singletonList(primaryDescriptor),
                 new TestdataMultiVarEntity("a"), new TestdataMultiVarEntity("b"));
         assertCode("a", move.getLeftEntity());
         assertCode("b", move.getRightEntity());

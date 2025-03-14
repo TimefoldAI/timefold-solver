@@ -146,12 +146,12 @@ public class SubChainSwapMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     @Override
-    public Collection<? extends Object> getPlanningEntities() {
+    public Collection<?> getPlanningEntities() {
         return CollectionUtils.concat(leftSubChain.getEntityList(), rightSubChain.getEntityList());
     }
 
     @Override
-    public Collection<? extends Object> getPlanningValues() {
+    public Collection<?> getPlanningValues() {
         return Arrays.asList(
                 variableDescriptor.getValue(leftSubChain.getFirstEntity()),
                 variableDescriptor.getValue(rightSubChain.getFirstEntity()));

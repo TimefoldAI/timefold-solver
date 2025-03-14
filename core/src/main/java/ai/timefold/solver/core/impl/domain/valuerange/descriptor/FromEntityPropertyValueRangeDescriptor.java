@@ -16,17 +16,13 @@ public class FromEntityPropertyValueRangeDescriptor<Solution_>
         super(variableDescriptor, addNullInValueRange, memberAccessor);
     }
 
-    // ************************************************************************
-    // Worker methods
-    // ************************************************************************
-
     @Override
     public boolean isEntityIndependent() {
         return false;
     }
 
     @Override
-    public ValueRange<?> extractValueRange(Solution_ solution, Object entity) {
+    public <Value_> ValueRange<Value_> extractValueRange(Solution_ solution, Object entity) {
         return readValueRange(entity);
     }
 

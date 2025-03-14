@@ -23,15 +23,11 @@ import ai.timefold.solver.core.impl.util.MutableLong;
 public final class ListVariableDescriptor<Solution_> extends GenuineVariableDescriptor<Solution_> {
 
     private final ListVariableStateDemand<Solution_> stateDemand = new ListVariableStateDemand<>(this);
-    private final BiPredicate inListPredicate = (element, entity) -> {
+    private final BiPredicate<Object, Object> inListPredicate = (element, entity) -> {
         var list = getValue(entity);
         return list.contains(element);
     };
     private boolean allowsUnassignedValues = true;
-
-    // ************************************************************************
-    // Constructors and simple getters/setters
-    // ************************************************************************
 
     public ListVariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
@@ -42,17 +38,14 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
         return stateDemand;
     }
 
+    @SuppressWarnings("unchecked")
     public <A> BiPredicate<A, Object> getInListPredicate() {
-        return inListPredicate;
+        return (BiPredicate<A, Object>) inListPredicate;
     }
 
     public boolean allowsUnassignedValues() {
         return allowsUnassignedValues;
     }
-
-    // ************************************************************************
-    // Lifecycle methods
-    // ************************************************************************
 
     @Override
     protected void processPropertyAnnotations(DescriptorPolicy descriptorPolicy) {
@@ -67,19 +60,14 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
                 .filter(descriptorPolicy::hasFromEntityValueRangeProvider)
                 .toList();
         if (!fromEntityValueRangeProviderRefs.isEmpty()) {
-            throw new IllegalArgumentException("@" + ValueRangeProvider.class.getSimpleName()
-                    + " on a @" + PlanningEntity.class.getSimpleName()
-                    + " is not supported with a list variable (" + this + ").\n"
-                    + "Maybe move the valueRangeProvider" + (fromEntityValueRangeProviderRefs.size() > 1 ? "s" : "")
-                    + " (" + fromEntityValueRangeProviderRefs
-                    + ") from the entity class to the @" + PlanningSolution.class.getSimpleName() + " class.");
+            throw new IllegalArgumentException("""
+                    @%s on a @%s is not supported with a list variable (%s).
+                    Maybe move the valueRangeProvider(s) (%s) from the entity class to the @%s class."""
+                    .formatted(ValueRangeProvider.class.getSimpleName(), PlanningEntity.class.getSimpleName(), this,
+                            fromEntityValueRangeProviderRefs, PlanningSolution.class.getSimpleName()));
         }
         super.processValueRangeRefs(descriptorPolicy, valueRangeProviderRefs);
     }
-
-    // ************************************************************************
-    // Worker methods
-    // ************************************************************************
 
     @Override
     public boolean acceptsValueType(Class<?> valueType) {
@@ -140,10 +128,7 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
         }
     }
 
-    // ************************************************************************
-    // Extraction methods
-    // ************************************************************************
-
+    @SuppressWarnings("unchecked")
     @Override
     public List<Object> getValue(Object entity) {
         Object value = super.getValue(entity);
@@ -162,27 +147,25 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
         getValue(entity).add(index, element);
     }
 
-    public Object getElement(Object entity, int index) {
+    @SuppressWarnings("unchecked")
+    public <Value_> Value_ getElement(Object entity, int index) {
         var values = getValue(entity);
         if (index >= values.size()) {
             throw new IndexOutOfBoundsException(
                     "Impossible state: The index (%s) must be less than the size (%s) of the planning list variable (%s) of entity (%s)."
                             .formatted(index, values.size(), this, entity));
         }
-        return values.get(index);
+        return (Value_) values.get(index);
     }
 
-    public Object setElement(Object entity, int index, Object element) {
-        return getValue(entity).set(index, element);
+    @SuppressWarnings("unchecked")
+    public <Value_> Value_ setElement(Object entity, int index, Value_ element) {
+        return (Value_) getValue(entity).set(index, element);
     }
 
     public int getListSize(Object entity) {
         return getValue(entity).size();
     }
-
-    // ************************************************************************
-    // Pinning support
-    // ************************************************************************
 
     public boolean supportsPinning() {
         return entityDescriptor.supportsPinning();

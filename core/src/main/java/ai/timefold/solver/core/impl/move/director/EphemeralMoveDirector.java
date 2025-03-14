@@ -1,13 +1,11 @@
 package ai.timefold.solver.core.impl.move.director;
 
-import java.util.List;
-
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * The only move director that supports undoing moves.
@@ -15,6 +13,7 @@ import org.jspecify.annotations.NonNull;
  * 
  * @param <Solution_>
  */
+@NullMarked
 public final class EphemeralMoveDirector<Solution_> extends MoveDirector<Solution_>
         implements AutoCloseable {
 
@@ -23,16 +22,13 @@ public final class EphemeralMoveDirector<Solution_> extends MoveDirector<Solutio
         super(new VariableChangeRecordingScoreDirector<>(scoreDirector, false));
     }
 
-    @SuppressWarnings("unchecked")
     public Move<Solution_> createUndoMove() {
-        var changes = (List<ChangeAction<Solution_>>) getVariableChangeRecordingScoreDirector().copyChanges();
-        return new RecordedUndoMove<>(changes);
+        return new RecordedUndoMove<>(getVariableChangeRecordingScoreDirector().copyChanges());
     }
 
     @Override
-    public <Entity_, Value_> @NonNull ElementLocation getPositionOf(
-            @NonNull PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            @NonNull Value_ value) {
+    public <Entity_, Value_> ElementLocation
+            getPositionOf(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value) {
         return getPositionOf(getVariableChangeRecordingScoreDirector().getBacking(), variableMetaModel, value);
 
     }

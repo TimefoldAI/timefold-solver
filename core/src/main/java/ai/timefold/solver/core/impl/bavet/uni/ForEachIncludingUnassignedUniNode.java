@@ -3,7 +3,8 @@ package ai.timefold.solver.core.impl.bavet.uni;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
-public final class ForEachIncludingUnassignedUniNode<A> extends AbstractForEachUniNode<A> {
+public sealed class ForEachIncludingUnassignedUniNode<A>
+        extends AbstractForEachUniNode<A> permits ForEachFromSolutionUniNode {
 
     public ForEachIncludingUnassignedUniNode(Class<A> forEachClass, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
             int outputStoreSize) {
@@ -12,11 +13,12 @@ public final class ForEachIncludingUnassignedUniNode<A> extends AbstractForEachU
 
     @Override
     public void update(A a) {
-        UniTuple<A> tuple = tupleMap.get(a);
+        var tuple = tupleMap.get(a);
         if (tuple == null) {
-            throw new IllegalStateException("The fact (" + a + ") was never inserted, so it cannot update.");
+            throw new IllegalStateException("The fact (%s) was never inserted, so it cannot update."
+                    .formatted(a));
         }
-        innerUpdate(a, tuple);
+        updateExisting(a, tuple);
     }
 
 }

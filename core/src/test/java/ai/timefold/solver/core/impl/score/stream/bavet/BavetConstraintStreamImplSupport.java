@@ -14,6 +14,7 @@ public record BavetConstraintStreamImplSupport(ConstraintMatchPolicy constraintM
         implements
             ConstraintStreamImplSupport {
 
+    @SuppressWarnings("unchecked")
     @Override
     public <Score_ extends Score<Score_>, Solution_> InnerScoreDirector<Solution_, Score_> buildScoreDirector(
             SolutionDescriptor<Solution_> solutionDescriptorSupplier, ConstraintProvider constraintProvider) {

@@ -2,6 +2,8 @@ package ai.timefold.solver.core.preview.api.domain.metamodel;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * Identifies that a given value was not found in any {@link PlanningEntity}'s list variables.
  * Singleton instance can be accessed by {@link ElementLocation#unassigned()}.
@@ -17,6 +19,7 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
  * Please direct your feedback to
  * <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver Github</a>.
  */
+@NullMarked
 public sealed interface UnassignedLocation
         extends ElementLocation
         permits DefaultUnassignedLocation {

@@ -4,8 +4,9 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public record DefaultPlanningListVariableMetaModel<Solution_, Entity_, Value_>(
         PlanningEntityMetaModel<Solution_, Entity_> entity,
         ListVariableDescriptor<Solution_> variableDescriptor)
@@ -15,12 +16,12 @@ public record DefaultPlanningListVariableMetaModel<Solution_, Entity_, Value_>(
 
     @SuppressWarnings("unchecked")
     @Override
-    public @NonNull Class<Value_> type() {
+    public Class<Value_> type() {
         return (Class<Value_>) variableDescriptor.getElementType();
     }
 
     @Override
-    public @NonNull String name() {
+    public String name() {
         return variableDescriptor.getVariableName();
     }
 

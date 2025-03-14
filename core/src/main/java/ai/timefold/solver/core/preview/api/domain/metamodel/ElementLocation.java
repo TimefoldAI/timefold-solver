@@ -4,7 +4,7 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * A supertype for {@link LocationInList} and {@link UnassignedLocation}.
@@ -27,6 +27,7 @@ import org.jspecify.annotations.NonNull;
  * Please direct your feedback to
  * <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver Github</a>.
  */
+@NullMarked
 public sealed interface ElementLocation permits LocationInList, UnassignedLocation {
 
     /**
@@ -37,7 +38,7 @@ public sealed interface ElementLocation permits LocationInList, UnassignedLocati
      * @param index 0 or higher
      * @return never null
      */
-    static @NonNull LocationInList of(@NonNull Object entity, int index) {
+    static LocationInList of(Object entity, int index) {
         return new DefaultLocationInList(entity, index);
     }
 
@@ -47,7 +48,7 @@ public sealed interface ElementLocation permits LocationInList, UnassignedLocati
      *
      * @return never null
      */
-    static @NonNull UnassignedLocation unassigned() {
+    static UnassignedLocation unassigned() {
         return DefaultUnassignedLocation.INSTANCE;
     }
 
@@ -57,7 +58,7 @@ public sealed interface ElementLocation permits LocationInList, UnassignedLocati
      * @return Location of the value in an entity's {@link PlanningListVariable}.
      * @throws IllegalStateException If this location is unassigned.
      */
-    default @NonNull LocationInList ensureAssigned() {
+    default LocationInList ensureAssigned() {
         return ensureAssigned(() -> "Unexpected unassigned location.");
     }
 
@@ -68,7 +69,6 @@ public sealed interface ElementLocation permits LocationInList, UnassignedLocati
      * @return Location of the value in an entity's {@link PlanningListVariable}.
      * @throws IllegalStateException If this location is unassigned.
      */
-    @NonNull
-    LocationInList ensureAssigned(@NonNull Supplier<String> messageSupplier);
+    LocationInList ensureAssigned(Supplier<String> messageSupplier);
 
 }

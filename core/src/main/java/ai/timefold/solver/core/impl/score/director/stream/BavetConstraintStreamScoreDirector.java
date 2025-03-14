@@ -29,15 +29,26 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     private final boolean derived;
     private BavetConstraintSession<Score_> session;
 
+    /**
+     * Builds a standard {@link BavetConstraintStreamScoreDirector}.
+     *
+     * @param scoreDirectorFactory
+     * @param lookUpEnabled
+     * @param constraintMatchPolicy
+     * @param expectShadowVariablesInCorrectState
+     */
     public BavetConstraintStreamScoreDirector(BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
-            boolean lookUpEnabled, ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState) {
-        this(scoreDirectorFactory, lookUpEnabled, constraintMatchPolicy, expectShadowVariablesInCorrectState, false);
+            boolean lookUpEnabled, ConstraintMatchPolicy constraintMatchPolicy,
+            boolean expectShadowVariablesInCorrectState) {
+        this(scoreDirectorFactory, lookUpEnabled, constraintMatchPolicy, expectShadowVariablesInCorrectState,
+                false);
     }
 
-    public BavetConstraintStreamScoreDirector(BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
-            boolean lookUpEnabled, ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState,
-            boolean derived) {
-        super(scoreDirectorFactory, lookUpEnabled, constraintMatchPolicy, expectShadowVariablesInCorrectState);
+    public BavetConstraintStreamScoreDirector(
+            BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory, boolean lookUpEnabled,
+            ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState, boolean derived) {
+        super(scoreDirectorFactory, lookUpEnabled, constraintMatchPolicy,
+                expectShadowVariablesInCorrectState);
         this.derived = derived;
     }
 

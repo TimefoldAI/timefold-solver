@@ -62,7 +62,7 @@ record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityInd
             var nextEntityIndex = (entityToEntityIndex.get(entity) + 1) % entities.length;
             var nextEntity = entities[nextEntityIndex];
             var firstUnpinnedIndexInList = listVariableDescriptor.getFirstUnpinnedIndex(nextEntity);
-            return (Node_) listVariableDescriptor.getElement(nextEntity, firstUnpinnedIndexInList);
+            return listVariableDescriptor.getElement(nextEntity, firstUnpinnedIndexInList);
         } else {
             return (Node_) listVariable.get(indexInEntityList + 1);
         }
@@ -82,7 +82,7 @@ record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityInd
             var listVariable = listVariableDescriptor.getValue(entities[previousEntityIndex]);
             return (Node_) listVariable.get(listVariable.size() - 1);
         } else {
-            return (Node_) listVariableDescriptor.getElement(entity, indexInEntityList - 1);
+            return listVariableDescriptor.getElement(entity, indexInEntityList - 1);
         }
     }
 

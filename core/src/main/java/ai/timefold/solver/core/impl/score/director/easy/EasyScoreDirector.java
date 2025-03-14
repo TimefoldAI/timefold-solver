@@ -28,10 +28,10 @@ public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     private final EasyScoreCalculator<Solution_, Score_> easyScoreCalculator;
 
-    public EasyScoreDirector(EasyScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
-            boolean lookUpEnabled, boolean expectShadowVariablesInCorrectState,
-            EasyScoreCalculator<Solution_, Score_> easyScoreCalculator) {
-        super(scoreDirectorFactory, lookUpEnabled, ConstraintMatchPolicy.DISABLED, expectShadowVariablesInCorrectState);
+    public EasyScoreDirector(EasyScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory, boolean lookUpEnabled,
+            boolean expectShadowVariablesInCorrectState, EasyScoreCalculator<Solution_, Score_> easyScoreCalculator) {
+        super(scoreDirectorFactory, lookUpEnabled, ConstraintMatchPolicy.DISABLED,
+                expectShadowVariablesInCorrectState);
         this.easyScoreCalculator = easyScoreCalculator;
     }
 

@@ -11,16 +11,17 @@ import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 import ai.timefold.solver.core.preview.api.move.Rebaser;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Adapts {@link ai.timefold.solver.core.impl.heuristic.move.Move} a legacy move)
  * to {@link Move a new move}.
  * Once the move selector framework is removed, this may be removed as well.
  * 
- * @param legacyMove never null
+ * @param legacyMove the move to adapt
  * @param <Solution_>
  */
+@NullMarked
 public record LegacyMoveAdapter<Solution_>(
         ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> legacyMove) implements Move<Solution_> {
 
@@ -38,7 +39,6 @@ public record LegacyMoveAdapter<Solution_>(
      * @param moveDirector never null
      * @param move never null
      * @return true if the move is doable
-     * @param <Solution_>
      */
     public static <Solution_> boolean isDoable(MoveDirector<Solution_> moveDirector, Move<Solution_> move) {
         if (move instanceof LegacyMoveAdapter<Solution_> legacyMoveAdapter) {
@@ -49,7 +49,7 @@ public record LegacyMoveAdapter<Solution_>(
     }
 
     @Override
-    public void execute(@NonNull MutableSolutionView<Solution_> solutionView) {
+    public void execute(MutableSolutionView<Solution_> solutionView) {
         var scoreDirector = getScoreDirector(solutionView);
         legacyMove.doMoveOnly(scoreDirector);
     }
@@ -58,6 +58,7 @@ public record LegacyMoveAdapter<Solution_>(
         return ((InnerMutableSolutionView<Solution_>) solutionView).getScoreDirector();
     }
 
+    @SuppressWarnings("unchecked")
     private ScoreDirector<Solution_> getScoreDirector(Rebaser rebaser) {
         return ((InnerMutableSolutionView<Solution_>) rebaser).getScoreDirector();
     }
@@ -67,27 +68,27 @@ public record LegacyMoveAdapter<Solution_>(
     }
 
     @Override
-    public @NonNull String describe() {
+    public String describe() {
         return legacyMove.getSimpleMoveTypeDescription();
     }
 
     @Override
-    public @NonNull Move<Solution_> rebase(@NonNull Rebaser rebaser) {
+    public Move<Solution_> rebase(Rebaser rebaser) {
         return new LegacyMoveAdapter<>(legacyMove.rebase(getScoreDirector(rebaser)));
     }
 
     @Override
-    public @NonNull Collection<?> extractPlanningEntities() {
+    public Collection<?> extractPlanningEntities() {
         return legacyMove.getPlanningEntities();
     }
 
     @Override
-    public @NonNull Collection<?> extractPlanningValues() {
+    public Collection<?> extractPlanningValues() {
         return legacyMove.getPlanningValues();
     }
 
     @Override
-    public @NonNull String toString() {
+    public String toString() {
         return legacyMove.toString();
     }
 }

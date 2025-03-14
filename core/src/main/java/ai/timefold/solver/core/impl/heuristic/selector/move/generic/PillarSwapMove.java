@@ -175,7 +175,8 @@ public class PillarSwapMove<Solution_> extends AbstractMove<Solution_> {
             if (!first) {
                 s.append(", ");
             }
-            s.append(variableDescriptor.getValue(pillar.get(0)));
+            var value = variableDescriptor.getValue(pillar.get(0));
+            s.append(value == null ? null : value.toString());
             first = false;
         }
     }

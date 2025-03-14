@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.preview.api.domain.metamodel;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Uniquely identifies the location of a value in a list variable.
@@ -21,11 +21,12 @@ import org.jspecify.annotations.NonNull;
  * <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver Github</a>.
  *
  */
+@NullMarked
 public sealed interface LocationInList
         extends ElementLocation, Comparable<LocationInList>
         permits DefaultLocationInList {
 
-    <Entity_> @NonNull Entity_ entity();
+    <Entity_> Entity_ entity();
 
     int index();
 

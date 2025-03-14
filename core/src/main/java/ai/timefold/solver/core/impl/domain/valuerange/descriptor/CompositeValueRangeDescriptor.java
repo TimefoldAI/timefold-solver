@@ -26,19 +26,15 @@ public class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRange
         entityIndependent = true;
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
             if (!valueRangeDescriptor.isCountable()) {
-                throw new IllegalStateException("The valueRangeDescriptor (" + this
-                        + ") has a childValueRangeDescriptor (" + valueRangeDescriptor
-                        + ") with countable (" + valueRangeDescriptor.isCountable() + ").");
+                throw new IllegalStateException(
+                        "The valueRangeDescriptor (%s) has a childValueRangeDescriptor (%s) with countable (%s)."
+                                .formatted(this, valueRangeDescriptor, valueRangeDescriptor.isCountable()));
             }
             if (!valueRangeDescriptor.isEntityIndependent()) {
                 entityIndependent = false;
             }
         }
     }
-
-    // ************************************************************************
-    // Worker methods
-    // ************************************************************************
 
     @Override
     public boolean isCountable() {
@@ -51,10 +47,11 @@ public class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRange
     }
 
     @Override
-    public ValueRange<?> extractValueRange(Solution_ solution, Object entity) {
+    public <Value_> ValueRange<Value_> extractValueRange(Solution_ solution, Object entity) {
         return innerExtractValueRange(solution, entity);
     }
 
+    @SuppressWarnings("unchecked")
     private <T> ValueRange<T> innerExtractValueRange(Solution_ solution, Object entity) {
         var childValueRangeList = new ArrayList<CountableValueRange<T>>(childValueRangeDescriptorList.size());
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
@@ -68,6 +65,7 @@ public class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRange
         return innerExtractValueRange(solution);
     }
 
+    @SuppressWarnings("unchecked")
     private <T> ValueRange<T> innerExtractValueRange(Solution_ solution) {
         var childValueRangeList = new ArrayList<CountableValueRange<T>>(childValueRangeDescriptorList.size());
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
@@ -81,7 +79,7 @@ public class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRange
     public long extractValueRangeSize(Solution_ solution, Object entity) {
         var size = addNullInValueRange ? 1L : 0L;
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
-            size += ((CountableValueRange) valueRangeDescriptor.extractValueRange(solution, entity)).getSize();
+            size += ((CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, entity)).getSize();
         }
         return size;
     }
@@ -91,7 +89,7 @@ public class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRange
         var size = addNullInValueRange ? 1L : 0L;
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
             var entityIndependentValueRangeDescriptor = (EntityIndependentValueRangeDescriptor<Solution_>) valueRangeDescriptor;
-            size += ((CountableValueRange) entityIndependentValueRangeDescriptor.extractValueRange(solution)).getSize();
+            size += ((CountableValueRange<?>) entityIndependentValueRangeDescriptor.extractValueRange(solution)).getSize();
         }
         return size;
     }

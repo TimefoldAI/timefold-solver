@@ -80,7 +80,7 @@ record DefaultPlanningEntityDiff<Solution_, Entity_>(PlanningSolutionDiff<Soluti
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (!(o instanceof DefaultPlanningEntityDiff<?, ?> that)) {
             return false;
         }

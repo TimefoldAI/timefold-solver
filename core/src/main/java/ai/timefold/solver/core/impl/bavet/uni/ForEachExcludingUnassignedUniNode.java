@@ -26,22 +26,23 @@ public final class ForEachExcludingUnassignedUniNode<A> extends AbstractForEachU
 
     @Override
     public void update(A a) {
-        UniTuple<A> tuple = tupleMap.get(a);
+        var tuple = tupleMap.get(a);
         if (tuple == null) { // The tuple was never inserted because it did not pass the filter.
             insert(a);
         } else if (filter.test(a)) {
-            innerUpdate(a, tuple);
-        } else {
-            super.retract(a); // Call super.retract() to avoid testing the filter again.
+            updateExisting(a, tuple);
+        } else { // Tuple no longer passes the filter.
+            retract(a);
         }
     }
 
     @Override
     public void retract(A a) {
-        if (!filter.test(a)) { // The tuple was never inserted because it did not pass the filter.
+        var tuple = tupleMap.remove(a);
+        if (tuple == null) { // The tuple was never inserted because it did not pass the filter.
             return;
         }
-        super.retract(a);
+        super.retractExisting(a, tuple);
     }
 
 }

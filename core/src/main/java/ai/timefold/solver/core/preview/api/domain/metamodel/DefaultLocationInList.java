@@ -3,12 +3,14 @@ package ai.timefold.solver.core.preview.api.domain.metamodel;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Points to a list variable position specified by an entity and an index.
  */
-record DefaultLocationInList(@NonNull Object entity, int index) implements LocationInList {
+@NullMarked
+record DefaultLocationInList(Object entity, int index) implements LocationInList {
 
     public DefaultLocationInList {
         Objects.requireNonNull(entity);
@@ -19,12 +21,12 @@ record DefaultLocationInList(@NonNull Object entity, int index) implements Locat
     }
 
     @Override
-    public @NonNull LocationInList ensureAssigned(@NonNull Supplier<String> messageSupplier) {
+    public LocationInList ensureAssigned(Supplier<String> messageSupplier) {
         return this;
     }
 
     @Override
-    public boolean equals(Object element) {
+    public boolean equals(@Nullable Object element) {
         if (!(element instanceof DefaultLocationInList that)) {
             return false;
         }

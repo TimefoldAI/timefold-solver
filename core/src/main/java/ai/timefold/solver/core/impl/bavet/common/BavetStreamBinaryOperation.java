@@ -1,16 +1,9 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
-import ai.timefold.solver.core.impl.bavet.common.bridge.BavetForeBridgeUniConstraintStream;
+public interface BavetStreamBinaryOperation<Stream_ extends BavetStream> {
 
-public interface BavetStreamBinaryOperation<Solution_> {
-    /**
-     * @return An instance of {@link BavetForeBridgeUniConstraintStream}.
-     */
-    BavetAbstractConstraintStream<Solution_> getLeftParent();
+    Stream_ getLeftParent();
 
-    /**
-     * @return An instance of {@link BavetForeBridgeUniConstraintStream}.
-     */
-    BavetAbstractConstraintStream<Solution_> getRightParent();
+    Stream_ getRightParent();
 
 }
