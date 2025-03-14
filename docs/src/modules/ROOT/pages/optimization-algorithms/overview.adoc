@@ -808,8 +808,6 @@ For instance, if `minimumImprovementRatio` is `0.2`, then the current rate of ch
   </localSearch>
 ----
 
-This `Termination` can only be used for a `Phase` (such as ``<localSearch>``), not for the `Solver` itself.
-
 [#SolverEventListener]
 === `SolverEventListener`
 

@@ -137,7 +137,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         var phaseList = buildPhaseList(configPolicy, bestSolutionRecaller, termination);
 
         return new DefaultSolver<>(environmentMode, randomFactory, bestSolutionRecaller, basicPlumbingTermination,
-                UniversalTermination.bridge(termination), phaseList, solverScope,
+                (UniversalTermination<Solution_>) termination, phaseList, solverScope,
                 moveThreadCount == null ? SolverConfig.MOVE_THREAD_COUNT_NONE : Integer.toString(moveThreadCount));
     }
 

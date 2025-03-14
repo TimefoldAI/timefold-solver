@@ -352,7 +352,7 @@ class ScoreExplanation(Generic[Solution_]):
             e.getKey()[len(_user_package_prefix):]: ConstraintMatchTotal(
                 constraint_ref=ConstraintRef(
                     package_name=e.getValue().getConstraintRef().packageName()[len(_user_package_prefix):],
-                                             constraint_name=e.getValue().getConstraintRef().constraintName()),
+                    constraint_name=e.getValue().getConstraintRef().constraintName()),
                 constraint_match_count=e.getValue().getConstraintMatchCount(),
                 constraint_match_set=_map_constraint_match_set(e.getValue().getConstraintMatchSet()),
                 constraint_weight=to_python_score(e.getValue().getConstraintWeight()),
@@ -464,7 +464,16 @@ class ConstraintAnalysis(Generic[Score_]):
         Returns a diagnostic text
         that explains part of the score quality through the ConstraintAnalysis API.
     match_count : int
-        Return the match count of the constraint.
+        For regular constraint analysis:
+        -1 if analysis not available,
+        0 if constraint has no matches,
+        positive if constraint has matches.
+        Equal to the size of the matches list.</li>
+        For a diff of constraint analyses:
+        positive if the constraint has more matches in the new analysis,
+        zero if the number of matches is the same in both,
+        negative otherwise.
+        Need not be equal to the size of the matches list.
     """
     _delegate: '_JavaConstraintAnalysis[Score_]'
 

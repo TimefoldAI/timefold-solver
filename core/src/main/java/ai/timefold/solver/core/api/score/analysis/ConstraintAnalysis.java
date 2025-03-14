@@ -31,9 +31,19 @@ import org.jspecify.annotations.Nullable;
  *        non-empty if constraint has matches.
  *        This is a {@link List} to simplify access to individual elements,
  *        but it contains no duplicates just like {@link HashSet} wouldn't.
- * @param matchCount -1 if analysis not available,
+ * @param matchCount
+ *        <ul>
+ *        <li>For regular constraint analysis:
+ *        -1 if analysis not available,
  *        0 if constraint has no matches,
  *        positive if constraint has matches.
+ *        Equal to the size of the {@link #matches} list.</li>
+ *        <li>For a {@link ScoreAnalysis#diff(ScoreAnalysis) diff of constraint analyses}:
+ *        positive if the constraint has more matches in the new analysis,
+ *        zero if the number of matches is the same in both,
+ *        negative otherwise.
+ *        Need not be equal to the size of the {@link #matches} list.</li>
+ *        </ul>
  */
 public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull ConstraintRef constraintRef, @NonNull Score_ weight,
         @NonNull Score_ score, @Nullable List<MatchAnalysis<Score_>> matches, int matchCount) {
@@ -56,20 +66,22 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull Constrai
                 .formatted(DefaultConstraintMatchTotal.class.getSimpleName(),
                         ConstraintMatchAwareIncrementalScoreCalculator.class.getSimpleName()));
         Objects.requireNonNull(score);
-        if (matches != null && matchCount != matches.size()) {
-            throw new IllegalArgumentException("The match count must be equal to the size of the matches list.");
-        }
     }
 
     @NonNull
     ConstraintAnalysis<Score_> negate() {
+        // Only used to compute diff; use semantics for non-diff.
+        // A negative match count is only allowed within these semantics when matches == null.
         if (matches == null) {
+            // At this point, matchCount is already negative, as matches == null.
             return new ConstraintAnalysis<>(constraintRef, weight.negate(), score.negate(), null, matchCount);
         } else {
-            var negatedMatchAnalyses = matches.stream()
+            // Within these semantics, match count == list size.
+            var negatedMatchAnalysesList = matches.stream()
                     .map(MatchAnalysis::negate)
                     .toList();
-            return new ConstraintAnalysis<>(constraintRef, weight.negate(), score.negate(), negatedMatchAnalyses);
+            return new ConstraintAnalysis<>(constraintRef, weight.negate(), score.negate(), negatedMatchAnalysesList,
+                    matchCount);
         }
     }
 
@@ -99,19 +111,19 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull Constrai
         var constraintWeightDifference = constraintAnalysis.weight().subtract(otherConstraintAnalysis.weight());
         var scoreDifference = constraintAnalysis.score().subtract(otherConstraintAnalysis.score());
         if (matchAnalyses == null) {
-            var leftCount = constraintAnalysis.matchCount();
-            var rightCount = otherConstraintAnalysis.matchCount();
-            if ((leftCount == -1 && rightCount != -1) || (leftCount != -1 && rightCount == -1)) {
+            var leftHasMatchCount = hasMatchCount(constraintAnalysis);
+            var rightHasMatchCount = hasMatchCount(otherConstraintAnalysis);
+            if ((!leftHasMatchCount && rightHasMatchCount) || (leftHasMatchCount && !rightHasMatchCount)) {
                 throw new IllegalStateException(
                         "Impossible state: One of the score analyses (%s, %s) provided no match count for a constraint (%s)."
                                 .formatted(constraintAnalysis, otherConstraintAnalysis, constraintRef));
             }
             return new ConstraintAnalysis<>(constraintRef, constraintWeightDifference, scoreDifference, null,
-                    leftCount - rightCount);
+                    getMatchCount(constraintAnalysis, otherConstraintAnalysis));
         }
         var matchAnalysisMap = mapMatchesToJustifications(matchAnalyses);
         var otherMatchAnalysisMap = mapMatchesToJustifications(otherMatchAnalyses);
-        var result = Stream.concat(matchAnalysisMap.keySet().stream(), otherMatchAnalysisMap.keySet().stream())
+        var matchAnalysesList = Stream.concat(matchAnalysisMap.keySet().stream(), otherMatchAnalysisMap.keySet().stream())
                 .distinct()
                 .map(justification -> {
                     var matchAnalysis = matchAnalysisMap.get(justification);
@@ -133,7 +145,16 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull Constrai
                     }
                 })
                 .toList();
-        return new ConstraintAnalysis<>(constraintRef, constraintWeightDifference, scoreDifference, result);
+        return new ConstraintAnalysis<>(constraintRef, constraintWeightDifference, scoreDifference, matchAnalysesList,
+                getMatchCount(constraintAnalysis, otherConstraintAnalysis));
+    }
+
+    private static boolean hasMatchCount(ConstraintAnalysis<?> analysis) {
+        return analysis.matchCount >= 0;
+    }
+
+    private static int getMatchCount(ConstraintAnalysis<?> analysis, ConstraintAnalysis<?> otherAnalysis) {
+        return analysis.matchCount() - otherAnalysis.matchCount();
     }
 
     private static <Score_ extends Score<Score_>> Map<ConstraintJustification, MatchAnalysis<Score_>>
