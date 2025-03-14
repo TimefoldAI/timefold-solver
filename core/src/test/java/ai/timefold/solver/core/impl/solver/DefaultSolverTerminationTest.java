@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.solver;
 
-import java.time.Duration;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
@@ -14,6 +14,7 @@ import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristi
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.DiminishedReturnsTerminationConfig;
+import ai.timefold.solver.core.config.solver.termination.TerminationCompositionStyle;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEasyScoreCalculator;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
@@ -27,6 +28,11 @@ import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -137,14 +143,14 @@ class DefaultSolverTerminationTest {
                 .hasMessageContaining("UnimprovedTimeMillisSpent");
     }
 
-    @Test
+    @ParameterizedTest
+    @ArgumentsSource(TerminationArgumentSource.class)
     @Timeout(10)
-    void terminateEarlyConstructionHeuristic() {
+    void terminateEarlyConstructionHeuristic(TerminationConfig terminationConfig) {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataSolution.class, TestdataEntity.class)
                 .withEasyScoreCalculatorClass(DummySimpleScoreThrowingEasyScoreCalculator.class)
-                .withTerminationConfig(new TerminationConfig()
-                        .withSpentLimit(Duration.ofMinutes(10))) // Long enough to never trigger.
+                .withTerminationConfig(terminationConfig) // Long enough to never trigger.
                 .withPhases(new ConstructionHeuristicPhaseConfig());
 
         var solution = TestdataSolution.generateSolution(2, 2);
@@ -161,14 +167,38 @@ class DefaultSolverTerminationTest {
         Assertions.assertThat(solution).isNotNull();
     }
 
-    @Test
+    @ParameterizedTest
+    @ArgumentsSource(TerminationArgumentSource.class)
     @Timeout(10)
-    void terminateEarlyLocalSearch() {
+    void terminateEarlyConstructionHeuristicInterrupted(TerminationConfig terminationConfig) {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataSolution.class, TestdataEntity.class)
+                .withEasyScoreCalculatorClass(DummySimpleScoreInterruptingEasyScoreCalculator.class)
+                .withTerminationConfig(terminationConfig) // Long enough to never trigger.
+                .withPhases(new ConstructionHeuristicPhaseConfig());
+
+        var solution = TestdataSolution.generateSolution(2, 2);
+        solution.getEntityList().forEach(entity -> entity.setValue(null)); // Uninitialize.
+        var solver = SolverFactory.<TestdataSolution> create(solverConfig)
+                .buildSolver();
+        DummySimpleScoreThrowingEasyScoreCalculator.SOLVER.set(solver);
+
+        var resultingSolution = solver.solve(solution);
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(resultingSolution).isNotNull();
+            softly.assertThat(resultingSolution.getScore().initScore()).isLessThan(0);
+        });
+        Assertions.assertThat(solution).isNotNull();
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(TerminationArgumentSource.class)
+    @Timeout(10)
+    void terminateEarlyLocalSearch(TerminationConfig terminationConfig) {
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
-                .withTerminationConfig(new TerminationConfig()
-                        .withSpentLimit(Duration.ofMinutes(10))) // Long enough to never trigger.
+                .withTerminationConfig(terminationConfig) // Long enough to never trigger.
                 .withConstraintProviderClass(TestdataConstraintProviderNonzeroValues.class)
                 .withPhases(new LocalSearchPhaseConfig());
 
@@ -182,6 +212,53 @@ class DefaultSolverTerminationTest {
 
         var resultingSolution = solver.solve(solution);
         Assertions.assertThat(resultingSolution).isNotNull();
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(TerminationArgumentSource.class)
+    @Timeout(10)
+    void terminateEarlyLocalSearchInterrupted(TerminationConfig terminationConfig) {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withTerminationConfig(terminationConfig) // Long enough to never trigger.
+                .withConstraintProviderClass(TestdataConstraintProviderNonzeroValues.class)
+                .withPhases(new LocalSearchPhaseConfig());
+
+        var solution = TestdataSolution.generateSolution(2, 2);
+        var solver = SolverFactory.<TestdataSolution> create(solverConfig)
+                .buildSolver();
+        solver.addEventListener(event -> {
+            Thread.currentThread().interrupt(); // Once the solver is running, terminate it.
+            LOGGER.info("Sent request to terminate early.");
+        });
+
+        var resultingSolution = solver.solve(solution);
+        Assertions.assertThat(resultingSolution).isNotNull();
+    }
+
+    static class TerminationArgumentSource implements ArgumentsProvider {
+
+        @Override
+        public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+            return Stream.of(
+                    Arguments.of(new TerminationConfig().withStepCountLimit(10000)),
+                    Arguments.of(new TerminationConfig().withScoreCalculationCountLimit(10000L)),
+                    Arguments.of(new TerminationConfig().withBestScoreLimit("1000")),
+                    Arguments.of(new TerminationConfig().withDaysSpentLimit(10L)),
+                    Arguments.of(new TerminationConfig().withDiminishedReturns()),
+                    Arguments.of(new TerminationConfig().withUnimprovedDaysSpentLimit(10L)),
+                    Arguments.of(new TerminationConfig().withUnimprovedStepCountLimit(10000)),
+                    Arguments.of(new TerminationConfig().withMoveCountLimit(10000L)),
+                    Arguments.of(new TerminationConfig()
+                            .withStepCountLimit(10000)
+                            .withMoveCountLimit(10000L)
+                            .withTerminationCompositionStyle(TerminationCompositionStyle.OR)),
+                    Arguments.of(new TerminationConfig()
+                            .withStepCountLimit(10000)
+                            .withMoveCountLimit(10000L)
+                            .withTerminationCompositionStyle(TerminationCompositionStyle.AND)));
+        }
     }
 
     @NullMarked
@@ -207,6 +284,27 @@ class DefaultSolverTerminationTest {
                 }
                 case 1 -> { // CH did one step, guaranteed running.
                     SOLVER.get().terminateEarly();
+                    yield SimpleScore.ZERO;
+                }
+                default -> throw new AssertionError("Expected Construction Heuristic to terminate early");
+            };
+        }
+    }
+
+    @NullMarked
+    public static final class DummySimpleScoreInterruptingEasyScoreCalculator
+            implements EasyScoreCalculator<TestdataSolution, SimpleScore> {
+        @Override
+        public SimpleScore calculateScore(TestdataSolution solution) {
+            var unassignedCount = (int) solution.getEntityList().stream()
+                    .filter(entity -> entity.getValue() == null)
+                    .count();
+            return switch (unassignedCount) {
+                case 2 -> { // CH is starting, ensure we are in the right state.
+                    yield SimpleScore.ZERO;
+                }
+                case 1 -> { // CH did one step, guaranteed running.
+                    Thread.currentThread().interrupt();
                     yield SimpleScore.ZERO;
                 }
                 default -> throw new AssertionError("Expected Construction Heuristic to terminate early");
