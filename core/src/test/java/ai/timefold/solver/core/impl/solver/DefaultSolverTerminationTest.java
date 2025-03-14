@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.solver;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicReference;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
@@ -144,6 +143,8 @@ class DefaultSolverTerminationTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataSolution.class, TestdataEntity.class)
                 .withEasyScoreCalculatorClass(DummySimpleScoreThrowingEasyScoreCalculator.class)
+                .withTerminationConfig(new TerminationConfig()
+                        .withSpentLimit(Duration.ofMinutes(10))) // Long enough to never trigger.
                 .withPhases(new ConstructionHeuristicPhaseConfig());
 
         var solution = TestdataSolution.generateSolution(2, 2);
@@ -166,25 +167,20 @@ class DefaultSolverTerminationTest {
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
+                .withTerminationConfig(new TerminationConfig()
+                        .withSpentLimit(Duration.ofMinutes(10))) // Long enough to never trigger.
                 .withConstraintProviderClass(TestdataConstraintProviderNonzeroValues.class)
                 .withPhases(new LocalSearchPhaseConfig());
 
         var solution = TestdataSolution.generateSolution(2, 2);
         var solver = SolverFactory.<TestdataSolution> create(solverConfig)
                 .buildSolver();
-        var latch = new CountDownLatch(1);
         solver.addEventListener(event -> {
             solver.terminateEarly(); // Once the solver is running, terminate it.
-            latch.countDown();
             LOGGER.info("Sent request to terminate early.");
         });
 
         var resultingSolution = solver.solve(solution);
-        try {
-            latch.await(5, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Assertions.fail("Solver did not terminate early.");
-        }
         Assertions.assertThat(resultingSolution).isNotNull();
     }
 

@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.solver.termination;
 
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
@@ -7,7 +8,7 @@ import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public final class ChildThreadPlumbingTermination<Solution_>
-        extends AbstractSolverTermination<Solution_>
+        extends AbstractUniversalTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private boolean terminateChildren = false;
@@ -36,6 +37,16 @@ public final class ChildThreadPlumbingTermination<Solution_>
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
         return -1.0; // Not supported
+    }
+
+    @Override
+    public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
+        return isSolverTerminated(phaseScope.getSolverScope());
+    }
+
+    @Override
+    public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
+        return calculateSolverTimeGradient(phaseScope.getSolverScope());
     }
 
     @Override

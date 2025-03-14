@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.change.ProblemChangeAdapter;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
@@ -17,7 +18,7 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public final class BasicPlumbingTermination<Solution_>
-        extends AbstractSolverTermination<Solution_>
+        extends AbstractUniversalTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
     private final boolean daemon;
@@ -124,6 +125,16 @@ public final class BasicPlumbingTermination<Solution_>
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
         return -1.0; // Not supported
+    }
+
+    @Override
+    public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
+        return isSolverTerminated(phaseScope.getSolverScope());
+    }
+
+    @Override
+    public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
+        return calculateSolverTimeGradient(phaseScope.getSolverScope());
     }
 
     @Override
