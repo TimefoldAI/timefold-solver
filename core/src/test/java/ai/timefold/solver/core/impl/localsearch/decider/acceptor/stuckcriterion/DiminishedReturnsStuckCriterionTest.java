@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion;
 
+import static ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.DiminishedReturnsStuckCriterion.REGULAR_TIME_WINDOW_MILLIS;
 import static ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.DiminishedReturnsStuckCriterion.START_TIME_WINDOW_MILLIS;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -29,7 +30,7 @@ class DiminishedReturnsStuckCriterionTest {
         when(moveScope.getStepScope()).thenReturn(stepScope);
         when(stepScope.getPhaseScope()).thenReturn(phaseScope);
         when(phaseScope.getSolverScope()).thenReturn(solverScope);
-        when(moveScope.getScore()).thenReturn(SimpleScore.of(1));
+        when(stepScope.getScore()).thenReturn(SimpleScore.of(1));
         when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(1));
         when(termination.isTerminated(anyLong(), any())).thenReturn(false, true);
 
@@ -59,7 +60,7 @@ class DiminishedReturnsStuckCriterionTest {
         when(moveScope.getStepScope()).thenReturn(stepScope);
         when(stepScope.getPhaseScope()).thenReturn(phaseScope);
         when(phaseScope.getSolverScope()).thenReturn(solverScope);
-        when(moveScope.getScore()).thenReturn(SimpleScore.of(1));
+        when(stepScope.getScore()).thenReturn(SimpleScore.of(1));
         when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(1));
         when(termination.isTerminated(anyLong(), any())).thenReturn(true);
 
@@ -74,6 +75,6 @@ class DiminishedReturnsStuckCriterionTest {
         strategy.stepStarted(stepScope);
         when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(2));
         strategy.stepEnded(stepScope);
-        assertThat(strategy.nextRestart).isEqualTo(START_TIME_WINDOW_MILLIS);
+        assertThat(strategy.nextRestart).isEqualTo(REGULAR_TIME_WINDOW_MILLIS);
     }
 }

@@ -269,24 +269,9 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
     }
 
     @Test
-    void triggerRestart() {
-        var stuckCriterion = mock(StuckCriterion.class);
-        when(stuckCriterion.isSolverStuck(any())).thenReturn(true);
-        var acceptor = new LateAcceptanceAcceptor<>(stuckCriterion);
-        acceptor.setLateAcceptanceSize(3);
-        var solverScope = new SolverScope<>();
-        var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
-        var stepScope0 = new LocalSearchStepScope<>(phaseScope);
-        var moveScope0 = buildMoveScope(stepScope0, -2000);
-        assertThat(acceptor.isAccepted(moveScope0)).isTrue();
-        assertThat(phaseScope.isSolverStuck()).isTrue();
-    }
-
-    @Test
     void delayRestart() {
         var stuckCriterion = mock(StuckCriterion.class);
         var acceptor = new LateAcceptanceAcceptor<>(stuckCriterion);
-        var restartStrategy = new AcceptorRestartStrategy(acceptor);
         acceptor.setLateAcceptanceSize(5);
         var solverScope = new SolverScope<>();
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
@@ -295,17 +280,15 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         var moveScope0 = buildMoveScope(stepScope0, -3000);
         phaseScope.setLastCompletedStepScope(stepScope0);
         solverScope.setBestScore(SimpleScore.of(-1000));
+        when(stuckCriterion.isSolverStuck(any())).thenReturn(true);
+
+        // Init
         acceptor.solvingStarted(solverScope);
         acceptor.phaseStarted(phaseScope);
         acceptor.stepStarted(stepScope0);
         assertThat(acceptor.isAccepted(moveScope0)).isFalse();
 
-        // Delay because there aren't enough top scores in the queue
-        assertThat(acceptor.bestScoreQueue.size()).isOne();
-        restartStrategy.applyRestart(stepScope0);
-        assertThat(acceptor.coefficient).isZero();
-
-        // Delay because the diversity is still high on the first event
+        // Delay because the diversity is still high
         acceptor.bestScoreQueue.addLast(SimpleScore.of(-999));
         acceptor.bestScoreQueue.addLast(SimpleScore.of(-998));
         acceptor.previousScores[0] = SimpleScore.of(-1002);
@@ -313,47 +296,53 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         acceptor.previousScores[2] = SimpleScore.of(-1000);
         acceptor.previousScores[3] = SimpleScore.of(-999);
         acceptor.previousScores[4] = SimpleScore.of(-998);
-        restartStrategy.applyRestart(stepScope0);
-        assertThat(acceptor.coefficient).isZero();
+        // Check the restart event
+        acceptor.stepEnded(stepScope0);
+        assertThat(phaseScope.isSolverStuck()).isFalse();
+
+        // Delay because the best score has no improvement
+        acceptor.previousScores[0] = SimpleScore.of(-1001);
+        acceptor.previousScores[1] = SimpleScore.of(-1001);
+        acceptor.previousScores[2] = SimpleScore.of(-1001);
+        acceptor.previousScores[3] = SimpleScore.of(-1001);
+        acceptor.previousScores[4] = SimpleScore.of(-1001);
+        acceptor.bestScoreQueue.clear();
+        acceptor.bestScoreQueue.addLast(SimpleScore.of(-999));
+        acceptor.stepEnded(stepScope0);
+        assertThat(phaseScope.isSolverStuck()).isFalse();
     }
 
     @Test
-    void delayOnlyFirstRestart() {
+    void restart() {
         var stuckCriterion = mock(StuckCriterion.class);
         var acceptor = new LateAcceptanceAcceptor<>(stuckCriterion);
-        var restartStrategy = new AcceptorRestartStrategy(acceptor);
         acceptor.setLateAcceptanceSize(5);
         var solverScope = new SolverScope<>();
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         var stepScope0 = new LocalSearchStepScope<>(phaseScope);
         stepScope0.setScore(SimpleScore.of(-1000));
-        var moveScope0 = buildMoveScope(stepScope0, -3000);
         phaseScope.setLastCompletedStepScope(stepScope0);
         solverScope.setBestScore(SimpleScore.of(-1000));
+        when(stuckCriterion.isSolverStuck(any())).thenReturn(true);
+
+        // Init
         acceptor.solvingStarted(solverScope);
         acceptor.phaseStarted(phaseScope);
         acceptor.stepStarted(stepScope0);
-        assertThat(acceptor.isAccepted(moveScope0)).isFalse();
-
-        // Delay because the diversity is still high on the first event
-        acceptor.bestScoreQueue.addLast(SimpleScore.of(-999));
-        acceptor.bestScoreQueue.addLast(SimpleScore.of(-998));
-        acceptor.previousScores[0] = SimpleScore.of(-1002);
-        acceptor.previousScores[1] = SimpleScore.of(-1001);
-        acceptor.previousScores[2] = SimpleScore.of(-1000);
-        acceptor.previousScores[3] = SimpleScore.of(-999);
-        acceptor.previousScores[4] = SimpleScore.of(-998);
-        restartStrategy.applyRestart(stepScope0);
-        assertThat(acceptor.coefficient).isZero();
 
         // Trigger the restart event as the diversity dropped
-        acceptor.previousScores[0] = SimpleScore.of(-1002);
-        acceptor.previousScores[1] = SimpleScore.of(-1002);
-        acceptor.previousScores[2] = SimpleScore.of(-1002);
-        acceptor.previousScores[3] = SimpleScore.of(-1002);
-        acceptor.previousScores[4] = SimpleScore.of(-1002);
-        restartStrategy.applyRestart(stepScope0);
-        assertThat(acceptor.coefficient).isOne();
+        // no diversity
+        acceptor.previousScores[0] = SimpleScore.of(-1001);
+        acceptor.previousScores[1] = SimpleScore.of(-1001);
+        acceptor.previousScores[2] = SimpleScore.of(-1001);
+        acceptor.previousScores[3] = SimpleScore.of(-1001);
+        acceptor.previousScores[4] = SimpleScore.of(-1001);
+        // more than one best score
+        acceptor.bestScoreQueue.addLast(SimpleScore.of(-1001));
+        acceptor.bestScoreQueue.addLast(SimpleScore.of(-1002));
+
+        acceptor.stepEnded(stepScope0);
+        assertThat(phaseScope.isSolverStuck()).isTrue();
     }
 
     @Test

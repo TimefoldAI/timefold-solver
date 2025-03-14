@@ -82,7 +82,7 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
 
     @Override
     @SuppressWarnings("unchecked")
-    public boolean accept(LocalSearchMoveScope<Solution_> moveScope) {
+    public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         var moveScore = moveScope.getScore();
         if (moveScore.compareTo(moveScope.getStepScope().getPhaseScope().getBestScore()) != 0
                 && (bestStepScore == null || moveScore.compareTo(bestStepScore) > 0)) {
