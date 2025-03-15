@@ -7,22 +7,19 @@ import ai.timefold.solver.core.impl.solver.termination.DiminishedReturnsTerminat
 
 public class DiminishedReturnsStuckCriterion<Solution_, Score_ extends Score<Score_>>
         extends AbstractGeometricStuckCriterion<Solution_> {
-    // Time window used at the beginning of the solving process
-    protected static final long START_TIME_WINDOW_MILLIS = 10_000;
-    // Time window used once the first restart event is triggered and accepted
-    protected static final long REGULAR_TIME_WINDOW_MILLIS = 600_000;
+    protected static final long TIME_WINDOW_MILLIS = 10_000;
     private static final double MINIMAL_IMPROVEMENT = 0.0001;
 
     private DiminishedReturnsTermination<Solution_, Score_> diminishedReturnsCriterion;
 
-    private boolean triggered;
+    protected boolean triggered;
 
     public DiminishedReturnsStuckCriterion() {
-        this(new DiminishedReturnsTermination<>(START_TIME_WINDOW_MILLIS, MINIMAL_IMPROVEMENT));
+        this(new DiminishedReturnsTermination<>(TIME_WINDOW_MILLIS, MINIMAL_IMPROVEMENT));
     }
 
     protected DiminishedReturnsStuckCriterion(DiminishedReturnsTermination<Solution_, Score_> diminishedReturnsCriterion) {
-        super(START_TIME_WINDOW_MILLIS);
+        super(TIME_WINDOW_MILLIS);
         this.diminishedReturnsCriterion = diminishedReturnsCriterion;
     }
 
@@ -47,11 +44,6 @@ public class DiminishedReturnsStuckCriterion<Solution_, Score_ extends Score<Sco
     @Override
     public void stepStarted(LocalSearchStepScope<Solution_> stepScope) {
         if (triggered) {
-            // Once the first restart event is triggered and accepted, we adjust the time window to the regular one.
-            // The aim is to give the solver more time to operate after applying the restart configuration.
-            if (getScalingFactor() == START_TIME_WINDOW_MILLIS) {
-                setScalingFactor(REGULAR_TIME_WINDOW_MILLIS);
-            }
             reset(stepScope);
         }
     }

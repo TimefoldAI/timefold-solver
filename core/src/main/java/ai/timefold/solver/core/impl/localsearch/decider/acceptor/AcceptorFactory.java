@@ -223,7 +223,7 @@ public class AcceptorFactory<Solution_> {
                 || (!acceptorTypeListsContainsAcceptorType(AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE)
                         && acceptorConfig.getLateAcceptanceSize() != null)) {
             StuckCriterion<Solution_> strategy = new DiminishedReturnsStuckCriterion<>();
-            var acceptor = new LateAcceptanceAcceptor<>(strategy);
+            var acceptor = new LateAcceptanceAcceptor<>(true, strategy);
             acceptor.setLateAcceptanceSize(Objects.requireNonNullElse(acceptorConfig.getLateAcceptanceSize(), 400));
             return Optional.of(acceptor);
         }

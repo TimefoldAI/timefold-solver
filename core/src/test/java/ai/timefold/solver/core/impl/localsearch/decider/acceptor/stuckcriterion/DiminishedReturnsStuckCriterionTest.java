@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion;
 
-import static ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.DiminishedReturnsStuckCriterion.REGULAR_TIME_WINDOW_MILLIS;
-import static ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.DiminishedReturnsStuckCriterion.START_TIME_WINDOW_MILLIS;
+import static ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.DiminishedReturnsStuckCriterion.TIME_WINDOW_MILLIS;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -42,11 +41,11 @@ class DiminishedReturnsStuckCriterionTest {
 
         // First restart
         assertThat(strategy.isSolverStuck(stepScope)).isTrue();
-        assertThat(strategy.nextRestart).isEqualTo(2L * START_TIME_WINDOW_MILLIS);
+        assertThat(strategy.nextRestart).isEqualTo(2L * TIME_WINDOW_MILLIS);
 
         // Second restart
         assertThat(strategy.isSolverStuck(stepScope)).isTrue();
-        assertThat(strategy.nextRestart).isEqualTo(3L * START_TIME_WINDOW_MILLIS);
+        assertThat(strategy.nextRestart).isEqualTo(3L * TIME_WINDOW_MILLIS);
     }
 
     @Test
@@ -69,12 +68,13 @@ class DiminishedReturnsStuckCriterionTest {
         strategy.solvingStarted(null);
         strategy.phaseStarted(phaseScope);
         assertThat(strategy.isSolverStuck(stepScope)).isTrue();
-        assertThat(strategy.nextRestart).isEqualTo(2L * START_TIME_WINDOW_MILLIS);
+        assertThat(strategy.nextRestart).isEqualTo(2L * TIME_WINDOW_MILLIS);
+        assertThat(strategy.triggered).isTrue();
 
         // Reset
         strategy.stepStarted(stepScope);
         when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(2));
-        strategy.stepEnded(stepScope);
-        assertThat(strategy.nextRestart).isEqualTo(REGULAR_TIME_WINDOW_MILLIS);
+        strategy.reset(stepScope);
+        assertThat(strategy.triggered).isFalse();
     }
 }

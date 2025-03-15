@@ -13,50 +13,62 @@ public abstract class RestartableAcceptor<Solution_> extends AbstractAcceptor<So
 
     private final StuckCriterion<Solution_> stuckCriterion;
     protected boolean restartTriggered;
+    private boolean enabled;
 
-    protected RestartableAcceptor(StuckCriterion<Solution_> stuckCriterion) {
+    protected RestartableAcceptor(boolean enabled, StuckCriterion<Solution_> stuckCriterion) {
+        this.enabled = enabled;
         this.stuckCriterion = stuckCriterion;
     }
 
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         super.solvingStarted(solverScope);
-        stuckCriterion.solvingStarted(solverScope);
+        if (enabled) {
+            stuckCriterion.solvingStarted(solverScope);
+        }
     }
 
     @Override
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
-        stuckCriterion.phaseStarted(phaseScope);
+        if (enabled) {
+            stuckCriterion.phaseStarted(phaseScope);
+        }
     }
 
     @Override
     public void phaseEnded(LocalSearchPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
-        stuckCriterion.phaseEnded(phaseScope);
+        if (enabled) {
+            stuckCriterion.phaseEnded(phaseScope);
+        }
     }
 
     @Override
     public void stepStarted(LocalSearchStepScope<Solution_> stepScope) {
         super.stepStarted(stepScope);
-        stuckCriterion.stepStarted(stepScope);
+        if (enabled) {
+            stuckCriterion.stepStarted(stepScope);
+        }
     }
 
     @Override
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
         super.stepEnded(stepScope);
-        if (stuckCriterion.isSolverStuck(stepScope)) {
-            if (rejectRestartEvent()) {
-                // We need to reset the criterion,
-                // or it will trigger the restart event in the next evaluation
-                stuckCriterion.reset(stepScope);
-                restartTriggered = false;
-            } else {
-                stepScope.getPhaseScope().setSolverStuck(true);
-                restartTriggered = true;
+        if (enabled) {
+            if (stuckCriterion.isSolverStuck(stepScope)) {
+                if (rejectRestartEvent()) {
+                    // We need to reset the criterion,
+                    // or it will trigger the restart event in the next evaluation
+                    stuckCriterion.reset(stepScope);
+                    restartTriggered = false;
+                } else {
+                    stepScope.getPhaseScope().setSolverStuck(true);
+                    restartTriggered = true;
+                }
             }
+            stuckCriterion.stepEnded(stepScope);
         }
-        stuckCriterion.stepEnded(stepScope);
     }
 
     /**

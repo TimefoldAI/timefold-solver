@@ -15,8 +15,8 @@ import ai.timefold.solver.core.impl.util.MutableInt;
 public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solution_> {
 
     protected static final double MIN_DIVERSITY_RATIO = 0.05;
-    // The goal is to increase from hundreds to thousands in the first restart event and then increment it linearly
-    protected static final int SCALING_FACTOR = 10;
+    protected static final int SCALE_FACTOR = 3;
+    private static final int MAX_REJECTED_EVENTS = 3;
 
     protected int lateAcceptanceSize = -1;
     protected boolean hillClimbingEnabled = true;
@@ -24,17 +24,18 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
     protected Score<?>[] previousScores;
     protected int lateScoreIndex = -1;
 
-    private int maxBestScoreSize;
     private Score<?> bestStepScore;
     private Score<?> currentBestScore;
     // Keep track of the best scores accumulated so far. This list will be used to reseed the later elements list.
     protected Deque<Score<?>> bestScoreQueue;
-    private int defaultLateAcceptanceSize;
+    protected int defaultLateAcceptanceSize;
+    protected int maxBestScoreSize;
     protected int coefficient;
-    private int countRestartWithoutImprovement;
+    private boolean allowDecrease;
+    private int countRejected;
 
-    public LateAcceptanceAcceptor(StuckCriterion<Solution_> stuckCriterionDetection) {
-        super(stuckCriterionDetection);
+    public LateAcceptanceAcceptor(boolean enableRestart, StuckCriterion<Solution_> stuckCriterionDetection) {
+        super(enableRestart, stuckCriterionDetection);
     }
 
     public void setLateAcceptanceSize(int lateAcceptanceSize) {
@@ -64,13 +65,13 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
         var initialScore = phaseScope.getBestScore();
         Arrays.fill(previousScores, initialScore);
         lateScoreIndex = 0;
-        coefficient = 0;
-        countRestartWithoutImprovement = 0;
-        defaultLateAcceptanceSize = lateAcceptanceSize;
-        // The maximum size is three times the size of the initial element list
-        maxBestScoreSize = defaultLateAcceptanceSize * 3 * SCALING_FACTOR;
+        coefficient = 1;
+        allowDecrease = false;
+        countRejected = 0;
+        maxBestScoreSize = lateAcceptanceSize * 3;
         bestScoreQueue = new ArrayDeque<>(maxBestScoreSize);
         bestScoreQueue.addLast(initialScore);
+        defaultLateAcceptanceSize = lateAcceptanceSize;
     }
 
     private void validate() {
@@ -106,14 +107,14 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
         previousScores[lateScoreIndex] = stepScope.getScore();
         lateScoreIndex = (lateScoreIndex + 1) % lateAcceptanceSize;
         if (((Score) currentBestScore).compareTo(stepScope.getScore()) < 0) {
-            if (countRestartWithoutImprovement > 0 && coefficient > 0) {
+            if (allowDecrease) {
                 // We decrease the coefficient
                 // if there is an improvement
                 // to avoid altering the late element size in the next restart event.
                 // This action is performed only once after a restart event
-                coefficient--;
+                coefficient /= SCALE_FACTOR;
+                allowDecrease = false;
             }
-            countRestartWithoutImprovement = 0;
             if (bestScoreQueue.size() < maxBestScoreSize) {
                 bestScoreQueue.addLast(stepScope.getScore());
             } else {
@@ -137,18 +138,26 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
         // and the proposed approach requires some diversity to reseed the scores.
         var reject = diversity > MIN_DIVERSITY_RATIO || bestScoreQueue.size() == 1;
         if (reject) {
+            countRejected++;
+            if (countRejected > MAX_REJECTED_EVENTS && bestScoreQueue.size() > 1) {
+                logger.info(
+                        "Restart event not rejected. Diversity ({}), Count best scores ({}), Distinct Elements ({}), Rejection Count ({})",
+                        diversity, bestScoreQueue.size(), distinctElements, countRejected);
+                return false;
+            }
             logger.info(
-                    "Restart event delayed. Diversity ({}), Count best scores ({}), Distinct Elements ({}), Restart without Improvement ({})",
-                    diversity, bestScoreQueue.size(), distinctElements, countRestartWithoutImprovement);
+                    "Restart event delayed. Diversity ({}), Count best scores ({}), Distinct Elements ({}), Rejection Count ({})",
+                    diversity, bestScoreQueue.size(), distinctElements, countRejected);
         }
         return reject;
     }
 
     @Override
     public void restart(LocalSearchStepScope<Solution_> stepScope) {
-        countRestartWithoutImprovement++;
-        coefficient++;
-        var newLateAcceptanceSize = defaultLateAcceptanceSize * coefficient * SCALING_FACTOR;
+        coefficient *= SCALE_FACTOR;
+        allowDecrease = true;
+        countRejected = 0;
+        var newLateAcceptanceSize = defaultLateAcceptanceSize * coefficient;
         if (logger.isInfoEnabled()) {
             if (lateAcceptanceSize == newLateAcceptanceSize) {
                 logger.info("Keeping the lateAcceptanceSize as {}.", lateAcceptanceSize);
@@ -171,15 +180,15 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
      */
     private void rebuildLateElementsList(int newLateAcceptanceSize) {
         var newPreviousScores = new Score[newLateAcceptanceSize];
-        var countPerScore = newLateAcceptanceSize / bestScoreQueue.size() + 1;
-        var count = new MutableInt(newLateAcceptanceSize - 1);
-        var iterator = bestScoreQueue.descendingIterator();
-        while (count.intValue() >= 0 && iterator.hasNext()) {
+        var countPerScore = Math.min(newLateAcceptanceSize / 2, (newLateAcceptanceSize / bestScoreQueue.size()) * 2);
+        var count = new MutableInt(0);
+        var iterator = bestScoreQueue.iterator();
+        while (count.intValue() < newLateAcceptanceSize && iterator.hasNext()) {
             var score = iterator.next();
             for (var i = 0; i < countPerScore; i++) {
                 newPreviousScores[count.intValue()] = score;
-                count.decrement();
-                if (count.intValue() < 0) {
+                count.increment();
+                if (count.intValue() == newLateAcceptanceSize) {
                     break;
                 }
             }

@@ -22,7 +22,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
     void lateAcceptanceSize() {
         var restartStrategy = mock(StuckCriterion.class);
         when(restartStrategy.isSolverStuck(any())).thenReturn(false);
-        var acceptor = new LateAcceptanceAcceptor<>(restartStrategy);
+        var acceptor = new LateAcceptanceAcceptor<>(true, restartStrategy);
         acceptor.setLateAcceptanceSize(3);
         acceptor.setHillClimbingEnabled(false);
 
@@ -138,7 +138,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
     void hillClimbingEnabled() {
         var restartStrategy = mock(StuckCriterion.class);
         when(restartStrategy.isSolverStuck(any())).thenReturn(false);
-        var acceptor = new LateAcceptanceAcceptor<>(restartStrategy);
+        var acceptor = new LateAcceptanceAcceptor<>(true, restartStrategy);
         acceptor.setLateAcceptanceSize(2);
         acceptor.setHillClimbingEnabled(true);
 
@@ -254,7 +254,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
     void zeroLateAcceptanceSize() {
         var restartStrategy = mock(StuckCriterion.class);
         when(restartStrategy.isSolverStuck(any())).thenReturn(false);
-        var acceptor = new LateAcceptanceAcceptor<>(restartStrategy);
+        var acceptor = new LateAcceptanceAcceptor<>(true, restartStrategy);
         acceptor.setLateAcceptanceSize(0);
         assertThatIllegalArgumentException().isThrownBy(() -> acceptor.phaseStarted(null));
     }
@@ -263,7 +263,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
     void negativeLateAcceptanceSize() {
         var restartStrategy = mock(StuckCriterion.class);
         when(restartStrategy.isSolverStuck(any())).thenReturn(false);
-        var acceptor = new LateAcceptanceAcceptor<>(restartStrategy);
+        var acceptor = new LateAcceptanceAcceptor<>(true, restartStrategy);
         acceptor.setLateAcceptanceSize(-1);
         assertThatIllegalArgumentException().isThrownBy(() -> acceptor.phaseStarted(null));
     }
@@ -271,7 +271,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
     @Test
     void delayRestart() {
         var stuckCriterion = mock(StuckCriterion.class);
-        var acceptor = new LateAcceptanceAcceptor<>(stuckCriterion);
+        var acceptor = new LateAcceptanceAcceptor<>(true, stuckCriterion);
         acceptor.setLateAcceptanceSize(5);
         var solverScope = new SolverScope<>();
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
@@ -313,9 +313,49 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
     }
 
     @Test
+    void restartAfterDelays() {
+        var stuckCriterion = mock(StuckCriterion.class);
+        var acceptor = new LateAcceptanceAcceptor<>(true, stuckCriterion);
+        acceptor.setLateAcceptanceSize(5);
+        var solverScope = new SolverScope<>();
+        var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
+        var stepScope0 = new LocalSearchStepScope<>(phaseScope);
+        stepScope0.setScore(SimpleScore.of(-1000));
+        var moveScope0 = buildMoveScope(stepScope0, -3000);
+        phaseScope.setLastCompletedStepScope(stepScope0);
+        solverScope.setBestScore(SimpleScore.of(-1000));
+        when(stuckCriterion.isSolverStuck(any())).thenReturn(true);
+
+        // Init
+        acceptor.solvingStarted(solverScope);
+        acceptor.phaseStarted(phaseScope);
+        acceptor.stepStarted(stepScope0);
+        assertThat(acceptor.isAccepted(moveScope0)).isFalse();
+
+        // Delay because the diversity is still high
+        acceptor.bestScoreQueue.addLast(SimpleScore.of(-999));
+        acceptor.bestScoreQueue.addLast(SimpleScore.of(-998));
+        acceptor.previousScores[0] = SimpleScore.of(-1002);
+        acceptor.previousScores[1] = SimpleScore.of(-1001);
+        acceptor.previousScores[2] = SimpleScore.of(-1000);
+        acceptor.previousScores[3] = SimpleScore.of(-999);
+        acceptor.previousScores[4] = SimpleScore.of(-998);
+
+        // Three delays in a row
+        acceptor.stepEnded(stepScope0);
+        acceptor.stepEnded(stepScope0);
+        acceptor.stepEnded(stepScope0);
+        assertThat(phaseScope.isSolverStuck()).isFalse();
+
+        // Trigger it
+        acceptor.stepEnded(stepScope0);
+        assertThat(phaseScope.isSolverStuck()).isTrue();
+    }
+
+    @Test
     void restart() {
         var stuckCriterion = mock(StuckCriterion.class);
-        var acceptor = new LateAcceptanceAcceptor<>(stuckCriterion);
+        var acceptor = new LateAcceptanceAcceptor<>(true, stuckCriterion);
         acceptor.setLateAcceptanceSize(5);
         var solverScope = new SolverScope<>();
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
@@ -341,6 +381,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         acceptor.bestScoreQueue.addLast(SimpleScore.of(-1001));
         acceptor.bestScoreQueue.addLast(SimpleScore.of(-1002));
 
+        assertThat(phaseScope.isSolverStuck()).isFalse();
         acceptor.stepEnded(stepScope0);
         assertThat(phaseScope.isSolverStuck()).isTrue();
     }
@@ -348,7 +389,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
     @Test
     void ensureDiversity() {
         var stuckCriterion = mock(StuckCriterion.class);
-        var acceptor = new LateAcceptanceAcceptor<>(stuckCriterion);
+        var acceptor = new LateAcceptanceAcceptor<>(true, stuckCriterion);
         var restartStrategy = new AcceptorRestartStrategy(acceptor);
         acceptor.setLateAcceptanceSize(5);
         var solverScope = new SolverScope<>();
@@ -377,7 +418,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
     @Test
     void reconfigureAfterImprovement() {
         var stuckCriterion = mock(StuckCriterion.class);
-        var acceptor = new LateAcceptanceAcceptor<>(stuckCriterion);
+        var acceptor = new LateAcceptanceAcceptor<>(true, stuckCriterion);
         var restartStrategy = new AcceptorRestartStrategy(acceptor);
         acceptor.setLateAcceptanceSize(5);
         var solverScope = new SolverScope<>();
@@ -399,12 +440,12 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         acceptor.bestScoreQueue.addLast(SimpleScore.of(-996));
         acceptor.bestScoreQueue.addLast(SimpleScore.of(-995));
         restartStrategy.applyRestart(stepScope0);
-        assertThat(acceptor.coefficient).isOne();
+        assertThat(acceptor.coefficient).isEqualTo(LateAcceptanceAcceptor.SCALE_FACTOR);
 
         // Step that improves the best solution should not change the late elements list in the next restart
         var stepScope1 = new LocalSearchStepScope<>(phaseScope);
         stepScope1.setScore(SimpleScore.of(-900));
         acceptor.stepEnded(stepScope1);
-        assertThat(acceptor.coefficient).isZero();
+        assertThat(acceptor.coefficient).isOne();
     }
 }
