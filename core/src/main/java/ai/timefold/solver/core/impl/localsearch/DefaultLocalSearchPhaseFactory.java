@@ -32,6 +32,8 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AcceptorFactory;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForagerFactory;
+import ai.timefold.solver.core.impl.localsearch.decider.restart.AcceptorRestartStrategy;
+import ai.timefold.solver.core.impl.localsearch.decider.restart.RestartStrategy;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
@@ -59,6 +61,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
             PhaseTermination<Solution_> termination) {
         var moveSelector = buildMoveSelector(configPolicy);
         var acceptor = buildAcceptor(configPolicy);
+        RestartStrategy<Solution_> restartStrategy = new AcceptorRestartStrategy<>(acceptor);
         var forager = buildForager(configPolicy);
         if (moveSelector.isNeverEnding() && !forager.supportsNeverEndingMoveSelector()) {
             throw new IllegalStateException("The moveSelector (" + moveSelector
@@ -71,11 +74,12 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         var environmentMode = configPolicy.getEnvironmentMode();
         LocalSearchDecider<Solution_> decider;
         if (moveThreadCount == null) {
-            decider = new LocalSearchDecider<>(configPolicy.getLogIndentation(), termination, moveSelector, acceptor, forager);
+            decider = new LocalSearchDecider<>(configPolicy.getLogIndentation(), termination, moveSelector,
+                    restartStrategy, acceptor, forager);
         } else {
             decider = TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTITHREADED_SOLVING)
-                    .buildLocalSearch(moveThreadCount, termination, moveSelector, acceptor, forager, environmentMode,
-                            configPolicy);
+                    .buildLocalSearch(moveThreadCount, termination, moveSelector, restartStrategy, acceptor, forager,
+                            environmentMode, configPolicy);
         }
         decider.enableAssertions(environmentMode);
         return decider;

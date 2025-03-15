@@ -11,7 +11,7 @@ import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>>
+public final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>>
         extends AbstractPhaseTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
