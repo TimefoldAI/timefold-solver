@@ -28,6 +28,14 @@ public final class LocalSearchPhaseScope<Solution_> extends AbstractPhaseScope<S
         this.lastCompletedStepScope = lastCompletedStepScope;
     }
 
+    public void setDecider(LocalSearchDecider<Solution_> decider) {
+        this.decider = decider;
+    }
+
+    public LocalSearchDecider<Solution_> getDecider() {
+        return decider;
+    }
+
     // ************************************************************************
     // Calculated methods
     // ************************************************************************

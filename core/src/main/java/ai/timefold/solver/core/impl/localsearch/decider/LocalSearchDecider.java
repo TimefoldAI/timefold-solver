@@ -82,15 +82,16 @@ public class LocalSearchDecider<Solution_> {
         forager.solvingStarted(solverScope);
     }
 
-    public void moveSelectorPhaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
-        moveSelector.phaseStarted(phaseScope);
-    }
-
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
         restartStrategy.phaseStarted(phaseScope);
         moveSelectorPhaseStarted(phaseScope);
         acceptor.phaseStarted(phaseScope);
         forager.phaseStarted(phaseScope);
+        phaseScope.setDecider(this);
+    }
+
+    public void moveSelectorPhaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
+        moveSelector.phaseStarted(phaseScope);
     }
 
     public void stepStarted(LocalSearchStepScope<Solution_> stepScope) {
@@ -157,6 +158,17 @@ public class LocalSearchDecider<Solution_> {
         }
     }
 
+    public void doMoveOnly(LocalSearchPhaseScope<Solution_> phaseScope,
+            ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> move) {
+        MoveDirector<Solution_> moveDirector = phaseScope.getScoreDirector().getMoveDirector();
+        var adaptedMove = new LegacyMoveAdapter<>(move);
+        adaptedMove.execute(moveDirector);
+        LocalSearchStepScope lastStepScope = new LocalSearchStepScope(phaseScope);
+        lastStepScope.setStep(adaptedMove);
+        lastStepScope.setScore(phaseScope.getScoreDirector().calculateScore());
+        phaseScope.setLastCompletedStepScope(lastStepScope);
+    }
+
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
         if (restartStrategy.isSolverStuck(stepScope)) {
             restartStrategy.applyRestart(stepScope);
@@ -179,6 +191,11 @@ public class LocalSearchDecider<Solution_> {
         moveSelector.solvingEnded(solverScope);
         acceptor.solvingEnded(solverScope);
         forager.solvingEnded(solverScope);
+    }
+
+    public void restoreCurrentBestSolution(LocalSearchPhaseScope<Solution_> phaseScope) {
+        phaseScope.getSolverScope().setWorkingSolutionFromBestSolution();
+        moveSelectorPhaseStarted(phaseScope);
     }
 
     public void solvingError(SolverScope<Solution_> solverScope, Exception exception) {

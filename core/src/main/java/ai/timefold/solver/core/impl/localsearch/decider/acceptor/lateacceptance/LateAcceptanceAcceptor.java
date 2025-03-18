@@ -1,8 +1,11 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance;
 
+import static java.util.stream.Collectors.joining;
+
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
+import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.RestartableAcceptor;
@@ -10,13 +13,11 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
-import ai.timefold.solver.core.impl.util.MutableInt;
 
 public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solution_> {
 
     protected static final double MIN_DIVERSITY_RATIO = 0.05;
-    protected static final int SCALE_FACTOR = 3;
-    private static final int MAX_REJECTED_EVENTS = 3;
+    protected static final int GEOMETRIC_FACTOR = 3;
 
     protected int lateAcceptanceSize = -1;
     protected boolean hillClimbingEnabled = true;
@@ -24,7 +25,7 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
     protected Score<?>[] previousScores;
     protected int lateScoreIndex = -1;
 
-    private Score<?> bestStepScore;
+    private final boolean enableStepIntensification;
     private Score<?> currentBestScore;
     // Keep track of the best scores accumulated so far. This list will be used to reseed the later elements list.
     protected Deque<Score<?>> bestScoreQueue;
@@ -32,10 +33,15 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
     protected int maxBestScoreSize;
     protected int coefficient;
     private boolean allowDecrease;
-    private int countRejected;
 
     public LateAcceptanceAcceptor(boolean enableRestart, StuckCriterion<Solution_> stuckCriterionDetection) {
+        this(true, enableRestart, stuckCriterionDetection);
+    }
+
+    public LateAcceptanceAcceptor(boolean enableStepIntensification, boolean enableRestart,
+            StuckCriterion<Solution_> stuckCriterionDetection) {
         super(enableRestart, stuckCriterionDetection);
+        this.enableStepIntensification = enableStepIntensification;
     }
 
     public void setLateAcceptanceSize(int lateAcceptanceSize) {
@@ -54,7 +60,6 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
     public void stepStarted(LocalSearchStepScope<Solution_> stepScope) {
         super.stepStarted(stepScope);
         currentBestScore = stepScope.getPhaseScope().getBestScore();
-        bestStepScore = null;
     }
 
     @Override
@@ -67,8 +72,7 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
         lateScoreIndex = 0;
         coefficient = 1;
         allowDecrease = false;
-        countRejected = 0;
-        maxBestScoreSize = lateAcceptanceSize * 3;
+        maxBestScoreSize = 50;
         bestScoreQueue = new ArrayDeque<>(maxBestScoreSize);
         bestScoreQueue.addLast(initialScore);
         defaultLateAcceptanceSize = lateAcceptanceSize;
@@ -85,34 +89,41 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
     @SuppressWarnings("unchecked")
     public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         var moveScore = moveScope.getScore();
-        if (moveScore.compareTo(moveScope.getStepScope().getPhaseScope().getBestScore()) != 0
-                && (bestStepScore == null || moveScore.compareTo(bestStepScore) > 0)) {
-            bestStepScore = moveScore;
-        }
         var lateScore = previousScores[lateScoreIndex];
-        if (moveScore.compareTo(lateScore) >= 0) {
-            return true;
+        var lastStepScore = moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore();
+        var accept = moveScore.compareTo(lateScore) >= 0 || moveScore.compareTo(lastStepScore) >= 0;
+        if (enableStepIntensification && accept) {
+            previousScores[lateScoreIndex] = moveScore;
+            lateScoreIndex = (lateScoreIndex + 1) % lateAcceptanceSize;
+        } else {
+            if (accept) {
+                previousScores[lateScoreIndex] = moveScore;
+            } else {
+                previousScores[lateScoreIndex] = lastStepScore;
+            }
+            lateScoreIndex = (lateScoreIndex + 1) % lateAcceptanceSize;
         }
-        if (hillClimbingEnabled) {
-            var lastStepScore = moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore();
-            return moveScore.compareTo(lastStepScore) >= 0;
-        }
-        return false;
+        return accept;
     }
 
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
         super.stepEnded(stepScope);
-        previousScores[lateScoreIndex] = stepScope.getScore();
-        lateScoreIndex = (lateScoreIndex + 1) % lateAcceptanceSize;
-        if (((Score) currentBestScore).compareTo(stepScope.getScore()) < 0) {
+        if (enableRestart && currentBestScore != null && ((Score) currentBestScore).compareTo(stepScope.getScore()) < 0) {
+            var levels = stepScope.getScore().toLevelDoubles();
+            var currentLevels = currentBestScore.toLevelDoubles();
+            if (levels.length == 3 && levels[1] != currentLevels[1]) {
+                logger.info("New best score ({}), Previous best score ({}), index ({}), late elements [{}]",
+                        stepScope.getScore(), currentBestScore, lateScoreIndex,
+                        Arrays.asList(previousScores).stream().map(Objects::toString).collect(joining(", ")));
+            }
             if (allowDecrease) {
                 // We decrease the coefficient
                 // if there is an improvement
                 // to avoid altering the late element size in the next restart event.
                 // This action is performed only once after a restart event
-                coefficient /= SCALE_FACTOR;
+                coefficient /= GEOMETRIC_FACTOR;
                 allowDecrease = false;
             }
             if (bestScoreQueue.size() < maxBestScoreSize) {
@@ -138,25 +149,17 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
         // and the proposed approach requires some diversity to reseed the scores.
         var reject = diversity > MIN_DIVERSITY_RATIO || bestScoreQueue.size() == 1;
         if (reject) {
-            countRejected++;
-            if (countRejected > MAX_REJECTED_EVENTS && bestScoreQueue.size() > 1) {
-                logger.info(
-                        "Restart event not rejected. Diversity ({}), Count best scores ({}), Distinct Elements ({}), Rejection Count ({})",
-                        diversity, bestScoreQueue.size(), distinctElements, countRejected);
-                return false;
-            }
             logger.info(
-                    "Restart event delayed. Diversity ({}), Count best scores ({}), Distinct Elements ({}), Rejection Count ({})",
-                    diversity, bestScoreQueue.size(), distinctElements, countRejected);
+                    "Restart event delayed. Diversity ({}), Count best scores ({}), Distinct Elements ({})",
+                    diversity, bestScoreQueue.size(), distinctElements);
         }
         return reject;
     }
 
     @Override
     public void restart(LocalSearchStepScope<Solution_> stepScope) {
-        coefficient *= SCALE_FACTOR;
+        coefficient *= GEOMETRIC_FACTOR;
         allowDecrease = true;
-        countRejected = 0;
         var newLateAcceptanceSize = defaultLateAcceptanceSize * coefficient;
         if (logger.isInfoEnabled()) {
             if (lateAcceptanceSize == newLateAcceptanceSize) {
@@ -180,15 +183,23 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
      */
     private void rebuildLateElementsList(int newLateAcceptanceSize) {
         var newPreviousScores = new Score[newLateAcceptanceSize];
-        var countPerScore = Math.min(newLateAcceptanceSize / 2, (newLateAcceptanceSize / bestScoreQueue.size()) * 2);
-        var count = new MutableInt(0);
-        var iterator = bestScoreQueue.iterator();
-        while (count.intValue() < newLateAcceptanceSize && iterator.hasNext()) {
+        var scoreQueueSize = bestScoreQueue.size();
+        if (scoreQueueSize > 2) {
+            scoreQueueSize--;
+        }
+        var countPerScore = newLateAcceptanceSize / scoreQueueSize + 1;
+        var count = newLateAcceptanceSize - 1;
+        var iterator = bestScoreQueue.descendingIterator();
+        if (scoreQueueSize > 2) {
+            // We discard the current best score
+            iterator.next();
+        }
+        while (count >= 0 && iterator.hasNext()) {
             var score = iterator.next();
             for (var i = 0; i < countPerScore; i++) {
-                newPreviousScores[count.intValue()] = score;
-                count.increment();
-                if (count.intValue() == newLateAcceptanceSize) {
+                newPreviousScores[count] = score;
+                count--;
+                if (count < 0) {
                     break;
                 }
             }
@@ -203,6 +214,13 @@ public class LateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solut
         super.phaseEnded(phaseScope);
         previousScores = null;
         lateScoreIndex = -1;
+    }
+
+    public <Score_ extends Score<Score_>> void resetLateElementsScore(int size, Score_ score) {
+        this.lateScoreIndex = 0;
+        this.lateAcceptanceSize = size;
+        this.previousScores = new Score[size];
+        Arrays.fill(previousScores, score);
     }
 
 }

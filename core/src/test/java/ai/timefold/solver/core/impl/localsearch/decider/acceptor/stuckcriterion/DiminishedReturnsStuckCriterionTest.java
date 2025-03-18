@@ -74,7 +74,7 @@ class DiminishedReturnsStuckCriterionTest {
         // Reset
         strategy.stepStarted(stepScope);
         when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(2));
-        strategy.reset(stepScope);
+        strategy.reset(phaseScope);
         assertThat(strategy.triggered).isFalse();
     }
 }

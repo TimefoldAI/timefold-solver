@@ -11,19 +11,19 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
  */
 public abstract class RestartableAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
 
-    private final StuckCriterion<Solution_> stuckCriterion;
+    protected final StuckCriterion<Solution_> stuckCriterion;
     protected boolean restartTriggered;
-    private boolean enabled;
+    protected boolean enableRestart;
 
-    protected RestartableAcceptor(boolean enabled, StuckCriterion<Solution_> stuckCriterion) {
-        this.enabled = enabled;
+    protected RestartableAcceptor(boolean enableRestart, StuckCriterion<Solution_> stuckCriterion) {
+        this.enableRestart = enableRestart;
         this.stuckCriterion = stuckCriterion;
     }
 
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         super.solvingStarted(solverScope);
-        if (enabled) {
+        if (enableRestart) {
             stuckCriterion.solvingStarted(solverScope);
         }
     }
@@ -31,7 +31,7 @@ public abstract class RestartableAcceptor<Solution_> extends AbstractAcceptor<So
     @Override
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
-        if (enabled) {
+        if (enableRestart) {
             stuckCriterion.phaseStarted(phaseScope);
         }
     }
@@ -39,7 +39,7 @@ public abstract class RestartableAcceptor<Solution_> extends AbstractAcceptor<So
     @Override
     public void phaseEnded(LocalSearchPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
-        if (enabled) {
+        if (enableRestart) {
             stuckCriterion.phaseEnded(phaseScope);
         }
     }
@@ -47,7 +47,7 @@ public abstract class RestartableAcceptor<Solution_> extends AbstractAcceptor<So
     @Override
     public void stepStarted(LocalSearchStepScope<Solution_> stepScope) {
         super.stepStarted(stepScope);
-        if (enabled) {
+        if (enableRestart) {
             stuckCriterion.stepStarted(stepScope);
         }
     }
@@ -55,12 +55,12 @@ public abstract class RestartableAcceptor<Solution_> extends AbstractAcceptor<So
     @Override
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
         super.stepEnded(stepScope);
-        if (enabled) {
+        if (enableRestart) {
             if (stuckCriterion.isSolverStuck(stepScope)) {
                 if (rejectRestartEvent()) {
                     // We need to reset the criterion,
                     // or it will trigger the restart event in the next evaluation
-                    stuckCriterion.reset(stepScope);
+                    stuckCriterion.reset(stepScope.getPhaseScope());
                     restartTriggered = false;
                 } else {
                     stepScope.getPhaseScope().setSolverStuck(true);

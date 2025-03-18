@@ -13,12 +13,14 @@ import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.greatdeluge.GreatDelugeAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.hillclimbing.HillClimbingAcceptor;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.iteratedlocalsearch.IteratedLocalSearchAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance.DiversifiedLateAcceptanceAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance.LateAcceptanceAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.simulatedannealing.SimulatedAnnealingAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stepcountinghillclimbing.StepCountingHillClimbingAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.DiminishedReturnsStuckCriterion;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.StuckCriterion;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.UnimprovedStepCountStuckCriterion;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.EntityTabuAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.MoveTabuAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.ValueTabuAcceptor;
@@ -50,6 +52,7 @@ public class AcceptorFactory<Solution_> {
                 buildSimulatedAnnealingAcceptor(configPolicy),
                 buildLateAcceptanceAcceptor(),
                 buildDiversifiedLateAcceptanceAcceptor(configPolicy),
+                buildIteratedLocalSearchAcceptor(),
                 buildGreatDelugeAcceptor(configPolicy))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
@@ -236,6 +239,16 @@ public class AcceptorFactory<Solution_> {
             configPolicy.ensurePreviewFeature(PreviewFeature.DIVERSIFIED_LATE_ACCEPTANCE);
             var acceptor = new DiversifiedLateAcceptanceAcceptor<Solution_>();
             acceptor.setLateAcceptanceSize(Objects.requireNonNullElse(acceptorConfig.getLateAcceptanceSize(), 5));
+            return Optional.of(acceptor);
+        }
+        return Optional.empty();
+    }
+
+    private Optional<IteratedLocalSearchAcceptor<Solution_>>
+            buildIteratedLocalSearchAcceptor() {
+        if (acceptorTypeListsContainsAcceptorType(AcceptorType.ITERATED_LOCAL_SEARCH)) {
+            StuckCriterion<Solution_> strategy = new UnimprovedStepCountStuckCriterion<>();
+            var acceptor = new IteratedLocalSearchAcceptor<>(5, strategy);
             return Optional.of(acceptor);
         }
         return Optional.empty();

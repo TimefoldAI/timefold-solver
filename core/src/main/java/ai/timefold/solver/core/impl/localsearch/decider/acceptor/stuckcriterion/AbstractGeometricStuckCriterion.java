@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Restart strategy, which exponentially increases the metric that triggers the restart process.
  * The first restart occurs after the {@code scalingFactor * GEOMETRIC_FACTOR^restartCount} metric.
- * Following that, the metric increases exponentially: 1, 3, 9, 27...
+ * Following that, the metric increases exponentially: 1, 5, 25, 125...
  * <p>
  * The strategy is based on the work: Search in a Small World by Toby Walsh
  * 
@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractGeometricStuckCriterion<Solution_> implements StuckCriterion<Solution_> {
     protected static final Logger logger = LoggerFactory.getLogger(AbstractGeometricStuckCriterion.class);
-    private static final double GEOMETRIC_FACTOR = 3; // Value extracted from the cited paper
+    private static final double GEOMETRIC_FACTOR = 5; // Value extracted from the cited paper
 
     private double scalingFactor;
     protected long nextRestart;

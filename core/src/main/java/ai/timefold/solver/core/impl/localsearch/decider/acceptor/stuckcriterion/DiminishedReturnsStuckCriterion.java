@@ -7,7 +7,7 @@ import ai.timefold.solver.core.impl.solver.termination.DiminishedReturnsTerminat
 
 public class DiminishedReturnsStuckCriterion<Solution_, Score_ extends Score<Score_>>
         extends AbstractGeometricStuckCriterion<Solution_> {
-    protected static final long TIME_WINDOW_MILLIS = 10_000;
+    protected static final long TIME_WINDOW_MILLIS = 20_000;
     private static final double MINIMAL_IMPROVEMENT = 0.0001;
 
     private DiminishedReturnsTermination<Solution_, Score_> diminishedReturnsCriterion;
@@ -35,16 +35,16 @@ public class DiminishedReturnsStuckCriterion<Solution_, Score_ extends Score<Sco
     }
 
     @Override
-    public void reset(LocalSearchStepScope<Solution_> stepScope) {
+    public void reset(LocalSearchPhaseScope<Solution_> phaseScope) {
         diminishedReturnsCriterion = new DiminishedReturnsTermination<>(nextRestart, MINIMAL_IMPROVEMENT);
-        diminishedReturnsCriterion.start(System.nanoTime(), stepScope.getPhaseScope().getBestScore());
+        diminishedReturnsCriterion.start(System.nanoTime(), phaseScope.getBestScore());
         triggered = false;
     }
 
     @Override
     public void stepStarted(LocalSearchStepScope<Solution_> stepScope) {
         if (triggered) {
-            reset(stepScope);
+            reset(stepScope.getPhaseScope());
         }
     }
 
