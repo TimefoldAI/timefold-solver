@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion;
 
+import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -60,6 +61,21 @@ public abstract class AbstractGeometricStuckCriterion<Solution_> implements Stuc
     }
 
     @Override
+    public boolean isSolverStuck(LocalSearchMoveScope<Solution_> moveScope) {
+        var triggered = evaluateCriterion(moveScope);
+        if (triggered) {
+            logger.info(
+                    "Restart triggered with geometric factor ({}), scaling factor of ({}), best score ({})",
+                    currentGeometricGrowFactor, scalingFactor,
+                    moveScope.getStepScope().getPhaseScope().getBestScore());
+            currentGeometricGrowFactor = Math.ceil(currentGeometricGrowFactor * GEOMETRIC_FACTOR);
+            nextRestart = calculateNextRestart();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public boolean isSolverStuck(LocalSearchStepScope<Solution_> stepScope) {
         var triggered = evaluateCriterion(stepScope);
         if (triggered) {
@@ -77,6 +93,8 @@ public abstract class AbstractGeometricStuckCriterion<Solution_> implements Stuc
     private long calculateNextRestart() {
         return (long) Math.ceil(currentGeometricGrowFactor * scalingFactor);
     }
+
+    abstract boolean evaluateCriterion(LocalSearchMoveScope<Solution_> moveScope);
 
     abstract boolean evaluateCriterion(LocalSearchStepScope<Solution_> stepScope);
 

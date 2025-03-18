@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor;
 
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.StuckCriterion;
+import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -70,6 +71,18 @@ public abstract class RestartableAcceptor<Solution_> extends AbstractAcceptor<So
             stuckCriterion.stepEnded(stepScope);
         }
     }
+
+    @Override
+    public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
+        if (enableRestart && stuckCriterion.isSolverStuck(moveScope)) {
+            moveScope.getStepScope().getPhaseScope().setSolverStuck(true);
+            restartTriggered = true;
+            return true;
+        }
+        return accept(moveScope);
+    }
+
+    public abstract boolean accept(LocalSearchMoveScope<Solution_> moveScope);
 
     /**
      * The stuck criterion may trigger a restart event, but the acceptor might choose to delay it.

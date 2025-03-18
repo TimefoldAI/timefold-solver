@@ -1,17 +1,20 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
-public class UnimprovedStepCountStuckCriterion<Solution_> implements StuckCriterion<Solution_> {
+public class UnimprovedMoveCountStuckCriterion<Solution_> implements StuckCriterion<Solution_> {
 
     private int countRejected;
+    private Score<?> initialBestScore;
     private Score<?> lastCompletedScore;
     private int maxRejected;
+    private boolean waitForFirstBestScore;
 
-    public UnimprovedStepCountStuckCriterion() {
+    public UnimprovedMoveCountStuckCriterion() {
     }
 
     public void setMaxRejected(int maxRejected) {
@@ -19,11 +22,21 @@ public class UnimprovedStepCountStuckCriterion<Solution_> implements StuckCriter
     }
 
     @Override
-    public boolean isSolverStuck(LocalSearchStepScope<Solution_> stepScope) {
-        if (((Score) stepScope.getScore()).compareTo(lastCompletedScore) <= 0) {
-            countRejected++;
+    public boolean isSolverStuck(LocalSearchMoveScope<Solution_> moveScope) {
+        if (waitForFirstBestScore) {
+            return false;
         }
+        if (moveScope.getScore().compareTo(lastCompletedScore) > 0) {
+            countRejected = 0;
+        }
+        countRejected++;
         return countRejected > maxRejected;
+    }
+
+    @Override
+    public boolean isSolverStuck(LocalSearchStepScope<Solution_> stepScope) {
+        // Only evaluated per move
+        return false;
     }
 
     @Override
@@ -33,7 +46,9 @@ public class UnimprovedStepCountStuckCriterion<Solution_> implements StuckCriter
 
     @Override
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
-        this.countRejected = 0;
+        waitForFirstBestScore = true;
+        countRejected = 0;
+        initialBestScore = phaseScope.getBestScore();
     }
 
     @Override
@@ -43,8 +58,9 @@ public class UnimprovedStepCountStuckCriterion<Solution_> implements StuckCriter
 
     @Override
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
-        if (((Score) stepScope.getScore()).compareTo(lastCompletedScore) > 0) {
-            reset(stepScope.getPhaseScope());
+        // Do nothing
+        if (waitForFirstBestScore && ((Score) stepScope.getScore()).compareTo(initialBestScore) > 0) {
+            waitForFirstBestScore = false;
         }
     }
 

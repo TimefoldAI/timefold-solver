@@ -22,7 +22,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
     @Test
     void lateAcceptanceSize() {
         var restartStrategy = mock(StuckCriterion.class);
-        when(restartStrategy.isSolverStuck(any())).thenReturn(false);
+        when(restartStrategy.isSolverStuck(any(LocalSearchStepScope.class))).thenReturn(false);
         var acceptor = new LateAcceptanceAcceptor<>(true, restartStrategy);
         acceptor.setLateAcceptanceSize(3);
         acceptor.setHillClimbingEnabled(false);
@@ -138,7 +138,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
     @Test
     void hillClimbingEnabled() {
         var restartStrategy = mock(StuckCriterion.class);
-        when(restartStrategy.isSolverStuck(any())).thenReturn(false);
+        when(restartStrategy.isSolverStuck(any(LocalSearchStepScope.class))).thenReturn(false);
         var acceptor = new LateAcceptanceAcceptor<>(true, restartStrategy);
         acceptor.setLateAcceptanceSize(2);
         acceptor.setHillClimbingEnabled(true);
@@ -254,7 +254,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
     @Test
     void zeroLateAcceptanceSize() {
         var restartStrategy = mock(StuckCriterion.class);
-        when(restartStrategy.isSolverStuck(any())).thenReturn(false);
+        when(restartStrategy.isSolverStuck(any(LocalSearchStepScope.class))).thenReturn(false);
         var acceptor = new LateAcceptanceAcceptor<>(true, restartStrategy);
         acceptor.setLateAcceptanceSize(0);
         assertThatIllegalArgumentException().isThrownBy(() -> acceptor.phaseStarted(null));
@@ -263,7 +263,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
     @Test
     void negativeLateAcceptanceSize() {
         var restartStrategy = mock(StuckCriterion.class);
-        when(restartStrategy.isSolverStuck(any())).thenReturn(false);
+        when(restartStrategy.isSolverStuck(any(LocalSearchStepScope.class))).thenReturn(false);
         var acceptor = new LateAcceptanceAcceptor<>(true, restartStrategy);
         acceptor.setLateAcceptanceSize(-1);
         assertThatIllegalArgumentException().isThrownBy(() -> acceptor.phaseStarted(null));
@@ -281,7 +281,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         var moveScope0 = buildMoveScope(stepScope0, -3000);
         phaseScope.setLastCompletedStepScope(stepScope0);
         solverScope.setBestScore(SimpleScore.of(-1000));
-        when(stuckCriterion.isSolverStuck(any())).thenReturn(true);
+        when(stuckCriterion.isSolverStuck(any(LocalSearchStepScope.class))).thenReturn(true);
 
         // Init
         acceptor.solvingStarted(solverScope);
@@ -325,7 +325,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         var moveScope0 = buildMoveScope(stepScope0, -3000);
         phaseScope.setLastCompletedStepScope(stepScope0);
         solverScope.setBestScore(SimpleScore.of(-1000));
-        when(stuckCriterion.isSolverStuck(any())).thenReturn(true);
+        when(stuckCriterion.isSolverStuck(any(LocalSearchStepScope.class))).thenReturn(true);
 
         // Init
         acceptor.solvingStarted(solverScope);
@@ -364,7 +364,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         stepScope0.setScore(SimpleScore.of(-1000));
         phaseScope.setLastCompletedStepScope(stepScope0);
         solverScope.setBestScore(SimpleScore.of(-1000));
-        when(stuckCriterion.isSolverStuck(any())).thenReturn(true);
+        when(stuckCriterion.isSolverStuck(any(LocalSearchStepScope.class))).thenReturn(true);
 
         // Init
         acceptor.solvingStarted(solverScope);

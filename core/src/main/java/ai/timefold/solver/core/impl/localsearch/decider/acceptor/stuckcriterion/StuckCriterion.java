@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion
 
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.impl.localsearch.event.LocalSearchPhaseLifecycleListener;
+import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 
@@ -18,6 +19,14 @@ public interface StuckCriterion<Solution_> extends LocalSearchPhaseLifecycleList
      * @param stepScope cannot be null
      */
     boolean isSolverStuck(LocalSearchStepScope<Solution_> stepScope);
+
+    /**
+     * Same as {{@link #isSolverStuck(LocalSearchStepScope)}, but it is called for every move}
+     * 
+     * @param moveScope cannot be null
+     * @return
+     */
+    boolean isSolverStuck(LocalSearchMoveScope<Solution_> moveScope);
 
     void reset(LocalSearchPhaseScope<Solution_> phaseScope);
 }

@@ -20,7 +20,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.simulatedanneal
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stepcountinghillclimbing.StepCountingHillClimbingAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.DiminishedReturnsStuckCriterion;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.StuckCriterion;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.UnimprovedStepCountStuckCriterion;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.UnimprovedMoveCountStuckCriterion;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.EntityTabuAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.MoveTabuAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.ValueTabuAcceptor;
@@ -247,8 +247,8 @@ public class AcceptorFactory<Solution_> {
     private Optional<IteratedLocalSearchAcceptor<Solution_>>
             buildIteratedLocalSearchAcceptor() {
         if (acceptorTypeListsContainsAcceptorType(AcceptorType.ITERATED_LOCAL_SEARCH)) {
-            StuckCriterion<Solution_> strategy = new UnimprovedStepCountStuckCriterion<>();
-            var acceptor = new IteratedLocalSearchAcceptor<>(5, strategy);
+            StuckCriterion<Solution_> strategy = new UnimprovedMoveCountStuckCriterion<>();
+            var acceptor = new IteratedLocalSearchAcceptor<>(3, strategy);
             return Optional.of(acceptor);
         }
         return Optional.empty();

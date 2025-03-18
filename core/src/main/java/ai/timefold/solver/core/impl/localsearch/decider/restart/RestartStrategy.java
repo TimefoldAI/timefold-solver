@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.localsearch.decider.restart;
 import ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.StuckCriterion;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
+import ai.timefold.solver.core.impl.phase.scope.AbstractMoveScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 
 /**
@@ -30,10 +31,21 @@ public sealed interface RestartStrategy<Solution_> extends PhaseLifecycleListene
      * 
      * @param stepScope cannot be null
      * 
-     * @return true if the solver needs to be reconfigured; or false otherwise
+     * @return true if the solver needs to be restarted; or false otherwise
      */
     default boolean isSolverStuck(AbstractStepScope<Solution_> stepScope) {
         return stepScope.getPhaseScope().isSolverStuck();
+    }
+
+    /**
+     * Same as {{@link #isSolverStuck(AbstractStepScope)}}.
+     * 
+     * @param moveScope cannot be null
+     * 
+     * @return true if the solver needs to be restarted; or false otherwise
+     */
+    default boolean isSolverStuck(AbstractMoveScope<Solution_> moveScope) {
+        return moveScope.getStepScope().getPhaseScope().isSolverStuck();
     }
 
 }

@@ -2,17 +2,16 @@ package ai.timefold.solver.core.impl.localsearch;
 
 import java.util.Collections;
 import java.util.Objects;
+import java.util.Optional;
 
+import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
-import ai.timefold.solver.core.config.heuristic.selector.entity.pillar.PillarSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.list.SubListSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationEnabled;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChangeMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.RuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorConfig;
@@ -202,11 +201,24 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
 
     @SuppressWarnings("rawtypes")
     protected MoveSelector<Solution_> buildPerturbationMoveSelector(HeuristicConfigPolicy<Solution_> configPolicy) {
+        MoveSelector<Solution_> moveSelector;
         var defaultCacheType = SelectionCacheType.JUST_IN_TIME;
         SelectionOrder defaultSelectionOrder;
         defaultSelectionOrder = SelectionOrder.RANDOM;
-        return new UnionMoveSelectorFactory<Solution_>(determinePerturbationMoveSelectorConfig(configPolicy))
-                .buildMoveSelector(configPolicy, defaultCacheType, defaultSelectionOrder, true);
+        var moveSelectorConfig =
+                Optional.ofNullable(phaseConfig.getMoveSelectorConfig()).map(AbstractConfig::copyConfig).orElse(null);
+        if (moveSelectorConfig == null) {
+            moveSelector = new UnionMoveSelectorFactory<Solution_>(determinePerturbationMoveSelectorConfig(configPolicy))
+                    .buildMoveSelector(configPolicy, defaultCacheType, defaultSelectionOrder, true);
+        } else {
+            if (moveSelectorConfig instanceof UnionMoveSelectorConfig unionMoveSelectorConfig) {
+                unionMoveSelectorConfig.getMoveSelectorList().forEach(m -> m.setFixedProbabilityWeight(null));
+            }
+            AbstractMoveSelectorFactory<Solution_, ?> moveSelectorFactory =
+                    MoveSelectorFactory.create((MoveSelectorConfig<?>) moveSelectorConfig);
+            moveSelector = moveSelectorFactory.buildMoveSelector(configPolicy, defaultCacheType, defaultSelectionOrder, true);
+        }
+        return moveSelector;
     }
 
     private UnionMoveSelectorConfig determineDefaultMoveSelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy) {
@@ -288,10 +300,6 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
             } else {
                 return new UnionMoveSelectorConfig()
                         .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig(),
-                                new PillarChangeMoveSelectorConfig().withPillarSelectorConfig(
-                                        new PillarSelectorConfig().withMinimumSubPillarSize(2).withMaximumSubPillarSize(5)),
-                                new PillarSwapMoveSelectorConfig().withPillarSelectorConfig(
-                                        new PillarSelectorConfig().withMinimumSubPillarSize(2).withMaximumSubPillarSize(5)),
                                 new RuinRecreateMoveSelectorConfig().withMinimumRuinedCount(1).withMaximumRuinedCount(5));
             }
         } else {

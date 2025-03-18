@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.solver.termination.DiminishedReturnsTermination;
@@ -21,6 +22,12 @@ public class DiminishedReturnsStuckCriterion<Solution_, Score_ extends Score<Sco
     protected DiminishedReturnsStuckCriterion(DiminishedReturnsTermination<Solution_, Score_> diminishedReturnsCriterion) {
         super(TIME_WINDOW_MILLIS);
         this.diminishedReturnsCriterion = diminishedReturnsCriterion;
+    }
+
+    @Override
+    boolean evaluateCriterion(LocalSearchMoveScope<Solution_> moveScope) {
+        // Only evaluated per step
+        return false;
     }
 
     @Override

@@ -110,7 +110,7 @@ public class LocalSearchDecider<Solution_> {
             LocalSearchMoveScope<Solution_> moveScope = new LocalSearchMoveScope<>(stepScope, moveIndex, adaptedMove);
             moveIndex++;
             doMove(moveScope);
-            if (forager.isQuitEarly()) {
+            if (forager.isQuitEarly() || restartStrategy.isSolverStuck(moveScope)) {
                 break;
             }
             stepScope.getPhaseScope().getSolverScope().checkYielding();

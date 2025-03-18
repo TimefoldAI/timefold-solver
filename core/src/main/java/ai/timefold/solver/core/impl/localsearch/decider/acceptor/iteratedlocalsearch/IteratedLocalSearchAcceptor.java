@@ -5,7 +5,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.RestartableAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance.LateAcceptanceAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.StuckCriterion;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.UnimprovedStepCountStuckCriterion;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.UnimprovedMoveCountStuckCriterion;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
@@ -13,14 +13,15 @@ import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 public class IteratedLocalSearchAcceptor<Solution_> extends RestartableAcceptor<Solution_> {
 
     private static final int[] LATE_ELEMENTS_SIZE =
-            new int[] { 5_000, 12_500, 25_000, 25_000 };
+            new int[] { 12_500, 25_000, 25_000, 50_000, 50_000 };
     private static final int[] LATE_ELEMENTS_MAX_REJECTIONS =
-            new int[] { 5_000, 12_500, 25_000, 50_000 };
+            new int[] { 12_500, 25_000, 50_000, 50_000, 75_000 };
     private final LateAcceptanceAcceptor<Solution_> lateAcceptanceAcceptor;
     private MoveSelector<Solution_> perturbationMoveSelector;
     private final int maxPerturbationCount;
     private int lateIndex;
     private int perturbationCount;
+    private Score<?> currentBestScore;
 
     public IteratedLocalSearchAcceptor(int maxPerturbationCount, StuckCriterion<Solution_> stuckCriterion) {
         super(true, stuckCriterion);
@@ -40,7 +41,7 @@ public class IteratedLocalSearchAcceptor<Solution_> extends RestartableAcceptor<
         lateAcceptanceAcceptor.setLateAcceptanceSize(LATE_ELEMENTS_SIZE[perturbationCount]);
         lateAcceptanceAcceptor.phaseStarted(phaseScope);
         stuckCriterion.reset(phaseScope);
-        if (stuckCriterion instanceof UnimprovedStepCountStuckCriterion<Solution_> stepCountStuckCriterion) {
+        if (stuckCriterion instanceof UnimprovedMoveCountStuckCriterion<Solution_> stepCountStuckCriterion) {
             stepCountStuckCriterion.setMaxRejected(LATE_ELEMENTS_MAX_REJECTIONS[lateIndex]);
         }
     }
@@ -56,12 +57,16 @@ public class IteratedLocalSearchAcceptor<Solution_> extends RestartableAcceptor<
     public void stepStarted(LocalSearchStepScope<Solution_> stepScope) {
         super.stepStarted(stepScope);
         lateAcceptanceAcceptor.stepStarted(stepScope);
+        currentBestScore = stepScope.getPhaseScope().getBestScore();
     }
 
     @Override
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
         super.stepEnded(stepScope);
         lateAcceptanceAcceptor.stepEnded(stepScope);
+        if (((Score) stepScope.getScore()).compareTo(currentBestScore) > 0) {
+            perturbationCount = 1;
+        }
     }
 
     @Override
@@ -96,7 +101,7 @@ public class IteratedLocalSearchAcceptor<Solution_> extends RestartableAcceptor<
                 stepScope.getPhaseScope().getLastCompletedStepScope().getScore());
         lateAcceptanceAcceptor.resetLateElementsScore(LATE_ELEMENTS_SIZE[lateIndex],
                 (Score) stepScope.getPhaseScope().getLastCompletedStepScope().getScore());
-        if (stuckCriterion instanceof UnimprovedStepCountStuckCriterion<Solution_> stepCountStuckCriterion) {
+        if (stuckCriterion instanceof UnimprovedMoveCountStuckCriterion<Solution_> stepCountStuckCriterion) {
             stepCountStuckCriterion.setMaxRejected(LATE_ELEMENTS_MAX_REJECTIONS[lateIndex]);
         }
         stuckCriterion.reset(stepScope.getPhaseScope());
@@ -104,7 +109,7 @@ public class IteratedLocalSearchAcceptor<Solution_> extends RestartableAcceptor<
     }
 
     @Override
-    public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
+    public boolean accept(LocalSearchMoveScope<Solution_> moveScope) {
         return lateAcceptanceAcceptor.isAccepted(moveScope);
     }
 }
