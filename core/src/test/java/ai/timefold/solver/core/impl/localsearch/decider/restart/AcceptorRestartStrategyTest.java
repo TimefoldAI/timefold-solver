@@ -6,7 +6,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance.LateAcceptanceAcceptor;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
@@ -18,12 +17,11 @@ class AcceptorRestartStrategyTest {
     @Test
     void restart() {
         // Restore the best solution
-        var moveSelector = mock(MoveSelector.class);
         var phaseScope = mock(LocalSearchPhaseScope.class);
         var stepScope = mock(LocalSearchStepScope.class);
         when(stepScope.getPhaseScope()).thenReturn(phaseScope);
         var acceptor = mock(LateAcceptanceAcceptor.class);
-        var strategy = new AcceptorRestartStrategy<>(moveSelector, acceptor);
+        var strategy = new AcceptorRestartStrategy<>(acceptor);
 
         // Call acceptor restart logic
         strategy.applyRestart(stepScope);

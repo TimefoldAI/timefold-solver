@@ -70,9 +70,8 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
     private LocalSearchDecider<Solution_> buildDecider(HeuristicConfigPolicy<Solution_> configPolicy,
             PhaseTermination<Solution_> termination) {
         var moveSelector = buildMoveSelector(configPolicy);
-        var perturbationMoveSelector = buildPerturbationMoveSelector(configPolicy);
         var acceptor = buildAcceptor(configPolicy);
-        RestartStrategy<Solution_> restartStrategy = new AcceptorRestartStrategy<>(perturbationMoveSelector, acceptor);
+        RestartStrategy<Solution_> restartStrategy = new AcceptorRestartStrategy<>(acceptor);
         var forager = buildForager(configPolicy);
         if (moveSelector.isNeverEnding() && !forager.supportsNeverEndingMoveSelector()) {
             throw new IllegalStateException("The moveSelector (" + moveSelector

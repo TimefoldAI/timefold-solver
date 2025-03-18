@@ -193,9 +193,14 @@ public class LocalSearchDecider<Solution_> {
         forager.solvingEnded(solverScope);
     }
 
-    public void restoreCurrentBestSolution(LocalSearchPhaseScope<Solution_> phaseScope) {
-        phaseScope.getSolverScope().setWorkingSolutionFromBestSolution();
-        moveSelectorPhaseStarted(phaseScope);
+    public void restoreCurrentBestSolution(LocalSearchStepScope<Solution_> stepScope) {
+        stepScope.getPhaseScope().getSolverScope().setWorkingSolutionFromBestSolution();
+        stepScope.setScore(stepScope.getPhaseScope().getBestScore());
+        // Changing the working solution requires reinitializing the move selector.
+        // The acceptor should not be restarted, as this may lead to an inconsistent state,
+        // such as changing the scores of all late elements in LA and DLAS.
+        // 1 - The move selector will reset all cached lists using old solution entity references
+        moveSelector.phaseStarted(stepScope.getPhaseScope());
     }
 
     public void solvingError(SolverScope<Solution_> solverScope, Exception exception) {

@@ -7,7 +7,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptorTest;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.StuckCriterion;
 import ai.timefold.solver.core.impl.localsearch.decider.restart.AcceptorRestartStrategy;
@@ -390,9 +389,8 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
     @Test
     void ensureDiversity() {
         var stuckCriterion = mock(StuckCriterion.class);
-        var moveSelector = mock(MoveSelector.class);
         var acceptor = new LateAcceptanceAcceptor<>(true, stuckCriterion);
-        var restartStrategy = new AcceptorRestartStrategy(moveSelector, acceptor);
+        var restartStrategy = new AcceptorRestartStrategy(acceptor);
         acceptor.setLateAcceptanceSize(5);
         var solverScope = new SolverScope<>();
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
@@ -420,9 +418,8 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
     @Test
     void reconfigureAfterImprovement() {
         var stuckCriterion = mock(StuckCriterion.class);
-        var moveSelector = mock(MoveSelector.class);
         var acceptor = new LateAcceptanceAcceptor<>(true, stuckCriterion);
-        var restartStrategy = new AcceptorRestartStrategy(moveSelector, acceptor);
+        var restartStrategy = new AcceptorRestartStrategy(acceptor);
         acceptor.setLateAcceptanceSize(5);
         var solverScope = new SolverScope<>();
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);

@@ -13,7 +13,7 @@ import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.greatdeluge.GreatDelugeAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.hillclimbing.HillClimbingAcceptor;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.iteratedlocalsearch.IteratedLocalSearchAcceptor;
+import ai.timefold.solver.core.impl.localsearch.decider.acceptor.iteratedlocalsearch.AdaptiveLateAcceptanceAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance.DiversifiedLateAcceptanceAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance.LateAcceptanceAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.simulatedannealing.SimulatedAnnealingAcceptor;
@@ -244,11 +244,11 @@ public class AcceptorFactory<Solution_> {
         return Optional.empty();
     }
 
-    private Optional<IteratedLocalSearchAcceptor<Solution_>>
+    private Optional<AdaptiveLateAcceptanceAcceptor<Solution_>>
             buildIteratedLocalSearchAcceptor() {
-        if (acceptorTypeListsContainsAcceptorType(AcceptorType.ITERATED_LOCAL_SEARCH)) {
+        if (acceptorTypeListsContainsAcceptorType(AcceptorType.ADAPTIVE_LATE_ACCEPTANCE)) {
             StuckCriterion<Solution_> strategy = new UnimprovedMoveCountStuckCriterion<>();
-            var acceptor = new IteratedLocalSearchAcceptor<>(3, strategy);
+            var acceptor = new AdaptiveLateAcceptanceAcceptor<>(strategy);
             return Optional.of(acceptor);
         }
         return Optional.empty();

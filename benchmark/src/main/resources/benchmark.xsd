@@ -3146,7 +3146,7 @@
       <xs:enumeration value="DIVERSIFIED_LATE_ACCEPTANCE"/>
                   
       
-      <xs:enumeration value="ITERATED_LOCAL_SEARCH"/>
+      <xs:enumeration value="ADAPTIVE_LATE_ACCEPTANCE"/>
                   
       
       <xs:enumeration value="GREAT_DELUGE"/>

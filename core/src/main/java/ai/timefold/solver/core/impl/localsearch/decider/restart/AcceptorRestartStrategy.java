@@ -1,9 +1,7 @@
 package ai.timefold.solver.core.impl.localsearch.decider.restart;
 
-import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.RestartableAcceptor;
-import ai.timefold.solver.core.impl.localsearch.decider.acceptor.iteratedlocalsearch.IteratedLocalSearchAcceptor;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
@@ -11,11 +9,9 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 public final class AcceptorRestartStrategy<Solution_> implements RestartStrategy<Solution_> {
 
-    private final MoveSelector<Solution_> perturbationMoveSelector;
     private final Acceptor<Solution_> acceptor;
 
-    public AcceptorRestartStrategy(MoveSelector<Solution_> perturbationMoveSelector, Acceptor<Solution_> acceptor) {
-        this.perturbationMoveSelector = perturbationMoveSelector;
+    public AcceptorRestartStrategy(Acceptor<Solution_> acceptor) {
         this.acceptor = acceptor;
     }
 
@@ -30,34 +26,31 @@ public final class AcceptorRestartStrategy<Solution_> implements RestartStrategy
 
     @Override
     public void stepStarted(AbstractStepScope<Solution_> stepScope) {
-        perturbationMoveSelector.stepStarted(stepScope);
+        // Do nothing
     }
 
     @Override
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
-        perturbationMoveSelector.stepEnded(stepScope);
+        // Do nothing
     }
 
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        perturbationMoveSelector.phaseStarted(phaseScope);
+        // Do nothing
     }
 
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
-        perturbationMoveSelector.phaseEnded(phaseScope);
+        // Do nothing
     }
 
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
-        perturbationMoveSelector.solvingStarted(solverScope);
-        if (acceptor instanceof IteratedLocalSearchAcceptor<Solution_> iteratedLocalSearchAcceptor) {
-            iteratedLocalSearchAcceptor.setPerturbationMoveSelector(perturbationMoveSelector);
-        }
+        // Do nothing
     }
 
     @Override
     public void solvingEnded(SolverScope<Solution_> solverScope) {
-        perturbationMoveSelector.solvingEnded(solverScope);
+        // Do nothing
     }
 }

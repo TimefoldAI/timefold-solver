@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor.iteratedlocalsearch;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.RestartableAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance.LateAcceptanceAcceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.stuckcriterion.StuckCriterion;
@@ -10,35 +9,27 @@ import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 
-public class IteratedLocalSearchAcceptor<Solution_> extends RestartableAcceptor<Solution_> {
+public class AdaptiveLateAcceptanceAcceptor<Solution_> extends RestartableAcceptor<Solution_> {
 
     private static final int[] LATE_ELEMENTS_SIZE =
-            new int[] { 12_500, 25_000, 25_000, 50_000, 50_000 };
+            new int[] { 2_500, 5_000, 12_500, 25_000, 25_000 };
     private static final int[] LATE_ELEMENTS_MAX_REJECTIONS =
-            new int[] { 12_500, 25_000, 50_000, 50_000, 75_000 };
+            new int[] { 5_000, 5_000, 12_500, 25_000, 50_000 };
     private final LateAcceptanceAcceptor<Solution_> lateAcceptanceAcceptor;
-    private MoveSelector<Solution_> perturbationMoveSelector;
-    private final int maxPerturbationCount;
     private int lateIndex;
-    private int perturbationCount;
-    private Score<?> currentBestScore;
+    private Score<?> initialScore;
 
-    public IteratedLocalSearchAcceptor(int maxPerturbationCount, StuckCriterion<Solution_> stuckCriterion) {
+    public AdaptiveLateAcceptanceAcceptor(StuckCriterion<Solution_> stuckCriterion) {
         super(true, stuckCriterion);
-        this.maxPerturbationCount = maxPerturbationCount;
         this.lateAcceptanceAcceptor = new LateAcceptanceAcceptor<>(false, false, null);
-    }
-
-    public void setPerturbationMoveSelector(MoveSelector<Solution_> perturbationMoveSelector) {
-        this.perturbationMoveSelector = perturbationMoveSelector;
     }
 
     @Override
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
-        perturbationCount = 1;
+        initialScore = phaseScope.getBestScore();
         lateIndex = 0;
-        lateAcceptanceAcceptor.setLateAcceptanceSize(LATE_ELEMENTS_SIZE[perturbationCount]);
+        lateAcceptanceAcceptor.setLateAcceptanceSize(LATE_ELEMENTS_SIZE[lateIndex]);
         lateAcceptanceAcceptor.phaseStarted(phaseScope);
         stuckCriterion.reset(phaseScope);
         if (stuckCriterion instanceof UnimprovedMoveCountStuckCriterion<Solution_> stepCountStuckCriterion) {
@@ -50,23 +41,18 @@ public class IteratedLocalSearchAcceptor<Solution_> extends RestartableAcceptor<
     public void phaseEnded(LocalSearchPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
         this.lateAcceptanceAcceptor.phaseEnded(phaseScope);
-
     }
 
     @Override
     public void stepStarted(LocalSearchStepScope<Solution_> stepScope) {
         super.stepStarted(stepScope);
         lateAcceptanceAcceptor.stepStarted(stepScope);
-        currentBestScore = stepScope.getPhaseScope().getBestScore();
     }
 
     @Override
     public void stepEnded(LocalSearchStepScope<Solution_> stepScope) {
         super.stepEnded(stepScope);
         lateAcceptanceAcceptor.stepEnded(stepScope);
-        if (((Score) stepScope.getScore()).compareTo(currentBestScore) > 0) {
-            perturbationCount = 1;
-        }
     }
 
     @Override
@@ -78,34 +64,19 @@ public class IteratedLocalSearchAcceptor<Solution_> extends RestartableAcceptor<
     @Override
     public void restart(LocalSearchStepScope<Solution_> stepScope) {
         lateIndex = (lateIndex + 1) % LATE_ELEMENTS_SIZE.length;
-        var lastCompletedStepScore = stepScope.getPhaseScope().getLastCompletedStepScope().getScore();
         var phaseScope = stepScope.getPhaseScope();
         var decider = phaseScope.getDecider();
         // Restore the current best solution
-        decider.restoreCurrentBestSolution(phaseScope);
-        // Apply the perturbation with perturbation move selector
-        for (int i = 0; i < perturbationCount; i++) {
-            perturbationMoveSelector.phaseStarted(phaseScope);
-            var iterator = perturbationMoveSelector.iterator();
-            if (iterator.hasNext()) {
-                decider.doMoveOnly(phaseScope, iterator.next());
-            }
-        }
-        // Reset cached entity list
-        decider.moveSelectorPhaseStarted(phaseScope);
+        decider.restoreCurrentBestSolution(stepScope);
         logger.info(
-                "Restart event triggered, step count ({}), perturbation count ({}), late elements size ({}), max rejections ({}), best score ({}), last completed score ({}), new perturbation score ({}),",
-                stepScope.getStepIndex(), perturbationCount, LATE_ELEMENTS_SIZE[lateIndex],
-                LATE_ELEMENTS_MAX_REJECTIONS[lateIndex], stepScope.getPhaseScope().getBestScore(),
-                lastCompletedStepScore,
-                stepScope.getPhaseScope().getLastCompletedStepScope().getScore());
-        lateAcceptanceAcceptor.resetLateElementsScore(LATE_ELEMENTS_SIZE[lateIndex],
-                (Score) stepScope.getPhaseScope().getLastCompletedStepScope().getScore());
+                "Restart event triggered, step count ({}), late elements size ({}), max rejections ({}), best score ({}), new perturbation score ({}),",
+                stepScope.getStepIndex(), LATE_ELEMENTS_SIZE[lateIndex], LATE_ELEMENTS_MAX_REJECTIONS[lateIndex],
+                stepScope.getPhaseScope().getBestScore(), initialScore);
+        lateAcceptanceAcceptor.resetLateElementsScore(LATE_ELEMENTS_SIZE[lateIndex], (Score) initialScore);
         if (stuckCriterion instanceof UnimprovedMoveCountStuckCriterion<Solution_> stepCountStuckCriterion) {
             stepCountStuckCriterion.setMaxRejected(LATE_ELEMENTS_MAX_REJECTIONS[lateIndex]);
         }
         stuckCriterion.reset(stepScope.getPhaseScope());
-        perturbationCount = (perturbationCount % maxPerturbationCount) + 1;
     }
 
     @Override
