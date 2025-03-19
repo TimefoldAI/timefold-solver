@@ -24,7 +24,6 @@ class DiminishedReturnsTerminationTest {
         assertThat(termination.isTerminated(10 * NANOS_PER_MILLISECOND, SimpleScore.ONE)).isFalse();
 
         // Y_0 is 1 - 0 = 1
-
         var score = SimpleScore.of(2);
         termination.step(11 * NANOS_PER_MILLISECOND, score);
 
@@ -37,6 +36,14 @@ class DiminishedReturnsTerminationTest {
 
         // This will compare as 2 - 2 = 0, 0 / 1 < 1, causing it to terminate
         assertThat(termination.isTerminated(21 * NANOS_PER_MILLISECOND, score)).isTrue();
+
+        // No improvement in the score
+        termination.start(0L, SimpleScore.ONE);
+        termination.step(NANOS_PER_MILLISECOND, SimpleScore.ONE);
+        // End the grace period
+        assertThat(termination.isTerminated(10 * NANOS_PER_MILLISECOND, SimpleScore.ONE)).isTrue();
+        // Second call bypass the time window verification and must be consistent
+        assertThat(termination.isTerminated(11 * NANOS_PER_MILLISECOND, SimpleScore.ONE)).isTrue();
     }
 
     @Test
