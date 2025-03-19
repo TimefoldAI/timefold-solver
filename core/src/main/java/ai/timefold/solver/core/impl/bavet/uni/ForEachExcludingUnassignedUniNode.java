@@ -6,14 +6,17 @@ import java.util.function.Predicate;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
-public final class ForEachExcludingUnassignedUniNode<A> extends AbstractForEachUniNode<A> {
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
+public final class ForEachExcludingUnassignedUniNode<Solution_, A> extends AbstractForEachUniNode<Solution_, A> {
 
     private final Predicate<A> filter;
 
     public ForEachExcludingUnassignedUniNode(Class<A> forEachClass, Predicate<A> filter,
             TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle, int outputStoreSize) {
         super(forEachClass, nextNodesTupleLifecycle, outputStoreSize);
-        this.filter = Objects.requireNonNullElse(filter, a -> true);
+        this.filter = Objects.requireNonNull(filter);
     }
 
     @Override
@@ -43,6 +46,17 @@ public final class ForEachExcludingUnassignedUniNode<A> extends AbstractForEachU
             return;
         }
         super.retractExisting(a, tuple);
+    }
+
+    @Override
+    public void initialize(Solution_ workingSolution) {
+        throw new UnsupportedOperationException("Impossible state: initialize() is not supported on %s."
+                .formatted(this));
+    }
+
+    @Override
+    public boolean supports(LifecycleOperation lifecycleOperation) {
+        return lifecycleOperation != LifecycleOperation.INITIALIZE;
     }
 
 }

@@ -8,14 +8,17 @@ import ai.timefold.solver.core.impl.bavet.common.BavetStream;
 import ai.timefold.solver.core.impl.bavet.common.TupleSource;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
 
+import org.jspecify.annotations.Nullable;
+
 public abstract class AbstractDataStream<Solution_>
         implements BavetStream {
 
     protected final DataStreamFactory<Solution_> dataStreamFactory;
-    protected final AbstractDataStream<Solution_> parent;
+    protected final @Nullable AbstractDataStream<Solution_> parent;
     protected final List<AbstractDataStream<Solution_>> childStreamList = new ArrayList<>(2);
 
-    protected AbstractDataStream(DataStreamFactory<Solution_> dataStreamFactory, AbstractDataStream<Solution_> parent) {
+    protected AbstractDataStream(DataStreamFactory<Solution_> dataStreamFactory,
+            @Nullable AbstractDataStream<Solution_> parent) {
         this.dataStreamFactory = dataStreamFactory;
         this.parent = parent;
     }
@@ -53,10 +56,6 @@ public abstract class AbstractDataStream<Solution_>
 
     public abstract void buildNode(DataNodeBuildHelper<Solution_> buildHelper);
 
-    // ************************************************************************
-    // Helper methods
-    // ************************************************************************
-
     protected void assertEmptyChildStreamList() {
         if (!childStreamList.isEmpty()) {
             throw new IllegalStateException(
@@ -65,7 +64,7 @@ public abstract class AbstractDataStream<Solution_>
     }
 
     @Override
-    public final AbstractDataStream<Solution_> getParent() {
+    public final @Nullable AbstractDataStream<Solution_> getParent() {
         return parent;
     }
 

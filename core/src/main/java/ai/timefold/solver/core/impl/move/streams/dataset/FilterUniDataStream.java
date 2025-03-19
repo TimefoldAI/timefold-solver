@@ -7,6 +7,9 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 final class FilterUniDataStream<Solution_, A>
         extends AbstractUniDataStream<Solution_, A> {
 

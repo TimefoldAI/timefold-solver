@@ -9,9 +9,9 @@ import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.move.streams.FromSolutionValueCollectingFunction;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -25,7 +25,7 @@ public final class DataStreamFactory<Solution_> {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public <A> @NonNull UniDataStream<Solution_, A> forEach(@NonNull Class<A> sourceClass) {
+    public <A> UniDataStream<Solution_, A> forEach(Class<A> sourceClass) {
         assertValidForEachType(sourceClass);
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(sourceClass);
         if (entityDescriptor == null) {
@@ -55,9 +55,13 @@ public final class DataStreamFactory<Solution_> {
         }
     }
 
-    public <A> UniDataStream<Solution_, A> forEachIncludingUnassigned(@NonNull Class<A> sourceClass) {
+    public <A> UniDataStream<Solution_, A> forEachIncludingUnassigned(Class<A> sourceClass) {
         assertValidForEachType(sourceClass);
         return share(new ForEachDataStream<>(this, sourceClass));
+    }
+
+    public <A> UniDataStream<Solution_, A> forEach(FromSolutionValueCollectingFunction<Solution_, A> valueCollectingFunction) {
+        return share(new ForEachDataStream<>(this, valueCollectingFunction));
     }
 
     public <A> void assertValidForEachType(Class<A> fromType) {

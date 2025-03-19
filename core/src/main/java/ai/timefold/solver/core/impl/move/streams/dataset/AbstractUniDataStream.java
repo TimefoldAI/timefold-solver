@@ -8,8 +8,10 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.bridge.ForeBridgeUniDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataStream<Solution_>
         implements UniDataStream<Solution_, A> {
 
@@ -17,54 +19,51 @@ public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataSt
         super(dataStreamFactory, null);
     }
 
-    protected AbstractUniDataStream(DataStreamFactory<Solution_> dataStreamFactory, AbstractDataStream<Solution_> parent) {
+    protected AbstractUniDataStream(DataStreamFactory<Solution_> dataStreamFactory,
+            @Nullable AbstractDataStream<Solution_> parent) {
         super(dataStreamFactory, parent);
     }
 
     @Override
-    public final @NonNull UniDataStream<Solution_, A> filter(@NonNull Predicate<A> predicate) {
+    public final UniDataStream<Solution_, A> filter(Predicate<A> predicate) {
         return shareAndAddChild(new FilterUniDataStream<>(dataStreamFactory, this, predicate));
     }
 
     @SafeVarargs
     @Override
-    public final @NonNull <B> UniDataStream<Solution_, A> ifExists(@NonNull Class<B> otherClass,
-            @NonNull BiJoiner<A, B>... joiners) {
+    public final <B> UniDataStream<Solution_, A> ifExists(Class<B> otherClass, BiJoiner<A, B>... joiners) {
         return ifExists(dataStreamFactory.forEach(otherClass), joiners);
     }
 
     @SafeVarargs
     @Override
-    public final @NonNull <B> UniDataStream<Solution_, A> ifExists(@NonNull UniDataStream<Solution_, B> otherStream,
-            @NonNull BiJoiner<A, B>... joiners) {
+    public final <B> UniDataStream<Solution_, A> ifExists(UniDataStream<Solution_, B> otherStream, BiJoiner<A, B>... joiners) {
         return ifExistsOrNot(true, otherStream, joiners);
     }
 
     @SafeVarargs
     @Override
-    public final @NonNull <B> UniDataStream<Solution_, A> ifExistsIncludingUnassigned(@NonNull Class<B> otherClass,
-            @NonNull BiJoiner<A, B>... joiners) {
+    public final <B> UniDataStream<Solution_, A> ifExistsIncludingUnassigned(Class<B> otherClass, BiJoiner<A, B>... joiners) {
         return ifExists(dataStreamFactory.forEachIncludingUnassigned(otherClass), joiners);
     }
 
     @SafeVarargs
     @Override
-    public final @NonNull <B> UniDataStream<Solution_, A> ifNotExists(@NonNull Class<B> otherClass,
-            @NonNull BiJoiner<A, B>... joiners) {
+    public final <B> UniDataStream<Solution_, A> ifNotExists(Class<B> otherClass, BiJoiner<A, B>... joiners) {
         return ifExistsOrNot(false, dataStreamFactory.forEach(otherClass), joiners);
     }
 
     @SafeVarargs
     @Override
-    public final @NonNull <B> UniDataStream<Solution_, A> ifNotExists(@NonNull UniDataStream<Solution_, B> otherStream,
-            @NonNull BiJoiner<A, B>... joiners) {
+    public final <B> UniDataStream<Solution_, A> ifNotExists(UniDataStream<Solution_, B> otherStream,
+            BiJoiner<A, B>... joiners) {
         return ifExistsOrNot(false, otherStream, joiners);
     }
 
     @SafeVarargs
     @Override
-    public final @NonNull <B> UniDataStream<Solution_, A> ifNotExistsIncludingUnassigned(@NonNull Class<B> otherClass,
-            @NonNull BiJoiner<A, B>... joiners) {
+    public final <B> UniDataStream<Solution_, A> ifNotExistsIncludingUnassigned(Class<B> otherClass,
+            BiJoiner<A, B>... joiners) {
         return ifNotExists(dataStreamFactory.forEachIncludingUnassigned(otherClass), joiners);
     }
 

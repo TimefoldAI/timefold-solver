@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.move.streams;
 
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
@@ -43,7 +42,7 @@ public final class DefaultMoveStreamFactory<Solution_>
             var variableDescriptor = planningVariableMetaModel.variableDescriptor();
             var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
             if (variableDescriptor.isValueRangeEntityIndependent()) {
-                return enumerate(solution -> ensureCountable(valueRangeDescriptor.extractValueRange(solution, null)));
+                return enumerate(new FromSolutionValueCollectingFunction<>(valueRangeDescriptor));
             } else {
                 return enumerateFromEntity(variableMetaModel.entity(),
                         ((solution, entity) -> ensureCountable(valueRangeDescriptor.extractValueRange(solution, entity))));
@@ -52,7 +51,7 @@ public final class DefaultMoveStreamFactory<Solution_>
             var variableDescriptor = planningListVariableMetaModel.variableDescriptor();
             var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
             if (variableDescriptor.isValueRangeEntityIndependent()) {
-                return enumerate(solution -> ensureCountable(valueRangeDescriptor.extractValueRange(solution, null)));
+                return enumerate(new FromSolutionValueCollectingFunction<>(valueRangeDescriptor));
             } else { // TODO enable this
                 throw new UnsupportedOperationException("List variable value range on entity is not yet supported.");
             }
@@ -72,8 +71,9 @@ public final class DefaultMoveStreamFactory<Solution_>
         }
     }
 
-    private <A> UniDataStream<Solution_, A> enumerate(Function<Solution_, CountableValueRange<A>> collectionFunction) {
-        return null;
+    private <A> UniDataStream<Solution_, A>
+            enumerate(FromSolutionValueCollectingFunction<Solution_, A> valueCollectingFunction) {
+        return dataStreamFactory.forEach(valueCollectingFunction);
     }
 
     private <Entity_, A> UniDataStream<Solution_, A> enumerateFromEntity(

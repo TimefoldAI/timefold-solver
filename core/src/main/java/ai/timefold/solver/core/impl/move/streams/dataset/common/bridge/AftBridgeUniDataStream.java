@@ -8,6 +8,9 @@ import ai.timefold.solver.core.impl.move.streams.dataset.AbstractUniDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 public final class AftBridgeUniDataStream<Solution_, A>
         extends AbstractUniDataStream<Solution_, A>
         implements TupleSource {

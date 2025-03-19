@@ -6,6 +6,9 @@ import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 public final class ForeBridgeUniDataStream<Solution_, A>
         extends AbstractUniDataStream<Solution_, A>
         implements UniDataStream<Solution_, A> {
