@@ -136,6 +136,12 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
             return false;
         }
 
+        if (gracePeriodSoftestImprovementDouble == 0.0) {
+            // The termination may be queried multiple times, even after completion.
+            // We must ensure the grace period improvement is greater than zero to avoid division by zero errors.
+            return true;
+        }
+
         return scoreDiff / gracePeriodSoftestImprovementDouble < minimumImprovementRatio;
     }
 
