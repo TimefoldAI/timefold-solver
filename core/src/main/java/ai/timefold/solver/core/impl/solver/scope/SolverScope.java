@@ -227,7 +227,6 @@ public class SolverScope<Solution_> {
 
     public void setBestScore(Score bestScore) {
         this.bestScore.set(bestScore);
-        logger.info("New best score: {}", bestScore);
     }
 
     public Long getBestSolutionTimeMillis() {
