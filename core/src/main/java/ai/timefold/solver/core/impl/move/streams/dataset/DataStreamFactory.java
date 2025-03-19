@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.move.streams.dataset;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,23 +9,22 @@ import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.DataStreamFactory;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.SolutionExtractor;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
-public final class DefaultDataStreamFactory<Solution_> implements DataStreamFactory<Solution_> {
+@NullMarked
+public final class DataStreamFactory<Solution_> {
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final Map<AbstractDataStream<Solution_>, AbstractDataStream<Solution_>> sharingStreamMap = new HashMap<>(256);
 
-    public DefaultDataStreamFactory(SolutionDescriptor<Solution_> solutionDescriptor) {
+    public DataStreamFactory(SolutionDescriptor<Solution_> solutionDescriptor) {
         this.solutionDescriptor = solutionDescriptor;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    @Override
     public <A> @NonNull UniDataStream<Solution_, A> forEach(@NonNull Class<A> sourceClass) {
         assertValidForEachType(sourceClass);
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(sourceClass);
@@ -85,19 +83,6 @@ public final class DefaultDataStreamFactory<Solution_> implements DataStreamFact
                     .formatted(fromType.getCanonicalName(), canonicalClassNameList,
                             solutionDescriptor.getSolutionClass().getCanonicalName()));
         }
-    }
-
-    @Override
-    public @NonNull <A> UniDataStream<Solution_, A> forEach(@NonNull Class<A> sourceClass,
-            @NonNull SolutionExtractor<Solution_, A> extractor) {
-        assertValidForEachType(sourceClass);
-        return share(new ForEachDataStream<>(this, sourceClass, extractor));
-    }
-
-    @Override
-    public @NonNull <A> UniDataStream<Solution_, A> forEach(@NonNull Class<A> sourceClass, @NonNull Collection<A> collection) {
-        // Not checking for valid from type because the collection is designed to inject arbitrary data into the stream.
-        return share(new ForEachDataStream<>(this, sourceClass, collection));
     }
 
     public <Stream_ extends AbstractDataStream<Solution_>> Stream_ share(Stream_ stream) {

@@ -14,9 +14,9 @@ import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHel
 
 public final class DatasetSessionFactory<Solution_> {
 
-    private final DefaultDataStreamFactory<Solution_> dataStreamFactory;
+    private final DataStreamFactory<Solution_> dataStreamFactory;
 
-    public DatasetSessionFactory(DefaultDataStreamFactory<Solution_> dataStreamFactory) {
+    public DatasetSessionFactory(DataStreamFactory<Solution_> dataStreamFactory) {
         this.dataStreamFactory = dataStreamFactory;
     }
 

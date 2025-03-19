@@ -13,12 +13,11 @@ import org.jspecify.annotations.NonNull;
 public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataStream<Solution_>
         implements UniDataStream<Solution_, A> {
 
-    protected AbstractUniDataStream(DefaultDataStreamFactory<Solution_> dataStreamFactory) {
+    protected AbstractUniDataStream(DataStreamFactory<Solution_> dataStreamFactory) {
         super(dataStreamFactory, null);
     }
 
-    protected AbstractUniDataStream(DefaultDataStreamFactory<Solution_> dataStreamFactory,
-            AbstractDataStream<Solution_> parent) {
+    protected AbstractUniDataStream(DataStreamFactory<Solution_> dataStreamFactory, AbstractDataStream<Solution_> parent) {
         super(dataStreamFactory, parent);
     }
 

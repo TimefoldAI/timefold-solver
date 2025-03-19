@@ -11,11 +11,11 @@ import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHel
 public abstract class AbstractDataStream<Solution_>
         implements BavetStream {
 
-    protected final DefaultDataStreamFactory<Solution_> dataStreamFactory;
+    protected final DataStreamFactory<Solution_> dataStreamFactory;
     protected final AbstractDataStream<Solution_> parent;
     protected final List<AbstractDataStream<Solution_>> childStreamList = new ArrayList<>(2);
 
-    protected AbstractDataStream(DefaultDataStreamFactory<Solution_> dataStreamFactory, AbstractDataStream<Solution_> parent) {
+    protected AbstractDataStream(DataStreamFactory<Solution_> dataStreamFactory, AbstractDataStream<Solution_> parent) {
         this.dataStreamFactory = dataStreamFactory;
         this.parent = parent;
     }

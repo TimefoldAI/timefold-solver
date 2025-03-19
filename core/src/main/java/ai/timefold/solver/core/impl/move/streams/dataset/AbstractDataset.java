@@ -7,10 +7,10 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 
 public abstract class AbstractDataset<Solution_, Tuple_ extends AbstractTuple> {
 
-    private final DefaultDataStreamFactory<Solution_> dataStreamFactory;
+    private final DataStreamFactory<Solution_> dataStreamFactory;
     private final AbstractDataStream<Solution_> parent;
 
-    protected AbstractDataset(DefaultDataStreamFactory<Solution_> dataStreamFactory, AbstractDataStream<Solution_> parent) {
+    protected AbstractDataset(DataStreamFactory<Solution_> dataStreamFactory, AbstractDataStream<Solution_> parent) {
         this.dataStreamFactory = Objects.requireNonNull(dataStreamFactory);
         this.parent = Objects.requireNonNull(parent);
     }

@@ -1095,7 +1095,8 @@ This annotation can be located on two types of methods:
 
 [NOTE]
 ====
-A @ValueRangeProvider annotation needs to be on a member in a class with a @PlanningSolution or a @PlanningEntity annotation.
+A `@ValueRangeProvider` annotation needs to be on a member
+in a class with a `@PlanningSolution` or a `@PlanningEntity` annotation.
 It is ignored on parent classes or subclasses without those annotations.
 ====
 
@@ -1103,7 +1104,7 @@ The return type of that method can be three types:
 
 * ``Collection``: The value range is defined by a `Collection` (usually a ``List``) of its possible values.
 * Array: The value range is defined by an array of its possible values.
-* ``ValueRange``: The value range is defined by its bounds. This is less common.
+* ``CountableValueRange``: The value range is defined by its bounds. This is less common.
 
 [#valueRangeProviderOnSolution]
 ==== `ValueRangeProvider` on the solution
@@ -1111,7 +1112,7 @@ The return type of that method can be three types:
 All instances of the same planning entity class share the same set of possible planning values for that planning variable.
 This is the most common way to configure a value range.
 
-The `@PlanningSolution` implementation has method that returns a `Collection` (or a ``ValueRange``).
+The `@PlanningSolution` implementation has a method that returns a `Collection` (or a ``CountableValueRange``).
 Any value from that `Collection` is a possible planning value for this planning variable.
 
 [tabs]
@@ -1159,7 +1160,7 @@ class Timetable:
 
 [IMPORTANT]
 ====
-That `Collection` (or ``ValueRange``) must not contain the value ``null``,
+That `Collection` (or ``CountableValueRange``) must not contain the value ``null``,
 not even for a <<planningVariableAllowingUnassigned,planning variable allowing unassigned values>>.
 ====
 
@@ -1453,7 +1454,7 @@ def get_personal_car_list(self) -> Annotated[list[PersonalCar], ValueRangeProvid
 [#valueRangeFactory]
 ==== `ValueRangeFactory`
 
-Instead of a ``Collection``, you can also return a `ValueRange` or ``CountableValueRange``, built by the ``ValueRangeFactory``:
+Instead of a ``Collection``, you can also return ``CountableValueRange``, built by the ``ValueRangeFactory``:
 
 [tabs]
 ====
@@ -1475,7 +1476,7 @@ def get_delay_range(self) -> Annotated[CountableValueRange, ValueRangeProvider]:
     return ValueRangeFactory.create_int_value_range(0, 5000)
 ----
 ====
-A `ValueRange` uses far less memory, because it only holds the bounds.
+A `CountableValueRange` uses far less memory, because it only holds the bounds.
 In the example above, a `Collection` would need to hold all `5000` ints, instead of just the two bounds.
 
 Furthermore, an `incrementUnit` can be specified, for example if you have to buy stocks in units of 200 pieces:
@@ -1503,17 +1504,11 @@ def get_stock_amount_range(self) -> Annotated[CountableValueRange, ValueRangePro
 ----
 ====
 
-[NOTE]
-====
-Return `CountableValueRange` instead of `ValueRange` whenever possible (so Timefold Solver knows that it's countable).
-====
-
 The `ValueRangeFactory` has creation methods for several value class types:
 
 * ``boolean``: A boolean range.
 * ``int``: A 32bit integer range.
 * ``long``: A 64bit integer range.
-* ``double``: A 64bit floating point range which only supports random selection (because it does not implement ``CountableValueRange``).
 * ``BigInteger``: An arbitrary-precision integer range.
 * ``BigDecimal``: A decimal point range. By default, the increment unit is the lowest non-zero value in the scale of the bounds.
 * `Temporal` (such as ``LocalDate``, ``LocalDateTime``, ...): A time range.

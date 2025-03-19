@@ -10,6 +10,7 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
+import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
@@ -84,7 +85,8 @@ class PlanningSolutionMetaModelTest {
 
             @Test
             void hasProperVariables() {
-                var variableMetaModel = planningEntityMetaModel.variable("value");
+                var variableMetaModel = (GenuineVariableMetaModel<TestdataSolution, TestdataEntity, ?>) planningEntityMetaModel
+                        .variable("value");
                 assertSoftly(softly -> {
                     softly.assertThat(planningEntityMetaModel.variables())
                             .containsOnly(variableMetaModel);
@@ -201,7 +203,9 @@ class PlanningSolutionMetaModelTest {
 
             @Test
             void hasProperVariables() {
-                var variableMetaModel = planningEntityMetaModel.variable("valueList");
+                var variableMetaModel =
+                        (GenuineVariableMetaModel<TestdataListSolution, TestdataListEntity, ?>) planningEntityMetaModel
+                                .variable("valueList");
                 assertSoftly(softly -> {
                     softly.assertThat(planningEntityMetaModel.variables())
                             .containsOnly(variableMetaModel);

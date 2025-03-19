@@ -8,8 +8,7 @@ final class TerminalUniDataStream<Solution_, A>
 
     private final AbstractDataset<Solution_, UniTuple<A>> dataset;
 
-    public TerminalUniDataStream(DefaultDataStreamFactory<Solution_> dataStreamFactory,
-            AbstractUniDataStream<Solution_, A> parent) {
+    public TerminalUniDataStream(DataStreamFactory<Solution_> dataStreamFactory, AbstractUniDataStream<Solution_, A> parent) {
         super(dataStreamFactory, parent);
         this.dataset = new UniDataset<>(dataStreamFactory, this);
     }

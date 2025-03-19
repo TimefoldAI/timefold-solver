@@ -20,7 +20,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
  */
 public abstract sealed class AbstractForEachUniNode<A>
         extends AbstractNode
-        permits ForEachExcludingUnassignedUniNode, ForEachIncludingUnassignedUniNode, ForEachStaticUniNode {
+        permits ForEachExcludingUnassignedUniNode, ForEachIncludingUnassignedUniNode {
 
     private final Class<A> forEachClass;
     private final int outputStoreSize;

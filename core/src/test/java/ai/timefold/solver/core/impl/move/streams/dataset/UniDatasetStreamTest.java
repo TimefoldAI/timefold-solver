@@ -19,7 +19,7 @@ class UniDatasetStreamTest {
 
     @Test
     void forEach() {
-        var dataStreamFactory = new DefaultDataStreamFactory<>(TestdataListSolution.buildSolutionDescriptor());
+        var dataStreamFactory = new DataStreamFactory<>(TestdataListSolution.buildSolutionDescriptor());
         var uniDataset = ((AbstractUniDataStream<TestdataListSolution, TestdataListEntity>) dataStreamFactory
                 .forEach(TestdataListEntity.class))
                 .createDataset();
@@ -48,7 +48,7 @@ class UniDatasetStreamTest {
                 .containsExactly(entity1, entity3);
     }
 
-    private DatasetSession<TestdataListSolution> createSession(DefaultDataStreamFactory<TestdataListSolution> dataStreamFactory,
+    private DatasetSession<TestdataListSolution> createSession(DataStreamFactory<TestdataListSolution> dataStreamFactory,
             TestdataListSolution solution) {
         var datasetSessionFactory = new DatasetSessionFactory<>(dataStreamFactory);
         var datasetSession = datasetSessionFactory.buildSession();
@@ -67,9 +67,8 @@ class UniDatasetStreamTest {
     private record TestdataListSolutionView(TestdataListSolution solution) implements SolutionView<TestdataListSolution> {
 
         @Override
-        public <Entity_, Value_> @Nullable Value_ getValue(
-                PlanningVariableMetaModel<TestdataListSolution, Entity_, Value_> variableMetaModel,
-                Entity_ entity) {
+        public <Entity_, Value_> @Nullable Value_
+                getValue(PlanningVariableMetaModel<TestdataListSolution, Entity_, Value_> variableMetaModel, Entity_ entity) {
             var descriptor = ((DefaultPlanningVariableMetaModel<TestdataListSolution, Entity_, Value_>) variableMetaModel)
                     .variableDescriptor();
             return descriptor.getValue(entity);
@@ -77,8 +76,8 @@ class UniDatasetStreamTest {
 
         @Override
         public <Entity_, Value_> Value_ getValueAtIndex(
-                PlanningListVariableMetaModel<TestdataListSolution, Entity_, Value_> variableMetaModel,
-                Entity_ entity, int index) {
+                PlanningListVariableMetaModel<TestdataListSolution, Entity_, Value_> variableMetaModel, Entity_ entity,
+                int index) {
             var descriptor = ((DefaultPlanningListVariableMetaModel<TestdataListSolution, Entity_, Value_>) variableMetaModel)
                     .variableDescriptor();
             return descriptor.getElement(entity, index);
@@ -86,8 +85,7 @@ class UniDatasetStreamTest {
 
         @Override
         public <Entity_, Value_> ElementLocation getPositionOf(
-                PlanningListVariableMetaModel<TestdataListSolution, Entity_, Value_> variableMetaModel,
-                Value_ value) {
+                PlanningListVariableMetaModel<TestdataListSolution, Entity_, Value_> variableMetaModel, Value_ value) {
             var descriptor = ((DefaultPlanningListVariableMetaModel<TestdataListSolution, Entity_, Value_>) variableMetaModel)
                     .variableDescriptor();
             for (var entity : solution.getEntityList()) {
