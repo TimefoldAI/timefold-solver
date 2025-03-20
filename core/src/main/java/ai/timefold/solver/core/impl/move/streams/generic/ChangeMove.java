@@ -12,7 +12,6 @@ import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 import ai.timefold.solver.core.preview.api.move.Rebaser;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -43,22 +42,23 @@ public class ChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Solutio
     }
 
     @Override
-    public void execute(@NonNull MutableSolutionView<Solution_> solutionView) {
+    public void execute(MutableSolutionView<Solution_> solutionView) {
         solutionView.changeVariable(variableMetaModel, entity, toPlanningValue);
     }
 
     @Override
-    public @NonNull ChangeMove<Solution_, Entity_, Value_> rebase(@NonNull Rebaser rebaser) {
-        return new ChangeMove<>(variableMetaModel, rebaser.rebase(entity), rebaser.rebase(toPlanningValue));
+    public ChangeMove<Solution_, Entity_, Value_> rebase(Rebaser rebaser) {
+        return new ChangeMove<>(variableMetaModel, Objects.requireNonNull(rebaser.rebase(entity)),
+                rebaser.rebase(toPlanningValue));
     }
 
     @Override
-    public @NonNull Collection<Entity_> extractPlanningEntities() {
+    public Collection<Entity_> extractPlanningEntities() {
         return Collections.singletonList(entity);
     }
 
     @Override
-    public @NonNull Collection<Value_> extractPlanningValues() {
+    public Collection<Value_> extractPlanningValues() {
         return Collections.singletonList(toPlanningValue);
     }
 
@@ -81,7 +81,7 @@ public class ChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Solutio
     }
 
     @Override
-    public @NonNull String toString() {
+    public String toString() {
         var oldValue = currentValue == null ? getVariableDescriptor(variableMetaModel).getValue(entity) : currentValue;
         return entity + " {" + oldValue + " -> " + toPlanningValue + "}";
     }

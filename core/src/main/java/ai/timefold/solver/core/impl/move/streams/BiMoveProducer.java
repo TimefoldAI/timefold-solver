@@ -20,16 +20,13 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class BiMoveProducer<Solution_, A, B> implements InnerMoveProducer<Solution_> {
 
-    private final DefaultMoveStreamFactory<Solution_> moveStreamFactory;
     private final AbstractDataset<Solution_, UniTuple<A>> aDataset;
     private final AbstractDataset<Solution_, UniTuple<B>> bDataset;
     private final BiMoveConstructor<Solution_, A, B> moveConstructor;
     private final BiPredicate<A, B> filter;
 
-    public BiMoveProducer(DefaultMoveStreamFactory<Solution_> moveStreamFactory,
-            AbstractDataset<Solution_, UniTuple<A>> aDataset, AbstractDataset<Solution_, UniTuple<B>> bDataset,
+    public BiMoveProducer(AbstractDataset<Solution_, UniTuple<A>> aDataset, AbstractDataset<Solution_, UniTuple<B>> bDataset,
             BiPredicate<A, B> filter, BiMoveConstructor<Solution_, A, B> moveConstructor) {
-        this.moveStreamFactory = Objects.requireNonNull(moveStreamFactory);
         this.aDataset = Objects.requireNonNull(aDataset);
         this.bDataset = Objects.requireNonNull(bDataset);
         this.filter = Objects.requireNonNull(filter);

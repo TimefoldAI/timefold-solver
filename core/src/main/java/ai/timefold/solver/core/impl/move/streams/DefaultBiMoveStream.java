@@ -29,8 +29,7 @@ public final class DefaultBiMoveStream<Solution_, A, B> implements BiMoveStream<
 
     @Override
     public MoveProducer<Solution_> asMove(BiMoveConstructor<Solution_, A, B> moveConstructor) {
-        return new BiMoveProducer<>((DefaultMoveStreamFactory<Solution_>) leftMoveStream.getMoveStreamFactory(),
-                leftMoveStream.getDataset(), rightDataset, filter, Objects.requireNonNull(moveConstructor));
+        return new BiMoveProducer<>(leftMoveStream.getDataset(), rightDataset, filter, Objects.requireNonNull(moveConstructor));
     }
 
     @Override

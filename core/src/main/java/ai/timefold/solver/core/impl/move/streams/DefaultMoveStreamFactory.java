@@ -33,7 +33,7 @@ public final class DefaultMoveStreamFactory<Solution_>
     public DefaultMoveStreamSession<Solution_> createSession(Solution_ workingSolution) {
         var session = datasetSessionFactory.buildSession();
         session.initialize(workingSolution);
-        return new DefaultMoveStreamSession<>(this, session, workingSolution);
+        return new DefaultMoveStreamSession<>(session, workingSolution);
     }
 
     @Override

@@ -28,7 +28,7 @@ public class ChangeMoveProvider<Solution_, Entity_, Value_>
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
         var variableDescriptor = ((DefaultPlanningVariableMetaModel<Solution_, Entity_, Value_>) variableMetaModel)
                 .variableDescriptor();
-        this.valueFilter = variableMetaModel.allowsUnassigned() ? (value) -> true : Objects::nonNull;
+        this.valueFilter = variableMetaModel.allowsUnassigned() ? value -> true : Objects::nonNull;
         this.entityAndValueFilter = (entity, value) -> variableDescriptor.getValue(entity) != value;
     }
 

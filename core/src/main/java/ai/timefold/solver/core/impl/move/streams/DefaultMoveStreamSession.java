@@ -13,13 +13,10 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public final class DefaultMoveStreamSession<Solution_> implements MoveStreamSession<Solution_> {
 
-    private final DefaultMoveStreamFactory<Solution_> moveStreamFactory;
     private final DatasetSession<Solution_> datasetSession;
     private final Solution_ workingSolution;
 
-    public DefaultMoveStreamSession(DefaultMoveStreamFactory<Solution_> moveStreamFactory,
-            DatasetSession<Solution_> datasetSession, Solution_ workingSolution) {
-        this.moveStreamFactory = Objects.requireNonNull(moveStreamFactory);
+    public DefaultMoveStreamSession(DatasetSession<Solution_> datasetSession, Solution_ workingSolution) {
         this.datasetSession = Objects.requireNonNull(datasetSession);
         this.workingSolution = Objects.requireNonNull(workingSolution);
     }
