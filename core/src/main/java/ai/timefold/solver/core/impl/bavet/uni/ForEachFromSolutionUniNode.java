@@ -46,7 +46,7 @@ public final class ForEachFromSolutionUniNode<Solution_, A>
             var valueIterator = valueRange.createOriginalIterator();
             while (valueIterator.hasNext()) {
                 var value = valueIterator.next();
-                insert(value);
+                super.insert(value);
             }
         }
     }

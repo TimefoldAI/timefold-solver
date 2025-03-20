@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
 
@@ -32,9 +33,11 @@ public record NodeNetwork(Map<Class<?>, List<AbstractForEachUniNode<?, ?>>> decl
     }
 
     public Stream<AbstractForEachUniNode<?, ?>> getForEachNodes(Class<?> factClass) {
+        // The node needs to match the fact, or the node needs to be applicable to the entire solution.
+        // The latter is for FromSolution nodes.
         return declaredClassToNodeMap.entrySet()
                 .stream()
-                .filter(entry -> entry.getKey().isAssignableFrom(factClass))
+                .filter(entry -> factClass == PlanningSolution.class || entry.getKey().isAssignableFrom(factClass))
                 .map(Map.Entry::getValue)
                 .flatMap(List::stream);
     }

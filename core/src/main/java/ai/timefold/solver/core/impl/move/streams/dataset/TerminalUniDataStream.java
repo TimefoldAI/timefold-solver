@@ -18,7 +18,7 @@ final class TerminalUniDataStream<Solution_, A>
     @Override
     public void buildNode(DataNodeBuildHelper<Solution_> buildHelper) {
         assertEmptyChildStreamList();
-        var inputStoreIndex = buildHelper.reserveTupleStoreIndex(parent);
+        var inputStoreIndex = buildHelper.reserveTupleStoreIndex(parent.getTupleSource());
         buildHelper.putInsertUpdateRetract(this, dataset.instantiate(inputStoreIndex));
     }
 

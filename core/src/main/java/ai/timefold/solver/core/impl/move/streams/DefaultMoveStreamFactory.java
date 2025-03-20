@@ -11,7 +11,6 @@ import ai.timefold.solver.core.impl.move.streams.dataset.AbstractUniDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.dataset.DatasetSessionFactory;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamFactory;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniMoveStream;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
@@ -31,7 +30,7 @@ public final class DefaultMoveStreamFactory<Solution_>
         this.datasetSessionFactory = new DatasetSessionFactory<>(dataStreamFactory);
     }
 
-    public MoveStreamSession<Solution_> createSession(Solution_ workingSolution) {
+    public DefaultMoveStreamSession<Solution_> createSession(Solution_ workingSolution) {
         var session = datasetSessionFactory.buildSession();
         session.initialize(workingSolution);
         return new DefaultMoveStreamSession<>(this, session, workingSolution);
@@ -39,7 +38,7 @@ public final class DefaultMoveStreamFactory<Solution_>
 
     @Override
     public <A> UniDataStream<Solution_, A> enumerate(Class<A> clz) {
-        return dataStreamFactory.forEach(clz);
+        return dataStreamFactory.forEachIncludingUnassigned(clz);
     }
 
     public <Entity_> UniDataStream<Solution_, Entity_>
