@@ -33,6 +33,7 @@ import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
@@ -245,6 +246,8 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     SupplyManager getSupplyManager();
 
     MoveDirector<Solution_> getMoveDirector();
+
+    MoveStreamSession<Solution_> getMoveStreamSession();
 
     ListVariableStateSupply<Solution_> getListVariableStateSupply(ListVariableDescriptor<Solution_> variableDescriptor);
 

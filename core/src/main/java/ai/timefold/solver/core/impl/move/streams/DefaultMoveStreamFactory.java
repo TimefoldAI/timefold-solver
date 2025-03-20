@@ -7,8 +7,11 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.move.streams.dataset.AbstractUniDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
+import ai.timefold.solver.core.impl.move.streams.dataset.DatasetSessionFactory;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamFactory;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniMoveStream;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
@@ -21,9 +24,17 @@ public final class DefaultMoveStreamFactory<Solution_>
         implements MoveStreamFactory<Solution_> {
 
     private final DataStreamFactory<Solution_> dataStreamFactory;
+    private final DatasetSessionFactory<Solution_> datasetSessionFactory;
 
     public DefaultMoveStreamFactory(SolutionDescriptor<Solution_> solutionDescriptor) {
         this.dataStreamFactory = new DataStreamFactory<>(solutionDescriptor);
+        this.datasetSessionFactory = new DatasetSessionFactory<>(dataStreamFactory);
+    }
+
+    public MoveStreamSession<Solution_> createSession(Solution_ workingSolution) {
+        var session = datasetSessionFactory.buildSession();
+        session.initialize(workingSolution);
+        return new DefaultMoveStreamSession<>(this, session, workingSolution);
     }
 
     @Override
@@ -84,7 +95,8 @@ public final class DefaultMoveStreamFactory<Solution_>
 
     @Override
     public <A> UniMoveStream<Solution_, A> pick(UniDataStream<Solution_, A> dataStream) {
-        return null;
+        return new DefaultUniMoveStream<>(this,
+                ((AbstractUniDataStream<Solution_, A>) dataStream).createDataset());
     }
 
 }

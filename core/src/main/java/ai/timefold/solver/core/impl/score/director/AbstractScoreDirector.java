@@ -33,6 +33,7 @@ import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableLis
 import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.SolutionTracker;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
@@ -81,11 +82,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private int workingInitScore = 0;
     private String undoMoveText;
 
-    // Null when tracking disabled
-    private final boolean trackingWorkingSolution;
     private final SolutionTracker<Solution_> solutionTracker;
     private final MoveDirector<Solution_> moveDirector = new MoveDirector<>(this);
 
+    // Null when tracking disabled
+    private final boolean trackingWorkingSolution;
     // Null when no list variable
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
 
@@ -206,6 +207,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public MoveDirector<Solution_> getMoveDirector() {
         return moveDirector;
+    }
+
+    @Override
+    public MoveStreamSession<Solution_> getMoveStreamSession() {
+        return null;
     }
 
     // ************************************************************************

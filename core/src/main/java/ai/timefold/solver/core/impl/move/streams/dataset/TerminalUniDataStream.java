@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.move.streams.dataset;
 
-import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
 
 import org.jspecify.annotations.NullMarked;
@@ -9,7 +8,7 @@ import org.jspecify.annotations.NullMarked;
 final class TerminalUniDataStream<Solution_, A>
         extends AbstractUniDataStream<Solution_, A> {
 
-    private final AbstractDataset<Solution_, UniTuple<A>> dataset;
+    private final UniDataset<Solution_, A> dataset;
 
     public TerminalUniDataStream(DataStreamFactory<Solution_> dataStreamFactory, AbstractUniDataStream<Solution_, A> parent) {
         super(dataStreamFactory, parent);
@@ -23,7 +22,7 @@ final class TerminalUniDataStream<Solution_, A>
         buildHelper.putInsertUpdateRetract(this, dataset.instantiate(inputStoreIndex));
     }
 
-    public AbstractDataset<Solution_, UniTuple<A>> getDataset() {
+    public UniDataset<Solution_, A> getDataset() {
         return dataset;
     }
 

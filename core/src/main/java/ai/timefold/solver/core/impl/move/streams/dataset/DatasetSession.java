@@ -7,7 +7,6 @@ import java.util.Objects;
 import ai.timefold.solver.core.impl.bavet.AbstractSession;
 import ai.timefold.solver.core.impl.bavet.NodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
-import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 public final class DatasetSession<Solution_> extends AbstractSession {
 
@@ -29,12 +28,6 @@ public final class DatasetSession<Solution_> extends AbstractSession {
     @SuppressWarnings("unchecked")
     public <Out_ extends AbstractTuple> DatasetInstance<Solution_, Out_> getInstance(AbstractDataset<Solution_, Out_> dataset) {
         return (DatasetInstance<Solution_, Out_>) Objects.requireNonNull(datasetInstanceMap.get(dataset));
-    }
-
-    public void initialize() {
-    }
-
-    public void updateWorkingSolution(SolutionView<Solution_> solutionView, Solution_ solution) {
     }
 
 }

@@ -4,7 +4,6 @@ import java.util.function.Predicate;
 
 import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 import ai.timefold.solver.core.impl.bavet.bi.joiner.BiJoinerComber;
-import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.bridge.ForeBridgeUniDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 
@@ -81,7 +80,7 @@ public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataSt
         throw new UnsupportedOperationException();
     }
 
-    public AbstractDataset<Solution_, UniTuple<A>> createDataset() {
+    public UniDataset<Solution_, A> createDataset() {
         var stream = shareAndAddChild(new TerminalUniDataStream<>(dataStreamFactory, this));
         return stream.getDataset();
     }

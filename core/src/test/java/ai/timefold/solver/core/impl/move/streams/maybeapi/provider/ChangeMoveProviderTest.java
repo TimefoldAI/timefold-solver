@@ -45,7 +45,7 @@ class ChangeMoveProviderTest {
             scoreDirector.triggerVariableListeners();
             scoreDirector.calculateScore();
 
-            var moveIterable = moveProducer.getMoveIterable(scoreDirector.getMoveDirector());
+            var moveIterable = moveProducer.getMoveIterable(scoreDirector.getMoveStreamSession());
             var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
                     .map(m -> (ChangeMove<TestdataSolution, TestdataEntity, TestdataValue>) m)
                     .toList();
