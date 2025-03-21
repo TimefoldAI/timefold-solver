@@ -14,9 +14,9 @@ import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHel
 
 public final class DatasetSessionFactory<Solution_> {
 
-    private final DefaultDataStreamFactory<Solution_> dataStreamFactory;
+    private final DataStreamFactory<Solution_> dataStreamFactory;
 
-    public DatasetSessionFactory(DefaultDataStreamFactory<Solution_> dataStreamFactory) {
+    public DatasetSessionFactory(DataStreamFactory<Solution_> dataStreamFactory) {
         this.dataStreamFactory = dataStreamFactory;
     }
 
@@ -35,12 +35,11 @@ public final class DatasetSessionFactory<Solution_> {
     }
 
     private NodeNetwork buildNodeNetwork(Set<AbstractDataStream<Solution_>> dataStreamSet,
-            DataNodeBuildHelper<Solution_> buildHelper,
-            Consumer<String> nodeNetworkVisualizationConsumer) {
-        var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<AbstractForEachUniNode<?>>>();
+            DataNodeBuildHelper<Solution_> buildHelper, Consumer<String> nodeNetworkVisualizationConsumer) {
+        var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<AbstractForEachUniNode<?, ?>>>();
         var nodeList = buildHelper.buildNodeList(dataStreamSet, buildHelper,
                 AbstractDataStream::buildNode, node -> {
-                    if (!(node instanceof AbstractForEachUniNode<?> forEachUniNode)) {
+                    if (!(node instanceof AbstractForEachUniNode<?, ?> forEachUniNode)) {
                         return;
                     }
                     var forEachClass = forEachUniNode.getForEachClass();

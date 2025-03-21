@@ -47,7 +47,7 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
     public void addNode(AbstractNode node, Stream_ creator, Stream_ parent) {
         reversedNodeList.add(node);
         nodeCreatorMap.put(node, creator);
-        if (!(node instanceof AbstractForEachUniNode<?>)) {
+        if (!(node instanceof AbstractForEachUniNode<?, ?>)) {
             if (parent == null) {
                 throw new IllegalStateException("Impossible state: The node (%s) has no parent (%s)."
                         .formatted(node, parent));
@@ -148,7 +148,7 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
     }
 
     public static NodeNetwork buildNodeNetwork(List<AbstractNode> nodeList,
-            Map<Class<?>, List<AbstractForEachUniNode<?>>> declaredClassToNodeMap) {
+            Map<Class<?>, List<AbstractForEachUniNode<?, ?>>> declaredClassToNodeMap) {
         var layerMap = new TreeMap<Long, List<Propagator>>();
         for (var node : nodeList) {
             layerMap.computeIfAbsent(node.getLayerIndex(), k -> new ArrayList<>())
@@ -206,7 +206,7 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
     @SuppressWarnings("unchecked")
     private static <Stream_ extends BavetStream> long determineLayerIndex(AbstractNode node,
             AbstractNodeBuildHelper<Stream_> buildHelper) {
-        if (node instanceof AbstractForEachUniNode<?>) { // ForEach nodes, and only they, are in layer 0.
+        if (node instanceof AbstractForEachUniNode<?, ?>) { // ForEach nodes, and only they, are in layer 0.
             return 0;
         } else if (node instanceof AbstractTwoInputNode<?, ?> joinNode) {
             var nodeCreator = (BavetStreamBinaryOperation<?>) buildHelper.getNodeCreatingStream(joinNode);

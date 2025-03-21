@@ -1,43 +1,12 @@
 package ai.timefold.solver.core.impl.move.streams.maybeapi.stream;
 
-import java.util.Collection;
-import java.util.function.BiFunction;
-import java.util.function.Function;
+import org.jspecify.annotations.NullMarked;
 
-import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
-
+@NullMarked
 public interface MoveStreamFactory<Solution_> {
 
+    // TODO should this include unassigned? It does now.
     <A> UniDataStream<Solution_, A> enumerate(Class<A> clz);
-
-    default <Entity_> UniDataStream<Solution_, Entity_>
-            enumerateEntities(PlanningEntityMetaModel<Solution_, Entity_> entityMetaModel) {
-        return enumerate(entityMetaModel.type());
-    }
-
-    @SuppressWarnings("unchecked")
-    default <Entity_, A> UniDataStream<Solution_, A>
-            enumeratePossibleValues(PlanningVariableMetaModel<Solution_, Entity_, A> variableMetaModel) {
-        var variableDescriptor =
-                ((DefaultPlanningVariableMetaModel<Solution_, Entity_, A>) variableMetaModel).variableDescriptor();
-        var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
-        if (variableDescriptor.isValueRangeEntityIndependent()) {
-            return enumerate(solution -> (Collection<A>) valueRangeDescriptor.extractValueRange(solution, null));
-        } else {
-            return enumerateFromEntity(variableMetaModel.entity(),
-                    (solution, entity) -> (Collection<A>) valueRangeDescriptor.extractValueRange(solution, entity));
-        }
-    }
-
-    <A> UniDataStream<Solution_, A> enumerate(Function<Solution_, Collection<A>> collectionFunction);
-
-    <Entity_, A> UniDataStream<Solution_, A> enumerateFromEntity(
-            PlanningEntityMetaModel<Solution_, Entity_> entityMetaModel,
-            BiFunction<Solution_, Entity_, Collection<A>> collectionFunction);
-
-    <A> UniDataStream<Solution_, A> enumerate(Collection<A> collection);
 
     default <A> UniMoveStream<Solution_, A> pick(Class<A> clz) {
         return pick(enumerate(clz));

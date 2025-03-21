@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
 
@@ -18,7 +19,8 @@ import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
  * @param layeredNodes nodes grouped first by their layer, then by their index within the layer;
  *        propagation needs to happen in this order.
  */
-public record NodeNetwork(Map<Class<?>, List<AbstractForEachUniNode<?>>> declaredClassToNodeMap, Propagator[][] layeredNodes) {
+public record NodeNetwork(Map<Class<?>, List<AbstractForEachUniNode<?, ?>>> declaredClassToNodeMap,
+        Propagator[][] layeredNodes) {
 
     public static final NodeNetwork EMPTY = new NodeNetwork(Map.of(), new Propagator[0][0]);
 
@@ -30,16 +32,12 @@ public record NodeNetwork(Map<Class<?>, List<AbstractForEachUniNode<?>>> declare
         return layeredNodes.length;
     }
 
-    public Stream<AbstractForEachUniNode<?>> getForEachNodes() {
-        return declaredClassToNodeMap.values()
-                .stream()
-                .flatMap(List::stream);
-    }
-
-    public Stream<AbstractForEachUniNode<?>> getForEachNodes(Class<?> factClass) {
+    public Stream<AbstractForEachUniNode<?, ?>> getForEachNodes(Class<?> factClass) {
+        // The node needs to match the fact, or the node needs to be applicable to the entire solution.
+        // The latter is for FromSolution nodes.
         return declaredClassToNodeMap.entrySet()
                 .stream()
-                .filter(entry -> entry.getKey().isAssignableFrom(factClass))
+                .filter(entry -> factClass == PlanningSolution.class || entry.getKey().isAssignableFrom(factClass))
                 .map(Map.Entry::getValue)
                 .flatMap(List::stream);
     }

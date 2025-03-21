@@ -70,12 +70,12 @@ public class ChangeMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     @Override
-    public Collection<? extends Object> getPlanningEntities() {
+    public Collection<?> getPlanningEntities() {
         return Collections.singletonList(entity);
     }
 
     @Override
-    public Collection<? extends Object> getPlanningValues() {
+    public Collection<?> getPlanningValues() {
         return Collections.singletonList(toPlanningValue);
     }
 

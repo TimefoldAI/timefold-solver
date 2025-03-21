@@ -19,7 +19,7 @@ import ai.timefold.solver.core.impl.domain.valuerange.buildin.temporal.TemporalV
 import org.jspecify.annotations.NonNull;
 
 /**
- * Factory for {@link ValueRange}.
+ * Factory for {@link CountableValueRange}.
  */
 public final class ValueRangeFactory {
 

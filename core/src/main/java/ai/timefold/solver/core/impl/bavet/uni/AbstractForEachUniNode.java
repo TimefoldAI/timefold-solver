@@ -10,6 +10,8 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * Filtering nodes are expensive.
  * Considering that most streams start with a nullity check on genuine planning variables,
@@ -18,9 +20,10 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
  *
  * @param <A>
  */
-public abstract sealed class AbstractForEachUniNode<A>
+@NullMarked
+public abstract sealed class AbstractForEachUniNode<Solution_, A>
         extends AbstractNode
-        permits ForEachExcludingUnassignedUniNode, ForEachIncludingUnassignedUniNode, ForEachStaticUniNode {
+        permits ForEachExcludingUnassignedUniNode, ForEachIncludingUnassignedUniNode {
 
     private final Class<A> forEachClass;
     private final int outputStoreSize;
@@ -33,6 +36,8 @@ public abstract sealed class AbstractForEachUniNode<A>
         this.outputStoreSize = outputStoreSize;
         this.propagationQueue = new StaticPropagationQueue<>(nextNodesTupleLifecycle);
     }
+
+    public abstract void initialize(Solution_ workingSolution);
 
     public void insert(A a) {
         var tuple = new UniTuple<>(a, outputStoreSize);
@@ -90,14 +95,49 @@ public abstract sealed class AbstractForEachUniNode<A>
         return forEachClass;
     }
 
-    public boolean supportsIndividualUpdates() {
-        return true;
-    }
+    /**
+     * Determines if this node supports the given lifecycle operation.
+     * Unsupported nodes will not be called during that lifecycle operation.
+     *
+     * @param lifecycleOperation the lifecycle operation to check
+     * @return {@code true} if the given lifecycle operation is supported; otherwise, {@code false}.
+     */
+    public abstract boolean supports(LifecycleOperation lifecycleOperation);
 
     @Override
     public final String toString() {
         return "%s(%s)"
                 .formatted(getClass().getSimpleName(), forEachClass.getSimpleName());
+    }
+
+    /**
+     * Represents the various lifecycle operations that can be performed
+     * on tuples within a node in Bavet.
+     */
+    public enum LifecycleOperation {
+        /**
+         * Called when initializing a new working solution.
+         */
+        INITIALIZE,
+        /**
+         * Represents the operation of inserting a new tuple into the node.
+         * This operation is typically performed when a new fact is added to the working solution
+         * and needs to be propagated through the node network.
+         */
+        INSERT,
+        /**
+         * Represents the operation of updating an existing tuple within the node.
+         * This operation is typically triggered when a fact in the working solution
+         * is modified, requiring the corresponding tuple to be updated and its changes
+         * propagated through the node network.
+         */
+        UPDATE,
+        /**
+         * Represents the operation of retracting or removing an existing tuple from the node.
+         * This operation is typically used when a fact is removed from the working solution
+         * and its corresponding tuple needs to be removed from the node network.
+         */
+        RETRACT
     }
 
 }

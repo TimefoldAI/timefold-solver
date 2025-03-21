@@ -11,5 +11,5 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
  */
 @FunctionalInterface
 public interface MoveProvider<Solution_>
-        extends Function<MoveStreamFactory<Solution_>, MoveConstructor<Solution_>> {
+        extends Function<MoveStreamFactory<Solution_>, MoveProducer<Solution_>> {
 }

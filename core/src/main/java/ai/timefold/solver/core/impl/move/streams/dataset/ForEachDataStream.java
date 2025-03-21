@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.move.streams.dataset;
 
-import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -12,48 +11,40 @@ import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.core.impl.bavet.uni.ForEachExcludingUnassignedUniNode;
 import ai.timefold.solver.core.impl.bavet.uni.ForEachFromSolutionUniNode;
 import ai.timefold.solver.core.impl.bavet.uni.ForEachIncludingUnassignedUniNode;
-import ai.timefold.solver.core.impl.bavet.uni.ForEachStaticUniNode;
+import ai.timefold.solver.core.impl.move.streams.FromSolutionValueCollectingFunction;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.SolutionExtractor;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
 public final class ForEachDataStream<Solution_, A>
         extends AbstractUniDataStream<Solution_, A>
         implements TupleSource {
 
     private final Class<A> forEachClass;
-    private final Predicate<A> filter;
-    private final SolutionExtractor<Solution_, A> extractor;
-    private final Collection<A> source;
+    private final @Nullable FromSolutionValueCollectingFunction<Solution_, A> valueCollectingFunction;
+    private final @Nullable Predicate<A> filter;
 
-    public ForEachDataStream(DefaultDataStreamFactory<Solution_> dataStreamFactory, Class<A> forEachClass) {
-        this(dataStreamFactory, forEachClass, (Predicate<A>) null);
+    public ForEachDataStream(DataStreamFactory<Solution_> dataStreamFactory, Class<A> forEachClass) {
+        this(dataStreamFactory, forEachClass, null);
     }
 
-    public ForEachDataStream(DefaultDataStreamFactory<Solution_> dataStreamFactory, Class<A> forEachClass,
-            Predicate<A> filter) {
+    public ForEachDataStream(DataStreamFactory<Solution_> dataStreamFactory, Class<A> forEachClass,
+            @Nullable Predicate<A> filter) {
         super(dataStreamFactory, null);
         this.forEachClass = Objects.requireNonNull(forEachClass, "The forEachClass cannot be null.");
+        this.valueCollectingFunction = null;
         this.filter = filter;
-        this.extractor = null;
-        this.source = null;
     }
 
-    public ForEachDataStream(DefaultDataStreamFactory<Solution_> dataStreamFactory, Class<A> forEachClass,
-            SolutionExtractor<Solution_, A> extractor) {
+    public ForEachDataStream(DataStreamFactory<Solution_> dataStreamFactory,
+            FromSolutionValueCollectingFunction<Solution_, A> valueCollectingFunction) {
         super(dataStreamFactory, null);
-        this.forEachClass = Objects.requireNonNull(forEachClass, "The forEachClass cannot be null.");
+        var function = Objects.requireNonNull(valueCollectingFunction, "The valueCollectingFunction cannot be null.");
+        this.forEachClass = function.declaredClass();
+        this.valueCollectingFunction = function;
         this.filter = null;
-        this.extractor = Objects.requireNonNull(extractor, "The extractor cannot be null.");
-        this.source = null;
-    }
-
-    public ForEachDataStream(DefaultDataStreamFactory<Solution_> dataStreamFactory, Class<A> forEachClass,
-            Collection<A> source) {
-        super(dataStreamFactory, null);
-        this.forEachClass = Objects.requireNonNull(forEachClass, "The forEachClass cannot be null.");
-        this.filter = null;
-        this.extractor = null;
-        this.source = Objects.requireNonNull(source, "The source cannot be null.");
     }
 
     @Override
@@ -69,11 +60,9 @@ public final class ForEachDataStream<Solution_, A>
         buildHelper.addNode(node, this, null);
     }
 
-    private AbstractForEachUniNode<A> getNode(TupleLifecycle<UniTuple<A>> tupleLifecycle, int outputStoreSize) {
-        if (source != null) {
-            return new ForEachStaticUniNode<>(forEachClass, source, tupleLifecycle, outputStoreSize);
-        } else if (extractor != null) {
-            return new ForEachFromSolutionUniNode<>(forEachClass, extractor, tupleLifecycle, outputStoreSize);
+    private AbstractForEachUniNode<Solution_, A> getNode(TupleLifecycle<UniTuple<A>> tupleLifecycle, int outputStoreSize) {
+        if (valueCollectingFunction != null) {
+            return new ForEachFromSolutionUniNode<>(valueCollectingFunction, tupleLifecycle, outputStoreSize);
         } else if (filter == null) {
             return new ForEachIncludingUnassignedUniNode<>(forEachClass, tupleLifecycle, outputStoreSize);
         } else {
@@ -83,25 +72,21 @@ public final class ForEachDataStream<Solution_, A>
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof ForEachDataStream<?, ?> that))
-            return false;
-        return Objects.equals(forEachClass, that.forEachClass) && Objects.equals(filter, that.filter)
-                && Objects.equals(extractor, that.extractor) && Objects.equals(source, that.source);
+        return o instanceof ForEachDataStream<?, ?> that &&
+                Objects.equals(forEachClass, that.forEachClass) &&
+                Objects.equals(valueCollectingFunction, that.valueCollectingFunction) &&
+                Objects.equals(filter, that.filter);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(forEachClass, filter, extractor, source);
+        return Objects.hash(forEachClass, valueCollectingFunction, filter);
     }
 
     @Override
     public String toString() {
-        if (source != null) {
-            return "Static ForEach(" + forEachClass.getSimpleName() + ") with " + childStreamList.size() + " children";
-        } else if (extractor != null) {
-            return "ForEach(" + forEachClass.getSimpleName() + ") from solution with " + childStreamList.size() + " children";
+        if (valueCollectingFunction != null) {
+            return "ForEach(" + valueCollectingFunction + ") with " + childStreamList.size() + " children";
         } else if (filter == null) {
             return "ForEach(" + forEachClass.getSimpleName() + ") with " + childStreamList.size() + " children";
         } else {

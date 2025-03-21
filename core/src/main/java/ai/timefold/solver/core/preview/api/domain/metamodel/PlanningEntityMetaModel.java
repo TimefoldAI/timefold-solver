@@ -55,10 +55,31 @@ public interface PlanningEntityMetaModel<Solution_, Entity_> {
      *
      * @return Genuine variables declared by the entity.
      */
-    default List<VariableMetaModel<Solution_, Entity_, ?>> genuineVariables() {
-        return variables().stream()
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    default List<GenuineVariableMetaModel<Solution_, Entity_, ?>> genuineVariables() {
+        return (List) variables().stream()
                 .filter(VariableMetaModel::isGenuine)
+                .map(v -> (GenuineVariableMetaModel<Solution_, Entity_, ?>) v)
                 .toList();
+    }
+
+    /**
+     * Returns a single genuine variable declared by the entity.
+     *
+     * @param <Value_> The type of the value of the variable.
+     * @return The single genuine variable declared by the entity.
+     * @throws IllegalStateException if the entity declares multiple genuine variables, or none.
+     */
+    @SuppressWarnings("unchecked")
+    default <Value_> GenuineVariableMetaModel<Solution_, Entity_, Value_> genuineVariable() {
+        var genuineVariables = genuineVariables();
+        return switch (genuineVariables.size()) {
+            case 0 -> throw new IllegalStateException("The entity class (%s) has no genuine variables."
+                    .formatted(type().getCanonicalName()));
+            case 1 -> (GenuineVariableMetaModel<Solution_, Entity_, Value_>) genuineVariables.get(0);
+            default -> throw new IllegalStateException("The entity class (%s) has multiple genuine variables (%s)."
+                    .formatted(type().getCanonicalName(), genuineVariables));
+        };
     }
 
     /**

@@ -15,6 +15,10 @@ import ai.timefold.solver.core.impl.move.streams.dataset.common.BavetIfExistsDat
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.bridge.ForeBridgeUniDataStream;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
 final class IfExistsUniDataStream<Solution_, A, B>
         extends AbstractUniDataStream<Solution_, A>
         implements BavetIfExistsDataStream<Solution_> {
@@ -23,11 +27,11 @@ final class IfExistsUniDataStream<Solution_, A, B>
     private final ForeBridgeUniDataStream<Solution_, B> parentBridgeB;
     private final boolean shouldExist;
     private final DefaultBiJoiner<A, B> joiner;
-    private final BiPredicate<A, B> filtering;
+    private final @Nullable BiPredicate<A, B> filtering;
 
-    public IfExistsUniDataStream(DefaultDataStreamFactory<Solution_> dataStreamFactory,
-            AbstractUniDataStream<Solution_, A> parentA, ForeBridgeUniDataStream<Solution_, B> parentBridgeB,
-            boolean shouldExist, DefaultBiJoiner<A, B> joiner, BiPredicate<A, B> filtering) {
+    public IfExistsUniDataStream(DataStreamFactory<Solution_> dataStreamFactory, AbstractUniDataStream<Solution_, A> parentA,
+            ForeBridgeUniDataStream<Solution_, B> parentBridgeB, boolean shouldExist, DefaultBiJoiner<A, B> joiner,
+            @Nullable BiPredicate<A, B> filtering) {
         super(dataStreamFactory);
         this.parentA = parentA;
         this.parentBridgeB = parentBridgeB;

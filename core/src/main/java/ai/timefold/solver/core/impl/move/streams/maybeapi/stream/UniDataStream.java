@@ -10,16 +10,16 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
 
     /**
      * Exhaustively test each fact against the {@link Predicate}
      * and match if {@link Predicate#test(Object)} returns true.
      */
-    @NonNull
-    UniDataStream<Solution_, A> filter(@NonNull Predicate<A> predicate);
+    UniDataStream<Solution_, A> filter(Predicate<A> predicate);
 
     /**
      * Create a new {@link UniDataStream} for every A where B exists for which all {@link BiJoiner}s are true
@@ -29,7 +29,7 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
      * @return a stream that matches every A where B exists for which the {@link BiJoiner}s are true
      */
     @SuppressWarnings("unchecked")
-    <B> @NonNull UniDataStream<Solution_, A> ifExists(@NonNull Class<B> otherClass, @NonNull BiJoiner<A, B>... joiners);
+    <B> UniDataStream<Solution_, A> ifExists(Class<B> otherClass, BiJoiner<A, B>... joiners);
 
     /**
      * Create a new {@link UniDataStream} for every A where B exists for which all {@link BiJoiner}s are true
@@ -39,8 +39,7 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
      * @return a stream that matches every A where B exists for which the {@link BiJoiner}s are true
      */
     @SuppressWarnings("unchecked")
-    <B> @NonNull UniDataStream<Solution_, A> ifExists(@NonNull UniDataStream<Solution_, B> otherStream,
-            @NonNull BiJoiner<A, B>... joiners);
+    <B> UniDataStream<Solution_, A> ifExists(UniDataStream<Solution_, B> otherStream, BiJoiner<A, B>... joiners);
 
     /**
      * Create a new {@link UniDataStream} for every A where B exists for which the {@link BiJoiner}s are true
@@ -53,8 +52,7 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
      * @return a stream that matches every A where B exists for which the {@link BiJoiner}s are true
      */
     @SuppressWarnings("unchecked")
-    <B> @NonNull UniDataStream<Solution_, A> ifExistsIncludingUnassigned(@NonNull Class<B> otherClass,
-            @NonNull BiJoiner<A, B>... joiners);
+    <B> UniDataStream<Solution_, A> ifExistsIncludingUnassigned(Class<B> otherClass, BiJoiner<A, B>... joiners);
 
     /**
      * Create a new {@link UniDataStream} for every A, if another A exists that does not {@link Object#equals(Object)}
@@ -63,8 +61,7 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
      * @return a stream that matches every A where a different A exists for which the {@link BiJoiner}s are true
      */
     @SuppressWarnings("unchecked")
-    default @NonNull UniDataStream<Solution_, A> ifExistsOther(@NonNull Class<A> otherClass,
-            @NonNull BiJoiner<A, A>... joiners) {
+    default UniDataStream<Solution_, A> ifExistsOther(Class<A> otherClass, BiJoiner<A, A>... joiners) {
         BiJoiner<A, A> otherness = Joiners.filtering(notEquals());
 
         @SuppressWarnings("unchecked")
@@ -84,8 +81,7 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
      * @return a stream that matches every A where a different A exists for which the {@link BiJoiner}s are true
      */
     @SuppressWarnings("unchecked")
-    default @NonNull UniDataStream<Solution_, A> ifExistsOtherIncludingUnassigned(@NonNull Class<A> otherClass,
-            @NonNull BiJoiner<A, A>... joiners) {
+    default UniDataStream<Solution_, A> ifExistsOtherIncludingUnassigned(Class<A> otherClass, BiJoiner<A, A>... joiners) {
         BiJoiner<A, A> otherness = Joiners.filtering(notEquals());
 
         @SuppressWarnings("unchecked")
@@ -102,7 +98,7 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
      * @return a stream that matches every A where B does not exist for which the {@link BiJoiner}s are true
      */
     @SuppressWarnings("unchecked")
-    <B> @NonNull UniDataStream<Solution_, A> ifNotExists(@NonNull Class<B> otherClass, @NonNull BiJoiner<A, B>... joiners);
+    <B> UniDataStream<Solution_, A> ifNotExists(Class<B> otherClass, BiJoiner<A, B>... joiners);
 
     /**
      * Create a new {@link UniDataStream} for every A where B does not exist for which the {@link BiJoiner}s are true
@@ -112,8 +108,7 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
      * @return a stream that matches every A where B does not exist for which the {@link BiJoiner}s are true
      */
     @SuppressWarnings("unchecked")
-    <B> @NonNull UniDataStream<Solution_, A> ifNotExists(@NonNull UniDataStream<Solution_, B> otherStream,
-            @NonNull BiJoiner<A, B>... joiners);
+    <B> UniDataStream<Solution_, A> ifNotExists(UniDataStream<Solution_, B> otherStream, BiJoiner<A, B>... joiners);
 
     /**
      * Create a new {@link UniDataStream} for every A where B does not exist for which the {@link BiJoiner}s are true
@@ -126,8 +121,7 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
      * @return a stream that matches every A where B does not exist for which the {@link BiJoiner}s are true
      */
     @SuppressWarnings("unchecked")
-    <B> @NonNull UniDataStream<Solution_, A> ifNotExistsIncludingUnassigned(@NonNull Class<B> otherClass,
-            @NonNull BiJoiner<A, B>... joiners);
+    <B> UniDataStream<Solution_, A> ifNotExistsIncludingUnassigned(Class<B> otherClass, BiJoiner<A, B>... joiners);
 
     /**
      * Create a new {@link UniDataStream} for every A, if no other A exists that does not {@link Object#equals(Object)}
@@ -137,8 +131,7 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
      * @return a stream that matches every A where a different A does not exist
      */
     @SuppressWarnings("unchecked")
-    default @NonNull UniDataStream<Solution_, A> ifNotExistsOther(@NonNull Class<A> otherClass,
-            @NonNull BiJoiner<A, A>... joiners) {
+    default UniDataStream<Solution_, A> ifNotExistsOther(Class<A> otherClass, BiJoiner<A, A>... joiners) {
         BiJoiner<A, A> otherness = Joiners.filtering(notEquals());
 
         @SuppressWarnings("unchecked")
@@ -158,8 +151,7 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
      * @return a stream that matches every A where a different A does not exist
      */
     @SuppressWarnings("unchecked")
-    default @NonNull UniDataStream<Solution_, A> ifNotExistsOtherIncludingUnassigned(@NonNull Class<A> otherClass,
-            @NonNull BiJoiner<A, A>... joiners) {
+    default UniDataStream<Solution_, A> ifNotExistsOtherIncludingUnassigned(Class<A> otherClass, BiJoiner<A, A>... joiners) {
         BiJoiner<A, A> otherness = Joiners.filtering(notEquals());
 
         @SuppressWarnings("unchecked")

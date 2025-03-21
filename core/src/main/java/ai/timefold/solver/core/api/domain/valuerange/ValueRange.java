@@ -18,8 +18,11 @@ import org.jspecify.annotations.Nullable;
  * to use less memory and provide more opportunities.
  * <p>
  * ValueRange is stateful.
- * Prefer using {@link CountableValueRange} (which extends this interface) whenever possible.
  * Implementations must be immutable.
+ * <p>
+ * Prefer using {@link CountableValueRange}.
+ * In a future version of Timefold Solver, uncountable value ranges will not be allowed,
+ * and certain recently introduced features already do not support them.
  *
  * @see ValueRangeFactory
  * @see CountableValueRange
