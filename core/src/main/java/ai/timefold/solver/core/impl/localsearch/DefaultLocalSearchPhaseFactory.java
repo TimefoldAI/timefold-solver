@@ -2,18 +2,28 @@ package ai.timefold.solver.core.impl.localsearch;
 
 import java.util.Collections;
 import java.util.Objects;
+import java.util.Optional;
 
+import ai.timefold.solver.core.config.AbstractConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
+import ai.timefold.solver.core.config.heuristic.selector.list.SubListSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigurationEnabled;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.RuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.value.chained.SubChainSelectorConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchType;
 import ai.timefold.solver.core.config.localsearch.decider.acceptor.AcceptorType;
@@ -32,6 +42,8 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AcceptorFactory;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForagerFactory;
+import ai.timefold.solver.core.impl.localsearch.decider.restart.AcceptorRestartStrategy;
+import ai.timefold.solver.core.impl.localsearch.decider.restart.RestartStrategy;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
@@ -59,6 +71,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
             PhaseTermination<Solution_> termination) {
         var moveSelector = buildMoveSelector(configPolicy);
         var acceptor = buildAcceptor(configPolicy);
+        RestartStrategy<Solution_> restartStrategy = new AcceptorRestartStrategy<>(acceptor);
         var forager = buildForager(configPolicy);
         if (moveSelector.isNeverEnding() && !forager.supportsNeverEndingMoveSelector()) {
             throw new IllegalStateException("The moveSelector (" + moveSelector
@@ -71,11 +84,12 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         var environmentMode = configPolicy.getEnvironmentMode();
         LocalSearchDecider<Solution_> decider;
         if (moveThreadCount == null) {
-            decider = new LocalSearchDecider<>(configPolicy.getLogIndentation(), termination, moveSelector, acceptor, forager);
+            decider = new LocalSearchDecider<>(configPolicy.getLogIndentation(), termination, moveSelector,
+                    restartStrategy, acceptor, forager);
         } else {
             decider = TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTITHREADED_SOLVING)
-                    .buildLocalSearch(moveThreadCount, termination, moveSelector, acceptor, forager, environmentMode,
-                            configPolicy);
+                    .buildLocalSearch(moveThreadCount, termination, moveSelector, restartStrategy, acceptor, forager,
+                            environmentMode, configPolicy);
         }
         decider.enableAssertions(environmentMode);
         return decider;
@@ -184,6 +198,28 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         return moveSelector;
     }
 
+    @SuppressWarnings("rawtypes")
+    protected MoveSelector<Solution_> buildPerturbationMoveSelector(HeuristicConfigPolicy<Solution_> configPolicy) {
+        MoveSelector<Solution_> moveSelector;
+        var defaultCacheType = SelectionCacheType.JUST_IN_TIME;
+        SelectionOrder defaultSelectionOrder;
+        defaultSelectionOrder = SelectionOrder.RANDOM;
+        var moveSelectorConfig =
+                Optional.ofNullable(phaseConfig.getMoveSelectorConfig()).map(AbstractConfig::copyConfig).orElse(null);
+        if (moveSelectorConfig == null) {
+            moveSelector = new UnionMoveSelectorFactory<Solution_>(determinePerturbationMoveSelectorConfig(configPolicy))
+                    .buildMoveSelector(configPolicy, defaultCacheType, defaultSelectionOrder, true);
+        } else {
+            if (moveSelectorConfig instanceof UnionMoveSelectorConfig unionMoveSelectorConfig) {
+                unionMoveSelectorConfig.getMoveSelectorList().forEach(m -> m.setFixedProbabilityWeight(null));
+            }
+            AbstractMoveSelectorFactory<Solution_, ?> moveSelectorFactory =
+                    MoveSelectorFactory.create((MoveSelectorConfig<?>) moveSelectorConfig);
+            moveSelector = moveSelectorFactory.buildMoveSelector(configPolicy, defaultCacheType, defaultSelectionOrder, true);
+        }
+        return moveSelector;
+    }
+
     private UnionMoveSelectorConfig determineDefaultMoveSelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy) {
         var solutionDescriptor = configPolicy.getSolutionDescriptor();
         var basicVariableDescriptorList = solutionDescriptor.getEntityDescriptors().stream()
@@ -226,6 +262,46 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                                 Specify move selectors manually or remove the top-level nearbyDistanceMeterClass from your solver config."""
                                 .formatted(configPolicy.getNearbyDistanceMeterClass()));
             }
+            return new UnionMoveSelectorConfig()
+                    .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig());
+        }
+    }
+
+    private UnionMoveSelectorConfig determinePerturbationMoveSelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy) {
+        var solutionDescriptor = configPolicy.getSolutionDescriptor();
+        var basicVariableDescriptorList = solutionDescriptor.getEntityDescriptors().stream()
+                .flatMap(entityDescriptor -> entityDescriptor.getGenuineVariableDescriptorList().stream())
+                .filter(variableDescriptor -> !variableDescriptor.isListVariable())
+                .distinct()
+                .toList();
+        var hasChainedVariable = basicVariableDescriptorList.stream()
+                .filter(v -> v instanceof BasicVariableDescriptor<Solution_>)
+                .anyMatch(v -> ((BasicVariableDescriptor<?>) v).isChained());
+        var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
+        if (basicVariableDescriptorList.isEmpty()) { // We only have the one list variable.
+            return new UnionMoveSelectorConfig()
+                    .withMoveSelectors(new ListChangeMoveSelectorConfig(), new ListSwapMoveSelectorConfig(),
+                            new KOptListMoveSelectorConfig().withMinimumK(2).withMaximumK(2),
+                            new SubListChangeMoveSelectorConfig().withSubListSelectorConfig(
+                                    new SubListSelectorConfig().withMinimumSubListSize(2).withMaximumSubListSize(5)),
+                            new SubListSwapMoveSelectorConfig().withSubListSelectorConfig(
+                                    new SubListSelectorConfig().withMinimumSubListSize(2).withMaximumSubListSize(5)),
+                            new ListRuinRecreateMoveSelectorConfig().withMinimumRuinedCount(1).withMaximumRuinedCount(5));
+        } else if (listVariableDescriptor == null) { // We only have basic variables.
+            if (hasChainedVariable && basicVariableDescriptorList.size() == 1) {
+                return new UnionMoveSelectorConfig()
+                        .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig(),
+                                new SubChainChangeMoveSelectorConfig().withSubChainSelectorConfig(
+                                        new SubChainSelectorConfig().withMinimumSubChainSize(2).withMaximumSubChainSize(5)),
+                                new SubChainSwapMoveSelectorConfig().withSubChainSelectorConfig(
+                                        new SubChainSelectorConfig().withMinimumSubChainSize(2).withMaximumSubChainSize(5)),
+                                new TailChainSwapMoveSelectorConfig());
+            } else {
+                return new UnionMoveSelectorConfig()
+                        .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig(),
+                                new RuinRecreateMoveSelectorConfig().withMinimumRuinedCount(1).withMaximumRuinedCount(5));
+            }
+        } else {
             return new UnionMoveSelectorConfig()
                     .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig());
         }
