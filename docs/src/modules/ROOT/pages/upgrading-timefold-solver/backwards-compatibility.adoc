@@ -20,15 +20,7 @@ The solver configuration is defined by the classes in the following package name
 They will change in future major or minor releases,
 but probably not in hotfix releases.
 
-Backwards incompatible changes will be clearly documented in xref:upgrading-timefold-solver/upgrade-to-latest-version.adoc#manualUpgrade[the upgrade recipe].
-
-
-[NOTE]
-====
-This documentation covers some `impl` classes too.
-Those documented `impl` classes are reliable and safe to use (unless explicitly marked as experimental in this documentation),
-but we're just not entirely comfortable yet to write their signatures in stone.
-====
+Backwards incompatible changes for a new major version are clearly documented in xref:upgrading-timefold-solver/upgrade-to-latest-version.adoc#manualUpgrade[the upgrade recipe].
 
 [#previewFeatures]
 == Preview features
