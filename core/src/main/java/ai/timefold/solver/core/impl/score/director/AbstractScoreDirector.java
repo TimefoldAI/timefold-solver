@@ -81,11 +81,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private int workingInitScore = 0;
     private String undoMoveText;
 
+    // Null when tracking disabled
+    private final boolean trackingWorkingSolution;
     private final SolutionTracker<Solution_> solutionTracker;
     private final MoveDirector<Solution_> moveDirector = new MoveDirector<>(this);
 
-    // Null when tracking disabled
-    private final boolean trackingWorkingSolution;
     // Null when no list variable
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
 
