@@ -26,7 +26,7 @@ jobs:
       matrix:
         include:
         - language: java-kotlin
-          build-mode: none # This mode only analyzes Java. Set this to 'autobuild' or 'manual' to analyze Kotlin too.
+          build-mode: autobuild
         - language: python
           build-mode: none
         - language: javascript-typescript # Need to add this even though we don't want this; otherwise Github complains.
