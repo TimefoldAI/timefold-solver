@@ -47,6 +47,7 @@
     <version.jaxb2.plugin>3.2.0</version.jaxb2.plugin>
     <version.revapi.plugin>0.15.0</version.revapi.plugin>
     <version.sonar.plugin>5.0.0.4389</version.sonar.plugin>
+    <version.source.plugin>3.3.1</version.source.plugin>
     <version.spotless.plugin>2.44.3</version.spotless.plugin>
     <version.surefire.plugin>3.5.2</version.surefire.plugin>
     <version.versions.plugin>2.18.0</version.versions.plugin>
@@ -385,6 +386,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-source-plugin</artifactId>
+          <version>${version.source.plugin}</version>
           <configuration>
             <excludes>
               <!-- The JAXB nor XSD artifacts should not appear in the sources JAR either (see the maven-jar-plugin). -->
