@@ -1,12 +1,9 @@
 package ai.timefold.solver.core.impl.move.streams;
 
-import java.util.function.BiFunction;
-
-import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
-import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.move.streams.dataset.AbstractUniDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.dataset.DatasetSessionFactory;
@@ -48,23 +45,21 @@ public final class DefaultMoveStreamFactory<Solution_>
 
     public <Entity_, A> UniDataStream<Solution_, A>
             enumeratePossibleValues(GenuineVariableMetaModel<Solution_, Entity_, A> variableMetaModel) {
-        if (variableMetaModel instanceof DefaultPlanningVariableMetaModel<Solution_, Entity_, A> planningVariableMetaModel) {
-            var variableDescriptor = planningVariableMetaModel.variableDescriptor();
-            var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
-            if (variableDescriptor.isValueRangeEntityIndependent()) {
-                return enumerate(new FromSolutionValueCollectingFunction<>(valueRangeDescriptor));
-            } else {
-                return enumerateFromEntity(variableMetaModel.entity(),
-                        ((solution, entity) -> ensureCountable(valueRangeDescriptor.extractValueRange(solution, entity))));
-            }
-        } else if (variableMetaModel instanceof DefaultPlanningListVariableMetaModel<Solution_, Entity_, A> planningListVariableMetaModel) {
-            var variableDescriptor = planningListVariableMetaModel.variableDescriptor();
-            var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
-            if (variableDescriptor.isValueRangeEntityIndependent()) {
-                return enumerate(new FromSolutionValueCollectingFunction<>(valueRangeDescriptor));
-            } else { // TODO enable this
-                throw new UnsupportedOperationException("List variable value range on entity is not yet supported.");
-            }
+        var variableDescriptor = getVariableDescriptor(variableMetaModel);
+        var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
+        if (variableDescriptor.isValueRangeEntityIndependent()) {
+            return enumerate(new FromSolutionValueCollectingFunction<>(valueRangeDescriptor));
+        } else {
+            throw new UnsupportedOperationException("Value range on entity is not yet supported.");
+        }
+    }
+
+    private static <Solution_> GenuineVariableDescriptor<Solution_>
+            getVariableDescriptor(GenuineVariableMetaModel<Solution_, ?, ?> variableMetaModel) {
+        if (variableMetaModel instanceof DefaultPlanningVariableMetaModel<Solution_, ?, ?> planningVariableMetaModel) {
+            return planningVariableMetaModel.variableDescriptor();
+        } else if (variableMetaModel instanceof DefaultPlanningListVariableMetaModel<Solution_, ?, ?> planningListVariableMetaModel) {
+            return planningListVariableMetaModel.variableDescriptor();
         } else {
             throw new IllegalStateException(
                     "Impossible state: variable metamodel (%s) represents neither basic not list variable."
@@ -72,24 +67,9 @@ public final class DefaultMoveStreamFactory<Solution_>
         }
     }
 
-    private static <A> CountableValueRange<A> ensureCountable(ValueRange<A> valueRange) {
-        if (valueRange instanceof CountableValueRange<A> countableValueRange) {
-            return countableValueRange;
-        } else { // Non-countable value ranges cannot be enumerated.
-            throw new UnsupportedOperationException("The value range (%s) is not countable."
-                    .formatted(valueRange));
-        }
-    }
-
     private <A> UniDataStream<Solution_, A>
             enumerate(FromSolutionValueCollectingFunction<Solution_, A> valueCollectingFunction) {
         return dataStreamFactory.forEach(valueCollectingFunction);
-    }
-
-    private <Entity_, A> UniDataStream<Solution_, A> enumerateFromEntity(
-            PlanningEntityMetaModel<Solution_, Entity_> entityMetaModel,
-            BiFunction<Solution_, Entity_, CountableValueRange<A>> collectionFunction) {
-        return null;
     }
 
     @Override
