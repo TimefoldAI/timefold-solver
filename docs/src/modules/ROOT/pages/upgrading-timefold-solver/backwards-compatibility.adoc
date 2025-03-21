@@ -5,15 +5,11 @@
 
 Timefold Solver separates its API from its implementation:
 
-* **Public API**: All classes in the following package namespaces are 100% *backwards compatible* in future releases,
-especially minor and hotfix releases:
+* **Public API**: All classes under these `api` and `config` namespaces are 100% *backwards compatible* in future minor and hotfix releases:
 ** `ai.timefold.solver.core.api`
 ** `ai.timefold.solver.benchmark.api`
 ** `ai.timefold.solver.test.api`
-** `ai.timefold.solver...api*`
-* **Configuration**: The solver configuration is backwards compatible for all elements,
-except for elements that require the use of non-public API classes.
-The solver configuration is defined by the classes in the following package namespaces:
+** `ai.timefold.solver.*.api`
 ** `ai.timefold.solver.core.config`
 ** `ai.timefold.solver.benchmark.config`
 * **Implementation classes**: All other classes are _not_ backwards compatible.
@@ -26,21 +22,22 @@ Backwards incompatible changes for a new major version are clearly documented in
 == Preview features
 
 Timefold Solver includes several components which are only available as preview features.
+These are in `preview.api` packages.
 These are:
 
-- xref:optimization-algorithms/local-search.adoc#diversifiedLateAcceptance[Diversified Late Acceptance] acceptor.
+- xref:optimization-algorithms/local-search.adoc#diversifiedLateAcceptance[Diversified Late Acceptance] acceptor
 - xref:constraints-and-score/understanding-the-score.adoc#solutionDiff[Solution diff API]
 in the `ai.timefold.solver.core.preview.api.domain.solution.diff` package,
-and in the `SolutionManager`.
+and in the `SolutionManager`
 - _Move Streams API_ in the `ai.timefold.solver.core.preview.api.move` package
 and the `ai.timefold.solver.core.preview.api.domain.metamodel` package,
-as well as in their subpackages.
-- _Timefold Solver for Python_, which is currently in beta.
+as well as in their subpackages
+- _Timefold Solver for Python_, which is currently in beta
 
 These preview features are developed to the same standard as the rest of Timefold Solver.
 However, their APIs are not yet considered stable, pending user feedback.
 Any class, method or field related to these features may change or be removed without prior notice,
-although we will strive to avoid this as much as possible.
+although we strive to avoid this as much as possible.
 
 We encourage you to try these preview features and give us feedback on your experience with them.
 Please direct your feedback to
