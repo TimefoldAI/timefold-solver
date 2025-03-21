@@ -25,11 +25,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - language: java
+        - language: java-kotlin
           build-mode: none # This mode only analyzes Java. Set this to 'autobuild' or 'manual' to analyze Kotlin too.
         - language: python
           build-mode: none
-        - language: javascript # Need to add this even though we don't want this; otherwise Github complains.
+        - language: javascript-typescript # Need to add this even though we don't want this; otherwise Github complains.
           build-mode: none
     steps:
     - name: Checkout repository
