@@ -43,7 +43,7 @@ class TimefoldProcessorOverridePropertiesAtRuntimeTest {
 
     @RegisterExtension
     static final QuarkusProdModeTest config = new QuarkusProdModeTest()
-            .setForcedDependencies(List.of(new AppArtifact("io.quarkus", "quarkus-resteasy", QUARKUS_VERSION)))
+            .setForcedDependencies(List.of(new AppArtifact("io.quarkus", "quarkus-rest", QUARKUS_VERSION)))
             // We want to check if these are overridden at runtime
             .overrideConfigKey("quarkus.timefold.solver.termination.best-score-limit", "0")
             .overrideConfigKey("quarkus.timefold.solver.move-thread-count", "4")
