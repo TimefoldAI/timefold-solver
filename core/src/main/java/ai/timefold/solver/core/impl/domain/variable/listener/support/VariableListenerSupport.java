@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
@@ -43,6 +45,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     private final Map<Demand<?>, SupplyWithDemandCount> supplyMap = new HashMap<>();
 
     private final List<ListVariableEvent> listVariableEventList;
+    private final Set<Object> unassignedValueWithEmptyInverseEntitySet;
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final List<CascadingUpdateShadowVariableDescriptor<Solution_>> cascadingUpdateShadowVarDescriptorList;
 
@@ -57,6 +60,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                 .toList();
         this.listVariableDescriptor = scoreDirector.getSolutionDescriptor().getListVariableDescriptor();
         this.listVariableEventList = new ArrayList<>();
+        this.unassignedValueWithEmptyInverseEntitySet = new HashSet<>();
     }
 
     public void linkVariableListeners() {
@@ -223,6 +227,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
             }
             notificationQueuesAreEmpty = false;
         }
+        unassignedValueWithEmptyInverseEntitySet.add(element);
     }
 
     public void beforeListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
@@ -259,6 +264,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         }
         notificationQueuesAreEmpty = true;
         listVariableEventList.clear();
+        unassignedValueWithEmptyInverseEntitySet.clear();
     }
 
     /**
@@ -276,6 +282,13 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                 // Evaluate later elements, but stops when there is no change
                 evaluateFromIndex(values, event.toIndex(), values.size(), false, cascadingUpdateShadowVariableDescriptor);
             }
+            // When the unassigned element has no inverse entity,
+            // it indicates that it is not reverting to a previous entity.
+            // In this case, we need to invoke the cascading logic,
+            // or its related shadow variables will remain unchanged.
+            for (var unassignedValue : unassignedValueWithEmptyInverseEntitySet) {
+                cascadingUpdateShadowVariableDescriptor.update(scoreDirector, unassignedValue);
+            }
         }
     }
 
@@ -283,8 +296,13 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
             CascadingUpdateShadowVariableDescriptor<Solution_> cascadingUpdateShadowVariableDescriptor) {
         var lastUpdated = fromIndex;
         while (lastUpdated < toIndex) {
-            if (!cascadingUpdateShadowVariableDescriptor.update(scoreDirector, values.get(lastUpdated))
-                    && !forceUpdate) {
+            var value = values.get(lastUpdated);
+            // The value is present in the unassigned values,
+            // but the cascade logic is triggered by a list event.
+            // So, we can remove it from the unassigned list
+            // since the entity will be reverted to a previous entity.
+            unassignedValueWithEmptyInverseEntitySet.remove(value);
+            if (!cascadingUpdateShadowVariableDescriptor.update(scoreDirector, value) && !forceUpdate) {
                 break;
             }
             lastUpdated++;

@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
@@ -23,6 +24,7 @@ import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhase;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhaseBuilder;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListAssignMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin.ListRuinRecreateMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirector;
@@ -31,6 +33,10 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadingEasyScoreCalculator;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadingEntity;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadingSolution;
+import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadingValue;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
@@ -385,6 +391,39 @@ class MoveDirectorTest {
             move.doMoveOnly(scoreDirector);
             scoreDirector.triggerVariableListeners();
         }
+    }
+
+    @Test
+    void undoCascadingUpdateShadowVariable() {
+        var solutionDescriptor = TestdataSingleCascadingSolution.buildSolutionDescriptor();
+        var scoreCalculator = new TestdataSingleCascadingEasyScoreCalculator();
+        var innerScoreDirector = new EasyScoreDirector<>(
+                new EasyScoreDirectorFactory<>(solutionDescriptor, scoreCalculator),
+                true,
+                true,
+                scoreCalculator);
+        var moveDirector = new MoveDirector<>(innerScoreDirector);
+
+        var entityA = new TestdataSingleCascadingEntity("Entity A");
+        var valueA = new TestdataSingleCascadingValue(0);
+        var valueB = new TestdataSingleCascadingValue(1);
+        var workingSolution = new TestdataSingleCascadingSolution();
+        workingSolution.setEntityList(List.of(entityA));
+        workingSolution.setValueList(List.of(valueA, valueB));
+
+        innerScoreDirector.setWorkingSolution(workingSolution);
+        assertThat(workingSolution.getValueList()).map(TestdataSingleCascadingValue::getCascadeValue).allMatch(Objects::isNull);
+
+        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
+            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
+            var move = new ListAssignMove<>(TestdataSingleCascadingEntity.buildVariableDescriptorForValueList(), valueA,
+                    entityA, 0);
+            move.doMoveOnly(scoreDirector);
+            assertThat(valueA.getCascadeValue()).isNotNull();
+        }
+
+        // After the move is undone, the cascade value must be reset
+        assertThat(valueA.getCascadeValue()).isNull();
     }
 
 }
