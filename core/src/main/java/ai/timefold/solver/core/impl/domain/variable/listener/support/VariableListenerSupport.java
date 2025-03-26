@@ -26,7 +26,7 @@ import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.util.IdentityHashSet;
+import ai.timefold.solver.core.impl.util.LinkedIdentityHashSet;
 
 /**
  * This class is not thread-safe.
@@ -60,7 +60,9 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                 .toList();
         this.listVariableDescriptor = scoreDirector.getSolutionDescriptor().getListVariableDescriptor();
         this.listVariableEventList = new ArrayList<>();
-        this.unassignedValueWithEmptyInverseEntitySet = new IdentityHashSet<>();
+        // The set class relies on an implementation that ensures a stable ordering of elements.
+        // Therefore, the sequence in which we invoke the listener logic remains consistent.
+        this.unassignedValueWithEmptyInverseEntitySet = new LinkedIdentityHashSet<>();
     }
 
     public void linkVariableListeners() {

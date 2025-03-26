@@ -158,6 +158,12 @@ public final class ElementAwareList<T> implements Iterable<T> {
         return new ElementAwareListIterator<>(first);
     }
 
+    public void clear() {
+        first = null;
+        last = null;
+        size = 0;
+    }
+
     /**
      * Returns an iterator that will randomly iterate over the elements.
      * This iterator is exhaustive; once every element has been once iterated over,

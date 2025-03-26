@@ -4,13 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 
-class IdentityHashSetTest {
+class LinkedIdentityHashSetTest {
 
     @Test
     void size() {
-        var identityHashSet = new IdentityHashSet<Integer>();
+        var identityHashSet = new LinkedIdentityHashSet<Integer>();
         assertThat(identityHashSet.size()).isZero();
         assertThat(identityHashSet).isEmpty();
         identityHashSet.add(1);
@@ -21,7 +22,7 @@ class IdentityHashSetTest {
 
     @Test
     void contains() {
-        var identityHashSet = new IdentityHashSet<>();
+        var identityHashSet = new LinkedIdentityHashSet<>();
         var o1 = new Object();
         var o2 = new Object();
         assertThat(identityHashSet.contains(o1)).isFalse();
@@ -34,7 +35,7 @@ class IdentityHashSetTest {
 
     @Test
     void iterator() {
-        var identityHashSet = new IdentityHashSet<>();
+        var identityHashSet = new LinkedIdentityHashSet<>();
         var o1 = new Object();
         var o2 = new Object();
         var o3 = new Object();
@@ -49,7 +50,7 @@ class IdentityHashSetTest {
 
     @Test
     void toArray() {
-        var identityHashSet = new IdentityHashSet<>();
+        var identityHashSet = new LinkedIdentityHashSet<>();
         var o1 = new Object();
         var o2 = new Object();
         var o3 = new Object();
@@ -74,7 +75,7 @@ class IdentityHashSetTest {
 
     @Test
     void addAndRemove() {
-        var identityHashSet = new IdentityHashSet<>();
+        var identityHashSet = new LinkedIdentityHashSet<>();
         var o1 = new Object();
         var o2 = new Object();
         assertThat(identityHashSet.add(o1)).isTrue();
@@ -87,7 +88,7 @@ class IdentityHashSetTest {
 
     @Test
     void containsAll() {
-        var identityHashSet = new IdentityHashSet<>();
+        var identityHashSet = new LinkedIdentityHashSet<>();
         var o1 = new Object();
         var o2 = new Object();
         var o3 = new Object();
@@ -99,7 +100,7 @@ class IdentityHashSetTest {
 
     @Test
     void addAll() {
-        var identityHashSet = new IdentityHashSet<>();
+        var identityHashSet = new LinkedIdentityHashSet<>();
         var o1 = new Object();
         var o2 = new Object();
         var o3 = new Object();
@@ -111,18 +112,18 @@ class IdentityHashSetTest {
 
     @Test
     void retainAll() {
-        var identityHashSet = new IdentityHashSet<>();
+        var identityHashSet = new LinkedIdentityHashSet<>();
         var o1 = new Object();
         var o2 = new Object();
         var o3 = new Object();
         identityHashSet.addAll(List.of(o1, o2, o3));
-        assertThat(identityHashSet.retainAll(List.of(o2, o1))).isTrue();
-        assertThat(identityHashSet).containsExactly(o2, o1);
+        AssertionsForClassTypes.assertThatThrownBy(() -> identityHashSet.retainAll(List.of(o1, o2)))
+                .isInstanceOf(UnsupportedOperationException.class);
     }
 
     @Test
     void removeAll() {
-        var identityHashSet = new IdentityHashSet<>();
+        var identityHashSet = new LinkedIdentityHashSet<>();
         var o1 = new Object();
         var o2 = new Object();
         var o3 = new Object();
@@ -134,7 +135,7 @@ class IdentityHashSetTest {
 
     @Test
     void clear() {
-        var identityHashSet = new IdentityHashSet<>();
+        var identityHashSet = new LinkedIdentityHashSet<>();
         var o1 = new Object();
         var o2 = new Object();
         var o3 = new Object();
