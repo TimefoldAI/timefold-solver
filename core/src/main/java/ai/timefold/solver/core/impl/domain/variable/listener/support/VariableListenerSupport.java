@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +26,7 @@ import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.util.IdentityHashSet;
 
 /**
  * This class is not thread-safe.
@@ -60,7 +60,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                 .toList();
         this.listVariableDescriptor = scoreDirector.getSolutionDescriptor().getListVariableDescriptor();
         this.listVariableEventList = new ArrayList<>();
-        this.unassignedValueWithEmptyInverseEntitySet = new HashSet<>();
+        this.unassignedValueWithEmptyInverseEntitySet = new IdentityHashSet<>();
     }
 
     public void linkVariableListeners() {
