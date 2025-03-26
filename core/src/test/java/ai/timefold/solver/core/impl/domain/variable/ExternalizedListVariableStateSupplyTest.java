@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.Mockito.mock;
@@ -84,6 +85,39 @@ class ExternalizedListVariableStateSupplyTest {
             // Cannot unassign again.
             assertThatThrownBy(() -> supply.afterListVariableElementUnassigned(scoreDirector, v1))
                     .isInstanceOf(IllegalStateException.class);
+        }
+    }
+
+    @Test
+    void trackingUnassignedElements() {
+        var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
+        var scoreDirector = (ScoreDirector<TestdataAllowsUnassignedValuesListSolution>) mock(InnerScoreDirector.class);
+        try (var supply = new ExternalizedListVariableStateSupply<>(variableDescriptor)) {
+
+            var v1 = new TestdataAllowsUnassignedValuesListValue("1");
+            var v2 = new TestdataAllowsUnassignedValuesListValue("2");
+            var v3 = new TestdataAllowsUnassignedValuesListValue("3");
+            var e1 = new TestdataAllowsUnassignedValuesListEntity("e1", v1, v2, v3);
+
+            var solution = new TestdataAllowsUnassignedValuesListSolution();
+            solution.setEntityList(new ArrayList<>(Arrays.asList(e1)));
+            solution.setValueList(Arrays.asList(v1, v2, v3));
+
+            when(scoreDirector.getWorkingSolution()).thenReturn(solution);
+            supply.resetWorkingSolution(scoreDirector);
+
+            supply.afterListVariableElementUnassigned(scoreDirector, v1);
+            assertThat(supply.getTrackedUnassignedElements()).isEmpty();
+
+            supply.startTrackingUnassignedElements();
+            supply.afterListVariableElementUnassigned(scoreDirector, v2);
+            assertThat(supply.getTrackedUnassignedElements()).containsExactly(v2);
+            supply.stopTrackingUnassignedElements();
+
+            supply.startTrackingUnassignedElements();
+            supply.afterListVariableElementUnassigned(scoreDirector, v3);
+            assertThat(supply.getTrackedUnassignedElements()).containsExactly(v3);
+            supply.stopTrackingUnassignedElements();
         }
     }
 

@@ -265,6 +265,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             solutionTracker.setBeforeMoveSolution(workingSolution);
         }
         try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
+            variableListenerSupport.startTrackingUnassignedElements();
             move.execute(ephemeralMoveDirector);
             Score_ score = calculateScore();
             if (assertMoveScoreFromScratch) {
@@ -278,6 +279,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 moveProcessor.accept(score);
             }
             return score;
+        } finally {
+            variableListenerSupport.stopTrackingUnassignedElements();
         }
     }
 

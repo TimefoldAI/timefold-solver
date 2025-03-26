@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
+import java.util.Set;
+
 import ai.timefold.solver.core.api.domain.variable.ListVariableListener;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -73,6 +75,23 @@ public interface ListVariableStateSupply<Solution_> extends
      * @return number of elements for which {@link #isAssigned(Object)} would return false.
      */
     int getUnassignedCount();
+
+    /**
+     * The method allows tracking of all unassigned elements over a specific period.
+     * The goal is to fetch a list of all unassigned elements in response to specific events,
+     * such as a move evaluation step.
+     */
+    void startTrackingUnassignedElements();
+
+    /**
+     * Disable tracking of the unassigned elements.
+     */
+    void stopTrackingUnassignedElements();
+
+    /**
+     * Return all unassigned elements tracked after {{@link #startTrackingUnassignedElements()}.
+     */
+    Set<Object> getTrackedUnassignedElements();
 
     /**
      *
