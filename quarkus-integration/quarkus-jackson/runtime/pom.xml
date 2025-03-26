@@ -27,14 +27,6 @@
       <groupId>ai.timefold.solver</groupId>
       <artifactId>timefold-solver-jackson</artifactId>
     </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>jakarta.inject</groupId>
-      <artifactId>jakarta.inject-api</artifactId>
-    </dependency>
   </dependencies>
   <build>
     <plugins>
@@ -72,6 +64,7 @@
         <configuration>
           <ignoredUnusedDeclaredDependencies>
             <dependency>ai.timefold.solver:timefold-solver-jackson</dependency>
+            <dependency>io.quarkus:quarkus-jackson</dependency>
           </ignoredUnusedDeclaredDependencies>
         </configuration>
       </plugin>
