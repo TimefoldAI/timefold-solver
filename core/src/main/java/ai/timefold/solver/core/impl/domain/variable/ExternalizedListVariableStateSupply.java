@@ -1,9 +1,5 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.Set;
-
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
@@ -20,16 +16,13 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     private final ListVariableDescriptor<Solution_> sourceVariableDescriptor;
     private final ListVariableState<Solution_> listVariableState;
-    private final Set<Object> unassignedValueSet;
 
     private boolean previousExternalized = false;
     private boolean nextExternalized = false;
-    private boolean trackingUnassignedElements = false;
 
     public ExternalizedListVariableStateSupply(ListVariableDescriptor<Solution_> sourceVariableDescriptor) {
         this.sourceVariableDescriptor = sourceVariableDescriptor;
         this.listVariableState = new ListVariableState<>(sourceVariableDescriptor);
-        this.unassignedValueSet = Collections.newSetFromMap(new IdentityHashMap<>());
     }
 
     @Override
@@ -101,9 +94,6 @@ final class ExternalizedListVariableStateSupply<Solution_>
     @Override
     public void afterListVariableElementUnassigned(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object element) {
         listVariableState.unassignElement(element);
-        if (trackingUnassignedElements) {
-            unassignedValueSet.add(element);
-        }
     }
 
     @Override
@@ -171,22 +161,6 @@ final class ExternalizedListVariableStateSupply<Solution_>
     @Override
     public ListVariableDescriptor<Solution_> getSourceVariableDescriptor() {
         return sourceVariableDescriptor;
-    }
-
-    @Override
-    public void startTrackingUnassignedElements() {
-        unassignedValueSet.clear();
-        trackingUnassignedElements = true;
-    }
-
-    @Override
-    public void stopTrackingUnassignedElements() {
-        trackingUnassignedElements = false;
-    }
-
-    @Override
-    public Set<Object> getTrackedUnassignedElements() {
-        return Set.copyOf(unassignedValueSet);
     }
 
     @Override
