@@ -66,7 +66,7 @@ include::../shared/java-prerequisites.adoc
 
 == The build file and the dependencies
 
-Use https://code.quarkus.io/?a=timefold-solver-quickstart&j=17&e=resteasy&e=resteasy-jackson&e=ai.timefold.solver%3Atimefold-solver-quarkus-jackson&e=ai.timefold.solver%3Atimefold-solver-quarkus[code.quarkus.io] to generate an application
+Use https://code.quarkus.io/?a=timefold-solver-quickstart&j=17&e=rest&e=rest-jackson&e=ai.timefold.solver%3Atimefold-solver-quarkus-jackson&e=ai.timefold.solver%3Atimefold-solver-quarkus[code.quarkus.io] to generate an application
 with the following extensions, for Maven or Gradle:
 
 [NOTE]
@@ -74,8 +74,8 @@ with the following extensions, for Maven or Gradle:
 Clicking the link above will automatically select the dependencies for you on *code.quarkus.io*.
 ====
 
-* RESTEasy JAX-RS (`quarkus-resteasy`)
-* RESTEasy Jackson (`quarkus-resteasy-jackson`)
+* Quarkus REST JAX-RS (`quarkus-rest`)
+* Quarkus REST Jackson (`quarkus-rest-jackson`)
 * Timefold Solver (`timefold-solver-quarkus`)
 * Timefold Solver Jackson (`timefold-solver-quarkus-jackson`)
 
@@ -128,11 +128,11 @@ Java::
   <dependencies>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy</artifactId>
+      <artifactId>quarkus-rest</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy-jackson</artifactId>
+      <artifactId>quarkus-rest-jackson</artifactId>
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
@@ -220,11 +220,11 @@ Kotlin::
   <dependencies>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy</artifactId>
+      <artifactId>quarkus-rest</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy-jackson</artifactId>
+      <artifactId>quarkus-rest-jackson</artifactId>
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
