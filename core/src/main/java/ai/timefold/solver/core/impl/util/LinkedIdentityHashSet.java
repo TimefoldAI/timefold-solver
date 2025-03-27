@@ -6,6 +6,11 @@ import java.util.Iterator;
 
 import org.jspecify.annotations.NullMarked;
 
+/**
+ * This set does not support null keys.
+ * 
+ * @param <V>
+ */
 @NullMarked
 public final class LinkedIdentityHashSet<V> extends AbstractSet<V> {
 
@@ -54,6 +59,9 @@ public final class LinkedIdentityHashSet<V> extends AbstractSet<V> {
 
     @Override
     public void clear() {
+        if (size() == 0) {
+            return;
+        }
         this.identityMap.clear();
         this.delegate.clear();
     }

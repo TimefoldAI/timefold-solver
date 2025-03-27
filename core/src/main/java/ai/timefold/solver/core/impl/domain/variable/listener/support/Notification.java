@@ -59,7 +59,8 @@ public interface Notification<Solution_, T extends AbstractVariableListener<Solu
     /**
      * A list variable change occurs on {@code entity} between {@code fromIndex} and {@code toIndex}.
      */
-    static <Solution_> ListVariableChangedNotification<Solution_> listVariableChanged(Object entity, int fromIndex, int toIndex) {
+    static <Solution_> ListVariableChangedNotification<Solution_> listVariableChanged(Object entity, int fromIndex,
+            int toIndex) {
         return new ListVariableChangedNotification<>(entity, fromIndex, toIndex);
     }
 

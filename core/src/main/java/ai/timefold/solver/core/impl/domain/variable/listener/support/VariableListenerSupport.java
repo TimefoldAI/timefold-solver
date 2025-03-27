@@ -188,13 +188,13 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     // ************************************************************************
 
     public void resetWorkingSolution() {
-        for (Notifiable notifiable : notifiableRegistry.getAll()) {
+        for (var notifiable : notifiableRegistry.getAll()) {
             notifiable.resetWorkingSolution();
         }
     }
 
     public void close() {
-        for (Notifiable notifiable : notifiableRegistry.getAll()) {
+        for (var notifiable : notifiableRegistry.getAll()) {
             notifiable.closeVariableListener();
         }
     }
@@ -214,7 +214,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         var notifiables = notifiableRegistry.get(entityDescriptor);
         if (!notifiables.isEmpty()) {
             EntityNotification<Solution_> notification = Notification.entityRemoved(entity);
-            for (EntityNotifiable<Solution_> notifiable : notifiables) {
+            for (var notifiable : notifiables) {
                 notifiable.notifyBefore(notification);
             }
             notificationQueuesAreEmpty = false;
@@ -233,7 +233,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     }
 
     public void afterElementUnassigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        Collection<ListVariableListenerNotifiable<Solution_>> notifiables = notifiableRegistry.get(variableDescriptor);
+        var notifiables = notifiableRegistry.get(variableDescriptor);
         if (!notifiables.isEmpty()) {
             ListVariableNotification<Solution_> notification = Notification.elementUnassigned(element);
             for (var notifiable : notifiables) {
@@ -277,20 +277,16 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         for (var notifiable : notifiableRegistry.getAll()) {
             notifiable.triggerAllNotifications();
         }
-        triggerCascadingUpdateShadowVariableUpdate();
+        // If there is no cascade, skip the whole thing.
+        // If there are no events and no newly unassigned variables, skip the whole thing as well.
+        if (!cascadingUpdateShadowVarDescriptorList.isEmpty() &&
+                !(listVariableChangedNotificationList.isEmpty() && unassignedValueWithEmptyInverseEntitySet.isEmpty())) {
+            triggerCascadingUpdateShadowVariableUpdate();
+        }
         notificationQueuesAreEmpty = true;
     }
 
-    /**
-     * Triggers all cascading update shadow variable user-logic.
-     */
     private void triggerCascadingUpdateShadowVariableUpdate() {
-        if (cascadingUpdateShadowVarDescriptorList.isEmpty() ||
-                (listVariableChangedNotificationList.isEmpty() && unassignedValueWithEmptyInverseEntitySet.isEmpty())) {
-            // If there is no cascade, skip the whole thing.
-            // If there are no events and no newly unassigned variables, skip the whole thing as well.
-            return;
-        }
         for (var cascadingUpdateShadowVariableDescriptor : cascadingUpdateShadowVarDescriptorList) {
             cascadeListVariableChangedNotifications(cascadingUpdateShadowVariableDescriptor);
             // When the unassigned element has no inverse entity,
@@ -377,7 +373,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         for (var variableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
             if (variableDescriptor.isListVariable()) {
                 var descriptor = (ListVariableDescriptor<Solution_>) variableDescriptor;
-                int size = descriptor.getValue(entity).size();
+                var size = descriptor.getValue(entity).size();
                 beforeListVariableChanged(descriptor, entity, 0, size);
                 afterListVariableChanged(descriptor, entity, 0, size);
             } else {
