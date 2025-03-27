@@ -2,10 +2,12 @@ package ai.timefold.solver.core.impl.domain.variable.listener.support;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -28,41 +30,51 @@ import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.util.LinkedIdentityHashSet;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 /**
  * This class is not thread-safe.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
+@NullMarked
 public final class VariableListenerSupport<Solution_> implements SupplyManager {
+
+    private static final int SHADOW_VARIABLE_VIOLATION_DISPLAY_LIMIT = 3;
 
     public static <Solution_> VariableListenerSupport<Solution_> create(InnerScoreDirector<Solution_, ?> scoreDirector) {
         return new VariableListenerSupport<>(scoreDirector, new NotifiableRegistry<>(scoreDirector.getSolutionDescriptor()));
     }
 
-    private static final int SHADOW_VARIABLE_VIOLATION_DISPLAY_LIMIT = 3;
     private final InnerScoreDirector<Solution_, ?> scoreDirector;
     private final NotifiableRegistry<Solution_> notifiableRegistry;
     private final Map<Demand<?>, SupplyWithDemandCount> supplyMap = new HashMap<>();
 
+    private final @Nullable ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final List<ListVariableEvent> listVariableEventList;
     private final Set<Object> unassignedValueWithEmptyInverseEntitySet;
-    private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final List<CascadingUpdateShadowVariableDescriptor<Solution_>> cascadingUpdateShadowVarDescriptorList;
 
     private boolean notificationQueuesAreEmpty = true;
     private int nextGlobalOrder = 0;
 
     VariableListenerSupport(InnerScoreDirector<Solution_, ?> scoreDirector, NotifiableRegistry<Solution_> notifiableRegistry) {
-        this.scoreDirector = scoreDirector;
-        this.notifiableRegistry = notifiableRegistry;
-        this.cascadingUpdateShadowVarDescriptorList = scoreDirector.getSolutionDescriptor().getEntityDescriptors().stream()
-                .flatMap(e -> e.getDeclaredCascadingUpdateShadowVariableDescriptors().stream())
-                .toList();
+        this.scoreDirector = Objects.requireNonNull(scoreDirector);
+        this.notifiableRegistry = Objects.requireNonNull(notifiableRegistry);
+
+        // Fields specific to list variable; will be ignored when list variable not in use.
         this.listVariableDescriptor = scoreDirector.getSolutionDescriptor().getListVariableDescriptor();
-        this.listVariableEventList = new ArrayList<>();
-        // The set class relies on an implementation that ensures a stable ordering of elements.
-        // Therefore, the sequence in which we invoke the listener logic remains consistent.
-        this.unassignedValueWithEmptyInverseEntitySet = new LinkedIdentityHashSet<>();
+        var hasListVariable = listVariableDescriptor != null;
+        this.cascadingUpdateShadowVarDescriptorList =
+                hasListVariable ? scoreDirector.getSolutionDescriptor().getEntityDescriptors().stream()
+                        .flatMap(e -> e.getDeclaredCascadingUpdateShadowVariableDescriptors().stream())
+                        .toList() : Collections.emptyList();
+        this.listVariableEventList = hasListVariable ? new ArrayList<>() : Collections.emptyList();
+        // We want the solver's operations to be deterministic and reproducible.
+        // Therefore we introduce a collection which maintains a consistent iteration order.
+        this.unassignedValueWithEmptyInverseEntitySet =
+                hasListVariable ? new LinkedIdentityHashSet<>() : Collections.emptySet();
     }
 
     public void linkVariableListeners() {
@@ -116,6 +128,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <Supply_ extends Supply> Supply_ demand(Demand<Supply_> demand) {
         var supplyWithDemandCount = supplyMap.get(demand);
@@ -131,6 +144,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private Supply createSupply(Demand<?> demand) {
         var supply = demand.createExternalizedSupply(this);
         if (supply instanceof SourcedVariableListener) {
@@ -261,19 +275,15 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         for (var notifiable : notifiableRegistry.getAll()) {
             notifiable.triggerAllNotifications();
         }
-        if (listVariableDescriptor != null && !cascadingUpdateShadowVarDescriptorList.isEmpty()) {
-            triggerCascadingUpdateShadowVariableUpdate();
-        }
+        triggerCascadingUpdateShadowVariableUpdate();
         notificationQueuesAreEmpty = true;
-        listVariableEventList.clear();
-        unassignedValueWithEmptyInverseEntitySet.clear();
     }
 
     /**
      * Triggers all cascading update shadow variable user-logic.
      */
     private void triggerCascadingUpdateShadowVariableUpdate() {
-        if (listVariableEventList.isEmpty() || cascadingUpdateShadowVarDescriptorList.isEmpty()) {
+        if (cascadingUpdateShadowVarDescriptorList.isEmpty()) {
             return;
         }
         for (var cascadingUpdateShadowVariableDescriptor : cascadingUpdateShadowVarDescriptorList) {
@@ -292,6 +302,8 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                 cascadingUpdateShadowVariableDescriptor.update(scoreDirector, unassignedValue);
             }
         }
+        listVariableEventList.clear();
+        unassignedValueWithEmptyInverseEntitySet.clear();
     }
 
     private void evaluateFromIndex(List<Object> values, int fromIndex, int toIndex, boolean forceUpdate,
@@ -314,7 +326,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     /**
      * @return null if there are no violations
      */
-    public String createShadowVariablesViolationMessage() {
+    public @Nullable String createShadowVariablesViolationMessage() {
         var workingSolution = scoreDirector.getWorkingSolution();
         var snapshot =
                 ShadowVariablesAssert.takeSnapshot(scoreDirector.getSolutionDescriptor(), workingSolution);
