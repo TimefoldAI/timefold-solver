@@ -16,6 +16,7 @@ public final class LinkedIdentityHashSet<V> extends AbstractSet<V> {
 
     private final ElementAwareList<V> delegate;
     private final IdentityHashMap<V, ElementAwareListEntry<V>> identityMap;
+    private int size = 0; // Avoid method calls to underlying collections.
 
     public LinkedIdentityHashSet() {
         this.delegate = new ElementAwareList<>();
@@ -29,11 +30,14 @@ public final class LinkedIdentityHashSet<V> extends AbstractSet<V> {
 
     @Override
     public int size() {
-        return delegate.size();
+        return size;
     }
 
     @Override
     public boolean contains(Object o) {
+        if (size == 0) { // Micro-optimization; contains() on an empty map is not entirely free.
+            return false;
+        }
         return identityMap.containsKey(o);
     }
 
@@ -42,6 +46,7 @@ public final class LinkedIdentityHashSet<V> extends AbstractSet<V> {
         var entry = identityMap.get(v);
         if (entry == null) {
             identityMap.put(v, delegate.add(v));
+            size += 1;
             return true;
         }
         return false;
@@ -49,17 +54,21 @@ public final class LinkedIdentityHashSet<V> extends AbstractSet<V> {
 
     @Override
     public boolean remove(Object o) {
+        if (size == 0) { // Micro-optimization; remove() on an empty map is not entirely free.
+            return false;
+        }
         var entry = identityMap.remove(o);
         if (entry == null) {
             return false;
         }
         entry.remove();
+        size -= 1;
         return true;
     }
 
     @Override
     public void clear() {
-        if (size() == 0) {
+        if (size == 0) { // Micro-optimization; clearing empty maps is not entirely free.
             return;
         }
         this.identityMap.clear();

@@ -301,31 +301,29 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
 
     private void cascadeListVariableChangedNotifications(
             CascadingUpdateShadowVariableDescriptor<Solution_> cascadingUpdateShadowVariableDescriptor) {
-        for (var event : listVariableChangedNotificationList) {
-            var values = listVariableDescriptor.getValue(event.getEntity());
-            var fromIndex = event.getFromIndex();
-            var toIndex = event.getToIndex();
-            // Evaluate all elements inside the range
-            evaluateFromIndex(values, fromIndex, toIndex, true, cascadingUpdateShadowVariableDescriptor);
-            // Evaluate later elements, but stops when there is no change
-            evaluateFromIndex(values, toIndex, values.size(), false, cascadingUpdateShadowVariableDescriptor);
+        for (var notification : listVariableChangedNotificationList) {
+            cascadeListVariableValueUpdates(
+                    listVariableDescriptor.getValue(notification.getEntity()),
+                    notification.getFromIndex(), notification.getToIndex(),
+                    cascadingUpdateShadowVariableDescriptor);
         }
     }
 
-    private void evaluateFromIndex(List<Object> values, int fromIndex, int toIndex, boolean forceUpdate,
+    private void cascadeListVariableValueUpdates(List<Object> values, int fromIndex, int toIndex,
             CascadingUpdateShadowVariableDescriptor<Solution_> cascadingUpdateShadowVariableDescriptor) {
-        var lastUpdated = fromIndex;
-        while (lastUpdated < toIndex) {
-            var value = values.get(lastUpdated);
+        for (int currentIndex = fromIndex; currentIndex < values.size(); currentIndex++) {
+            var value = values.get(currentIndex);
             // The value is present in the unassigned values,
             // but the cascade logic is triggered by a list event.
             // So, we can remove it from the unassigned list
             // since the entity will be reverted to a previous entity.
             unassignedValueWithEmptyInverseEntitySet.remove(value);
+            // Force updates within the range.
+            // Outside the range, only update while the values keep changing.
+            var forceUpdate = currentIndex < toIndex;
             if (!cascadingUpdateShadowVariableDescriptor.update(scoreDirector, value) && !forceUpdate) {
                 break;
             }
-            lastUpdated++;
         }
     }
 
