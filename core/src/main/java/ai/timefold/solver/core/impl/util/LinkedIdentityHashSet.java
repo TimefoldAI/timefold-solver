@@ -73,5 +73,6 @@ public final class LinkedIdentityHashSet<V> extends AbstractSet<V> {
         }
         this.identityMap.clear();
         this.delegate.clear();
+        size = 0;
     }
 }
