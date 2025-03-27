@@ -13,6 +13,10 @@ abstract class AbstractNotification {
         this.entity = entity;
     }
 
+    public Object getEntity() {
+        return entity;
+    }
+
     /**
      * Warning: do not test equality of {@link AbstractNotification}s for different {@link VariableListener}s
      * (so {@link ShadowVariableDescriptor}s) because equality does not take those into account (for performance)!

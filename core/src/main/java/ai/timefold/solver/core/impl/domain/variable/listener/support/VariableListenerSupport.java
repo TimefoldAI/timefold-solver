@@ -52,7 +52,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     private final Map<Demand<?>, SupplyWithDemandCount> supplyMap = new HashMap<>();
 
     private final @Nullable ListVariableDescriptor<Solution_> listVariableDescriptor;
-    private final List<ListVariableEvent> listVariableEventList;
+    private final List<ListVariableChangedNotification<Solution_>> listVariableChangedNotificationList;
     private final Set<Object> unassignedValueWithEmptyInverseEntitySet;
     private final List<CascadingUpdateShadowVariableDescriptor<Solution_>> cascadingUpdateShadowVarDescriptorList;
 
@@ -70,7 +70,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                 hasListVariable ? scoreDirector.getSolutionDescriptor().getEntityDescriptors().stream()
                         .flatMap(e -> e.getDeclaredCascadingUpdateShadowVariableDescriptors().stream())
                         .toList() : Collections.emptyList();
-        this.listVariableEventList = hasListVariable ? new ArrayList<>() : Collections.emptyList();
+        this.listVariableChangedNotificationList = hasListVariable ? new ArrayList<>() : Collections.emptyList();
         // We want the solver's operations to be deterministic and reproducible.
         // Therefore we introduce a collection which maintains a consistent iteration order.
         this.unassignedValueWithEmptyInverseEntitySet =
@@ -261,14 +261,14 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
             int toIndex) {
         var notifiables = notifiableRegistry.get(variableDescriptor);
+        var notification = Notification.<Solution_> listVariableChanged(entity, fromIndex, toIndex);
         if (!notifiables.isEmpty()) {
-            ListVariableNotification<Solution_> notification = Notification.listVariableChanged(entity, fromIndex, toIndex);
             for (var notifiable : notifiables) {
                 notifiable.notifyAfter(notification);
             }
             notificationQueuesAreEmpty = false;
         }
-        listVariableEventList.add(new ListVariableEvent(entity, fromIndex, toIndex));
+        listVariableChangedNotificationList.add(notification);
     }
 
     public void triggerVariableListenersInNotificationQueues() {
@@ -287,12 +287,14 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
             return;
         }
         for (var cascadingUpdateShadowVariableDescriptor : cascadingUpdateShadowVarDescriptorList) {
-            for (var event : listVariableEventList) {
-                var values = listVariableDescriptor.getValue(event.entity());
+            for (var event : listVariableChangedNotificationList) {
+                var values = listVariableDescriptor.getValue(event.getEntity());
+                var fromIndex = event.getFromIndex();
+                var toIndex = event.getToIndex();
                 // Evaluate all elements inside the range
-                evaluateFromIndex(values, event.fromIndex(), event.toIndex(), true, cascadingUpdateShadowVariableDescriptor);
+                evaluateFromIndex(values, fromIndex, toIndex, true, cascadingUpdateShadowVariableDescriptor);
                 // Evaluate later elements, but stops when there is no change
-                evaluateFromIndex(values, event.toIndex(), values.size(), false, cascadingUpdateShadowVariableDescriptor);
+                evaluateFromIndex(values, toIndex, values.size(), false, cascadingUpdateShadowVariableDescriptor);
             }
             // When the unassigned element has no inverse entity,
             // it indicates that it is not reverting to a previous entity.
@@ -302,7 +304,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                 cascadingUpdateShadowVariableDescriptor.update(scoreDirector, unassignedValue);
             }
         }
-        listVariableEventList.clear();
+        listVariableChangedNotificationList.clear();
         unassignedValueWithEmptyInverseEntitySet.clear();
     }
 
