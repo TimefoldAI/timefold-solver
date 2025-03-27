@@ -63,18 +63,16 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         this.scoreDirector = Objects.requireNonNull(scoreDirector);
         this.notifiableRegistry = Objects.requireNonNull(notifiableRegistry);
 
-        // Fields specific to list variable; will be ignored when list variable not in use.
+        // Fields specific to list variable; will be ignored if not necessary.
         this.listVariableDescriptor = scoreDirector.getSolutionDescriptor().getListVariableDescriptor();
-        var hasListVariable = listVariableDescriptor != null;
         this.cascadingUpdateShadowVarDescriptorList =
-                hasListVariable ? scoreDirector.getSolutionDescriptor().getEntityDescriptors().stream()
+                listVariableDescriptor != null ? scoreDirector.getSolutionDescriptor().getEntityDescriptors().stream()
                         .flatMap(e -> e.getDeclaredCascadingUpdateShadowVariableDescriptors().stream())
                         .toList() : Collections.emptyList();
-        this.listVariableChangedNotificationList = hasListVariable ? new ArrayList<>() : Collections.emptyList();
-        // We want the solver's operations to be deterministic and reproducible.
-        // Therefore we introduce a collection which maintains a consistent iteration order.
+        var hasCascadingUpdates = !cascadingUpdateShadowVarDescriptorList.isEmpty();
+        this.listVariableChangedNotificationList = hasCascadingUpdates ? new ArrayList<>() : Collections.emptyList();
         this.unassignedValueWithEmptyInverseEntitySet =
-                hasListVariable ? new LinkedIdentityHashSet<>() : Collections.emptySet();
+                hasCascadingUpdates ? new LinkedIdentityHashSet<>() : Collections.emptySet();
     }
 
     public void linkVariableListeners() {
@@ -243,7 +241,9 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
             }
             notificationQueuesAreEmpty = false;
         }
-        unassignedValueWithEmptyInverseEntitySet.add(element);
+        if (!cascadingUpdateShadowVarDescriptorList.isEmpty()) { // Only necessary if there is a cascade.
+            unassignedValueWithEmptyInverseEntitySet.add(element);
+        }
     }
 
     public void beforeListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor, Object entity, int fromIndex,
@@ -268,7 +268,9 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
             }
             notificationQueuesAreEmpty = false;
         }
-        listVariableChangedNotificationList.add(notification);
+        if (!cascadingUpdateShadowVarDescriptorList.isEmpty()) { // Only necessary if there is a cascade.
+            listVariableChangedNotificationList.add(notification);
+        }
     }
 
     public void triggerVariableListenersInNotificationQueues() {
@@ -283,29 +285,35 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
      * Triggers all cascading update shadow variable user-logic.
      */
     private void triggerCascadingUpdateShadowVariableUpdate() {
-        if (cascadingUpdateShadowVarDescriptorList.isEmpty()) {
+        if (cascadingUpdateShadowVarDescriptorList.isEmpty() ||
+                (listVariableChangedNotificationList.isEmpty() && unassignedValueWithEmptyInverseEntitySet.isEmpty())) {
+            // If there is no cascade, skip the whole thing.
+            // If there are no events and no newly unassigned variables, skip the whole thing as well.
             return;
         }
         for (var cascadingUpdateShadowVariableDescriptor : cascadingUpdateShadowVarDescriptorList) {
-            for (var event : listVariableChangedNotificationList) {
-                var values = listVariableDescriptor.getValue(event.getEntity());
-                var fromIndex = event.getFromIndex();
-                var toIndex = event.getToIndex();
-                // Evaluate all elements inside the range
-                evaluateFromIndex(values, fromIndex, toIndex, true, cascadingUpdateShadowVariableDescriptor);
-                // Evaluate later elements, but stops when there is no change
-                evaluateFromIndex(values, toIndex, values.size(), false, cascadingUpdateShadowVariableDescriptor);
-            }
+            cascadeListVariableChangedNotifications(cascadingUpdateShadowVariableDescriptor);
             // When the unassigned element has no inverse entity,
             // it indicates that it is not reverting to a previous entity.
             // In this case, we need to invoke the cascading logic,
             // or its related shadow variables will remain unchanged.
-            for (var unassignedValue : unassignedValueWithEmptyInverseEntitySet) {
-                cascadingUpdateShadowVariableDescriptor.update(scoreDirector, unassignedValue);
-            }
+            cascadeUnassignedValues(cascadingUpdateShadowVariableDescriptor);
         }
         listVariableChangedNotificationList.clear();
         unassignedValueWithEmptyInverseEntitySet.clear();
+    }
+
+    private void cascadeListVariableChangedNotifications(
+            CascadingUpdateShadowVariableDescriptor<Solution_> cascadingUpdateShadowVariableDescriptor) {
+        for (var event : listVariableChangedNotificationList) {
+            var values = listVariableDescriptor.getValue(event.getEntity());
+            var fromIndex = event.getFromIndex();
+            var toIndex = event.getToIndex();
+            // Evaluate all elements inside the range
+            evaluateFromIndex(values, fromIndex, toIndex, true, cascadingUpdateShadowVariableDescriptor);
+            // Evaluate later elements, but stops when there is no change
+            evaluateFromIndex(values, toIndex, values.size(), false, cascadingUpdateShadowVariableDescriptor);
+        }
     }
 
     private void evaluateFromIndex(List<Object> values, int fromIndex, int toIndex, boolean forceUpdate,
@@ -322,6 +330,13 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                 break;
             }
             lastUpdated++;
+        }
+    }
+
+    private void cascadeUnassignedValues(
+            CascadingUpdateShadowVariableDescriptor<Solution_> cascadingUpdateShadowVariableDescriptor) {
+        for (var unassignedValue : unassignedValueWithEmptyInverseEntitySet) {
+            cascadingUpdateShadowVariableDescriptor.update(scoreDirector, unassignedValue);
         }
     }
 
