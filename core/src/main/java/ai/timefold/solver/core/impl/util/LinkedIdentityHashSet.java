@@ -4,7 +4,10 @@ import java.util.AbstractSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 
-public class LinkedIdentityHashSet<V> extends AbstractSet<V> {
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
+public final class LinkedIdentityHashSet<V> extends AbstractSet<V> {
 
     private final ElementAwareList<V> delegate;
     private final IdentityHashMap<V, ElementAwareListEntry<V>> identityMap;
@@ -31,23 +34,22 @@ public class LinkedIdentityHashSet<V> extends AbstractSet<V> {
 
     @Override
     public boolean add(V v) {
-        var size = delegate.size();
-        identityMap.computeIfAbsent(v, v1 -> {
-            var item = delegate.add(v1);
-            identityMap.put(v1, item);
-            return item;
-        });
-        return delegate.size() != size;
+        var entry = identityMap.get(v);
+        if (entry == null) {
+            identityMap.put(v, delegate.add(v));
+            return true;
+        }
+        return false;
     }
 
     @Override
     public boolean remove(Object o) {
-        var size = delegate.size();
-        if (identityMap.containsKey(o)) {
-            var item = identityMap.remove(o);
-            delegate.remove(item);
+        var entry = identityMap.remove(o);
+        if (entry == null) {
+            return false;
         }
-        return delegate.size() != size;
+        entry.remove();
+        return true;
     }
 
     @Override
