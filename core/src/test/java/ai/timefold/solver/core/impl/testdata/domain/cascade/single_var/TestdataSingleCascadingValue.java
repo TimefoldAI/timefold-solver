@@ -80,6 +80,10 @@ public class TestdataSingleCascadingValue {
 
     //---Complex methods---//
     public void updateCascadeValue() {
+        if (entity == null) {
+            cascadeValue = null;
+            return;
+        }
         numberOfCalls++;
         if (cascadeValue == null || cascadeValue != value + 1) {
             cascadeValue = value + 1;

@@ -175,6 +175,16 @@ class ElementAwareListTest {
         assertOrder(list, new String[] { "A", "C" }, 1, 0);
     }
 
+    @Test
+    void clear() {
+        var list = new ElementAwareList<String>();
+        list.add("A");
+        list.add("B");
+        assertThat(list.size()).isEqualTo(2);
+        list.clear();
+        assertThat(list.size()).isZero();
+    }
+
     private void assertOrder(ElementAwareList<String> list, String[] elements, int... randoms) {
         var iter = list.randomizedIterator(new TestRandom(randoms));
         Assertions.assertThat(iter)

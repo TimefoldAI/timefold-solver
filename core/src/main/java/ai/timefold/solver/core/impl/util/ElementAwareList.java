@@ -155,7 +155,16 @@ public final class ElementAwareList<T> implements Iterable<T> {
      */
     @Override
     public Iterator<T> iterator() {
+        if (size == 0) {
+            return Collections.emptyIterator();
+        }
         return new ElementAwareListIterator<>(first);
+    }
+
+    public void clear() {
+        first = null;
+        last = null;
+        size = 0;
     }
 
     /**

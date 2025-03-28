@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.domain.variable.listener.support;
 import ai.timefold.solver.core.api.domain.variable.ListVariableListener;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 
-final class ListVariableChangedNotification<Solution_> extends AbstractNotification
+public final class ListVariableChangedNotification<Solution_> extends AbstractNotification
         implements ListVariableNotification<Solution_> {
 
     private final int fromIndex;
@@ -13,6 +13,14 @@ final class ListVariableChangedNotification<Solution_> extends AbstractNotificat
         super(entity);
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
+    }
+
+    public int getFromIndex() {
+        return fromIndex;
+    }
+
+    public int getToIndex() {
+        return toIndex;
     }
 
     @Override
