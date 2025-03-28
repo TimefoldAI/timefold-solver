@@ -2,9 +2,9 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
 import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.mockRebasingScoreDirector;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 class ListAssignMoveTest {
 
     private final InnerScoreDirector<TestdataListSolution, ?> innerScoreDirector = mock(InnerScoreDirector.class);
-    private final MoveDirector<TestdataListSolution> moveDirector = new MoveDirector<>(innerScoreDirector);
+    private final MoveDirector<TestdataListSolution, ?> moveDirector = new MoveDirector<>(innerScoreDirector);
     private final ListVariableDescriptor<TestdataListSolution> variableDescriptor =
             TestdataListEntity.buildVariableDescriptorForValueList();
 
@@ -38,26 +38,23 @@ class ListAssignMoveTest {
         var v3 = new TestdataListValue("3");
         var e1 = new TestdataListEntity("e1");
 
-        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
-            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
-            // v1 -> e1[0]
-            var move = new ListAssignMove<>(variableDescriptor, v1, e1, 0);
-            move.doMoveOnly(scoreDirector);
-            assertThat(e1.getValueList()).containsExactly(v1);
-            verify(innerScoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 0);
-            verify(innerScoreDirector).beforeListVariableElementAssigned(variableDescriptor, v1);
-            verify(innerScoreDirector).afterListVariableElementAssigned(variableDescriptor, v1);
-            verify(innerScoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 1);
-            verify(innerScoreDirector).triggerVariableListeners();
-            verifyNoMoreInteractions(innerScoreDirector);
-        }
+        moveDirector.executeTemporary(new ListAssignMove<>(variableDescriptor, v1, e1, 0),
+                (__, ___) -> {
+                    assertThat(e1.getValueList()).containsExactly(v1);
+                    verify(innerScoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 0);
+                    verify(innerScoreDirector).beforeListVariableElementAssigned(variableDescriptor, v1);
+                    verify(innerScoreDirector).afterListVariableElementAssigned(variableDescriptor, v1);
+                    verify(innerScoreDirector).afterListVariableChanged(variableDescriptor, e1, 0, 1);
+                    verify(innerScoreDirector, atLeastOnce()).triggerVariableListeners();
+                    return null;
+                });
 
         // v2 -> e1[0]
-        new ListAssignMove<>(variableDescriptor, v2, e1, 0).doMoveOnly(innerScoreDirector);
+        moveDirector.execute(new ListAssignMove<>(variableDescriptor, v2, e1, 0));
         // v3 -> e1[1]
-        new ListAssignMove<>(variableDescriptor, v3, e1, 1).doMoveOnly(innerScoreDirector);
+        moveDirector.execute(new ListAssignMove<>(variableDescriptor, v3, e1, 1));
         // v1 -> e1[0]
-        new ListAssignMove<>(variableDescriptor, v1, e1, 0).doMoveOnly(innerScoreDirector);
+        moveDirector.execute(new ListAssignMove<>(variableDescriptor, v1, e1, 0));
         assertThat(e1.getValueList()).containsExactly(v1, v2, v3);
     }
 

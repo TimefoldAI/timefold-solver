@@ -55,7 +55,7 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
         return scoreDirectorFactory;
     }
 
-    protected AbstractScoreDirectorFactory<Solution_, Score_> decideMultipleScoreDirectorFactories(
+    protected AbstractScoreDirectorFactory<Solution_, Score_, ?> decideMultipleScoreDirectorFactories(
             SolutionDescriptor<Solution_> solutionDescriptor, EnvironmentMode environmentMode) {
         if (!ConfigUtils.isEmptyCollection(config.getScoreDrlList())) {
             throw new IllegalStateException(

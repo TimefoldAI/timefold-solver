@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -15,10 +16,10 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.RevertableScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorCache;
 
-public final class VariableChangeRecordingScoreDirector<Solution_>
+public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extends Score<Score_>>
         implements RevertableScoreDirector<Solution_> {
 
-    private final InnerScoreDirector<Solution_, ?> backingScoreDirector;
+    private final InnerScoreDirector<Solution_, Score_> backingScoreDirector;
     private final List<ChangeAction<Solution_>> variableChanges;
 
     /*
@@ -45,14 +46,14 @@ public final class VariableChangeRecordingScoreDirector<Solution_>
     }
 
     public VariableChangeRecordingScoreDirector(ScoreDirector<Solution_> backingScoreDirector, boolean requiresIndexCache) {
-        this.backingScoreDirector = (InnerScoreDirector<Solution_, ?>) backingScoreDirector;
+        this.backingScoreDirector = (InnerScoreDirector<Solution_, Score_>) backingScoreDirector;
         this.cache = requiresIndexCache ? new IdentityHashMap<>() : null;
         // Intentional LinkedList; fast clear, no allocations upfront,
         // will most often only carry a small number of items.
         this.variableChanges = new LinkedList<>();
     }
 
-    private VariableChangeRecordingScoreDirector(InnerScoreDirector<Solution_, ?> backingScoreDirector,
+    private VariableChangeRecordingScoreDirector(InnerScoreDirector<Solution_, Score_> backingScoreDirector,
             List<ChangeAction<Solution_>> variableChanges, Map<Object, Integer> cache) {
         this.backingScoreDirector = backingScoreDirector;
         this.variableChanges = variableChanges;
@@ -175,7 +176,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_>
     /**
      * Returns the score director to which events are delegated.
      */
-    public InnerScoreDirector<Solution_, ?> getBacking() {
+    public InnerScoreDirector<Solution_, Score_> getBacking() {
         return backingScoreDirector;
     }
 
@@ -185,7 +186,7 @@ public final class VariableChangeRecordingScoreDirector<Solution_>
      * This method returns a copy of the score director
      * that only tracks variable changes without firing any delegated score director events.
      */
-    public VariableChangeRecordingScoreDirector<Solution_> getNonDelegating() {
+    public VariableChangeRecordingScoreDirector<Solution_, Score_> getNonDelegating() {
         return new VariableChangeRecordingScoreDirector<>(null, variableChanges, cache);
     }
 
@@ -217,10 +218,4 @@ public final class VariableChangeRecordingScoreDirector<Solution_>
         return Objects.requireNonNull(backingScoreDirector).lookUpWorkingObjectOrReturnNull(externalObject);
     }
 
-    @Override
-    public void changeVariableFacade(VariableDescriptor<Solution_> variableDescriptor, Object entity, Object newValue) {
-        beforeVariableChanged(variableDescriptor, entity);
-        variableDescriptor.setValue(entity, newValue);
-        afterVariableChanged(variableDescriptor, entity);
-    }
 }

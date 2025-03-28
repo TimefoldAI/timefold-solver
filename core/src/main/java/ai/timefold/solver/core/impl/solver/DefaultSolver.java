@@ -67,6 +67,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         this.randomFactory = randomFactory;
         this.basicPlumbingTermination = basicPlumbingTermination;
         this.solverScope = solverScope;
+        solverScope.setSolver(this);
         this.moveThreadCountDescription = moveThreadCountDescription;
     }
 

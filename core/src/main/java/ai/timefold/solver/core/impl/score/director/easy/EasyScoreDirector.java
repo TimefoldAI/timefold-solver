@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.score.director.easy;
 
 import java.util.Map;
+import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
@@ -12,6 +13,9 @@ import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
+
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Easy java implementation of {@link ScoreDirector}, which recalculates the {@link Score}
@@ -28,20 +32,15 @@ public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     private final EasyScoreCalculator<Solution_, Score_> easyScoreCalculator;
 
-    public EasyScoreDirector(EasyScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory, boolean lookUpEnabled,
+    private EasyScoreDirector(EasyScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory, boolean lookUpEnabled,
             boolean expectShadowVariablesInCorrectState, EasyScoreCalculator<Solution_, Score_> easyScoreCalculator) {
-        super(scoreDirectorFactory, lookUpEnabled, ConstraintMatchPolicy.DISABLED,
-                expectShadowVariablesInCorrectState);
-        this.easyScoreCalculator = easyScoreCalculator;
+        super(scoreDirectorFactory, lookUpEnabled, ConstraintMatchPolicy.DISABLED, expectShadowVariablesInCorrectState);
+        this.easyScoreCalculator = Objects.requireNonNull(easyScoreCalculator);
     }
 
     public EasyScoreCalculator<Solution_, Score_> getEasyScoreCalculator() {
         return easyScoreCalculator;
     }
-
-    // ************************************************************************
-    // Complex methods
-    // ************************************************************************
 
     @Override
     public Score_ calculateScore() {
@@ -60,6 +59,11 @@ public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
         }
         setCalculatedScore(score);
         return score;
+    }
+
+    @Override
+    public void setWorkingSolution(Solution_ workingSolution) {
+        super.setWorkingSolution(workingSolution, null);
     }
 
     /**
@@ -89,6 +93,30 @@ public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
     @Override
     public boolean requiresFlushing() {
         return false; // Every score calculation starts from scratch; nothing is saved.
+    }
+
+    @NullMarked
+    public static final class Builder<Solution_, Score_ extends Score<Score_>>
+            extends
+            AbstractScoreDirectorBuilder<Solution_, Score_, EasyScoreDirectorFactory<Solution_, Score_>, Builder<Solution_, Score_>> {
+
+        private @Nullable EasyScoreCalculator<Solution_, Score_> easyScoreCalculator;
+
+        public Builder(EasyScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory) {
+            super(scoreDirectorFactory);
+        }
+
+        public Builder<Solution_, Score_> withEasyScoreCalculator(EasyScoreCalculator<Solution_, Score_> easyScoreCalculator) {
+            this.easyScoreCalculator = easyScoreCalculator;
+            return this;
+        }
+
+        @Override
+        public EasyScoreDirector<Solution_, Score_> build() {
+            return new EasyScoreDirector<>(scoreDirectorFactory, lookUpEnabled, expectShadowVariablesInCorrectState,
+                    easyScoreCalculator);
+        }
+
     }
 
 }

@@ -19,7 +19,6 @@ import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolut
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 class ChainedChangeMoveTest {
 
@@ -41,17 +40,15 @@ class ChainedChangeMoveTest {
         var inverseVariableSupply = SelectorTestUtils.mockSingletonInverseVariableSupply(
                 new TestdataChainedEntity[] { a1, a2, a3, b1 });
 
-        try (var ephemeralMoveDirector = new MoveDirector<>(innerScoreDirector).ephemeral()) {
-            var scoreDirector = Mockito.spy(ephemeralMoveDirector.getScoreDirector());
-            var move = new ChainedChangeMove<>(variableDescriptor, a3, b1, inverseVariableSupply);
-            assertThat(move.isMoveDoable(scoreDirector)).isTrue();
-            move.doMoveOnly(scoreDirector);
+        var moveDirector = new MoveDirector<>(innerScoreDirector);
+        var move = new ChainedChangeMove<>(variableDescriptor, a3, b1, inverseVariableSupply);
+        moveDirector.execute(move);
 
-            SelectorTestUtils.assertChain(a0, a1, a2);
-            SelectorTestUtils.assertChain(b0, b1, a3);
+        SelectorTestUtils.assertChain(a0, a1, a2);
+        SelectorTestUtils.assertChain(b0, b1, a3);
 
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a3, b1);
-        }
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a3);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a3);
     }
 
     @Test
@@ -67,19 +64,19 @@ class ChainedChangeMoveTest {
         var inverseVariableSupply = SelectorTestUtils.mockSingletonInverseVariableSupply(
                 new TestdataChainedEntity[] { a1, a2, a3, b1 });
 
-        try (var ephemeralMoveDirector = new MoveDirector<>(innerScoreDirector).ephemeral()) {
-            var scoreDirector = Mockito.spy(ephemeralMoveDirector.getScoreDirector());
-            var move = new ChainedChangeMove<>(variableDescriptor, a2, b0, inverseVariableSupply);
-            assertThat(move.isMoveDoable(scoreDirector)).isTrue();
-            move.doMoveOnly(scoreDirector);
+        var moveDirector = new MoveDirector<>(innerScoreDirector);
+        var move = new ChainedChangeMove<>(variableDescriptor, a2, b0, inverseVariableSupply);
+        moveDirector.execute(move);
 
-            SelectorTestUtils.assertChain(a0, a1, a3);
-            SelectorTestUtils.assertChain(b0, a2, b1);
+        SelectorTestUtils.assertChain(a0, a1, a3);
+        SelectorTestUtils.assertChain(b0, a2, b1);
 
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a2, b0);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a3, a1);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, b1, a2);
-        }
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a2);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a2);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a3);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a3);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, b1);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, b1);
     }
 
     @Test
@@ -93,18 +90,18 @@ class ChainedChangeMoveTest {
         var inverseVariableSupply = SelectorTestUtils.mockSingletonInverseVariableSupply(
                 new TestdataChainedEntity[] { a1, a2, a3, a4 });
 
-        try (var ephemeralMoveDirector = new MoveDirector<>(innerScoreDirector).ephemeral()) {
-            var scoreDirector = Mockito.spy(ephemeralMoveDirector.getScoreDirector());
-            var move = new ChainedChangeMove<>(variableDescriptor, a2, a3, inverseVariableSupply);
-            assertThat(move.isMoveDoable(scoreDirector)).isTrue();
-            move.doMoveOnly(scoreDirector);
+        var moveDirector = new MoveDirector<>(innerScoreDirector);
+        var move = new ChainedChangeMove<>(variableDescriptor, a2, a3, inverseVariableSupply);
+        moveDirector.execute(move);
 
-            SelectorTestUtils.assertChain(a0, a1, a3, a2, a4);
+        SelectorTestUtils.assertChain(a0, a1, a3, a2, a4);
 
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a2, a3);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a3, a1);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a4, a2);
-        }
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a2);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a2);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a3);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a3);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a4);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a4);
     }
 
     @Test

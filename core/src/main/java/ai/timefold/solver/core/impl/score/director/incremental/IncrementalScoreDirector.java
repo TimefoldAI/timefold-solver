@@ -22,6 +22,9 @@ import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 /**
  * Incremental java implementation of {@link ScoreDirector}, which only recalculates the {@link Score}
  * of the part of the {@link PlanningSolution working solution} that changed,
@@ -36,13 +39,12 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
 
     private final IncrementalScoreCalculator<Solution_, Score_> incrementalScoreCalculator;
 
-    public IncrementalScoreDirector(IncrementalScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
+    private IncrementalScoreDirector(IncrementalScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
             boolean lookUpEnabled, ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState,
             IncrementalScoreCalculator<Solution_, Score_> incrementalScoreCalculator) {
-        super(scoreDirectorFactory, lookUpEnabled,
-                determineCorrectPolicy(constraintMatchPolicy, incrementalScoreCalculator),
+        super(scoreDirectorFactory, lookUpEnabled, determineCorrectPolicy(constraintMatchPolicy, incrementalScoreCalculator),
                 expectShadowVariablesInCorrectState);
-        this.incrementalScoreCalculator = incrementalScoreCalculator;
+        this.incrementalScoreCalculator = Objects.requireNonNull(incrementalScoreCalculator);
     }
 
     private static ConstraintMatchPolicy determineCorrectPolicy(ConstraintMatchPolicy constraintMatchPolicy,
@@ -64,7 +66,7 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void setWorkingSolution(Solution_ workingSolution) {
-        super.setWorkingSolution(workingSolution);
+        super.setWorkingSolution(workingSolution, null);
         if (incrementalScoreCalculator instanceof ConstraintMatchAwareIncrementalScoreCalculator) {
             ((ConstraintMatchAwareIncrementalScoreCalculator<Solution_, ?>) incrementalScoreCalculator)
                     .resetWorkingSolution(workingSolution, getConstraintMatchPolicy().isEnabled());
@@ -258,6 +260,31 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
     public void afterProblemFactRemoved(Object problemFact) {
         incrementalScoreCalculator.resetWorkingSolution(workingSolution); // TODO do not nuke it
         super.afterProblemFactRemoved(problemFact);
+    }
+
+    @NullMarked
+    public static final class Builder<Solution_, Score_ extends Score<Score_>>
+            extends
+            AbstractScoreDirectorBuilder<Solution_, Score_, IncrementalScoreDirectorFactory<Solution_, Score_>, Builder<Solution_, Score_>> {
+
+        private @Nullable IncrementalScoreCalculator<Solution_, Score_> incrementalScoreCalculator;
+
+        public Builder(IncrementalScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory) {
+            super(scoreDirectorFactory);
+        }
+
+        public Builder<Solution_, Score_>
+                withIncrementalScoreCalculator(IncrementalScoreCalculator<Solution_, Score_> incrementalScoreCalculator) {
+            this.incrementalScoreCalculator = incrementalScoreCalculator;
+            return this;
+        }
+
+        @Override
+        public IncrementalScoreDirector<Solution_, Score_> build() {
+            return new IncrementalScoreDirector<>(scoreDirectorFactory, lookUpEnabled, constraintMatchPolicy,
+                    expectShadowVariablesInCorrectState, incrementalScoreCalculator);
+        }
+
     }
 
 }

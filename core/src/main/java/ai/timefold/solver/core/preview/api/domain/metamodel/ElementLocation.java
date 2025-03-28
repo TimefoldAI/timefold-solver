@@ -19,7 +19,7 @@ import org.jspecify.annotations.NullMarked;
  * <strong>This package and all of its contents are part of the Move Streams API,
  * which is under development and is only offered as a preview feature.</strong>
  * There are no guarantees for backward compatibility;
- * any class, method or field may change or be removed without prior notice,
+ * any class, method, or field may change or be removed without prior notice,
  * although we will strive to avoid this as much as possible.
  * <p>
  * We encourage you to try the API and give us feedback on your experience with it,

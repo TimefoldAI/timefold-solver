@@ -32,6 +32,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AcceptorFactory;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForagerFactory;
+import ai.timefold.solver.core.impl.move.MoveSelectorBasedMoveRepository;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
@@ -57,12 +58,12 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
 
     private LocalSearchDecider<Solution_> buildDecider(HeuristicConfigPolicy<Solution_> configPolicy,
             PhaseTermination<Solution_> termination) {
-        var moveSelector = buildMoveSelector(configPolicy);
+        var moveRepository = new MoveSelectorBasedMoveRepository<>(buildMoveSelector(configPolicy));
         var acceptor = buildAcceptor(configPolicy);
         var forager = buildForager(configPolicy);
-        if (moveSelector.isNeverEnding() && !forager.supportsNeverEndingMoveSelector()) {
-            throw new IllegalStateException("The moveSelector (" + moveSelector
-                    + ") has neverEnding (" + moveSelector.isNeverEnding()
+        if (moveRepository.isNeverEnding() && !forager.supportsNeverEndingMoveSelector()) {
+            throw new IllegalStateException("The moveSelector (" + moveRepository
+                    + ") has neverEnding (" + moveRepository.isNeverEnding()
                     + "), but the forager (" + forager
                     + ") does not support it.\n"
                     + "Maybe configure the <forager> with an <acceptedCountLimit>.");
@@ -71,10 +72,11 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         var environmentMode = configPolicy.getEnvironmentMode();
         LocalSearchDecider<Solution_> decider;
         if (moveThreadCount == null) {
-            decider = new LocalSearchDecider<>(configPolicy.getLogIndentation(), termination, moveSelector, acceptor, forager);
+            decider =
+                    new LocalSearchDecider<>(configPolicy.getLogIndentation(), termination, moveRepository, acceptor, forager);
         } else {
             decider = TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTITHREADED_SOLVING)
-                    .buildLocalSearch(moveThreadCount, termination, moveSelector, acceptor, forager, environmentMode,
+                    .buildLocalSearch(moveThreadCount, termination, moveRepository, acceptor, forager, environmentMode,
                             configPolicy);
         }
         decider.enableAssertions(environmentMode);

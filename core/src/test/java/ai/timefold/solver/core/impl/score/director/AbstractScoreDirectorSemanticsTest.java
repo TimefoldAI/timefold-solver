@@ -8,7 +8,6 @@ import java.util.List;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintConfigurationSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListSolution;
@@ -29,9 +28,6 @@ public abstract class AbstractScoreDirectorSemanticsTest {
             buildInnerScoreDirectorFactoryWithConstraintConfiguration(
                     SolutionDescriptor<TestdataConstraintConfigurationSolution> solutionDescriptor);
 
-    protected abstract InnerScoreDirectorFactory<TestdataSolution, SimpleScore>
-            buildInnerScoreDirectorFactory(SolutionDescriptor<TestdataSolution> solutionDescriptor);
-
     protected abstract InnerScoreDirectorFactory<TestdataPinnedListSolution, SimpleScore>
             buildInnerScoreDirectorFactoryWithListVariableEntityPin(
                     SolutionDescriptor<TestdataPinnedListSolution> solutionDescriptor);
@@ -47,14 +43,14 @@ public abstract class AbstractScoreDirectorSemanticsTest {
 
         // Create first score director, calculate score.
         var solution1 = TestdataConstraintConfigurationSolution.generateSolution(1, 1);
-        try (var scoreDirector1 = scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
+        try (var scoreDirector1 = scoreDirectorFactory.buildScoreDirector()) {
             scoreDirector1.setWorkingSolution(solution1);
             var score1 = scoreDirector1.calculateScore();
             assertThat(score1).isEqualTo(SimpleScore.of(1));
 
             // Create second score director, calculate score.
             var solution2 = TestdataConstraintConfigurationSolution.generateSolution(2, 2);
-            try (var scoreDirector2 = scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
+            try (var scoreDirector2 = scoreDirectorFactory.buildScoreDirector()) {
                 scoreDirector2.setWorkingSolution(solution2);
                 var score2 = scoreDirector2.calculateScore();
                 assertThat(score2).isEqualTo(SimpleScore.of(2));
@@ -89,7 +85,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
 
         // Create score director, calculate score.
         var solution1 = TestdataConstraintConfigurationSolution.generateSolution(1, 1);
-        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
             scoreDirector.setWorkingSolution(solution1);
             var score1 = scoreDirector.calculateScore();
             assertThat(score1).isEqualTo(SimpleScore.of(1));
@@ -119,7 +115,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
 
         // Create score director, calculate score with a given constraint configuration.
         var solution = TestdataConstraintConfigurationSolution.generateSolution(1, 1);
-        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
             scoreDirector.setWorkingSolution(solution);
             var score1 = scoreDirector.calculateScore();
             assertThat(score1).isEqualTo(SimpleScore.of(1));
@@ -143,7 +139,9 @@ public abstract class AbstractScoreDirectorSemanticsTest {
 
         // Create score director, calculate score with a given constraint configuration.
         var solution = TestdataConstraintConfigurationSolution.generateSolution(1, 1);
-        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.ENABLED)) {
+        try (var scoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
+                .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
+                .build()) {
             scoreDirector.setWorkingSolution(solution);
             var score1 = scoreDirector.calculateScore();
             assertSoftly(softly -> {
@@ -176,7 +174,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
         firstEntity.setValueList(List.of(solution.getValueList().get(0)));
         firstEntity.setPinned(true);
 
-        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
             scoreDirector.setWorkingSolution(solution);
             var score1 = scoreDirector.calculateScore();
             assertThat(score1).isEqualTo(SimpleScore.ofUninitialized(-1, -2));
@@ -204,7 +202,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
         secondEntity.setValueList(List.of(solution.getValueList().get(1)));
         secondEntity.setPlanningPinToIndex(1);
 
-        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
             scoreDirector.setWorkingSolution(solution);
             var score1 = scoreDirector.calculateScore();
             assertThat(score1).isEqualTo(SimpleScore.ofUninitialized(-1, -3));

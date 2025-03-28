@@ -32,7 +32,7 @@ final class ScoreDirectorFactoryCache<ConstraintProvider_ extends ConstraintProv
      * Score director factory creation is expensive; we cache it.
      * The cache needs to be recomputed every time that the parent's configuration changes.
      */
-    private final Map<ConstraintRef, AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_>> scoreDirectorFactoryMap =
+    private final Map<ConstraintRef, AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, ?>> scoreDirectorFactoryMap =
             new HashMap<>();
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
@@ -50,7 +50,7 @@ final class ScoreDirectorFactoryCache<ConstraintProvider_ extends ConstraintProv
      * @param constraintProvider never null, determines the constraint provider to be used
      * @return never null
      */
-    public AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_> getScoreDirectorFactory(
+    public AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, ?> getScoreDirectorFactory(
             BiFunction<ConstraintProvider_, ConstraintFactory, Constraint> constraintFunction,
             ConstraintProvider_ constraintProvider, EnvironmentMode environmentMode) {
         /*
@@ -81,7 +81,8 @@ final class ScoreDirectorFactoryCache<ConstraintProvider_ extends ConstraintProv
      * @param constraintProvider never null, constraint provider to create the factory from; ignored on cache hit
      * @return never null
      */
-    public AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_> getScoreDirectorFactory(ConstraintRef constraintRef,
+    public AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, ?> getScoreDirectorFactory(
+            ConstraintRef constraintRef,
             ConstraintProvider constraintProvider, EnvironmentMode environmentMode) {
         return scoreDirectorFactoryMap.computeIfAbsent(constraintRef,
                 k -> new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor, constraintProvider, environmentMode));

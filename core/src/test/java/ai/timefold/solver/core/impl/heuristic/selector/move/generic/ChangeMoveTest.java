@@ -9,15 +9,11 @@ import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
-import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
-import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.multivar.TestdataMultiVarEntity;
-import ai.timefold.solver.core.impl.testdata.domain.multivar.TestdataMultiVarSolution;
 import ai.timefold.solver.core.impl.testdata.domain.multivar.TestdataOtherValue;
 import ai.timefold.solver.core.impl.testdata.domain.valuerange.entityproviding.TestdataEntityProvidingEntity;
 import ai.timefold.solver.core.impl.testdata.domain.valuerange.entityproviding.TestdataEntityProvidingSolution;
@@ -28,18 +24,17 @@ class ChangeMoveTest {
 
     @Test
     void isMoveDoable() {
-        TestdataValue v1 = new TestdataValue("1");
-        TestdataValue v2 = new TestdataValue("2");
-        TestdataValue v3 = new TestdataValue("3");
+        var v1 = new TestdataValue("1");
+        var v2 = new TestdataValue("2");
+        var v3 = new TestdataValue("3");
 
-        TestdataEntityProvidingEntity a = new TestdataEntityProvidingEntity("a", Arrays.asList(v1, v2, v3), null);
+        var a = new TestdataEntityProvidingEntity("a", Arrays.asList(v1, v2, v3), null);
 
         ScoreDirector<TestdataEntityProvidingSolution> scoreDirector = mock(ScoreDirector.class);
 
-        GenuineVariableDescriptor<TestdataEntityProvidingSolution> variableDescriptor =
-                TestdataEntityProvidingEntity.buildVariableDescriptorForValue();
+        var variableDescriptor = TestdataEntityProvidingEntity.buildVariableDescriptorForValue();
 
-        ChangeMove<TestdataEntityProvidingSolution> aMove = new ChangeMove<>(variableDescriptor, a, v2);
+        var aMove = new ChangeMove<>(variableDescriptor, a, v2);
         a.setValue(v1);
         assertThat(aMove.isMoveDoable(scoreDirector)).isTrue();
 
@@ -52,22 +47,18 @@ class ChangeMoveTest {
 
     @Test
     void doMove() {
-        TestdataValue v1 = new TestdataValue("1");
-        TestdataValue v2 = new TestdataValue("2");
-        TestdataValue v3 = new TestdataValue("3");
+        var v1 = new TestdataValue("1");
+        var v2 = new TestdataValue("2");
+        var v3 = new TestdataValue("3");
 
-        TestdataEntityProvidingEntity a = new TestdataEntityProvidingEntity("a", Arrays.asList(v1, v2, v3), null);
+        var a = new TestdataEntityProvidingEntity("a", Arrays.asList(v1, v2, v3), null);
 
-        ScoreDirectorFactory<TestdataEntityProvidingSolution> scoreDirectorFactory =
-                new EasyScoreDirectorFactory<>(TestdataEntityProvidingSolution.buildSolutionDescriptor(),
-                        solution -> SimpleScore.ZERO);
-        ScoreDirector<TestdataEntityProvidingSolution> scoreDirector =
-                scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED);
+        var scoreDirectorFactory = new EasyScoreDirectorFactory<>(TestdataEntityProvidingSolution.buildSolutionDescriptor(),
+                solution -> SimpleScore.ZERO);
+        var scoreDirector = scoreDirectorFactory.buildScoreDirector();
+        var variableDescriptor = TestdataEntityProvidingEntity.buildVariableDescriptorForValue();
 
-        GenuineVariableDescriptor<TestdataEntityProvidingSolution> variableDescriptor =
-                TestdataEntityProvidingEntity.buildVariableDescriptorForValue();
-
-        ChangeMove<TestdataEntityProvidingSolution> aMove = new ChangeMove<>(variableDescriptor, a, v2);
+        var aMove = new ChangeMove<>(variableDescriptor, a, v2);
         a.setValue(v1);
         aMove.doMoveOnly(scoreDirector);
         assertThat(a.getValue()).isEqualTo(v2);
@@ -83,19 +74,19 @@ class ChangeMoveTest {
 
     @Test
     void rebase() {
-        GenuineVariableDescriptor<TestdataSolution> variableDescriptor = TestdataEntity.buildVariableDescriptorForValue();
+        var variableDescriptor = TestdataEntity.buildVariableDescriptorForValue();
 
-        TestdataValue v1 = new TestdataValue("v1");
-        TestdataValue v2 = new TestdataValue("v2");
-        TestdataEntity e1 = new TestdataEntity("e1", v1);
-        TestdataEntity e2 = new TestdataEntity("e2", null);
-        TestdataEntity e3 = new TestdataEntity("e3", v1);
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var e1 = new TestdataEntity("e1", v1);
+        var e2 = new TestdataEntity("e2", null);
+        var e3 = new TestdataEntity("e3", v1);
 
-        TestdataValue destinationV1 = new TestdataValue("v1");
-        TestdataValue destinationV2 = new TestdataValue("v2");
-        TestdataEntity destinationE1 = new TestdataEntity("e1", destinationV1);
-        TestdataEntity destinationE2 = new TestdataEntity("e2", null);
-        TestdataEntity destinationE3 = new TestdataEntity("e3", destinationV1);
+        var destinationV1 = new TestdataValue("v1");
+        var destinationV2 = new TestdataValue("v2");
+        var destinationE1 = new TestdataEntity("e1", destinationV1);
+        var destinationE2 = new TestdataEntity("e2", null);
+        var destinationE3 = new TestdataEntity("e3", destinationV1);
 
         ScoreDirector<TestdataSolution> destinationScoreDirector = mockRebasingScoreDirector(
                 variableDescriptor.getEntityDescriptor().getSolutionDescriptor(), new Object[][] {
@@ -123,17 +114,15 @@ class ChangeMoveTest {
 
     @Test
     void getters() {
-        GenuineVariableDescriptor<TestdataMultiVarSolution> primaryVariableDescriptor =
+        var primaryVariableDescriptor =
                 TestdataMultiVarEntity.buildVariableDescriptorForPrimaryValue();
-        ChangeMove<TestdataMultiVarSolution> primaryMove =
-                new ChangeMove<>(primaryVariableDescriptor, new TestdataMultiVarEntity("a"), null);
+        var primaryMove = new ChangeMove<>(primaryVariableDescriptor, new TestdataMultiVarEntity("a"), null);
         assertCode("a", primaryMove.getEntity());
         assertThat(primaryMove.getVariableName()).isEqualTo("primaryValue");
         assertCode(null, primaryMove.getToPlanningValue());
 
-        GenuineVariableDescriptor<TestdataMultiVarSolution> secondaryVariableDescriptor =
-                TestdataMultiVarEntity.buildVariableDescriptorForSecondaryValue();
-        ChangeMove<TestdataMultiVarSolution> secondaryMove =
+        var secondaryVariableDescriptor = TestdataMultiVarEntity.buildVariableDescriptorForSecondaryValue();
+        var secondaryMove =
                 new ChangeMove<>(secondaryVariableDescriptor, new TestdataMultiVarEntity("b"), new TestdataValue("1"));
         assertCode("b", secondaryMove.getEntity());
         assertThat(secondaryMove.getVariableName()).isEqualTo("secondaryValue");
@@ -142,11 +131,11 @@ class ChangeMoveTest {
 
     @Test
     void toStringTest() {
-        TestdataValue v1 = new TestdataValue("v1");
-        TestdataValue v2 = new TestdataValue("v2");
-        TestdataEntity a = new TestdataEntity("a", null);
-        TestdataEntity b = new TestdataEntity("b", v1);
-        GenuineVariableDescriptor<TestdataSolution> variableDescriptor = TestdataEntity.buildVariableDescriptorForValue();
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var a = new TestdataEntity("a", null);
+        var b = new TestdataEntity("b", v1);
+        var variableDescriptor = TestdataEntity.buildVariableDescriptorForValue();
 
         assertThat(new ChangeMove<>(variableDescriptor, a, null)).hasToString("a {null -> null}");
         assertThat(new ChangeMove<>(variableDescriptor, a, v1)).hasToString("a {null -> v1}");
@@ -158,16 +147,16 @@ class ChangeMoveTest {
 
     @Test
     void toStringTestMultiVar() {
-        TestdataValue v1 = new TestdataValue("v1");
-        TestdataValue v2 = new TestdataValue("v2");
-        TestdataValue v3 = new TestdataValue("v3");
-        TestdataValue v4 = new TestdataValue("v4");
-        TestdataOtherValue w1 = new TestdataOtherValue("w1");
-        TestdataOtherValue w2 = new TestdataOtherValue("w2");
-        TestdataMultiVarEntity a = new TestdataMultiVarEntity("a", null, null, null);
-        TestdataMultiVarEntity b = new TestdataMultiVarEntity("b", v1, v3, w1);
-        TestdataMultiVarEntity c = new TestdataMultiVarEntity("c", v2, v4, w2);
-        GenuineVariableDescriptor<TestdataMultiVarSolution> variableDescriptor =
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var v3 = new TestdataValue("v3");
+        var v4 = new TestdataValue("v4");
+        var w1 = new TestdataOtherValue("w1");
+        var w2 = new TestdataOtherValue("w2");
+        var a = new TestdataMultiVarEntity("a", null, null, null);
+        var b = new TestdataMultiVarEntity("b", v1, v3, w1);
+        var c = new TestdataMultiVarEntity("c", v2, v4, w2);
+        var variableDescriptor =
                 TestdataMultiVarEntity.buildVariableDescriptorForSecondaryValue();
 
         assertThat(new ChangeMove<>(variableDescriptor, a, null)).hasToString("a {null -> null}");

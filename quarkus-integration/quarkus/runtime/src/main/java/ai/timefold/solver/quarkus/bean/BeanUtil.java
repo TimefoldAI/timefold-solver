@@ -12,7 +12,7 @@ public class BeanUtil {
     public static ConstraintMetaModel buildConstraintMetaModel(SolverFactory<?> solverFactory) {
         if (Objects.requireNonNull(solverFactory) instanceof DefaultSolverFactory<?> defaultSolverFactory) {
             var scoreDirectorFactory = defaultSolverFactory.getScoreDirectorFactory();
-            if (scoreDirectorFactory instanceof AbstractConstraintStreamScoreDirectorFactory<?, ?> castScoreDirectorFactory) {
+            if (scoreDirectorFactory instanceof AbstractConstraintStreamScoreDirectorFactory<?, ?, ?> castScoreDirectorFactory) {
                 return castScoreDirectorFactory.getConstraintMetaModel();
             } else {
                 throw new IllegalStateException(

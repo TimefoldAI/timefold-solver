@@ -22,7 +22,6 @@ import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolut
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 class SubChainReversingSwapMoveTest {
 
@@ -48,23 +47,23 @@ class SubChainReversingSwapMoveTest {
         var inverseVariableSupply = SelectorTestUtils.mockSingletonInverseVariableSupply(
                 new TestdataChainedEntity[] { a1, a2, a3, a4, a5, b1, b2, b3 });
 
-        try (var ephemeralMoveDirector = new MoveDirector<>(innerScoreDirector).ephemeral()) {
-            var scoreDirector = Mockito.spy(ephemeralMoveDirector.getScoreDirector());
-            var move = new SubChainReversingSwapMove<>(variableDescriptor,
-                    inverseVariableSupply,
-                    new SubChain(Arrays.asList(a3, a4, a5)),
-                    new SubChain(Arrays.asList(b2, b3)));
-            move.doMoveOnly(scoreDirector);
+        var moveDirector = new MoveDirector<>(innerScoreDirector);
+        moveDirector.execute(new SubChainReversingSwapMove<>(variableDescriptor, inverseVariableSupply,
+                new SubChain(Arrays.asList(a3, a4, a5)), new SubChain(Arrays.asList(b2, b3))));
 
-            SelectorTestUtils.assertChain(a0, a1, a2, b3, b2);
-            SelectorTestUtils.assertChain(b0, b1, a5, a4, a3);
+        SelectorTestUtils.assertChain(a0, a1, a2, b3, b2);
+        SelectorTestUtils.assertChain(b0, b1, a5, a4, a3);
 
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a5, b1);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a4, a5);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a3, a4);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, b3, a2);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, b2, b3);
-        }
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a5);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a5);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a4);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a4);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a3);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a3);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, b3);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, b3);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, b2);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, b2);
     }
 
     @Test
@@ -84,25 +83,27 @@ class SubChainReversingSwapMoveTest {
         var inverseVariableSupply = SelectorTestUtils.mockSingletonInverseVariableSupply(
                 new TestdataChainedEntity[] { a1, a2, a3, a4, a5, b1, b2, b3 });
 
-        try (var ephemeralMoveDirector = new MoveDirector<>(innerScoreDirector).ephemeral()) {
-            var scoreDirector = Mockito.spy(ephemeralMoveDirector.getScoreDirector());
-            var move = new SubChainReversingSwapMove<>(variableDescriptor,
-                    inverseVariableSupply,
-                    new SubChain(Arrays.asList(a2, a3, a4)),
-                    new SubChain(Arrays.asList(b1, b2)));
-            move.doMoveOnly(scoreDirector);
+        var moveDirector = new MoveDirector<>(innerScoreDirector);
+        moveDirector.execute(new SubChainReversingSwapMove<>(variableDescriptor, inverseVariableSupply,
+                new SubChain(Arrays.asList(a2, a3, a4)), new SubChain(Arrays.asList(b1, b2))));
 
-            SelectorTestUtils.assertChain(a0, a1, b2, b1, a5);
-            SelectorTestUtils.assertChain(b0, a4, a3, a2, b3);
+        SelectorTestUtils.assertChain(a0, a1, b2, b1, a5);
+        SelectorTestUtils.assertChain(b0, a4, a3, a2, b3);
 
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a4, b0);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a3, a4);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a2, a3);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, b3, a2);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, b2, a1);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, b1, b2);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a5, b1);
-        }
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a4);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a4);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a3);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a3);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a2);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a2);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, b3);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, b3);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, b2);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, b2);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, b1);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, b1);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a5);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a5);
     }
 
     @Test
@@ -119,22 +120,22 @@ class SubChainReversingSwapMoveTest {
         var inverseVariableSupply = SelectorTestUtils.mockSingletonInverseVariableSupply(
                 new TestdataChainedEntity[] { a1, a2, a3, a4, a5, a6, a7 });
 
-        try (var ephemeralMoveDirector = new MoveDirector<>(innerScoreDirector).ephemeral()) {
-            var scoreDirector = Mockito.spy(ephemeralMoveDirector.getScoreDirector());
-            var move = new SubChainReversingSwapMove<>(variableDescriptor,
-                    inverseVariableSupply,
-                    new SubChain(Arrays.asList(a3, a4, a5)),
-                    new SubChain(Arrays.asList(a6, a7)));
-            move.doMoveOnly(scoreDirector);
+        var moveDirector = new MoveDirector<>(innerScoreDirector);
+        moveDirector.execute(new SubChainReversingSwapMove<>(variableDescriptor, inverseVariableSupply,
+                new SubChain(Arrays.asList(a3, a4, a5)), new SubChain(Arrays.asList(a6, a7))));
 
-            SelectorTestUtils.assertChain(a0, a1, a2, a7, a6, a5, a4, a3);
+        SelectorTestUtils.assertChain(a0, a1, a2, a7, a6, a5, a4, a3);
 
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a7, a2);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a6, a7);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a5, a6);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a4, a5);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a3, a4);
-        }
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a7);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a7);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a6);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a6);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a5);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a5);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a4);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a4);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a3);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a3);
     }
 
     @Test
@@ -151,23 +152,24 @@ class SubChainReversingSwapMoveTest {
         var inverseVariableSupply = SelectorTestUtils.mockSingletonInverseVariableSupply(
                 new TestdataChainedEntity[] { a1, a2, a3, a4, a5, a6, a7 });
 
-        try (var ephemeralMoveDirector = new MoveDirector<>(innerScoreDirector).ephemeral()) {
-            var scoreDirector = Mockito.spy(ephemeralMoveDirector.getScoreDirector());
-            var move = new SubChainReversingSwapMove<>(variableDescriptor,
-                    inverseVariableSupply,
-                    new SubChain(Arrays.asList(a2, a3, a4)),
-                    new SubChain(Arrays.asList(a5, a6)));
-            move.doMoveOnly(scoreDirector);
+        var moveDirector = new MoveDirector<>(innerScoreDirector);
+        moveDirector.execute(new SubChainReversingSwapMove<>(variableDescriptor, inverseVariableSupply,
+                new SubChain(Arrays.asList(a2, a3, a4)), new SubChain(Arrays.asList(a5, a6))));
 
-            SelectorTestUtils.assertChain(a0, a1, a6, a5, a4, a3, a2, a7);
+        SelectorTestUtils.assertChain(a0, a1, a6, a5, a4, a3, a2, a7);
 
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a6, a1);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a5, a6);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a4, a5);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a3, a4);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a2, a3);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a7, a2);
-        }
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a6);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a6);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a5);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a5);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a4);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a4);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a3);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a3);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a2);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a2);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a7);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a7);
     }
 
     @Test
@@ -184,23 +186,26 @@ class SubChainReversingSwapMoveTest {
         var inverseVariableSupply = SelectorTestUtils.mockSingletonInverseVariableSupply(
                 new TestdataChainedEntity[] { a1, a2, a3, a4, a5, a6, a7 });
 
-        try (var ephemeralMoveDirector = new MoveDirector<>(innerScoreDirector).ephemeral()) {
-            var scoreDirector = Mockito.spy(ephemeralMoveDirector.getScoreDirector());
-            var move = new SubChainReversingSwapMove<>(variableDescriptor,
-                    inverseVariableSupply,
-                    new SubChain(Arrays.asList(a5, a6)), // Opposite parameter order
-                    new SubChain(Arrays.asList(a2, a3, a4)));
-            move.doMoveOnly(scoreDirector);
+        var moveDirector = new MoveDirector<>(innerScoreDirector);
+        moveDirector.execute(new SubChainReversingSwapMove<>(variableDescriptor,
+                inverseVariableSupply,
+                new SubChain(Arrays.asList(a5, a6)), // Opposite parameter order
+                new SubChain(Arrays.asList(a2, a3, a4))));
 
-            SelectorTestUtils.assertChain(a0, a1, a6, a5, a4, a3, a2, a7);
+        SelectorTestUtils.assertChain(a0, a1, a6, a5, a4, a3, a2, a7);
 
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a6, a1);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a5, a6);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a4, a5);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a3, a4);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a2, a3);
-            verify(scoreDirector).changeVariableFacade(variableDescriptor, a7, a2);
-        }
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a6);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a6);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a5);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a5);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a4);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a4);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a3);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a3);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a2);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a2);
+        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a7);
+        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a7);
     }
 
     @Test

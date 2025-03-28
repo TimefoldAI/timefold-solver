@@ -1,10 +1,11 @@
 package ai.timefold.solver.core.impl.constructionheuristic.decider;
 
+import java.util.Iterator;
+
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForager;
-import ai.timefold.solver.core.impl.constructionheuristic.placer.Placement;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicMoveScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
@@ -86,13 +87,14 @@ public class ConstructionHeuristicDecider<Solution_> {
         // Overridable by a subclass.
     }
 
-    public void decideNextStep(ConstructionHeuristicStepScope<Solution_> stepScope, Placement<Solution_> placement) {
+    public void decideNextStep(ConstructionHeuristicStepScope<Solution_> stepScope, Iterator<Move<Solution_>> moveIterator) {
         var moveIndex = 0;
         var terminatedPrematurely = false;
-        for (var move : placement) {
+        while (moveIterator.hasNext()) {
+            var move = moveIterator.next();
             var allowedNonDoableMove = isAllowedNonDoableMove(move);
             if (!allowedNonDoableMove) {
-                MoveDirector<Solution_> moveDirector = stepScope.getMoveDirector();
+                MoveDirector<Solution_, ?> moveDirector = stepScope.getMoveDirector();
                 if (!LegacyMoveAdapter.isDoable(moveDirector, move)) {
                     // Construction Heuristic should not do non-doable moves, but in some cases, it has to.
                     // Specifically:
@@ -155,12 +157,12 @@ public class ConstructionHeuristicDecider<Solution_> {
 
     protected <Score_ extends Score<Score_>> void doMove(ConstructionHeuristicMoveScope<Solution_> moveScope) {
         InnerScoreDirector<Solution_, Score_> scoreDirector = moveScope.getScoreDirector();
-        scoreDirector.doAndProcessMove(moveScope.getMove(), assertMoveScoreFromScratch, score -> {
-            moveScope.setScore(score);
-            forager.addMove(moveScope);
-        });
+        var score = scoreDirector.executeTemporaryMove(moveScope.getMove(), assertMoveScoreFromScratch);
+        moveScope.setScore(score);
+        forager.addMove(moveScope);
         if (assertExpectedUndoMoveScore) {
-            scoreDirector.assertExpectedUndoMoveScore(moveScope.getMove(),
+            var undoMoveToString = "Undo(%s)".formatted(moveScope.getMove());
+            scoreDirector.assertExpectedUndoMoveScore(moveScope.getMove(), undoMoveToString,
                     (Score_) moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore(),
                     SolverLifecyclePoint.of(moveScope));
         }

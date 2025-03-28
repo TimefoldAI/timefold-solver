@@ -137,7 +137,7 @@ public class TimefoldSolverBeanFactory implements ApplicationContextAware, Envir
         failInjectionWithMultipleSolvers(ConstraintMetaModel.class.getName());
         var solverFactory = (DefaultSolverFactory<Solution_>) context.getBean(SolverFactory.class);
         var scoreDirectorFactory = solverFactory.getScoreDirectorFactory();
-        if (scoreDirectorFactory instanceof AbstractConstraintStreamScoreDirectorFactory<Solution_, ?> castScoreDirectorFactory) {
+        if (scoreDirectorFactory instanceof AbstractConstraintStreamScoreDirectorFactory<Solution_, ?, ?> castScoreDirectorFactory) {
             return castScoreDirectorFactory.getConstraintMetaModel();
         } else {
             throw new IllegalStateException(

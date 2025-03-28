@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.score.director;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -20,7 +21,7 @@ import org.slf4j.LoggerFactory;
  * @param <Score_> the score type to go with the solution
  * @see ScoreDirectorFactory
  */
-public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Score<Score_>>
+public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Score<Score_>, Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>>
         implements InnerScoreDirectorFactory<Solution_, Score_> {
 
     protected final transient Logger logger = LoggerFactory.getLogger(getClass());
@@ -77,7 +78,7 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
 
     /**
      * When true, a snapshot of the solution is created before, after and after the undo of a move.
-     * In {@link ai.timefold.solver.core.config.solver.EnvironmentMode#TRACKED_FULL_ASSERT},
+     * In {@link EnvironmentMode#TRACKED_FULL_ASSERT},
      * the snapshots are compared when corruption is detected,
      * allowing us to report exactly what variables are different.
      */
@@ -89,15 +90,14 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
         this.trackingWorkingSolution = trackingWorkingSolution;
     }
 
-    // ************************************************************************
-    // Complex methods
-    // ************************************************************************
-
     @Override
     public void assertScoreFromScratch(Solution_ solution) {
         // Get the score before uncorruptedScoreDirector.calculateScore() modifies it
         Score_ score = getSolutionDescriptor().getScore(solution);
-        try (var uncorruptedScoreDirector = buildDerivedScoreDirector(false, ConstraintMatchPolicy.ENABLED)) {
+        // Most score directors don't need derived status; CS will override this.
+        try (var uncorruptedScoreDirector = createScoreDirectorBuilder()
+                .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
+                .buildDerived()) {
             uncorruptedScoreDirector.setWorkingSolution(solution);
             Score_ uncorruptedScore = uncorruptedScoreDirector.calculateScore();
             if (!score.equals(uncorruptedScore)) {

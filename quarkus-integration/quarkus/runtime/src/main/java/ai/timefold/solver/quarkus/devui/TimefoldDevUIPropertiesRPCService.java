@@ -132,7 +132,7 @@ public class TimefoldDevUIPropertiesRPCService {
     private List<ConstraintRef> buildConstraintList(SolverFactory<?> solverFactory) {
         if (solverFactory != null) {
             var scoreDirectorFactory = ((DefaultSolverFactory<?>) solverFactory).getScoreDirectorFactory();
-            if (scoreDirectorFactory instanceof AbstractConstraintStreamScoreDirectorFactory<?, ?> castScoreDirectorFactory) {
+            if (scoreDirectorFactory instanceof AbstractConstraintStreamScoreDirectorFactory<?, ?, ?> castScoreDirectorFactory) {
                 return castScoreDirectorFactory.getConstraintMetaModel().getConstraints()
                         .stream()
                         .map(Constraint::getConstraintRef)

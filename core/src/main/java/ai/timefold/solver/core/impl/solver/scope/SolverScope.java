@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.solver.scope;
 
 import static ai.timefold.solver.core.impl.util.MathUtils.getSpeed;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +41,7 @@ public class SolverScope<Solution_> {
     private final AtomicLong startingSystemTimeMillis = resetAtomicLongTimeMillis(new AtomicLong());
     private final AtomicLong endingSystemTimeMillis = resetAtomicLongTimeMillis(new AtomicLong());
 
-    private Set<SolverMetric> solverMetricSet;
+    private Set<SolverMetric> solverMetricSet = Collections.emptySet();
     private Tags monitoringTags;
     private int startingSolverCount;
     private Random workingRandom;

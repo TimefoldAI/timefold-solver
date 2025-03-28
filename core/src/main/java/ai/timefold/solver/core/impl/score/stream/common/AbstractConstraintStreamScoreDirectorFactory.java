@@ -4,9 +4,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 
@@ -17,8 +15,8 @@ import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInl
  * @param <Score_> the score type to go with the solution
  * @see ScoreDirectorFactory
  */
-public abstract class AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_ extends Score<Score_>>
-        extends AbstractScoreDirectorFactory<Solution_, Score_> {
+public abstract class AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_ extends Score<Score_>, Factory_ extends AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, Factory_>>
+        extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_> {
 
     protected AbstractConstraintStreamScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor) {
         super(solutionDescriptor);
@@ -38,9 +36,5 @@ public abstract class AbstractConstraintStreamScoreDirectorFactory<Solution_, Sc
     public boolean supportsConstraintMatching() {
         return true;
     }
-
-    @Override
-    public abstract InnerScoreDirector<Solution_, Score_> buildDerivedScoreDirector(boolean lookUpEnabled,
-            ConstraintMatchPolicy constraintMatchPolicy);
 
 }

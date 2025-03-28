@@ -123,8 +123,10 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
         }
     }
 
-    private void wrapAndExecute(MoveDirector<Solution_> moveDirector,
+    private void wrapAndExecute(MoveDirector<Solution_, Score_> moveDirector,
             ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> move) {
+        // No need to call moveDirector.execute(),
+        // as legacy moves were guaranteed to trigger shadow vars as part of their contract.
         new LegacyMoveAdapter<>(move).execute(moveDirector);
     }
 
@@ -151,13 +153,13 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
 
     private Recommendation_ execute(InnerScoreDirector<Solution_, Score_> scoreDirector, Move<Solution_> move, long moveIndex,
             In_ clonedElement, Function<In_, Out_> propositionFunction) {
-        try (var ephemeralMoveDirector = scoreDirector.getMoveDirector().ephemeral()) {
-            move.execute(ephemeralMoveDirector);
-            var newScoreAnalysis = scoreDirector.buildScoreAnalysis(fetchPolicy);
-            var newScoreDifference = newScoreAnalysis.diff(originalScoreAnalysis);
-            var result = propositionFunction.apply(clonedElement);
-            return recommendationConstructor.apply(moveIndex, result, newScoreDifference);
-        }
+        return scoreDirector.getMoveDirector().executeTemporary(move,
+                (moveDirector, score) -> {
+                    var newScoreAnalysis = scoreDirector.buildScoreAnalysis(fetchPolicy);
+                    var newScoreDifference = newScoreAnalysis.diff(originalScoreAnalysis);
+                    var result = propositionFunction.apply(clonedElement);
+                    return recommendationConstructor.apply(moveIndex, result, newScoreDifference);
+                });
     }
 
 }

@@ -14,8 +14,7 @@ import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
-import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
-import ai.timefold.solver.core.impl.score.director.incremental.IncrementalScoreDirector;
+import ai.timefold.solver.core.impl.score.director.incremental.IncrementalScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
@@ -26,51 +25,48 @@ class ScoreDirectorFactoryFactoryTest {
 
     @Test
     void incrementalScoreCalculatorWithCustomProperties() {
-        ScoreDirectorFactoryConfig config = new ScoreDirectorFactoryConfig();
+        var config = new ScoreDirectorFactoryConfig();
         config.setIncrementalScoreCalculatorClass(
                 TestCustomPropertiesIncrementalScoreCalculator.class);
-        HashMap<String, String> customProperties = new HashMap<>();
+        var customProperties = new HashMap<String, String>();
         customProperties.put("stringProperty", "string 1");
         customProperties.put("intProperty", "7");
         config.setIncrementalScoreCalculatorCustomProperties(customProperties);
 
-        ScoreDirectorFactory<TestdataSolution> scoreDirectorFactory = buildTestdataScoreDirectoryFactory(config);
-        IncrementalScoreDirector<TestdataSolution, ?> scoreDirector =
-                (IncrementalScoreDirector<TestdataSolution, ?>) scoreDirectorFactory.buildScoreDirector(false,
-                        ConstraintMatchPolicy.DISABLED);
-        TestCustomPropertiesIncrementalScoreCalculator scoreCalculator =
-                (TestCustomPropertiesIncrementalScoreCalculator) scoreDirector
-                        .getIncrementalScoreCalculator();
-        assertThat(scoreCalculator.getStringProperty()).isEqualTo("string 1");
-        assertThat(scoreCalculator.getIntProperty()).isEqualTo(7);
+        var scoreDirectorFactory =
+                (IncrementalScoreDirectorFactory<TestdataSolution, SimpleScore>) buildTestdataScoreDirectoryFactory(config);
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
+            var scoreCalculator =
+                    (TestCustomPropertiesIncrementalScoreCalculator) scoreDirector.getIncrementalScoreCalculator();
+            assertThat(scoreCalculator.getStringProperty()).isEqualTo("string 1");
+            assertThat(scoreCalculator.getIntProperty()).isEqualTo(7);
+        }
     }
 
     @Test
     void buildWithAssertionScoreDirectorFactory() {
-        ScoreDirectorFactoryConfig assertionScoreDirectorConfig = new ScoreDirectorFactoryConfig()
+        var assertionScoreDirectorConfig = new ScoreDirectorFactoryConfig()
                 .withIncrementalScoreCalculatorClass(TestCustomPropertiesIncrementalScoreCalculator.class);
-        ScoreDirectorFactoryConfig config = new ScoreDirectorFactoryConfig()
+        var config = new ScoreDirectorFactoryConfig()
                 .withIncrementalScoreCalculatorClass(TestCustomPropertiesIncrementalScoreCalculator.class)
                 .withAssertionScoreDirectorFactory(assertionScoreDirectorConfig);
 
-        AbstractScoreDirectorFactory<TestdataSolution, ?> scoreDirectorFactory =
-                (AbstractScoreDirectorFactory<TestdataSolution, ?>) buildTestdataScoreDirectoryFactory(config,
+        var scoreDirectorFactory =
+                (AbstractScoreDirectorFactory<TestdataSolution, ?, ?>) buildTestdataScoreDirectoryFactory(config,
                         EnvironmentMode.STEP_ASSERT);
 
-        ScoreDirectorFactory<TestdataSolution> assertionScoreDirectorFactory =
-                scoreDirectorFactory.getAssertionScoreDirectorFactory();
-        IncrementalScoreDirector<TestdataSolution, ?> assertionScoreDirector =
-                (IncrementalScoreDirector<TestdataSolution, ?>) assertionScoreDirectorFactory.buildScoreDirector(false,
-                        ConstraintMatchPolicy.DISABLED);
-        IncrementalScoreCalculator<TestdataSolution, ?> assertionScoreCalculator =
-                assertionScoreDirector.getIncrementalScoreCalculator();
-
-        assertThat(assertionScoreCalculator).isExactlyInstanceOf(TestCustomPropertiesIncrementalScoreCalculator.class);
+        var assertionScoreDirectorFactory =
+                (IncrementalScoreDirectorFactory<TestdataSolution, SimpleScore>) scoreDirectorFactory
+                        .getAssertionScoreDirectorFactory();
+        try (var assertionScoreDirector = assertionScoreDirectorFactory.buildScoreDirector()) {
+            var assertionScoreCalculator = assertionScoreDirector.getIncrementalScoreCalculator();
+            assertThat(assertionScoreCalculator).isExactlyInstanceOf(TestCustomPropertiesIncrementalScoreCalculator.class);
+        }
     }
 
     @Test
     void multipleScoreCalculations_throwsException() {
-        ScoreDirectorFactoryConfig config = new ScoreDirectorFactoryConfig()
+        var config = new ScoreDirectorFactoryConfig()
                 .withConstraintProviderClass(TestdataConstraintProvider.class)
                 .withEasyScoreCalculatorClass(TestCustomPropertiesEasyScoreCalculator.class)
                 .withIncrementalScoreCalculatorClass(TestCustomPropertiesIncrementalScoreCalculator.class);

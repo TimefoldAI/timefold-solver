@@ -18,7 +18,11 @@ public interface VariableDescriptorAwareScoreDirector<Solution_>
 
     void afterVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity);
 
-    void changeVariableFacade(VariableDescriptor<Solution_> variableDescriptor, Object entity, Object newValue);
+    default void changeVariableFacade(VariableDescriptor<Solution_> variableDescriptor, Object entity, Object newValue) {
+        beforeVariableChanged(variableDescriptor, entity);
+        variableDescriptor.setValue(entity, newValue);
+        afterVariableChanged(variableDescriptor, entity);
+    }
 
     // ************************************************************************
     // List variable

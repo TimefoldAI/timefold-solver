@@ -38,7 +38,7 @@ public final class RuinRecreateMove<Solution_> extends AbstractMove<Solution_> {
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         recordedNewValues = new Object[ruinedEntityList.size()];
 
-        var recordingScoreDirector = (VariableChangeRecordingScoreDirector<Solution_>) scoreDirector;
+        var recordingScoreDirector = (VariableChangeRecordingScoreDirector<Solution_, ?>) scoreDirector;
         for (var ruinedEntity : ruinedEntityList) {
             recordingScoreDirector.beforeVariableChanged(genuineVariableDescriptor, ruinedEntity);
             genuineVariableDescriptor.setValue(ruinedEntity, null);
@@ -55,7 +55,6 @@ public final class RuinRecreateMove<Solution_> extends AbstractMove<Solution_> {
         var nestedSolverScope = new SolverScope<Solution_>();
         nestedSolverScope.setSolver(solverScope.getSolver());
         nestedSolverScope.setScoreDirector(recordingScoreDirector.getBacking());
-        constructionHeuristicPhase.setSolver(nestedSolverScope.getSolver());
         constructionHeuristicPhase.solvingStarted(nestedSolverScope);
         constructionHeuristicPhase.solve(nestedSolverScope);
         constructionHeuristicPhase.solvingEnded(nestedSolverScope);

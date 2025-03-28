@@ -16,7 +16,7 @@ public final class DefaultMultiConstraintVerification<Solution_, Score_ extends 
 
     private final ConstraintProvider constraintProvider;
 
-    DefaultMultiConstraintVerification(AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
+    DefaultMultiConstraintVerification(AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, ?> scoreDirectorFactory,
             ConstraintProvider constraintProvider) {
         super(scoreDirectorFactory);
         this.constraintProvider = constraintProvider;
@@ -30,7 +30,10 @@ public final class DefaultMultiConstraintVerification<Solution_, Score_ extends 
 
     @Override
     public @NonNull DefaultMultiConstraintAssertion<Score_> givenSolution(@NonNull Solution_ solution) {
-        try (var scoreDirector = scoreDirectorFactory.buildDerivedScoreDirector(true, ConstraintMatchPolicy.ENABLED)) {
+        // Most score directors don't need derived status; CS will override this.
+        try (var scoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
+                .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
+                .buildDerived()) {
             scoreDirector.setWorkingSolution(Objects.requireNonNull(solution));
             return new DefaultMultiConstraintAssertion<>(constraintProvider, scoreDirector.calculateScore(),
                     scoreDirector.getConstraintMatchTotalMap(), scoreDirector.getIndictmentMap());

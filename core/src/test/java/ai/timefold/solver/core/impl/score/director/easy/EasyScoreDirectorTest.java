@@ -6,7 +6,6 @@ import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.config.score.trend.InitializingScoreTrendLevel;
-import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.corrupted.TestdataCorruptedShadowedEntity;
@@ -22,7 +21,7 @@ class EasyScoreDirectorTest {
                 (solution_) -> SimpleScore.of(0));
         scoreDirectorFactory
                 .setInitializingScoreTrend(InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_DOWN, 1));
-        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
             var solution = new TestdataCorruptedShadowedSolution("s1");
             var v1 = new TestdataValue("v1");
             var v2 = new TestdataValue("v2");

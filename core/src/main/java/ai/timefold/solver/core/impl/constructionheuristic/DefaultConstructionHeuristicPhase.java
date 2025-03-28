@@ -6,6 +6,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHe
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
+import ai.timefold.solver.core.impl.move.PlacerBasedMoveRepository;
 import ai.timefold.solver.core.impl.phase.AbstractPossiblyInitializingPhase;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
@@ -24,17 +25,17 @@ public class DefaultConstructionHeuristicPhase<Solution_>
         implements ConstructionHeuristicPhase<Solution_> {
 
     protected final ConstructionHeuristicDecider<Solution_> decider;
-    protected final EntityPlacer<Solution_> entityPlacer;
+    protected final PlacerBasedMoveRepository<Solution_> moveRepository;
     private TerminationStatus terminationStatus = TerminationStatus.NOT_TERMINATED;
 
     protected DefaultConstructionHeuristicPhase(DefaultConstructionHeuristicPhaseBuilder<Solution_> builder) {
         super(builder);
         this.decider = builder.decider;
-        this.entityPlacer = builder.getEntityPlacer();
+        this.moveRepository = new PlacerBasedMoveRepository<>(builder.getEntityPlacer());
     }
 
     public EntityPlacer<Solution_> getEntityPlacer() {
-        return entityPlacer;
+        return moveRepository.getPlacer();
     }
 
     @Override
@@ -67,13 +68,11 @@ public class DefaultConstructionHeuristicPhase<Solution_>
             maxStepCount = listVariableDescriptor.countUnassigned(workingSolution);
         }
 
-        var iterator = entityPlacer.iterator();
         TerminationStatus earlyTerminationStatus = null;
-        while (iterator.hasNext()) {
-            var placement = iterator.next();
+        while (moveRepository.hasNext()) {
             var stepScope = new ConstructionHeuristicStepScope<>(phaseScope);
             stepStarted(stepScope);
-            decider.decideNextStep(stepScope, placement);
+            decider.decideNextStep(stepScope, moveRepository.iterator());
             if (stepScope.getStep() == null) {
                 if (phaseTermination.isPhaseTerminated(phaseScope)) {
                     var logLevel = Level.TRACE;
@@ -112,7 +111,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
             }
         }
         // We only store the termination status, which is exposed to the outside, when the phase has ended.
-        terminationStatus = translateEarlyTermination(phaseScope, earlyTerminationStatus, iterator.hasNext());
+        terminationStatus = translateEarlyTermination(phaseScope, earlyTerminationStatus, moveRepository.hasNext());
         phaseEnded(phaseScope);
     }
 
@@ -122,7 +121,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
 
     protected void doStep(ConstructionHeuristicStepScope<Solution_> stepScope) {
         var step = stepScope.getStep();
-        step.execute(stepScope.getMoveDirector());
+        stepScope.getScoreDirector().executeMove(step);
         predictWorkingStepScore(stepScope, step);
         if (!isNested()) {
             processWorkingSolutionDuringStep(stepScope);
@@ -130,32 +129,33 @@ public class DefaultConstructionHeuristicPhase<Solution_>
     }
 
     private void processWorkingSolutionDuringStep(ConstructionHeuristicStepScope<Solution_> stepScope) {
+        var solver = stepScope.getPhaseScope().getSolverScope().getSolver();
         solver.getBestSolutionRecaller().processWorkingSolutionDuringConstructionHeuristicsStep(stepScope);
     }
 
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         super.solvingStarted(solverScope);
-        entityPlacer.solvingStarted(solverScope);
+        moveRepository.solvingStarted(solverScope);
         decider.solvingStarted(solverScope);
     }
 
     public void phaseStarted(ConstructionHeuristicPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
         terminationStatus = TerminationStatus.NOT_TERMINATED;
-        entityPlacer.phaseStarted(phaseScope);
+        moveRepository.phaseStarted(phaseScope);
         decider.phaseStarted(phaseScope);
     }
 
     public void stepStarted(ConstructionHeuristicStepScope<Solution_> stepScope) {
         super.stepStarted(stepScope);
-        entityPlacer.stepStarted(stepScope);
+        moveRepository.stepStarted(stepScope);
         decider.stepStarted(stepScope);
     }
 
     public void stepEnded(ConstructionHeuristicStepScope<Solution_> stepScope) {
         super.stepEnded(stepScope);
-        entityPlacer.stepEnded(stepScope);
+        moveRepository.stepEnded(stepScope);
         decider.stepEnded(stepScope);
         if (decider.isLoggingEnabled() && logger.isDebugEnabled()) {
             var timeMillisSpent = stepScope.getPhaseScope().calculateSolverTimeMillisSpentUpToNow();
@@ -172,7 +172,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
         super.phaseEnded(phaseScope);
         ensureCorrectTermination(phaseScope, logger);
         updateBestSolutionAndFire(phaseScope);
-        entityPlacer.phaseEnded(phaseScope);
+        moveRepository.phaseEnded(phaseScope);
         decider.phaseEnded(phaseScope);
         phaseScope.endingNow();
         if (decider.isLoggingEnabled() && logger.isInfoEnabled()) {
@@ -190,6 +190,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
     private void updateBestSolutionAndFire(ConstructionHeuristicPhaseScope<Solution_> phaseScope) {
         if (!isNested() && !phaseScope.getStartingScore().equals(phaseScope.getBestScore())) {
             // Only update the best solution if the CH made any change; nested phases don't update the best solution.
+            var solver = phaseScope.getSolverScope().getSolver();
             solver.getBestSolutionRecaller().updateBestSolutionAndFire(phaseScope.getSolverScope());
         }
     }
@@ -197,7 +198,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
     @Override
     public void solvingEnded(SolverScope<Solution_> solverScope) {
         super.solvingEnded(solverScope);
-        entityPlacer.solvingEnded(solverScope);
+        moveRepository.solvingEnded(solverScope);
         decider.solvingEnded(solverScope);
     }
 

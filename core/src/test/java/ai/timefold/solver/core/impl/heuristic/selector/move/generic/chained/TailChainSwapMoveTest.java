@@ -91,23 +91,38 @@ class TailChainSwapMoveTest {
         SelectorTestUtils.assertChain(b0, b1);
 
         var moveDirector = new MoveDirector<>(innerScoreDirector);
-        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
-            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
-            var move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply,
-                    anchorVariableSupply, a2, b0);
-            move.doMoveOnly(scoreDirector);
-            SelectorTestUtils.assertChain(a0, a1, b1);
-            SelectorTestUtils.assertChain(b0, a2, a3);
-        }
+        moveDirector.execute(new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a2, b0));
+        SelectorTestUtils.assertChain(a0, a1, b1);
+        SelectorTestUtils.assertChain(b0, a2, a3);
+    }
 
-        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
-            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
-            // To tail value
-            var move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a2, b1);
-            move.doMoveOnly(scoreDirector);
-            SelectorTestUtils.assertChain(a0, a1);
-            SelectorTestUtils.assertChain(b0, b1, a2, a3);
-        }
+    @Test
+    void doMoveToTailValue() {
+        var a0 = new TestdataChainedAnchor("a0");
+        var a1 = new TestdataChainedEntity("a1", a0);
+        var a2 = new TestdataChainedEntity("a2", a1);
+        var a3 = new TestdataChainedEntity("a3", a2);
+
+        var b0 = new TestdataChainedAnchor("b0");
+        var b1 = new TestdataChainedEntity("b1", b0);
+
+        var solution = new TestdataChainedSolution("solution");
+        solution.setChainedAnchorList(Arrays.asList(a0, b0));
+        solution.setChainedEntityList(Arrays.asList(a1, a2, a3, b1));
+
+        innerScoreDirector.setWorkingSolution(solution);
+        var inverseVariableSupply = innerScoreDirector.getSupplyManager()
+                .demand(new SingletonInverseVariableDemand<>(variableDescriptor));
+        var anchorVariableSupply = innerScoreDirector.getSupplyManager()
+                .demand(new AnchorVariableDemand<>(variableDescriptor));
+
+        SelectorTestUtils.assertChain(a0, a1, a2, a3);
+        SelectorTestUtils.assertChain(b0, b1);
+
+        var moveDirector = new MoveDirector<>(innerScoreDirector);
+        moveDirector.execute(new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a2, b1));
+        SelectorTestUtils.assertChain(a0, a1);
+        SelectorTestUtils.assertChain(b0, b1, a2, a3);
     }
 
     @Test
@@ -133,48 +148,47 @@ class TailChainSwapMoveTest {
         SelectorTestUtils.assertChain(a0, a1, a2, a3, a4, a5, a6, a7);
 
         var moveDirector = new MoveDirector<>(innerScoreDirector);
-        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
-            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
-            var move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply,
-                    anchorVariableSupply, a4, a1);
-            move.doMoveOnly(scoreDirector);
-            SelectorTestUtils.assertChain(a0, a1, a4, a3, a2, a5, a6, a7);
-        }
+        moveDirector.executeTemporary(
+                new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a4, a1),
+                (__, ___) -> {
+                    SelectorTestUtils.assertChain(a0, a1, a4, a3, a2, a5, a6, a7);
+                    return null;
+                });
 
-        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
-            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
-            var move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a3, a1);
-            move.doMoveOnly(scoreDirector);
-            SelectorTestUtils.assertChain(a0, a1, a3, a2, a4, a5, a6, a7);
-        }
+        moveDirector.executeTemporary(
+                new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a3, a1),
+                (__, ___) -> {
+                    SelectorTestUtils.assertChain(a0, a1, a3, a2, a4, a5, a6, a7);
+                    return null;
+                });
 
-        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
-            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
-            var move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a7, a1);
-            move.doMoveOnly(scoreDirector);
-            SelectorTestUtils.assertChain(a0, a1, a7, a6, a5, a4, a3, a2);
-        }
+        moveDirector.executeTemporary(
+                new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a7, a1),
+                (__, ___) -> {
+                    SelectorTestUtils.assertChain(a0, a1, a7, a6, a5, a4, a3, a2);
+                    return null;
+                });
 
-        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
-            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
-            var move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a1, a4);
-            move.doMoveOnly(scoreDirector);
-            SelectorTestUtils.assertChain(a0, a7, a6, a5, a2, a3, a4, a1);
-        }
+        moveDirector.executeTemporary(
+                new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a1, a4),
+                (__, ___) -> {
+                    SelectorTestUtils.assertChain(a0, a7, a6, a5, a2, a3, a4, a1);
+                    return null;
+                });
 
-        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
-            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
-            var move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a3, a4);
-            move.doMoveOnly(scoreDirector);
-            SelectorTestUtils.assertChain(a0, a7, a6, a5, a4, a3, a2, a1);
-        }
+        moveDirector.executeTemporary(
+                new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a3, a4),
+                (__, ___) -> {
+                    SelectorTestUtils.assertChain(a0, a7, a6, a5, a4, a3, a2, a1);
+                    return null;
+                });
 
-        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
-            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
-            var move = new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a2, a6);
-            move.doMoveOnly(scoreDirector);
-            SelectorTestUtils.assertChain(a0, a7, a3, a4, a5, a6, a2, a1);
-        }
+        moveDirector.executeTemporary(
+                new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a2, a6),
+                (__, ___) -> {
+                    SelectorTestUtils.assertChain(a0, a7, a3, a4, a5, a6, a2, a1);
+                    return null;
+                });
     }
 
     @Test

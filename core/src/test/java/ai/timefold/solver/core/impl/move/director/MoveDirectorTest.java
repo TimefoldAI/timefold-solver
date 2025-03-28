@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
@@ -59,7 +60,7 @@ class MoveDirectorTest {
                 .<TestdataValue> planningVariable("value");
 
         var mockScoreDirector = mock(InnerScoreDirector.class);
-        var moveDirector = new MoveDirector<TestdataSolution>(mockScoreDirector);
+        var moveDirector = new MoveDirector<TestdataSolution, SimpleScore>(mockScoreDirector);
         var expectedValue = new TestdataValue("value");
         var actualValue = moveDirector.getValue(variableMetaModel, new TestdataEntity("A", expectedValue));
         assertThat(actualValue).isEqualTo(expectedValue);
@@ -209,7 +210,7 @@ class MoveDirectorTest {
                     var value = (TestdataValue) invocation.getArgument(0);
                     return new TestdataValue(value.getCode());
                 });
-        var moveDirector = new MoveDirector<TestdataSolution>(mockScoreDirector);
+        var moveDirector = new MoveDirector<TestdataSolution, SimpleScore>(mockScoreDirector);
 
         var expectedValue = new TestdataValue("value");
         var actualValue = moveDirector.rebase(expectedValue);
@@ -222,18 +223,9 @@ class MoveDirectorTest {
     }
 
     @Test
-    void updateShadowVariables() {
-        var mockScoreDirector = mock(InnerScoreDirector.class);
-        var moveDirector = new MoveDirector<TestdataSolution>(mockScoreDirector);
-
-        moveDirector.updateShadowVariables();
-        verify(mockScoreDirector).triggerVariableListeners();
-    }
-
-    @Test
     void undoNestedPhaseMove() {
         var innerScoreDirector = mock(InnerScoreDirector.class);
-        var moveDirector = new MoveDirector<TestdataListSolution>(innerScoreDirector);
+        var moveDirector = new MoveDirector<TestdataListSolution, SimpleScore>(innerScoreDirector);
         var listVariableStateSupply = mock(ListVariableStateSupply.class);
         var listVariableDescriptor = mock(ListVariableDescriptor.class);
         var supplyManager = mock(SupplyManager.class);
@@ -304,7 +296,7 @@ class MoveDirectorTest {
     @Test
     void testSolverScopeNestedPhase() {
         var innerScoreDirector = mock(InnerScoreDirector.class);
-        var moveDirector = new MoveDirector<TestdataSolution>(innerScoreDirector);
+        var moveDirector = new MoveDirector<TestdataSolution, SimpleScore>(innerScoreDirector);
         var genuineVariableDescriptor = mock(GenuineVariableDescriptor.class);
         var supplyManager = mock(SupplyManager.class);
         var ruinRecreateConstructionHeuristicPhaseBuilder = mock(RuinRecreateConstructionHeuristicPhaseBuilder.class);
@@ -344,11 +336,10 @@ class MoveDirectorTest {
     void variableListenersAreTriggeredWhenSolutionIsConsistent() {
         var solutionDescriptor = TestdataShadowedFullSolution.buildSolutionDescriptor();
         var scoreCalculator = new TestdataShadowedFullEasyScoreCalculator();
-        var innerScoreDirector = new EasyScoreDirector<>(
-                new EasyScoreDirectorFactory<>(solutionDescriptor, scoreCalculator),
-                true,
-                true,
-                scoreCalculator);
+        var innerScoreDirector =
+                new EasyScoreDirector.Builder<>(new EasyScoreDirectorFactory<>(solutionDescriptor, scoreCalculator))
+                        .withEasyScoreCalculator(scoreCalculator)
+                        .build();
         var moveDirector = new MoveDirector<>(innerScoreDirector);
 
         var entityA = new TestdataShadowedFullEntity("Entity A");

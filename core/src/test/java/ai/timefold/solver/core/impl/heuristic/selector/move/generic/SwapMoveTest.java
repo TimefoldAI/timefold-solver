@@ -7,20 +7,14 @@ import static org.mockito.Mockito.mock;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
-import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
-import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.multivar.TestdataMultiVarEntity;
-import ai.timefold.solver.core.impl.testdata.domain.multivar.TestdataMultiVarSolution;
 import ai.timefold.solver.core.impl.testdata.domain.multivar.TestdataOtherValue;
 import ai.timefold.solver.core.impl.testdata.domain.valuerange.entityproviding.TestdataEntityProvidingEntity;
 import ai.timefold.solver.core.impl.testdata.domain.valuerange.entityproviding.TestdataEntityProvidingSolution;
@@ -31,22 +25,20 @@ class SwapMoveTest {
 
     @Test
     void isMoveDoableValueRangeProviderOnEntity() {
-        TestdataValue v1 = new TestdataValue("1");
-        TestdataValue v2 = new TestdataValue("2");
-        TestdataValue v3 = new TestdataValue("3");
-        TestdataValue v4 = new TestdataValue("4");
-        TestdataValue v5 = new TestdataValue("5");
+        var v1 = new TestdataValue("1");
+        var v2 = new TestdataValue("2");
+        var v3 = new TestdataValue("3");
+        var v4 = new TestdataValue("4");
+        var v5 = new TestdataValue("5");
 
-        TestdataEntityProvidingEntity a = new TestdataEntityProvidingEntity("a", Arrays.asList(v1, v2, v3), null);
-        TestdataEntityProvidingEntity b = new TestdataEntityProvidingEntity("b", Arrays.asList(v2, v3, v4, v5), null);
-        TestdataEntityProvidingEntity c = new TestdataEntityProvidingEntity("c", Arrays.asList(v4, v5), null);
+        var a = new TestdataEntityProvidingEntity("a", Arrays.asList(v1, v2, v3), null);
+        var b = new TestdataEntityProvidingEntity("b", Arrays.asList(v2, v3, v4, v5), null);
+        var c = new TestdataEntityProvidingEntity("c", Arrays.asList(v4, v5), null);
 
         ScoreDirector<TestdataEntityProvidingSolution> scoreDirector = mock(ScoreDirector.class);
-        EntityDescriptor<TestdataEntityProvidingSolution> entityDescriptor = TestdataEntityProvidingEntity
-                .buildEntityDescriptor();
+        var entityDescriptor = TestdataEntityProvidingEntity.buildEntityDescriptor();
 
-        SwapMove<TestdataEntityProvidingSolution> abMove = new SwapMove<>(entityDescriptor.getGenuineVariableDescriptorList(),
-                a, b);
+        var abMove = new SwapMove<>(entityDescriptor.getGenuineVariableDescriptorList(), a, b);
         a.setValue(v1);
         b.setValue(v2);
         assertThat(abMove.isMoveDoable(scoreDirector)).isFalse();
@@ -66,8 +58,7 @@ class SwapMoveTest {
         b.setValue(v4);
         assertThat(abMove.isMoveDoable(scoreDirector)).isFalse();
 
-        SwapMove<TestdataEntityProvidingSolution> acMove = new SwapMove<>(entityDescriptor.getGenuineVariableDescriptorList(),
-                a, c);
+        var acMove = new SwapMove<>(entityDescriptor.getGenuineVariableDescriptorList(), a, c);
         a.setValue(v1);
         c.setValue(v4);
         assertThat(acMove.isMoveDoable(scoreDirector)).isFalse();
@@ -75,8 +66,7 @@ class SwapMoveTest {
         c.setValue(v5);
         assertThat(acMove.isMoveDoable(scoreDirector)).isFalse();
 
-        SwapMove<TestdataEntityProvidingSolution> bcMove = new SwapMove<>(entityDescriptor.getGenuineVariableDescriptorList(),
-                b, c);
+        var bcMove = new SwapMove<>(entityDescriptor.getGenuineVariableDescriptorList(), b, c);
         b.setValue(v2);
         c.setValue(v4);
         assertThat(bcMove.isMoveDoable(scoreDirector)).isFalse();
@@ -93,25 +83,21 @@ class SwapMoveTest {
 
     @Test
     void doMove() {
-        TestdataValue v1 = new TestdataValue("1");
-        TestdataValue v2 = new TestdataValue("2");
-        TestdataValue v3 = new TestdataValue("3");
-        TestdataValue v4 = new TestdataValue("4");
+        var v1 = new TestdataValue("1");
+        var v2 = new TestdataValue("2");
+        var v3 = new TestdataValue("3");
+        var v4 = new TestdataValue("4");
 
-        TestdataEntityProvidingEntity a = new TestdataEntityProvidingEntity("a", Arrays.asList(v1, v2, v3), null);
-        TestdataEntityProvidingEntity b = new TestdataEntityProvidingEntity("b", Arrays.asList(v1, v2, v3, v4), null);
-        TestdataEntityProvidingEntity c = new TestdataEntityProvidingEntity("c", Arrays.asList(v2, v3, v4), null);
+        var a = new TestdataEntityProvidingEntity("a", Arrays.asList(v1, v2, v3), null);
+        var b = new TestdataEntityProvidingEntity("b", Arrays.asList(v1, v2, v3, v4), null);
+        var c = new TestdataEntityProvidingEntity("c", Arrays.asList(v2, v3, v4), null);
 
-        ScoreDirectorFactory<TestdataEntityProvidingSolution> scoreDirectorFactory =
-                new EasyScoreDirectorFactory<>(TestdataEntityProvidingSolution.buildSolutionDescriptor(),
-                        solution -> SimpleScore.ZERO);
-        ScoreDirector<TestdataEntityProvidingSolution> scoreDirector =
-                scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED);
-        EntityDescriptor<TestdataEntityProvidingSolution> entityDescriptor = TestdataEntityProvidingEntity
-                .buildEntityDescriptor();
+        var scoreDirectorFactory = new EasyScoreDirectorFactory<>(TestdataEntityProvidingSolution.buildSolutionDescriptor(),
+                solution -> SimpleScore.ZERO);
+        var scoreDirector = scoreDirectorFactory.buildScoreDirector();
+        var entityDescriptor = TestdataEntityProvidingEntity.buildEntityDescriptor();
 
-        SwapMove<TestdataEntityProvidingSolution> abMove = new SwapMove<>(entityDescriptor.getGenuineVariableDescriptorList(),
-                a, b);
+        var abMove = new SwapMove<>(entityDescriptor.getGenuineVariableDescriptorList(), a, b);
 
         a.setValue(v1);
         b.setValue(v1);
@@ -134,8 +120,7 @@ class SwapMoveTest {
         assertThat(a.getValue()).isEqualTo(v2);
         assertThat(b.getValue()).isEqualTo(v3);
 
-        SwapMove<TestdataEntityProvidingSolution> acMove = new SwapMove<>(entityDescriptor.getGenuineVariableDescriptorList(),
-                a, c);
+        var acMove = new SwapMove<>(entityDescriptor.getGenuineVariableDescriptorList(), a, c);
 
         a.setValue(v2);
         c.setValue(v2);
@@ -158,8 +143,7 @@ class SwapMoveTest {
         assertThat(a.getValue()).isEqualTo(v3);
         assertThat(c.getValue()).isEqualTo(v4);
 
-        SwapMove<TestdataEntityProvidingSolution> bcMove = new SwapMove<>(entityDescriptor.getGenuineVariableDescriptorList(),
-                b, c);
+        var bcMove = new SwapMove<>(entityDescriptor.getGenuineVariableDescriptorList(), b, c);
 
         b.setValue(v2);
         c.setValue(v2);
@@ -185,21 +169,20 @@ class SwapMoveTest {
 
     @Test
     void rebase() {
-        EntityDescriptor<TestdataSolution> entityDescriptor = TestdataEntity.buildEntityDescriptor();
-        List<GenuineVariableDescriptor<TestdataSolution>> variableDescriptorList = entityDescriptor
-                .getGenuineVariableDescriptorList();
+        var entityDescriptor = TestdataEntity.buildEntityDescriptor();
+        var variableDescriptorList = entityDescriptor.getGenuineVariableDescriptorList();
 
-        TestdataValue v1 = new TestdataValue("v1");
-        TestdataValue v2 = new TestdataValue("v2");
-        TestdataEntity e1 = new TestdataEntity("e1", v1);
-        TestdataEntity e2 = new TestdataEntity("e2", null);
-        TestdataEntity e3 = new TestdataEntity("e3", v1);
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var e1 = new TestdataEntity("e1", v1);
+        var e2 = new TestdataEntity("e2", null);
+        var e3 = new TestdataEntity("e3", v1);
 
-        TestdataValue destinationV1 = new TestdataValue("v1");
-        TestdataValue destinationV2 = new TestdataValue("v2");
-        TestdataEntity destinationE1 = new TestdataEntity("e1", destinationV1);
-        TestdataEntity destinationE2 = new TestdataEntity("e2", null);
-        TestdataEntity destinationE3 = new TestdataEntity("e3", destinationV1);
+        var destinationV1 = new TestdataValue("v1");
+        var destinationV2 = new TestdataValue("v2");
+        var destinationE1 = new TestdataEntity("e1", destinationV1);
+        var destinationE2 = new TestdataEntity("e2", null);
+        var destinationE3 = new TestdataEntity("e3", destinationV1);
 
         ScoreDirector<TestdataSolution> destinationScoreDirector = mockRebasingScoreDirector(
                 entityDescriptor.getSolutionDescriptor(), new Object[][] {
@@ -225,11 +208,9 @@ class SwapMoveTest {
 
     @Test
     void getters() {
-        GenuineVariableDescriptor<TestdataMultiVarSolution> primaryDescriptor = TestdataMultiVarEntity
-                .buildVariableDescriptorForPrimaryValue();
-        GenuineVariableDescriptor<TestdataMultiVarSolution> secondaryDescriptor = TestdataMultiVarEntity
-                .buildVariableDescriptorForSecondaryValue();
-        SwapMove move = new SwapMove<>(Collections.singletonList(primaryDescriptor),
+        var primaryDescriptor = TestdataMultiVarEntity.buildVariableDescriptorForPrimaryValue();
+        var secondaryDescriptor = TestdataMultiVarEntity.buildVariableDescriptorForSecondaryValue();
+        var move = new SwapMove<>(Collections.singletonList(primaryDescriptor),
                 new TestdataMultiVarEntity("a"), new TestdataMultiVarEntity("b"));
         assertCode("a", move.getLeftEntity());
         assertCode("b", move.getRightEntity());
@@ -242,14 +223,13 @@ class SwapMoveTest {
 
     @Test
     void toStringTest() {
-        TestdataValue v1 = new TestdataValue("v1");
-        TestdataValue v2 = new TestdataValue("v2");
-        TestdataEntity a = new TestdataEntity("a", null);
-        TestdataEntity b = new TestdataEntity("b", v1);
-        TestdataEntity c = new TestdataEntity("c", v2);
-        EntityDescriptor<TestdataSolution> entityDescriptor = TestdataEntity.buildEntityDescriptor();
-        List<GenuineVariableDescriptor<TestdataSolution>> variableDescriptorList = entityDescriptor
-                .getGenuineVariableDescriptorList();
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var a = new TestdataEntity("a", null);
+        var b = new TestdataEntity("b", v1);
+        var c = new TestdataEntity("c", v2);
+        var entityDescriptor = TestdataEntity.buildEntityDescriptor();
+        var variableDescriptorList = entityDescriptor.getGenuineVariableDescriptorList();
 
         assertThat(new SwapMove<>(variableDescriptorList, a, a)).hasToString("a {null} <-> a {null}");
         assertThat(new SwapMove<>(variableDescriptorList, a, b)).hasToString("a {null} <-> b {v1}");
@@ -260,18 +240,17 @@ class SwapMoveTest {
 
     @Test
     void toStringTestMultiVar() {
-        TestdataValue v1 = new TestdataValue("v1");
-        TestdataValue v2 = new TestdataValue("v2");
-        TestdataValue v3 = new TestdataValue("v3");
-        TestdataValue v4 = new TestdataValue("v4");
-        TestdataOtherValue w1 = new TestdataOtherValue("w1");
-        TestdataOtherValue w2 = new TestdataOtherValue("w2");
-        TestdataMultiVarEntity a = new TestdataMultiVarEntity("a", null, null, null);
-        TestdataMultiVarEntity b = new TestdataMultiVarEntity("b", v1, v3, w1);
-        TestdataMultiVarEntity c = new TestdataMultiVarEntity("c", v2, v4, w2);
-        EntityDescriptor<TestdataMultiVarSolution> entityDescriptor = TestdataMultiVarEntity.buildEntityDescriptor();
-        List<GenuineVariableDescriptor<TestdataMultiVarSolution>> variableDescriptorList = entityDescriptor
-                .getGenuineVariableDescriptorList();
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var v3 = new TestdataValue("v3");
+        var v4 = new TestdataValue("v4");
+        var w1 = new TestdataOtherValue("w1");
+        var w2 = new TestdataOtherValue("w2");
+        var a = new TestdataMultiVarEntity("a", null, null, null);
+        var b = new TestdataMultiVarEntity("b", v1, v3, w1);
+        var c = new TestdataMultiVarEntity("c", v2, v4, w2);
+        var entityDescriptor = TestdataMultiVarEntity.buildEntityDescriptor();
+        var variableDescriptorList = entityDescriptor.getGenuineVariableDescriptorList();
 
         assertThat(new SwapMove<>(variableDescriptorList, a, a)).hasToString("a {null, null, null} <-> a {null, null, null}");
         assertThat(new SwapMove<>(variableDescriptorList, a, b)).hasToString("a {null, null, null} <-> b {v1, v3, w1}");

@@ -1,6 +1,9 @@
 package ai.timefold.solver.core.impl.move.director;
 
-import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
+import java.util.function.BiFunction;
+
+import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -14,12 +17,12 @@ import org.jspecify.annotations.NullMarked;
  * @param <Solution_>
  */
 @NullMarked
-public final class EphemeralMoveDirector<Solution_> extends MoveDirector<Solution_>
+public final class EphemeralMoveDirector<Solution_, Score_ extends Score<Score_>>
+        extends MoveDirector<Solution_, Score_>
         implements AutoCloseable {
 
-    EphemeralMoveDirector(VariableDescriptorAwareScoreDirector<Solution_> scoreDirector) {
-        // Doesn't require the index cache, because we maintain the invariant in this class.
-        super(new VariableChangeRecordingScoreDirector<>(scoreDirector, false));
+    EphemeralMoveDirector(InnerScoreDirector<Solution_, Score_> scoreDirector) {
+        super(scoreDirector);
     }
 
     public Move<Solution_> createUndoMove() {
@@ -33,13 +36,14 @@ public final class EphemeralMoveDirector<Solution_> extends MoveDirector<Solutio
 
     }
 
-    public VariableChangeRecordingScoreDirector<Solution_> getVariableChangeRecordingScoreDirector() {
-        return (VariableChangeRecordingScoreDirector<Solution_>) scoreDirector;
+    public VariableChangeRecordingScoreDirector<Solution_, Score_> getVariableChangeRecordingScoreDirector() {
+        return (VariableChangeRecordingScoreDirector<Solution_, Score_>) externalScoreDirector;
     }
 
     @Override
-    public EphemeralMoveDirector<Solution_> ephemeral() {
-        throw new IllegalStateException("Impossible state: move director is already ephemeral.");
+    public <Result_> Result_ executeTemporary(Move<Solution_> move,
+            BiFunction<EphemeralMoveDirector<Solution_, Score_>, Score_, Result_> postprocessor) {
+        throw new UnsupportedOperationException("Impossible state: This move director does not support undoing moves.");
     }
 
     @Override

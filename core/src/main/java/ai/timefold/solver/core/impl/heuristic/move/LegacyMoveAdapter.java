@@ -40,7 +40,7 @@ public record LegacyMoveAdapter<Solution_>(
      * @param move never null
      * @return true if the move is doable
      */
-    public static <Solution_> boolean isDoable(MoveDirector<Solution_> moveDirector, Move<Solution_> move) {
+    public static <Solution_> boolean isDoable(MoveDirector<Solution_, ?> moveDirector, Move<Solution_> move) {
         if (move instanceof LegacyMoveAdapter<Solution_> legacyMoveAdapter) {
             return legacyMoveAdapter.isMoveDoable(moveDirector);
         } else {
