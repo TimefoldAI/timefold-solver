@@ -34,6 +34,7 @@ public abstract class AbstractPhaseScope<Solution_> {
     protected long childThreadsScoreCalculationCount = 0L;
 
     protected int bestSolutionStepIndex;
+    protected boolean solverStuck = false;
 
     /**
      * As defined by #AbstractPhaseScope(SolverScope, int, boolean)
@@ -245,6 +246,14 @@ public abstract class AbstractPhaseScope<Solution_> {
 
     public int getNextStepIndex() {
         return getLastCompletedStepScope().getStepIndex() + 1;
+    }
+
+    public boolean isSolverStuck() {
+        return this.solverStuck;
+    }
+
+    public void setSolverStuck(boolean solverStuck) {
+        this.solverStuck = solverStuck;
     }
 
     @Override

@@ -26,12 +26,16 @@ import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.micrometer.core.instrument.Tags;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 public class SolverScope<Solution_> {
+    protected final transient Logger logger = LoggerFactory.getLogger(getClass());
 
     // Solution-derived fields have the potential for race conditions.
     private final AtomicReference<ProblemSizeStatistics> problemSizeStatistics = new AtomicReference<>();
