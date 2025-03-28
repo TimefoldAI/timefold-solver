@@ -12,12 +12,10 @@ class LinkedIdentityHashSetTest {
     @Test
     void size() {
         var identityHashSet = new LinkedIdentityHashSet<Integer>();
-        assertThat(identityHashSet.size()).isZero();
         assertThat(identityHashSet).isEmpty();
         identityHashSet.add(1);
         identityHashSet.add(2);
         assertThat(identityHashSet).hasSize(2);
-        assertThat(identityHashSet).isNotEmpty();
     }
 
     @Test
