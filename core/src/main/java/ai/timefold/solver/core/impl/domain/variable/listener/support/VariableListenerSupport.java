@@ -34,11 +34,6 @@ import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableList
 import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.ShadowVariablesAssert;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.provided.DefaultShadowVariableSession;
-import ai.timefold.solver.core.impl.domain.variable.provided.DefaultShadowVariableSessionFactory;
-import ai.timefold.solver.core.impl.domain.variable.provided.DefaultTopologicalOrderGraph;
-import ai.timefold.solver.core.impl.domain.variable.provided.ProvidedShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.provided.TopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
@@ -97,7 +92,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                         .flatMap(e -> e.getDeclaredCascadingUpdateShadowVariableDescriptors().stream())
                         .toList() : Collections.emptyList();
         var hasCascadingUpdates = !cascadingUpdateShadowVarDescriptorList.isEmpty();
-        this.listVariableChangedNotificationList = hasCascadingUpdates ? new ArrayList<>() : Collections.emptyList();
+        this.listVariableChangedNotificationList = new ArrayList<>();
         this.unassignedValueWithEmptyInverseEntitySet =
                 hasCascadingUpdates ? new LinkedIdentityHashSet<>() : Collections.emptySet();
         this.shadowVariableProviderSet = new LinkedHashSet<>();
@@ -337,7 +332,6 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         var notifiables = notifiableRegistry.get(variableDescriptor);
         var notification = Notification.<Solution_> listVariableChanged(entity, fromIndex, toIndex);
         if (!notifiables.isEmpty()) {
-            ListVariableNotification<Solution_> notification = Notification.listVariableChanged(entity, fromIndex, toIndex);
             for (var notifiable : notifiables) {
                 notifiable.notifyAfter(notification);
             }
@@ -365,26 +359,27 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         if (listVariableDescriptor != null) {
             if (shadowVariableSession != null) {
                 for (var change : listVariableChangedNotificationList) {
-                    var entity = change.entity();
+                    var entity = change.getEntity();
                     var elementList = listVariableDescriptor.getValue(entity);
-                    int changeStart = Math.max(0, change.fromIndex() - 1);
-                    int changeEnd = Math.min(elementList.size(), change.toIndex() + 1);
+                    int changeStart = Math.max(0, change.getFromIndex() - 1);
+                    int changeEnd = Math.min(elementList.size(), change.getToIndex() + 1);
                     for (int i = changeStart; i < changeEnd; i++) {
                         shadowVariableSession.afterListElementChanged(elementList.get(i));
                     }
                 }
             }
-        // If there is no cascade, skip the whole thing.
-        // If there are no events and no newly unassigned variables, skip the whole thing as well.
-        if (!cascadingUpdateShadowVarDescriptorList.isEmpty() &&
-                !(listVariableChangedNotificationList.isEmpty() && unassignedValueWithEmptyInverseEntitySet.isEmpty())) {
-            triggerCascadingUpdateShadowVariableUpdate();
-        }
-        if (shadowVariableSession != null) {
-            shadowVariableSession.updateVariables();
+            // If there is no cascade, skip the whole thing.
+            // If there are no events and no newly unassigned variables, skip the whole thing as well.
+            if (!cascadingUpdateShadowVarDescriptorList.isEmpty() &&
+                    !(listVariableChangedNotificationList.isEmpty() && unassignedValueWithEmptyInverseEntitySet.isEmpty())) {
+                triggerCascadingUpdateShadowVariableUpdate();
+            }
+            if (shadowVariableSession != null) {
+                shadowVariableSession.updateVariables();
+            }
+            listVariableChangedNotificationList.clear();
         }
         notificationQueuesAreEmpty = true;
-        listVariableChangedNotificationList.clear();
     }
 
     /**
