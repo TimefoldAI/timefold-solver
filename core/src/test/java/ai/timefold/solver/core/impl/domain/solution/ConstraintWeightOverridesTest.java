@@ -76,12 +76,11 @@ class ConstraintWeightOverridesTest {
     void appliesOverridesToConstraintProvider() {
         var solutionDescriptor = TestdataConstraintWeightOverridesSolution.buildSolutionDescriptor();
         var solution = TestdataConstraintWeightOverridesSolution.generateSolution(3, 5);
-        var testdataConstraintWeightOverridesSolutionScoreInnerScoreDirectorFactory =
-                BavetConstraintStreamScoreDirectorFactory.buildScoreDirectorFactory(solutionDescriptor,
-                        new ScoreDirectorFactoryConfig()
-                                .withConstraintProviderClass(TestdataConstraintWeightOverridesConstraintProvider.class),
-                        EnvironmentMode.PHASE_ASSERT);
-        try (var scoreDirector = testdataConstraintWeightOverridesSolutionScoreInnerScoreDirectorFactory.buildScoreDirector()) {
+        var scoreDirectorFactory = BavetConstraintStreamScoreDirectorFactory.buildScoreDirectorFactory(solutionDescriptor,
+                new ScoreDirectorFactoryConfig()
+                        .withConstraintProviderClass(TestdataConstraintWeightOverridesConstraintProvider.class),
+                EnvironmentMode.PHASE_ASSERT);
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
             // Default weights
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.triggerVariableListeners();

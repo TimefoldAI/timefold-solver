@@ -32,7 +32,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
 
     public MoveDirector(InnerScoreDirector<Solution_, Score_> scoreDirector) {
         this.backingScoreDirector = Objects.requireNonNull(scoreDirector);
-        if (getClass() == EphemeralMoveDirector.class) {
+        if (EphemeralMoveDirector.class.isAssignableFrom(getClass())) {
             // Ephemeral move director records operations for a later undo,
             // and the external director is no longer an instance of InnerScoreDirector.
             // However, some pieces of code need methods from InnerScoreDirector,

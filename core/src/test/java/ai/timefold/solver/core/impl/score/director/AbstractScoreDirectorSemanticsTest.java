@@ -25,21 +25,21 @@ public abstract class AbstractScoreDirectorSemanticsTest {
             TestdataPinnedWithIndexListSolution.buildSolutionDescriptor();
 
     protected abstract ScoreDirectorFactory<TestdataConstraintConfigurationSolution, SimpleScore>
-            buildInnerScoreDirectorFactoryWithConstraintConfiguration(
+            buildScoreDirectorFactoryWithConstraintConfiguration(
                     SolutionDescriptor<TestdataConstraintConfigurationSolution> solutionDescriptor);
 
     protected abstract ScoreDirectorFactory<TestdataPinnedListSolution, SimpleScore>
-            buildInnerScoreDirectorFactoryWithListVariableEntityPin(
+            buildScoreDirectorFactoryWithListVariableEntityPin(
                     SolutionDescriptor<TestdataPinnedListSolution> solutionDescriptor);
 
     protected abstract ScoreDirectorFactory<TestdataPinnedWithIndexListSolution, SimpleScore>
-            buildInnerScoreDirectorFactoryWithListVariablePinIndex(
+            buildScoreDirectorFactoryWithListVariablePinIndex(
                     SolutionDescriptor<TestdataPinnedWithIndexListSolution> solutionDescriptor);
 
     @Test
     void independentScoreDirectors() {
         var scoreDirectorFactory =
-                buildInnerScoreDirectorFactoryWithConstraintConfiguration(constraintConfigurationSolutionDescriptor);
+                buildScoreDirectorFactoryWithConstraintConfiguration(constraintConfigurationSolutionDescriptor);
 
         // Create first score director, calculate score.
         var solution1 = TestdataConstraintConfigurationSolution.generateSolution(1, 1);
@@ -81,7 +81,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
     @Test
     void solutionBasedScoreWeights() {
         var scoreDirectorFactory =
-                buildInnerScoreDirectorFactoryWithConstraintConfiguration(constraintConfigurationSolutionDescriptor);
+                buildScoreDirectorFactoryWithConstraintConfiguration(constraintConfigurationSolutionDescriptor);
 
         // Create score director, calculate score.
         var solution1 = TestdataConstraintConfigurationSolution.generateSolution(1, 1);
@@ -111,7 +111,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
     @Test
     void mutableConstraintConfiguration() {
         var scoreDirectorFactory =
-                buildInnerScoreDirectorFactoryWithConstraintConfiguration(constraintConfigurationSolutionDescriptor);
+                buildScoreDirectorFactoryWithConstraintConfiguration(constraintConfigurationSolutionDescriptor);
 
         // Create score director, calculate score with a given constraint configuration.
         var solution = TestdataConstraintConfigurationSolution.generateSolution(1, 1);
@@ -133,7 +133,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
     @Test
     void constraintPresentEvenIfNoMatches() {
         var scoreDirectorFactory =
-                buildInnerScoreDirectorFactoryWithConstraintConfiguration(constraintConfigurationSolutionDescriptor);
+                buildScoreDirectorFactoryWithConstraintConfiguration(constraintConfigurationSolutionDescriptor);
         // Need constraint match support for this.
         Assumptions.assumeTrue(scoreDirectorFactory.supportsConstraintMatching());
 
@@ -168,7 +168,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
 
     @Test
     void listVariableEntityPinningSupported() {
-        var scoreDirectorFactory = buildInnerScoreDirectorFactoryWithListVariableEntityPin(pinnedListSolutionDescriptor);
+        var scoreDirectorFactory = buildScoreDirectorFactoryWithListVariableEntityPin(pinnedListSolutionDescriptor);
         var solution = TestdataPinnedListSolution.generateUninitializedSolution(2, 2);
         var firstEntity = solution.getEntityList().get(0);
         firstEntity.setValueList(List.of(solution.getValueList().get(0)));
@@ -193,7 +193,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
     @Test
     void listVariableIndexPinningSupported() {
         var scoreDirectorFactory =
-                buildInnerScoreDirectorFactoryWithListVariablePinIndex(pinnedWithIndexListSolutionDescriptor);
+                buildScoreDirectorFactoryWithListVariablePinIndex(pinnedWithIndexListSolutionDescriptor);
         var solution = TestdataPinnedWithIndexListSolution.generateUninitializedSolution(3, 3);
         var firstEntity = solution.getEntityList().get(0);
         firstEntity.setValueList(List.of(solution.getValueList().get(0)));

@@ -27,7 +27,7 @@ final class EasyScoreDirectorSemanticsTest extends AbstractScoreDirectorSemantic
 
     @Override
     protected ScoreDirectorFactory<TestdataConstraintConfigurationSolution, SimpleScore>
-            buildInnerScoreDirectorFactoryWithConstraintConfiguration(
+            buildScoreDirectorFactoryWithConstraintConfiguration(
                     SolutionDescriptor<TestdataConstraintConfigurationSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withEasyScoreCalculatorClass(TestdataConstraintWeightEasyScoreCalculator.class);
@@ -38,7 +38,7 @@ final class EasyScoreDirectorSemanticsTest extends AbstractScoreDirectorSemantic
 
     @Override
     protected ScoreDirectorFactory<TestdataPinnedListSolution, SimpleScore>
-            buildInnerScoreDirectorFactoryWithListVariableEntityPin(
+            buildScoreDirectorFactoryWithListVariableEntityPin(
                     SolutionDescriptor<TestdataPinnedListSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withEasyScoreCalculatorClass(TestdataPinnedListEasyScoreCalculator.class);
@@ -49,7 +49,7 @@ final class EasyScoreDirectorSemanticsTest extends AbstractScoreDirectorSemantic
 
     @Override
     protected ScoreDirectorFactory<TestdataPinnedWithIndexListSolution, SimpleScore>
-            buildInnerScoreDirectorFactoryWithListVariablePinIndex(
+            buildScoreDirectorFactoryWithListVariablePinIndex(
                     SolutionDescriptor<TestdataPinnedWithIndexListSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withEasyScoreCalculatorClass(TestdataPinnedWithIndexListEasyScoreCalculator.class);

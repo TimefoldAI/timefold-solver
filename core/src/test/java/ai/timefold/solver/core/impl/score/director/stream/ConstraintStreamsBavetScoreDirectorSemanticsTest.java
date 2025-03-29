@@ -18,7 +18,7 @@ final class ConstraintStreamsBavetScoreDirectorSemanticsTest extends AbstractSco
 
     @Override
     protected ScoreDirectorFactory<TestdataConstraintConfigurationSolution, SimpleScore>
-            buildInnerScoreDirectorFactoryWithConstraintConfiguration(
+            buildScoreDirectorFactoryWithConstraintConfiguration(
                     SolutionDescriptor<TestdataConstraintConfigurationSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withConstraintProviderClass(TestdataConstraintWeightConstraintProvider.class);
@@ -29,7 +29,7 @@ final class ConstraintStreamsBavetScoreDirectorSemanticsTest extends AbstractSco
 
     @Override
     protected ScoreDirectorFactory<TestdataPinnedListSolution, SimpleScore>
-            buildInnerScoreDirectorFactoryWithListVariableEntityPin(
+            buildScoreDirectorFactoryWithListVariableEntityPin(
                     SolutionDescriptor<TestdataPinnedListSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withConstraintProviderClass(TestdataPinnedListConstraintProvider.class);
@@ -40,7 +40,7 @@ final class ConstraintStreamsBavetScoreDirectorSemanticsTest extends AbstractSco
 
     @Override
     protected ScoreDirectorFactory<TestdataPinnedWithIndexListSolution, SimpleScore>
-            buildInnerScoreDirectorFactoryWithListVariablePinIndex(
+            buildScoreDirectorFactoryWithListVariablePinIndex(
                     SolutionDescriptor<TestdataPinnedWithIndexListSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withConstraintProviderClass(TestdataPinnedWithIndexListConstraintProvider.class);

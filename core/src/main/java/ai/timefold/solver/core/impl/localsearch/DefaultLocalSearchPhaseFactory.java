@@ -62,11 +62,10 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         var acceptor = buildAcceptor(configPolicy);
         var forager = buildForager(configPolicy);
         if (moveRepository.isNeverEnding() && !forager.supportsNeverEndingMoveSelector()) {
-            throw new IllegalStateException("The moveSelector (" + moveRepository
-                    + ") has neverEnding (" + moveRepository.isNeverEnding()
-                    + "), but the forager (" + forager
-                    + ") does not support it.\n"
-                    + "Maybe configure the <forager> with an <acceptedCountLimit>.");
+            throw new IllegalStateException("""
+                    The moveSelector (%s) has neverEnding (%s), but the forager (%s) does not support it.
+                    Maybe configure the <forager> with an <acceptedCountLimit>."""
+                    .formatted(moveRepository, moveRepository.isNeverEnding(), forager));
         }
         var moveThreadCount = configPolicy.getMoveThreadCount();
         var environmentMode = configPolicy.getEnvironmentMode();
@@ -119,9 +118,9 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         LocalSearchForagerConfig foragerConfig_;
         if (phaseConfig.getForagerConfig() != null) {
             if (phaseConfig.getLocalSearchType() != null) {
-                throw new IllegalArgumentException("The localSearchType (" + phaseConfig.getLocalSearchType()
-                        + ") must not be configured if the foragerConfig (" + phaseConfig.getForagerConfig()
-                        + ") is explicitly configured.");
+                throw new IllegalArgumentException(
+                        "The localSearchType (%s) must not be configured if the foragerConfig (%s) is explicitly configured."
+                                .formatted(phaseConfig.getLocalSearchType(), phaseConfig.getForagerConfig()));
             }
             foragerConfig_ = phaseConfig.getForagerConfig();
         } else {
@@ -147,8 +146,8 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                     foragerConfig_.setPickEarlyType(LocalSearchPickEarlyType.FIRST_LAST_STEP_SCORE_IMPROVING);
                     break;
                 default:
-                    throw new IllegalStateException("The localSearchType (" + localSearchType_
-                            + ") is not implemented.");
+                    throw new IllegalStateException("The localSearchType (%s) is not implemented."
+                            .formatted(localSearchType_));
             }
         }
         return LocalSearchForagerFactory.<Solution_> create(foragerConfig_).buildForager();
@@ -217,16 +216,14 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
              *
              * Combining essential variables with list variables in a single entity is not supported. Therefore,
              * default selectors do not support enabling Nearby Selection with multiple entities.
-             *
-             * TODO Improve so that list variables get list variable selectors directly.
-             * TODO PLANNER-2755 Support coexistence of basic and list variables on the same entity.
              */
             if (configPolicy.getNearbyDistanceMeterClass() != null) {
-                throw new IllegalArgumentException(
-                        """
-                                The configuration contains both basic and list variables, which makes it incompatible with using a top-level nearbyDistanceMeterClass (%s).
-                                Specify move selectors manually or remove the top-level nearbyDistanceMeterClass from your solver config."""
-                                .formatted(configPolicy.getNearbyDistanceMeterClass()));
+                throw new IllegalArgumentException("""
+                        The configuration contains both basic and list variables, \
+                        which makes it incompatible with using a top-level nearbyDistanceMeterClass (%s).
+                        Specify move selectors manually or \
+                        remove the top-level nearbyDistanceMeterClass from your solver config."""
+                        .formatted(configPolicy.getNearbyDistanceMeterClass()));
             }
             return new UnionMoveSelectorConfig()
                     .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig());
