@@ -13,13 +13,17 @@ import org.jspecify.annotations.NullMarked;
 /**
  * The only move director that supports undoing moves.
  * Moves are undone when the director is {@link #close() closed}.
+ * The class can not be made {@link AutoCloseable},
+ * as using it in a try-with-resources statement would mean undo would happen even on moves that threw exceptions,
+ * causing all sorts of unexpected situations.
+ * This way, the move throws an exception and terminates the execution,
+ * therefore never even getting to the point of triggering an undo for this move.
  * 
  * @param <Solution_>
  */
 @NullMarked
 public final class EphemeralMoveDirector<Solution_, Score_ extends Score<Score_>>
-        extends MoveDirector<Solution_, Score_>
-        implements AutoCloseable {
+        extends MoveDirector<Solution_, Score_> {
 
     EphemeralMoveDirector(InnerScoreDirector<Solution_, Score_> scoreDirector) {
         super(scoreDirector);
@@ -46,7 +50,6 @@ public final class EphemeralMoveDirector<Solution_, Score_ extends Score<Score_>
         throw new UnsupportedOperationException("Impossible state: This move director does not support undoing moves.");
     }
 
-    @Override
     public void close() {
         getVariableChangeRecordingScoreDirector().undoChanges();
     }

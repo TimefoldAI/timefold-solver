@@ -135,19 +135,21 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     public final Score_ executeTemporary(Move<Solution_> move) {
-        try (var ephemeralMoveDirector = ephemeral()) {
-            ephemeralMoveDirector.execute(move);
-            return backingScoreDirector.calculateScore();
-        }
+        var ephemeralMoveDirector = ephemeral();
+        ephemeralMoveDirector.execute(move);
+        var score = backingScoreDirector.calculateScore();
+        ephemeralMoveDirector.close();
+        return score;
     }
 
     public <Result_> Result_ executeTemporary(Move<Solution_> move,
             BiFunction<EphemeralMoveDirector<Solution_, Score_>, Score_, Result_> postprocessor) {
-        try (var ephemeralMoveDirector = ephemeral()) {
-            ephemeralMoveDirector.execute(move);
-            var score = backingScoreDirector.calculateScore();
-            return postprocessor.apply(ephemeralMoveDirector, score);
-        }
+        var ephemeralMoveDirector = ephemeral();
+        ephemeralMoveDirector.execute(move);
+        var score = backingScoreDirector.calculateScore();
+        var result = postprocessor.apply(ephemeralMoveDirector, score);
+        ephemeralMoveDirector.close();
+        return result;
     }
 
     // Only used in tests of legacy moves.
@@ -198,6 +200,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
 
     /**
      * Moves that are to be undone later need to be run with the instance returned by this method.
+     * To undo the move, remember to call {@link EphemeralMoveDirector#close()}.
      *
      * @return never null
      */

@@ -79,15 +79,16 @@ class MoveDirectorTest {
         var entity = new TestdataEntity("A", originalValue);
         var newValue = new TestdataValue("newValue");
 
+        // Run a change and undo it.
         var mockScoreDirector = (InnerScoreDirector<TestdataSolution, ?>) mock(InnerScoreDirector.class);
-        try (var moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral()) {
-            moveDirector.changeVariable(variableMetaModel, entity, newValue);
+        var moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral();
+        moveDirector.changeVariable(variableMetaModel, entity, newValue);
+        assertThat(entity.getValue()).isEqualTo(newValue);
+        verify(mockScoreDirector).beforeVariableChanged(variableDescriptor, entity);
+        verify(mockScoreDirector).afterVariableChanged(variableDescriptor, entity);
+        reset(mockScoreDirector);
+        moveDirector.close();
 
-            assertThat(entity.getValue()).isEqualTo(newValue);
-            verify(mockScoreDirector).beforeVariableChanged(variableDescriptor, entity);
-            verify(mockScoreDirector).afterVariableChanged(variableDescriptor, entity);
-            reset(mockScoreDirector);
-        }
         assertThat(entity.getValue()).isEqualTo(originalValue);
         verify(mockScoreDirector).beforeVariableChanged(variableDescriptor, entity);
         verify(mockScoreDirector).afterVariableChanged(variableDescriptor, entity);
@@ -134,28 +135,30 @@ class MoveDirectorTest {
         var expectedValue3 = new TestdataListValue("value3");
         var entity = TestdataListEntity.createWithValues("A", expectedValue1, expectedValue2, expectedValue3);
 
+        // Swap between second and last position.
         var mockScoreDirector = (InnerScoreDirector<TestdataListSolution, ?>) mock(InnerScoreDirector.class);
-        try (var moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral()) {
-            // Swap between second and last position.
-            moveDirector.moveValueInList(variableMetaModel, entity, 1, 2);
-            assertThat(entity.getValueList()).containsExactly(expectedValue1, expectedValue3, expectedValue2);
-            verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entity, 1, 3);
-            verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entity, 1, 3);
-            reset(mockScoreDirector);
-        }
+        var moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral();
+        moveDirector.moveValueInList(variableMetaModel, entity, 1, 2);
+        assertThat(entity.getValueList()).containsExactly(expectedValue1, expectedValue3, expectedValue2);
+        verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entity, 1, 3);
+        verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entity, 1, 3);
+        reset(mockScoreDirector);
+        moveDirector.close(); // Undo it.
+
         assertThat(entity.getValueList()).containsExactly(expectedValue1, expectedValue2, expectedValue3);
         verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entity, 1, 3);
         verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entity, 1, 3);
         reset(mockScoreDirector);
 
         // Do the same in reverse.
-        try (var moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral()) {
-            moveDirector.moveValueInList(variableMetaModel, entity, 2, 1);
-            assertThat(entity.getValueList()).containsExactly(expectedValue1, expectedValue3, expectedValue2);
-            verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entity, 1, 3);
-            verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entity, 1, 3);
-            reset(mockScoreDirector);
-        }
+        moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral();
+        moveDirector.moveValueInList(variableMetaModel, entity, 2, 1);
+        assertThat(entity.getValueList()).containsExactly(expectedValue1, expectedValue3, expectedValue2);
+        verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entity, 1, 3);
+        verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entity, 1, 3);
+        reset(mockScoreDirector);
+        moveDirector.close();
+
         assertThat(entity.getValueList()).containsExactly(expectedValue1, expectedValue2, expectedValue3);
         verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entity, 1, 3);
         verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entity, 1, 3);
@@ -180,19 +183,20 @@ class MoveDirectorTest {
         var expectedValueB3 = new TestdataListValue("valueB3");
         var entityB = TestdataListEntity.createWithValues("B", expectedValueB1, expectedValueB2, expectedValueB3);
 
+        // Swap between second and last position.
         var mockScoreDirector = (InnerScoreDirector<TestdataListSolution, ?>) mock(InnerScoreDirector.class);
-        try (var moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral()) {
-            // Swap between second and last position.
-            moveDirector.moveValueBetweenLists(variableMetaModel, entityA, 1, entityB, 2);
-            assertThat(entityA.getValueList()).containsExactly(expectedValueA1, expectedValueA3);
-            verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entityA, 1, 2);
-            verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entityA, 1, 1);
-            assertThat(entityB.getValueList()).containsExactly(expectedValueB1, expectedValueB2, expectedValueA2,
-                    expectedValueB3);
-            verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entityB, 2, 2);
-            verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entityB, 2, 3);
-            reset(mockScoreDirector);
-        }
+        var moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral();
+        moveDirector.moveValueBetweenLists(variableMetaModel, entityA, 1, entityB, 2);
+        assertThat(entityA.getValueList()).containsExactly(expectedValueA1, expectedValueA3);
+        verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entityA, 1, 2);
+        verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entityA, 1, 1);
+        assertThat(entityB.getValueList()).containsExactly(expectedValueB1, expectedValueB2, expectedValueA2,
+                expectedValueB3);
+        verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entityB, 2, 2);
+        verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entityB, 2, 3);
+        reset(mockScoreDirector);
+        moveDirector.close(); // Undo it.
+
         assertThat(entityA.getValueList()).containsExactly(expectedValueA1, expectedValueA2, expectedValueA3);
         verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entityB, 2, 3);
         verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entityB, 2, 2);
@@ -264,32 +268,32 @@ class MoveDirectorTest {
                 .thenReturn(constructionHeuristicPhase);
         when(constructionHeuristicPhase.getMissingUpdatedElementsMap()).thenReturn(Map.of(e2, List.of(v2)));
 
-        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
-            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
-            var move = new ListRuinRecreateMove<TestdataListSolution>(listVariableDescriptor,
-                    ruinRecreateConstructionHeuristicPhaseBuilder, mock(SolverScope.class), Arrays.asList(v1), Set.of(e1));
-            move.doMoveOnly(scoreDirector);
-            var undoMove = (RecordedUndoMove<TestdataListSolution>) ephemeralMoveDirector.createUndoMove();
-            // e1 must be analyzed at the beginning of the move execution
-            assertThat(undoMove.variableChangeActionList().stream().anyMatch(action -> {
-                if (action instanceof ListVariableBeforeChangeAction<?, ?, ?> beforeChangeAction) {
-                    return beforeChangeAction.entity() == e1 && beforeChangeAction.fromIndex() == 0
-                            && beforeChangeAction.toIndex() == 1 && beforeChangeAction.oldValue().size() == 1
-                            && beforeChangeAction.oldValue().get(0).equals(v1);
-                }
-                return false;
-            })).isTrue();
-            // e2 is not analyzed at the beginning of move execution,
-            // but it must have a before list change event to restore the original elements.
-            assertThat(undoMove.variableChangeActionList().stream().anyMatch(action -> {
-                if (action instanceof ListVariableBeforeChangeAction<?, ?, ?> beforeChangeAction) {
-                    return beforeChangeAction.entity() == e2 && beforeChangeAction.fromIndex() == 0
-                            && beforeChangeAction.toIndex() == 1 && beforeChangeAction.oldValue().size() == 1
-                            && beforeChangeAction.oldValue().get(0).equals(v2);
-                }
-                return false;
-            })).isTrue();
-        }
+        var ephemeralMoveDirector = moveDirector.ephemeral();
+        var scoreDirector = ephemeralMoveDirector.getScoreDirector();
+        var move = new ListRuinRecreateMove<TestdataListSolution>(listVariableDescriptor,
+                ruinRecreateConstructionHeuristicPhaseBuilder, mock(SolverScope.class), Arrays.asList(v1), Set.of(e1));
+        move.doMoveOnly(scoreDirector);
+        var undoMove = (RecordedUndoMove<TestdataListSolution>) ephemeralMoveDirector.createUndoMove();
+        // e1 must be analyzed at the beginning of the move execution
+        assertThat(undoMove.variableChangeActionList().stream().anyMatch(action -> {
+            if (action instanceof ListVariableBeforeChangeAction<?, ?, ?> beforeChangeAction) {
+                return beforeChangeAction.entity() == e1 && beforeChangeAction.fromIndex() == 0
+                        && beforeChangeAction.toIndex() == 1 && beforeChangeAction.oldValue().size() == 1
+                        && beforeChangeAction.oldValue().get(0).equals(v1);
+            }
+            return false;
+        })).isTrue();
+        // e2 is not analyzed at the beginning of move execution,
+        // but it must have a before list change event to restore the original elements.
+        assertThat(undoMove.variableChangeActionList().stream().anyMatch(action -> {
+            if (action instanceof ListVariableBeforeChangeAction<?, ?, ?> beforeChangeAction) {
+                return beforeChangeAction.entity() == e2 && beforeChangeAction.fromIndex() == 0
+                        && beforeChangeAction.toIndex() == 1 && beforeChangeAction.oldValue().size() == 1
+                        && beforeChangeAction.oldValue().get(0).equals(v2);
+            }
+            return false;
+        })).isTrue();
+        ephemeralMoveDirector.close();
     }
 
     @Test
@@ -318,17 +322,17 @@ class MoveDirectorTest {
                 .thenReturn(ruinRecreateConstructionHeuristicPhaseBuilder);
         when(ruinRecreateConstructionHeuristicPhaseBuilder.build())
                 .thenReturn(constructionHeuristicPhase);
-        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
-            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
+        var ephemeralMoveDirector = moveDirector.ephemeral();
+        var scoreDirector = ephemeralMoveDirector.getScoreDirector();
 
-            var move = new RuinRecreateMove<TestdataSolution>(genuineVariableDescriptor,
-                    ruinRecreateConstructionHeuristicPhaseBuilder, mainSolverScope, List.of(v1), Set.of(e1));
-            move.doMoveOnly(scoreDirector);
-            // Not using the main solver scope
-            verify(constructionHeuristicPhase, times(0)).solve(mainSolverScope);
-            // Uses a new instance of SolverScope
-            verify(constructionHeuristicPhase, times(1)).solve(any());
-        }
+        var move = new RuinRecreateMove<TestdataSolution>(genuineVariableDescriptor,
+                ruinRecreateConstructionHeuristicPhaseBuilder, mainSolverScope, List.of(v1), Set.of(e1));
+        move.doMoveOnly(scoreDirector);
+        // Not using the main solver scope
+        verify(constructionHeuristicPhase, times(0)).solve(mainSolverScope);
+        // Uses a new instance of SolverScope
+        verify(constructionHeuristicPhase, times(1)).solve(any());
+        ephemeralMoveDirector.close();
     }
 
     @Test
@@ -366,19 +370,18 @@ class MoveDirectorTest {
 
         innerScoreDirector.setWorkingSolution(workingSolution);
 
-        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
-            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
-
-            var move = new TestdataShadowedFullMultiSwapListMove(entityA, entityB,
-                    List.of(
-                            List.of(valueE, valueF),
-                            List.of(valueA, valueB, valueC, valueD)),
-                    List.of(
-                            List.of(valueA, valueB, valueC, valueD),
-                            List.of(valueE, valueF)));
-            move.doMoveOnly(scoreDirector);
-            scoreDirector.triggerVariableListeners();
-        }
+        var ephemeralMoveDirector = moveDirector.ephemeral();
+        var scoreDirector = ephemeralMoveDirector.getScoreDirector();
+        var move = new TestdataShadowedFullMultiSwapListMove(entityA, entityB,
+                List.of(
+                        List.of(valueE, valueF),
+                        List.of(valueA, valueB, valueC, valueD)),
+                List.of(
+                        List.of(valueA, valueB, valueC, valueD),
+                        List.of(valueE, valueF)));
+        move.doMoveOnly(scoreDirector);
+        scoreDirector.triggerVariableListeners();
+        ephemeralMoveDirector.close();
     }
 
     @Test
@@ -399,13 +402,13 @@ class MoveDirectorTest {
         innerScoreDirector.setWorkingSolution(workingSolution);
         assertThat(workingSolution.getValueList()).map(TestdataSingleCascadingValue::getCascadeValue).allMatch(Objects::isNull);
 
-        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
-            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
-            var move = new ListAssignMove<>(TestdataSingleCascadingEntity.buildVariableDescriptorForValueList(), valueA,
-                    entityA, 0);
-            move.doMoveOnly(scoreDirector);
-            assertThat(valueA.getCascadeValue()).isNotNull();
-        }
+        var ephemeralMoveDirector = moveDirector.ephemeral();
+        var scoreDirector = ephemeralMoveDirector.getScoreDirector();
+        var move = new ListAssignMove<>(TestdataSingleCascadingEntity.buildVariableDescriptorForValueList(), valueA,
+                entityA, 0);
+        move.doMoveOnly(scoreDirector);
+        assertThat(valueA.getCascadeValue()).isNotNull();
+        ephemeralMoveDirector.close();
 
         // After the move is undone, the cascade value must be reset
         assertThat(valueA.getCascadeValue()).isNull();
