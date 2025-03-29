@@ -3,13 +3,14 @@ package ai.timefold.solver.core.impl.move.streams;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Random;
 import java.util.Set;
 import java.util.function.BiPredicate;
+import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.move.streams.dataset.AbstractDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.AbstractDataset;
-import ai.timefold.solver.core.impl.move.streams.dataset.DatasetInstance;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiMoveConstructor;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -34,7 +35,7 @@ public final class BiMoveProducer<Solution_, A, B> implements InnerMoveProducer<
     }
 
     @Override
-    public Iterable<Move<Solution_>> getMoveIterable(MoveStreamSession<Solution_> moveStreamSession) {
+    public MoveIterable<Solution_> getMoveIterable(MoveStreamSession<Solution_> moveStreamSession) {
         return new BiMoveIterable((DefaultMoveStreamSession<Solution_>) moveStreamSession);
     }
 
@@ -46,8 +47,8 @@ public final class BiMoveProducer<Solution_, A, B> implements InnerMoveProducer<
 
     private final class BiMoveIterator implements Iterator<Move<Solution_>> {
 
-        private final DatasetInstance<Solution_, UniTuple<A>> aInstance;
-        private final DatasetInstance<Solution_, UniTuple<B>> bInstance;
+        private final IteratorSupplier<A> aIteratorSupplier;
+        private final IteratorSupplier<B> bIteratorSupplier;
         private final Solution_ solution;
 
         // Fields required for iteration.
@@ -57,8 +58,18 @@ public final class BiMoveProducer<Solution_, A, B> implements InnerMoveProducer<
         private @Nullable A currentA;
 
         public BiMoveIterator(DefaultMoveStreamSession<Solution_> moveStreamSession) {
-            this.aInstance = moveStreamSession.getDatasetInstance(aDataset);
-            this.bInstance = moveStreamSession.getDatasetInstance(bDataset);
+            var aInstance = moveStreamSession.getDatasetInstance(aDataset);
+            this.aIteratorSupplier = aInstance::iterator;
+            var bInstance = moveStreamSession.getDatasetInstance(bDataset);
+            this.bIteratorSupplier = bInstance::iterator;
+            this.solution = moveStreamSession.getWorkingSolution();
+        }
+
+        public BiMoveIterator(DefaultMoveStreamSession<Solution_> moveStreamSession, Random random) {
+            var aInstance = moveStreamSession.getDatasetInstance(aDataset);
+            this.aIteratorSupplier = () -> aInstance.iterator(random);
+            var bInstance = moveStreamSession.getDatasetInstance(bDataset);
+            this.bIteratorSupplier = () -> bInstance.iterator(random);
             this.solution = moveStreamSession.getWorkingSolution();
         }
 
@@ -71,13 +82,13 @@ public final class BiMoveProducer<Solution_, A, B> implements InnerMoveProducer<
 
             // Initialize iterators if needed.
             if (aIterator == null) {
-                aIterator = aInstance.iterator();
+                aIterator = aIteratorSupplier.get();
                 // If first iterator is empty, there's no next move.
                 if (!aIterator.hasNext()) {
                     return false;
                 }
                 currentA = aIterator.next().factA;
-                bIterator = bInstance.iterator();
+                bIterator = bIteratorSupplier.get();
             }
 
             // Try to find the next valid move.
@@ -99,7 +110,7 @@ public final class BiMoveProducer<Solution_, A, B> implements InnerMoveProducer<
                 if (aIterator.hasNext()) {
                     currentA = aIterator.next().factA;
                     // Reset inner iterator for new outer element.
-                    bIterator = bInstance.iterator();
+                    bIterator = bIteratorSupplier.get();
                 } else {
                     // Both iterators exhausted.
                     return false;
@@ -116,9 +127,14 @@ public final class BiMoveProducer<Solution_, A, B> implements InnerMoveProducer<
             nextMove = null;
             return result;
         }
+
+        @FunctionalInterface
+        private interface IteratorSupplier<A> extends Supplier<Iterator<UniTuple<A>>> {
+
+        }
     }
 
-    private final class BiMoveIterable implements Iterable<Move<Solution_>> {
+    private final class BiMoveIterable implements MoveIterable<Solution_> {
 
         private final DefaultMoveStreamSession<Solution_> moveStreamSession;
 
@@ -129,6 +145,11 @@ public final class BiMoveProducer<Solution_, A, B> implements InnerMoveProducer<
         @Override
         public Iterator<Move<Solution_>> iterator() {
             return new BiMoveIterator(moveStreamSession);
+        }
+
+        @Override
+        public Iterator<Move<Solution_>> iterator(Random random) {
+            return new BiMoveIterator(moveStreamSession, random);
         }
 
     }

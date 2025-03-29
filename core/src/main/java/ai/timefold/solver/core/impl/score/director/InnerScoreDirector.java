@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
-import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -32,12 +31,15 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
+import ai.timefold.solver.core.impl.move.MoveRepository;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import ai.timefold.solver.core.preview.api.move.Move;
+
+import org.jspecify.annotations.Nullable;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -89,6 +91,19 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param workingSolution never null
      */
     void setWorkingSolution(Solution_ workingSolution);
+
+    /**
+     * Different phases may need different move repositories,
+     * as they may be based on different sets of moves.
+     * Therefore move repository cannot be injected at score director construction time.
+     * 
+     * A phase may not need a move repository at all,
+     * such as construction heuristics, which currently does not support Move Streams.
+     * 
+     * Each phase is responsible for calling this method to set its repository,
+     * and also calling it again at the end to null it out.
+     */
+    void setMoveRepository(@Nullable MoveRepository<Solution_> moveRepository);
 
     /**
      * Calculates the {@link Score} and updates the {@link PlanningSolution working solution} accordingly.
@@ -148,21 +163,16 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     int getWorkingGenuineEntityCount();
 
+    void executeMove(Move<Solution_> move);
+
     /**
+     * Executes a move, finds out its score, and immediately undoes it.
+     *
      * @param move never null
      * @param assertMoveScoreFromScratch true will hurt performance
      * @return never null
      */
-    default Score_ doAndProcessMove(Move<Solution_> move, boolean assertMoveScoreFromScratch) {
-        return doAndProcessMove(move, assertMoveScoreFromScratch, null);
-    }
-
-    /**
-     * @param move never null
-     * @param assertMoveScoreFromScratch true will hurt performance
-     * @param moveProcessor use this to store the score as well as call the acceptor and forager; skipped if null.
-     */
-    Score_ doAndProcessMove(Move<Solution_> move, boolean assertMoveScoreFromScratch, Consumer<Score_> moveProcessor);
+    Score_ executeTemporaryMove(Move<Solution_> move, boolean assertMoveScoreFromScratch);
 
     /**
      * @param expectedWorkingEntityListRevision an
@@ -199,7 +209,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     /**
      * @return never null
      */
-    InnerScoreDirectorFactory<Solution_, Score_> getScoreDirectorFactory();
+    ScoreDirectorFactory<Solution_, Score_> getScoreDirectorFactory();
 
     /**
      * @return never null
@@ -244,7 +254,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      */
     SupplyManager getSupplyManager();
 
-    MoveDirector<Solution_> getMoveDirector();
+    MoveDirector<Solution_, Score_> getMoveDirector();
 
     ListVariableStateSupply<Solution_> getListVariableStateSupply(ListVariableDescriptor<Solution_> variableDescriptor);
 
@@ -295,7 +305,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param workingScore never null
      * @param completedAction sometimes null, when assertion fails then the completedAction's {@link Object#toString()}
      *        is included in the exception message
-     * @see InnerScoreDirectorFactory#assertScoreFromScratch
+     * @see ScoreDirectorFactory#assertScoreFromScratch
      */
     void assertWorkingScoreFromScratch(Score_ workingScore, Object completedAction);
 
@@ -309,7 +319,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param predictedScore never null
      * @param completedAction sometimes null, when assertion fails then the completedAction's {@link Object#toString()}
      *        is included in the exception message
-     * @see InnerScoreDirectorFactory#assertScoreFromScratch
+     * @see ScoreDirectorFactory#assertScoreFromScratch
      */
     void assertPredictedScoreFromScratch(Score_ predictedScore, Object completedAction);
 

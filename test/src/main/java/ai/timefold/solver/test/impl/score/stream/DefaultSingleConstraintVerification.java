@@ -13,7 +13,8 @@ public final class DefaultSingleConstraintVerification<Solution_, Score_ extends
         extends AbstractConstraintVerification<Solution_, Score_>
         implements SingleConstraintVerification<Solution_> {
 
-    DefaultSingleConstraintVerification(AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory) {
+    DefaultSingleConstraintVerification(
+            AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, ?> scoreDirectorFactory) {
         super(scoreDirectorFactory);
     }
 
@@ -25,7 +26,10 @@ public final class DefaultSingleConstraintVerification<Solution_, Score_ extends
 
     @Override
     public @NonNull DefaultSingleConstraintAssertion<Solution_, Score_> givenSolution(@NonNull Solution_ solution) {
-        try (var scoreDirector = scoreDirectorFactory.buildDerivedScoreDirector(true, ConstraintMatchPolicy.ENABLED)) {
+        // Most score directors don't need derived status; CS will override this.
+        try (var scoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
+                .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
+                .buildDerived()) {
             scoreDirector.setWorkingSolution(Objects.requireNonNull(solution));
             return new DefaultSingleConstraintAssertion<>(scoreDirectorFactory, scoreDirector.calculateScore(),
                     scoreDirector.getConstraintMatchTotalMap(), scoreDirector.getIndictmentMap());

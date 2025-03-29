@@ -10,7 +10,6 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
-import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.testdata.domain.constraintweightoverrides.TestdataConstraintWeightOverridesConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.constraintweightoverrides.TestdataConstraintWeightOverridesSolution;
@@ -77,11 +76,11 @@ class ConstraintWeightOverridesTest {
     void appliesOverridesToConstraintProvider() {
         var solutionDescriptor = TestdataConstraintWeightOverridesSolution.buildSolutionDescriptor();
         var solution = TestdataConstraintWeightOverridesSolution.generateSolution(3, 5);
-        try (var scoreDirector = BavetConstraintStreamScoreDirectorFactory.buildScoreDirectorFactory(solutionDescriptor,
+        var scoreDirectorFactory = BavetConstraintStreamScoreDirectorFactory.buildScoreDirectorFactory(solutionDescriptor,
                 new ScoreDirectorFactoryConfig()
                         .withConstraintProviderClass(TestdataConstraintWeightOverridesConstraintProvider.class),
-                EnvironmentMode.PHASE_ASSERT)
-                .buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
+                EnvironmentMode.PHASE_ASSERT);
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
             // Default weights
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.triggerVariableListeners();

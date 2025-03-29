@@ -6,7 +6,6 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.event.SolverEventListener;
-import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleSupport;
@@ -54,7 +53,6 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
         this.globalTermination = globalTermination;
         bestSolutionRecaller.setSolverEventSupport(solverEventSupport);
         this.phaseList = phaseList;
-        phaseList.forEach(phase -> ((AbstractPhase<Solution_>) phase).setSolver(this));
     }
 
     public void solvingStarted(SolverScope<Solution_> solverScope) {

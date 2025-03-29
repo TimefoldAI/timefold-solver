@@ -14,13 +14,14 @@ public record BavetConstraintStreamImplSupport(ConstraintMatchPolicy constraintM
         implements
             ConstraintStreamImplSupport {
 
-    @SuppressWarnings("unchecked")
     @Override
     public <Score_ extends Score<Score_>, Solution_> InnerScoreDirector<Solution_, Score_> buildScoreDirector(
             SolutionDescriptor<Solution_> solutionDescriptorSupplier, ConstraintProvider constraintProvider) {
-        return (InnerScoreDirector<Solution_, Score_>) new BavetConstraintStreamScoreDirectorFactory<>(
-                solutionDescriptorSupplier, constraintProvider, EnvironmentMode.PHASE_ASSERT)
-                .buildScoreDirector(false, constraintMatchPolicy);
+        var scoreDirectorFactory = new BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>(solutionDescriptorSupplier,
+                constraintProvider, EnvironmentMode.PHASE_ASSERT);
+        return scoreDirectorFactory.createScoreDirectorBuilder()
+                .withConstraintMatchPolicy(constraintMatchPolicy)
+                .build();
     }
 
     @Override

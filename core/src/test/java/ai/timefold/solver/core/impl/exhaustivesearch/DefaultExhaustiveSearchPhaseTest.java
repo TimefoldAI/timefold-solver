@@ -4,6 +4,7 @@ import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertCod
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -61,7 +62,13 @@ class DefaultExhaustiveSearchPhaseTest extends AbstractMeterTest {
         var workingSolution = new TestdataSolution();
         when(phaseScope.getWorkingSolution()).thenReturn(workingSolution);
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector = mock(InnerScoreDirector.class);
-        when(scoreDirector.getMoveDirector()).thenReturn(mock(MoveDirector.class));
+        var moveDirector = new MoveDirector<>(scoreDirector);
+        doAnswer(invocation -> {
+            var move = (Move<TestdataSolution>) invocation.getArgument(0);
+            moveDirector.execute(move);
+            return null;
+        }).when(scoreDirector)
+                .executeMove(any());
         when(phaseScope.getScoreDirector()).thenReturn((InnerScoreDirector) scoreDirector);
 
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();

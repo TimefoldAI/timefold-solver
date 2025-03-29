@@ -21,7 +21,6 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.phase.PossiblyInitializingPhase;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
-import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
@@ -164,7 +163,7 @@ class SolverFactoryTest {
         var solution = new TestdataSolution("s1");
         solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2"), new TestdataEntity("e3")));
         solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
-        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
             scoreDirector.setWorkingSolution(solution);
             var score = scoreDirector.calculateScore();
             assertThat(score).isNotNull();

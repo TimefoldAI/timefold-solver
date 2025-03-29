@@ -19,7 +19,7 @@ public abstract class AbstractSimplifiedMove<Solution_> implements Move<Solution
     @Override
     public final void doMoveOnly(ScoreDirector<Solution_> scoreDirector) {
         var recordingScoreDirector =
-                scoreDirector instanceof VariableChangeRecordingScoreDirector<Solution_> variableChangeRecordingScoreDirector
+                scoreDirector instanceof VariableChangeRecordingScoreDirector<Solution_, ?> variableChangeRecordingScoreDirector
                         ? variableChangeRecordingScoreDirector
                         : new VariableChangeRecordingScoreDirector<>(scoreDirector);
         doMoveOnGenuineVariables(recordingScoreDirector);

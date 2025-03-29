@@ -17,7 +17,7 @@ import ai.timefold.solver.core.impl.exhaustivesearch.node.bounder.ScoreBounder;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchPhaseScope;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchStepScope;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
-import ai.timefold.solver.core.impl.move.director.MoveDirector;
+import ai.timefold.solver.core.impl.move.generic.CompositeMove;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -170,9 +170,8 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         restoreMoveList.addAll(oldMoveList);
         Collections.reverse(newMoveList);
         restoreMoveList.addAll(newMoveList);
-        MoveDirector<Solution_> moveDirector = phaseScope.getScoreDirector().getMoveDirector();
-        restoreMoveList.forEach(restoreMove -> restoreMove.execute(moveDirector));
-        // There is no need to recalculate the score, but we still need to set it
+        var compositeMove = CompositeMove.buildMove(restoreMoveList);
+        phaseScope.getScoreDirector().executeMove(compositeMove);
         phaseScope.getSolutionDescriptor().setScore(phaseScope.getWorkingSolution(), stepScope.getStartingStepScore());
         if (assertWorkingSolutionScoreFromScratch) {
             // In BRUTE_FORCE the stepScore can be null because it was not calculated

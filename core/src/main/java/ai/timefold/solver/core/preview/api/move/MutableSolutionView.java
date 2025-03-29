@@ -3,7 +3,6 @@ package ai.timefold.solver.core.preview.api.move;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
@@ -17,7 +16,7 @@ import org.jspecify.annotations.Nullable;
  * <strong>This package and all of its contents are part of the Move Streams API,
  * which is under development and is only offered as a preview feature.</strong>
  * There are no guarantees for backward compatibility;
- * any class, method or field may change or be removed without prior notice,
+ * any class, method, or field may change or be removed without prior notice,
  * although we will strive to avoid this as much as possible.
  * <p>
  * We encourage you to try the API and give us feedback on your experience with it,
@@ -129,11 +128,5 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
     <Entity_, Value_> @Nullable Value_ moveValueInList(
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity, int sourceIndex,
             int destinationIndex);
-
-    /**
-     * Tells the underlying {@link ScoreDirector}
-     * to notify the solver of the mutating operations performed by the {@link Move}.
-     */
-    void updateShadowVariables();
 
 }

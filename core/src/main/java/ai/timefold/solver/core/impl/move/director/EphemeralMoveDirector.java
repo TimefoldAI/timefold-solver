@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.move.director;
 
-import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
+import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -10,19 +11,23 @@ import org.jspecify.annotations.NullMarked;
 /**
  * The only move director that supports undoing moves.
  * Moves are undone when the director is {@link #close() closed}.
+ * The class can not be made {@link AutoCloseable},
+ * as using it in a try-with-resources statement would mean undo would happen even on moves that threw exceptions,
+ * causing all sorts of unexpected situations.
+ * This way, the move throws an exception and terminates the execution,
+ * therefore never even getting to the point of triggering an undo for this move.
  * 
  * @param <Solution_>
  */
 @NullMarked
-public final class EphemeralMoveDirector<Solution_> extends MoveDirector<Solution_>
-        implements AutoCloseable {
+final class EphemeralMoveDirector<Solution_, Score_ extends Score<Score_>>
+        extends MoveDirector<Solution_, Score_> {
 
-    EphemeralMoveDirector(VariableDescriptorAwareScoreDirector<Solution_> scoreDirector) {
-        // Doesn't require the index cache, because we maintain the invariant in this class.
-        super(new VariableChangeRecordingScoreDirector<>(scoreDirector, false));
+    EphemeralMoveDirector(InnerScoreDirector<Solution_, Score_> scoreDirector) {
+        super(scoreDirector);
     }
 
-    public Move<Solution_> createUndoMove() {
+    Move<Solution_> createUndoMove() {
         return new RecordedUndoMove<>(getVariableChangeRecordingScoreDirector().copyChanges());
     }
 
@@ -33,16 +38,16 @@ public final class EphemeralMoveDirector<Solution_> extends MoveDirector<Solutio
 
     }
 
-    public VariableChangeRecordingScoreDirector<Solution_> getVariableChangeRecordingScoreDirector() {
-        return (VariableChangeRecordingScoreDirector<Solution_>) scoreDirector;
+    public VariableChangeRecordingScoreDirector<Solution_, Score_> getVariableChangeRecordingScoreDirector() {
+        return (VariableChangeRecordingScoreDirector<Solution_, Score_>) externalScoreDirector;
     }
 
     @Override
-    public EphemeralMoveDirector<Solution_> ephemeral() {
-        throw new IllegalStateException("Impossible state: move director is already ephemeral.");
+    public <Result_> Result_ executeTemporary(Move<Solution_> move,
+            TemporaryMovePostprocessor<Solution_, Score_, Result_> postprocessor) {
+        throw new UnsupportedOperationException("Impossible state: This move director does not support undoing moves.");
     }
 
-    @Override
     public void close() {
         getVariableChangeRecordingScoreDirector().undoChanges();
     }

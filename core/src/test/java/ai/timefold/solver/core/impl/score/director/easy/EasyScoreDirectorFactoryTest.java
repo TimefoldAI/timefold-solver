@@ -9,8 +9,6 @@ import java.util.Collections;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;
@@ -19,15 +17,13 @@ class EasyScoreDirectorFactoryTest {
 
     @Test
     void buildScoreDirector() {
-        SolutionDescriptor<TestdataSolution> solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         EasyScoreCalculator<TestdataSolution, SimpleScore> scoreCalculator = mock(EasyScoreCalculator.class);
         when(scoreCalculator.calculateScore(any(TestdataSolution.class)))
                 .thenAnswer(invocation -> SimpleScore.of(-10));
-        EasyScoreDirectorFactory<TestdataSolution, SimpleScore> directorFactory = new EasyScoreDirectorFactory<>(
-                solutionDescriptor, scoreCalculator);
-
-        try (var director = directorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
-            TestdataSolution solution = new TestdataSolution();
+        var directorFactory = new EasyScoreDirectorFactory<>(solutionDescriptor, scoreCalculator);
+        try (var director = directorFactory.buildScoreDirector()) {
+            var solution = new TestdataSolution();
             solution.setValueList(Collections.emptyList());
             solution.setEntityList(Collections.emptyList());
             director.setWorkingSolution(solution);

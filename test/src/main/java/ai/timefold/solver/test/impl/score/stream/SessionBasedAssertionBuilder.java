@@ -9,10 +9,10 @@ import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInl
 
 final class SessionBasedAssertionBuilder<Solution_, Score_ extends Score<Score_>> {
 
-    private final AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_> constraintStreamScoreDirectorFactory;
+    private final AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, ?> constraintStreamScoreDirectorFactory;
 
     public SessionBasedAssertionBuilder(
-            AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_> constraintStreamScoreDirectorFactory) {
+            AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, ?> constraintStreamScoreDirectorFactory) {
         this.constraintStreamScoreDirectorFactory = Objects.requireNonNull(constraintStreamScoreDirectorFactory);
     }
 

@@ -15,6 +15,8 @@ import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSession;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * FP streams implementation of {@link ScoreDirector}, which only recalculates the {@link Score}
  * of the part of the {@link PlanningSolution working solution} that changed,
@@ -29,22 +31,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     private final boolean derived;
     private BavetConstraintSession<Score_> session;
 
-    /**
-     * Builds a standard {@link BavetConstraintStreamScoreDirector}.
-     *
-     * @param scoreDirectorFactory
-     * @param lookUpEnabled
-     * @param constraintMatchPolicy
-     * @param expectShadowVariablesInCorrectState
-     */
-    public BavetConstraintStreamScoreDirector(BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
-            boolean lookUpEnabled, ConstraintMatchPolicy constraintMatchPolicy,
-            boolean expectShadowVariablesInCorrectState) {
-        this(scoreDirectorFactory, lookUpEnabled, constraintMatchPolicy, expectShadowVariablesInCorrectState,
-                false);
-    }
-
-    public BavetConstraintStreamScoreDirector(
+    private BavetConstraintStreamScoreDirector(
             BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory, boolean lookUpEnabled,
             ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState, boolean derived) {
         super(scoreDirectorFactory, lookUpEnabled, constraintMatchPolicy,
@@ -59,8 +46,8 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     @Override
     public void setWorkingSolution(Solution_ workingSolution) {
         session = scoreDirectorFactory.newSession(workingSolution, constraintMatchPolicy, derived);
-        getSolutionDescriptor().visitAll(workingSolution, session::insert);
-        super.setWorkingSolution(workingSolution);
+        session.initialize(workingSolution);
+        super.setWorkingSolution(workingSolution, session::insert);
     }
 
     @Override
@@ -192,4 +179,28 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     public boolean isDerived() {
         return derived;
     }
+
+    @NullMarked
+    public static final class Builder<Solution_, Score_ extends Score<Score_>>
+            extends
+            AbstractScoreDirectorBuilder<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>, Builder<Solution_, Score_>> {
+
+        public Builder(BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory) {
+            super(scoreDirectorFactory);
+        }
+
+        @Override
+        public BavetConstraintStreamScoreDirector<Solution_, Score_> build() {
+            return new BavetConstraintStreamScoreDirector<>(scoreDirectorFactory, lookUpEnabled, constraintMatchPolicy,
+                    expectShadowVariablesInCorrectState, false);
+        }
+
+        @Override
+        public AbstractScoreDirector<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>>
+                buildDerived() {
+            return new BavetConstraintStreamScoreDirector<>(scoreDirectorFactory, lookUpEnabled, constraintMatchPolicy,
+                    expectShadowVariablesInCorrectState, true);
+        }
+    }
+
 }

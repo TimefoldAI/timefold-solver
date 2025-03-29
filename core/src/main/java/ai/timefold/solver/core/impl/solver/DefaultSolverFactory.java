@@ -32,7 +32,7 @@ import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.PhaseFactory;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
 import ai.timefold.solver.core.impl.solver.random.DefaultRandomFactory;
@@ -63,7 +63,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
 
     private final SolverConfig solverConfig;
     private final SolutionDescriptor<Solution_> solutionDescriptor;
-    private final InnerScoreDirectorFactory<Solution_, ?> scoreDirectorFactory;
+    private final ScoreDirectorFactory<Solution_, ?> scoreDirectorFactory;
 
     public DefaultSolverFactory(SolverConfig solverConfig) {
         this.solverConfig = Objects.requireNonNull(solverConfig, "The solverConfig (" + solverConfig + ") cannot be null.");
@@ -76,8 +76,9 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         return solutionDescriptor;
     }
 
-    public <Score_ extends Score<Score_>> InnerScoreDirectorFactory<Solution_, Score_> getScoreDirectorFactory() {
-        return (InnerScoreDirectorFactory<Solution_, Score_>) scoreDirectorFactory;
+    @SuppressWarnings("unchecked")
+    public <Score_ extends Score<Score_>> ScoreDirectorFactory<Solution_, Score_> getScoreDirectorFactory() {
+        return (ScoreDirectorFactory<Solution_, Score_>) scoreDirectorFactory;
     }
 
     @Override
@@ -110,8 +111,11 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         }
 
         // TODO add the move stream session here
-        var castScoreDirector = scoreDirectorFactory.buildScoreDirector(true,
-                constraintMatchEnabled ? ConstraintMatchPolicy.ENABLED : ConstraintMatchPolicy.DISABLED);
+        var castScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
+                .withLookUpEnabled(true)
+                .withConstraintMatchPolicy(
+                        constraintMatchEnabled ? ConstraintMatchPolicy.ENABLED : ConstraintMatchPolicy.DISABLED)
+                .build();
         solverScope.setScoreDirector(castScoreDirector);
         solverScope.setProblemChangeDirector(new DefaultProblemChangeDirector<>(castScoreDirector));
 
@@ -185,13 +189,11 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         return solutionDescriptor;
     }
 
-    private InnerScoreDirectorFactory<Solution_, ?> buildScoreDirectorFactory() {
-        EnvironmentMode environmentMode = solverConfig.determineEnvironmentMode();
-        ScoreDirectorFactoryConfig scoreDirectorFactoryConfig_ =
-                Objects.requireNonNullElseGet(solverConfig.getScoreDirectorFactoryConfig(),
-                        ScoreDirectorFactoryConfig::new);
-        ScoreDirectorFactoryFactory<Solution_, ?> scoreDirectorFactoryFactory =
-                new ScoreDirectorFactoryFactory<>(scoreDirectorFactoryConfig_);
+    private <Score_ extends Score<Score_>> ScoreDirectorFactory<Solution_, Score_> buildScoreDirectorFactory() {
+        var environmentMode = solverConfig.determineEnvironmentMode();
+        var scoreDirectorFactoryConfig_ =
+                Objects.requireNonNullElseGet(solverConfig.getScoreDirectorFactoryConfig(), ScoreDirectorFactoryConfig::new);
+        var scoreDirectorFactoryFactory = new ScoreDirectorFactoryFactory<Solution_, Score_>(scoreDirectorFactoryConfig_);
         return scoreDirectorFactoryFactory.buildScoreDirectorFactory(environmentMode, solutionDescriptor);
     }
 

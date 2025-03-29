@@ -109,8 +109,9 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
 
     protected void doStep(LocalSearchStepScope<Solution_> stepScope) {
         var step = stepScope.getStep();
-        step.execute(stepScope.getMoveDirector());
+        stepScope.getScoreDirector().executeMove(step);
         predictWorkingStepScore(stepScope, step);
+        var solver = stepScope.getPhaseScope().getSolverScope().getSolver();
         solver.getBestSolutionRecaller().processWorkingSolutionDuringStep(stepScope);
     }
 
@@ -124,7 +125,6 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
         decider.phaseStarted(phaseScope);
-        // TODO maybe this restriction should be lifted to allow LocalSearch to initialize a solution too?
         assertWorkingSolutionInitialized(phaseScope);
     }
 

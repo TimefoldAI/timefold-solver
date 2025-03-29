@@ -16,7 +16,7 @@ import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
 
 import io.micrometer.core.instrument.Tags;
@@ -37,8 +37,8 @@ public class PickedMoveStepScoreDiffStatistic<Solution_> implements SolverStatis
     @Override
     public void register(Solver<Solution_> solver) {
         DefaultSolver<Solution_> defaultSolver = (DefaultSolver<Solution_>) solver;
-        InnerScoreDirectorFactory<Solution_, ?> innerScoreDirectorFactory = defaultSolver.getScoreDirectorFactory();
-        SolutionDescriptor<Solution_> solutionDescriptor = innerScoreDirectorFactory.getSolutionDescriptor();
+        ScoreDirectorFactory<Solution_, ?> scoreDirectorFactory = defaultSolver.getScoreDirectorFactory();
+        SolutionDescriptor<Solution_> solutionDescriptor = scoreDirectorFactory.getSolutionDescriptor();
         PickedMoveStepScoreDiffStatisticListener<Solution_, ?> listener =
                 new PickedMoveStepScoreDiffStatisticListener<>((ScoreDefinition<?>) solutionDescriptor.getScoreDefinition());
         solverToPhaseLifecycleListenerMap.put(solver, listener);

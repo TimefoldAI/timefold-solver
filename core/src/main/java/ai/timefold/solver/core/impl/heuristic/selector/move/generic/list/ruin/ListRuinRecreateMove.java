@@ -43,7 +43,7 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
     @Override
     protected void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector) {
         entityToNewPositionMap.clear();
-        var variableChangeRecordingScoreDirector = (VariableChangeRecordingScoreDirector<Solution_>) scoreDirector;
+        var variableChangeRecordingScoreDirector = (VariableChangeRecordingScoreDirector<Solution_, ?>) scoreDirector;
         try (var listVariableStateSupply = variableChangeRecordingScoreDirector.getBacking().getSupplyManager()
                 .demand(listVariableDescriptor.getStateDemand())) {
             var entityToOriginalPositionMap =
@@ -88,7 +88,6 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
             var nestedSolverScope = new SolverScope<Solution_>();
             nestedSolverScope.setSolver(solverScope.getSolver());
             nestedSolverScope.setScoreDirector(variableChangeRecordingScoreDirector.getBacking());
-            constructionHeuristicPhase.setSolver(nestedSolverScope.getSolver());
             constructionHeuristicPhase.solvingStarted(nestedSolverScope);
             constructionHeuristicPhase.solve(nestedSolverScope);
             constructionHeuristicPhase.solvingEnded(nestedSolverScope);

@@ -8,7 +8,6 @@ import java.util.List;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintConfigurationSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListSolution;
@@ -25,36 +24,33 @@ public abstract class AbstractScoreDirectorSemanticsTest {
     private final SolutionDescriptor<TestdataPinnedWithIndexListSolution> pinnedWithIndexListSolutionDescriptor =
             TestdataPinnedWithIndexListSolution.buildSolutionDescriptor();
 
-    protected abstract InnerScoreDirectorFactory<TestdataConstraintConfigurationSolution, SimpleScore>
-            buildInnerScoreDirectorFactoryWithConstraintConfiguration(
+    protected abstract ScoreDirectorFactory<TestdataConstraintConfigurationSolution, SimpleScore>
+            buildScoreDirectorFactoryWithConstraintConfiguration(
                     SolutionDescriptor<TestdataConstraintConfigurationSolution> solutionDescriptor);
 
-    protected abstract InnerScoreDirectorFactory<TestdataSolution, SimpleScore>
-            buildInnerScoreDirectorFactory(SolutionDescriptor<TestdataSolution> solutionDescriptor);
-
-    protected abstract InnerScoreDirectorFactory<TestdataPinnedListSolution, SimpleScore>
-            buildInnerScoreDirectorFactoryWithListVariableEntityPin(
+    protected abstract ScoreDirectorFactory<TestdataPinnedListSolution, SimpleScore>
+            buildScoreDirectorFactoryWithListVariableEntityPin(
                     SolutionDescriptor<TestdataPinnedListSolution> solutionDescriptor);
 
-    protected abstract InnerScoreDirectorFactory<TestdataPinnedWithIndexListSolution, SimpleScore>
-            buildInnerScoreDirectorFactoryWithListVariablePinIndex(
+    protected abstract ScoreDirectorFactory<TestdataPinnedWithIndexListSolution, SimpleScore>
+            buildScoreDirectorFactoryWithListVariablePinIndex(
                     SolutionDescriptor<TestdataPinnedWithIndexListSolution> solutionDescriptor);
 
     @Test
     void independentScoreDirectors() {
         var scoreDirectorFactory =
-                buildInnerScoreDirectorFactoryWithConstraintConfiguration(constraintConfigurationSolutionDescriptor);
+                buildScoreDirectorFactoryWithConstraintConfiguration(constraintConfigurationSolutionDescriptor);
 
         // Create first score director, calculate score.
         var solution1 = TestdataConstraintConfigurationSolution.generateSolution(1, 1);
-        try (var scoreDirector1 = scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
+        try (var scoreDirector1 = scoreDirectorFactory.buildScoreDirector()) {
             scoreDirector1.setWorkingSolution(solution1);
             var score1 = scoreDirector1.calculateScore();
             assertThat(score1).isEqualTo(SimpleScore.of(1));
 
             // Create second score director, calculate score.
             var solution2 = TestdataConstraintConfigurationSolution.generateSolution(2, 2);
-            try (var scoreDirector2 = scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
+            try (var scoreDirector2 = scoreDirectorFactory.buildScoreDirector()) {
                 scoreDirector2.setWorkingSolution(solution2);
                 var score2 = scoreDirector2.calculateScore();
                 assertThat(score2).isEqualTo(SimpleScore.of(2));
@@ -85,11 +81,11 @@ public abstract class AbstractScoreDirectorSemanticsTest {
     @Test
     void solutionBasedScoreWeights() {
         var scoreDirectorFactory =
-                buildInnerScoreDirectorFactoryWithConstraintConfiguration(constraintConfigurationSolutionDescriptor);
+                buildScoreDirectorFactoryWithConstraintConfiguration(constraintConfigurationSolutionDescriptor);
 
         // Create score director, calculate score.
         var solution1 = TestdataConstraintConfigurationSolution.generateSolution(1, 1);
-        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
             scoreDirector.setWorkingSolution(solution1);
             var score1 = scoreDirector.calculateScore();
             assertThat(score1).isEqualTo(SimpleScore.of(1));
@@ -115,11 +111,11 @@ public abstract class AbstractScoreDirectorSemanticsTest {
     @Test
     void mutableConstraintConfiguration() {
         var scoreDirectorFactory =
-                buildInnerScoreDirectorFactoryWithConstraintConfiguration(constraintConfigurationSolutionDescriptor);
+                buildScoreDirectorFactoryWithConstraintConfiguration(constraintConfigurationSolutionDescriptor);
 
         // Create score director, calculate score with a given constraint configuration.
         var solution = TestdataConstraintConfigurationSolution.generateSolution(1, 1);
-        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
             scoreDirector.setWorkingSolution(solution);
             var score1 = scoreDirector.calculateScore();
             assertThat(score1).isEqualTo(SimpleScore.of(1));
@@ -137,13 +133,15 @@ public abstract class AbstractScoreDirectorSemanticsTest {
     @Test
     void constraintPresentEvenIfNoMatches() {
         var scoreDirectorFactory =
-                buildInnerScoreDirectorFactoryWithConstraintConfiguration(constraintConfigurationSolutionDescriptor);
+                buildScoreDirectorFactoryWithConstraintConfiguration(constraintConfigurationSolutionDescriptor);
         // Need constraint match support for this.
         Assumptions.assumeTrue(scoreDirectorFactory.supportsConstraintMatching());
 
         // Create score director, calculate score with a given constraint configuration.
         var solution = TestdataConstraintConfigurationSolution.generateSolution(1, 1);
-        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.ENABLED)) {
+        try (var scoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
+                .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
+                .build()) {
             scoreDirector.setWorkingSolution(solution);
             var score1 = scoreDirector.calculateScore();
             assertSoftly(softly -> {
@@ -170,13 +168,13 @@ public abstract class AbstractScoreDirectorSemanticsTest {
 
     @Test
     void listVariableEntityPinningSupported() {
-        var scoreDirectorFactory = buildInnerScoreDirectorFactoryWithListVariableEntityPin(pinnedListSolutionDescriptor);
+        var scoreDirectorFactory = buildScoreDirectorFactoryWithListVariableEntityPin(pinnedListSolutionDescriptor);
         var solution = TestdataPinnedListSolution.generateUninitializedSolution(2, 2);
         var firstEntity = solution.getEntityList().get(0);
         firstEntity.setValueList(List.of(solution.getValueList().get(0)));
         firstEntity.setPinned(true);
 
-        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
             scoreDirector.setWorkingSolution(solution);
             var score1 = scoreDirector.calculateScore();
             assertThat(score1).isEqualTo(SimpleScore.ofUninitialized(-1, -2));
@@ -195,7 +193,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
     @Test
     void listVariableIndexPinningSupported() {
         var scoreDirectorFactory =
-                buildInnerScoreDirectorFactoryWithListVariablePinIndex(pinnedWithIndexListSolutionDescriptor);
+                buildScoreDirectorFactoryWithListVariablePinIndex(pinnedWithIndexListSolutionDescriptor);
         var solution = TestdataPinnedWithIndexListSolution.generateUninitializedSolution(3, 3);
         var firstEntity = solution.getEntityList().get(0);
         firstEntity.setValueList(List.of(solution.getValueList().get(0)));
@@ -204,7 +202,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
         secondEntity.setValueList(List.of(solution.getValueList().get(1)));
         secondEntity.setPlanningPinToIndex(1);
 
-        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)) {
+        try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
             scoreDirector.setWorkingSolution(solution);
             var score1 = scoreDirector.calculateScore();
             assertThat(score1).isEqualTo(SimpleScore.ofUninitialized(-1, -3));

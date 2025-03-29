@@ -5,10 +5,8 @@ import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorSemanticsTest;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintConfigurationSolution;
 import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintWeightConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListConstraintProvider;
@@ -19,8 +17,8 @@ import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPi
 final class ConstraintStreamsBavetScoreDirectorSemanticsTest extends AbstractScoreDirectorSemanticsTest {
 
     @Override
-    protected InnerScoreDirectorFactory<TestdataConstraintConfigurationSolution, SimpleScore>
-            buildInnerScoreDirectorFactoryWithConstraintConfiguration(
+    protected ScoreDirectorFactory<TestdataConstraintConfigurationSolution, SimpleScore>
+            buildScoreDirectorFactoryWithConstraintConfiguration(
                     SolutionDescriptor<TestdataConstraintConfigurationSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withConstraintProviderClass(TestdataConstraintWeightConstraintProvider.class);
@@ -30,18 +28,8 @@ final class ConstraintStreamsBavetScoreDirectorSemanticsTest extends AbstractSco
     }
 
     @Override
-    protected InnerScoreDirectorFactory<TestdataSolution, SimpleScore>
-            buildInnerScoreDirectorFactory(SolutionDescriptor<TestdataSolution> solutionDescriptor) {
-        var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
-                .withConstraintProviderClass(TestdataConstraintProvider.class);
-        var scoreDirectorFactoryFactory =
-                new ScoreDirectorFactoryFactory<TestdataSolution, SimpleScore>(scoreDirectorFactoryConfig);
-        return scoreDirectorFactoryFactory.buildScoreDirectorFactory(EnvironmentMode.REPRODUCIBLE, solutionDescriptor);
-    }
-
-    @Override
-    protected InnerScoreDirectorFactory<TestdataPinnedListSolution, SimpleScore>
-            buildInnerScoreDirectorFactoryWithListVariableEntityPin(
+    protected ScoreDirectorFactory<TestdataPinnedListSolution, SimpleScore>
+            buildScoreDirectorFactoryWithListVariableEntityPin(
                     SolutionDescriptor<TestdataPinnedListSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withConstraintProviderClass(TestdataPinnedListConstraintProvider.class);
@@ -51,8 +39,8 @@ final class ConstraintStreamsBavetScoreDirectorSemanticsTest extends AbstractSco
     }
 
     @Override
-    protected InnerScoreDirectorFactory<TestdataPinnedWithIndexListSolution, SimpleScore>
-            buildInnerScoreDirectorFactoryWithListVariablePinIndex(
+    protected ScoreDirectorFactory<TestdataPinnedWithIndexListSolution, SimpleScore>
+            buildScoreDirectorFactoryWithListVariablePinIndex(
                     SolutionDescriptor<TestdataPinnedWithIndexListSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
                 .withConstraintProviderClass(TestdataPinnedWithIndexListConstraintProvider.class);

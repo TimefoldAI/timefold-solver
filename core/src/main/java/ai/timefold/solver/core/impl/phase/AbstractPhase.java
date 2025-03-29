@@ -9,7 +9,6 @@ import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleSupport;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
-import ai.timefold.solver.core.impl.solver.AbstractSolver;
 import ai.timefold.solver.core.impl.solver.exception.ScoreCorruptionException;
 import ai.timefold.solver.core.impl.solver.exception.VariableCorruptionException;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -41,8 +40,6 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     /** Used for {@link #addPhaseLifecycleListener(PhaseLifecycleListener)}. */
     protected PhaseLifecycleSupport<Solution_> phaseLifecycleSupport = new PhaseLifecycleSupport<>();
 
-    protected AbstractSolver<Solution_> solver;
-
     protected AbstractPhase(AbstractPhaseBuilder<Solution_> builder) {
         phaseIndex = builder.phaseIndex;
         logIndentation = builder.logIndentation;
@@ -59,14 +56,6 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
 
     public Termination<Solution_> getPhaseTermination() {
         return phaseTermination;
-    }
-
-    public AbstractSolver<Solution_> getSolver() {
-        return solver;
-    }
-
-    public void setSolver(AbstractSolver<Solution_> solver) {
-        this.solver = solver;
     }
 
     public boolean isAssertStepScoreFromScratch() {
@@ -102,6 +91,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         phaseScope.startingNow();
         phaseScope.reset();
         if (!isNested()) {
+            var solver = phaseScope.getSolverScope().getSolver();
             solver.phaseStarted(phaseScope);
         }
         phaseTermination.phaseStarted(phaseScope);
@@ -124,6 +114,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         if (!isNested()) {
+            var solver = phaseScope.getSolverScope().getSolver();
             solver.phaseEnded(phaseScope);
         }
         phaseTermination.phaseEnded(phaseScope);
@@ -151,6 +142,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     @Override
     public void stepStarted(AbstractStepScope<Solution_> stepScope) {
         if (!isNested()) {
+            var solver = stepScope.getPhaseScope().getSolverScope().getSolver();
             solver.stepStarted(stepScope);
         }
         phaseTermination.stepStarted(stepScope);
@@ -190,6 +182,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     @Override
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
         if (!isNested()) {
+            var solver = stepScope.getPhaseScope().getSolverScope().getSolver();
             solver.stepEnded(stepScope);
             collectMetrics(stepScope);
         }

@@ -83,6 +83,7 @@ public final class DefaultCustomPhase<Solution_>
         customPhaseCommand.changeWorkingSolution(scoreDirector,
                 () -> phaseTermination.isPhaseTerminated(stepScope.getPhaseScope()));
         calculateWorkingStepScore(stepScope, customPhaseCommand);
+        var solver = stepScope.getPhaseScope().getSolverScope().getSolver();
         solver.getBestSolutionRecaller().processWorkingSolutionDuringStep(stepScope);
     }
 

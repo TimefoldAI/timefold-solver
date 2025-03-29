@@ -274,6 +274,12 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     }
 
     public void triggerVariableListenersInNotificationQueues() {
+        if (notificationQueuesAreEmpty) {
+            // Shortcut in case the trigger is called multiple times in a row,
+            // without any notifications inbetween.
+            // This is better than trying to ensure that the situation never ever occurs.
+            return;
+        }
         for (var notifiable : notifiableRegistry.getAll()) {
             notifiable.triggerAllNotifications();
         }

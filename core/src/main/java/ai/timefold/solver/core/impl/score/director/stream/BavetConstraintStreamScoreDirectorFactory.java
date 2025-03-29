@@ -12,7 +12,7 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSession;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSessionFactory;
@@ -20,7 +20,8 @@ import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStream
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 
 public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ extends Score<Score_>>
-        extends AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_> {
+        extends
+        AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>> {
 
     public static <Solution_, Score_ extends Score<Score_>> BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>
             buildScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor, ScoreDirectorFactoryConfig config,
@@ -61,19 +62,6 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
         constraintSessionFactory = new BavetConstraintSessionFactory<>(solutionDescriptor, constraintMetaModel);
     }
 
-    @Override
-    public BavetConstraintStreamScoreDirector<Solution_, Score_> buildScoreDirector(boolean lookUpEnabled,
-            ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState) {
-        return new BavetConstraintStreamScoreDirector<>(this, lookUpEnabled, constraintMatchPolicy,
-                expectShadowVariablesInCorrectState);
-    }
-
-    @Override
-    public InnerScoreDirector<Solution_, Score_> buildDerivedScoreDirector(boolean lookUpEnabled,
-            ConstraintMatchPolicy constraintMatchPolicy) {
-        return new BavetConstraintStreamScoreDirector<>(this, lookUpEnabled, constraintMatchPolicy, true, true);
-    }
-
     public BavetConstraintSession<Score_> newSession(Solution_ workingSolution, ConstraintMatchPolicy constraintMatchPolicy,
             boolean scoreDirectorDerived) {
         return newSession(workingSolution, constraintMatchPolicy, scoreDirectorDerived, null);
@@ -96,6 +84,16 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
     @Override
     public ConstraintMetaModel getConstraintMetaModel() {
         return constraintMetaModel;
+    }
+
+    @Override
+    public BavetConstraintStreamScoreDirector.Builder<Solution_, Score_> createScoreDirectorBuilder() {
+        return new BavetConstraintStreamScoreDirector.Builder<>(this);
+    }
+
+    @Override
+    public AbstractScoreDirector<Solution_, Score_, ?> buildScoreDirector() {
+        return createScoreDirectorBuilder().build();
     }
 
 }

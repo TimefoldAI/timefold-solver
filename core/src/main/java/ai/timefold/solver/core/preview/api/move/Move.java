@@ -20,7 +20,10 @@ import org.jspecify.annotations.NullMarked;
  * <p>
  * Usually the move holds a direct reference to each {@link PlanningEntity} of the {@link PlanningSolution}
  * which it will change when {@link #execute(MutableSolutionView)} is called.
- * On that change it will also notify the {@link ScoreDirector} accordingly.
+ * It is recommended for the moves to not touch shadow variables,
+ * the solver will update shadow variables after move execution is complete.
+ * If the move has to touch shadow variables, it is responsible for updating them
+ * consistently across the entire dependency graph.
  * <p>
  * For tabu search, a Move should implement {@link Object#equals(Object)} and {@link Object#hashCode()},
  * {@link #extractPlanningEntities()} and {@link #extractPlanningValues()}.
@@ -28,7 +31,7 @@ import org.jspecify.annotations.NullMarked;
  * <strong>This package and all of its contents are part of the Move Streams API,
  * which is under development and is only offered as a preview feature.</strong>
  * There are no guarantees for backward compatibility;
- * any class, method or field may change or be removed without prior notice,
+ * any class, method, or field may change or be removed without prior notice,
  * although we will strive to avoid this as much as possible.
  * <p>
  * We encourage you to try the API and give us feedback on your experience with it,

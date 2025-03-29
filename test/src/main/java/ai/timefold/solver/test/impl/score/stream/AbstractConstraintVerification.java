@@ -13,10 +13,10 @@ abstract class AbstractConstraintVerification<Solution_, Score_ extends Score<Sc
 
     protected final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
-    protected final AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory;
+    protected final AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, ?> scoreDirectorFactory;
     protected final SessionBasedAssertionBuilder<Solution_, Score_> sessionBasedAssertionBuilder;
 
-    AbstractConstraintVerification(AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory) {
+    AbstractConstraintVerification(AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, ?> scoreDirectorFactory) {
         this.scoreDirectorFactory = scoreDirectorFactory;
         this.sessionBasedAssertionBuilder = new SessionBasedAssertionBuilder<>(scoreDirectorFactory);
     }

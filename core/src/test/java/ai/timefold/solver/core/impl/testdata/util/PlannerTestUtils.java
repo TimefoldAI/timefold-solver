@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.testdata.util;
 import static java.util.Arrays.stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -20,7 +21,6 @@ import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
@@ -31,7 +31,6 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
-import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
@@ -55,7 +54,7 @@ public final class PlannerTestUtils {
 
     public static <Solution_> SolverFactory<Solution_> buildSolverFactory(
             Class<Solution_> solutionClass, Class<?>... entityClasses) {
-        SolverConfig solverConfig = buildSolverConfig(solutionClass, entityClasses);
+        var solverConfig = buildSolverConfig(solutionClass, entityClasses);
         return SolverFactory.create(solverConfig);
     }
 
@@ -76,10 +75,10 @@ public final class PlannerTestUtils {
 
     public static <Solution_> Solution_ solve(SolverConfig solverConfig, Solution_ problem, boolean bestSolutionEventExists) {
         SolverFactory<Solution_> solverFactory = SolverFactory.create(solverConfig);
-        Solver<Solution_> solver = solverFactory.buildSolver();
-        AtomicReference<Solution_> eventBestSolutionRef = new AtomicReference<>();
+        var solver = solverFactory.buildSolver();
+        var eventBestSolutionRef = new AtomicReference<Solution_>();
         solver.addEventListener(event -> eventBestSolutionRef.set(event.getNewBestSolution()));
-        Solution_ finalBestSolution = solver.solve(problem);
+        var finalBestSolution = solver.solve(problem);
         if (bestSolutionEventExists) {
             assertThat(eventBestSolutionRef).doesNotHaveNullValue();
         } else {
@@ -97,7 +96,7 @@ public final class PlannerTestUtils {
     }
 
     public static TestdataSolution generateTestdataSolution(String code, int entityAndValueCount) {
-        TestdataSolution solution = new TestdataSolution(code);
+        var solution = new TestdataSolution(code);
         solution.setValueList(IntStream.range(1, entityAndValueCount + 1)
                 .mapToObj(i -> new TestdataValue("v" + i))
                 .collect(Collectors.toList()));
@@ -113,13 +112,23 @@ public final class PlannerTestUtils {
 
     public static <Solution_> InnerScoreDirector<Solution_, SimpleScore>
             mockScoreDirector(SolutionDescriptor<Solution_> solutionDescriptor) {
-        EasyScoreDirectorFactory<Solution_, SimpleScore> scoreDirectorFactory =
-                new EasyScoreDirectorFactory<>(solutionDescriptor, (solution_) -> SimpleScore.of(0));
-        scoreDirectorFactory.setInitializingScoreTrend(
-                InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_DOWN, 1));
-        return mock(InnerScoreDirector.class,
-                AdditionalAnswers
-                        .delegatesTo(scoreDirectorFactory.buildScoreDirector(false, ConstraintMatchPolicy.DISABLED)));
+        return mockScoreDirector(solutionDescriptor, true);
+    }
+
+    public static <Solution_> InnerScoreDirector<Solution_, SimpleScore>
+            mockScoreDirector(SolutionDescriptor<Solution_> solutionDescriptor, boolean useSolution) {
+        var scoreDirectorFactory = new EasyScoreDirectorFactory<>(solutionDescriptor, solution_ -> SimpleScore.of(0));
+        scoreDirectorFactory
+                .setInitializingScoreTrend(InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_DOWN, 1));
+        if (useSolution) {
+            return mock(InnerScoreDirector.class,
+                    AdditionalAnswers.delegatesTo(scoreDirectorFactory.buildScoreDirector()));
+        } else {
+            var mockedScoreDirector = mock(InnerScoreDirector.class,
+                    AdditionalAnswers.delegatesTo(scoreDirectorFactory.buildScoreDirector()));
+            doReturn(SimpleScore.of(0)).when(mockedScoreDirector).calculateScore();
+            return mockedScoreDirector;
+        }
     }
 
     public static <Solution_, Score_ extends Score<Score_>> InnerScoreDirector<Solution_, Score_>
@@ -127,11 +136,11 @@ public final class PlannerTestUtils {
         InnerScoreDirector<Solution_, Score_> scoreDirector = mock(InnerScoreDirector.class);
         when(scoreDirector.getSolutionDescriptor()).thenReturn(solutionDescriptor);
         when(scoreDirector.lookUpWorkingObject(any())).thenAnswer((invocation) -> {
-            Object externalObject = invocation.getArguments()[0];
+            var externalObject = invocation.getArguments()[0];
             if (externalObject == null) {
                 return null;
             }
-            for (Object[] lookUpMapping : lookUpMappings) {
+            for (var lookUpMapping : lookUpMappings) {
                 if (externalObject == lookUpMapping[0]) {
                     return lookUpMapping[1];
                 }
@@ -162,7 +171,7 @@ public final class PlannerTestUtils {
     }
 
     public static <X, Y> Map<X, Y> asMap(X x1, Y y1, X x2, Y y2) {
-        Map<X, Y> result = asMap(x1, y1);
+        var result = asMap(x1, y1);
         result.put(x2, y2);
         return result;
     }
@@ -174,7 +183,7 @@ public final class PlannerTestUtils {
     }
 
     public static <X extends Comparable<X>, Y> SortedMap<X, Y> asSortedMap(X x1, Y y1, X x2, Y y2) {
-        SortedMap<X, Y> result = asSortedMap(x1, y1);
+        var result = asSortedMap(x1, y1);
         result.put(x2, y2);
         return result;
     }

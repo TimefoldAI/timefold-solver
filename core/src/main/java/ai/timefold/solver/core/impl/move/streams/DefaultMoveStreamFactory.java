@@ -78,4 +78,8 @@ public final class DefaultMoveStreamFactory<Solution_>
                 ((AbstractUniDataStream<Solution_, A>) dataStream).createDataset());
     }
 
+    public SolutionDescriptor<Solution_> getSolutionDescriptor() {
+        return dataStreamFactory.getSolutionDescriptor();
+    }
+
 }
