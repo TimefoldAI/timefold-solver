@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.util.HashMap;
 
-import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
@@ -75,13 +74,14 @@ class ScoreDirectorFactoryFactoryTest {
                 .withMessageContaining("together");
     }
 
-    private <Score_ extends Score<Score_>> ScoreDirectorFactory<TestdataSolution> buildTestdataScoreDirectoryFactory(
-            ScoreDirectorFactoryConfig config, EnvironmentMode environmentMode) {
-        return new ScoreDirectorFactoryFactory<TestdataSolution, Score_>(config)
+    private ScoreDirectorFactory<TestdataSolution, SimpleScore>
+            buildTestdataScoreDirectoryFactory(ScoreDirectorFactoryConfig config, EnvironmentMode environmentMode) {
+        return new ScoreDirectorFactoryFactory<TestdataSolution, SimpleScore>(config)
                 .buildScoreDirectorFactory(environmentMode, TestdataSolution.buildSolutionDescriptor());
     }
 
-    private ScoreDirectorFactory<TestdataSolution> buildTestdataScoreDirectoryFactory(ScoreDirectorFactoryConfig config) {
+    private ScoreDirectorFactory<TestdataSolution, SimpleScore>
+            buildTestdataScoreDirectoryFactory(ScoreDirectorFactoryConfig config) {
         return buildTestdataScoreDirectoryFactory(config, EnvironmentMode.PHASE_ASSERT);
     }
 

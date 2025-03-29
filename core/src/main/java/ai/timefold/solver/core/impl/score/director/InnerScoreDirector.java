@@ -209,7 +209,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     /**
      * @return never null
      */
-    InnerScoreDirectorFactory<Solution_, Score_> getScoreDirectorFactory();
+    ScoreDirectorFactory<Solution_, Score_> getScoreDirectorFactory();
 
     /**
      * @return never null
@@ -305,7 +305,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param workingScore never null
      * @param completedAction sometimes null, when assertion fails then the completedAction's {@link Object#toString()}
      *        is included in the exception message
-     * @see InnerScoreDirectorFactory#assertScoreFromScratch
+     * @see ScoreDirectorFactory#assertScoreFromScratch
      */
     void assertWorkingScoreFromScratch(Score_ workingScore, Object completedAction);
 
@@ -319,7 +319,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param predictedScore never null
      * @param completedAction sometimes null, when assertion fails then the completedAction's {@link Object#toString()}
      *        is included in the exception message
-     * @see InnerScoreDirectorFactory#assertScoreFromScratch
+     * @see ScoreDirectorFactory#assertScoreFromScratch
      */
     void assertPredictedScoreFromScratch(Score_ predictedScore, Object completedAction);
 
@@ -330,7 +330,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * <p>
      * Furthermore, if the assert fails, a score corruption analysis might be included in the exception message.
      *
-     * @param move            never null
+     * @param move never null
      * @param beforeMoveScore never null
      */
     void assertExpectedUndoMoveScore(Move<Solution_> move, Score_ beforeMoveScore, SolverLifecyclePoint executionPoint);

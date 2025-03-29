@@ -48,6 +48,9 @@ public final class MoveStreamsBasedMoveRepository<Solution_>
 
     @Override
     public void initialize(Solution_ workingSolution) {
+        if (moveStreamSession != null) {
+            throw new IllegalStateException("Impossible state: move repository initialized twice.");
+        }
         moveStreamSession = moveStreamFactory.createSession(workingSolution);
         moveStreamFactory.getSolutionDescriptor().visitAll(workingSolution, moveStreamSession::insert);
         moveStreamSession.settle();

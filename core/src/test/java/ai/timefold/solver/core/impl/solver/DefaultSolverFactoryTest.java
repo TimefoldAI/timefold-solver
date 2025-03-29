@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
 import org.assertj.core.api.SoftAssertions;
@@ -78,7 +78,7 @@ class DefaultSolverFactoryTest {
         DefaultSolverFactory<TestdataSolution> defaultSolverFactory = new DefaultSolverFactory<>(solverConfig);
 
         SolutionDescriptor<TestdataSolution> solutionDescriptor1 = defaultSolverFactory.getSolutionDescriptor();
-        InnerScoreDirectorFactory<TestdataSolution, SimpleScore> scoreDirectorFactory1 =
+        ScoreDirectorFactory<TestdataSolution, SimpleScore> scoreDirectorFactory1 =
                 defaultSolverFactory.getScoreDirectorFactory();
         SoftAssertions.assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor1).isNotNull();
@@ -87,7 +87,7 @@ class DefaultSolverFactoryTest {
         });
 
         SolutionDescriptor<TestdataSolution> solutionDescriptor2 = defaultSolverFactory.getSolutionDescriptor();
-        InnerScoreDirectorFactory<TestdataSolution, SimpleScore> scoreDirectorFactory2 =
+        ScoreDirectorFactory<TestdataSolution, SimpleScore> scoreDirectorFactory2 =
                 defaultSolverFactory.getScoreDirectorFactory();
         SoftAssertions.assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor2).isSameAs(solutionDescriptor1);

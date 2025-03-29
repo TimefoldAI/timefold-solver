@@ -19,7 +19,7 @@ import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.change.ProblemChangeAdapter;
 import ai.timefold.solver.core.impl.solver.random.RandomFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
@@ -79,7 +79,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         return randomFactory;
     }
 
-    public InnerScoreDirectorFactory<Solution_, ?> getScoreDirectorFactory() {
+    public ScoreDirectorFactory<Solution_, ?> getScoreDirectorFactory() {
         return solverScope.getScoreDirector().getScoreDirectorFactory();
     }
 

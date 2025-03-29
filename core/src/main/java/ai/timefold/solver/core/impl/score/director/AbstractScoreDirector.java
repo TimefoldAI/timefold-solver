@@ -668,8 +668,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     private void assertScoreFromScratch(Score_ score, Object completedAction, boolean predicted) {
-        InnerScoreDirectorFactory<Solution_, Score_> assertionScoreDirectorFactory = scoreDirectorFactory
-                .getAssertionScoreDirectorFactory();
+        var assertionScoreDirectorFactory = scoreDirectorFactory.getAssertionScoreDirectorFactory();
         if (assertionScoreDirectorFactory == null) {
             assertionScoreDirectorFactory = scoreDirectorFactory;
         }
@@ -678,7 +677,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
                 .buildDerived()) {
             uncorruptedScoreDirector.setWorkingSolution(workingSolution);
-            Score_ uncorruptedScore = uncorruptedScoreDirector.calculateScore();
+            var uncorruptedScore = uncorruptedScoreDirector.calculateScore();
             if (!score.equals(uncorruptedScore)) {
                 String scoreCorruptionAnalysis = buildScoreCorruptionAnalysis(uncorruptedScoreDirector, predicted);
                 String shadowVariableAnalysis = buildShadowVariableAnalysis(predicted);

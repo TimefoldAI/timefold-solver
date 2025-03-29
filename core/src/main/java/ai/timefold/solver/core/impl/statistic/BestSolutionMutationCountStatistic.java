@@ -9,7 +9,7 @@ import ai.timefold.solver.core.api.solver.event.SolverEventListener;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.mutation.MutationCounter;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
 
 import org.jspecify.annotations.NonNull;
@@ -31,8 +31,8 @@ public class BestSolutionMutationCountStatistic<Solution_> implements SolverStat
     @Override
     public void register(Solver<Solution_> solver) {
         DefaultSolver<Solution_> defaultSolver = (DefaultSolver<Solution_>) solver;
-        InnerScoreDirectorFactory<Solution_, ?> innerScoreDirectorFactory = defaultSolver.getScoreDirectorFactory();
-        SolutionDescriptor<Solution_> solutionDescriptor = innerScoreDirectorFactory.getSolutionDescriptor();
+        ScoreDirectorFactory<Solution_, ?> scoreDirectorFactory = defaultSolver.getScoreDirectorFactory();
+        SolutionDescriptor<Solution_> solutionDescriptor = scoreDirectorFactory.getSolutionDescriptor();
         MutationCounter<Solution_> mutationCounter = new MutationCounter<>(solutionDescriptor);
         BestSolutionMutationCountStatisticListener<Solution_> listener =
                 Metrics.gauge(SolverMetric.BEST_SOLUTION_MUTATION.getMeterId(),

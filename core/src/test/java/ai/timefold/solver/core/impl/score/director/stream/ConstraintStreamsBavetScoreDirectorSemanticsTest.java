@@ -5,7 +5,7 @@ import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorSemanticsTest;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
 import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintConfigurationSolution;
 import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintWeightConstraintProvider;
@@ -17,7 +17,7 @@ import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPi
 final class ConstraintStreamsBavetScoreDirectorSemanticsTest extends AbstractScoreDirectorSemanticsTest {
 
     @Override
-    protected InnerScoreDirectorFactory<TestdataConstraintConfigurationSolution, SimpleScore>
+    protected ScoreDirectorFactory<TestdataConstraintConfigurationSolution, SimpleScore>
             buildInnerScoreDirectorFactoryWithConstraintConfiguration(
                     SolutionDescriptor<TestdataConstraintConfigurationSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
@@ -28,7 +28,7 @@ final class ConstraintStreamsBavetScoreDirectorSemanticsTest extends AbstractSco
     }
 
     @Override
-    protected InnerScoreDirectorFactory<TestdataPinnedListSolution, SimpleScore>
+    protected ScoreDirectorFactory<TestdataPinnedListSolution, SimpleScore>
             buildInnerScoreDirectorFactoryWithListVariableEntityPin(
                     SolutionDescriptor<TestdataPinnedListSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()
@@ -39,7 +39,7 @@ final class ConstraintStreamsBavetScoreDirectorSemanticsTest extends AbstractSco
     }
 
     @Override
-    protected InnerScoreDirectorFactory<TestdataPinnedWithIndexListSolution, SimpleScore>
+    protected ScoreDirectorFactory<TestdataPinnedWithIndexListSolution, SimpleScore>
             buildInnerScoreDirectorFactoryWithListVariablePinIndex(
                     SolutionDescriptor<TestdataPinnedWithIndexListSolution> solutionDescriptor) {
         var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig()

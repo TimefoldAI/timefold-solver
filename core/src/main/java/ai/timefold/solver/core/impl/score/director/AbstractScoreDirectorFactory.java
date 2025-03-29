@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
  * @see ScoreDirectorFactory
  */
 public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Score<Score_>, Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>>
-        implements InnerScoreDirectorFactory<Solution_, Score_> {
+        implements ScoreDirectorFactory<Solution_, Score_> {
 
     protected final transient Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -31,7 +31,7 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
 
     protected InitializingScoreTrend initializingScoreTrend;
 
-    protected InnerScoreDirectorFactory<Solution_, Score_> assertionScoreDirectorFactory = null;
+    protected ScoreDirectorFactory<Solution_, Score_> assertionScoreDirectorFactory = null;
 
     protected boolean assertClonedSolution = false;
     protected boolean trackingWorkingSolution = false;
@@ -60,11 +60,11 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
         this.initializingScoreTrend = initializingScoreTrend;
     }
 
-    public InnerScoreDirectorFactory<Solution_, Score_> getAssertionScoreDirectorFactory() {
+    public ScoreDirectorFactory<Solution_, Score_> getAssertionScoreDirectorFactory() {
         return assertionScoreDirectorFactory;
     }
 
-    public void setAssertionScoreDirectorFactory(InnerScoreDirectorFactory<Solution_, Score_> assertionScoreDirectorFactory) {
+    public void setAssertionScoreDirectorFactory(ScoreDirectorFactory<Solution_, Score_> assertionScoreDirectorFactory) {
         this.assertionScoreDirectorFactory = assertionScoreDirectorFactory;
     }
 

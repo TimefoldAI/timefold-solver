@@ -28,7 +28,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreate
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListAssignMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin.ListRuinRecreateMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirector;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
@@ -336,10 +335,8 @@ class MoveDirectorTest {
     void variableListenersAreTriggeredWhenSolutionIsConsistent() {
         var solutionDescriptor = TestdataShadowedFullSolution.buildSolutionDescriptor();
         var scoreCalculator = new TestdataShadowedFullEasyScoreCalculator();
-        var innerScoreDirector =
-                new EasyScoreDirector.Builder<>(new EasyScoreDirectorFactory<>(solutionDescriptor, scoreCalculator))
-                        .withEasyScoreCalculator(scoreCalculator)
-                        .build();
+        var easyScoreDirectorFactory = new EasyScoreDirectorFactory<>(solutionDescriptor, scoreCalculator);
+        var innerScoreDirector = easyScoreDirectorFactory.buildScoreDirector();
         var moveDirector = new MoveDirector<>(innerScoreDirector);
 
         var entityA = new TestdataShadowedFullEntity("Entity A");
@@ -389,9 +386,7 @@ class MoveDirectorTest {
         var solutionDescriptor = TestdataSingleCascadingSolution.buildSolutionDescriptor();
         var scoreCalculator = new TestdataSingleCascadingEasyScoreCalculator();
         var scoreDirectorFactory = new EasyScoreDirectorFactory<>(solutionDescriptor, scoreCalculator);
-        var innerScoreDirector = new EasyScoreDirector.Builder<>(scoreDirectorFactory)
-                .withEasyScoreCalculator(scoreCalculator)
-                .build();
+        var innerScoreDirector = scoreDirectorFactory.buildScoreDirector();
         var moveDirector = new MoveDirector<>(innerScoreDirector);
 
         var entityA = new TestdataSingleCascadingEntity("Entity A");

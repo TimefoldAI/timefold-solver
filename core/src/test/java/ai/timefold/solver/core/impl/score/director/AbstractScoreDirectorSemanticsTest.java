@@ -24,15 +24,15 @@ public abstract class AbstractScoreDirectorSemanticsTest {
     private final SolutionDescriptor<TestdataPinnedWithIndexListSolution> pinnedWithIndexListSolutionDescriptor =
             TestdataPinnedWithIndexListSolution.buildSolutionDescriptor();
 
-    protected abstract InnerScoreDirectorFactory<TestdataConstraintConfigurationSolution, SimpleScore>
+    protected abstract ScoreDirectorFactory<TestdataConstraintConfigurationSolution, SimpleScore>
             buildInnerScoreDirectorFactoryWithConstraintConfiguration(
                     SolutionDescriptor<TestdataConstraintConfigurationSolution> solutionDescriptor);
 
-    protected abstract InnerScoreDirectorFactory<TestdataPinnedListSolution, SimpleScore>
+    protected abstract ScoreDirectorFactory<TestdataPinnedListSolution, SimpleScore>
             buildInnerScoreDirectorFactoryWithListVariableEntityPin(
                     SolutionDescriptor<TestdataPinnedListSolution> solutionDescriptor);
 
-    protected abstract InnerScoreDirectorFactory<TestdataPinnedWithIndexListSolution, SimpleScore>
+    protected abstract ScoreDirectorFactory<TestdataPinnedWithIndexListSolution, SimpleScore>
             buildInnerScoreDirectorFactoryWithListVariablePinIndex(
                     SolutionDescriptor<TestdataPinnedWithIndexListSolution> solutionDescriptor);
 

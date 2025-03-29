@@ -20,7 +20,7 @@ import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.score.DefaultScoreExplanation;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.util.MutableReference;
 import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningSolutionDiff;
@@ -35,7 +35,7 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
         implements SolutionManager<Solution_, Score_> {
 
     private final DefaultSolverFactory<Solution_> solverFactory;
-    private final InnerScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory;
+    private final ScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory;
 
     public <ProblemId_> DefaultSolutionManager(SolverManager<Solution_, ProblemId_> solverManager) {
         this(((DefaultSolverManager<Solution_, ProblemId_>) solverManager).getSolverFactory());
@@ -46,7 +46,7 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
         this.scoreDirectorFactory = this.solverFactory.getScoreDirectorFactory();
     }
 
-    public InnerScoreDirectorFactory<Solution_, Score_> getScoreDirectorFactory() {
+    public ScoreDirectorFactory<Solution_, Score_> getScoreDirectorFactory() {
         return scoreDirectorFactory;
     }
 
