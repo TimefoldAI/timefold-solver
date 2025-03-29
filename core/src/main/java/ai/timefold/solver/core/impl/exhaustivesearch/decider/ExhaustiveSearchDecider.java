@@ -129,9 +129,9 @@ public final class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearc
         var scoreDirector = stepScope.<Score_> getScoreDirector();
         var move = moveNode.getMove();
         var undoMove = scoreDirector.getMoveDirector().executeTemporary(move,
-                (moveDirector, score) -> {
+                (score, undo) -> {
                     processMove(stepScope, moveNode);
-                    return moveDirector.createUndoMove();
+                    return undo;
                 });
         moveNode.setUndoMove(undoMove);
         var executionPoint = SolverLifecyclePoint.of(stepScope, moveNode.getTreeId());

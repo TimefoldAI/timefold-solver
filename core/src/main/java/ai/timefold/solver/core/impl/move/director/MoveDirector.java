@@ -138,23 +138,23 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         var ephemeralMoveDirector = ephemeral();
         ephemeralMoveDirector.execute(move);
         var score = backingScoreDirector.calculateScore();
-        ephemeralMoveDirector.close();
+        ephemeralMoveDirector.close(); // This undoes the move.
         return score;
     }
 
     public <Result_> Result_ executeTemporary(Move<Solution_> move,
-            BiFunction<EphemeralMoveDirector<Solution_, Score_>, Score_, Result_> postprocessor) {
+            TemporaryMovePostprocessor<Solution_, Score_, Result_> postprocessor) {
         var ephemeralMoveDirector = ephemeral();
         ephemeralMoveDirector.execute(move);
         var score = backingScoreDirector.calculateScore();
-        var result = postprocessor.apply(ephemeralMoveDirector, score);
-        ephemeralMoveDirector.close();
+        var result = postprocessor.apply(score, ephemeralMoveDirector.createUndoMove());
+        ephemeralMoveDirector.close(); // This undoes the move.
         return result;
     }
 
     // Only used in tests of legacy moves.
     public final <Result_> Result_ executeTemporary(ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> move,
-            BiFunction<EphemeralMoveDirector<Solution_, Score_>, Score_, Result_> postprocessor) {
+            TemporaryMovePostprocessor<Solution_, Score_, Result_> postprocessor) {
         return executeTemporary(new LegacyMoveAdapter<>(move), postprocessor);
     }
 
@@ -211,6 +211,21 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     @Override
     public final VariableDescriptorAwareScoreDirector<Solution_> getScoreDirector() {
         return externalScoreDirector;
+    }
+
+    /**
+     * Allows for reading data produced by a temporary move, before it is undone.
+     * The score argument represents the score after executing the move on the solution.
+     * The move argument represents the undo move for that move.
+     * 
+     * @param <Solution_> type of the solution
+     * @param <Score_> score of the move
+     * @param <Result_> user-defined return type of the function
+     */
+    @FunctionalInterface
+    public interface TemporaryMovePostprocessor<Solution_, Score_ extends Score<Score_>, Result_>
+            extends BiFunction<Score_, Move<Solution_>, Result_> {
+
     }
 
 }

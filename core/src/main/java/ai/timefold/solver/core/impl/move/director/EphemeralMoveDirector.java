@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.move.director;
 
-import java.util.function.BiFunction;
-
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
@@ -22,14 +20,14 @@ import org.jspecify.annotations.NullMarked;
  * @param <Solution_>
  */
 @NullMarked
-public final class EphemeralMoveDirector<Solution_, Score_ extends Score<Score_>>
+final class EphemeralMoveDirector<Solution_, Score_ extends Score<Score_>>
         extends MoveDirector<Solution_, Score_> {
 
     EphemeralMoveDirector(InnerScoreDirector<Solution_, Score_> scoreDirector) {
         super(scoreDirector);
     }
 
-    public Move<Solution_> createUndoMove() {
+    Move<Solution_> createUndoMove() {
         return new RecordedUndoMove<>(getVariableChangeRecordingScoreDirector().copyChanges());
     }
 
@@ -46,7 +44,7 @@ public final class EphemeralMoveDirector<Solution_, Score_ extends Score<Score_>
 
     @Override
     public <Result_> Result_ executeTemporary(Move<Solution_> move,
-            BiFunction<EphemeralMoveDirector<Solution_, Score_>, Score_, Result_> postprocessor) {
+            TemporaryMovePostprocessor<Solution_, Score_, Result_> postprocessor) {
         throw new UnsupportedOperationException("Impossible state: This move director does not support undoing moves.");
     }
 

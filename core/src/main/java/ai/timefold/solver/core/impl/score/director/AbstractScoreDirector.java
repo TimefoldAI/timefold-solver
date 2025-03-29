@@ -289,7 +289,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             solutionTracker.setBeforeMoveSolution(workingSolution);
         }
         var moveScore = assertMoveScoreFromScratch ? moveDirector.executeTemporary(move,
-                (director, score) -> {
+                (score, undoMove) -> {
                     if (solutionTracker != null) {
                         solutionTracker.setAfterMoveSolution(workingSolution);
                     }
