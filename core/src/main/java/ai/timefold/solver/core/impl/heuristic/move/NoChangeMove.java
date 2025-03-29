@@ -1,5 +1,8 @@
 package ai.timefold.solver.core.impl.heuristic.move;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 
@@ -33,6 +36,16 @@ public final class NoChangeMove<Solution_> extends AbstractMove<Solution_> {
     @Override
     public Move<Solution_> rebase(ScoreDirector<Solution_> destinationScoreDirector) {
         return (Move<Solution_>) INSTANCE;
+    }
+
+    @Override
+    public Collection<?> getPlanningEntities() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public Collection<?> getPlanningValues() {
+        return Collections.emptyList();
     }
 
     @Override
