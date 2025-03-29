@@ -123,8 +123,7 @@ public class LocalSearchDecider<Solution_> {
         moveScope.setAccepted(acceptor.isAccepted(moveScope));
         forager.addMove(moveScope);
         if (assertExpectedUndoMoveScore) {
-            var undoMoveToString = "Undo(%s)".formatted(move);
-            scoreDirector.assertExpectedUndoMoveScore(moveScope.getMove(), undoMoveToString,
+            scoreDirector.assertExpectedUndoMoveScore(moveScope.getMove(),
                     (Score_) moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore(),
                     SolverLifecyclePoint.of(moveScope));
         }

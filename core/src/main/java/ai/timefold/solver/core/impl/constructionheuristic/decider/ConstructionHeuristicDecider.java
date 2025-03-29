@@ -161,8 +161,7 @@ public class ConstructionHeuristicDecider<Solution_> {
         moveScope.setScore(score);
         forager.addMove(moveScope);
         if (assertExpectedUndoMoveScore) {
-            var undoMoveToString = "Undo(%s)".formatted(moveScope.getMove());
-            scoreDirector.assertExpectedUndoMoveScore(moveScope.getMove(), undoMoveToString,
+            scoreDirector.assertExpectedUndoMoveScore(moveScope.getMove(),
                     (Score_) moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore(),
                     SolverLifecyclePoint.of(moveScope));
         }

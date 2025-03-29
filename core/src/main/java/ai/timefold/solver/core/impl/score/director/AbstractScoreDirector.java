@@ -694,9 +694,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public void assertExpectedUndoMoveScore(Move<Solution_> move, String undoMoveToString, Score_ beforeMoveScore,
-            SolverLifecyclePoint executionPoint) {
-        Score_ undoScore = calculateScore();
+    public void assertExpectedUndoMoveScore(Move<Solution_> move, Score_ beforeMoveScore, SolverLifecyclePoint executionPoint) {
+        var undoScore = calculateScore();
         if (Objects.equals(undoScore, beforeMoveScore)) {
             return;
         }
@@ -707,10 +706,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             solutionTracker.setAfterUndoSolution(workingSolution);
         }
         // Precondition: assert that there are probably no corrupted constraints
+        var undoMoveToString = "Undo(%s)".formatted(move);
         assertWorkingScoreFromScratch(undoScore, undoMoveToString);
         // Precondition: assert that shadow variables aren't stale after doing the undoMove
         assertShadowVariablesAreNotStale(undoScore, undoMoveToString);
-        String corruptionDiagnosis = "";
+        var corruptionDiagnosis = "";
         if (trackingWorkingSolution) {
             // Recalculate all shadow variables from scratch.
             // We cannot set all shadow variables to null, since some variable listeners
@@ -727,8 +727,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
             corruptionDiagnosis = solutionTracker.buildScoreCorruptionMessage();
         }
-        String scoreDifference = undoScore.subtract(beforeMoveScore).toShortString();
-        String corruptionMessage = """
+        var scoreDifference = undoScore.subtract(beforeMoveScore).toShortString();
+        var corruptionMessage = """
                 UndoMove corruption (%s):
                    the beforeMoveScore (%s) is not the undoScore (%s),
                    which is the uncorruptedScore (%s) of the workingSolution.

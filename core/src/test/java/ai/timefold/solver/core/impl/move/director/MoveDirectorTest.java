@@ -388,11 +388,10 @@ class MoveDirectorTest {
     void undoCascadingUpdateShadowVariable() {
         var solutionDescriptor = TestdataSingleCascadingSolution.buildSolutionDescriptor();
         var scoreCalculator = new TestdataSingleCascadingEasyScoreCalculator();
-        var innerScoreDirector = new EasyScoreDirector<>(
-                new EasyScoreDirectorFactory<>(solutionDescriptor, scoreCalculator),
-                true,
-                true,
-                scoreCalculator);
+        var scoreDirectorFactory = new EasyScoreDirectorFactory<>(solutionDescriptor, scoreCalculator);
+        var innerScoreDirector = new EasyScoreDirector.Builder<>(scoreDirectorFactory)
+                .withEasyScoreCalculator(scoreCalculator)
+                .build();
         var moveDirector = new MoveDirector<>(innerScoreDirector);
 
         var entityA = new TestdataSingleCascadingEntity("Entity A");

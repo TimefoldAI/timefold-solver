@@ -330,12 +330,10 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * <p>
      * Furthermore, if the assert fails, a score corruption analysis might be included in the exception message.
      *
-     * @param move never null
-     * @param undoMoveToString never null
+     * @param move            never null
      * @param beforeMoveScore never null
      */
-    void assertExpectedUndoMoveScore(Move<Solution_> move, String undoMoveToString, Score_ beforeMoveScore,
-            SolverLifecyclePoint executionPoint);
+    void assertExpectedUndoMoveScore(Move<Solution_> move, Score_ beforeMoveScore, SolverLifecyclePoint executionPoint);
 
     /**
      * Needs to be called after use because some implementations need to clean up their resources.

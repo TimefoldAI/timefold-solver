@@ -138,8 +138,7 @@ public final class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearc
         if (assertExpectedUndoMoveScore) {
             // In BRUTE_FORCE a stepScore can be null because it was not calculated
             if (stepScope.getStartingStepScore() != null) {
-                var undoMoveToString = "Undo(%s)".formatted(move);
-                scoreDirector.assertExpectedUndoMoveScore(move, undoMoveToString, (Score_) stepScope.getStartingStepScore(),
+                scoreDirector.assertExpectedUndoMoveScore(move, (Score_) stepScope.getStartingStepScore(),
                         executionPoint);
             }
         }
