@@ -296,8 +296,6 @@ public class EntityDescriptor<Solution_> {
             MemberAccessorFactory.MemberAccessorType memberAccessorType;
             if (variableAnnotationClass.equals(CustomShadowVariable.class)
                     || variableAnnotationClass.equals(ShadowVariable.class)
-                    || variableAnnotationClass.equals(DeclarativeShadowVariable.class)
-                    || variableAnnotationClass.equals(InvalidityMarker.class)
                     || variableAnnotationClass.equals(ShadowVariable.List.class)
                     || variableAnnotationClass.equals(PiggybackShadowVariable.class)
                     || variableAnnotationClass.equals(CascadingUpdateShadowVariable.class)) {

@@ -8,16 +8,13 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public interface SingleVariableReference<Entity_, Value_> extends VariableReference<Entity_, Value_> {
     <Fact_> SingleVariableReference<Entity_, Fact_> fact(
-            Class<? extends Fact_> factClass,
-            Function<Value_, Fact_> mapper);
+            Function<Value_, Fact_> mapper, Class<? extends Fact_> factClass);
 
     <Variable_> SingleVariableReference<Entity_, Variable_> variable(
-            Class<? extends Variable_> variableClass,
-            String variableName);
+            String variableName, Class<? extends Variable_> variableClass);
 
     <Variable_> SingleVariableReference<Entity_, Variable_> intermediate(
-            Class<? extends Variable_> intermediateClass,
-            String intermediateName);
+            String intermediateName, Class<? extends Variable_> intermediateClass);
 
     SingleVariableReference<Entity_, Value_> previous();
 
@@ -25,8 +22,8 @@ public interface SingleVariableReference<Entity_, Value_> extends VariableRefere
 
     <Inverse_> SingleVariableReference<Entity_, Inverse_> inverse(Class<? extends Inverse_> inverseClass);
 
-    <Element_> GroupVariableReference<Entity_, Element_> group(Class<? extends Element_> element,
-            Function<Value_, List<Element_>> groupFunction);
+    <Element_> GroupVariableReference<Entity_, Element_> group(Function<Value_, List<Element_>> groupFunction,
+            Class<? extends Element_> elementClass);
 
     SingleVariableReference<Entity_, Value_> allowNullValue();
 }
