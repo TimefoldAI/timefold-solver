@@ -6,10 +6,12 @@
 :icons: font
 
 In spring of 2024, Red Hat announced https://access.redhat.com/articles/7060671[end of life for OptaPlanner].
-Timefold Solver is a faster, feature-rich, and actively developed fork of OptaPlanner.
+Timefold Solver is a faster, feature-rich, and actively developed fork of OptaPlanner by the same team.
 
-Upgrading from OptaPlanner to Timefold Solver Community Edition only takes two minutes.
-Run the command below to upgrade your code automatically.
+== Automatic upgrade
+
+Upgrading from OptaPlanner to Timefold Solver only takes two minutes.
+Run the command below to upgrade your java, build and other code automatically.
 
 [tabs]
 ====
@@ -39,6 +41,12 @@ If it doesn't work, just revert it instead and
 https://github.com/timefoldai/timefold-solver/issues[submit an issue].
 We'll fix it with the highest priority.
 
+Timefold Solver 1.x does not support `scoreDRL`, nor is it upgraded automatically.
+If you're still using `scoreDRL` from OptaPlanner 7.x,
+please link:https://timefold.ai/blog/2023/migrating-score-drl-to-constraint-streams/[upgrade to Constraint Streams first].
+
+== Manual upgrade
+
 Timefold Solver 1.x is backward compatible with OptaPlanner 8.x,
 except for the following changes:
 
@@ -58,9 +66,3 @@ except for the following changes:
 * The unsecure module `persistence-xstream` is removed, because of old, unresolved CVEs in XStream.
 * The deprecated, undocumented `ScoreHibernateType` has been removed because of Jakarta.
 Use JPA's `ScoreConverter` instead.
-
-Timefold Solver 1.x does not support `scoreDRL`, nor is it upgraded automatically.
-If you're still using `scoreDRL` from OptaPlanner 7.x,
-please link:https://timefold.ai/blog/2023/migrating-score-drl-to-constraint-streams/[upgrade to Constraint Streams first].
-
-All other deprecated code remains to make upgrading easy.
