@@ -160,6 +160,4 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
         return ifNotExistsIncludingUnassigned(otherClass, allJoiners);
     }
 
-    UniDataStream<Solution_, A> addNull();
-
 }

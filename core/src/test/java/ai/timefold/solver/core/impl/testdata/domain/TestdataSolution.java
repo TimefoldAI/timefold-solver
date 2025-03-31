@@ -23,6 +23,14 @@ public class TestdataSolution extends TestdataObject {
     }
 
     public static TestdataSolution generateSolution(int valueListSize, int entityListSize) {
+        return generateSolution(valueListSize, entityListSize, true);
+    }
+
+    public static TestdataSolution generateUninitializedSolution(int valueListSize, int entityListSize) {
+        return generateSolution(valueListSize, entityListSize, false);
+    }
+
+    private static TestdataSolution generateSolution(int valueListSize, int entityListSize, boolean initialized) {
         TestdataSolution solution = new TestdataSolution("Generated Solution 0");
         List<TestdataValue> valueList = new ArrayList<>(valueListSize);
         for (int i = 0; i < valueListSize; i++) {
@@ -32,7 +40,7 @@ public class TestdataSolution extends TestdataObject {
         solution.setValueList(valueList);
         List<TestdataEntity> entityList = new ArrayList<>(entityListSize);
         for (int i = 0; i < entityListSize; i++) {
-            TestdataValue value = valueList.get(i % valueListSize);
+            TestdataValue value = initialized ? valueList.get(i % valueListSize) : null;
             TestdataEntity entity = new TestdataEntity("Generated Entity " + i, value);
             entityList.add(entity);
         }
