@@ -37,11 +37,9 @@ public class ChangeMoveProvider<Solution_, Entity_, Value_>
         var defaultMoveStreamFactory = (DefaultMoveStreamFactory<Solution_>) moveStreamFactory;
         var valueStream = defaultMoveStreamFactory.enumeratePossibleValues(variableMetaModel)
                 .filter(this::acceptValue);
-        if (variableMetaModel.allowsUnassigned()) {
-            valueStream = valueStream.addNull();
-        }
-        return moveStreamFactory.pick(defaultMoveStreamFactory.enumerateEntities(variableMetaModel.entity())
-                .filter(this::acceptEntity))
+        var entityStream = defaultMoveStreamFactory.enumerateEntities(variableMetaModel)
+                .filter(this::acceptEntity);
+        return moveStreamFactory.pick(entityStream)
                 .pick(valueStream, this::acceptEntityValuePair)
                 .asMove((solution, entity, value) -> new ChangeMove<>(variableMetaModel, entity, value));
     }

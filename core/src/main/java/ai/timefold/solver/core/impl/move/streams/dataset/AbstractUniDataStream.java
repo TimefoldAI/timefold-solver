@@ -75,11 +75,6 @@ public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataSt
                 joinerComber.getMergedJoiner(), joinerComber.getMergedFiltering()), childStreamList::add);
     }
 
-    @Override
-    public UniDataStream<Solution_, A> addNull() {
-        throw new UnsupportedOperationException();
-    }
-
     public UniDataset<Solution_, A> createDataset() {
         var stream = shareAndAddChild(new TerminalUniDataStream<>(dataStreamFactory, this));
         return stream.getDataset();

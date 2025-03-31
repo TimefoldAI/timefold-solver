@@ -13,13 +13,15 @@ import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSessi
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
+import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEntity;
+import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedSolution;
 
 import org.junit.jupiter.api.Test;
 
 class ChangeMoveProviderTest {
 
     @Test
-    void fromSolution() {
+    void fromSolutionBasicVariable() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var variableMetaModel = solutionDescriptor.getMetaModel()
                 .entity(TestdataEntity.class)
@@ -79,8 +81,71 @@ class ChangeMoveProviderTest {
         });
     }
 
-    private MoveStreamSession<TestdataSolution> createSession(DefaultMoveStreamFactory<TestdataSolution> moveStreamFactory,
-            SolutionDescriptor<TestdataSolution> solutionDescriptor, TestdataSolution solution) {
+    @Test
+    void fromSolutionBasicVariableAllowsUnassigned() {
+        var solutionDescriptor = TestdataAllowsUnassignedSolution.buildSolutionDescriptor();
+        var variableMetaModel = solutionDescriptor.getMetaModel()
+                .entity(TestdataAllowsUnassignedEntity.class)
+                .genuineVariable()
+                .ensurePlanningVariable();
+        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor);
+        var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
+        var moveProducer = moveProvider.apply(moveStreamFactory);
+
+        var solution = TestdataAllowsUnassignedSolution.generateSolution(2, 2);
+        var firstEntity = solution.getEntityList().get(0); // Assigned to null.
+        var secondEntity = solution.getEntityList().get(1); // Assigned to secondValue.
+        var firstValue = solution.getValueList().get(0); // Not assigned to any entity.
+        var secondValue = solution.getValueList().get(1);
+        var moveStreamSession = createSession(moveStreamFactory, solutionDescriptor, solution);
+
+        // Filters out moves that would change the value to the value the entity already has.
+        // Therefore this will have 4 moves (2 entities * 2 values) as opposed to 6 (2 entities * 3 values).
+        var moveIterable = moveProducer.getMoveIterable(moveStreamSession);
+        assertThat(moveIterable).hasSize(4);
+
+        var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
+                .map(m -> (ChangeMove<TestdataAllowsUnassignedSolution, TestdataAllowsUnassignedEntity, TestdataValue>) m)
+                .toList();
+        assertThat(moveList).hasSize(4);
+
+        // First entity is assigned to null, therefore the applicable moves assign to firstValue and secondValue.
+        var firstMove = moveList.get(0);
+        assertSoftly(softly -> {
+            softly.assertThat(firstMove.extractPlanningEntities())
+                    .containsExactly(firstEntity);
+            softly.assertThat(firstMove.extractPlanningValues())
+                    .containsExactly(firstValue);
+        });
+
+        var secondMove = moveList.get(1);
+        assertSoftly(softly -> {
+            softly.assertThat(secondMove.extractPlanningEntities())
+                    .containsExactly(firstEntity);
+            softly.assertThat(secondMove.extractPlanningValues())
+                    .containsExactly(secondValue);
+        });
+
+        // Second entity is assigned to secondValue, therefore the applicable moves assign to null and firstValue.
+        var thirdMove = moveList.get(2);
+        assertSoftly(softly -> {
+            softly.assertThat(thirdMove.extractPlanningEntities())
+                    .containsExactly(secondEntity);
+            softly.assertThat(thirdMove.extractPlanningValues())
+                    .containsExactly(new TestdataValue[] { null });
+        });
+
+        var fourthMove = moveList.get(3);
+        assertSoftly(softly -> {
+            softly.assertThat(fourthMove.extractPlanningEntities())
+                    .containsExactly(secondEntity);
+            softly.assertThat(fourthMove.extractPlanningValues())
+                    .containsExactly(firstValue);
+        });
+    }
+
+    private <Solution_> MoveStreamSession<Solution_> createSession(DefaultMoveStreamFactory<Solution_> moveStreamFactory,
+            SolutionDescriptor<Solution_> solutionDescriptor, Solution_ solution) {
         var moveStreamSession = moveStreamFactory.createSession(solution);
         solutionDescriptor.visitAll(solution, moveStreamSession::insert);
         moveStreamSession.settle();

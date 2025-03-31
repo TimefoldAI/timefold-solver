@@ -12,6 +12,7 @@ import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniMoveStream;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -43,6 +44,17 @@ public final class DefaultMoveStreamFactory<Solution_>
         return enumerate(entityMetaModel.type());
     }
 
+    public <Entity_> UniDataStream<Solution_, Entity_>
+            enumerateEntities(PlanningVariableMetaModel<Solution_, Entity_, ?> variableMetaModel) {
+        return enumerateEntities(variableMetaModel.entity());
+    }
+
+    /**
+     * Enumerate possible values for a given variable.
+     * If the variable allows unassigned values, the resulting stream will include a null value.
+     *
+     * @return data stream with all possible values of a given variable
+     */
     public <Entity_, A> UniDataStream<Solution_, A>
             enumeratePossibleValues(GenuineVariableMetaModel<Solution_, Entity_, A> variableMetaModel) {
         var variableDescriptor = getVariableDescriptor(variableMetaModel);
