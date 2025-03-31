@@ -30,6 +30,6 @@ public interface SingleConstraintVerification<Solution_> {
     SingleConstraintAssertion given(@NonNull Object @NonNull... facts);
 
     @NonNull
-    SingleConstraintAssertion givenSolution(@NonNull Solution_ solution);
+    SingleConstraintListener givenSolution(@NonNull Solution_ solution);
 
 }

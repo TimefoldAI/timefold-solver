@@ -14,8 +14,8 @@ import ai.timefold.solver.test.api.score.stream.MultiConstraintAssertion;
 
 import org.jspecify.annotations.NonNull;
 
-public final class DefaultMultiConstraintAssertion<Score_ extends Score<Score_>>
-        implements MultiConstraintAssertion {
+public sealed class DefaultMultiConstraintAssertion<Score_ extends Score<Score_>>
+        implements MultiConstraintAssertion permits DefaultMultiConstraintListener {
 
     private final ConstraintProvider constraintProvider;
     private final Score_ actualScore;

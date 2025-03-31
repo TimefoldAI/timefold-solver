@@ -4,11 +4,13 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
@@ -28,6 +30,10 @@ import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerif
 import ai.timefold.solver.test.api.score.stream.testdata.justification.TestFirstJustification;
 import ai.timefold.solver.test.api.score.stream.testdata.justification.TestSecondJustification;
 
+import ai.timefold.solver.test.api.score.stream.testdata.shadow.list.TestdataListShadowConstraintVerifierConstraintProvider;
+import ai.timefold.solver.test.api.score.stream.testdata.shadow.list.TestdataListShadowConstraintVerifierEntity;
+import ai.timefold.solver.test.api.score.stream.testdata.shadow.list.TestdataListShadowConstraintVerifierSolution;
+import ai.timefold.solver.test.api.score.stream.testdata.shadow.list.TestdataListShadowConstraintVerifierValue;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
@@ -39,10 +45,83 @@ class SingleConstraintAssertionTest {
                     TestdataConstraintVerifierFirstEntity.class,
                     TestdataConstraintVerifierSecondEntity.class);
 
+    private final ConstraintVerifier<TestdataListShadowConstraintVerifierConstraintProvider, TestdataListShadowConstraintVerifierSolution> shadowConstraintVerifier =
+            ConstraintVerifier.build(new TestdataListShadowConstraintVerifierConstraintProvider(),
+                    TestdataListShadowConstraintVerifierSolution.class,
+                    TestdataListShadowConstraintVerifierEntity.class,
+                    TestdataListShadowConstraintVerifierValue.class);
+
     private final ConstraintVerifier<TestdataConstraintVerifierJustificationProvider, TestdataConstraintVerifierSolution> constraintVerifierForJustification =
             ConstraintVerifier.build(new TestdataConstraintVerifierJustificationProvider(),
                     TestdataConstraintVerifierSolution.class,
                     TestdataConstraintVerifierFirstEntity.class);
+
+    @Test
+    void triggerVariableListenersListSingleSolution() {
+        var solution = TestdataListShadowConstraintVerifierSolution.generateSolution(2, 1);
+
+        // Test cascade penalty
+        assertThatCode(() -> shadowConstraintVerifier
+                .verifyThat(TestdataListShadowConstraintVerifierConstraintProvider::penalizeCascadingUpdate)
+                .givenSolution(solution)
+                .settingAllShadowVariables()
+                .penalizesBy(10)).doesNotThrowAnyException();
+
+        // Test cascade reward
+        assertThatCode(() -> shadowConstraintVerifier
+                .verifyThat(TestdataListShadowConstraintVerifierConstraintProvider::rewardCascadingUpdate)
+                .givenSolution(solution)
+                .settingAllShadowVariables()
+                .rewardsWith(20)).doesNotThrowAnyException();
+
+        // Test cascade justification
+        assertThatCode(() -> shadowConstraintVerifier
+                .verifyThat(TestdataListShadowConstraintVerifierConstraintProvider::penalizeCascadingUpdate)
+                .givenSolution(solution)
+                .settingAllShadowVariables()
+                .justifiesWith(DefaultConstraintJustification.of(SimpleScore.of(-10), solution.getValueList().get(0))))
+                .doesNotThrowAnyException();
+
+        // Test cascade indictment
+        assertThatCode(() -> shadowConstraintVerifier
+                .verifyThat(TestdataListShadowConstraintVerifierConstraintProvider::penalizeCascadingUpdate)
+                .givenSolution(solution)
+                .settingAllShadowVariables()
+                .indictsWith(solution.getValueList().get(0)))
+                .doesNotThrowAnyException();
+
+        solution.getEntityList().get(0).setValueList(List.of(solution.getValueList().get(1)));
+        solution.getValueList().get(0).setEntity(null);
+        // Test listener penalty
+        assertThatCode(() -> shadowConstraintVerifier
+                .verifyThat(TestdataListShadowConstraintVerifierConstraintProvider::penalizeListener)
+                .givenSolution(solution)
+                .settingAllShadowVariables()
+                .penalizesBy(20)).doesNotThrowAnyException();
+
+        // Test listener reward
+        assertThatCode(() -> shadowConstraintVerifier
+                .verifyThat(TestdataListShadowConstraintVerifierConstraintProvider::rewardListener)
+                .givenSolution(solution)
+                .settingAllShadowVariables()
+                .rewardsWith(40)).doesNotThrowAnyException();
+
+        // Test listener justification
+        assertThatCode(() -> shadowConstraintVerifier
+                .verifyThat(TestdataListShadowConstraintVerifierConstraintProvider::penalizeListener)
+                .givenSolution(solution)
+                .settingAllShadowVariables()
+                .justifiesWith(DefaultConstraintJustification.of(SimpleScore.of(-20), solution.getValueList().get(1))))
+                .doesNotThrowAnyException();
+
+        // Test listener indictment
+        assertThatCode(() -> shadowConstraintVerifier
+                .verifyThat(TestdataListShadowConstraintVerifierConstraintProvider::penalizeListener)
+                .givenSolution(solution)
+                .settingAllShadowVariables()
+                .indictsWith(solution.getValueList().get(1)))
+                .doesNotThrowAnyException();
+    }
 
     @Test
     void penalizesAndDoesNotReward() {
@@ -215,7 +294,6 @@ class SingleConstraintAssertionTest {
                 .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
                 .rewardsLessThan("There should be less than 2 rewards", 3))
                 .doesNotThrowAnyException();
-        ;
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
                 .penalizesLessThan("There should not be penalties", 2))

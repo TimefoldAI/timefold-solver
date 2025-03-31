@@ -29,15 +29,15 @@ import ai.timefold.solver.test.api.score.stream.SingleConstraintAssertion;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Score<Score_>>
-        implements SingleConstraintAssertion {
+public sealed class DefaultSingleConstraintAssertion<Solution_, Score_ extends Score<Score_>>
+        implements SingleConstraintAssertion permits DefaultSingleConstraintListener {
 
     private final AbstractConstraint<Solution_, ?, ?> constraint;
     private final ScoreDefinition<Score_> scoreDefinition;
-    private final Score_ score;
-    private final Collection<ConstraintMatchTotal<Score_>> constraintMatchTotalCollection;
-    private final Collection<ConstraintJustification> justificationCollection;
-    private final Collection<Indictment<Score_>> indictmentCollection;
+    private Score_ score;
+    private Collection<ConstraintMatchTotal<Score_>> constraintMatchTotalCollection;
+    private Collection<ConstraintJustification> justificationCollection;
+    private Collection<Indictment<Score_>> indictmentCollection;
 
     @SuppressWarnings("unchecked")
     DefaultSingleConstraintAssertion(AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, ?> scoreDirectorFactory,
@@ -49,6 +49,11 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Impossible state: no constraint found."));
         this.scoreDefinition = scoreDirectorFactory.getScoreDefinition();
+        update(score, constraintMatchTotalMap, indictmentMap);
+    }
+
+    final void update(Score_ score, Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
+                      Map<Object, Indictment<Score_>> indictmentMap) {
         this.score = requireNonNull(score);
         this.constraintMatchTotalCollection = new ArrayList<>(requireNonNull(constraintMatchTotalMap).values());
         this.indictmentCollection = new ArrayList<>(requireNonNull(indictmentMap).values());
@@ -262,18 +267,15 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         ScoreImpactType actualScoreImpactType = constraint.getScoreImpactType();
         if (actualScoreImpactType == ScoreImpactType.MIXED) {
             // Impact means we need to check for expected impact type and actual impact match.
-            switch (scoreImpactType) {
-                case REWARD:
-                    Number negatedImpact = deducedImpacts.value();
-                    if (equalityPredicate.test(matchWeightTotal, negatedImpact)) {
-                        return;
-                    }
-                    break;
-                case PENALTY:
-                    if (equalityPredicate.test(matchWeightTotal, impact)) {
-                        return;
-                    }
-                    break;
+            if (requireNonNull(scoreImpactType) == ScoreImpactType.REWARD) {
+                Number negatedImpact = deducedImpacts.value();
+                if (equalityPredicate.test(matchWeightTotal, negatedImpact)) {
+                    return;
+                }
+            } else if (scoreImpactType == ScoreImpactType.PENALTY) {
+                if (equalityPredicate.test(matchWeightTotal, impact)) {
+                    return;
+                }
             }
         } else if (actualScoreImpactType == scoreImpactType && equalityPredicate.test(matchWeightTotal, impact)) {
             // Reward and positive or penalty and negative means all is OK.
@@ -292,18 +294,15 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         ScoreImpactType actualScoreImpactType = constraint.getScoreImpactType();
         if (actualScoreImpactType == ScoreImpactType.MIXED) {
             // Impact means we need to check for expected impact type and actual impact match.
-            switch (scoreImpactType) {
-                case REWARD:
-                    Number negatedImpact = deducedImpacts.value();
-                    if (comparator.compare(matchWeightTotal, negatedImpact) < 0) {
-                        return;
-                    }
-                    break;
-                case PENALTY:
-                    if (comparator.compare(matchWeightTotal, impact) < 0) {
-                        return;
-                    }
-                    break;
+            if (requireNonNull(scoreImpactType) == ScoreImpactType.REWARD) {
+                Number negatedImpact = deducedImpacts.value();
+                if (comparator.compare(matchWeightTotal, negatedImpact) < 0) {
+                    return;
+                }
+            } else if (scoreImpactType == ScoreImpactType.PENALTY) {
+                if (comparator.compare(matchWeightTotal, impact) < 0) {
+                    return;
+                }
             }
         } else if (actualScoreImpactType == scoreImpactType && comparator.compare(matchWeightTotal, impact) < 0) {
             // Reward and positive or penalty and negative means all is OK.
@@ -322,18 +321,15 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
         ScoreImpactType actualScoreImpactType = constraint.getScoreImpactType();
         if (actualScoreImpactType == ScoreImpactType.MIXED) {
             // Impact means we need to check for expected impact type and actual impact match.
-            switch (scoreImpactType) {
-                case REWARD:
-                    Number negatedImpact = deducedImpacts.value();
-                    if (comparator.compare(matchWeightTotal, negatedImpact) > 0) {
-                        return;
-                    }
-                    break;
-                case PENALTY:
-                    if (comparator.compare(matchWeightTotal, impact) > 0) {
-                        return;
-                    }
-                    break;
+            if (requireNonNull(scoreImpactType) == ScoreImpactType.REWARD) {
+                Number negatedImpact = deducedImpacts.value();
+                if (comparator.compare(matchWeightTotal, negatedImpact) > 0) {
+                    return;
+                }
+            } else if (scoreImpactType == ScoreImpactType.PENALTY) {
+                if (comparator.compare(matchWeightTotal, impact) > 0) {
+                    return;
+                }
             }
         } else if (actualScoreImpactType == scoreImpactType && comparator.compare(matchWeightTotal, impact) > 0) {
             // Reward and positive or penalty and negative means all is OK.
