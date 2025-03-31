@@ -112,22 +112,22 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
     }
 
     @Override
-    public <Fact_> GroupVariableReference<Entity_, Fact_> facts(Class<? extends Fact_> factClass,
-            Function<Value_, Fact_> mapper) {
+    public <Fact_> GroupVariableReference<Entity_, Fact_> facts(Function<Value_, Fact_> mapper,
+            Class<? extends Fact_> factClass) {
         return child(factClass, new FactGraphNavigator<>(getVariableId(), factClass, mapper));
     }
 
     @Override
-    public <Variable_> GroupVariableReference<Entity_, Variable_> variables(Class<? extends Variable_> variableClass,
-            String variableName) {
+    public <Variable_> GroupVariableReference<Entity_, Variable_> variables(String variableName,
+            Class<? extends Variable_> variableClass) {
         return child(variableClass,
                 new VariableGraphNavigator<>(getVariableId(),
                         solutionDescriptor.getEntityDescriptorStrict(valueType).getVariableDescriptorOrFail(variableName)));
     }
 
     @Override
-    public <Variable_> GroupVariableReference<Entity_, Variable_> intermediates(Class<? extends Variable_> intermediateClass,
-            String intermediateName) {
+    public <Variable_> GroupVariableReference<Entity_, Variable_> intermediates(String intermediateName,
+            Class<? extends Variable_> intermediateClass) {
         return child(intermediateClass,
                 new IntermediateGraphNavigator<>(getVariableId(),
                         valueType,
@@ -258,8 +258,8 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
                                         groupElement,
                                         (InnerVariableReference<Solution_, ?, ?>) shadowVariableFactory
                                                 .entity(variableEntityClass)
-                                                .variable(variableGraphNavigator.variableDescriptor.getVariablePropertyType(),
-                                                        variableGraphNavigator.variableDescriptor.getVariableName())),
+                                                .variable(variableGraphNavigator.variableDescriptor.getVariableName(),
+                                                        variableGraphNavigator.variableDescriptor.getVariablePropertyType())),
                                 graph.addVariableReferenceEntity(source.getVariableId(),
                                         object,
                                         source));
@@ -271,8 +271,8 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
                                         groupElement,
                                         (InnerVariableReference<Solution_, ?, ?>) shadowVariableFactory
                                                 .entity(variableEntityClass)
-                                                .intermediate(intermediateGraphNavigator.getValueType(),
-                                                        intermediateGraphNavigator.getIntermediateName())),
+                                                .intermediate(intermediateGraphNavigator.getIntermediateName(),
+                                                        intermediateGraphNavigator.getValueType())),
                                 graph.addVariableReferenceEntity(source.getVariableId(),
                                         object,
                                         source));
@@ -298,7 +298,7 @@ public final class DefaultGroupVariableReference<Solution_, Entity_, ParentValue
 
     @Override
     public boolean isNullValueValid() {
-        return parent.isNullValueValid();
+        return allowNullValues;
     }
 
     @Override

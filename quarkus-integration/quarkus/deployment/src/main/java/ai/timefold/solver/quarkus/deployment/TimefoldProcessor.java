@@ -8,6 +8,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -35,6 +36,7 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
+import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
@@ -721,12 +723,31 @@ class TimefoldProcessor {
                                             planningEntityClassResultHandle);
                                 }
 
+                                ResultHandle enabledPreviewFeatureSet = methodCreator.invokeStaticMethod(
+                                        MethodDescriptor.ofMethod(
+                                                EnumSet.class, "noneOf", EnumSet.class, Class.class),
+                                        methodCreator.loadClass(PreviewFeature.class));
+                                if (solverConfig.getEnablePreviewFeatureSet() != null) {
+                                    for (var enabledPreviewFeature : solverConfig.getEnablePreviewFeatureSet()) {
+                                        methodCreator.invokeVirtualMethod(
+                                                MethodDescriptor.ofMethod(EnumSet.class, "add", boolean.class, Object.class),
+                                                enabledPreviewFeatureSet, methodCreator.load(enabledPreviewFeature));
+                                    }
+                                }
+                                for (int i = 0; i < planningEntityClassList.size(); i++) {
+                                    ResultHandle planningEntityClassResultHandle =
+                                            methodCreator.loadClass(planningEntityClassList.get(i));
+                                    methodCreator.writeArrayValue(planningEntityClassesResultHandle, i,
+                                            planningEntityClassResultHandle);
+                                }
+
                                 // Got incompatible class change error when trying to invoke static method on
                                 // ConstraintVerifier.build(ConstraintProvider, Class, Class...)
                                 ResultHandle solutionDescriptorResultHandle = methodCreator.invokeStaticMethod(
                                         MethodDescriptor.ofMethod(SolutionDescriptor.class, "buildSolutionDescriptor",
-                                                SolutionDescriptor.class, Class.class, Class[].class),
-                                        planningSolutionClassResultHandle, planningEntityClassesResultHandle);
+                                                SolutionDescriptor.class, Set.class, Class.class, Class[].class),
+                                        enabledPreviewFeatureSet, planningSolutionClassResultHandle,
+                                        planningEntityClassesResultHandle);
                                 ResultHandle constraintVerifierResultHandle = methodCreator.newInstance(
                                         MethodDescriptor.ofConstructor(
                                                 "ai.timefold.solver.test.impl.score.stream.DefaultConstraintVerifier",

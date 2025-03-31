@@ -16,26 +16,26 @@ public class TestdataFSRShadowVariableProvider implements ShadowVariableProvider
     public void defineVariables(@NonNull ShadowVariableFactory variableFactory) {
         var previousHandle = variableFactory.entity(TestdataFSRVisit.class).previous();
         var vehicleHandle = variableFactory.entity(TestdataFSRVisit.class).inverse(TestdataFSRVehicle.class);
-        var previousFinishTimeHandle = previousHandle.variable(LocalDateTime.class, "serviceFinishTime");
-        var visitGroupHandle = variableFactory.entity(TestdataFSRVisit.class).group(TestdataFSRVisit.class,
-                TestdataFSRVisit::getVisitGroup);
-        var visitGroupReadyTimesHandle = visitGroupHandle.intermediates(LocalDateTime.class, "serviceReadyTime");
+        var previousFinishTimeHandle = previousHandle.variable("serviceFinishTime", LocalDateTime.class);
+        var visitGroupHandle = variableFactory.entity(TestdataFSRVisit.class).group(TestdataFSRVisit::getVisitGroup,
+                TestdataFSRVisit.class);
+        var visitGroupReadyTimesHandle = visitGroupHandle.intermediates("serviceReadyTime", LocalDateTime.class);
 
         var serviceReadyTimeHandle = variableFactory.newShadow(TestdataFSRVisit.class)
-                .computeIfHasAll(previousFinishTimeHandle,
+                .computeIfHas(previousFinishTimeHandle,
                         (visit, previousServiceEndTime) -> previousServiceEndTime.plusMinutes(30L))
                 .elseComputeIfHasAll(vehicleHandle,
                         (visit, vehicle) -> BASE_START_TIME)
                 .asIntermediate("serviceReadyTime");
 
         var serviceStartTimeHandle = variableFactory.newShadow(TestdataFSRVisit.class)
-                .computeIfHasAll(visitGroupReadyTimesHandle,
+                .computeIfHas(visitGroupReadyTimesHandle,
                         (visit, groupReadyTimes) -> groupReadyTimes.isEmpty() ? null : Collections.max(groupReadyTimes))
                 .elseComputeIfHasAll(serviceReadyTimeHandle, (visit, readyTime) -> readyTime)
                 .as("serviceStartTime");
 
         var serviceEndTimeHandle = variableFactory.newShadow(TestdataFSRVisit.class)
-                .computeIfHasAll(serviceStartTimeHandle, (visit, startTime) -> startTime.plusMinutes(30))
+                .computeIfHas(serviceStartTimeHandle, (visit, startTime) -> startTime.plusMinutes(30))
                 .as("serviceFinishTime");
     }
 }

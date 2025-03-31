@@ -16,10 +16,10 @@ public class TestdataTAShadowVariableProvider implements ShadowVariableProvider 
     private static LocalDateTime getMaxEndTime(TestdataTATask task, LocalDateTime initialStartTime,
             List<@Nullable LocalDateTime> dependencyEndTimes, String name) {
         var maxEndTime = initialStartTime;
+        if (dependencyEndTimes.size() != task.getDependencies().size()) {
+            return null;
+        }
         for (LocalDateTime endTime : dependencyEndTimes) {
-            if (endTime == null) {
-                return null;
-            }
             if (endTime.isAfter(maxEndTime)) {
                 maxEndTime = endTime;
             }
@@ -30,14 +30,14 @@ public class TestdataTAShadowVariableProvider implements ShadowVariableProvider 
     @Override
     public void defineVariables(ShadowVariableFactory shadowVariableFactory) {
         var task = shadowVariableFactory.entity(TestdataTATask.class);
-        var taskDependencies = task.group(TestdataTATask.class, TestdataTATask::getDependencies);
-        var taskDependencyEndTimes = taskDependencies.variables(LocalDateTime.class, "endTime").allowNullValues();
+        var taskDependencies = task.group(TestdataTATask::getDependencies, TestdataTATask.class);
+        var taskDependencyEndTimes = taskDependencies.variables("endTime", LocalDateTime.class);
 
         var previousTask = task.previous();
-        var previousTaskEndTime = previousTask.variable(LocalDateTime.class, "endTime");
+        var previousTaskEndTime = previousTask.variable("endTime", LocalDateTime.class);
 
         var taskEmployee = task.inverse(TestdataTAEmployee.class);
-        var taskEmployeeStartTime = taskEmployee.fact(LocalDateTime.class, TestdataTAEmployee::getStartTime);
+        var taskEmployeeStartTime = taskEmployee.fact(TestdataTAEmployee::getStartTime, LocalDateTime.class);
 
         var startTime = shadowVariableFactory.newShadow(TestdataTATask.class)
                 .computeIfHasAll(
@@ -55,7 +55,7 @@ public class TestdataTAShadowVariableProvider implements ShadowVariableProvider 
                 .as("startTime");
 
         var endTime = shadowVariableFactory.newShadow(TestdataTATask.class)
-                .computeIfHasAll(startTime, (t, taskStartTime) -> taskStartTime.plus(t.getDuration()))
+                .computeIfHas(startTime, (t, taskStartTime) -> taskStartTime.plus(t.getDuration()))
                 .as("endTime");
     }
 }

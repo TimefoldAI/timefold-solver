@@ -10,7 +10,7 @@ import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public interface ShadowCalculationBuilderFactory<Entity_> {
-    <Value_, A> ShadowCalculationBuilder<Entity_, Value_> computeIfHasAll(
+    <Value_, A> ShadowCalculationBuilder<Entity_, Value_> computeIfHas(
             VariableReference<Entity_, A> a,
             BiFunction<Entity_, A, Value_> function);
 

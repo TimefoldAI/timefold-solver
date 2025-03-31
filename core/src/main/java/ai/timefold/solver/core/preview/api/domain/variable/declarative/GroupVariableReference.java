@@ -8,15 +8,13 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public interface GroupVariableReference<Entity_, Value_> extends VariableReference<Entity_, List<Value_>> {
     <Fact_> GroupVariableReference<Entity_, Fact_> facts(
-            Class<? extends Fact_> factClass,
-            Function<Value_, Fact_> mapper);
+            Function<Value_, Fact_> mapper, Class<? extends Fact_> factClass);
 
-    <Variable_> GroupVariableReference<Entity_, Variable_> variables(Class<? extends Variable_> variableClass,
-            String variableName);
+    <Variable_> GroupVariableReference<Entity_, Variable_> variables(String variableName,
+            Class<? extends Variable_> variableClass);
 
     <Variable_> GroupVariableReference<Entity_, Variable_> intermediates(
-            Class<? extends Variable_> intermediateClass,
-            String intermediateName);
+            String intermediateName, Class<? extends Variable_> intermediateClass);
 
     GroupVariableReference<Entity_, Value_> previous();
 

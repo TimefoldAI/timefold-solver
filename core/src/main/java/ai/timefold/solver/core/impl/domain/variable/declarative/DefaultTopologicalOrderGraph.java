@@ -4,20 +4,23 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.PrimitiveIterator;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import ai.timefold.solver.core.impl.util.CollectionUtils;
+
 public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
     private final int[] ord;
-    private final boolean[] loopedComponent;
+    private final Map<Integer, List<Integer>> componentMap;
     private final Set<Integer>[] forwardEdges;
     private final Set<Integer>[] backEdges;
 
     @SuppressWarnings({ "unchecked" })
     public DefaultTopologicalOrderGraph(final int size) {
         this.ord = new int[size];
-        this.loopedComponent = new boolean[size];
+        this.componentMap = CollectionUtils.newLinkedHashMap(size);
         this.forwardEdges = new Set[size];
         this.backEdges = new Set[size];
         for (int i = 0; i < size; i++) {
@@ -41,14 +44,17 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
 
     @Override
     public PrimitiveIterator.OfInt nodeForwardEdges(int from) {
-        return forwardEdges[from].stream().mapToInt(Integer::intValue).iterator();
+        return componentMap.get(from).stream()
+                .flatMap(member -> forwardEdges[member].stream())
+                .mapToInt(Integer::intValue)
+                .distinct().iterator();
     }
 
     @Override
     public boolean isLooped(LoopedTracker loopedTracker, int node) {
         return switch (loopedTracker.status(node)) {
             case UNKNOWN -> {
-                if (loopedComponent[node]) {
+                if (componentMap.get(node).size() > 1) {
                     loopedTracker.mark(node, LoopedStatus.LOOPED);
                     yield true;
                 }
@@ -81,6 +87,7 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
         int[] lowMap = new int[size];
         boolean[] onStackSet = new boolean[size];
         List<BitSet> components = new ArrayList<>();
+        componentMap.clear();
 
         for (int node = 0; node < size; node++) {
             if (indexMap[node] == 0) {
@@ -91,9 +98,11 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
         int ordIndex = 0;
         for (int i = components.size() - 1; i >= 0; i--) {
             var component = components.get(i);
+            var componentNodes = new ArrayList<Integer>(component.cardinality());
             for (int node = component.nextSetBit(0); node >= 0; node = component.nextSetBit(node + 1)) {
                 ord[node] = ordIndex;
-                loopedComponent[node] = component.cardinality() > 1;
+                componentNodes.add(node);
+                componentMap.put(node, componentNodes);
                 ordIndex++;
                 if (node == Integer.MAX_VALUE) {
                     break;
