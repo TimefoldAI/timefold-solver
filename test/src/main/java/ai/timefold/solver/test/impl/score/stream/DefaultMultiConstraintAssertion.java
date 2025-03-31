@@ -1,50 +1,24 @@
 package ai.timefold.solver.test.impl.score.stream;
 
-import static java.util.Objects.requireNonNull;
-
-import java.util.Collection;
 import java.util.Map;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import ai.timefold.solver.core.impl.score.DefaultScoreExplanation;
-import ai.timefold.solver.test.api.score.stream.MultiConstraintAssertion;
 
-import org.jspecify.annotations.NonNull;
-
-public sealed class DefaultMultiConstraintAssertion<Score_ extends Score<Score_>>
-        implements MultiConstraintAssertion permits DefaultMultiConstraintListener {
-
-    private final ConstraintProvider constraintProvider;
-    private final Score_ actualScore;
-    private final Collection<ConstraintMatchTotal<Score_>> constraintMatchTotalCollection;
-    private final Collection<Indictment<Score_>> indictmentCollection;
+public final class DefaultMultiConstraintAssertion<Score_ extends Score<Score_>>
+        extends AbstractMultiConstraintAssertion<Score_> {
 
     DefaultMultiConstraintAssertion(ConstraintProvider constraintProvider, Score_ actualScore,
             Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
             Map<Object, Indictment<Score_>> indictmentMap) {
-        this.constraintProvider = requireNonNull(constraintProvider);
-        this.actualScore = requireNonNull(actualScore);
-        this.constraintMatchTotalCollection = requireNonNull(constraintMatchTotalMap).values();
-        this.indictmentCollection = requireNonNull(indictmentMap).values();
+        super(constraintProvider);
+        update(actualScore, constraintMatchTotalMap, indictmentMap);
     }
 
     @Override
-    public void scores(@NonNull Score<?> score, String message) {
-        if (actualScore.equals(score)) {
-            return;
-        }
-        Class<?> constraintProviderClass = constraintProvider.getClass();
-        String expectation = message == null ? "Broken expectation." : message;
-        throw new AssertionError(expectation + System.lineSeparator() +
-                "  Constraint provider: " + constraintProviderClass + System.lineSeparator() +
-                "       Expected score: " + score + " (" + score.getClass() + ")" + System.lineSeparator() +
-                "         Actual score: " + actualScore + " (" + actualScore.getClass() + ")" +
-                System.lineSeparator() + System.lineSeparator() +
-                "  " + DefaultScoreExplanation.explainScore(actualScore, constraintMatchTotalCollection,
-                        indictmentCollection));
+    void ensureInitialized() {
+        // There is no need to take any action, as the data has already been initialized in the constructor
     }
-
 }

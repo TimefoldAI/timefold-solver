@@ -31,7 +31,7 @@ public final class DefaultSingleConstraintListener<Solution_, Score_ extends Sco
     void ensureInitialized() {
         if (!initialized) {
             try (var scoreDirector = scoreDirectorFactory.buildDerivedScoreDirector(true, ConstraintMatchPolicy.ENABLED)) {
-                scoreDirector.setWorkingSolution(Objects.requireNonNull(solution));
+                scoreDirector.setWorkingSolution(solution);
                 // When models include custom listeners,
                 // the notification queue may no longer be empty
                 // because the shadow variable might be linked to a source

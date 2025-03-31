@@ -29,15 +29,8 @@ public final class DefaultMultiConstraintVerification<Solution_, Score_ extends 
     }
 
     @Override
-    public @NonNull DefaultMultiConstraintAssertion<Score_> givenSolution(@NonNull Solution_ solution) {
-        // Most score directors don't need derived status; CS will override this.
-        try (var scoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
-                .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
-                .buildDerived()) {
-            scoreDirector.setWorkingSolution(Objects.requireNonNull(solution));
-            return new DefaultMultiConstraintAssertion<>(constraintProvider, scoreDirector.calculateScore(),
-                    scoreDirector.getConstraintMatchTotalMap(), scoreDirector.getIndictmentMap());
-        }
+    public @NonNull DefaultMultiConstraintListener<Solution_, Score_> givenSolution(@NonNull Solution_ solution) {
+        return new DefaultMultiConstraintListener<>(constraintProvider, scoreDirectorFactory, solution);
     }
 
 }

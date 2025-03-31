@@ -19,6 +19,10 @@ import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.Testd
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.noshadows.TestdataPinnedNoShadowsListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.noshadows.TestdataPinnedNoShadowsListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.noshadows.TestdataPinnedNoShadowsListValue;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableConstraintProvider;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableEntity;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableSolution;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableValue;
 import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierConstraintProvider;
 import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierExtendedSolution;
 import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierFirstEntity;
@@ -28,6 +32,22 @@ import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 class MultiConstraintAssertionTest {
+
+
+    @Test
+    void triggerVariableListenersListSingleSolution() {
+        var constraintVerifier = ConstraintVerifier.build(new TestdataListMultipleShadowVariableConstraintProvider(),
+                TestdataListMultipleShadowVariableSolution.class,
+                TestdataListMultipleShadowVariableEntity.class,
+                TestdataListMultipleShadowVariableValue.class);
+
+        var solution = TestdataListMultipleShadowVariableSolution.generateSolution(1, 1);
+        assertThatCode(() -> constraintVerifier.verifyThat()
+                .givenSolution(solution)
+                .settingAllShadowVariables()
+                .scores(SimpleScore.of(30))) // -10 + 20 - 20 + 40
+                .doesNotThrowAnyException();
+    }
 
     @Test
     void checksScore() {
