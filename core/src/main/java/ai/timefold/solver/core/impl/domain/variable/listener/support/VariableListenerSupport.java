@@ -229,7 +229,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                     this,
                     shadowVariableGraphCreator);
             shadowVariableSession = shadowVariableSessionFactory.forSolution(scoreDirector.getWorkingSolution());
-            shadowVariableSession.updateVariables();
+            triggerVariableListenersInNotificationQueues();
         }
     }
 

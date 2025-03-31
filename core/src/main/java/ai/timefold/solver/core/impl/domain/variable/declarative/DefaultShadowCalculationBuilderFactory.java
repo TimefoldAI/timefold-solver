@@ -31,7 +31,7 @@ public class DefaultShadowCalculationBuilderFactory<Solution_, Entity_> implemen
     }
 
     @Override
-    public <Value_, A> ShadowCalculationBuilder<Entity_, Value_> computeIfHasAll(VariableReference<Entity_, A> a,
+    public <Value_, A> ShadowCalculationBuilder<Entity_, Value_> computeIfHas(VariableReference<Entity_, A> a,
             BiFunction<Entity_, A, Value_> function) {
         try {
             return new DefaultShadowCalculationBuilder<>(variableFactory, solutionDescriptor, supplyManager, entityClass,

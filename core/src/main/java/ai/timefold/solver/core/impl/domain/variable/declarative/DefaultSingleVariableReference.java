@@ -76,23 +76,23 @@ public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentVal
     }
 
     @Override
-    public <Fact_> SingleVariableReference<Entity_, Fact_> fact(Class<? extends Fact_> factClass,
-            Function<Value_, Fact_> mapper) {
+    public <Fact_> SingleVariableReference<Entity_, Fact_> fact(Function<Value_, Fact_> mapper,
+            Class<? extends Fact_> factClass) {
         return child(factClass,
                 new FactGraphNavigator<>(navigator.getVariableId(), valueType, mapper));
     }
 
     @Override
-    public <Variable_> SingleVariableReference<Entity_, Variable_> variable(Class<? extends Variable_> variableClass,
-            String variableName) {
+    public <Variable_> SingleVariableReference<Entity_, Variable_> variable(String variableName,
+            Class<? extends Variable_> variableClass) {
         return child(variableClass,
                 new VariableGraphNavigator<>(navigator.getVariableId(), solutionDescriptor.getEntityDescriptorStrict(valueType)
                         .getVariableDescriptorOrFail(variableName)));
     }
 
     @Override
-    public <Variable_> SingleVariableReference<Entity_, Variable_> intermediate(Class<? extends Variable_> intermediateClass,
-            String intermediateName) {
+    public <Variable_> SingleVariableReference<Entity_, Variable_> intermediate(String intermediateName,
+            Class<? extends Variable_> intermediateClass) {
         return child(intermediateClass,
                 new IntermediateGraphNavigator<>(navigator.getVariableId(),
                         valueType,
@@ -123,15 +123,15 @@ public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentVal
     }
 
     @Override
-    public <Element_> GroupVariableReference<Entity_, Element_> group(Class<? extends Element_> element,
-            Function<Value_, List<Element_>> groupFunction) {
+    public <Element_> GroupVariableReference<Entity_, Element_> group(Function<Value_, List<Element_>> groupFunction,
+            Class<? extends Element_> elementClass) {
         if (parent != null) {
             throw new IllegalArgumentException("group() must be the first method called.");
         }
         return new DefaultGroupVariableReference<>(shadowVariableFactory, solutionDescriptor, supplyManager,
-                this, new GroupGraphNavigator<>(element, groupFunction),
+                this, new GroupGraphNavigator<>(elementClass, groupFunction),
                 entityClass, valueType,
-                element, shadowVariableFactory.nextGroupId());
+                elementClass, shadowVariableFactory.nextGroupId());
     }
 
     @Override
@@ -203,7 +203,7 @@ public sealed class DefaultSingleVariableReference<Solution_, Entity_, ParentVal
 
     @Override
     public boolean isNullValueValid() {
-        return false;
+        return allowsNullValues;
     }
 
     @Override

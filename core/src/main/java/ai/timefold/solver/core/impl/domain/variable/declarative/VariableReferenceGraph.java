@@ -19,9 +19,11 @@ public class VariableReferenceGraph<Solution_> {
     private final Map<VariableId, List<BiConsumer<VariableReferenceGraph<Solution_>, Object>>> variableReferenceToAfterProcessor;
     private final Map<VariableId, AbstractShadowVariableReference<Solution_, ?, ?>> variableIdToShadowVariable;
     private final Map<EntityVariableOrFactReference<Solution_>, List<EntityVariableOrFactReference<Solution_>>> fixedEdges;
+    private final IdentityHashMap<Object, List<EntityVariableOrFactReference<Solution_>>> entityToVariableReferenceMap;
     private int[][] counts;
     private TopologicalOrderGraph graph;
     private BitSet changed;
+    private boolean updating = false;
 
     public VariableReferenceGraph(ChangedVariableNotifier<Solution_> changedVariableNotifier) {
         this.changedVariableNotifier = changedVariableNotifier;
@@ -31,6 +33,7 @@ public class VariableReferenceGraph<Solution_> {
         variableReferenceToAfterProcessor = new HashMap<>();
         variableIdToShadowVariable = new HashMap<>();
         fixedEdges = new HashMap<>();
+        entityToVariableReferenceMap = new IdentityHashMap<>();
     }
 
     public void addShadowVariable(AbstractShadowVariableReference<Solution_, ?, ?> shadowVariable) {
@@ -73,6 +76,8 @@ public class VariableReferenceGraph<Solution_> {
 
         for (var instance : instanceList) {
             afterVariableChanged(instance.variableId(), instance.entity());
+            entityToVariableReferenceMap.computeIfAbsent(instance.entity(), ignored -> new ArrayList<>())
+                    .add(instance);
         }
         for (var fixedEdgeEntry : fixedEdges.entrySet()) {
             for (var toEdge : fixedEdgeEntry.getValue()) {
@@ -128,39 +133,34 @@ public class VariableReferenceGraph<Solution_> {
     }
 
     public void updateChanged() {
+        if (updating) {
+            // An exception occurred when processing a move
+            // Variable state is probably incorrect/will trigger a different
+            // exception, so return early.
+            return;
+        }
         graph.endBatchChange();
 
+        updating = true;
         var visited = new boolean[instanceList.size()];
         var loopedTracker = new LoopedTracker(visited.length);
+
         while (!changed.isEmpty()) {
-            int minTopologicalOrder = Integer.MAX_VALUE;
-            int minNode = 0;
-            for (int i = changed.nextSetBit(0); i >= 0; i = changed.nextSetBit(i + 1)) {
-                var topologicalOrder = graph.getTopologicalOrder(i);
-                if (topologicalOrder < minTopologicalOrder) {
-                    minTopologicalOrder = topologicalOrder;
-                    minNode = i;
-                }
-                if (i == Integer.MAX_VALUE) {
-                    break; // or (i+1) would overflow
-                }
-            }
-            changed.clear(minNode);
+            int minNode = popChangedNodeWithLowestTopologicalIndex();
             if (visited[minNode]) {
                 continue;
             }
             visited[minNode] = true;
+            var shadowVariable = variableIdToShadowVariable.get(instanceList.get(minNode).variableId());
             var isChanged = true;
 
-            var shadowVariable = variableIdToShadowVariable.get(instanceList.get(minNode).variableId());
-
             if (shadowVariable != null) {
-                if (graph.isLooped(loopedTracker, minNode)) {
-                    shadowVariable.invalidate(changedVariableNotifier,
-                            instanceList.get(minNode).entity());
+                var isEntityLooped = entityToVariableReferenceMap.get(instanceList.get(minNode).entity())
+                        .stream().anyMatch(instance -> graph.isLooped(loopedTracker, instance.id()));
+                if (isEntityLooped) {
+                    shadowVariable.invalidate(changedVariableNotifier, instanceList.get(minNode).entity());
                 } else {
-                    isChanged = shadowVariable.update(changedVariableNotifier,
-                            instanceList.get(minNode).entity());
+                    isChanged = shadowVariable.update(changedVariableNotifier, instanceList.get(minNode).entity());
                 }
             }
 
@@ -170,6 +170,24 @@ public class VariableReferenceGraph<Solution_> {
                 });
             }
         }
+        updating = false;
+    }
+
+    private int popChangedNodeWithLowestTopologicalIndex() {
+        int minTopologicalOrder = Integer.MAX_VALUE;
+        int minNode = 0;
+        for (int i = changed.nextSetBit(0); i >= 0; i = changed.nextSetBit(i + 1)) {
+            var topologicalOrder = graph.getTopologicalOrder(i);
+            if (topologicalOrder < minTopologicalOrder) {
+                minTopologicalOrder = topologicalOrder;
+                minNode = i;
+            }
+            if (i == Integer.MAX_VALUE) {
+                break; // or (i+1) would overflow
+            }
+        }
+        changed.clear(minNode);
+        return minNode;
     }
 
     public void beforeVariableChanged(VariableId variableReference, Object entity) {
