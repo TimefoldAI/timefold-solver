@@ -4,6 +4,8 @@ import java.util.Arrays;
 
 import jakarta.xml.bind.annotation.XmlEnum;
 
+import ai.timefold.solver.core.config.solver.PreviewFeature;
+
 import org.jspecify.annotations.NonNull;
 
 @XmlEnum
@@ -12,6 +14,9 @@ public enum LocalSearchType {
     TABU_SEARCH,
     SIMULATED_ANNEALING,
     LATE_ACCEPTANCE,
+    /**
+     * See {@link PreviewFeature#DIVERSIFIED_LATE_ACCEPTANCE}.
+     */
     DIVERSIFIED_LATE_ACCEPTANCE,
     GREAT_DELUGE,
     VARIABLE_NEIGHBORHOOD_DESCENT;

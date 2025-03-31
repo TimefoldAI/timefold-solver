@@ -43,7 +43,7 @@ public final class MoveStreamsBasedMoveRepository<Solution_>
 
     @Override
     public boolean isNeverEnding() {
-        return true;
+        return random;
     }
 
     @Override

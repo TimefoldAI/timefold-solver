@@ -1,8 +1,5 @@
 package ai.timefold.solver.core.impl.localsearch.decider.forager;
 
-import java.util.List;
-
-import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchPickEarlyType;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.finalist.FinalistPodium;
@@ -17,16 +14,16 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
  * @see LocalSearchForager
  * @see Acceptor
  */
-public class AcceptedLocalSearchForager<Solution_> extends AbstractLocalSearchForager<Solution_> {
+public final class AcceptedLocalSearchForager<Solution_> extends AbstractLocalSearchForager<Solution_> {
 
-    protected final FinalistPodium<Solution_> finalistPodium;
-    protected final LocalSearchPickEarlyType pickEarlyType;
-    protected final int acceptedCountLimit;
-    protected final boolean breakTieRandomly;
+    private final FinalistPodium<Solution_> finalistPodium;
+    private final LocalSearchPickEarlyType pickEarlyType;
+    private final int acceptedCountLimit;
+    private final boolean breakTieRandomly;
 
-    protected long selectedMoveCount;
-    protected long acceptedMoveCount;
-    protected LocalSearchMoveScope<Solution_> earlyPickedMoveScope;
+    private long selectedMoveCount;
+    private long acceptedMoveCount;
+    private LocalSearchMoveScope<Solution_> earlyPickedMoveScope;
 
     public AcceptedLocalSearchForager(FinalistPodium<Solution_> finalistPodium,
             LocalSearchPickEarlyType pickEarlyType, int acceptedCountLimit, boolean breakTieRandomly) {
@@ -82,19 +79,18 @@ public class AcceptedLocalSearchForager<Solution_> extends AbstractLocalSearchFo
         finalistPodium.addMove(moveScope);
     }
 
-    protected void checkPickEarly(LocalSearchMoveScope<Solution_> moveScope) {
+    private void checkPickEarly(LocalSearchMoveScope<Solution_> moveScope) {
         switch (pickEarlyType) {
             case NEVER:
                 break;
             case FIRST_BEST_SCORE_IMPROVING:
-                Score bestScore = moveScope.getStepScope().getPhaseScope().getBestScore();
+                var bestScore = moveScope.getStepScope().getPhaseScope().getBestScore();
                 if (moveScope.getScore().compareTo(bestScore) > 0) {
                     earlyPickedMoveScope = moveScope;
                 }
                 break;
             case FIRST_LAST_STEP_SCORE_IMPROVING:
-                Score lastStepScore = moveScope.getStepScope().getPhaseScope()
-                        .getLastCompletedStepScope().getScore();
+                var lastStepScore = moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore();
                 if (moveScope.getScore().compareTo(lastStepScore) > 0) {
                     earlyPickedMoveScope = moveScope;
                 }
@@ -116,7 +112,7 @@ public class AcceptedLocalSearchForager<Solution_> extends AbstractLocalSearchFo
         if (earlyPickedMoveScope != null) {
             return earlyPickedMoveScope;
         }
-        List<LocalSearchMoveScope<Solution_>> finalistList = finalistPodium.getFinalistList();
+        var finalistList = finalistPodium.getFinalistList();
         if (finalistList.isEmpty()) {
             return null;
         }

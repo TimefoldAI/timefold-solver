@@ -1393,6 +1393,8 @@
                       
           </xs:choice>
                     
+          <xs:element minOccurs="0" name="moveProvidersClass" type="xs:string"/>
+                    
           <xs:element minOccurs="0" name="acceptor" type="tns:localSearchAcceptorConfig"/>
                     
           <xs:element minOccurs="0" name="forager" type="tns:localSearchForagerConfig"/>
@@ -1588,6 +1590,8 @@
       <xs:enumeration value="DIVERSIFIED_LATE_ACCEPTANCE"/>
             
       <xs:enumeration value="PLANNING_SOLUTION_DIFF"/>
+            
+      <xs:enumeration value="MOVE_STREAMS"/>
           
     </xs:restriction>
       
