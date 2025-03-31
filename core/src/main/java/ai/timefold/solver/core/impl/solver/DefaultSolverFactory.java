@@ -110,7 +110,6 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                     metricsRequiringConstraintMatchSet);
         }
 
-        // TODO add the move stream session here
         var castScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
                 .withLookUpEnabled(true)
                 .withConstraintMatchPolicy(

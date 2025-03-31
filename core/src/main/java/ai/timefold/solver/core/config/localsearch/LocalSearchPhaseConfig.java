@@ -27,7 +27,9 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubLi
 import ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig;
 import ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchForagerConfig;
 import ai.timefold.solver.core.config.phase.PhaseConfig;
+import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.util.ConfigUtils;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProviders;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -35,6 +37,7 @@ import org.jspecify.annotations.Nullable;
 @XmlType(propOrder = {
         "localSearchType",
         "moveSelectorConfig",
+        "moveProvidersClass",
         "acceptorConfig",
         "foragerConfig"
 })
@@ -74,6 +77,7 @@ public class LocalSearchPhaseConfig extends PhaseConfig<LocalSearchPhaseConfig> 
             @XmlElement(name = UnionMoveSelectorConfig.XML_ELEMENT_NAME, type = UnionMoveSelectorConfig.class)
     })
     private MoveSelectorConfig moveSelectorConfig = null;
+    private Class<? extends MoveProviders> moveProvidersClass = null;
     @XmlElement(name = "acceptor")
     private LocalSearchAcceptorConfig acceptorConfig = null;
     @XmlElement(name = "forager")
@@ -97,6 +101,22 @@ public class LocalSearchPhaseConfig extends PhaseConfig<LocalSearchPhaseConfig> 
 
     public void setMoveSelectorConfig(@Nullable MoveSelectorConfig moveSelectorConfig) {
         this.moveSelectorConfig = moveSelectorConfig;
+    }
+
+    /**
+     * Part of {@link PreviewFeature#MOVE_STREAMS}.
+     */
+    @SuppressWarnings("unchecked")
+    public @Nullable <Solution_> Class<? extends MoveProviders<Solution_>> getMoveProvidersClass() {
+        return (Class<? extends MoveProviders<Solution_>>) moveProvidersClass;
+    }
+
+    /**
+     * Part of {@link PreviewFeature#MOVE_STREAMS}.
+     */
+    @SuppressWarnings("rawtypes")
+    public void setMoveProvidersClass(@Nullable Class<? extends MoveProviders> moveProvidersClass) {
+        this.moveProvidersClass = moveProvidersClass;
     }
 
     public @Nullable LocalSearchAcceptorConfig getAcceptorConfig() {
@@ -129,6 +149,15 @@ public class LocalSearchPhaseConfig extends PhaseConfig<LocalSearchPhaseConfig> 
         return this;
     }
 
+    /**
+     * Part of {@link PreviewFeature#MOVE_STREAMS}.
+     */
+    public @NonNull LocalSearchPhaseConfig
+            withMoveProvidersClass(@NonNull Class<? extends MoveProviders<?>> moveProviderClass) {
+        this.moveProvidersClass = moveProviderClass;
+        return this;
+    }
+
     public @NonNull LocalSearchPhaseConfig withAcceptorConfig(@NonNull LocalSearchAcceptorConfig acceptorConfig) {
         this.acceptorConfig = acceptorConfig;
         return this;
@@ -146,6 +175,8 @@ public class LocalSearchPhaseConfig extends PhaseConfig<LocalSearchPhaseConfig> 
                 inheritedConfig.getLocalSearchType());
         setMoveSelectorConfig(ConfigUtils.inheritOverwritableProperty(
                 getMoveSelectorConfig(), inheritedConfig.getMoveSelectorConfig()));
+        setMoveProvidersClass(ConfigUtils.inheritOverwritableProperty(getMoveProvidersClass(),
+                inheritedConfig.getMoveProvidersClass()));
         acceptorConfig = ConfigUtils.inheritConfig(acceptorConfig, inheritedConfig.getAcceptorConfig());
         foragerConfig = ConfigUtils.inheritConfig(foragerConfig, inheritedConfig.getForagerConfig());
         return this;
@@ -163,6 +194,9 @@ public class LocalSearchPhaseConfig extends PhaseConfig<LocalSearchPhaseConfig> 
         }
         if (moveSelectorConfig != null) {
             moveSelectorConfig.visitReferencedClasses(classVisitor);
+        }
+        if (moveProvidersClass != null) {
+            classVisitor.accept(moveProvidersClass);
         }
         if (acceptorConfig != null) {
             acceptorConfig.visitReferencedClasses(classVisitor);

@@ -11,7 +11,6 @@ import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristi
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchType;
 import ai.timefold.solver.core.config.phase.PhaseConfig;
-import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 
 import org.jspecify.annotations.NonNull;
@@ -72,7 +71,7 @@ public enum SolverBenchmarkBluePrintType {
         LocalSearchType[] lsTypes = LocalSearchType.getBluePrintTypes();
         List<SolverBenchmarkConfig> solverBenchmarkConfigList = new ArrayList<>(lsTypes.length);
         for (LocalSearchType lsType : lsTypes) {
-            if (PreviewFeature.DIVERSIFIED_LATE_ACCEPTANCE != null && lsType == LocalSearchType.DIVERSIFIED_LATE_ACCEPTANCE) {
+            if (lsType == LocalSearchType.DIVERSIFIED_LATE_ACCEPTANCE) {
                 // When the preview feature is removed, this will fail at compile time
                 // and the code will have to be adjusted.
                 // Most likely, the preview feature will be promoted to a regular feature,

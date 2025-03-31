@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.move.streams.maybeapi.provider;
+package ai.timefold.solver.core.impl.move.streams.generic.provider;
 
 import java.util.Objects;
 import java.util.function.BiPredicate;
@@ -7,7 +7,7 @@ import java.util.function.Predicate;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamFactory;
-import ai.timefold.solver.core.impl.move.streams.generic.ChangeMove;
+import ai.timefold.solver.core.impl.move.streams.generic.move.ChangeMove;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProducer;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProvider;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamFactory;

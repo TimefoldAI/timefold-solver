@@ -29,9 +29,6 @@ These are:
 - xref:constraints-and-score/understanding-the-score.adoc#solutionDiff[Solution diff API]
 in the `ai.timefold.solver.core.preview.api.domain.solution.diff` package,
 and in the `SolutionManager`
-- _Move Streams API_ in the `ai.timefold.solver.core.preview.api.move` package
-and the `ai.timefold.solver.core.preview.api.domain.metamodel` package,
-as well as in their subpackages
 - _Timefold Solver for Python_, which is currently in beta
 
 These preview features are developed to the same standard as the rest of Timefold Solver.
@@ -42,3 +39,14 @@ although we strive to avoid this as much as possible.
 We encourage you to try these preview features and give us feedback on your experience with them.
 Please direct your feedback to
 https://github.com/TimefoldAI/timefold-solver/discussions[Timefold Solver Github].
+
+=== Experimental status of Move Streams
+
+Move Streams, although marked as a preview feature, is an active research project.
+It is intended to simplify the creation of custom moves, eventually replacing move selectors.
+The component is under heavy development, entirely undocumented, and many key features are yet to be delivered.
+Neither the API nor the feature set are complete, and any part can change or be removed at any time.
+
+Move Streams will eventually stabilize and be promoted from a research project to a true preview feature.
+We only expose it now to be able to use it for experimentation and testing.
+As such, it is an exception to the rule — this preview feature is not finished, and it is not yet ready for feedback.

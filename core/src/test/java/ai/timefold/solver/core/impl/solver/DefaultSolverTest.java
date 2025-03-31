@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -47,12 +48,16 @@ import ai.timefold.solver.core.config.localsearch.LocalSearchType;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.monitoring.MonitoringConfig;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
+import ai.timefold.solver.core.impl.move.streams.generic.provider.ChangeMoveProvider;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProvider;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProviders;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
@@ -90,6 +95,8 @@ import ai.timefold.solver.core.impl.testdata.domain.score.TestdataHardSoftScoreS
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 import ai.timefold.solver.core.impl.testutil.AbstractMeterTest;
 import ai.timefold.solver.core.impl.testutil.NoChangeCustomPhaseCommand;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
@@ -118,6 +125,62 @@ class DefaultSolverTest extends AbstractMeterTest {
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
         assertThat(solution.getScore().isSolutionInitialized()).isTrue();
+    }
+
+    @Test
+    void solveWithMoveStreams() {
+        var solverConfig = new SolverConfig()
+                .withPreviewFeature(PreviewFeature.MOVE_STREAMS)
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withEasyScoreCalculatorClass(TestingEasyScoreCalculator.class)
+                .withTerminationConfig(new TerminationConfig()
+                        .withBestScoreLimit("0")) // Should get there quickly.
+                .withPhases(new LocalSearchPhaseConfig()
+                        .withMoveProvidersClass(TestingMoveProviders.class));
+
+        var solution = TestdataSolution.generateSolution(3, 2);
+
+        solution = PlannerTestUtils.solve(solverConfig, solution);
+        assertThat(solution).isNotNull();
+        assertThat(solution.getScore().isSolutionInitialized()).isTrue();
+    }
+
+    @Test
+    void solveWithMoveStreamsNotEnabled() {
+        var solverConfig = new SolverConfig() // Preview feature not enabled.
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withEasyScoreCalculatorClass(TestingEasyScoreCalculator.class)
+                .withTerminationConfig(new TerminationConfig()
+                        .withBestScoreLimit("0")) // Should get there quickly.
+                .withPhases(new LocalSearchPhaseConfig()
+                        .withMoveProvidersClass(TestingMoveProviders.class));
+
+        var solution = TestdataSolution.generateSolution(3, 2);
+        Assertions.assertThatThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("MOVE_STREAMS");
+    }
+
+    @Test
+    void solveWithMoveStreamsAndMoveSelectorsFails() {
+        var solverConfig = new SolverConfig()
+                .withPreviewFeature(PreviewFeature.MOVE_STREAMS)
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withEasyScoreCalculatorClass(TestingEasyScoreCalculator.class)
+                .withTerminationConfig(new TerminationConfig()
+                        .withBestScoreLimit("0")) // Should get there quickly.
+                .withPhases(new LocalSearchPhaseConfig()
+                        .withMoveSelectorConfig(new ChangeMoveSelectorConfig())
+                        .withMoveProvidersClass(TestingMoveProviders.class));
+
+        var solution = TestdataSolution.generateSolution(3, 2);
+        Assertions.assertThatThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution))
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining("move selectors")
+                .hasMessageContaining("Move Streams");
     }
 
     @Test
@@ -1434,6 +1497,36 @@ class DefaultSolverTest extends AbstractMeterTest {
             var random = (int) (Math.random() * 1000);
             return SimpleScore.of(random);
         }
+    }
+
+    public static final class TestingMoveProviders implements MoveProviders<TestdataSolution> {
+        @Override
+        public List<MoveProvider<TestdataSolution>> defineMoves(PlanningSolutionMetaModel<TestdataSolution> solutionMetaModel) {
+            var variableMetamodel = solutionMetaModel.entity(TestdataEntity.class)
+                    .<TestdataValue> genuineVariable("value");
+            return List.of(new ChangeMoveProvider<>(
+                    (PlanningVariableMetaModel<TestdataSolution, TestdataEntity, TestdataValue>) variableMetamodel));
+        }
+    }
+
+    /**
+     * Penalizes the number of values which are not the first value.
+     */
+    public static final class TestingEasyScoreCalculator implements EasyScoreCalculator<TestdataSolution, SimpleScore> {
+
+        @Override
+        public @NonNull SimpleScore calculateScore(@NonNull TestdataSolution testdataSolution) {
+            var valueList = testdataSolution.getValueList();
+            var firstValue = valueList.get(0);
+            var valueSet = new HashSet<TestdataValue>(valueList.size());
+            testdataSolution.getEntityList().forEach(e -> {
+                if (e.getValue() != firstValue) {
+                    valueSet.add(e.getValue());
+                }
+            });
+            return SimpleScore.of(-valueSet.size());
+        }
+
     }
 
 }

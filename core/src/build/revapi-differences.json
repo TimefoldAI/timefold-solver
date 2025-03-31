@@ -140,6 +140,17 @@
           "new": "class ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig",
           "annotation": "@org.jspecify.annotations.NullMarked",
           "justification": "Less verbose nullability, no practical impact."
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig",
+          "new": "class ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"localSearchType\", \"moveSelectorConfig\", \"acceptorConfig\", \"foragerConfig\"}",
+          "newValue": "{\"localSearchType\", \"moveSelectorConfig\", \"moveProvidersClass\", \"acceptorConfig\", \"foragerConfig\"}",
+          "justification": "Move Streams arrives as a preview feature."
         }
       ]
     }

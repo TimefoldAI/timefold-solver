@@ -7,7 +7,8 @@ import java.util.stream.StreamSupport;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamFactory;
-import ai.timefold.solver.core.impl.move.streams.generic.ChangeMove;
+import ai.timefold.solver.core.impl.move.streams.generic.move.ChangeMove;
+import ai.timefold.solver.core.impl.move.streams.generic.provider.ChangeMoveProvider;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
