@@ -21,6 +21,9 @@ import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.Testd
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.noshadows.TestdataPinnedNoShadowsListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.noshadows.TestdataPinnedNoShadowsListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.noshadows.TestdataPinnedNoShadowsListValue;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableConstraintProvider;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableEntity;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableSolution;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableValue;
 import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierConstraintProvider;
 import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierExtendedSolution;
@@ -31,9 +34,6 @@ import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerif
 import ai.timefold.solver.test.api.score.stream.testdata.justification.TestFirstJustification;
 import ai.timefold.solver.test.api.score.stream.testdata.justification.TestSecondJustification;
 
-import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableEntity;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableSolution;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
@@ -525,7 +525,7 @@ class SingleConstraintAssertionTest {
 
     @Test
     void listVarUnassignedWhileAllowsUnassigned() {
-        var constraintVerifier =
+        var verifier =
                 ConstraintVerifier.build(new TestdataAllowsUnassignedListConstraintProvider(),
                         TestdataAllowsUnassignedValuesListSolution.class,
                         TestdataAllowsUnassignedValuesListEntity.class,
@@ -538,22 +538,22 @@ class SingleConstraintAssertionTest {
         value1.setIndex(0);
         value1.setEntity(entity);
 
-        assertThatCode(() -> constraintVerifier
+        assertThatCode(() -> verifier
                 .verifyThat(TestdataAllowsUnassignedListConstraintProvider::penalizeEveryAssignedValue)
                 .given(entity, value1, value2)
                 .penalizes("There should be no penalties", 0))
                 .hasMessageContaining("There should be no penalties");
-        assertThatCode(() -> constraintVerifier
+        assertThatCode(() -> verifier
                 .verifyThat(TestdataAllowsUnassignedListConstraintProvider::penalizeEveryValue)
                 .given(entity, value1, value2)
                 .penalizes("There should be no penalties", 1))
                 .hasMessageContaining("There should be no penalties");
 
-        assertThatCode(() -> constraintVerifier
+        assertThatCode(() -> verifier
                 .verifyThat(TestdataAllowsUnassignedListConstraintProvider::penalizeEveryAssignedValue)
                 .given(entity, value1, value2)
                 .penalizes("There should be penalties", 1)).doesNotThrowAnyException();
-        assertThatCode(() -> constraintVerifier
+        assertThatCode(() -> verifier
                 .verifyThat(TestdataAllowsUnassignedListConstraintProvider::penalizeEveryValue)
                 .given(entity, value1, value2)
                 .penalizes("There should be penalties", 2)).doesNotThrowAnyException();
@@ -585,7 +585,7 @@ class SingleConstraintAssertionTest {
 
     @Test
     void listVarUnassignedWhileDisallowsUnassigned() {
-        var constraintVerifier =
+        var verifier =
                 ConstraintVerifier.build(new TestdataDisallowsUnassignedListConstraintProvider(),
                         TestdataListSolution.class,
                         TestdataListEntity.class,
@@ -597,11 +597,11 @@ class SingleConstraintAssertionTest {
         value1.setIndex(0);
         value1.setEntity(entity);
 
-        assertThatCode(() -> constraintVerifier
+        assertThatCode(() -> verifier
                 .verifyThat(TestdataDisallowsUnassignedListConstraintProvider::penalizeEveryAssignedValue)
                 .given(entity, value1, value2)
                 .penalizes("There should be penalties", 1)).doesNotThrowAnyException();
-        assertThatCode(() -> constraintVerifier
+        assertThatCode(() -> verifier
                 .verifyThat(TestdataDisallowsUnassignedListConstraintProvider::penalizeEveryValue)
                 .given(entity, value1, value2)
                 .penalizes("There should be penalties", 2)).doesNotThrowAnyException();
@@ -633,7 +633,7 @@ class SingleConstraintAssertionTest {
 
     @Test
     void listVarUnassignedWhileDisallowsUnassigned_noInverseRelationShadowVar() {
-        var constraintVerifier =
+        var verifier =
                 ConstraintVerifier.build(new TestdataDisallowsUnassignedListWithoutInverseShadowVarConstraintProvider(),
                         TestdataPinnedNoShadowsListSolution.class,
                         TestdataPinnedNoShadowsListEntity.class,
@@ -644,12 +644,12 @@ class SingleConstraintAssertionTest {
         var entity = new TestdataPinnedNoShadowsListEntity("eA", value1);
         value1.setIndex(0);
 
-        assertThatCode(() -> constraintVerifier
+        assertThatCode(() -> verifier
                 .verifyThat(
                         TestdataDisallowsUnassignedListWithoutInverseShadowVarConstraintProvider::penalizeEveryAssignedValue)
                 .given(entity, value1, value2)
                 .penalizes("There should be penalties", 1)).doesNotThrowAnyException();
-        assertThatCode(() -> constraintVerifier
+        assertThatCode(() -> verifier
                 .verifyThat(TestdataDisallowsUnassignedListWithoutInverseShadowVarConstraintProvider::penalizeEveryValue)
                 .given(entity, value1, value2)
                 .penalizes("There should be penalties", 2)).doesNotThrowAnyException();

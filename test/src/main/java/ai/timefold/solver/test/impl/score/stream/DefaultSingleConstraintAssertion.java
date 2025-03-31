@@ -7,16 +7,15 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
 
-public final class DefaultSingleConstraintAssertion <Solution_, Score_ extends Score<Score_>>
-        extends AbstractSingleConstraintAssertion<Solution_, Score_>{
+public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Score<Score_>>
+        extends AbstractSingleConstraintAssertion<Solution_, Score_> {
 
     DefaultSingleConstraintAssertion(AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, ?> scoreDirectorFactory,
-                                     Score_ score, Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
-                                     Map<Object, Indictment<Score_>> indictmentMap) {
+            Score_ score, Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
+            Map<Object, Indictment<Score_>> indictmentMap) {
         super(scoreDirectorFactory);
         update(score, constraintMatchTotalMap, indictmentMap);
     }
-
 
     @Override
     void ensureInitialized() {

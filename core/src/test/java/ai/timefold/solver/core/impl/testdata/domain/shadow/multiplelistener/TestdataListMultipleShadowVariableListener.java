@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener;
 
 import ai.timefold.solver.core.api.domain.variable.VariableListener;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+
 import org.jspecify.annotations.NonNull;
 
 public class TestdataListMultipleShadowVariableListener

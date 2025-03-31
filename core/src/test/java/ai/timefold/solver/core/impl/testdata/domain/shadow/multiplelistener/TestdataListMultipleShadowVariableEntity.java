@@ -24,7 +24,7 @@ public class TestdataListMultipleShadowVariableEntity extends TestdataObject {
     }
 
     public static TestdataListMultipleShadowVariableEntity createWithValues(String code,
-                                                                            TestdataListMultipleShadowVariableValue... values) {
+            TestdataListMultipleShadowVariableValue... values) {
         // Set up shadow variables to preserve consistency.
         return new TestdataListMultipleShadowVariableEntity(code, values).setUpShadowVariables();
     }

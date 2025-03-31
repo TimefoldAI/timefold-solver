@@ -40,7 +40,7 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
     private Collection<Indictment<Score_>> indictmentCollection;
 
     @SuppressWarnings("unchecked")
-    AbstractSingleConstraintAssertion(AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory) {
+    AbstractSingleConstraintAssertion(AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, ?> scoreDirectorFactory) {
         this.constraint = (AbstractConstraint<Solution_, ?, ?>) scoreDirectorFactory.getConstraintMetaModel()
                 .getConstraints()
                 .stream()
@@ -50,7 +50,7 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
     }
 
     final void update(Score_ score, Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
-                      Map<Object, Indictment<Score_>> indictmentMap) {
+            Map<Object, Indictment<Score_>> indictmentMap) {
         this.score = requireNonNull(score);
         this.constraintMatchTotalCollection = new ArrayList<>(requireNonNull(constraintMatchTotalMap).values());
         this.indictmentCollection = new ArrayList<>(requireNonNull(indictmentMap).values());
@@ -301,10 +301,8 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
                 if (equalityPredicate.test(matchWeightTotal, negatedImpact)) {
                     return;
                 }
-            } else if (scoreImpactType == ScoreImpactType.PENALTY) {
-                if (equalityPredicate.test(matchWeightTotal, impact)) {
-                    return;
-                }
+            } else if (scoreImpactType == ScoreImpactType.PENALTY && equalityPredicate.test(matchWeightTotal, impact)) {
+                return;
             }
         } else if (actualScoreImpactType == scoreImpactType && equalityPredicate.test(matchWeightTotal, impact)) {
             // Reward and positive or penalty and negative means all is OK.
@@ -328,10 +326,8 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
                 if (comparator.compare(matchWeightTotal, negatedImpact) < 0) {
                     return;
                 }
-            } else if (scoreImpactType == ScoreImpactType.PENALTY) {
-                if (comparator.compare(matchWeightTotal, impact) < 0) {
-                    return;
-                }
+            } else if (scoreImpactType == ScoreImpactType.PENALTY && comparator.compare(matchWeightTotal, impact) < 0) {
+                return;
             }
         } else if (actualScoreImpactType == scoreImpactType && comparator.compare(matchWeightTotal, impact) < 0) {
             // Reward and positive or penalty and negative means all is OK.
@@ -355,10 +351,8 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
                 if (comparator.compare(matchWeightTotal, negatedImpact) > 0) {
                     return;
                 }
-            } else if (scoreImpactType == ScoreImpactType.PENALTY) {
-                if (comparator.compare(matchWeightTotal, impact) > 0) {
-                    return;
-                }
+            } else if (scoreImpactType == ScoreImpactType.PENALTY && comparator.compare(matchWeightTotal, impact) > 0) {
+                return;
             }
         } else if (actualScoreImpactType == scoreImpactType && comparator.compare(matchWeightTotal, impact) > 0) {
             // Reward and positive or penalty and negative means all is OK.

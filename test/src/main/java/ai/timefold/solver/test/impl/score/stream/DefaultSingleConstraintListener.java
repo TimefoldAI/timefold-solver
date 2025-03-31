@@ -11,12 +11,12 @@ import ai.timefold.solver.test.api.score.stream.SingleConstraintListener;
 public final class DefaultSingleConstraintListener<Solution_, Score_ extends Score<Score_>>
         extends AbstractSingleConstraintAssertion<Solution_, Score_> implements SingleConstraintListener {
 
-    private final AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory;
+    private final AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, ?> scoreDirectorFactory;
     private final Solution_ solution;
     private boolean initialized = false;
 
-    DefaultSingleConstraintListener(AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
-                                    Solution_ solution) {
+    DefaultSingleConstraintListener(AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, ?> scoreDirectorFactory,
+            Solution_ solution) {
         super(scoreDirectorFactory);
         this.scoreDirectorFactory = scoreDirectorFactory;
         this.solution = Objects.requireNonNull(solution);
@@ -30,7 +30,10 @@ public final class DefaultSingleConstraintListener<Solution_, Score_ extends Sco
     @Override
     void ensureInitialized() {
         if (!initialized) {
-            try (var scoreDirector = scoreDirectorFactory.buildDerivedScoreDirector(true, ConstraintMatchPolicy.ENABLED)) {
+            // Most score directors don't need derived status; CS will override this.
+            try (var scoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
+                    .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
+                    .buildDerived()) {
                 scoreDirector.setWorkingSolution(solution);
                 // When models include custom listeners,
                 // the notification queue may no longer be empty
@@ -53,7 +56,10 @@ public final class DefaultSingleConstraintListener<Solution_, Score_ extends Sco
 
     @Override
     public SingleConstraintAssertion settingAllShadowVariables() {
-        try (var scoreDirector = scoreDirectorFactory.buildDerivedScoreDirector(true, ConstraintMatchPolicy.ENABLED)) {
+        // Most score directors don't need derived status; CS will override this.
+        try (var scoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
+                .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
+                .buildDerived()) {
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.forceTriggerVariableListeners();
             update(scoreDirector.calculateScore(), scoreDirector.getConstraintMatchTotalMap(),
