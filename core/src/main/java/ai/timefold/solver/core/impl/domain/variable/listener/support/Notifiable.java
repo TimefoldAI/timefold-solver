@@ -19,6 +19,11 @@ public interface Notifiable {
     void resetWorkingSolution();
 
     /**
+     * Clear all notifications without triggering any related event logic.
+     */
+    void clearAllNotifications();
+
+    /**
      * Trigger all queued notifications.
      */
     void triggerAllNotifications();

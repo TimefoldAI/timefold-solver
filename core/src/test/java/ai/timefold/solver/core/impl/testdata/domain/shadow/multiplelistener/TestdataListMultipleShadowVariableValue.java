@@ -1,4 +1,4 @@
-package ai.timefold.solver.test.api.score.stream.testdata.shadow.list;
+package ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,42 +15,42 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
 
 @PlanningEntity
-public class TestdataListShadowConstraintVerifierValue extends TestdataObject {
+public class TestdataListMultipleShadowVariableValue extends TestdataObject {
 
-    public static EntityDescriptor<TestdataListShadowConstraintVerifierSolution> buildEntityDescriptor() {
-        return TestdataListShadowConstraintVerifierSolution.buildSolutionDescriptor()
-                .findEntityDescriptorOrFail(TestdataListShadowConstraintVerifierValue.class);
+    public static EntityDescriptor<TestdataListMultipleShadowVariableSolution> buildEntityDescriptor() {
+        return TestdataListMultipleShadowVariableSolution.buildSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataListMultipleShadowVariableValue.class);
     }
 
     @InverseRelationShadowVariable(sourceVariableName = "valueList")
-    private TestdataListShadowConstraintVerifierEntity entity;
+    private TestdataListMultipleShadowVariableEntity entity;
     @IndexShadowVariable(sourceVariableName = "valueList")
     private Integer index;
     @PreviousElementShadowVariable(sourceVariableName = "valueList")
-    private TestdataListShadowConstraintVerifierValue previous;
+    private TestdataListMultipleShadowVariableValue previous;
     @NextElementShadowVariable(sourceVariableName = "valueList")
-    private TestdataListShadowConstraintVerifierValue next;
+    private TestdataListMultipleShadowVariableValue next;
     @CascadingUpdateShadowVariable(targetMethodName = "updateCascadeValue")
     private Integer cascadeValue;
-    @ShadowVariable(variableListenerClass = TestdataListShadowVariableListener.class, sourceVariableName = "entity")
+    @ShadowVariable(variableListenerClass = TestdataListMultipleShadowVariableListener.class, sourceVariableName = "entity")
     private Integer listenerValue;
-    private final List<TestdataListShadowConstraintVerifierEntity> entityHistory = new ArrayList<>();
+    private final List<TestdataListMultipleShadowVariableEntity> entityHistory = new ArrayList<>();
     private final List<Integer> indexHistory = new ArrayList<>();
-    private final List<TestdataListShadowConstraintVerifierValue> previousHistory = new ArrayList<>();
-    private final List<TestdataListShadowConstraintVerifierValue> nextHistory = new ArrayList<>();
+    private final List<TestdataListMultipleShadowVariableValue> previousHistory = new ArrayList<>();
+    private final List<TestdataListMultipleShadowVariableValue> nextHistory = new ArrayList<>();
 
-    public TestdataListShadowConstraintVerifierValue() {
+    public TestdataListMultipleShadowVariableValue() {
     }
 
-    public TestdataListShadowConstraintVerifierValue(String code) {
+    public TestdataListMultipleShadowVariableValue(String code) {
         super(code);
     }
 
-    public TestdataListShadowConstraintVerifierEntity getEntity() {
+    public TestdataListMultipleShadowVariableEntity getEntity() {
         return entity;
     }
 
-    public void setEntity(TestdataListShadowConstraintVerifierEntity entity) {
+    public void setEntity(TestdataListMultipleShadowVariableEntity entity) {
         this.entity = entity;
         entityHistory.add(entity);
     }
@@ -64,20 +64,20 @@ public class TestdataListShadowConstraintVerifierValue extends TestdataObject {
         indexHistory.add(index);
     }
 
-    public TestdataListShadowConstraintVerifierValue getPrevious() {
+    public TestdataListMultipleShadowVariableValue getPrevious() {
         return previous;
     }
 
-    public void setPrevious(TestdataListShadowConstraintVerifierValue previous) {
+    public void setPrevious(TestdataListMultipleShadowVariableValue previous) {
         this.previous = previous;
         previousHistory.add(previous);
     }
 
-    public TestdataListShadowConstraintVerifierValue getNext() {
+    public TestdataListMultipleShadowVariableValue getNext() {
         return next;
     }
 
-    public void setNext(TestdataListShadowConstraintVerifierValue next) {
+    public void setNext(TestdataListMultipleShadowVariableValue next) {
         this.next = next;
         nextHistory.add(next);
     }
@@ -94,6 +94,9 @@ public class TestdataListShadowConstraintVerifierValue extends TestdataObject {
     }
 
     public Integer getListenerValue() {
+        if (listenerValue == null) {
+            return 0;
+        }
         return listenerValue;
     }
 
@@ -101,7 +104,7 @@ public class TestdataListShadowConstraintVerifierValue extends TestdataObject {
         this.listenerValue = listenerValue;
     }
 
-    public List<TestdataListShadowConstraintVerifierEntity> getEntityHistory() {
+    public List<TestdataListMultipleShadowVariableEntity> getEntityHistory() {
         return Collections.unmodifiableList(entityHistory);
     }
 
@@ -109,11 +112,11 @@ public class TestdataListShadowConstraintVerifierValue extends TestdataObject {
         return Collections.unmodifiableList(indexHistory);
     }
 
-    public List<TestdataListShadowConstraintVerifierValue> getPreviousHistory() {
+    public List<TestdataListMultipleShadowVariableValue> getPreviousHistory() {
         return Collections.unmodifiableList(previousHistory);
     }
 
-    public List<TestdataListShadowConstraintVerifierValue> getNextHistory() {
+    public List<TestdataListMultipleShadowVariableValue> getNextHistory() {
         return Collections.unmodifiableList(nextHistory);
     }
 

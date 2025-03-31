@@ -344,6 +344,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
+    public void clearVariableListenerEvents() {
+        variableListenerSupport.clearAllVariableListenerEvents();
+    }
+
+    @Override
     public void forceTriggerVariableListeners() {
         variableListenerSupport.forceTriggerAllVariableListeners(getWorkingSolution());
     }

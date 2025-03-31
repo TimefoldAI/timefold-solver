@@ -21,6 +21,7 @@ import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.Testd
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.noshadows.TestdataPinnedNoShadowsListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.noshadows.TestdataPinnedNoShadowsListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.noshadows.TestdataPinnedNoShadowsListValue;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableValue;
 import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierConstraintProvider;
 import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierExtendedSolution;
 import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierFirstEntity;
@@ -30,10 +31,9 @@ import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerif
 import ai.timefold.solver.test.api.score.stream.testdata.justification.TestFirstJustification;
 import ai.timefold.solver.test.api.score.stream.testdata.justification.TestSecondJustification;
 
-import ai.timefold.solver.test.api.score.stream.testdata.shadow.list.TestdataListShadowConstraintVerifierConstraintProvider;
-import ai.timefold.solver.test.api.score.stream.testdata.shadow.list.TestdataListShadowConstraintVerifierEntity;
-import ai.timefold.solver.test.api.score.stream.testdata.shadow.list.TestdataListShadowConstraintVerifierSolution;
-import ai.timefold.solver.test.api.score.stream.testdata.shadow.list.TestdataListShadowConstraintVerifierValue;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableConstraintProvider;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableEntity;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableSolution;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
@@ -45,11 +45,11 @@ class SingleConstraintAssertionTest {
                     TestdataConstraintVerifierFirstEntity.class,
                     TestdataConstraintVerifierSecondEntity.class);
 
-    private final ConstraintVerifier<TestdataListShadowConstraintVerifierConstraintProvider, TestdataListShadowConstraintVerifierSolution> shadowConstraintVerifier =
-            ConstraintVerifier.build(new TestdataListShadowConstraintVerifierConstraintProvider(),
-                    TestdataListShadowConstraintVerifierSolution.class,
-                    TestdataListShadowConstraintVerifierEntity.class,
-                    TestdataListShadowConstraintVerifierValue.class);
+    private final ConstraintVerifier<TestdataListMultipleShadowVariableConstraintProvider, TestdataListMultipleShadowVariableSolution> shadowConstraintVerifier =
+            ConstraintVerifier.build(new TestdataListMultipleShadowVariableConstraintProvider(),
+                    TestdataListMultipleShadowVariableSolution.class,
+                    TestdataListMultipleShadowVariableEntity.class,
+                    TestdataListMultipleShadowVariableValue.class);
 
     private final ConstraintVerifier<TestdataConstraintVerifierJustificationProvider, TestdataConstraintVerifierSolution> constraintVerifierForJustification =
             ConstraintVerifier.build(new TestdataConstraintVerifierJustificationProvider(),
@@ -58,25 +58,26 @@ class SingleConstraintAssertionTest {
 
     @Test
     void triggerVariableListenersListSingleSolution() {
-        var solution = TestdataListShadowConstraintVerifierSolution.generateSolution(2, 1);
+        var solution = TestdataListMultipleShadowVariableSolution.generateSolution(2, 1);
 
+        // Cascading update
         // Test cascade penalty
         assertThatCode(() -> shadowConstraintVerifier
-                .verifyThat(TestdataListShadowConstraintVerifierConstraintProvider::penalizeCascadingUpdate)
+                .verifyThat(TestdataListMultipleShadowVariableConstraintProvider::penalizeCascadingUpdate)
                 .givenSolution(solution)
                 .settingAllShadowVariables()
                 .penalizesBy(10)).doesNotThrowAnyException();
 
         // Test cascade reward
         assertThatCode(() -> shadowConstraintVerifier
-                .verifyThat(TestdataListShadowConstraintVerifierConstraintProvider::rewardCascadingUpdate)
+                .verifyThat(TestdataListMultipleShadowVariableConstraintProvider::rewardCascadingUpdate)
                 .givenSolution(solution)
                 .settingAllShadowVariables()
                 .rewardsWith(20)).doesNotThrowAnyException();
 
         // Test cascade justification
         assertThatCode(() -> shadowConstraintVerifier
-                .verifyThat(TestdataListShadowConstraintVerifierConstraintProvider::penalizeCascadingUpdate)
+                .verifyThat(TestdataListMultipleShadowVariableConstraintProvider::penalizeCascadingUpdate)
                 .givenSolution(solution)
                 .settingAllShadowVariables()
                 .justifiesWith(DefaultConstraintJustification.of(SimpleScore.of(-10), solution.getValueList().get(0))))
@@ -84,31 +85,32 @@ class SingleConstraintAssertionTest {
 
         // Test cascade indictment
         assertThatCode(() -> shadowConstraintVerifier
-                .verifyThat(TestdataListShadowConstraintVerifierConstraintProvider::penalizeCascadingUpdate)
+                .verifyThat(TestdataListMultipleShadowVariableConstraintProvider::penalizeCascadingUpdate)
                 .givenSolution(solution)
                 .settingAllShadowVariables()
                 .indictsWith(solution.getValueList().get(0)))
                 .doesNotThrowAnyException();
 
+        // Custom listener
         solution.getEntityList().get(0).setValueList(List.of(solution.getValueList().get(1)));
         solution.getValueList().get(0).setEntity(null);
         // Test listener penalty
         assertThatCode(() -> shadowConstraintVerifier
-                .verifyThat(TestdataListShadowConstraintVerifierConstraintProvider::penalizeListener)
+                .verifyThat(TestdataListMultipleShadowVariableConstraintProvider::penalizeListener)
                 .givenSolution(solution)
                 .settingAllShadowVariables()
                 .penalizesBy(20)).doesNotThrowAnyException();
 
         // Test listener reward
         assertThatCode(() -> shadowConstraintVerifier
-                .verifyThat(TestdataListShadowConstraintVerifierConstraintProvider::rewardListener)
+                .verifyThat(TestdataListMultipleShadowVariableConstraintProvider::rewardListener)
                 .givenSolution(solution)
                 .settingAllShadowVariables()
                 .rewardsWith(40)).doesNotThrowAnyException();
 
         // Test listener justification
         assertThatCode(() -> shadowConstraintVerifier
-                .verifyThat(TestdataListShadowConstraintVerifierConstraintProvider::penalizeListener)
+                .verifyThat(TestdataListMultipleShadowVariableConstraintProvider::penalizeListener)
                 .givenSolution(solution)
                 .settingAllShadowVariables()
                 .justifiesWith(DefaultConstraintJustification.of(SimpleScore.of(-20), solution.getValueList().get(1))))
@@ -116,7 +118,7 @@ class SingleConstraintAssertionTest {
 
         // Test listener indictment
         assertThatCode(() -> shadowConstraintVerifier
-                .verifyThat(TestdataListShadowConstraintVerifierConstraintProvider::penalizeListener)
+                .verifyThat(TestdataListMultipleShadowVariableConstraintProvider::penalizeListener)
                 .givenSolution(solution)
                 .settingAllShadowVariables()
                 .indictsWith(solution.getValueList().get(1)))

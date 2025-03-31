@@ -25,15 +25,8 @@ public final class DefaultSingleConstraintVerification<Solution_, Score_ extends
     }
 
     @Override
-    public @NonNull DefaultSingleConstraintAssertion<Solution_, Score_> givenSolution(@NonNull Solution_ solution) {
-        // Most score directors don't need derived status; CS will override this.
-        try (var scoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
-                .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
-                .buildDerived()) {
-            scoreDirector.setWorkingSolution(Objects.requireNonNull(solution));
-            return new DefaultSingleConstraintAssertion<>(scoreDirectorFactory, scoreDirector.calculateScore(),
-                    scoreDirector.getConstraintMatchTotalMap(), scoreDirector.getIndictmentMap());
-        }
+    public @NonNull DefaultSingleConstraintListener<Solution_, Score_> givenSolution(@NonNull Solution_ solution) {
+        return new DefaultSingleConstraintListener<>(scoreDirectorFactory, solution);
     }
 
 }

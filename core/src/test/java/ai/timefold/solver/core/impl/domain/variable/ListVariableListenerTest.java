@@ -18,6 +18,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListEntityWithShadowHistory;
 import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListSolutionWithShadowHistory;
 import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListValueWithShadowHistory;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableSolution;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
 import org.junit.jupiter.api.DisplayName;
@@ -30,6 +31,9 @@ class ListVariableListenerTest {
 
     private final InnerScoreDirector<TestdataListSolutionWithShadowHistory, SimpleScore> scoreDirector =
             PlannerTestUtils.mockScoreDirector(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
+
+    private final InnerScoreDirector<TestdataListMultipleShadowVariableSolution, SimpleScore> multipleListenerScoreDirector =
+            PlannerTestUtils.mockScoreDirector(TestdataListMultipleShadowVariableSolution.buildSolutionDescriptor());
 
     static TestdataListSolutionWithShadowHistory buildSolution(TestdataListEntityWithShadowHistory... entities) {
         List<TestdataListValueWithShadowHistory> values =
@@ -995,5 +999,16 @@ class ListVariableListenerTest {
         assertNextHistory(c, d, b);
         assertNextHistory(d, e, c);
         assertNextHistory(e, d);
+    }
+
+    @Test
+    void clearEvents() {
+        var solution = TestdataListMultipleShadowVariableSolution.generateSolution(2, 1);
+        multipleListenerScoreDirector.setWorkingSolution(solution);
+        multipleListenerScoreDirector.clearVariableListenerEvents();
+        assertThat(solution.getValueList().stream().allMatch(v -> v.getListenerValue() == 0))
+                .isTrue(); // zero if it is null
+        assertThat(solution.getValueList().stream().allMatch(v -> v.getCascadeValue() == 2))
+                .isTrue(); // two if it is null
     }
 }

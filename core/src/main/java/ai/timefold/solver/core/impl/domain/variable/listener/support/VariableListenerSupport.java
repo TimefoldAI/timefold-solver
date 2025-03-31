@@ -368,6 +368,15 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         triggerVariableListenersInNotificationQueues();
     }
 
+    /**
+     * Clear all variable listeners without triggering any logic.
+     * The goal is to clear all queues and avoid executing custom listener logic.
+     */
+    public void clearAllVariableListenerEvents() {
+        notifiableRegistry.getAll().forEach(Notifiable::clearAllNotifications);
+        notificationQueuesAreEmpty = true;
+    }
+
     private void simulateGenuineVariableChange(Object entity) {
         var entityDescriptor = scoreDirector.getSolutionDescriptor()
                 .findEntityDescriptorOrFail(entity.getClass());

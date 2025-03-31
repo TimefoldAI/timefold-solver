@@ -342,6 +342,11 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     void close();
 
     /**
+     * This function clears all listener events that have been generated without triggering any of them.
+     */
+    void clearVariableListenerEvents();
+
+    /**
      * Unlike {@link #triggerVariableListeners()} which only triggers notifications already in the queue,
      * this triggers every variable listener on every genuine variable.
      * This is useful in {@link SolutionManager#update(Object)} to fill in shadow variable values.

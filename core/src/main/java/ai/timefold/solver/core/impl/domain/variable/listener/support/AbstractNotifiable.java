@@ -81,6 +81,11 @@ abstract class AbstractNotifiable<Solution_, T extends AbstractVariableListener<
     }
 
     @Override
+    public void clearAllNotifications() {
+        notificationQueue.clear();
+    }
+
+    @Override
     public void triggerAllNotifications() {
         int notifiedCount = 0;
         for (Notification<Solution_, ? super T> notification : notificationQueue) {
