@@ -1,5 +1,5 @@
 ---
-name: "Timefold benchmark"
+name: "Timefold Solver Benchmark"
 metadata:
   keywords:
     - "timefold"
@@ -7,7 +7,13 @@ metadata:
     - "performance"
     - "scaling"
     - "tweaking"
-#  guide: "https://quarkus.io/guides/timefold"
   categories:
+    - "ai"
     - "business-automation"
+  guide: "https://docs.timefold.ai/timefold-solver/latest/quickstart/quarkus/quarkus-quickstart"
+  icon-url: "https://timefold.ai/uploads/images/Brand-Assets/Logomark-Negative.svg"
   status: "stable"
+  config:
+    - "quarkus.timefold.benchmark."
+  extension-dependencies:
+    - "ai.timefold.solver:timefold-solver-quarkus"
