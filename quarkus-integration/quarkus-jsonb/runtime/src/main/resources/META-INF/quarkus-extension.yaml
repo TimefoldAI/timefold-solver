@@ -1,5 +1,5 @@
 ---
-name: "Timefold JSON-B"
+name: "Timefold Solver JSON-B Integration"
 metadata:
   keywords:
     - "timefold"
@@ -7,6 +7,11 @@ metadata:
     - "json-b"
     - "json"
   categories:
+    - "ai"
     - "business-automation"
     - "serialization"
+  guide: "https://docs.timefold.ai/timefold-solver/latest/quickstart/quarkus/quarkus-quickstart"
+  icon-url: "https://timefold.ai/uploads/images/Brand-Assets/Logomark-Negative.svg"
   status: "stable"
+  extension-dependencies:
+    - "ai.timefold.solver:timefold-solver-quarkus"
