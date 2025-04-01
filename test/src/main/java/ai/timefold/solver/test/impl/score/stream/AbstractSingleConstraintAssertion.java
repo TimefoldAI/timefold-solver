@@ -49,6 +49,7 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         this.scoreDefinition = scoreDirectorFactory.getScoreDefinition();
     }
 
+    @SuppressWarnings("java:S1905")
     final void update(Score_ score, Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
             Map<Object, Indictment<Score_>> indictmentMap) {
         this.score = requireNonNull(score);
@@ -148,7 +149,7 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         assertImpact(ScoreImpactType.REWARD, matchWeightTotal, message);
     }
 
-    private void validateMatchWeighTotal(Number matchWeightTotal) {
+    private static void validateMatchWeighTotal(Number matchWeightTotal) {
         if (matchWeightTotal.doubleValue() < 0) {
             throw new IllegalArgumentException("The matchWeightTotal (" + matchWeightTotal + ") must be positive.");
         }
@@ -282,7 +283,7 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         assertLessThanMatchCount(ScoreImpactType.REWARD, times, message);
     }
 
-    private void validateLessThanMatchCount(Number matchCount) {
+    private static void validateLessThanMatchCount(Number matchCount) {
         if (matchCount.doubleValue() < 1) {
             throw new IllegalArgumentException("The match count (" + matchCount + ") must be greater than 0.");
         }
@@ -731,7 +732,7 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         return String.format(preformattedMessage.toString(), params.toArray());
     }
 
-    private String getImpactTypeLabel(ScoreImpactType scoreImpactType) {
+    private static String getImpactTypeLabel(ScoreImpactType scoreImpactType) {
         if (scoreImpactType == ScoreImpactType.PENALTY) {
             return "penalty";
         } else if (scoreImpactType == ScoreImpactType.REWARD) {
