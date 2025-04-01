@@ -1865,7 +1865,7 @@ public class TimeslotChangeMove extends AbstractMove<Timetable> {
     private Lesson lesson;
     private Timeslot toTimeslot;
 
-    public CloudComputerChangeMove(Lesson lesson, Timeslot toTimeslot) {
+    public TimeslotChangeMove(Lesson lesson, Timeslot toTimeslot) {
         this.lesson = lesson;
         this.toTimeslot = toTimeslot;
     }
