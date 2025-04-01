@@ -1,6 +1,6 @@
 package ai.timefold.solver.test.api.score.stream;
 
-public interface MultipleConstraintListener extends MultiConstraintAssertion {
+public interface MultiConstraintListener extends MultiConstraintAssertion {
 
     /**
      * The method allows the code under test that uses any type of shadow variables

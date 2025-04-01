@@ -9,10 +9,10 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.test.api.score.stream.MultiConstraintAssertion;
-import ai.timefold.solver.test.api.score.stream.MultipleConstraintListener;
+import ai.timefold.solver.test.api.score.stream.MultiConstraintListener;
 
 public final class DefaultMultiConstraintListener<Solution_, Score_ extends Score<Score_>>
-        extends AbstractMultiConstraintAssertion<Score_> implements MultipleConstraintListener {
+        extends AbstractMultiConstraintAssertion<Score_> implements MultiConstraintListener {
 
     private final AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, ?> scoreDirectorFactory;
     private final Solution_ solution;

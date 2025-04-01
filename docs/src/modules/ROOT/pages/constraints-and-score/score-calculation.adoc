@@ -2387,16 +2387,6 @@ Java::
                 .settingAllShadowVariables()
                 .penalizesBy(20);
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-    (constraint_verifier.verify_that(vehicle_capacity)
-                        .given_solution(solution)
-                        .setting_all_shadow_variables()
-                        .penalizes_by(20))
-----
 ====
 
 [NOTE]
@@ -2504,16 +2494,6 @@ Java::
                 .givenSolution(solution)
                 .settingAllShadowVariables()
                 .scores(HardSoftScore.ofSoft(20));
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-    (constraint_verifier.verify_that()
-            .given_solution(solution)
-            .setting_all_shadow_variables()
-            .scores(HardSoftScore.of_soft(20)))
 ----
 ====
 
