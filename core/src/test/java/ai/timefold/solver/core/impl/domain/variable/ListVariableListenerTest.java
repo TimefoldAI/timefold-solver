@@ -15,6 +15,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListUna
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListSwapMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListEntityWithShadowHistory;
 import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListSolutionWithShadowHistory;
 import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListValueWithShadowHistory;
@@ -999,16 +1000,5 @@ class ListVariableListenerTest {
         assertNextHistory(c, d, b);
         assertNextHistory(d, e, c);
         assertNextHistory(e, d);
-    }
-
-    @Test
-    void clearEvents() {
-        var solution = TestdataListMultipleShadowVariableSolution.generateSolution(2, 1);
-        multipleListenerScoreDirector.setWorkingSolution(solution);
-        multipleListenerScoreDirector.clearVariableListenerEvents();
-        assertThat(solution.getValueList().stream().allMatch(v -> v.getListenerValue() == 0))
-                .isTrue(); // zero if it is null
-        assertThat(solution.getValueList().stream().allMatch(v -> v.getCascadeValue() == 2))
-                .isTrue(); // two if it is null
     }
 }

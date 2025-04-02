@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.bavet;
 
 import static ai.timefold.solver.core.api.score.stream.Joiners.filtering;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.function.Function;
 
@@ -9,11 +10,16 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamTest;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 
+import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableEntity;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableSolution;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableValue;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestTemplate;
 
 final class BavetRegressionTest extends AbstractConstraintStreamTest {
@@ -517,6 +523,26 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
                 assertMatch(entity1),
                 assertMatch(entity1),
                 assertMatch(entity2));
+    }
+
+    @TestTemplate
+    @SuppressWarnings("unchecked")
+    void clearEvents() {
+        var scoreDirector =
+                (BavetConstraintStreamScoreDirector<TestdataListMultipleShadowVariableSolution, SimpleScore>) buildScoreDirector(
+                        TestdataListMultipleShadowVariableSolution.buildSolutionDescriptor(),
+                        factory -> new Constraint[] {
+                                factory.forEach(TestdataListMultipleShadowVariableValue.class)
+                                        .penalize(SimpleScore.ONE, TestdataListMultipleShadowVariableValue::getCascadeValue)
+                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                        });
+        var solution = TestdataListMultipleShadowVariableSolution.generateSolution(2, 1);
+        scoreDirector.setWorkingSolution(solution);
+        scoreDirector.clearShadowVariablesListenerQueue();
+        assertThat(solution.getValueList().stream().allMatch(v -> v.getListenerValue() == 0))
+                .isTrue(); // zero if it is null
+        assertThat(solution.getValueList().stream().allMatch(v -> v.getCascadeValue() == 2))
+                .isTrue(); // two if it is null
     }
 
 }
