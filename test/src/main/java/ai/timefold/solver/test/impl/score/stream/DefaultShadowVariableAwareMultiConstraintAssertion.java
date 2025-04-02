@@ -20,8 +20,8 @@ public final class DefaultShadowVariableAwareMultiConstraintAssertion<Solution_,
     private boolean initialized = false;
 
     DefaultShadowVariableAwareMultiConstraintAssertion(ConstraintProvider constraintProvider,
-                                                       AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, ?> scoreDirectorFactory,
-                                                       Solution_ solution) {
+            AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, ?> scoreDirectorFactory,
+            Solution_ solution) {
         super(constraintProvider);
         this.scoreDirectorFactory = requireNonNull(scoreDirectorFactory);
         this.solution = Objects.requireNonNull(solution);

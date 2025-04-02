@@ -6,8 +6,8 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
-import ai.timefold.solver.test.api.score.stream.SingleConstraintAssertion;
 import ai.timefold.solver.test.api.score.stream.ShadowVariableAwareSingleConstraintAssertion;
+import ai.timefold.solver.test.api.score.stream.SingleConstraintAssertion;
 
 public final class DefaultShadowVariableAwareSingleConstraintAssertion<Solution_, Score_ extends Score<Score_>>
         extends AbstractSingleConstraintAssertion<Solution_, Score_> implements ShadowVariableAwareSingleConstraintAssertion {
@@ -16,8 +16,9 @@ public final class DefaultShadowVariableAwareSingleConstraintAssertion<Solution_
     private final Solution_ solution;
     private boolean initialized = false;
 
-    DefaultShadowVariableAwareSingleConstraintAssertion(AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, ?> scoreDirectorFactory,
-                                                        Solution_ solution) {
+    DefaultShadowVariableAwareSingleConstraintAssertion(
+            AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, ?> scoreDirectorFactory,
+            Solution_ solution) {
         super(scoreDirectorFactory);
         this.scoreDirectorFactory = scoreDirectorFactory;
         this.solution = Objects.requireNonNull(solution);

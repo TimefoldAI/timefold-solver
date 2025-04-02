@@ -15,11 +15,9 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListUna
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListSwapMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListEntityWithShadowHistory;
 import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListSolutionWithShadowHistory;
 import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListValueWithShadowHistory;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableSolution;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
 import org.junit.jupiter.api.DisplayName;
@@ -32,9 +30,6 @@ class ListVariableListenerTest {
 
     private final InnerScoreDirector<TestdataListSolutionWithShadowHistory, SimpleScore> scoreDirector =
             PlannerTestUtils.mockScoreDirector(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
-
-    private final InnerScoreDirector<TestdataListMultipleShadowVariableSolution, SimpleScore> multipleListenerScoreDirector =
-            PlannerTestUtils.mockScoreDirector(TestdataListMultipleShadowVariableSolution.buildSolutionDescriptor());
 
     static TestdataListSolutionWithShadowHistory buildSolution(TestdataListEntityWithShadowHistory... entities) {
         List<TestdataListValueWithShadowHistory> values =

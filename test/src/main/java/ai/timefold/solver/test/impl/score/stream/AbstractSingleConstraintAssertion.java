@@ -30,7 +30,8 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_ extends Score<Score_>>
-        implements SingleConstraintAssertion permits DefaultSingleConstraintAssertion, DefaultShadowVariableAwareSingleConstraintAssertion {
+        implements SingleConstraintAssertion
+        permits DefaultSingleConstraintAssertion, DefaultShadowVariableAwareSingleConstraintAssertion {
 
     private final AbstractConstraint<Solution_, ?, ?> constraint;
     private final ScoreDefinition<Score_> scoreDefinition;
