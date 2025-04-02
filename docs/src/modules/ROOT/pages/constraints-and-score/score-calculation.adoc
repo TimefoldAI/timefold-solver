@@ -2373,7 +2373,7 @@ In this case, the `given(...)` call takes the `vehicleA`, `visit1` and `visit2` 
 Alternatively, you can use a `givenSolution(...)` method here and provide a planning solution instead.
 
 It's important to understand
-that calling `giveSolution(...)` does not trigger any xref:using-timefold-solver/modeling-planning-problems.adoc#customVariableListener[custom listener] or the xref:using-timefold-solver/modeling-planning-problems.adoc#tailChainVariable[cascading update listener].
+that calling `givenSolution(...)` does not update any xref:using-timefold-solver/modeling-planning-problems.adoc#shadowVariable[shadow variables].
 This is the default behavior and can be modified by invoking `settingAllShadowVariables()`.
 
 [tabs]
@@ -2478,11 +2478,10 @@ remains consistent as your code base evolves.
 It is therefore necessary for the `given(...)` method to list all planning entities and problem facts,
 or provide the entire planning solution instead.
 
-To test all constraints while activating the variable listeners,
-such as xref:using-timefold-solver/modeling-planning-problems.adoc#customVariableListener[custom listeners] and xref:using-timefold-solver/modeling-planning-problems.adoc#tailChainVariable[cascading update listeners],
+To test all constraints while updating all xref:using-timefold-solver/modeling-planning-problems.adoc#shadowVariable[shadow variables],
 call `giveSolution(...)` and `settingAllShadowVariables()`.
-This approach ensures that all listeners are triggered,
-and the constraints that depend on the related shared variables are calculated accordingly.
+This approach ensures that the shadow variable listeners are triggered,
+and the constraints that depend on the related variables are evaluated accordingly.
 
 [tabs]
 ====

@@ -16,6 +16,6 @@ public interface MultiConstraintVerification<Solution_> {
      * As defined by {@link SingleConstraintVerification#givenSolution(Object)}.
      */
     @NonNull
-    MultiConstraintListener givenSolution(@NonNull Solution_ solution);
+    ShadowVariableAwareMultiConstraintAssertion givenSolution(@NonNull Solution_ solution);
 
 }

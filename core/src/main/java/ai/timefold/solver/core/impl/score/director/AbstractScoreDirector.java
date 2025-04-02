@@ -343,8 +343,13 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         variableListenerSupport.triggerVariableListenersInNotificationQueues();
     }
 
-    @Override
-    public void clearVariableListenerEvents() {
+    /**
+     * This function clears all listener events that have been generated without triggering any of them.
+     * Using this method requires caution because clearing the event queue can lead to inconsistent states.
+     * This occurs when the shadow variables are not updated,
+     * causing constraints reliant on these variables to be inaccurately evaluated.
+     */
+    protected void clearVariableListenerEvents() {
         variableListenerSupport.clearAllVariableListenerEvents();
     }
 

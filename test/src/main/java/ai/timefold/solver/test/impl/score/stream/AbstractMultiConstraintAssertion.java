@@ -15,7 +15,7 @@ import ai.timefold.solver.test.api.score.stream.MultiConstraintAssertion;
 import org.jspecify.annotations.NonNull;
 
 public abstract sealed class AbstractMultiConstraintAssertion<Score_ extends Score<Score_>>
-        implements MultiConstraintAssertion permits DefaultMultiConstraintAssertion, DefaultMultiConstraintListener {
+        implements MultiConstraintAssertion permits DefaultMultiConstraintAssertion, DefaultShadowVariableAwareMultiConstraintAssertion {
 
     private final ConstraintProvider constraintProvider;
     private Score_ actualScore;
@@ -26,7 +26,7 @@ public abstract sealed class AbstractMultiConstraintAssertion<Score_ extends Sco
         this.constraintProvider = requireNonNull(constraintProvider);
     }
 
-    void update(Score_ actualScore, Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
+    final void update(Score_ actualScore, Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
             Map<Object, Indictment<Score_>> indictmentMap) {
         this.actualScore = requireNonNull(actualScore);
         this.constraintMatchTotalCollection = requireNonNull(constraintMatchTotalMap).values();

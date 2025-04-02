@@ -22,8 +22,8 @@ public final class DefaultSingleConstraintVerification<Solution_, Score_ extends
     }
 
     @Override
-    public @NonNull DefaultSingleConstraintListener<Solution_, Score_> givenSolution(@NonNull Solution_ solution) {
-        return new DefaultSingleConstraintListener<>(scoreDirectorFactory, solution);
+    public @NonNull DefaultShadowVariableAwareSingleConstraintAssertion<Solution_, Score_> givenSolution(@NonNull Solution_ solution) {
+        return new DefaultShadowVariableAwareSingleConstraintAssertion<>(scoreDirectorFactory, solution);
     }
 
 }

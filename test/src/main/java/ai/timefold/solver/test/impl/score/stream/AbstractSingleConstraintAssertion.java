@@ -30,7 +30,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_ extends Score<Score_>>
-        implements SingleConstraintAssertion permits DefaultSingleConstraintAssertion, DefaultSingleConstraintListener {
+        implements SingleConstraintAssertion permits DefaultSingleConstraintAssertion, DefaultShadowVariableAwareSingleConstraintAssertion {
 
     private final AbstractConstraint<Solution_, ?, ?> constraint;
     private final ScoreDefinition<Score_> scoreDefinition;
@@ -49,7 +49,6 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         this.scoreDefinition = scoreDirectorFactory.getScoreDefinition();
     }
 
-    @SuppressWarnings("java:S1905")
     final void update(Score_ score, Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
             Map<Object, Indictment<Score_>> indictmentMap) {
         this.score = requireNonNull(score);

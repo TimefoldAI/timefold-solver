@@ -23,27 +23,6 @@ public class TestdataListMultipleShadowVariableEntity extends TestdataObject {
                 .getGenuineVariableDescriptor("valueList");
     }
 
-    public static TestdataListMultipleShadowVariableEntity createWithValues(String code,
-            TestdataListMultipleShadowVariableValue... values) {
-        // Set up shadow variables to preserve consistency.
-        return new TestdataListMultipleShadowVariableEntity(code, values).setUpShadowVariables();
-    }
-
-    TestdataListMultipleShadowVariableEntity setUpShadowVariables() {
-        for (int i = 0; i < valueList.size(); i++) {
-            TestdataListMultipleShadowVariableValue value = valueList.get(i);
-            value.setEntity(this);
-            value.setIndex(i);
-            if (i > 0) {
-                value.setPrevious(valueList.get(i - 1));
-            }
-            if (i < valueList.size() - 1) {
-                value.setNext(valueList.get(i + 1));
-            }
-        }
-        return this;
-    }
-
     @PlanningListVariable(valueRangeProviderRefs = "valueRange")
     private List<TestdataListMultipleShadowVariableValue> valueList;
 

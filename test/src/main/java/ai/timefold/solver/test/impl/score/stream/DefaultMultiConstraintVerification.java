@@ -26,8 +26,8 @@ public final class DefaultMultiConstraintVerification<Solution_, Score_ extends 
     }
 
     @Override
-    public @NonNull DefaultMultiConstraintListener<Solution_, Score_> givenSolution(@NonNull Solution_ solution) {
-        return new DefaultMultiConstraintListener<>(constraintProvider, scoreDirectorFactory, solution);
+    public @NonNull DefaultShadowVariableAwareMultiConstraintAssertion<Solution_, Score_> givenSolution(@NonNull Solution_ solution) {
+        return new DefaultShadowVariableAwareMultiConstraintAssertion<>(constraintProvider, scoreDirectorFactory, solution);
     }
 
 }

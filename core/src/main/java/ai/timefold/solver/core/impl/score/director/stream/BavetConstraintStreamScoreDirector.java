@@ -43,6 +43,20 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     // Complex methods
     // ************************************************************************
 
+    /**
+     * The function is exclusively available for the Bavet score director, and its use must be approached with caution.
+     * The primary purpose of this method is
+     * to enable the {@link ai.timefold.solver.test.api.score.stream.ConstraintVerifier}
+     * to ignore events related to shadow variables when testing constraints that do not rely on them.
+     *
+     * @see AbstractScoreDirector#clearVariableListenerEvents()
+     * @see ai.timefold.solver.test.api.score.stream.SingleConstraintListener#settingAllShadowVariables()
+     * @see ai.timefold.solver.test.api.score.stream.MultiConstraintListener#settingAllShadowVariables()
+     */
+    public void clearShadowVariablesListenerQueue() {
+        clearVariableListenerEvents();
+    }
+
     @Override
     public void setWorkingSolution(Solution_ workingSolution) {
         session = scoreDirectorFactory.newSession(workingSolution, constraintMatchPolicy, derived);
