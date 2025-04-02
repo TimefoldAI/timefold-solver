@@ -15,7 +15,8 @@ import ai.timefold.solver.test.api.score.stream.MultiConstraintAssertion;
 import org.jspecify.annotations.NonNull;
 
 public abstract sealed class AbstractMultiConstraintAssertion<Score_ extends Score<Score_>>
-        implements MultiConstraintAssertion permits DefaultMultiConstraintAssertion, DefaultShadowVariableAwareMultiConstraintAssertion {
+        implements MultiConstraintAssertion
+        permits DefaultMultiConstraintAssertion, DefaultShadowVariableAwareMultiConstraintAssertion {
 
     private final ConstraintProvider constraintProvider;
     private Score_ actualScore;
@@ -43,13 +44,15 @@ public abstract sealed class AbstractMultiConstraintAssertion<Score_ extends Sco
         }
         Class<?> constraintProviderClass = constraintProvider.getClass();
         String expectation = message == null ? "Broken expectation." : message;
-        throw new AssertionError(expectation + System.lineSeparator() +
-                "  Constraint provider: " + constraintProviderClass + System.lineSeparator() +
-                "       Expected score: " + score + " (" + score.getClass() + ")" + System.lineSeparator() +
-                "         Actual score: " + actualScore + " (" + actualScore.getClass() + ")" +
-                System.lineSeparator() + System.lineSeparator() +
-                "  " + DefaultScoreExplanation.explainScore(actualScore, constraintMatchTotalCollection,
-                        indictmentCollection));
+        throw new AssertionError("""
+                %s%s
+                  Constraint provider: %s%s
+                         Expected score: %s (%s)%s
+                         Actual score: %s (%s)%s%s
+                         %s""".formatted(expectation, System.lineSeparator(), constraintProviderClass, System.lineSeparator(),
+                score, score.getClass(), System.lineSeparator(), actualScore, actualScore.getClass(), System.lineSeparator(),
+                System.lineSeparator(), DefaultScoreExplanation.explainScore(actualScore, constraintMatchTotalCollection,
+                        indictmentCollection)));
     }
 
 }
