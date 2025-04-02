@@ -15,11 +15,9 @@ import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStream
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-
-import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableEntity;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableSolution;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableValue;
-import org.junit.jupiter.api.Test;
+
 import org.junit.jupiter.api.TestTemplate;
 
 final class BavetRegressionTest extends AbstractConstraintStreamTest {
@@ -29,7 +27,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
     }
 
     @TestTemplate
-    public void joinWithNullKeyFromRight() {
+    void joinWithNullKeyFromRight() {
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
                         factory -> new Constraint[] {
@@ -81,7 +79,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
      * @see <a href="https://github.com/TimefoldAI/timefold-solver/issues/186">Timefold Solver Github Issue 186</a>
      */
     @TestTemplate
-    public void filteringJoinNullConflict() {
+    void filteringJoinNullConflict() {
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
                         factory -> new Constraint[] {
@@ -137,7 +135,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
      * @see <a href="https://github.com/TimefoldAI/timefold-solver/issues/186">Timefold Solver Github Issue 186</a>
      */
     @TestTemplate
-    public void filteringIfExistsNullConflict() {
+    void filteringIfExistsNullConflict() {
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
                         factory -> new Constraint[] {
@@ -190,7 +188,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
      * @see <a href="https://github.com/TimefoldAI/timefold-solver/issues/186">Timefold Solver Github Issue 186</a>
      */
     @TestTemplate
-    public void filteringIfNotExistsNullConflict() {
+    void filteringIfNotExistsNullConflict() {
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
                         factory -> new Constraint[] {
@@ -242,7 +240,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
      * Like {@link #filteringJoinNullConflict()}, but using two different forEach nodes.
      */
     @TestTemplate
-    public void filteringJoinNullConflictDifferentNodes() {
+    void filteringJoinNullConflictDifferentNodes() {
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
                         factory -> new Constraint[] {
@@ -299,7 +297,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
      * Like {@link #filteringIfExistsNullConflict()}, but using two different forEach nodes.
      */
     @TestTemplate
-    public void filteringIfExistsNullConflictDifferentNodes() {
+    void filteringIfExistsNullConflictDifferentNodes() {
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
                         factory -> new Constraint[] {
@@ -353,7 +351,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
      * Like {@link #filteringIfExistsNullConflict()}, but using two different forEach nodes.
      */
     @TestTemplate
-    public void filteringIfNotExistsNullConflictDifferentNodes() {
+    void filteringIfNotExistsNullConflictDifferentNodes() {
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
                         factory -> new Constraint[] {
@@ -412,7 +410,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
     }
 
     @TestTemplate
-    public void mapPlanningEntityChanges() {
+    void mapPlanningEntityChanges() {
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
                         factory -> new Constraint[] {
@@ -457,7 +455,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
      * @see <a href="https://github.com/TimefoldAI/timefold-solver/issues/828">Timefold Solver Github Issue 828</a>
      */
     @TestTemplate
-    public void concatSameTupleDeadAndAlive() {
+    void concatSameTupleDeadAndAlive() {
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
                         factory -> new Constraint[] {
