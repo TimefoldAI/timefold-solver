@@ -49,10 +49,15 @@ public abstract sealed class AbstractMultiConstraintAssertion<Solution_, Score_ 
         Class<?> constraintProviderClass = constraintProvider.getClass();
         String expectation = message == null ? "Broken expectation." : message;
         throw new AssertionError(
-                "%s%s  Constraint provider: %s%s       Expected score: %s (%s)%s         Actual score: %s (%s)%s%s  %s"
-                        .formatted(expectation, System.lineSeparator(), constraintProviderClass, System.lineSeparator(), score,
-                                score.getClass(), System.lineSeparator(), actualScore, actualScore.getClass(),
-                                System.lineSeparator(), System.lineSeparator(),
+                """
+                        %s
+                          Constraint provider: %s
+                                 Expected score: %s (%s)
+                                   Actual score: %s (%s)
+
+                                     %s"""
+                        .formatted(expectation, constraintProviderClass, score, score.getClass(), actualScore,
+                                actualScore.getClass(),
                                 DefaultScoreExplanation.explainScore(actualScore, constraintMatchTotalCollection,
                                         indictmentCollection)));
     }

@@ -272,7 +272,7 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         assertLessThanImpact(ScoreImpactType.REWARD, matchWeightTotal, message);
     }
 
-    private void validateLessThanMatchWeighTotal(Number matchWeightTotal) {
+    private static void validateLessThanMatchWeighTotal(Number matchWeightTotal) {
         if (matchWeightTotal.doubleValue() < 1) {
             throw new IllegalArgumentException("The matchWeightTotal (%s) must be greater than 0.".formatted(matchWeightTotal));
         }
