@@ -14,7 +14,6 @@ import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamS
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamTest;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableSolution;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableValue;
 
@@ -38,10 +37,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
                                         .asConstraint(TEST_CONSTRAINT_NAME)
                         });
 
-        TestdataSolution solution = TestdataSolution.generateSolution(1, 2);
-        TestdataEntity entity1 = solution.getEntityList().get(0);
-        TestdataEntity entity2 = solution.getEntityList().get(1);
-        TestdataValue value = solution.getValueList().get(0);
+        var solution = TestdataSolution.generateSolution(1, 2);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var value = solution.getValueList().get(0);
         entity1.setValue(null);
         entity2.setValue(value);
 
@@ -99,10 +98,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
                                         .asConstraint(TEST_CONSTRAINT_NAME)
                         });
 
-        TestdataSolution solution = TestdataSolution.generateSolution(1, 2);
-        TestdataEntity entity1 = solution.getEntityList().get(0);
-        TestdataEntity entity2 = solution.getEntityList().get(1);
-        TestdataValue value = solution.getValueList().get(0);
+        var solution = TestdataSolution.generateSolution(1, 2);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var value = solution.getValueList().get(0);
         entity1.setValue(null);
         entity2.setValue(value);
 
@@ -152,10 +151,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
                                         .asConstraint(TEST_CONSTRAINT_NAME)
                         });
 
-        TestdataSolution solution = TestdataSolution.generateSolution(1, 2);
-        TestdataEntity entity1 = solution.getEntityList().get(0);
-        TestdataEntity entity2 = solution.getEntityList().get(1);
-        TestdataValue value = solution.getValueList().get(0);
+        var solution = TestdataSolution.generateSolution(1, 2);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var value = solution.getValueList().get(0);
         entity1.setValue(null);
         entity2.setValue(value);
 
@@ -199,10 +198,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
                                         .asConstraint(TEST_CONSTRAINT_NAME)
                         });
 
-        TestdataSolution solution = TestdataSolution.generateSolution(1, 2);
-        TestdataEntity entity1 = solution.getEntityList().get(0);
-        TestdataEntity entity2 = solution.getEntityList().get(1);
-        TestdataValue value = solution.getValueList().get(0);
+        var solution = TestdataSolution.generateSolution(1, 2);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var value = solution.getValueList().get(0);
         entity1.setValue(null);
         entity2.setValue(value);
 
@@ -261,10 +260,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
                                         .asConstraint(TEST_CONSTRAINT_NAME)
                         });
 
-        TestdataSolution solution = TestdataSolution.generateSolution(1, 2);
-        TestdataEntity entity1 = solution.getEntityList().get(0);
-        TestdataEntity entity2 = solution.getEntityList().get(1);
-        TestdataValue value = solution.getValueList().get(0);
+        var solution = TestdataSolution.generateSolution(1, 2);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var value = solution.getValueList().get(0);
         entity1.setValue(null);
         entity2.setValue(value);
 
@@ -318,10 +317,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
                                         .asConstraint(TEST_CONSTRAINT_NAME)
                         });
 
-        TestdataSolution solution = TestdataSolution.generateSolution(1, 2);
-        TestdataEntity entity1 = solution.getEntityList().get(0);
-        TestdataEntity entity2 = solution.getEntityList().get(1);
-        TestdataValue value = solution.getValueList().get(0);
+        var solution = TestdataSolution.generateSolution(1, 2);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var value = solution.getValueList().get(0);
         entity1.setValue(null);
         entity2.setValue(value);
 
@@ -372,10 +371,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
                                         .asConstraint(TEST_CONSTRAINT_NAME)
                         });
 
-        TestdataSolution solution = TestdataSolution.generateSolution(1, 2);
-        TestdataEntity entity1 = solution.getEntityList().get(0);
-        TestdataEntity entity2 = solution.getEntityList().get(1);
-        TestdataValue value = solution.getValueList().get(0);
+        var solution = TestdataSolution.generateSolution(1, 2);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var value = solution.getValueList().get(0);
         entity1.setValue(null);
         entity2.setValue(value);
 
@@ -421,10 +420,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
                                         .asConstraint(TEST_CONSTRAINT_NAME)
                         });
 
-        TestdataSolution solution = TestdataSolution.generateSolution(1, 2);
-        TestdataEntity entity1 = solution.getEntityList().get(0);
-        TestdataEntity entity2 = solution.getEntityList().get(1);
-        TestdataValue value = solution.getValueList().get(0);
+        var solution = TestdataSolution.generateSolution(1, 2);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var value = solution.getValueList().get(0);
         entity1.setValue(null);
         entity2.setValue(value);
 
@@ -466,12 +465,12 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
                                         .asConstraint(TEST_CONSTRAINT_NAME)
                         });
 
-        TestdataSolution solution = TestdataSolution.generateSolution(2, 2);
-        TestdataEntity entity1 = solution.getEntityList().get(0);
-        TestdataEntity entity2 = solution.getEntityList().get(1);
-        TestdataValue valueA = solution.getValueList().get(0);
+        var solution = TestdataSolution.generateSolution(2, 2);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var valueA = solution.getValueList().get(0);
         valueA.setCode("A");
-        TestdataValue valueB = solution.getValueList().get(1);
+        var valueB = solution.getValueList().get(1);
         valueB.setCode("B");
 
         scoreDirector.setWorkingSolution(solution);

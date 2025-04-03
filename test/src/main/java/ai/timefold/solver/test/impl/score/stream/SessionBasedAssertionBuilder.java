@@ -5,7 +5,6 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
-import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 
 final class SessionBasedAssertionBuilder<Solution_, Score_ extends Score<Score_>> {
 
@@ -16,15 +15,16 @@ final class SessionBasedAssertionBuilder<Solution_, Score_ extends Score<Score_>
         this.constraintStreamScoreDirectorFactory = Objects.requireNonNull(constraintStreamScoreDirectorFactory);
     }
 
-    public DefaultMultiConstraintAssertion<Score_> multiConstraintGiven(ConstraintProvider constraintProvider,
+    public DefaultMultiConstraintAssertion<Solution_, Score_> multiConstraintGiven(ConstraintProvider constraintProvider,
             Object... facts) {
-        AbstractScoreInliner<Score_> scoreInliner = constraintStreamScoreDirectorFactory.fireAndForget(facts);
-        return new DefaultMultiConstraintAssertion<>(constraintProvider, scoreInliner.extractScore(0),
-                scoreInliner.getConstraintIdToConstraintMatchTotalMap(), scoreInliner.getIndictmentMap());
+        var scoreInliner = constraintStreamScoreDirectorFactory.fireAndForget(facts);
+        return new DefaultMultiConstraintAssertion<>(constraintProvider, constraintStreamScoreDirectorFactory,
+                scoreInliner.extractScore(0), scoreInliner.getConstraintIdToConstraintMatchTotalMap(),
+                scoreInliner.getIndictmentMap());
     }
 
     public DefaultSingleConstraintAssertion<Solution_, Score_> singleConstraintGiven(Object... facts) {
-        AbstractScoreInliner<Score_> scoreInliner = constraintStreamScoreDirectorFactory.fireAndForget(facts);
+        var scoreInliner = constraintStreamScoreDirectorFactory.fireAndForget(facts);
         return new DefaultSingleConstraintAssertion<>(constraintStreamScoreDirectorFactory,
                 scoreInliner.extractScore(0), scoreInliner.getConstraintIdToConstraintMatchTotalMap(),
                 scoreInliner.getIndictmentMap());

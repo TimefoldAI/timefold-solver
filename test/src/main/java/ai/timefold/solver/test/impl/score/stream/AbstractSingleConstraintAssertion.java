@@ -30,6 +30,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_ extends Score<Score_>>
+        extends AbstractConstraintAssertion<Solution_, Score_>
         implements SingleConstraintAssertion
         permits DefaultSingleConstraintAssertion, DefaultShadowVariableAwareSingleConstraintAssertion {
 
@@ -42,6 +43,7 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
 
     @SuppressWarnings("unchecked")
     AbstractSingleConstraintAssertion(AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, ?> scoreDirectorFactory) {
+        super(scoreDirectorFactory);
         this.constraint = (AbstractConstraint<Solution_, ?, ?>) scoreDirectorFactory.getConstraintMetaModel()
                 .getConstraints()
                 .stream()
@@ -50,6 +52,7 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         this.scoreDefinition = scoreDirectorFactory.getScoreDefinition();
     }
 
+    @Override
     final void update(Score_ score, Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
             Map<Object, Indictment<Score_>> indictmentMap) {
         this.score = requireNonNull(score);
@@ -60,9 +63,8 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
                 .map(c -> (ConstraintJustification) c.getJustification())
                 .distinct()
                 .toList();
+        toggleInitialized();
     }
-
-    abstract void ensureInitialized();
 
     @Override
     public @NonNull SingleConstraintAssertion justifiesWith(String message,
@@ -151,7 +153,7 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
 
     private static void validateMatchWeighTotal(Number matchWeightTotal) {
         if (matchWeightTotal.doubleValue() < 0) {
-            throw new IllegalArgumentException("The matchWeightTotal (" + matchWeightTotal + ") must be positive.");
+            throw new IllegalArgumentException("The matchWeightTotal (%s) must be positive.".formatted(matchWeightTotal));
         }
     }
 
@@ -272,7 +274,7 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
 
     private void validateLessThanMatchWeighTotal(Number matchWeightTotal) {
         if (matchWeightTotal.doubleValue() < 1) {
-            throw new IllegalArgumentException("The matchWeightTotal (" + matchWeightTotal + ") must be greater than 0.");
+            throw new IllegalArgumentException("The matchWeightTotal (%s) must be greater than 0.".formatted(matchWeightTotal));
         }
     }
 
@@ -285,20 +287,20 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
 
     private static void validateLessThanMatchCount(Number matchCount) {
         if (matchCount.doubleValue() < 1) {
-            throw new IllegalArgumentException("The match count (" + matchCount + ") must be greater than 0.");
+            throw new IllegalArgumentException("The match count (%s) must be greater than 0.".formatted(matchCount));
         }
     }
 
     private void assertImpact(ScoreImpactType scoreImpactType, Number matchWeightTotal, String message) {
         BiPredicate<Number, Number> equalityPredicate =
                 NumberEqualityUtil.getEqualityPredicate(scoreDefinition, matchWeightTotal);
-        Pair<Number, Number> deducedImpacts = deduceImpact();
-        Number impact = deducedImpacts.key();
-        ScoreImpactType actualScoreImpactType = constraint.getScoreImpactType();
+        var deducedImpacts = deduceImpact();
+        var impact = deducedImpacts.key();
+        var actualScoreImpactType = constraint.getScoreImpactType();
         if (actualScoreImpactType == ScoreImpactType.MIXED) {
             // Impact means we need to check for expected impact type and actual impact match.
             if (requireNonNull(scoreImpactType) == ScoreImpactType.REWARD) {
-                Number negatedImpact = deducedImpacts.value();
+                var negatedImpact = deducedImpacts.value();
                 if (equalityPredicate.test(matchWeightTotal, negatedImpact)) {
                     return;
                 }
@@ -309,21 +311,21 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
             // Reward and positive or penalty and negative means all is OK.
             return;
         }
-        String constraintId = constraint.getConstraintRef().constraintId();
-        String assertionMessage = buildAssertionErrorMessage(scoreImpactType, matchWeightTotal, actualScoreImpactType,
+        var constraintId = constraint.getConstraintRef().constraintId();
+        var assertionMessage = buildAssertionErrorMessage(scoreImpactType, matchWeightTotal, actualScoreImpactType,
                 impact, constraintId, message);
         throw new AssertionError(assertionMessage);
     }
 
     private void assertMoreThanImpact(ScoreImpactType scoreImpactType, Number matchWeightTotal, String message) {
         Comparator<Number> comparator = NumberEqualityUtil.getComparison(matchWeightTotal);
-        Pair<Number, Number> deducedImpacts = deduceImpact();
-        Number impact = deducedImpacts.key();
-        ScoreImpactType actualScoreImpactType = constraint.getScoreImpactType();
+        var deducedImpacts = deduceImpact();
+        var impact = deducedImpacts.key();
+        var actualScoreImpactType = constraint.getScoreImpactType();
         if (actualScoreImpactType == ScoreImpactType.MIXED) {
             // Impact means we need to check for expected impact type and actual impact match.
             if (requireNonNull(scoreImpactType) == ScoreImpactType.REWARD) {
-                Number negatedImpact = deducedImpacts.value();
+                var negatedImpact = deducedImpacts.value();
                 if (comparator.compare(matchWeightTotal, negatedImpact) < 0) {
                     return;
                 }
@@ -334,21 +336,21 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
             // Reward and positive or penalty and negative means all is OK.
             return;
         }
-        String constraintId = constraint.getConstraintRef().constraintId();
-        String assertionMessage = buildMoreThanAssertionErrorMessage(scoreImpactType, matchWeightTotal, actualScoreImpactType,
+        var constraintId = constraint.getConstraintRef().constraintId();
+        var assertionMessage = buildMoreThanAssertionErrorMessage(scoreImpactType, matchWeightTotal, actualScoreImpactType,
                 impact, constraintId, message);
         throw new AssertionError(assertionMessage);
     }
 
     private void assertLessThanImpact(ScoreImpactType scoreImpactType, Number matchWeightTotal, String message) {
-        Comparator<Number> comparator = NumberEqualityUtil.getComparison(matchWeightTotal);
-        Pair<Number, Number> deducedImpacts = deduceImpact();
-        Number impact = deducedImpacts.key();
-        ScoreImpactType actualScoreImpactType = constraint.getScoreImpactType();
+        var comparator = NumberEqualityUtil.getComparison(matchWeightTotal);
+        var deducedImpacts = deduceImpact();
+        var impact = deducedImpacts.key();
+        var actualScoreImpactType = constraint.getScoreImpactType();
         if (actualScoreImpactType == ScoreImpactType.MIXED) {
             // Impact means we need to check for expected impact type and actual impact match.
             if (requireNonNull(scoreImpactType) == ScoreImpactType.REWARD) {
-                Number negatedImpact = deducedImpacts.value();
+                var negatedImpact = deducedImpacts.value();
                 if (comparator.compare(matchWeightTotal, negatedImpact) > 0) {
                     return;
                 }
@@ -359,35 +361,35 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
             // Reward and positive or penalty and negative means all is OK.
             return;
         }
-        String constraintId = constraint.getConstraintRef().constraintId();
-        String assertionMessage = buildLessThanAssertionErrorMessage(scoreImpactType, matchWeightTotal, actualScoreImpactType,
+        var constraintId = constraint.getConstraintRef().constraintId();
+        var assertionMessage = buildLessThanAssertionErrorMessage(scoreImpactType, matchWeightTotal, actualScoreImpactType,
                 impact, constraintId, message);
         throw new AssertionError(assertionMessage);
     }
 
     private void assertJustification(String message, boolean completeValidation, ConstraintJustification... justifications) {
         // Valid empty comparison
-        boolean emptyJustifications = justifications == null || justifications.length == 0;
+        var emptyJustifications = justifications == null || justifications.length == 0;
         if (emptyJustifications && justificationCollection.isEmpty()) {
             return;
         }
 
         // No justifications
         if (emptyJustifications && !justificationCollection.isEmpty()) {
-            String assertionMessage = buildAssertionErrorMessage("Justification", constraint.getConstraintRef().constraintId(),
+            var assertionMessage = buildAssertionErrorMessage("Justification", constraint.getConstraintRef().constraintId(),
                     justificationCollection, emptyList(), emptyList(), justificationCollection, message);
             throw new AssertionError(assertionMessage);
         }
 
         // Empty justifications
         if (justificationCollection.isEmpty()) {
-            String assertionMessage = buildAssertionErrorMessage("Justification", constraint.getConstraintRef().constraintId(),
+            var assertionMessage = buildAssertionErrorMessage("Justification", constraint.getConstraintRef().constraintId(),
                     emptyList(), Arrays.asList(justifications), Arrays.asList(justifications), emptyList(), message);
             throw new AssertionError(assertionMessage);
         }
 
-        List<Object> expectedNotFound = new ArrayList<>(justificationCollection.size());
-        for (Object justification : justifications) {
+        var expectedNotFound = new ArrayList<>(justificationCollection.size());
+        for (var justification : justifications) {
             // Test invalid match
             if (justificationCollection.stream().noneMatch(justification::equals)) {
                 expectedNotFound.add(justification);
@@ -402,20 +404,20 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         if (expectedNotFound.isEmpty() && unexpectedFound.isEmpty()) {
             return;
         }
-        String assertionMessage = buildAssertionErrorMessage("Justification", constraint.getConstraintRef().constraintId(),
+        var assertionMessage = buildAssertionErrorMessage("Justification", constraint.getConstraintRef().constraintId(),
                 unexpectedFound, expectedNotFound, Arrays.asList(justifications), justificationCollection, message);
         throw new AssertionError(assertionMessage);
     }
 
     private void assertIndictments(String message, boolean completeValidation, Object... indictments) {
-        boolean emptyIndictments = indictments == null || indictments.length == 0;
+        var emptyIndictments = indictments == null || indictments.length == 0;
         // Valid empty comparison
         if (emptyIndictments && indictmentCollection.isEmpty()) {
             return;
         }
 
         // No indictments
-        Collection<Object> indictmentObjectList = indictmentCollection.stream().map(Indictment::getIndictedObject).toList();
+        var indictmentObjectList = indictmentCollection.stream().map(Indictment::getIndictedObject).toList();
         if (emptyIndictments && !indictmentObjectList.isEmpty()) {
             String assertionMessage = buildAssertionErrorMessage("Indictment", constraint.getConstraintRef().constraintId(),
                     indictmentObjectList, emptyList(), emptyList(), indictmentObjectList, message);
@@ -429,14 +431,14 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
             throw new AssertionError(assertionMessage);
         }
 
-        List<Object> expectedNotFound = new ArrayList<>(indictmentObjectList.size());
+        var expectedNotFound = new ArrayList<>(indictmentObjectList.size());
         for (Object indictment : indictments) {
             // Test invalid match
             if (indictmentObjectList.stream().noneMatch(indictment::equals)) {
                 expectedNotFound.add(indictment);
             }
         }
-        List<Object> unexpectedFound = emptyList();
+        var unexpectedFound = emptyList();
         if (completeValidation) {
             unexpectedFound = indictmentObjectList.stream()
                     .filter(indictment -> Arrays.stream(indictments).noneMatch(indictment::equals))
@@ -445,7 +447,7 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         if (expectedNotFound.isEmpty() && unexpectedFound.isEmpty()) {
             return;
         }
-        String assertionMessage = buildAssertionErrorMessage("Indictment", constraint.getConstraintRef().constraintId(),
+        var assertionMessage = buildAssertionErrorMessage("Indictment", constraint.getConstraintRef().constraintId(),
                 unexpectedFound, expectedNotFound, Arrays.asList(indictments), indictmentObjectList, message);
         throw new AssertionError(assertionMessage);
     }
@@ -457,71 +459,72 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
      * @return never null; key is the deduced impact, the value its negation
      */
     private Pair<Number, Number> deduceImpact() {
-        Score_ zeroScore = scoreDefinition.getZeroScore();
-        Number zero = zeroScore.toLevelNumbers()[0]; // Zero in the exact numeric type expected by the caller.
+        var zeroScore = scoreDefinition.getZeroScore();
+        var zero = zeroScore.toLevelNumbers()[0]; // Zero in the exact numeric type expected by the caller.
         if (constraintMatchTotalCollection.isEmpty()) {
             return new Pair<>(zero, zero);
         }
         // We do not know the matchWeight, so we need to deduce it.
         // Constraint matches give us a score, whose levels are in the form of (matchWeight * constraintWeight).
         // Here, we strip the constraintWeight.
-        Score_ totalMatchWeightedScore = constraintMatchTotalCollection.stream()
+        var totalMatchWeightedScore = constraintMatchTotalCollection.stream()
                 .map(matchScore -> scoreDefinition.divideBySanitizedDivisor(matchScore.getScore(),
                         matchScore.getConstraintWeight()))
                 .reduce(zeroScore, Score::add);
         // Each level of the resulting score now has to be the same number, the matchWeight.
         // Except for where the number is zero.
-        Number deducedImpact = retrieveImpact(totalMatchWeightedScore, zero);
+        var deducedImpact = retrieveImpact(totalMatchWeightedScore, zero);
         if (deducedImpact.equals(zero)) {
             return new Pair<>(zero, zero);
         }
-        Number negatedDeducedImpact = retrieveImpact(totalMatchWeightedScore.negate(), zero);
+        var negatedDeducedImpact = retrieveImpact(totalMatchWeightedScore.negate(), zero);
         return new Pair<>(deducedImpact, negatedDeducedImpact);
     }
 
     private Number retrieveImpact(Score_ score, Number zero) {
-        Number[] levelNumbers = score.toLevelNumbers();
-        List<Number> impacts = Arrays.stream(levelNumbers)
+        var levelNumbers = score.toLevelNumbers();
+        var impacts = Arrays.stream(levelNumbers)
                 .distinct()
                 .filter(matchWeight -> !Objects.equals(matchWeight, zero))
                 .toList();
         return switch (impacts.size()) {
             case 0 -> zero;
             case 1 -> impacts.get(0);
-            default -> throw new IllegalStateException("Impossible state: expecting at most one match weight (" +
-                    impacts.size() + ") in matchWeightedScore level numbers (" + Arrays.toString(levelNumbers) + ").");
+            default -> throw new IllegalStateException(
+                    "Impossible state: expecting at most one match weight (%d) in matchWeightedScore level numbers (%s)."
+                            .formatted(impacts.size(), Arrays.toString(levelNumbers)));
         };
     }
 
     private void assertMatchCount(ScoreImpactType scoreImpactType, long expectedMatchCount, String message) {
-        long actualMatchCount = determineMatchCount(scoreImpactType);
+        var actualMatchCount = determineMatchCount(scoreImpactType);
         if (actualMatchCount == expectedMatchCount) {
             return;
         }
-        String constraintId = constraint.getConstraintRef().constraintId();
-        String assertionMessage =
+        var constraintId = constraint.getConstraintRef().constraintId();
+        var assertionMessage =
                 buildAssertionErrorMessage(scoreImpactType, expectedMatchCount, actualMatchCount, constraintId, message);
         throw new AssertionError(assertionMessage);
     }
 
     private void assertMoreThanMatchCount(ScoreImpactType scoreImpactType, long expectedMatchCount, String message) {
-        long actualMatchCount = determineMatchCount(scoreImpactType);
+        var actualMatchCount = determineMatchCount(scoreImpactType);
         if (actualMatchCount > expectedMatchCount) {
             return;
         }
-        String constraintId = constraint.getConstraintRef().constraintId();
-        String assertionMessage = buildMoreThanAssertionErrorMessage(scoreImpactType, expectedMatchCount, actualMatchCount,
+        var constraintId = constraint.getConstraintRef().constraintId();
+        var assertionMessage = buildMoreThanAssertionErrorMessage(scoreImpactType, expectedMatchCount, actualMatchCount,
                 constraintId, message);
         throw new AssertionError(assertionMessage);
     }
 
     private void assertLessThanMatchCount(ScoreImpactType scoreImpactType, long expectedMatchCount, String message) {
-        long actualMatchCount = determineMatchCount(scoreImpactType);
+        var actualMatchCount = determineMatchCount(scoreImpactType);
         if (actualMatchCount < expectedMatchCount) {
             return;
         }
-        String constraintId = constraint.getConstraintRef().constraintId();
-        String assertionMessage = buildLessThanAssertionErrorMessage(scoreImpactType, expectedMatchCount, actualMatchCount,
+        var constraintId = constraint.getConstraintRef().constraintId();
+        var assertionMessage = buildLessThanAssertionErrorMessage(scoreImpactType, expectedMatchCount, actualMatchCount,
                 constraintId, message);
         throw new AssertionError(assertionMessage);
     }
@@ -530,8 +533,8 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         if (determineMatchCount(scoreImpactType) > 0) {
             return;
         }
-        String constraintId = constraint.getConstraintRef().constraintId();
-        String assertionMessage = buildAssertionErrorMessage(scoreImpactType, constraintId, message);
+        var constraintId = constraint.getConstraintRef().constraintId();
+        var assertionMessage = buildAssertionErrorMessage(scoreImpactType, constraintId, message);
         throw new AssertionError(assertionMessage);
     }
 
@@ -539,12 +542,12 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         if (constraintMatchTotalCollection.isEmpty()) {
             return 0;
         }
-        ScoreImpactType actualImpactType = constraint.getScoreImpactType();
+        var actualImpactType = constraint.getScoreImpactType();
 
         if (actualImpactType != scoreImpactType && actualImpactType != ScoreImpactType.MIXED) {
             return 0;
         }
-        Score_ zeroScore = scoreDefinition.getZeroScore();
+        var zeroScore = scoreDefinition.getZeroScore();
         return constraintMatchTotalCollection.stream()
                 .mapToLong(constraintMatchTotal -> {
                     if (actualImpactType == ScoreImpactType.MIXED) {
@@ -566,14 +569,10 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
 
     private String buildAssertionErrorMessage(ScoreImpactType expectedImpactType, Number expectedImpact,
             ScoreImpactType actualImpactType, Number actualImpact, String constraintId, String message) {
-        String expectation = message != null ? message : "Broken expectation.";
-        String preformattedMessage = "%s%n" +
-                "%18s: %s%n" +
-                "%18s: %s (%s)%n" +
-                "%18s: %s (%s)%n%n" +
-                "  %s";
-        String expectedImpactLabel = "Expected " + getImpactTypeLabel(expectedImpactType);
-        String actualImpactLabel = "Actual " + getImpactTypeLabel(actualImpactType);
+        var expectation = message != null ? message : "Broken expectation.";
+        var preformattedMessage = "%s%n%18s: %s%n%18s: %s (%s)%n%18s: %s (%s)%n%n  %s";
+        var expectedImpactLabel = "Expected " + getImpactTypeLabel(expectedImpactType);
+        var actualImpactLabel = "Actual " + getImpactTypeLabel(actualImpactType);
         return String.format(preformattedMessage,
                 expectation,
                 "Constraint", constraintId,
@@ -596,14 +595,10 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
 
     private String buildMoreOrLessThanAssertionErrorMessage(ScoreImpactType expectedImpactType, String moreOrLessThan,
             Number expectedImpact, ScoreImpactType actualImpactType, Number actualImpact, String constraintId, String message) {
-        String expectation = message != null ? message : "Broken expectation.";
-        String preformattedMessage = "%s%n" +
-                "%28s: %s%n" +
-                "%28s: %s (%s)%n" +
-                "%28s: %s (%s)%n%n" +
-                "  %s";
-        String expectedImpactLabel = "Expected " + getImpactTypeLabel(expectedImpactType) + " " + moreOrLessThan;
-        String actualImpactLabel = "Actual " + getImpactTypeLabel(actualImpactType);
+        var expectation = message != null ? message : "Broken expectation.";
+        var preformattedMessage = "%s%n%28s: %s%n%28s: %s (%s)%n%28s: %s (%s)%n%n  %s";
+        var expectedImpactLabel = "Expected " + getImpactTypeLabel(expectedImpactType) + " " + moreOrLessThan;
+        var actualImpactLabel = "Actual " + getImpactTypeLabel(actualImpactType);
         return String.format(preformattedMessage,
                 expectation,
                 "Constraint", constraintId,
@@ -614,14 +609,10 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
 
     private String buildAssertionErrorMessage(ScoreImpactType impactType, long expectedTimes, long actualTimes,
             String constraintId, String message) {
-        String expectation = message != null ? message : "Broken expectation.";
-        String preformattedMessage = "%s%n" +
-                "%18s: %s%n" +
-                "%18s: %s time(s)%n" +
-                "%18s: %s time(s)%n%n" +
-                "  %s";
-        String expectedImpactLabel = "Expected " + getImpactTypeLabel(impactType);
-        String actualImpactLabel = "Actual " + getImpactTypeLabel(impactType);
+        var expectation = message != null ? message : "Broken expectation.";
+        var preformattedMessage = "%s%n%18s: %s%n%18s: %s time(s)%n%18s: %s time(s)%n%n  %s";
+        var expectedImpactLabel = "Expected " + getImpactTypeLabel(impactType);
+        var actualImpactLabel = "Actual " + getImpactTypeLabel(impactType);
         return String.format(preformattedMessage,
                 expectation,
                 "Constraint", constraintId,
@@ -645,14 +636,10 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
     private String buildMoreOrLessThanAssertionErrorMessage(ScoreImpactType impactType, String moreOrLessThan,
             long expectedTimes, long actualTimes,
             String constraintId, String message) {
-        String expectation = message != null ? message : "Broken expectation.";
-        String preformattedMessage = "%s%n" +
-                "%28s: %s%n" +
-                "%28s: %s time(s)%n" +
-                "%28s: %s time(s)%n%n" +
-                "  %s";
-        String expectedImpactLabel = "Expected " + getImpactTypeLabel(impactType) + " " + moreOrLessThan;
-        String actualImpactLabel = "Actual " + getImpactTypeLabel(impactType);
+        var expectation = message != null ? message : "Broken expectation.";
+        var preformattedMessage = "%s%n%28s: %s%n%28s: %s time(s)%n%28s: %s time(s)%n%n  %s";
+        var expectedImpactLabel = "Expected " + getImpactTypeLabel(impactType) + " " + moreOrLessThan;
+        var actualImpactLabel = "Actual " + getImpactTypeLabel(impactType);
         return String.format(preformattedMessage,
                 expectation,
                 "Constraint", constraintId,
@@ -662,12 +649,9 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
     }
 
     private String buildAssertionErrorMessage(ScoreImpactType impactType, String constraintId, String message) {
-        String expectation = message != null ? message : "Broken expectation.";
-        String preformattedMessage = "%s%n" +
-                "%18s: %s%n" +
-                "%18s but there was none.%n%n" +
-                "  %s";
-        String expectedImpactLabel = "Expected " + getImpactTypeLabel(impactType);
+        var expectation = message != null ? message : "Broken expectation.";
+        var preformattedMessage = "%s%n%18s: %s%n%18s but there was none.%n%n  %s";
+        var expectedImpactLabel = "Expected " + getImpactTypeLabel(impactType);
         return String.format(preformattedMessage,
                 expectation,
                 "Constraint", constraintId,
@@ -678,10 +662,10 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
     private static String buildAssertionErrorMessage(String type, String constraintId, Collection<?> unexpectedFound,
             Collection<?> expectedNotFound, Collection<?> expectedCollection, Collection<?> actualCollection,
             String message) {
-        String expectation = message != null ? message : "Broken expectation.";
-        StringBuilder preformattedMessage = new StringBuilder("%s%n")
+        var expectation = message != null ? message : "Broken expectation.";
+        var preformattedMessage = new StringBuilder("%s%n")
                 .append("%18s: %s%n");
-        List<Object> params = new ArrayList<>();
+        var params = new ArrayList<>();
         params.add(expectation);
         params.add(type);
         params.add(constraintId);

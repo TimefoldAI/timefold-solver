@@ -127,7 +127,7 @@ class SingleConstraintAssertionTest {
 
     @Test
     void penalizesAndDoesNotReward() {
-        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+        var solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::penalizeEveryEntity)
                 .given(solution.getEntityList().toArray())
@@ -140,7 +140,7 @@ class SingleConstraintAssertionTest {
 
     @Test
     void rewardsButDoesNotPenalize() {
-        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+        var solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::rewardEveryEntity)
                 .given(solution.getEntityList().toArray())
@@ -455,7 +455,7 @@ class SingleConstraintAssertionTest {
 
     @Test
     void penalizesByCountAndDoesNotReward() {
-        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+        var solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::penalizeEveryEntity)
                 .given(solution.getEntityList().toArray())
@@ -468,7 +468,7 @@ class SingleConstraintAssertionTest {
 
     @Test
     void penalizesByBigDecimal() {
-        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+        var solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::penalizeEveryEntity)
                 .given(solution.getEntityList().toArray())
@@ -482,7 +482,7 @@ class SingleConstraintAssertionTest {
 
     @Test
     void rewardsByCountButDoesNotPenalize() {
-        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+        var solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::rewardEveryEntity)
                 .given(solution.getEntityList().toArray())
@@ -495,7 +495,7 @@ class SingleConstraintAssertionTest {
 
     @Test
     void rewardsByBigDecimal() {
-        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+        var solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::rewardEveryEntity)
                 .given(solution.getEntityList().toArray())
@@ -682,7 +682,7 @@ class SingleConstraintAssertionTest {
 
     @Test
     void justifies() {
-        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+        var solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
         // No error
         assertThatCode(
@@ -778,7 +778,7 @@ class SingleConstraintAssertionTest {
 
     @Test
     void justifiesWithCustomMessage() {
-        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+        var solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
         assertThatCode(
                 () -> constraintVerifierForJustification
@@ -815,7 +815,7 @@ class SingleConstraintAssertionTest {
 
     @Test
     void justifiesEmptyMatches() {
-        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+        var solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
         assertThatCode(
                 () -> constraintVerifierForJustification
@@ -853,7 +853,7 @@ class SingleConstraintAssertionTest {
 
     @Test
     void justifiesExactly() {
-        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+        var solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
         // No error
         assertThatCode(
@@ -895,7 +895,7 @@ class SingleConstraintAssertionTest {
 
     @Test
     void justifiesExactlyWithCustomMessage() {
-        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+        var solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
         assertThatCode(
                 () -> constraintVerifierForJustification
@@ -934,7 +934,7 @@ class SingleConstraintAssertionTest {
 
     @Test
     void justifiesExactlyEmptyMatches() {
-        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+        var solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
         assertThatCode(
                 () -> constraintVerifierForJustification
@@ -972,7 +972,7 @@ class SingleConstraintAssertionTest {
 
     @Test
     void indicts() {
-        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+        var solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
         // No error
         assertThatCode(
@@ -990,7 +990,7 @@ class SingleConstraintAssertionTest {
                 .doesNotThrowAnyException();
 
         // Invalid indictment
-        TestdataConstraintVerifierFirstEntity badEntity =
+        var badEntity =
                 new TestdataConstraintVerifierFirstEntity("bad code", new TestdataValue("bad code"));
         assertThatCode(
                 () -> constraintVerifierForJustification
@@ -1066,9 +1066,9 @@ class SingleConstraintAssertionTest {
 
     @Test
     void indictsWithCustomMessage() {
-        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+        var solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
-        TestdataConstraintVerifierFirstEntity badEntity =
+        var badEntity =
                 new TestdataConstraintVerifierFirstEntity("bad code", new TestdataValue("bad code"));
         assertThatCode(
                 () -> constraintVerifierForJustification
@@ -1105,7 +1105,7 @@ class SingleConstraintAssertionTest {
 
     @Test
     void indictEmptyMatches() {
-        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+        var solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
         assertThatCode(
                 () -> constraintVerifierForJustification
@@ -1143,7 +1143,7 @@ class SingleConstraintAssertionTest {
 
     @Test
     void indictsWithExactly() {
-        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+        var solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
         // No error
         assertThatCode(
@@ -1161,7 +1161,7 @@ class SingleConstraintAssertionTest {
                 .doesNotThrowAnyException();
 
         // Invalid indictment
-        TestdataConstraintVerifierFirstEntity badEntity =
+        var badEntity =
                 new TestdataConstraintVerifierFirstEntity("bad code", new TestdataValue("bad code"));
         assertThatCode(
                 () -> constraintVerifierForJustification
@@ -1199,9 +1199,9 @@ class SingleConstraintAssertionTest {
 
     @Test
     void indictsWithExactlyWithCustomMessage() {
-        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+        var solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
-        TestdataConstraintVerifierFirstEntity badEntity =
+        var badEntity =
                 new TestdataConstraintVerifierFirstEntity("bad code", new TestdataValue("bad code"));
         assertThatCode(
                 () -> constraintVerifierForJustification
@@ -1240,7 +1240,7 @@ class SingleConstraintAssertionTest {
 
     @Test
     void indictsWithExactlyEmptyMatches() {
-        TestdataConstraintVerifierSolution solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+        var solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
 
         assertThatCode(
                 () -> constraintVerifierForJustification

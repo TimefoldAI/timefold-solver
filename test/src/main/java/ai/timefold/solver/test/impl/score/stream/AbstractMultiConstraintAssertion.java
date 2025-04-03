@@ -10,11 +10,13 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.impl.score.DefaultScoreExplanation;
+import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.test.api.score.stream.MultiConstraintAssertion;
 
 import org.jspecify.annotations.NonNull;
 
-public abstract sealed class AbstractMultiConstraintAssertion<Score_ extends Score<Score_>>
+public abstract sealed class AbstractMultiConstraintAssertion<Solution_, Score_ extends Score<Score_>>
+        extends AbstractConstraintAssertion<Solution_, Score_>
         implements MultiConstraintAssertion
         permits DefaultMultiConstraintAssertion, DefaultShadowVariableAwareMultiConstraintAssertion {
 
@@ -23,18 +25,20 @@ public abstract sealed class AbstractMultiConstraintAssertion<Score_ extends Sco
     private Collection<ConstraintMatchTotal<Score_>> constraintMatchTotalCollection;
     private Collection<Indictment<Score_>> indictmentCollection;
 
-    AbstractMultiConstraintAssertion(ConstraintProvider constraintProvider) {
+    AbstractMultiConstraintAssertion(ConstraintProvider constraintProvider,
+            AbstractConstraintStreamScoreDirectorFactory<Solution_, Score_, ?> scoreDirectorFactory) {
+        super(scoreDirectorFactory);
         this.constraintProvider = requireNonNull(constraintProvider);
     }
 
-    final void update(Score_ actualScore, Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
+    @Override
+    final void update(Score_ score, Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
             Map<Object, Indictment<Score_>> indictmentMap) {
-        this.actualScore = requireNonNull(actualScore);
+        this.actualScore = requireNonNull(score);
         this.constraintMatchTotalCollection = requireNonNull(constraintMatchTotalMap).values();
         this.indictmentCollection = requireNonNull(indictmentMap).values();
+        toggleInitialized();
     }
-
-    abstract void ensureInitialized();
 
     @Override
     public void scores(@NonNull Score<?> score, String message) {
@@ -44,15 +48,13 @@ public abstract sealed class AbstractMultiConstraintAssertion<Score_ extends Sco
         }
         Class<?> constraintProviderClass = constraintProvider.getClass();
         String expectation = message == null ? "Broken expectation." : message;
-        throw new AssertionError("""
-                %s%s
-                  Constraint provider: %s%s
-                         Expected score: %s (%s)%s
-                         Actual score: %s (%s)%s%s
-                         %s""".formatted(expectation, System.lineSeparator(), constraintProviderClass, System.lineSeparator(),
-                score, score.getClass(), System.lineSeparator(), actualScore, actualScore.getClass(), System.lineSeparator(),
-                System.lineSeparator(), DefaultScoreExplanation.explainScore(actualScore, constraintMatchTotalCollection,
-                        indictmentCollection)));
+        throw new AssertionError(
+                "%s%s  Constraint provider: %s%s       Expected score: %s (%s)%s         Actual score: %s (%s)%s%s  %s"
+                        .formatted(expectation, System.lineSeparator(), constraintProviderClass, System.lineSeparator(), score,
+                                score.getClass(), System.lineSeparator(), actualScore, actualScore.getClass(),
+                                System.lineSeparator(), System.lineSeparator(),
+                                DefaultScoreExplanation.explainScore(actualScore, constraintMatchTotalCollection,
+                                        indictmentCollection)));
     }
 
 }

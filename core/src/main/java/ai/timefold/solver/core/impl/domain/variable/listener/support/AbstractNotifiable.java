@@ -34,7 +34,7 @@ abstract class AbstractNotifiable<Solution_, T extends AbstractVariableListener<
                     ((ListVariableListener<Solution_, Object, Object>) variableListener),
                     new ArrayDeque<>(), globalOrder);
         } else {
-            VariableListener<Solution_, Object> basicVariableListener = (VariableListener<Solution_, Object>) variableListener;
+            var basicVariableListener = (VariableListener<Solution_, Object>) variableListener;
             return new VariableListenerNotifiable<>(
                     scoreDirector,
                     basicVariableListener,
@@ -87,24 +87,24 @@ abstract class AbstractNotifiable<Solution_, T extends AbstractVariableListener<
 
     @Override
     public void triggerAllNotifications() {
-        int notifiedCount = 0;
-        for (Notification<Solution_, ? super T> notification : notificationQueue) {
+        var notifiedCount = 0;
+        for (var notification : notificationQueue) {
             notification.triggerAfter(variableListener, scoreDirector);
             notifiedCount++;
         }
         if (notifiedCount != notificationQueue.size()) {
-            throw new IllegalStateException("The variableListener (" + variableListener.getClass()
-                    + ") has been notified with notifiedCount (" + notifiedCount
-                    + ") but after being triggered, its notificationCount (" + notificationQueue.size()
-                    + ") is different.\n"
-                    + "Maybe that variableListener (" + variableListener.getClass()
-                    + ") changed an upstream shadow variable (which is illegal).");
+            throw new IllegalStateException(
+                    """
+                            The variableListener (%s) has been notified with notifiedCount (%d) but after being triggered, its notificationCount (%d) is different.
+                            Maybe that variableListener (%s) changed an upstream shadow variable (which is illegal)."""
+                            .formatted(variableListener.getClass(), notifiedCount, notificationQueue.size(),
+                                    variableListener.getClass()));
         }
         notificationQueue.clear();
     }
 
     @Override
     public String toString() {
-        return "(" + globalOrder + ") " + variableListener;
+        return "(%d) %s".formatted(globalOrder, variableListener);
     }
 }

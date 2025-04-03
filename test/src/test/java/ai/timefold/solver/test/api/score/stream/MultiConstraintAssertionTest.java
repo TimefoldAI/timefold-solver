@@ -55,7 +55,7 @@ class MultiConstraintAssertionTest {
                 TestdataConstraintVerifierFirstEntity.class,
                 TestdataConstraintVerifierSecondEntity.class);
 
-        TestdataConstraintVerifierExtendedSolution solution = TestdataConstraintVerifierExtendedSolution.generateSolution(4, 5);
+        var solution = TestdataConstraintVerifierExtendedSolution.generateSolution(4, 5);
 
         assertThatCode(() -> constraintVerifier.verifyThat()
                 .givenSolution(solution)

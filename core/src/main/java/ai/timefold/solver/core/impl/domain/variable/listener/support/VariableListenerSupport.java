@@ -398,11 +398,12 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
 
     public void assertNotificationQueuesAreEmpty() {
         if (!notificationQueuesAreEmpty) {
-            throw new IllegalStateException("The notificationQueues might not be empty (" + notificationQueuesAreEmpty
-                    + ") so any shadow variables might be stale so score calculation is unreliable.\n"
-                    + "Maybe a " + ScoreDirector.class.getSimpleName() + ".before*() method was called"
-                    + " without calling " + ScoreDirector.class.getSimpleName() + ".triggerVariableListeners(),"
-                    + " before calling " + ScoreDirector.class.getSimpleName() + ".calculateScore().");
+            throw new IllegalStateException(
+                    """
+                            The notificationQueues might not be empty (%s) so any shadow variables might be stale so score calculation is unreliable.
+                            Maybe a %s.before*() method was called without calling %s.triggerVariableListeners(), before calling %s.calculateScore()."""
+                            .formatted(notificationQueuesAreEmpty, ScoreDirector.class.getSimpleName(),
+                                    ScoreDirector.class.getSimpleName(), ScoreDirector.class.getSimpleName()));
         }
     }
 

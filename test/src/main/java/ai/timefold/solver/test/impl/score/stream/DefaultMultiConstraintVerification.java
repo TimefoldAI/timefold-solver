@@ -20,7 +20,7 @@ public final class DefaultMultiConstraintVerification<Solution_, Score_ extends 
     }
 
     @Override
-    public @NonNull DefaultMultiConstraintAssertion<Score_> given(@NonNull Object @NonNull... facts) {
+    public @NonNull DefaultMultiConstraintAssertion<Solution_, Score_> given(@NonNull Object @NonNull... facts) {
         assertCorrectArguments(facts);
         return sessionBasedAssertionBuilder.multiConstraintGiven(constraintProvider, facts);
     }

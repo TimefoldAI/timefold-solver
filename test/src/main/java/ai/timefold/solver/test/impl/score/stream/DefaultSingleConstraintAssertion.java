@@ -18,7 +18,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
     }
 
     @Override
-    void ensureInitialized() {
-        // There is no need to take any action, as the data has already been initialized in the constructor
+    Solution_ getSolution() {
+        throw new IllegalStateException("Impossible state as the solution is initialized at the constructor.");
     }
 }
