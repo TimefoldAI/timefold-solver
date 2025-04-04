@@ -9,7 +9,6 @@ public interface MultiConstraintVerification<Solution_> {
      *
      * @param facts at least one
      */
-    // TODO @NonNull Object correct here?
     @NonNull
     MultiConstraintAssertion given(@NonNull Object @NonNull... facts);
 
@@ -17,6 +16,6 @@ public interface MultiConstraintVerification<Solution_> {
      * As defined by {@link SingleConstraintVerification#givenSolution(Object)}.
      */
     @NonNull
-    MultiConstraintAssertion givenSolution(@NonNull Solution_ solution);
+    ShadowVariableAwareMultiConstraintAssertion givenSolution(@NonNull Solution_ solution);
 
 }

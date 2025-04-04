@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.bavet;
 
 import static ai.timefold.solver.core.api.score.stream.Joiners.filtering;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.function.Function;
 
@@ -9,10 +10,12 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamTest;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableSolution;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableValue;
 
 import org.junit.jupiter.api.TestTemplate;
 
@@ -23,7 +26,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
     }
 
     @TestTemplate
-    public void joinWithNullKeyFromRight() {
+    void joinWithNullKeyFromRight() {
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
                         factory -> new Constraint[] {
@@ -34,10 +37,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
                                         .asConstraint(TEST_CONSTRAINT_NAME)
                         });
 
-        TestdataSolution solution = TestdataSolution.generateSolution(1, 2);
-        TestdataEntity entity1 = solution.getEntityList().get(0);
-        TestdataEntity entity2 = solution.getEntityList().get(1);
-        TestdataValue value = solution.getValueList().get(0);
+        var solution = TestdataSolution.generateSolution(1, 2);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var value = solution.getValueList().get(0);
         entity1.setValue(null);
         entity2.setValue(value);
 
@@ -75,7 +78,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
      * @see <a href="https://github.com/TimefoldAI/timefold-solver/issues/186">Timefold Solver Github Issue 186</a>
      */
     @TestTemplate
-    public void filteringJoinNullConflict() {
+    void filteringJoinNullConflict() {
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
                         factory -> new Constraint[] {
@@ -95,10 +98,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
                                         .asConstraint(TEST_CONSTRAINT_NAME)
                         });
 
-        TestdataSolution solution = TestdataSolution.generateSolution(1, 2);
-        TestdataEntity entity1 = solution.getEntityList().get(0);
-        TestdataEntity entity2 = solution.getEntityList().get(1);
-        TestdataValue value = solution.getValueList().get(0);
+        var solution = TestdataSolution.generateSolution(1, 2);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var value = solution.getValueList().get(0);
         entity1.setValue(null);
         entity2.setValue(value);
 
@@ -131,7 +134,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
      * @see <a href="https://github.com/TimefoldAI/timefold-solver/issues/186">Timefold Solver Github Issue 186</a>
      */
     @TestTemplate
-    public void filteringIfExistsNullConflict() {
+    void filteringIfExistsNullConflict() {
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
                         factory -> new Constraint[] {
@@ -148,10 +151,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
                                         .asConstraint(TEST_CONSTRAINT_NAME)
                         });
 
-        TestdataSolution solution = TestdataSolution.generateSolution(1, 2);
-        TestdataEntity entity1 = solution.getEntityList().get(0);
-        TestdataEntity entity2 = solution.getEntityList().get(1);
-        TestdataValue value = solution.getValueList().get(0);
+        var solution = TestdataSolution.generateSolution(1, 2);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var value = solution.getValueList().get(0);
         entity1.setValue(null);
         entity2.setValue(value);
 
@@ -184,7 +187,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
      * @see <a href="https://github.com/TimefoldAI/timefold-solver/issues/186">Timefold Solver Github Issue 186</a>
      */
     @TestTemplate
-    public void filteringIfNotExistsNullConflict() {
+    void filteringIfNotExistsNullConflict() {
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
                         factory -> new Constraint[] {
@@ -195,10 +198,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
                                         .asConstraint(TEST_CONSTRAINT_NAME)
                         });
 
-        TestdataSolution solution = TestdataSolution.generateSolution(1, 2);
-        TestdataEntity entity1 = solution.getEntityList().get(0);
-        TestdataEntity entity2 = solution.getEntityList().get(1);
-        TestdataValue value = solution.getValueList().get(0);
+        var solution = TestdataSolution.generateSolution(1, 2);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var value = solution.getValueList().get(0);
         entity1.setValue(null);
         entity2.setValue(value);
 
@@ -236,7 +239,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
      * Like {@link #filteringJoinNullConflict()}, but using two different forEach nodes.
      */
     @TestTemplate
-    public void filteringJoinNullConflictDifferentNodes() {
+    void filteringJoinNullConflictDifferentNodes() {
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
                         factory -> new Constraint[] {
@@ -257,10 +260,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
                                         .asConstraint(TEST_CONSTRAINT_NAME)
                         });
 
-        TestdataSolution solution = TestdataSolution.generateSolution(1, 2);
-        TestdataEntity entity1 = solution.getEntityList().get(0);
-        TestdataEntity entity2 = solution.getEntityList().get(1);
-        TestdataValue value = solution.getValueList().get(0);
+        var solution = TestdataSolution.generateSolution(1, 2);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var value = solution.getValueList().get(0);
         entity1.setValue(null);
         entity2.setValue(value);
 
@@ -293,7 +296,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
      * Like {@link #filteringIfExistsNullConflict()}, but using two different forEach nodes.
      */
     @TestTemplate
-    public void filteringIfExistsNullConflictDifferentNodes() {
+    void filteringIfExistsNullConflictDifferentNodes() {
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
                         factory -> new Constraint[] {
@@ -314,10 +317,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
                                         .asConstraint(TEST_CONSTRAINT_NAME)
                         });
 
-        TestdataSolution solution = TestdataSolution.generateSolution(1, 2);
-        TestdataEntity entity1 = solution.getEntityList().get(0);
-        TestdataEntity entity2 = solution.getEntityList().get(1);
-        TestdataValue value = solution.getValueList().get(0);
+        var solution = TestdataSolution.generateSolution(1, 2);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var value = solution.getValueList().get(0);
         entity1.setValue(null);
         entity2.setValue(value);
 
@@ -347,7 +350,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
      * Like {@link #filteringIfExistsNullConflict()}, but using two different forEach nodes.
      */
     @TestTemplate
-    public void filteringIfNotExistsNullConflictDifferentNodes() {
+    void filteringIfNotExistsNullConflictDifferentNodes() {
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
                         factory -> new Constraint[] {
@@ -368,10 +371,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
                                         .asConstraint(TEST_CONSTRAINT_NAME)
                         });
 
-        TestdataSolution solution = TestdataSolution.generateSolution(1, 2);
-        TestdataEntity entity1 = solution.getEntityList().get(0);
-        TestdataEntity entity2 = solution.getEntityList().get(1);
-        TestdataValue value = solution.getValueList().get(0);
+        var solution = TestdataSolution.generateSolution(1, 2);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var value = solution.getValueList().get(0);
         entity1.setValue(null);
         entity2.setValue(value);
 
@@ -406,7 +409,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
     }
 
     @TestTemplate
-    public void mapPlanningEntityChanges() {
+    void mapPlanningEntityChanges() {
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
                         factory -> new Constraint[] {
@@ -417,10 +420,10 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
                                         .asConstraint(TEST_CONSTRAINT_NAME)
                         });
 
-        TestdataSolution solution = TestdataSolution.generateSolution(1, 2);
-        TestdataEntity entity1 = solution.getEntityList().get(0);
-        TestdataEntity entity2 = solution.getEntityList().get(1);
-        TestdataValue value = solution.getValueList().get(0);
+        var solution = TestdataSolution.generateSolution(1, 2);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var value = solution.getValueList().get(0);
         entity1.setValue(null);
         entity2.setValue(value);
 
@@ -451,7 +454,7 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
      * @see <a href="https://github.com/TimefoldAI/timefold-solver/issues/828">Timefold Solver Github Issue 828</a>
      */
     @TestTemplate
-    public void concatSameTupleDeadAndAlive() {
+    void concatSameTupleDeadAndAlive() {
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector =
                 buildScoreDirector(TestdataSolution.buildSolutionDescriptor(),
                         factory -> new Constraint[] {
@@ -462,12 +465,12 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
                                         .asConstraint(TEST_CONSTRAINT_NAME)
                         });
 
-        TestdataSolution solution = TestdataSolution.generateSolution(2, 2);
-        TestdataEntity entity1 = solution.getEntityList().get(0);
-        TestdataEntity entity2 = solution.getEntityList().get(1);
-        TestdataValue valueA = solution.getValueList().get(0);
+        var solution = TestdataSolution.generateSolution(2, 2);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var valueA = solution.getValueList().get(0);
         valueA.setCode("A");
-        TestdataValue valueB = solution.getValueList().get(1);
+        var valueB = solution.getValueList().get(1);
         valueB.setCode("B");
 
         scoreDirector.setWorkingSolution(solution);
@@ -517,6 +520,26 @@ final class BavetRegressionTest extends AbstractConstraintStreamTest {
                 assertMatch(entity1),
                 assertMatch(entity1),
                 assertMatch(entity2));
+    }
+
+    @TestTemplate
+    @SuppressWarnings("unchecked")
+    void clearEvents() {
+        var scoreDirector =
+                (BavetConstraintStreamScoreDirector<TestdataListMultipleShadowVariableSolution, SimpleScore>) buildScoreDirector(
+                        TestdataListMultipleShadowVariableSolution.buildSolutionDescriptor(),
+                        factory -> new Constraint[] {
+                                factory.forEach(TestdataListMultipleShadowVariableValue.class)
+                                        .penalize(SimpleScore.ONE, TestdataListMultipleShadowVariableValue::getCascadeValue)
+                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                        });
+        var solution = TestdataListMultipleShadowVariableSolution.generateSolution(2, 1);
+        scoreDirector.setWorkingSolution(solution);
+        scoreDirector.clearShadowVariablesListenerQueue();
+        assertThat(solution.getValueList().stream().allMatch(v -> v.getListenerValue() == 0))
+                .isTrue(); // zero if it is null
+        assertThat(solution.getValueList().stream().allMatch(v -> v.getCascadeValue() == 2))
+                .isTrue(); // two if it is null
     }
 
 }

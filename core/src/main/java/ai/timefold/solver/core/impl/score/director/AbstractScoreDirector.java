@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -24,7 +23,6 @@ import ai.timefold.solver.core.api.solver.change.ProblemChangeDirector;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.lookup.LookUpManager;
-import ai.timefold.solver.core.impl.domain.solution.ConstraintWeightSupplier;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -312,9 +310,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public Solution_ cloneSolution(Solution_ originalSolution) {
         SolutionDescriptor<Solution_> solutionDescriptor = getSolutionDescriptor();
-        Score_ originalScore = solutionDescriptor.getScore(originalSolution);
-        Solution_ cloneSolution = solutionDescriptor.getSolutionCloner().cloneSolution(originalSolution);
-        Score_ cloneScore = solutionDescriptor.getScore(cloneSolution);
+        var originalScore = solutionDescriptor.getScore(originalSolution);
+        var cloneSolution = solutionDescriptor.getSolutionCloner().cloneSolution(originalSolution);
+        var cloneScore = solutionDescriptor.getScore(cloneSolution);
         if (scoreDirectorFactory.isAssertClonedSolution()) {
             if (!Objects.equals(originalScore, cloneScore)) {
                 throw new CloningCorruptionException("""
@@ -322,7 +320,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                         Check the %s."""
                         .formatted(originalScore, cloneScore, SolutionCloner.class.getSimpleName()));
             }
-            Map<Object, Object> originalEntityMap = new IdentityHashMap<>();
+            var originalEntityMap = new IdentityHashMap<>();
             solutionDescriptor.visitAllEntities(originalSolution,
                     originalEntity -> originalEntityMap.put(originalEntity, null));
             solutionDescriptor.visitAllEntities(cloneSolution, cloneEntity -> {
@@ -341,6 +339,16 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public void triggerVariableListeners() {
         variableListenerSupport.triggerVariableListenersInNotificationQueues();
+    }
+
+    /**
+     * This function clears all listener events that have been generated without triggering any of them.
+     * Using this method requires caution because clearing the event queue can lead to inconsistent states.
+     * This occurs when the shadow variables are not updated,
+     * causing constraints reliant on these variables to be inaccurately evaluated.
+     */
+    protected void clearVariableListenerEvents() {
+        variableListenerSupport.clearAllVariableListenerEvents();
     }
 
     @Override
@@ -560,9 +568,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public void beforeProblemFactRemoved(Object problemFact) {
         if (isConstraintConfiguration(problemFact)) {
-            throw new IllegalStateException("Attempted to remove constraint configuration (" + problemFact +
-                    ") from solution (" + workingSolution + ").\n" +
-                    "Maybe use before/afterProblemPropertyChanged(...) instead.");
+            throw new IllegalStateException("""
+                    Attempted to remove constraint configuration (%s) from solution (%s).
+                    Maybe use before/afterProblemPropertyChanged(...) instead.""".formatted(problemFact, workingSolution));
         }
     }
 
@@ -580,8 +588,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public <E> @Nullable E lookUpWorkingObject(@Nullable E externalObject) {
         if (!lookUpEnabled) {
-            throw new IllegalStateException("When lookUpEnabled (" + lookUpEnabled
-                    + ") is disabled in the constructor, this method should not be called.");
+            throw new IllegalStateException(
+                    "When lookUpEnabled (%s) is disabled in the constructor, this method should not be called."
+                            .formatted(lookUpEnabled));
         }
         return lookUpManager.lookUpWorkingObject(externalObject);
     }
@@ -589,8 +598,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public <E> @Nullable E lookUpWorkingObjectOrReturnNull(@Nullable E externalObject) {
         if (!lookUpEnabled) {
-            throw new IllegalStateException("When lookUpEnabled (" + lookUpEnabled
-                    + ") is disabled in the constructor, this method should not be called.");
+            throw new IllegalStateException(
+                    "When lookUpEnabled (%s) is disabled in the constructor, this method should not be called."
+                            .formatted(lookUpEnabled));
         }
         return lookUpManager.lookUpWorkingObjectOrReturnNull(externalObject);
     }
@@ -601,7 +611,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void assertExpectedWorkingScore(Score_ expectedWorkingScore, Object completedAction) {
-        Score_ workingScore = calculateScore();
+        var workingScore = calculateScore();
         if (!expectedWorkingScore.equals(workingScore)) {
             throw new ScoreCorruptionException("""
                     Score corruption (%s): the expectedWorkingScore (%s) is not the workingScore (%s) \
@@ -613,7 +623,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void assertShadowVariablesAreNotStale(Score_ expectedWorkingScore, Object completedAction) {
-        String violationMessage = variableListenerSupport.createShadowVariablesViolationMessage();
+        var violationMessage = variableListenerSupport.createShadowVariablesViolationMessage();
         if (violationMessage != null) {
             throw new VariableCorruptionException("""
                     %s corruption after completedAction (%s):
@@ -621,7 +631,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                     .formatted(VariableListener.class.getSimpleName(), completedAction, violationMessage));
         }
 
-        Score_ workingScore = calculateScore();
+        var workingScore = calculateScore();
         if (!expectedWorkingScore.equals(workingScore)) {
             assertWorkingScoreFromScratch(workingScore,
                     "assertShadowVariablesAreNotStale(" + expectedWorkingScore + ", " + completedAction + ")");
@@ -642,8 +652,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
      * @return never null
      */
     protected String buildShadowVariableAnalysis(boolean predicted) {
-        String violationMessage = variableListenerSupport.createShadowVariablesViolationMessage();
-        String workingLabel = predicted ? "working" : "corrupted";
+        var violationMessage = variableListenerSupport.createShadowVariablesViolationMessage();
+        var workingLabel = predicted ? "working" : "corrupted";
         if (violationMessage == null) {
             return """
                     Shadow variable corruption in the %s scoreDirector:
@@ -894,8 +904,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     protected boolean isConstraintConfiguration(Object problemFactOrEntity) {
-        SolutionDescriptor<Solution_> solutionDescriptor = scoreDirectorFactory.getSolutionDescriptor();
-        ConstraintWeightSupplier<Solution_, Score_> constraintWeightSupplier = solutionDescriptor.getConstraintWeightSupplier();
+        var solutionDescriptor = scoreDirectorFactory.getSolutionDescriptor();
+        var constraintWeightSupplier = solutionDescriptor.getConstraintWeightSupplier();
         if (constraintWeightSupplier == null) {
             return false;
         }

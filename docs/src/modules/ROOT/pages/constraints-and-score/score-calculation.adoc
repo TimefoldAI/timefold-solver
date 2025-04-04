@@ -2372,6 +2372,23 @@ The `given(...)` call is used to enumerate all the facts that the constraint str
 In this case, the `given(...)` call takes the `vehicleA`, `visit1` and `visit2` instances previously created.
 Alternatively, you can use a `givenSolution(...)` method here and provide a planning solution instead.
 
+It's important to understand
+that calling `givenSolution(...)` does not update any xref:using-timefold-solver/modeling-planning-problems.adoc#shadowVariable[shadow variables].
+This is the default behavior and can be modified by invoking `settingAllShadowVariables()`.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+        constraintVerifier.verifyThat(VehicleRoutingConstraintProvider::vehicleCapacity)
+                .givenSolution(solution)
+                .settingAllShadowVariables()
+                .penalizesBy(20);
+----
+====
+
 [NOTE]
 ====
 You can also use methods `justifiesWith(...)`, `justifiesWithExactly(...)`, `indictsWith(...)` and `indictsWithExactly(...)`
@@ -2460,6 +2477,24 @@ Using this method, you ensure that the constraint provider does not miss any con
 remains consistent as your code base evolves.
 It is therefore necessary for the `given(...)` method to list all planning entities and problem facts,
 or provide the entire planning solution instead.
+
+To test all constraints while updating all xref:using-timefold-solver/modeling-planning-problems.adoc#shadowVariable[shadow variables],
+call `giveSolution(...)` and `settingAllShadowVariables()`.
+This approach ensures that the shadow variable listeners are triggered,
+and the constraints that depend on the related variables are evaluated accordingly.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+        constraintVerifier.verifyThat()
+                .givenSolution(solution)
+                .settingAllShadowVariables()
+                .scores(HardSoftScore.ofSoft(20));
+----
+====
 
 [NOTE]
 ====

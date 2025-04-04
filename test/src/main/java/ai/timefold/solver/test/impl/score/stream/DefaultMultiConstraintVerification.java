@@ -1,10 +1,7 @@
 package ai.timefold.solver.test.impl.score.stream;
 
-import java.util.Objects;
-
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.test.api.score.stream.MultiConstraintVerification;
 
@@ -23,21 +20,15 @@ public final class DefaultMultiConstraintVerification<Solution_, Score_ extends 
     }
 
     @Override
-    public @NonNull DefaultMultiConstraintAssertion<Score_> given(@NonNull Object @NonNull... facts) {
+    public @NonNull DefaultMultiConstraintAssertion<Solution_, Score_> given(@NonNull Object @NonNull... facts) {
         assertCorrectArguments(facts);
         return sessionBasedAssertionBuilder.multiConstraintGiven(constraintProvider, facts);
     }
 
     @Override
-    public @NonNull DefaultMultiConstraintAssertion<Score_> givenSolution(@NonNull Solution_ solution) {
-        // Most score directors don't need derived status; CS will override this.
-        try (var scoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
-                .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
-                .buildDerived()) {
-            scoreDirector.setWorkingSolution(Objects.requireNonNull(solution));
-            return new DefaultMultiConstraintAssertion<>(constraintProvider, scoreDirector.calculateScore(),
-                    scoreDirector.getConstraintMatchTotalMap(), scoreDirector.getIndictmentMap());
-        }
+    public @NonNull DefaultShadowVariableAwareMultiConstraintAssertion<Solution_, Score_>
+            givenSolution(@NonNull Solution_ solution) {
+        return new DefaultShadowVariableAwareMultiConstraintAssertion<>(constraintProvider, scoreDirectorFactory, solution);
     }
 
 }

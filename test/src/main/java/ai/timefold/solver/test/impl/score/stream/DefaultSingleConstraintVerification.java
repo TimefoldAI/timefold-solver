@@ -1,9 +1,6 @@
 package ai.timefold.solver.test.impl.score.stream;
 
-import java.util.Objects;
-
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.test.api.score.stream.SingleConstraintVerification;
 
@@ -25,15 +22,9 @@ public final class DefaultSingleConstraintVerification<Solution_, Score_ extends
     }
 
     @Override
-    public @NonNull DefaultSingleConstraintAssertion<Solution_, Score_> givenSolution(@NonNull Solution_ solution) {
-        // Most score directors don't need derived status; CS will override this.
-        try (var scoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
-                .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
-                .buildDerived()) {
-            scoreDirector.setWorkingSolution(Objects.requireNonNull(solution));
-            return new DefaultSingleConstraintAssertion<>(scoreDirectorFactory, scoreDirector.calculateScore(),
-                    scoreDirector.getConstraintMatchTotalMap(), scoreDirector.getIndictmentMap());
-        }
+    public @NonNull DefaultShadowVariableAwareSingleConstraintAssertion<Solution_, Score_>
+            givenSolution(@NonNull Solution_ solution) {
+        return new DefaultShadowVariableAwareSingleConstraintAssertion<>(scoreDirectorFactory, solution);
     }
 
 }

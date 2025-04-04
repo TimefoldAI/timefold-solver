@@ -43,6 +43,18 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     // Complex methods
     // ************************************************************************
 
+    /**
+     * The function is exclusively available for the Bavet score director, and its use must be approached with caution.
+     * The primary purpose of this method is
+     * to enable the {@code ConstraintVerifier}
+     * to ignore events related to shadow variables when testing constraints that do not rely on them.
+     *
+     * @see AbstractScoreDirector#clearVariableListenerEvents()
+     */
+    public void clearShadowVariablesListenerQueue() {
+        clearVariableListenerEvents();
+    }
+
     @Override
     public void setWorkingSolution(Solution_ workingSolution) {
         session = scoreDirectorFactory.newSession(workingSolution, constraintMatchPolicy, derived);
@@ -53,7 +65,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     @Override
     public Score_ calculateScore() {
         variableListenerSupport.assertNotificationQueuesAreEmpty();
-        Score_ score = session.calculateScore(getWorkingInitScore());
+        var score = session.calculateScore(getWorkingInitScore());
         setCalculatedScore(score);
         return score;
     }
@@ -101,11 +113,11 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     @Override
     public void afterEntityAdded(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
         if (entity == null) {
-            throw new IllegalArgumentException("The entity (" + entity + ") cannot be added to the ScoreDirector.");
+            throw new IllegalArgumentException("The entity (%s) cannot be added to the ScoreDirector.".formatted(entity));
         }
         if (!getSolutionDescriptor().hasEntityDescriptor(entity.getClass())) {
-            throw new IllegalArgumentException("The entity (" + entity + ") of class (" + entity.getClass()
-                    + ") is not a configured @" + PlanningEntity.class.getSimpleName() + ".");
+            throw new IllegalArgumentException("The entity (%s) of class (%s) is not a configured @%s.".formatted(entity,
+                    entity.getClass(), PlanningEntity.class.getSimpleName()));
         }
         session.insert(entity);
         super.afterEntityAdded(entityDescriptor, entity);
@@ -143,7 +155,8 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     @Override
     public void afterProblemFactAdded(Object problemFact) {
         if (problemFact == null) {
-            throw new IllegalArgumentException("The problemFact (" + problemFact + ") cannot be added to the ScoreDirector.");
+            throw new IllegalArgumentException(
+                    "The problemFact (%s) cannot be added to the ScoreDirector.".formatted(problemFact));
         }
         session.insert(problemFact);
         super.afterProblemFactAdded(problemFact);
