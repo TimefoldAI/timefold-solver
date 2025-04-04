@@ -304,4 +304,26 @@ class SolverInheritanceBasicVariableTest {
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
                 .isInstanceOf(IllegalStateException.class);
     }
+
+    /**
+     * This test validates the behavior of the solver
+     * when multiple inheritance is used, the child is annotated with {@code @PlanningEntity}
+     * and it inherits from class and interface.
+     */
+    @Test
+    void testMultipleBothClassesAnnotatedMixedPattern() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(
+                        ai.timefold.solver.core.impl.testdata.domain.superclass.multipleinheritance.baseannotated.mixed.childannotated.TestdataMultipleSolution.class)
+                .withEntityClasses(
+                        ai.timefold.solver.core.impl.testdata.domain.superclass.multipleinheritance.baseannotated.mixed.childannotated.TestdataMultipleChildEntity.class)
+                .withConstraintProviderClass(
+                        ai.timefold.solver.core.impl.testdata.domain.superclass.multipleinheritance.baseannotated.mixed.childannotated.TestMultipleConstraintProvider.class)
+                .withTerminationConfig(new TerminationConfig().withStepCountLimit(10));
+        var problem =
+                ai.timefold.solver.core.impl.testdata.domain.superclass.multipleinheritance.baseannotated.mixed.childannotated.TestdataMultipleSolution
+                        .generateSolution(3, 2, false);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution.getScore()).isEqualTo(SimpleScore.of(6)); // value of 2 for each constraint
+    }
 }

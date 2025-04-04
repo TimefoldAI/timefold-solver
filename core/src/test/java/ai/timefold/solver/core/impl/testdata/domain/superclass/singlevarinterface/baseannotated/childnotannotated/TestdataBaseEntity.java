@@ -18,4 +18,3 @@ public interface TestdataBaseEntity {
     void setValue(String value);
 
 }
-

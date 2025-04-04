@@ -1,10 +1,9 @@
-package ai.timefold.solver.core.impl.testdata.domain.superclass.multipleinheritance.baseannotated.childnotannotated;
+package ai.timefold.solver.core.impl.testdata.domain.superclass.multipleinheritance.baseannotated.mixed.childannotated;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.superclass.multipleinheritance.baseannotated.childannotated.TestdataMultipleChildEntity;
 
 import org.jspecify.annotations.NonNull;
 
@@ -16,7 +15,15 @@ public class TestMultipleConstraintProvider implements ConstraintProvider {
                 factory.forEach(TestdataMultipleChildEntity.class)
                         .filter(e -> e.getValue() != null)
                         .reward(SimpleScore.ONE, value -> 1)
-                        .asConstraint("Constraint")
+                        .asConstraint("Constraint"),
+                factory.forEach(TestdataMultipleChildEntity.class)
+                        .filter(e -> e.getValue2() != null)
+                        .reward(SimpleScore.ONE, value -> 1)
+                        .asConstraint("Constraint 2"),
+                factory.forEach(TestdataMultipleChildEntity.class)
+                        .filter(e -> e.getValue3() != null)
+                        .reward(SimpleScore.ONE, value -> 1)
+                        .asConstraint("Constraint 3")
         };
     }
 
