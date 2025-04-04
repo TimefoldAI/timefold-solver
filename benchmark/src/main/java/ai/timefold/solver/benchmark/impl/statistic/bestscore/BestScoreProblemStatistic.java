@@ -37,7 +37,7 @@ public class BestScoreProblemStatistic extends ProblemStatistic<LineChart<Long, 
                 var subSingleStatistic = singleBenchmarkResult.getSubSingleStatistic(problemStatisticType);
                 List<BestScoreStatisticPoint> points = subSingleStatistic.getPointList();
                 for (BestScoreStatisticPoint point : points) {
-                    if (!point.getScore().isSolutionInitialized()) {
+                    if (!point.isInitialized()) {
                         continue;
                     }
                     long timeMillisSpent = point.getTimeMillisSpent();

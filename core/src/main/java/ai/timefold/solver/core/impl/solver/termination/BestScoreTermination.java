@@ -6,6 +6,7 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.jspecify.annotations.NullMarked;
@@ -33,12 +34,12 @@ final class BestScoreTermination<Solution_>
 
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
-        return isTerminated(solverScope.isBestSolutionInitialized(), solverScope.getBestScore());
+        return isTerminated(solverScope.isBestSolutionInitialized(), solverScope.getBestScore().initialized());
     }
 
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
-        return isTerminated(phaseScope.isBestSolutionInitialized(), phaseScope.getBestScore());
+        return isTerminated(phaseScope.isBestSolutionInitialized(), phaseScope.getBestScore().initialized());
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -51,7 +52,7 @@ final class BestScoreTermination<Solution_>
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
         var startingInitializedScore = solverScope.getStartingInitializedScore();
         var bestScore = solverScope.getBestScore();
-        return calculateTimeGradient(startingInitializedScore, (Score) bestScoreLimit, bestScore);
+        return calculateTimeGradient((Score) startingInitializedScore, (Score) bestScoreLimit, (Score) bestScore.initialized());
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -59,9 +60,14 @@ final class BestScoreTermination<Solution_>
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
         var startingInitializedScore = phaseScope.getStartingScore();
         var bestScore = phaseScope.getBestScore();
-        return calculateTimeGradient((Score) startingInitializedScore, (Score) bestScoreLimit, (Score) bestScore);
+        return calculateTimeGradient((Score) startingInitializedScore.initialized(), (Score) bestScoreLimit,
+                (Score) bestScore.initialized());
     }
 
+    /**
+     * CH is not allowed to compute a time gradient.
+     * Therefore the scores at this point no longer need to be {@link InnerScore}.
+     */
     <Score_ extends Score<Score_>> double calculateTimeGradient(Score_ startScore, Score_ endScore, Score_ score) {
         var totalDiff = endScore.subtract(startScore);
         var totalDiffNumbers = totalDiff.toLevelNumbers();

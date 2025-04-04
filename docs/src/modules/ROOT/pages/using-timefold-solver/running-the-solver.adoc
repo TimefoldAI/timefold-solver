@@ -342,11 +342,11 @@ For example, set it to `debug` logging, to see when the phases end and how fast 
 
 [source,options="nowrap"]
 ----
-INFO  Solving started: time spent (31), best score (-8init/0hard/0soft), environment mode (PHASE_ASSERT), move thread count (NONE), random (JDK with seed 0).
+INFO  Solving started: time spent (31), best score (0hard/0soft), environment mode (PHASE_ASSERT), move thread count (NONE), random (JDK with seed 0).
 INFO  Problem scale: entity count (4), variable count (8), approximate value count (4), approximate problem scale (256).
-DEBUG     CH step (0), time spent (47), score (-6init/0hard/0soft), selected move count (4), picked move ([Math(0) {null -> Room A}, Math(0) {null -> MONDAY 08:30}]).
-DEBUG     CH step (1), time spent (50), score (-4init/0hard/0soft), selected move count (4), picked move ([Physics(1) {null -> Room A}, Physics(1) {null -> MONDAY 09:30}]).
-DEBUG     CH step (2), time spent (51), score (-2init/-1hard/-1soft), selected move count (4), picked move ([Chemistry(2) {null -> Room B}, Chemistry(2) {null -> MONDAY 08:30}]).
+DEBUG     CH step (0), time spent (47), score (0hard/0soft), selected move count (4), picked move ([Math(0) {null -> Room A}, Math(0) {null -> MONDAY 08:30}]).
+DEBUG     CH step (1), time spent (50), score (0hard/0soft), selected move count (4), picked move ([Physics(1) {null -> Room A}, Physics(1) {null -> MONDAY 09:30}]).
+DEBUG     CH step (2), time spent (51), score (-1hard/-1soft), selected move count (4), picked move ([Chemistry(2) {null -> Room B}, Chemistry(2) {null -> MONDAY 08:30}]).
 DEBUG     CH step (3), time spent (52), score (-2hard/-1soft), selected move count (4), picked move ([Biology(3) {null -> Room A}, Biology(3) {null -> MONDAY 08:30}]).
 INFO  Construction Heuristic phase (0) ended: time spent (53), best score (-2hard/-1soft), move evaluation speed (1066/sec), step total (4).
 DEBUG     LS step (0), time spent (56), score (-2hard/0soft), new best score (-2hard/0soft), accepted/selected move count (1/1), picked move (Chemistry(2) {Room B, MONDAY 08:30} <-> Physics(1) {Room A, MONDAY 09:30}).

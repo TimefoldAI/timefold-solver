@@ -16,8 +16,7 @@ class BendableScoreConverterTest extends AbstractScoreJpaTest {
     @Test
     void persistAndMerge() {
         persistAndMerge(new BendableScoreConverterTestJpaEntity(BendableScore.zero(3, 2)), null,
-                BendableScore.of(new int[] { 10000, 2000, 300 }, new int[] { 40, 5 }),
-                BendableScore.ofUninitialized(-7, new int[] { 10000, 2000, 300 }, new int[] { 40, 5 }));
+                BendableScore.of(new int[] { 10000, 2000, 300 }, new int[] { 40, 5 }));
     }
 
     @Entity

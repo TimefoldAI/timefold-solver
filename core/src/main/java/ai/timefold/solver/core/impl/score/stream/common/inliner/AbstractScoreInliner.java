@@ -134,7 +134,7 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
         }
     }
 
-    public abstract Score_ extractScore(int initScore);
+    public abstract Score_ extractScore();
 
     /**
      * Create a new instance of {@link WeightedScoreImpacter} for a particular constraint.

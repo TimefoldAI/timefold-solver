@@ -48,19 +48,19 @@ public class HardSoftLongScoreDefinition extends AbstractScoreDefinition<HardSof
     }
 
     @Override
-    public HardSoftLongScore fromLevelNumbers(int initScore, Number[] levelNumbers) {
+    public HardSoftLongScore fromLevelNumbers(Number[] levelNumbers) {
         if (levelNumbers.length != getLevelsSize()) {
             throw new IllegalStateException("The levelNumbers (" + Arrays.toString(levelNumbers)
                     + ")'s length (" + levelNumbers.length + ") must equal the levelSize (" + getLevelsSize() + ").");
         }
-        return HardSoftLongScore.ofUninitialized(initScore, (Long) levelNumbers[0], (Long) levelNumbers[1]);
+        return HardSoftLongScore.of((Long) levelNumbers[0], (Long) levelNumbers[1]);
     }
 
     @Override
     public HardSoftLongScore buildOptimisticBound(InitializingScoreTrend initializingScoreTrend,
             HardSoftLongScore score) {
         InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
-        return HardSoftLongScore.ofUninitialized(0,
+        return HardSoftLongScore.of(
                 trendLevels[0] == InitializingScoreTrendLevel.ONLY_DOWN ? score.hardScore() : Long.MAX_VALUE,
                 trendLevels[1] == InitializingScoreTrendLevel.ONLY_DOWN ? score.softScore() : Long.MAX_VALUE);
     }
@@ -69,21 +69,17 @@ public class HardSoftLongScoreDefinition extends AbstractScoreDefinition<HardSof
     public HardSoftLongScore buildPessimisticBound(InitializingScoreTrend initializingScoreTrend,
             HardSoftLongScore score) {
         InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
-        return HardSoftLongScore.ofUninitialized(0,
-                trendLevels[0] == InitializingScoreTrendLevel.ONLY_UP ? score.hardScore() : Long.MIN_VALUE,
+        return HardSoftLongScore.of(trendLevels[0] == InitializingScoreTrendLevel.ONLY_UP ? score.hardScore() : Long.MIN_VALUE,
                 trendLevels[1] == InitializingScoreTrendLevel.ONLY_UP ? score.softScore() : Long.MIN_VALUE);
     }
 
     @Override
     public HardSoftLongScore divideBySanitizedDivisor(HardSoftLongScore dividend, HardSoftLongScore divisor) {
-        int dividendInitScore = dividend.initScore();
-        int divisorInitScore = sanitize(divisor.initScore());
         long dividendHardScore = dividend.hardScore();
         long divisorHardScore = sanitize(divisor.hardScore());
         long dividendSoftScore = dividend.softScore();
         long divisorSoftScore = sanitize(divisor.softScore());
         return fromLevelNumbers(
-                divide(dividendInitScore, divisorInitScore),
                 new Number[] {
                         divide(dividendHardScore, divisorHardScore),
                         divide(dividendSoftScore, divisorSoftScore)

@@ -15,8 +15,6 @@ class HardSoftScoreJacksonRoundTripTest extends AbstractScoreJacksonRoundTripTes
         assertSerializeAndDeserialize(null, new TestHardSoftScoreWrapper(null));
         HardSoftScore score = HardSoftScore.of(1200, 34);
         assertSerializeAndDeserialize(score, new TestHardSoftScoreWrapper(score));
-        score = HardSoftScore.ofUninitialized(-7, 1200, 34);
-        assertSerializeAndDeserialize(score, new TestHardSoftScoreWrapper(score));
     }
 
     public static class TestHardSoftScoreWrapper extends TestScoreWrapper<HardSoftScore> {

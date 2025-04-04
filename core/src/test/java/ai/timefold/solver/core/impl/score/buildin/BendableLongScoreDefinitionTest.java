@@ -92,7 +92,6 @@ class BendableLongScoreDefinitionTest {
         BendableLongScore optimisticBound = scoreDefinition.buildOptimisticBound(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_UP, 5),
                 scoreDefinition.createScore(-1, -2, -3, -4, -5));
-        assertThat(optimisticBound.initScore()).isEqualTo(0);
         assertThat(optimisticBound.hardScore(0)).isEqualTo(Long.MAX_VALUE);
         assertThat(optimisticBound.hardScore(1)).isEqualTo(Long.MAX_VALUE);
         assertThat(optimisticBound.softScore(0)).isEqualTo(Long.MAX_VALUE);
@@ -106,7 +105,6 @@ class BendableLongScoreDefinitionTest {
         BendableLongScore optimisticBound = scoreDefinition.buildOptimisticBound(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_DOWN, 5),
                 scoreDefinition.createScore(-1, -2, -3, -4, -5));
-        assertThat(optimisticBound.initScore()).isEqualTo(0);
         assertThat(optimisticBound.hardScore(0)).isEqualTo(-1);
         assertThat(optimisticBound.hardScore(1)).isEqualTo(-2);
         assertThat(optimisticBound.softScore(0)).isEqualTo(-3);
@@ -120,7 +118,6 @@ class BendableLongScoreDefinitionTest {
         BendableLongScore pessimisticBound = scoreDefinition.buildPessimisticBound(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_UP, 5),
                 scoreDefinition.createScore(-1, -2, -3, -4, -5));
-        assertThat(pessimisticBound.initScore()).isEqualTo(0);
         assertThat(pessimisticBound.hardScore(0)).isEqualTo(-1);
         assertThat(pessimisticBound.hardScore(1)).isEqualTo(-2);
         assertThat(pessimisticBound.softScore(0)).isEqualTo(-3);
@@ -134,7 +131,6 @@ class BendableLongScoreDefinitionTest {
         BendableLongScore pessimisticBound = scoreDefinition.buildPessimisticBound(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_DOWN, 5),
                 scoreDefinition.createScore(-1, -2, -3, -4, -5));
-        assertThat(pessimisticBound.initScore()).isEqualTo(0);
         assertThat(pessimisticBound.hardScore(0)).isEqualTo(Long.MIN_VALUE);
         assertThat(pessimisticBound.hardScore(1)).isEqualTo(Long.MIN_VALUE);
         assertThat(pessimisticBound.softScore(0)).isEqualTo(Long.MIN_VALUE);
@@ -145,7 +141,7 @@ class BendableLongScoreDefinitionTest {
     @Test
     void divideBySanitizedDivisor() {
         BendableLongScoreDefinition scoreDefinition = new BendableLongScoreDefinition(1, 1);
-        BendableLongScore dividend = scoreDefinition.createScoreUninitialized(2, 0, 10);
+        BendableLongScore dividend = scoreDefinition.createScore(0, 10);
         BendableLongScore zeroDivisor = scoreDefinition.getZeroScore();
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, zeroDivisor))
                 .isEqualTo(dividend);
@@ -154,7 +150,7 @@ class BendableLongScoreDefinitionTest {
                 .isEqualTo(dividend);
         BendableLongScore tenDivisor = scoreDefinition.getOneSoftestScore();
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, tenDivisor))
-                .isEqualTo(scoreDefinition.createScoreUninitialized(2, 0, 10));
+                .isEqualTo(scoreDefinition.createScore(0, 10));
     }
 
 }

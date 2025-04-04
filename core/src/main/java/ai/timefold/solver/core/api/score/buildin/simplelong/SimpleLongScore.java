@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.api.score.buildin.simplelong;
 
-import java.util.Objects;
-
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.score.ScoreUtil;
 
@@ -16,22 +14,23 @@ import org.jspecify.annotations.NonNull;
  */
 public final class SimpleLongScore implements Score<SimpleLongScore> {
 
-    public static final SimpleLongScore ZERO = new SimpleLongScore(0, 0L);
-    public static final SimpleLongScore ONE = new SimpleLongScore(0, 1L);
-    public static final SimpleLongScore MINUS_ONE = new SimpleLongScore(0, -1L);
+    public static final SimpleLongScore ZERO = new SimpleLongScore(0L);
+    public static final SimpleLongScore ONE = new SimpleLongScore(1L);
+    public static final SimpleLongScore MINUS_ONE = new SimpleLongScore(-1L);
 
     public static @NonNull SimpleLongScore parseScore(@NonNull String scoreString) {
         String[] scoreTokens = ScoreUtil.parseScoreTokens(SimpleLongScore.class, scoreString, "");
-        int initScore = ScoreUtil.parseInitScore(SimpleLongScore.class, scoreString, scoreTokens[0]);
         long score = ScoreUtil.parseLevelAsLong(SimpleLongScore.class, scoreString, scoreTokens[1]);
-        return ofUninitialized(initScore, score);
+        return of(score);
     }
 
+    /**
+     * @deprecated Use {@link #of(long)} instead.
+     * @return init score is always zero
+     */
+    @Deprecated(forRemoval = true, since = "1.21.0")
     public static @NonNull SimpleLongScore ofUninitialized(int initScore, long score) {
-        if (initScore == 0) {
-            return of(score);
-        }
-        return new SimpleLongScore(initScore, score);
+        return of(score);
     }
 
     public static @NonNull SimpleLongScore of(long score) {
@@ -42,15 +41,10 @@ public final class SimpleLongScore implements Score<SimpleLongScore> {
         } else if (score == 1L) {
             return ONE;
         } else {
-            return new SimpleLongScore(0, score);
+            return new SimpleLongScore(score);
         }
     }
 
-    // ************************************************************************
-    // Fields
-    // ************************************************************************
-
-    private final int initScore;
     private final long score;
 
     /**
@@ -60,17 +54,11 @@ public final class SimpleLongScore implements Score<SimpleLongScore> {
      */
     @SuppressWarnings("unused")
     private SimpleLongScore() {
-        this(Integer.MIN_VALUE, Long.MIN_VALUE);
+        this(Long.MIN_VALUE);
     }
 
-    private SimpleLongScore(int initScore, long score) {
-        this.initScore = initScore;
+    private SimpleLongScore(long score) {
         this.score = score;
-    }
-
-    @Override
-    public int initScore() {
-        return initScore;
     }
 
     /**
@@ -94,53 +82,34 @@ public final class SimpleLongScore implements Score<SimpleLongScore> {
         return score;
     }
 
-    // ************************************************************************
-    // Worker methods
-    // ************************************************************************
-
-    @Override
-    public @NonNull SimpleLongScore withInitScore(int newInitScore) {
-        return ofUninitialized(newInitScore, score);
-    }
-
     @Override
     public @NonNull SimpleLongScore add(@NonNull SimpleLongScore addend) {
-        return ofUninitialized(
-                initScore + addend.initScore(),
-                score + addend.score());
+        return of(score + addend.score());
     }
 
     @Override
     public @NonNull SimpleLongScore subtract(@NonNull SimpleLongScore subtrahend) {
-        return ofUninitialized(
-                initScore - subtrahend.initScore(),
-                score - subtrahend.score());
+        return of(score - subtrahend.score());
     }
 
     @Override
     public @NonNull SimpleLongScore multiply(double multiplicand) {
-        return ofUninitialized(
-                (int) Math.floor(initScore * multiplicand),
-                (long) Math.floor(score * multiplicand));
+        return of((long) Math.floor(score * multiplicand));
     }
 
     @Override
     public @NonNull SimpleLongScore divide(double divisor) {
-        return ofUninitialized(
-                (int) Math.floor(initScore / divisor),
-                (long) Math.floor(score / divisor));
+        return of((long) Math.floor(score / divisor));
     }
 
     @Override
     public @NonNull SimpleLongScore power(double exponent) {
-        return ofUninitialized(
-                (int) Math.floor(Math.pow(initScore, exponent)),
-                (long) Math.floor(Math.pow(score, exponent)));
+        return of((long) Math.floor(Math.pow(score, exponent)));
     }
 
     @Override
     public @NonNull SimpleLongScore abs() {
-        return ofUninitialized(Math.abs(initScore), Math.abs(score));
+        return of(Math.abs(score));
     }
 
     @Override
@@ -150,7 +119,7 @@ public final class SimpleLongScore implements Score<SimpleLongScore> {
 
     @Override
     public boolean isFeasible() {
-        return initScore >= 0;
+        return true;
     }
 
     @Override
@@ -161,24 +130,19 @@ public final class SimpleLongScore implements Score<SimpleLongScore> {
     @Override
     public boolean equals(Object o) {
         if (o instanceof SimpleLongScore other) {
-            return initScore == other.initScore()
-                    && score == other.score();
+            return score == other.score();
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(initScore, score);
+        return Long.hashCode(score);
     }
 
     @Override
     public int compareTo(@NonNull SimpleLongScore other) {
-        if (initScore != other.initScore()) {
-            return Integer.compare(initScore, other.initScore());
-        } else {
-            return Long.compare(score, other.score());
-        }
+        return Long.compare(score, other.score());
     }
 
     @Override
@@ -188,7 +152,7 @@ public final class SimpleLongScore implements Score<SimpleLongScore> {
 
     @Override
     public String toString() {
-        return ScoreUtil.getInitPrefix(initScore) + score;
+        return Long.toString(score);
     }
 
 }

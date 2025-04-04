@@ -6,12 +6,13 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.bounder.ScoreBounder;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 /**
  * Investigate nodes layer by layer: investigate shallower nodes first.
  * This results in horrible memory scalability.
  * <p>
- * A typical {@link ScoreBounder}'s {@link ScoreBounder#calculateOptimisticBound(ScoreDirector, Score)}
+ * A typical {@link ScoreBounder}'s {@link ScoreBounder#calculateOptimisticBound(ScoreDirector, InnerScore)}
  * will be weak, which results in horrible performance scalability too.
  */
 public class BreadthFirstNodeComparator implements Comparator<ExhaustiveSearchNode> {
@@ -22,6 +23,7 @@ public class BreadthFirstNodeComparator implements Comparator<ExhaustiveSearchNo
         this.scoreBounderEnabled = scoreBounderEnabled;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public int compare(ExhaustiveSearchNode a, ExhaustiveSearchNode b) {
         // Investigate shallower nodes first
@@ -33,7 +35,9 @@ public class BreadthFirstNodeComparator implements Comparator<ExhaustiveSearchNo
             return -1;
         }
         // Investigate better score first (ignore initScore to avoid depth first ordering)
-        int scoreComparison = a.getScore().withInitScore(0).compareTo(b.getScore().withInitScore(0));
+        Score aScore = a.getScore().initialized();
+        Score bScore = b.getScore().initialized();
+        int scoreComparison = aScore.compareTo(bScore);
         if (scoreComparison < 0) {
             return -1;
         } else if (scoreComparison > 0) {
@@ -41,7 +45,7 @@ public class BreadthFirstNodeComparator implements Comparator<ExhaustiveSearchNo
         }
         if (scoreBounderEnabled) {
             // Investigate better optimistic bound first
-            int optimisticBoundComparison = a.getOptimisticBound().compareTo(b.getOptimisticBound());
+            int optimisticBoundComparison = a.getOptimisticBound().compareTo((InnerScore) b.getOptimisticBound());
             if (optimisticBoundComparison < 0) {
                 return -1;
             } else if (optimisticBoundComparison > 0) {

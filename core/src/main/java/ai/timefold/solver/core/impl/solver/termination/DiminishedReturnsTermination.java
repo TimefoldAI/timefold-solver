@@ -5,6 +5,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeur
 import ai.timefold.solver.core.impl.phase.custom.scope.CustomPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
@@ -63,18 +64,19 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
      *         {@link Double#NaN} if a harder level changed
      * @param <Score_> The score type
      */
-    private static <Score_ extends Score<Score_>> double softImprovementOrNaNForHarderChange(Score_ start, Score_ end) {
+    private static <Score_ extends Score<Score_>> double softImprovementOrNaNForHarderChange(InnerScore<Score_> start,
+            InnerScore<Score_> end) {
         if (start.equals(end)) {
             // optimization: since most of the time the score the same,
             // we can use equals to avoid creating double arrays in the
             // vast majority of comparisons
             return 0.0;
         }
-        if (start.initScore() != end.initScore()) {
+        if (start.unassignedCount() != end.unassignedCount()) {
             // init score improved
             return Double.NaN;
         }
-        var scoreDiffs = end.subtract(start).toLevelDoubles();
+        var scoreDiffs = end.initialized().subtract(start.initialized()).toLevelDoubles();
         var softestLevel = scoreDiffs.length - 1;
         for (int i = 0; i < softestLevel; i++) {
             if (scoreDiffs[i] != 0.0) {
@@ -84,15 +86,15 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
         return scoreDiffs[softestLevel];
     }
 
-    public void start(long startTime, Score_ startingScore) {
+    public void start(long startTime, InnerScore<Score_> startingScore) {
         resetGracePeriod(startTime, startingScore);
     }
 
-    public void step(long time, Score_ bestScore) {
+    public void step(long time, InnerScore<Score_> bestScore) {
         scoresByTime.put(time, bestScore);
     }
 
-    private void resetGracePeriod(long currentTime, Score_ startingScore) {
+    private void resetGracePeriod(long currentTime, InnerScore<Score_> startingScore) {
         gracePeriodStartTimeNanos = currentTime;
         isGracePeriodActive = true;
 
@@ -103,7 +105,7 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
         scoresByTime.put(currentTime, startingScore);
     }
 
-    public boolean isTerminated(long currentTime, Score_ endScore) {
+    public boolean isTerminated(long currentTime, InnerScore<Score_> endScore) {
         if (isGracePeriodActive) {
             // first score in scoresByTime = first score in grace period window
             var endpointDiff = softImprovementOrNaNForHarderChange(scoresByTime.peekFirst(), endScore);
@@ -145,9 +147,10 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
         return scoreDiff / gracePeriodSoftestImprovementDouble < minimumImprovementRatio;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
-        return isTerminated(System.nanoTime(), phaseScope.getBestScore());
+        return isTerminated(System.nanoTime(), (InnerScore<Score_>) phaseScope.getBestScore());
     }
 
     @Override
@@ -161,9 +164,10 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
         return new DiminishedReturnsTermination<>(slidingWindowNanos, minimumImprovementRatio);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        start(System.nanoTime(), phaseScope.getBestScore());
+        start(System.nanoTime(), (InnerScore<Score_>) phaseScope.getBestScore());
     }
 
     @Override
@@ -171,9 +175,10 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
         scoresByTime.clear();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
-        step(System.nanoTime(), stepScope.getPhaseScope().getBestScore());
+        step(System.nanoTime(), (InnerScore<Score_>) stepScope.getPhaseScope().getBestScore());
     }
 
     @SuppressWarnings("rawtypes")

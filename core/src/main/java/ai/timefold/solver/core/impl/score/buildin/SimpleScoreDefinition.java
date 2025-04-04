@@ -48,36 +48,31 @@ public class SimpleScoreDefinition extends AbstractScoreDefinition<SimpleScore> 
     }
 
     @Override
-    public SimpleScore fromLevelNumbers(int initScore, Number[] levelNumbers) {
+    public SimpleScore fromLevelNumbers(Number[] levelNumbers) {
         if (levelNumbers.length != getLevelsSize()) {
             throw new IllegalStateException("The levelNumbers (" + Arrays.toString(levelNumbers)
                     + ")'s length (" + levelNumbers.length + ") must equal the levelSize (" + getLevelsSize() + ").");
         }
-        return SimpleScore.ofUninitialized(initScore, (Integer) levelNumbers[0]);
+        return SimpleScore.of((Integer) levelNumbers[0]);
     }
 
     @Override
     public SimpleScore buildOptimisticBound(InitializingScoreTrend initializingScoreTrend, SimpleScore score) {
         InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
-        return SimpleScore.ofUninitialized(0,
-                trendLevels[0] == InitializingScoreTrendLevel.ONLY_DOWN ? score.score() : Integer.MAX_VALUE);
+        return SimpleScore.of(trendLevels[0] == InitializingScoreTrendLevel.ONLY_DOWN ? score.score() : Integer.MAX_VALUE);
     }
 
     @Override
     public SimpleScore buildPessimisticBound(InitializingScoreTrend initializingScoreTrend, SimpleScore score) {
         InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
-        return SimpleScore.ofUninitialized(0,
-                trendLevels[0] == InitializingScoreTrendLevel.ONLY_UP ? score.score() : Integer.MIN_VALUE);
+        return SimpleScore.of(trendLevels[0] == InitializingScoreTrendLevel.ONLY_UP ? score.score() : Integer.MIN_VALUE);
     }
 
     @Override
     public SimpleScore divideBySanitizedDivisor(SimpleScore dividend, SimpleScore divisor) {
-        int dividendInitScore = dividend.initScore();
-        int divisorInitScore = sanitize(divisor.initScore());
         int dividendScore = dividend.score();
         int divisorScore = sanitize(divisor.score());
         return fromLevelNumbers(
-                divide(dividendInitScore, divisorInitScore),
                 new Number[] {
                         divide(dividendScore, divisorScore)
                 });

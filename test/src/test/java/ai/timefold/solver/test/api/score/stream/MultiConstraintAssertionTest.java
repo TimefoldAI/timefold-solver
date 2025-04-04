@@ -139,13 +139,8 @@ class MultiConstraintAssertionTest {
         assertThatCode(() -> constraintVerifier
                 .verifyThat()
                 .givenSolution(solution)
-                .scores(SimpleScore.ofUninitialized(-1, -3), "There should be no penalties"))
+                .scores(SimpleScore.of(-3), "There should be no penalties"))
                 .doesNotThrowAnyException();
-        assertThatCode(() -> constraintVerifier
-                .verifyThat()
-                .givenSolution(solution)
-                .scores(SimpleScore.of(-3), "One value is not assigned, therefore uninitialized"))
-                .hasMessageContaining("One value is not assigned, therefore uninitialized");
     }
 
     private static final class TestdataDisallowsUnassignedListConstraintProvider implements ConstraintProvider {
@@ -191,13 +186,8 @@ class MultiConstraintAssertionTest {
         assertThatCode(() -> constraintVerifier
                 .verifyThat()
                 .givenSolution(solution)
-                .scores(SimpleScore.ofUninitialized(-1, -3), "There should be no penalties"))
+                .scores(SimpleScore.of(-3), "There should be no penalties"))
                 .doesNotThrowAnyException();
-        assertThatCode(() -> constraintVerifier
-                .verifyThat()
-                .givenSolution(solution)
-                .scores(SimpleScore.of(-3), "One value is not assigned, therefore uninitialized"))
-                .hasMessageContaining("One value is not assigned, therefore uninitialized");
     }
 
     private static final class TestdataDisallowsUnassignedListWithoutInverseShadowVarConstraintProvider

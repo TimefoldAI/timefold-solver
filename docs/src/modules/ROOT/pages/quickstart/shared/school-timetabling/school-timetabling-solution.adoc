@@ -6,7 +6,6 @@ Furthermore, because it contains all lessons, each with a specific planning vari
 it is a _planning solution_ and it has a score:
 
 * If lessons are still unassigned, then it is an _uninitialized_ solution,
-for example, a solution with the score `-4init/0hard/0soft`.
 * If it breaks hard constraints, then it is an _infeasible_ solution,
 for example, a solution with the score `-2hard/-3soft`.
 * If it adheres to all hard constraints, then it is a _feasible_ solution,

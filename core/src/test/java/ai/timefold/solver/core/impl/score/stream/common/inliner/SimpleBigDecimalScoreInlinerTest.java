@@ -20,7 +20,7 @@ class SimpleBigDecimalScoreInlinerTest
     @Test
     void defaultScore() {
         var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchPolicy);
-        assertThat(scoreInliner.extractScore(0)).isEqualTo(SimpleBigDecimalScore.ZERO);
+        assertThat(scoreInliner.extractScore()).isEqualTo(SimpleBigDecimalScore.ZERO);
     }
 
     @Test
@@ -30,19 +30,19 @@ class SimpleBigDecimalScoreInlinerTest
         var scoreInliner = (AbstractScoreInliner<SimpleBigDecimalScore>) impacter.getContext().parent;
 
         var undo1 = impacter.impactScore(BigDecimal.TEN, ConstraintMatchSupplier.empty());
-        assertThat(scoreInliner.extractScore(0))
+        assertThat(scoreInliner.extractScore())
                 .isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(100)));
 
         var undo2 = impacter.impactScore(BigDecimal.valueOf(20), ConstraintMatchSupplier.empty());
-        assertThat(scoreInliner.extractScore(0))
+        assertThat(scoreInliner.extractScore())
                 .isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(300)));
 
         undo2.run();
-        assertThat(scoreInliner.extractScore(0))
+        assertThat(scoreInliner.extractScore())
                 .isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(100)));
 
         undo1.run();
-        assertThat(scoreInliner.extractScore(0))
+        assertThat(scoreInliner.extractScore())
                 .isEqualTo(SimpleBigDecimalScore.of(BigDecimal.ZERO));
     }
 

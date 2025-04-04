@@ -7,6 +7,7 @@ import java.util.TreeSet;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.comparator.AbstractNodeComparatorTest;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.comparator.ScoreFirstNodeComparator;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
@@ -21,8 +22,8 @@ class ExhaustiveSearchPhaseScopeTest extends AbstractNodeComparatorTest {
         phase.addExpandableNode(buildNode(0, "0", 0, 0));
         phase.addExpandableNode(buildNode(0, "1", 0, 0));
         phase.addExpandableNode(buildNode(0, "2", 0, 0));
-        phase.setBestPessimisticBound(SimpleScore.of(Integer.MIN_VALUE));
-        phase.registerPessimisticBound(SimpleScore.of(1));
+        phase.setBestPessimisticBound(InnerScore.of(SimpleScore.of(Integer.MIN_VALUE)));
+        phase.registerPessimisticBound(InnerScore.of(SimpleScore.ONE));
         assertThat(phase.getExpandableNodeQueue()).hasSize(1);
     }
 

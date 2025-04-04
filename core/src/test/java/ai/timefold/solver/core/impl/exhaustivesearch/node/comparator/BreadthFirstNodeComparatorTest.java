@@ -1,5 +1,8 @@
 package ai.timefold.solver.core.impl.exhaustivesearch.node.comparator;
 
+import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
+
 import org.junit.jupiter.api.Test;
 
 class BreadthFirstNodeComparatorTest extends AbstractNodeComparatorTest {
@@ -17,7 +20,7 @@ class BreadthFirstNodeComparatorTest extends AbstractNodeComparatorTest {
                 buildNode(1, "-90", 7, 71),
                 buildNode(1, "-90", 5, 70),
                 buildNode(1, "-85", 5, 60),
-                buildNode(1, "-1init/-80", 5, 60));
+                buildNode(1, InnerScore.ofUninitialized(SimpleScore.of(-80), 1), 5, 60));
     }
 
 }

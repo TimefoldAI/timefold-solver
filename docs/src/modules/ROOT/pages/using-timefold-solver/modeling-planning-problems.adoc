@@ -545,9 +545,6 @@ One way to deal with this is to filter the entity selector of the placer in the 
 A planning variable is considered initialized if its value is not `null` or if the variable is ``allowsUnassigned``.
 So a variable which allows unassigned values is always considered initialized.
 
-A planning entity is initialized if all of its planning variables are initialized.
-
-A solution is initialized if all of its planning entities are initialized.
 
 [#shadowVariable]
 == Planning variable (shadow)

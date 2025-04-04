@@ -58,6 +58,7 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
 
     private Boolean succeeded = null;
     private Score<?> score = null;
+    private boolean initialized = false;
     private long timeMillisSpent = -1L;
     private long scoreCalculationCount = -1L;
     private long moveEvaluationCount = -1L;
@@ -144,8 +145,9 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
         return score;
     }
 
-    public void setScore(Score<?> score) {
+    public void setScore(Score<?> score, boolean isInitialized) {
         this.score = score;
+        this.initialized = isInitialized;
     }
 
     public long getTimeMillisSpent() {
@@ -206,7 +208,7 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
     }
 
     public boolean isInitialized() {
-        return score != null && score.isSolutionInitialized();
+        return score != null && initialized;
     }
 
     @Override

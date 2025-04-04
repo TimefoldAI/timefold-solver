@@ -11,6 +11,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDesc
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
 import ai.timefold.solver.core.impl.move.InnerMutableSolutionView;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
@@ -134,7 +135,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         execute(new LegacyMoveAdapter<>(move));
     }
 
-    public final Score_ executeTemporary(Move<Solution_> move) {
+    public final InnerScore<Score_> executeTemporary(Move<Solution_> move) {
         var ephemeralMoveDirector = ephemeral();
         ephemeralMoveDirector.execute(move);
         var score = backingScoreDirector.calculateScore();
@@ -224,7 +225,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
      */
     @FunctionalInterface
     public interface TemporaryMovePostprocessor<Solution_, Score_ extends Score<Score_>, Result_>
-            extends BiFunction<Score_, Move<Solution_>, Result_> {
+            extends BiFunction<InnerScore<Score_>, Move<Solution_>, Result_> {
 
     }
 

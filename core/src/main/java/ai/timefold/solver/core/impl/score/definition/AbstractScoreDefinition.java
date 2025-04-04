@@ -53,11 +53,6 @@ public abstract class AbstractScoreDefinition<Score_ extends Score<Score_>> impl
     }
 
     @Override
-    public String getInitLabel() {
-        return "init score";
-    }
-
-    @Override
     public int getLevelsSize() {
         return levelLabels.length;
     }

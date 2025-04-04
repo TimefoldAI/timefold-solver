@@ -17,8 +17,6 @@ class SimpleBigDecimalScoreJacksonRoundTripTest extends AbstractScoreJacksonRoun
         assertSerializeAndDeserialize(null, new TestSimpleBigDecimalScoreWrapper(null));
         SimpleBigDecimalScore score = SimpleBigDecimalScore.of(new BigDecimal("1234.4321"));
         assertSerializeAndDeserialize(score, new TestSimpleBigDecimalScoreWrapper(score));
-        score = SimpleBigDecimalScore.ofUninitialized(-7, new BigDecimal("1234.4321"));
-        assertSerializeAndDeserialize(score, new TestSimpleBigDecimalScoreWrapper(score));
     }
 
     public static class TestSimpleBigDecimalScoreWrapper extends TestScoreWrapper<SimpleBigDecimalScore> {

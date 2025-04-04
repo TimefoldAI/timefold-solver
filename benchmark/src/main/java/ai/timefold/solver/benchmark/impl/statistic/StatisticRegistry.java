@@ -103,7 +103,7 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
                 return;
             }
         }
-        scoreConsumer.accept(scoreDefinition.fromLevelNumbers(0, levelNumbers));
+        scoreConsumer.accept(scoreDefinition.fromLevelNumbers(levelNumbers));
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })

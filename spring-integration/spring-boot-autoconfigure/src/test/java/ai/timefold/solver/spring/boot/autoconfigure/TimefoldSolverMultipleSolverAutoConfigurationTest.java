@@ -141,7 +141,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                     };
                     // We ensure the best-score limit won't take priority
                     customScope.setStartingInitializedScore(HardSoftScore.of(-1, -1));
-                    customScope.setBestScore(HardSoftScore.of(-1, -1));
+                    customScope.setInitializedBestScore(HardSoftScore.of(-1, -1));
                     double gradientTimeDefaultSolver1 =
                             ((DefaultSolverJob<TestdataSpringSolution, Long>) solver1.solve(1L, problem)).getSolverTermination()
                                     .calculateSolverTimeGradient(customScope);
@@ -183,7 +183,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                     };
                     // We ensure the best-score limit won't take priority
                     customScope.setStartingInitializedScore(HardSoftScore.of(-1, -1));
-                    customScope.setBestScore(HardSoftScore.of(-1, -1));
+                    customScope.setInitializedBestScore(HardSoftScore.of(-1, -1));
                     double gradientTimeDefaultSolver1 =
                             ((DefaultSolverJob<TestdataSpringSolution, Long>) solver1.solve(1L, problem)).getSolverTermination()
                                     .calculateSolverTimeGradient(customScope);
@@ -406,7 +406,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                         };
                         // We ensure the best-score limit won't take priority
                         customScope.setStartingInitializedScore(HardSoftScore.of(-1, -1));
-                        customScope.setBestScore(HardSoftScore.of(-1, -1));
+                        customScope.setInitializedBestScore(HardSoftScore.of(-1, -1));
                         double gradientTime = solverJob.getSolverTermination().calculateSolverTimeGradient(customScope);
                         TestdataSpringSolution solution = solverJob.getFinalBestSolution();
                         assertThat(solution).isNotNull();

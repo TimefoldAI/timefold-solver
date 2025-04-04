@@ -17,6 +17,7 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintMatch;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 import org.jspecify.annotations.NonNull;
@@ -28,27 +29,27 @@ public final class DefaultScoreExplanation<Solution_, Score_ extends Score<Score
     private static final int DEFAULT_SCORE_EXPLANATION_CONSTRAINT_MATCH_LIMIT = 2;
 
     private final Solution_ solution;
-    private final Score_ score;
+    private final InnerScore<Score_> innerScore;
     private final Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap;
     private final List<ConstraintJustification> constraintJustificationList;
     private final Map<Object, Indictment<Score_>> indictmentMap;
     private final AtomicReference<String> summary = new AtomicReference<>(); // Will be calculated lazily.
 
-    public static <Score_ extends Score<Score_>> String explainScore(Score_ workingScore,
+    public static <Score_ extends Score<Score_>> String explainScore(InnerScore<Score_> workingScore,
             Collection<ConstraintMatchTotal<Score_>> constraintMatchTotalCollection,
             Collection<Indictment<Score_>> indictmentCollection) {
         return explainScore(workingScore, constraintMatchTotalCollection, indictmentCollection,
                 DEFAULT_SCORE_EXPLANATION_INDICTMENT_LIMIT, DEFAULT_SCORE_EXPLANATION_CONSTRAINT_MATCH_LIMIT);
     }
 
-    public static <Score_ extends Score<Score_>> String explainScore(Score_ workingScore,
+    public static <Score_ extends Score<Score_>> String explainScore(InnerScore<Score_> workingScore,
             Collection<ConstraintMatchTotal<Score_>> constraintMatchTotalCollection,
             Collection<Indictment<Score_>> indictmentCollection, int indictmentLimit, int constraintMatchLimit) {
         var scoreExplanation = new StringBuilder((constraintMatchTotalCollection.size() + 4 + 2 * indictmentLimit) * 80);
         scoreExplanation.append("""
-                Explanation of score (%s):
+                Explanation of score (%s)%s:
                     Constraint matches:
-                """.formatted(workingScore));
+                """.formatted(workingScore, workingScore.isInitialized() ? "" : " for an uninitialized solution"));
 
         Comparator<ConstraintMatchTotal<Score_>> constraintMatchTotalComparator = comparing(ConstraintMatchTotal::getScore);
         Comparator<ConstraintMatch<Score_>> constraintMatchComparator = comparing(ConstraintMatch::getScore);
@@ -130,11 +131,11 @@ public final class DefaultScoreExplanation<Solution_, Score_ extends Score<Score
                 scoreDirector.getIndictmentMap());
     }
 
-    public DefaultScoreExplanation(Solution_ solution, Score_ score,
+    public DefaultScoreExplanation(Solution_ solution, InnerScore<Score_> innerScore,
             Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
             Map<Object, Indictment<Score_>> indictmentMap) {
         this.solution = solution;
-        this.score = score;
+        this.innerScore = innerScore;
         this.constraintMatchTotalMap = constraintMatchTotalMap;
         List<ConstraintJustification> workingConstraintJustificationList = new ArrayList<>();
         for (ConstraintMatchTotal<Score_> constraintMatchTotal : constraintMatchTotalMap.values()) {
@@ -157,7 +158,12 @@ public final class DefaultScoreExplanation<Solution_, Score_ extends Score<Score
 
     @Override
     public @NonNull Score_ getScore() {
-        return score;
+        return innerScore.initialized();
+    }
+
+    @Override
+    public boolean isInitialized() {
+        return innerScore.isInitialized();
     }
 
     @Override
@@ -178,7 +184,7 @@ public final class DefaultScoreExplanation<Solution_, Score_ extends Score<Score
     @Override
     public @NonNull String getSummary() {
         return summary.updateAndGet(currentSummary -> Objects.requireNonNullElseGet(currentSummary,
-                () -> explainScore(score, constraintMatchTotalMap.values(), indictmentMap.values())));
+                () -> explainScore(innerScore, constraintMatchTotalMap.values(), indictmentMap.values())));
     }
 
     @Override

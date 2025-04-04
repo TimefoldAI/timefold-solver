@@ -22,7 +22,7 @@ public final class BestScoreSubSingleStatisticTest
 
     @Override
     protected List<BestScoreStatisticPoint> getInputPoints() {
-        return Collections.singletonList(new BestScoreStatisticPoint(Long.MAX_VALUE, SimpleScore.of(Integer.MAX_VALUE)));
+        return Collections.singletonList(new BestScoreStatisticPoint(Long.MAX_VALUE, SimpleScore.of(Integer.MAX_VALUE), true));
     }
 
     @Override

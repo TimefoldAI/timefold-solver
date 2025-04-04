@@ -24,8 +24,8 @@ final class SimpleScoreInliner extends AbstractScoreInliner<SimpleScore> {
     }
 
     @Override
-    public SimpleScore extractScore(int initScore) {
-        return SimpleScore.ofUninitialized(initScore, score);
+    public SimpleScore extractScore() {
+        return SimpleScore.of(score);
     }
 
     @Override

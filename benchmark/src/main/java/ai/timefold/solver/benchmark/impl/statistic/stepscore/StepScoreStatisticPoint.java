@@ -7,10 +7,12 @@ public class StepScoreStatisticPoint extends StatisticPoint {
 
     private final long timeMillisSpent;
     private final Score score;
+    private final boolean isInitialized;
 
-    public StepScoreStatisticPoint(long timeMillisSpent, Score score) {
+    public StepScoreStatisticPoint(long timeMillisSpent, Score score, boolean isInitialized) {
         this.timeMillisSpent = timeMillisSpent;
         this.score = score;
+        this.isInitialized = isInitialized;
     }
 
     public long getTimeMillisSpent() {
@@ -21,9 +23,13 @@ public class StepScoreStatisticPoint extends StatisticPoint {
         return score;
     }
 
+    public boolean isInitialized() {
+        return isInitialized;
+    }
+
     @Override
     public String toCsvLine() {
-        return buildCsvLineWithStrings(timeMillisSpent, score.toString());
+        return buildCsvLineWithStrings(timeMillisSpent, score.toString(), isInitialized ? "true" : "false");
     }
 
 }

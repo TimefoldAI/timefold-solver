@@ -6,6 +6,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.forager.finalist.Finalis
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 /**
@@ -79,19 +80,20 @@ public final class AcceptedLocalSearchForager<Solution_> extends AbstractLocalSe
         finalistPodium.addMove(moveScope);
     }
 
+    @SuppressWarnings("unchecked")
     private void checkPickEarly(LocalSearchMoveScope<Solution_> moveScope) {
         switch (pickEarlyType) {
             case NEVER:
                 break;
             case FIRST_BEST_SCORE_IMPROVING:
                 var bestScore = moveScope.getStepScope().getPhaseScope().getBestScore();
-                if (moveScope.getScore().compareTo(bestScore) > 0) {
+                if (moveScope.getScore().compareTo((InnerScore) bestScore) > 0) {
                     earlyPickedMoveScope = moveScope;
                 }
                 break;
             case FIRST_LAST_STEP_SCORE_IMPROVING:
                 var lastStepScore = moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore();
-                if (moveScope.getScore().compareTo(lastStepScore) > 0) {
+                if (moveScope.getScore().compareTo((InnerScore) lastStepScore) > 0) {
                     earlyPickedMoveScope = moveScope;
                 }
                 break;

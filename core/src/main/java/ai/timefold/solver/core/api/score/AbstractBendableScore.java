@@ -25,9 +25,6 @@ public abstract class AbstractBendableScore<Score_ extends AbstractBendableScore
         return ScoreUtil.parseBendableScoreTokens(scoreClass, scoreString);
     }
 
-    /**
-     * @param initScore see {@link Score#initScore()}
-     */
     protected AbstractBendableScore(int initScore) {
         super(initScore);
     }

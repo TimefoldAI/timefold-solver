@@ -2,7 +2,9 @@ package ai.timefold.solver.core.impl.exhaustivesearch.node.comparator;
 
 import java.util.Comparator;
 
+import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 /**
  * Investigate deeper nodes first.
@@ -15,6 +17,7 @@ public class DepthFirstNodeComparator implements Comparator<ExhaustiveSearchNode
         this.scoreBounderEnabled = scoreBounderEnabled;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public int compare(ExhaustiveSearchNode a, ExhaustiveSearchNode b) {
         // Investigate deeper first
@@ -26,7 +29,9 @@ public class DepthFirstNodeComparator implements Comparator<ExhaustiveSearchNode
             return 1;
         }
         // Investigate better score first (ignore initScore as that's already done by investigate deeper first)
-        int scoreComparison = a.getScore().withInitScore(0).compareTo(b.getScore().withInitScore(0));
+        Score aScore = a.getScore().initialized();
+        Score bScore = b.getScore().initialized();
+        int scoreComparison = aScore.compareTo(bScore);
         if (scoreComparison < 0) {
             return -1;
         } else if (scoreComparison > 0) {
@@ -38,7 +43,7 @@ public class DepthFirstNodeComparator implements Comparator<ExhaustiveSearchNode
         // In non-mixed cases, the comparison order is irrelevant.
         if (scoreBounderEnabled) {
             // Investigate better optimistic bound first
-            int optimisticBoundComparison = a.getOptimisticBound().compareTo(b.getOptimisticBound());
+            int optimisticBoundComparison = a.getOptimisticBound().compareTo((InnerScore) b.getOptimisticBound());
             if (optimisticBoundComparison < 0) {
                 return -1;
             } else if (optimisticBoundComparison > 0) {

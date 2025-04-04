@@ -1207,6 +1207,15 @@ public class SolutionDescriptor<Solution_> {
 
     public record SolutionInitializationStatistics(int genuineEntityCount, int shadowEntityCount,
             int uninitializedEntityCount, int uninitializedVariableCount, int unassignedValueCount) {
+
+        public int getInitCount() {
+            return uninitializedVariableCount + uninitializedEntityCount;
+        }
+
+        public boolean isInitialized() {
+            return getInitCount() == 0;
+        }
+
     }
 
     private Stream<Object> extractAllEntitiesStream(Solution_ solution) {
@@ -1265,8 +1274,9 @@ public class SolutionDescriptor<Solution_> {
      * @param score sometimes null, in rare occasions to indicate that the old {@link Score} is stale,
      *        but no new ones has been calculated
      */
+    @SuppressWarnings("unchecked")
     public <Score_ extends Score<Score_>> void setScore(Solution_ solution, Score_ score) {
-        ((ScoreDescriptor) scoreDescriptor).setScore(solution, score);
+        ((ScoreDescriptor<Score_>) scoreDescriptor).setScore(solution, score);
     }
 
     public PlanningSolutionDiff<Solution_> diff(Solution_ oldSolution, Solution_ newSolution) {

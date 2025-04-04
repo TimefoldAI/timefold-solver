@@ -107,13 +107,6 @@ public final class ConstraintConfigurationBasedConstraintWeightSupplier<Score_ e
                     .formatted(constraintWeight, constraintWeight.getClass(), constraintRef, scoreDescriptor.getScoreClass(),
                             constraintConfigurationDescriptor.getConstraintConfigurationClass()));
         }
-        if (constraintWeight.initScore() != 0) {
-            throw new IllegalArgumentException("""
-                    The constraintWeight (%s) for constraint (%s) must have an initScore (%d) equal to 0.
-                    Maybe validate the data input of your constraintConfigurationClass (%s) for that constraint."""
-                    .formatted(constraintWeight, constraintRef, constraintWeight.initScore(),
-                            constraintConfigurationDescriptor.getConstraintConfigurationClass()));
-        }
         if (!scoreDescriptor.getScoreDefinition().isPositiveOrZero(constraintWeight)) {
             throw new IllegalArgumentException("""
                     The constraintWeight (%s) for constraint (%s) must be positive or zero.

@@ -4,6 +4,7 @@ import java.util.Random;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -16,7 +17,7 @@ public abstract class AbstractMoveScope<Solution_> {
     protected final int moveIndex;
     protected final Move<Solution_> move;
 
-    protected Score<?> score = null;
+    protected InnerScore<?> score = null;
 
     protected AbstractMoveScope(AbstractStepScope<Solution_> stepScope, int moveIndex, Move<Solution_> move) {
         this.stepScope = stepScope;
@@ -36,11 +37,16 @@ public abstract class AbstractMoveScope<Solution_> {
         return move;
     }
 
-    public Score getScore() {
+    public InnerScore<?> getScore() {
         return score;
     }
 
-    public void setScore(Score score) {
+    @SuppressWarnings("rawtypes")
+    public void setInitializedScore(Score<?> score) {
+        setScore(InnerScore.of((Score) score));
+    }
+
+    public void setScore(InnerScore<?> score) {
         this.score = score;
     }
 

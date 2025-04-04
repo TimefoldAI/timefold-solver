@@ -43,7 +43,6 @@ class HardSoftScoreDefinitionTest {
         HardSoftScore optimisticBound = scoreDefinition.buildOptimisticBound(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_UP, 2),
                 HardSoftScore.of(-1, -2));
-        assertThat(optimisticBound.initScore()).isEqualTo(0);
         assertThat(optimisticBound.hardScore()).isEqualTo(Integer.MAX_VALUE);
         assertThat(optimisticBound.softScore()).isEqualTo(Integer.MAX_VALUE);
     }
@@ -54,7 +53,6 @@ class HardSoftScoreDefinitionTest {
         HardSoftScore optimisticBound = scoreDefinition.buildOptimisticBound(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_DOWN, 2),
                 HardSoftScore.of(-1, -2));
-        assertThat(optimisticBound.initScore()).isEqualTo(0);
         assertThat(optimisticBound.hardScore()).isEqualTo(-1);
         assertThat(optimisticBound.softScore()).isEqualTo(-2);
     }
@@ -65,7 +63,6 @@ class HardSoftScoreDefinitionTest {
         HardSoftScore pessimisticBound = scoreDefinition.buildPessimisticBound(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_UP, 2),
                 HardSoftScore.of(-1, -2));
-        assertThat(pessimisticBound.initScore()).isEqualTo(0);
         assertThat(pessimisticBound.hardScore()).isEqualTo(-1);
         assertThat(pessimisticBound.softScore()).isEqualTo(-2);
     }
@@ -76,7 +73,6 @@ class HardSoftScoreDefinitionTest {
         HardSoftScore pessimisticBound = scoreDefinition.buildPessimisticBound(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_DOWN, 2),
                 HardSoftScore.of(-1, -2));
-        assertThat(pessimisticBound.initScore()).isEqualTo(0);
         assertThat(pessimisticBound.hardScore()).isEqualTo(Integer.MIN_VALUE);
         assertThat(pessimisticBound.softScore()).isEqualTo(Integer.MIN_VALUE);
     }
@@ -84,16 +80,16 @@ class HardSoftScoreDefinitionTest {
     @Test
     void divideBySanitizedDivisor() {
         HardSoftScoreDefinition scoreDefinition = new HardSoftScoreDefinition();
-        HardSoftScore dividend = scoreDefinition.fromLevelNumbers(2, new Number[] { 0, 10 });
+        HardSoftScore dividend = scoreDefinition.fromLevelNumbers(new Number[] { 0, 10 });
         HardSoftScore zeroDivisor = scoreDefinition.getZeroScore();
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, zeroDivisor))
                 .isEqualTo(dividend);
         HardSoftScore oneDivisor = scoreDefinition.getOneSoftestScore();
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, oneDivisor))
                 .isEqualTo(dividend);
-        HardSoftScore tenDivisor = scoreDefinition.fromLevelNumbers(10, new Number[] { 10, 10 });
+        HardSoftScore tenDivisor = scoreDefinition.fromLevelNumbers(new Number[] { 10, 10 });
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, tenDivisor))
-                .isEqualTo(scoreDefinition.fromLevelNumbers(0, new Number[] { 0, 1 }));
+                .isEqualTo(scoreDefinition.fromLevelNumbers(new Number[] { 0, 1 }));
     }
 
 }

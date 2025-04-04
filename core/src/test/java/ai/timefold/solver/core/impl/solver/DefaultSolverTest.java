@@ -124,7 +124,8 @@ class DefaultSolverTest extends AbstractMeterTest {
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
-        assertThat(solution.getScore().isSolutionInitialized()).isTrue();
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getValue() == null)).isEmpty();
     }
 
     @Test
@@ -143,7 +144,8 @@ class DefaultSolverTest extends AbstractMeterTest {
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
-        assertThat(solution.getScore().isSolutionInitialized()).isTrue();
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getValue() == null)).isEmpty();
     }
 
     @Test
@@ -534,7 +536,8 @@ class DefaultSolverTest extends AbstractMeterTest {
         }
         meterRegistry.publish();
         assertThat(solution).isNotNull();
-        assertThat(solution.getScore().isSolutionInitialized()).isTrue();
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getValue() == null)).isEmpty();
 
         assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "DURATION")).isZero();
         assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "ACTIVE_TASKS")).isZero();
@@ -867,7 +870,8 @@ class DefaultSolverTest extends AbstractMeterTest {
 
         solution = PlannerTestUtils.solve(solverConfig, solution, false);
         assertThat(solution).isNotNull();
-        assertThat(solution.getScore().isSolutionInitialized()).isTrue();
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getValue() == null)).isEmpty();
     }
 
     private static final class FailCommand implements PhaseCommand<Object> {
@@ -891,7 +895,7 @@ class DefaultSolverTest extends AbstractMeterTest {
 
         solution = PlannerTestUtils.solve(solverConfig, solution, false);
         assertThat(solution).isNotNull();
-        assertThat(solution.getScore().isSolutionInitialized()).isTrue();
+        assertThat(solution.getScore()).isNotNull();
     }
 
     @Test
@@ -906,7 +910,7 @@ class DefaultSolverTest extends AbstractMeterTest {
 
         solution = PlannerTestUtils.solve(solverConfig, solution, false);
         assertThat(solution).isNotNull();
-        assertThat(solution.getScore().isSolutionInitialized()).isTrue();
+        assertThat(solution.getScore()).isNotNull();
     }
 
     @Test
@@ -941,7 +945,7 @@ class DefaultSolverTest extends AbstractMeterTest {
 
         solution = PlannerTestUtils.solve(solverConfig, solution, false);
         assertThat(solution).isNotNull();
-        assertThat(solution.getScore().isSolutionInitialized()).isFalse();
+        assertThat(solution.getScore()).isNotNull();
     }
 
     @Test
@@ -958,8 +962,8 @@ class DefaultSolverTest extends AbstractMeterTest {
                 new TestdataEntity("e3"), new TestdataEntity("e4"), new TestdataEntity("e5")));
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
-        assertThat(solution).isNotNull();
-        assertThat(solution.getScore().isSolutionInitialized()).isFalse();
+        assertThat(solution.getEntityList().stream().filter(e -> e.getValue() == null))
+                .isNotEmpty();
     }
 
     @Test
@@ -1021,19 +1025,18 @@ class DefaultSolverTest extends AbstractMeterTest {
                 .collect(Collectors.toList()));
 
         var score = SolutionManager.create(solverFactory).update(solution);
-        assertThat(score.initScore()).isEqualTo(-entityCount);
-        assertThat(score.isSolutionInitialized()).isFalse();
+        assertThat(score).isNotNull();
 
         // Keep restarting the solver until the solution is initialized.
         for (var initScore = -entityCount; initScore < 0; initScore += stepCountLimit) {
-            softly.assertThat(solution.getScore().initScore()).isEqualTo(initScore);
-            softly.assertThat(solution.getScore().isSolutionInitialized()).isFalse();
+            var uninitializedCount = solution.getEntityList().stream().filter(e -> e.getValue() == null)
+                    .count();
+            softly.assertThat(uninitializedCount).isEqualTo(-initScore);
             solution = solver.solve(solution);
         }
 
-        // Finally, the initScore is 0.
-        softly.assertThat(solution.getScore().initScore()).isZero();
-        softly.assertThat(solution.getScore().isSolutionInitialized()).isTrue();
+        // Finally, the solution is initialized.
+        softly.assertThat(solution.getEntityList().stream().filter(e -> e.getValue() == null)).isEmpty();
     }
 
     @Test
@@ -1053,19 +1056,24 @@ class DefaultSolverTest extends AbstractMeterTest {
         var solution = TestdataListSolution.generateUninitializedSolution(valueCount, 8);
 
         var score = SolutionManager.create(solverFactory).update(solution);
-        assertThat(score.initScore()).isEqualTo(-valueCount);
-        assertThat(score.isSolutionInitialized()).isFalse();
+        assertThat(score).isNotNull();
 
         // Keep restarting the solver until the solution is initialized.
         for (var initScore = -valueCount; initScore < 0; initScore += stepCountLimit) {
-            softly.assertThat(solution.getScore().initScore()).isEqualTo(initScore);
-            softly.assertThat(solution.getScore().isSolutionInitialized()).isFalse();
+            var initializedCount = solution.getEntityList().stream()
+                    .map(TestdataListEntity::getValueList)
+                    .mapToInt(List::size)
+                    .sum();
+            softly.assertThat(initializedCount).isLessThan(valueCount);
             solution = solver.solve(solution);
         }
 
-        // Finally, the initScore is 0.
-        softly.assertThat(solution.getScore().initScore()).isZero();
-        softly.assertThat(solution.getScore().isSolutionInitialized()).isTrue();
+        // Finally, the solution is initialized.
+        var initializedCount = solution.getEntityList().stream()
+                .map(TestdataListEntity::getValueList)
+                .mapToInt(List::size)
+                .sum();
+        softly.assertThat(initializedCount).isEqualTo(valueCount);
     }
 
     @Test
@@ -1176,7 +1184,6 @@ class DefaultSolverTest extends AbstractMeterTest {
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
-        assertThat(solution.getScore().isSolutionInitialized()).isTrue();
     }
 
     /**
@@ -1222,7 +1229,7 @@ class DefaultSolverTest extends AbstractMeterTest {
 
         solution = solver.solve(solution);
         assertThat(solution).isNotNull();
-        assertThat(solution.getScore().isSolutionInitialized()).isTrue();
+        assertThat(solution.getScore()).isNotNull();
     }
 
     @Test

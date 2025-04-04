@@ -194,8 +194,7 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
                 Metrics.gauge(metric.getMeterId() + ".count",
                         tags, count);
             }
-            SolverMetric.registerScoreMetrics(metric,
-                    tags, scoreDefinition, scoreMap, constraintMatchTotal.getScore());
+            SolverMetric.registerScoreMetrics(metric, tags, scoreDefinition, scoreMap, constraintMatchTotal.getScore());
         }
     }
 

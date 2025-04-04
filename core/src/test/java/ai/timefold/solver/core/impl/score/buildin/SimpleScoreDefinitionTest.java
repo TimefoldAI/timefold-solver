@@ -38,7 +38,6 @@ class SimpleScoreDefinitionTest {
         SimpleScore optimisticBound = scoreDefinition.buildOptimisticBound(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_UP, 1),
                 SimpleScore.of(-1));
-        assertThat(optimisticBound.initScore()).isEqualTo(0);
         assertThat(optimisticBound.score()).isEqualTo(Integer.MAX_VALUE);
     }
 
@@ -48,7 +47,6 @@ class SimpleScoreDefinitionTest {
         SimpleScore optimisticBound = scoreDefinition.buildOptimisticBound(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_DOWN, 1),
                 SimpleScore.of(-1));
-        assertThat(optimisticBound.initScore()).isEqualTo(0);
         assertThat(optimisticBound.score()).isEqualTo(-1);
     }
 
@@ -58,7 +56,6 @@ class SimpleScoreDefinitionTest {
         SimpleScore pessimisticBound = scoreDefinition.buildPessimisticBound(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_UP, 1),
                 SimpleScore.of(-1));
-        assertThat(pessimisticBound.initScore()).isEqualTo(0);
         assertThat(pessimisticBound.score()).isEqualTo(-1);
     }
 
@@ -68,23 +65,22 @@ class SimpleScoreDefinitionTest {
         SimpleScore pessimisticBound = scoreDefinition.buildPessimisticBound(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_DOWN, 1),
                 SimpleScore.of(-1));
-        assertThat(pessimisticBound.initScore()).isEqualTo(0);
         assertThat(pessimisticBound.score()).isEqualTo(Integer.MIN_VALUE);
     }
 
     @Test
     void divideBySanitizedDivisor() {
         SimpleScoreDefinition scoreDefinition = new SimpleScoreDefinition();
-        SimpleScore dividend = scoreDefinition.fromLevelNumbers(2, new Number[] { 10 });
+        SimpleScore dividend = scoreDefinition.fromLevelNumbers(new Number[] { 10 });
         SimpleScore zeroDivisor = scoreDefinition.getZeroScore();
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, zeroDivisor))
                 .isEqualTo(dividend);
         SimpleScore oneDivisor = scoreDefinition.getOneSoftestScore();
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, oneDivisor))
                 .isEqualTo(dividend);
-        SimpleScore tenDivisor = scoreDefinition.fromLevelNumbers(10, new Number[] { 10 });
+        SimpleScore tenDivisor = scoreDefinition.fromLevelNumbers(new Number[] { 10 });
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, tenDivisor))
-                .isEqualTo(scoreDefinition.fromLevelNumbers(0, new Number[] { 1 }));
+                .isEqualTo(scoreDefinition.fromLevelNumbers(new Number[] { 1 }));
     }
 
 }

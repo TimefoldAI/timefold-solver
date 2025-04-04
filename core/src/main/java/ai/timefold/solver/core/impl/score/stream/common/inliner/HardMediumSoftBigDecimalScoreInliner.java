@@ -40,8 +40,8 @@ final class HardMediumSoftBigDecimalScoreInliner extends AbstractScoreInliner<Ha
     }
 
     @Override
-    public HardMediumSoftBigDecimalScore extractScore(int initScore) {
-        return HardMediumSoftBigDecimalScore.ofUninitialized(initScore, hardScore, mediumScore, softScore);
+    public HardMediumSoftBigDecimalScore extractScore() {
+        return HardMediumSoftBigDecimalScore.of(hardScore, mediumScore, softScore);
     }
 
     @Override

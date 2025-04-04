@@ -48,12 +48,12 @@ public class HardSoftBigDecimalScoreDefinition extends AbstractScoreDefinition<H
     }
 
     @Override
-    public HardSoftBigDecimalScore fromLevelNumbers(int initScore, Number[] levelNumbers) {
+    public HardSoftBigDecimalScore fromLevelNumbers(Number[] levelNumbers) {
         if (levelNumbers.length != getLevelsSize()) {
             throw new IllegalStateException("The levelNumbers (" + Arrays.toString(levelNumbers)
                     + ")'s length (" + levelNumbers.length + ") must equal the levelSize (" + getLevelsSize() + ").");
         }
-        return HardSoftBigDecimalScore.ofUninitialized(initScore, (BigDecimal) levelNumbers[0], (BigDecimal) levelNumbers[1]);
+        return HardSoftBigDecimalScore.of((BigDecimal) levelNumbers[0], (BigDecimal) levelNumbers[1]);
     }
 
     @Override
@@ -75,14 +75,11 @@ public class HardSoftBigDecimalScoreDefinition extends AbstractScoreDefinition<H
     @Override
     public HardSoftBigDecimalScore divideBySanitizedDivisor(HardSoftBigDecimalScore dividend,
             HardSoftBigDecimalScore divisor) {
-        int dividendInitScore = dividend.initScore();
-        int divisorInitScore = sanitize(divisor.initScore());
         BigDecimal dividendHardScore = dividend.hardScore();
         BigDecimal divisorHardScore = sanitize(divisor.hardScore());
         BigDecimal dividendSoftScore = dividend.softScore();
         BigDecimal divisorSoftScore = sanitize(divisor.softScore());
         return fromLevelNumbers(
-                divide(dividendInitScore, divisorInitScore),
                 new Number[] {
                         divide(dividendHardScore, divisorHardScore),
                         divide(dividendSoftScore, divisorSoftScore)

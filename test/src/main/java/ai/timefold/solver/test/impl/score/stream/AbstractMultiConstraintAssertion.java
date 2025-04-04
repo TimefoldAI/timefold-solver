@@ -10,6 +10,7 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.impl.score.DefaultScoreExplanation;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.test.api.score.stream.MultiConstraintAssertion;
 
@@ -21,7 +22,7 @@ public abstract sealed class AbstractMultiConstraintAssertion<Solution_, Score_ 
         permits DefaultMultiConstraintAssertion, DefaultShadowVariableAwareMultiConstraintAssertion {
 
     private final ConstraintProvider constraintProvider;
-    private Score_ actualScore;
+    private InnerScore<Score_> actualScore;
     private Collection<ConstraintMatchTotal<Score_>> constraintMatchTotalCollection;
     private Collection<Indictment<Score_>> indictmentCollection;
 
@@ -32,9 +33,9 @@ public abstract sealed class AbstractMultiConstraintAssertion<Solution_, Score_ 
     }
 
     @Override
-    final void update(Score_ score, Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
+    final void update(InnerScore<Score_> innerScore, Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
             Map<Object, Indictment<Score_>> indictmentMap) {
-        this.actualScore = requireNonNull(score);
+        this.actualScore = InnerScore.of(requireNonNull(innerScore).initialized()); // Strip initialization information.
         this.constraintMatchTotalCollection = requireNonNull(constraintMatchTotalMap).values();
         this.indictmentCollection = requireNonNull(indictmentMap).values();
         toggleInitialized();
@@ -43,7 +44,7 @@ public abstract sealed class AbstractMultiConstraintAssertion<Solution_, Score_ 
     @Override
     public void scores(@NonNull Score<?> score, String message) {
         ensureInitialized();
-        if (actualScore.equals(score)) {
+        if (actualScore.initialized().equals(score)) {
             return;
         }
         Class<?> constraintProviderClass = constraintProvider.getClass();

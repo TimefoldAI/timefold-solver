@@ -15,8 +15,6 @@ class SimpleLongScoreJacksonRoundTripTest extends AbstractScoreJacksonRoundTripT
         assertSerializeAndDeserialize(null, new TestSimpleLongScoreWrapper(null));
         SimpleLongScore score = SimpleLongScore.of(1234L);
         assertSerializeAndDeserialize(score, new TestSimpleLongScoreWrapper(score));
-        score = SimpleLongScore.ofUninitialized(-7, 1234L);
-        assertSerializeAndDeserialize(score, new TestSimpleLongScoreWrapper(score));
     }
 
     public static class TestSimpleLongScoreWrapper

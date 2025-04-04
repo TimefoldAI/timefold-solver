@@ -13,7 +13,7 @@ import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSession;
  * Layer N+1 only starts propagating after layer N has completed its propagation,
  * that is after {@link #propagateRetracts()},
  * {@link #propagateUpdates()} and {@link #propagateInserts()} have been called on every node in the layer.
- * This happens in and is guaranteed by {@link BavetConstraintSession#calculateScore(int)}.
+ * This happens in and is guaranteed by {@link BavetConstraintSession#calculateScore()}.
  * <p>
  * Nodes in a layer do not propagate entirely independently.
  * In fact, we first call {@link #propagateRetracts()} on all nodes in the layer,

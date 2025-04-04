@@ -14,6 +14,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListSwa
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListUnassignMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListSwapMove;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListEntityWithShadowHistory;
 import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListSolutionWithShadowHistory;
@@ -184,7 +185,7 @@ class ListVariableListenerTest {
         solution.getValueList().add(x);
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.ofUninitialized(-1, 0));
+        assertThat(scoreDirector.calculateScore()).isEqualTo(InnerScore.ofUninitialized(SimpleScore.ZERO, 1));
 
         new ListAssignMove<>(variableDescriptor, x, ann, 2).doMoveOnly(scoreDirector);
 

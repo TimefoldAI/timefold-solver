@@ -25,8 +25,6 @@ class BendableLongScoreTest extends AbstractScoreTest {
     void parseScore() {
         assertThat(scoreDefinitionHSS.parseScore("[-5432109876]hard/[-9876543210/-3456789012]soft"))
                 .isEqualTo(scoreDefinitionHSS.createScore(-5432109876L, -9876543210L, -3456789012L));
-        assertThat(scoreDefinitionHSS.parseScore("-7init/[-5432109876]hard/[-9876543210/-3456789012]soft"))
-                .isEqualTo(scoreDefinitionHSS.createScoreUninitialized(-7, -5432109876L, -9876543210L, -3456789012L));
         assertThat(scoreDefinitionHSS.parseScore("[-5432109876]hard/[-9876543210/*]soft"))
                 .isEqualTo(scoreDefinitionHSS.createScore(-5432109876L, -9876543210L, Long.MIN_VALUE));
         assertThat(scoreDefinitionHSS.parseScore("[-5432109876]hard/[*/-3456789012]soft"))
@@ -41,8 +39,6 @@ class BendableLongScoreTest extends AbstractScoreTest {
         assertThat(scoreDefinitionHSS.createScore(-5432109876L, 0L, -0L).toShortString()).isEqualTo("[-5432109876]hard");
         assertThat(scoreDefinitionHSS.createScore(-5432109876L, -9876543210L, -3456789012L).toShortString())
                 .isEqualTo("[-5432109876]hard/[-9876543210/-3456789012]soft");
-        assertThat(scoreDefinitionHSS.createScoreUninitialized(-7, -5432109876L, -9876543210L, -3456789012L).toShortString())
-                .isEqualTo("-7init/[-5432109876]hard/[-9876543210/-3456789012]soft");
     }
 
     @Test
@@ -53,8 +49,6 @@ class BendableLongScoreTest extends AbstractScoreTest {
                 .hasToString("[-5432109876]hard/[-9876543210/-3456789012]soft");
         assertThat(new BendableLongScoreDefinition(2, 1).createScore(-5432109876L, -9876543210L, -3456789012L))
                 .hasToString("[-5432109876/-9876543210]hard/[-3456789012]soft");
-        assertThat(scoreDefinitionHSS.createScoreUninitialized(-7, -5432109876L, -9876543210L, -3456789012L))
-                .hasToString("-7init/[-5432109876]hard/[-9876543210/-3456789012]soft");
         assertThat(new BendableLongScoreDefinition(0, 0).createScore()).hasToString("[]hard/[]soft");
     }
 
@@ -72,21 +66,10 @@ class BendableLongScoreTest extends AbstractScoreTest {
     }
 
     @Test
-    void withInitScore() {
-        assertThat(scoreDefinitionHSS.createScore(-5432109876L, -9876543210L, -3456789012L).withInitScore(-7))
-                .isEqualTo(scoreDefinitionHSS.createScoreUninitialized(-7, -5432109876L, -9876543210L, -3456789012L));
-    }
-
-    @Test
     void feasibleHSS() {
-        assertScoreNotFeasible(
-                scoreDefinitionHSS.createScore(-5L, -300L, -9876543210L),
-                scoreDefinitionHSS.createScoreUninitialized(-7, -5L, -300L, -9876543210L),
-                scoreDefinitionHSS.createScoreUninitialized(-7, 0L, -300L, -9876543210L));
-        assertScoreFeasible(
-                scoreDefinitionHSS.createScore(0L, -300L, -9876543210L),
-                scoreDefinitionHSS.createScore(2L, -300L, -9876543210L),
-                scoreDefinitionHSS.createScoreUninitialized(0, 0L, -300L, -9876543210L));
+        assertScoreNotFeasible(scoreDefinitionHSS.createScore(-5L, -300L, -9876543210L));
+        assertScoreFeasible(scoreDefinitionHSS.createScore(0L, -300L, -9876543210L),
+                scoreDefinitionHSS.createScore(2L, -300L, -9876543210L));
     }
 
     @Test
@@ -94,9 +77,6 @@ class BendableLongScoreTest extends AbstractScoreTest {
         assertThat(scoreDefinitionHSS.createScore(1111111111L, -20L, -9876543210L).add(
                 scoreDefinitionHSS.createScore(2222222222L, -300L, 9876543210L)))
                 .isEqualTo(scoreDefinitionHSS.createScore(3333333333L, -320L, 0L));
-        assertThat(scoreDefinitionHSS.createScoreUninitialized(-70, 1111111111L, -20L, -9876543210L).add(
-                scoreDefinitionHSS.createScoreUninitialized(-7, 2222222222L, -300L, 9876543210L)))
-                .isEqualTo(scoreDefinitionHSS.createScoreUninitialized(-77, 3333333333L, -320L, 0L));
     }
 
     @Test
@@ -104,9 +84,6 @@ class BendableLongScoreTest extends AbstractScoreTest {
         assertThat(scoreDefinitionHSS.createScore(3333333333L, -20L, -5555555555L).subtract(
                 scoreDefinitionHSS.createScore(1111111111L, -300L, 3333333333L)))
                 .isEqualTo(scoreDefinitionHSS.createScore(2222222222L, 280L, -8888888888L));
-        assertThat(scoreDefinitionHSS.createScoreUninitialized(-70, 3333333333L, -20L, -5555555555L).subtract(
-                scoreDefinitionHSS.createScoreUninitialized(-7, 1111111111L, -300L, 3333333333L)))
-                .isEqualTo(scoreDefinitionHSS.createScoreUninitialized(-63, 2222222222L, 280L, -8888888888L));
     }
 
     @Test
@@ -117,8 +94,6 @@ class BendableLongScoreTest extends AbstractScoreTest {
                 .isEqualTo(scoreDefinitionHSS.createScore(1L, -2L, 1L));
         assertThat(scoreDefinitionHSS.createScore(4L, -4L, 4L).multiply(1.2))
                 .isEqualTo(scoreDefinitionHSS.createScore(4L, -5L, 4L));
-        assertThat(scoreDefinitionHSS.createScoreUninitialized(-7, 4L, -5L, 6L).multiply(2.0))
-                .isEqualTo(scoreDefinitionHSS.createScoreUninitialized(-14, 8L, -10L, 12L));
     }
 
     @Test
@@ -129,8 +104,6 @@ class BendableLongScoreTest extends AbstractScoreTest {
                 .isEqualTo(scoreDefinitionHSS.createScore(4L, -5L, 4L));
         assertThat(scoreDefinitionHSS.createScore(24L, -24L, 24L).divide(5.0))
                 .isEqualTo(scoreDefinitionHSS.createScore(4L, -5L, 4L));
-        assertThat(scoreDefinitionHSS.createScoreUninitialized(-14, 8L, -10L, 12L).divide(2.0))
-                .isEqualTo(scoreDefinitionHSS.createScoreUninitialized(-7, 4L, -5L, 6L));
     }
 
     @Test
@@ -139,8 +112,6 @@ class BendableLongScoreTest extends AbstractScoreTest {
                 .isEqualTo(scoreDefinitionHSS.createScore(90000000000L, 160000000000L, 250000000000L));
         assertThat(scoreDefinitionHSS.createScore(90000000000L, 160000000000L, 250000000000L).power(0.5))
                 .isEqualTo(scoreDefinitionHSS.createScore(300000L, 400000L, 500000L));
-        assertThat(scoreDefinitionHSS.createScoreUninitialized(-7, 3L, -4L, 5L).power(3.0))
-                .isEqualTo(scoreDefinitionHSS.createScoreUninitialized(-343, 27L, -64L, 125L));
     }
 
     @Test
@@ -176,30 +147,18 @@ class BendableLongScoreTest extends AbstractScoreTest {
 
     @Test
     void equalsAndHashCodeHSS() {
-        PlannerAssert.assertObjectsAreEqual(
-                scoreDefinitionHSS.createScore(-10L, -200L, -3000L),
-                scoreDefinitionHSS.createScore(-10L, -200L, -3000L),
-                scoreDefinitionHSS.createScoreUninitialized(0, -10L, -200L, -3000L));
-        PlannerAssert.assertObjectsAreEqual(
-                scoreDefinitionHSS.createScoreUninitialized(-7, -10L, -200L, -3000L),
-                scoreDefinitionHSS.createScoreUninitialized(-7, -10L, -200L, -3000L));
+        PlannerAssert.assertObjectsAreEqual(scoreDefinitionHSS.createScore(-10L, -200L, -3000L),
+                scoreDefinitionHSS.createScore(-10L, -200L, -3000L));
         PlannerAssert.assertObjectsAreNotEqual(
                 scoreDefinitionHSS.createScore(-10L, -200L, -3000L),
                 scoreDefinitionHSS.createScore(-30L, -200L, -3000L),
                 scoreDefinitionHSS.createScore(-10L, -400L, -3000L),
-                scoreDefinitionHSS.createScore(-10L, -400L, -5000L),
-                scoreDefinitionHSS.createScoreUninitialized(-7, -10L, -200L, -3000L));
+                scoreDefinitionHSS.createScore(-10L, -400L, -5000L));
     }
 
     @Test
     void compareToHSS() {
         PlannerAssert.assertCompareToOrder(
-                scoreDefinitionHSS.createScoreUninitialized(-8, 0L, 0L, 0L),
-                scoreDefinitionHSS.createScoreUninitialized(-7, -20L, -20L, -20L),
-                scoreDefinitionHSS.createScoreUninitialized(-7, -1L, -300L, -4000L),
-                scoreDefinitionHSS.createScoreUninitialized(-7, 0L, 0L, 0L),
-                scoreDefinitionHSS.createScoreUninitialized(-7, 0L, 0L, 1L),
-                scoreDefinitionHSS.createScoreUninitialized(-7, 0L, 1L, 0L),
                 scoreDefinitionHSS.createScore(-20L, Long.MIN_VALUE, Long.MIN_VALUE),
                 scoreDefinitionHSS.createScore(-20L, Long.MIN_VALUE, -20L),
                 scoreDefinitionHSS.createScore(-20L, Long.MIN_VALUE, 1L),

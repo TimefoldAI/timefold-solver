@@ -2,18 +2,18 @@ package ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance
 
 import java.util.Arrays;
 
-import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptor;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
 
     protected int lateAcceptanceSize = -1;
     protected boolean hillClimbingEnabled = true;
 
-    protected Score<?>[] previousScores;
+    protected InnerScore<?>[] previousScores;
     protected int lateScoreIndex = -1;
 
     public void setLateAcceptanceSize(int lateAcceptanceSize) {
@@ -32,7 +32,7 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
         validate();
-        previousScores = new Score[lateAcceptanceSize];
+        previousScores = new InnerScore[lateAcceptanceSize];
         var initialScore = phaseScope.getBestScore();
         Arrays.fill(previousScores, initialScore);
         lateScoreIndex = 0;
@@ -46,10 +46,10 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
-        var moveScore = moveScope.getScore();
-        var lateScore = previousScores[lateScoreIndex];
+        var moveScore = (InnerScore) moveScope.getScore();
+        var lateScore = (InnerScore) previousScores[lateScoreIndex];
         if (moveScore.compareTo(lateScore) >= 0) {
             return true;
         }

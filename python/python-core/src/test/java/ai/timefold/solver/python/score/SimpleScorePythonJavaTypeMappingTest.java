@@ -32,14 +32,7 @@ class SimpleScorePythonJavaTypeMappingTest {
 
         var initializedPythonScore = (PythonSimpleScore) typeMapping.toPythonObject(initializedScore);
 
-        assertThat(initializedPythonScore.init_score).isEqualTo(PythonInteger.ZERO);
         assertThat(initializedPythonScore.score).isEqualTo(PythonInteger.valueOf(10));
-
-        var uninitializedScore = SimpleLongScore.ofUninitialized(-5, 20);
-        var uninitializedPythonScore = (PythonSimpleScore) typeMapping.toPythonObject(uninitializedScore);
-
-        assertThat(uninitializedPythonScore.init_score).isEqualTo(PythonInteger.valueOf(-5));
-        assertThat(uninitializedPythonScore.score).isEqualTo(PythonInteger.valueOf(20));
     }
 
     @Test
@@ -48,13 +41,6 @@ class SimpleScorePythonJavaTypeMappingTest {
 
         var initializedJavaScore = typeMapping.toJavaObject(initializedScore);
 
-        assertThat(initializedJavaScore.initScore()).isEqualTo(0);
         assertThat(initializedJavaScore.score()).isEqualTo(10);
-
-        var uninitializedScore = PythonSimpleScore.ofUninitialized(-5, 20);
-        var uninitializedJavaScore = typeMapping.toJavaObject(uninitializedScore);
-
-        assertThat(uninitializedJavaScore.initScore()).isEqualTo(-5);
-        assertThat(uninitializedJavaScore.score()).isEqualTo(20);
     }
 }

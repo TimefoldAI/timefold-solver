@@ -1,5 +1,8 @@
 package ai.timefold.solver.core.impl.exhaustivesearch.node.comparator;
 
+import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
+
 import org.junit.jupiter.api.Test;
 
 class OptimisticBoundFirstNodeComparatorTest extends AbstractNodeComparatorTest {
@@ -10,7 +13,7 @@ class OptimisticBoundFirstNodeComparatorTest extends AbstractNodeComparatorTest 
         assertScoreCompareToOrder(comparator,
                 buildNode(1, "-300", 5, 41),
                 buildNode(1, "-300", 5, 40),
-                buildNode(1, "-10init/-200", 5, 40),
+                buildNode(1, InnerScore.ofUninitialized(SimpleScore.of(-200), 10), 5, 40),
                 buildNode(1, "-110", 5, 40),
                 buildNode(1, "-110", 7, 40),
                 buildNode(2, "-110", 5, 40),
@@ -23,7 +26,7 @@ class OptimisticBoundFirstNodeComparatorTest extends AbstractNodeComparatorTest 
                 buildNode(2, "-95", 0, 5, 40),
                 buildNode(2, "-95", 0, 7, 40),
                 buildNode(1, "-11", 1, 5, 40),
-                buildNode(1, "-1init/-10", 1, 5, 40));
+                buildNode(1, InnerScore.ofUninitialized(SimpleScore.of(-10), 1), 1, 5, 40));
     }
 
 }

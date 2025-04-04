@@ -34,19 +34,22 @@ class BestSolutionChangedEvent(Generic[Solution_]):
         - In real-time planning, not all ProblemChanges might be processed:
           check `is_every_problem_change_processed`.
 
-        - This `planning_solution` might be uninitialized: check `Score.init_score`.
+        - This `planning_solution` might be uninitialized: check `is_new_best_solution_initialized`.
 
         - This `planning_solution` might be infeasible: check `Score.is_feasible`.
 
+    is_new_best_solution_initialized : bool
+        Checks if the new best solutioon is initialized.
+
     is_every_problem_change_processed : bool
         Checks if all scheduled ProblemChanges have been processed.
-        This method is thread-safe.
 
     time_spent: timedelta
         The duration between starting solving and finding the current best solution.
     """
     new_best_score: 'Score'
     new_best_solution: Solution_
+    is_new_best_solution_initialized: bool
     is_every_problem_change_processed: bool
     time_spent: timedelta
 
@@ -237,6 +240,7 @@ class Solver(Generic[Solution_]):
                     event = BestSolutionChangedEvent(
                         new_best_score=to_python_score(event.getNewBestScore()),
                         new_best_solution=unwrap_python_like_object(event.getNewBestSolution()),
+                        is_new_best_solution_initialized=event.isNewBestSolutionInitialized(),
                         is_every_problem_change_processed=event.isEveryProblemChangeProcessed(),
                         time_spent=timedelta(milliseconds=event.getTimeMillisSpent())
                     )

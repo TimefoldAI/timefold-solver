@@ -90,6 +90,7 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
                 .isEqualToIgnoringWhitespace("""
                         {
                            "score" : "1hard/2soft",
+                           "initialized" : true,
                            "constraints" : [ {
                              "package" : "packageA",
                              "name" : "constraint2",
@@ -151,6 +152,7 @@ class TimefoldJacksonModuleTest extends AbstractJacksonRoundTripTest {
         return """
                 {
                   "score" : "2hard/4soft",
+                  "initialized" : true,
                   "constraints" : [ {
                     "package" : "package1",
                     "name" : "constraint1",

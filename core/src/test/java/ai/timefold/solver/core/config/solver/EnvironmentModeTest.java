@@ -12,7 +12,6 @@ import java.util.Random;
 import java.util.function.BooleanSupplier;
 import java.util.stream.IntStream;
 
-import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
@@ -31,6 +30,7 @@ import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.Corrup
 import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.CorruptedUndoShadowValue;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.impl.solver.random.RandomFactory;
@@ -290,9 +290,9 @@ class EnvironmentModeTest {
             scoreDirector.triggerVariableListeners();
             InnerScoreDirector<TestdataSolution, ?> innerScoreDirector =
                     (InnerScoreDirector<TestdataSolution, ?>) scoreDirector;
-            Score<?> score = innerScoreDirector.calculateScore();
+            InnerScore<?> score = innerScoreDirector.calculateScore();
 
-            if (!score.isSolutionInitialized()) {
+            if (!score.isInitialized()) {
                 throw new IllegalStateException("The solution (" + TestdataEntity.class.getSimpleName()
                         + ") was not fully initialized by CustomSolverPhase: ("
                         + this.getClass().getCanonicalName() + ")");

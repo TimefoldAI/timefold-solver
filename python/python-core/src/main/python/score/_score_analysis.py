@@ -319,6 +319,9 @@ class ScoreExplanation(Generic[Solution_]):
         If the specific Score type used by the `planning_solution`
         is required, retrieve it from the `solution` attribute.
 
+    is_initialized: bool
+        Whether the solution being analyzed was initialized.
+
     summary : str
         Returns a diagnostic text
         that explains the solution through the `ConstraintMatch` API
@@ -368,6 +371,10 @@ class ScoreExplanation(Generic[Solution_]):
             unwrap_python_like_object(e.getKey()): Indictment(e.getValue())
             for e in cast(set['_JavaMap.Entry'], self._delegate.getIndictmentMap().entrySet())
         }
+
+    @property
+    def is_initialized(self) -> bool:
+        return self._delegate.isInitialized()
 
     @property
     def score(self) -> 'Score':

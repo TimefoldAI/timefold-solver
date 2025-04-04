@@ -10,14 +10,12 @@ import ai.timefold.jpyinterpreter.types.PythonJavaTypeMapping;
 import ai.timefold.jpyinterpreter.types.PythonLikeType;
 import ai.timefold.jpyinterpreter.types.collections.PythonLikeTuple;
 import ai.timefold.jpyinterpreter.types.numeric.PythonDecimal;
-import ai.timefold.jpyinterpreter.types.numeric.PythonInteger;
 import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
 
 public final class BendableDecimalScorePythonJavaTypeMapping
         implements PythonJavaTypeMapping<PythonLikeObject, BendableBigDecimalScore> {
     private final PythonLikeType type;
     private final Constructor<?> constructor;
-    private final Field initScoreField;
     private final Field hardScoresField;
     private final Field softScoresField;
 
@@ -26,7 +24,6 @@ public final class BendableDecimalScorePythonJavaTypeMapping
         this.type = type;
         Class<?> clazz = type.getJavaClass();
         constructor = clazz.getConstructor();
-        initScoreField = clazz.getField("init_score");
         hardScoresField = clazz.getField("hard_scores");
         softScoresField = clazz.getField("soft_scores");
     }
@@ -53,7 +50,6 @@ public final class BendableDecimalScorePythonJavaTypeMapping
     public PythonLikeObject toPythonObject(BendableBigDecimalScore javaObject) {
         try {
             var instance = constructor.newInstance();
-            initScoreField.set(instance, PythonInteger.valueOf(javaObject.initScore()));
             hardScoresField.set(instance, toPythonList(javaObject.hardScores()));
             softScoresField.set(instance, toPythonList(javaObject.softScores()));
             return (PythonLikeObject) instance;
@@ -65,7 +61,6 @@ public final class BendableDecimalScorePythonJavaTypeMapping
     @Override
     public BendableBigDecimalScore toJavaObject(PythonLikeObject pythonObject) {
         try {
-            var initScore = ((PythonInteger) initScoreField.get(pythonObject)).value.intValue();
             var hardScoreTuple = ((PythonLikeTuple) hardScoresField.get(pythonObject));
             var softScoreTuple = ((PythonLikeTuple) softScoresField.get(pythonObject));
             BigDecimal[] hardScores = new BigDecimal[hardScoreTuple.size()];
@@ -76,11 +71,7 @@ public final class BendableDecimalScorePythonJavaTypeMapping
             for (int i = 0; i < softScores.length; i++) {
                 softScores[i] = ((PythonDecimal) softScoreTuple.get(i)).value;
             }
-            if (initScore == 0) {
-                return BendableBigDecimalScore.of(hardScores, softScores);
-            } else {
-                return BendableBigDecimalScore.ofUninitialized(initScore, hardScores, softScores);
-            }
+            return BendableBigDecimalScore.of(hardScores, softScores);
         } catch (IllegalAccessException e) {
             throw new IllegalStateException(e);
         }

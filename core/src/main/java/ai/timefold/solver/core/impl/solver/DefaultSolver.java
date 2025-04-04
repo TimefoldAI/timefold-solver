@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.ProblemFactChange;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
@@ -345,7 +344,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             InnerScoreDirector<Solution_, ?> scoreDirector = solverScope.getScoreDirector();
             assertCorrectSolutionState();
             // Everything is fine, proceed.
-            Score<?> score = scoreDirector.calculateScore();
+            var score = scoreDirector.calculateScore();
             basicPlumbingTermination.endProblemChangesProcessing();
             bestSolutionRecaller.updateBestSolutionAndFireIfInitialized(solverScope);
             logger.info("Real-time problem fact changes done: step total ({}), new best score ({}).",

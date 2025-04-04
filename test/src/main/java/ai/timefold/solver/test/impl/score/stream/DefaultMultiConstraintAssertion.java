@@ -6,6 +6,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
 
 public final class DefaultMultiConstraintAssertion<Solution_, Score_ extends Score<Score_>>
@@ -16,7 +17,7 @@ public final class DefaultMultiConstraintAssertion<Solution_, Score_ extends Sco
             Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
             Map<Object, Indictment<Score_>> indictmentMap) {
         super(constraintProvider, scoreDirectorFactory);
-        update(actualScore, constraintMatchTotalMap, indictmentMap);
+        update(InnerScore.of(actualScore), constraintMatchTotalMap, indictmentMap);
     }
 
     @Override

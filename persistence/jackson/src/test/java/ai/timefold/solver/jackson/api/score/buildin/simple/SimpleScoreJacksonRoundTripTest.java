@@ -15,8 +15,6 @@ class SimpleScoreJacksonRoundTripTest extends AbstractScoreJacksonRoundTripTest 
         assertSerializeAndDeserialize(null, new TestSimpleScoreWrapper(null));
         SimpleScore score = SimpleScore.of(1234);
         assertSerializeAndDeserialize(score, new TestSimpleScoreWrapper(score));
-        score = SimpleScore.ofUninitialized(-7, 1234);
-        assertSerializeAndDeserialize(score, new TestSimpleScoreWrapper(score));
     }
 
     public static class TestSimpleScoreWrapper extends TestScoreWrapper<SimpleScore> {

@@ -31,7 +31,8 @@ public class StepScoreSubSingleStatistic<Solution_>
     public void open(StatisticRegistry<Solution_> registry, Tags runTag) {
         registry.addListener(SolverMetric.STEP_SCORE,
                 timeMillisSpent -> registry.extractScoreFromMeters(SolverMetric.STEP_SCORE, runTag,
-                        score -> pointList.add(new StepScoreStatisticPoint(timeMillisSpent, score))));
+                        score -> pointList.add(new StepScoreStatisticPoint(timeMillisSpent, score,
+                                subSingleBenchmarkResult.isInitialized()))));
     }
 
     // ************************************************************************
@@ -40,14 +41,15 @@ public class StepScoreSubSingleStatistic<Solution_>
 
     @Override
     protected String getCsvHeader() {
-        return StatisticPoint.buildCsvLine("timeMillisSpent", "score");
+        return StatisticPoint.buildCsvLine("timeMillisSpent", "score", "initialized");
     }
 
     @Override
     protected StepScoreStatisticPoint createPointFromCsvLine(ScoreDefinition<?> scoreDefinition,
             List<String> csvLine) {
         return new StepScoreStatisticPoint(Long.parseLong(csvLine.get(0)),
-                scoreDefinition.parseScore(csvLine.get(1)));
+                scoreDefinition.parseScore(csvLine.get(1)),
+                Boolean.parseBoolean(csvLine.get(2)));
     }
 
 }

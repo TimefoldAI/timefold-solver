@@ -18,9 +18,6 @@ class HardSoftBigDecimalScoreJaxbAdapterTest extends AbstractScoreJaxbAdapterTes
 
         HardSoftBigDecimalScore score = HardSoftBigDecimalScore.of(new BigDecimal("1200.0021"), new BigDecimal("34.4300"));
         assertSerializeAndDeserialize(score, new TestHardSoftBigDecimalScoreWrapper(score));
-
-        score = HardSoftBigDecimalScore.ofUninitialized(-7, new BigDecimal("1200.0021"), new BigDecimal("34.4300"));
-        assertSerializeAndDeserialize(score, new TestHardSoftBigDecimalScoreWrapper(score));
     }
 
     @XmlRootElement

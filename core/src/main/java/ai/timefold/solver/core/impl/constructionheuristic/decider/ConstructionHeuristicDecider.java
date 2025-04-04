@@ -13,6 +13,7 @@ import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.move.generic.NoChangeMove;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
@@ -162,7 +163,7 @@ public class ConstructionHeuristicDecider<Solution_> {
         forager.addMove(moveScope);
         if (assertExpectedUndoMoveScore) {
             scoreDirector.assertExpectedUndoMoveScore(moveScope.getMove(),
-                    (Score_) moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore(),
+                    (InnerScore<Score_>) moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore(),
                     SolverLifecyclePoint.of(moveScope));
         }
         if (isLoggingEnabled()) {

@@ -77,7 +77,7 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
     public AbstractScoreInliner<Score_> fireAndForget(Object... facts) {
         var session = newSession(null, ConstraintMatchPolicy.ENABLED, true);
         Arrays.stream(facts).forEach(session::insert);
-        session.calculateScore(0);
+        session.calculateScore();
         return session.getScoreInliner();
     }
 
