@@ -28,7 +28,14 @@ public abstract class VariableDescriptor<Solution_> {
 
     protected VariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
-        if (variableMemberAccessor.getType().isPrimitive()) {
+        this(ordinal, entityDescriptor, variableMemberAccessor, false);
+    }
+
+    protected VariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
+            MemberAccessor variableMemberAccessor, boolean allowPrimitive) {
+        if (!allowPrimitive && variableMemberAccessor.getType().isPrimitive()) {
+            // uninitialized variables only apply to genuine planning variables;
+            // shadow variables can use primitives
             throw new IllegalStateException("""
                     The entityClass (%s) has a @%s annotated member (%s) that returns a primitive type (%s).
                     This means it cannot represent an uninitialized variable as null \
