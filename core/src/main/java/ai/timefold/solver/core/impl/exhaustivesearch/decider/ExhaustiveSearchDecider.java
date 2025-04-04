@@ -9,6 +9,7 @@ import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchStepS
 import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.ManualEntityMimicRecorder;
 import ai.timefold.solver.core.impl.move.MoveRepository;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
@@ -138,7 +139,7 @@ public final class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearc
         if (assertExpectedUndoMoveScore) {
             // In BRUTE_FORCE a stepScore can be null because it was not calculated
             if (stepScope.getStartingStepScore() != null) {
-                scoreDirector.assertExpectedUndoMoveScore(move, (Score_) stepScope.getStartingStepScore(),
+                scoreDirector.assertExpectedUndoMoveScore(move, (InnerScore<Score_>) stepScope.getStartingStepScore(),
                         executionPoint);
             }
         }
@@ -153,7 +154,7 @@ public final class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearc
         var lastLayer = moveNode.isLastLayer();
         if (!scoreBounderEnabled) {
             if (lastLayer) {
-                Score_ score = phaseScope.calculateScore();
+                InnerScore<Score_> score = (InnerScore<Score_>) phaseScope.calculateScore();
                 moveNode.setScore(score);
                 if (assertMoveScoreFromScratch) {
                     phaseScope.assertWorkingScoreFromScratch(score, moveNode.getMove());
@@ -163,24 +164,24 @@ public final class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearc
                 phaseScope.addExpandableNode(moveNode);
             }
         } else {
-            Score_ score = phaseScope.calculateScore();
-            moveNode.setScore(score);
+            var innerScore = phaseScope.calculateScore();
+            moveNode.setScore(innerScore);
             if (assertMoveScoreFromScratch) {
-                phaseScope.assertWorkingScoreFromScratch(score, moveNode.getMove());
+                phaseScope.assertWorkingScoreFromScratch(innerScore, moveNode.getMove());
             }
             if (lastLayer) {
                 // There is no point in bounding a fully initialized score
-                phaseScope.registerPessimisticBound(score);
-                bestSolutionRecaller.processWorkingSolutionDuringMove(score, stepScope);
+                phaseScope.registerPessimisticBound(innerScore);
+                bestSolutionRecaller.processWorkingSolutionDuringMove(innerScore, stepScope);
             } else {
                 var scoreDirector = phaseScope.getScoreDirector();
-                var optimisticBound = (Score_) scoreBounder.calculateOptimisticBound(scoreDirector, score);
+                var optimisticBound = (InnerScore<Score_>) scoreBounder.calculateOptimisticBound(scoreDirector, innerScore);
                 moveNode.setOptimisticBound(optimisticBound);
-                var bestPessimisticBound = (Score_) phaseScope.getBestPessimisticBound();
+                var bestPessimisticBound = (InnerScore<Score_>) phaseScope.getBestPessimisticBound();
                 if (optimisticBound.compareTo(bestPessimisticBound) > 0) {
                     // It's still worth investigating this node further (no need to prune it)
                     phaseScope.addExpandableNode(moveNode);
-                    var pessimisticBound = (Score_) scoreBounder.calculatePessimisticBound(scoreDirector, score);
+                    var pessimisticBound = scoreBounder.calculatePessimisticBound(scoreDirector, innerScore);
                     phaseScope.registerPessimisticBound(pessimisticBound);
                 }
             }

@@ -14,8 +14,6 @@ class BendableLongScoreJsonbAdapterTest extends AbstractScoreJsonbAdapterTest {
         assertSerializeAndDeserialize(null, new TestBendableLongScoreWrapper(null));
         BendableLongScore score = BendableLongScore.of(new long[] { 1000L, 200L }, new long[] { 34L });
         assertSerializeAndDeserialize(score, new TestBendableLongScoreWrapper(score));
-        score = BendableLongScore.ofUninitialized(-7, new long[] { 1000L, 200L }, new long[] { 34L });
-        assertSerializeAndDeserialize(score, new TestBendableLongScoreWrapper(score));
     }
 
     public static class TestBendableLongScoreWrapper extends TestScoreWrapper<BendableLongScore> {

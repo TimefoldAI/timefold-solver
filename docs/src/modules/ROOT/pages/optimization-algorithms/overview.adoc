@@ -846,7 +846,7 @@ class Solver(Generic[Solution_]):
 
 The ``BestSolutionChangedEvent``'s `newBestSolution` may not be initialized or feasible.
 Use the `isFeasible()` method on ``BestSolutionChangedEvent``'s new best `Score` to detect such cases.
-Use `Score.isSolutionInitialized()` instead of `Score.isFeasible()` to only ignore uninitialized solutions,
+Use the event's `isNewBestSolutionInitialized()` method to only ignore uninitialized solutions,
 but also accept infeasible solutions.
 
 [WARNING]

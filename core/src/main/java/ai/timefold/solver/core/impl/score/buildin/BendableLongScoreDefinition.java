@@ -54,7 +54,7 @@ public class BendableLongScoreDefinition extends AbstractBendableScoreDefinition
     }
 
     @Override
-    public BendableLongScore fromLevelNumbers(int initScore, Number[] levelNumbers) {
+    public BendableLongScore fromLevelNumbers(Number[] levelNumbers) {
         if (levelNumbers.length != getLevelsSize()) {
             throw new IllegalStateException("The levelNumbers (" + Arrays.toString(levelNumbers)
                     + ")'s length (" + levelNumbers.length + ") must equal the levelSize (" + getLevelsSize() + ").");
@@ -67,22 +67,17 @@ public class BendableLongScoreDefinition extends AbstractBendableScoreDefinition
         for (int i = 0; i < softLevelsSize; i++) {
             softScores[i] = (Long) levelNumbers[hardLevelsSize + i];
         }
-        return BendableLongScore.ofUninitialized(initScore, hardScores, softScores);
+        return BendableLongScore.of(hardScores, softScores);
     }
 
     public BendableLongScore createScore(long... scores) {
-        return createScoreUninitialized(0, scores);
-    }
-
-    public BendableLongScore createScoreUninitialized(int initScore, long... scores) {
         int levelsSize = hardLevelsSize + softLevelsSize;
         if (scores.length != levelsSize) {
             throw new IllegalArgumentException("The scores (" + Arrays.toString(scores)
                     + ")'s length (" + scores.length
                     + ") is not levelsSize (" + levelsSize + ").");
         }
-        return BendableLongScore.ofUninitialized(initScore,
-                Arrays.copyOfRange(scores, 0, hardLevelsSize),
+        return BendableLongScore.of(Arrays.copyOfRange(scores, 0, hardLevelsSize),
                 Arrays.copyOfRange(scores, hardLevelsSize, levelsSize));
     }
 
@@ -102,7 +97,7 @@ public class BendableLongScoreDefinition extends AbstractBendableScoreDefinition
                     ? score.softScore(i)
                     : Long.MAX_VALUE;
         }
-        return BendableLongScore.ofUninitialized(0, hardScores, softScores);
+        return BendableLongScore.of(hardScores, softScores);
     }
 
     @Override
@@ -121,13 +116,11 @@ public class BendableLongScoreDefinition extends AbstractBendableScoreDefinition
                     ? score.softScore(i)
                     : Long.MIN_VALUE;
         }
-        return BendableLongScore.ofUninitialized(0, hardScores, softScores);
+        return BendableLongScore.of(hardScores, softScores);
     }
 
     @Override
     public BendableLongScore divideBySanitizedDivisor(BendableLongScore dividend, BendableLongScore divisor) {
-        int dividendInitScore = dividend.initScore();
-        int divisorInitScore = sanitize(divisor.initScore());
         long[] hardScores = new long[hardLevelsSize];
         for (int i = 0; i < hardLevelsSize; i++) {
             hardScores[i] = divide(dividend.hardScore(i), sanitize(divisor.hardScore(i)));
@@ -137,7 +130,7 @@ public class BendableLongScoreDefinition extends AbstractBendableScoreDefinition
             softScores[i] = divide(dividend.softScore(i), sanitize(divisor.softScore(i)));
         }
         long[] levels = LongStream.concat(Arrays.stream(hardScores), Arrays.stream(softScores)).toArray();
-        return createScoreUninitialized(divide(dividendInitScore, divisorInitScore), levels);
+        return createScore(levels);
     }
 
     @Override

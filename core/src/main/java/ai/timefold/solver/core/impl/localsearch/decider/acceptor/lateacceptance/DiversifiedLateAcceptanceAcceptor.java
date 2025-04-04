@@ -2,21 +2,21 @@ package ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance
 
 import java.util.Arrays;
 
-import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptor;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
 
     // The worst score in the late elements list
-    protected Score<?> lateWorse;
+    protected InnerScore<?> lateWorse;
     // Number of occurrences of lateWorse in the late elements
     protected int lateWorseOccurrences = -1;
 
     protected int lateAcceptanceSize = -1;
 
-    protected Score<?>[] previousScores;
+    protected InnerScore<?>[] previousScores;
     protected int lateScoreIndex = -1;
 
     public void setLateAcceptanceSize(int lateAcceptanceSize) {
@@ -31,7 +31,7 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAccept
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
         validate();
-        previousScores = new Score[lateAcceptanceSize];
+        previousScores = new InnerScore[lateAcceptanceSize];
         var initialScore = phaseScope.getBestScore();
         Arrays.fill(previousScores, initialScore);
         lateScoreIndex = 0;
@@ -46,15 +46,15 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAccept
         }
     }
 
-    @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Override
     public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         // The acceptance and replacement strategies are based on the work:
         // Diversified Late Acceptance Search by M. Namazi, C. Sanderson, M. A. H. Newton, M. M. A. Polash, and A. Sattar
         var moveScore = moveScope.getScore();
-        var current = (Score) moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore();
+        var current = (InnerScore) moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore();
         var previous = current;
-        var accept = moveScore.compareTo(current) == 0 || moveScore.compareTo(lateWorse) > 0;
+        var accept = moveScore.compareTo(current) == 0 || moveScore.compareTo((InnerScore) lateWorse) > 0;
         if (accept) {
             current = moveScore;
         }
@@ -72,9 +72,9 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAccept
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private void updateLateScore(Score newScore) {
+    private void updateLateScore(InnerScore newScore) {
         var newScoreWorseCmp = newScore.compareTo(lateWorse);
-        var lateScore = (Score) previousScores[lateScoreIndex];
+        var lateScore = (InnerScore) previousScores[lateScoreIndex];
         var lateScoreEqual = lateScore.compareTo(lateWorse) == 0;
         if (newScoreWorseCmp < 0) {
             this.lateWorse = newScore;
@@ -90,7 +90,7 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAccept
             lateWorse = previousScores[0];
             lateWorseOccurrences = 1;
             for (var i = 1; i < lateAcceptanceSize; i++) {
-                Score previousScore = previousScores[i];
+                InnerScore previousScore = previousScores[i];
                 var scoreCmp = previousScore.compareTo(lateWorse);
                 if (scoreCmp < 0) {
                     lateWorse = previousScores[i];

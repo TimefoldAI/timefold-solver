@@ -32,7 +32,7 @@ class ValueTabuAcceptorTest {
         var v4 = new TestdataValue("v4");
 
         var solverScope = new SolverScope<>();
-        solverScope.setBestScore(SimpleScore.of(0));
+        solverScope.setInitializedBestScore(SimpleScore.ZERO);
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         acceptor.phaseStarted(phaseScope);
 
@@ -117,7 +117,7 @@ class ValueTabuAcceptorTest {
         var v4 = new TestdataValue("v4");
 
         var solverScope = new SolverScope<>();
-        solverScope.setBestScore(SimpleScore.of(0));
+        solverScope.setInitializedBestScore(SimpleScore.ZERO);
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         acceptor.phaseStarted(phaseScope);
 
@@ -214,7 +214,7 @@ class ValueTabuAcceptorTest {
         var v1 = new TestdataValue("v1");
 
         var solverScope = new SolverScope<>();
-        solverScope.setBestScore(SimpleScore.of(-100));
+        solverScope.setInitializedBestScore(SimpleScore.of(-100));
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         acceptor.phaseStarted(phaseScope);
 
@@ -247,7 +247,7 @@ class ValueTabuAcceptorTest {
         var move = mock(Move.class);
         when(move.extractPlanningValues()).thenReturn(Arrays.asList(values));
         var moveScope = new LocalSearchMoveScope<Solution_>(stepScope, 0, move);
-        moveScope.setScore(SimpleScore.of(score));
+        moveScope.setInitializedScore(SimpleScore.of(score));
         return moveScope;
     }
 

@@ -22,7 +22,7 @@ public final class StepScoreSubSingleStatisticTest
 
     @Override
     protected List<StepScoreStatisticPoint> getInputPoints() {
-        return Collections.singletonList(new StepScoreStatisticPoint(Long.MAX_VALUE, SimpleScore.of(Integer.MAX_VALUE)));
+        return Collections.singletonList(new StepScoreStatisticPoint(Long.MAX_VALUE, SimpleScore.of(Integer.MAX_VALUE), true));
     }
 
     @Override

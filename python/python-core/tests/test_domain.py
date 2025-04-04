@@ -146,7 +146,6 @@ def test_solve_nullable():
     solution = solver.solve(problem)
 
     assert solution.score.is_feasible
-    assert solution.score.init_score == 0
     assert solution.score.hard_score == 1
     assert solution.score.soft_score == 1
     assert solution.entities[0].value == v1 or solution.entities[0].value is None

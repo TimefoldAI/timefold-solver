@@ -21,7 +21,7 @@ class StrategicOscillationByLevelFinalistPodiumTest {
         var finalistPodium = new StrategicOscillationByLevelFinalistPodium<>(false);
 
         var solverScope = new SolverScope<>();
-        solverScope.setBestScore(HardSoftScore.of(-200, -5000));
+        solverScope.setInitializedBestScore(HardSoftScore.of(-200, -5000));
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         var lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
         lastCompletedStepScope.setScore(solverScope.getBestScore());
@@ -74,7 +74,7 @@ class StrategicOscillationByLevelFinalistPodiumTest {
         var finalistPodium = new StrategicOscillationByLevelFinalistPodium<>(true);
 
         var solverScope = new SolverScope<>();
-        solverScope.setBestScore(HardSoftScore.of(-200, -5000));
+        solverScope.setInitializedBestScore(HardSoftScore.of(-200, -5000));
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         var lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
         lastCompletedStepScope.setScore(solverScope.getBestScore());
@@ -129,7 +129,7 @@ class StrategicOscillationByLevelFinalistPodiumTest {
             int hardScore, int softScore) {
         Move<Solution_> move = mock(Move.class);
         var moveScope = new LocalSearchMoveScope<>(stepScope, 0, move);
-        moveScope.setScore(HardSoftScore.of(hardScore, softScore));
+        moveScope.setInitializedScore(HardSoftScore.of(hardScore, softScore));
         moveScope.setAccepted(true);
         return moveScope;
     }
@@ -139,7 +139,7 @@ class StrategicOscillationByLevelFinalistPodiumTest {
         var finalistPodium = new StrategicOscillationByLevelFinalistPodium<>(false);
 
         var solverScope = new SolverScope<>();
-        solverScope.setBestScore(HardMediumSoftScore.of(-200, -5000, -10));
+        solverScope.setInitializedBestScore(HardMediumSoftScore.of(-200, -5000, -10));
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         var lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
         lastCompletedStepScope.setScore(solverScope.getBestScore());
@@ -193,7 +193,7 @@ class StrategicOscillationByLevelFinalistPodiumTest {
 
         // Reference score is [0, -2, -3]
         var solverScope = new SolverScope<>();
-        solverScope.setBestScore(HardMediumSoftScore.of(-0, -2, -3));
+        solverScope.setInitializedBestScore(HardMediumSoftScore.of(-0, -2, -3));
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         var lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
         lastCompletedStepScope.setScore(solverScope.getBestScore());
@@ -216,7 +216,7 @@ class StrategicOscillationByLevelFinalistPodiumTest {
             int hardScore, int mediumScore, int softScore) {
         Move<Solution_> move = mock(Move.class);
         var moveScope = new LocalSearchMoveScope<>(stepScope, 0, move);
-        moveScope.setScore(HardMediumSoftScore.of(hardScore, mediumScore, softScore));
+        moveScope.setInitializedScore(HardMediumSoftScore.of(hardScore, mediumScore, softScore));
         moveScope.setAccepted(true);
         return moveScope;
     }

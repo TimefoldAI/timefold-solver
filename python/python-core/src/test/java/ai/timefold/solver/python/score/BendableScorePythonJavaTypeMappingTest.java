@@ -32,8 +32,6 @@ class BendableScorePythonJavaTypeMappingTest {
 
         var initializedPythonScore = (PythonBendableScore) typeMapping.toPythonObject(initializedScore);
 
-        assertThat(initializedPythonScore.init_score).isEqualTo(PythonInteger.ZERO);
-
         assertThat(initializedPythonScore.hard_scores.size()).isEqualTo(3);
         assertThat(initializedPythonScore.hard_scores.get(0)).isEqualTo(PythonInteger.valueOf(10));
         assertThat(initializedPythonScore.hard_scores.get(1)).isEqualTo(PythonInteger.valueOf(20));
@@ -42,20 +40,6 @@ class BendableScorePythonJavaTypeMappingTest {
         assertThat(initializedPythonScore.soft_scores.size()).isEqualTo(2);
         assertThat(initializedPythonScore.soft_scores.get(0)).isEqualTo(PythonInteger.valueOf(4));
         assertThat(initializedPythonScore.soft_scores.get(1)).isEqualTo(PythonInteger.valueOf(5));
-
-        var uninitializedScore = BendableLongScore.ofUninitialized(-300, new long[] { 10, 20, 30 }, new long[] { 4, 5 });
-        var uninitializedPythonScore = (PythonBendableScore) typeMapping.toPythonObject(uninitializedScore);
-
-        assertThat(uninitializedPythonScore.init_score).isEqualTo(PythonInteger.valueOf(-300));
-
-        assertThat(uninitializedPythonScore.hard_scores.size()).isEqualTo(3);
-        assertThat(uninitializedPythonScore.hard_scores.get(0)).isEqualTo(PythonInteger.valueOf(10));
-        assertThat(uninitializedPythonScore.hard_scores.get(1)).isEqualTo(PythonInteger.valueOf(20));
-        assertThat(uninitializedPythonScore.hard_scores.get(2)).isEqualTo(PythonInteger.valueOf(30));
-
-        assertThat(uninitializedPythonScore.soft_scores.size()).isEqualTo(2);
-        assertThat(uninitializedPythonScore.soft_scores.get(0)).isEqualTo(PythonInteger.valueOf(4));
-        assertThat(uninitializedPythonScore.soft_scores.get(1)).isEqualTo(PythonInteger.valueOf(5));
     }
 
     @Test
@@ -64,15 +48,7 @@ class BendableScorePythonJavaTypeMappingTest {
 
         var initializedJavaScore = typeMapping.toJavaObject(initializedScore);
 
-        assertThat(initializedJavaScore.initScore()).isEqualTo(0);
         assertThat(initializedJavaScore.hardScores()).containsExactly(10, 20, 30);
         assertThat(initializedJavaScore.softScores()).containsExactly(4, 5);
-
-        var uninitializedScore = PythonBendableScore.ofUninitialized(-300, new int[] { 10, 20, 30 }, new int[] { 4, 5 });
-        var uninitializedJavaScore = typeMapping.toJavaObject(uninitializedScore);
-
-        assertThat(uninitializedJavaScore.initScore()).isEqualTo(-300);
-        assertThat(uninitializedJavaScore.hardScores()).containsExactly(10, 20, 30);
-        assertThat(uninitializedJavaScore.softScores()).containsExactly(4, 5);
     }
 }

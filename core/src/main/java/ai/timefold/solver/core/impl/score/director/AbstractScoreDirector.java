@@ -157,7 +157,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         return workingSolution;
     }
 
-    protected int getWorkingInitScore() {
+    @Override
+    public int getWorkingInitScore() {
         return workingInitScore;
     }
 
@@ -277,7 +278,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public Score_ executeTemporaryMove(Move<Solution_> move, boolean assertMoveScoreFromScratch) {
+    public InnerScore<Score_> executeTemporaryMove(Move<Solution_> move, boolean assertMoveScoreFromScratch) {
         // This change and resulting before/after events will not be propagated to move stream session,
         // as they will be immediately undone.
         // Moves will only be re-generated once the solution has actually changed,
@@ -301,6 +302,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public boolean isWorkingEntityListDirty(long expectedWorkingEntityListRevision) {
         return workingEntityListRevision != expectedWorkingEntityListRevision;
+    }
+
+    @Override
+    public boolean isWorkingSolutionInitialized() {
+        return workingInitScore == 0;
     }
 
     protected void setWorkingEntityListDirty() {
@@ -610,19 +616,19 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     // ************************************************************************
 
     @Override
-    public void assertExpectedWorkingScore(Score_ expectedWorkingScore, Object completedAction) {
-        var workingScore = calculateScore();
+    public void assertExpectedWorkingScore(InnerScore<Score_> expectedWorkingScore, Object completedAction) {
+        InnerScore<Score_> workingScore = calculateScore();
         if (!expectedWorkingScore.equals(workingScore)) {
             throw new ScoreCorruptionException("""
                     Score corruption (%s): the expectedWorkingScore (%s) is not the workingScore (%s) \
                     after completedAction (%s)."""
-                    .formatted(expectedWorkingScore.subtract(workingScore).toShortString(),
+                    .formatted(expectedWorkingScore.initialized().subtract(workingScore.initialized()).toShortString(),
                             expectedWorkingScore, workingScore, completedAction));
         }
     }
 
     @Override
-    public void assertShadowVariablesAreNotStale(Score_ expectedWorkingScore, Object completedAction) {
+    public void assertShadowVariablesAreNotStale(InnerScore<Score_> expectedWorkingScore, Object completedAction) {
         var violationMessage = variableListenerSupport.createShadowVariablesViolationMessage();
         if (violationMessage != null) {
             throw new VariableCorruptionException("""
@@ -641,7 +647,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                     All the shadow variable values are still the same, so this is impossible.
                     Maybe run with %s if you haven't already, to fail earlier."""
                     .formatted(VariableListener.class.getSimpleName(),
-                            expectedWorkingScore.subtract(workingScore).toShortString(),
+                            expectedWorkingScore.initialized().subtract(workingScore.initialized()).toShortString(),
                             expectedWorkingScore, workingScore, VariableListener.class.getSimpleName(), completedAction,
                             EnvironmentMode.TRACKED_FULL_ASSERT));
         }
@@ -668,16 +674,16 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public void assertWorkingScoreFromScratch(Score_ workingScore, Object completedAction) {
+    public void assertWorkingScoreFromScratch(InnerScore<Score_> workingScore, Object completedAction) {
         assertScoreFromScratch(workingScore, completedAction, false);
     }
 
     @Override
-    public void assertPredictedScoreFromScratch(Score_ workingScore, Object completedAction) {
+    public void assertPredictedScoreFromScratch(InnerScore<Score_> workingScore, Object completedAction) {
         assertScoreFromScratch(workingScore, completedAction, true);
     }
 
-    private void assertScoreFromScratch(Score_ score, Object completedAction, boolean predicted) {
+    private void assertScoreFromScratch(InnerScore<Score_> innerScore, Object completedAction, boolean predicted) {
         var assertionScoreDirectorFactory = scoreDirectorFactory.getAssertionScoreDirectorFactory();
         if (assertionScoreDirectorFactory == null) {
             assertionScoreDirectorFactory = scoreDirectorFactory;
@@ -687,25 +693,26 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
                 .buildDerived()) {
             uncorruptedScoreDirector.setWorkingSolution(workingSolution);
-            var uncorruptedScore = uncorruptedScoreDirector.calculateScore();
-            if (!score.equals(uncorruptedScore)) {
+            var uncorruptedInnerScore = uncorruptedScoreDirector.calculateScore();
+            if (!innerScore.equals(uncorruptedInnerScore)) {
                 String scoreCorruptionAnalysis = buildScoreCorruptionAnalysis(uncorruptedScoreDirector, predicted);
                 String shadowVariableAnalysis = buildShadowVariableAnalysis(predicted);
                 throw new ScoreCorruptionException("""
                         Score corruption (%s): the %s (%s) is not the uncorruptedScore (%s) after completedAction (%s):
                         %s
                         %s"""
-                        .formatted(score.subtract(uncorruptedScore).toShortString(),
-                                predicted ? "predictedScore" : "workingScore", score, uncorruptedScore, completedAction,
-                                scoreCorruptionAnalysis, shadowVariableAnalysis));
+                        .formatted(innerScore.initialized().subtract(uncorruptedInnerScore.initialized()).toShortString(),
+                                predicted ? "predictedScore" : "workingScore", innerScore, uncorruptedInnerScore,
+                                completedAction, scoreCorruptionAnalysis, shadowVariableAnalysis));
             }
         }
     }
 
     @Override
-    public void assertExpectedUndoMoveScore(Move<Solution_> move, Score_ beforeMoveScore, SolverLifecyclePoint executionPoint) {
-        var undoScore = calculateScore();
-        if (Objects.equals(undoScore, beforeMoveScore)) {
+    public void assertExpectedUndoMoveScore(Move<Solution_> move, InnerScore<Score_> beforeMoveInnerScore,
+            SolverLifecyclePoint executionPoint) {
+        var undoInnerScore = calculateScore();
+        if (Objects.equals(undoInnerScore, beforeMoveInnerScore)) {
             return;
         }
         logger.trace("        Corruption detected. Diagnosing...");
@@ -716,9 +723,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
         // Precondition: assert that there are probably no corrupted constraints
         var undoMoveToString = "Undo(%s)".formatted(move);
-        assertWorkingScoreFromScratch(undoScore, undoMoveToString);
+        assertWorkingScoreFromScratch(undoInnerScore, undoMoveToString);
         // Precondition: assert that shadow variables aren't stale after doing the undoMove
-        assertShadowVariablesAreNotStale(undoScore, undoMoveToString);
+        assertShadowVariablesAreNotStale(undoInnerScore, undoMoveToString);
         var corruptionDiagnosis = "";
         if (trackingWorkingSolution) {
             // Recalculate all shadow variables from scratch.
@@ -736,7 +743,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
             corruptionDiagnosis = solutionTracker.buildScoreCorruptionMessage();
         }
-        var scoreDifference = undoScore.subtract(beforeMoveScore).toShortString();
+        var scoreDifference = undoInnerScore.initialized().subtract(beforeMoveInnerScore.initialized()).toShortString();
         var corruptionMessage = """
                 UndoMove corruption (%s):
                    the beforeMoveScore (%s) is not the undoScore (%s),
@@ -758,7 +765,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 3) If you use custom %ss,
                    check them for shadow variables that are used by score constraints
                    that could cause the scoreDifference (%s)."""
-                .formatted(scoreDifference, beforeMoveScore, undoScore, undoScore,
+                .formatted(scoreDifference, beforeMoveInnerScore, undoInnerScore, undoInnerScore,
                         corruptionDiagnosis,
                         EnvironmentMode.TRACKED_FULL_ASSERT, executionPoint,
                         move.getClass().getSimpleName(), move, undoMoveToString,
@@ -790,9 +797,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                             ConstraintMatchPolicy.DISABLED);
         }
 
-        var corruptedAnalysis = buildScoreAnalysis(ScoreAnalysisFetchPolicy.FETCH_ALL, ScoreAnalysisMode.SCORE_CORRUPTION);
-        var uncorruptedAnalysis = uncorruptedScoreDirector.buildScoreAnalysis(ScoreAnalysisFetchPolicy.FETCH_ALL,
-                ScoreAnalysisMode.SCORE_CORRUPTION);
+        var corruptedAnalysis = buildScoreAnalysis(ScoreAnalysisFetchPolicy.FETCH_ALL);
+        var uncorruptedAnalysis = uncorruptedScoreDirector.buildScoreAnalysis(ScoreAnalysisFetchPolicy.FETCH_ALL);
 
         var excessSet = new LinkedHashSet<MatchAnalysis<Score_>>();
         var missingSet = new LinkedHashSet<MatchAnalysis<Score_>>();

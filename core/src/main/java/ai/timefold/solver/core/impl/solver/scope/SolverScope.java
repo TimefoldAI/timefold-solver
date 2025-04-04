@@ -21,6 +21,7 @@ import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.AbstractSolver;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
@@ -37,7 +38,7 @@ public class SolverScope<Solution_> {
     // Solution-derived fields have the potential for race conditions.
     private final AtomicReference<ProblemSizeStatistics> problemSizeStatistics = new AtomicReference<>();
     private final AtomicReference<Solution_> bestSolution = new AtomicReference<>();
-    private final AtomicReference<Score<?>> bestScore = new AtomicReference<>();
+    private final AtomicReference<InnerScore<?>> bestScore = new AtomicReference<>();
     private final AtomicLong startingSystemTimeMillis = resetAtomicLongTimeMillis(new AtomicLong());
     private final AtomicLong endingSystemTimeMillis = resetAtomicLongTimeMillis(new AtomicLong());
 
@@ -172,7 +173,7 @@ public class SolverScope<Solution_> {
         return scoreDirector.getWorkingGenuineEntityCount();
     }
 
-    public Score calculateScore() {
+    public InnerScore<?> calculateScore() {
         return scoreDirector.calculateScore();
     }
 
@@ -180,11 +181,11 @@ public class SolverScope<Solution_> {
         scoreDirector.getScoreDirectorFactory().assertScoreFromScratch(solution);
     }
 
-    public Score getStartingInitializedScore() {
+    public Score<?> getStartingInitializedScore() {
         return startingInitializedScore;
     }
 
-    public void setStartingInitializedScore(Score startingInitializedScore) {
+    public void setStartingInitializedScore(Score<?> startingInitializedScore) {
         this.startingInitializedScore = startingInitializedScore;
     }
 
@@ -218,11 +219,16 @@ public class SolverScope<Solution_> {
         this.bestSolution.set(bestSolution);
     }
 
-    public Score getBestScore() {
+    public InnerScore<?> getBestScore() {
         return bestScore.get();
     }
 
-    public void setBestScore(Score bestScore) {
+    @SuppressWarnings("rawtypes")
+    public void setInitializedBestScore(Score<?> bestScore) {
+        setBestScore(InnerScore.of((Score) bestScore));
+    }
+
+    public void setBestScore(InnerScore<?> bestScore) {
         this.bestScore.set(bestScore);
     }
 
@@ -265,7 +271,7 @@ public class SolverScope<Solution_> {
     }
 
     public boolean isBestSolutionInitialized() {
-        return getBestScore().isSolutionInitialized();
+        return getBestScore().isInitialized();
     }
 
     public long calculateTimeMillisSpentUpToNow() {

@@ -13,6 +13,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.size.TabuS
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 /**
  * Abstract superclass for all Tabu Acceptors.
@@ -120,6 +121,7 @@ public abstract class AbstractTabuAcceptor<Solution_> extends AbstractAcceptor<S
         }
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         int maximumTabuStepIndex = locateMaximumTabuStepIndex(moveScope);
@@ -129,8 +131,7 @@ public abstract class AbstractTabuAcceptor<Solution_> extends AbstractAcceptor<S
         }
         if (aspirationEnabled) {
             // Natural comparison because shifting penalties don't apply
-            if (moveScope.getScore().compareTo(
-                    moveScope.getStepScope().getPhaseScope().getBestScore()) > 0) {
+            if (moveScope.getScore().compareTo((InnerScore) moveScope.getStepScope().getPhaseScope().getBestScore()) > 0) {
                 logger.trace("{}        Proposed move ({}) is tabu, but is accepted anyway due to aspiration.",
                         logIndentation,
                         moveScope.getMove());

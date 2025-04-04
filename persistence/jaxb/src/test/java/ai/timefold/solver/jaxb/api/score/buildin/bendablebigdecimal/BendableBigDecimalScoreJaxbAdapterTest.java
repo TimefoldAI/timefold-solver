@@ -20,11 +20,6 @@ class BendableBigDecimalScoreJaxbAdapterTest extends AbstractScoreJaxbAdapterTes
                 new BigDecimal[] { new BigDecimal("1000.0001"), new BigDecimal("200.0020") },
                 new BigDecimal[] { new BigDecimal("34.4300") });
         assertSerializeAndDeserialize(score, new TestBendableBigDecimalScoreWrapper(score));
-
-        score = BendableBigDecimalScore.ofUninitialized(-7,
-                new BigDecimal[] { new BigDecimal("1000.0001"), new BigDecimal("200.0020") },
-                new BigDecimal[] { new BigDecimal("34.4300") });
-        assertSerializeAndDeserialize(score, new TestBendableBigDecimalScoreWrapper(score));
     }
 
     @XmlRootElement

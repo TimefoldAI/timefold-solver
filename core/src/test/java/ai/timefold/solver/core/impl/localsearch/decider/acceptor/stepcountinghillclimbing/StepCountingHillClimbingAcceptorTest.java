@@ -19,7 +19,7 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         var acceptor = new StepCountingHillClimbingAcceptor<>(2, StepCountingHillClimbingType.STEP);
 
         var solverScope = new SolverScope<>();
-        solverScope.setBestScore(SimpleScore.of(-1000));
+        solverScope.setInitializedBestScore(SimpleScore.of(-1000));
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         var lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
         lastCompletedStepScope.setScore(solverScope.getBestScore());
@@ -130,7 +130,7 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         var acceptor = new StepCountingHillClimbingAcceptor<>(2, StepCountingHillClimbingType.EQUAL_OR_IMPROVING_STEP);
 
         var solverScope = new SolverScope<>();
-        solverScope.setBestScore(SimpleScore.of(-1000));
+        solverScope.setInitializedBestScore(SimpleScore.of(-1000));
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         var lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
         lastCompletedStepScope.setScore(solverScope.getBestScore());
@@ -241,7 +241,7 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         var acceptor = new StepCountingHillClimbingAcceptor<>(2, StepCountingHillClimbingType.IMPROVING_STEP);
 
         var solverScope = new SolverScope<>();
-        solverScope.setBestScore(SimpleScore.of(-1000));
+        solverScope.setInitializedBestScore(SimpleScore.of(-1000));
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         var lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
         lastCompletedStepScope.setScore(solverScope.getBestScore());

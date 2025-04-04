@@ -47,7 +47,8 @@ public class PickedMoveStepScoreDiffStatistic<Solution_> implements SolverStatis
 
     private static class PickedMoveStepScoreDiffStatisticListener<Solution_, Score_ extends Score<Score_>>
             extends PhaseLifecycleListenerAdapter<Solution_> {
-        private Score_ oldStepScore = null;
+
+        private Score_ oldStepScore = null; // Guaranteed local search; no need for InnerScore.
         private final ScoreDefinition<Score_> scoreDefinition;
         private final Map<Tags, List<AtomicReference<Number>>> tagsToMoveScoreMap = new ConcurrentHashMap<>();
 
@@ -55,10 +56,11 @@ public class PickedMoveStepScoreDiffStatistic<Solution_> implements SolverStatis
             this.scoreDefinition = scoreDefinition;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
             if (phaseScope instanceof LocalSearchPhaseScope) {
-                oldStepScore = phaseScope.getStartingScore();
+                oldStepScore = (Score_) phaseScope.getStartingScore().initialized();
             }
         }
 
@@ -79,7 +81,7 @@ public class PickedMoveStepScoreDiffStatistic<Solution_> implements SolverStatis
         @SuppressWarnings("unchecked")
         private void localSearchStepEnded(LocalSearchStepScope<Solution_> stepScope) {
             String moveType = stepScope.getStep().describe();
-            Score_ newStepScore = (Score_) stepScope.getScore();
+            Score_ newStepScore = (Score_) stepScope.getScore().initialized();
             Score_ stepScoreDiff = newStepScore.subtract(oldStepScore);
             oldStepScore = newStepScore;
 

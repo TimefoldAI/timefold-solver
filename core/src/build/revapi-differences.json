@@ -151,6 +151,90 @@
           "oldValue": "{\"localSearchType\", \"moveSelectorConfig\", \"acceptorConfig\", \"foragerConfig\"}",
           "newValue": "{\"localSearchType\", \"moveSelectorConfig\", \"moveProvidersClass\", \"acceptorConfig\", \"foragerConfig\"}",
           "justification": "Move Streams arrives as a preview feature."
+        },
+        {
+          "ignore": true,
+          "code": "java.method.returnTypeErasureChanged",
+          "old": "method ai.timefold.solver.core.api.score.buildin.bendable.BendableScore ai.timefold.solver.core.api.score.buildin.bendable.BendableScore::withInitScore(int)",
+          "new": "method Score_ ai.timefold.solver.core.api.score.Score<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::withInitScore(int) @ ai.timefold.solver.core.api.score.buildin.bendable.BendableScore",
+          "justification": "Init scores are no longer supported"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.returnTypeErasureChanged",
+          "old": "method ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore::withInitScore(int)",
+          "new": "method Score_ ai.timefold.solver.core.api.score.Score<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::withInitScore(int) @ ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore",
+          "justification": "Init scores are no longer supported"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.returnTypeErasureChanged",
+          "old": "method ai.timefold.solver.core.api.score.buildin.bendablelong.BendableLongScore ai.timefold.solver.core.api.score.buildin.bendablelong.BendableLongScore::withInitScore(int)",
+          "new": "method Score_ ai.timefold.solver.core.api.score.Score<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::withInitScore(int) @ ai.timefold.solver.core.api.score.buildin.bendablelong.BendableLongScore",
+          "justification": "Init scores are no longer supported"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.returnTypeErasureChanged",
+          "old": "method ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore::withInitScore(int)",
+          "new": "method Score_ ai.timefold.solver.core.api.score.Score<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::withInitScore(int) @ ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore",
+          "justification": "Init scores are no longer supported"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.returnTypeErasureChanged",
+          "old": "method ai.timefold.solver.core.api.score.buildin.hardmediumsoftbigdecimal.HardMediumSoftBigDecimalScore ai.timefold.solver.core.api.score.buildin.hardmediumsoftbigdecimal.HardMediumSoftBigDecimalScore::withInitScore(int)",
+          "new": "method Score_ ai.timefold.solver.core.api.score.Score<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::withInitScore(int) @ ai.timefold.solver.core.api.score.buildin.hardmediumsoftbigdecimal.HardMediumSoftBigDecimalScore",
+          "justification": "Init scores are no longer supported"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.returnTypeErasureChanged",
+          "old": "method ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore::withInitScore(int)",
+          "new": "method Score_ ai.timefold.solver.core.api.score.Score<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::withInitScore(int) @ ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore",
+          "justification": "Init scores are no longer supported"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.returnTypeErasureChanged",
+          "old": "method ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore::withInitScore(int)",
+          "new": "method Score_ ai.timefold.solver.core.api.score.Score<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::withInitScore(int) @ ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore",
+          "justification": "Init scores are no longer supported"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.returnTypeErasureChanged",
+          "old": "method ai.timefold.solver.core.api.score.buildin.hardsoftbigdecimal.HardSoftBigDecimalScore ai.timefold.solver.core.api.score.buildin.hardsoftbigdecimal.HardSoftBigDecimalScore::withInitScore(int)",
+          "new": "method Score_ ai.timefold.solver.core.api.score.Score<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::withInitScore(int) @ ai.timefold.solver.core.api.score.buildin.hardsoftbigdecimal.HardSoftBigDecimalScore",
+          "justification": "Init scores are no longer supported"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.returnTypeErasureChanged",
+          "old": "method ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore::withInitScore(int)",
+          "new": "method Score_ ai.timefold.solver.core.api.score.Score<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::withInitScore(int) @ ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore",
+          "justification": "Init scores are no longer supported"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.returnTypeErasureChanged",
+          "old": "method ai.timefold.solver.core.api.score.buildin.simple.SimpleScore ai.timefold.solver.core.api.score.buildin.simple.SimpleScore::withInitScore(int)",
+          "new": "method Score_ ai.timefold.solver.core.api.score.Score<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::withInitScore(int) @ ai.timefold.solver.core.api.score.buildin.simple.SimpleScore",
+          "justification": "Init scores are no longer supported"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.returnTypeErasureChanged",
+          "old": "method ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore::withInitScore(int)",
+          "new": "method Score_ ai.timefold.solver.core.api.score.Score<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::withInitScore(int) @ ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore",
+          "justification": "Init scores are no longer supported"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.returnTypeErasureChanged",
+          "old": "method ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore::withInitScore(int)",
+          "new": "method Score_ ai.timefold.solver.core.api.score.Score<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::withInitScore(int) @ ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore",
+          "justification": "Init scores are no longer supported"
         }
       ]
     }

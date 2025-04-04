@@ -19,6 +19,7 @@ public final class ScoreAnalysisJacksonSerializer<Score_ extends Score<Score_>> 
     public void serialize(ScoreAnalysis<Score_> value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         gen.writeStartObject();
         gen.writeStringField("score", value.score().toString());
+        gen.writeBooleanField("initialized", value.isSolutionInitialized());
 
         List<Map<String, Object>> result = new ArrayList<>();
         value.constraintMap().forEach((constraintRef, constraintAnalysis) -> {

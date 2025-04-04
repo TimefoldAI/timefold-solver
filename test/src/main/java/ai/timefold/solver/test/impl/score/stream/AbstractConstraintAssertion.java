@@ -6,6 +6,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
 
@@ -21,7 +22,7 @@ public abstract class AbstractConstraintAssertion<Solution_, Score_ extends Scor
 
     abstract Solution_ getSolution();
 
-    abstract void update(Score_ score, Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
+    abstract void update(InnerScore<Score_> score, Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
             Map<Object, Indictment<Score_>> indictmentMap);
 
     /**

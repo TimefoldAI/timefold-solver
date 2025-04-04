@@ -9,7 +9,6 @@ import ai.timefold.solver.core.api.score.Score;
 
 public final class ScoreUtil {
 
-    public static final String INIT_LABEL = "init";
     public static final String HARD_LABEL = "hard";
     public static final String MEDIUM_LABEL = "medium";
     public static final String SOFT_LABEL = "soft";
@@ -19,18 +18,7 @@ public final class ScoreUtil {
         String[] scoreTokens = new String[levelSuffixes.length + 1];
         String[] suffixedScoreTokens = scoreString.split("/");
         int startIndex;
-        if (suffixedScoreTokens.length == levelSuffixes.length + 1) {
-            String suffixedScoreToken = suffixedScoreTokens[0];
-            if (!suffixedScoreToken.endsWith(INIT_LABEL)) {
-                throw new IllegalArgumentException("The scoreString (" + scoreString
-                        + ") for the scoreClass (" + scoreClass.getSimpleName()
-                        + ") doesn't follow the correct pattern (" + buildScorePattern(false, levelSuffixes) + "):"
-                        + " the suffixedScoreToken (" + suffixedScoreToken
-                        + ") does not end with levelSuffix (" + INIT_LABEL + ").");
-            }
-            scoreTokens[0] = suffixedScoreToken.substring(0, suffixedScoreToken.length() - INIT_LABEL.length());
-            startIndex = 1;
-        } else if (suffixedScoreTokens.length == levelSuffixes.length) {
+        if (suffixedScoreTokens.length == levelSuffixes.length) {
             scoreTokens[0] = "0";
             startIndex = 0;
         } else {
@@ -54,16 +42,6 @@ public final class ScoreUtil {
             scoreTokens[1 + i] = suffixedScoreToken.substring(0, suffixedScoreToken.length() - levelSuffix.length());
         }
         return scoreTokens;
-    }
-
-    public static int parseInitScore(Class<? extends Score<?>> scoreClass, String scoreString, String initScoreString) {
-        try {
-            return Integer.parseInt(initScoreString);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("The scoreString (" + scoreString
-                    + ") for the scoreClass (" + scoreClass.getSimpleName() + ") has a initScoreString ("
-                    + initScoreString + ") which is not a valid integer.", e);
-        }
     }
 
     public static int parseLevelAsInt(Class<? extends Score<?>> scoreClass, String scoreString, String levelString) {
@@ -129,20 +107,9 @@ public final class ScoreUtil {
         return scorePattern.toString();
     }
 
-    public static String getInitPrefix(int initScore) {
-        if (initScore == 0) {
-            return "";
-        }
-        return initScore + INIT_LABEL + "/";
-    }
-
     public static <Score_ extends Score<Score_>> String buildShortString(Score<Score_> score, Predicate<Number> notZero,
             String... levelLabels) {
-        int initScore = score.initScore();
         StringBuilder shortString = new StringBuilder();
-        if (initScore != 0) {
-            shortString.append(initScore).append(INIT_LABEL);
-        }
         int i = 0;
         for (Number levelNumber : score.toLevelNumbers()) {
             if (notZero.test(levelNumber)) {
@@ -164,14 +131,8 @@ public final class ScoreUtil {
             String scoreString) {
         String[][] scoreTokens = new String[3][];
         scoreTokens[0] = new String[1];
+        scoreTokens[0][0] = "0";
         int startIndex = 0;
-        int initEndIndex = scoreString.indexOf(INIT_LABEL, startIndex);
-        if (initEndIndex >= 0) {
-            scoreTokens[0][0] = scoreString.substring(startIndex, initEndIndex);
-            startIndex = initEndIndex + INIT_LABEL.length() + "/".length();
-        } else {
-            scoreTokens[0][0] = "0";
-        }
         for (int i = 0; i < LEVEL_SUFFIXES.length; i++) {
             String levelSuffix = LEVEL_SUFFIXES[i];
             int endIndex = scoreString.indexOf(levelSuffix, startIndex);
@@ -208,11 +169,7 @@ public final class ScoreUtil {
 
     public static <Score_ extends IBendableScore<Score_>> String buildBendableShortString(IBendableScore<Score_> score,
             Predicate<Number> notZero) {
-        int initScore = score.initScore();
         StringBuilder shortString = new StringBuilder();
-        if (initScore != 0) {
-            shortString.append(initScore).append(INIT_LABEL);
-        }
         Number[] levelNumbers = score.toLevelNumbers();
         int hardLevelsSize = score.hardLevelsSize();
         if (Arrays.stream(levelNumbers).limit(hardLevelsSize).anyMatch(notZero)) {

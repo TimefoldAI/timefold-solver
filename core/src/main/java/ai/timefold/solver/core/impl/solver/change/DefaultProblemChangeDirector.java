@@ -4,8 +4,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.change.ProblemChangeDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
@@ -104,9 +102,4 @@ public final class DefaultProblemChangeDirector<Solution_> implements ProblemCha
         scoreDirector.triggerVariableListeners();
     }
 
-    public Score<?> doProblemChange(ProblemChange<Solution_> problemChange) {
-        problemChange.doChange(scoreDirector.getWorkingSolution(), this);
-        updateShadowVariables();
-        return scoreDirector.calculateScore();
-    }
 }

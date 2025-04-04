@@ -6,7 +6,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.score.Score;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
@@ -159,7 +158,6 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
          *        and the solver will terminate as well, without launching any optimizing phase.
          *        Therefore, the solution captured with {@link SolverJobBuilder#withBestSolutionConsumer(Consumer)}
          *        will likely be unchanged from this one.
-         * @see Score#initScore() Score Javadoc explains partial initialization and its consequences.
          */
         void accept(Solution_ solution, boolean isTerminatedEarly);
 

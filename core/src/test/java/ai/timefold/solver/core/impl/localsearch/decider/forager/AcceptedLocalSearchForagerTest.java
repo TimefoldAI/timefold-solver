@@ -221,19 +221,19 @@ class AcceptedLocalSearchForagerTest {
         solverScope.setScoreDirector(scoreDirector);
         Random workingRandom = new TestRandom(1, 1);
         solverScope.setWorkingRandom(workingRandom);
-        solverScope.setBestScore(SimpleScore.of(-10));
+        solverScope.setInitializedBestScore(SimpleScore.of(-10));
         solverScope.setSolverMetricSet(EnumSet.of(SolverMetric.MOVE_EVALUATION_COUNT));
         LocalSearchStepScope<TestdataSolution> lastLocalSearchStepScope = new LocalSearchStepScope<>(phaseScope);
-        lastLocalSearchStepScope.setScore(SimpleScore.of(-100));
+        lastLocalSearchStepScope.setInitializedScore(SimpleScore.of(-100));
         phaseScope.setLastCompletedStepScope(lastLocalSearchStepScope);
         return phaseScope;
     }
 
-    public static LocalSearchMoveScope<TestdataSolution> createMoveScope(LocalSearchStepScope<TestdataSolution> stepScope,
+    private static LocalSearchMoveScope<TestdataSolution> createMoveScope(LocalSearchStepScope<TestdataSolution> stepScope,
             SimpleScore score, boolean accepted) {
         LocalSearchMoveScope<TestdataSolution> moveScope =
                 new LocalSearchMoveScope<>(stepScope, 0, new LegacyMoveAdapter<>(new DummyMove()));
-        moveScope.setScore(score);
+        moveScope.setInitializedScore(score);
         moveScope.setAccepted(accepted);
         return moveScope;
     }

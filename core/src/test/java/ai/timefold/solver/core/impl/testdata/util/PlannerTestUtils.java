@@ -31,6 +31,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
@@ -126,7 +127,7 @@ public final class PlannerTestUtils {
         } else {
             var mockedScoreDirector = mock(InnerScoreDirector.class,
                     AdditionalAnswers.delegatesTo(scoreDirectorFactory.buildScoreDirector()));
-            doReturn(SimpleScore.of(0)).when(mockedScoreDirector).calculateScore();
+            doReturn(InnerScore.of(SimpleScore.ZERO)).when(mockedScoreDirector).calculateScore();
             return mockedScoreDirector;
         }
     }

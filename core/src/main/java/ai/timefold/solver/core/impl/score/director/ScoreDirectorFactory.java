@@ -38,7 +38,7 @@ public interface ScoreDirectorFactory<Solution_, Score_ extends Score<Score_>> {
      * it would be equal to the score of that parameter.
      *
      * @param solution never null
-     * @see InnerScoreDirector#assertWorkingScoreFromScratch(Score, Object)
+     * @see InnerScoreDirector#assertWorkingScoreFromScratch(InnerScore, Object)
      */
     void assertScoreFromScratch(Solution_ solution);
 

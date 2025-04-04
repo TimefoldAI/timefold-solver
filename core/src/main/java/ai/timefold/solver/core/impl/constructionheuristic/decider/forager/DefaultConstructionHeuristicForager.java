@@ -4,6 +4,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.constructionheuristic.decider.forager.ConstructionHeuristicPickEarlyType;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicMoveScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 public class DefaultConstructionHeuristicForager<Solution_> extends AbstractConstructionHeuristicForager<Solution_> {
 
@@ -42,38 +43,40 @@ public class DefaultConstructionHeuristicForager<Solution_> extends AbstractCons
         moveScope.getStepScope().getPhaseScope()
                 .addMoveEvaluationCount(moveScope.getMove(), 1L);
         checkPickEarly(moveScope);
-        if (maxScoreMoveScope == null || moveScope.getScore().compareTo(maxScoreMoveScope.getScore()) > 0) {
+        if (maxScoreMoveScope == null || moveScope.getScore().compareTo((InnerScore) maxScoreMoveScope.getScore()) > 0) {
             maxScoreMoveScope = moveScope;
         }
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected void checkPickEarly(ConstructionHeuristicMoveScope<Solution_> moveScope) {
         switch (pickEarlyType) {
-            case NEVER:
-                break;
-            case FIRST_NON_DETERIORATING_SCORE:
+            case NEVER -> {
+            }
+            case FIRST_NON_DETERIORATING_SCORE -> {
                 Score lastStepScore = moveScope.getStepScope().getPhaseScope()
-                        .getLastCompletedStepScope().getScore();
-                if (moveScope.getScore().withInitScore(0).compareTo(lastStepScore.withInitScore(0)) >= 0) {
+                        .getLastCompletedStepScope().getScore().initialized();
+                Score moveScore = moveScope.getScore().initialized();
+                if (moveScore.compareTo(lastStepScore) >= 0) {
                     earlyPickedMoveScope = moveScope;
                 }
-                break;
-            case FIRST_FEASIBLE_SCORE:
-                if (moveScope.getScore().withInitScore(0).isFeasible()) {
+            }
+            case FIRST_FEASIBLE_SCORE -> {
+                if (moveScope.getScore().initialized().isFeasible()) {
                     earlyPickedMoveScope = moveScope;
                 }
-                break;
-            case FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD:
-                Score lastStepScore2 = moveScope.getStepScope().getPhaseScope()
-                        .getLastCompletedStepScope().getScore();
-                Score lastStepScoreDifference = moveScope.getScore().withInitScore(0)
-                        .subtract(lastStepScore2.withInitScore(0));
+            }
+            case FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD -> {
+                Score lastStepScore = moveScope.getStepScope().getPhaseScope()
+                        .getLastCompletedStepScope().getScore().initialized();
+                Score moveScore = moveScope.getScore().initialized();
+                Score lastStepScoreDifference = moveScore.subtract(lastStepScore);
                 if (lastStepScoreDifference.isFeasible()) {
                     earlyPickedMoveScope = moveScope;
                 }
-                break;
-            default:
-                throw new IllegalStateException("The pickEarlyType (" + pickEarlyType + ") is not implemented.");
+            }
+            default ->
+                throw new IllegalStateException("The pickEarlyType (%s) is not implemented.".formatted(pickEarlyType));
         }
     }
 

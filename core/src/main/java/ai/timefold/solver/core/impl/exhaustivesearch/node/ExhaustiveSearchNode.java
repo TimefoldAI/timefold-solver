@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.exhaustivesearch.node;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.bounder.ScoreBounder;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 public class ExhaustiveSearchNode {
@@ -14,13 +15,13 @@ public class ExhaustiveSearchNode {
     // The move to get from the parent to this node
     private Move move;
     private Move undoMove;
-    private Score score;
+    private InnerScore<?> score;
     /**
      * Never worse than the best possible score a leaf node below this node might lead to.
      *
-     * @see ScoreBounder#calculateOptimisticBound(ScoreDirector, Score)
+     * @see ScoreBounder#calculateOptimisticBound(ScoreDirector, InnerScore)
      */
-    private Score optimisticBound;
+    private InnerScore<?> optimisticBound;
     private boolean expandable = false;
 
     public ExhaustiveSearchNode(ExhaustiveSearchLayer layer, ExhaustiveSearchNode parent) {
@@ -57,19 +58,24 @@ public class ExhaustiveSearchNode {
         this.undoMove = undoMove;
     }
 
-    public Score getScore() {
+    public InnerScore<?> getScore() {
         return score;
     }
 
-    public void setScore(Score score) {
+    @SuppressWarnings("rawtypes")
+    public void setInitializedScore(Score<?> score) {
+        setScore(InnerScore.of((Score) score));
+    }
+
+    public void setScore(InnerScore<?> score) {
         this.score = score;
     }
 
-    public Score getOptimisticBound() {
+    public InnerScore<?> getOptimisticBound() {
         return optimisticBound;
     }
 
-    public void setOptimisticBound(Score optimisticBound) {
+    public void setOptimisticBound(InnerScore<?> optimisticBound) {
         this.optimisticBound = optimisticBound;
     }
 

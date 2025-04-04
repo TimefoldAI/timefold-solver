@@ -7,26 +7,20 @@ from timefold.solver.score import *
 from typing import Annotated
 
 def test_simple_score():
-    uninit_score = SimpleScore.of_uninitialized(-2, 10)
     score = SimpleScore.of(10)
 
-    assert str(uninit_score) == '-2init/10'
     assert str(score) == '10'
 
-    assert SimpleScore.parse('-2init/10') == uninit_score
     assert SimpleScore.parse('10') == score
 
 
 def test_hard_soft_score():
-    uninit_score = HardSoftScore.of_uninitialized(-3, 100, 20)
     score = HardSoftScore.of(100, 20)
     soft_score = HardSoftScore.of_soft(3)
     hard_score = HardSoftScore.of_hard(3)
 
-    assert str(uninit_score) == '-3init/100hard/20soft'
     assert str(score) == '100hard/20soft'
 
-    assert HardSoftScore.parse('-3init/100hard/20soft') == uninit_score
     assert HardSoftScore.parse('100hard/20soft') == score
 
     assert soft_score == HardSoftScore(0, 3)
@@ -34,16 +28,13 @@ def test_hard_soft_score():
 
 
 def test_hard_medium_soft_score():
-    uninit_score = HardMediumSoftScore.of_uninitialized(-4, 1000, 200, 30)
     score = HardMediumSoftScore.of(1000, 200, 30)
     soft_score = HardMediumSoftScore.of_soft(3)
     medium_score = HardMediumSoftScore.of_medium(3)
     hard_score = HardMediumSoftScore.of_hard(3)
 
-    assert str(uninit_score) == '-4init/1000hard/200medium/30soft'
     assert str(score) == '1000hard/200medium/30soft'
 
-    assert HardMediumSoftScore.parse('-4init/1000hard/200medium/30soft') == uninit_score
     assert HardMediumSoftScore.parse('1000hard/200medium/30soft') == score
 
     assert soft_score == HardMediumSoftScore(0, 0, 3)
@@ -52,15 +43,12 @@ def test_hard_medium_soft_score():
 
 
 def test_bendable_score():
-    uninit_score = BendableScore.of_uninitialized(-500, (1, -2, 3), (-30, 40))
     score = BendableScore.of((1, -2, 3), (-30, 40))
     soft_score = BendableScore.of_soft(3, 2, 1, 5)
     hard_score = BendableScore.of_hard(3, 2, 1, 5)
 
-    assert str(uninit_score) == '-500init/[1/-2/3]hard/[-30/40]soft'
     assert str(score) == '[1/-2/3]hard/[-30/40]soft'
 
-    assert BendableScore.parse('-500init/[1/-2/3]hard/[-30/40]soft') == uninit_score
     assert BendableScore.parse('[1/-2/3]hard/[-30/40]soft') == score
 
     assert soft_score == BendableScore((0, 0, 0), (0, 5))
@@ -68,26 +56,20 @@ def test_bendable_score():
 
 
 def test_simple_decimal_score():
-    uninit_score = SimpleDecimalScore.of_uninitialized(-2, Decimal('10.1'))
     score = SimpleDecimalScore.of(Decimal('10.1'))
 
-    assert str(uninit_score) == '-2init/10.1'
     assert str(score) == '10.1'
 
-    assert SimpleDecimalScore.parse('-2init/10.1') == uninit_score
     assert SimpleDecimalScore.parse('10.1') == score
 
 
 def test_hard_soft_decimal_score():
-    uninit_score = HardSoftDecimalScore.of_uninitialized(-3, Decimal('100.1'), Decimal('20.2'))
     score = HardSoftDecimalScore.of(Decimal('100.1'), Decimal('20.2'))
     soft_score = HardSoftDecimalScore.of_soft(Decimal(3))
     hard_score = HardSoftDecimalScore.of_hard(Decimal(3))
 
-    assert str(uninit_score) == '-3init/100.1hard/20.2soft'
     assert str(score) == '100.1hard/20.2soft'
 
-    assert HardSoftDecimalScore.parse('-3init/100.1hard/20.2soft') == uninit_score
     assert HardSoftDecimalScore.parse('100.1hard/20.2soft') == score
 
     assert soft_score == HardSoftDecimalScore(Decimal(0), Decimal(3))
@@ -95,16 +77,13 @@ def test_hard_soft_decimal_score():
 
 
 def test_hard_medium_soft_decimal_score():
-    uninit_score = HardMediumSoftDecimalScore.of_uninitialized(-4, Decimal('1000.1'), Decimal('200.2'), Decimal('30.3'))
     score = HardMediumSoftDecimalScore.of(Decimal('1000.1'), Decimal('200.2'), Decimal('30.3'))
     soft_score = HardMediumSoftDecimalScore.of_soft(Decimal(3))
     medium_score = HardMediumSoftDecimalScore.of_medium(Decimal(3))
     hard_score = HardMediumSoftDecimalScore.of_hard(Decimal(3))
 
-    assert str(uninit_score) == '-4init/1000.1hard/200.2medium/30.3soft'
     assert str(score) == '1000.1hard/200.2medium/30.3soft'
 
-    assert HardMediumSoftDecimalScore.parse('-4init/1000.1hard/200.2medium/30.3soft') == uninit_score
     assert HardMediumSoftDecimalScore.parse('1000.1hard/200.2medium/30.3soft') == score
 
     assert soft_score == HardMediumSoftDecimalScore(Decimal(0), Decimal(0), Decimal(3))
@@ -113,17 +92,13 @@ def test_hard_medium_soft_decimal_score():
 
 
 def test_bendable_decimal_score():
-    uninit_score = BendableDecimalScore.of_uninitialized(-500, (Decimal('1.1'), Decimal('-2.2'), Decimal('3.3')),
-                                                         (Decimal('-30.3'), Decimal('40.4')))
     score = BendableDecimalScore.of((Decimal('1.1'), Decimal('-2.2'), Decimal('3.3')),
                                     (Decimal('-30.3'), Decimal('40.4')))
     soft_score = BendableDecimalScore.of_soft(3, 2, 1, Decimal(5))
     hard_score = BendableDecimalScore.of_hard(3, 2, 1, Decimal(5))
 
-    assert str(uninit_score) == '-500init/[1.1/-2.2/3.3]hard/[-30.3/40.4]soft'
     assert str(score) == '[1.1/-2.2/3.3]hard/[-30.3/40.4]soft'
 
-    assert BendableDecimalScore.parse('-500init/[1.1/-2.2/3.3]hard/[-30.3/40.4]soft') == uninit_score
     assert BendableDecimalScore.parse('[1.1/-2.2/3.3]hard/[-30.3/40.4]soft') == score
 
     assert soft_score == BendableDecimalScore((Decimal(0), Decimal(0), Decimal(0)), (Decimal(0), Decimal(5)))

@@ -43,7 +43,6 @@ class NoChangePhaseTest {
         TestdataEntity solvedE3 = solution.getEntityList().get(2);
         assertCode("e3", solvedE3);
         assertThat(solvedE3.getValue()).isEqualTo(v1);
-        assertThat(solution.getScore().initScore()).isEqualTo(-1);
     }
 
 }

@@ -50,11 +50,13 @@ public class SimulatedAnnealingAcceptor<Solution_> extends AbstractAcceptor<Solu
         levelsLength = -1;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         LocalSearchPhaseScope<Solution_> phaseScope = moveScope.getStepScope().getPhaseScope();
-        Score lastStepScore = phaseScope.getLastCompletedStepScope().getScore();
-        Score moveScore = moveScope.getScore();
+        // Guaranteed local search; no need for InnerScore.
+        Score lastStepScore = phaseScope.getLastCompletedStepScope().getScore().initialized();
+        Score moveScore = moveScope.getScore().initialized();
         if (moveScore.compareTo(lastStepScore) >= 0) {
             return true;
         }
@@ -73,11 +75,7 @@ public class SimulatedAnnealingAcceptor<Solution_> extends AbstractAcceptor<Solu
             }
             acceptChance *= acceptChanceLevel;
         }
-        if (moveScope.getWorkingRandom().nextDouble() < acceptChance) {
-            return true;
-        } else {
-            return false;
-        }
+        return moveScope.getWorkingRandom().nextDouble() < acceptChance;
     }
 
     @Override

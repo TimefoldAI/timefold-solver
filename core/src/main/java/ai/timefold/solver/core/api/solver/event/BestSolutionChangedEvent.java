@@ -21,17 +21,30 @@ public class BestSolutionChangedEvent<Solution_> extends EventObject {
     private final long timeMillisSpent;
     private final Solution_ newBestSolution;
     private final Score newBestScore;
+    private final boolean isNewBestSolutionInitialized;
+
+    /**
+     * @param timeMillisSpent {@code >= 0L}
+     * @deprecated Use {@link #BestSolutionChangedEvent(Solver, long, Object, Score, boolean)} instead.
+     */
+    @Deprecated(forRemoval = true, since = "1.21.0")
+    public BestSolutionChangedEvent(@NonNull Solver<Solution_> solver, long timeMillisSpent,
+            @NonNull Solution_ newBestSolution, @NonNull Score newBestScore) {
+        this(solver, timeMillisSpent, newBestSolution, newBestScore, true);
+    }
 
     /**
      * @param timeMillisSpent {@code >= 0L}
      */
     public BestSolutionChangedEvent(@NonNull Solver<Solution_> solver, long timeMillisSpent,
-            @NonNull Solution_ newBestSolution, @NonNull Score newBestScore) {
+            @NonNull Solution_ newBestSolution, @NonNull Score newBestScore,
+            boolean isNewBestSolutionInitialized) {
         super(solver);
         this.solver = solver;
         this.timeMillisSpent = timeMillisSpent;
         this.newBestSolution = newBestSolution;
         this.newBestScore = newBestScore;
+        this.isNewBestSolutionInitialized = isNewBestSolutionInitialized;
     }
 
     /**
@@ -47,7 +60,7 @@ public class BestSolutionChangedEvent<Solution_> extends EventObject {
      * <ul>
      * <li>In real-time planning, not all {@link ProblemChange}s might be processed:
      * check {@link #isEveryProblemFactChangeProcessed()}.</li>
-     * <li>this {@link PlanningSolution} might be uninitialized: check {@link Score#isSolutionInitialized()}.</li>
+     * <li>this {@link PlanningSolution} might be uninitialized: check {@link #isNewBestSolutionInitialized()}.</li>
      * <li>this {@link PlanningSolution} might be infeasible: check {@link Score#isFeasible()}.</li>
      * </ul>
      *
@@ -64,6 +77,10 @@ public class BestSolutionChangedEvent<Solution_> extends EventObject {
      */
     public @NonNull Score getNewBestScore() {
         return newBestScore;
+    }
+
+    public boolean isNewBestSolutionInitialized() {
+        return isNewBestSolutionInitialized;
     }
 
     /**

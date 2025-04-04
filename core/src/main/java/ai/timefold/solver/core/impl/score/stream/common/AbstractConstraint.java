@@ -203,12 +203,6 @@ public abstract class AbstractConstraint<Solution_, Constraint_ extends Abstract
                     .formatted(constraintWeight, constraintWeight.getClass(), constraintRef,
                             scoreDescriptor.getScoreDefinition().getScoreClass()));
         }
-        if (constraintWeight.initScore() != 0) {
-            throw new IllegalArgumentException("""
-                    The constraintWeight (%s) for constraint (%s) must have an initScore (%d) equal to 0.
-                    Maybe check your constraint implementation."""
-                    .formatted(constraintWeight, constraintRef, constraintWeight.initScore()));
-        }
         if (!scoreDescriptor.getScoreDefinition().isPositiveOrZero(constraintWeight)) {
             throw new IllegalArgumentException("""
                     The constraintWeight (%s) for constraint (%s) must be positive or zero.

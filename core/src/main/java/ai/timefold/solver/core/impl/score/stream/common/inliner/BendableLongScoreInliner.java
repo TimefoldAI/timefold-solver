@@ -58,9 +58,8 @@ public final class BendableLongScoreInliner extends AbstractScoreInliner<Bendabl
     }
 
     @Override
-    public BendableLongScore extractScore(int initScore) {
-        return BendableLongScore.ofUninitialized(initScore,
-                Arrays.copyOf(hardScores, hardScores.length),
+    public BendableLongScore extractScore() {
+        return BendableLongScore.of(Arrays.copyOf(hardScores, hardScores.length),
                 Arrays.copyOf(softScores, softScores.length));
     }
 

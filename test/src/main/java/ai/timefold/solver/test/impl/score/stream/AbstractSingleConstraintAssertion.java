@@ -20,6 +20,7 @@ import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.impl.score.DefaultScoreExplanation;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
@@ -36,7 +37,7 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
 
     private final AbstractConstraint<Solution_, ?, ?> constraint;
     private final ScoreDefinition<Score_> scoreDefinition;
-    private Score_ score;
+    private InnerScore<Score_> actualScore;
     private Collection<ConstraintMatchTotal<Score_>> constraintMatchTotalCollection;
     private Collection<ConstraintJustification> justificationCollection;
     private Collection<Indictment<Score_>> indictmentCollection;
@@ -53,9 +54,9 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
     }
 
     @Override
-    final void update(Score_ score, Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
+    final void update(InnerScore<Score_> innerScore, Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
             Map<Object, Indictment<Score_>> indictmentMap) {
-        this.score = requireNonNull(score);
+        this.actualScore = InnerScore.of(requireNonNull(innerScore).initialized()); // Strip initialization information.
         this.constraintMatchTotalCollection = new ArrayList<>(requireNonNull(constraintMatchTotalMap).values());
         this.indictmentCollection = new ArrayList<>(requireNonNull(indictmentMap).values());
         this.justificationCollection = this.constraintMatchTotalCollection.stream()
@@ -578,7 +579,7 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
                 "Constraint", constraintId,
                 expectedImpactLabel, expectedImpact, expectedImpact.getClass(),
                 actualImpactLabel, actualImpact, actualImpact.getClass(),
-                DefaultScoreExplanation.explainScore(score, constraintMatchTotalCollection, indictmentCollection));
+                DefaultScoreExplanation.explainScore(actualScore, constraintMatchTotalCollection, indictmentCollection));
     }
 
     private String buildMoreThanAssertionErrorMessage(ScoreImpactType expectedImpactType, Number expectedImpact,
@@ -604,7 +605,7 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
                 "Constraint", constraintId,
                 expectedImpactLabel, expectedImpact, expectedImpact.getClass(),
                 actualImpactLabel, actualImpact, actualImpact.getClass(),
-                DefaultScoreExplanation.explainScore(score, constraintMatchTotalCollection, indictmentCollection));
+                DefaultScoreExplanation.explainScore(actualScore, constraintMatchTotalCollection, indictmentCollection));
     }
 
     private String buildAssertionErrorMessage(ScoreImpactType impactType, long expectedTimes, long actualTimes,
@@ -618,7 +619,7 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
                 "Constraint", constraintId,
                 expectedImpactLabel, expectedTimes,
                 actualImpactLabel, actualTimes,
-                DefaultScoreExplanation.explainScore(score, constraintMatchTotalCollection, indictmentCollection));
+                DefaultScoreExplanation.explainScore(actualScore, constraintMatchTotalCollection, indictmentCollection));
     }
 
     private String buildMoreThanAssertionErrorMessage(ScoreImpactType impactType, long expectedTimes, long actualTimes,
@@ -645,7 +646,7 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
                 "Constraint", constraintId,
                 expectedImpactLabel, expectedTimes,
                 actualImpactLabel, actualTimes,
-                DefaultScoreExplanation.explainScore(score, constraintMatchTotalCollection, indictmentCollection));
+                DefaultScoreExplanation.explainScore(actualScore, constraintMatchTotalCollection, indictmentCollection));
     }
 
     private String buildAssertionErrorMessage(ScoreImpactType impactType, String constraintId, String message) {
@@ -656,7 +657,7 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
                 expectation,
                 "Constraint", constraintId,
                 expectedImpactLabel,
-                DefaultScoreExplanation.explainScore(score, constraintMatchTotalCollection, indictmentCollection));
+                DefaultScoreExplanation.explainScore(actualScore, constraintMatchTotalCollection, indictmentCollection));
     }
 
     private static String buildAssertionErrorMessage(String type, String constraintId, Collection<?> unexpectedFound,

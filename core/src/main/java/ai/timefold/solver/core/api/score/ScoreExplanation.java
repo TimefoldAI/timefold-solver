@@ -46,6 +46,13 @@ public interface ScoreExplanation<Solution_, Score_ extends Score<Score_>> {
     Score_ getScore();
 
     /**
+     * Whether {@link #getSolution()} is initialized or not.
+     * 
+     * @return true if initialized
+     */
+    boolean isInitialized();
+
+    /**
      * Returns a diagnostic text that explains the solution through the {@link ConstraintMatch} API to identify which
      * constraints or planning entities cause that score quality.
      * <p>

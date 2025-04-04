@@ -5,7 +5,6 @@ import static java.util.stream.Collectors.toList;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.TreeMap;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -110,7 +109,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      *
      * @return never null, the {@link Score} of the {@link PlanningSolution working solution}
      */
-    Score_ calculateScore();
+    InnerScore<Score_> calculateScore();
 
     /**
      * @return {@link ConstraintMatchPolicy#ENABLED} if {@link #getConstraintMatchTotalMap()} and {@link #getIndictmentMap()}
@@ -163,6 +162,8 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     int getWorkingGenuineEntityCount();
 
+    int getWorkingInitScore();
+
     void executeMove(Move<Solution_> move);
 
     /**
@@ -172,13 +173,15 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param assertMoveScoreFromScratch true will hurt performance
      * @return never null
      */
-    Score_ executeTemporaryMove(Move<Solution_> move, boolean assertMoveScoreFromScratch);
+    InnerScore<Score_> executeTemporaryMove(Move<Solution_> move, boolean assertMoveScoreFromScratch);
 
     /**
      * @param expectedWorkingEntityListRevision an
      * @return true if the entityList might have a different set of instances now
      */
     boolean isWorkingEntityListDirty(long expectedWorkingEntityListRevision);
+
+    boolean isWorkingSolutionInitialized();
 
     /**
      * Some score directors keep a set of changes
@@ -278,7 +281,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param completedAction sometimes null, when assertion fails then the completedAction's {@link Object#toString()}
      *        is included in the exception message
      */
-    void assertExpectedWorkingScore(Score_ expectedWorkingScore, Object completedAction);
+    void assertExpectedWorkingScore(InnerScore<Score_> expectedWorkingScore, Object completedAction);
 
     /**
      * Asserts that if all {@link VariableListener}s are forcibly triggered,
@@ -293,7 +296,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param completedAction sometimes null, when assertion fails then the completedAction's {@link Object#toString()}
      *        is included in the exception message
      */
-    void assertShadowVariablesAreNotStale(Score_ expectedWorkingScore, Object completedAction);
+    void assertShadowVariablesAreNotStale(InnerScore<Score_> expectedWorkingScore, Object completedAction);
 
     /**
      * Asserts that if the {@link Score} is calculated for the current {@link PlanningSolution working solution}
@@ -307,7 +310,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      *        is included in the exception message
      * @see ScoreDirectorFactory#assertScoreFromScratch
      */
-    void assertWorkingScoreFromScratch(Score_ workingScore, Object completedAction);
+    void assertWorkingScoreFromScratch(InnerScore<Score_> workingScore, Object completedAction);
 
     /**
      * Asserts that if the {@link Score} is calculated for the current {@link PlanningSolution working solution}
@@ -321,7 +324,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      *        is included in the exception message
      * @see ScoreDirectorFactory#assertScoreFromScratch
      */
-    void assertPredictedScoreFromScratch(Score_ predictedScore, Object completedAction);
+    void assertPredictedScoreFromScratch(InnerScore<Score_> predictedScore, Object completedAction);
 
     /**
      * Asserts that if the {@link Score} is calculated for the current {@link PlanningSolution working solution}
@@ -333,7 +336,8 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @param move never null
      * @param beforeMoveScore never null
      */
-    void assertExpectedUndoMoveScore(Move<Solution_> move, Score_ beforeMoveScore, SolverLifecyclePoint executionPoint);
+    void assertExpectedUndoMoveScore(Move<Solution_> move, InnerScore<Score_> beforeMoveScore,
+            SolverLifecyclePoint executionPoint);
 
     /**
      * Needs to be called after use because some implementations need to clean up their resources.
@@ -357,48 +361,13 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     default ScoreAnalysis<Score_> buildScoreAnalysis(ScoreAnalysisFetchPolicy scoreAnalysisFetchPolicy) {
-        return buildScoreAnalysis(scoreAnalysisFetchPolicy, ScoreAnalysisMode.DEFAULT);
-    }
-
-    /**
-     *
-     * @param scoreAnalysisFetchPolicy never null
-     * @param mode Allows to tweak the behavior of this method.
-     * @return never null
-     */
-    default ScoreAnalysis<Score_> buildScoreAnalysis(ScoreAnalysisFetchPolicy scoreAnalysisFetchPolicy,
-            ScoreAnalysisMode mode) {
-        var score = calculateScore();
-        if (Objects.requireNonNull(mode) == ScoreAnalysisMode.RECOMMENDATION_API) {
-            score = score.withInitScore(0);
-        }
+        var state = calculateScore();
         var constraintAnalysisMap = new TreeMap<ConstraintRef, ConstraintAnalysis<Score_>>();
         for (var constraintMatchTotal : getConstraintMatchTotalMap().values()) {
             var constraintAnalysis = getConstraintAnalysis(constraintMatchTotal, scoreAnalysisFetchPolicy);
             constraintAnalysisMap.put(constraintMatchTotal.getConstraintRef(), constraintAnalysis);
         }
-        return new ScoreAnalysis<>(score, constraintAnalysisMap);
-    }
-
-    enum ScoreAnalysisMode {
-        /**
-         * The default mode, which will throw an exception if the solution is not initialized.
-         */
-        DEFAULT,
-        /**
-         * If analysis is requested as a result of a score corruption detection,
-         * there will be no tweaks to the score and no initialization exception will be thrown.
-         * This is because score corruption may have been detected during construction heuristics,
-         * where the score is rightfully uninitialized.
-         */
-        SCORE_CORRUPTION,
-        /**
-         * Will not throw an exception if the solution is not initialized,
-         * but will set {@link Score#initScore()} to zero.
-         * Recommendation API always has an uninitialized solution by design.
-         */
-        RECOMMENDATION_API
-
+        return new ScoreAnalysis<>(state.initialized(), constraintAnalysisMap, state.isInitialized());
     }
 
     /*

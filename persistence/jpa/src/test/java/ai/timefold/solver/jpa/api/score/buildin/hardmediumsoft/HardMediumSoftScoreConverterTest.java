@@ -16,8 +16,7 @@ class HardMediumSoftScoreConverterTest extends AbstractScoreJpaTest {
     @Test
     void persistAndMerge() {
         persistAndMerge(new HardMediumSoftScoreConverterTestJpaEntity(HardMediumSoftScore.ZERO), null,
-                HardMediumSoftScore.of(-100, -20, -3),
-                HardMediumSoftScore.ofUninitialized(-7, -100, -20, -3));
+                HardMediumSoftScore.of(-100, -20, -3));
     }
 
     @Entity
