@@ -213,7 +213,7 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
 
     @Override
     public boolean hasAnyFailure() {
-        return !hasAllSuccess();
+        return succeeded != null && !succeeded;
     }
 
     public boolean isScoreFeasible() {
