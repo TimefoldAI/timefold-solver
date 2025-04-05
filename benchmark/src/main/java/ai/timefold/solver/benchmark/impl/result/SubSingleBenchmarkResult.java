@@ -204,7 +204,7 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
 
     @Override
     public boolean hasAllSuccess() {
-        return succeeded != null && succeeded.booleanValue();
+        return succeeded != null && succeeded;
     }
 
     public boolean isInitialized() {
@@ -213,7 +213,7 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
 
     @Override
     public boolean hasAnyFailure() {
-        return succeeded != null && !succeeded.booleanValue();
+        return !hasAllSuccess();
     }
 
     public boolean isScoreFeasible() {
