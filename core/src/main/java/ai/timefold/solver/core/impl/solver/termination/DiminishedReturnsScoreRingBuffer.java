@@ -95,7 +95,7 @@ final class DiminishedReturnsScoreRingBuffer<Score_ extends Score<Score_>> {
     void resize() {
         var newCapacity = nanoTimeRingBuffer.length * 2;
         var newNanoTimeRingBuffer = new long[newCapacity];
-        var newScoreRingBuffer = (InnerScore<Score_>[]) new InnerScore[newCapacity];
+        var newScoreRingBuffer = new InnerScore[newCapacity];
 
         if (readIndex < writeIndex) {
             // entries are [startIndex, writeIndex)
