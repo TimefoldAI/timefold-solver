@@ -48,20 +48,19 @@ public class HardMediumSoftScoreDefinition extends AbstractScoreDefinition<HardM
     }
 
     @Override
-    public HardMediumSoftScore fromLevelNumbers(int initScore, Number[] levelNumbers) {
+    public HardMediumSoftScore fromLevelNumbers(Number[] levelNumbers) {
         if (levelNumbers.length != getLevelsSize()) {
             throw new IllegalStateException("The levelNumbers (" + Arrays.toString(levelNumbers)
                     + ")'s length (" + levelNumbers.length + ") must equal the levelSize (" + getLevelsSize() + ").");
         }
-        return HardMediumSoftScore.ofUninitialized(initScore, (Integer) levelNumbers[0], (Integer) levelNumbers[1],
-                (Integer) levelNumbers[2]);
+        return HardMediumSoftScore.of((Integer) levelNumbers[0], (Integer) levelNumbers[1], (Integer) levelNumbers[2]);
     }
 
     @Override
     public HardMediumSoftScore buildOptimisticBound(InitializingScoreTrend initializingScoreTrend,
             HardMediumSoftScore score) {
         InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
-        return HardMediumSoftScore.ofUninitialized(0,
+        return HardMediumSoftScore.of(
                 trendLevels[0] == InitializingScoreTrendLevel.ONLY_DOWN ? score.hardScore() : Integer.MAX_VALUE,
                 trendLevels[1] == InitializingScoreTrendLevel.ONLY_DOWN ? score.mediumScore() : Integer.MAX_VALUE,
                 trendLevels[2] == InitializingScoreTrendLevel.ONLY_DOWN ? score.softScore() : Integer.MAX_VALUE);
@@ -71,7 +70,7 @@ public class HardMediumSoftScoreDefinition extends AbstractScoreDefinition<HardM
     public HardMediumSoftScore buildPessimisticBound(InitializingScoreTrend initializingScoreTrend,
             HardMediumSoftScore score) {
         InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
-        return HardMediumSoftScore.ofUninitialized(0,
+        return HardMediumSoftScore.of(
                 trendLevels[0] == InitializingScoreTrendLevel.ONLY_UP ? score.hardScore() : Integer.MIN_VALUE,
                 trendLevels[1] == InitializingScoreTrendLevel.ONLY_UP ? score.mediumScore() : Integer.MIN_VALUE,
                 trendLevels[2] == InitializingScoreTrendLevel.ONLY_UP ? score.softScore() : Integer.MIN_VALUE);
@@ -79,8 +78,6 @@ public class HardMediumSoftScoreDefinition extends AbstractScoreDefinition<HardM
 
     @Override
     public HardMediumSoftScore divideBySanitizedDivisor(HardMediumSoftScore dividend, HardMediumSoftScore divisor) {
-        int dividendInitScore = dividend.initScore();
-        int divisorInitScore = sanitize(divisor.initScore());
         int dividendHardScore = dividend.hardScore();
         int divisorHardScore = sanitize(divisor.hardScore());
         int dividendMediumScore = dividend.mediumScore();
@@ -88,7 +85,6 @@ public class HardMediumSoftScoreDefinition extends AbstractScoreDefinition<HardM
         int dividendSoftScore = dividend.softScore();
         int divisorSoftScore = sanitize(divisor.softScore());
         return fromLevelNumbers(
-                divide(dividendInitScore, divisorInitScore),
                 new Number[] {
                         divide(dividendHardScore, divisorHardScore),
                         divide(dividendMediumScore, divisorMediumScore),

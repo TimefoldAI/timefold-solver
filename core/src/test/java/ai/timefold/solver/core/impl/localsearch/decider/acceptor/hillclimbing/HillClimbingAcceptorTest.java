@@ -17,10 +17,10 @@ class HillClimbingAcceptorTest extends AbstractAcceptorTest {
         var acceptor = new HillClimbingAcceptor<>();
 
         var solverScope = new SolverScope<>();
-        solverScope.setBestScore(SimpleScore.of(-1000));
+        solverScope.setInitializedBestScore(SimpleScore.of(-1000));
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         var lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
-        lastCompletedStepScope.setScore(SimpleScore.of(-1000));
+        lastCompletedStepScope.setInitializedScore(SimpleScore.of(-1000));
         phaseScope.setLastCompletedStepScope(lastCompletedStepScope);
         acceptor.phaseStarted(phaseScope);
 

@@ -25,7 +25,6 @@ public final class BendableScore implements IBendableScore<BendableScore> {
 
     public static @NonNull BendableScore parseScore(@NonNull String scoreString) {
         String[][] scoreTokens = ScoreUtil.parseBendableScoreTokens(BendableScore.class, scoreString);
-        int initScore = ScoreUtil.parseInitScore(BendableScore.class, scoreString, scoreTokens[0][0]);
         int[] hardScores = new int[scoreTokens[1].length];
         for (int i = 0; i < hardScores.length; i++) {
             hardScores[i] = ScoreUtil.parseLevelAsInt(BendableScore.class, scoreString, scoreTokens[1][i]);
@@ -34,19 +33,17 @@ public final class BendableScore implements IBendableScore<BendableScore> {
         for (int i = 0; i < softScores.length; i++) {
             softScores[i] = ScoreUtil.parseLevelAsInt(BendableScore.class, scoreString, scoreTokens[2][i]);
         }
-        return ofUninitialized(initScore, hardScores, softScores);
+        return of(hardScores, softScores);
     }
 
     /**
-     * Creates a new {@link BendableScore}.
-     *
-     * @param initScore see {@link Score#initScore()}
-     * @param hardScores never change that array afterwards: it must be immutable
-     * @param softScores never change that array afterwards: it must be immutable
+     * @deprecated Use {@link #of(int[], int[])} instead.
+     * @return init score is always zero
      */
+    @Deprecated(forRemoval = true, since = "1.21.0")
     public static @NonNull BendableScore ofUninitialized(int initScore, int @NonNull [] hardScores,
             int @NonNull [] softScores) {
-        return new BendableScore(initScore, hardScores, softScores);
+        return BendableScore.of(hardScores, softScores);
     }
 
     /**
@@ -56,7 +53,7 @@ public final class BendableScore implements IBendableScore<BendableScore> {
      * @param softScores never change that array afterwards: it must be immutable
      */
     public static @NonNull BendableScore of(int @NonNull [] hardScores, int @NonNull [] softScores) {
-        return new BendableScore(0, hardScores, softScores);
+        return new BendableScore(hardScores, softScores);
     }
 
     /**
@@ -66,7 +63,7 @@ public final class BendableScore implements IBendableScore<BendableScore> {
      * @param softLevelsSize at least 0
      */
     public static @NonNull BendableScore zero(int hardLevelsSize, int softLevelsSize) {
-        return new BendableScore(0, new int[hardLevelsSize], new int[softLevelsSize]);
+        return new BendableScore(new int[hardLevelsSize], new int[softLevelsSize]);
     }
 
     /**
@@ -80,7 +77,7 @@ public final class BendableScore implements IBendableScore<BendableScore> {
     public static @NonNull BendableScore ofHard(int hardLevelsSize, int softLevelsSize, int hardLevel, int hardScore) {
         int[] hardScores = new int[hardLevelsSize];
         hardScores[hardLevel] = hardScore;
-        return new BendableScore(0, hardScores, new int[softLevelsSize]);
+        return new BendableScore(hardScores, new int[softLevelsSize]);
     }
 
     /**
@@ -94,14 +91,9 @@ public final class BendableScore implements IBendableScore<BendableScore> {
     public static @NonNull BendableScore ofSoft(int hardLevelsSize, int softLevelsSize, int softLevel, int softScore) {
         int[] softScores = new int[softLevelsSize];
         softScores[softLevel] = softScore;
-        return new BendableScore(0, new int[hardLevelsSize], softScores);
+        return new BendableScore(new int[hardLevelsSize], softScores);
     }
 
-    // ************************************************************************
-    // Fields
-    // ************************************************************************
-
-    private final int initScore;
     private final int[] hardScores;
     private final int[] softScores;
 
@@ -112,21 +104,15 @@ public final class BendableScore implements IBendableScore<BendableScore> {
      */
     @SuppressWarnings("unused")
     private BendableScore() {
-        this(Integer.MIN_VALUE, new int[] {}, new int[] {});
+        this(new int[] {}, new int[] {});
     }
 
     /**
-     * @param initScore see {@link Score#initScore()}
+     *
      */
-    private BendableScore(int initScore, int @NonNull [] hardScores, int @NonNull [] softScores) {
-        this.initScore = initScore;
+    private BendableScore(int @NonNull [] hardScores, int @NonNull [] softScores) {
         this.hardScores = hardScores;
         this.softScores = softScores;
-    }
-
-    @Override
-    public int initScore() {
-        return initScore;
     }
 
     /**
@@ -211,15 +197,6 @@ public final class BendableScore implements IBendableScore<BendableScore> {
         return softScore(hardLevel);
     }
 
-    // ************************************************************************
-    // Worker methods
-    // ************************************************************************
-
-    @Override
-    public @NonNull BendableScore withInitScore(int newInitScore) {
-        return new BendableScore(newInitScore, hardScores, softScores);
-    }
-
     /**
      * @param level {@code 0 <= level <} {@link #levelsSize()}
      * @return higher is better
@@ -244,9 +221,6 @@ public final class BendableScore implements IBendableScore<BendableScore> {
 
     @Override
     public boolean isFeasible() {
-        if (initScore < 0) {
-            return false;
-        }
         for (int hardScore : hardScores) {
             if (hardScore < 0) {
                 return false;
@@ -267,7 +241,6 @@ public final class BendableScore implements IBendableScore<BendableScore> {
             newSoftScores[i] = softScores[i] + addend.softScore(i);
         }
         return new BendableScore(
-                initScore + addend.initScore(),
                 newHardScores, newSoftScores);
     }
 
@@ -283,7 +256,6 @@ public final class BendableScore implements IBendableScore<BendableScore> {
             newSoftScores[i] = softScores[i] - subtrahend.softScore(i);
         }
         return new BendableScore(
-                initScore - subtrahend.initScore(),
                 newHardScores, newSoftScores);
     }
 
@@ -298,7 +270,6 @@ public final class BendableScore implements IBendableScore<BendableScore> {
             newSoftScores[i] = (int) Math.floor(softScores[i] * multiplicand);
         }
         return new BendableScore(
-                (int) Math.floor(initScore * multiplicand),
                 newHardScores, newSoftScores);
     }
 
@@ -313,7 +284,6 @@ public final class BendableScore implements IBendableScore<BendableScore> {
             newSoftScores[i] = (int) Math.floor(softScores[i] / divisor);
         }
         return new BendableScore(
-                (int) Math.floor(initScore / divisor),
                 newHardScores, newSoftScores);
     }
 
@@ -328,7 +298,6 @@ public final class BendableScore implements IBendableScore<BendableScore> {
             newSoftScores[i] = (int) Math.floor(Math.pow(softScores[i], exponent));
         }
         return new BendableScore(
-                (int) Math.floor(Math.pow(initScore, exponent)),
                 newHardScores, newSoftScores);
     }
 
@@ -342,7 +311,7 @@ public final class BendableScore implements IBendableScore<BendableScore> {
         for (int i = 0; i < newSoftScores.length; i++) {
             newSoftScores[i] = -softScores[i];
         }
-        return new BendableScore(-initScore, newHardScores, newSoftScores);
+        return new BendableScore(newHardScores, newSoftScores);
     }
 
     @Override
@@ -355,7 +324,7 @@ public final class BendableScore implements IBendableScore<BendableScore> {
         for (int i = 0; i < newSoftScores.length; i++) {
             newSoftScores[i] = Math.abs(softScores[i]);
         }
-        return new BendableScore(Math.abs(initScore), newHardScores, newSoftScores);
+        return new BendableScore(newHardScores, newSoftScores);
     }
 
     @Override
@@ -382,9 +351,6 @@ public final class BendableScore implements IBendableScore<BendableScore> {
                     || softLevelsSize() != other.softLevelsSize()) {
                 return false;
             }
-            if (initScore != other.initScore()) {
-                return false;
-            }
             for (int i = 0; i < hardScores.length; i++) {
                 if (hardScores[i] != other.hardScore(i)) {
                     return false;
@@ -402,15 +368,12 @@ public final class BendableScore implements IBendableScore<BendableScore> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(initScore, Arrays.hashCode(hardScores), Arrays.hashCode(softScores));
+        return Objects.hash(Arrays.hashCode(hardScores), Arrays.hashCode(softScores));
     }
 
     @Override
     public int compareTo(@NonNull BendableScore other) {
         validateCompatible(other);
-        if (initScore != other.initScore()) {
-            return Integer.compare(initScore, other.initScore());
-        }
         for (int i = 0; i < hardScores.length; i++) {
             if (hardScores[i] != other.hardScore(i)) {
                 return Integer.compare(hardScores[i], other.hardScore(i));
@@ -431,8 +394,7 @@ public final class BendableScore implements IBendableScore<BendableScore> {
 
     @Override
     public String toString() {
-        StringBuilder s = new StringBuilder(((hardScores.length + softScores.length) * 4) + 13);
-        s.append(ScoreUtil.getInitPrefix(initScore));
+        StringBuilder s = new StringBuilder(((hardScores.length + softScores.length) * 4) + 7);
         s.append("[");
         boolean first = true;
         for (int hardScore : hardScores) {

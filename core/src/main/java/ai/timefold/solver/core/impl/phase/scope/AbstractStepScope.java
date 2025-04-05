@@ -5,6 +5,7 @@ import java.util.Random;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 /**
@@ -14,7 +15,7 @@ public abstract class AbstractStepScope<Solution_> {
 
     protected final int stepIndex;
 
-    protected Score<?> score = null;
+    protected InnerScore<?> score = null;
     protected boolean bestScoreImproved = false;
     // Stays null if there is no need to clone it
     protected Solution_ clonedSolution = null;
@@ -29,11 +30,16 @@ public abstract class AbstractStepScope<Solution_> {
         return stepIndex;
     }
 
-    public Score<?> getScore() {
+    public InnerScore<?> getScore() {
         return score;
     }
 
-    public void setScore(Score<?> score) {
+    @SuppressWarnings("rawtypes")
+    public void setInitializedScore(Score<?> score) {
+        setScore(InnerScore.of((Score) score));
+    }
+
+    public void setScore(InnerScore<?> score) {
         this.score = score;
     }
 

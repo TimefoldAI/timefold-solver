@@ -48,7 +48,7 @@ public class PickedMoveBestScoreDiffStatistic<Solution_, Score_ extends Score<Sc
     private static class PickedMoveBestScoreDiffStatisticListener<Solution_, Score_ extends Score<Score_>>
             extends PhaseLifecycleListenerAdapter<Solution_> {
 
-        private Score_ oldBestScore = null;
+        private Score_ oldBestScore = null; // Guaranteed local search; no need for InnerScore.
         private final ScoreDefinition<Score_> scoreDefinition;
         private final Map<Tags, List<AtomicReference<Number>>> tagsToMoveScoreMap = new ConcurrentHashMap<>();
 
@@ -56,10 +56,11 @@ public class PickedMoveBestScoreDiffStatistic<Solution_, Score_ extends Score<Sc
             this.scoreDefinition = scoreDefinition;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
             if (phaseScope instanceof LocalSearchPhaseScope) {
-                oldBestScore = phaseScope.getBestScore();
+                oldBestScore = (Score_) phaseScope.getBestScore().initialized();
             }
         }
 
@@ -80,9 +81,9 @@ public class PickedMoveBestScoreDiffStatistic<Solution_, Score_ extends Score<Sc
         @SuppressWarnings("unchecked")
         private void localSearchStepEnded(LocalSearchStepScope<Solution_> stepScope) {
             if (stepScope.getBestScoreImproved()) {
-                String moveType = stepScope.getStep().describe();
-                Score_ newBestScore = (Score_) stepScope.getScore();
-                Score_ bestScoreDiff = newBestScore.subtract(oldBestScore);
+                var moveType = stepScope.getStep().describe();
+                var newBestScore = (Score_) stepScope.getScore().initialized();
+                var bestScoreDiff = newBestScore.subtract(oldBestScore);
                 oldBestScore = newBestScore;
                 SolverMetric.registerScoreMetrics(SolverMetric.PICKED_MOVE_TYPE_BEST_SCORE_DIFF,
                         stepScope.getPhaseScope().getSolverScope().getMonitoringTags()

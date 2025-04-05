@@ -15,9 +15,7 @@ class SimpleScoreConverterTest extends AbstractScoreJpaTest {
 
     @Test
     void persistAndMerge() {
-        persistAndMerge(new SimpleScoreConverterTestJpaEntity(SimpleScore.ZERO), null,
-                SimpleScore.of(-10),
-                SimpleScore.ofUninitialized(-7, -10));
+        persistAndMerge(new SimpleScoreConverterTestJpaEntity(SimpleScore.ZERO), null, SimpleScore.of(-10));
     }
 
     @Entity

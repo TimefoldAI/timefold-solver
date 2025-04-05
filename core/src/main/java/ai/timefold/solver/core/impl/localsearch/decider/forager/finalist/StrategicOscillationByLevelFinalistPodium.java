@@ -12,14 +12,14 @@ import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
  */
 public final class StrategicOscillationByLevelFinalistPodium<Solution_> extends AbstractFinalistPodium<Solution_> {
 
-    protected final boolean referenceBestScoreInsteadOfLastStepScore;
+    private final boolean referenceBestScoreInsteadOfLastStepScore;
 
-    protected Score referenceScore;
-    protected Number[] referenceLevelNumbers;
-
-    protected Score finalistScore;
-    protected Number[] finalistLevelNumbers;
-    protected boolean finalistImprovesUponReference;
+    // Guaranteed inside local search, therefore no need for InnerScore.
+    private Score referenceScore;
+    private Number[] referenceLevelNumbers;
+    private Score finalistScore;
+    private Number[] finalistLevelNumbers;
+    private boolean finalistImprovesUponReference;
 
     public StrategicOscillationByLevelFinalistPodium(boolean referenceBestScoreInsteadOfLastStepScore) {
         this.referenceBestScoreInsteadOfLastStepScore = referenceBestScoreInsteadOfLastStepScore;
@@ -29,11 +29,9 @@ public final class StrategicOscillationByLevelFinalistPodium<Solution_> extends 
     public void stepStarted(LocalSearchStepScope<Solution_> stepScope) {
         super.stepStarted(stepScope);
         referenceScore = referenceBestScoreInsteadOfLastStepScore
-                ? stepScope.getPhaseScope().getBestScore()
-                : stepScope.getPhaseScope().getLastCompletedStepScope().getScore();
-        referenceLevelNumbers = referenceBestScoreInsteadOfLastStepScore
-                ? stepScope.getPhaseScope().getBestScore().toLevelNumbers()
-                : stepScope.getPhaseScope().getLastCompletedStepScope().getScore().toLevelNumbers();
+                ? stepScope.getPhaseScope().getBestScore().initialized()
+                : stepScope.getPhaseScope().getLastCompletedStepScope().getScore().initialized();
+        referenceLevelNumbers = referenceScore.toLevelNumbers();
         finalistScore = null;
         finalistLevelNumbers = null;
         finalistImprovesUponReference = false;
@@ -50,7 +48,7 @@ public final class StrategicOscillationByLevelFinalistPodium<Solution_> extends 
             finalistScore = null;
             finalistLevelNumbers = null;
         }
-        Score moveScore = moveScope.getScore();
+        Score moveScore = moveScope.getScore().initialized();
         Number[] moveLevelNumbers = moveScore.toLevelNumbers();
         int comparison = doComparison(moveScore, moveLevelNumbers);
         if (comparison > 0) {

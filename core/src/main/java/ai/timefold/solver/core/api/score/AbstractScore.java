@@ -21,16 +21,22 @@ import ai.timefold.solver.core.impl.score.ScoreUtil;
 public abstract class AbstractScore<Score_ extends AbstractScore<Score_>> implements Score<Score_>,
         Serializable {
 
-    protected static final String INIT_LABEL = ScoreUtil.INIT_LABEL;
+    protected static final String INIT_LABEL = "init";
 
     protected static String[] parseScoreTokens(Class<? extends AbstractScore<?>> scoreClass,
             String scoreString, String... levelSuffixes) {
         return ScoreUtil.parseScoreTokens(scoreClass, scoreString, levelSuffixes);
     }
 
-    protected static int parseInitScore(Class<? extends AbstractScore<?>> scoreClass,
-            String scoreString, String initScoreString) {
-        return ScoreUtil.parseInitScore(scoreClass, scoreString, initScoreString);
+    protected static int parseInitScore(Class<? extends AbstractScore<?>> scoreClass, String scoreString,
+            String initScoreString) {
+        try {
+            return Integer.parseInt(initScoreString);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("The scoreString (" + scoreString
+                    + ") for the scoreClass (" + scoreClass.getSimpleName() + ") has a initScoreString ("
+                    + initScoreString + ") which is not a valid integer.", e);
+        }
     }
 
     protected static int parseLevelAsInt(Class<? extends AbstractScore<?>> scoreClass,
@@ -58,9 +64,6 @@ public abstract class AbstractScore<Score_ extends AbstractScore<Score_>> implem
 
     protected final int initScore;
 
-    /**
-     * @param initScore see {@link Score#initScore()}
-     */
     protected AbstractScore(int initScore) {
         this.initScore = initScore;
         // The initScore can be positive during statistical calculations.
@@ -76,7 +79,10 @@ public abstract class AbstractScore<Score_ extends AbstractScore<Score_>> implem
     // ************************************************************************
 
     protected String getInitPrefix() {
-        return ScoreUtil.getInitPrefix(initScore);
+        if (initScore == 0) {
+            return "";
+        }
+        return initScore + INIT_LABEL + "/";
     }
 
     protected String buildShortString(Predicate<Number> notZero, String... levelLabels) {

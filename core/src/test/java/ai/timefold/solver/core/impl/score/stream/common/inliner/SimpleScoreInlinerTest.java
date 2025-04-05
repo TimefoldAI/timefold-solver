@@ -18,7 +18,7 @@ class SimpleScoreInlinerTest extends AbstractScoreInlinerTest<TestdataSolution, 
     @Test
     void defaultScore() {
         var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchPolicy);
-        assertThat(scoreInliner.extractScore(0)).isEqualTo(SimpleScore.ZERO);
+        assertThat(scoreInliner.extractScore()).isEqualTo(SimpleScore.ZERO);
     }
 
     @Test
@@ -28,19 +28,19 @@ class SimpleScoreInlinerTest extends AbstractScoreInlinerTest<TestdataSolution, 
         var scoreInliner = (AbstractScoreInliner<SimpleScore>) impacter.getContext().parent;
 
         var undo1 = impacter.impactScore(10, ConstraintMatchSupplier.empty());
-        assertThat(scoreInliner.extractScore(0))
+        assertThat(scoreInliner.extractScore())
                 .isEqualTo(SimpleScore.of(100));
 
         var undo2 = impacter.impactScore(20, ConstraintMatchSupplier.empty());
-        assertThat(scoreInliner.extractScore(0))
+        assertThat(scoreInliner.extractScore())
                 .isEqualTo(SimpleScore.of(300));
 
         undo2.run();
-        assertThat(scoreInliner.extractScore(0))
+        assertThat(scoreInliner.extractScore())
                 .isEqualTo(SimpleScore.of(100));
 
         undo1.run();
-        assertThat(scoreInliner.extractScore(0))
+        assertThat(scoreInliner.extractScore())
                 .isEqualTo(SimpleScore.of(0));
     }
 

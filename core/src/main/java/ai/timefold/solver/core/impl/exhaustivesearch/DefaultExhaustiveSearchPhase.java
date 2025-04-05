@@ -129,7 +129,7 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
 
         if (decider.isScoreBounderEnabled()) {
             InnerScoreDirector<Solution_, ?> scoreDirector = phaseScope.getScoreDirector();
-            Score score = scoreDirector.calculateScore();
+            var score = scoreDirector.calculateScore();
             startNode.setScore(score);
             ScoreBounder scoreBounder = decider.getScoreBounder();
             phaseScope.setBestPessimisticBound(startLayer.isLastLayer() ? score
@@ -149,6 +149,7 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         decider.stepStarted(stepScope);
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected void restoreWorkingSolution(ExhaustiveSearchStepScope<Solution_> stepScope) {
         ExhaustiveSearchPhaseScope<Solution_> phaseScope = stepScope.getPhaseScope();
         ExhaustiveSearchNode oldNode = phaseScope.getLastCompletedStepScope().getExpandingNode();
@@ -172,7 +173,9 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         restoreMoveList.addAll(newMoveList);
         var compositeMove = CompositeMove.buildMove(restoreMoveList);
         phaseScope.getScoreDirector().executeMove(compositeMove);
-        phaseScope.getSolutionDescriptor().setScore(phaseScope.getWorkingSolution(), stepScope.getStartingStepScore());
+        var startingStepScore = stepScope.getStartingStepScore();
+        phaseScope.getSolutionDescriptor().setScore(phaseScope.getWorkingSolution(),
+                (Score) (startingStepScore == null ? null : startingStepScore.initialized()));
         if (assertWorkingSolutionScoreFromScratch) {
             // In BRUTE_FORCE the stepScore can be null because it was not calculated
             if (stepScope.getStartingStepScore() != null) {

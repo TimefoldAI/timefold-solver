@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.solver.termination;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.Offset.offset;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -15,6 +16,7 @@ import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecim
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.buildin.SimpleScoreDefinition;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
@@ -31,24 +33,29 @@ class BestScoreTerminationTest {
         SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
         when(solverScope.getScoreDefinition()).thenReturn(new SimpleScoreDefinition());
         when(solverScope.isBestSolutionInitialized()).thenReturn(true);
-        when(solverScope.getStartingInitializedScore()).thenReturn(SimpleScore.of(-1100));
+        doReturn(SimpleScore.of(-1100)).when(solverScope).getStartingInitializedScore();
 
-        when(solverScope.getBestScore()).thenReturn(SimpleScore.of(-1100));
+        doReturn(InnerScore.of(SimpleScore.of(-1100))).when(solverScope).getBestScore();
         assertThat(termination.isSolverTerminated(solverScope)).isFalse();
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(0.0, offset(0.0));
-        when(solverScope.getBestScore()).thenReturn(SimpleScore.of(-1100));
+
+        doReturn(InnerScore.of(SimpleScore.of(-1100))).when(solverScope).getBestScore();
         assertThat(termination.isSolverTerminated(solverScope)).isFalse();
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(0.0, offset(0.0));
-        when(solverScope.getBestScore()).thenReturn(SimpleScore.of(-1040));
+
+        doReturn(InnerScore.of(SimpleScore.of(-1040))).when(solverScope).getBestScore();
         assertThat(termination.isSolverTerminated(solverScope)).isFalse();
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(0.6, offset(0.0));
-        when(solverScope.getBestScore()).thenReturn(SimpleScore.of(-1040));
+
+        doReturn(InnerScore.of(SimpleScore.of(-1040))).when(solverScope).getBestScore();
         assertThat(termination.isSolverTerminated(solverScope)).isFalse();
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(0.6, offset(0.0));
-        when(solverScope.getBestScore()).thenReturn(SimpleScore.of(-1000));
+
+        doReturn(InnerScore.of(SimpleScore.of(-1000))).when(solverScope).getBestScore();
         assertThat(termination.isSolverTerminated(solverScope)).isTrue();
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(1.0, offset(0.0));
-        when(solverScope.getBestScore()).thenReturn(SimpleScore.of(-900));
+
+        doReturn(InnerScore.of(SimpleScore.of(-900))).when(solverScope).getBestScore();
         assertThat(termination.isSolverTerminated(solverScope)).isTrue();
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(1.0, offset(0.0));
     }
@@ -61,24 +68,29 @@ class BestScoreTerminationTest {
                 new BestScoreTermination<>(scoreDefinition, SimpleScore.of(-1000), new double[] {});
         AbstractPhaseScope<TestdataSolution> phaseScope = mock(AbstractPhaseScope.class);
         when(phaseScope.isBestSolutionInitialized()).thenReturn(true);
-        when(phaseScope.getStartingScore()).thenReturn(SimpleScore.of(-1100));
+        doReturn(InnerScore.of(SimpleScore.of(-1100))).when(phaseScope).getStartingScore();
 
-        when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(-1100));
+        doReturn(InnerScore.of(SimpleScore.of(-1100))).when(phaseScope).getBestScore();
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.0, offset(0.0));
-        when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(-1100));
+
+        doReturn(InnerScore.of(SimpleScore.of(-1100))).when(phaseScope).getBestScore();
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.0, offset(0.0));
-        when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(-1040));
+
+        doReturn(InnerScore.of(SimpleScore.of(-1040))).when(phaseScope).getBestScore();
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.6, offset(0.0));
-        when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(-1040));
+
+        doReturn(InnerScore.of(SimpleScore.of(-1040))).when(phaseScope).getBestScore();
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.6, offset(0.0));
-        when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(-1000));
+
+        doReturn(InnerScore.of(SimpleScore.of(-1000))).when(phaseScope).getBestScore();
         assertThat(termination.isPhaseTerminated(phaseScope)).isTrue();
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(1.0, offset(0.0));
-        when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(-900));
+
+        doReturn(InnerScore.of(SimpleScore.of(-900))).when(phaseScope).getBestScore();
         assertThat(termination.isPhaseTerminated(phaseScope)).isTrue();
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(1.0, offset(0.0));
     }

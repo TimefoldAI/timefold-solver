@@ -54,7 +54,7 @@ public class BendableBigDecimalScoreDefinition extends AbstractBendableScoreDefi
     }
 
     @Override
-    public BendableBigDecimalScore fromLevelNumbers(int initScore, Number[] levelNumbers) {
+    public BendableBigDecimalScore fromLevelNumbers(Number[] levelNumbers) {
         if (levelNumbers.length != getLevelsSize()) {
             throw new IllegalStateException("The levelNumbers (" + Arrays.toString(levelNumbers)
                     + ")'s length (" + levelNumbers.length + ") must equal the levelSize (" + getLevelsSize() + ").");
@@ -67,22 +67,17 @@ public class BendableBigDecimalScoreDefinition extends AbstractBendableScoreDefi
         for (int i = 0; i < softLevelsSize; i++) {
             softScores[i] = (BigDecimal) levelNumbers[hardLevelsSize + i];
         }
-        return BendableBigDecimalScore.ofUninitialized(initScore, hardScores, softScores);
+        return BendableBigDecimalScore.of(hardScores, softScores);
     }
 
     public BendableBigDecimalScore createScore(BigDecimal... scores) {
-        return createScoreUninitialized(0, scores);
-    }
-
-    public BendableBigDecimalScore createScoreUninitialized(int initScore, BigDecimal... scores) {
         int levelsSize = hardLevelsSize + softLevelsSize;
         if (scores.length != levelsSize) {
             throw new IllegalArgumentException("The scores (" + Arrays.toString(scores)
                     + ")'s length (" + scores.length
                     + ") is not levelsSize (" + levelsSize + ").");
         }
-        return BendableBigDecimalScore.ofUninitialized(initScore,
-                Arrays.copyOfRange(scores, 0, hardLevelsSize),
+        return BendableBigDecimalScore.of(Arrays.copyOfRange(scores, 0, hardLevelsSize),
                 Arrays.copyOfRange(scores, hardLevelsSize, levelsSize));
     }
 
@@ -105,8 +100,6 @@ public class BendableBigDecimalScoreDefinition extends AbstractBendableScoreDefi
     @Override
     public BendableBigDecimalScore divideBySanitizedDivisor(BendableBigDecimalScore dividend,
             BendableBigDecimalScore divisor) {
-        int dividendInitScore = dividend.initScore();
-        int divisorInitScore = sanitize(divisor.initScore());
         BigDecimal[] hardScores = new BigDecimal[hardLevelsSize];
         for (int i = 0; i < hardLevelsSize; i++) {
             hardScores[i] = divide(dividend.hardScore(i), sanitize(divisor.hardScore(i)));
@@ -117,7 +110,7 @@ public class BendableBigDecimalScoreDefinition extends AbstractBendableScoreDefi
         }
         BigDecimal[] levels = Stream.concat(Arrays.stream(hardScores), Arrays.stream(softScores))
                 .toArray(BigDecimal[]::new);
-        return createScoreUninitialized(divide(dividendInitScore, divisorInitScore), levels);
+        return createScore(levels);
     }
 
     @Override

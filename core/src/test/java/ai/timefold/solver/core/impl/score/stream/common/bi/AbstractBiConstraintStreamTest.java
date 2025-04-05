@@ -2356,8 +2356,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(-21));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(-21));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2375,8 +2374,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleLongScore.of(-21));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(-21));
     }
 
     @Override
@@ -2393,8 +2391,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-21)));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-21)));
     }
 
     private <Score_ extends Score<Score_>, Solution_, Entity_> void assertDefaultJustifications(
@@ -2442,8 +2439,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(-42));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(-42));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2461,8 +2457,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleLongScore.of(-42));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(-42));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2481,8 +2476,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-42)));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-42)));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2497,8 +2491,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(21));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(21));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2513,8 +2506,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(42));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(42));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2532,8 +2524,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleLongScore.of(42));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(42));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2552,8 +2543,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(42)));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(42)));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2568,8 +2558,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(21));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(21));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2584,8 +2573,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(42));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(42));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2603,8 +2591,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleLongScore.of(42));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(42));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2623,8 +2610,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(42)));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(42)));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2639,8 +2625,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(-42));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(-42));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2658,8 +2643,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleLongScore.of(-42));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(-42));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2678,8 +2662,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-42)));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-42)));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2696,8 +2679,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(-21));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(-21));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2748,8 +2730,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(-42));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(-42));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2769,8 +2750,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleLongScore.of(-42));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(-42));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2791,8 +2771,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-42)));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-42)));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2809,8 +2788,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(21));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(21));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2827,8 +2805,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(42));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(42));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2848,8 +2825,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleLongScore.of(42));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(42));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2870,8 +2846,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(42)));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(42)));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2888,8 +2863,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(21));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(21));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2906,8 +2880,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(42));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(42));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2927,8 +2900,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleLongScore.of(42));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(42));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2949,8 +2921,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(42)));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(42)));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2967,8 +2938,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(-42));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(-42));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2988,8 +2958,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleLongScore.of(-42));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(-42));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3010,8 +2979,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-42)));
+        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-42)));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 

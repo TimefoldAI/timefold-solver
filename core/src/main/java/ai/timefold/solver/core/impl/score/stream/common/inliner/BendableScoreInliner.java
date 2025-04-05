@@ -52,9 +52,8 @@ final class BendableScoreInliner extends AbstractScoreInliner<BendableScore> {
     }
 
     @Override
-    public BendableScore extractScore(int initScore) {
-        return BendableScore.ofUninitialized(initScore,
-                Arrays.copyOf(hardScores, hardScores.length),
+    public BendableScore extractScore() {
+        return BendableScore.of(Arrays.copyOf(hardScores, hardScores.length),
                 Arrays.copyOf(softScores, softScores.length));
     }
 

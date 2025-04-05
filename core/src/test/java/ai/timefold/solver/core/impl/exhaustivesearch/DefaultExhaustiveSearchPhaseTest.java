@@ -30,6 +30,7 @@ import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchStepS
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -86,7 +87,7 @@ class DefaultExhaustiveSearchPhaseTest extends AbstractMeterTest {
         var node2B = createNode(layer2, node1);
         var node3B = createNode(layer3, node2B);
         var node4B = createNode(layer4, node3B); // newNode
-        node4B.setScore(SimpleScore.ofUninitialized(-96, 7));
+        node4B.setScore(InnerScore.ofUninitialized(SimpleScore.of(7), 96));
         when(lastCompletedStepScope.getExpandingNode()).thenReturn(node3A);
         when(stepScope.getExpandingNode()).thenReturn(node4B);
 
@@ -144,7 +145,6 @@ class DefaultExhaustiveSearchPhaseTest extends AbstractMeterTest {
         var solvedE3 = solution.getEntityList().get(2);
         assertCode("e3", solvedE3);
         assertThat(solvedE3.getValue()).isEqualTo(v1);
-        assertThat(solution.getScore().initScore()).isEqualTo(0);
     }
 
     @Test
@@ -183,7 +183,6 @@ class DefaultExhaustiveSearchPhaseTest extends AbstractMeterTest {
         var solvedE3 = solution.getEntityList().get(2);
         assertCode("e3", solvedE3);
         assertThat(solvedE3.getValue()).isEqualTo(v1);
-        assertThat(solution.getScore().initScore()).isZero();
 
         SolverMetric.MOVE_EVALUATION_COUNT.register(solver);
         SolverMetric.SCORE_CALCULATION_COUNT.register(solver);

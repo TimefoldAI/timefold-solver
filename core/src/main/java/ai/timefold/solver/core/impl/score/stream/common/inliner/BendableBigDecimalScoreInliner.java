@@ -55,9 +55,8 @@ final class BendableBigDecimalScoreInliner extends AbstractScoreInliner<Bendable
     }
 
     @Override
-    public BendableBigDecimalScore extractScore(int initScore) {
-        return BendableBigDecimalScore.ofUninitialized(initScore,
-                Arrays.copyOf(hardScores, hardScores.length),
+    public BendableBigDecimalScore extractScore() {
+        return BendableBigDecimalScore.of(Arrays.copyOf(hardScores, hardScores.length),
                 Arrays.copyOf(softScores, softScores.length));
     }
 

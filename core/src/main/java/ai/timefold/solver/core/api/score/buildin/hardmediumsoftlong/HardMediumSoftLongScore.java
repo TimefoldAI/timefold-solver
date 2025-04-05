@@ -24,30 +24,31 @@ import org.jspecify.annotations.NonNull;
  */
 public final class HardMediumSoftLongScore implements Score<HardMediumSoftLongScore> {
 
-    public static final @NonNull HardMediumSoftLongScore ZERO = new HardMediumSoftLongScore(0, 0L, 0L, 0L);
-    public static final @NonNull HardMediumSoftLongScore ONE_HARD = new HardMediumSoftLongScore(0, 1L, 0L, 0L);
-    private static final @NonNull HardMediumSoftLongScore MINUS_ONE_HARD = new HardMediumSoftLongScore(0, -1L, 0L, 0L);
-    public static final @NonNull HardMediumSoftLongScore ONE_MEDIUM = new HardMediumSoftLongScore(0, 0L, 1L, 0L);
-    private static final @NonNull HardMediumSoftLongScore MINUS_ONE_MEDIUM = new HardMediumSoftLongScore(0, 0L, -1L, 0L);
-    public static final @NonNull HardMediumSoftLongScore ONE_SOFT = new HardMediumSoftLongScore(0, 0L, 0L, 1L);
-    private static final @NonNull HardMediumSoftLongScore MINUS_ONE_SOFT = new HardMediumSoftLongScore(0, 0L, 0L, -1L);
+    public static final @NonNull HardMediumSoftLongScore ZERO = new HardMediumSoftLongScore(0L, 0L, 0L);
+    public static final @NonNull HardMediumSoftLongScore ONE_HARD = new HardMediumSoftLongScore(1L, 0L, 0L);
+    private static final @NonNull HardMediumSoftLongScore MINUS_ONE_HARD = new HardMediumSoftLongScore(-1L, 0L, 0L);
+    public static final @NonNull HardMediumSoftLongScore ONE_MEDIUM = new HardMediumSoftLongScore(0L, 1L, 0L);
+    private static final @NonNull HardMediumSoftLongScore MINUS_ONE_MEDIUM = new HardMediumSoftLongScore(0L, -1L, 0L);
+    public static final @NonNull HardMediumSoftLongScore ONE_SOFT = new HardMediumSoftLongScore(0L, 0L, 1L);
+    private static final @NonNull HardMediumSoftLongScore MINUS_ONE_SOFT = new HardMediumSoftLongScore(0L, 0L, -1L);
 
     public static @NonNull HardMediumSoftLongScore parseScore(@NonNull String scoreString) {
         String[] scoreTokens = ScoreUtil.parseScoreTokens(HardMediumSoftLongScore.class, scoreString,
                 HARD_LABEL, MEDIUM_LABEL, SOFT_LABEL);
-        int initScore = ScoreUtil.parseInitScore(HardMediumSoftLongScore.class, scoreString, scoreTokens[0]);
         long hardScore = ScoreUtil.parseLevelAsLong(HardMediumSoftLongScore.class, scoreString, scoreTokens[1]);
         long mediumScore = ScoreUtil.parseLevelAsLong(HardMediumSoftLongScore.class, scoreString, scoreTokens[2]);
         long softScore = ScoreUtil.parseLevelAsLong(HardMediumSoftLongScore.class, scoreString, scoreTokens[3]);
-        return ofUninitialized(initScore, hardScore, mediumScore, softScore);
+        return of(hardScore, mediumScore, softScore);
     }
 
+    /**
+     * @deprecated Use {@link #of(long, long, long)} instead.
+     * @return init score is always zero
+     */
+    @Deprecated(forRemoval = true, since = "1.21.0")
     public static @NonNull HardMediumSoftLongScore ofUninitialized(int initScore, long hardScore, long mediumScore,
             long softScore) {
-        if (initScore == 0) {
-            return of(hardScore, mediumScore, softScore);
-        }
-        return new HardMediumSoftLongScore(initScore, hardScore, mediumScore, softScore);
+        return of(hardScore, mediumScore, softScore);
     }
 
     public static @NonNull HardMediumSoftLongScore of(long hardScore, long mediumScore, long softScore) {
@@ -70,7 +71,7 @@ public final class HardMediumSoftLongScore implements Score<HardMediumSoftLongSc
         } else if (hardScore == 1L && mediumScore == 0L && softScore == 0L) {
             return ONE_HARD;
         }
-        return new HardMediumSoftLongScore(0, hardScore, mediumScore, softScore);
+        return new HardMediumSoftLongScore(hardScore, mediumScore, softScore);
     }
 
     public static @NonNull HardMediumSoftLongScore ofHard(long hardScore) {
@@ -81,7 +82,7 @@ public final class HardMediumSoftLongScore implements Score<HardMediumSoftLongSc
         } else if (hardScore == 1L) {
             return ONE_HARD;
         }
-        return new HardMediumSoftLongScore(0, hardScore, 0L, 0L);
+        return new HardMediumSoftLongScore(hardScore, 0L, 0L);
     }
 
     public static @NonNull HardMediumSoftLongScore ofMedium(long mediumScore) {
@@ -92,7 +93,7 @@ public final class HardMediumSoftLongScore implements Score<HardMediumSoftLongSc
         } else if (mediumScore == 1L) {
             return ONE_MEDIUM;
         }
-        return new HardMediumSoftLongScore(0, 0L, mediumScore, 0L);
+        return new HardMediumSoftLongScore(0L, mediumScore, 0L);
     }
 
     public static @NonNull HardMediumSoftLongScore ofSoft(long softScore) {
@@ -103,14 +104,9 @@ public final class HardMediumSoftLongScore implements Score<HardMediumSoftLongSc
         } else if (softScore == 1L) {
             return ONE_SOFT;
         }
-        return new HardMediumSoftLongScore(0, 0L, 0L, softScore);
+        return new HardMediumSoftLongScore(0L, 0L, softScore);
     }
 
-    // ************************************************************************
-    // Fields
-    // ************************************************************************
-
-    private final int initScore;
     private final long hardScore;
     private final long mediumScore;
     private final long softScore;
@@ -122,19 +118,13 @@ public final class HardMediumSoftLongScore implements Score<HardMediumSoftLongSc
      */
     @SuppressWarnings("unused")
     private HardMediumSoftLongScore() {
-        this(Integer.MIN_VALUE, Long.MIN_VALUE, Long.MIN_VALUE, Long.MIN_VALUE);
+        this(Long.MIN_VALUE, Long.MIN_VALUE, Long.MIN_VALUE);
     }
 
-    private HardMediumSoftLongScore(int initScore, long hardScore, long mediumScore, long softScore) {
-        this.initScore = initScore;
+    private HardMediumSoftLongScore(long hardScore, long mediumScore, long softScore) {
         this.hardScore = hardScore;
         this.mediumScore = mediumScore;
         this.softScore = softScore;
-    }
-
-    @Override
-    public int initScore() {
-        return initScore;
     }
 
     /**
@@ -204,15 +194,6 @@ public final class HardMediumSoftLongScore implements Score<HardMediumSoftLongSc
         return softScore;
     }
 
-    // ************************************************************************
-    // Worker methods
-    // ************************************************************************
-
-    @Override
-    public @NonNull HardMediumSoftLongScore withInitScore(int newInitScore) {
-        return ofUninitialized(newInitScore, hardScore, mediumScore, softScore);
-    }
-
     /**
      * A {@link PlanningSolution} is feasible if it has no broken hard constraints.
      *
@@ -220,57 +201,47 @@ public final class HardMediumSoftLongScore implements Score<HardMediumSoftLongSc
      */
     @Override
     public boolean isFeasible() {
-        return initScore >= 0 && hardScore >= 0L;
+        return hardScore >= 0L;
     }
 
     @Override
     public @NonNull HardMediumSoftLongScore add(@NonNull HardMediumSoftLongScore addend) {
-        return ofUninitialized(
-                initScore + addend.initScore(),
-                hardScore + addend.hardScore(),
+        return of(hardScore + addend.hardScore(),
                 mediumScore + addend.mediumScore(),
                 softScore + addend.softScore());
     }
 
     @Override
     public @NonNull HardMediumSoftLongScore subtract(@NonNull HardMediumSoftLongScore subtrahend) {
-        return ofUninitialized(
-                initScore - subtrahend.initScore(),
-                hardScore - subtrahend.hardScore(),
+        return of(hardScore - subtrahend.hardScore(),
                 mediumScore - subtrahend.mediumScore(),
                 softScore - subtrahend.softScore());
     }
 
     @Override
     public @NonNull HardMediumSoftLongScore multiply(double multiplicand) {
-        return ofUninitialized(
-                (int) Math.floor(initScore * multiplicand),
-                (long) Math.floor(hardScore * multiplicand),
+        return of((long) Math.floor(hardScore * multiplicand),
                 (long) Math.floor(mediumScore * multiplicand),
                 (long) Math.floor(softScore * multiplicand));
     }
 
     @Override
     public @NonNull HardMediumSoftLongScore divide(double divisor) {
-        return ofUninitialized(
-                (int) Math.floor(initScore / divisor),
-                (long) Math.floor(hardScore / divisor),
+        return of((long) Math.floor(hardScore / divisor),
                 (long) Math.floor(mediumScore / divisor),
                 (long) Math.floor(softScore / divisor));
     }
 
     @Override
     public @NonNull HardMediumSoftLongScore power(double exponent) {
-        return ofUninitialized(
-                (int) Math.floor(Math.pow(initScore, exponent)),
-                (long) Math.floor(Math.pow(hardScore, exponent)),
+        return of((long) Math.floor(Math.pow(hardScore, exponent)),
                 (long) Math.floor(Math.pow(mediumScore, exponent)),
                 (long) Math.floor(Math.pow(softScore, exponent)));
     }
 
     @Override
     public @NonNull HardMediumSoftLongScore abs() {
-        return ofUninitialized(Math.abs(initScore), Math.abs(hardScore), Math.abs(mediumScore), Math.abs(softScore));
+        return of(Math.abs(hardScore), Math.abs(mediumScore), Math.abs(softScore));
     }
 
     @Override
@@ -286,8 +257,7 @@ public final class HardMediumSoftLongScore implements Score<HardMediumSoftLongSc
     @Override
     public boolean equals(Object o) {
         if (o instanceof HardMediumSoftLongScore other) {
-            return initScore == other.initScore()
-                    && hardScore == other.hardScore()
+            return hardScore == other.hardScore()
                     && mediumScore == other.mediumScore()
                     && softScore == other.softScore();
         }
@@ -296,14 +266,12 @@ public final class HardMediumSoftLongScore implements Score<HardMediumSoftLongSc
 
     @Override
     public int hashCode() {
-        return Objects.hash(initScore, hardScore, mediumScore, softScore);
+        return Objects.hash(hardScore, mediumScore, softScore);
     }
 
     @Override
     public int compareTo(@NonNull HardMediumSoftLongScore other) {
-        if (initScore != other.initScore()) {
-            return Integer.compare(initScore, other.initScore());
-        } else if (hardScore != other.hardScore()) {
+        if (hardScore != other.hardScore()) {
             return Long.compare(hardScore, other.hardScore());
         } else if (mediumScore != other.mediumScore()) {
             return Long.compare(mediumScore, other.mediumScore());
@@ -319,8 +287,7 @@ public final class HardMediumSoftLongScore implements Score<HardMediumSoftLongSc
 
     @Override
     public String toString() {
-        return ScoreUtil.getInitPrefix(initScore) + hardScore + HARD_LABEL + "/" + mediumScore + MEDIUM_LABEL + "/" + softScore
-                + SOFT_LABEL;
+        return hardScore + HARD_LABEL + "/" + mediumScore + MEDIUM_LABEL + "/" + softScore + SOFT_LABEL;
     }
 
 }

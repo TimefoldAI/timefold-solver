@@ -49,6 +49,7 @@ public class SingleBenchmarkResult implements BenchmarkResult {
     private Integer failureCount = null;
     private Score totalScore = null;
     private Score averageScore = null;
+    private boolean hasUninitializedScores = false;
     private SubSingleBenchmarkResult median = null;
     private SubSingleBenchmarkResult best = null;
     private SubSingleBenchmarkResult worst = null;
@@ -202,9 +203,10 @@ public class SingleBenchmarkResult implements BenchmarkResult {
         return averageScore;
     }
 
-    public void setAverageAndTotalScoreForTesting(Score<?> averageAndTotalScore) {
+    public void setAverageAndTotalScoreForTesting(Score<?> averageAndTotalScore, boolean hasUninitializedScores) {
         this.averageScore = averageAndTotalScore;
         this.totalScore = averageAndTotalScore;
+        this.hasUninitializedScores = hasUninitializedScores;
     }
 
     public SubSingleBenchmarkResult getMedian() {
@@ -246,7 +248,7 @@ public class SingleBenchmarkResult implements BenchmarkResult {
     }
 
     public boolean isInitialized() {
-        return averageScore != null && averageScore.isSolutionInitialized();
+        return averageScore != null && !hasUninitializedScores;
     }
 
     @Override
@@ -360,11 +362,14 @@ public class SingleBenchmarkResult implements BenchmarkResult {
                 failureCount++;
                 it.remove();
             } else {
+                var isUninitialized = !subSingleBenchmarkResult.isInitialized();
                 if (firstNonFailure) {
                     totalScore = subSingleBenchmarkResult.getAverageScore();
+                    hasUninitializedScores = isUninitialized;
                     firstNonFailure = false;
                 } else {
                     totalScore = totalScore.add(subSingleBenchmarkResult.getAverageScore());
+                    hasUninitializedScores = hasUninitializedScores || isUninitialized;
                 }
             }
         }

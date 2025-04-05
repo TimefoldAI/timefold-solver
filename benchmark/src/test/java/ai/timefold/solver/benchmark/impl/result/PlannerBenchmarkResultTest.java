@@ -105,7 +105,7 @@ class PlannerBenchmarkResultTest {
         SingleBenchmarkResult singleBenchmarkResult = new SingleBenchmarkResult(solverBenchmarkResult, problemBenchmarkResult);
         solverBenchmarkResult.getSingleBenchmarkResultList().add(singleBenchmarkResult);
         problemBenchmarkResult.getSingleBenchmarkResultList().add(singleBenchmarkResult);
-        singleBenchmarkResult.setAverageAndTotalScoreForTesting(SimpleScore.of(score));
+        singleBenchmarkResult.setAverageAndTotalScoreForTesting(SimpleScore.of(score), true);
         singleBenchmarkResult.setSubSingleBenchmarkResultList(new ArrayList<>(1));
         createSubSingleBenchmarkResult(singleBenchmarkResult, 0);
         return singleBenchmarkResult;
@@ -134,7 +134,7 @@ class PlannerBenchmarkResultTest {
         String originalXml = IOUtils.toString(
                 PlannerBenchmarkResultTest.class.getResourceAsStream(TEST_PLANNER_BENCHMARK_RESULT), StandardCharsets.UTF_8);
 
-        assertThat(jaxbString.trim()).isXmlEqualTo(originalXml.trim());
+        assertThat(jaxbString.trim()).isEqualToIgnoringWhitespace(originalXml.trim());
     }
 
     @Test

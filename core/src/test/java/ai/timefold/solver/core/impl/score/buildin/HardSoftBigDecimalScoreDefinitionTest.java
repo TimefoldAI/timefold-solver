@@ -42,7 +42,7 @@ class HardSoftBigDecimalScoreDefinitionTest {
     @Test
     void divideBySanitizedDivisor() {
         HardSoftBigDecimalScoreDefinition scoreDefinition = new HardSoftBigDecimalScoreDefinition();
-        HardSoftBigDecimalScore dividend = scoreDefinition.fromLevelNumbers(2,
+        HardSoftBigDecimalScore dividend = scoreDefinition.fromLevelNumbers(
                 new Number[] { BigDecimal.ZERO, BigDecimal.TEN });
         HardSoftBigDecimalScore zeroDivisor = scoreDefinition.getZeroScore();
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, zeroDivisor))
@@ -50,10 +50,10 @@ class HardSoftBigDecimalScoreDefinitionTest {
         HardSoftBigDecimalScore oneDivisor = scoreDefinition.getOneSoftestScore();
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, oneDivisor))
                 .isEqualTo(dividend);
-        HardSoftBigDecimalScore tenDivisor = scoreDefinition.fromLevelNumbers(10,
+        HardSoftBigDecimalScore tenDivisor = scoreDefinition.fromLevelNumbers(
                 new Number[] { BigDecimal.TEN, BigDecimal.TEN });
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, tenDivisor))
-                .isEqualTo(scoreDefinition.fromLevelNumbers(0,
+                .isEqualTo(scoreDefinition.fromLevelNumbers(
                         new Number[] { BigDecimal.ZERO, BigDecimal.ONE }));
     }
 

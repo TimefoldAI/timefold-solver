@@ -750,7 +750,7 @@ def on_best_solution_changed(event: BestSolutionChangedEvent[VehicleRoutePlan]) 
 ----
 ====
 
-. Use `Score.isSolutionInitialized()` instead of `Score.isFeasible()` to only ignore uninitialized solutions,
+. Use the event's `isNewBestSolutionInitialized()` method instead of `Score.isFeasible()` to only ignore uninitialized solutions,
 but do accept infeasible solutions too.
 
 

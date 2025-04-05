@@ -37,7 +37,7 @@ public class StepScoreProblemStatistic extends ProblemStatistic<LineChart<Long, 
                 var subSingleStatistic = singleBenchmarkResult.getSubSingleStatistic(problemStatisticType);
                 List<StepScoreStatisticPoint> points = subSingleStatistic.getPointList();
                 for (StepScoreStatisticPoint point : points) {
-                    if (!point.getScore().isSolutionInitialized()) {
+                    if (!point.isInitialized()) {
                         continue;
                     }
                     long timeMillisSpent = point.getTimeMillisSpent();

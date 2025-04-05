@@ -32,7 +32,7 @@ class EntityTabuAcceptorTest {
         var e4 = new TestdataEntity("e4");
 
         var solverScope = new SolverScope<>();
-        solverScope.setBestScore(SimpleScore.of(0));
+        solverScope.setInitializedBestScore(SimpleScore.ZERO);
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         acceptor.phaseStarted(phaseScope);
 
@@ -117,7 +117,7 @@ class EntityTabuAcceptorTest {
         var e4 = new TestdataEntity("e4");
 
         var solverScope = new SolverScope<>();
-        solverScope.setBestScore(SimpleScore.of(0));
+        solverScope.setInitializedBestScore(SimpleScore.ZERO);
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         acceptor.phaseStarted(phaseScope);
 
@@ -214,7 +214,7 @@ class EntityTabuAcceptorTest {
         var e1 = new TestdataEntity("e1");
 
         var solverScope = new SolverScope<>();
-        solverScope.setBestScore(SimpleScore.of(-100));
+        solverScope.setInitializedBestScore(SimpleScore.of(-100));
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         acceptor.phaseStarted(phaseScope);
 
@@ -247,7 +247,7 @@ class EntityTabuAcceptorTest {
         var move = mock(Move.class);
         when(move.extractPlanningEntities()).thenReturn(Arrays.asList(entities));
         var moveScope = new LocalSearchMoveScope<Solution_>(stepScope, 0, move);
-        moveScope.setScore(SimpleScore.of(score));
+        moveScope.setInitializedScore(SimpleScore.of(score));
         return moveScope;
     }
 

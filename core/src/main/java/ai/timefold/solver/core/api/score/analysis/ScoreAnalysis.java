@@ -44,19 +44,30 @@ import org.jspecify.annotations.Nullable;
  * Note: the constructors of this record are off-limits.
  * We ask users to use exclusively {@link SolutionManager#analyze(Object)} to obtain instances of this record.
  *
+ * @param score Score of the solution being analyzed.
  * @param constraintMap for each constraint identified by its {@link Constraint#getConstraintRef()},
  *        the {@link ConstraintAnalysis} that describes the impact of that constraint on the overall score.
  *        Constraints are present even if they have no matches, unless their weight is zero;
  *        zero-weight constraints are not present.
  *        Entries in the map have a stable iteration order; items are ordered first by {@link ConstraintAnalysis#weight()},
  *        then by {@link ConstraintAnalysis#constraintRef()}.
+ * @param isSolutionInitialized Whether the solution was fully initialized at the time of analysis.
  *
  * @param <Score_>
  */
 public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
-        @NonNull Map<ConstraintRef, ConstraintAnalysis<Score_>> constraintMap) {
+        @NonNull Map<ConstraintRef, ConstraintAnalysis<Score_>> constraintMap,
+        boolean isSolutionInitialized) {
 
     static final int DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT = 3;
+
+    /**
+     * As defined by {@link #ScoreAnalysis(Score, Map, boolean)},
+     * with the final argument set to true.
+     */
+    public ScoreAnalysis(@NonNull Score_ score, @NonNull Map<ConstraintRef, ConstraintAnalysis<Score_>> constraintMap) {
+        this(score, constraintMap, true);
+    }
 
     public ScoreAnalysis {
         Objects.requireNonNull(score, "score");
@@ -144,6 +155,11 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
      * <p>
      * If one {@link ScoreAnalysis} provides {@link MatchAnalysis} and the other doesn't, exception is thrown.
      * Such {@link ScoreAnalysis} instances are mutually incompatible.
+     * 
+     * <p>
+     * If {@code this} came from a fully initialized solution,
+     * {@link #isSolutionInitialized} will be true.
+     * False otherwise.
      */
     public @NonNull ScoreAnalysis<Score_> diff(@NonNull ScoreAnalysis<Score_> other) {
         var result = Stream.concat(constraintMap.keySet().stream(),
@@ -158,7 +174,7 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
                         },
                         (constraintRef, otherConstraintRef) -> constraintRef,
                         HashMap::new));
-        return new ScoreAnalysis<>(score.subtract(other.score()), result);
+        return new ScoreAnalysis<>(score.subtract(other.score()), result, isSolutionInitialized);
     }
 
     /**
@@ -224,10 +240,6 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
                 });
 
         return summary.toString();
-    }
-
-    public boolean isSolutionInitialized() {
-        return score().isSolutionInitialized();
     }
 
     @Override

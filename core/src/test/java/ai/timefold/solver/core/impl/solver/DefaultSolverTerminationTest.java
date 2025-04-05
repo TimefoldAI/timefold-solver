@@ -55,8 +55,9 @@ class DefaultSolverTerminationTest {
                 .buildSolver();
         var bestSolution = solver.solve(solution);
         // 2 entities means 2 steps, but the step count limit is 1.
-        // Therefore the best solution is uninitialized.
-        Assertions.assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.ofUninitialized(-1, 0));
+        // Therefore the best solution is uninitialized, but the score is still just zero.
+        // (No init score.)
+        Assertions.assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.ZERO);
     }
 
     @Test
@@ -74,8 +75,9 @@ class DefaultSolverTerminationTest {
                 .buildSolver();
         var bestSolution = solver.solve(solution);
         // 2 entities means 2 steps, but the step count limit is 1.
-        // Therefore the best solution is uninitialized.
-        Assertions.assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.ofUninitialized(-1, 0));
+        // Therefore the best solution is uninitialized, but the score is still just zero.
+        // (No init score.)
+        Assertions.assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.ZERO);
     }
 
     @Test
@@ -162,9 +164,8 @@ class DefaultSolverTerminationTest {
         var resultingSolution = solver.solve(solution);
         SoftAssertions.assertSoftly(softly -> {
             softly.assertThat(resultingSolution).isNotNull();
-            softly.assertThat(resultingSolution.getScore().initScore()).isLessThan(0);
+            softly.assertThat(resultingSolution.getScore()).isNotNull();
         });
-        Assertions.assertThat(solution).isNotNull();
     }
 
     @ParameterizedTest
@@ -186,9 +187,8 @@ class DefaultSolverTerminationTest {
         var resultingSolution = solver.solve(solution);
         SoftAssertions.assertSoftly(softly -> {
             softly.assertThat(resultingSolution).isNotNull();
-            softly.assertThat(resultingSolution.getScore().initScore()).isLessThan(0);
+            softly.assertThat(resultingSolution.getScore()).isNotNull();
         });
-        Assertions.assertThat(solution).isNotNull();
     }
 
     @ParameterizedTest

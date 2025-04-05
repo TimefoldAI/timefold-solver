@@ -16,9 +16,6 @@ class HardSoftLongScoreJaxbAdapterTest extends AbstractScoreJaxbAdapterTest {
 
         HardSoftLongScore score = HardSoftLongScore.of(1200L, 34L);
         assertSerializeAndDeserialize(score, new TestHardSoftLongScoreWrapper(score));
-
-        score = HardSoftLongScore.ofUninitialized(-7, 1200L, 34L);
-        assertSerializeAndDeserialize(score, new TestHardSoftLongScoreWrapper(score));
     }
 
     @XmlRootElement

@@ -1,18 +1,18 @@
 package ai.timefold.solver.core.impl.localsearch.decider.acceptor.stepcountinghillclimbing;
 
-import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.localsearch.decider.acceptor.stepcountinghillclimbing.StepCountingHillClimbingType;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptor;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 public class StepCountingHillClimbingAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
 
     protected int stepCountingHillClimbingSize = -1;
     protected StepCountingHillClimbingType stepCountingHillClimbingType;
 
-    protected Score thresholdScore;
+    protected InnerScore<?> thresholdScore;
     protected int count = -1;
 
     public StepCountingHillClimbingAcceptor(int stepCountingHillClimbingSize,
@@ -40,10 +40,11 @@ public class StepCountingHillClimbingAcceptor<Solution_> extends AbstractAccepto
         count = 0;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
-        Score lastStepScore = moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore();
-        Score moveScore = moveScope.getScore();
+        InnerScore lastStepScore = moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore();
+        InnerScore moveScore = moveScope.getScore();
         if (moveScore.compareTo(lastStepScore) >= 0) {
             return true;
         }
@@ -60,26 +61,23 @@ public class StepCountingHillClimbingAcceptor<Solution_> extends AbstractAccepto
         }
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private int determineCountIncrement(LocalSearchStepScope<Solution_> stepScope) {
-        switch (stepCountingHillClimbingType) {
-            case SELECTED_MOVE:
+        return switch (stepCountingHillClimbingType) {
+            case SELECTED_MOVE -> {
                 long selectedMoveCount = stepScope.getSelectedMoveCount();
-                return selectedMoveCount > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) selectedMoveCount;
-            case ACCEPTED_MOVE:
+                yield selectedMoveCount > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) selectedMoveCount;
+            }
+            case ACCEPTED_MOVE -> {
                 long acceptedMoveCount = stepScope.getAcceptedMoveCount();
-                return acceptedMoveCount > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) acceptedMoveCount;
-            case STEP:
-                return 1;
-            case EQUAL_OR_IMPROVING_STEP:
-                return ((Score) stepScope.getScore()).compareTo(
-                        stepScope.getPhaseScope().getLastCompletedStepScope().getScore()) >= 0 ? 1 : 0;
-            case IMPROVING_STEP:
-                return ((Score) stepScope.getScore()).compareTo(
-                        stepScope.getPhaseScope().getLastCompletedStepScope().getScore()) > 0 ? 1 : 0;
-            default:
-                throw new IllegalStateException("The stepCountingHillClimbingType (" + stepCountingHillClimbingType
-                        + ") is not implemented.");
-        }
+                yield acceptedMoveCount > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) acceptedMoveCount;
+            }
+            case STEP -> 1;
+            case EQUAL_OR_IMPROVING_STEP -> ((InnerScore) stepScope.getScore()).compareTo(
+                    stepScope.getPhaseScope().getLastCompletedStepScope().getScore()) >= 0 ? 1 : 0;
+            case IMPROVING_STEP -> ((InnerScore) stepScope.getScore()).compareTo(
+                    stepScope.getPhaseScope().getLastCompletedStepScope().getScore()) > 0 ? 1 : 0;
+        };
     }
 
     @Override

@@ -13,6 +13,7 @@ public class ScoreSubSingleBenchmarkRankingComparator implements Comparator<SubS
         return Comparator
                 // Reverse, less is better (redundant: failed benchmarks don't get ranked at all)
                 .comparing(SubSingleBenchmarkResult::hasAnyFailure, Comparator.reverseOrder())
+                .thenComparing(SubSingleBenchmarkResult::isInitialized)
                 .thenComparing(SubSingleBenchmarkResult::getScore,
                         new ResilientScoreComparator(aScoreDefinition))
                 .compare(a, b);

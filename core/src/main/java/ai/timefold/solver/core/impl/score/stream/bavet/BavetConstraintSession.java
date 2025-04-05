@@ -34,9 +34,9 @@ public final class BavetConstraintSession<Score_ extends Score<Score_>> extends 
         this.scoreInliner = scoreInliner;
     }
 
-    public Score_ calculateScore(int initScore) {
+    public Score_ calculateScore() {
         settle();
-        return scoreInliner.extractScore(initScore);
+        return scoreInliner.extractScore();
     }
 
     public AbstractScoreInliner<Score_> getScoreInliner() {

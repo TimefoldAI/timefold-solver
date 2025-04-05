@@ -81,7 +81,7 @@ public class TimefoldTestResource {
         };
         // We ensure the best-score limit won't take priority
         customScope.setStartingInitializedScore(HardSoftScore.of(-1, -1));
-        customScope.setBestScore(HardSoftScore.of(-1, -1));
+        customScope.setInitializedBestScore(HardSoftScore.of(-1, -1));
         try {
             String score = solverJob.getFinalBestSolution().getScore().toString();
             DecimalFormatSymbols decimalFormatSymbols = DecimalFormatSymbols.getInstance();

@@ -48,12 +48,12 @@ public class SimpleBigDecimalScoreDefinition extends AbstractScoreDefinition<Sim
     }
 
     @Override
-    public SimpleBigDecimalScore fromLevelNumbers(int initScore, Number[] levelNumbers) {
+    public SimpleBigDecimalScore fromLevelNumbers(Number[] levelNumbers) {
         if (levelNumbers.length != getLevelsSize()) {
             throw new IllegalStateException("The levelNumbers (" + Arrays.toString(levelNumbers)
                     + ")'s length (" + levelNumbers.length + ") must equal the levelSize (" + getLevelsSize() + ").");
         }
-        return SimpleBigDecimalScore.ofUninitialized(initScore, (BigDecimal) levelNumbers[0]);
+        return SimpleBigDecimalScore.of((BigDecimal) levelNumbers[0]);
     }
 
     @Override
@@ -75,12 +75,9 @@ public class SimpleBigDecimalScoreDefinition extends AbstractScoreDefinition<Sim
     @Override
     public SimpleBigDecimalScore divideBySanitizedDivisor(SimpleBigDecimalScore dividend,
             SimpleBigDecimalScore divisor) {
-        int dividendInitScore = dividend.initScore();
-        int divisorInitScore = sanitize(divisor.initScore());
         BigDecimal dividendScore = dividend.score();
         BigDecimal divisorScore = sanitize(divisor.score());
         return fromLevelNumbers(
-                divide(dividendInitScore, divisorInitScore),
                 new Number[] {
                         divide(dividendScore, divisorScore)
                 });
