@@ -362,13 +362,14 @@ public class SingleBenchmarkResult implements BenchmarkResult {
                 failureCount++;
                 it.remove();
             } else {
+                var isUninitialized = !subSingleBenchmarkResult.isInitialized();
                 if (firstNonFailure) {
                     totalScore = subSingleBenchmarkResult.getAverageScore();
-                    hasUninitializedScores = subSingleBenchmarkResult.isInitialized();
+                    hasUninitializedScores = isUninitialized;
                     firstNonFailure = false;
                 } else {
                     totalScore = totalScore.add(subSingleBenchmarkResult.getAverageScore());
-                    hasUninitializedScores = hasUninitializedScores || subSingleBenchmarkResult.isInitialized();
+                    hasUninitializedScores = hasUninitializedScores || isUninitialized;
                 }
             }
         }
