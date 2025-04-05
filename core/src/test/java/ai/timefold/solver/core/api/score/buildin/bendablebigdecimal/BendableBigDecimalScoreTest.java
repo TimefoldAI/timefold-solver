@@ -22,8 +22,6 @@ class BendableBigDecimalScoreTest extends AbstractScoreTest {
     private static final BigDecimal PLUS_21 = BigDecimal.valueOf(21);
     private static final BigDecimal PLUS_20 = BigDecimal.valueOf(20);
     private static final BigDecimal PLUS_19 = BigDecimal.valueOf(19);
-    private static final BigDecimal PLUS_16 = BigDecimal.valueOf(16);
-    private static final BigDecimal NINE = BigDecimal.valueOf(9);
     private static final BigDecimal FIVE = BigDecimal.valueOf(5);
     private static final BigDecimal FOUR = BigDecimal.valueOf(4);
     private static final BigDecimal THREE = BigDecimal.valueOf(3);
@@ -47,7 +45,8 @@ class BendableBigDecimalScoreTest extends AbstractScoreTest {
     private static final BigDecimal MINUS_8000 = BigDecimal.valueOf(-8000);
     private static final BigDecimal MIN_INTEGER = BigDecimal.valueOf(Integer.MIN_VALUE);
 
-    private BendableBigDecimalScoreDefinition scoreDefinitionHSS = new BendableBigDecimalScoreDefinition(1, 2);
+    private final BendableBigDecimalScoreDefinition scoreDefinitionHSS = new BendableBigDecimalScoreDefinition(1, 2);
+    private final BendableBigDecimalScoreDefinition scoreDefinitionHHSSS = new BendableBigDecimalScoreDefinition(2, 3);
 
     @Test
     void of() {
@@ -204,8 +203,6 @@ class BendableBigDecimalScoreTest extends AbstractScoreTest {
                 scoreDefinitionHSS.createScore(ONE, MIN_INTEGER, MINUS_20),
                 scoreDefinitionHSS.createScore(ONE, MINUS_20, MIN_INTEGER));
     }
-
-    private BendableBigDecimalScoreDefinition scoreDefinitionHHSSS = new BendableBigDecimalScoreDefinition(2, 3);
 
     @Test
     void feasibleHHSSS() {
