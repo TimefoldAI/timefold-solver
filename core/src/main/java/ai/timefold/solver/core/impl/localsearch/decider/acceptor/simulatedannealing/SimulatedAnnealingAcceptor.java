@@ -55,8 +55,8 @@ public class SimulatedAnnealingAcceptor<Solution_> extends AbstractAcceptor<Solu
     public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         LocalSearchPhaseScope<Solution_> phaseScope = moveScope.getStepScope().getPhaseScope();
         // Guaranteed local search; no need for InnerScore.
-        Score lastStepScore = phaseScope.getLastCompletedStepScope().getScore().initialized();
-        Score moveScore = moveScope.getScore().initialized();
+        Score lastStepScore = phaseScope.getLastCompletedStepScope().getScore().raw();
+        Score moveScore = moveScope.getScore().raw();
         if (moveScore.compareTo(lastStepScore) >= 0) {
             return true;
         }

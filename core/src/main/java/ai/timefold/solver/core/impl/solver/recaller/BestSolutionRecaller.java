@@ -49,13 +49,13 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
         // Starting bestSolution is already set by Solver.solve(Solution)
         InnerScoreDirector scoreDirector = solverScope.getScoreDirector();
         InnerScore innerScore = scoreDirector.calculateScore();
-        var score = innerScore.initialized();
+        var score = innerScore.raw();
         solverScope.setBestScore(innerScore);
         solverScope.setBestSolutionTimeMillis(System.currentTimeMillis());
         // The original bestSolution might be the final bestSolution and should have an accurate Score
         solverScope.getSolutionDescriptor().setScore(solverScope.getBestSolution(), score);
         if (innerScore.isInitialized()) {
-            solverScope.setStartingInitializedScore(innerScore.initialized());
+            solverScope.setStartingInitializedScore(innerScore.raw());
         } else {
             solverScope.setStartingInitializedScore(null);
         }
@@ -109,7 +109,7 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
         if (bestScoreImproved) {
             phaseScope.setBestSolutionStepIndex(stepScope.getStepIndex());
             var newBestSolution = solverScope.getScoreDirector().cloneWorkingSolution();
-            var innerScore = new InnerScore<>(moveScore.initialized(), solverScope.getScoreDirector().getWorkingInitScore());
+            var innerScore = new InnerScore<>(moveScore.raw(), solverScope.getScoreDirector().getWorkingInitScore());
             updateBestSolutionAndFire(solverScope, innerScore, newBestSolution);
         } else if (assertBestScoreIsUnmodified) {
             solverScope.assertScoreFromScratch(solverScope.getBestSolution());
@@ -145,7 +145,7 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
             Solution_ bestSolution) {
         if (bestScore.isInitialized()) {
             if (!solverScope.isBestSolutionInitialized()) {
-                solverScope.setStartingInitializedScore(bestScore.initialized());
+                solverScope.setStartingInitializedScore(bestScore.raw());
             }
         }
         solverScope.setBestSolution(bestSolution);

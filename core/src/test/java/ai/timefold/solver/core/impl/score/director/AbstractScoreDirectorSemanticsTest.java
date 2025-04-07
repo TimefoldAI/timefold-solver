@@ -46,17 +46,17 @@ public abstract class AbstractScoreDirectorSemanticsTest {
         try (var scoreDirector1 = scoreDirectorFactory.buildScoreDirector()) {
             scoreDirector1.setWorkingSolution(solution1);
             var score1 = scoreDirector1.calculateScore();
-            assertThat(score1.initialized()).isEqualTo(SimpleScore.of(1));
+            assertThat(score1.raw()).isEqualTo(SimpleScore.of(1));
 
             // Create second score director, calculate score.
             var solution2 = TestdataConstraintConfigurationSolution.generateSolution(2, 2);
             try (var scoreDirector2 = scoreDirectorFactory.buildScoreDirector()) {
                 scoreDirector2.setWorkingSolution(solution2);
                 var score2 = scoreDirector2.calculateScore();
-                assertThat(score2.initialized()).isEqualTo(SimpleScore.of(2));
+                assertThat(score2.raw()).isEqualTo(SimpleScore.of(2));
 
                 // Ensure that the second score director did not influence the first.
-                assertThat(scoreDirector1.calculateScore().initialized()).isEqualTo(SimpleScore.of(1));
+                assertThat(scoreDirector1.calculateScore().raw()).isEqualTo(SimpleScore.of(1));
 
                 // Make a change on the second score director, ensure it did not affect the first.
                 var entity = solution2.getEntityList().get(1);
@@ -64,16 +64,16 @@ public abstract class AbstractScoreDirectorSemanticsTest {
                 solution2.getEntityList().remove(entity);
                 scoreDirector2.afterEntityRemoved(entity);
                 scoreDirector2.triggerVariableListeners();
-                assertThat(scoreDirector2.calculateScore().initialized()).isEqualTo(SimpleScore.of(1));
-                assertThat(scoreDirector1.calculateScore().initialized()).isEqualTo(SimpleScore.of(1));
+                assertThat(scoreDirector2.calculateScore().raw()).isEqualTo(SimpleScore.of(1));
+                assertThat(scoreDirector1.calculateScore().raw()).isEqualTo(SimpleScore.of(1));
 
                 // Add the same entity to the first score director, ensure it did not affect the second.
                 scoreDirector1.beforeEntityAdded(entity);
                 solution1.getEntityList().add(entity);
                 scoreDirector1.afterEntityAdded(entity);
                 scoreDirector1.triggerVariableListeners();
-                assertThat(scoreDirector1.calculateScore().initialized()).isEqualTo(SimpleScore.of(2));
-                assertThat(scoreDirector2.calculateScore().initialized()).isEqualTo(SimpleScore.of(1));
+                assertThat(scoreDirector1.calculateScore().raw()).isEqualTo(SimpleScore.of(2));
+                assertThat(scoreDirector2.calculateScore().raw()).isEqualTo(SimpleScore.of(1));
             }
         }
     }
@@ -88,7 +88,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
         try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
             scoreDirector.setWorkingSolution(solution1);
             var score1 = scoreDirector.calculateScore();
-            assertThat(score1.initialized()).isEqualTo(SimpleScore.ONE);
+            assertThat(score1.raw()).isEqualTo(SimpleScore.ONE);
 
             // Set new solution with a different constraint weight, calculate score.
             var solution2 =
@@ -97,13 +97,13 @@ public abstract class AbstractScoreDirectorSemanticsTest {
             constraintConfiguration.setFirstWeight(SimpleScore.of(2));
             scoreDirector.setWorkingSolution(solution2);
             var score2 = scoreDirector.calculateScore();
-            assertThat(score2.initialized()).isEqualTo(SimpleScore.of(2));
+            assertThat(score2.raw()).isEqualTo(SimpleScore.of(2));
 
             // Set new solution with a disabled constraint, calculate score.
             constraintConfiguration.setFirstWeight(SimpleScore.ZERO);
             scoreDirector.setWorkingSolution(solution2);
             var score3 = scoreDirector.calculateScore();
-            assertThat(score3.initialized()).isEqualTo(SimpleScore.ZERO);
+            assertThat(score3.raw()).isEqualTo(SimpleScore.ZERO);
         }
 
     }
@@ -118,7 +118,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
         try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
             scoreDirector.setWorkingSolution(solution);
             var score1 = scoreDirector.calculateScore();
-            assertThat(score1.initialized()).isEqualTo(SimpleScore.ONE);
+            assertThat(score1.raw()).isEqualTo(SimpleScore.ONE);
 
             // Change constraint configuration on the current working solution.
             var constraintConfiguration = solution.getConstraintConfiguration();
@@ -126,7 +126,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
             constraintConfiguration.setFirstWeight(SimpleScore.of(2));
             scoreDirector.afterProblemPropertyChanged(constraintConfiguration);
             var score2 = scoreDirector.calculateScore();
-            assertThat(score2.initialized()).isEqualTo(SimpleScore.of(2));
+            assertThat(score2.raw()).isEqualTo(SimpleScore.of(2));
         }
     }
 
@@ -146,7 +146,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
             var score1 = scoreDirector.calculateScore();
             assertSoftly(softly -> {
                 softly.assertThat(score1.isInitialized()).isTrue();
-                softly.assertThat(score1.initialized().score()).isEqualTo(1);
+                softly.assertThat(score1.raw().score()).isEqualTo(1);
                 softly.assertThat(scoreDirector.getConstraintMatchTotalMap())
                         .containsOnlyKeys("ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration/First weight");
             });
@@ -159,7 +159,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
             var score2 = scoreDirector.calculateScore();
             assertSoftly(softly -> {
                 softly.assertThat(score2.isInitialized()).isFalse();
-                softly.assertThat(score2.initialized().score()).isZero();
+                softly.assertThat(score2.raw().score()).isZero();
                 softly.assertThat(scoreDirector.getConstraintMatchTotalMap())
                         .containsOnlyKeys("ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration/First weight");
             });
@@ -186,7 +186,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
             scoreDirector.afterListVariableElementAssigned(secondEntity, "valueList", 0);
             scoreDirector.triggerVariableListeners();
             var score2 = scoreDirector.calculateScore();
-            assertThat(score2.initialized()).isEqualTo(SimpleScore.of(-2));
+            assertThat(score2.raw()).isEqualTo(SimpleScore.of(-2));
         }
     }
 
@@ -214,7 +214,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
             scoreDirector.afterListVariableElementAssigned(thirdEntity, "valueList", 0);
             scoreDirector.triggerVariableListeners();
             var score2 = scoreDirector.calculateScore();
-            assertThat(score2.initialized()).isEqualTo(SimpleScore.of(-3));
+            assertThat(score2.raw()).isEqualTo(SimpleScore.of(-3));
         }
     }
 

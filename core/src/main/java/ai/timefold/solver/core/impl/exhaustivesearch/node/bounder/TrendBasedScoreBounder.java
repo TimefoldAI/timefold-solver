@@ -18,12 +18,12 @@ public final class TrendBasedScoreBounder<Score_ extends Score<Score_>> implemen
 
     @Override
     public InnerScore<Score_> calculateOptimisticBound(ScoreDirector<?> scoreDirector, InnerScore<Score_> score) {
-        return new InnerScore<>(scoreDefinition.buildOptimisticBound(initializingScoreTrend, score.initialized()), 0);
+        return new InnerScore<>(scoreDefinition.buildOptimisticBound(initializingScoreTrend, score.raw()), 0);
     }
 
     @Override
     public InnerScore<Score_> calculatePessimisticBound(ScoreDirector<?> scoreDirector, InnerScore<Score_> score) {
-        return new InnerScore<>(scoreDefinition.buildPessimisticBound(initializingScoreTrend, score.initialized()), 0);
+        return new InnerScore<>(scoreDefinition.buildPessimisticBound(initializingScoreTrend, score.raw()), 0);
     }
 
 }

@@ -167,7 +167,7 @@ public class ConstructionHeuristicDecider<Solution_> {
         }
         if (isLoggingEnabled()) {
             logger.trace("{}        Move index ({}), score ({}), move ({}).",
-                    logIndentation, moveScope.getMoveIndex(), moveScope.getScore().initialized(), moveScope.getMove());
+                    logIndentation, moveScope.getMoveIndex(), moveScope.getScore().raw(), moveScope.getMove());
         }
     }
 

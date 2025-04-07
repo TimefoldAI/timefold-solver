@@ -622,7 +622,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             throw new ScoreCorruptionException("""
                     Score corruption (%s): the expectedWorkingScore (%s) is not the workingScore (%s) \
                     after completedAction (%s)."""
-                    .formatted(expectedWorkingScore.initialized().subtract(workingScore.initialized()).toShortString(),
+                    .formatted(expectedWorkingScore.raw().subtract(workingScore.raw()).toShortString(),
                             expectedWorkingScore, workingScore, completedAction));
         }
     }
@@ -647,7 +647,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                     All the shadow variable values are still the same, so this is impossible.
                     Maybe run with %s if you haven't already, to fail earlier."""
                     .formatted(VariableListener.class.getSimpleName(),
-                            expectedWorkingScore.initialized().subtract(workingScore.initialized()).toShortString(),
+                            expectedWorkingScore.raw().subtract(workingScore.raw()).toShortString(),
                             expectedWorkingScore, workingScore, VariableListener.class.getSimpleName(), completedAction,
                             EnvironmentMode.TRACKED_FULL_ASSERT));
         }
@@ -701,7 +701,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                         Score corruption (%s): the %s (%s) is not the uncorruptedScore (%s) after completedAction (%s):
                         %s
                         %s"""
-                        .formatted(innerScore.initialized().subtract(uncorruptedInnerScore.initialized()).toShortString(),
+                        .formatted(innerScore.raw().subtract(uncorruptedInnerScore.raw()).toShortString(),
                                 predicted ? "predictedScore" : "workingScore", innerScore, uncorruptedInnerScore,
                                 completedAction, scoreCorruptionAnalysis, shadowVariableAnalysis));
             }
@@ -743,7 +743,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
             corruptionDiagnosis = solutionTracker.buildScoreCorruptionMessage();
         }
-        var scoreDifference = undoInnerScore.initialized().subtract(beforeMoveInnerScore.initialized()).toShortString();
+        var scoreDifference = undoInnerScore.raw().subtract(beforeMoveInnerScore.raw()).toShortString();
         var corruptionMessage = """
                 UndoMove corruption (%s):
                    the beforeMoveScore (%s) is not the undoScore (%s),

@@ -94,10 +94,10 @@ final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<Solutio
             var solverScope = stepScope.getPhaseScope().getSolverScope();
             var bestSolutionTimeMillis = solverScope.getBestSolutionTimeMillis();
             var bestScore = solverScope.getBestScore();
-            var bestScoreValue = (Score) bestScore.initialized();
+            var bestScoreValue = (Score) bestScore.raw();
             for (var it = bestScoreImprovementHistoryQueue.iterator(); it.hasNext();) {
                 var bestScoreImprovement = it.next();
-                var bestScoreImprovementValue = bestScoreImprovement.value().initialized();
+                var bestScoreImprovementValue = bestScoreImprovement.value().raw();
                 var scoreDifference = bestScoreValue.subtract(bestScoreImprovementValue);
                 var timeLimitNotYetReached = bestScoreImprovement.key()
                         + unimprovedTimeMillisSpentLimit >= bestSolutionTimeMillis;

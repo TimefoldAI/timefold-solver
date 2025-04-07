@@ -84,7 +84,7 @@ class ConstraintWeightOverridesTest {
             // Default weights
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.triggerVariableListeners();
-            assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(5));
+            assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(5));
 
             // Only second constraint is active
             solution.setConstraintWeightOverrides(ConstraintWeightOverrides.of(Map.of(
@@ -92,7 +92,7 @@ class ConstraintWeightOverridesTest {
                     SECOND_WEIGHT, SimpleScore.of(2))));
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.triggerVariableListeners();
-            assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(10));
+            assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(10));
 
             // Unknown constraint is present
             solution.setConstraintWeightOverrides(ConstraintWeightOverrides.of(Map.of(

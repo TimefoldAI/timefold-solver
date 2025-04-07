@@ -59,7 +59,7 @@ public class PickedMoveBestScoreDiffStatistic<Solution_, Score_ extends Score<Sc
         @Override
         public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
             if (phaseScope instanceof LocalSearchPhaseScope) {
-                oldBestScore = phaseScope.<Score_> getBestScore().initialized();
+                oldBestScore = phaseScope.<Score_> getBestScore().raw();
             }
         }
 
@@ -80,7 +80,7 @@ public class PickedMoveBestScoreDiffStatistic<Solution_, Score_ extends Score<Sc
         private void localSearchStepEnded(LocalSearchStepScope<Solution_> stepScope) {
             if (stepScope.getBestScoreImproved()) {
                 var moveType = stepScope.getStep().describe();
-                var newBestScore = stepScope.<Score_> getScore().initialized();
+                var newBestScore = stepScope.<Score_> getScore().raw();
                 var bestScoreDiff = newBestScore.subtract(oldBestScore);
                 oldBestScore = newBestScore;
                 SolverMetric.registerScoreMetrics(SolverMetric.PICKED_MOVE_TYPE_BEST_SCORE_DIFF,

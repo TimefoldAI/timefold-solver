@@ -76,7 +76,7 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
             // init score improved
             return Double.NaN;
         }
-        var scoreDiffs = end.initialized().subtract(start.initialized()).toLevelDoubles();
+        var scoreDiffs = end.raw().subtract(start.raw()).toLevelDoubles();
         var softestLevel = scoreDiffs.length - 1;
         for (int i = 0; i < softestLevel; i++) {
             if (scoreDiffs[i] != 0.0) {

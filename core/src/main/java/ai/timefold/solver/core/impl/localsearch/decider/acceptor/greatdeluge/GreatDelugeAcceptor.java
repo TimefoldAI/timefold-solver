@@ -43,7 +43,7 @@ public class GreatDelugeAcceptor<Solution_> extends AbstractAcceptor<Solution_> 
     @Override
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
-        startingWaterLevel = initialWaterLevel != null ? initialWaterLevel : phaseScope.getBestScore().initialized();
+        startingWaterLevel = initialWaterLevel != null ? initialWaterLevel : phaseScope.getBestScore().raw();
         if (waterLevelIncrementRatio != null) {
             currentWaterLevelRatio = 0.0;
         }
@@ -63,11 +63,11 @@ public class GreatDelugeAcceptor<Solution_> extends AbstractAcceptor<Solution_> 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public boolean isAccepted(LocalSearchMoveScope moveScope) {
-        Score moveScore = moveScope.getScore().initialized();
+        Score moveScore = moveScope.getScore().raw();
         if (moveScore.compareTo(currentWaterLevel) >= 0) {
             return true;
         }
-        Score lastStepScore = moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore().initialized();
+        Score lastStepScore = moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore().raw();
         return moveScore.compareTo(lastStepScore) > 0; // Aspiration
     }
 

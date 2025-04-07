@@ -14,7 +14,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScore;
 public abstract class AbstractNodeComparatorTest {
 
     protected ExhaustiveSearchNode buildNode(int depth, InnerScore<SimpleScore> score, long parentBreadth, long breadth) {
-        return buildNode(depth, score, InnerScore.of(score.initialized()), parentBreadth, breadth);
+        return buildNode(depth, score, InnerScore.of(score.raw()), parentBreadth, breadth);
     }
 
     protected ExhaustiveSearchNode buildNode(int depth, String score, long parentBreadth, long breadth) {

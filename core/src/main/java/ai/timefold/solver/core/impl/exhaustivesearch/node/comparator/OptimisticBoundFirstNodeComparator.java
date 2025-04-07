@@ -29,8 +29,8 @@ public class OptimisticBoundFirstNodeComparator implements Comparator<Exhaustive
             return 1;
         }
         // Investigate better score first
-        Score aScore = a.getScore().initialized();
-        Score bScore = b.getScore().initialized();
+        Score aScore = a.getScore().raw();
+        Score bScore = b.getScore().raw();
         int scoreComparison = aScore.compareTo(bScore);
         if (scoreComparison < 0) {
             return -1;

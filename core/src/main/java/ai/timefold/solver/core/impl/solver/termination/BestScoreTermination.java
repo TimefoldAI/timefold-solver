@@ -34,12 +34,12 @@ final class BestScoreTermination<Solution_>
 
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
-        return isTerminated(solverScope.isBestSolutionInitialized(), solverScope.getBestScore().initialized());
+        return isTerminated(solverScope.isBestSolutionInitialized(), solverScope.getBestScore().raw());
     }
 
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
-        return isTerminated(phaseScope.isBestSolutionInitialized(), phaseScope.getBestScore().initialized());
+        return isTerminated(phaseScope.isBestSolutionInitialized(), phaseScope.getBestScore().raw());
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -52,7 +52,7 @@ final class BestScoreTermination<Solution_>
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
         var startingInitializedScore = solverScope.getStartingInitializedScore();
         var bestScore = solverScope.getBestScore();
-        return calculateTimeGradient((Score) startingInitializedScore, (Score) bestScoreLimit, (Score) bestScore.initialized());
+        return calculateTimeGradient((Score) startingInitializedScore, (Score) bestScoreLimit, (Score) bestScore.raw());
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -60,7 +60,7 @@ final class BestScoreTermination<Solution_>
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
         var startingInitializedScore = phaseScope.<Score> getStartingScore();
         var bestScore = phaseScope.<Score> getBestScore();
-        return calculateTimeGradient(startingInitializedScore.initialized(), (Score) bestScoreLimit, bestScore.initialized());
+        return calculateTimeGradient(startingInitializedScore.raw(), (Score) bestScoreLimit, bestScore.raw());
     }
 
     /**

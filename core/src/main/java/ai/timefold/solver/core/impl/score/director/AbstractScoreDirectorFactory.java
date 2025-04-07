@@ -100,7 +100,7 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
                 .buildDerived()) {
             uncorruptedScoreDirector.setWorkingSolution(solution);
             var uncorruptedScore = uncorruptedScoreDirector.calculateScore()
-                    .initialized();
+                    .raw();
             if (!score.equals(uncorruptedScore)) {
                 throw new IllegalStateException(
                         "Score corruption (%s): the solution's score (%s) is not the uncorruptedScore (%s)."

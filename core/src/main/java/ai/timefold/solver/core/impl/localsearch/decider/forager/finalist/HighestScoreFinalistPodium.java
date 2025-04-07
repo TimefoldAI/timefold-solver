@@ -30,7 +30,7 @@ public final class HighestScoreFinalistPodium<Solution_> extends AbstractFinalis
             finalistIsAccepted = true;
             finalistScore = null;
         }
-        Score<?> moveScore = moveScope.getScore().initialized(); // Guaranteed local search; no need for InnerScore.
+        Score<?> moveScore = moveScope.getScore().raw(); // Guaranteed local search; no need for InnerScore.
         int scoreComparison = doComparison(moveScore);
         if (scoreComparison > 0) {
             finalistScore = moveScore;

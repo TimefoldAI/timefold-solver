@@ -17,7 +17,7 @@ import ai.timefold.solver.core.api.score.Score;
  *
  * For solutions which do allow unassigning values, {@link #unassignedCount} is always zero.
  */
-public record InnerScore<Score_ extends Score<Score_>>(Score_ initialized, int unassignedCount)
+public record InnerScore<Score_ extends Score<Score_>>(Score_ raw, int unassignedCount)
         implements
             Comparable<InnerScore<Score_>> {
 
@@ -40,17 +40,17 @@ public record InnerScore<Score_ extends Score<Score_>>(Score_ initialized, int u
     }
 
     @Override
-    public int compareTo(InnerScore<Score_> o) {
-        var uninitializedCountComparison = Integer.compare(unassignedCount, o.unassignedCount);
+    public int compareTo(InnerScore<Score_> other) {
+        var uninitializedCountComparison = Integer.compare(unassignedCount, other.unassignedCount);
         if (uninitializedCountComparison != 0) {
             return -uninitializedCountComparison;
         } else {
-            return initialized.compareTo(o.initialized);
+            return raw.compareTo(other.raw);
         }
     }
 
     @Override
     public String toString() {
-        return isInitialized() ? initialized.toString() : "-%dinit/%s".formatted(unassignedCount, initialized);
+        return isInitialized() ? raw.toString() : "-%dinit/%s".formatted(unassignedCount, raw);
     }
 }

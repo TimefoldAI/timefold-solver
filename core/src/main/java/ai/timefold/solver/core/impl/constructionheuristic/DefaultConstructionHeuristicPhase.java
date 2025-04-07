@@ -162,7 +162,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
             logger.debug("{}    CH step ({}), time spent ({}), score ({}), selected move count ({}), picked move ({}).",
                     logIndentation,
                     stepScope.getStepIndex(), timeMillisSpent,
-                    stepScope.getScore().initialized(),
+                    stepScope.getScore().raw(),
                     stepScope.getSelectedMoveCount(),
                     stepScope.getStepString());
         }
@@ -181,7 +181,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
                     logIndentation,
                     phaseIndex,
                     phaseScope.calculateSolverTimeMillisSpentUpToNow(),
-                    phaseScope.getBestScore().initialized(),
+                    phaseScope.getBestScore().raw(),
                     phaseScope.getPhaseMoveEvaluationSpeed(),
                     phaseScope.getNextStepIndex());
         }

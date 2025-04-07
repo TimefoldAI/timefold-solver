@@ -158,7 +158,7 @@ public final class DefaultScoreExplanation<Solution_, Score_ extends Score<Score
 
     @Override
     public @NonNull Score_ getScore() {
-        return innerScore.initialized();
+        return innerScore.raw();
     }
 
     @Override

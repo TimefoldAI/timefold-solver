@@ -60,7 +60,7 @@ public class PickedMoveStepScoreDiffStatistic<Solution_> implements SolverStatis
         @Override
         public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
             if (phaseScope instanceof LocalSearchPhaseScope) {
-                oldStepScore = (Score_) phaseScope.getStartingScore().initialized();
+                oldStepScore = (Score_) phaseScope.getStartingScore().raw();
             }
         }
 
@@ -80,7 +80,7 @@ public class PickedMoveStepScoreDiffStatistic<Solution_> implements SolverStatis
 
         private void localSearchStepEnded(LocalSearchStepScope<Solution_> stepScope) {
             String moveType = stepScope.getStep().describe();
-            Score_ newStepScore = stepScope.<Score_> getScore().initialized();
+            Score_ newStepScore = stepScope.<Score_> getScore().raw();
             Score_ stepScoreDiff = newStepScore.subtract(oldStepScore);
             oldStepScore = newStepScore;
 

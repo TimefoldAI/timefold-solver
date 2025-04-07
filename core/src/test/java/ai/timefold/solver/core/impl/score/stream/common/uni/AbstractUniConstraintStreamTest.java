@@ -2931,7 +2931,7 @@ public abstract class AbstractUniConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(-7));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-7));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2949,7 +2949,7 @@ public abstract class AbstractUniConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(-7));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-7));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -2965,7 +2965,7 @@ public abstract class AbstractUniConstraintStreamTest
                                 .asConstraint(TEST_CONSTRAINT_NAME) });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-7)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-7)));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3015,7 +3015,7 @@ public abstract class AbstractUniConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(-14));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-14));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3033,7 +3033,7 @@ public abstract class AbstractUniConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(-14));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-14));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3049,7 +3049,7 @@ public abstract class AbstractUniConstraintStreamTest
                                 .asConstraint(TEST_CONSTRAINT_NAME) });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-14)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-14)));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3064,7 +3064,7 @@ public abstract class AbstractUniConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(7));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(7));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3079,7 +3079,7 @@ public abstract class AbstractUniConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(14));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(14));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3097,7 +3097,7 @@ public abstract class AbstractUniConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(14));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(14));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3115,7 +3115,7 @@ public abstract class AbstractUniConstraintStreamTest
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(14)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(14)));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3130,7 +3130,7 @@ public abstract class AbstractUniConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(7));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(7));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3145,7 +3145,7 @@ public abstract class AbstractUniConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(14));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(14));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3163,7 +3163,7 @@ public abstract class AbstractUniConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(14));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(14));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3182,7 +3182,7 @@ public abstract class AbstractUniConstraintStreamTest
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(14)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(14)));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3197,7 +3197,7 @@ public abstract class AbstractUniConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(-14));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-14));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3215,7 +3215,7 @@ public abstract class AbstractUniConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(-14));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-14));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3234,7 +3234,7 @@ public abstract class AbstractUniConstraintStreamTest
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-14)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-14)));
         assertDefaultJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3251,7 +3251,7 @@ public abstract class AbstractUniConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(-7));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-7));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3303,7 +3303,7 @@ public abstract class AbstractUniConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(-14));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-14));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3323,7 +3323,7 @@ public abstract class AbstractUniConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(-14));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-14));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3341,7 +3341,7 @@ public abstract class AbstractUniConstraintStreamTest
                                 .asConstraint(TEST_CONSTRAINT_NAME) });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-14)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-14)));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3358,7 +3358,7 @@ public abstract class AbstractUniConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(7));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(7));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3375,7 +3375,7 @@ public abstract class AbstractUniConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(14));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(14));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3395,7 +3395,7 @@ public abstract class AbstractUniConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(14));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(14));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3415,7 +3415,7 @@ public abstract class AbstractUniConstraintStreamTest
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(14)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(14)));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3432,7 +3432,7 @@ public abstract class AbstractUniConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(7));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(7));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3449,7 +3449,7 @@ public abstract class AbstractUniConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(14));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(14));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3469,7 +3469,7 @@ public abstract class AbstractUniConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(14));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(14));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3490,7 +3490,7 @@ public abstract class AbstractUniConstraintStreamTest
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(14)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(14)));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3507,7 +3507,7 @@ public abstract class AbstractUniConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(-14));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-14));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3527,7 +3527,7 @@ public abstract class AbstractUniConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(-14));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-14));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 
@@ -3548,7 +3548,7 @@ public abstract class AbstractUniConstraintStreamTest
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-14)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-14)));
         assertCustomJustifications(scoreDirector, solution.getEntityList());
     }
 

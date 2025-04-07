@@ -24,7 +24,7 @@ public class SolverEventSupport<Solution_> extends AbstractEventSupport<SolverEv
         var timeMillisSpent = solverScope.getBestSolutionTimeMillisSpent();
         var bestScore = solverScope.getBestScore();
         if (it.hasNext()) {
-            var event = new BestSolutionChangedEvent<>(solver, timeMillisSpent, newBestSolution, bestScore.initialized(),
+            var event = new BestSolutionChangedEvent<>(solver, timeMillisSpent, newBestSolution, bestScore.raw(),
                     bestScore.isInitialized());
             do {
                 it.next().bestSolutionChanged(event);

@@ -166,7 +166,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         var phaseScope = stepScope.getPhaseScope();
         // There is no need to recalculate the score, but we still need to set it
         phaseScope.getSolutionDescriptor().setScore(phaseScope.getWorkingSolution(),
-                stepScope.<Score_> getScore().initialized());
+                stepScope.<Score_> getScore().raw());
         if (assertStepScoreFromScratch) {
             phaseScope.<Score_> assertPredictedScoreFromScratch(stepScope.getScore(), completedAction);
         }
@@ -196,7 +196,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
                     solverScope.getMonitoringTags(),
                     solverScope.getScoreDefinition(),
                     solverScope.getStepScoreMap(),
-                    stepScope.getScore().initialized());
+                    stepScope.getScore().raw());
         }
     }
 

@@ -95,9 +95,9 @@ public final class DefaultCustomPhase<Solution_>
                     logIndentation,
                     stepScope.getStepIndex(),
                     phaseScope.calculateSolverTimeMillisSpentUpToNow(),
-                    stepScope.getScore().initialized(),
+                    stepScope.getScore().raw(),
                     stepScope.getBestScoreImproved() ? "new" : "   ",
-                    phaseScope.getBestScore().initialized());
+                    phaseScope.getBestScore().raw());
         }
     }
 
@@ -110,7 +110,7 @@ public final class DefaultCustomPhase<Solution_>
                 logIndentation,
                 phaseIndex,
                 phaseScope.calculateSolverTimeMillisSpentUpToNow(),
-                phaseScope.getBestScore().initialized(),
+                phaseScope.getBestScore().raw(),
                 phaseScope.getPhaseMoveEvaluationSpeed(),
                 phaseScope.getNextStepIndex());
     }

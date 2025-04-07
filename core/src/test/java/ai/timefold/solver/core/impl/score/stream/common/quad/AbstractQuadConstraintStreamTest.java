@@ -2049,7 +2049,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(-2));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-2));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2069,7 +2069,7 @@ public abstract class AbstractQuadConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(-2));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-2));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2089,7 +2089,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-2)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-2)));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2145,7 +2145,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(-4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-4));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2165,7 +2165,7 @@ public abstract class AbstractQuadConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(-4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-4));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2186,7 +2186,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-4)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-4)));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2203,7 +2203,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(2));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(2));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2220,7 +2220,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(4));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2240,7 +2240,7 @@ public abstract class AbstractQuadConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(4));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2262,7 +2262,7 @@ public abstract class AbstractQuadConstraintStreamTest
 
         scoreDirector.setWorkingSolution(solution);
         scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(4)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(4)));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2279,7 +2279,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(2));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(2));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2296,7 +2296,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(4));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2316,7 +2316,7 @@ public abstract class AbstractQuadConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(4));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2337,7 +2337,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(4)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(4)));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2354,7 +2354,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(-4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-4));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2374,7 +2374,7 @@ public abstract class AbstractQuadConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(-4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-4));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2395,7 +2395,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-4)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-4)));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2414,7 +2414,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(-2));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-2));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2472,7 +2472,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(-4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-4));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2494,7 +2494,7 @@ public abstract class AbstractQuadConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(-4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-4));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2518,7 +2518,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-4)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-4)));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2537,7 +2537,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(2));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(2));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2556,7 +2556,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(4));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2578,7 +2578,7 @@ public abstract class AbstractQuadConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(4));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2602,7 +2602,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(4)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(4)));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2621,7 +2621,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(2));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(2));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2640,7 +2640,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(4));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2662,7 +2662,7 @@ public abstract class AbstractQuadConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(4));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2686,7 +2686,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(4)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(4)));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2705,7 +2705,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleScore.of(-4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-4));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2727,7 +2727,7 @@ public abstract class AbstractQuadConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleLongScore.of(-4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-4));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2751,7 +2751,7 @@ public abstract class AbstractQuadConstraintStreamTest
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore().initialized()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-4)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-4)));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 

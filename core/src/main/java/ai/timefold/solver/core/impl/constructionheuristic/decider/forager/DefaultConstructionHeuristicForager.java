@@ -53,21 +53,21 @@ public class DefaultConstructionHeuristicForager<Solution_> extends AbstractCons
             }
             case FIRST_NON_DETERIORATING_SCORE -> {
                 var lastStepScore = moveScope.getStepScope().getPhaseScope()
-                        .getLastCompletedStepScope().<Score_> getScore().initialized();
-                var moveScore = moveScope.<Score_> getScore().initialized();
+                        .getLastCompletedStepScope().<Score_> getScore().raw();
+                var moveScore = moveScope.<Score_> getScore().raw();
                 if (moveScore.compareTo(lastStepScore) >= 0) {
                     earlyPickedMoveScope = moveScope;
                 }
             }
             case FIRST_FEASIBLE_SCORE -> {
-                if (moveScope.getScore().initialized().isFeasible()) {
+                if (moveScope.getScore().raw().isFeasible()) {
                     earlyPickedMoveScope = moveScope;
                 }
             }
             case FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD -> {
                 var lastStepScore = moveScope.getStepScope().getPhaseScope()
-                        .getLastCompletedStepScope().<Score_> getScore().initialized();
-                var moveScore = moveScope.<Score_> getScore().initialized();
+                        .getLastCompletedStepScope().<Score_> getScore().raw();
+                var moveScore = moveScope.<Score_> getScore().raw();
                 var lastStepScoreDifference = moveScore.subtract(lastStepScore);
                 if (lastStepScoreDifference.isFeasible()) {
                     earlyPickedMoveScope = moveScope;

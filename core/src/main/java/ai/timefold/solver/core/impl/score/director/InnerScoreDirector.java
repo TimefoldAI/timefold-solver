@@ -367,7 +367,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
             var constraintAnalysis = getConstraintAnalysis(constraintMatchTotal, scoreAnalysisFetchPolicy);
             constraintAnalysisMap.put(constraintMatchTotal.getConstraintRef(), constraintAnalysis);
         }
-        return new ScoreAnalysis<>(state.initialized(), constraintAnalysisMap, state.isInitialized());
+        return new ScoreAnalysis<>(state.raw(), constraintAnalysisMap, state.isInitialized());
     }
 
     /*

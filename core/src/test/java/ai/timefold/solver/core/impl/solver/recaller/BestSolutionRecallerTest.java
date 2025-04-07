@@ -83,7 +83,7 @@ class BestSolutionRecallerTest {
         TestdataSolution originalBestSolution = originalBestScore.solution;
         var scoreDirector = solverScope.getScoreDirector();
         when(scoreDirector.getSolutionDescriptor().getScore(originalBestSolution))
-                .thenReturn(originalBestScore.innerScore.initialized());
+                .thenReturn(originalBestScore.innerScore.raw());
         when(scoreDirector.getWorkingInitScore()).thenReturn(-originalBestScore.innerScore.unassignedCount());
         solverScope.setBestSolution(originalBestSolution);
         solverScope.setBestScore(originalBestScore.innerScore);
@@ -91,7 +91,7 @@ class BestSolutionRecallerTest {
         ConstructionHeuristicStepScope<TestdataSolution> stepScope = setupConstructionHeuristics(solverScope);
         TestdataSolution stepSolution = stepScore.solution;
         when(scoreDirector.getSolutionDescriptor().getScore(stepSolution))
-                .thenReturn(stepScore.innerScore.initialized());
+                .thenReturn(stepScore.innerScore.raw());
         when(scoreDirector.getWorkingInitScore()).thenReturn(-stepScore.innerScore.unassignedCount());
         doReturn(stepScore.innerScore).when(stepScope).getScore();
         when(stepScope.createOrGetClonedSolution()).thenReturn(stepSolution);
@@ -165,7 +165,7 @@ class BestSolutionRecallerTest {
         SolverScope<TestdataSolution> solverScope = createSolverScope();
         TestdataSolution originalBestSolution = originalBestScore.solution;
         when(solverScope.getScoreDirector().getSolutionDescriptor().getScore(originalBestSolution))
-                .thenReturn(originalBestScore.innerScore.initialized());
+                .thenReturn(originalBestScore.innerScore.raw());
         solverScope.setBestSolution(originalBestSolution);
         solverScope.setBestScore(originalBestScore.innerScore);
 
@@ -173,7 +173,7 @@ class BestSolutionRecallerTest {
 
         TestdataSolution moveSolution = moveScore.solution;
         when(solverScope.getScoreDirector().getSolutionDescriptor().getScore(moveSolution))
-                .thenReturn(moveScore.innerScore.initialized());
+                .thenReturn(moveScore.innerScore.raw());
         when(solverScope.getScoreDirector().cloneWorkingSolution()).thenReturn(moveSolution);
 
         BestSolutionRecaller<TestdataSolution> recaller = createBestSolutionRecaller();

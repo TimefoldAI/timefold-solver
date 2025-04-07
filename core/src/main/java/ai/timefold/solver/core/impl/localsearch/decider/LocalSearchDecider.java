@@ -128,7 +128,7 @@ public class LocalSearchDecider<Solution_> {
                     SolverLifecyclePoint.of(moveScope));
         }
         logger.trace("{}        Move index ({}), score ({}), accepted ({}), move ({}).",
-                logIndentation, moveScope.getMoveIndex(), moveScope.getScore().initialized(), moveScope.getAccepted(),
+                logIndentation, moveScope.getMoveIndex(), moveScope.getScore().raw(), moveScope.getAccepted(),
                 moveScope.getMove());
     }
 

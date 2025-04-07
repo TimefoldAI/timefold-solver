@@ -40,19 +40,19 @@ final class BestScoreFeasibleTermination<Solution_>
     }
 
     private static boolean isTerminated(InnerScore<?> innerScore) {
-        return innerScore.isInitialized() && innerScore.initialized().isFeasible();
+        return innerScore.isInitialized() && innerScore.raw().isFeasible();
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
         return calculateFeasibilityTimeGradient(InnerScore.of((Score) solverScope.getStartingInitializedScore()),
-                (Score) solverScope.getBestScore().initialized());
+                (Score) solverScope.getBestScore().raw());
     }
 
     @Override
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
-        return calculateFeasibilityTimeGradient(phaseScope.getStartingScore(), phaseScope.getBestScore().initialized());
+        return calculateFeasibilityTimeGradient(phaseScope.getStartingScore(), phaseScope.getBestScore().raw());
     }
 
     <Score_ extends Score<Score_>> double calculateFeasibilityTimeGradient(@Nullable InnerScore<Score_> innerStartScore,
@@ -60,7 +60,7 @@ final class BestScoreFeasibleTermination<Solution_>
         if (innerStartScore == null || !innerStartScore.isInitialized()) {
             return 0.0;
         }
-        var startScore = innerStartScore.initialized();
+        var startScore = innerStartScore.raw();
         var totalDiff = startScore.negate();
         var totalDiffNumbers = totalDiff.toLevelNumbers();
         var scoreDiff = score.subtract(startScore);
