@@ -4,7 +4,6 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.constructionheuristic.decider.forager.ConstructionHeuristicPickEarlyType;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicMoveScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
-import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 public class DefaultConstructionHeuristicForager<Solution_> extends AbstractConstructionHeuristicForager<Solution_> {
 
@@ -43,20 +42,19 @@ public class DefaultConstructionHeuristicForager<Solution_> extends AbstractCons
         moveScope.getStepScope().getPhaseScope()
                 .addMoveEvaluationCount(moveScope.getMove(), 1L);
         checkPickEarly(moveScope);
-        if (maxScoreMoveScope == null || moveScope.getScore().compareTo((InnerScore) maxScoreMoveScope.getScore()) > 0) {
+        if (maxScoreMoveScope == null || moveScope.getScore().compareTo(maxScoreMoveScope.getScore()) > 0) {
             maxScoreMoveScope = moveScope;
         }
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    protected void checkPickEarly(ConstructionHeuristicMoveScope<Solution_> moveScope) {
+    protected <Score_ extends Score<Score_>> void checkPickEarly(ConstructionHeuristicMoveScope<Solution_> moveScope) {
         switch (pickEarlyType) {
             case NEVER -> {
             }
             case FIRST_NON_DETERIORATING_SCORE -> {
-                Score lastStepScore = moveScope.getStepScope().getPhaseScope()
-                        .getLastCompletedStepScope().getScore().initialized();
-                Score moveScore = moveScope.getScore().initialized();
+                var lastStepScore = moveScope.getStepScope().getPhaseScope()
+                        .getLastCompletedStepScope().<Score_> getScore().initialized();
+                var moveScore = moveScope.<Score_> getScore().initialized();
                 if (moveScore.compareTo(lastStepScore) >= 0) {
                     earlyPickedMoveScope = moveScope;
                 }
@@ -67,10 +65,10 @@ public class DefaultConstructionHeuristicForager<Solution_> extends AbstractCons
                 }
             }
             case FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD -> {
-                Score lastStepScore = moveScope.getStepScope().getPhaseScope()
-                        .getLastCompletedStepScope().getScore().initialized();
-                Score moveScore = moveScope.getScore().initialized();
-                Score lastStepScoreDifference = moveScore.subtract(lastStepScore);
+                var lastStepScore = moveScope.getStepScope().getPhaseScope()
+                        .getLastCompletedStepScope().<Score_> getScore().initialized();
+                var moveScore = moveScope.<Score_> getScore().initialized();
+                var lastStepScoreDifference = moveScore.subtract(lastStepScore);
                 if (lastStepScoreDifference.isFeasible()) {
                     earlyPickedMoveScope = moveScope;
                 }

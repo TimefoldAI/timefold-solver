@@ -9,6 +9,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAccepto
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -44,7 +45,7 @@ class GreatDelugeAcceptorTest extends AbstractAcceptorTest {
 
         stepScope0.setStep(moveScope0.getMove());
         stepScope0.setScore(moveScope0.getScore());
-        solverScope.setBestScore(moveScope0.getScore());
+        solverScope.setBestScore((InnerScore) moveScope0.getScore());
         acceptor.stepEnded(stepScope0);
         phaseScope.setLastCompletedStepScope(stepScope0);
 
@@ -62,7 +63,7 @@ class GreatDelugeAcceptorTest extends AbstractAcceptorTest {
 
         stepScope1.setStep(moveScope1.getMove());
         stepScope1.setScore(moveScope1.getScore());
-        solverScope.setBestScore(moveScope1.getScore());
+        solverScope.setBestScore((InnerScore) moveScope1.getScore());
         acceptor.stepEnded(stepScope1);
         phaseScope.setLastCompletedStepScope(stepScope1);
 
@@ -155,7 +156,7 @@ class GreatDelugeAcceptorTest extends AbstractAcceptorTest {
 
         stepScope0.setStep(moveScope0.getMove());
         stepScope0.setScore(moveScope0.getScore());
-        solverScope.setBestScore(moveScope0.getScore());
+        solverScope.setBestScore((InnerScore) moveScope0.getScore());
         acceptor.stepEnded(stepScope0);
         phaseScope.setLastCompletedStepScope(stepScope0);
 
@@ -172,7 +173,7 @@ class GreatDelugeAcceptorTest extends AbstractAcceptorTest {
 
         stepScope1.setStep(moveScope1.getMove());
         stepScope1.setScore(moveScope1.getScore());
-        solverScope.setBestScore(moveScope1.getScore());
+        solverScope.setBestScore((InnerScore) moveScope1.getScore());
         acceptor.stepEnded(stepScope1);
         phaseScope.setLastCompletedStepScope(stepScope1);
 

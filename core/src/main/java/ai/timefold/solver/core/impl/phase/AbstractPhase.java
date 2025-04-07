@@ -161,20 +161,20 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         }
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    protected void predictWorkingStepScore(AbstractStepScope<Solution_> stepScope, Object completedAction) {
-        AbstractPhaseScope<Solution_> phaseScope = stepScope.getPhaseScope();
+    protected <Score_ extends Score<Score_>> void predictWorkingStepScore(AbstractStepScope<Solution_> stepScope,
+            Object completedAction) {
+        var phaseScope = stepScope.getPhaseScope();
         // There is no need to recalculate the score, but we still need to set it
         phaseScope.getSolutionDescriptor().setScore(phaseScope.getWorkingSolution(),
-                (Score) stepScope.getScore().initialized());
+                stepScope.<Score_> getScore().initialized());
         if (assertStepScoreFromScratch) {
-            phaseScope.assertPredictedScoreFromScratch(stepScope.getScore(), completedAction);
+            phaseScope.<Score_> assertPredictedScoreFromScratch(stepScope.getScore(), completedAction);
         }
         if (assertExpectedStepScore) {
-            phaseScope.assertExpectedWorkingScore(stepScope.getScore(), completedAction);
+            phaseScope.<Score_> assertExpectedWorkingScore(stepScope.getScore(), completedAction);
         }
         if (assertShadowVariablesAreNotStaleAfterStep) {
-            phaseScope.assertShadowVariablesAreNotStale(stepScope.getScore(), completedAction);
+            phaseScope.<Score_> assertShadowVariablesAreNotStale(stepScope.getScore(), completedAction);
         }
     }
 

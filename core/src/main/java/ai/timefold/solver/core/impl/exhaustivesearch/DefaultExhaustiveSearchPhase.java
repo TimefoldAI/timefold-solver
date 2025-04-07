@@ -149,8 +149,7 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         decider.stepStarted(stepScope);
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    protected void restoreWorkingSolution(ExhaustiveSearchStepScope<Solution_> stepScope) {
+    protected <Score_ extends Score<Score_>> void restoreWorkingSolution(ExhaustiveSearchStepScope<Solution_> stepScope) {
         ExhaustiveSearchPhaseScope<Solution_> phaseScope = stepScope.getPhaseScope();
         ExhaustiveSearchNode oldNode = phaseScope.getLastCompletedStepScope().getExpandingNode();
         ExhaustiveSearchNode newNode = stepScope.getExpandingNode();
@@ -173,19 +172,19 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         restoreMoveList.addAll(newMoveList);
         var compositeMove = CompositeMove.buildMove(restoreMoveList);
         phaseScope.getScoreDirector().executeMove(compositeMove);
-        var startingStepScore = stepScope.getStartingStepScore();
+        var startingStepScore = stepScope.<Score_> getStartingStepScore();
         phaseScope.getSolutionDescriptor().setScore(phaseScope.getWorkingSolution(),
-                (Score) (startingStepScore == null ? null : startingStepScore.initialized()));
+                (startingStepScore == null ? null : startingStepScore.initialized()));
         if (assertWorkingSolutionScoreFromScratch) {
             // In BRUTE_FORCE the stepScore can be null because it was not calculated
             if (stepScope.getStartingStepScore() != null) {
-                phaseScope.assertPredictedScoreFromScratch(stepScope.getStartingStepScore(), restoreMoveList);
+                phaseScope.assertPredictedScoreFromScratch(stepScope.<Score_> getStartingStepScore(), restoreMoveList);
             }
         }
         if (assertExpectedWorkingSolutionScore) {
             // In BRUTE_FORCE the stepScore can be null because it was not calculated
             if (stepScope.getStartingStepScore() != null) {
-                phaseScope.assertExpectedWorkingScore(stepScope.getStartingStepScore(), restoreMoveList);
+                phaseScope.assertExpectedWorkingScore(stepScope.<Score_> getStartingStepScore(), restoreMoveList);
             }
         }
     }
@@ -202,7 +201,7 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
                     phaseScope.calculateSolverTimeMillisSpentUpToNow(),
                     stepScope.getTreeId(),
                     (stepScope.getBestScoreImproved() ? "new" : "   "),
-                    phaseScope.getBestScore(),
+                    phaseScope.getBestScore().initialized(),
                     stepScope.getSelectedMoveCount());
         }
     }
@@ -217,7 +216,7 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
                 logIndentation,
                 phaseIndex,
                 phaseScope.calculateSolverTimeMillisSpentUpToNow(),
-                phaseScope.getBestScore(),
+                phaseScope.getBestScore().initialized(),
                 phaseScope.getPhaseMoveEvaluationSpeed(),
                 phaseScope.getNextStepIndex());
     }

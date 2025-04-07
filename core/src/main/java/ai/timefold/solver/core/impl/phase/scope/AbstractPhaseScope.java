@@ -75,8 +75,9 @@ public abstract class AbstractPhaseScope<Solution_> {
         return startingSystemTimeMillis;
     }
 
-    public InnerScore<?> getStartingScore() {
-        return startingScore;
+    @SuppressWarnings("unchecked")
+    public <Score_ extends Score<Score_>> InnerScore<Score_> getStartingScore() {
+        return (InnerScore<Score_>) startingScore;
     }
 
     public Long getEndingSystemTimeMillis() {
@@ -195,7 +196,7 @@ public abstract class AbstractPhaseScope<Solution_> {
         return solverScope.getWorkingEntityCount();
     }
 
-    public InnerScore<?> calculateScore() {
+    public <Score_ extends Score<Score_>> InnerScore<Score_> calculateScore() {
         return solverScope.calculateScore();
     }
 
@@ -231,7 +232,7 @@ public abstract class AbstractPhaseScope<Solution_> {
         return solverScope.isBestSolutionInitialized();
     }
 
-    public InnerScore<?> getBestScore() {
+    public <Score_ extends Score<Score_>> InnerScore<Score_> getBestScore() {
         return solverScope.getBestScore();
     }
 

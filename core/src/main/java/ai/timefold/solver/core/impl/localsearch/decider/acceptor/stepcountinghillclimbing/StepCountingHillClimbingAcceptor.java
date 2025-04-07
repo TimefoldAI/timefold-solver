@@ -61,7 +61,6 @@ public class StepCountingHillClimbingAcceptor<Solution_> extends AbstractAccepto
         }
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     private int determineCountIncrement(LocalSearchStepScope<Solution_> stepScope) {
         return switch (stepCountingHillClimbingType) {
             case SELECTED_MOVE -> {
@@ -73,10 +72,10 @@ public class StepCountingHillClimbingAcceptor<Solution_> extends AbstractAccepto
                 yield acceptedMoveCount > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) acceptedMoveCount;
             }
             case STEP -> 1;
-            case EQUAL_OR_IMPROVING_STEP -> ((InnerScore) stepScope.getScore()).compareTo(
-                    stepScope.getPhaseScope().getLastCompletedStepScope().getScore()) >= 0 ? 1 : 0;
-            case IMPROVING_STEP -> ((InnerScore) stepScope.getScore()).compareTo(
-                    stepScope.getPhaseScope().getLastCompletedStepScope().getScore()) > 0 ? 1 : 0;
+            case EQUAL_OR_IMPROVING_STEP ->
+                stepScope.getScore().compareTo(stepScope.getPhaseScope().getLastCompletedStepScope().getScore()) >= 0 ? 1 : 0;
+            case IMPROVING_STEP ->
+                stepScope.getScore().compareTo(stepScope.getPhaseScope().getLastCompletedStepScope().getScore()) > 0 ? 1 : 0;
         };
     }
 

@@ -147,10 +147,9 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
         return scoreDiff / gracePeriodSoftestImprovementDouble < minimumImprovementRatio;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
-        return isTerminated(System.nanoTime(), (InnerScore<Score_>) phaseScope.getBestScore());
+        return isTerminated(System.nanoTime(), phaseScope.getBestScore());
     }
 
     @Override
@@ -164,10 +163,9 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
         return new DiminishedReturnsTermination<>(slidingWindowNanos, minimumImprovementRatio);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        start(System.nanoTime(), (InnerScore<Score_>) phaseScope.getBestScore());
+        start(System.nanoTime(), phaseScope.getBestScore());
     }
 
     @Override
@@ -175,10 +173,9 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
         scoresByTime.clear();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
-        step(System.nanoTime(), (InnerScore<Score_>) stepScope.getPhaseScope().getBestScore());
+        step(System.nanoTime(), stepScope.getPhaseScope().getBestScore());
     }
 
     @SuppressWarnings("rawtypes")

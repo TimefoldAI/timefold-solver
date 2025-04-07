@@ -137,6 +137,7 @@ public class SolverScope<Solution_> {
         this.workingRandom = workingRandom;
     }
 
+    @SuppressWarnings("unchecked")
     public <Score_ extends Score<Score_>> InnerScoreDirector<Solution_, Score_> getScoreDirector() {
         return (InnerScoreDirector<Solution_, Score_>) scoreDirector;
     }
@@ -173,8 +174,8 @@ public class SolverScope<Solution_> {
         return scoreDirector.getWorkingGenuineEntityCount();
     }
 
-    public InnerScore<?> calculateScore() {
-        return scoreDirector.calculateScore();
+    public <Score_ extends Score<Score_>> InnerScore<Score_> calculateScore() {
+        return this.<Score_> getScoreDirector().calculateScore();
     }
 
     public void assertScoreFromScratch(Solution_ solution) {
@@ -219,16 +220,16 @@ public class SolverScope<Solution_> {
         this.bestSolution.set(bestSolution);
     }
 
-    public InnerScore<?> getBestScore() {
-        return bestScore.get();
+    @SuppressWarnings("unchecked")
+    public <Score_ extends Score<Score_>> InnerScore<Score_> getBestScore() {
+        return (InnerScore<Score_>) bestScore.get();
     }
 
-    @SuppressWarnings("rawtypes")
-    public void setInitializedBestScore(Score<?> bestScore) {
-        setBestScore(InnerScore.of((Score) bestScore));
+    public <Score_ extends Score<Score_>> void setInitializedBestScore(Score_ bestScore) {
+        setBestScore(InnerScore.of(bestScore));
     }
 
-    public void setBestScore(InnerScore<?> bestScore) {
+    public <Score_ extends Score<Score_>> void setBestScore(InnerScore<Score_> bestScore) {
         this.bestScore.set(bestScore);
     }
 

@@ -30,8 +30,9 @@ public abstract class AbstractStepScope<Solution_> {
         return stepIndex;
     }
 
-    public InnerScore<?> getScore() {
-        return score;
+    @SuppressWarnings("unchecked")
+    public <Score_ extends Score<Score_>> InnerScore<Score_> getScore() {
+        return (InnerScore<Score_>) score;
     }
 
     @SuppressWarnings("rawtypes")

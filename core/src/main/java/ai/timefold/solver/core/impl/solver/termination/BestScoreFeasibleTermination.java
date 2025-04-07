@@ -50,11 +50,9 @@ final class BestScoreFeasibleTermination<Solution_>
                 (Score) solverScope.getBestScore().initialized());
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
-        return calculateFeasibilityTimeGradient((InnerScore) phaseScope.getStartingScore(),
-                (Score) phaseScope.getBestScore().initialized());
+        return calculateFeasibilityTimeGradient(phaseScope.getStartingScore(), phaseScope.getBestScore().initialized());
     }
 
     <Score_ extends Score<Score_>> double calculateFeasibilityTimeGradient(@Nullable InnerScore<Score_> innerStartScore,

@@ -7,6 +7,7 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptorTest;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, -900))).isTrue();
         stepScope0.setStep(moveScope0.getMove());
         stepScope0.setScore(moveScope0.getScore());
-        solverScope.setBestScore(moveScope0.getScore());
+        solverScope.setBestScore((InnerScore) moveScope0.getScore());
         acceptor.stepEnded(stepScope0);
         phaseScope.setLastCompletedStepScope(stepScope0);
 
@@ -71,7 +72,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, -900))).isTrue();
         stepScope2.setStep(moveScope2.getMove());
         stepScope2.setScore(moveScope2.getScore());
-        solverScope.setBestScore(moveScope2.getScore());
+        solverScope.setBestScore((InnerScore) moveScope2.getScore());
         acceptor.stepEnded(stepScope2);
         phaseScope.setLastCompletedStepScope(stepScope2);
 
@@ -87,7 +88,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, -900))).isFalse();
         stepScope3.setStep(moveScope3.getMove());
         stepScope3.setScore(moveScope3.getScore());
-        solverScope.setBestScore(moveScope3.getScore());
+        solverScope.setBestScore((InnerScore) moveScope3.getScore());
         acceptor.stepEnded(stepScope3);
         phaseScope.setLastCompletedStepScope(stepScope3);
 
@@ -152,7 +153,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, -900))).isTrue();
         stepScope0.setStep(moveScope0.getMove());
         stepScope0.setScore(moveScope0.getScore());
-        solverScope.setBestScore(moveScope0.getScore());
+        solverScope.setBestScore((InnerScore) moveScope0.getScore());
         acceptor.stepEnded(stepScope0);
         phaseScope.setLastCompletedStepScope(stepScope0);
 
@@ -184,7 +185,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, -700))).isTrue();
         stepScope2.setStep(moveScope2.getMove());
         stepScope2.setScore(moveScope2.getScore());
-        solverScope.setBestScore(moveScope2.getScore());
+        solverScope.setBestScore((InnerScore) moveScope2.getScore());
         acceptor.stepEnded(stepScope2);
         phaseScope.setLastCompletedStepScope(stepScope2);
 
@@ -200,7 +201,7 @@ class LateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, -900))).isFalse();
         stepScope3.setStep(moveScope3.getMove());
         stepScope3.setScore(moveScope3.getScore());
-        solverScope.setBestScore(moveScope3.getScore());
+        solverScope.setBestScore((InnerScore) moveScope3.getScore());
         acceptor.stepEnded(stepScope3);
         phaseScope.setLastCompletedStepScope(stepScope3);
 

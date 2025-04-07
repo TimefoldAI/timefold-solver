@@ -60,6 +60,7 @@ public class GreatDelugeAcceptor<Solution_> extends AbstractAcceptor<Solution_> 
         currentWaterLevel = null;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public boolean isAccepted(LocalSearchMoveScope moveScope) {
         Score moveScore = moveScope.getScore().initialized();
@@ -67,11 +68,7 @@ public class GreatDelugeAcceptor<Solution_> extends AbstractAcceptor<Solution_> 
             return true;
         }
         Score lastStepScore = moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore().initialized();
-        if (moveScore.compareTo(lastStepScore) > 0) {
-            // Aspiration
-            return true;
-        }
-        return false;
+        return moveScore.compareTo(lastStepScore) > 0; // Aspiration
     }
 
     @Override

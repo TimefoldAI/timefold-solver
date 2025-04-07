@@ -80,15 +80,15 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
 
     public <Score_ extends Score<Score_>> void processWorkingSolutionDuringStep(AbstractStepScope<Solution_> stepScope) {
         var phaseScope = stepScope.getPhaseScope();
-        var score = (InnerScore<Score_>) stepScope.getScore();
+        var score = stepScope.<Score_> getScore();
         var solverScope = phaseScope.getSolverScope();
-        var bestScoreImproved = score.compareTo((InnerScore<Score_>) solverScope.getBestScore()) > 0;
+        var bestScoreImproved = score.compareTo(solverScope.getBestScore()) > 0;
         stepScope.setBestScoreImproved(bestScoreImproved);
         if (bestScoreImproved) {
             phaseScope.setBestSolutionStepIndex(stepScope.getStepIndex());
             var newBestSolution = stepScope.createOrGetClonedSolution();
             var innerScore = InnerScore.ofUninitialized(
-                    (Score_) solverScope.getSolutionDescriptor().getScore(newBestSolution),
+                    solverScope.getSolutionDescriptor().<Score_> getScore(newBestSolution),
                     -stepScope.getScoreDirector().getWorkingInitScore());
             updateBestSolutionAndFire(solverScope, innerScore, newBestSolution);
         } else if (assertBestScoreIsUnmodified) {
@@ -100,7 +100,7 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
             AbstractStepScope<Solution_> stepScope) {
         var phaseScope = stepScope.getPhaseScope();
         var solverScope = phaseScope.getSolverScope();
-        var bestScoreImproved = moveScore.compareTo((InnerScore<Score_>) solverScope.getBestScore()) > 0;
+        var bestScoreImproved = moveScore.compareTo(solverScope.getBestScore()) > 0;
         // The method processWorkingSolutionDuringMove() is called 0..* times
         // stepScope.getBestScoreImproved() is initialized on false before the first call here
         if (bestScoreImproved) {

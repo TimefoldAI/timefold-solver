@@ -58,13 +58,13 @@ public class ExhaustiveSearchNode {
         this.undoMove = undoMove;
     }
 
-    public InnerScore<?> getScore() {
-        return score;
+    @SuppressWarnings("unchecked")
+    public <Score_ extends Score<Score_>> InnerScore<Score_> getScore() {
+        return (InnerScore<Score_>) score;
     }
 
-    @SuppressWarnings("rawtypes")
-    public void setInitializedScore(Score<?> score) {
-        setScore(InnerScore.of((Score) score));
+    public <Score_ extends Score<Score_>> void setInitializedScore(Score_ score) {
+        setScore(InnerScore.of(score));
     }
 
     public void setScore(InnerScore<?> score) {

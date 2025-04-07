@@ -146,8 +146,8 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
                     logIndentation,
                     stepScope.getStepIndex(),
                     phaseScope.calculateSolverTimeMillisSpentUpToNow(),
-                    stepScope.getScore(),
-                    (stepScope.getBestScoreImproved() ? "new" : "   "), phaseScope.getBestScore(),
+                    stepScope.getScore().initialized(),
+                    (stepScope.getBestScoreImproved() ? "new" : "   "), phaseScope.getBestScore().initialized(),
                     stepScope.getAcceptedMoveCount(),
                     stepScope.getSelectedMoveCount(),
                     stepScope.getStepString());
@@ -208,7 +208,7 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
                 logIndentation,
                 phaseIndex,
                 phaseScope.calculateSolverTimeMillisSpentUpToNow(),
-                phaseScope.getBestScore(),
+                phaseScope.getBestScore().initialized(),
                 phaseScope.getPhaseMoveEvaluationSpeed(),
                 phaseScope.getNextStepIndex());
     }

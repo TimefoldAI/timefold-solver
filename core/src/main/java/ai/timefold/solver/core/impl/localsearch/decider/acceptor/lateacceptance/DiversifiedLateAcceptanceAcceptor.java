@@ -46,7 +46,7 @@ public class DiversifiedLateAcceptanceAcceptor<Solution_> extends AbstractAccept
         }
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         // The acceptance and replacement strategies are based on the work:

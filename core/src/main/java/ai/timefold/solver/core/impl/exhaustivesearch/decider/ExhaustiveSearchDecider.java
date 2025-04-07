@@ -137,14 +137,16 @@ public final class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearc
         moveNode.setUndoMove(undoMove);
         var executionPoint = SolverLifecyclePoint.of(stepScope, moveNode.getTreeId());
         if (assertExpectedUndoMoveScore) {
+            var startingStepScore = stepScope.<Score_> getStartingStepScore();
             // In BRUTE_FORCE a stepScore can be null because it was not calculated
-            if (stepScope.getStartingStepScore() != null) {
-                scoreDirector.assertExpectedUndoMoveScore(move, (InnerScore<Score_>) stepScope.getStartingStepScore(),
-                        executionPoint);
+            if (startingStepScore != null) {
+                scoreDirector.assertExpectedUndoMoveScore(move, startingStepScore, executionPoint);
             }
         }
+        var nodeScore = moveNode.getScore();
         LOGGER.trace("{}        Move treeId ({}), score ({}), expandable ({}), move ({}).",
-                logIndentation, executionPoint.treeId(), moveNode.getScore(), moveNode.isExpandable(), moveNode.getMove());
+                logIndentation, executionPoint.treeId(), nodeScore == null ? "null" : nodeScore, moveNode.isExpandable(),
+                moveNode.getMove());
     }
 
     @SuppressWarnings("unchecked")
@@ -154,7 +156,7 @@ public final class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearc
         var lastLayer = moveNode.isLastLayer();
         if (!scoreBounderEnabled) {
             if (lastLayer) {
-                InnerScore<Score_> score = (InnerScore<Score_>) phaseScope.calculateScore();
+                var score = phaseScope.calculateScore();
                 moveNode.setScore(score);
                 if (assertMoveScoreFromScratch) {
                     phaseScope.assertWorkingScoreFromScratch(score, moveNode.getMove());

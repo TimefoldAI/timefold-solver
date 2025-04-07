@@ -8,6 +8,7 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptorTest;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.testutil.TestRandom;
 
@@ -41,7 +42,7 @@ class SimulatedAnnealingAcceptorTest extends AbstractAcceptorTest {
         assertThat(acceptor.isAccepted(moveScope0)).isTrue();
         stepScope0.setStep(moveScope0.getMove());
         stepScope0.setScore(moveScope0.getScore());
-        solverScope.setBestScore(moveScope0.getScore());
+        solverScope.setBestScore((InnerScore) moveScope0.getScore());
         acceptor.stepEnded(stepScope0);
         phaseScope.setLastCompletedStepScope(stepScope0);
 
@@ -73,7 +74,7 @@ class SimulatedAnnealingAcceptorTest extends AbstractAcceptorTest {
         assertThat(acceptor.isAccepted(moveScope2)).isTrue();
         stepScope2.setStep(moveScope2.getMove());
         stepScope2.setScore(moveScope2.getScore());
-        solverScope.setBestScore(moveScope2.getScore());
+        solverScope.setBestScore((InnerScore) moveScope2.getScore());
         acceptor.stepEnded(stepScope2);
         phaseScope.setLastCompletedStepScope(stepScope2);
 

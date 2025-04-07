@@ -58,10 +58,9 @@ final class BestScoreTermination<Solution_>
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
-        var startingInitializedScore = phaseScope.getStartingScore();
-        var bestScore = phaseScope.getBestScore();
-        return calculateTimeGradient((Score) startingInitializedScore.initialized(), (Score) bestScoreLimit,
-                (Score) bestScore.initialized());
+        var startingInitializedScore = phaseScope.<Score> getStartingScore();
+        var bestScore = phaseScope.<Score> getBestScore();
+        return calculateTimeGradient(startingInitializedScore.initialized(), (Score) bestScoreLimit, bestScore.initialized());
     }
 
     /**

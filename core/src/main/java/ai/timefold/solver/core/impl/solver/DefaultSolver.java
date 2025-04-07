@@ -231,7 +231,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 + "environment mode ({}), move thread count ({}), random ({}).",
                 (startingSolverCount == 1 ? "started" : "restarted"),
                 solverScope.calculateTimeMillisSpentUpToNow(),
-                solverScope.getBestScore(),
+                solverScope.getBestScore().initialized(),
                 environmentMode.name(),
                 moveThreadCountDescription,
                 (randomFactory != null ? randomFactory : "not fixed"));
@@ -313,7 +313,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         logger.info("Solving ended: time spent ({}), best score ({}), move evaluation speed ({}/sec), "
                 + "phase total ({}), environment mode ({}), move thread count ({}).",
                 solverScope.getTimeMillisSpent(),
-                solverScope.getBestScore(),
+                solverScope.getBestScore().initialized(),
                 solverScope.getMoveEvaluationSpeed(),
                 phaseList.size(),
                 environmentMode.name(),

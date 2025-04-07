@@ -131,18 +131,6 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
         return solverJob.getSolverStatus();
     }
 
-    // TODO Future features
-    //    @Override
-    //    public void reloadProblem(ProblemId_ problemId, Function<? super ProblemId_, Solution_> problemFinder) {
-    //        DefaultSolverJob<Solution_, ProblemId_> solverJob = problemIdToSolverJobMap.get(problemId);
-    //        if (solverJob == null) {
-    //            // We cannot distinguish between "already terminated" and "never solved" without causing a memory leak.
-    //            logger.debug("Ignoring reloadProblem() call because problemId ({}) is not solving.", problemId);
-    //            return;
-    //        }
-    //        solverJob.reloadProblem(problemFinder);
-    //    }
-
     @Override
     public @NonNull CompletableFuture<Void> addProblemChanges(@NonNull ProblemId_ problemId,
             @NonNull List<ProblemChange<Solution_>> problemChangeList) {

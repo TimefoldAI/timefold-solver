@@ -9,6 +9,7 @@ import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -92,7 +93,7 @@ class StrategicOscillationByLevelFinalistPodiumTest {
         stepScope0.setScore(moveScope0.getScore());
         finalistPodium.stepEnded(stepScope0);
         phaseScope.setLastCompletedStepScope(stepScope0);
-        solverScope.setBestScore(stepScope0.getScore());
+        solverScope.setBestScore((InnerScore) stepScope0.getScore());
 
         var stepScope1 = new LocalSearchStepScope<>(phaseScope);
         finalistPodium.stepStarted(stepScope1);
