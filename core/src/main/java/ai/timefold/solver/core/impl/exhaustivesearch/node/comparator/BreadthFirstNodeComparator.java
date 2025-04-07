@@ -45,7 +45,7 @@ public class BreadthFirstNodeComparator implements Comparator<ExhaustiveSearchNo
         }
         if (scoreBounderEnabled) {
             // Investigate better optimistic bound first
-            int optimisticBoundComparison = a.getOptimisticBound().compareTo((InnerScore) b.getOptimisticBound());
+            int optimisticBoundComparison = a.getOptimisticBound().compareTo(b.getOptimisticBound());
             if (optimisticBoundComparison < 0) {
                 return -1;
             } else if (optimisticBoundComparison > 0) {

@@ -71,8 +71,9 @@ public class ExhaustiveSearchNode {
         this.score = score;
     }
 
-    public InnerScore<?> getOptimisticBound() {
-        return optimisticBound;
+    @SuppressWarnings("unchecked")
+    public <Score_ extends Score<Score_>> InnerScore<Score_> getOptimisticBound() {
+        return (InnerScore<Score_>) optimisticBound;
     }
 
     public void setOptimisticBound(InnerScore<?> optimisticBound) {

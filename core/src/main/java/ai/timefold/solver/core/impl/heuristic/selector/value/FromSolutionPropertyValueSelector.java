@@ -45,12 +45,8 @@ public final class FromSolutionPropertyValueSelector<Solution_>
 
     @Override
     public SelectionCacheType getCacheType() {
-        SelectionCacheType intrinsicCacheType = valueRangeMightContainEntity
-                ? SelectionCacheType.STEP
-                : SelectionCacheType.PHASE;
-        return (intrinsicCacheType.compareTo(minimumCacheType) > 0)
-                ? intrinsicCacheType
-                : minimumCacheType;
+        var intrinsicCacheType = valueRangeMightContainEntity ? SelectionCacheType.STEP : SelectionCacheType.PHASE;
+        return (intrinsicCacheType.compareTo(minimumCacheType) > 0) ? intrinsicCacheType : minimumCacheType;
     }
 
     // ************************************************************************
@@ -61,7 +57,7 @@ public final class FromSolutionPropertyValueSelector<Solution_>
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
         InnerScoreDirector<Solution_, ?> scoreDirector = phaseScope.getScoreDirector();
-        cachedValueRange = (ValueRange<Object>) valueRangeDescriptor.extractValueRange(scoreDirector.getWorkingSolution());
+        cachedValueRange = valueRangeDescriptor.extractValueRange(scoreDirector.getWorkingSolution());
         if (valueRangeMightContainEntity) {
             cachedEntityListRevision = scoreDirector.getWorkingEntityListRevision();
             cachedEntityListIsDirty = false;
@@ -72,13 +68,12 @@ public final class FromSolutionPropertyValueSelector<Solution_>
     public void stepStarted(AbstractStepScope<Solution_> stepScope) {
         super.stepStarted(stepScope);
         if (valueRangeMightContainEntity) {
-            InnerScoreDirector<Solution_, ?> scoreDirector = stepScope.getScoreDirector();
+            var scoreDirector = stepScope.getScoreDirector();
             if (scoreDirector.isWorkingEntityListDirty(cachedEntityListRevision)) {
                 if (minimumCacheType.compareTo(SelectionCacheType.STEP) > 0) {
                     cachedEntityListIsDirty = true;
                 } else {
-                    cachedValueRange = (ValueRange<Object>) valueRangeDescriptor
-                            .extractValueRange(scoreDirector.getWorkingSolution());
+                    cachedValueRange = valueRangeDescriptor.extractValueRange(scoreDirector.getWorkingSolution());
                     cachedEntityListRevision = scoreDirector.getWorkingEntityListRevision();
                 }
             }
@@ -162,7 +157,7 @@ public final class FromSolutionPropertyValueSelector<Solution_>
             return true;
         if (other == null || getClass() != other.getClass())
             return false;
-        FromSolutionPropertyValueSelector<?> that = (FromSolutionPropertyValueSelector<?>) other;
+        var that = (FromSolutionPropertyValueSelector<?>) other;
         return randomSelection == that.randomSelection &&
                 Objects.equals(valueRangeDescriptor, that.valueRangeDescriptor) && minimumCacheType == that.minimumCacheType;
     }

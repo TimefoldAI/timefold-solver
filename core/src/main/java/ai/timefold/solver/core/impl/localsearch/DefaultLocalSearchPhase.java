@@ -16,7 +16,6 @@ import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 
@@ -64,7 +63,7 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
             return;
         }
 
-        LocalSearchPhaseScope<Solution_> phaseScope = new LocalSearchPhaseScope<>(solverScope, phaseIndex);
+        var phaseScope = new LocalSearchPhaseScope<Solution_>(solverScope, phaseIndex);
         phaseStarted(phaseScope);
 
         if (solverScope.isMetricEnabled(SolverMetric.MOVE_COUNT_PER_STEP)) {
@@ -75,7 +74,7 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
         }
 
         while (!phaseTermination.isPhaseTerminated(phaseScope)) {
-            LocalSearchStepScope<Solution_> stepScope = new LocalSearchStepScope<>(phaseScope);
+            var stepScope = new LocalSearchStepScope<Solution_>(phaseScope);
             stepScope.setTimeGradient(phaseTermination.calculatePhaseTimeGradient(phaseScope));
             stepStarted(stepScope);
             decider.decideNextStep(stepScope);
@@ -139,7 +138,7 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
         super.stepEnded(stepScope);
         decider.stepEnded(stepScope);
         collectMetrics(stepScope);
-        LocalSearchPhaseScope<Solution_> phaseScope = stepScope.getPhaseScope();
+        var phaseScope = stepScope.getPhaseScope();
         if (logger.isDebugEnabled()) {
             logger.debug("{}    LS step ({}), time spent ({}), score ({}), {} best score ({})," +
                     " accepted/selected move count ({}/{}), picked move ({}).",
@@ -155,20 +154,20 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
     }
 
     private void collectMetrics(LocalSearchStepScope<Solution_> stepScope) {
-        LocalSearchPhaseScope<Solution_> phaseScope = stepScope.getPhaseScope();
-        SolverScope<Solution_> solverScope = phaseScope.getSolverScope();
+        var phaseScope = stepScope.getPhaseScope();
+        var solverScope = phaseScope.getSolverScope();
         if (solverScope.isMetricEnabled(SolverMetric.MOVE_COUNT_PER_STEP)) {
             acceptedMoveCountPerStep.set(stepScope.getAcceptedMoveCount());
             selectedMoveCountPerStep.set(stepScope.getSelectedMoveCount());
         }
         if (solverScope.isMetricEnabled(SolverMetric.CONSTRAINT_MATCH_TOTAL_STEP_SCORE)
                 || solverScope.isMetricEnabled(SolverMetric.CONSTRAINT_MATCH_TOTAL_BEST_SCORE)) {
-            InnerScoreDirector<Solution_, ?> scoreDirector = stepScope.getScoreDirector();
-            ScoreDefinition<?> scoreDefinition = solverScope.getScoreDefinition();
+            var scoreDirector = stepScope.getScoreDirector();
+            var scoreDefinition = solverScope.getScoreDefinition();
             if (scoreDirector.getConstraintMatchPolicy().isEnabled()) {
                 for (ConstraintMatchTotal<?> constraintMatchTotal : scoreDirector.getConstraintMatchTotalMap()
                         .values()) {
-                    Tags tags = solverScope.getMonitoringTags().and(
+                    var tags = solverScope.getMonitoringTags().and(
                             "constraint.package", constraintMatchTotal.getConstraintRef().packageName(),
                             "constraint.name", constraintMatchTotal.getConstraintRef().constraintName());
                     collectConstraintMatchTotalMetrics(SolverMetric.CONSTRAINT_MATCH_TOTAL_BEST_SCORE, tags,
@@ -189,7 +188,7 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
             if (countMap.containsKey(tags)) {
                 countMap.get(tags).set(constraintMatchTotal.getConstraintMatchCount());
             } else {
-                AtomicLong count = new AtomicLong(constraintMatchTotal.getConstraintMatchCount());
+                var count = new AtomicLong(constraintMatchTotal.getConstraintMatchCount());
                 countMap.put(tags, count);
                 Metrics.gauge(metric.getMeterId() + ".count",
                         tags, count);

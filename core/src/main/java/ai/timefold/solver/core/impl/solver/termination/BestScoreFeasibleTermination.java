@@ -47,7 +47,7 @@ final class BestScoreFeasibleTermination<Solution_>
     @Override
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
         return calculateFeasibilityTimeGradient(InnerScore.of((Score) solverScope.getStartingInitializedScore()),
-                (Score) solverScope.getBestScore().raw());
+                solverScope.getBestScore().raw());
     }
 
     @Override

@@ -71,7 +71,7 @@ public final class FromSolutionEntitySelector<Solution_>
     @Override
     public void stepStarted(AbstractStepScope<Solution_> stepScope) {
         super.stepStarted(stepScope);
-        InnerScoreDirector<Solution_, ?> scoreDirector = stepScope.getScoreDirector();
+        var scoreDirector = stepScope.getScoreDirector();
         if (scoreDirector.isWorkingEntityListDirty(cachedEntityListRevision)) {
             if (minimumCacheType.compareTo(SelectionCacheType.STEP) > 0) {
                 cachedEntityListIsDirty = true;

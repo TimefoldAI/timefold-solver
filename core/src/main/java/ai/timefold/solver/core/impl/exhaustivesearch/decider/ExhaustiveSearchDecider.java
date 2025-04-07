@@ -27,14 +27,14 @@ public final class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearc
     private final ManualEntityMimicRecorder<Solution_> manualEntityMimicRecorder;
     private final MoveRepository<Solution_> moveRepository;
     private final boolean scoreBounderEnabled;
-    private final ScoreBounder scoreBounder;
+    private final ScoreBounder<?> scoreBounder;
 
     private boolean assertMoveScoreFromScratch = false;
     private boolean assertExpectedUndoMoveScore = false;
 
     public ExhaustiveSearchDecider(String logIndentation, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             PhaseTermination<Solution_> termination, ManualEntityMimicRecorder<Solution_> manualEntityMimicRecorder,
-            MoveRepository<Solution_> moveRepository, boolean scoreBounderEnabled, ScoreBounder scoreBounder) {
+            MoveRepository<Solution_> moveRepository, boolean scoreBounderEnabled, ScoreBounder<?> scoreBounder) {
         this.logIndentation = logIndentation;
         this.bestSolutionRecaller = bestSolutionRecaller;
         this.termination = termination;
@@ -52,8 +52,9 @@ public final class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearc
         return scoreBounderEnabled;
     }
 
-    public ScoreBounder getScoreBounder() {
-        return scoreBounder;
+    @SuppressWarnings("unchecked")
+    public <Score_ extends Score<Score_>> ScoreBounder<Score_> getScoreBounder() {
+        return (ScoreBounder<Score_>) scoreBounder;
     }
 
     public void setAssertMoveScoreFromScratch(boolean assertMoveScoreFromScratch) {
@@ -156,7 +157,7 @@ public final class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearc
         var lastLayer = moveNode.isLastLayer();
         if (!scoreBounderEnabled) {
             if (lastLayer) {
-                var score = phaseScope.calculateScore();
+                var score = phaseScope.<Score_> calculateScore();
                 moveNode.setScore(score);
                 if (assertMoveScoreFromScratch) {
                     phaseScope.assertWorkingScoreFromScratch(score, moveNode.getMove());
@@ -166,7 +167,7 @@ public final class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearc
                 phaseScope.addExpandableNode(moveNode);
             }
         } else {
-            var innerScore = phaseScope.calculateScore();
+            var innerScore = phaseScope.<Score_> calculateScore();
             moveNode.setScore(innerScore);
             if (assertMoveScoreFromScratch) {
                 phaseScope.assertWorkingScoreFromScratch(innerScore, moveNode.getMove());
@@ -176,14 +177,15 @@ public final class ExhaustiveSearchDecider<Solution_> implements ExhaustiveSearc
                 phaseScope.registerPessimisticBound(innerScore);
                 bestSolutionRecaller.processWorkingSolutionDuringMove(innerScore, stepScope);
             } else {
-                var scoreDirector = phaseScope.getScoreDirector();
-                var optimisticBound = (InnerScore<Score_>) scoreBounder.calculateOptimisticBound(scoreDirector, innerScore);
+                var scoreDirector = phaseScope.<Score_> getScoreDirector();
+                var castScoreBounder = this.<Score_> getScoreBounder();
+                var optimisticBound = castScoreBounder.calculateOptimisticBound(scoreDirector, innerScore);
                 moveNode.setOptimisticBound(optimisticBound);
                 var bestPessimisticBound = (InnerScore<Score_>) phaseScope.getBestPessimisticBound();
                 if (optimisticBound.compareTo(bestPessimisticBound) > 0) {
                     // It's still worth investigating this node further (no need to prune it)
                     phaseScope.addExpandableNode(moveNode);
-                    var pessimisticBound = scoreBounder.calculatePessimisticBound(scoreDirector, innerScore);
+                    var pessimisticBound = castScoreBounder.calculatePessimisticBound(scoreDirector, innerScore);
                     phaseScope.registerPessimisticBound(pessimisticBound);
                 }
             }

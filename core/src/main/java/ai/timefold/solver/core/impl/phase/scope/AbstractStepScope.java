@@ -60,8 +60,8 @@ public abstract class AbstractStepScope<Solution_> {
         return getPhaseScope().getScoreDirector();
     }
 
-    public MoveDirector<Solution_, ?> getMoveDirector() {
-        return getScoreDirector().getMoveDirector();
+    public <Score_ extends Score<Score_>> MoveDirector<Solution_, Score_> getMoveDirector() {
+        return this.<Score_> getScoreDirector().getMoveDirector();
     }
 
     public Solution_ getWorkingSolution() {

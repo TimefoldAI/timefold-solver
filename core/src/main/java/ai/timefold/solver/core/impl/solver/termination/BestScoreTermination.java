@@ -42,9 +42,8 @@ final class BestScoreTermination<Solution_>
         return isTerminated(phaseScope.isBestSolutionInitialized(), phaseScope.getBestScore().raw());
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private boolean isTerminated(boolean bestSolutionInitialized, Score<?> bestScore) {
-        return bestSolutionInitialized && ((Score) bestScore).compareTo(bestScoreLimit) >= 0;
+    private <Score_ extends Score<Score_>> boolean isTerminated(boolean bestSolutionInitialized, Score_ bestScore) {
+        return bestSolutionInitialized && bestScore.compareTo(getBestScoreLimit()) >= 0;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -52,7 +51,7 @@ final class BestScoreTermination<Solution_>
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
         var startingInitializedScore = solverScope.getStartingInitializedScore();
         var bestScore = solverScope.getBestScore();
-        return calculateTimeGradient((Score) startingInitializedScore, (Score) bestScoreLimit, (Score) bestScore.raw());
+        return calculateTimeGradient((Score) startingInitializedScore, getBestScoreLimit(), (Score) bestScore.raw());
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -60,7 +59,7 @@ final class BestScoreTermination<Solution_>
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
         var startingInitializedScore = phaseScope.<Score> getStartingScore();
         var bestScore = phaseScope.<Score> getBestScore();
-        return calculateTimeGradient(startingInitializedScore.raw(), (Score) bestScoreLimit, bestScore.raw());
+        return calculateTimeGradient(startingInitializedScore.raw(), getBestScoreLimit(), bestScore.raw());
     }
 
     /**
@@ -128,6 +127,11 @@ final class BestScoreTermination<Solution_>
             timeGradient = 1.0;
         }
         return timeGradient;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <Score_ extends Score<Score_>> Score_ getBestScoreLimit() {
+        return (Score_) bestScoreLimit;
     }
 
     @Override

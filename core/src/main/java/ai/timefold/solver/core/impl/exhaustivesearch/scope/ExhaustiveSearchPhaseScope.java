@@ -43,8 +43,9 @@ public final class ExhaustiveSearchPhaseScope<Solution_> extends AbstractPhaseSc
         this.expandableNodeQueue = expandableNodeQueue;
     }
 
-    public InnerScore<?> getBestPessimisticBound() {
-        return bestPessimisticBound;
+    @SuppressWarnings("unchecked")
+    public <Score_ extends Score<Score_>> InnerScore<Score_> getBestPessimisticBound() {
+        return (InnerScore<Score_>) bestPessimisticBound;
     }
 
     public void setBestPessimisticBound(InnerScore<?> bestPessimisticBound) {
@@ -69,14 +70,14 @@ public final class ExhaustiveSearchPhaseScope<Solution_> extends AbstractPhaseSc
     }
 
     public <Score_ extends Score<Score_>> void registerPessimisticBound(InnerScore<Score_> pessimisticBound) {
-        if (pessimisticBound.compareTo((InnerScore<Score_>) bestPessimisticBound) > 0) {
+        var castBestPessimisticBound = this.<Score_> getBestPessimisticBound();
+        if (pessimisticBound.compareTo(castBestPessimisticBound) > 0) {
             bestPessimisticBound = pessimisticBound;
             // Prune the queue
             // TODO optimize this because expandableNodeQueue is too long to iterate
             expandableNodeQueue.removeIf(node -> {
-                var optimistic = (InnerScore<Score_>) node.getOptimisticBound();
-                var bestPessimistic = (InnerScore<Score_>) bestPessimisticBound;
-                return optimistic.compareTo(bestPessimistic) <= 0;
+                var optimistic = node.<Score_> getOptimisticBound();
+                return optimistic.compareTo(pessimisticBound) <= 0;
             });
         }
     }

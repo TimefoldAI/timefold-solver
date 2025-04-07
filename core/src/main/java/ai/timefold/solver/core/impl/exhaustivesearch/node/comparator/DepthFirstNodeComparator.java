@@ -4,7 +4,6 @@ import java.util.Comparator;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
-import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 /**
  * Investigate deeper nodes first.
@@ -43,7 +42,7 @@ public class DepthFirstNodeComparator implements Comparator<ExhaustiveSearchNode
         // In non-mixed cases, the comparison order is irrelevant.
         if (scoreBounderEnabled) {
             // Investigate better optimistic bound first
-            int optimisticBoundComparison = a.getOptimisticBound().compareTo((InnerScore) b.getOptimisticBound());
+            int optimisticBoundComparison = a.getOptimisticBound().compareTo(b.getOptimisticBound());
             if (optimisticBoundComparison < 0) {
                 return -1;
             } else if (optimisticBoundComparison > 0) {

@@ -182,8 +182,9 @@ public class SolverScope<Solution_> {
         scoreDirector.getScoreDirectorFactory().assertScoreFromScratch(solution);
     }
 
-    public Score<?> getStartingInitializedScore() {
-        return startingInitializedScore;
+    @SuppressWarnings("unchecked")
+    public <Score_ extends Score<Score_>> Score_ getStartingInitializedScore() {
+        return (Score_) startingInitializedScore;
     }
 
     public void setStartingInitializedScore(Score<?> startingInitializedScore) {
