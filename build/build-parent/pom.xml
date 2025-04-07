@@ -42,7 +42,7 @@
     <version.dependency.plugin>3.8.1</version.dependency.plugin>
     <version.exec.plugin>3.5.0</version.exec.plugin>
     <version.enforcer.plugin>3.5.0</version.enforcer.plugin>
-    <version.jacoco.plugin>0.8.12</version.jacoco.plugin>
+    <version.jacoco.plugin>0.8.13</version.jacoco.plugin>
     <version.jar.plugin>3.4.2</version.jar.plugin>
     <version.jaxb2.plugin>3.2.0</version.jaxb2.plugin>
     <version.revapi.plugin>0.15.0</version.revapi.plugin>
