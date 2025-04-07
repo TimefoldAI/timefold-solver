@@ -38,7 +38,7 @@ class DiversifiedLateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         acceptor.phaseStarted(phaseScope);
         moveScope0 = buildMoveScope(stepScope0, -2000);
         stepScope0.setScore(moveScope0.getScore());
-        acceptor.lateWorse = InnerScore.of(SimpleScore.of(-2001));
+        acceptor.lateWorseScore = InnerScore.of(SimpleScore.of(-2001));
         acceptor.lateWorseOccurrences = 1;
         acceptor.previousScores[0] = InnerScore.of(SimpleScore.of(-2001));
         acceptor.previousScores[1] = InnerScore.of(SimpleScore.of(-2001));
@@ -46,7 +46,7 @@ class DiversifiedLateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         stepScope0.getPhaseScope().getLastCompletedStepScope().setInitializedScore(SimpleScore.of(-2001));
         acceptor.isAccepted(moveScope0);
         assertThat(acceptor.previousScores[0]).isEqualTo(InnerScore.of(SimpleScore.of(-2000)));
-        assertThat(acceptor.lateWorse).isEqualTo(InnerScore.of(SimpleScore.of(-2001)));
+        assertThat(acceptor.lateWorseScore).isEqualTo(InnerScore.of(SimpleScore.of(-2001)));
         assertThat(acceptor.lateWorseOccurrences).isEqualTo(1);
     }
 
@@ -64,7 +64,7 @@ class DiversifiedLateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
         // Current worse than late score and late score worse than previous
         acceptor.phaseStarted(phaseScope);
-        acceptor.lateWorse = InnerScore.of(SimpleScore.of(-2005));
+        acceptor.lateWorseScore = InnerScore.of(SimpleScore.of(-2005));
         var moveScope0 = buildMoveScope(stepScope0, -2000);
         stepScope0.setScore(moveScope0.getScore());
         acceptor.previousScores[0] = InnerScore.of(SimpleScore.of(-1999));
@@ -74,7 +74,7 @@ class DiversifiedLateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
         // Current worse than late score and late score better than late score
         acceptor.phaseStarted(phaseScope);
-        acceptor.lateWorse = InnerScore.of(SimpleScore.of(-2005));
+        acceptor.lateWorseScore = InnerScore.of(SimpleScore.of(-2005));
         moveScope0 = buildMoveScope(stepScope0, -2001);
         stepScope0.setScore(moveScope0.getScore());
         acceptor.previousScores[0] = InnerScore.of(SimpleScore.of(-1999));
@@ -84,7 +84,7 @@ class DiversifiedLateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
         // Current equal to previous and current worse than late score
         acceptor.phaseStarted(phaseScope);
-        acceptor.lateWorse = InnerScore.of(SimpleScore.of(-2005));
+        acceptor.lateWorseScore = InnerScore.of(SimpleScore.of(-2005));
         moveScope0 = buildMoveScope(stepScope0, -2001);
         stepScope0.setScore(moveScope0.getScore());
         acceptor.previousScores[0] = InnerScore.of(SimpleScore.of(-1999));
@@ -94,7 +94,7 @@ class DiversifiedLateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
         // Current better than previous and previous better than late score
         acceptor.phaseStarted(phaseScope);
-        acceptor.lateWorse = InnerScore.of(SimpleScore.of(-2005));
+        acceptor.lateWorseScore = InnerScore.of(SimpleScore.of(-2005));
         moveScope0 = buildMoveScope(stepScope0, -1998);
         stepScope0.setScore(moveScope0.getScore());
         acceptor.previousScores[0] = InnerScore.of(SimpleScore.of(-2000));
@@ -104,7 +104,7 @@ class DiversifiedLateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
         // Current better than previous and previous worse than late score
         acceptor.phaseStarted(phaseScope);
-        acceptor.lateWorse = InnerScore.of(SimpleScore.of(-2005));
+        acceptor.lateWorseScore = InnerScore.of(SimpleScore.of(-2005));
         moveScope0 = buildMoveScope(stepScope0, -1998);
         stepScope0.setScore(moveScope0.getScore());
         acceptor.previousScores[0] = InnerScore.of(SimpleScore.of(-1999));
@@ -114,7 +114,7 @@ class DiversifiedLateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
         // Current worse than late score and previous worse than the current
         acceptor.phaseStarted(phaseScope);
-        acceptor.lateWorse = InnerScore.of(SimpleScore.of(-2005));
+        acceptor.lateWorseScore = InnerScore.of(SimpleScore.of(-2005));
         moveScope0 = buildMoveScope(stepScope0, -2000);
         stepScope0.setScore(moveScope0.getScore());
         acceptor.previousScores[0] = InnerScore.of(SimpleScore.of(-1999));
@@ -125,7 +125,7 @@ class DiversifiedLateAcceptanceAcceptorTest extends AbstractAcceptorTest {
         // No replacement
         // Current better than late score and previous better than current
         acceptor.phaseStarted(phaseScope);
-        acceptor.lateWorse = InnerScore.of(SimpleScore.of(-2005));
+        acceptor.lateWorseScore = InnerScore.of(SimpleScore.of(-2005));
         moveScope0 = buildMoveScope(stepScope0, -2000);
         stepScope0.setScore(moveScope0.getScore());
         acceptor.previousScores[0] = InnerScore.of(SimpleScore.of(-2001));
@@ -135,7 +135,7 @@ class DiversifiedLateAcceptanceAcceptorTest extends AbstractAcceptorTest {
 
         // Current equal to previous and current better than late score
         acceptor.phaseStarted(phaseScope);
-        acceptor.lateWorse = InnerScore.of(SimpleScore.of(-2005));
+        acceptor.lateWorseScore = InnerScore.of(SimpleScore.of(-2005));
         moveScope0 = buildMoveScope(stepScope0, -2000);
         stepScope0.setScore(moveScope0.getScore());
         acceptor.previousScores[0] = InnerScore.of(SimpleScore.of(-2001));

@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.localsearch.decider.acceptor.lateacceptance
 
 import java.util.Arrays;
 
+import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptor;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
@@ -49,15 +50,21 @@ public class LateAcceptanceAcceptor<Solution_> extends AbstractAcceptor<Solution
     @Override
     public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
         var moveScore = (InnerScore) moveScope.getScore();
-        var lateScore = (InnerScore) previousScores[lateScoreIndex];
+        var lateScore = getPreviousScore(lateScoreIndex);
         if (moveScore.compareTo(lateScore) >= 0) {
             return true;
         }
         if (hillClimbingEnabled) {
-            var lastStepScore = moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore();
+            var lastStepScore = moveScope.getStepScope().getPhaseScope()
+                    .getLastCompletedStepScope().getScore();
             return moveScore.compareTo(lastStepScore) >= 0;
         }
         return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    private <Score_ extends Score<Score_>> InnerScore<Score_> getPreviousScore(int lateScoreIndex) {
+        return (InnerScore<Score_>) previousScores[lateScoreIndex];
     }
 
     @Override
