@@ -37,7 +37,7 @@ class TimefoldProcessorInheritanceOnlyBaseClassAnnotatedBaseInterfaceTest {
      */
     @Test
     void testOnlyBaseClassAnnotatedBaseIsInterface() {
-        TestdataSolution problem = TestdataSolution.generateSolution(1, 2);
+        TestdataSolution problem = TestdataSolution.generateSolution(1, 2, false);
         TestdataSolution solution = solverFactory.buildSolver().solve(problem);
         assertNotNull(solution);
         assertThat(solution.getScore()).isEqualTo(SimpleScore.of(2));

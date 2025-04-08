@@ -25,10 +25,11 @@ class SolverInheritanceBasicVariableTest {
                 .withEntityClasses(
                         ai.timefold.solver.core.impl.testdata.domain.superclass.singlevar.baseannotated.childannotated.TestdataChildEntity.class)
                 .withConstraintProviderClass(
-                        ai.timefold.solver.core.impl.testdata.domain.superclass.singlevar.baseannotated.childannotated.TestConstraintProvider.class);
+                        ai.timefold.solver.core.impl.testdata.domain.superclass.singlevar.baseannotated.childannotated.TestConstraintProvider.class)
+                .withTerminationConfig(new TerminationConfig().withStepCountLimit(10));
         var problem =
                 ai.timefold.solver.core.impl.testdata.domain.superclass.singlevar.baseannotated.childannotated.TestdataSolution
-                        .generateSolution(3, 2);
+                        .generateSolution(3, 2, false);
         var solution = PlannerTestUtils.solve(solverConfig, problem);
         assertThat(solution.getScore()).isEqualTo(SimpleScore.of(2));
     }
@@ -46,10 +47,11 @@ class SolverInheritanceBasicVariableTest {
                 .withEntityClasses(
                         ai.timefold.solver.core.impl.testdata.domain.superclass.singlevarinterface.baseannotated.childannotated.TestdataChildEntity.class)
                 .withConstraintProviderClass(
-                        ai.timefold.solver.core.impl.testdata.domain.superclass.singlevarinterface.baseannotated.childannotated.TestConstraintProvider.class);
+                        ai.timefold.solver.core.impl.testdata.domain.superclass.singlevarinterface.baseannotated.childannotated.TestConstraintProvider.class)
+                .withTerminationConfig(new TerminationConfig().withStepCountLimit(10));
         var problem =
                 ai.timefold.solver.core.impl.testdata.domain.superclass.singlevarinterface.baseannotated.childannotated.TestdataSolution
-                        .generateSolution(3, 2);
+                        .generateSolution(3, 2, false);
         var solution = PlannerTestUtils.solve(solverConfig, problem);
         assertThat(solution.getScore()).isEqualTo(SimpleScore.of(2));
     }
@@ -66,10 +68,11 @@ class SolverInheritanceBasicVariableTest {
                 .withEntityClasses(
                         ai.timefold.solver.core.impl.testdata.domain.superclass.singlevar.baseannotated.childnotannotated.TestdataChildEntity.class)
                 .withConstraintProviderClass(
-                        ai.timefold.solver.core.impl.testdata.domain.superclass.singlevar.baseannotated.childnotannotated.TestConstraintProvider.class);
+                        ai.timefold.solver.core.impl.testdata.domain.superclass.singlevar.baseannotated.childnotannotated.TestConstraintProvider.class)
+                .withTerminationConfig(new TerminationConfig().withStepCountLimit(10));
         var problem =
                 ai.timefold.solver.core.impl.testdata.domain.superclass.singlevar.baseannotated.childnotannotated.TestdataSolution
-                        .generateSolution(3, 2);
+                        .generateSolution(3, 2, false);
         var solution = PlannerTestUtils.solve(solverConfig, problem);
         assertThat(solution.getScore()).isEqualTo(SimpleScore.of(2));
     }
@@ -87,10 +90,11 @@ class SolverInheritanceBasicVariableTest {
                 .withEntityClasses(
                         ai.timefold.solver.core.impl.testdata.domain.superclass.singlevarinterface.baseannotated.childnotannotated.TestdataChildEntity.class)
                 .withConstraintProviderClass(
-                        ai.timefold.solver.core.impl.testdata.domain.superclass.singlevarinterface.baseannotated.childnotannotated.TestConstraintProvider.class);
+                        ai.timefold.solver.core.impl.testdata.domain.superclass.singlevarinterface.baseannotated.childnotannotated.TestConstraintProvider.class)
+                .withTerminationConfig(new TerminationConfig().withStepCountLimit(10));
         var problem =
                 ai.timefold.solver.core.impl.testdata.domain.superclass.singlevarinterface.baseannotated.childnotannotated.TestdataSolution
-                        .generateSolution(3, 2);
+                        .generateSolution(3, 2, false);
         var solution = PlannerTestUtils.solve(solverConfig, problem);
         assertThat(solution.getScore()).isEqualTo(SimpleScore.of(2));
     }
@@ -111,7 +115,7 @@ class SolverInheritanceBasicVariableTest {
                 .generateSolution(3, 2);
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, solution))
                 .hasMessageContaining(
-                        "should have at least 1 getter method or 1 field with a PlanningVariable annotation or a shadow variable annotation.");
+                        "is not annotated with @PlanningEntity but defines genuine or shadow variables.");
     }
 
     /**
@@ -132,7 +136,7 @@ class SolverInheritanceBasicVariableTest {
                         .generateSolution(3, 2);
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, solution))
                 .hasMessageContaining(
-                        "should have at least 1 getter method or 1 field with a PlanningVariable annotation or a shadow variable annotation.");
+                        "is not annotated with @PlanningEntity but defines genuine or shadow variables.");
     }
 
     /**
@@ -195,7 +199,7 @@ class SolverInheritanceBasicVariableTest {
                 ai.timefold.solver.core.impl.testdata.domain.superclass.singlevar.baseannotated.childannotatedreplacevar.TestdataSolution
                         .generateSolution(3, 2, false);
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, solution))
-                .isInstanceOf(IllegalStateException.class);
+                .hasMessageContaining("redefines the genuine variables [value], which is not permitted.");
     }
 
     /**
@@ -216,7 +220,7 @@ class SolverInheritanceBasicVariableTest {
                 ai.timefold.solver.core.impl.testdata.domain.superclass.singlevarinterface.baseannotated.childannotatedreplacevar.TestdataSolution
                         .generateSolution(3, 2, false);
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, solution))
-                .isInstanceOf(IllegalStateException.class);
+                .hasMessageContaining("redefines the genuine variables [value], which is not permitted.");
     }
 
     /**
@@ -236,8 +240,8 @@ class SolverInheritanceBasicVariableTest {
         var problem =
                 ai.timefold.solver.core.impl.testdata.domain.superclass.multipleinheritance.baseannotated.childannotated.TestdataMultipleSolution
                         .generateSolution(3, 2, false);
-        var solution = PlannerTestUtils.solve(solverConfig, problem);
-        assertThat(solution.getScore()).isEqualTo(SimpleScore.of(4)); // value of 2 for each constraint
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .hasMessageContaining("The multiple inheritance is not allowed.");
     }
 
     /**
@@ -258,8 +262,8 @@ class SolverInheritanceBasicVariableTest {
         var problem =
                 ai.timefold.solver.core.impl.testdata.domain.superclass.multipleinheritanceinterface.baseannotated.childannotated.TestdataMultipleSolution
                         .generateSolution(3, 2, false);
-        var solution = PlannerTestUtils.solve(solverConfig, problem);
-        assertThat(solution.getScore()).isEqualTo(SimpleScore.of(4)); // value of 2 for each constraint
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .hasMessageContaining("The multiple inheritance is not allowed.");
     }
 
     /**
@@ -280,7 +284,7 @@ class SolverInheritanceBasicVariableTest {
                 ai.timefold.solver.core.impl.testdata.domain.superclass.multipleinheritance.baseannotated.childnotannotated.TestdataMultipleSolution
                         .generateSolution(3, 2);
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
-                .isInstanceOf(IllegalStateException.class);
+                .hasMessageContaining("The multiple inheritance is not allowed.");
     }
 
     /**
@@ -302,7 +306,7 @@ class SolverInheritanceBasicVariableTest {
                 ai.timefold.solver.core.impl.testdata.domain.superclass.multipleinheritanceinterface.baseannotated.childnotannotated.TestdataMultipleSolution
                         .generateSolution(3, 2);
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
-                .isInstanceOf(IllegalStateException.class);
+                .hasMessageContaining("The multiple inheritance is not allowed.");
     }
 
     /**
@@ -323,7 +327,7 @@ class SolverInheritanceBasicVariableTest {
         var problem =
                 ai.timefold.solver.core.impl.testdata.domain.superclass.multipleinheritance.baseannotated.mixed.childannotated.TestdataMultipleSolution
                         .generateSolution(3, 2, false);
-        var solution = PlannerTestUtils.solve(solverConfig, problem);
-        assertThat(solution.getScore()).isEqualTo(SimpleScore.of(6)); // value of 2 for each constraint
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .hasMessageContaining("Mixed inheritance is not permitted.");// value of 2 for each constraint
     }
 }

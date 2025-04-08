@@ -34,7 +34,7 @@ class TimefoldProcessorInheritanceBothClassesAnnotatedTest {
      */
     @Test
     void testBothClassesAnnotated() {
-        TestdataSolution problem = TestdataSolution.generateSolution(1, 1);
+        TestdataSolution problem = TestdataSolution.generateSolution(1, 1, false);
         TestdataSolution solution = solverFactory.buildSolver().solve(problem);
         assertNotNull(solution);
         assertThat(solution.getScore()).isEqualTo(SimpleScore.of(2));
