@@ -193,7 +193,6 @@ public class SolutionDescriptor<Solution_> {
 
     private PlanningSolutionMetaModel<Solution_> planningSolutionMetaModel;
     private SolutionCloner<Solution_> solutionCloner;
-    private boolean assertModelForCloning = false;
 
     // ************************************************************************
     // Constructors and simple getters/setters
@@ -733,10 +732,6 @@ public class SolutionDescriptor<Solution_> {
 
     public SolutionCloner<Solution_> getSolutionCloner() {
         return solutionCloner;
-    }
-
-    public void setAssertModelForCloning(boolean assertModelForCloning) {
-        this.assertModelForCloning = assertModelForCloning;
     }
 
     // ************************************************************************

@@ -174,17 +174,11 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                     solverConfig.getEntityClassList() + "). If you're using the Quarkus extension or Spring Boot starter, " +
                     "it should have been filled in already.");
         }
-        SolutionDescriptor<Solution_> solutionDescriptor =
-                SolutionDescriptor.buildSolutionDescriptor(solverConfig.determineDomainAccessType(),
-                        (Class<Solution_>) solverConfig.getSolutionClass(),
-                        solverConfig.getGizmoMemberAccessorMap(),
-                        solverConfig.getGizmoSolutionClonerMap(),
-                        solverConfig.getEntityClassList());
-        EnvironmentMode environmentMode = solverConfig.determineEnvironmentMode();
-        if (environmentMode.isStepAssertOrMore()) {
-            solutionDescriptor.setAssertModelForCloning(true);
-        }
-
+        var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(solverConfig.determineDomainAccessType(),
+                (Class<Solution_>) solverConfig.getSolutionClass(),
+                solverConfig.getGizmoMemberAccessorMap(),
+                solverConfig.getGizmoSolutionClonerMap(),
+                solverConfig.getEntityClassList());
         return solutionDescriptor;
     }
 
@@ -271,7 +265,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         }
 
         protected OptionalInt resolveMoveThreadCount(String moveThreadCount, boolean enforceMaximum) {
-            int availableProcessorCount = getAvailableProcessors();
+            var availableProcessorCount = getAvailableProcessors();
             int resolvedMoveThreadCount;
             if (moveThreadCount == null || moveThreadCount.equals(SolverConfig.MOVE_THREAD_COUNT_NONE)) {
                 return OptionalInt.empty();

@@ -259,21 +259,15 @@ public class SingleBenchmarkResult implements BenchmarkResult {
     }
 
     public Long getScoreCalculationSpeed() {
-        var timeMillisSpent = this.timeMillisSpent;
-        if (timeMillisSpent == 0L) {
-            // Avoid divide by zero exception on a fast CPU
-            timeMillisSpent = 1L;
-        }
-        return scoreCalculationCount * 1000L / timeMillisSpent;
+        var scoreCalculationCountByThousand = scoreCalculationCount * 1000L;
+        // Avoid divide by zero exception on a fast CPU
+        return timeMillisSpent == 0L ? scoreCalculationCountByThousand : scoreCalculationCountByThousand / timeMillisSpent;
     }
 
     public Long getMoveEvaluationSpeed() {
-        var timeSpent = this.timeMillisSpent;
-        if (timeSpent == 0L) {
-            // Avoid divide by zero exception on a fast CPU
-            timeSpent = 1L;
-        }
-        return moveEvaluationCount * 1000L / timeSpent;
+        var moveEvaluationCountByThousand = moveEvaluationCount * 1000L;
+        // Avoid divide by zero exception on a fast CPU
+        return timeMillisSpent == 0L ? moveEvaluationCountByThousand : moveEvaluationCountByThousand / timeMillisSpent;
     }
 
     @SuppressWarnings("unused") // Used By FreeMarker.
@@ -335,7 +329,7 @@ public class SingleBenchmarkResult implements BenchmarkResult {
             throw new IllegalStateException(
                     "Cannot get representative subSingleBenchmarkResult from empty subSingleBenchmarkResultList.");
         }
-        var subSingleBenchmarkResultListCopy = new ArrayList<SubSingleBenchmarkResult>(subSingleBenchmarkResultList);
+        var subSingleBenchmarkResultListCopy = new ArrayList<>(subSingleBenchmarkResultList);
         // sort (according to ranking) so that the best subSingle is at index 0
         subSingleBenchmarkResultListCopy.sort(new SubSingleBenchmarkRankBasedComparator());
         best = subSingleBenchmarkResultListCopy.get(0);
@@ -352,7 +346,7 @@ public class SingleBenchmarkResult implements BenchmarkResult {
         failureCount = 0;
         var firstNonFailure = true;
         totalScore = null;
-        var successResultList = new ArrayList<SubSingleBenchmarkResult>(subSingleBenchmarkResultList);
+        var successResultList = new ArrayList<>(subSingleBenchmarkResultList);
         // Do not rank a SubSingleBenchmarkResult that has a failure
         for (var it = successResultList.iterator(); it.hasNext();) {
             var subSingleBenchmarkResult = it.next();
@@ -377,7 +371,7 @@ public class SingleBenchmarkResult implements BenchmarkResult {
         determineRanking(successResultList);
     }
 
-    private void determineRanking(List<SubSingleBenchmarkResult> rankedSubSingleBenchmarkResultList) {
+    private static void determineRanking(List<SubSingleBenchmarkResult> rankedSubSingleBenchmarkResultList) {
         var subSingleBenchmarkRankingComparator = new ScoreSubSingleBenchmarkRankingComparator();
         rankedSubSingleBenchmarkResultList.sort(Collections.reverseOrder(subSingleBenchmarkRankingComparator));
         var ranking = 0;
