@@ -13,7 +13,7 @@ class BendableLongScoreJacksonRoundTripTest extends AbstractScoreJacksonRoundTri
     @Test
     void serializeAndDeserialize() {
         assertSerializeAndDeserialize(null, new TestBendableLongScoreWrapper(null));
-        BendableLongScore score = BendableLongScore.of(new long[] { 1000L, 200L }, new long[] { 34L });
+        var score = BendableLongScore.of(new long[] { 1000L, 200L }, new long[] { 34L });
         assertSerializeAndDeserialize(score, new TestBendableLongScoreWrapper(score));
     }
 

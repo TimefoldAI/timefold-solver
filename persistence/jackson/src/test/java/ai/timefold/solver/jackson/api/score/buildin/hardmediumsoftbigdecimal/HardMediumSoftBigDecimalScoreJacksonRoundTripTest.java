@@ -15,7 +15,7 @@ class HardMediumSoftBigDecimalScoreJacksonRoundTripTest extends AbstractScoreJac
     @Test
     void serializeAndDeserialize() {
         assertSerializeAndDeserialize(null, new TestHardMediumSoftBigDecimalScoreWrapper(null));
-        HardMediumSoftBigDecimalScore score = HardMediumSoftBigDecimalScore.of(new BigDecimal("1200.0021"),
+        var score = HardMediumSoftBigDecimalScore.of(new BigDecimal("1200.0021"),
                 new BigDecimal("-3.1415"), new BigDecimal("34.4300"));
         assertSerializeAndDeserialize(score, new TestHardMediumSoftBigDecimalScoreWrapper(score));
     }

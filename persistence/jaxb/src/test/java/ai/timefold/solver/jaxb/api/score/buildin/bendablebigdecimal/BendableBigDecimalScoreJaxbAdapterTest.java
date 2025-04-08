@@ -16,7 +16,7 @@ class BendableBigDecimalScoreJaxbAdapterTest extends AbstractScoreJaxbAdapterTes
     void serializeAndDeserialize() {
         assertSerializeAndDeserialize(null, new TestBendableBigDecimalScoreWrapper(null));
 
-        BendableBigDecimalScore score = BendableBigDecimalScore.of(
+        var score = BendableBigDecimalScore.of(
                 new BigDecimal[] { new BigDecimal("1000.0001"), new BigDecimal("200.0020") },
                 new BigDecimal[] { new BigDecimal("34.4300") });
         assertSerializeAndDeserialize(score, new TestBendableBigDecimalScoreWrapper(score));

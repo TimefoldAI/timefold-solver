@@ -13,7 +13,7 @@ class HardMediumSoftLongScoreJacksonRoundTripTest extends AbstractScoreJacksonRo
     @Test
     void serializeAndDeserialize() {
         assertSerializeAndDeserialize(null, new TestHardMediumSoftLongScoreWrapper(null));
-        HardMediumSoftLongScore score = HardMediumSoftLongScore.of(1200L, 30L, 4L);
+        var score = HardMediumSoftLongScore.of(1200L, 30L, 4L);
         assertSerializeAndDeserialize(score, new TestHardMediumSoftLongScoreWrapper(score));
     }
 

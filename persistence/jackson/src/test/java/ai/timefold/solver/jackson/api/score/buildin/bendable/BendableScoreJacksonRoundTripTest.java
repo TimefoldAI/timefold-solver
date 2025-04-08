@@ -13,7 +13,7 @@ class BendableScoreJacksonRoundTripTest extends AbstractScoreJacksonRoundTripTes
     @Test
     void serializeAndDeserialize() {
         assertSerializeAndDeserialize(null, new TestBendableScoreWrapper(null));
-        BendableScore score = BendableScore.of(new int[] { 1000, 200 }, new int[] { 34 });
+        var score = BendableScore.of(new int[] { 1000, 200 }, new int[] { 34 });
         assertSerializeAndDeserialize(score, new TestBendableScoreWrapper(score));
     }
 

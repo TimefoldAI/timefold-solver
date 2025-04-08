@@ -14,7 +14,7 @@ class SimpleScoreJaxbAdapterTest extends AbstractScoreJaxbAdapterTest {
     void serializeAndDeserialize() {
         assertSerializeAndDeserialize(null, new TestSimpleScoreWrapper(null));
 
-        SimpleScore score = SimpleScore.of(1234);
+        var score = SimpleScore.of(1234);
         assertSerializeAndDeserialize(score, new TestSimpleScoreWrapper(score));
     }
 
