@@ -7,11 +7,9 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.Score;
@@ -293,8 +291,7 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
     }
 
     private void assertImpact(ScoreImpactType scoreImpactType, Number matchWeightTotal, String message) {
-        BiPredicate<Number, Number> equalityPredicate =
-                NumberEqualityUtil.getEqualityPredicate(scoreDefinition, matchWeightTotal);
+        var equalityPredicate = NumberEqualityUtil.getEqualityPredicate(scoreDefinition, matchWeightTotal);
         var deducedImpacts = deduceImpact();
         var impact = deducedImpacts.key();
         var actualScoreImpactType = constraint.getScoreImpactType();
@@ -319,7 +316,7 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
     }
 
     private void assertMoreThanImpact(ScoreImpactType scoreImpactType, Number matchWeightTotal, String message) {
-        Comparator<Number> comparator = NumberEqualityUtil.getComparison(matchWeightTotal);
+        var comparator = NumberEqualityUtil.getComparison(matchWeightTotal);
         var deducedImpacts = deduceImpact();
         var impact = deducedImpacts.key();
         var actualScoreImpactType = constraint.getScoreImpactType();
@@ -376,7 +373,7 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         }
 
         // No justifications
-        if (emptyJustifications && !justificationCollection.isEmpty()) {
+        if (emptyJustifications) {
             var assertionMessage = buildAssertionErrorMessage("Justification", constraint.getConstraintRef().constraintId(),
                     justificationCollection, emptyList(), emptyList(), justificationCollection, message);
             throw new AssertionError(assertionMessage);
@@ -420,20 +417,20 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         // No indictments
         var indictmentObjectList = indictmentCollection.stream().map(Indictment::getIndictedObject).toList();
         if (emptyIndictments && !indictmentObjectList.isEmpty()) {
-            String assertionMessage = buildAssertionErrorMessage("Indictment", constraint.getConstraintRef().constraintId(),
+            var assertionMessage = buildAssertionErrorMessage("Indictment", constraint.getConstraintRef().constraintId(),
                     indictmentObjectList, emptyList(), emptyList(), indictmentObjectList, message);
             throw new AssertionError(assertionMessage);
         }
 
         // Empty indictments
         if (indictmentObjectList.isEmpty()) {
-            String assertionMessage = buildAssertionErrorMessage("Indictment", constraint.getConstraintRef().constraintId(),
+            var assertionMessage = buildAssertionErrorMessage("Indictment", constraint.getConstraintRef().constraintId(),
                     emptyList(), Arrays.asList(indictments), Arrays.asList(indictments), emptyList(), message);
             throw new AssertionError(assertionMessage);
         }
 
         var expectedNotFound = new ArrayList<>(indictmentObjectList.size());
-        for (Object indictment : indictments) {
+        for (var indictment : indictments) {
             // Test invalid match
             if (indictmentObjectList.stream().noneMatch(indictment::equals)) {
                 expectedNotFound.add(indictment);
@@ -552,8 +549,8 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         return constraintMatchTotalCollection.stream()
                 .mapToLong(constraintMatchTotal -> {
                     if (actualImpactType == ScoreImpactType.MIXED) {
-                        boolean isImpactPositive = constraintMatchTotal.getScore().compareTo(zeroScore) > 0;
-                        boolean isImpactNegative = constraintMatchTotal.getScore().compareTo(zeroScore) < 0;
+                        var isImpactPositive = constraintMatchTotal.getScore().compareTo(zeroScore) > 0;
+                        var isImpactNegative = constraintMatchTotal.getScore().compareTo(zeroScore) < 0;
                         if (isImpactPositive && scoreImpactType == ScoreImpactType.PENALTY) {
                             return constraintMatchTotal.getConstraintMatchSet().size();
                         } else if (isImpactNegative && scoreImpactType == ScoreImpactType.REWARD) {

@@ -47,8 +47,8 @@ public abstract sealed class AbstractMultiConstraintAssertion<Solution_, Score_ 
         if (actualScore.raw().equals(score)) {
             return;
         }
-        Class<?> constraintProviderClass = constraintProvider.getClass();
-        String expectation = message == null ? "Broken expectation." : message;
+        var constraintProviderClass = constraintProvider.getClass();
+        var expectation = message == null ? "Broken expectation." : message;
         throw new AssertionError("""
                 %s
                   Constraint provider: %s
