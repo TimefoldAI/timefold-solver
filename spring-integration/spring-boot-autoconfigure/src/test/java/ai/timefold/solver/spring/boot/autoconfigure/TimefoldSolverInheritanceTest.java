@@ -121,7 +121,7 @@ class TimefoldSolverInheritanceTest {
                     var solverFactory = context.getBean(SolverFactory.class);
                     var problem =
                             ai.timefold.solver.core.impl.testdata.domain.superclass.singlevar.baseannotated.childannotated.TestdataSolution
-                                    .generateSolution(1, 1);
+                                    .generateSolution(1, 1, false);
                     var solution =
                             (ai.timefold.solver.core.impl.testdata.domain.superclass.singlevar.baseannotated.childannotated.TestdataSolution) solverFactory
                                     .buildSolver().solve(problem);
@@ -143,7 +143,7 @@ class TimefoldSolverInheritanceTest {
                     var solverFactory = context.getBean(SolverFactory.class);
                     var problem =
                             ai.timefold.solver.core.impl.testdata.domain.superclass.singlevarinterface.baseannotated.childannotated.TestdataSolution
-                                    .generateSolution(1, 1);
+                                    .generateSolution(1, 1, false);
                     var solution =
                             (ai.timefold.solver.core.impl.testdata.domain.superclass.singlevarinterface.baseannotated.childannotated.TestdataSolution) solverFactory
                                     .buildSolver().solve(problem);
@@ -164,7 +164,7 @@ class TimefoldSolverInheritanceTest {
                     var solverFactory = context.getBean(SolverFactory.class);
                     var problem =
                             ai.timefold.solver.core.impl.testdata.domain.superclass.singlevar.baseannotated.childnotannotated.TestdataSolution
-                                    .generateSolution(1, 2);
+                                    .generateSolution(1, 2, false);
                     var solution =
                             (ai.timefold.solver.core.impl.testdata.domain.superclass.singlevar.baseannotated.childnotannotated.TestdataSolution) solverFactory
                                     .buildSolver().solve(problem);
@@ -186,7 +186,7 @@ class TimefoldSolverInheritanceTest {
                     var solverFactory = context.getBean(SolverFactory.class);
                     var problem =
                             ai.timefold.solver.core.impl.testdata.domain.superclass.singlevarinterface.baseannotated.childnotannotated.TestdataSolution
-                                    .generateSolution(1, 2);
+                                    .generateSolution(1, 2, false);
                     var solution =
                             (ai.timefold.solver.core.impl.testdata.domain.superclass.singlevarinterface.baseannotated.childnotannotated.TestdataSolution) solverFactory
                                     .buildSolver().solve(problem);

@@ -13,7 +13,7 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 @PlanningSolution
 public class TestdataSolution {
 
-    public static TestdataSolution generateSolution(int valueListSize, int entityListSize) {
+    public static TestdataSolution generateSolution(int valueListSize, int entityListSize, boolean initialized) {
         var solution = new TestdataSolution();
         var valueList = new ArrayList<String>(valueListSize);
         for (int i = 0; i < valueListSize; i++) {
@@ -22,9 +22,11 @@ public class TestdataSolution {
         solution.setValueList(valueList);
         var entityList = new ArrayList<TestdataChildEntity>(entityListSize);
         for (int i = 0; i < entityListSize; i++) {
-            var value = valueList.get(i % valueListSize);
             var entity = new TestdataChildEntity(i);
-            entity.setValue(value);
+            if (initialized) {
+                var value = valueList.get(i % valueListSize);
+                entity.setValue(value);
+            }
             entityList.add(entity);
         }
         solution.setEntityList(entityList);
