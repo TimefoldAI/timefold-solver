@@ -17,21 +17,20 @@ class ScoreSubSingleBenchmarkRankingComparatorTest {
 
     @Test
     void compareTo() {
-        ScoreSubSingleBenchmarkRankingComparator comparator = new ScoreSubSingleBenchmarkRankingComparator();
-        SolverBenchmarkResult solverBenchmarkResult = mock(SolverBenchmarkResult.class);
+        var comparator = new ScoreSubSingleBenchmarkRankingComparator();
+        var solverBenchmarkResult = mock(SolverBenchmarkResult.class);
         when(solverBenchmarkResult.getScoreDefinition()).thenReturn(new SimpleScoreDefinition());
-        SingleBenchmarkResult singleBenchmarkResult = new SingleBenchmarkResult(solverBenchmarkResult,
-                mock(ProblemBenchmarkResult.class));
-        SubSingleBenchmarkResult a = new SubSingleBenchmarkResult(singleBenchmarkResult, 0);
+        var singleBenchmarkResult = new SingleBenchmarkResult(solverBenchmarkResult, mock(ProblemBenchmarkResult.class));
+        var a = new SubSingleBenchmarkResult(singleBenchmarkResult, 0);
         a.setSucceeded(false);
         a.setScore(null, false);
-        SubSingleBenchmarkResult b = new SubSingleBenchmarkResult(singleBenchmarkResult, 1);
+        var b = new SubSingleBenchmarkResult(singleBenchmarkResult, 1);
         b.setSucceeded(true);
         b.setScore(SimpleScore.of(-1), false);
-        SubSingleBenchmarkResult c = new SubSingleBenchmarkResult(singleBenchmarkResult, 2);
+        var c = new SubSingleBenchmarkResult(singleBenchmarkResult, 2);
         c.setSucceeded(true);
         c.setScore(SimpleScore.of(-300), true);
-        SubSingleBenchmarkResult d = new SubSingleBenchmarkResult(singleBenchmarkResult, 3);
+        var d = new SubSingleBenchmarkResult(singleBenchmarkResult, 3);
         d.setSucceeded(true);
         d.setScore(SimpleScore.of(-20), true);
         assertCompareToOrder(comparator, a, b, c, d);

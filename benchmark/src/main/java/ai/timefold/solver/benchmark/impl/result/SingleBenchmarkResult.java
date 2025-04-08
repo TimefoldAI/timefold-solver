@@ -3,8 +3,6 @@ package ai.timefold.solver.benchmark.impl.result;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -88,7 +86,7 @@ public class SingleBenchmarkResult implements BenchmarkResult {
     }
 
     public void initSubSingleStatisticMaps() {
-        for (SubSingleBenchmarkResult subSingleBenchmarkResult : subSingleBenchmarkResultList) {
+        for (var subSingleBenchmarkResult : subSingleBenchmarkResultList) {
             subSingleBenchmarkResult.initSubSingleStatisticMap();
         }
     }
@@ -261,7 +259,7 @@ public class SingleBenchmarkResult implements BenchmarkResult {
     }
 
     public Long getScoreCalculationSpeed() {
-        long timeMillisSpent = this.timeMillisSpent;
+        var timeMillisSpent = this.timeMillisSpent;
         if (timeMillisSpent == 0L) {
             // Avoid divide by zero exception on a fast CPU
             timeMillisSpent = 1L;
@@ -270,7 +268,7 @@ public class SingleBenchmarkResult implements BenchmarkResult {
     }
 
     public Long getMoveEvaluationSpeed() {
-        long timeSpent = this.timeMillisSpent;
+        var timeSpent = this.timeMillisSpent;
         if (timeSpent == 0L) {
             // Avoid divide by zero exception on a fast CPU
             timeSpent = 1L;
@@ -311,9 +309,9 @@ public class SingleBenchmarkResult implements BenchmarkResult {
     }
 
     public void makeDirs() {
-        File singleReportDirectory = getResultDirectory();
+        var singleReportDirectory = getResultDirectory();
         singleReportDirectory.mkdirs();
-        for (SubSingleBenchmarkResult subSingleBenchmarkResult : subSingleBenchmarkResultList) {
+        for (var subSingleBenchmarkResult : subSingleBenchmarkResultList) {
             subSingleBenchmarkResult.makeDirs();
         }
     }
@@ -323,7 +321,7 @@ public class SingleBenchmarkResult implements BenchmarkResult {
     }
 
     public void accumulateResults(BenchmarkReport benchmarkReport) {
-        for (SubSingleBenchmarkResult subSingleBenchmarkResult : subSingleBenchmarkResultList) {
+        for (var subSingleBenchmarkResult : subSingleBenchmarkResultList) {
             subSingleBenchmarkResult.accumulateResults(benchmarkReport);
         }
         determineTotalsAndAveragesAndRanking();
@@ -337,7 +335,7 @@ public class SingleBenchmarkResult implements BenchmarkResult {
             throw new IllegalStateException(
                     "Cannot get representative subSingleBenchmarkResult from empty subSingleBenchmarkResultList.");
         }
-        List<SubSingleBenchmarkResult> subSingleBenchmarkResultListCopy = new ArrayList<>(subSingleBenchmarkResultList);
+        var subSingleBenchmarkResultListCopy = new ArrayList<SubSingleBenchmarkResult>(subSingleBenchmarkResultList);
         // sort (according to ranking) so that the best subSingle is at index 0
         subSingleBenchmarkResultListCopy.sort(new SubSingleBenchmarkRankBasedComparator());
         best = subSingleBenchmarkResultListCopy.get(0);
@@ -352,12 +350,12 @@ public class SingleBenchmarkResult implements BenchmarkResult {
 
     private void determineTotalsAndAveragesAndRanking() {
         failureCount = 0;
-        boolean firstNonFailure = true;
+        var firstNonFailure = true;
         totalScore = null;
-        List<SubSingleBenchmarkResult> successResultList = new ArrayList<>(subSingleBenchmarkResultList);
+        var successResultList = new ArrayList<SubSingleBenchmarkResult>(subSingleBenchmarkResultList);
         // Do not rank a SubSingleBenchmarkResult that has a failure
-        for (Iterator<SubSingleBenchmarkResult> it = successResultList.iterator(); it.hasNext();) {
-            SubSingleBenchmarkResult subSingleBenchmarkResult = it.next();
+        for (var it = successResultList.iterator(); it.hasNext();) {
+            var subSingleBenchmarkResult = it.next();
             if (subSingleBenchmarkResult.hasAnyFailure()) {
                 failureCount++;
                 it.remove();
@@ -380,13 +378,12 @@ public class SingleBenchmarkResult implements BenchmarkResult {
     }
 
     private void determineRanking(List<SubSingleBenchmarkResult> rankedSubSingleBenchmarkResultList) {
-        Comparator<SubSingleBenchmarkResult> subSingleBenchmarkRankingComparator =
-                new ScoreSubSingleBenchmarkRankingComparator();
+        var subSingleBenchmarkRankingComparator = new ScoreSubSingleBenchmarkRankingComparator();
         rankedSubSingleBenchmarkResultList.sort(Collections.reverseOrder(subSingleBenchmarkRankingComparator));
-        int ranking = 0;
+        var ranking = 0;
         SubSingleBenchmarkResult previousSubSingleBenchmarkResult = null;
-        int previousSameRankingCount = 0;
-        for (SubSingleBenchmarkResult subSingleBenchmarkResult : rankedSubSingleBenchmarkResultList) {
+        var previousSameRankingCount = 0;
+        for (var subSingleBenchmarkResult : rankedSubSingleBenchmarkResultList) {
             if (previousSubSingleBenchmarkResult != null
                     && subSingleBenchmarkRankingComparator.compare(previousSubSingleBenchmarkResult,
                             subSingleBenchmarkResult) != 0) {
@@ -406,10 +403,10 @@ public class SingleBenchmarkResult implements BenchmarkResult {
     protected static SingleBenchmarkResult createMerge(
             SolverBenchmarkResult solverBenchmarkResult, ProblemBenchmarkResult problemBenchmarkResult,
             SingleBenchmarkResult oldResult) {
-        SingleBenchmarkResult newResult = new SingleBenchmarkResult(solverBenchmarkResult, problemBenchmarkResult);
+        var newResult = new SingleBenchmarkResult(solverBenchmarkResult, problemBenchmarkResult);
         newResult.subSingleBenchmarkResultList = new ArrayList<>(oldResult.getSubSingleBenchmarkResultList().size());
-        int subSingleBenchmarkIndex = 0;
-        for (SubSingleBenchmarkResult oldSubResult : oldResult.subSingleBenchmarkResultList) {
+        var subSingleBenchmarkIndex = 0;
+        for (var oldSubResult : oldResult.subSingleBenchmarkResultList) {
             SubSingleBenchmarkResult.createMerge(newResult, oldSubResult, subSingleBenchmarkIndex);
             subSingleBenchmarkIndex++;
         }

@@ -84,13 +84,13 @@ class WorstScoreSolverRankingComparatorTest extends AbstractSolverRankingCompara
 
     @Test
     void uninitializedSingleBenchmarks() {
-        SingleBenchmarkResult a0 = addSingleBenchmark(a, aSingleBenchmarkResultList, -1000, -30, -1000);
+        var a0 = addSingleBenchmark(a, aSingleBenchmarkResultList, -1000, -30, -1000);
         addSingleBenchmark(a, aSingleBenchmarkResultList, -400, -30, -1000);
         addSingleBenchmark(a, aSingleBenchmarkResultList, -30, -30, -1000);
         a.setSingleBenchmarkResultList(aSingleBenchmarkResultList);
         a.accumulateResults(benchmarkReport);
-        SingleBenchmarkResult b0 = addSingleBenchmark(b, bSingleBenchmarkResultList, -1000, -30, -1000);
-        SingleBenchmarkResult b1 = addSingleBenchmark(b, bSingleBenchmarkResultList, -400, -30, -1000);
+        var b0 = addSingleBenchmark(b, bSingleBenchmarkResultList, -1000, -30, -1000);
+        var b1 = addSingleBenchmark(b, bSingleBenchmarkResultList, -400, -30, -1000);
         addSingleBenchmark(b, bSingleBenchmarkResultList, -30, -30, -1000);
         b.setSingleBenchmarkResultList(bSingleBenchmarkResultList);
         b.accumulateResults(benchmarkReport);
