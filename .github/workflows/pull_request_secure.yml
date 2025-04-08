@@ -374,10 +374,18 @@ jobs:
         run: mvn org.apache.maven.plugins:maven-dependency-plugin:2.8:get -Dartifact=org.jacoco:org.jacoco.agent:0.8.11:jar:runtime -Ddest=target/jacocoagent.jar
 
       - name: Run tox to measure timefold solver python code coverage from Python tests
+        # Sometimes crashes at the very end when using JaCoCo.
+        # This crash happens after everything is processed and stored, and therefore can be safely ignored.
+        # Ignore the crash to not ruin the long-running build.
+        continue-on-error: true
         run: python -m tox -- --cov=timefold --cov-report=xml:target/coverage.xml --cov-config=tox.ini --cov-branch --cov-append --jacoco-agent=./target/jacocoagent.jar
 
       - name: Run tox to measure jpyinterpreter code coverage from Python tests
         working-directory: ./python/jpyinterpreter
+        # Sometimes crashes at the very end when using JaCoCo.
+        # This crash happens after everything is processed and stored, and therefore can be safely ignored.
+        # Ignore the crash to not ruin the long-running build.
+        continue-on-error: true
         run: python -m tox -- --cov=jpyinterpreter --cov-report=xml:target/coverage.xml --cov-config=tox.ini --cov-branch --cov-append --jacoco-agent=../../target/jacocoagent.jar --jacoco-output=../../target/jacoco.exec
 
       - name: Run analysis
