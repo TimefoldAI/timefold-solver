@@ -48,9 +48,10 @@ class BestSolutionRecallerTest {
     @Test
     void unimprovedUninitializedProcessWorkingSolutionDuringStep() {
         var originalBestScore =
-                new InnerScoreWithSolution<>(mock(TestdataSolution.class), InnerScore.ofUninitialized(SimpleScore.of(-300), 1));
+                new InnerScoreWithSolution<>(mock(TestdataSolution.class),
+                        InnerScore.withUnassignedCount(SimpleScore.of(-300), 1));
         var stepScore =
-                new InnerScoreWithSolution<>(mock(TestdataSolution.class), InnerScore.ofUninitialized(SimpleScore.ZERO, 2));
+                new InnerScoreWithSolution<>(mock(TestdataSolution.class), InnerScore.withUnassignedCount(SimpleScore.ZERO, 2));
         doProcessWorkingSolutionDuringStep(originalBestScore, stepScore, false);
     }
 
@@ -64,9 +65,9 @@ class BestSolutionRecallerTest {
     @Test
     void improvedUninitializedProcessWorkingSolutionDuringStep() {
         var originalBestScore =
-                new InnerScoreWithSolution<>(mock(TestdataSolution.class), InnerScore.ofUninitialized(SimpleScore.ZERO, 2));
+                new InnerScoreWithSolution<>(mock(TestdataSolution.class), InnerScore.withUnassignedCount(SimpleScore.ZERO, 2));
         var stepScore =
-                new InnerScoreWithSolution<>(mock(TestdataSolution.class), InnerScore.ofUninitialized(SimpleScore.ZERO, 1));
+                new InnerScoreWithSolution<>(mock(TestdataSolution.class), InnerScore.withUnassignedCount(SimpleScore.ZERO, 1));
         doProcessWorkingSolutionDuringStep(originalBestScore, stepScore, true);
     }
 
@@ -114,17 +115,19 @@ class BestSolutionRecallerTest {
     protected void doProcessWorkingSolutionDuringStep(SimpleScore originalBestScore, SimpleScore stepScore,
             boolean stepImprovesBestSolution) {
         var originalBestInnerScore = new InnerScoreWithSolution<TestdataSolution, SimpleScore>(mock(TestdataSolution.class),
-                InnerScore.of(originalBestScore));
+                InnerScore.fullyAssigned(originalBestScore));
         var originalStepInnerScore = new InnerScoreWithSolution<TestdataSolution, SimpleScore>(mock(TestdataSolution.class),
-                InnerScore.of(stepScore));
+                InnerScore.fullyAssigned(stepScore));
         doProcessWorkingSolutionDuringStep(originalBestInnerScore, originalStepInnerScore, stepImprovesBestSolution);
     }
 
     @Test
     void unimprovedUninitializedProcessWorkingSolutionDuringMove() {
-        var bestScore = new InnerScoreWithSolution<>(mock(TestdataSolution.class), InnerScore.of(SimpleScore.of(-10)));
+        var bestScore =
+                new InnerScoreWithSolution<>(mock(TestdataSolution.class), InnerScore.fullyAssigned(SimpleScore.of(-10)));
         var moveScore =
-                new InnerScoreWithSolution<>(mock(TestdataSolution.class), InnerScore.ofUninitialized(SimpleScore.of(-1), 1));
+                new InnerScoreWithSolution<>(mock(TestdataSolution.class),
+                        InnerScore.withUnassignedCount(SimpleScore.of(-1), 1));
         doProcessWorkingSolutionDuringMove(bestScore, moveScore, false);
     }
 
@@ -138,8 +141,9 @@ class BestSolutionRecallerTest {
     @Test
     void improvedUninitializedProcessWorkingSolutionDuringMove() {
         var bestScore =
-                new InnerScoreWithSolution<>(mock(TestdataSolution.class), InnerScore.ofUninitialized(SimpleScore.ZERO, 1));
-        var moveScore = new InnerScoreWithSolution<>(mock(TestdataSolution.class), InnerScore.of(SimpleScore.of(-2)));
+                new InnerScoreWithSolution<>(mock(TestdataSolution.class), InnerScore.withUnassignedCount(SimpleScore.ZERO, 1));
+        var moveScore =
+                new InnerScoreWithSolution<>(mock(TestdataSolution.class), InnerScore.fullyAssigned(SimpleScore.of(-2)));
         doProcessWorkingSolutionDuringMove(bestScore, moveScore, true);
     }
 
@@ -153,9 +157,9 @@ class BestSolutionRecallerTest {
     protected void doProcessWorkingSolutionDuringMove(SimpleScore originalBestScore, SimpleScore moveScore,
             boolean moveImprovesBestSolution) {
         var originalBestInnerScore = new InnerScoreWithSolution<TestdataSolution, SimpleScore>(mock(TestdataSolution.class),
-                InnerScore.of(originalBestScore));
+                InnerScore.fullyAssigned(originalBestScore));
         var originalMoveInnerScore = new InnerScoreWithSolution<TestdataSolution, SimpleScore>(mock(TestdataSolution.class),
-                InnerScore.of(moveScore));
+                InnerScore.fullyAssigned(moveScore));
         doProcessWorkingSolutionDuringMove(originalBestInnerScore, originalMoveInnerScore, moveImprovesBestSolution);
     }
 

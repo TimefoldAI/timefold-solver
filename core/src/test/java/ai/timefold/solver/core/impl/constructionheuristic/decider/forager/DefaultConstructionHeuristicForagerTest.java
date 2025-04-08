@@ -21,12 +21,12 @@ class DefaultConstructionHeuristicForagerTest<Solution_> {
     void checkPickEarlyNever() {
         var forager = new DefaultConstructionHeuristicForager<Solution_>(ConstructionHeuristicPickEarlyType.NEVER);
         var stepScope =
-                buildStepScope(InnerScore.ofUninitialized(SimpleScore.of(-100), 8));
-        forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.ofUninitialized(SimpleScore.of(-110), 7)));
+                buildStepScope(InnerScore.withUnassignedCount(SimpleScore.of(-100), 8));
+        forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.withUnassignedCount(SimpleScore.of(-110), 7)));
         assertThat(forager.isQuitEarly()).isFalse();
-        forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.ofUninitialized(SimpleScore.of(-100), 7)));
+        forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.withUnassignedCount(SimpleScore.of(-100), 7)));
         assertThat(forager.isQuitEarly()).isFalse();
-        forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.ofUninitialized(SimpleScore.of(-90), 7)));
+        forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.withUnassignedCount(SimpleScore.of(-90), 7)));
         assertThat(forager.isQuitEarly()).isFalse();
     }
 
@@ -35,10 +35,10 @@ class DefaultConstructionHeuristicForagerTest<Solution_> {
         var forager = new DefaultConstructionHeuristicForager<Solution_>(
                 ConstructionHeuristicPickEarlyType.FIRST_NON_DETERIORATING_SCORE);
         var stepScope =
-                buildStepScope(InnerScore.ofUninitialized(SimpleScore.of(-100), 8));
-        forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.ofUninitialized(SimpleScore.of(-110), 7)));
+                buildStepScope(InnerScore.withUnassignedCount(SimpleScore.of(-100), 8));
+        forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.withUnassignedCount(SimpleScore.of(-110), 7)));
         assertThat(forager.isQuitEarly()).isFalse();
-        forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.ofUninitialized(SimpleScore.of(-100), 7)));
+        forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.withUnassignedCount(SimpleScore.of(-100), 7)));
         assertThat(forager.isQuitEarly()).isTrue();
     }
 
@@ -47,12 +47,12 @@ class DefaultConstructionHeuristicForagerTest<Solution_> {
         var forager = new DefaultConstructionHeuristicForager<Solution_>(
                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE);
         var stepScope =
-                buildStepScope(InnerScore.ofUninitialized(HardSoftScore.of(0, -100), 8));
-        forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.ofUninitialized(HardSoftScore.of(-1, -110), 7)));
+                buildStepScope(InnerScore.withUnassignedCount(HardSoftScore.of(0, -100), 8));
+        forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.withUnassignedCount(HardSoftScore.of(-1, -110), 7)));
         assertThat(forager.isQuitEarly()).isFalse();
-        forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.ofUninitialized(HardSoftScore.of(-1, -90), 7)));
+        forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.withUnassignedCount(HardSoftScore.of(-1, -90), 7)));
         assertThat(forager.isQuitEarly()).isFalse();
-        forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.ofUninitialized(HardSoftScore.of(0, -110), 7)));
+        forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.withUnassignedCount(HardSoftScore.of(0, -110), 7)));
         assertThat(forager.isQuitEarly()).isTrue();
     }
 
@@ -61,12 +61,12 @@ class DefaultConstructionHeuristicForagerTest<Solution_> {
         var forager = new DefaultConstructionHeuristicForager<Solution_>(
                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD);
         var stepScope =
-                buildStepScope(InnerScore.ofUninitialized(HardSoftScore.of(-10, -100), 8));
-        forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.ofUninitialized(HardSoftScore.of(-11, -110), 7)));
+                buildStepScope(InnerScore.withUnassignedCount(HardSoftScore.of(-10, -100), 8));
+        forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.withUnassignedCount(HardSoftScore.of(-11, -110), 7)));
         assertThat(forager.isQuitEarly()).isFalse();
-        forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.ofUninitialized(HardSoftScore.of(-11, -90), 7)));
+        forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.withUnassignedCount(HardSoftScore.of(-11, -90), 7)));
         assertThat(forager.isQuitEarly()).isFalse();
-        forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.ofUninitialized(HardSoftScore.of(-10, -110), 7)));
+        forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.withUnassignedCount(HardSoftScore.of(-10, -110), 7)));
         assertThat(forager.isQuitEarly()).isTrue();
     }
 

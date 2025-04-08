@@ -16,10 +16,10 @@ class DiminishedReturnsScoreRingBufferTest {
                 1, 3,
                 new long[] { 0, 2, 3, 0 },
                 new InnerScore[] {
-                        InnerScore.of(SimpleScore.ONE),
-                        InnerScore.of(SimpleScore.of(2)),
-                        InnerScore.of(SimpleScore.of(3)),
-                        InnerScore.of(SimpleScore.of(4))
+                        InnerScore.fullyAssigned(SimpleScore.ONE),
+                        InnerScore.fullyAssigned(SimpleScore.of(2)),
+                        InnerScore.fullyAssigned(SimpleScore.of(3)),
+                        InnerScore.fullyAssigned(SimpleScore.of(4))
                 });
         buffer.resize();
         var bufferState = buffer.getState();
@@ -27,8 +27,8 @@ class DiminishedReturnsScoreRingBufferTest {
         assertThat(bufferState.writeIndex()).isEqualTo(2);
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(2, 3, 0, 0, 0, 0, 0, 0);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
-                InnerScore.of(SimpleScore.of(2)),
-                InnerScore.of(SimpleScore.of(3)),
+                InnerScore.fullyAssigned(SimpleScore.of(2)),
+                InnerScore.fullyAssigned(SimpleScore.of(3)),
                 null,
                 null,
                 null,
@@ -43,10 +43,10 @@ class DiminishedReturnsScoreRingBufferTest {
                 3, 1,
                 new long[] { 3, 0, 0, 2 },
                 new InnerScore[] {
-                        InnerScore.of(SimpleScore.of(3)),
-                        InnerScore.of(SimpleScore.of(4)),
-                        InnerScore.of(SimpleScore.ONE),
-                        InnerScore.of(SimpleScore.of(2))
+                        InnerScore.fullyAssigned(SimpleScore.of(3)),
+                        InnerScore.fullyAssigned(SimpleScore.of(4)),
+                        InnerScore.fullyAssigned(SimpleScore.ONE),
+                        InnerScore.fullyAssigned(SimpleScore.of(2))
                 });
         buffer.resize();
         var bufferState = buffer.getState();
@@ -54,8 +54,8 @@ class DiminishedReturnsScoreRingBufferTest {
         assertThat(bufferState.writeIndex()).isEqualTo(2);
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(2, 3, 0, 0, 0, 0, 0, 0);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
-                InnerScore.of(SimpleScore.of(2)),
-                InnerScore.of(SimpleScore.of(3)),
+                InnerScore.fullyAssigned(SimpleScore.of(2)),
+                InnerScore.fullyAssigned(SimpleScore.of(3)),
                 null,
                 null,
                 null,
@@ -75,61 +75,61 @@ class DiminishedReturnsScoreRingBufferTest {
                         null,
                         null
                 });
-        buffer.put(1, InnerScore.of(SimpleScore.ONE));
+        buffer.put(1, InnerScore.fullyAssigned(SimpleScore.ONE));
         var bufferState = buffer.getState();
         assertThat(bufferState.readIndex()).isZero();
         assertThat(bufferState.writeIndex()).isEqualTo(1);
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(1, 0, 0, 0);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
-                InnerScore.of(SimpleScore.ONE),
+                InnerScore.fullyAssigned(SimpleScore.ONE),
                 null,
                 null,
                 null);
 
-        buffer.put(3, InnerScore.of(SimpleScore.of(2)));
+        buffer.put(3, InnerScore.fullyAssigned(SimpleScore.of(2)));
         bufferState = buffer.getState();
         assertThat(bufferState.readIndex()).isZero();
         assertThat(bufferState.writeIndex()).isEqualTo(2);
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(1, 3, 0, 0);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
-                InnerScore.of(SimpleScore.ONE),
-                InnerScore.of(SimpleScore.of(2)),
+                InnerScore.fullyAssigned(SimpleScore.ONE),
+                InnerScore.fullyAssigned(SimpleScore.of(2)),
                 null,
                 null);
 
-        buffer.put(5, InnerScore.of(SimpleScore.of(3)));
+        buffer.put(5, InnerScore.fullyAssigned(SimpleScore.of(3)));
         bufferState = buffer.getState();
         assertThat(bufferState.readIndex()).isZero();
         assertThat(bufferState.writeIndex()).isEqualTo(3);
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(1, 3, 5, 0);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
-                InnerScore.of(SimpleScore.ONE),
-                InnerScore.of(SimpleScore.of(2)),
-                InnerScore.of(SimpleScore.of(3)),
+                InnerScore.fullyAssigned(SimpleScore.ONE),
+                InnerScore.fullyAssigned(SimpleScore.of(2)),
+                InnerScore.fullyAssigned(SimpleScore.of(3)),
                 null);
 
-        buffer.put(7, InnerScore.of(SimpleScore.of(4)));
+        buffer.put(7, InnerScore.fullyAssigned(SimpleScore.of(4)));
         bufferState = buffer.getState();
         assertThat(bufferState.readIndex()).isZero();
         assertThat(bufferState.writeIndex()).isZero();
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(1, 3, 5, 7);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
-                InnerScore.of(SimpleScore.ONE),
-                InnerScore.of(SimpleScore.of(2)),
-                InnerScore.of(SimpleScore.of(3)),
-                InnerScore.of(SimpleScore.of(4)));
+                InnerScore.fullyAssigned(SimpleScore.ONE),
+                InnerScore.fullyAssigned(SimpleScore.of(2)),
+                InnerScore.fullyAssigned(SimpleScore.of(3)),
+                InnerScore.fullyAssigned(SimpleScore.of(4)));
 
-        buffer.put(9, InnerScore.of(SimpleScore.of(5)));
+        buffer.put(9, InnerScore.fullyAssigned(SimpleScore.of(5)));
         bufferState = buffer.getState();
         assertThat(bufferState.readIndex()).isZero();
         assertThat(bufferState.writeIndex()).isEqualTo(5);
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(1, 3, 5, 7, 9, 0, 0, 0);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
-                InnerScore.of(SimpleScore.ONE),
-                InnerScore.of(SimpleScore.of(2)),
-                InnerScore.of(SimpleScore.of(3)),
-                InnerScore.of(SimpleScore.of(4)),
-                InnerScore.of(SimpleScore.of(5)),
+                InnerScore.fullyAssigned(SimpleScore.ONE),
+                InnerScore.fullyAssigned(SimpleScore.of(2)),
+                InnerScore.fullyAssigned(SimpleScore.of(3)),
+                InnerScore.fullyAssigned(SimpleScore.of(4)),
+                InnerScore.fullyAssigned(SimpleScore.of(5)),
                 null,
                 null,
                 null);
@@ -141,44 +141,44 @@ class DiminishedReturnsScoreRingBufferTest {
                 2, 0,
                 new long[] { 0, 0, 1, 3 },
                 new InnerScore[] {
-                        InnerScore.of(SimpleScore.of(-1)),
-                        InnerScore.of(SimpleScore.ZERO),
-                        InnerScore.of(SimpleScore.ONE),
-                        InnerScore.of(SimpleScore.of(2))
+                        InnerScore.fullyAssigned(SimpleScore.of(-1)),
+                        InnerScore.fullyAssigned(SimpleScore.ZERO),
+                        InnerScore.fullyAssigned(SimpleScore.ONE),
+                        InnerScore.fullyAssigned(SimpleScore.of(2))
                 });
-        buffer.put(5, InnerScore.of(SimpleScore.of(3)));
+        buffer.put(5, InnerScore.fullyAssigned(SimpleScore.of(3)));
         var bufferState = buffer.getState();
         assertThat(bufferState.readIndex()).isEqualTo(2);
         assertThat(bufferState.writeIndex()).isEqualTo(1);
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(5, 0, 1, 3);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
-                InnerScore.of(SimpleScore.of(3)),
-                InnerScore.of(SimpleScore.ZERO),
-                InnerScore.of(SimpleScore.ONE),
-                InnerScore.of(SimpleScore.of(2)));
+                InnerScore.fullyAssigned(SimpleScore.of(3)),
+                InnerScore.fullyAssigned(SimpleScore.ZERO),
+                InnerScore.fullyAssigned(SimpleScore.ONE),
+                InnerScore.fullyAssigned(SimpleScore.of(2)));
 
-        buffer.put(7, InnerScore.of(SimpleScore.of(4)));
+        buffer.put(7, InnerScore.fullyAssigned(SimpleScore.of(4)));
         bufferState = buffer.getState();
         assertThat(bufferState.readIndex()).isEqualTo(2);
         assertThat(bufferState.writeIndex()).isEqualTo(2);
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(5, 7, 1, 3);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
-                InnerScore.of(SimpleScore.of(3)),
-                InnerScore.of(SimpleScore.of(4)),
-                InnerScore.of(SimpleScore.ONE),
-                InnerScore.of(SimpleScore.of(2)));
+                InnerScore.fullyAssigned(SimpleScore.of(3)),
+                InnerScore.fullyAssigned(SimpleScore.of(4)),
+                InnerScore.fullyAssigned(SimpleScore.ONE),
+                InnerScore.fullyAssigned(SimpleScore.of(2)));
 
-        buffer.put(9, InnerScore.of(SimpleScore.of(5)));
+        buffer.put(9, InnerScore.fullyAssigned(SimpleScore.of(5)));
         bufferState = buffer.getState();
         assertThat(bufferState.readIndex()).isZero();
         assertThat(bufferState.writeIndex()).isEqualTo(5);
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(1, 3, 5, 7, 9, 0, 0, 0);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
-                InnerScore.of(SimpleScore.ONE),
-                InnerScore.of(SimpleScore.of(2)),
-                InnerScore.of(SimpleScore.of(3)),
-                InnerScore.of(SimpleScore.of(4)),
-                InnerScore.of(SimpleScore.of(5)),
+                InnerScore.fullyAssigned(SimpleScore.ONE),
+                InnerScore.fullyAssigned(SimpleScore.of(2)),
+                InnerScore.fullyAssigned(SimpleScore.of(3)),
+                InnerScore.fullyAssigned(SimpleScore.of(4)),
+                InnerScore.fullyAssigned(SimpleScore.of(5)),
                 null,
                 null,
                 null);
@@ -190,20 +190,20 @@ class DiminishedReturnsScoreRingBufferTest {
                 2, 0,
                 new long[] { 0, 0, 1, 3 },
                 new InnerScore[] {
-                        InnerScore.of(SimpleScore.of(-1)),
-                        InnerScore.of(SimpleScore.ZERO),
-                        InnerScore.of(SimpleScore.ONE),
-                        InnerScore.of(SimpleScore.of(2))
+                        InnerScore.fullyAssigned(SimpleScore.of(-1)),
+                        InnerScore.fullyAssigned(SimpleScore.ZERO),
+                        InnerScore.fullyAssigned(SimpleScore.ONE),
+                        InnerScore.fullyAssigned(SimpleScore.of(2))
                 });
-        assertThat(buffer.peekFirst()).isEqualTo(InnerScore.of(SimpleScore.ONE));
+        assertThat(buffer.peekFirst()).isEqualTo(InnerScore.fullyAssigned(SimpleScore.ONE));
         var bufferState = buffer.getState();
         assertThat(bufferState.readIndex()).isEqualTo(2);
         assertThat(bufferState.writeIndex()).isZero();
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(0, 0, 1, 3);
-        assertThat(bufferState.scoreRingBuffer()).containsExactly(InnerScore.of(SimpleScore.of(-1)),
-                InnerScore.of(SimpleScore.ZERO),
-                InnerScore.of(SimpleScore.ONE),
-                InnerScore.of(SimpleScore.of(2)));
+        assertThat(bufferState.scoreRingBuffer()).containsExactly(InnerScore.fullyAssigned(SimpleScore.of(-1)),
+                InnerScore.fullyAssigned(SimpleScore.ZERO),
+                InnerScore.fullyAssigned(SimpleScore.ONE),
+                InnerScore.fullyAssigned(SimpleScore.of(2)));
     }
 
     @Test
@@ -229,8 +229,8 @@ class DiminishedReturnsScoreRingBufferTest {
                 new InnerScore[] {
                         null,
                         null,
-                        InnerScore.of(SimpleScore.ONE),
-                        InnerScore.of(SimpleScore.of(2))
+                        InnerScore.fullyAssigned(SimpleScore.ONE),
+                        InnerScore.fullyAssigned(SimpleScore.of(2))
                 });
         buffer.clear();
         var bufferState = buffer.getState();
@@ -249,21 +249,21 @@ class DiminishedReturnsScoreRingBufferTest {
                 0, 0,
                 new long[] { 1, 2, 3, 4 },
                 new InnerScore[] {
-                        InnerScore.of(SimpleScore.ONE),
-                        InnerScore.of(SimpleScore.of(2)),
-                        InnerScore.of(SimpleScore.of(3)),
-                        InnerScore.of(SimpleScore.of(4))
+                        InnerScore.fullyAssigned(SimpleScore.ONE),
+                        InnerScore.fullyAssigned(SimpleScore.of(2)),
+                        InnerScore.fullyAssigned(SimpleScore.of(3)),
+                        InnerScore.fullyAssigned(SimpleScore.of(4))
                 });
-        assertThat(buffer.pollLatestScoreBeforeTimeAndClearPrior(2)).isEqualTo(InnerScore.of(SimpleScore.of(2)));
+        assertThat(buffer.pollLatestScoreBeforeTimeAndClearPrior(2)).isEqualTo(InnerScore.fullyAssigned(SimpleScore.of(2)));
 
         var bufferState = buffer.getState();
         assertThat(bufferState.readIndex()).isEqualTo(1);
         assertThat(bufferState.writeIndex()).isZero();
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(0, 2, 3, 4);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(null,
-                InnerScore.of(SimpleScore.of(2)),
-                InnerScore.of(SimpleScore.of(3)),
-                InnerScore.of(SimpleScore.of(4)));
+                InnerScore.fullyAssigned(SimpleScore.of(2)),
+                InnerScore.fullyAssigned(SimpleScore.of(3)),
+                InnerScore.fullyAssigned(SimpleScore.of(4)));
     }
 
     @Test
@@ -287,19 +287,19 @@ class DiminishedReturnsScoreRingBufferTest {
                 0, 3,
                 new long[] { 1, 2, 3, 0 },
                 new InnerScore[] {
-                        InnerScore.of(SimpleScore.ONE),
-                        InnerScore.of(SimpleScore.of(2)),
-                        InnerScore.of(SimpleScore.of(3)),
+                        InnerScore.fullyAssigned(SimpleScore.ONE),
+                        InnerScore.fullyAssigned(SimpleScore.of(2)),
+                        InnerScore.fullyAssigned(SimpleScore.of(3)),
                         null
                 });
-        assertThat(buffer.pollLatestScoreBeforeTimeAndClearPrior(2)).isEqualTo(InnerScore.of(SimpleScore.of(2)));
+        assertThat(buffer.pollLatestScoreBeforeTimeAndClearPrior(2)).isEqualTo(InnerScore.fullyAssigned(SimpleScore.of(2)));
         var bufferState = buffer.getState();
         assertThat(bufferState.readIndex()).isEqualTo(1);
         assertThat(bufferState.writeIndex()).isEqualTo(3);
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(0, 2, 3, 0);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(null,
-                InnerScore.of(SimpleScore.of(2)),
-                InnerScore.of(SimpleScore.of(3)),
+                InnerScore.fullyAssigned(SimpleScore.of(2)),
+                InnerScore.fullyAssigned(SimpleScore.of(3)),
                 null);
     }
 
@@ -309,19 +309,19 @@ class DiminishedReturnsScoreRingBufferTest {
                 0, 3,
                 new long[] { 1, 2, 4, 0 },
                 new InnerScore[] {
-                        InnerScore.of(SimpleScore.ONE),
-                        InnerScore.of(SimpleScore.of(2)),
-                        InnerScore.of(SimpleScore.of(3)),
+                        InnerScore.fullyAssigned(SimpleScore.ONE),
+                        InnerScore.fullyAssigned(SimpleScore.of(2)),
+                        InnerScore.fullyAssigned(SimpleScore.of(3)),
                         null
                 });
-        assertThat(buffer.pollLatestScoreBeforeTimeAndClearPrior(3)).isEqualTo(InnerScore.of(SimpleScore.of(2)));
+        assertThat(buffer.pollLatestScoreBeforeTimeAndClearPrior(3)).isEqualTo(InnerScore.fullyAssigned(SimpleScore.of(2)));
         var bufferState = buffer.getState();
         assertThat(bufferState.readIndex()).isEqualTo(1);
         assertThat(bufferState.writeIndex()).isEqualTo(3);
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(0, 2, 4, 0);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(null,
-                InnerScore.of(SimpleScore.of(2)),
-                InnerScore.of(SimpleScore.of(3)),
+                InnerScore.fullyAssigned(SimpleScore.of(2)),
+                InnerScore.fullyAssigned(SimpleScore.of(3)),
                 null);
     }
 
@@ -331,19 +331,19 @@ class DiminishedReturnsScoreRingBufferTest {
                 0, 3,
                 new long[] { 1, 2, 3, 0 },
                 new InnerScore[] {
-                        InnerScore.of(SimpleScore.ONE),
-                        InnerScore.of(SimpleScore.of(2)),
-                        InnerScore.of(SimpleScore.of(3)),
+                        InnerScore.fullyAssigned(SimpleScore.ONE),
+                        InnerScore.fullyAssigned(SimpleScore.of(2)),
+                        InnerScore.fullyAssigned(SimpleScore.of(3)),
                         null
                 });
-        assertThat(buffer.pollLatestScoreBeforeTimeAndClearPrior(10)).isEqualTo(InnerScore.of(SimpleScore.of(3)));
+        assertThat(buffer.pollLatestScoreBeforeTimeAndClearPrior(10)).isEqualTo(InnerScore.fullyAssigned(SimpleScore.of(3)));
         var bufferState = buffer.getState();
         assertThat(bufferState.readIndex()).isEqualTo(2);
         assertThat(bufferState.writeIndex()).isEqualTo(3);
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(0, 0, 3, 0);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(null,
                 null,
-                InnerScore.of(SimpleScore.of(3)),
+                InnerScore.fullyAssigned(SimpleScore.of(3)),
                 null);
     }
 
@@ -353,21 +353,21 @@ class DiminishedReturnsScoreRingBufferTest {
                 4, 3,
                 new long[] { 2, 3, 4, 0, 1 },
                 new InnerScore[] {
-                        InnerScore.of(SimpleScore.of(2)),
-                        InnerScore.of(SimpleScore.of(3)),
-                        InnerScore.of(SimpleScore.of(4)),
+                        InnerScore.fullyAssigned(SimpleScore.of(2)),
+                        InnerScore.fullyAssigned(SimpleScore.of(3)),
+                        InnerScore.fullyAssigned(SimpleScore.of(4)),
                         null,
-                        InnerScore.of(SimpleScore.ONE)
+                        InnerScore.fullyAssigned(SimpleScore.ONE)
                 });
-        assertThat(buffer.pollLatestScoreBeforeTimeAndClearPrior(3)).isEqualTo(InnerScore.of(SimpleScore.of(3)));
+        assertThat(buffer.pollLatestScoreBeforeTimeAndClearPrior(3)).isEqualTo(InnerScore.fullyAssigned(SimpleScore.of(3)));
         var bufferState = buffer.getState();
         assertThat(bufferState.readIndex()).isEqualTo(1);
         assertThat(bufferState.writeIndex()).isEqualTo(3);
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(0, 3, 4, 0, 0);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
                 null,
-                InnerScore.of(SimpleScore.of(3)),
-                InnerScore.of(SimpleScore.of(4)),
+                InnerScore.fullyAssigned(SimpleScore.of(3)),
+                InnerScore.fullyAssigned(SimpleScore.of(4)),
                 null,
                 null);
     }
@@ -378,21 +378,21 @@ class DiminishedReturnsScoreRingBufferTest {
                 4, 3,
                 new long[] { 2, 3, 5, 0, 1 },
                 new InnerScore[] {
-                        InnerScore.of(SimpleScore.of(2)),
-                        InnerScore.of(SimpleScore.of(3)),
-                        InnerScore.of(SimpleScore.of(4)),
+                        InnerScore.fullyAssigned(SimpleScore.of(2)),
+                        InnerScore.fullyAssigned(SimpleScore.of(3)),
+                        InnerScore.fullyAssigned(SimpleScore.of(4)),
                         null,
-                        InnerScore.of(SimpleScore.ONE)
+                        InnerScore.fullyAssigned(SimpleScore.ONE)
                 });
-        assertThat(buffer.pollLatestScoreBeforeTimeAndClearPrior(4)).isEqualTo(InnerScore.of(SimpleScore.of(3)));
+        assertThat(buffer.pollLatestScoreBeforeTimeAndClearPrior(4)).isEqualTo(InnerScore.fullyAssigned(SimpleScore.of(3)));
         var bufferState = buffer.getState();
         assertThat(bufferState.readIndex()).isEqualTo(1);
         assertThat(bufferState.writeIndex()).isEqualTo(3);
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(0, 3, 5, 0, 0);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
                 null,
-                InnerScore.of(SimpleScore.of(3)),
-                InnerScore.of(SimpleScore.of(4)),
+                InnerScore.fullyAssigned(SimpleScore.of(3)),
+                InnerScore.fullyAssigned(SimpleScore.of(4)),
                 null,
                 null);
     }
@@ -403,13 +403,13 @@ class DiminishedReturnsScoreRingBufferTest {
                 4, 3,
                 new long[] { 2, 3, 4, 0, 1 },
                 new InnerScore[] {
-                        InnerScore.of(SimpleScore.of(2)),
-                        InnerScore.of(SimpleScore.of(3)),
-                        InnerScore.of(SimpleScore.of(4)),
+                        InnerScore.fullyAssigned(SimpleScore.of(2)),
+                        InnerScore.fullyAssigned(SimpleScore.of(3)),
+                        InnerScore.fullyAssigned(SimpleScore.of(4)),
                         null,
-                        InnerScore.of(SimpleScore.ONE)
+                        InnerScore.fullyAssigned(SimpleScore.ONE)
                 });
-        assertThat(buffer.pollLatestScoreBeforeTimeAndClearPrior(10)).isEqualTo(InnerScore.of(SimpleScore.of(4)));
+        assertThat(buffer.pollLatestScoreBeforeTimeAndClearPrior(10)).isEqualTo(InnerScore.fullyAssigned(SimpleScore.of(4)));
         var bufferState = buffer.getState();
         assertThat(bufferState.readIndex()).isEqualTo(2);
         assertThat(bufferState.writeIndex()).isEqualTo(3);
@@ -417,7 +417,7 @@ class DiminishedReturnsScoreRingBufferTest {
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
                 null,
                 null,
-                InnerScore.of(SimpleScore.of(4)),
+                InnerScore.fullyAssigned(SimpleScore.of(4)),
                 null,
                 null);
     }
@@ -428,21 +428,21 @@ class DiminishedReturnsScoreRingBufferTest {
                 4, 3,
                 new long[] { 2, 3, 4, 0, 1 },
                 new InnerScore[] {
-                        InnerScore.of(SimpleScore.of(2)),
-                        InnerScore.of(SimpleScore.of(3)),
-                        InnerScore.of(SimpleScore.of(4)),
+                        InnerScore.fullyAssigned(SimpleScore.of(2)),
+                        InnerScore.fullyAssigned(SimpleScore.of(3)),
+                        InnerScore.fullyAssigned(SimpleScore.of(4)),
                         null,
-                        InnerScore.of(SimpleScore.ONE)
+                        InnerScore.fullyAssigned(SimpleScore.ONE)
                 });
-        assertThat(buffer.pollLatestScoreBeforeTimeAndClearPrior(2)).isEqualTo(InnerScore.of(SimpleScore.of(2)));
+        assertThat(buffer.pollLatestScoreBeforeTimeAndClearPrior(2)).isEqualTo(InnerScore.fullyAssigned(SimpleScore.of(2)));
         var bufferState = buffer.getState();
         assertThat(bufferState.readIndex()).isZero();
         assertThat(bufferState.writeIndex()).isEqualTo(3);
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(2, 3, 4, 0, 0);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
-                InnerScore.of(SimpleScore.of(2)),
-                InnerScore.of(SimpleScore.of(3)),
-                InnerScore.of(SimpleScore.of(4)),
+                InnerScore.fullyAssigned(SimpleScore.of(2)),
+                InnerScore.fullyAssigned(SimpleScore.of(3)),
+                InnerScore.fullyAssigned(SimpleScore.of(4)),
                 null,
                 null);
     }
@@ -453,23 +453,23 @@ class DiminishedReturnsScoreRingBufferTest {
                 4, 3,
                 new long[] { 3, 4, 5, 0, 1 },
                 new InnerScore[] {
-                        InnerScore.of(SimpleScore.of(2)),
-                        InnerScore.of(SimpleScore.of(3)),
-                        InnerScore.of(SimpleScore.of(4)),
+                        InnerScore.fullyAssigned(SimpleScore.of(2)),
+                        InnerScore.fullyAssigned(SimpleScore.of(3)),
+                        InnerScore.fullyAssigned(SimpleScore.of(4)),
                         null,
-                        InnerScore.of(SimpleScore.ONE)
+                        InnerScore.fullyAssigned(SimpleScore.ONE)
                 });
-        assertThat(buffer.pollLatestScoreBeforeTimeAndClearPrior(2)).isEqualTo(InnerScore.of(SimpleScore.ONE));
+        assertThat(buffer.pollLatestScoreBeforeTimeAndClearPrior(2)).isEqualTo(InnerScore.fullyAssigned(SimpleScore.ONE));
         var bufferState = buffer.getState();
         assertThat(bufferState.readIndex()).isEqualTo(4);
         assertThat(bufferState.writeIndex()).isEqualTo(3);
         assertThat(bufferState.nanoTimeRingBuffer()).containsExactly(3, 4, 5, 0, 1);
         assertThat(bufferState.scoreRingBuffer()).containsExactly(
-                InnerScore.of(SimpleScore.of(2)),
-                InnerScore.of(SimpleScore.of(3)),
-                InnerScore.of(SimpleScore.of(4)),
+                InnerScore.fullyAssigned(SimpleScore.of(2)),
+                InnerScore.fullyAssigned(SimpleScore.of(3)),
+                InnerScore.fullyAssigned(SimpleScore.of(4)),
                 null,
-                InnerScore.of(SimpleScore.ONE));
+                InnerScore.fullyAssigned(SimpleScore.ONE));
     }
 
     @Test
@@ -481,10 +481,10 @@ class DiminishedReturnsScoreRingBufferTest {
                         null,
                         null,
                         null,
-                        InnerScore.of(SimpleScore.ONE),
-                        InnerScore.of(SimpleScore.of(2))
+                        InnerScore.fullyAssigned(SimpleScore.ONE),
+                        InnerScore.fullyAssigned(SimpleScore.of(2))
                 });
-        assertThat(buffer.pollLatestScoreBeforeTimeAndClearPrior(10)).isEqualTo(InnerScore.of(SimpleScore.of(2)));
+        assertThat(buffer.pollLatestScoreBeforeTimeAndClearPrior(10)).isEqualTo(InnerScore.fullyAssigned(SimpleScore.of(2)));
         var bufferState = buffer.getState();
         assertThat(bufferState.readIndex()).isEqualTo(4);
         assertThat(bufferState.writeIndex()).isZero();
@@ -494,6 +494,6 @@ class DiminishedReturnsScoreRingBufferTest {
                 null,
                 null,
                 null,
-                InnerScore.of(SimpleScore.of(2)));
+                InnerScore.fullyAssigned(SimpleScore.of(2)));
     }
 }

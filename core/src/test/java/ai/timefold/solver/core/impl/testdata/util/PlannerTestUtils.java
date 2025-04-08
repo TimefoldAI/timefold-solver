@@ -127,7 +127,7 @@ public final class PlannerTestUtils {
         } else {
             var mockedScoreDirector = mock(InnerScoreDirector.class,
                     AdditionalAnswers.delegatesTo(scoreDirectorFactory.buildScoreDirector()));
-            doReturn(InnerScore.of(SimpleScore.ZERO)).when(mockedScoreDirector).calculateScore();
+            doReturn(InnerScore.fullyAssigned(SimpleScore.ZERO)).when(mockedScoreDirector).calculateScore();
             return mockedScoreDirector;
         }
     }

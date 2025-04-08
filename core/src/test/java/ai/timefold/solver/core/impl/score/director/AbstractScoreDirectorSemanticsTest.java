@@ -145,7 +145,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
             scoreDirector.setWorkingSolution(solution);
             var score1 = scoreDirector.calculateScore();
             assertSoftly(softly -> {
-                softly.assertThat(score1.isInitialized()).isTrue();
+                softly.assertThat(score1.fullyAssigned()).isTrue();
                 softly.assertThat(score1.raw().score()).isEqualTo(1);
                 softly.assertThat(scoreDirector.getConstraintMatchTotalMap())
                         .containsOnlyKeys("ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration/First weight");
@@ -158,7 +158,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
             scoreDirector.afterVariableChanged(entity, "value");
             var score2 = scoreDirector.calculateScore();
             assertSoftly(softly -> {
-                softly.assertThat(score2.isInitialized()).isFalse();
+                softly.assertThat(score2.fullyAssigned()).isFalse();
                 softly.assertThat(score2.raw().score()).isZero();
                 softly.assertThat(scoreDirector.getConstraintMatchTotalMap())
                         .containsOnlyKeys("ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration/First weight");
@@ -177,7 +177,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
         try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
             scoreDirector.setWorkingSolution(solution);
             var score1 = scoreDirector.calculateScore();
-            assertThat(score1).isEqualTo(InnerScore.ofUninitialized(SimpleScore.of(-2), 1));
+            assertThat(score1).isEqualTo(InnerScore.withUnassignedCount(SimpleScore.of(-2), 1));
 
             var workingSolution = scoreDirector.getWorkingSolution();
             var secondEntity = workingSolution.getEntityList().get(1);
@@ -205,7 +205,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
         try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
             scoreDirector.setWorkingSolution(solution);
             var score1 = scoreDirector.calculateScore();
-            assertThat(score1).isEqualTo(InnerScore.ofUninitialized(SimpleScore.of(-3), 1));
+            assertThat(score1).isEqualTo(InnerScore.withUnassignedCount(SimpleScore.of(-3), 1));
 
             var workingSolution = scoreDirector.getWorkingSolution();
             var thirdEntity = workingSolution.getEntityList().get(2);

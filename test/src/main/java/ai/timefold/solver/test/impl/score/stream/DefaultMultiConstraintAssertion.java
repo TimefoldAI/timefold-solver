@@ -17,7 +17,7 @@ public final class DefaultMultiConstraintAssertion<Solution_, Score_ extends Sco
             Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
             Map<Object, Indictment<Score_>> indictmentMap) {
         super(constraintProvider, scoreDirectorFactory);
-        update(InnerScore.of(actualScore), constraintMatchTotalMap, indictmentMap);
+        update(InnerScore.fullyAssigned(actualScore), constraintMatchTotalMap, indictmentMap);
     }
 
     @Override

@@ -29,27 +29,27 @@ class BestScoreFeasibleTerminationTest {
         doReturn(HardSoftScore.of(-100, -100)).when(solverScope).getStartingInitializedScore();
         when(solverScope.isBestSolutionInitialized()).thenReturn(true);
 
-        doReturn(InnerScore.of(HardSoftScore.of(-100, -100))).when(solverScope).getBestScore();
+        doReturn(InnerScore.fullyAssigned(HardSoftScore.of(-100, -100))).when(solverScope).getBestScore();
         assertThat(termination.isSolverTerminated(solverScope)).isFalse();
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(0.0, offset(0.0));
 
-        doReturn(InnerScore.of(HardSoftScore.of(-80, -100))).when(solverScope).getBestScore();
+        doReturn(InnerScore.fullyAssigned(HardSoftScore.of(-80, -100))).when(solverScope).getBestScore();
         assertThat(termination.isSolverTerminated(solverScope)).isFalse();
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(0.2, offset(0.0));
 
-        doReturn(InnerScore.of(HardSoftScore.of(-60, -100))).when(solverScope).getBestScore();
+        doReturn(InnerScore.fullyAssigned(HardSoftScore.of(-60, -100))).when(solverScope).getBestScore();
         assertThat(termination.isSolverTerminated(solverScope)).isFalse();
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(0.4, offset(0.0));
 
-        doReturn(InnerScore.of(HardSoftScore.of(-40, -100))).when(solverScope).getBestScore();
+        doReturn(InnerScore.fullyAssigned(HardSoftScore.of(-40, -100))).when(solverScope).getBestScore();
         assertThat(termination.isSolverTerminated(solverScope)).isFalse();
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(0.6, offset(0.0));
 
-        doReturn(InnerScore.of(HardSoftScore.of(-20, -100))).when(solverScope).getBestScore();
+        doReturn(InnerScore.fullyAssigned(HardSoftScore.of(-20, -100))).when(solverScope).getBestScore();
         assertThat(termination.isSolverTerminated(solverScope)).isFalse();
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(0.8, offset(0.0));
 
-        doReturn(InnerScore.of(HardSoftScore.ofSoft(-100))).when(solverScope).getBestScore();
+        doReturn(InnerScore.fullyAssigned(HardSoftScore.ofSoft(-100))).when(solverScope).getBestScore();
         assertThat(termination.isSolverTerminated(solverScope)).isTrue();
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(1.0, offset(0.0));
     }
@@ -61,30 +61,30 @@ class BestScoreFeasibleTerminationTest {
         UniversalTermination<TestdataSolution> termination =
                 new BestScoreFeasibleTermination<>(scoreDefinition, new double[] {});
         AbstractPhaseScope<TestdataSolution> phaseScope = mock(AbstractPhaseScope.class);
-        doReturn(InnerScore.of(HardSoftScore.of(-100, -100))).when(phaseScope).getStartingScore();
+        doReturn(InnerScore.fullyAssigned(HardSoftScore.of(-100, -100))).when(phaseScope).getStartingScore();
         when(phaseScope.isBestSolutionInitialized()).thenReturn(true);
 
-        doReturn(InnerScore.of(HardSoftScore.of(-100, -100))).when(phaseScope).getBestScore();
+        doReturn(InnerScore.fullyAssigned(HardSoftScore.of(-100, -100))).when(phaseScope).getBestScore();
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.0, offset(0.0));
 
-        doReturn(InnerScore.of(HardSoftScore.of(-80, -100))).when(phaseScope).getBestScore();
+        doReturn(InnerScore.fullyAssigned(HardSoftScore.of(-80, -100))).when(phaseScope).getBestScore();
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.2, offset(0.0));
 
-        doReturn(InnerScore.of(HardSoftScore.of(-60, -100))).when(phaseScope).getBestScore();
+        doReturn(InnerScore.fullyAssigned(HardSoftScore.of(-60, -100))).when(phaseScope).getBestScore();
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.4, offset(0.0));
 
-        doReturn(InnerScore.of(HardSoftScore.of(-40, -100))).when(phaseScope).getBestScore();
+        doReturn(InnerScore.fullyAssigned(HardSoftScore.of(-40, -100))).when(phaseScope).getBestScore();
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.6, offset(0.0));
 
-        doReturn(InnerScore.of(HardSoftScore.of(-20, -100))).when(phaseScope).getBestScore();
+        doReturn(InnerScore.fullyAssigned(HardSoftScore.of(-20, -100))).when(phaseScope).getBestScore();
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.8, offset(0.0));
 
-        doReturn(InnerScore.of(HardSoftScore.ofSoft(-100))).when(phaseScope).getBestScore();
+        doReturn(InnerScore.fullyAssigned(HardSoftScore.ofSoft(-100))).when(phaseScope).getBestScore();
         assertThat(termination.isPhaseTerminated(phaseScope)).isTrue();
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(1.0, offset(0.0));
     }
@@ -98,7 +98,7 @@ class BestScoreFeasibleTerminationTest {
         // Normal cases
         // Smack in the middle
         assertThat(termination.calculateFeasibilityTimeGradient(
-                InnerScore.of(BendableScore.of(new int[] { -10, -100 }, new int[] { -50, -60, -70 })),
+                InnerScore.fullyAssigned(BendableScore.of(new int[] { -10, -100 }, new int[] { -50, -60, -70 })),
                 BendableScore.of(new int[] { -4, -40 }, new int[] { -50, -60, -70 }))).isEqualTo(0.6, offset(0.0));
     }
 

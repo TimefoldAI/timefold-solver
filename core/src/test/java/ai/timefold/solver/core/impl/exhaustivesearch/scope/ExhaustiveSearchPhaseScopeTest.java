@@ -22,8 +22,8 @@ class ExhaustiveSearchPhaseScopeTest extends AbstractNodeComparatorTest {
         phase.addExpandableNode(buildNode(0, "0", 0, 0));
         phase.addExpandableNode(buildNode(0, "1", 0, 0));
         phase.addExpandableNode(buildNode(0, "2", 0, 0));
-        phase.setBestPessimisticBound(InnerScore.of(SimpleScore.of(Integer.MIN_VALUE)));
-        phase.registerPessimisticBound(InnerScore.of(SimpleScore.ONE));
+        phase.setBestPessimisticBound(InnerScore.fullyAssigned(SimpleScore.of(Integer.MIN_VALUE)));
+        phase.registerPessimisticBound(InnerScore.fullyAssigned(SimpleScore.ONE));
         assertThat(phase.getExpandableNodeQueue()).hasSize(1);
     }
 

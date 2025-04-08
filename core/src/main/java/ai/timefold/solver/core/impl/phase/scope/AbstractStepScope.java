@@ -37,7 +37,7 @@ public abstract class AbstractStepScope<Solution_> {
 
     @SuppressWarnings("rawtypes")
     public void setInitializedScore(Score<?> score) {
-        setScore(InnerScore.of((Score) score));
+        setScore(InnerScore.fullyAssigned((Score) score));
     }
 
     public void setScore(InnerScore<?> score) {

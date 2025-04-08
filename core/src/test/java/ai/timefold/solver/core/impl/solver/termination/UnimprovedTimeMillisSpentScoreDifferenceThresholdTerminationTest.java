@@ -48,7 +48,7 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
         doReturn(START_TIME_MILLIS).when(phaseScope).getStartingSystemTimeMillis();
         doReturn(START_TIME_MILLIS).when(solverScope).getBestSolutionTimeMillis();
         doReturn(true).when(stepScope).getBestScoreImproved();
-        doReturn(InnerScore.of(SimpleScore.ZERO)).when(solverScope).getBestScore();
+        doReturn(InnerScore.fullyAssigned(SimpleScore.ZERO)).when(solverScope).getBestScore();
 
         termination.solvingStarted(solverScope);
         termination.phaseStarted(phaseScope);
@@ -63,7 +63,7 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
 
         // second step - score has improved beyond the threshold => termination is postponed by another second
         doReturn(START_TIME_MILLIS + 500).when(solverScope).getBestSolutionTimeMillis();
-        doReturn(InnerScore.of(SimpleScore.of(10))).when(solverScope).getBestScore();
+        doReturn(InnerScore.fullyAssigned(SimpleScore.of(10))).when(solverScope).getBestScore();
 
         termination.stepEnded(stepScope);
 
@@ -96,7 +96,7 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
         doReturn(START_TIME_MILLIS).when(phaseScope).getStartingSystemTimeMillis();
         doReturn(START_TIME_MILLIS).when(solverScope).getBestSolutionTimeMillis();
         doReturn(true).when(stepScope).getBestScoreImproved();
-        doReturn(InnerScore.of(SimpleScore.ZERO)).when(solverScope).getBestScore();
+        doReturn(InnerScore.fullyAssigned(SimpleScore.ZERO)).when(solverScope).getBestScore();
 
         termination.solvingStarted(solverScope);
         termination.phaseStarted(phaseScope);
@@ -112,7 +112,7 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
         // second step - score has improved, but not beyond the threshold
         doReturn(START_TIME_MILLIS + 1000).when(clock).millis();
         doReturn(START_TIME_MILLIS + 1000).when(solverScope).getBestSolutionTimeMillis();
-        doReturn(InnerScore.of(SimpleScore.of(5))).when(solverScope).getBestScore();
+        doReturn(InnerScore.fullyAssigned(SimpleScore.of(5))).when(solverScope).getBestScore();
         termination.stepEnded(stepScope);
 
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
@@ -123,7 +123,7 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
         // third step - score has improved beyond the threshold, but too late
         doReturn(START_TIME_MILLIS + 1001).when(clock).millis();
         doReturn(START_TIME_MILLIS + 1001).when(solverScope).getBestSolutionTimeMillis();
-        doReturn(InnerScore.of(SimpleScore.of(10))).when(solverScope).getBestScore();
+        doReturn(InnerScore.fullyAssigned(SimpleScore.of(10))).when(solverScope).getBestScore();
         termination.stepEnded(stepScope);
 
         assertThat(termination.isPhaseTerminated(phaseScope)).isTrue();
@@ -220,7 +220,7 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
         doReturn(START_TIME_MILLIS + 1501).when(lsPhaseScope).getStartingSystemTimeMillis();
         doReturn(START_TIME_MILLIS + 1501).when(solverScope).getBestSolutionTimeMillis();
         doReturn(true).when(lsStepScope).getBestScoreImproved();
-        doReturn(InnerScore.of(SimpleScore.of(5))).when(solverScope).getBestScore();
+        doReturn(InnerScore.fullyAssigned(SimpleScore.of(5))).when(solverScope).getBestScore();
         termination.phaseStarted(lsPhaseScope);
         termination.stepEnded(lsStepScope);
 
@@ -232,7 +232,7 @@ class UnimprovedTimeMillisSpentScoreDifferenceThresholdTerminationTest {
         // third step - score has improved beyond the threshold
         doReturn(START_TIME_MILLIS + 1502).when(clock).millis();
         doReturn(START_TIME_MILLIS + 1502).when(solverScope).getBestSolutionTimeMillis();
-        doReturn(InnerScore.of(SimpleScore.of(10))).when(solverScope).getBestScore();
+        doReturn(InnerScore.fullyAssigned(SimpleScore.of(10))).when(solverScope).getBestScore();
         termination.stepEnded(lsStepScope);
 
         assertThat(termination.isPhaseTerminated(lsPhaseScope)).isFalse();

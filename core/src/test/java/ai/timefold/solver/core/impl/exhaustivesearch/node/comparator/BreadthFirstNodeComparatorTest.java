@@ -20,7 +20,7 @@ class BreadthFirstNodeComparatorTest extends AbstractNodeComparatorTest {
                 buildNode(1, "-90", 7, 71),
                 buildNode(1, "-90", 5, 70),
                 buildNode(1, "-85", 5, 60),
-                buildNode(1, InnerScore.ofUninitialized(SimpleScore.of(-80), 1), 5, 60));
+                buildNode(1, InnerScore.withUnassignedCount(SimpleScore.of(-80), 1), 5, 60));
     }
 
 }

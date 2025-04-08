@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.score.director;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
@@ -21,21 +23,23 @@ public record InnerScore<Score_ extends Score<Score_>>(Score_ raw, int unassigne
         implements
             Comparable<InnerScore<Score_>> {
 
-    public static <Score_ extends Score<Score_>> InnerScore<Score_> of(Score_ score) {
-        return ofUninitialized(score, 0);
+    public static <Score_ extends Score<Score_>> InnerScore<Score_> fullyAssigned(Score_ score) {
+        return new InnerScore<>(score, 0);
     }
 
-    public static <Score_ extends Score<Score_>> InnerScore<Score_> ofUninitialized(Score_ score, int uninitializedCount) {
-        return new InnerScore<>(score, uninitializedCount);
+    public static <Score_ extends Score<Score_>> InnerScore<Score_> withUnassignedCount(Score_ score, int unassignedCount) {
+        return new InnerScore<>(score, unassignedCount);
     }
 
     public InnerScore {
+        Objects.requireNonNull(raw);
         if (unassignedCount < 0) {
-            throw new IllegalArgumentException("The unassignedCount (" + unassignedCount + ") must be >= 0.");
+            throw new IllegalArgumentException("The unassignedCount (%d) must be >= 0."
+                    .formatted(unassignedCount));
         }
     }
 
-    public boolean isInitialized() {
+    public boolean fullyAssigned() {
         return unassignedCount == 0;
     }
 
@@ -51,6 +55,6 @@ public record InnerScore<Score_ extends Score<Score_>>(Score_ raw, int unassigne
 
     @Override
     public String toString() {
-        return isInitialized() ? raw.toString() : "-%dinit/%s".formatted(unassignedCount, raw);
+        return fullyAssigned() ? raw.toString() : "-%dinit/%s".formatted(unassignedCount, raw);
     }
 }

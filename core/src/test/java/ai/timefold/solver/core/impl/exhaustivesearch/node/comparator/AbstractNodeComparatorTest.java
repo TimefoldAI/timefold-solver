@@ -14,21 +14,22 @@ import ai.timefold.solver.core.impl.score.director.InnerScore;
 public abstract class AbstractNodeComparatorTest {
 
     protected ExhaustiveSearchNode buildNode(int depth, InnerScore<SimpleScore> score, long parentBreadth, long breadth) {
-        return buildNode(depth, score, InnerScore.of(score.raw()), parentBreadth, breadth);
+        return buildNode(depth, score, InnerScore.fullyAssigned(score.raw()), parentBreadth, breadth);
     }
 
     protected ExhaustiveSearchNode buildNode(int depth, String score, long parentBreadth, long breadth) {
-        return buildNode(depth, InnerScore.of(SimpleScore.parseScore(score)), parentBreadth, breadth);
+        return buildNode(depth, InnerScore.fullyAssigned(SimpleScore.parseScore(score)), parentBreadth, breadth);
     }
 
     protected ExhaustiveSearchNode buildNode(int depth, InnerScore<SimpleScore> score, int optimisticBound,
             long parentBreadth, long breadth) {
-        return buildNode(depth, score, InnerScore.of(SimpleScore.of(optimisticBound)), parentBreadth, breadth);
+        return buildNode(depth, score, InnerScore.fullyAssigned(SimpleScore.of(optimisticBound)), parentBreadth, breadth);
     }
 
     protected ExhaustiveSearchNode buildNode(int depth, String score, int optimisticBound,
             long parentBreadth, long breadth) {
-        return buildNode(depth, InnerScore.of(SimpleScore.parseScore(score)), optimisticBound, parentBreadth, breadth);
+        return buildNode(depth, InnerScore.fullyAssigned(SimpleScore.parseScore(score)), optimisticBound, parentBreadth,
+                breadth);
     }
 
     protected ExhaustiveSearchNode buildNode(int depth, InnerScore<SimpleScore> score, InnerScore<SimpleScore> optimisticBound,

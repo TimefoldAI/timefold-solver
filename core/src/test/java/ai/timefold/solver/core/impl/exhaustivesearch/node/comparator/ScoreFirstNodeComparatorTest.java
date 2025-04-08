@@ -23,8 +23,8 @@ class ScoreFirstNodeComparatorTest extends AbstractNodeComparatorTest {
                 buildNode(1, "-90", 7, 40),
                 buildNode(2, "-90", 5, 40),
                 buildNode(2, "-90", 7, 40),
-                buildNode(1, InnerScore.ofUninitialized(SimpleScore.of(-85), 1), 5, 40),
-                buildNode(1, InnerScore.ofUninitialized(SimpleScore.of(-80), 100), 7, 40));
+                buildNode(1, InnerScore.withUnassignedCount(SimpleScore.of(-85), 1), 5, 40),
+                buildNode(1, InnerScore.withUnassignedCount(SimpleScore.of(-80), 100), 7, 40));
     }
 
 }

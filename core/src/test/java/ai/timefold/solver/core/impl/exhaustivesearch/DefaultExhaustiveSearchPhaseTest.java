@@ -87,7 +87,7 @@ class DefaultExhaustiveSearchPhaseTest extends AbstractMeterTest {
         var node2B = createNode(layer2, node1);
         var node3B = createNode(layer3, node2B);
         var node4B = createNode(layer4, node3B); // newNode
-        node4B.setScore(InnerScore.ofUninitialized(SimpleScore.of(7), 96));
+        node4B.setScore(InnerScore.withUnassignedCount(SimpleScore.of(7), 96));
         when(lastCompletedStepScope.getExpandingNode()).thenReturn(node3A);
         when(stepScope.getExpandingNode()).thenReturn(node4B);
 

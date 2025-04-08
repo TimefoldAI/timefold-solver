@@ -54,7 +54,7 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
         solverScope.setBestSolutionTimeMillis(System.currentTimeMillis());
         // The original bestSolution might be the final bestSolution and should have an accurate Score
         solverScope.getSolutionDescriptor().setScore(solverScope.getBestSolution(), score);
-        if (innerScore.isInitialized()) {
+        if (innerScore.fullyAssigned()) {
             solverScope.setStartingInitializedScore(innerScore.raw());
         } else {
             solverScope.setStartingInitializedScore(null);
@@ -87,7 +87,7 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
         if (bestScoreImproved) {
             phaseScope.setBestSolutionStepIndex(stepScope.getStepIndex());
             var newBestSolution = stepScope.createOrGetClonedSolution();
-            var innerScore = InnerScore.ofUninitialized(
+            var innerScore = InnerScore.withUnassignedCount(
                     solverScope.getSolutionDescriptor().<Score_> getScore(newBestSolution),
                     -stepScope.getScoreDirector().getWorkingInitScore());
             updateBestSolutionAndFire(solverScope, innerScore, newBestSolution);
@@ -138,13 +138,13 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
     private void updateBestSolutionWithoutFiring(SolverScope<Solution_> solverScope) {
         var newBestSolution = solverScope.getScoreDirector().cloneWorkingSolution();
         var newBestScore = solverScope.getSolutionDescriptor().<Score> getScore(newBestSolution);
-        var innerScore = InnerScore.ofUninitialized(newBestScore, -solverScope.getScoreDirector().getWorkingInitScore());
+        var innerScore = InnerScore.withUnassignedCount(newBestScore, -solverScope.getScoreDirector().getWorkingInitScore());
         updateBestSolutionWithoutFiring(solverScope, innerScore, newBestSolution);
     }
 
     private void updateBestSolutionWithoutFiring(SolverScope<Solution_> solverScope, InnerScore<?> bestScore,
             Solution_ bestSolution) {
-        if (bestScore.isInitialized()) {
+        if (bestScore.fullyAssigned()) {
             if (!solverScope.isBestSolutionInitialized()) {
                 solverScope.setStartingInitializedScore(bestScore.raw());
             }

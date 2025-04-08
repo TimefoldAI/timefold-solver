@@ -181,7 +181,7 @@ class ListVariableListenerTest {
         solution.getValueList().add(x);
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore()).isEqualTo(InnerScore.ofUninitialized(SimpleScore.ZERO, 1));
+        assertThat(scoreDirector.calculateScore()).isEqualTo(InnerScore.withUnassignedCount(SimpleScore.ZERO, 1));
 
         new ListAssignMove<>(variableDescriptor, x, ann, 2).doMoveOnly(scoreDirector);
 

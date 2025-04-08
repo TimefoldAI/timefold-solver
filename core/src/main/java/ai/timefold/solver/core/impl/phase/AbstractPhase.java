@@ -191,7 +191,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
 
     private static <Solution_> void collectMetrics(AbstractStepScope<Solution_> stepScope) {
         var solverScope = stepScope.getPhaseScope().getSolverScope();
-        if (solverScope.isMetricEnabled(SolverMetric.STEP_SCORE) && stepScope.getScore().isInitialized()) {
+        if (solverScope.isMetricEnabled(SolverMetric.STEP_SCORE) && stepScope.getScore().fullyAssigned()) {
             SolverMetric.registerScoreMetrics(SolverMetric.STEP_SCORE,
                     solverScope.getMonitoringTags(),
                     solverScope.getScoreDefinition(),
@@ -215,7 +215,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     // ************************************************************************
 
     protected void assertWorkingSolutionInitialized(AbstractPhaseScope<Solution_> phaseScope) {
-        if (!phaseScope.getStartingScore().isInitialized()) {
+        if (!phaseScope.getStartingScore().fullyAssigned()) {
             var scoreDirector = phaseScope.getScoreDirector();
             var solutionDescriptor = scoreDirector.getSolutionDescriptor();
             var workingSolution = scoreDirector.getWorkingSolution();

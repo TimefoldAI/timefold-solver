@@ -227,7 +227,7 @@ public class SolverScope<Solution_> {
     }
 
     public <Score_ extends Score<Score_>> void setInitializedBestScore(Score_ bestScore) {
-        setBestScore(InnerScore.of(bestScore));
+        setBestScore(InnerScore.fullyAssigned(bestScore));
     }
 
     public <Score_ extends Score<Score_>> void setBestScore(InnerScore<Score_> bestScore) {
@@ -273,7 +273,7 @@ public class SolverScope<Solution_> {
     }
 
     public boolean isBestSolutionInitialized() {
-        return getBestScore().isInitialized();
+        return getBestScore().fullyAssigned();
     }
 
     public long calculateTimeMillisSpentUpToNow() {

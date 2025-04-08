@@ -15,7 +15,7 @@ public final class DefaultSingleConstraintAssertion<Solution_, Score_ extends Sc
             Score_ score, Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
             Map<Object, Indictment<Score_>> indictmentMap) {
         super(scoreDirectorFactory);
-        update(InnerScore.of(score), constraintMatchTotalMap, indictmentMap);
+        update(InnerScore.fullyAssigned(score), constraintMatchTotalMap, indictmentMap);
     }
 
     @Override

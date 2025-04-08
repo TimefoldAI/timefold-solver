@@ -20,7 +20,7 @@ class DepthFirstNodeComparatorTest extends AbstractNodeComparatorTest {
                 buildNode(2, "-110", 7, 40),
                 buildNode(2, "-90", 5, 40),
                 buildNode(2, "-90", 7, 40),
-                buildNode(2, InnerScore.ofUninitialized(SimpleScore.of(-80), 1), 7, 40));
+                buildNode(2, InnerScore.withUnassignedCount(SimpleScore.of(-80), 1), 7, 40));
     }
 
 }

@@ -35,7 +35,7 @@ public abstract sealed class AbstractMultiConstraintAssertion<Solution_, Score_ 
     @Override
     final void update(InnerScore<Score_> innerScore, Map<String, ConstraintMatchTotal<Score_>> constraintMatchTotalMap,
             Map<Object, Indictment<Score_>> indictmentMap) {
-        this.actualScore = InnerScore.of(requireNonNull(innerScore).raw()); // Strip initialization information.
+        this.actualScore = InnerScore.fullyAssigned(requireNonNull(innerScore).raw()); // Strip initialization information.
         this.constraintMatchTotalCollection = requireNonNull(constraintMatchTotalMap).values();
         this.indictmentCollection = requireNonNull(indictmentMap).values();
         toggleInitialized();

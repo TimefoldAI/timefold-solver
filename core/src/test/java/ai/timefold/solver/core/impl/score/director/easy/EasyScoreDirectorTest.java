@@ -32,7 +32,7 @@ class EasyScoreDirectorTest {
             solution.setEntityList(Arrays.asList(e1, e2));
             scoreDirector.setWorkingSolution(solution);
 
-            scoreDirector.assertShadowVariablesAreNotStale(InnerScore.ofUninitialized(SimpleScore.ZERO, 2), "NoChange");
+            scoreDirector.assertShadowVariablesAreNotStale(InnerScore.withUnassignedCount(SimpleScore.ZERO, 2), "NoChange");
             scoreDirector.beforeVariableChanged(e1, "value");
             e1.setValue(v1);
             scoreDirector.afterVariableChanged(e1, "value");
@@ -41,7 +41,8 @@ class EasyScoreDirectorTest {
             scoreDirector.afterVariableChanged(e2, "value");
             scoreDirector.triggerVariableListeners();
             assertThatThrownBy(
-                    () -> scoreDirector.assertShadowVariablesAreNotStale(InnerScore.of(SimpleScore.ZERO), "FirstChange"))
+                    () -> scoreDirector.assertShadowVariablesAreNotStale(InnerScore.fullyAssigned(SimpleScore.ZERO),
+                            "FirstChange"))
                     .isInstanceOf(IllegalStateException.class);
         }
     }

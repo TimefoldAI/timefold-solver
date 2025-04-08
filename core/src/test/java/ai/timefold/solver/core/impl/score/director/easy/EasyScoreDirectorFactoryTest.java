@@ -29,7 +29,7 @@ class EasyScoreDirectorFactoryTest {
             solution.setEntityList(Collections.emptyList());
             director.setWorkingSolution(solution);
             assertThat(director.calculateScore())
-                    .isEqualTo(InnerScore.of(SimpleScore.of(-10)));
+                    .isEqualTo(InnerScore.fullyAssigned(SimpleScore.of(-10)));
         }
     }
 

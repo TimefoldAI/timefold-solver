@@ -43,7 +43,7 @@ public abstract class AbstractMoveScope<Solution_> {
     }
 
     public <Score_ extends Score<Score_>> void setInitializedScore(Score_ score) {
-        setScore(InnerScore.of(score));
+        setScore(InnerScore.fullyAssigned(score));
     }
 
     public void setScore(InnerScore<?> score) {
