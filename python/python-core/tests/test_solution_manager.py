@@ -53,6 +53,7 @@ def assert_score_explanation(problem: Solution,
                              score_explanation: ScoreExplanation[Solution]):
     assert score_explanation.solution is problem
     assert score_explanation.score.score == 3
+    assert score_explanation.is_initialized == True
 
     constraint_ref = ConstraintRef(package_name='tests.test_solution_manager',
                                    constraint_name='Maximize Value')
