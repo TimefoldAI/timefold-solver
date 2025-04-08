@@ -122,7 +122,7 @@ class ScoreAnalysisTest {
                 getConstraintAnalysis(constraintMatchTotal, ScoreAnalysisFetchPolicy.FETCH_ALL),
                 constraintMatchTotal2.getConstraintRef(),
                 getConstraintAnalysis(constraintMatchTotal2, ScoreAnalysisFetchPolicy.FETCH_ALL));
-        var scoreAnalysis = new ScoreAnalysis<>(SimpleScore.ofUninitialized(3, 0), constraintAnalysisMap);
+        var scoreAnalysis = new ScoreAnalysis<>(SimpleScore.ZERO, constraintAnalysisMap, false);
 
         // Single constraint analysis
         var constraintSummary = constraintAnalysisMap.get(constraintMatchTotal.getConstraintRef()).summarize();
@@ -138,7 +138,7 @@ class ScoreAnalysisTest {
         assertThat(scoreAnalysis.getConstraintAnalysis(constraintName1).matchCount()).isZero();
         assertThat(summary)
                 .isEqualTo("""
-                        Explanation of score (3init/0):
+                        Explanation of score (0):
                             Constraint matches:
                                 0: constraint (constraint1) has no matches.
                                 0: constraint (constraint2) has no matches.

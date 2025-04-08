@@ -13,7 +13,8 @@ import ai.timefold.solver.core.impl.score.buildin.HardSoftScoreDefinition;
  * @see ScoreDefinition
  * @see HardSoftScoreDefinition
  */
-public abstract class AbstractScoreDefinition<Score_ extends Score<Score_>> implements ScoreDefinition<Score_> {
+public abstract class AbstractScoreDefinition<Score_ extends Score<Score_>>
+        implements ScoreDefinition<Score_> {
 
     private final String[] levelLabels;
 
@@ -53,11 +54,6 @@ public abstract class AbstractScoreDefinition<Score_ extends Score<Score_>> impl
     }
 
     @Override
-    public String getInitLabel() {
-        return "init score";
-    }
-
-    @Override
     public int getLevelsSize() {
         return levelLabels.length;
     }
@@ -68,12 +64,7 @@ public abstract class AbstractScoreDefinition<Score_ extends Score<Score_>> impl
     }
 
     @Override
-    public String formatScore(Score_ score) {
-        return score.toString();
-    }
-
-    @Override
-    public boolean isCompatibleArithmeticArgument(Score score) {
+    public boolean isCompatibleArithmeticArgument(Score_ score) {
         return Objects.equals(score.getClass(), getScoreClass());
     }
 

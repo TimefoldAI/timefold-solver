@@ -9,6 +9,7 @@ import java.util.Collections;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,7 @@ class EasyScoreDirectorFactoryTest {
             solution.setEntityList(Collections.emptyList());
             director.setWorkingSolution(solution);
             assertThat(director.calculateScore())
-                    .isEqualTo(SimpleScore.ofUninitialized(0, -10));
+                    .isEqualTo(InnerScore.fullyAssigned(SimpleScore.of(-10)));
         }
     }
 

@@ -2,7 +2,6 @@ package ai.timefold.solver.core.api.score.buildin.hardsoft;
 
 import static ai.timefold.solver.core.impl.score.ScoreUtil.HARD_LABEL;
 import static ai.timefold.solver.core.impl.score.ScoreUtil.SOFT_LABEL;
-import static ai.timefold.solver.core.impl.score.ScoreUtil.parseInitScore;
 import static ai.timefold.solver.core.impl.score.ScoreUtil.parseLevelAsInt;
 import static ai.timefold.solver.core.impl.score.ScoreUtil.parseScoreTokens;
 
@@ -11,7 +10,7 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.score.ScoreUtil;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * This {@link Score} is based on 2 levels of int constraints: hard and soft.
@@ -22,30 +21,32 @@ import org.jspecify.annotations.NonNull;
  *
  * @see Score
  */
+@NullMarked
 public final class HardSoftScore implements Score<HardSoftScore> {
 
-    public static final @NonNull HardSoftScore ZERO = new HardSoftScore(0, 0, 0);
-    public static final @NonNull HardSoftScore ONE_HARD = new HardSoftScore(0, 1, 0);
-    public static final @NonNull HardSoftScore ONE_SOFT = new HardSoftScore(0, 0, 1);
-    private static final @NonNull HardSoftScore MINUS_ONE_SOFT = new HardSoftScore(0, 0, -1);
-    private static final @NonNull HardSoftScore MINUS_ONE_HARD = new HardSoftScore(0, -1, 0);
+    public static final HardSoftScore ZERO = new HardSoftScore(0, 0);
+    public static final HardSoftScore ONE_HARD = new HardSoftScore(1, 0);
+    public static final HardSoftScore ONE_SOFT = new HardSoftScore(0, 1);
+    private static final HardSoftScore MINUS_ONE_SOFT = new HardSoftScore(0, -1);
+    private static final HardSoftScore MINUS_ONE_HARD = new HardSoftScore(-1, 0);
 
-    public static @NonNull HardSoftScore parseScore(@NonNull String scoreString) {
-        String[] scoreTokens = parseScoreTokens(HardSoftScore.class, scoreString, HARD_LABEL, SOFT_LABEL);
-        int initScore = parseInitScore(HardSoftScore.class, scoreString, scoreTokens[0]);
-        int hardScore = parseLevelAsInt(HardSoftScore.class, scoreString, scoreTokens[1]);
-        int softScore = parseLevelAsInt(HardSoftScore.class, scoreString, scoreTokens[2]);
-        return ofUninitialized(initScore, hardScore, softScore);
+    public static HardSoftScore parseScore(String scoreString) {
+        var scoreTokens = parseScoreTokens(HardSoftScore.class, scoreString, HARD_LABEL, SOFT_LABEL);
+        var hardScore = parseLevelAsInt(HardSoftScore.class, scoreString, scoreTokens[0]);
+        var softScore = parseLevelAsInt(HardSoftScore.class, scoreString, scoreTokens[1]);
+        return of(hardScore, softScore);
     }
 
-    public static @NonNull HardSoftScore ofUninitialized(int initScore, int hardScore, int softScore) {
-        if (initScore == 0) {
-            return of(hardScore, softScore);
-        }
-        return new HardSoftScore(initScore, hardScore, softScore);
+    /**
+     * @deprecated Use {@link #of(int, int)} instead.
+     * @return init score is always zero
+     */
+    @Deprecated(forRemoval = true, since = "1.22.0")
+    public static HardSoftScore ofUninitialized(int initScore, int hardScore, int softScore) {
+        return of(hardScore, softScore);
     }
 
-    public static @NonNull HardSoftScore of(int hardScore, int softScore) {
+    public static HardSoftScore of(int hardScore, int softScore) {
         // Optimization for frequently seen values.
         if (hardScore == 0) {
             if (softScore == -1) {
@@ -63,10 +64,10 @@ public final class HardSoftScore implements Score<HardSoftScore> {
             }
         }
         // Every other case is constructed.
-        return new HardSoftScore(0, hardScore, softScore);
+        return new HardSoftScore(hardScore, softScore);
     }
 
-    public static @NonNull HardSoftScore ofHard(int hardScore) {
+    public static HardSoftScore ofHard(int hardScore) {
         // Optimization for frequently seen values.
         if (hardScore == -1) {
             return MINUS_ONE_HARD;
@@ -76,10 +77,10 @@ public final class HardSoftScore implements Score<HardSoftScore> {
             return ONE_HARD;
         }
         // Every other case is constructed.
-        return new HardSoftScore(0, hardScore, 0);
+        return new HardSoftScore(hardScore, 0);
     }
 
-    public static @NonNull HardSoftScore ofSoft(int softScore) {
+    public static HardSoftScore ofSoft(int softScore) {
         // Optimization for frequently seen values.
         if (softScore == -1) {
             return MINUS_ONE_SOFT;
@@ -89,14 +90,9 @@ public final class HardSoftScore implements Score<HardSoftScore> {
             return ONE_SOFT;
         }
         // Every other case is constructed.
-        return new HardSoftScore(0, 0, softScore);
+        return new HardSoftScore(0, softScore);
     }
 
-    // ************************************************************************
-    // Fields
-    // ************************************************************************
-
-    private final int initScore;
     private final int hardScore;
     private final int softScore;
 
@@ -107,18 +103,12 @@ public final class HardSoftScore implements Score<HardSoftScore> {
      */
     @SuppressWarnings("unused")
     private HardSoftScore() {
-        this(Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE);
+        this(Integer.MIN_VALUE, Integer.MIN_VALUE);
     }
 
-    private HardSoftScore(int initScore, int hardScore, int softScore) {
-        this.initScore = initScore;
+    private HardSoftScore(int hardScore, int softScore) {
         this.hardScore = hardScore;
         this.softScore = softScore;
-    }
-
-    @Override
-    public int initScore() {
-        return initScore;
     }
 
     /**
@@ -165,80 +155,60 @@ public final class HardSoftScore implements Score<HardSoftScore> {
         return softScore;
     }
 
-    // ************************************************************************
-    // Worker methods
-    // ************************************************************************
-
-    @Override
-    public @NonNull HardSoftScore withInitScore(int newInitScore) {
-        return ofUninitialized(newInitScore, hardScore, softScore);
-    }
-
     @Override
     public boolean isFeasible() {
-        return initScore >= 0 && hardScore >= 0;
+        return hardScore >= 0;
     }
 
     @Override
-    public @NonNull HardSoftScore add(@NonNull HardSoftScore addend) {
-        return ofUninitialized(
-                initScore + addend.initScore(),
-                hardScore + addend.hardScore(),
+    public HardSoftScore add(HardSoftScore addend) {
+        return of(hardScore + addend.hardScore(),
                 softScore + addend.softScore());
     }
 
     @Override
-    public @NonNull HardSoftScore subtract(@NonNull HardSoftScore subtrahend) {
-        return ofUninitialized(
-                initScore - subtrahend.initScore(),
-                hardScore - subtrahend.hardScore(),
+    public HardSoftScore subtract(HardSoftScore subtrahend) {
+        return of(hardScore - subtrahend.hardScore(),
                 softScore - subtrahend.softScore());
     }
 
     @Override
-    public @NonNull HardSoftScore multiply(double multiplicand) {
-        return ofUninitialized(
-                (int) Math.floor(initScore * multiplicand),
-                (int) Math.floor(hardScore * multiplicand),
+    public HardSoftScore multiply(double multiplicand) {
+        return of((int) Math.floor(hardScore * multiplicand),
                 (int) Math.floor(softScore * multiplicand));
     }
 
     @Override
-    public @NonNull HardSoftScore divide(double divisor) {
-        return ofUninitialized(
-                (int) Math.floor(initScore / divisor),
-                (int) Math.floor(hardScore / divisor),
+    public HardSoftScore divide(double divisor) {
+        return of((int) Math.floor(hardScore / divisor),
                 (int) Math.floor(softScore / divisor));
     }
 
     @Override
-    public @NonNull HardSoftScore power(double exponent) {
-        return ofUninitialized(
-                (int) Math.floor(Math.pow(initScore, exponent)),
-                (int) Math.floor(Math.pow(hardScore, exponent)),
+    public HardSoftScore power(double exponent) {
+        return of((int) Math.floor(Math.pow(hardScore, exponent)),
                 (int) Math.floor(Math.pow(softScore, exponent)));
     }
 
     @Override
-    public @NonNull HardSoftScore abs() {
-        return ofUninitialized(Math.abs(initScore), Math.abs(hardScore), Math.abs(softScore));
+    public HardSoftScore abs() {
+        return of(Math.abs(hardScore), Math.abs(softScore));
     }
 
     @Override
-    public @NonNull HardSoftScore zero() {
+    public HardSoftScore zero() {
         return ZERO;
     }
 
     @Override
-    public Number @NonNull [] toLevelNumbers() {
+    public Number[] toLevelNumbers() {
         return new Number[] { hardScore, softScore };
     }
 
     @Override
     public boolean equals(Object o) {
         if (o instanceof HardSoftScore other) {
-            return initScore == other.initScore()
-                    && hardScore == other.hardScore()
+            return hardScore == other.hardScore()
                     && softScore == other.softScore();
         }
         return false;
@@ -246,14 +216,12 @@ public final class HardSoftScore implements Score<HardSoftScore> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(initScore, hardScore, softScore);
+        return Objects.hash(hardScore, softScore);
     }
 
     @Override
-    public int compareTo(@NonNull HardSoftScore other) {
-        if (initScore != other.initScore()) {
-            return Integer.compare(initScore, other.initScore());
-        } else if (hardScore != other.hardScore()) {
+    public int compareTo(HardSoftScore other) {
+        if (hardScore != other.hardScore()) {
             return Integer.compare(hardScore, other.hardScore());
         } else {
             return Integer.compare(softScore, other.softScore());
@@ -261,13 +229,13 @@ public final class HardSoftScore implements Score<HardSoftScore> {
     }
 
     @Override
-    public @NonNull String toShortString() {
+    public String toShortString() {
         return ScoreUtil.buildShortString(this, n -> n.intValue() != 0, HARD_LABEL, SOFT_LABEL);
     }
 
     @Override
     public String toString() {
-        return ScoreUtil.getInitPrefix(initScore) + hardScore + HARD_LABEL + "/" + softScore + SOFT_LABEL;
+        return hardScore + HARD_LABEL + "/" + softScore + SOFT_LABEL;
     }
 
 }

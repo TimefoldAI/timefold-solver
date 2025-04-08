@@ -6,6 +6,7 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptorTest;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.junit.jupiter.api.Test;
@@ -17,10 +18,10 @@ class HillClimbingAcceptorTest extends AbstractAcceptorTest {
         var acceptor = new HillClimbingAcceptor<>();
 
         var solverScope = new SolverScope<>();
-        solverScope.setBestScore(SimpleScore.of(-1000));
+        solverScope.setInitializedBestScore(SimpleScore.of(-1000));
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         var lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
-        lastCompletedStepScope.setScore(SimpleScore.of(-1000));
+        lastCompletedStepScope.setInitializedScore(SimpleScore.of(-1000));
         phaseScope.setLastCompletedStepScope(lastCompletedStepScope);
         acceptor.phaseStarted(phaseScope);
 
@@ -36,7 +37,7 @@ class HillClimbingAcceptorTest extends AbstractAcceptorTest {
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, -900))).isTrue();
         stepScope0.setStep(moveScope0.getMove());
         stepScope0.setScore(moveScope0.getScore());
-        solverScope.setBestScore(moveScope0.getScore());
+        solverScope.setBestScore((InnerScore) moveScope0.getScore());
         acceptor.stepEnded(stepScope0);
         phaseScope.setLastCompletedStepScope(stepScope0);
 

@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.localsearch.decider.forager;
 
+import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchPickEarlyType;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.finalist.FinalistPodium;
@@ -79,19 +80,20 @@ public final class AcceptedLocalSearchForager<Solution_> extends AbstractLocalSe
         finalistPodium.addMove(moveScope);
     }
 
-    private void checkPickEarly(LocalSearchMoveScope<Solution_> moveScope) {
+    private <Score_ extends Score<Score_>> void checkPickEarly(LocalSearchMoveScope<Solution_> moveScope) {
         switch (pickEarlyType) {
             case NEVER:
                 break;
             case FIRST_BEST_SCORE_IMPROVING:
-                var bestScore = moveScope.getStepScope().getPhaseScope().getBestScore();
-                if (moveScope.getScore().compareTo(bestScore) > 0) {
+                var bestScore = moveScope.getStepScope().getPhaseScope().<Score_> getBestScore();
+                if (moveScope.<Score_> getScore().compareTo(bestScore) > 0) {
                     earlyPickedMoveScope = moveScope;
                 }
                 break;
             case FIRST_LAST_STEP_SCORE_IMPROVING:
-                var lastStepScore = moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore();
-                if (moveScope.getScore().compareTo(lastStepScore) > 0) {
+                var lastStepScore = moveScope.getStepScope().getPhaseScope()
+                        .getLastCompletedStepScope().<Score_> getScore();
+                if (moveScope.<Score_> getScore().compareTo(lastStepScore) > 0) {
                     earlyPickedMoveScope = moveScope;
                 }
                 break;

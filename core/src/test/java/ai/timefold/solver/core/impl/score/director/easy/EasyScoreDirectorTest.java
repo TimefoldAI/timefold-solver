@@ -6,6 +6,7 @@ import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.config.score.trend.InitializingScoreTrendLevel;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.corrupted.TestdataCorruptedShadowedEntity;
@@ -31,7 +32,7 @@ class EasyScoreDirectorTest {
             solution.setEntityList(Arrays.asList(e1, e2));
             scoreDirector.setWorkingSolution(solution);
 
-            scoreDirector.assertShadowVariablesAreNotStale(SimpleScore.ofUninitialized(-2, 0), "NoChange");
+            scoreDirector.assertShadowVariablesAreNotStale(InnerScore.withUnassignedCount(SimpleScore.ZERO, 2), "NoChange");
             scoreDirector.beforeVariableChanged(e1, "value");
             e1.setValue(v1);
             scoreDirector.afterVariableChanged(e1, "value");
@@ -40,7 +41,8 @@ class EasyScoreDirectorTest {
             scoreDirector.afterVariableChanged(e2, "value");
             scoreDirector.triggerVariableListeners();
             assertThatThrownBy(
-                    () -> scoreDirector.assertShadowVariablesAreNotStale(SimpleScore.ofUninitialized(0, 0), "FirstChange"))
+                    () -> scoreDirector.assertShadowVariablesAreNotStale(InnerScore.fullyAssigned(SimpleScore.ZERO),
+                            "FirstChange"))
                     .isInstanceOf(IllegalStateException.class);
         }
     }

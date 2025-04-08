@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.exhaustivesearch.node.comparator;
 
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -8,30 +9,35 @@ import java.util.Comparator;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 public abstract class AbstractNodeComparatorTest {
 
+    protected ExhaustiveSearchNode buildNode(int depth, InnerScore<SimpleScore> score, long parentBreadth, long breadth) {
+        return buildNode(depth, score, InnerScore.fullyAssigned(score.raw()), parentBreadth, breadth);
+    }
+
     protected ExhaustiveSearchNode buildNode(int depth, String score, long parentBreadth, long breadth) {
-        return buildNode(depth,
-                SimpleScore.parseScore(score),
-                SimpleScore.parseScore(score).withInitScore(0),
-                parentBreadth, breadth);
+        return buildNode(depth, InnerScore.fullyAssigned(SimpleScore.parseScore(score)), parentBreadth, breadth);
+    }
+
+    protected ExhaustiveSearchNode buildNode(int depth, InnerScore<SimpleScore> score, int optimisticBound,
+            long parentBreadth, long breadth) {
+        return buildNode(depth, score, InnerScore.fullyAssigned(SimpleScore.of(optimisticBound)), parentBreadth, breadth);
     }
 
     protected ExhaustiveSearchNode buildNode(int depth, String score, int optimisticBound,
             long parentBreadth, long breadth) {
-        return buildNode(depth,
-                SimpleScore.parseScore(score),
-                SimpleScore.of(optimisticBound),
-                parentBreadth, breadth);
+        return buildNode(depth, InnerScore.fullyAssigned(SimpleScore.parseScore(score)), optimisticBound, parentBreadth,
+                breadth);
     }
 
-    protected ExhaustiveSearchNode buildNode(int depth, SimpleScore score, SimpleScore optimisticBound,
+    protected ExhaustiveSearchNode buildNode(int depth, InnerScore<SimpleScore> score, InnerScore<SimpleScore> optimisticBound,
             long parentBreadth, long breadth) {
-        ExhaustiveSearchNode node = mock(ExhaustiveSearchNode.class);
+        var node = mock(ExhaustiveSearchNode.class);
         when(node.getDepth()).thenReturn(depth);
-        when(node.getScore()).thenReturn(score);
-        when(node.getOptimisticBound()).thenReturn(optimisticBound);
+        doReturn(score).when(node).getScore();
+        doReturn(optimisticBound).when(node).getOptimisticBound();
         when(node.getParentBreadth()).thenReturn(parentBreadth);
         when(node.getBreadth()).thenReturn(breadth);
         when(node.toString()).thenReturn(score.toString());
@@ -52,8 +58,8 @@ public abstract class AbstractNodeComparatorTest {
 
     protected static void assertScoreCompareToOrder(Comparator<ExhaustiveSearchNode> comparator,
             ExhaustiveSearchNode... nodes) {
-        for (int i = 0; i < nodes.length; i++) {
-            for (int j = i + 1; j < nodes.length; j++) {
+        for (var i = 0; i < nodes.length; i++) {
+            for (var j = i + 1; j < nodes.length; j++) {
                 assertLesser(comparator, nodes[i], nodes[j]);
             }
         }

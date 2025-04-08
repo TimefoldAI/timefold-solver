@@ -5,6 +5,7 @@ import java.util.Arrays;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.jspecify.annotations.NullMarked;
@@ -38,30 +39,32 @@ final class BestScoreFeasibleTermination<Solution_>
         return isTerminated(phaseScope.getBestScore());
     }
 
-    private static boolean isTerminated(Score<?> bestScore) {
-        return bestScore.isFeasible();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
-        return calculateFeasibilityTimeGradient(solverScope.getStartingInitializedScore(), solverScope.getBestScore());
+    private static boolean isTerminated(InnerScore<?> innerScore) {
+        return innerScore.fullyAssigned() && innerScore.raw().isFeasible();
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
-        return calculateFeasibilityTimeGradient((Score) phaseScope.getStartingScore(), (Score) phaseScope.getBestScore());
+    public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
+        return calculateFeasibilityTimeGradient(InnerScore.fullyAssigned((Score) solverScope.getStartingInitializedScore()),
+                solverScope.getBestScore().raw());
     }
 
-    <Score_ extends Score<Score_>> double calculateFeasibilityTimeGradient(@Nullable Score_ startScore, Score_ score) {
-        if (startScore == null || !startScore.isSolutionInitialized()) {
+    @Override
+    public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
+        return calculateFeasibilityTimeGradient(phaseScope.getStartingScore(), phaseScope.getBestScore().raw());
+    }
+
+    <Score_ extends Score<Score_>> double calculateFeasibilityTimeGradient(@Nullable InnerScore<Score_> innerStartScore,
+            Score_ score) {
+        if (innerStartScore == null || !innerStartScore.fullyAssigned()) {
             return 0.0;
         }
-        Score_ totalDiff = startScore.negate();
-        Number[] totalDiffNumbers = totalDiff.toLevelNumbers();
-        Score_ scoreDiff = score.subtract(startScore);
-        Number[] scoreDiffNumbers = scoreDiff.toLevelNumbers();
+        var startScore = innerStartScore.raw();
+        var totalDiff = startScore.negate();
+        var totalDiffNumbers = totalDiff.toLevelNumbers();
+        var scoreDiff = score.subtract(startScore);
+        var scoreDiffNumbers = scoreDiff.toLevelNumbers();
         if (scoreDiffNumbers.length != totalDiffNumbers.length) {
             throw new IllegalStateException("The startScore (" + startScore + ") and score (" + score
                     + ") don't have the same levelsSize.");

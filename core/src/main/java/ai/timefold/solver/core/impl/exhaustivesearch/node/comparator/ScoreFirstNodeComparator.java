@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.exhaustivesearch.node.comparator;
 
 import java.util.Comparator;
 
+import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
 
 /**
@@ -16,33 +17,36 @@ public class ScoreFirstNodeComparator implements Comparator<ExhaustiveSearchNode
         }
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public int compare(ExhaustiveSearchNode a, ExhaustiveSearchNode b) {
         // Investigate better score first (ignore initScore to avoid depth first ordering)
-        int scoreComparison = a.getScore().withInitScore(0).compareTo(b.getScore().withInitScore(0));
+        Score aScore = a.getScore().raw();
+        Score bScore = b.getScore().raw();
+        var scoreComparison = aScore.compareTo(bScore);
         if (scoreComparison < 0) {
             return -1;
         } else if (scoreComparison > 0) {
             return 1;
         }
         // Investigate better optimistic bound first
-        int optimisticBoundComparison = a.getOptimisticBound().compareTo(b.getOptimisticBound());
+        var optimisticBoundComparison = a.getOptimisticBound().compareTo(b.getOptimisticBound());
         if (optimisticBoundComparison < 0) {
             return -1;
         } else if (optimisticBoundComparison > 0) {
             return 1;
         }
         // Investigate deeper first
-        int aDepth = a.getDepth();
-        int bDepth = b.getDepth();
+        var aDepth = a.getDepth();
+        var bDepth = b.getDepth();
         if (aDepth < bDepth) {
             return -1;
         } else if (aDepth > bDepth) {
             return 1;
         }
         // Investigate higher parent breadth index first (to reduce on the churn on workingSolution)
-        long aParentBreadth = a.getParentBreadth();
-        long bParentBreadth = b.getParentBreadth();
+        var aParentBreadth = a.getParentBreadth();
+        var bParentBreadth = b.getParentBreadth();
         if (aParentBreadth < bParentBreadth) {
             return -1;
         } else if (aParentBreadth > bParentBreadth) {

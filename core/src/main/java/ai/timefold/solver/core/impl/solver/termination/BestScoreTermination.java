@@ -6,6 +6,7 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.jspecify.annotations.NullMarked;
@@ -33,17 +34,16 @@ final class BestScoreTermination<Solution_>
 
     @Override
     public boolean isSolverTerminated(SolverScope<Solution_> solverScope) {
-        return isTerminated(solverScope.isBestSolutionInitialized(), solverScope.getBestScore());
+        return isTerminated(solverScope.isBestSolutionInitialized(), solverScope.getBestScore().raw());
     }
 
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
-        return isTerminated(phaseScope.isBestSolutionInitialized(), phaseScope.getBestScore());
+        return isTerminated(phaseScope.isBestSolutionInitialized(), phaseScope.getBestScore().raw());
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private boolean isTerminated(boolean bestSolutionInitialized, Score<?> bestScore) {
-        return bestSolutionInitialized && ((Score) bestScore).compareTo(bestScoreLimit) >= 0;
+    private <Score_ extends Score<Score_>> boolean isTerminated(boolean bestSolutionInitialized, Score_ bestScore) {
+        return bestSolutionInitialized && bestScore.compareTo(getBestScoreLimit()) >= 0;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -51,17 +51,21 @@ final class BestScoreTermination<Solution_>
     public double calculateSolverTimeGradient(SolverScope<Solution_> solverScope) {
         var startingInitializedScore = solverScope.getStartingInitializedScore();
         var bestScore = solverScope.getBestScore();
-        return calculateTimeGradient(startingInitializedScore, (Score) bestScoreLimit, bestScore);
+        return calculateTimeGradient((Score) startingInitializedScore, getBestScoreLimit(), (Score) bestScore.raw());
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public double calculatePhaseTimeGradient(AbstractPhaseScope<Solution_> phaseScope) {
-        var startingInitializedScore = phaseScope.getStartingScore();
-        var bestScore = phaseScope.getBestScore();
-        return calculateTimeGradient((Score) startingInitializedScore, (Score) bestScoreLimit, (Score) bestScore);
+        var startingInitializedScore = phaseScope.<Score> getStartingScore();
+        var bestScore = phaseScope.<Score> getBestScore();
+        return calculateTimeGradient(startingInitializedScore.raw(), getBestScoreLimit(), bestScore.raw());
     }
 
+    /**
+     * CH is not allowed to compute a time gradient.
+     * Therefore the scores at this point no longer need to be {@link InnerScore}.
+     */
     <Score_ extends Score<Score_>> double calculateTimeGradient(Score_ startScore, Score_ endScore, Score_ score) {
         var totalDiff = endScore.subtract(startScore);
         var totalDiffNumbers = totalDiff.toLevelNumbers();
@@ -123,6 +127,11 @@ final class BestScoreTermination<Solution_>
             timeGradient = 1.0;
         }
         return timeGradient;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <Score_ extends Score<Score_>> Score_ getBestScoreLimit() {
+        return (Score_) bestScoreLimit;
     }
 
     @Override

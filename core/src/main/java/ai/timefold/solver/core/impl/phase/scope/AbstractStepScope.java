@@ -5,6 +5,7 @@ import java.util.Random;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 /**
@@ -14,7 +15,7 @@ public abstract class AbstractStepScope<Solution_> {
 
     protected final int stepIndex;
 
-    protected Score<?> score = null;
+    protected InnerScore<?> score = null;
     protected boolean bestScoreImproved = false;
     // Stays null if there is no need to clone it
     protected Solution_ clonedSolution = null;
@@ -29,11 +30,17 @@ public abstract class AbstractStepScope<Solution_> {
         return stepIndex;
     }
 
-    public Score<?> getScore() {
-        return score;
+    @SuppressWarnings("unchecked")
+    public <Score_ extends Score<Score_>> InnerScore<Score_> getScore() {
+        return (InnerScore<Score_>) score;
     }
 
-    public void setScore(Score<?> score) {
+    @SuppressWarnings("rawtypes")
+    public void setInitializedScore(Score<?> score) {
+        setScore(InnerScore.fullyAssigned((Score) score));
+    }
+
+    public void setScore(InnerScore<?> score) {
         this.score = score;
     }
 
@@ -53,8 +60,8 @@ public abstract class AbstractStepScope<Solution_> {
         return getPhaseScope().getScoreDirector();
     }
 
-    public MoveDirector<Solution_, ?> getMoveDirector() {
-        return getScoreDirector().getMoveDirector();
+    public <Score_ extends Score<Score_>> MoveDirector<Solution_, Score_> getMoveDirector() {
+        return this.<Score_> getScoreDirector().getMoveDirector();
     }
 
     public Solution_ getWorkingSolution() {

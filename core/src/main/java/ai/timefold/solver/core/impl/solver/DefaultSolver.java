@@ -4,19 +4,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.ProblemFactChange;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
-import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
@@ -29,8 +26,6 @@ import ai.timefold.solver.core.impl.solver.termination.UniversalTermination;
 
 import org.jspecify.annotations.NonNull;
 
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.LongTaskTimer;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
 
@@ -118,7 +113,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
 
     @Override
     public boolean terminateEarly() {
-        boolean terminationEarlySuccessful = basicPlumbingTermination.terminateEarly();
+        var terminationEarlySuccessful = basicPlumbingTermination.terminateEarly();
         if (terminationEarlySuccessful) {
             logger.info("Terminating solver early.");
         }
@@ -169,7 +164,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
     }
 
     public void setMonitorTagMap(Map<String, String> monitorTagMap) {
-        Tags monitoringTags = Objects.requireNonNullElse(monitorTagMap, Collections.<String, String> emptyMap())
+        var monitoringTags = Objects.requireNonNullElse(monitorTagMap, Collections.<String, String> emptyMap())
                 .entrySet().stream().map(entry -> Tags.of(entry.getKey(), entry.getValue()))
                 .reduce(Tags.empty(), Tags::and);
         solverScope.setMonitoringTags(monitoringTags);
@@ -182,15 +177,15 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
     @Override
     public final @NonNull Solution_ solve(@NonNull Solution_ problem) {
         // No tags for these metrics; they are global
-        LongTaskTimer solveLengthTimer = Metrics.more().longTaskTimer(SolverMetric.SOLVE_DURATION.getMeterId());
-        Counter errorCounter = Metrics.counter(SolverMetric.ERROR_COUNT.getMeterId());
+        var solveLengthTimer = Metrics.more().longTaskTimer(SolverMetric.SOLVE_DURATION.getMeterId());
+        var errorCounter = Metrics.counter(SolverMetric.ERROR_COUNT.getMeterId());
 
         solverScope.setBestSolution(Objects.requireNonNull(problem, "The problem must not be null."));
         solverScope.setSolver(this);
         outerSolvingStarted(solverScope);
-        boolean restartSolver = true;
+        var restartSolver = true;
         while (restartSolver) {
-            LongTaskTimer.Sample sample = solveLengthTimer.start();
+            var sample = solveLengthTimer.start();
             try {
                 // solvingStarted will call registerSolverSpecificMetrics(), since
                 // the solverScope need to be fully initialized to calculate the
@@ -232,7 +227,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 + "environment mode ({}), move thread count ({}), random ({}).",
                 (startingSolverCount == 1 ? "started" : "restarted"),
                 solverScope.calculateTimeMillisSpentUpToNow(),
-                solverScope.getBestScore(),
+                solverScope.getBestScore().raw(),
                 environmentMode.name(),
                 moveThreadCountDescription,
                 (randomFactory != null ? randomFactory : "not fixed"));
@@ -265,7 +260,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
                 return;
             }
             var listVariableDescriptor = entityDescriptor.getGenuineListVariableDescriptor();
-            int pinIndex = listVariableDescriptor.getFirstUnpinnedIndex(entity);
+            var pinIndex = listVariableDescriptor.getFirstUnpinnedIndex(entity);
             if (entityDescriptor.isMovable(solverScope.getScoreDirector().getWorkingSolution(), entity)) {
                 if (pinIndex < 0) {
                     throw new IllegalStateException("The movable planning entity (%s) has a pin index (%s) which is negative."
@@ -289,12 +284,12 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
     }
 
     private void assertNonNullPlanningId(Object fact) {
-        Class<?> factClass = fact.getClass();
-        MemberAccessor planningIdAccessor = solverScope.getSolutionDescriptor().getPlanningIdAccessor(factClass);
+        var factClass = fact.getClass();
+        var planningIdAccessor = solverScope.getSolutionDescriptor().getPlanningIdAccessor(factClass);
         if (planningIdAccessor == null) { // There is no planning ID annotation.
             return;
         }
-        Object id = planningIdAccessor.executeGetter(fact);
+        var id = planningIdAccessor.executeGetter(fact);
         if (id == null) { // Fail fast as planning ID is null.
             throw new IllegalStateException("The planningId (" + id + ") of the member (" + planningIdAccessor
                     + ") of the class (" + factClass + ") on object (" + fact + ") must not be null.\n"
@@ -314,7 +309,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         logger.info("Solving ended: time spent ({}), best score ({}), move evaluation speed ({}/sec), "
                 + "phase total ({}), environment mode ({}), move thread count ({}).",
                 solverScope.getTimeMillisSpent(),
-                solverScope.getBestScore(),
+                solverScope.getBestScore().raw(),
                 solverScope.getMoveEvaluationSpeed(),
                 phaseList.size(),
                 environmentMode.name(),
@@ -325,16 +320,16 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
     }
 
     private boolean checkProblemFactChanges() {
-        boolean restartSolver = basicPlumbingTermination.waitForRestartSolverDecision();
+        var restartSolver = basicPlumbingTermination.waitForRestartSolverDecision();
         if (!restartSolver) {
             return false;
         } else {
-            BlockingQueue<ProblemChangeAdapter<Solution_>> problemFactChangeQueue = basicPlumbingTermination
+            var problemFactChangeQueue = basicPlumbingTermination
                     .startProblemChangesProcessing();
             solverScope.setWorkingSolutionFromBestSolution();
 
-            int stepIndex = 0;
-            ProblemChangeAdapter<Solution_> problemChangeAdapter = problemFactChangeQueue.poll();
+            var stepIndex = 0;
+            var problemChangeAdapter = problemFactChangeQueue.poll();
             while (problemChangeAdapter != null) {
                 problemChangeAdapter.doProblemChange(solverScope);
                 logger.debug("    Real-time problem change applied; step index ({}).", stepIndex);
@@ -345,7 +340,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             InnerScoreDirector<Solution_, ?> scoreDirector = solverScope.getScoreDirector();
             assertCorrectSolutionState();
             // Everything is fine, proceed.
-            Score<?> score = scoreDirector.calculateScore();
+            var score = scoreDirector.calculateScore();
             basicPlumbingTermination.endProblemChangesProcessing();
             bestSolutionRecaller.updateBestSolutionAndFireIfInitialized(solverScope);
             logger.info("Real-time problem fact changes done: step total ({}), new best score ({}).",

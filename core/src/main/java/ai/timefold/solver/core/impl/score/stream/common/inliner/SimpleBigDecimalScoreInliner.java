@@ -26,8 +26,8 @@ final class SimpleBigDecimalScoreInliner extends AbstractScoreInliner<SimpleBigD
     }
 
     @Override
-    public SimpleBigDecimalScore extractScore(int initScore) {
-        return SimpleBigDecimalScore.ofUninitialized(initScore, score);
+    public SimpleBigDecimalScore extractScore() {
+        return SimpleBigDecimalScore.of(score);
     }
 
     @Override

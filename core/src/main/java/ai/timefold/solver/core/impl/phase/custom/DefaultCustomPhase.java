@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.phase.custom;
 
-import java.util.Iterator;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -10,7 +9,6 @@ import ai.timefold.solver.core.impl.phase.AbstractPossiblyInitializingPhase;
 import ai.timefold.solver.core.impl.phase.custom.scope.CustomPhaseScope;
 import ai.timefold.solver.core.impl.phase.custom.scope.CustomStepScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 
@@ -50,10 +48,10 @@ public final class DefaultCustomPhase<Solution_>
 
     @Override
     public void solve(SolverScope<Solution_> solverScope) {
-        CustomPhaseScope<Solution_> phaseScope = new CustomPhaseScope<>(solverScope, phaseIndex);
+        var phaseScope = new CustomPhaseScope<>(solverScope, phaseIndex);
         phaseStarted(phaseScope);
         TerminationStatus earlyTerminationStatus = null;
-        Iterator<PhaseCommand<Solution_>> iterator = customPhaseCommandList.iterator();
+        var iterator = customPhaseCommandList.iterator();
         while (iterator.hasNext()) {
             var customPhaseCommand = iterator.next();
             solverScope.checkYielding();
@@ -61,7 +59,7 @@ public final class DefaultCustomPhase<Solution_>
                 earlyTerminationStatus = TerminationStatus.early(phaseScope.getNextStepIndex());
                 break;
             }
-            CustomStepScope<Solution_> stepScope = new CustomStepScope<>(phaseScope);
+            var stepScope = new CustomStepScope<>(phaseScope);
             stepStarted(stepScope);
             doStep(stepScope, customPhaseCommand);
             stepEnded(stepScope);
@@ -79,7 +77,7 @@ public final class DefaultCustomPhase<Solution_>
     }
 
     private void doStep(CustomStepScope<Solution_> stepScope, PhaseCommand<Solution_> customPhaseCommand) {
-        InnerScoreDirector<Solution_, ?> scoreDirector = stepScope.getScoreDirector();
+        var scoreDirector = stepScope.getScoreDirector();
         customPhaseCommand.changeWorkingSolution(scoreDirector,
                 () -> phaseTermination.isPhaseTerminated(stepScope.getPhaseScope()));
         calculateWorkingStepScore(stepScope, customPhaseCommand);
@@ -89,15 +87,15 @@ public final class DefaultCustomPhase<Solution_>
 
     public void stepEnded(CustomStepScope<Solution_> stepScope) {
         super.stepEnded(stepScope);
-        CustomPhaseScope<Solution_> phaseScope = stepScope.getPhaseScope();
+        var phaseScope = stepScope.getPhaseScope();
         if (logger.isDebugEnabled()) {
             logger.debug("{}    Custom step ({}), time spent ({}), score ({}), {} best score ({}).",
                     logIndentation,
                     stepScope.getStepIndex(),
                     phaseScope.calculateSolverTimeMillisSpentUpToNow(),
-                    stepScope.getScore(),
+                    stepScope.getScore().raw(),
                     stepScope.getBestScoreImproved() ? "new" : "   ",
-                    phaseScope.getBestScore());
+                    phaseScope.getBestScore().raw());
         }
     }
 
@@ -110,7 +108,7 @@ public final class DefaultCustomPhase<Solution_>
                 logIndentation,
                 phaseIndex,
                 phaseScope.calculateSolverTimeMillisSpentUpToNow(),
-                phaseScope.getBestScore(),
+                phaseScope.getBestScore().raw(),
                 phaseScope.getPhaseMoveEvaluationSpeed(),
                 phaseScope.getNextStepIndex());
     }

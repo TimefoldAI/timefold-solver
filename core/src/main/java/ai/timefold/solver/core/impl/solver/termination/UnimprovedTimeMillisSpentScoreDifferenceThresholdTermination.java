@@ -9,6 +9,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeur
 import ai.timefold.solver.core.impl.phase.custom.scope.CustomPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 import ai.timefold.solver.core.impl.util.Pair;
@@ -25,7 +26,7 @@ final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<Solutio
     private final Score<?> unimprovedScoreDifferenceThreshold;
     private final Clock clock;
 
-    private @Nullable Queue<Pair<Long, Score<?>>> bestScoreImprovementHistoryQueue;
+    private @Nullable Queue<Pair<Long, InnerScore<?>>> bestScoreImprovementHistoryQueue;
     // safeTimeMillis is until when we're safe from termination
     private long solverSafeTimeMillis = -1L;
     private long phaseSafeTimeMillis = -1L;
@@ -91,11 +92,13 @@ final class UnimprovedTimeMillisSpentScoreDifferenceThresholdTermination<Solutio
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
         if (stepScope.getBestScoreImproved()) {
             var solverScope = stepScope.getPhaseScope().getSolverScope();
-            long bestSolutionTimeMillis = solverScope.getBestSolutionTimeMillis();
+            var bestSolutionTimeMillis = solverScope.getBestSolutionTimeMillis();
             var bestScore = solverScope.getBestScore();
+            var bestScoreValue = (Score) bestScore.raw();
             for (var it = bestScoreImprovementHistoryQueue.iterator(); it.hasNext();) {
                 var bestScoreImprovement = it.next();
-                var scoreDifference = bestScore.subtract(bestScoreImprovement.value());
+                var bestScoreImprovementValue = bestScoreImprovement.value().raw();
+                var scoreDifference = bestScoreValue.subtract(bestScoreImprovementValue);
                 var timeLimitNotYetReached = bestScoreImprovement.key()
                         + unimprovedTimeMillisSpentLimit >= bestSolutionTimeMillis;
                 var scoreImprovedOverThreshold = scoreDifference.compareTo(unimprovedScoreDifferenceThreshold) >= 0;

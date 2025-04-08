@@ -14,8 +14,6 @@ class SimpleLongScoreJsonbAdapterTest extends AbstractScoreJsonbAdapterTest {
         assertSerializeAndDeserialize(null, new TestSimpleLongScoreWrapper(null));
         SimpleLongScore score = SimpleLongScore.of(1234L);
         assertSerializeAndDeserialize(score, new TestSimpleLongScoreWrapper(score));
-        score = SimpleLongScore.ofUninitialized(-7, 1234L);
-        assertSerializeAndDeserialize(score, new TestSimpleLongScoreWrapper(score));
     }
 
     public static class TestSimpleLongScoreWrapper extends TestScoreWrapper<SimpleLongScore> {

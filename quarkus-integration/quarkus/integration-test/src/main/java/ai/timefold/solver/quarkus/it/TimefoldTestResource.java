@@ -16,8 +16,6 @@ import jakarta.ws.rs.core.MediaType;
 
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.solver.SolverConfigOverride;
-import ai.timefold.solver.core.api.solver.SolverJob;
-import ai.timefold.solver.core.api.solver.SolverJobBuilder;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.solver.DefaultSolverJob;
@@ -36,7 +34,7 @@ public class TimefoldTestResource {
     }
 
     private static TestdataStringLengthShadowSolution generateProblem() {
-        TestdataStringLengthShadowSolution planningProblem = new TestdataStringLengthShadowSolution();
+        var planningProblem = new TestdataStringLengthShadowSolution();
         planningProblem.setEntityList(Arrays.asList(
                 new TestdataStringLengthShadowEntity(),
                 new TestdataStringLengthShadowEntity()));
@@ -48,7 +46,7 @@ public class TimefoldTestResource {
     @Path("/solver-factory")
     @Produces(MediaType.TEXT_PLAIN)
     public String solveWithSolverFactory() {
-        SolverJob<TestdataStringLengthShadowSolution, Long> solverJob = solverManager.solve(1L, generateProblem());
+        var solverJob = solverManager.solve(1L, generateProblem());
         try {
             return solverJob.getFinalBestSolution().getScore().toString();
         } catch (InterruptedException e) {
@@ -63,15 +61,14 @@ public class TimefoldTestResource {
     @Path("/solver-factory/override")
     @Produces(MediaType.TEXT_PLAIN)
     public String solveWithOverriddenTime(@QueryParam("seconds") Integer seconds) {
-        SolverJobBuilder<TestdataStringLengthShadowSolution, Long> solverJobBuilder = solverManager.solveBuilder()
+        var solverJobBuilder = solverManager.solveBuilder()
                 .withProblemId(1L)
                 .withProblem(generateProblem())
                 .withConfigOverride(
                         new SolverConfigOverride<TestdataStringLengthShadowSolution>()
                                 .withTerminationConfig(new TerminationConfig()
                                         .withSpentLimit(Duration.ofSeconds(seconds))));
-        DefaultSolverJob<TestdataStringLengthShadowSolution, Long> solverJob =
-                (DefaultSolverJob<TestdataStringLengthShadowSolution, Long>) solverJobBuilder.run();
+        var solverJob = (DefaultSolverJob<TestdataStringLengthShadowSolution, Long>) solverJobBuilder.run();
         SolverScope<TestdataStringLengthShadowSolution> customScope = new SolverScope<>() {
             @Override
             public long calculateTimeMillisSpentUpToNow() {
@@ -81,13 +78,13 @@ public class TimefoldTestResource {
         };
         // We ensure the best-score limit won't take priority
         customScope.setStartingInitializedScore(HardSoftScore.of(-1, -1));
-        customScope.setBestScore(HardSoftScore.of(-1, -1));
+        customScope.setInitializedBestScore(HardSoftScore.of(-1, -1));
         try {
-            String score = solverJob.getFinalBestSolution().getScore().toString();
-            DecimalFormatSymbols decimalFormatSymbols = DecimalFormatSymbols.getInstance();
+            var score = solverJob.getFinalBestSolution().getScore().toString();
+            var decimalFormatSymbols = DecimalFormatSymbols.getInstance();
             decimalFormatSymbols.setDecimalSeparator('.');
-            DecimalFormat decimalFormat = new DecimalFormat("0.00", decimalFormatSymbols);
-            double gradientTime = solverJob.getSolverTermination().calculateSolverTimeGradient(customScope);
+            var decimalFormat = new DecimalFormat("0.00", decimalFormatSymbols);
+            var gradientTime = solverJob.getSolverTermination().calculateSolverTimeGradient(customScope);
             solverManager.terminateEarly(1L);
             return String.format("%s,%s", score, decimalFormat.format(gradientTime));
         } catch (InterruptedException e) {

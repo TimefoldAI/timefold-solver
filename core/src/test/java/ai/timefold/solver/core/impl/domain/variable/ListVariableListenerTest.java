@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.domain.variable;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
@@ -14,6 +13,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListSwa
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListUnassignMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListSwapMove;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListEntityWithShadowHistory;
 import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListSolutionWithShadowHistory;
@@ -32,9 +32,9 @@ class ListVariableListenerTest {
             PlannerTestUtils.mockScoreDirector(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
 
     static TestdataListSolutionWithShadowHistory buildSolution(TestdataListEntityWithShadowHistory... entities) {
-        List<TestdataListValueWithShadowHistory> values =
+        var values =
                 Arrays.stream(entities).flatMap(e -> e.getValueList().stream()).collect(Collectors.toList());
-        TestdataListSolutionWithShadowHistory solution = new TestdataListSolutionWithShadowHistory();
+        var solution = new TestdataListSolutionWithShadowHistory();
         solution.setEntityList(Arrays.asList(entities));
         solution.setValueList(values);
         return solution;
@@ -81,22 +81,19 @@ class ListVariableListenerTest {
                 .containsExactly(nextHistory);
     }
 
-    void doChangeMove(
-            TestdataListEntityWithShadowHistory sourceEntity, int sourceIndex,
+    void doChangeMove(TestdataListEntityWithShadowHistory sourceEntity, int sourceIndex,
             TestdataListEntityWithShadowHistory destinationEntity, int destinationIndex) {
         new ListChangeMove<>(variableDescriptor, sourceEntity, sourceIndex, destinationEntity, destinationIndex)
                 .doMoveOnly(scoreDirector);
     }
 
-    void doSwapMove(
-            TestdataListEntityWithShadowHistory leftEntity, int leftIndex,
+    void doSwapMove(TestdataListEntityWithShadowHistory leftEntity, int leftIndex,
             TestdataListEntityWithShadowHistory rightEntity, int rightIndex) {
         new ListSwapMove<>(variableDescriptor, leftEntity, leftIndex, rightEntity, rightIndex)
                 .doMoveOnly(scoreDirector);
     }
 
-    void doSubListChangeMove(
-            TestdataListEntityWithShadowHistory sourceEntity, int fromIndex, int toIndex,
+    void doSubListChangeMove(TestdataListEntityWithShadowHistory sourceEntity, int fromIndex, int toIndex,
             TestdataListEntityWithShadowHistory destinationEntity, int destinationIndex, boolean reversing) {
         new SubListChangeMove<>(
                 variableDescriptor,
@@ -119,10 +116,10 @@ class ListVariableListenerTest {
 
     @Test
     void addAndRemoveEntity() {
-        TestdataListValueWithShadowHistory a = new TestdataListValueWithShadowHistory("A");
-        TestdataListValueWithShadowHistory b = new TestdataListValueWithShadowHistory("B");
-        TestdataListValueWithShadowHistory c = new TestdataListValueWithShadowHistory("C");
-        TestdataListEntityWithShadowHistory ann = new TestdataListEntityWithShadowHistory("Ann", a, b, c);
+        var a = new TestdataListValueWithShadowHistory("A");
+        var b = new TestdataListValueWithShadowHistory("B");
+        var c = new TestdataListValueWithShadowHistory("C");
+        var ann = new TestdataListEntityWithShadowHistory("Ann", a, b, c);
 
         scoreDirector.setWorkingSolution(buildSolution(ann));
         scoreDirector.forceTriggerVariableListeners();
@@ -184,7 +181,7 @@ class ListVariableListenerTest {
         solution.getValueList().add(x);
 
         scoreDirector.setWorkingSolution(solution);
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.ofUninitialized(-1, 0));
+        assertThat(scoreDirector.calculateScore()).isEqualTo(InnerScore.withUnassignedCount(SimpleScore.ZERO, 1));
 
         new ListAssignMove<>(variableDescriptor, x, ann, 2).doMoveOnly(scoreDirector);
 
@@ -238,12 +235,12 @@ class ListVariableListenerTest {
     @Test
     @DisplayName("M1: Ann[3]→Ann[1]")
     void moveElementToLowerIndexSameEntity() {
-        TestdataListValueWithShadowHistory a = new TestdataListValueWithShadowHistory("A");
-        TestdataListValueWithShadowHistory b = new TestdataListValueWithShadowHistory("B");
-        TestdataListValueWithShadowHistory c = new TestdataListValueWithShadowHistory("C");
-        TestdataListValueWithShadowHistory d = new TestdataListValueWithShadowHistory("D");
-        TestdataListValueWithShadowHistory e = new TestdataListValueWithShadowHistory("E");
-        TestdataListEntityWithShadowHistory ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e);
+        var a = new TestdataListValueWithShadowHistory("A");
+        var b = new TestdataListValueWithShadowHistory("B");
+        var c = new TestdataListValueWithShadowHistory("C");
+        var d = new TestdataListValueWithShadowHistory("D");
+        var e = new TestdataListValueWithShadowHistory("E");
+        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e);
 
         scoreDirector.setWorkingSolution(buildSolution(ann));
 
@@ -279,12 +276,12 @@ class ListVariableListenerTest {
     @Test
     @DisplayName("M2: Ann[0]→Ann[2]")
     void moveElementToHigherIndexSameEntity() {
-        TestdataListValueWithShadowHistory a = new TestdataListValueWithShadowHistory("A");
-        TestdataListValueWithShadowHistory b = new TestdataListValueWithShadowHistory("B");
-        TestdataListValueWithShadowHistory c = new TestdataListValueWithShadowHistory("C");
-        TestdataListValueWithShadowHistory d = new TestdataListValueWithShadowHistory("D");
-        TestdataListValueWithShadowHistory e = new TestdataListValueWithShadowHistory("E");
-        TestdataListEntityWithShadowHistory ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e);
+        var a = new TestdataListValueWithShadowHistory("A");
+        var b = new TestdataListValueWithShadowHistory("B");
+        var c = new TestdataListValueWithShadowHistory("C");
+        var d = new TestdataListValueWithShadowHistory("D");
+        var e = new TestdataListValueWithShadowHistory("E");
+        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e);
 
         scoreDirector.setWorkingSolution(buildSolution(ann));
 
@@ -320,13 +317,13 @@ class ListVariableListenerTest {
     @Test
     @DisplayName("M3: Ann[0]→Bob[1]")
     void moveElementToAnotherEntityChangeIndex() {
-        TestdataListValueWithShadowHistory a = new TestdataListValueWithShadowHistory("A");
-        TestdataListValueWithShadowHistory b = new TestdataListValueWithShadowHistory("B");
-        TestdataListValueWithShadowHistory c = new TestdataListValueWithShadowHistory("C");
-        TestdataListValueWithShadowHistory x = new TestdataListValueWithShadowHistory("X");
-        TestdataListValueWithShadowHistory y = new TestdataListValueWithShadowHistory("Y");
-        TestdataListEntityWithShadowHistory ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
-        TestdataListEntityWithShadowHistory bob = TestdataListEntityWithShadowHistory.createWithValues("Bob", x, y);
+        var a = new TestdataListValueWithShadowHistory("A");
+        var b = new TestdataListValueWithShadowHistory("B");
+        var c = new TestdataListValueWithShadowHistory("C");
+        var x = new TestdataListValueWithShadowHistory("X");
+        var y = new TestdataListValueWithShadowHistory("Y");
+        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
+        var bob = TestdataListEntityWithShadowHistory.createWithValues("Bob", x, y);
 
         scoreDirector.setWorkingSolution(buildSolution(ann, bob));
 
@@ -363,13 +360,13 @@ class ListVariableListenerTest {
     @Test
     @DisplayName("M4: Ann[1]→Bob[1]")
     void moveElementToAnotherEntitySameIndex() {
-        TestdataListValueWithShadowHistory a = new TestdataListValueWithShadowHistory("A");
-        TestdataListValueWithShadowHistory b = new TestdataListValueWithShadowHistory("B");
-        TestdataListValueWithShadowHistory c = new TestdataListValueWithShadowHistory("C");
-        TestdataListValueWithShadowHistory x = new TestdataListValueWithShadowHistory("X");
-        TestdataListValueWithShadowHistory y = new TestdataListValueWithShadowHistory("Y");
-        TestdataListEntityWithShadowHistory ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
-        TestdataListEntityWithShadowHistory bob = TestdataListEntityWithShadowHistory.createWithValues("Bob", x, y);
+        var a = new TestdataListValueWithShadowHistory("A");
+        var b = new TestdataListValueWithShadowHistory("B");
+        var c = new TestdataListValueWithShadowHistory("C");
+        var x = new TestdataListValueWithShadowHistory("X");
+        var y = new TestdataListValueWithShadowHistory("Y");
+        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
+        var bob = TestdataListEntityWithShadowHistory.createWithValues("Bob", x, y);
 
         scoreDirector.setWorkingSolution(buildSolution(ann, bob));
 
@@ -406,10 +403,10 @@ class ListVariableListenerTest {
     @Test
     @DisplayName("M5: Ann[1]→Ann[2]")
     void moveOneUpToEnd() {
-        TestdataListValueWithShadowHistory a = new TestdataListValueWithShadowHistory("A");
-        TestdataListValueWithShadowHistory b = new TestdataListValueWithShadowHistory("B");
-        TestdataListValueWithShadowHistory c = new TestdataListValueWithShadowHistory("C");
-        TestdataListEntityWithShadowHistory ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
+        var a = new TestdataListValueWithShadowHistory("A");
+        var b = new TestdataListValueWithShadowHistory("B");
+        var c = new TestdataListValueWithShadowHistory("C");
+        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
 
         scoreDirector.setWorkingSolution(buildSolution(ann));
 
@@ -437,10 +434,10 @@ class ListVariableListenerTest {
     @Test
     @DisplayName("M6: Ann[1]→Ann[0]")
     void moveOneDownToStart() {
-        TestdataListValueWithShadowHistory a = new TestdataListValueWithShadowHistory("A");
-        TestdataListValueWithShadowHistory b = new TestdataListValueWithShadowHistory("B");
-        TestdataListValueWithShadowHistory c = new TestdataListValueWithShadowHistory("C");
-        TestdataListEntityWithShadowHistory ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
+        var a = new TestdataListValueWithShadowHistory("A");
+        var b = new TestdataListValueWithShadowHistory("B");
+        var c = new TestdataListValueWithShadowHistory("C");
+        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
 
         scoreDirector.setWorkingSolution(buildSolution(ann));
 
@@ -468,12 +465,12 @@ class ListVariableListenerTest {
     @Test
     @DisplayName("S1: Ann[1]↔Ann[3]")
     void swapElementsSameEntity() {
-        TestdataListValueWithShadowHistory a = new TestdataListValueWithShadowHistory("A");
-        TestdataListValueWithShadowHistory b = new TestdataListValueWithShadowHistory("B");
-        TestdataListValueWithShadowHistory c = new TestdataListValueWithShadowHistory("C");
-        TestdataListValueWithShadowHistory d = new TestdataListValueWithShadowHistory("D");
-        TestdataListValueWithShadowHistory e = new TestdataListValueWithShadowHistory("E");
-        TestdataListEntityWithShadowHistory ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e);
+        var a = new TestdataListValueWithShadowHistory("A");
+        var b = new TestdataListValueWithShadowHistory("B");
+        var c = new TestdataListValueWithShadowHistory("C");
+        var d = new TestdataListValueWithShadowHistory("D");
+        var e = new TestdataListValueWithShadowHistory("E");
+        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e);
 
         scoreDirector.setWorkingSolution(buildSolution(ann));
 
@@ -509,13 +506,13 @@ class ListVariableListenerTest {
     @Test
     @DisplayName("S2: Ann[0]↔Bob[1]")
     void swapElementsAnotherEntityChangeIndex() {
-        TestdataListValueWithShadowHistory a = new TestdataListValueWithShadowHistory("A");
-        TestdataListValueWithShadowHistory b = new TestdataListValueWithShadowHistory("B");
-        TestdataListValueWithShadowHistory c = new TestdataListValueWithShadowHistory("C");
-        TestdataListValueWithShadowHistory x = new TestdataListValueWithShadowHistory("X");
-        TestdataListValueWithShadowHistory y = new TestdataListValueWithShadowHistory("Y");
-        TestdataListEntityWithShadowHistory ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
-        TestdataListEntityWithShadowHistory bob = TestdataListEntityWithShadowHistory.createWithValues("Bob", x, y);
+        var a = new TestdataListValueWithShadowHistory("A");
+        var b = new TestdataListValueWithShadowHistory("B");
+        var c = new TestdataListValueWithShadowHistory("C");
+        var x = new TestdataListValueWithShadowHistory("X");
+        var y = new TestdataListValueWithShadowHistory("Y");
+        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
+        var bob = TestdataListEntityWithShadowHistory.createWithValues("Bob", x, y);
 
         scoreDirector.setWorkingSolution(buildSolution(ann, bob));
 
@@ -552,13 +549,13 @@ class ListVariableListenerTest {
     @Test
     @DisplayName("S3: Ann[1]↔Bob[1]")
     void swapElementsAnotherEntitySameIndex() {
-        TestdataListValueWithShadowHistory a = new TestdataListValueWithShadowHistory("A");
-        TestdataListValueWithShadowHistory b = new TestdataListValueWithShadowHistory("B");
-        TestdataListValueWithShadowHistory c = new TestdataListValueWithShadowHistory("C");
-        TestdataListValueWithShadowHistory x = new TestdataListValueWithShadowHistory("X");
-        TestdataListValueWithShadowHistory y = new TestdataListValueWithShadowHistory("Y");
-        TestdataListEntityWithShadowHistory ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
-        TestdataListEntityWithShadowHistory bob = TestdataListEntityWithShadowHistory.createWithValues("Bob", x, y);
+        var a = new TestdataListValueWithShadowHistory("A");
+        var b = new TestdataListValueWithShadowHistory("B");
+        var c = new TestdataListValueWithShadowHistory("C");
+        var x = new TestdataListValueWithShadowHistory("X");
+        var y = new TestdataListValueWithShadowHistory("Y");
+        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
+        var bob = TestdataListEntityWithShadowHistory.createWithValues("Bob", x, y);
 
         scoreDirector.setWorkingSolution(buildSolution(ann, bob));
 
@@ -600,11 +597,11 @@ class ListVariableListenerTest {
     @Test
     @DisplayName("S4: Ann[1]↔Ann[2]")
     void swapNeighbors() {
-        TestdataListValueWithShadowHistory a = new TestdataListValueWithShadowHistory("A");
-        TestdataListValueWithShadowHistory b = new TestdataListValueWithShadowHistory("B");
-        TestdataListValueWithShadowHistory c = new TestdataListValueWithShadowHistory("C");
-        TestdataListValueWithShadowHistory d = new TestdataListValueWithShadowHistory("D");
-        TestdataListEntityWithShadowHistory ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d);
+        var a = new TestdataListValueWithShadowHistory("A");
+        var b = new TestdataListValueWithShadowHistory("B");
+        var c = new TestdataListValueWithShadowHistory("C");
+        var d = new TestdataListValueWithShadowHistory("D");
+        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d);
 
         scoreDirector.setWorkingSolution(buildSolution(ann));
 
@@ -636,12 +633,12 @@ class ListVariableListenerTest {
     @Test
     @DisplayName("subC1: Ann[1..3]→Ann[3]")
     void moveSubListToHigherIndexSameEntity() {
-        TestdataListValueWithShadowHistory a = new TestdataListValueWithShadowHistory("A");
-        TestdataListValueWithShadowHistory b = new TestdataListValueWithShadowHistory("B");
-        TestdataListValueWithShadowHistory c = new TestdataListValueWithShadowHistory("C");
-        TestdataListValueWithShadowHistory d = new TestdataListValueWithShadowHistory("D");
-        TestdataListValueWithShadowHistory e = new TestdataListValueWithShadowHistory("E");
-        TestdataListEntityWithShadowHistory ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e);
+        var a = new TestdataListValueWithShadowHistory("A");
+        var b = new TestdataListValueWithShadowHistory("B");
+        var c = new TestdataListValueWithShadowHistory("C");
+        var d = new TestdataListValueWithShadowHistory("D");
+        var e = new TestdataListValueWithShadowHistory("E");
+        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e);
 
         scoreDirector.setWorkingSolution(buildSolution(ann));
 
@@ -677,12 +674,12 @@ class ListVariableListenerTest {
     @Test
     @DisplayName("subC2: Ann[1..4]→Ann[0]")
     void moveSubListToLowerIndexSameEntity() {
-        TestdataListValueWithShadowHistory a = new TestdataListValueWithShadowHistory("A");
-        TestdataListValueWithShadowHistory b = new TestdataListValueWithShadowHistory("B");
-        TestdataListValueWithShadowHistory c = new TestdataListValueWithShadowHistory("C");
-        TestdataListValueWithShadowHistory d = new TestdataListValueWithShadowHistory("D");
-        TestdataListValueWithShadowHistory e = new TestdataListValueWithShadowHistory("E");
-        TestdataListEntityWithShadowHistory ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e);
+        var a = new TestdataListValueWithShadowHistory("A");
+        var b = new TestdataListValueWithShadowHistory("B");
+        var c = new TestdataListValueWithShadowHistory("C");
+        var d = new TestdataListValueWithShadowHistory("D");
+        var e = new TestdataListValueWithShadowHistory("E");
+        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e);
 
         scoreDirector.setWorkingSolution(buildSolution(ann));
 
@@ -718,16 +715,16 @@ class ListVariableListenerTest {
     @Test
     @DisplayName("subC3: Ann[1..4]→Bob[2]")
     void moveSubListToAnotherEntity() {
-        TestdataListValueWithShadowHistory a = new TestdataListValueWithShadowHistory("A");
-        TestdataListValueWithShadowHistory b = new TestdataListValueWithShadowHistory("B");
-        TestdataListValueWithShadowHistory c = new TestdataListValueWithShadowHistory("C");
-        TestdataListValueWithShadowHistory d = new TestdataListValueWithShadowHistory("D");
-        TestdataListValueWithShadowHistory e = new TestdataListValueWithShadowHistory("E");
-        TestdataListValueWithShadowHistory x = new TestdataListValueWithShadowHistory("X");
-        TestdataListValueWithShadowHistory y = new TestdataListValueWithShadowHistory("Y");
-        TestdataListValueWithShadowHistory z = new TestdataListValueWithShadowHistory("Z");
-        TestdataListEntityWithShadowHistory ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e);
-        TestdataListEntityWithShadowHistory bob = TestdataListEntityWithShadowHistory.createWithValues("Bob", x, y, z);
+        var a = new TestdataListValueWithShadowHistory("A");
+        var b = new TestdataListValueWithShadowHistory("B");
+        var c = new TestdataListValueWithShadowHistory("C");
+        var d = new TestdataListValueWithShadowHistory("D");
+        var e = new TestdataListValueWithShadowHistory("E");
+        var x = new TestdataListValueWithShadowHistory("X");
+        var y = new TestdataListValueWithShadowHistory("Y");
+        var z = new TestdataListValueWithShadowHistory("Z");
+        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e);
+        var bob = TestdataListEntityWithShadowHistory.createWithValues("Bob", x, y, z);
 
         scoreDirector.setWorkingSolution(buildSolution(ann, bob));
 
@@ -776,12 +773,12 @@ class ListVariableListenerTest {
     @Test
     @DisplayName("subC4: Ann[1..3]→Bob[1]")
     void moveTailSubList() {
-        TestdataListValueWithShadowHistory a = new TestdataListValueWithShadowHistory("A");
-        TestdataListValueWithShadowHistory b = new TestdataListValueWithShadowHistory("B");
-        TestdataListValueWithShadowHistory c = new TestdataListValueWithShadowHistory("C");
-        TestdataListValueWithShadowHistory x = new TestdataListValueWithShadowHistory("X");
-        TestdataListEntityWithShadowHistory ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
-        TestdataListEntityWithShadowHistory bob = TestdataListEntityWithShadowHistory.createWithValues("Bob", x);
+        var a = new TestdataListValueWithShadowHistory("A");
+        var b = new TestdataListValueWithShadowHistory("B");
+        var c = new TestdataListValueWithShadowHistory("C");
+        var x = new TestdataListValueWithShadowHistory("X");
+        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
+        var bob = TestdataListEntityWithShadowHistory.createWithValues("Bob", x);
 
         scoreDirector.setWorkingSolution(buildSolution(ann, bob));
 
@@ -812,11 +809,11 @@ class ListVariableListenerTest {
     @Test
     @DisplayName("subC5: Ann[0..3]→Bob[0]")
     void moveWholeListReversing() {
-        TestdataListValueWithShadowHistory a = new TestdataListValueWithShadowHistory("A");
-        TestdataListValueWithShadowHistory b = new TestdataListValueWithShadowHistory("B");
-        TestdataListValueWithShadowHistory c = new TestdataListValueWithShadowHistory("C");
-        TestdataListEntityWithShadowHistory ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
-        TestdataListEntityWithShadowHistory bob = TestdataListEntityWithShadowHistory.createWithValues("Bob");
+        var a = new TestdataListValueWithShadowHistory("A");
+        var b = new TestdataListValueWithShadowHistory("B");
+        var c = new TestdataListValueWithShadowHistory("C");
+        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c);
+        var bob = TestdataListEntityWithShadowHistory.createWithValues("Bob");
 
         scoreDirector.setWorkingSolution(buildSolution(ann, bob));
 
@@ -845,15 +842,15 @@ class ListVariableListenerTest {
     @Test
     @DisplayName("subS1: Ann[0..2]↔Ann[4..7]")
     void swapSubListsSameEntity() {
-        TestdataListValueWithShadowHistory a = new TestdataListValueWithShadowHistory("A");
-        TestdataListValueWithShadowHistory b = new TestdataListValueWithShadowHistory("B");
-        TestdataListValueWithShadowHistory c = new TestdataListValueWithShadowHistory("C");
-        TestdataListValueWithShadowHistory d = new TestdataListValueWithShadowHistory("D");
-        TestdataListValueWithShadowHistory e = new TestdataListValueWithShadowHistory("E");
-        TestdataListValueWithShadowHistory f = new TestdataListValueWithShadowHistory("F");
-        TestdataListValueWithShadowHistory g = new TestdataListValueWithShadowHistory("G");
-        TestdataListValueWithShadowHistory h = new TestdataListValueWithShadowHistory("H");
-        TestdataListEntityWithShadowHistory ann =
+        var a = new TestdataListValueWithShadowHistory("A");
+        var b = new TestdataListValueWithShadowHistory("B");
+        var c = new TestdataListValueWithShadowHistory("C");
+        var d = new TestdataListValueWithShadowHistory("D");
+        var e = new TestdataListValueWithShadowHistory("E");
+        var f = new TestdataListValueWithShadowHistory("F");
+        var g = new TestdataListValueWithShadowHistory("G");
+        var h = new TestdataListValueWithShadowHistory("H");
+        var ann =
                 TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e, f, g, h);
 
         scoreDirector.setWorkingSolution(buildSolution(ann));
@@ -902,15 +899,15 @@ class ListVariableListenerTest {
     @Test
     @DisplayName("subS2: Ann[0..2]↔Ann[4..6]")
     void swapSubListsSameSizeSameEntity() {
-        TestdataListValueWithShadowHistory a = new TestdataListValueWithShadowHistory("A");
-        TestdataListValueWithShadowHistory b = new TestdataListValueWithShadowHistory("B");
-        TestdataListValueWithShadowHistory c = new TestdataListValueWithShadowHistory("C");
-        TestdataListValueWithShadowHistory d = new TestdataListValueWithShadowHistory("D");
-        TestdataListValueWithShadowHistory e = new TestdataListValueWithShadowHistory("E");
-        TestdataListValueWithShadowHistory f = new TestdataListValueWithShadowHistory("F");
-        TestdataListValueWithShadowHistory g = new TestdataListValueWithShadowHistory("G");
-        TestdataListValueWithShadowHistory h = new TestdataListValueWithShadowHistory("H");
-        TestdataListEntityWithShadowHistory ann =
+        var a = new TestdataListValueWithShadowHistory("A");
+        var b = new TestdataListValueWithShadowHistory("B");
+        var c = new TestdataListValueWithShadowHistory("C");
+        var d = new TestdataListValueWithShadowHistory("D");
+        var e = new TestdataListValueWithShadowHistory("E");
+        var f = new TestdataListValueWithShadowHistory("F");
+        var g = new TestdataListValueWithShadowHistory("G");
+        var h = new TestdataListValueWithShadowHistory("H");
+        var ann =
                 TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e, f, g, h);
 
         scoreDirector.setWorkingSolution(buildSolution(ann));
@@ -959,12 +956,12 @@ class ListVariableListenerTest {
     @Test
     @DisplayName("subSR1: Ann[3..5]↔Ann[0..2]")
     void swapSubListsSameEntityReversing() {
-        TestdataListValueWithShadowHistory a = new TestdataListValueWithShadowHistory("A");
-        TestdataListValueWithShadowHistory b = new TestdataListValueWithShadowHistory("B");
-        TestdataListValueWithShadowHistory c = new TestdataListValueWithShadowHistory("C");
-        TestdataListValueWithShadowHistory d = new TestdataListValueWithShadowHistory("D");
-        TestdataListValueWithShadowHistory e = new TestdataListValueWithShadowHistory("E");
-        TestdataListEntityWithShadowHistory ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e);
+        var a = new TestdataListValueWithShadowHistory("A");
+        var b = new TestdataListValueWithShadowHistory("B");
+        var c = new TestdataListValueWithShadowHistory("C");
+        var d = new TestdataListValueWithShadowHistory("D");
+        var e = new TestdataListValueWithShadowHistory("E");
+        var ann = TestdataListEntityWithShadowHistory.createWithValues("Ann", a, b, c, d, e);
 
         scoreDirector.setWorkingSolution(buildSolution(ann));
 

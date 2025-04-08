@@ -13,6 +13,7 @@ import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -43,22 +44,11 @@ public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     @Override
-    public Score_ calculateScore() {
+    public InnerScore<Score_> calculateScore() {
         variableListenerSupport.assertNotificationQueuesAreEmpty();
-        Score_ score = easyScoreCalculator.calculateScore(workingSolution);
-        if (!score.isSolutionInitialized()) {
-            throw new IllegalStateException("""
-                    The score (%s)'s initScore (%d) should be 0.
-                    Maybe the score calculator (%s) is calculating the initScore too, \
-                    although it's the score director's responsibility."""
-                    .formatted(this, score.initScore(), easyScoreCalculator.getClass()));
-        }
-        int workingInitScore = getWorkingInitScore();
-        if (workingInitScore != 0) {
-            score = score.withInitScore(workingInitScore);
-        }
+        var score = easyScoreCalculator.calculateScore(workingSolution);
         setCalculatedScore(score);
-        return score;
+        return new InnerScore<>(score, -getWorkingInitScore());
     }
 
     @Override

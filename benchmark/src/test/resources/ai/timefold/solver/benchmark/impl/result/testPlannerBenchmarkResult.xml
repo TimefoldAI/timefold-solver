@@ -33,10 +33,12 @@
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
         <succeeded>true</succeeded>
         <score class="ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-37858soft</score>
+        <initialized>true</initialized>
         <timeMillisSpent>276</timeMillisSpent>
         <scoreCalculationCount>1632</scoreCalculationCount>
         <moveEvaluationCount>500</moveEvaluationCount>
       </subSingleBenchmarkResult>
+      <allScoresInitialized>true</allScoresInitialized>
       <timeMillisSpent>-1</timeMillisSpent>
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>
@@ -46,10 +48,12 @@
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
         <succeeded>true</succeeded>
         <score class="ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-49506soft</score>
+        <initialized>true</initialized>
         <timeMillisSpent>60</timeMillisSpent>
         <scoreCalculationCount>5832</scoreCalculationCount>
         <moveEvaluationCount>1000</moveEvaluationCount>
       </subSingleBenchmarkResult>
+      <allScoresInitialized>true</allScoresInitialized>
       <timeMillisSpent>-1</timeMillisSpent>
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>
@@ -77,10 +81,12 @@
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
         <succeeded>true</succeeded>
         <score class="ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-22838soft</score>
+        <initialized>true</initialized>
         <timeMillisSpent>251</timeMillisSpent>
         <scoreCalculationCount>1668</scoreCalculationCount>
         <moveEvaluationCount>1000</moveEvaluationCount>
       </subSingleBenchmarkResult>
+      <allScoresInitialized>true</allScoresInitialized>
       <timeMillisSpent>-1</timeMillisSpent>
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>
@@ -90,10 +96,12 @@
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
         <succeeded>true</succeeded>
         <score class="ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-30857soft</score>
+        <initialized>true</initialized>
         <timeMillisSpent>61</timeMillisSpent>
         <scoreCalculationCount>5530</scoreCalculationCount>
         <moveEvaluationCount>2000</moveEvaluationCount>
       </subSingleBenchmarkResult>
+      <allScoresInitialized>true</allScoresInitialized>
       <timeMillisSpent>-1</timeMillisSpent>
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>
@@ -139,10 +147,12 @@
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
         <succeeded>true</succeeded>
         <score class="ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-21607soft</score>
+        <initialized>true</initialized>
         <timeMillisSpent>5000</timeMillisSpent>
         <scoreCalculationCount>777269</scoreCalculationCount>
         <moveEvaluationCount>700000</moveEvaluationCount>
       </subSingleBenchmarkResult>
+      <allScoresInitialized>true</allScoresInitialized>
       <timeMillisSpent>-1</timeMillisSpent>
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>
@@ -152,10 +162,12 @@
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
         <succeeded>true</succeeded>
         <score class="ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-25288soft</score>
+        <initialized>true</initialized>
         <timeMillisSpent>5000</timeMillisSpent>
         <scoreCalculationCount>856937</scoreCalculationCount>
         <moveEvaluationCount>500000</moveEvaluationCount>
       </subSingleBenchmarkResult>
+      <allScoresInitialized>true</allScoresInitialized>
       <timeMillisSpent>-1</timeMillisSpent>
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>
@@ -201,10 +213,12 @@
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
         <succeeded>true</succeeded>
         <score class="ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-21252soft</score>
+        <initialized>true</initialized>
         <timeMillisSpent>5000</timeMillisSpent>
         <scoreCalculationCount>761968</scoreCalculationCount>
         <moveEvaluationCount>361000</moveEvaluationCount>
       </subSingleBenchmarkResult>
+      <allScoresInitialized>true</allScoresInitialized>
       <timeMillisSpent>-1</timeMillisSpent>
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>
@@ -214,10 +228,12 @@
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
         <succeeded>true</succeeded>
         <score class="ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-25645soft</score>
+        <initialized>true</initialized>
         <timeMillisSpent>5000</timeMillisSpent>
         <scoreCalculationCount>858383</scoreCalculationCount>
         <moveEvaluationCount>5580</moveEvaluationCount>
       </subSingleBenchmarkResult>
+      <allScoresInitialized>true</allScoresInitialized>
       <timeMillisSpent>-1</timeMillisSpent>
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>
@@ -285,10 +301,12 @@
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
         <succeeded>true</succeeded>
         <score class="ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-21929soft</score>
+        <initialized>true</initialized>
         <timeMillisSpent>5000</timeMillisSpent>
         <scoreCalculationCount>993153</scoreCalculationCount>
         <moveEvaluationCount>593000</moveEvaluationCount>
       </subSingleBenchmarkResult>
+      <allScoresInitialized>true</allScoresInitialized>
       <timeMillisSpent>-1</timeMillisSpent>
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>
@@ -298,10 +316,12 @@
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
         <succeeded>true</succeeded>
         <score class="ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-25258soft</score>
+        <initialized>true</initialized>
         <timeMillisSpent>5000</timeMillisSpent>
         <scoreCalculationCount>850727</scoreCalculationCount>
         <moveEvaluationCount>550000</moveEvaluationCount>
       </subSingleBenchmarkResult>
+      <allScoresInitialized>true</allScoresInitialized>
       <timeMillisSpent>-1</timeMillisSpent>
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>
@@ -369,10 +389,12 @@
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
         <succeeded>true</succeeded>
         <score class="ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-21148soft</score>
+        <initialized>true</initialized>
         <timeMillisSpent>5000</timeMillisSpent>
         <scoreCalculationCount>873469</scoreCalculationCount>
         <moveEvaluationCount>573000</moveEvaluationCount>
       </subSingleBenchmarkResult>
+      <allScoresInitialized>true</allScoresInitialized>
       <timeMillisSpent>-1</timeMillisSpent>
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>
@@ -382,10 +404,12 @@
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
         <succeeded>true</succeeded>
         <score class="ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore">0hard/-23083soft</score>
+        <initialized>true</initialized>
         <timeMillisSpent>5000</timeMillisSpent>
         <scoreCalculationCount>726321</scoreCalculationCount>
         <moveEvaluationCount>526000</moveEvaluationCount>
       </subSingleBenchmarkResult>
+      <allScoresInitialized>true</allScoresInitialized>
       <timeMillisSpent>-1</timeMillisSpent>
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>

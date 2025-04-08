@@ -20,7 +20,7 @@ class HardSoftBigDecimalScoreInlinerTest
     @Test
     void defaultScore() {
         var scoreInliner = buildScoreInliner(Collections.emptyMap(), constraintMatchPolicy);
-        assertThat(scoreInliner.extractScore(0)).isEqualTo(HardSoftBigDecimalScore.ZERO);
+        assertThat(scoreInliner.extractScore()).isEqualTo(HardSoftBigDecimalScore.ZERO);
     }
 
     @Test
@@ -30,19 +30,19 @@ class HardSoftBigDecimalScoreInlinerTest
         var scoreInliner = (AbstractScoreInliner<HardSoftBigDecimalScore>) impacter.getContext().parent;
 
         var undo1 = impacter.impactScore(BigDecimal.ONE, ConstraintMatchSupplier.empty());
-        assertThat(scoreInliner.extractScore(0))
+        assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardSoftBigDecimalScore.of(BigDecimal.valueOf(90), BigDecimal.ZERO));
 
         var undo2 = impacter.impactScore(BigDecimal.valueOf(2), ConstraintMatchSupplier.empty());
-        assertThat(scoreInliner.extractScore(0))
+        assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardSoftBigDecimalScore.of(BigDecimal.valueOf(270), BigDecimal.ZERO));
 
         undo2.run();
-        assertThat(scoreInliner.extractScore(0))
+        assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardSoftBigDecimalScore.of(BigDecimal.valueOf(90), BigDecimal.ZERO));
 
         undo1.run();
-        assertThat(scoreInliner.extractScore(0))
+        assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardSoftBigDecimalScore.of(BigDecimal.valueOf(0), BigDecimal.ZERO));
     }
 
@@ -53,19 +53,19 @@ class HardSoftBigDecimalScoreInlinerTest
         var scoreInliner = (AbstractScoreInliner<HardSoftBigDecimalScore>) impacter.getContext().parent;
 
         var undo1 = impacter.impactScore(BigDecimal.ONE, ConstraintMatchSupplier.empty());
-        assertThat(scoreInliner.extractScore(0))
+        assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardSoftBigDecimalScore.of(BigDecimal.ZERO, BigDecimal.valueOf(90)));
 
         var undo2 = impacter.impactScore(BigDecimal.valueOf(2), ConstraintMatchSupplier.empty());
-        assertThat(scoreInliner.extractScore(0))
+        assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardSoftBigDecimalScore.of(BigDecimal.ZERO, BigDecimal.valueOf(270)));
 
         undo2.run();
-        assertThat(scoreInliner.extractScore(0))
+        assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardSoftBigDecimalScore.of(BigDecimal.ZERO, BigDecimal.valueOf(90)));
 
         undo1.run();
-        assertThat(scoreInliner.extractScore(0))
+        assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardSoftBigDecimalScore.of(BigDecimal.ZERO, BigDecimal.ZERO));
     }
 
@@ -76,19 +76,19 @@ class HardSoftBigDecimalScoreInlinerTest
         var scoreInliner = (AbstractScoreInliner<HardSoftBigDecimalScore>) impacter.getContext().parent;
 
         var undo1 = impacter.impactScore(BigDecimal.TEN, ConstraintMatchSupplier.empty());
-        assertThat(scoreInliner.extractScore(0))
+        assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardSoftBigDecimalScore.of(BigDecimal.valueOf(100), BigDecimal.valueOf(1000)));
 
         var undo2 = impacter.impactScore(BigDecimal.valueOf(20), ConstraintMatchSupplier.empty());
-        assertThat(scoreInliner.extractScore(0))
+        assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardSoftBigDecimalScore.of(BigDecimal.valueOf(300), BigDecimal.valueOf(3000)));
 
         undo2.run();
-        assertThat(scoreInliner.extractScore(0))
+        assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardSoftBigDecimalScore.of(BigDecimal.valueOf(100), BigDecimal.valueOf(1000)));
 
         undo1.run();
-        assertThat(scoreInliner.extractScore(0))
+        assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardSoftBigDecimalScore.of(BigDecimal.ZERO, BigDecimal.ZERO));
     }
 

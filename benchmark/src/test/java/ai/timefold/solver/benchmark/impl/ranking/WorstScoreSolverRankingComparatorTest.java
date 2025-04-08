@@ -84,34 +84,27 @@ class WorstScoreSolverRankingComparatorTest extends AbstractSolverRankingCompara
 
     @Test
     void uninitializedSingleBenchmarks() {
-        SingleBenchmarkResult a0 = addSingleBenchmark(a, aSingleBenchmarkResultList, -1000, -30, -1000);
+        var a0 = addSingleBenchmark(a, aSingleBenchmarkResultList, -1000, -30, -1000);
         addSingleBenchmark(a, aSingleBenchmarkResultList, -400, -30, -1000);
         addSingleBenchmark(a, aSingleBenchmarkResultList, -30, -30, -1000);
         a.setSingleBenchmarkResultList(aSingleBenchmarkResultList);
         a.accumulateResults(benchmarkReport);
-        SingleBenchmarkResult b0 = addSingleBenchmark(b, bSingleBenchmarkResultList, -1000, -30, -1000);
-        SingleBenchmarkResult b1 = addSingleBenchmark(b, bSingleBenchmarkResultList, -400, -30, -1000);
+        var b0 = addSingleBenchmark(b, bSingleBenchmarkResultList, -1000, -30, -1000);
+        var b1 = addSingleBenchmark(b, bSingleBenchmarkResultList, -400, -30, -1000);
         addSingleBenchmark(b, bSingleBenchmarkResultList, -30, -30, -1000);
         b.setSingleBenchmarkResultList(bSingleBenchmarkResultList);
         b.accumulateResults(benchmarkReport);
         assertCompareToEquals(comparator, a, b);
 
-        a0.setAverageAndTotalScoreForTesting(SimpleScore.ofUninitialized(-100, -1000));
-        b0.setAverageAndTotalScoreForTesting(SimpleScore.ofUninitialized(-100, -1000));
-        b1.setAverageAndTotalScoreForTesting(SimpleScore.ofUninitialized(-100, 400));
+        a0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000), false);
+        b0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000), false);
+        b1.setAverageAndTotalScoreForTesting(SimpleScore.of(400), false);
         a.accumulateResults(benchmarkReport);
         b.accumulateResults(benchmarkReport);
-        // B is worse on uninitialized variable count in the second worst score
         assertCompareToOrder(comparator, b, a);
 
-        a0.setAverageAndTotalScoreForTesting(SimpleScore.ofUninitialized(-101, -1000));
-        a.accumulateResults(benchmarkReport);
-        // uninitialized variable count in a better score is bigger in A
-        assertCompareToOrder(comparator, a, b);
-
-        // uninitialized variable counts are equal, A is worse on score
-        b0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000));
-        b1.setAverageAndTotalScoreForTesting(SimpleScore.ofUninitialized(-100, 400));
+        b0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000), true);
+        b1.setAverageAndTotalScoreForTesting(SimpleScore.of(400), false);
         b.accumulateResults(benchmarkReport);
         assertCompareToOrder(comparator, a, b);
     }

@@ -59,6 +59,28 @@ Every upgrade note indicates how likely your code will be affected by that chang
 The upgrade recipe often lists the changes as they apply to Java code.
 We kindly ask Kotlin and Python users to translate the changes accordingly.
 
+=== Upgrade from 1.21.0 to 1.22.0
+
+.icon:info-circle[role=yellow] Init score no longer available
+[%collapsible%open]
+====
+It is no longer possible to create a score which would have any other `init` value than zero.
+The `Score.initScore()` method now returns zero in all cases.
+The `Score.withInitScore(...)` method now returns the unchanged score,
+making it impossible to set the init score in any way.
+All such methods were deprecated and will be removed in a future major version of Timefold Solver.
+Additionally, the `Score` classes no longer have the `initScore` field.
+
+Although this is technically a backwards-incompatible change,
+it only affects a small minority of users who do not allow nullable planning variables.
+For everyone else, the value had always been zero.
+
+Users which need to understand when their solutions have been initialized
+can refer to the initialization event on the `SolverManager`,
+or to `BestSolutionChangedEvent.isNewBestSolutionInitialized()` method.
+====
+
+
 === Upgrade from 1.19.0 to 1.20.0
 
 .icon:info-circle[role=yellow] New values for `EnvironmentMode`

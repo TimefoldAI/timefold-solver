@@ -366,6 +366,21 @@ During Construction Heuristics, those variables are likely to be `null` anyway.
 For example, a ``Lesson``'s `timeslot` variable should not be used.
 
 
+[#planningEntityInitialization]
+=== When is a planning entity considered initialized
+
+A planning entity is considered initialized in either of the following cases:
+
+- No <<planningVariable,genuine planning variable>> is set to `null`.
+- Genuine planning variable is set to `null`, but it <<planningVariableAllowingUnassigned,allows unassigned values>>.
+- No possible value for a list variable is left unassigned to any one of the genuine entities, unless it <<planningListVariableAllowingUnassigned,allows unassigned values>>.
+
+NOTE: It follows that, if unassigned values are allowed, a planning entity is always considered initialized.
+
+xref:optimization-algorithms/local-search.adoc#localSearchOverview[Local Search] will refuse to start when it encounters an uninitialized entity in your planning solution.
+Run xref:optimization-algorithms/construction-heuristics.adoc#constructionHeuristicsOverview[Construction Heuristics] before Local Search to get a good starting solution.
+
+
 [#planningVariable]
 == Planning variable (genuine)
 
@@ -461,9 +476,11 @@ see xref:#planningListVariable[planning list variable] and xref:#chainedPlanning
 [#planningVariableAllowingUnassigned]
 === Allowing unassigned values
 
-By default, an initialized planning variable cannot be ``null``, so an initialized solution will never use `null` for any of its planning variables.
+By default, an initialized planning variable cannot be ``null``,
+so an initialized solution will never use `null` for any of its planning variables.
 In an over-constrained use case, this can be counterproductive.
-For example: in task assignment with too many tasks for the workforce, we would rather leave low priority tasks unassigned instead of assigning them to an overloaded worker.
+For example: in task assignment with too many tasks for the workforce,
+we would rather leave low priority tasks unassigned instead of assigning them to an overloaded worker.
 
 To allow an initialized planning variable to be ``null``, set `allowsUnassigned` to ``true``:
 
@@ -539,15 +556,6 @@ One way to deal with this is to filter the entity selector of the placer in the 
 </solver>
 ----
 
-[#whenIsAPlanningVariableInitialized]
-=== When is a planning variable considered initialized?
-
-A planning variable is considered initialized if its value is not `null` or if the variable is ``allowsUnassigned``.
-So a variable which allows unassigned values is always considered initialized.
-
-A planning entity is initialized if all of its planning variables are initialized.
-
-A solution is initialized if all of its planning entities are initialized.
 
 [#shadowVariable]
 == Planning variable (shadow)
@@ -1881,11 +1889,8 @@ class Customer:
 
 Use `@PreviousElementShadowVariable` or `@NextElementShadowVariable` to get a reference to an element that is assigned to the same entity's list variable one index lower (previous element) or one index higher (next element).
 
-[NOTE]
-====
-The previous and next element shadow variables may be `null` even in a fully initialized solution.
+NOTE: The previous and next element shadow variables may be `null` even in a fully initialized solution.
 The first element's previous shadow variable is `null` and the last element's next shadow variable is `null`.
-====
 
 The planning entity side has a genuine list variable:
 

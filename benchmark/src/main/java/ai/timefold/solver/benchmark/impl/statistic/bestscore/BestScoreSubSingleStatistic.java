@@ -31,7 +31,8 @@ public class BestScoreSubSingleStatistic<Solution_>
     public void open(StatisticRegistry<Solution_> registry, Tags runTag) {
         registry.addListener(SolverMetric.BEST_SCORE,
                 timestamp -> registry.extractScoreFromMeters(SolverMetric.BEST_SCORE, runTag,
-                        score -> pointList.add(new BestScoreStatisticPoint(timestamp, score))));
+                        score -> pointList
+                                .add(new BestScoreStatisticPoint(timestamp, score, subSingleBenchmarkResult.isInitialized()))));
     }
 
     // ************************************************************************
@@ -40,14 +41,15 @@ public class BestScoreSubSingleStatistic<Solution_>
 
     @Override
     protected String getCsvHeader() {
-        return StatisticPoint.buildCsvLine("timeMillisSpent", "score");
+        return StatisticPoint.buildCsvLine("timeMillisSpent", "score", "initialized");
     }
 
     @Override
     protected BestScoreStatisticPoint createPointFromCsvLine(ScoreDefinition<?> scoreDefinition,
             List<String> csvLine) {
         return new BestScoreStatisticPoint(Long.parseLong(csvLine.get(0)),
-                scoreDefinition.parseScore(csvLine.get(1)));
+                scoreDefinition.parseScore(csvLine.get(1)),
+                Boolean.parseBoolean(csvLine.get(2)));
     }
 
 }

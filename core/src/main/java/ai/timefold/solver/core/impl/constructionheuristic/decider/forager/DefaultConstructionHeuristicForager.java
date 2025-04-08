@@ -47,33 +47,34 @@ public class DefaultConstructionHeuristicForager<Solution_> extends AbstractCons
         }
     }
 
-    protected void checkPickEarly(ConstructionHeuristicMoveScope<Solution_> moveScope) {
+    protected <Score_ extends Score<Score_>> void checkPickEarly(ConstructionHeuristicMoveScope<Solution_> moveScope) {
         switch (pickEarlyType) {
-            case NEVER:
-                break;
-            case FIRST_NON_DETERIORATING_SCORE:
-                Score lastStepScore = moveScope.getStepScope().getPhaseScope()
-                        .getLastCompletedStepScope().getScore();
-                if (moveScope.getScore().withInitScore(0).compareTo(lastStepScore.withInitScore(0)) >= 0) {
+            case NEVER -> {
+            }
+            case FIRST_NON_DETERIORATING_SCORE -> {
+                var lastStepScore = moveScope.getStepScope().getPhaseScope()
+                        .getLastCompletedStepScope().<Score_> getScore().raw();
+                var moveScore = moveScope.<Score_> getScore().raw();
+                if (moveScore.compareTo(lastStepScore) >= 0) {
                     earlyPickedMoveScope = moveScope;
                 }
-                break;
-            case FIRST_FEASIBLE_SCORE:
-                if (moveScope.getScore().withInitScore(0).isFeasible()) {
+            }
+            case FIRST_FEASIBLE_SCORE -> {
+                if (moveScope.getScore().raw().isFeasible()) {
                     earlyPickedMoveScope = moveScope;
                 }
-                break;
-            case FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD:
-                Score lastStepScore2 = moveScope.getStepScope().getPhaseScope()
-                        .getLastCompletedStepScope().getScore();
-                Score lastStepScoreDifference = moveScope.getScore().withInitScore(0)
-                        .subtract(lastStepScore2.withInitScore(0));
+            }
+            case FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD -> {
+                var lastStepScore = moveScope.getStepScope().getPhaseScope()
+                        .getLastCompletedStepScope().<Score_> getScore().raw();
+                var moveScore = moveScope.<Score_> getScore().raw();
+                var lastStepScoreDifference = moveScore.subtract(lastStepScore);
                 if (lastStepScoreDifference.isFeasible()) {
                     earlyPickedMoveScope = moveScope;
                 }
-                break;
-            default:
-                throw new IllegalStateException("The pickEarlyType (" + pickEarlyType + ") is not implemented.");
+            }
+            default ->
+                throw new IllegalStateException("The pickEarlyType (%s) is not implemented.".formatted(pickEarlyType));
         }
     }
 

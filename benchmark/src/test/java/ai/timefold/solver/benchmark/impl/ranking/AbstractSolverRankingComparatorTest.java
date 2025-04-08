@@ -14,9 +14,9 @@ public abstract class AbstractSolverRankingComparatorTest {
 
     protected <Solution_> ProblemBenchmarkResult<Solution_>
             addProblemBenchmark(List<SingleBenchmarkResult> singleBenchmarkResultList) {
-        ProblemBenchmarkResult<Solution_> problemBenchmarkResult = new ProblemBenchmarkResult<>(null);
+        var problemBenchmarkResult = new ProblemBenchmarkResult<Solution_>(null);
         problemBenchmarkResult.setSingleBenchmarkResultList(singleBenchmarkResultList);
-        for (SingleBenchmarkResult singleBenchmarkResult : singleBenchmarkResultList) {
+        for (var singleBenchmarkResult : singleBenchmarkResultList) {
             singleBenchmarkResult.setProblemBenchmarkResult(problemBenchmarkResult);
         }
         return problemBenchmarkResult;
@@ -43,9 +43,9 @@ public abstract class AbstractSolverRankingComparatorTest {
             SolverBenchmarkResult solverBenchmarkResult,
             List<SingleBenchmarkResult> singleBenchmarkResultList,
             Score_ score, Score_ bestScore, Score_ worstScore) {
-        SingleBenchmarkResult singleBenchmarkResult = new SingleBenchmarkResult(solverBenchmarkResult, null);
+        var singleBenchmarkResult = new SingleBenchmarkResult(solverBenchmarkResult, null);
         singleBenchmarkResult.setFailureCount(0);
-        singleBenchmarkResult.setAverageAndTotalScoreForTesting(score);
+        singleBenchmarkResult.setAverageAndTotalScoreForTesting(score, true);
         singleBenchmarkResult.setWinningScoreDifference(score.subtract(bestScore));
         singleBenchmarkResult.setWorstScoreDifferencePercentage(
                 ScoreDifferencePercentage.calculateScoreDifferencePercentage(worstScore, score));

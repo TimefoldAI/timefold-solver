@@ -2338,8 +2338,7 @@ public abstract class AbstractTriConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(-2));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-2));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2358,8 +2357,7 @@ public abstract class AbstractTriConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleLongScore.of(-2));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-2));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2378,8 +2376,7 @@ public abstract class AbstractTriConstraintStreamTest
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-2)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-2)));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2434,8 +2431,7 @@ public abstract class AbstractTriConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(-4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-4));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2454,8 +2450,7 @@ public abstract class AbstractTriConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleLongScore.of(-4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-4));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2475,8 +2470,7 @@ public abstract class AbstractTriConstraintStreamTest
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-4)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-4)));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2492,8 +2486,7 @@ public abstract class AbstractTriConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(2));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(2));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2509,8 +2502,7 @@ public abstract class AbstractTriConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(4));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2529,8 +2521,7 @@ public abstract class AbstractTriConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleLongScore.of(4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(4));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2550,8 +2541,7 @@ public abstract class AbstractTriConstraintStreamTest
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(4)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(4)));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2567,8 +2557,7 @@ public abstract class AbstractTriConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(2));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(2));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2584,8 +2573,7 @@ public abstract class AbstractTriConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(4));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2604,8 +2592,7 @@ public abstract class AbstractTriConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleLongScore.of(4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(4));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2625,8 +2612,7 @@ public abstract class AbstractTriConstraintStreamTest
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(4)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(4)));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2642,8 +2628,7 @@ public abstract class AbstractTriConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(-4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-4));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2662,8 +2647,7 @@ public abstract class AbstractTriConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleLongScore.of(-4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-4));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2683,8 +2667,7 @@ public abstract class AbstractTriConstraintStreamTest
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-4)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-4)));
         assertDefaultJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2702,8 +2685,7 @@ public abstract class AbstractTriConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(-2));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-2));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2760,8 +2742,7 @@ public abstract class AbstractTriConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(-4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-4));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2782,8 +2763,7 @@ public abstract class AbstractTriConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleLongScore.of(-4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-4));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2805,8 +2785,7 @@ public abstract class AbstractTriConstraintStreamTest
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-4)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-4)));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2824,8 +2803,7 @@ public abstract class AbstractTriConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(2));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(2));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2843,8 +2821,7 @@ public abstract class AbstractTriConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(4));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2865,8 +2842,7 @@ public abstract class AbstractTriConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleLongScore.of(4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(4));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2888,8 +2864,7 @@ public abstract class AbstractTriConstraintStreamTest
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(4)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(4)));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2907,8 +2882,7 @@ public abstract class AbstractTriConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(2));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(2));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2926,8 +2900,7 @@ public abstract class AbstractTriConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(4));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2948,8 +2921,7 @@ public abstract class AbstractTriConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleLongScore.of(4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(4));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2971,8 +2943,7 @@ public abstract class AbstractTriConstraintStreamTest
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(4)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(4)));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -2990,8 +2961,7 @@ public abstract class AbstractTriConstraintStreamTest
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleScore.of(-4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleScore.of(-4));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -3012,8 +2982,7 @@ public abstract class AbstractTriConstraintStreamTest
                 });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleLongScore.of(-4));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleLongScore.of(-4));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 
@@ -3035,8 +3004,7 @@ public abstract class AbstractTriConstraintStreamTest
                         });
 
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.calculateScore();
-        assertThat(scoreDirector.calculateScore()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-4)));
+        assertThat(scoreDirector.calculateScore().raw()).isEqualTo(SimpleBigDecimalScore.of(BigDecimal.valueOf(-4)));
         assertCustomJustifications(scoreDirector, solution.getEntityList(), solution.getValueList());
     }
 

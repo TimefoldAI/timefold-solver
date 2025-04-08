@@ -45,7 +45,7 @@ public final class FromSolutionEntitySelector<Solution_>
      */
     @Override
     public SelectionCacheType getCacheType() {
-        SelectionCacheType intrinsicCacheType = SelectionCacheType.STEP;
+        var intrinsicCacheType = SelectionCacheType.STEP;
         return (intrinsicCacheType.compareTo(minimumCacheType) > 0)
                 ? intrinsicCacheType
                 : minimumCacheType;
@@ -71,7 +71,7 @@ public final class FromSolutionEntitySelector<Solution_>
     @Override
     public void stepStarted(AbstractStepScope<Solution_> stepScope) {
         super.stepStarted(stepScope);
-        InnerScoreDirector<Solution_, ?> scoreDirector = stepScope.getScoreDirector();
+        var scoreDirector = stepScope.getScoreDirector();
         if (scoreDirector.isWorkingEntityListDirty(cachedEntityListRevision)) {
             if (minimumCacheType.compareTo(SelectionCacheType.STEP) > 0) {
                 cachedEntityListIsDirty = true;
@@ -160,7 +160,7 @@ public final class FromSolutionEntitySelector<Solution_>
             return true;
         if (other == null || getClass() != other.getClass())
             return false;
-        FromSolutionEntitySelector<?> that = (FromSolutionEntitySelector<?>) other;
+        var that = (FromSolutionEntitySelector<?>) other;
         return randomSelection == that.randomSelection && Objects.equals(entityDescriptor, that.entityDescriptor)
                 && minimumCacheType == that.minimumCacheType;
     }

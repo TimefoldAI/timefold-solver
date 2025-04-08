@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import ai.timefold.solver.core.config.phase.NoChangePhaseConfig;
-import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
@@ -19,13 +18,13 @@ class NoChangePhaseTest {
 
     @Test
     void solve() {
-        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         solverConfig.setPhaseConfigList(Collections.singletonList(new NoChangePhaseConfig()));
 
-        TestdataSolution solution = new TestdataSolution("s1");
-        TestdataValue v1 = new TestdataValue("v1");
-        TestdataValue v2 = new TestdataValue("v2");
-        TestdataValue v3 = new TestdataValue("v3");
+        var solution = new TestdataSolution("s1");
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var v3 = new TestdataValue("v3");
         solution.setValueList(Arrays.asList(v1, v2, v3));
         solution.setEntityList(Arrays.asList(
                 new TestdataEntity("e1", null),
@@ -34,16 +33,15 @@ class NoChangePhaseTest {
 
         solution = PlannerTestUtils.solve(solverConfig, solution, false);
         assertThat(solution).isNotNull();
-        TestdataEntity solvedE1 = solution.getEntityList().get(0);
+        var solvedE1 = solution.getEntityList().get(0);
         assertCode("e1", solvedE1);
         assertThat(solvedE1.getValue()).isEqualTo(null);
-        TestdataEntity solvedE2 = solution.getEntityList().get(1);
+        var solvedE2 = solution.getEntityList().get(1);
         assertCode("e2", solvedE2);
         assertThat(solvedE2.getValue()).isEqualTo(v2);
-        TestdataEntity solvedE3 = solution.getEntityList().get(2);
+        var solvedE3 = solution.getEntityList().get(2);
         assertCode("e3", solvedE3);
         assertThat(solvedE3.getValue()).isEqualTo(v1);
-        assertThat(solution.getScore().initScore()).isEqualTo(-1);
     }
 
 }

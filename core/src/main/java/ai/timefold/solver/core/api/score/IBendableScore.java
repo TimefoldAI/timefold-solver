@@ -4,6 +4,8 @@ import java.io.Serializable;
 
 import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * Bendable score is a {@link Score} whose {@link #hardLevelsSize()} and {@link #softLevelsSize()}
  * are only known at runtime.
@@ -16,6 +18,7 @@ import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
  *
  * @param <Score_> the actual score type to allow addition, subtraction and other arithmetic
  */
+@NullMarked
 public interface IBendableScore<Score_ extends IBendableScore<Score_>>
         extends Score<Score_>, Serializable {
 

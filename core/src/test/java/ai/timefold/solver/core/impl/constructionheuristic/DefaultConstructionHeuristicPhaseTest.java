@@ -73,7 +73,6 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
         var solvedE3 = solution.getEntityList().get(2);
         assertCode("e3", solvedE3);
         assertThat(solvedE3.getValue()).isEqualTo(v1);
-        assertThat(solution.getScore().initScore()).isEqualTo(0);
     }
 
     @Test
@@ -338,7 +337,8 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
-        assertThat(solution.getScore().isSolutionInitialized()).isTrue();
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getValue() == null)).isEmpty();
     }
 
 }

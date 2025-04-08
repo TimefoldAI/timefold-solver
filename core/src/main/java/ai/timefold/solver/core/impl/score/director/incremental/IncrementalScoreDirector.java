@@ -21,6 +21,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescripto
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -76,23 +77,13 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public Score_ calculateScore() {
+    public InnerScore<Score_> calculateScore() {
         variableListenerSupport.assertNotificationQueuesAreEmpty();
-        Score_ score = Objects.requireNonNull(incrementalScoreCalculator.calculateScore(),
+        var score = Objects.requireNonNull(incrementalScoreCalculator.calculateScore(),
                 () -> "The incrementalScoreCalculator (%s) must return a non-null score in the method calculateScore()."
                         .formatted(incrementalScoreCalculator));
-        if (!score.isSolutionInitialized()) {
-            throw new IllegalStateException("The score (" + this + ")'s initScore (" + score.initScore()
-                    + ") should be 0.\n"
-                    + "Maybe the score calculator (" + incrementalScoreCalculator.getClass() + ") is calculating "
-                    + "the initScore too, although it's the score director's responsibility.");
-        }
-        int workingInitScore = getWorkingInitScore();
-        if (workingInitScore != 0) {
-            score = score.withInitScore(workingInitScore);
-        }
         setCalculatedScore(score);
-        return score;
+        return new InnerScore<>(score, -getWorkingInitScore());
     }
 
     @Override

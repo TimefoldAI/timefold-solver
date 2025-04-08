@@ -1,9 +1,6 @@
 package ai.timefold.solver.core.impl.solver.event;
 
-import java.util.Iterator;
-
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
 import ai.timefold.solver.core.api.solver.event.SolverEventListener;
@@ -23,12 +20,12 @@ public class SolverEventSupport<Solution_> extends AbstractEventSupport<SolverEv
     }
 
     public void fireBestSolutionChanged(SolverScope<Solution_> solverScope, Solution_ newBestSolution) {
-        final Iterator<SolverEventListener<Solution_>> it = getEventListeners().iterator();
-        long timeMillisSpent = solverScope.getBestSolutionTimeMillisSpent();
-        Score bestScore = solverScope.getBestScore();
+        var it = getEventListeners().iterator();
+        var timeMillisSpent = solverScope.getBestSolutionTimeMillisSpent();
+        var bestScore = solverScope.getBestScore();
         if (it.hasNext()) {
-            final BestSolutionChangedEvent<Solution_> event = new BestSolutionChangedEvent<>(solver,
-                    timeMillisSpent, newBestSolution, bestScore);
+            var event = new BestSolutionChangedEvent<>(solver, timeMillisSpent, newBestSolution, bestScore.raw(),
+                    bestScore.fullyAssigned());
             do {
                 it.next().bestSolutionChanged(event);
             } while (it.hasNext());

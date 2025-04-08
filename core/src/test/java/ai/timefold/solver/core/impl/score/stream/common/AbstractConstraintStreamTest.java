@@ -63,7 +63,7 @@ public abstract class AbstractConstraintStreamTest {
     protected <Solution_> void assertScore(InnerScoreDirector<Solution_, SimpleScore> scoreDirector,
             AssertableMatch... assertableMatches) {
         scoreDirector.triggerVariableListeners();
-        var score = scoreDirector.calculateScore();
+        var score = scoreDirector.calculateScore().raw();
         var scoreTotal = Arrays.stream(assertableMatches)
                 .mapToInt(assertableMatch -> assertableMatch.score)
                 .sum();

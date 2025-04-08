@@ -30,6 +30,7 @@ public abstract class AbstractScoreAnalysisJacksonDeserializer<Score_ extends Sc
     public final ScoreAnalysis<Score_> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         JsonNode node = p.readValueAsTree();
         var score = parseScore(node.get("score").asText());
+        var initialized = node.get("initialized").asBoolean();
         var constraintAnalysisList = new HashMap<ConstraintRef, ConstraintAnalysis<Score_>>();
         for (var constraintNode : node.get("constraints")) {
             var constraintPackage = constraintNode.get("package").asText();
@@ -67,7 +68,7 @@ public abstract class AbstractScoreAnalysisJacksonDeserializer<Score_ extends Sc
                         new ConstraintAnalysis<>(constraintRef, constraintWeight, constraintScore, matchScoreList));
             }
         }
-        return new ScoreAnalysis<>(score, constraintAnalysisList);
+        return new ScoreAnalysis<>(score, constraintAnalysisList, initialized);
     }
 
     /**

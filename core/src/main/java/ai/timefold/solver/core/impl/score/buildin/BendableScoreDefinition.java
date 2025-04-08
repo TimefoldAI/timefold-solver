@@ -35,7 +35,7 @@ public class BendableScoreDefinition extends AbstractBendableScoreDefinition<Ben
 
     @Override
     public BendableScore parseScore(String scoreString) {
-        BendableScore score = BendableScore.parseScore(scoreString);
+        var score = BendableScore.parseScore(scoreString);
         if (score.hardLevelsSize() != hardLevelsSize) {
             throw new IllegalArgumentException("The scoreString (" + scoreString
                     + ") for the scoreClass (" + BendableScore.class.getSimpleName()
@@ -54,88 +54,81 @@ public class BendableScoreDefinition extends AbstractBendableScoreDefinition<Ben
     }
 
     @Override
-    public BendableScore fromLevelNumbers(int initScore, Number[] levelNumbers) {
+    public BendableScore fromLevelNumbers(Number[] levelNumbers) {
         if (levelNumbers.length != getLevelsSize()) {
             throw new IllegalStateException("The levelNumbers (" + Arrays.toString(levelNumbers)
                     + ")'s length (" + levelNumbers.length + ") must equal the levelSize (" + getLevelsSize() + ").");
         }
-        int[] hardScores = new int[hardLevelsSize];
-        for (int i = 0; i < hardLevelsSize; i++) {
+        var hardScores = new int[hardLevelsSize];
+        for (var i = 0; i < hardLevelsSize; i++) {
             hardScores[i] = (Integer) levelNumbers[i];
         }
-        int[] softScores = new int[softLevelsSize];
-        for (int i = 0; i < softLevelsSize; i++) {
+        var softScores = new int[softLevelsSize];
+        for (var i = 0; i < softLevelsSize; i++) {
             softScores[i] = (Integer) levelNumbers[hardLevelsSize + i];
         }
-        return BendableScore.ofUninitialized(initScore, hardScores, softScores);
+        return BendableScore.of(hardScores, softScores);
     }
 
     public BendableScore createScore(int... scores) {
-        return createScoreUninitialized(0, scores);
-    }
-
-    public BendableScore createScoreUninitialized(int initScore, int... scores) {
-        int levelsSize = hardLevelsSize + softLevelsSize;
+        var levelsSize = hardLevelsSize + softLevelsSize;
         if (scores.length != levelsSize) {
             throw new IllegalArgumentException("The scores (" + Arrays.toString(scores)
                     + ")'s length (" + scores.length
                     + ") is not levelsSize (" + levelsSize + ").");
         }
-        return BendableScore.ofUninitialized(initScore,
-                Arrays.copyOfRange(scores, 0, hardLevelsSize),
+        return BendableScore.of(Arrays.copyOfRange(scores, 0, hardLevelsSize),
                 Arrays.copyOfRange(scores, hardLevelsSize, levelsSize));
     }
 
     @Override
     public BendableScore buildOptimisticBound(InitializingScoreTrend initializingScoreTrend, BendableScore score) {
-        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
-        int[] hardScores = new int[hardLevelsSize];
-        for (int i = 0; i < hardLevelsSize; i++) {
+        var trendLevels = initializingScoreTrend.trendLevels();
+        var hardScores = new int[hardLevelsSize];
+        for (var i = 0; i < hardLevelsSize; i++) {
             hardScores[i] = (trendLevels[i] == InitializingScoreTrendLevel.ONLY_DOWN)
                     ? score.hardScore(i)
                     : Integer.MAX_VALUE;
         }
-        int[] softScores = new int[softLevelsSize];
-        for (int i = 0; i < softLevelsSize; i++) {
+        var softScores = new int[softLevelsSize];
+        for (var i = 0; i < softLevelsSize; i++) {
             softScores[i] = (trendLevels[hardLevelsSize + i] == InitializingScoreTrendLevel.ONLY_DOWN)
                     ? score.softScore(i)
                     : Integer.MAX_VALUE;
         }
-        return BendableScore.ofUninitialized(0, hardScores, softScores);
+        return BendableScore.of(hardScores, softScores);
     }
 
     @Override
     public BendableScore buildPessimisticBound(InitializingScoreTrend initializingScoreTrend, BendableScore score) {
-        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
-        int[] hardScores = new int[hardLevelsSize];
-        for (int i = 0; i < hardLevelsSize; i++) {
+        var trendLevels = initializingScoreTrend.trendLevels();
+        var hardScores = new int[hardLevelsSize];
+        for (var i = 0; i < hardLevelsSize; i++) {
             hardScores[i] = (trendLevels[i] == InitializingScoreTrendLevel.ONLY_UP)
                     ? score.hardScore(i)
                     : Integer.MIN_VALUE;
         }
-        int[] softScores = new int[softLevelsSize];
-        for (int i = 0; i < softLevelsSize; i++) {
+        var softScores = new int[softLevelsSize];
+        for (var i = 0; i < softLevelsSize; i++) {
             softScores[i] = (trendLevels[hardLevelsSize + i] == InitializingScoreTrendLevel.ONLY_UP)
                     ? score.softScore(i)
                     : Integer.MIN_VALUE;
         }
-        return BendableScore.ofUninitialized(0, hardScores, softScores);
+        return BendableScore.of(hardScores, softScores);
     }
 
     @Override
     public BendableScore divideBySanitizedDivisor(BendableScore dividend, BendableScore divisor) {
-        int dividendInitScore = dividend.initScore();
-        int divisorInitScore = sanitize(divisor.initScore());
-        int[] hardScores = new int[hardLevelsSize];
-        for (int i = 0; i < hardLevelsSize; i++) {
+        var hardScores = new int[hardLevelsSize];
+        for (var i = 0; i < hardLevelsSize; i++) {
             hardScores[i] = divide(dividend.hardScore(i), sanitize(divisor.hardScore(i)));
         }
-        int[] softScores = new int[softLevelsSize];
-        for (int i = 0; i < softLevelsSize; i++) {
+        var softScores = new int[softLevelsSize];
+        for (var i = 0; i < softLevelsSize; i++) {
             softScores[i] = divide(dividend.softScore(i), sanitize(divisor.softScore(i)));
         }
-        int[] levels = IntStream.concat(Arrays.stream(hardScores), Arrays.stream(softScores)).toArray();
-        return createScoreUninitialized(divide(dividendInitScore, divisorInitScore), levels);
+        var levels = IntStream.concat(Arrays.stream(hardScores), Arrays.stream(softScores)).toArray();
+        return createScore(levels);
     }
 
     @Override

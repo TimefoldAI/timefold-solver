@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.solver.termination;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.Offset.offset;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -15,6 +16,7 @@ import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecim
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.buildin.SimpleScoreDefinition;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 
@@ -24,71 +26,78 @@ class BestScoreTerminationTest {
 
     @Test
     void solveTermination() {
-        ScoreDefinition<?> scoreDefinition = mock(ScoreDefinition.class);
+        ScoreDefinition<SimpleScore> scoreDefinition = mock(ScoreDefinition.class);
         when(scoreDefinition.getLevelsSize()).thenReturn(1);
-        SolverTermination<TestdataSolution> termination =
-                new BestScoreTermination<>(scoreDefinition, SimpleScore.of(-1000), new double[] {});
+        var termination = new BestScoreTermination<TestdataSolution>(scoreDefinition, SimpleScore.of(-1000), new double[] {});
         SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
         when(solverScope.getScoreDefinition()).thenReturn(new SimpleScoreDefinition());
         when(solverScope.isBestSolutionInitialized()).thenReturn(true);
-        when(solverScope.getStartingInitializedScore()).thenReturn(SimpleScore.of(-1100));
+        doReturn(SimpleScore.of(-1100)).when(solverScope).getStartingInitializedScore();
 
-        when(solverScope.getBestScore()).thenReturn(SimpleScore.of(-1100));
+        doReturn(InnerScore.fullyAssigned(SimpleScore.of(-1100))).when(solverScope).getBestScore();
         assertThat(termination.isSolverTerminated(solverScope)).isFalse();
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(0.0, offset(0.0));
-        when(solverScope.getBestScore()).thenReturn(SimpleScore.of(-1100));
+
+        doReturn(InnerScore.fullyAssigned(SimpleScore.of(-1100))).when(solverScope).getBestScore();
         assertThat(termination.isSolverTerminated(solverScope)).isFalse();
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(0.0, offset(0.0));
-        when(solverScope.getBestScore()).thenReturn(SimpleScore.of(-1040));
+
+        doReturn(InnerScore.fullyAssigned(SimpleScore.of(-1040))).when(solverScope).getBestScore();
         assertThat(termination.isSolverTerminated(solverScope)).isFalse();
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(0.6, offset(0.0));
-        when(solverScope.getBestScore()).thenReturn(SimpleScore.of(-1040));
+
+        doReturn(InnerScore.fullyAssigned(SimpleScore.of(-1040))).when(solverScope).getBestScore();
         assertThat(termination.isSolverTerminated(solverScope)).isFalse();
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(0.6, offset(0.0));
-        when(solverScope.getBestScore()).thenReturn(SimpleScore.of(-1000));
+
+        doReturn(InnerScore.fullyAssigned(SimpleScore.of(-1000))).when(solverScope).getBestScore();
         assertThat(termination.isSolverTerminated(solverScope)).isTrue();
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(1.0, offset(0.0));
-        when(solverScope.getBestScore()).thenReturn(SimpleScore.of(-900));
+
+        doReturn(InnerScore.fullyAssigned(SimpleScore.of(-900))).when(solverScope).getBestScore();
         assertThat(termination.isSolverTerminated(solverScope)).isTrue();
         assertThat(termination.calculateSolverTimeGradient(solverScope)).isEqualTo(1.0, offset(0.0));
     }
 
     @Test
     void phaseTermination() {
-        ScoreDefinition<?> scoreDefinition = mock(ScoreDefinition.class);
+        ScoreDefinition<SimpleScore> scoreDefinition = mock(ScoreDefinition.class);
         when(scoreDefinition.getLevelsSize()).thenReturn(1);
-        PhaseTermination<TestdataSolution> termination =
-                new BestScoreTermination<>(scoreDefinition, SimpleScore.of(-1000), new double[] {});
+        var termination = new BestScoreTermination<TestdataSolution>(scoreDefinition, SimpleScore.of(-1000), new double[] {});
         AbstractPhaseScope<TestdataSolution> phaseScope = mock(AbstractPhaseScope.class);
         when(phaseScope.isBestSolutionInitialized()).thenReturn(true);
-        when(phaseScope.getStartingScore()).thenReturn(SimpleScore.of(-1100));
+        doReturn(InnerScore.fullyAssigned(SimpleScore.of(-1100))).when(phaseScope).getStartingScore();
 
-        when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(-1100));
+        doReturn(InnerScore.fullyAssigned(SimpleScore.of(-1100))).when(phaseScope).getBestScore();
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.0, offset(0.0));
-        when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(-1100));
+
+        doReturn(InnerScore.fullyAssigned(SimpleScore.of(-1100))).when(phaseScope).getBestScore();
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.0, offset(0.0));
-        when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(-1040));
+
+        doReturn(InnerScore.fullyAssigned(SimpleScore.of(-1040))).when(phaseScope).getBestScore();
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.6, offset(0.0));
-        when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(-1040));
+
+        doReturn(InnerScore.fullyAssigned(SimpleScore.of(-1040))).when(phaseScope).getBestScore();
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.6, offset(0.0));
-        when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(-1000));
+
+        doReturn(InnerScore.fullyAssigned(SimpleScore.of(-1000))).when(phaseScope).getBestScore();
         assertThat(termination.isPhaseTerminated(phaseScope)).isTrue();
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(1.0, offset(0.0));
-        when(phaseScope.getBestScore()).thenReturn(SimpleScore.of(-900));
+
+        doReturn(InnerScore.fullyAssigned(SimpleScore.of(-900))).when(phaseScope).getBestScore();
         assertThat(termination.isPhaseTerminated(phaseScope)).isTrue();
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(1.0, offset(0.0));
     }
 
     @Test
     void calculateTimeGradientSimpleScore() {
-        ScoreDefinition scoreDefinition = mock(ScoreDefinition.class);
+        ScoreDefinition<SimpleScore> scoreDefinition = mock(ScoreDefinition.class);
         when(scoreDefinition.getLevelsSize()).thenReturn(1);
-        BestScoreTermination<TestdataSolution> termination = new BestScoreTermination<>(scoreDefinition,
-                SimpleScore.of(10), new double[] {});
+        var termination = new BestScoreTermination<TestdataSolution>(scoreDefinition, SimpleScore.of(10), new double[] {});
 
         assertThat(termination.calculateTimeGradient(
                 SimpleScore.of(0), SimpleScore.of(10), SimpleScore.of(0))).isEqualTo(0.0, offset(0.0));
@@ -107,9 +116,9 @@ class BestScoreTerminationTest {
 
     @Test
     void calculateTimeGradientSimpleBigDecimalScore() {
-        ScoreDefinition scoreDefinition = mock(ScoreDefinition.class);
+        ScoreDefinition<SimpleBigDecimalScore> scoreDefinition = mock(ScoreDefinition.class);
         when(scoreDefinition.getLevelsSize()).thenReturn(1);
-        BestScoreTermination<TestdataSolution> termination = new BestScoreTermination<>(scoreDefinition,
+        var termination = new BestScoreTermination<TestdataSolution>(scoreDefinition,
                 SimpleBigDecimalScore.of(new BigDecimal("10.00")), new double[] {});
 
         assertThat(termination.calculateTimeGradient(
@@ -134,10 +143,9 @@ class BestScoreTerminationTest {
 
     @Test
     void calculateTimeGradientHardSoftScore() {
-        ScoreDefinition scoreDefinition = mock(ScoreDefinition.class);
+        ScoreDefinition<HardSoftScore> scoreDefinition = mock(ScoreDefinition.class);
         when(scoreDefinition.getLevelsSize()).thenReturn(2);
-        BestScoreTermination termination = new BestScoreTermination(scoreDefinition,
-                HardSoftScore.of(-10, -300), new double[] { 0.75 });
+        var termination = new BestScoreTermination<>(scoreDefinition, HardSoftScore.of(-10, -300), new double[] { 0.75 });
 
         // Normal cases
         // Smack in the middle
@@ -197,9 +205,9 @@ class BestScoreTerminationTest {
 
     @Test
     void calculateTimeGradientHardSoftBigDecimalScore() {
-        ScoreDefinition scoreDefinition = mock(ScoreDefinition.class);
+        ScoreDefinition<HardSoftBigDecimalScore> scoreDefinition = mock(ScoreDefinition.class);
         when(scoreDefinition.getLevelsSize()).thenReturn(2);
-        BestScoreTermination termination = new BestScoreTermination(scoreDefinition,
+        var termination = new BestScoreTermination<>(scoreDefinition,
                 HardSoftBigDecimalScore.of(new BigDecimal("10.00"), new BigDecimal("10.00")), new double[] { 0.75 });
 
         // hard == soft
@@ -232,10 +240,10 @@ class BestScoreTerminationTest {
 
     @Test
     void calculateTimeGradientBendableScoreHS() {
-        ScoreDefinition scoreDefinition = mock(ScoreDefinition.class);
+        ScoreDefinition<BendableScore> scoreDefinition = mock(ScoreDefinition.class);
         when(scoreDefinition.getLevelsSize()).thenReturn(2);
-        BestScoreTermination termination = new BestScoreTermination(scoreDefinition,
-                BendableScore.of(new int[] { -10 }, new int[] { -300 }), new double[] { 0.75 });
+        var termination = new BestScoreTermination<>(scoreDefinition, BendableScore.of(new int[] { -10 }, new int[] { -300 }),
+                new double[] { 0.75 });
 
         // Normal cases
         // Smack in the middle
@@ -309,9 +317,9 @@ class BestScoreTerminationTest {
 
     @Test
     void calculateTimeGradientBendableScoreHHSSS() {
-        ScoreDefinition scoreDefinition = mock(ScoreDefinition.class);
+        var scoreDefinition = mock(ScoreDefinition.class);
         when(scoreDefinition.getLevelsSize()).thenReturn(5);
-        BestScoreTermination termination = new BestScoreTermination(scoreDefinition,
+        var termination = new BestScoreTermination<>(scoreDefinition,
                 BendableScore.of(new int[] { 0, 0 }, new int[] { 0, 0, -10 }),
                 new double[] { 0.75, 0.75, 0.75, 0.75 });
 

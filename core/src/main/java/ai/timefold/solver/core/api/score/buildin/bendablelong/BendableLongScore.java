@@ -8,7 +8,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.score.ScoreUtil;
 import ai.timefold.solver.core.impl.score.buildin.BendableLongScoreDefinition;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * This {@link Score} is based on n levels of long constraints.
@@ -21,32 +21,29 @@ import org.jspecify.annotations.NonNull;
  *
  * @see Score
  */
+@NullMarked
 public final class BendableLongScore implements IBendableScore<BendableLongScore> {
 
-    public static @NonNull BendableLongScore parseScore(@NonNull String scoreString) {
-        String[][] scoreTokens = ScoreUtil.parseBendableScoreTokens(BendableLongScore.class, scoreString);
-        int initScore = ScoreUtil.parseInitScore(BendableLongScore.class, scoreString, scoreTokens[0][0]);
-        long[] hardScores = new long[scoreTokens[1].length];
-        for (int i = 0; i < hardScores.length; i++) {
-            hardScores[i] = ScoreUtil.parseLevelAsLong(BendableLongScore.class, scoreString, scoreTokens[1][i]);
+    public static BendableLongScore parseScore(String scoreString) {
+        var scoreTokens = ScoreUtil.parseBendableScoreTokens(BendableLongScore.class, scoreString);
+        var hardScores = new long[scoreTokens[0].length];
+        for (var i = 0; i < hardScores.length; i++) {
+            hardScores[i] = ScoreUtil.parseLevelAsLong(BendableLongScore.class, scoreString, scoreTokens[0][i]);
         }
-        long[] softScores = new long[scoreTokens[2].length];
-        for (int i = 0; i < softScores.length; i++) {
-            softScores[i] = ScoreUtil.parseLevelAsLong(BendableLongScore.class, scoreString, scoreTokens[2][i]);
+        var softScores = new long[scoreTokens[1].length];
+        for (var i = 0; i < softScores.length; i++) {
+            softScores[i] = ScoreUtil.parseLevelAsLong(BendableLongScore.class, scoreString, scoreTokens[1][i]);
         }
-        return ofUninitialized(initScore, hardScores, softScores);
+        return of(hardScores, softScores);
     }
 
     /**
-     * Creates a new {@link BendableLongScore}.
-     *
-     * @param initScore see {@link Score#initScore()}
-     * @param hardScores never change that array afterwards: it must be immutable
-     * @param softScores never change that array afterwards: it must be immutable
+     * @deprecated Use {@link #of(long[], long[])} instead.
+     * @return init score is always zero
      */
-    public static @NonNull BendableLongScore ofUninitialized(int initScore, long @NonNull [] hardScores,
-            long @NonNull [] softScores) {
-        return new BendableLongScore(initScore, hardScores, softScores);
+    @Deprecated(forRemoval = true, since = "1.22.0")
+    public static BendableLongScore ofUninitialized(int initScore, long[] hardScores, long[] softScores) {
+        return BendableLongScore.of(hardScores, softScores);
     }
 
     /**
@@ -55,8 +52,8 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
      * @param hardScores never change that array afterwards: it must be immutable
      * @param softScores never change that array afterwards: it must be immutable
      */
-    public static @NonNull BendableLongScore of(long @NonNull [] hardScores, long @NonNull [] softScores) {
-        return new BendableLongScore(0, hardScores, softScores);
+    public static BendableLongScore of(long[] hardScores, long[] softScores) {
+        return new BendableLongScore(hardScores, softScores);
     }
 
     /**
@@ -65,8 +62,8 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
      * @param hardLevelsSize at least 0
      * @param softLevelsSize at least 0
      */
-    public static @NonNull BendableLongScore zero(int hardLevelsSize, int softLevelsSize) {
-        return new BendableLongScore(0, new long[hardLevelsSize], new long[softLevelsSize]);
+    public static BendableLongScore zero(int hardLevelsSize, int softLevelsSize) {
+        return new BendableLongScore(new long[hardLevelsSize], new long[softLevelsSize]);
     }
 
     /**
@@ -77,10 +74,10 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
      * @param hardLevel at least 0, less than hardLevelsSize
      * @param hardScore any
      */
-    public static @NonNull BendableLongScore ofHard(int hardLevelsSize, int softLevelsSize, int hardLevel, long hardScore) {
-        long[] hardScores = new long[hardLevelsSize];
+    public static BendableLongScore ofHard(int hardLevelsSize, int softLevelsSize, int hardLevel, long hardScore) {
+        var hardScores = new long[hardLevelsSize];
         hardScores[hardLevel] = hardScore;
-        return new BendableLongScore(0, hardScores, new long[softLevelsSize]);
+        return new BendableLongScore(hardScores, new long[softLevelsSize]);
     }
 
     /**
@@ -91,17 +88,12 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
      * @param softLevel at least 0, less than softLevelsSize
      * @param softScore any
      */
-    public static @NonNull BendableLongScore ofSoft(int hardLevelsSize, int softLevelsSize, int softLevel, long softScore) {
-        long[] softScores = new long[softLevelsSize];
+    public static BendableLongScore ofSoft(int hardLevelsSize, int softLevelsSize, int softLevel, long softScore) {
+        var softScores = new long[softLevelsSize];
         softScores[softLevel] = softScore;
-        return new BendableLongScore(0, new long[hardLevelsSize], softScores);
+        return new BendableLongScore(new long[hardLevelsSize], softScores);
     }
 
-    // ************************************************************************
-    // Fields
-    // ************************************************************************
-
-    private final int initScore;
     private final long[] hardScores;
     private final long[] softScores;
 
@@ -112,27 +104,21 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
      */
     @SuppressWarnings("unused")
     private BendableLongScore() {
-        this(Integer.MIN_VALUE, new long[] {}, new long[] {});
+        this(new long[] {}, new long[] {});
     }
 
     /**
-     * @param initScore see {@link Score#initScore()}
+     *
      */
-    private BendableLongScore(int initScore, long @NonNull [] hardScores, long @NonNull [] softScores) {
-        this.initScore = initScore;
+    private BendableLongScore(long[] hardScores, long[] softScores) {
         this.hardScores = hardScores;
         this.softScores = softScores;
-    }
-
-    @Override
-    public int initScore() {
-        return initScore;
     }
 
     /**
      * @return array copy because this class is immutable
      */
-    public long @NonNull [] hardScores() {
+    public long[] hardScores() {
         return Arrays.copyOf(hardScores, hardScores.length);
     }
 
@@ -142,14 +128,14 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
      * @deprecated Use {@link #hardScores()} instead.
      */
     @Deprecated(forRemoval = true)
-    public long @NonNull [] getHardScores() {
+    public long[] getHardScores() {
         return hardScores();
     }
 
     /**
      * @return array copy because this class is immutable
      */
-    public long @NonNull [] softScores() {
+    public long[] softScores() {
         return Arrays.copyOf(softScores, softScores.length);
     }
 
@@ -159,7 +145,7 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
      * @deprecated Use {@link #softScores()} instead.
      */
     @Deprecated(forRemoval = true)
-    public long @NonNull [] getSoftScores() {
+    public long[] getSoftScores() {
         return softScores();
     }
 
@@ -209,15 +195,6 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
         return softScore(index);
     }
 
-    // ************************************************************************
-    // Worker methods
-    // ************************************************************************
-
-    @Override
-    public @NonNull BendableLongScore withInitScore(int newInitScore) {
-        return new BendableLongScore(newInitScore, hardScores, softScores);
-    }
-
     /**
      * @param index {@code 0 <= index <} {@link #levelsSize()}
      * @return higher is better
@@ -242,10 +219,7 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
 
     @Override
     public boolean isFeasible() {
-        if (initScore < 0) {
-            return false;
-        }
-        for (long hardScore : hardScores) {
+        for (var hardScore : hardScores) {
             if (hardScore < 0) {
                 return false;
             }
@@ -254,120 +228,115 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
     }
 
     @Override
-    public @NonNull BendableLongScore add(@NonNull BendableLongScore addend) {
+    public BendableLongScore add(BendableLongScore addend) {
         validateCompatible(addend);
-        long[] newHardScores = new long[hardScores.length];
-        long[] newSoftScores = new long[softScores.length];
-        for (int i = 0; i < newHardScores.length; i++) {
+        var newHardScores = new long[hardScores.length];
+        var newSoftScores = new long[softScores.length];
+        for (var i = 0; i < newHardScores.length; i++) {
             newHardScores[i] = hardScores[i] + addend.hardScore(i);
         }
-        for (int i = 0; i < newSoftScores.length; i++) {
+        for (var i = 0; i < newSoftScores.length; i++) {
             newSoftScores[i] = softScores[i] + addend.softScore(i);
         }
         return new BendableLongScore(
-                initScore + addend.initScore(),
                 newHardScores, newSoftScores);
     }
 
     @Override
-    public @NonNull BendableLongScore subtract(@NonNull BendableLongScore subtrahend) {
+    public BendableLongScore subtract(BendableLongScore subtrahend) {
         validateCompatible(subtrahend);
-        long[] newHardScores = new long[hardScores.length];
-        long[] newSoftScores = new long[softScores.length];
-        for (int i = 0; i < newHardScores.length; i++) {
+        var newHardScores = new long[hardScores.length];
+        var newSoftScores = new long[softScores.length];
+        for (var i = 0; i < newHardScores.length; i++) {
             newHardScores[i] = hardScores[i] - subtrahend.hardScore(i);
         }
-        for (int i = 0; i < newSoftScores.length; i++) {
+        for (var i = 0; i < newSoftScores.length; i++) {
             newSoftScores[i] = softScores[i] - subtrahend.softScore(i);
         }
         return new BendableLongScore(
-                initScore - subtrahend.initScore(),
                 newHardScores, newSoftScores);
     }
 
     @Override
-    public @NonNull BendableLongScore multiply(double multiplicand) {
-        long[] newHardScores = new long[hardScores.length];
-        long[] newSoftScores = new long[softScores.length];
-        for (int i = 0; i < newHardScores.length; i++) {
+    public BendableLongScore multiply(double multiplicand) {
+        var newHardScores = new long[hardScores.length];
+        var newSoftScores = new long[softScores.length];
+        for (var i = 0; i < newHardScores.length; i++) {
             newHardScores[i] = (long) Math.floor(hardScores[i] * multiplicand);
         }
-        for (int i = 0; i < newSoftScores.length; i++) {
+        for (var i = 0; i < newSoftScores.length; i++) {
             newSoftScores[i] = (long) Math.floor(softScores[i] * multiplicand);
         }
         return new BendableLongScore(
-                (int) Math.floor(initScore * multiplicand),
                 newHardScores, newSoftScores);
     }
 
     @Override
-    public @NonNull BendableLongScore divide(double divisor) {
-        long[] newHardScores = new long[hardScores.length];
-        long[] newSoftScores = new long[softScores.length];
-        for (int i = 0; i < newHardScores.length; i++) {
+    public BendableLongScore divide(double divisor) {
+        var newHardScores = new long[hardScores.length];
+        var newSoftScores = new long[softScores.length];
+        for (var i = 0; i < newHardScores.length; i++) {
             newHardScores[i] = (long) Math.floor(hardScores[i] / divisor);
         }
-        for (int i = 0; i < newSoftScores.length; i++) {
+        for (var i = 0; i < newSoftScores.length; i++) {
             newSoftScores[i] = (long) Math.floor(softScores[i] / divisor);
         }
         return new BendableLongScore(
-                (int) Math.floor(initScore / divisor),
                 newHardScores, newSoftScores);
     }
 
     @Override
-    public @NonNull BendableLongScore power(double exponent) {
-        long[] newHardScores = new long[hardScores.length];
-        long[] newSoftScores = new long[softScores.length];
-        for (int i = 0; i < newHardScores.length; i++) {
+    public BendableLongScore power(double exponent) {
+        var newHardScores = new long[hardScores.length];
+        var newSoftScores = new long[softScores.length];
+        for (var i = 0; i < newHardScores.length; i++) {
             newHardScores[i] = (long) Math.floor(Math.pow(hardScores[i], exponent));
         }
-        for (int i = 0; i < newSoftScores.length; i++) {
+        for (var i = 0; i < newSoftScores.length; i++) {
             newSoftScores[i] = (long) Math.floor(Math.pow(softScores[i], exponent));
         }
         return new BendableLongScore(
-                (int) Math.floor(Math.pow(initScore, exponent)),
                 newHardScores, newSoftScores);
     }
 
     @Override
-    public @NonNull BendableLongScore negate() { // Overridden as the default impl would create zero() all the time.
-        long[] newHardScores = new long[hardScores.length];
-        long[] newSoftScores = new long[softScores.length];
-        for (int i = 0; i < newHardScores.length; i++) {
+    public BendableLongScore negate() { // Overridden as the default impl would create zero() all the time.
+        var newHardScores = new long[hardScores.length];
+        var newSoftScores = new long[softScores.length];
+        for (var i = 0; i < newHardScores.length; i++) {
             newHardScores[i] = -hardScores[i];
         }
-        for (int i = 0; i < newSoftScores.length; i++) {
+        for (var i = 0; i < newSoftScores.length; i++) {
             newSoftScores[i] = -softScores[i];
         }
-        return new BendableLongScore(-initScore, newHardScores, newSoftScores);
+        return new BendableLongScore(newHardScores, newSoftScores);
     }
 
     @Override
-    public @NonNull BendableLongScore abs() {
-        long[] newHardScores = new long[hardScores.length];
-        long[] newSoftScores = new long[softScores.length];
-        for (int i = 0; i < newHardScores.length; i++) {
+    public BendableLongScore abs() {
+        var newHardScores = new long[hardScores.length];
+        var newSoftScores = new long[softScores.length];
+        for (var i = 0; i < newHardScores.length; i++) {
             newHardScores[i] = Math.abs(hardScores[i]);
         }
-        for (int i = 0; i < newSoftScores.length; i++) {
+        for (var i = 0; i < newSoftScores.length; i++) {
             newSoftScores[i] = Math.abs(softScores[i]);
         }
-        return new BendableLongScore(Math.abs(initScore), newHardScores, newSoftScores);
+        return new BendableLongScore(newHardScores, newSoftScores);
     }
 
     @Override
-    public @NonNull BendableLongScore zero() {
+    public BendableLongScore zero() {
         return BendableLongScore.zero(hardLevelsSize(), softLevelsSize());
     }
 
     @Override
-    public Number @NonNull [] toLevelNumbers() {
-        Number[] levelNumbers = new Number[hardScores.length + softScores.length];
-        for (int i = 0; i < hardScores.length; i++) {
+    public Number[] toLevelNumbers() {
+        var levelNumbers = new Number[hardScores.length + softScores.length];
+        for (var i = 0; i < hardScores.length; i++) {
             levelNumbers[i] = hardScores[i];
         }
-        for (int i = 0; i < softScores.length; i++) {
+        for (var i = 0; i < softScores.length; i++) {
             levelNumbers[hardScores.length + i] = softScores[i];
         }
         return levelNumbers;
@@ -380,15 +349,12 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
                     || softLevelsSize() != other.softLevelsSize()) {
                 return false;
             }
-            if (initScore != other.initScore()) {
-                return false;
-            }
-            for (int i = 0; i < hardScores.length; i++) {
+            for (var i = 0; i < hardScores.length; i++) {
                 if (hardScores[i] != other.hardScore(i)) {
                     return false;
                 }
             }
-            for (int i = 0; i < softScores.length; i++) {
+            for (var i = 0; i < softScores.length; i++) {
                 if (softScores[i] != other.softScore(i)) {
                     return false;
                 }
@@ -400,21 +366,18 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
 
     @Override
     public int hashCode() {
-        return Objects.hash(initScore, Arrays.hashCode(hardScores), Arrays.hashCode(softScores));
+        return Objects.hash(Arrays.hashCode(hardScores), Arrays.hashCode(softScores));
     }
 
     @Override
-    public int compareTo(@NonNull BendableLongScore other) {
+    public int compareTo(BendableLongScore other) {
         validateCompatible(other);
-        if (initScore != other.initScore()) {
-            return Integer.compare(initScore, other.initScore());
-        }
-        for (int i = 0; i < hardScores.length; i++) {
+        for (var i = 0; i < hardScores.length; i++) {
             if (hardScores[i] != other.hardScore(i)) {
                 return Long.compare(hardScores[i], other.hardScore(i));
             }
         }
-        for (int i = 0; i < softScores.length; i++) {
+        for (var i = 0; i < softScores.length; i++) {
             if (softScores[i] != other.softScore(i)) {
                 return Long.compare(softScores[i], other.softScore(i));
             }
@@ -423,17 +386,16 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
     }
 
     @Override
-    public @NonNull String toShortString() {
+    public String toShortString() {
         return ScoreUtil.buildBendableShortString(this, n -> n.longValue() != 0L);
     }
 
     @Override
     public String toString() {
-        StringBuilder s = new StringBuilder(((hardScores.length + softScores.length) * 4) + 13);
-        s.append(ScoreUtil.getInitPrefix(initScore));
+        var s = new StringBuilder(((hardScores.length + softScores.length) * 4) + 7);
         s.append("[");
-        boolean first = true;
-        for (long hardScore : hardScores) {
+        var first = true;
+        for (var hardScore : hardScores) {
             if (first) {
                 first = false;
             } else {
@@ -443,7 +405,7 @@ public final class BendableLongScore implements IBendableScore<BendableLongScore
         }
         s.append("]hard/[");
         first = true;
-        for (long softScore : softScores) {
+        for (var softScore : softScores) {
             if (first) {
                 first = false;
             } else {

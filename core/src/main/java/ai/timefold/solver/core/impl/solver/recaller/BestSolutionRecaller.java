@@ -6,7 +6,7 @@ import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.event.SolverEventSupport;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
@@ -43,25 +43,27 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
     // Worker methods
     // ************************************************************************
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         // Starting bestSolution is already set by Solver.solve(Solution)
-        InnerScoreDirector scoreDirector = solverScope.getScoreDirector();
-        Score score = scoreDirector.calculateScore();
-        solverScope.setBestScore(score);
+        var scoreDirector = solverScope.getScoreDirector();
+        InnerScore innerScore = scoreDirector.calculateScore();
+        var score = innerScore.raw();
+        solverScope.setBestScore(innerScore);
         solverScope.setBestSolutionTimeMillis(System.currentTimeMillis());
         // The original bestSolution might be the final bestSolution and should have an accurate Score
         solverScope.getSolutionDescriptor().setScore(solverScope.getBestSolution(), score);
-        if (score.isSolutionInitialized()) {
-            solverScope.setStartingInitializedScore(score);
+        if (innerScore.fullyAssigned()) {
+            solverScope.setStartingInitializedScore(innerScore.raw());
         } else {
             solverScope.setStartingInitializedScore(null);
         }
         if (assertInitialScoreFromScratch) {
-            scoreDirector.assertWorkingScoreFromScratch(score, "Initial score calculated");
+            scoreDirector.assertWorkingScoreFromScratch(innerScore, "Initial score calculated");
         }
         if (assertShadowVariablesAreNotStale) {
-            scoreDirector.assertShadowVariablesAreNotStale(score, "Initial score calculated");
+            scoreDirector.assertShadowVariablesAreNotStale(innerScore, "Initial score calculated");
         }
     }
 
@@ -76,25 +78,29 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
         updateBestSolutionWithoutFiring(solverScope, stepScope.getScore(), newBestSolution);
     }
 
-    public void processWorkingSolutionDuringStep(AbstractStepScope<Solution_> stepScope) {
-        AbstractPhaseScope<Solution_> phaseScope = stepScope.getPhaseScope();
-        Score score = stepScope.getScore();
-        SolverScope<Solution_> solverScope = phaseScope.getSolverScope();
-        boolean bestScoreImproved = score.compareTo(solverScope.getBestScore()) > 0;
+    public <Score_ extends Score<Score_>> void processWorkingSolutionDuringStep(AbstractStepScope<Solution_> stepScope) {
+        var phaseScope = stepScope.getPhaseScope();
+        var score = stepScope.<Score_> getScore();
+        var solverScope = phaseScope.getSolverScope();
+        var bestScoreImproved = score.compareTo(solverScope.getBestScore()) > 0;
         stepScope.setBestScoreImproved(bestScoreImproved);
         if (bestScoreImproved) {
             phaseScope.setBestSolutionStepIndex(stepScope.getStepIndex());
-            Solution_ newBestSolution = stepScope.createOrGetClonedSolution();
-            updateBestSolutionAndFire(solverScope, score, newBestSolution);
+            var newBestSolution = stepScope.createOrGetClonedSolution();
+            var innerScore = InnerScore.withUnassignedCount(
+                    solverScope.getSolutionDescriptor().<Score_> getScore(newBestSolution),
+                    -stepScope.getScoreDirector().getWorkingInitScore());
+            updateBestSolutionAndFire(solverScope, innerScore, newBestSolution);
         } else if (assertBestScoreIsUnmodified) {
             solverScope.assertScoreFromScratch(solverScope.getBestSolution());
         }
     }
 
-    public void processWorkingSolutionDuringMove(Score score, AbstractStepScope<Solution_> stepScope) {
-        AbstractPhaseScope<Solution_> phaseScope = stepScope.getPhaseScope();
-        SolverScope<Solution_> solverScope = phaseScope.getSolverScope();
-        boolean bestScoreImproved = score.compareTo(solverScope.getBestScore()) > 0;
+    public <Score_ extends Score<Score_>> void processWorkingSolutionDuringMove(InnerScore<Score_> moveScore,
+            AbstractStepScope<Solution_> stepScope) {
+        var phaseScope = stepScope.getPhaseScope();
+        var solverScope = phaseScope.getSolverScope();
+        var bestScoreImproved = moveScore.compareTo(solverScope.getBestScore()) > 0;
         // The method processWorkingSolutionDuringMove() is called 0..* times
         // stepScope.getBestScoreImproved() is initialized on false before the first call here
         if (bestScoreImproved) {
@@ -102,8 +108,9 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
         }
         if (bestScoreImproved) {
             phaseScope.setBestSolutionStepIndex(stepScope.getStepIndex());
-            Solution_ newBestSolution = solverScope.getScoreDirector().cloneWorkingSolution();
-            updateBestSolutionAndFire(solverScope, score, newBestSolution);
+            var newBestSolution = solverScope.getScoreDirector().cloneWorkingSolution();
+            var innerScore = new InnerScore<>(moveScore.raw(), solverScope.getScoreDirector().getWorkingInitScore());
+            updateBestSolutionAndFire(solverScope, innerScore, newBestSolution);
         } else if (assertBestScoreIsUnmodified) {
             solverScope.assertScoreFromScratch(solverScope.getBestSolution());
         }
@@ -121,21 +128,25 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
         }
     }
 
-    private void updateBestSolutionAndFire(SolverScope<Solution_> solverScope, Score bestScore, Solution_ bestSolution) {
+    private void updateBestSolutionAndFire(SolverScope<Solution_> solverScope, InnerScore<?> bestScore,
+            Solution_ bestSolution) {
         updateBestSolutionWithoutFiring(solverScope, bestScore, bestSolution);
         solverEventSupport.fireBestSolutionChanged(solverScope, solverScope.getBestSolution());
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void updateBestSolutionWithoutFiring(SolverScope<Solution_> solverScope) {
-        Solution_ newBestSolution = solverScope.getScoreDirector().cloneWorkingSolution();
-        Score newBestScore = solverScope.getSolutionDescriptor().getScore(newBestSolution);
-        updateBestSolutionWithoutFiring(solverScope, newBestScore, newBestSolution);
+        var newBestSolution = solverScope.getScoreDirector().cloneWorkingSolution();
+        var newBestScore = solverScope.getSolutionDescriptor().<Score> getScore(newBestSolution);
+        var innerScore = InnerScore.withUnassignedCount(newBestScore, -solverScope.getScoreDirector().getWorkingInitScore());
+        updateBestSolutionWithoutFiring(solverScope, innerScore, newBestSolution);
     }
 
-    private void updateBestSolutionWithoutFiring(SolverScope<Solution_> solverScope, Score bestScore, Solution_ bestSolution) {
-        if (bestScore.isSolutionInitialized()) {
+    private void updateBestSolutionWithoutFiring(SolverScope<Solution_> solverScope, InnerScore<?> bestScore,
+            Solution_ bestSolution) {
+        if (bestScore.fullyAssigned()) {
             if (!solverScope.isBestSolutionInitialized()) {
-                solverScope.setStartingInitializedScore(bestScore);
+                solverScope.setStartingInitializedScore(bestScore.raw());
             }
         }
         solverScope.setBestSolution(bestSolution);

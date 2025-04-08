@@ -33,8 +33,8 @@ final class HardSoftBigDecimalScoreInliner extends AbstractScoreInliner<HardSoft
     }
 
     @Override
-    public HardSoftBigDecimalScore extractScore(int initScore) {
-        return HardSoftBigDecimalScore.ofUninitialized(initScore, hardScore, softScore);
+    public HardSoftBigDecimalScore extractScore() {
+        return HardSoftBigDecimalScore.of(hardScore, softScore);
     }
 
     @Override

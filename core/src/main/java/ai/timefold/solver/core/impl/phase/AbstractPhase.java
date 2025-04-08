@@ -149,10 +149,9 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         phaseLifecycleSupport.fireStepStarted(stepScope);
     }
 
-    protected <Score_ extends Score<Score_>> void calculateWorkingStepScore(AbstractStepScope<Solution_> stepScope,
-            Object completedAction) {
+    protected void calculateWorkingStepScore(AbstractStepScope<Solution_> stepScope, Object completedAction) {
         AbstractPhaseScope<Solution_> phaseScope = stepScope.getPhaseScope();
-        Score_ score = phaseScope.calculateScore();
+        var score = phaseScope.calculateScore();
         stepScope.setScore(score);
         if (assertStepScoreFromScratch) {
             phaseScope.assertWorkingScoreFromScratch(score, completedAction);
@@ -162,20 +161,20 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         }
     }
 
-    @SuppressWarnings("unchecked")
     protected <Score_ extends Score<Score_>> void predictWorkingStepScore(AbstractStepScope<Solution_> stepScope,
             Object completedAction) {
-        AbstractPhaseScope<Solution_> phaseScope = stepScope.getPhaseScope();
+        var phaseScope = stepScope.getPhaseScope();
         // There is no need to recalculate the score, but we still need to set it
-        phaseScope.getSolutionDescriptor().setScore(phaseScope.getWorkingSolution(), (Score_) stepScope.getScore());
+        phaseScope.getSolutionDescriptor().setScore(phaseScope.getWorkingSolution(),
+                stepScope.<Score_> getScore().raw());
         if (assertStepScoreFromScratch) {
-            phaseScope.assertPredictedScoreFromScratch((Score_) stepScope.getScore(), completedAction);
+            phaseScope.<Score_> assertPredictedScoreFromScratch(stepScope.getScore(), completedAction);
         }
         if (assertExpectedStepScore) {
-            phaseScope.assertExpectedWorkingScore((Score_) stepScope.getScore(), completedAction);
+            phaseScope.<Score_> assertExpectedWorkingScore(stepScope.getScore(), completedAction);
         }
         if (assertShadowVariablesAreNotStaleAfterStep) {
-            phaseScope.assertShadowVariablesAreNotStale((Score_) stepScope.getScore(), completedAction);
+            phaseScope.<Score_> assertShadowVariablesAreNotStale(stepScope.getScore(), completedAction);
         }
     }
 
@@ -192,12 +191,12 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
 
     private static <Solution_> void collectMetrics(AbstractStepScope<Solution_> stepScope) {
         var solverScope = stepScope.getPhaseScope().getSolverScope();
-        if (solverScope.isMetricEnabled(SolverMetric.STEP_SCORE) && stepScope.getScore().isSolutionInitialized()) {
+        if (solverScope.isMetricEnabled(SolverMetric.STEP_SCORE) && stepScope.getScore().fullyAssigned()) {
             SolverMetric.registerScoreMetrics(SolverMetric.STEP_SCORE,
                     solverScope.getMonitoringTags(),
                     solverScope.getScoreDefinition(),
                     solverScope.getStepScoreMap(),
-                    stepScope.getScore());
+                    stepScope.getScore().raw());
         }
     }
 
@@ -216,7 +215,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     // ************************************************************************
 
     protected void assertWorkingSolutionInitialized(AbstractPhaseScope<Solution_> phaseScope) {
-        if (!phaseScope.getStartingScore().isSolutionInitialized()) {
+        if (!phaseScope.getStartingScore().fullyAssigned()) {
             var scoreDirector = phaseScope.getScoreDirector();
             var solutionDescriptor = scoreDirector.getSolutionDescriptor();
             var workingSolution = scoreDirector.getWorkingSolution();

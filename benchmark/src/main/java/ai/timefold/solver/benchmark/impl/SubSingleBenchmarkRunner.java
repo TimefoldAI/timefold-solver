@@ -1,16 +1,11 @@
 package ai.timefold.solver.benchmark.impl;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
-import ai.timefold.solver.benchmark.impl.result.ProblemBenchmarkResult;
-import ai.timefold.solver.benchmark.impl.result.SingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.statistic.StatisticRegistry;
-import ai.timefold.solver.benchmark.impl.statistic.SubSingleStatistic;
-import ai.timefold.solver.core.api.score.ScoreExplanation;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolutionUpdatePolicy;
 import ai.timefold.solver.core.config.solver.SolverConfig;
@@ -67,11 +62,10 @@ public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBe
     @Override
     public SubSingleBenchmarkRunner<Solution_> call() {
         MDC.put(NAME_MDC, subSingleBenchmarkResult.getName());
-        Runtime runtime = Runtime.getRuntime();
-        SingleBenchmarkResult singleBenchmarkResult = subSingleBenchmarkResult.getSingleBenchmarkResult();
-        ProblemBenchmarkResult<Solution_> problemBenchmarkResult = singleBenchmarkResult
-                .getProblemBenchmarkResult();
-        Solution_ problem = problemBenchmarkResult.readProblem();
+        var runtime = Runtime.getRuntime();
+        var singleBenchmarkResult = subSingleBenchmarkResult.getSingleBenchmarkResult();
+        var problemBenchmarkResult = singleBenchmarkResult.getProblemBenchmarkResult();
+        var problem = (Solution_) problemBenchmarkResult.readProblem();
         if (!problemBenchmarkResult.getPlannerBenchmarkResult().hasMultipleParallelBenchmarks()) {
             runtime.gc();
             subSingleBenchmarkResult.setUsedMemoryAfterInputSolution(runtime.totalMemory() - runtime.freeMemory());
@@ -79,42 +73,40 @@ public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBe
         LOGGER.trace("Benchmark problem has been read for subSingleBenchmarkResult ({}).",
                 subSingleBenchmarkResult);
 
-        SolverConfig solverConfig = singleBenchmarkResult.getSolverBenchmarkResult()
+        var solverConfig = singleBenchmarkResult.getSolverBenchmarkResult()
                 .getSolverConfig();
         if (singleBenchmarkResult.getSubSingleCount() > 1) {
             solverConfig = new SolverConfig(solverConfig);
             solverConfig.offerRandomSeedFromSubSingleIndex(subSingleBenchmarkResult.getSubSingleBenchmarkIndex());
         }
-        Map<String, String> subSingleBenchmarkTagMap = new HashMap<>();
-        String runId = UUID.randomUUID().toString();
+        var subSingleBenchmarkTagMap = new HashMap<String, String>();
+        var runId = UUID.randomUUID().toString();
         subSingleBenchmarkTagMap.put("timefold.benchmark.run", runId);
         solverConfig = new SolverConfig(solverConfig);
         randomSeed = solverConfig.getRandomSeed();
 
         // Defensive copy of solverConfig for every SingleBenchmarkResult to reset Random, tabu lists, ...
-        DefaultSolverFactory<Solution_> solverFactory = new DefaultSolverFactory<>(new SolverConfig(solverConfig));
+        var solverFactory = new DefaultSolverFactory<Solution_>(new SolverConfig(solverConfig));
 
         // Register metrics
-        StatisticRegistry<Solution_> statisticRegistry =
-                new StatisticRegistry<>(solverFactory.getSolutionDescriptor().getScoreDefinition());
+        var statisticRegistry = new StatisticRegistry<Solution_>(solverFactory.getSolutionDescriptor().getScoreDefinition());
         Metrics.addRegistry(statisticRegistry);
-        Tags runTag = Tags.of("timefold.benchmark.run", runId);
+        var runTag = Tags.of("timefold.benchmark.run", runId);
         subSingleBenchmarkResult.getEffectiveSubSingleStatisticMap().forEach((statisticType, subSingleStatistic) -> {
             subSingleStatistic.open(statisticRegistry, runTag);
             subSingleStatistic.initPointList();
         });
 
-        DefaultSolver<Solution_> solver = (DefaultSolver<Solution_>) solverFactory.buildSolver();
+        var solver = (DefaultSolver<Solution_>) solverFactory.buildSolver();
         solver.setMonitorTagMap(subSingleBenchmarkTagMap);
         solver.addPhaseLifecycleListener(statisticRegistry);
-        Solution_ solution = solver.solve(problem);
+        var solution = solver.solve(problem);
 
         solver.removePhaseLifecycleListener(statisticRegistry);
         Metrics.removeRegistry(statisticRegistry);
-        long timeMillisSpent = solver.getTimeMillisSpent();
+        var timeMillisSpent = solver.getTimeMillisSpent();
 
-        for (SubSingleStatistic<Solution_, ?> subSingleStatistic : subSingleBenchmarkResult.getEffectiveSubSingleStatisticMap()
-                .values()) {
+        for (var subSingleStatistic : subSingleBenchmarkResult.getEffectiveSubSingleStatisticMap().values()) {
             subSingleStatistic.close(statisticRegistry, runTag);
             subSingleStatistic.hibernatePointList();
         }
@@ -122,16 +114,16 @@ public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBe
             var solverScope = solver.getSolverScope();
             var solutionDescriptor = solverScope.getSolutionDescriptor();
             problemBenchmarkResult.registerProblemSizeStatistics(solverScope.getProblemSizeStatistics());
-            subSingleBenchmarkResult.setScore(solutionDescriptor.getScore(solution));
+            subSingleBenchmarkResult.setScore(solutionDescriptor.getScore(solution), solverScope.isBestSolutionInitialized());
             subSingleBenchmarkResult.setTimeMillisSpent(timeMillisSpent);
             subSingleBenchmarkResult.setScoreCalculationCount(solverScope.getScoreCalculationCount());
             subSingleBenchmarkResult.setMoveEvaluationCount(solverScope.getMoveEvaluationCount());
 
-            SolutionManager<Solution_, ?> solutionManager = SolutionManager.create(solverFactory);
-            boolean isConstraintMatchEnabled = solver.getSolverScope().getScoreDirector().getConstraintMatchPolicy()
+            var solutionManager = SolutionManager.create(solverFactory);
+            var isConstraintMatchEnabled = solver.getSolverScope().getScoreDirector().getConstraintMatchPolicy()
                     .isEnabled();
             if (isConstraintMatchEnabled) { // Easy calculator fails otherwise.
-                ScoreExplanation<Solution_, ?> scoreExplanation =
+                var scoreExplanation =
                         solutionManager.explain(solution, SolutionUpdatePolicy.NO_UPDATE);
                 subSingleBenchmarkResult.setScoreExplanationSummary(scoreExplanation.getSummary());
             }

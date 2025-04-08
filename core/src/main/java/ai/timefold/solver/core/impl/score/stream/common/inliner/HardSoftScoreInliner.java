@@ -31,8 +31,8 @@ final class HardSoftScoreInliner extends AbstractScoreInliner<HardSoftScore> {
     }
 
     @Override
-    public HardSoftScore extractScore(int initScore) {
-        return HardSoftScore.ofUninitialized(initScore, hardScore, softScore);
+    public HardSoftScore extractScore() {
+        return HardSoftScore.of(hardScore, softScore);
     }
 
     @Override

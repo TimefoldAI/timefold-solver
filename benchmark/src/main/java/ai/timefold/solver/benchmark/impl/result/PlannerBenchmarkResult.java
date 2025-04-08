@@ -314,7 +314,7 @@ public class PlannerBenchmarkResult {
         determineSolverRanking(benchmarkReport);
     }
 
-    private void determineTotalsAndAverages() {
+    private <Score_ extends Score<Score_>> void determineTotalsAndAverages() {
         failureCount = 0;
         long totalProblemScale = 0L;
         int problemScaleCount = 0;
@@ -327,7 +327,7 @@ public class PlannerBenchmarkResult {
             failureCount += problemBenchmarkResult.getFailureCount();
         }
         averageProblemScale = problemScaleCount == 0 ? null : totalProblemScale / problemScaleCount;
-        Score totalScore = null;
+        Score_ totalScore = null;
         int solverBenchmarkCount = 0;
         boolean firstSolverBenchmarkResult = true;
         for (SolverBenchmarkResult solverBenchmarkResult : solverBenchmarkResultList) {
@@ -339,9 +339,9 @@ public class PlannerBenchmarkResult {
                 environmentMode = null;
             }
 
-            Score score = solverBenchmarkResult.getAverageScore();
+            Score_ score = (Score_) solverBenchmarkResult.getAverageScore();
             if (score != null) {
-                ScoreDefinition scoreDefinition = solverBenchmarkResult.getScoreDefinition();
+                ScoreDefinition<Score_> scoreDefinition = solverBenchmarkResult.getScoreDefinition();
                 if (totalScore != null && !scoreDefinition.isCompatibleArithmeticArgument(totalScore)) {
                     // Mixing different use cases with different score definitions.
                     totalScore = null;

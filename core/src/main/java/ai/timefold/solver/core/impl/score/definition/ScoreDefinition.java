@@ -17,14 +17,6 @@ import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
 public interface ScoreDefinition<Score_ extends Score<Score_>> {
 
     /**
-     * Returns the label for {@link Score#initScore()}.
-     *
-     * @return never null
-     * @see #getLevelLabels()
-     */
-    String getInitLabel();
-
-    /**
      * Returns the length of {@link Score#toLevelNumbers()} for every {@link Score} of this definition.
      * For example: returns 2 on {@link HardSoftScoreDefinition}.
      *
@@ -43,8 +35,6 @@ public interface ScoreDefinition<Score_ extends Score<Score_>> {
     /**
      * Returns a label for each score level. Each label includes the suffix "score" and must start in lower case.
      * For example: returns {@code {"hard score", "soft score "}} on {@link HardSoftScoreDefinition}.
-     * <p>
-     * It does not include the {@link #getInitLabel()}.
      *
      * @return never null, array with length of {@link #getLevelsSize()}, each element is never null
      */
@@ -89,32 +79,20 @@ public interface ScoreDefinition<Score_ extends Score<Score_>> {
     }
 
     /**
-     * Returns a {@link String} representation of the {@link Score}.
-     *
-     * @param score never null
-     * @return never null
-     * @see #parseScore(String)
-     */
-    String formatScore(Score_ score);
-
-    /**
      * Parses the {@link String} and returns a {@link Score}.
      *
      * @param scoreString never null
      * @return never null
-     * @see #formatScore(Score)
      */
     Score_ parseScore(String scoreString);
 
     /**
      * The opposite of {@link Score#toLevelNumbers()}.
      *
-     * @param initScore {@code <= 0}, managed by Timefold, needed as a parameter in the {@link Score}'s creation
-     *        method, see {@link Score#initScore()}
      * @param levelNumbers never null
      * @return never null
      */
-    Score_ fromLevelNumbers(int initScore, Number[] levelNumbers);
+    Score_ fromLevelNumbers(Number[] levelNumbers);
 
     /**
      * Builds a {@link Score} which is equal or better than any other {@link Score} with more variables initialized
@@ -122,7 +100,7 @@ public interface ScoreDefinition<Score_ extends Score<Score_>> {
      *
      * @param initializingScoreTrend never null, with {@link InitializingScoreTrend#getLevelsSize()}
      *        equal to {@link #getLevelsSize()}.
-     * @param score never null, with {@link Score#initScore()} {@code 0}.
+     * @param score never null, considered initialized
      * @return never null
      */
     Score_ buildOptimisticBound(InitializingScoreTrend initializingScoreTrend, Score_ score);
@@ -133,7 +111,7 @@ public interface ScoreDefinition<Score_ extends Score<Score_>> {
      *
      * @param initializingScoreTrend never null, with {@link InitializingScoreTrend#getLevelsSize()}
      *        equal to {@link #getLevelsSize()}.
-     * @param score never null, with {@link Score#initScore()} {@code 0}
+     * @param score never null, considered initialized
      * @return never null
      */
     Score_ buildPessimisticBound(InitializingScoreTrend initializingScoreTrend, Score_ score);
@@ -154,7 +132,7 @@ public interface ScoreDefinition<Score_ extends Score<Score_>> {
      * @return true if the otherScore is accepted as a parameter of {@link Score#add(Score)},
      *         {@link Score#subtract(Score)} and {@link Score#compareTo(Object)} for scores of this score definition.
      */
-    boolean isCompatibleArithmeticArgument(Score score);
+    boolean isCompatibleArithmeticArgument(Score_ score);
 
     /**
      * Return the type of number that the score implementation operates on.

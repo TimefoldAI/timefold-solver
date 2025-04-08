@@ -4,8 +4,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.change.ProblemChangeDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
@@ -33,7 +31,7 @@ public final class DefaultProblemChangeDirector<Solution_> implements ProblemCha
     public <Entity> void removeEntity(@NonNull Entity entity, @NonNull Consumer<Entity> entityConsumer) {
         Objects.requireNonNull(entity, () -> "Entity (" + entity + ") cannot be null.");
         Objects.requireNonNull(entityConsumer, () -> "Entity consumer (" + entityConsumer + ") cannot be null.");
-        Entity workingEntity = lookUpWorkingObjectOrFail(entity);
+        var workingEntity = lookUpWorkingObjectOrFail(entity);
         scoreDirector.beforeEntityRemoved(workingEntity);
         entityConsumer.accept(workingEntity);
         scoreDirector.afterEntityRemoved(workingEntity);
@@ -45,7 +43,7 @@ public final class DefaultProblemChangeDirector<Solution_> implements ProblemCha
         Objects.requireNonNull(entity, () -> "Entity (" + entity + ") cannot be null.");
         Objects.requireNonNull(variableName, () -> "Planning variable name (" + variableName + ") cannot be null.");
         Objects.requireNonNull(entityConsumer, () -> "Entity consumer (" + entityConsumer + ") cannot be null.");
-        Entity workingEntity = lookUpWorkingObjectOrFail(entity);
+        var workingEntity = lookUpWorkingObjectOrFail(entity);
         scoreDirector.beforeVariableChanged(workingEntity, variableName);
         entityConsumer.accept(workingEntity);
         scoreDirector.afterVariableChanged(workingEntity, variableName);
@@ -68,7 +66,7 @@ public final class DefaultProblemChangeDirector<Solution_> implements ProblemCha
         Objects.requireNonNull(problemFact, () -> "Problem fact (" + problemFact + ") cannot be null.");
         Objects.requireNonNull(problemFactConsumer, () -> "Problem fact consumer (" + problemFactConsumer
                 + ") cannot be null.");
-        ProblemFact workingProblemFact = lookUpWorkingObjectOrFail(problemFact);
+        var workingProblemFact = lookUpWorkingObjectOrFail(problemFact);
         scoreDirector.beforeProblemFactRemoved(workingProblemFact);
         problemFactConsumer.accept(workingProblemFact);
         scoreDirector.afterProblemFactRemoved(workingProblemFact);
@@ -81,7 +79,7 @@ public final class DefaultProblemChangeDirector<Solution_> implements ProblemCha
                 () -> "Problem fact or entity (" + problemFactOrEntity + ") cannot be null.");
         Objects.requireNonNull(problemFactOrEntityConsumer, () -> "Problem fact or entity consumer ("
                 + problemFactOrEntityConsumer + ") cannot be null.");
-        EntityOrProblemFact workingEntityOrProblemFact = lookUpWorkingObjectOrFail(problemFactOrEntity);
+        var workingEntityOrProblemFact = lookUpWorkingObjectOrFail(problemFactOrEntity);
         scoreDirector.beforeProblemPropertyChanged(workingEntityOrProblemFact);
         problemFactOrEntityConsumer.accept(workingEntityOrProblemFact);
         scoreDirector.afterProblemPropertyChanged(workingEntityOrProblemFact);
@@ -104,9 +102,4 @@ public final class DefaultProblemChangeDirector<Solution_> implements ProblemCha
         scoreDirector.triggerVariableListeners();
     }
 
-    public Score<?> doProblemChange(ProblemChange<Solution_> problemChange) {
-        problemChange.doChange(scoreDirector.getWorkingSolution(), this);
-        updateShadowVariables();
-        return scoreDirector.calculateScore();
-    }
 }

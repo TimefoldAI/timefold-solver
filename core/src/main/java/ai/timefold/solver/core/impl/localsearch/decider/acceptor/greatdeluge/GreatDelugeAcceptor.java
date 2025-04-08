@@ -8,12 +8,11 @@ import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 
 public class GreatDelugeAcceptor<Solution_> extends AbstractAcceptor<Solution_> {
 
+    // Guaranteed inside local search, therefore no need for InnerScore.
     private Score initialWaterLevel;
     private Score waterLevelIncrementScore;
     private Double waterLevelIncrementRatio;
-
     private Score startingWaterLevel = null;
-
     private Score currentWaterLevel = null;
     private Double currentWaterLevelRatio = null;
 
@@ -44,7 +43,7 @@ public class GreatDelugeAcceptor<Solution_> extends AbstractAcceptor<Solution_> 
     @Override
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
-        startingWaterLevel = initialWaterLevel != null ? initialWaterLevel : phaseScope.getBestScore();
+        startingWaterLevel = initialWaterLevel != null ? initialWaterLevel : phaseScope.getBestScore().raw();
         if (waterLevelIncrementRatio != null) {
             currentWaterLevelRatio = 0.0;
         }
@@ -61,18 +60,15 @@ public class GreatDelugeAcceptor<Solution_> extends AbstractAcceptor<Solution_> 
         currentWaterLevel = null;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public boolean isAccepted(LocalSearchMoveScope moveScope) {
-        Score moveScore = moveScope.getScore();
+        var moveScore = moveScope.getScore().raw();
         if (moveScore.compareTo(currentWaterLevel) >= 0) {
             return true;
         }
-        Score lastStepScore = moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore();
-        if (moveScore.compareTo(lastStepScore) > 0) {
-            // Aspiration
-            return true;
-        }
-        return false;
+        var lastStepScore = moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore().raw();
+        return moveScore.compareTo(lastStepScore) > 0; // Aspiration
     }
 
     @Override

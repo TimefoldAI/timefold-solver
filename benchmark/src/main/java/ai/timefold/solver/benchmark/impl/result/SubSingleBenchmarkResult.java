@@ -58,6 +58,7 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
 
     private Boolean succeeded = null;
     private Score<?> score = null;
+    private boolean initialized = false;
     private long timeMillisSpent = -1L;
     private long scoreCalculationCount = -1L;
     private long moveEvaluationCount = -1L;
@@ -92,15 +93,15 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
     }
 
     public void initSubSingleStatisticMap() {
-        List<ProblemStatistic> problemStatisticList = singleBenchmarkResult.getProblemBenchmarkResult()
-                .getProblemStatisticList();
+        List<ProblemStatistic> problemStatisticList =
+                singleBenchmarkResult.getProblemBenchmarkResult().getProblemStatisticList();
         effectiveSubSingleStatisticMap = new HashMap<>(
                 problemStatisticList.size() + pureSubSingleStatisticList.size());
-        for (ProblemStatistic problemStatistic : problemStatisticList) {
-            SubSingleStatistic subSingleStatistic = problemStatistic.createSubSingleStatistic(this);
+        for (var problemStatistic : problemStatisticList) {
+            var subSingleStatistic = problemStatistic.createSubSingleStatistic(this);
             effectiveSubSingleStatisticMap.put(subSingleStatistic.getStatisticType(), subSingleStatistic);
         }
-        for (PureSubSingleStatistic pureSubSingleStatistic : pureSubSingleStatisticList) {
+        for (var pureSubSingleStatistic : pureSubSingleStatisticList) {
             effectiveSubSingleStatisticMap.put(pureSubSingleStatistic.getStatisticType(), pureSubSingleStatistic);
         }
     }
@@ -144,8 +145,9 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
         return score;
     }
 
-    public void setScore(Score<?> score) {
+    public void setScore(Score<?> score, boolean isInitialized) {
         this.score = score;
+        this.initialized = isInitialized;
     }
 
     public long getTimeMillisSpent() {
@@ -202,16 +204,16 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
 
     @Override
     public boolean hasAllSuccess() {
-        return succeeded != null && succeeded.booleanValue();
+        return succeeded != null && succeeded;
     }
 
     public boolean isInitialized() {
-        return score != null && score.isSolutionInitialized();
+        return score != null && initialized;
     }
 
     @Override
     public boolean hasAnyFailure() {
-        return succeeded != null && !succeeded.booleanValue();
+        return succeeded != null && !succeeded;
     }
 
     public boolean isScoreFeasible() {
@@ -257,7 +259,7 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
     }
 
     public void makeDirs() {
-        File subSingleReportDirectory = getResultDirectory();
+        var subSingleReportDirectory = getResultDirectory();
         subSingleReportDirectory.mkdirs();
     }
 
@@ -272,16 +274,16 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
     protected static SubSingleBenchmarkResult createMerge(
             SingleBenchmarkResult singleBenchmarkResult, SubSingleBenchmarkResult oldResult,
             int subSingleBenchmarkIndex) {
-        SubSingleBenchmarkResult newResult = new SubSingleBenchmarkResult(singleBenchmarkResult, subSingleBenchmarkIndex);
+        var newResult = new SubSingleBenchmarkResult(singleBenchmarkResult, subSingleBenchmarkIndex);
         newResult.pureSubSingleStatisticList = new ArrayList<>(oldResult.pureSubSingleStatisticList.size());
-        for (PureSubSingleStatistic oldSubSingleStatistic : oldResult.pureSubSingleStatisticList) {
+        for (var oldSubSingleStatistic : oldResult.pureSubSingleStatisticList) {
             newResult.pureSubSingleStatisticList.add(
                     oldSubSingleStatistic.getStatisticType().buildPureSubSingleStatistic(newResult));
         }
 
         newResult.initSubSingleStatisticMap();
-        for (SubSingleStatistic newSubSingleStatistic : newResult.effectiveSubSingleStatisticMap.values()) {
-            SubSingleStatistic oldSubSingleStatistic = oldResult
+        for (var newSubSingleStatistic : newResult.effectiveSubSingleStatisticMap.values()) {
+            var oldSubSingleStatistic = oldResult
                     .getSubSingleStatistic(newSubSingleStatistic.getStatisticType());
             if (!oldSubSingleStatistic.getCsvFile().exists()) {
                 if (oldResult.hasAnyFailure()) {

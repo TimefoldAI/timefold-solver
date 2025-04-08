@@ -5,7 +5,6 @@ import java.util.Collections;
 
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
-import ai.timefold.solver.core.preview.api.move.Move;
 
 public class MoveTabuAcceptor<Solution_> extends AbstractTabuAcceptor<Solution_> {
 
@@ -18,13 +17,13 @@ public class MoveTabuAcceptor<Solution_> extends AbstractTabuAcceptor<Solution_>
     // ************************************************************************
 
     @Override
-    protected Collection<? extends Object> findTabu(LocalSearchMoveScope<Solution_> moveScope) {
+    protected Collection<Object> findTabu(LocalSearchMoveScope<Solution_> moveScope) {
         return Collections.singletonList(moveScope.getMove());
     }
 
     @Override
-    protected Collection<? extends Object> findNewTabu(LocalSearchStepScope<Solution_> stepScope) {
-        return Collections.singletonList((Move<?>) stepScope.getStep());
+    protected Collection<Object> findNewTabu(LocalSearchStepScope<Solution_> stepScope) {
+        return Collections.singletonList(stepScope.getStep());
     }
 
 }

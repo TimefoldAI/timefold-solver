@@ -245,10 +245,6 @@ Most use cases tend to use ``HardSoftScore``.
 
 image::constraints-and-score/overview/scoreClassDiagram.png[align="center"]
 
-All Score implementations also have an `initScore` (which is an ``int``).
-It is mostly intended for internal use in Timefold Solver: it is the negative number of uninitialized planning variables.
-From a user's perspective this is ``0``, unless a Construction Heuristic is terminated before it could initialize all planning variables (in which case `Score.isSolutionInitialized()` returns ``false``).
-
 The `Score` implementation (for example ``HardSoftScore``) must be the same throughout a `Solver` runtime.
 The `Score` implementation is configured in the solution domain class:
 

@@ -8,6 +8,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchLayer;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 /**
@@ -17,7 +18,7 @@ public final class ExhaustiveSearchPhaseScope<Solution_> extends AbstractPhaseSc
 
     private List<ExhaustiveSearchLayer> layerList;
     private SortedSet<ExhaustiveSearchNode> expandableNodeQueue;
-    private Score bestPessimisticBound;
+    private InnerScore<?> bestPessimisticBound;
 
     private ExhaustiveSearchStepScope<Solution_> lastCompletedStepScope;
 
@@ -42,11 +43,12 @@ public final class ExhaustiveSearchPhaseScope<Solution_> extends AbstractPhaseSc
         this.expandableNodeQueue = expandableNodeQueue;
     }
 
-    public Score getBestPessimisticBound() {
-        return bestPessimisticBound;
+    @SuppressWarnings("unchecked")
+    public <Score_ extends Score<Score_>> InnerScore<Score_> getBestPessimisticBound() {
+        return (InnerScore<Score_>) bestPessimisticBound;
     }
 
-    public void setBestPessimisticBound(Score bestPessimisticBound) {
+    public void setBestPessimisticBound(InnerScore<?> bestPessimisticBound) {
         this.bestPessimisticBound = bestPessimisticBound;
     }
 
@@ -67,12 +69,16 @@ public final class ExhaustiveSearchPhaseScope<Solution_> extends AbstractPhaseSc
         return layerList.size();
     }
 
-    public void registerPessimisticBound(Score pessimisticBound) {
-        if (pessimisticBound.compareTo(bestPessimisticBound) > 0) {
+    public <Score_ extends Score<Score_>> void registerPessimisticBound(InnerScore<Score_> pessimisticBound) {
+        var castBestPessimisticBound = this.<Score_> getBestPessimisticBound();
+        if (pessimisticBound.compareTo(castBestPessimisticBound) > 0) {
             bestPessimisticBound = pessimisticBound;
             // Prune the queue
             // TODO optimize this because expandableNodeQueue is too long to iterate
-            expandableNodeQueue.removeIf(node -> node.getOptimisticBound().compareTo(bestPessimisticBound) <= 0);
+            expandableNodeQueue.removeIf(node -> {
+                var optimistic = node.<Score_> getOptimisticBound();
+                return optimistic.compareTo(pessimisticBound) <= 0;
+            });
         }
     }
 

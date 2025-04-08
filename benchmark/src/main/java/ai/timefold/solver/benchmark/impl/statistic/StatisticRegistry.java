@@ -21,7 +21,6 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
-import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.search.Search;
@@ -44,7 +43,7 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
 
     public StatisticRegistry(ScoreDefinition<?> scoreDefinition) {
         this.scoreDefinition = scoreDefinition;
-        Number zeroScoreLevel0 = scoreDefinition.getZeroScore().toLevelNumbers()[0];
+        var zeroScoreLevel0 = scoreDefinition.getZeroScore().toLevelNumbers()[0];
         if (zeroScoreLevel0 instanceof BigDecimal) {
             scoreLevelNumberConverter = number -> BigDecimal.valueOf(number.doubleValue());
         } else if (zeroScoreLevel0 instanceof BigInteger) {
@@ -90,20 +89,20 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
     }
 
     public void extractScoreFromMeters(SolverMetric metric, Tags runId, Consumer<Score<?>> scoreConsumer) {
-        String[] labelNames = scoreDefinition.getLevelLabels();
-        for (int i = 0; i < labelNames.length; i++) {
+        var labelNames = scoreDefinition.getLevelLabels();
+        for (var i = 0; i < labelNames.length; i++) {
             labelNames[i] = labelNames[i].replace(' ', '.');
         }
-        Number[] levelNumbers = new Number[labelNames.length];
-        for (int i = 0; i < labelNames.length; i++) {
-            Gauge scoreLevelGauge = this.find(metric.getMeterId() + "." + labelNames[i]).tags(runId).gauge();
+        var levelNumbers = new Number[labelNames.length];
+        for (var i = 0; i < labelNames.length; i++) {
+            var scoreLevelGauge = this.find(metric.getMeterId() + "." + labelNames[i]).tags(runId).gauge();
             if (scoreLevelGauge != null && Double.isFinite(scoreLevelGauge.value())) {
                 levelNumbers[i] = scoreLevelNumberConverter.apply(scoreLevelGauge.value());
             } else {
                 return;
             }
         }
-        scoreConsumer.accept(scoreDefinition.fromLevelNumbers(0, levelNumbers));
+        scoreConsumer.accept(scoreDefinition.fromLevelNumbers(levelNumbers));
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -131,7 +130,7 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
     }
 
     public void getGaugeValue(String meterId, Tags runId, Consumer<Number> gaugeConsumer) {
-        Gauge gauge = this.find(meterId).tags(runId).gauge();
+        var gauge = this.find(meterId).tags(runId).gauge();
         if (gauge != null && Double.isFinite(gauge.value())) {
             gaugeConsumer.accept(gauge.value());
         }
@@ -154,8 +153,7 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
 
     @Override
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
-        final long timestamp =
-                System.currentTimeMillis() - stepScope.getPhaseScope().getSolverScope().getStartingSystemTimeMillis();
+        var timestamp = System.currentTimeMillis() - stepScope.getPhaseScope().getSolverScope().getStartingSystemTimeMillis();
         stepMeterListenerList.forEach(listener -> listener.accept(timestamp, stepScope));
         if (stepScope.getBestScoreImproved()) {
             // Since best solution metrics are updated in a best solution listener, we need

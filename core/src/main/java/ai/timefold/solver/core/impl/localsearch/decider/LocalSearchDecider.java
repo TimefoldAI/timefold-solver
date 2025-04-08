@@ -10,13 +10,10 @@ import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.move.MoveRepository;
-import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.Termination;
-import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,11 +87,11 @@ public class LocalSearchDecider<Solution_> {
     }
 
     public void decideNextStep(LocalSearchStepScope<Solution_> stepScope) {
-        InnerScoreDirector<Solution_, ?> scoreDirector = stepScope.getScoreDirector();
+        var scoreDirector = stepScope.getScoreDirector();
         scoreDirector.setAllChangesWillBeUndoneBeforeStepEnds(true);
-        int moveIndex = 0;
+        var moveIndex = 0;
         for (var move : moveRepository) {
-            LocalSearchMoveScope<Solution_> moveScope = new LocalSearchMoveScope<>(stepScope, moveIndex, move);
+            var moveScope = new LocalSearchMoveScope<>(stepScope, moveIndex, move);
             moveIndex++;
             doMove(moveScope);
             if (forager.isQuitEarly()) {
@@ -109,10 +106,9 @@ public class LocalSearchDecider<Solution_> {
         pickMove(stepScope);
     }
 
-    @SuppressWarnings("unchecked")
     protected <Score_ extends Score<Score_>> void doMove(LocalSearchMoveScope<Solution_> moveScope) {
-        var scoreDirector = (InnerScoreDirector<Solution_, Score_>) moveScope.getScoreDirector();
-        var moveDirector = (MoveDirector<Solution_, Score_>) moveScope.getStepScope().getMoveDirector();
+        var scoreDirector = moveScope.<Score_> getScoreDirector();
+        var moveDirector = moveScope.getStepScope().<Score_> getMoveDirector();
         var move = moveScope.getMove();
         if (!LegacyMoveAdapter.isDoable(moveDirector, move)) {
             throw new IllegalStateException("Impossible state: Local search move selector (" + moveRepository
@@ -124,17 +120,18 @@ public class LocalSearchDecider<Solution_> {
         forager.addMove(moveScope);
         if (assertExpectedUndoMoveScore) {
             scoreDirector.assertExpectedUndoMoveScore(moveScope.getMove(),
-                    (Score_) moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore(),
+                    moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore(),
                     SolverLifecyclePoint.of(moveScope));
         }
         logger.trace("{}        Move index ({}), score ({}), accepted ({}), move ({}).",
-                logIndentation, moveScope.getMoveIndex(), moveScope.getScore(), moveScope.getAccepted(), moveScope.getMove());
+                logIndentation, moveScope.getMoveIndex(), moveScope.getScore().raw(), moveScope.getAccepted(),
+                moveScope.getMove());
     }
 
     protected void pickMove(LocalSearchStepScope<Solution_> stepScope) {
-        LocalSearchMoveScope<Solution_> pickedMoveScope = forager.pickMove(stepScope);
+        var pickedMoveScope = forager.pickMove(stepScope);
         if (pickedMoveScope != null) {
-            Move<Solution_> step = pickedMoveScope.getMove();
+            var step = pickedMoveScope.getMove();
             stepScope.setStep(step);
             if (logger.isDebugEnabled()) {
                 stepScope.setStepString(step.toString());

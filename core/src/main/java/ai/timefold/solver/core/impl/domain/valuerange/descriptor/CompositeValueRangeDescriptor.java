@@ -51,26 +51,25 @@ public class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRange
         return innerExtractValueRange(solution, entity);
     }
 
-    @SuppressWarnings("unchecked")
     private <T> ValueRange<T> innerExtractValueRange(Solution_ solution, Object entity) {
         var childValueRangeList = new ArrayList<CountableValueRange<T>>(childValueRangeDescriptorList.size());
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
-            childValueRangeList.add((CountableValueRange<T>) valueRangeDescriptor.extractValueRange(solution, entity));
+            childValueRangeList.add((CountableValueRange<T>) valueRangeDescriptor.<T> extractValueRange(solution, entity));
         }
         return doNullInValueRangeWrapping(new CompositeCountableValueRange<>(childValueRangeList));
     }
 
     @Override
-    public ValueRange<?> extractValueRange(Solution_ solution) {
+    public <T> ValueRange<T> extractValueRange(Solution_ solution) {
         return innerExtractValueRange(solution);
     }
 
-    @SuppressWarnings("unchecked")
     private <T> ValueRange<T> innerExtractValueRange(Solution_ solution) {
         var childValueRangeList = new ArrayList<CountableValueRange<T>>(childValueRangeDescriptorList.size());
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
             var entityIndependentValueRangeDescriptor = (EntityIndependentValueRangeDescriptor<Solution_>) valueRangeDescriptor;
-            childValueRangeList.add((CountableValueRange<T>) entityIndependentValueRangeDescriptor.extractValueRange(solution));
+            childValueRangeList
+                    .add((CountableValueRange<T>) entityIndependentValueRangeDescriptor.<T> extractValueRange(solution));
         }
         return doNullInValueRangeWrapping(new CompositeCountableValueRange<>(childValueRangeList));
     }
@@ -79,7 +78,7 @@ public class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRange
     public long extractValueRangeSize(Solution_ solution, Object entity) {
         var size = addNullInValueRange ? 1L : 0L;
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
-            size += ((CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, entity)).getSize();
+            size += ((CountableValueRange<Object>) valueRangeDescriptor.extractValueRange(solution, entity)).getSize();
         }
         return size;
     }
@@ -89,7 +88,7 @@ public class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRange
         var size = addNullInValueRange ? 1L : 0L;
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
             var entityIndependentValueRangeDescriptor = (EntityIndependentValueRangeDescriptor<Solution_>) valueRangeDescriptor;
-            size += ((CountableValueRange<?>) entityIndependentValueRangeDescriptor.extractValueRange(solution)).getSize();
+            size += ((CountableValueRange<Object>) entityIndependentValueRangeDescriptor.extractValueRange(solution)).getSize();
         }
         return size;
     }

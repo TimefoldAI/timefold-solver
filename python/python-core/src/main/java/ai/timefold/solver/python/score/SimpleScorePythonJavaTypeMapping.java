@@ -13,15 +13,13 @@ import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
 public final class SimpleScorePythonJavaTypeMapping implements PythonJavaTypeMapping<PythonLikeObject, SimpleLongScore> {
     private final PythonLikeType type;
     private final Constructor<?> constructor;
-    private final Field initScoreField;
     private final Field scoreField;
 
     public SimpleScorePythonJavaTypeMapping(PythonLikeType type)
             throws ClassNotFoundException, NoSuchFieldException, NoSuchMethodException {
         this.type = type;
-        Class<?> clazz = type.getJavaClass();
+        var clazz = type.getJavaClass();
         constructor = clazz.getConstructor();
-        initScoreField = clazz.getField("init_score");
         scoreField = clazz.getField("score");
     }
 
@@ -39,7 +37,6 @@ public final class SimpleScorePythonJavaTypeMapping implements PythonJavaTypeMap
     public PythonLikeObject toPythonObject(SimpleLongScore javaObject) {
         try {
             var instance = constructor.newInstance();
-            initScoreField.set(instance, PythonInteger.valueOf(javaObject.initScore()));
             scoreField.set(instance, PythonInteger.valueOf(javaObject.score()));
             return (PythonLikeObject) instance;
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
@@ -50,13 +47,8 @@ public final class SimpleScorePythonJavaTypeMapping implements PythonJavaTypeMap
     @Override
     public SimpleLongScore toJavaObject(PythonLikeObject pythonObject) {
         try {
-            var initScore = ((PythonInteger) initScoreField.get(pythonObject)).value.intValue();
             var score = ((PythonInteger) scoreField.get(pythonObject)).value.longValue();
-            if (initScore == 0) {
-                return SimpleLongScore.of(score);
-            } else {
-                return SimpleLongScore.ofUninitialized(initScore, score);
-            }
+            return SimpleLongScore.of(score);
         } catch (IllegalAccessException e) {
             throw new IllegalStateException(e);
         }

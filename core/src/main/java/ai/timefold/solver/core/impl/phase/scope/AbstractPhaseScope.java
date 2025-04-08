@@ -6,6 +6,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -27,7 +28,7 @@ public abstract class AbstractPhaseScope<Solution_> {
     protected Long startingSystemTimeMillis;
     protected Long startingScoreCalculationCount;
     protected Long startingMoveEvaluationCount;
-    protected Score startingScore;
+    protected InnerScore<?> startingScore;
     protected Long endingSystemTimeMillis;
     protected Long endingScoreCalculationCount;
     protected Long endingMoveEvaluationCount;
@@ -74,8 +75,9 @@ public abstract class AbstractPhaseScope<Solution_> {
         return startingSystemTimeMillis;
     }
 
-    public <Score_ extends Score<Score_>> Score_ getStartingScore() {
-        return (Score_) startingScore;
+    @SuppressWarnings("unchecked")
+    public <Score_ extends Score<Score_>> InnerScore<Score_> getStartingScore() {
+        return (InnerScore<Score_>) startingScore;
     }
 
     public Long getEndingSystemTimeMillis() {
@@ -194,29 +196,29 @@ public abstract class AbstractPhaseScope<Solution_> {
         return solverScope.getWorkingEntityCount();
     }
 
-    public <Score_ extends Score<Score_>> Score_ calculateScore() {
-        return (Score_) solverScope.calculateScore();
+    public <Score_ extends Score<Score_>> InnerScore<Score_> calculateScore() {
+        return solverScope.calculateScore();
     }
 
-    public <Score_ extends Score<Score_>> void assertExpectedWorkingScore(Score_ expectedWorkingScore,
+    public <Score_ extends Score<Score_>> void assertExpectedWorkingScore(InnerScore<Score_> expectedWorkingScore,
             Object completedAction) {
         InnerScoreDirector<Solution_, Score_> innerScoreDirector = getScoreDirector();
         innerScoreDirector.assertExpectedWorkingScore(expectedWorkingScore, completedAction);
     }
 
-    public <Score_ extends Score<Score_>> void assertWorkingScoreFromScratch(Score_ workingScore,
+    public <Score_ extends Score<Score_>> void assertWorkingScoreFromScratch(InnerScore<Score_> workingScore,
             Object completedAction) {
         InnerScoreDirector<Solution_, Score_> innerScoreDirector = getScoreDirector();
         innerScoreDirector.assertWorkingScoreFromScratch(workingScore, completedAction);
     }
 
-    public <Score_ extends Score<Score_>> void assertPredictedScoreFromScratch(Score_ workingScore,
+    public <Score_ extends Score<Score_>> void assertPredictedScoreFromScratch(InnerScore<Score_> workingScore,
             Object completedAction) {
         InnerScoreDirector<Solution_, Score_> innerScoreDirector = getScoreDirector();
         innerScoreDirector.assertPredictedScoreFromScratch(workingScore, completedAction);
     }
 
-    public <Score_ extends Score<Score_>> void assertShadowVariablesAreNotStale(Score_ workingScore,
+    public <Score_ extends Score<Score_>> void assertShadowVariablesAreNotStale(InnerScore<Score_> workingScore,
             Object completedAction) {
         InnerScoreDirector<Solution_, Score_> innerScoreDirector = getScoreDirector();
         innerScoreDirector.assertShadowVariablesAreNotStale(workingScore, completedAction);
@@ -230,8 +232,8 @@ public abstract class AbstractPhaseScope<Solution_> {
         return solverScope.isBestSolutionInitialized();
     }
 
-    public <Score_ extends Score<Score_>> Score_ getBestScore() {
-        return (Score_) solverScope.getBestScore();
+    public <Score_ extends Score<Score_>> InnerScore<Score_> getBestScore() {
+        return solverScope.getBestScore();
     }
 
     public long getPhaseBestSolutionTimeMillis() {

@@ -5,6 +5,7 @@ import java.util.NavigableMap;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -39,7 +40,7 @@ final class DiminishedReturnsScoreRingBuffer<Score_ extends Score<Score_>> {
     int readIndex;
     int writeIndex;
     private long[] nanoTimeRingBuffer;
-    private Score_[] scoreRingBuffer;
+    private InnerScore<Score_>[] scoreRingBuffer;
 
     DiminishedReturnsScoreRingBuffer() {
         this(DEFAULT_CAPACITY);
@@ -47,11 +48,11 @@ final class DiminishedReturnsScoreRingBuffer<Score_ extends Score<Score_>> {
 
     @SuppressWarnings("unchecked")
     DiminishedReturnsScoreRingBuffer(int capacity) {
-        this(0, 0, new long[capacity], (Score_[]) new Score[capacity]);
+        this(0, 0, new long[capacity], new InnerScore[capacity]);
     }
 
     DiminishedReturnsScoreRingBuffer(int readIndex, int writeIndex,
-            long[] nanoTimeRingBuffer, @Nullable Score_[] scoreRingBuffer) {
+            long[] nanoTimeRingBuffer, @Nullable InnerScore<Score_>[] scoreRingBuffer) {
         this.nanoTimeRingBuffer = nanoTimeRingBuffer;
         this.scoreRingBuffer = scoreRingBuffer;
         this.readIndex = readIndex;
@@ -59,7 +60,7 @@ final class DiminishedReturnsScoreRingBuffer<Score_ extends Score<Score_>> {
     }
 
     record RingBufferState(int readIndex, int writeIndex,
-            long[] nanoTimeRingBuffer, @Nullable Score<?>[] scoreRingBuffer) {
+            long[] nanoTimeRingBuffer, @Nullable InnerScore<?>[] scoreRingBuffer) {
         @Override
         public boolean equals(Object o) {
             if (!(o instanceof RingBufferState that)) {
@@ -90,11 +91,11 @@ final class DiminishedReturnsScoreRingBuffer<Score_ extends Score<Score_>> {
         return new RingBufferState(readIndex, writeIndex, nanoTimeRingBuffer, scoreRingBuffer);
     }
 
+    @SuppressWarnings("unchecked")
     void resize() {
         var newCapacity = nanoTimeRingBuffer.length * 2;
         var newNanoTimeRingBuffer = new long[newCapacity];
-        @SuppressWarnings("unchecked")
-        var newScoreRingBuffer = (Score_[]) new Score[newCapacity];
+        var newScoreRingBuffer = new InnerScore[newCapacity];
 
         if (readIndex < writeIndex) {
             // entries are [startIndex, writeIndex)
@@ -138,7 +139,7 @@ final class DiminishedReturnsScoreRingBuffer<Score_ extends Score<Score_>> {
      *
      * @return the first element of the score ring buffer
      */
-    public @NonNull Score_ peekFirst() {
+    public @NonNull InnerScore<Score_> peekFirst() {
         var out = scoreRingBuffer[readIndex];
         if (out == null) {
             throw new IllegalStateException("Impossible state: buffer is empty");
@@ -153,7 +154,7 @@ final class DiminishedReturnsScoreRingBuffer<Score_ extends Score<Score_>> {
      * @param nanoTime the {@link System#nanoTime()} when the score was produced.
      * @param score the score that was produced.
      */
-    public void put(long nanoTime, @NonNull Score_ score) {
+    public void put(long nanoTime, @NonNull InnerScore<Score_> score) {
         if (nanoTimeRingBuffer[writeIndex] != 0L) {
             resize();
         }
@@ -170,7 +171,7 @@ final class DiminishedReturnsScoreRingBuffer<Score_ extends Score<Score_>> {
      * @return the first element in the score ring buffer after the count
      *         elements were removed.
      */
-    private @NonNull Score_ clearCountAndPeekNext(int count) {
+    private @NonNull InnerScore<Score_> clearCountAndPeekNext(int count) {
         if (readIndex + count < nanoTimeRingBuffer.length) {
             Arrays.fill(nanoTimeRingBuffer, readIndex, readIndex + count, 0L);
             Arrays.fill(scoreRingBuffer, readIndex, readIndex + count, null);
@@ -193,7 +194,7 @@ final class DiminishedReturnsScoreRingBuffer<Score_ extends Score<Score_>> {
      * @param nanoTime the queried time in nanoseconds.
      * @return the latest score prior to the given time.
      */
-    public @NonNull Score_ pollLatestScoreBeforeTimeAndClearPrior(long nanoTime) {
+    public @NonNull InnerScore<Score_> pollLatestScoreBeforeTimeAndClearPrior(long nanoTime) {
         if (readIndex == writeIndex && nanoTimeRingBuffer[writeIndex] == 0L) {
             throw new IllegalStateException("Impossible state: buffer is empty");
         }

@@ -15,7 +15,7 @@ public interface EntityIndependentValueRangeDescriptor<Solution_> extends ValueR
      * @return never null
      * @see ValueRangeDescriptor#extractValueRange
      */
-    ValueRange<?> extractValueRange(Solution_ solution);
+    <T> ValueRange<T> extractValueRange(Solution_ solution);
 
     /**
      * As specified by {@link ValueRangeDescriptor#extractValueRangeSize}.

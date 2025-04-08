@@ -50,8 +50,8 @@ final class HardMediumSoftLongScoreInliner extends AbstractScoreInliner<HardMedi
     }
 
     @Override
-    public HardMediumSoftLongScore extractScore(int initScore) {
-        return HardMediumSoftLongScore.ofUninitialized(initScore, hardScore, mediumScore, softScore);
+    public HardMediumSoftLongScore extractScore() {
+        return HardMediumSoftLongScore.of(hardScore, mediumScore, softScore);
     }
 
     @Override

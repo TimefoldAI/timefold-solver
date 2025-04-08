@@ -6,8 +6,7 @@ Furthermore, because it contains all vehicles and visits, each with a specific p
 it is a https://timefold.ai/docs/timefold-solver/latest/using-timefold-solver/modeling-planning-problems#planningProblemAndPlanningSolution[_planning solution_]
 and it has a score:
 
-* If visits are still unassigned, then it is an _uninitialized_ solution,
-for example, a solution with the score `-4init/0hard/0soft`.
+* If visits are still unassigned, then it is an _uninitialized_ solution.
 * If it breaks hard constraints, then it is an _infeasible_ solution,
 for example, a solution with the score `-2hard/-3soft`.
 * If it adheres to all hard constraints, then it is a _feasible_ solution,

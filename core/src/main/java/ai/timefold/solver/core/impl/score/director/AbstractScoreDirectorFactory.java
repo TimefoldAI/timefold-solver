@@ -93,18 +93,18 @@ public abstract class AbstractScoreDirectorFactory<Solution_, Score_ extends Sco
     @Override
     public void assertScoreFromScratch(Solution_ solution) {
         // Get the score before uncorruptedScoreDirector.calculateScore() modifies it
-        Score_ score = getSolutionDescriptor().getScore(solution);
+        var score = getSolutionDescriptor().<Score_> getScore(solution);
         // Most score directors don't need derived status; CS will override this.
         try (var uncorruptedScoreDirector = createScoreDirectorBuilder()
                 .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
                 .buildDerived()) {
             uncorruptedScoreDirector.setWorkingSolution(solution);
-            Score_ uncorruptedScore = uncorruptedScoreDirector.calculateScore();
+            var uncorruptedScore = uncorruptedScoreDirector.calculateScore()
+                    .raw();
             if (!score.equals(uncorruptedScore)) {
                 throw new IllegalStateException(
-                        "Score corruption (" + score.subtract(uncorruptedScore).toShortString()
-                                + "): the solution's score (" + score + ") is not the uncorruptedScore ("
-                                + uncorruptedScore + ").");
+                        "Score corruption (%s): the solution's score (%s) is not the uncorruptedScore (%s)."
+                                .formatted(score.subtract(uncorruptedScore).toShortString(), score, uncorruptedScore));
             }
         }
     }

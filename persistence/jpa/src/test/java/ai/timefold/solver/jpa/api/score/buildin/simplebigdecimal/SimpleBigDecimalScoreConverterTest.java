@@ -18,8 +18,7 @@ class SimpleBigDecimalScoreConverterTest extends AbstractScoreJpaTest {
     @Test
     void persistAndMerge() {
         persistAndMerge(new SimpleBigDecimalScoreConverterTestJpaEntity(SimpleBigDecimalScore.ZERO), null,
-                SimpleBigDecimalScore.of(new BigDecimal("-10.01000")),
-                SimpleBigDecimalScore.ofUninitialized(-7, new BigDecimal("-10.01000")));
+                SimpleBigDecimalScore.of(new BigDecimal("-10.01000")));
     }
 
     @Entity

@@ -7,7 +7,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.CompositeAcceptor;
@@ -27,10 +26,10 @@ class CompositeAcceptorTest {
         LocalSearchPhaseScope<TestdataSolution> phaseScope = mock(LocalSearchPhaseScope.class);
         LocalSearchStepScope<TestdataSolution> stepScope = mock(LocalSearchStepScope.class);
 
-        Acceptor acceptor1 = mock(Acceptor.class);
-        Acceptor acceptor2 = mock(Acceptor.class);
-        Acceptor acceptor3 = mock(Acceptor.class);
-        CompositeAcceptor compositeAcceptor = new CompositeAcceptor(acceptor1, acceptor2, acceptor3);
+        Acceptor<TestdataSolution> acceptor1 = mock(Acceptor.class);
+        Acceptor<TestdataSolution> acceptor2 = mock(Acceptor.class);
+        Acceptor<TestdataSolution> acceptor3 = mock(Acceptor.class);
+        var compositeAcceptor = new CompositeAcceptor<>(acceptor1, acceptor2, acceptor3);
 
         compositeAcceptor.solvingStarted(solverScope);
         compositeAcceptor.phaseStarted(phaseScope);
@@ -60,13 +59,13 @@ class CompositeAcceptorTest {
     }
 
     private boolean isCompositeAccepted(boolean... childAccepts) {
-        List<Acceptor> acceptorList = new ArrayList<>(childAccepts.length);
-        for (boolean childAccept : childAccepts) {
-            Acceptor acceptor = mock(Acceptor.class);
+        var acceptorList = new ArrayList<Acceptor<TestdataSolution>>(childAccepts.length);
+        for (var childAccept : childAccepts) {
+            Acceptor<TestdataSolution> acceptor = mock(Acceptor.class);
             when(acceptor.isAccepted(any(LocalSearchMoveScope.class))).thenReturn(childAccept);
             acceptorList.add(acceptor);
         }
-        CompositeAcceptor acceptor = new CompositeAcceptor(acceptorList);
+        var acceptor = new CompositeAcceptor<>(acceptorList);
         return acceptor.isAccepted(mock(LocalSearchMoveScope.class));
     }
 }

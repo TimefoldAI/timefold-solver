@@ -8,6 +8,7 @@ import ai.timefold.solver.core.config.localsearch.decider.acceptor.stepcountingh
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAcceptorTest;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,7 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         var acceptor = new StepCountingHillClimbingAcceptor<>(2, StepCountingHillClimbingType.STEP);
 
         var solverScope = new SolverScope<>();
-        solverScope.setBestScore(SimpleScore.of(-1000));
+        solverScope.setInitializedBestScore(SimpleScore.of(-1000));
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         var lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
         lastCompletedStepScope.setScore(solverScope.getBestScore());
@@ -38,7 +39,7 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, -900))).isTrue();
         stepScope0.setStep(moveScope0.getMove());
         stepScope0.setScore(moveScope0.getScore());
-        solverScope.setBestScore(moveScope0.getScore());
+        solverScope.setBestScore((InnerScore) moveScope0.getScore());
         acceptor.stepEnded(stepScope0);
         phaseScope.setLastCompletedStepScope(stepScope0);
 
@@ -70,7 +71,7 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, -700))).isTrue();
         stepScope2.setStep(moveScope2.getMove());
         stepScope2.setScore(moveScope2.getScore());
-        solverScope.setBestScore(moveScope2.getScore());
+        solverScope.setBestScore((InnerScore) moveScope2.getScore());
         acceptor.stepEnded(stepScope2);
         phaseScope.setLastCompletedStepScope(stepScope2);
 
@@ -102,7 +103,7 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, -400))).isTrue();
         stepScope4.setStep(moveScope4.getMove());
         stepScope4.setScore(moveScope4.getScore());
-        solverScope.setBestScore(moveScope4.getScore());
+        solverScope.setBestScore((InnerScore) moveScope4.getScore());
         acceptor.stepEnded(stepScope4);
         phaseScope.setLastCompletedStepScope(stepScope4);
 
@@ -130,7 +131,7 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         var acceptor = new StepCountingHillClimbingAcceptor<>(2, StepCountingHillClimbingType.EQUAL_OR_IMPROVING_STEP);
 
         var solverScope = new SolverScope<>();
-        solverScope.setBestScore(SimpleScore.of(-1000));
+        solverScope.setInitializedBestScore(SimpleScore.of(-1000));
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         var lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
         lastCompletedStepScope.setScore(solverScope.getBestScore());
@@ -149,7 +150,7 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, -900))).isTrue();
         stepScope0.setStep(moveScope0.getMove());
         stepScope0.setScore(moveScope0.getScore());
-        solverScope.setBestScore(moveScope0.getScore());
+        solverScope.setBestScore((InnerScore) moveScope0.getScore());
         acceptor.stepEnded(stepScope0);
         phaseScope.setLastCompletedStepScope(stepScope0);
 
@@ -182,7 +183,7 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, -700))).isTrue();
         stepScope2.setStep(moveScope2.getMove());
         stepScope2.setScore(moveScope2.getScore());
-        solverScope.setBestScore(moveScope2.getScore());
+        solverScope.setBestScore((InnerScore) moveScope2.getScore());
         acceptor.stepEnded(stepScope2);
         phaseScope.setLastCompletedStepScope(stepScope2);
 
@@ -213,7 +214,7 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, -400))).isTrue();
         stepScope4.setStep(moveScope4.getMove());
         stepScope4.setScore(moveScope4.getScore());
-        solverScope.setBestScore(moveScope4.getScore());
+        solverScope.setBestScore((InnerScore) moveScope4.getScore());
         acceptor.stepEnded(stepScope4);
         phaseScope.setLastCompletedStepScope(stepScope4);
 
@@ -241,7 +242,7 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         var acceptor = new StepCountingHillClimbingAcceptor<>(2, StepCountingHillClimbingType.IMPROVING_STEP);
 
         var solverScope = new SolverScope<>();
-        solverScope.setBestScore(SimpleScore.of(-1000));
+        solverScope.setInitializedBestScore(SimpleScore.of(-1000));
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         var lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
         lastCompletedStepScope.setScore(solverScope.getBestScore());
@@ -260,7 +261,7 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, -900))).isTrue();
         stepScope0.setStep(moveScope0.getMove());
         stepScope0.setScore(moveScope0.getScore());
-        solverScope.setBestScore(moveScope0.getScore());
+        solverScope.setBestScore((InnerScore) moveScope0.getScore());
         acceptor.stepEnded(stepScope0);
         phaseScope.setLastCompletedStepScope(stepScope0);
 
@@ -293,7 +294,7 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, -700))).isTrue();
         stepScope2.setStep(moveScope2.getMove());
         stepScope2.setScore(moveScope2.getScore());
-        solverScope.setBestScore(moveScope2.getScore());
+        solverScope.setBestScore((InnerScore) moveScope2.getScore());
         acceptor.stepEnded(stepScope2);
         phaseScope.setLastCompletedStepScope(stepScope2);
 
@@ -324,7 +325,7 @@ class StepCountingHillClimbingAcceptorTest extends AbstractAcceptorTest {
         assertThat(acceptor.isAccepted(buildMoveScope(stepScope0, -400))).isTrue();
         stepScope4.setStep(moveScope4.getMove());
         stepScope4.setScore(moveScope4.getScore());
-        solverScope.setBestScore(moveScope4.getScore());
+        solverScope.setBestScore((InnerScore) moveScope4.getScore());
         acceptor.stepEnded(stepScope4);
         phaseScope.setLastCompletedStepScope(stepScope4);
 

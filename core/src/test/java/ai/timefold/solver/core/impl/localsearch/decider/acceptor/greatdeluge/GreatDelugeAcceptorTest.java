@@ -9,6 +9,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AbstractAccepto
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -22,10 +23,10 @@ class GreatDelugeAcceptorTest extends AbstractAcceptorTest {
         acceptor.setWaterLevelIncrementScore(SimpleScore.of(100));
 
         var solverScope = new SolverScope<>();
-        solverScope.setBestScore(SimpleScore.of(-1000));
+        solverScope.setInitializedBestScore(SimpleScore.of(-1000));
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         var lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
-        lastCompletedStepScope.setScore(SimpleScore.of(-1000));
+        lastCompletedStepScope.setInitializedScore(SimpleScore.of(-1000));
         phaseScope.setLastCompletedStepScope(lastCompletedStepScope);
         acceptor.phaseStarted(phaseScope);
 
@@ -44,7 +45,7 @@ class GreatDelugeAcceptorTest extends AbstractAcceptorTest {
 
         stepScope0.setStep(moveScope0.getMove());
         stepScope0.setScore(moveScope0.getScore());
-        solverScope.setBestScore(moveScope0.getScore());
+        solverScope.setBestScore((InnerScore) moveScope0.getScore());
         acceptor.stepEnded(stepScope0);
         phaseScope.setLastCompletedStepScope(stepScope0);
 
@@ -62,7 +63,7 @@ class GreatDelugeAcceptorTest extends AbstractAcceptorTest {
 
         stepScope1.setStep(moveScope1.getMove());
         stepScope1.setScore(moveScope1.getScore());
-        solverScope.setBestScore(moveScope1.getScore());
+        solverScope.setBestScore((InnerScore) moveScope1.getScore());
         acceptor.stepEnded(stepScope1);
         phaseScope.setLastCompletedStepScope(stepScope1);
 
@@ -93,10 +94,10 @@ class GreatDelugeAcceptorTest extends AbstractAcceptorTest {
         acceptor.setWaterLevelIncrementScore(HardMediumSoftScore.of(0, 100, 100));
 
         var solverScope = new SolverScope<>();
-        solverScope.setBestScore(HardMediumSoftScore.of(0, -200, -1000));
+        solverScope.setInitializedBestScore(HardMediumSoftScore.of(0, -200, -1000));
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         var lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
-        lastCompletedStepScope.setScore(HardMediumSoftScore.of(0, -200, -1000));
+        lastCompletedStepScope.setInitializedScore(HardMediumSoftScore.of(0, -200, -1000));
         phaseScope.setLastCompletedStepScope(lastCompletedStepScope);
         acceptor.phaseStarted(phaseScope);
 
@@ -105,20 +106,20 @@ class GreatDelugeAcceptorTest extends AbstractAcceptorTest {
         var stepScope0 = new LocalSearchStepScope<>(phaseScope);
         acceptor.stepStarted(stepScope0);
         var moveScope0 = new LocalSearchMoveScope<>(stepScope0, 0, mock(Move.class));
-        moveScope0.setScore(HardMediumSoftScore.of(0, -100, -300));
+        moveScope0.setInitializedScore(HardMediumSoftScore.of(0, -100, -300));
         assertThat(acceptor.isAccepted(moveScope0)).isTrue();
         var moveScope1 = new LocalSearchMoveScope<>(stepScope0, 0, mock(Move.class));
-        moveScope1.setScore(HardMediumSoftScore.of(0, -100, -500));
+        moveScope1.setInitializedScore(HardMediumSoftScore.of(0, -100, -500));
         // Aspiration
         assertThat(acceptor.isAccepted(moveScope1)).isTrue();
         var moveScope2 = new LocalSearchMoveScope<>(stepScope0, 0, mock(Move.class));
-        moveScope2.setScore(HardMediumSoftScore.of(0, -50, -800));
+        moveScope2.setInitializedScore(HardMediumSoftScore.of(0, -50, -800));
         assertThat(acceptor.isAccepted(moveScope2)).isTrue();
         var moveScope3 = new LocalSearchMoveScope<>(stepScope0, 0, mock(Move.class));
-        moveScope3.setScore(HardMediumSoftScore.of(-5, -50, -100));
+        moveScope3.setInitializedScore(HardMediumSoftScore.of(-5, -50, -100));
         assertThat(acceptor.isAccepted(moveScope3)).isFalse();
         var moveScope4 = new LocalSearchMoveScope<>(stepScope0, 0, mock(Move.class));
-        moveScope4.setScore(HardMediumSoftScore.of(0, -22, -200));
+        moveScope4.setInitializedScore(HardMediumSoftScore.of(0, -22, -200));
         assertThat(acceptor.isAccepted(moveScope4)).isTrue();
 
         stepScope0.setStep(moveScope4.getMove());
@@ -136,10 +137,10 @@ class GreatDelugeAcceptorTest extends AbstractAcceptorTest {
         acceptor.setWaterLevelIncrementRatio(0.1);
 
         var solverScope = new SolverScope<>();
-        solverScope.setBestScore(SimpleScore.of(-8));
+        solverScope.setInitializedBestScore(SimpleScore.of(-8));
         var phaseScope = new LocalSearchPhaseScope<>(solverScope, 0);
         var lastCompletedStepScope = new LocalSearchStepScope<>(phaseScope, -1);
-        lastCompletedStepScope.setScore(SimpleScore.of(-8));
+        lastCompletedStepScope.setInitializedScore(SimpleScore.of(-8));
         phaseScope.setLastCompletedStepScope(lastCompletedStepScope);
         acceptor.phaseStarted(phaseScope);
 
@@ -155,7 +156,7 @@ class GreatDelugeAcceptorTest extends AbstractAcceptorTest {
 
         stepScope0.setStep(moveScope0.getMove());
         stepScope0.setScore(moveScope0.getScore());
-        solverScope.setBestScore(moveScope0.getScore());
+        solverScope.setBestScore((InnerScore) moveScope0.getScore());
         acceptor.stepEnded(stepScope0);
         phaseScope.setLastCompletedStepScope(stepScope0);
 
@@ -172,7 +173,7 @@ class GreatDelugeAcceptorTest extends AbstractAcceptorTest {
 
         stepScope1.setStep(moveScope1.getMove());
         stepScope1.setScore(moveScope1.getScore());
-        solverScope.setBestScore(moveScope1.getScore());
+        solverScope.setBestScore((InnerScore) moveScope1.getScore());
         acceptor.stepEnded(stepScope1);
         phaseScope.setLastCompletedStepScope(stepScope1);
 

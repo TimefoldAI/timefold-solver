@@ -13,6 +13,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSession;
 
 import org.jspecify.annotations.NullMarked;
@@ -63,11 +64,11 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     }
 
     @Override
-    public Score_ calculateScore() {
+    public InnerScore<Score_> calculateScore() {
         variableListenerSupport.assertNotificationQueuesAreEmpty();
-        var score = session.calculateScore(getWorkingInitScore());
+        var score = session.calculateScore();
         setCalculatedScore(score);
-        return score;
+        return new InnerScore<>(score, -getWorkingInitScore());
     }
 
     @Override

@@ -12,14 +12,14 @@ import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
  */
 public final class StrategicOscillationByLevelFinalistPodium<Solution_> extends AbstractFinalistPodium<Solution_> {
 
-    protected final boolean referenceBestScoreInsteadOfLastStepScore;
+    private final boolean referenceBestScoreInsteadOfLastStepScore;
 
-    protected Score referenceScore;
-    protected Number[] referenceLevelNumbers;
-
-    protected Score finalistScore;
-    protected Number[] finalistLevelNumbers;
-    protected boolean finalistImprovesUponReference;
+    // Guaranteed inside local search, therefore no need for InnerScore.
+    private Score<?> referenceScore;
+    private Number[] referenceLevelNumbers;
+    private Score<?> finalistScore;
+    private Number[] finalistLevelNumbers;
+    private boolean finalistImprovesUponReference;
 
     public StrategicOscillationByLevelFinalistPodium(boolean referenceBestScoreInsteadOfLastStepScore) {
         this.referenceBestScoreInsteadOfLastStepScore = referenceBestScoreInsteadOfLastStepScore;
@@ -29,16 +29,15 @@ public final class StrategicOscillationByLevelFinalistPodium<Solution_> extends 
     public void stepStarted(LocalSearchStepScope<Solution_> stepScope) {
         super.stepStarted(stepScope);
         referenceScore = referenceBestScoreInsteadOfLastStepScore
-                ? stepScope.getPhaseScope().getBestScore()
-                : stepScope.getPhaseScope().getLastCompletedStepScope().getScore();
-        referenceLevelNumbers = referenceBestScoreInsteadOfLastStepScore
-                ? stepScope.getPhaseScope().getBestScore().toLevelNumbers()
-                : stepScope.getPhaseScope().getLastCompletedStepScope().getScore().toLevelNumbers();
+                ? stepScope.getPhaseScope().getBestScore().raw()
+                : stepScope.getPhaseScope().getLastCompletedStepScope().getScore().raw();
+        referenceLevelNumbers = referenceScore.toLevelNumbers();
         finalistScore = null;
         finalistLevelNumbers = null;
         finalistImprovesUponReference = false;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void addMove(LocalSearchMoveScope<Solution_> moveScope) {
         boolean accepted = moveScope.getAccepted();
@@ -50,9 +49,9 @@ public final class StrategicOscillationByLevelFinalistPodium<Solution_> extends 
             finalistScore = null;
             finalistLevelNumbers = null;
         }
-        Score moveScore = moveScope.getScore();
-        Number[] moveLevelNumbers = moveScore.toLevelNumbers();
-        int comparison = doComparison(moveScore, moveLevelNumbers);
+        Score moveScore = moveScope.getScore().raw();
+        var moveLevelNumbers = moveScore.toLevelNumbers();
+        var comparison = doComparison(moveScore, moveLevelNumbers);
         if (comparison > 0) {
             finalistScore = moveScore;
             finalistLevelNumbers = moveLevelNumbers;
@@ -63,15 +62,16 @@ public final class StrategicOscillationByLevelFinalistPodium<Solution_> extends 
         }
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private int doComparison(Score moveScore, Number[] moveLevelNumbers) {
         if (finalistScore == null) {
             return 1;
         }
         // If there is an improving move, do not oscillate
         if (!finalistImprovesUponReference && moveScore.compareTo(referenceScore) < 0) {
-            for (int i = 0; i < referenceLevelNumbers.length; i++) {
-                boolean moveIsHigher = ((Comparable) moveLevelNumbers[i]).compareTo(referenceLevelNumbers[i]) > 0;
-                boolean finalistIsHigher = ((Comparable) finalistLevelNumbers[i]).compareTo(referenceLevelNumbers[i]) > 0;
+            for (var i = 0; i < referenceLevelNumbers.length; i++) {
+                var moveIsHigher = ((Comparable) moveLevelNumbers[i]).compareTo(referenceLevelNumbers[i]) > 0;
+                var finalistIsHigher = ((Comparable) finalistLevelNumbers[i]).compareTo(referenceLevelNumbers[i]) > 0;
                 if (moveIsHigher) {
                     if (finalistIsHigher) {
                         // Both are higher, take the best one but do not ignore higher levels

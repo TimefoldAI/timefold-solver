@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import ai.timefold.solver.benchmark.impl.report.BenchmarkReport;
@@ -54,12 +55,12 @@ class TotalRankSolverRankingWeightFactoryTest extends AbstractSolverRankingCompa
         b.setSingleBenchmarkResultList(bSingleBenchmarkResultList);
         b.accumulateResults(benchmarkReport);
         solverBenchmarkResultList.add(b);
-        List<SingleBenchmarkResult> totalSingleBenchmarkResultList = new ArrayList<>(aSingleBenchmarkResultList);
+        var totalSingleBenchmarkResultList = new ArrayList<>(aSingleBenchmarkResultList);
         totalSingleBenchmarkResultList.addAll(bSingleBenchmarkResultList);
         addProblemBenchmark(totalSingleBenchmarkResultList);
 
-        Comparable aWeight = factory.createRankingWeight(solverBenchmarkResultList, a);
-        Comparable bWeight = factory.createRankingWeight(solverBenchmarkResultList, b);
+        var aWeight = factory.createRankingWeight(solverBenchmarkResultList, a);
+        var bWeight = factory.createRankingWeight(solverBenchmarkResultList, b);
         assertCompareToOrder(aWeight, bWeight);
     }
 
@@ -77,66 +78,61 @@ class TotalRankSolverRankingWeightFactoryTest extends AbstractSolverRankingCompa
         b.setSingleBenchmarkResultList(bSingleBenchmarkResultList); // 4 wins - 0 equals - 2 losses
         b.accumulateResults(benchmarkReport);
         solverBenchmarkResultList.add(b);
-        SolverBenchmarkResult c = new SolverBenchmarkResult(null);
+        var c = new SolverBenchmarkResult(null);
         c.setScoreDefinition(new SimpleScoreDefinition());
-        List<SingleBenchmarkResult> cSingleBenchmarkResultList = new ArrayList<>();
+        var cSingleBenchmarkResultList = new ArrayList<SingleBenchmarkResult>();
         addSingleBenchmark(c, cSingleBenchmarkResultList, -5000, -10, -5000); // Loses vs b, Equals vs a
         addSingleBenchmark(c, cSingleBenchmarkResultList, -100, -10, -5000); // Wins vs a - wins vs b
         addSingleBenchmark(c, cSingleBenchmarkResultList, -10, -10, -5000); // Wins vs a - wins vs b
         c.setSingleBenchmarkResultList(cSingleBenchmarkResultList); // 4 wins - 1 equals - 1 losses
         c.accumulateResults(benchmarkReport);
         solverBenchmarkResultList.add(c);
-        List<SingleBenchmarkResult> totalSingleBenchmarkResultList = new ArrayList<>(aSingleBenchmarkResultList);
+        var totalSingleBenchmarkResultList = new ArrayList<>(aSingleBenchmarkResultList);
         totalSingleBenchmarkResultList.addAll(bSingleBenchmarkResultList);
         totalSingleBenchmarkResultList.addAll(cSingleBenchmarkResultList);
         addProblemBenchmark(totalSingleBenchmarkResultList);
 
-        Comparable aWeight = factory.createRankingWeight(solverBenchmarkResultList, a);
-        Comparable bWeight = factory.createRankingWeight(solverBenchmarkResultList, b);
-        Comparable cWeight = factory.createRankingWeight(solverBenchmarkResultList, c);
+        var aWeight = factory.createRankingWeight(solverBenchmarkResultList, a);
+        var bWeight = factory.createRankingWeight(solverBenchmarkResultList, b);
+        var cWeight = factory.createRankingWeight(solverBenchmarkResultList, c);
 
         assertCompareToOrder(aWeight, bWeight, cWeight);
     }
 
     @Test
     void uninitializedSingleBenchmarks() {
-        SingleBenchmarkResult a0 = addSingleBenchmark(a, aSingleBenchmarkResultList, -1000, -30, -1000);
+        var a0 = addSingleBenchmark(a, aSingleBenchmarkResultList, -1000, -30, -1000);
         addSingleBenchmark(a, aSingleBenchmarkResultList, -400, -30, -1000);
         addSingleBenchmark(a, aSingleBenchmarkResultList, -30, -30, -1000);
         a.setSingleBenchmarkResultList(aSingleBenchmarkResultList);
         a.accumulateResults(benchmarkReport);
         solverBenchmarkResultList.add(a);
-        SingleBenchmarkResult b0 = addSingleBenchmark(b, bSingleBenchmarkResultList, -1000, -30, -1000);
-        SingleBenchmarkResult b1 = addSingleBenchmark(b, bSingleBenchmarkResultList, -400, -30, -1000);
+        var b0 = addSingleBenchmark(b, bSingleBenchmarkResultList, -1000, -30, -1000);
+        var b1 = addSingleBenchmark(b, bSingleBenchmarkResultList, -400, -30, -1000);
         addSingleBenchmark(b, bSingleBenchmarkResultList, -30, -30, -1000);
         b.setSingleBenchmarkResultList(bSingleBenchmarkResultList);
         b.accumulateResults(benchmarkReport);
         solverBenchmarkResultList.add(b);
-        List<SingleBenchmarkResult> totalSingleBenchmarkResultList = new ArrayList<>(aSingleBenchmarkResultList);
+        var totalSingleBenchmarkResultList = new ArrayList<>(aSingleBenchmarkResultList);
         totalSingleBenchmarkResultList.addAll(bSingleBenchmarkResultList);
         addProblemBenchmark(totalSingleBenchmarkResultList);
 
-        Comparable aWeight = factory.createRankingWeight(solverBenchmarkResultList, a);
-        Comparable bWeight = factory.createRankingWeight(solverBenchmarkResultList, b);
+        var aWeight = factory.createRankingWeight(solverBenchmarkResultList, a);
+        var bWeight = factory.createRankingWeight(solverBenchmarkResultList, b);
         assertCompareToEquals(aWeight, bWeight);
 
-        a0.setAverageAndTotalScoreForTesting(SimpleScore.ofUninitialized(-100, -1000));
-        b0.setAverageAndTotalScoreForTesting(SimpleScore.ofUninitialized(-100, -1000));
+        a0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000), false);
+        b0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000), false);
         a.accumulateResults(benchmarkReport);
         b.accumulateResults(benchmarkReport);
         // ranks, uninitialized variable counts, total scores and worst scores are equal
         assertCompareToEquals(aWeight, bWeight);
 
-        b0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000));
-        b1.setAverageAndTotalScoreForTesting(SimpleScore.ofUninitialized(-100, -400));
+        b0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000), true);
+        b1.setAverageAndTotalScoreForTesting(SimpleScore.of(-400), false);
         b.accumulateResults(benchmarkReport);
         // ranks, uninitialized variable counts and total scores are equal, A loses on worst score (tie-breaker)
         assertCompareToOrder(aWeight, bWeight);
-
-        b1.setAverageAndTotalScoreForTesting(SimpleScore.ofUninitialized(-101, -400));
-        b.accumulateResults(benchmarkReport);
-        // ranks are equal, uninitialized variable count is bigger in B
-        assertCompareToOrder(bWeight, aWeight);
     }
 
     @Test
@@ -152,12 +148,12 @@ class TotalRankSolverRankingWeightFactoryTest extends AbstractSolverRankingCompa
         b.setSingleBenchmarkResultList(bSingleBenchmarkResultList);
         b.accumulateResults(benchmarkReport);
         solverBenchmarkResultList.add(b);
-        List<SingleBenchmarkResult> totalSingleBenchmarkResultList = new ArrayList<>(aSingleBenchmarkResultList);
+        var totalSingleBenchmarkResultList = new ArrayList<>(aSingleBenchmarkResultList);
         totalSingleBenchmarkResultList.addAll(bSingleBenchmarkResultList);
         addProblemBenchmark(totalSingleBenchmarkResultList);
 
-        Comparable aWeight = factory.createRankingWeight(solverBenchmarkResultList, a);
-        Comparable bWeight = factory.createRankingWeight(solverBenchmarkResultList, b);
+        var aWeight = factory.createRankingWeight(solverBenchmarkResultList, a);
+        var bWeight = factory.createRankingWeight(solverBenchmarkResultList, b);
         assertCompareToOrder(aWeight, bWeight);
     }
 
@@ -176,12 +172,12 @@ class TotalRankSolverRankingWeightFactoryTest extends AbstractSolverRankingCompa
         b.setSingleBenchmarkResultList(bSingleBenchmarkResultList);
         b.accumulateResults(benchmarkReport);
         solverBenchmarkResultList.add(b);
-        List<SingleBenchmarkResult> totalSingleBenchmarkResultList = new ArrayList<>(aSingleBenchmarkResultList);
+        var totalSingleBenchmarkResultList = new ArrayList<>(aSingleBenchmarkResultList);
         totalSingleBenchmarkResultList.addAll(bSingleBenchmarkResultList);
         addProblemBenchmark(totalSingleBenchmarkResultList);
 
-        Comparable aWeight = factory.createRankingWeight(solverBenchmarkResultList, a);
-        Comparable bWeight = factory.createRankingWeight(solverBenchmarkResultList, b);
+        var aWeight = factory.createRankingWeight(solverBenchmarkResultList, a);
+        var bWeight = factory.createRankingWeight(solverBenchmarkResultList, b);
         assertCompareToEquals(aWeight, bWeight);
     }
 
@@ -200,14 +196,14 @@ class TotalRankSolverRankingWeightFactoryTest extends AbstractSolverRankingCompa
         b.accumulateResults(benchmarkReport);
         solverBenchmarkResultList.add(b);
         // A and B have different datasets (6 datasets in total)
-        for (SolverBenchmarkResult solverBenchmarkResult : solverBenchmarkResultList) {
-            for (SingleBenchmarkResult singleBenchmarkResult : solverBenchmarkResult.getSingleBenchmarkResultList()) {
-                addProblemBenchmark(Arrays.asList(singleBenchmarkResult));
+        for (var solverBenchmarkResult : solverBenchmarkResultList) {
+            for (var singleBenchmarkResult : solverBenchmarkResult.getSingleBenchmarkResultList()) {
+                addProblemBenchmark(Collections.singletonList(singleBenchmarkResult));
             }
         }
 
-        Comparable aWeight = factory.createRankingWeight(solverBenchmarkResultList, a);
-        Comparable bWeight = factory.createRankingWeight(solverBenchmarkResultList, b);
+        var aWeight = factory.createRankingWeight(solverBenchmarkResultList, a);
+        var bWeight = factory.createRankingWeight(solverBenchmarkResultList, b);
         // Tie-breaker, A wins on total score
         assertCompareToOrder(bWeight, aWeight);
     }
@@ -227,29 +223,29 @@ class TotalRankSolverRankingWeightFactoryTest extends AbstractSolverRankingCompa
         b.accumulateResults(benchmarkReport);
         solverBenchmarkResultList.add(b);
         // A and B have different datasets (6 datasets in total)
-        for (SolverBenchmarkResult solverBenchmarkResult : solverBenchmarkResultList) {
-            for (SingleBenchmarkResult singleBenchmarkResult : solverBenchmarkResult.getSingleBenchmarkResultList()) {
-                addProblemBenchmark(Arrays.asList(singleBenchmarkResult));
+        for (var solverBenchmarkResult : solverBenchmarkResultList) {
+            for (var singleBenchmarkResult : solverBenchmarkResult.getSingleBenchmarkResultList()) {
+                addProblemBenchmark(Collections.singletonList(singleBenchmarkResult));
             }
         }
 
-        Comparable aWeight = factory.createRankingWeight(solverBenchmarkResultList, a);
-        Comparable bWeight = factory.createRankingWeight(solverBenchmarkResultList, b);
+        var aWeight = factory.createRankingWeight(solverBenchmarkResultList, a);
+        var bWeight = factory.createRankingWeight(solverBenchmarkResultList, b);
         // Tie-breaker (total score) is equal
         assertCompareToEquals(aWeight, bWeight);
     }
 
     @Test
     void overlappingPlannerBenchmarks() {
-        SingleBenchmarkResult a0 = addSingleBenchmark(a, aSingleBenchmarkResultList, -1000, -30, -1000);
-        SingleBenchmarkResult a1 = addSingleBenchmark(a, aSingleBenchmarkResultList, -400, -30, -1000);
-        SingleBenchmarkResult a2 = addSingleBenchmark(a, aSingleBenchmarkResultList, -30, -30, -1000);
+        var a0 = addSingleBenchmark(a, aSingleBenchmarkResultList, -1000, -30, -1000);
+        var a1 = addSingleBenchmark(a, aSingleBenchmarkResultList, -400, -30, -1000);
+        var a2 = addSingleBenchmark(a, aSingleBenchmarkResultList, -30, -30, -1000);
         a.setSingleBenchmarkResultList(aSingleBenchmarkResultList);
         a.accumulateResults(benchmarkReport);
         solverBenchmarkResultList.add(a);
-        SingleBenchmarkResult b0 = addSingleBenchmark(b, bSingleBenchmarkResultList, -1000, -30, -1000);
-        SingleBenchmarkResult b1 = addSingleBenchmark(b, bSingleBenchmarkResultList, -400, -30, -1000);
-        SingleBenchmarkResult b2 = addSingleBenchmark(b, bSingleBenchmarkResultList, -30, -30, -1000);
+        var b0 = addSingleBenchmark(b, bSingleBenchmarkResultList, -1000, -30, -1000);
+        var b1 = addSingleBenchmark(b, bSingleBenchmarkResultList, -400, -30, -1000);
+        var b2 = addSingleBenchmark(b, bSingleBenchmarkResultList, -30, -30, -1000);
         b.setSingleBenchmarkResultList(bSingleBenchmarkResultList);
         b.accumulateResults(benchmarkReport);
         solverBenchmarkResultList.add(b);
@@ -257,14 +253,14 @@ class TotalRankSolverRankingWeightFactoryTest extends AbstractSolverRankingCompa
         addProblemBenchmark(Arrays.asList(a1, b1));
         addProblemBenchmark(Arrays.asList(a2, b2));
 
-        Comparable aWeight = factory.createRankingWeight(solverBenchmarkResultList, a);
-        Comparable bWeight = factory.createRankingWeight(solverBenchmarkResultList, b);
+        var aWeight = factory.createRankingWeight(solverBenchmarkResultList, a);
+        var bWeight = factory.createRankingWeight(solverBenchmarkResultList, b);
         assertCompareToEquals(aWeight, bWeight);
 
-        addProblemBenchmark(Arrays.asList(a1));
-        addProblemBenchmark(Arrays.asList(a2));
-        addProblemBenchmark(Arrays.asList(b0));
-        addProblemBenchmark(Arrays.asList(b2));
+        addProblemBenchmark(Collections.singletonList(a1));
+        addProblemBenchmark(Collections.singletonList(a2));
+        addProblemBenchmark(Collections.singletonList(b0));
+        addProblemBenchmark(Collections.singletonList(b2));
         addProblemBenchmark(Arrays.asList(a0, b1));
         aWeight = factory.createRankingWeight(solverBenchmarkResultList, a);
         bWeight = factory.createRankingWeight(solverBenchmarkResultList, b);

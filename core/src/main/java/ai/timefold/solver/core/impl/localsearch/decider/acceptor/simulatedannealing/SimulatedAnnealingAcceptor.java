@@ -31,7 +31,7 @@ public class SimulatedAnnealingAcceptor<Solution_> extends AbstractAcceptor<Solu
     @Override
     public void phaseStarted(LocalSearchPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
-        for (double startingTemperatureLevel : startingTemperature.toLevelDoubles()) {
+        for (var startingTemperatureLevel : startingTemperature.toLevelDoubles()) {
             if (startingTemperatureLevel < 0.0) {
                 throw new IllegalArgumentException("The startingTemperature (" + startingTemperature
                         + ") cannot have negative level (" + startingTemperatureLevel + ").");
@@ -50,20 +50,22 @@ public class SimulatedAnnealingAcceptor<Solution_> extends AbstractAcceptor<Solu
         levelsLength = -1;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public boolean isAccepted(LocalSearchMoveScope<Solution_> moveScope) {
-        LocalSearchPhaseScope<Solution_> phaseScope = moveScope.getStepScope().getPhaseScope();
-        Score lastStepScore = phaseScope.getLastCompletedStepScope().getScore();
-        Score moveScore = moveScope.getScore();
+        var phaseScope = moveScope.getStepScope().getPhaseScope();
+        // Guaranteed local search; no need for InnerScore.
+        Score lastStepScore = phaseScope.getLastCompletedStepScope().getScore().raw();
+        Score moveScore = moveScope.getScore().raw();
         if (moveScore.compareTo(lastStepScore) >= 0) {
             return true;
         }
-        Score moveScoreDifference = lastStepScore.subtract(moveScore);
-        double[] moveScoreDifferenceLevels = moveScoreDifference.toLevelDoubles();
-        double acceptChance = 1.0;
-        for (int i = 0; i < levelsLength; i++) {
-            double moveScoreDifferenceLevel = moveScoreDifferenceLevels[i];
-            double temperatureLevel = temperatureLevels[i];
+        var moveScoreDifference = lastStepScore.subtract(moveScore);
+        var moveScoreDifferenceLevels = moveScoreDifference.toLevelDoubles();
+        var acceptChance = 1.0;
+        for (var i = 0; i < levelsLength; i++) {
+            var moveScoreDifferenceLevel = moveScoreDifferenceLevels[i];
+            var temperatureLevel = temperatureLevels[i];
             double acceptChanceLevel;
             if (moveScoreDifferenceLevel <= 0.0) {
                 // In this level, moveScore is better than the lastStepScore, so do not disrupt the acceptChance
@@ -73,21 +75,17 @@ public class SimulatedAnnealingAcceptor<Solution_> extends AbstractAcceptor<Solu
             }
             acceptChance *= acceptChanceLevel;
         }
-        if (moveScope.getWorkingRandom().nextDouble() < acceptChance) {
-            return true;
-        } else {
-            return false;
-        }
+        return moveScope.getWorkingRandom().nextDouble() < acceptChance;
     }
 
     @Override
     public void stepStarted(LocalSearchStepScope<Solution_> stepScope) {
         super.stepStarted(stepScope);
         // TimeGradient only refreshes at the beginning of a step, so this code is in stepStarted instead of stepEnded
-        double timeGradient = stepScope.getTimeGradient();
-        double reverseTimeGradient = 1.0 - timeGradient;
+        var timeGradient = stepScope.getTimeGradient();
+        var reverseTimeGradient = 1.0 - timeGradient;
         temperatureLevels = new double[levelsLength];
-        for (int i = 0; i < levelsLength; i++) {
+        for (var i = 0; i < levelsLength; i++) {
             temperatureLevels[i] = startingTemperatureLevels[i] * reverseTimeGradient;
             if (temperatureLevels[i] < temperatureMinimum) {
                 temperatureLevels[i] = temperatureMinimum;

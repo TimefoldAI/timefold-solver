@@ -34,7 +34,7 @@ public class FromSolutionPropertyValueRangeDescriptor<Solution_>
     }
 
     @Override
-    public ValueRange<?> extractValueRange(Solution_ solution) {
+    public <T> ValueRange<T> extractValueRange(Solution_ solution) {
         return readValueRange(solution);
     }
 
