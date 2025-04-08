@@ -9,13 +9,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverConfigOverride;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverJob;
@@ -101,12 +99,12 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
             Consumer<? super Solution_> solverJobStartedConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
             SolverConfigOverride<Solution_> configOverride) {
-        Solver<Solution_> solver = solverFactory.buildSolver(configOverride);
+        var solver = solverFactory.buildSolver(configOverride);
         ((DefaultSolver<Solution_>) solver).setMonitorTagMap(Map.of("problem.id", problemId.toString()));
         BiConsumer<? super ProblemId_, ? super Throwable> finalExceptionHandler = (exceptionHandler != null)
                 ? exceptionHandler
                 : defaultExceptionHandler;
-        DefaultSolverJob<Solution_, ProblemId_> solverJob = problemIdToSolverJobMap
+        var solverJob = problemIdToSolverJobMap
                 .compute(problemId, (key, oldSolverJob) -> {
                     if (oldSolverJob != null) {
                         // TODO Future features: automatically restart solving by calling reloadProblem()
@@ -117,14 +115,14 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
                                 finalExceptionHandler);
                     }
                 });
-        Future<Solution_> future = solverThreadPool.submit(solverJob);
+        var future = solverThreadPool.submit(solverJob);
         solverJob.setFinalBestSolutionFuture(future);
         return solverJob;
     }
 
     @Override
     public @NonNull SolverStatus getSolverStatus(@NonNull ProblemId_ problemId) {
-        DefaultSolverJob<Solution_, ProblemId_> solverJob = getSolverJob(problemId);
+        var solverJob = getSolverJob(problemId);
         if (solverJob == null) {
             return SolverStatus.NOT_SOLVING;
         }
@@ -134,7 +132,7 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
     @Override
     public @NonNull CompletableFuture<Void> addProblemChanges(@NonNull ProblemId_ problemId,
             @NonNull List<ProblemChange<Solution_>> problemChangeList) {
-        DefaultSolverJob<Solution_, ProblemId_> solverJob = getSolverJob(problemId);
+        var solverJob = getSolverJob(problemId);
         if (solverJob == null) {
             // We cannot distinguish between "already terminated" and "never solved" without causing a memory leak.
             throw new IllegalStateException(
@@ -146,7 +144,7 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
 
     @Override
     public void terminateEarly(@NonNull ProblemId_ problemId) {
-        DefaultSolverJob<Solution_, ProblemId_> solverJob = getSolverJob(problemId);
+        var solverJob = getSolverJob(problemId);
         if (solverJob == null) {
             // We cannot distinguish between "already terminated" and "never solved" without causing a memory leak.
             LOGGER.debug("Ignoring terminateEarly() call because problemId ({}) is not solving.", problemId);

@@ -9,14 +9,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
-import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
 
 import io.micrometer.core.instrument.Tags;
@@ -28,19 +26,19 @@ public class PickedMoveStepScoreDiffStatistic<Solution_> implements SolverStatis
 
     @Override
     public void unregister(Solver<Solution_> solver) {
-        PhaseLifecycleListenerAdapter<Solution_> listener = solverToPhaseLifecycleListenerMap.remove(solver);
+        var listener = solverToPhaseLifecycleListenerMap.remove(solver);
         if (listener != null) {
             ((DefaultSolver<Solution_>) solver).removePhaseLifecycleListener(listener);
         }
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void register(Solver<Solution_> solver) {
-        DefaultSolver<Solution_> defaultSolver = (DefaultSolver<Solution_>) solver;
-        ScoreDirectorFactory<Solution_, ?> scoreDirectorFactory = defaultSolver.getScoreDirectorFactory();
-        SolutionDescriptor<Solution_> solutionDescriptor = scoreDirectorFactory.getSolutionDescriptor();
-        PickedMoveStepScoreDiffStatisticListener<Solution_, ?> listener =
-                new PickedMoveStepScoreDiffStatisticListener<>((ScoreDefinition<?>) solutionDescriptor.getScoreDefinition());
+        var defaultSolver = (DefaultSolver<Solution_>) solver;
+        var scoreDirectorFactory = defaultSolver.getScoreDirectorFactory();
+        var solutionDescriptor = scoreDirectorFactory.getSolutionDescriptor();
+        var listener = new PickedMoveStepScoreDiffStatisticListener(solutionDescriptor.getScoreDefinition());
         solverToPhaseLifecycleListenerMap.put(solver, listener);
         defaultSolver.addPhaseLifecycleListener(listener);
     }
@@ -79,9 +77,9 @@ public class PickedMoveStepScoreDiffStatistic<Solution_> implements SolverStatis
         }
 
         private void localSearchStepEnded(LocalSearchStepScope<Solution_> stepScope) {
-            String moveType = stepScope.getStep().describe();
-            Score_ newStepScore = stepScope.<Score_> getScore().raw();
-            Score_ stepScoreDiff = newStepScore.subtract(oldStepScore);
+            var moveType = stepScope.getStep().describe();
+            var newStepScore = stepScope.<Score_> getScore().raw();
+            var stepScoreDiff = newStepScore.subtract(oldStepScore);
             oldStepScore = newStepScore;
 
             SolverMetric.registerScoreMetrics(SolverMetric.PICKED_MOVE_TYPE_STEP_SCORE_DIFF,

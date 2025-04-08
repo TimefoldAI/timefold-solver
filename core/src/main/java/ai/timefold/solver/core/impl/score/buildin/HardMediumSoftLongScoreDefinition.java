@@ -59,7 +59,7 @@ public class HardMediumSoftLongScoreDefinition extends AbstractScoreDefinition<H
     @Override
     public HardMediumSoftLongScore buildOptimisticBound(InitializingScoreTrend initializingScoreTrend,
             HardMediumSoftLongScore score) {
-        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
+        var trendLevels = initializingScoreTrend.trendLevels();
         return HardMediumSoftLongScore.of(
                 trendLevels[0] == InitializingScoreTrendLevel.ONLY_DOWN ? score.hardScore() : Long.MAX_VALUE,
                 trendLevels[1] == InitializingScoreTrendLevel.ONLY_DOWN ? score.mediumScore() : Long.MAX_VALUE,
@@ -69,7 +69,7 @@ public class HardMediumSoftLongScoreDefinition extends AbstractScoreDefinition<H
     @Override
     public HardMediumSoftLongScore buildPessimisticBound(InitializingScoreTrend initializingScoreTrend,
             HardMediumSoftLongScore score) {
-        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
+        var trendLevels = initializingScoreTrend.trendLevels();
         return HardMediumSoftLongScore.of(
                 trendLevels[0] == InitializingScoreTrendLevel.ONLY_UP ? score.hardScore() : Long.MIN_VALUE,
                 trendLevels[1] == InitializingScoreTrendLevel.ONLY_UP ? score.mediumScore() : Long.MIN_VALUE,
@@ -79,12 +79,12 @@ public class HardMediumSoftLongScoreDefinition extends AbstractScoreDefinition<H
     @Override
     public HardMediumSoftLongScore divideBySanitizedDivisor(HardMediumSoftLongScore dividend,
             HardMediumSoftLongScore divisor) {
-        long dividendHardScore = dividend.hardScore();
-        long divisorHardScore = sanitize(divisor.hardScore());
-        long dividendMediumScore = dividend.mediumScore();
-        long divisorMediumScore = sanitize(divisor.mediumScore());
-        long dividendSoftScore = dividend.softScore();
-        long divisorSoftScore = sanitize(divisor.softScore());
+        var dividendHardScore = dividend.hardScore();
+        var divisorHardScore = sanitize(divisor.hardScore());
+        var dividendMediumScore = dividend.mediumScore();
+        var divisorMediumScore = sanitize(divisor.mediumScore());
+        var dividendSoftScore = dividend.softScore();
+        var divisorSoftScore = sanitize(divisor.softScore());
         return fromLevelNumbers(
                 new Number[] {
                         divide(dividendHardScore, divisorHardScore),

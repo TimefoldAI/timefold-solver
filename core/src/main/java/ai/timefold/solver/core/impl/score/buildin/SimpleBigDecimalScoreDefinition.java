@@ -59,24 +59,22 @@ public class SimpleBigDecimalScoreDefinition extends AbstractScoreDefinition<Sim
     @Override
     public SimpleBigDecimalScore buildOptimisticBound(InitializingScoreTrend initializingScoreTrend,
             SimpleBigDecimalScore score) {
-        // TODO https://issues.redhat.com/browse/PLANNER-232
-        throw new UnsupportedOperationException("PLANNER-232: BigDecimalScore does not support bounds" +
-                " because a BigDecimal cannot represent infinity.");
+        throw new UnsupportedOperationException(
+                "BigDecimalScore does not support bounds because a BigDecimal cannot represent infinity.");
     }
 
     @Override
     public SimpleBigDecimalScore buildPessimisticBound(InitializingScoreTrend initializingScoreTrend,
             SimpleBigDecimalScore score) {
-        // TODO https://issues.redhat.com/browse/PLANNER-232
-        throw new UnsupportedOperationException("PLANNER-232: BigDecimalScore does not support bounds" +
-                " because a BigDecimal cannot represent infinity.");
+        throw new UnsupportedOperationException(
+                "BigDecimalScore does not support bounds because a BigDecimal cannot represent infinity.");
     }
 
     @Override
     public SimpleBigDecimalScore divideBySanitizedDivisor(SimpleBigDecimalScore dividend,
             SimpleBigDecimalScore divisor) {
-        BigDecimal dividendScore = dividend.score();
-        BigDecimal divisorScore = sanitize(divisor.score());
+        var dividendScore = dividend.score();
+        var divisorScore = sanitize(divisor.score());
         return fromLevelNumbers(
                 new Number[] {
                         divide(dividendScore, divisorScore)

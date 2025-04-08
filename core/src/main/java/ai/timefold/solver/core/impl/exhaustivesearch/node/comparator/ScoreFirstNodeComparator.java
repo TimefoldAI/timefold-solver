@@ -23,30 +23,30 @@ public class ScoreFirstNodeComparator implements Comparator<ExhaustiveSearchNode
         // Investigate better score first (ignore initScore to avoid depth first ordering)
         Score aScore = a.getScore().raw();
         Score bScore = b.getScore().raw();
-        int scoreComparison = aScore.compareTo(bScore);
+        var scoreComparison = aScore.compareTo(bScore);
         if (scoreComparison < 0) {
             return -1;
         } else if (scoreComparison > 0) {
             return 1;
         }
         // Investigate better optimistic bound first
-        int optimisticBoundComparison = a.getOptimisticBound().compareTo(b.getOptimisticBound());
+        var optimisticBoundComparison = a.getOptimisticBound().compareTo(b.getOptimisticBound());
         if (optimisticBoundComparison < 0) {
             return -1;
         } else if (optimisticBoundComparison > 0) {
             return 1;
         }
         // Investigate deeper first
-        int aDepth = a.getDepth();
-        int bDepth = b.getDepth();
+        var aDepth = a.getDepth();
+        var bDepth = b.getDepth();
         if (aDepth < bDepth) {
             return -1;
         } else if (aDepth > bDepth) {
             return 1;
         }
         // Investigate higher parent breadth index first (to reduce on the churn on workingSolution)
-        long aParentBreadth = a.getParentBreadth();
-        long bParentBreadth = b.getParentBreadth();
+        var aParentBreadth = a.getParentBreadth();
+        var bParentBreadth = b.getParentBreadth();
         if (aParentBreadth < bParentBreadth) {
             return -1;
         } else if (aParentBreadth > bParentBreadth) {

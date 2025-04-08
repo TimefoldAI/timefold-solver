@@ -63,11 +63,11 @@ public class GreatDelugeAcceptor<Solution_> extends AbstractAcceptor<Solution_> 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public boolean isAccepted(LocalSearchMoveScope moveScope) {
-        Score moveScore = moveScope.getScore().raw();
+        var moveScore = moveScope.getScore().raw();
         if (moveScore.compareTo(currentWaterLevel) >= 0) {
             return true;
         }
-        Score lastStepScore = moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore().raw();
+        var lastStepScore = moveScope.getStepScope().getPhaseScope().getLastCompletedStepScope().getScore().raw();
         return moveScore.compareTo(lastStepScore) > 0; // Aspiration
     }
 

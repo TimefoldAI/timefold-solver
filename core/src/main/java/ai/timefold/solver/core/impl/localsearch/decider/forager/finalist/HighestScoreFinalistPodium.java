@@ -12,7 +12,7 @@ import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
  */
 public final class HighestScoreFinalistPodium<Solution_> extends AbstractFinalistPodium<Solution_> {
 
-    protected Score finalistScore;
+    private Score<?> finalistScore;
 
     @Override
     public void stepStarted(LocalSearchStepScope<Solution_> stepScope) {
@@ -22,7 +22,7 @@ public final class HighestScoreFinalistPodium<Solution_> extends AbstractFinalis
 
     @Override
     public void addMove(LocalSearchMoveScope<Solution_> moveScope) {
-        boolean accepted = moveScope.getAccepted();
+        var accepted = moveScope.getAccepted();
         if (finalistIsAccepted && !accepted) {
             return;
         }
@@ -30,8 +30,8 @@ public final class HighestScoreFinalistPodium<Solution_> extends AbstractFinalis
             finalistIsAccepted = true;
             finalistScore = null;
         }
-        Score<?> moveScore = moveScope.getScore().raw(); // Guaranteed local search; no need for InnerScore.
-        int scoreComparison = doComparison(moveScore);
+        var moveScore = moveScope.getScore().raw(); // Guaranteed local search; no need for InnerScore.
+        var scoreComparison = doComparison(moveScore);
         if (scoreComparison > 0) {
             finalistScore = moveScore;
             clearAndAddFinalist(moveScope);
@@ -40,6 +40,7 @@ public final class HighestScoreFinalistPodium<Solution_> extends AbstractFinalis
         }
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private int doComparison(Score moveScore) {
         if (finalistScore == null) {
             return 1;

@@ -9,14 +9,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
-import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
 
 import io.micrometer.core.instrument.Tags;
@@ -28,7 +26,7 @@ public class PickedMoveBestScoreDiffStatistic<Solution_, Score_ extends Score<Sc
 
     @Override
     public void unregister(Solver<Solution_> solver) {
-        PhaseLifecycleListenerAdapter<Solution_> listener = solverToPhaseLifecycleListenerMap.remove(solver);
+        var listener = solverToPhaseLifecycleListenerMap.remove(solver);
         if (listener != null) {
             ((DefaultSolver<Solution_>) solver).removePhaseLifecycleListener(listener);
         }
@@ -36,11 +34,10 @@ public class PickedMoveBestScoreDiffStatistic<Solution_, Score_ extends Score<Sc
 
     @Override
     public void register(Solver<Solution_> solver) {
-        DefaultSolver<Solution_> defaultSolver = (DefaultSolver<Solution_>) solver;
-        ScoreDirectorFactory<Solution_, ?> scoreDirectorFactory = defaultSolver.getScoreDirectorFactory();
-        SolutionDescriptor<Solution_> solutionDescriptor = scoreDirectorFactory.getSolutionDescriptor();
-        PickedMoveBestScoreDiffStatisticListener<Solution_, Score_> listener =
-                new PickedMoveBestScoreDiffStatisticListener<Solution_, Score_>(solutionDescriptor.getScoreDefinition());
+        var defaultSolver = (DefaultSolver<Solution_>) solver;
+        var scoreDirectorFactory = defaultSolver.getScoreDirectorFactory();
+        var solutionDescriptor = scoreDirectorFactory.getSolutionDescriptor();
+        var listener = new PickedMoveBestScoreDiffStatisticListener<Solution_, Score_>(solutionDescriptor.getScoreDefinition());
         solverToPhaseLifecycleListenerMap.put(solver, listener);
         defaultSolver.addPhaseLifecycleListener(listener);
     }

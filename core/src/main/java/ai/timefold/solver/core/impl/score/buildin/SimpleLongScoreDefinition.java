@@ -53,20 +53,20 @@ public class SimpleLongScoreDefinition extends AbstractScoreDefinition<SimpleLon
 
     @Override
     public SimpleLongScore buildOptimisticBound(InitializingScoreTrend initializingScoreTrend, SimpleLongScore score) {
-        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
+        var trendLevels = initializingScoreTrend.trendLevels();
         return SimpleLongScore.of(trendLevels[0] == InitializingScoreTrendLevel.ONLY_DOWN ? score.score() : Long.MAX_VALUE);
     }
 
     @Override
     public SimpleLongScore buildPessimisticBound(InitializingScoreTrend initializingScoreTrend, SimpleLongScore score) {
-        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
+        var trendLevels = initializingScoreTrend.trendLevels();
         return SimpleLongScore.of(trendLevels[0] == InitializingScoreTrendLevel.ONLY_UP ? score.score() : Long.MIN_VALUE);
     }
 
     @Override
     public SimpleLongScore divideBySanitizedDivisor(SimpleLongScore dividend, SimpleLongScore divisor) {
-        long dividendScore = dividend.score();
-        long divisorScore = sanitize(divisor.score());
+        var dividendScore = dividend.score();
+        var divisorScore = sanitize(divisor.score());
         return fromLevelNumbers(
                 new Number[] {
                         divide(dividendScore, divisorScore)

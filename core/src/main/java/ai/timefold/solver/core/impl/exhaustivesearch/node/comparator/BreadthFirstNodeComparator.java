@@ -27,8 +27,8 @@ public class BreadthFirstNodeComparator implements Comparator<ExhaustiveSearchNo
     @Override
     public int compare(ExhaustiveSearchNode a, ExhaustiveSearchNode b) {
         // Investigate shallower nodes first
-        int aDepth = a.getDepth();
-        int bDepth = b.getDepth();
+        var aDepth = a.getDepth();
+        var bDepth = b.getDepth();
         if (aDepth < bDepth) {
             return 1;
         } else if (aDepth > bDepth) {
@@ -37,7 +37,7 @@ public class BreadthFirstNodeComparator implements Comparator<ExhaustiveSearchNo
         // Investigate better score first (ignore initScore to avoid depth first ordering)
         Score aScore = a.getScore().raw();
         Score bScore = b.getScore().raw();
-        int scoreComparison = aScore.compareTo(bScore);
+        var scoreComparison = aScore.compareTo(bScore);
         if (scoreComparison < 0) {
             return -1;
         } else if (scoreComparison > 0) {
@@ -45,7 +45,7 @@ public class BreadthFirstNodeComparator implements Comparator<ExhaustiveSearchNo
         }
         if (scoreBounderEnabled) {
             // Investigate better optimistic bound first
-            int optimisticBoundComparison = a.getOptimisticBound().compareTo(b.getOptimisticBound());
+            var optimisticBoundComparison = a.getOptimisticBound().compareTo(b.getOptimisticBound());
             if (optimisticBoundComparison < 0) {
                 return -1;
             } else if (optimisticBoundComparison > 0) {

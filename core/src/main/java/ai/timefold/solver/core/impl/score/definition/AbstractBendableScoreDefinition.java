@@ -3,7 +3,8 @@ package ai.timefold.solver.core.impl.score.definition;
 import ai.timefold.solver.core.api.score.IBendableScore;
 import ai.timefold.solver.core.api.score.Score;
 
-public abstract class AbstractBendableScoreDefinition<Score_ extends Score<Score_>> extends AbstractScoreDefinition<Score_>
+public abstract class AbstractBendableScoreDefinition<Score_ extends Score<Score_>>
+        extends AbstractScoreDefinition<Score_>
         implements ScoreDefinition<Score_> {
 
     protected static String[] generateLevelLabels(int hardLevelsSize, int softLevelsSize) {
@@ -11,8 +12,8 @@ public abstract class AbstractBendableScoreDefinition<Score_ extends Score<Score
             throw new IllegalArgumentException("The hardLevelsSize (" + hardLevelsSize
                     + ") and softLevelsSize (" + softLevelsSize + ") should be positive.");
         }
-        String[] levelLabels = new String[hardLevelsSize + softLevelsSize];
-        for (int i = 0; i < levelLabels.length; i++) {
+        var levelLabels = new String[hardLevelsSize + softLevelsSize];
+        for (var i = 0; i < levelLabels.length; i++) {
             String labelPrefix;
             if (i < hardLevelsSize) {
                 labelPrefix = "hard " + i;
@@ -56,9 +57,9 @@ public abstract class AbstractBendableScoreDefinition<Score_ extends Score<Score
     }
 
     @Override
-    public boolean isCompatibleArithmeticArgument(Score score) {
+    public boolean isCompatibleArithmeticArgument(Score_ score) {
         if (super.isCompatibleArithmeticArgument(score)) {
-            IBendableScore<?> bendableScore = (IBendableScore<?>) score;
+            var bendableScore = (IBendableScore<?>) score;
             return getLevelsSize() == bendableScore.levelsSize()
                     && getHardLevelsSize() == bendableScore.hardLevelsSize()
                     && getSoftLevelsSize() == bendableScore.softLevelsSize();

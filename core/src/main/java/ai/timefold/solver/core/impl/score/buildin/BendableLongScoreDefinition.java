@@ -35,7 +35,7 @@ public class BendableLongScoreDefinition extends AbstractBendableScoreDefinition
 
     @Override
     public BendableLongScore parseScore(String scoreString) {
-        BendableLongScore score = BendableLongScore.parseScore(scoreString);
+        var score = BendableLongScore.parseScore(scoreString);
         if (score.hardLevelsSize() != hardLevelsSize) {
             throw new IllegalArgumentException("The scoreString (" + scoreString
                     + ") for the scoreClass (" + BendableLongScore.class.getSimpleName()
@@ -59,19 +59,19 @@ public class BendableLongScoreDefinition extends AbstractBendableScoreDefinition
             throw new IllegalStateException("The levelNumbers (" + Arrays.toString(levelNumbers)
                     + ")'s length (" + levelNumbers.length + ") must equal the levelSize (" + getLevelsSize() + ").");
         }
-        long[] hardScores = new long[hardLevelsSize];
-        for (int i = 0; i < hardLevelsSize; i++) {
+        var hardScores = new long[hardLevelsSize];
+        for (var i = 0; i < hardLevelsSize; i++) {
             hardScores[i] = (Long) levelNumbers[i];
         }
-        long[] softScores = new long[softLevelsSize];
-        for (int i = 0; i < softLevelsSize; i++) {
+        var softScores = new long[softLevelsSize];
+        for (var i = 0; i < softLevelsSize; i++) {
             softScores[i] = (Long) levelNumbers[hardLevelsSize + i];
         }
         return BendableLongScore.of(hardScores, softScores);
     }
 
     public BendableLongScore createScore(long... scores) {
-        int levelsSize = hardLevelsSize + softLevelsSize;
+        var levelsSize = hardLevelsSize + softLevelsSize;
         if (scores.length != levelsSize) {
             throw new IllegalArgumentException("The scores (" + Arrays.toString(scores)
                     + ")'s length (" + scores.length
@@ -84,15 +84,15 @@ public class BendableLongScoreDefinition extends AbstractBendableScoreDefinition
     @Override
     public BendableLongScore buildOptimisticBound(InitializingScoreTrend initializingScoreTrend,
             BendableLongScore score) {
-        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
-        long[] hardScores = new long[hardLevelsSize];
-        for (int i = 0; i < hardLevelsSize; i++) {
+        var trendLevels = initializingScoreTrend.trendLevels();
+        var hardScores = new long[hardLevelsSize];
+        for (var i = 0; i < hardLevelsSize; i++) {
             hardScores[i] = (trendLevels[i] == InitializingScoreTrendLevel.ONLY_DOWN)
                     ? score.hardScore(i)
                     : Long.MAX_VALUE;
         }
-        long[] softScores = new long[softLevelsSize];
-        for (int i = 0; i < softLevelsSize; i++) {
+        var softScores = new long[softLevelsSize];
+        for (var i = 0; i < softLevelsSize; i++) {
             softScores[i] = (trendLevels[hardLevelsSize + i] == InitializingScoreTrendLevel.ONLY_DOWN)
                     ? score.softScore(i)
                     : Long.MAX_VALUE;
@@ -103,15 +103,15 @@ public class BendableLongScoreDefinition extends AbstractBendableScoreDefinition
     @Override
     public BendableLongScore buildPessimisticBound(InitializingScoreTrend initializingScoreTrend,
             BendableLongScore score) {
-        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
-        long[] hardScores = new long[hardLevelsSize];
-        for (int i = 0; i < hardLevelsSize; i++) {
+        var trendLevels = initializingScoreTrend.trendLevels();
+        var hardScores = new long[hardLevelsSize];
+        for (var i = 0; i < hardLevelsSize; i++) {
             hardScores[i] = (trendLevels[i] == InitializingScoreTrendLevel.ONLY_UP)
                     ? score.hardScore(i)
                     : Long.MIN_VALUE;
         }
-        long[] softScores = new long[softLevelsSize];
-        for (int i = 0; i < softLevelsSize; i++) {
+        var softScores = new long[softLevelsSize];
+        for (var i = 0; i < softLevelsSize; i++) {
             softScores[i] = (trendLevels[hardLevelsSize + i] == InitializingScoreTrendLevel.ONLY_UP)
                     ? score.softScore(i)
                     : Long.MIN_VALUE;
@@ -121,15 +121,15 @@ public class BendableLongScoreDefinition extends AbstractBendableScoreDefinition
 
     @Override
     public BendableLongScore divideBySanitizedDivisor(BendableLongScore dividend, BendableLongScore divisor) {
-        long[] hardScores = new long[hardLevelsSize];
-        for (int i = 0; i < hardLevelsSize; i++) {
+        var hardScores = new long[hardLevelsSize];
+        for (var i = 0; i < hardLevelsSize; i++) {
             hardScores[i] = divide(dividend.hardScore(i), sanitize(divisor.hardScore(i)));
         }
-        long[] softScores = new long[softLevelsSize];
-        for (int i = 0; i < softLevelsSize; i++) {
+        var softScores = new long[softLevelsSize];
+        for (var i = 0; i < softLevelsSize; i++) {
             softScores[i] = divide(dividend.softScore(i), sanitize(divisor.softScore(i)));
         }
-        long[] levels = LongStream.concat(Arrays.stream(hardScores), Arrays.stream(softScores)).toArray();
+        var levels = LongStream.concat(Arrays.stream(hardScores), Arrays.stream(softScores)).toArray();
         return createScore(levels);
     }
 

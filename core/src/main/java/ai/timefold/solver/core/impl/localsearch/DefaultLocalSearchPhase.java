@@ -63,7 +63,7 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
             return;
         }
 
-        var phaseScope = new LocalSearchPhaseScope<Solution_>(solverScope, phaseIndex);
+        var phaseScope = new LocalSearchPhaseScope<>(solverScope, phaseIndex);
         phaseStarted(phaseScope);
 
         if (solverScope.isMetricEnabled(SolverMetric.MOVE_COUNT_PER_STEP)) {
@@ -74,7 +74,7 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
         }
 
         while (!phaseTermination.isPhaseTerminated(phaseScope)) {
-            var stepScope = new LocalSearchStepScope<Solution_>(phaseScope);
+            var stepScope = new LocalSearchStepScope<>(phaseScope);
             stepScope.setTimeGradient(phaseTermination.calculatePhaseTimeGradient(phaseScope));
             stepStarted(stepScope);
             decider.decideNextStep(stepScope);

@@ -79,20 +79,10 @@ public interface ScoreDefinition<Score_ extends Score<Score_>> {
     }
 
     /**
-     * Returns a {@link String} representation of the {@link Score}.
-     *
-     * @param score never null
-     * @return never null
-     * @see #parseScore(String)
-     */
-    String formatScore(Score_ score);
-
-    /**
      * Parses the {@link String} and returns a {@link Score}.
      *
      * @param scoreString never null
      * @return never null
-     * @see #formatScore(Score)
      */
     Score_ parseScore(String scoreString);
 
@@ -142,7 +132,7 @@ public interface ScoreDefinition<Score_ extends Score<Score_>> {
      * @return true if the otherScore is accepted as a parameter of {@link Score#add(Score)},
      *         {@link Score#subtract(Score)} and {@link Score#compareTo(Object)} for scores of this score definition.
      */
-    boolean isCompatibleArithmeticArgument(Score score);
+    boolean isCompatibleArithmeticArgument(Score_ score);
 
     /**
      * Return the type of number that the score implementation operates on.

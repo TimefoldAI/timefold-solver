@@ -59,7 +59,7 @@ public class HardSoftLongScoreDefinition extends AbstractScoreDefinition<HardSof
     @Override
     public HardSoftLongScore buildOptimisticBound(InitializingScoreTrend initializingScoreTrend,
             HardSoftLongScore score) {
-        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
+        var trendLevels = initializingScoreTrend.trendLevels();
         return HardSoftLongScore.of(
                 trendLevels[0] == InitializingScoreTrendLevel.ONLY_DOWN ? score.hardScore() : Long.MAX_VALUE,
                 trendLevels[1] == InitializingScoreTrendLevel.ONLY_DOWN ? score.softScore() : Long.MAX_VALUE);
@@ -68,17 +68,17 @@ public class HardSoftLongScoreDefinition extends AbstractScoreDefinition<HardSof
     @Override
     public HardSoftLongScore buildPessimisticBound(InitializingScoreTrend initializingScoreTrend,
             HardSoftLongScore score) {
-        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
+        var trendLevels = initializingScoreTrend.trendLevels();
         return HardSoftLongScore.of(trendLevels[0] == InitializingScoreTrendLevel.ONLY_UP ? score.hardScore() : Long.MIN_VALUE,
                 trendLevels[1] == InitializingScoreTrendLevel.ONLY_UP ? score.softScore() : Long.MIN_VALUE);
     }
 
     @Override
     public HardSoftLongScore divideBySanitizedDivisor(HardSoftLongScore dividend, HardSoftLongScore divisor) {
-        long dividendHardScore = dividend.hardScore();
-        long divisorHardScore = sanitize(divisor.hardScore());
-        long dividendSoftScore = dividend.softScore();
-        long divisorSoftScore = sanitize(divisor.softScore());
+        var dividendHardScore = dividend.hardScore();
+        var divisorHardScore = sanitize(divisor.hardScore());
+        var dividendSoftScore = dividend.softScore();
+        var divisorSoftScore = sanitize(divisor.softScore());
         return fromLevelNumbers(
                 new Number[] {
                         divide(dividendHardScore, divisorHardScore),

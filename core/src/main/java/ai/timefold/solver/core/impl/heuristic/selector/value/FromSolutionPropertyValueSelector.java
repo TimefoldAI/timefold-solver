@@ -12,7 +12,6 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 /**
  * This is the common {@link ValueSelector} implementation.
@@ -56,7 +55,7 @@ public final class FromSolutionPropertyValueSelector<Solution_>
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
-        InnerScoreDirector<Solution_, ?> scoreDirector = phaseScope.getScoreDirector();
+        var scoreDirector = phaseScope.getScoreDirector();
         cachedValueRange = valueRangeDescriptor.extractValueRange(scoreDirector.getWorkingSolution());
         if (valueRangeMightContainEntity) {
             cachedEntityListRevision = scoreDirector.getWorkingEntityListRevision();

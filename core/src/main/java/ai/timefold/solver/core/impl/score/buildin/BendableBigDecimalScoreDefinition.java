@@ -35,7 +35,7 @@ public class BendableBigDecimalScoreDefinition extends AbstractBendableScoreDefi
 
     @Override
     public BendableBigDecimalScore parseScore(String scoreString) {
-        BendableBigDecimalScore score = BendableBigDecimalScore.parseScore(scoreString);
+        var score = BendableBigDecimalScore.parseScore(scoreString);
         if (score.hardLevelsSize() != hardLevelsSize) {
             throw new IllegalArgumentException("The scoreString (" + scoreString
                     + ") for the scoreClass (" + BendableBigDecimalScore.class.getSimpleName()
@@ -59,19 +59,19 @@ public class BendableBigDecimalScoreDefinition extends AbstractBendableScoreDefi
             throw new IllegalStateException("The levelNumbers (" + Arrays.toString(levelNumbers)
                     + ")'s length (" + levelNumbers.length + ") must equal the levelSize (" + getLevelsSize() + ").");
         }
-        BigDecimal[] hardScores = new BigDecimal[hardLevelsSize];
-        for (int i = 0; i < hardLevelsSize; i++) {
+        var hardScores = new BigDecimal[hardLevelsSize];
+        for (var i = 0; i < hardLevelsSize; i++) {
             hardScores[i] = (BigDecimal) levelNumbers[i];
         }
-        BigDecimal[] softScores = new BigDecimal[softLevelsSize];
-        for (int i = 0; i < softLevelsSize; i++) {
+        var softScores = new BigDecimal[softLevelsSize];
+        for (var i = 0; i < softLevelsSize; i++) {
             softScores[i] = (BigDecimal) levelNumbers[hardLevelsSize + i];
         }
         return BendableBigDecimalScore.of(hardScores, softScores);
     }
 
     public BendableBigDecimalScore createScore(BigDecimal... scores) {
-        int levelsSize = hardLevelsSize + softLevelsSize;
+        var levelsSize = hardLevelsSize + softLevelsSize;
         if (scores.length != levelsSize) {
             throw new IllegalArgumentException("The scores (" + Arrays.toString(scores)
                     + ")'s length (" + scores.length
@@ -84,31 +84,29 @@ public class BendableBigDecimalScoreDefinition extends AbstractBendableScoreDefi
     @Override
     public BendableBigDecimalScore buildOptimisticBound(InitializingScoreTrend initializingScoreTrend,
             BendableBigDecimalScore score) {
-        // TODO https://issues.redhat.com/browse/PLANNER-232
-        throw new UnsupportedOperationException("PLANNER-232: BigDecimalScore does not support bounds" +
-                " because a BigDecimal cannot represent infinity.");
+        throw new UnsupportedOperationException(
+                "BigDecimalScore does not support bounds because a BigDecimal cannot represent infinity.");
     }
 
     @Override
     public BendableBigDecimalScore buildPessimisticBound(InitializingScoreTrend initializingScoreTrend,
             BendableBigDecimalScore score) {
-        // TODO https://issues.redhat.com/browse/PLANNER-232
-        throw new UnsupportedOperationException("PLANNER-232: BigDecimalScore does not support bounds" +
-                " because a BigDecimal cannot represent infinity.");
+        throw new UnsupportedOperationException(
+                "BigDecimalScore does not support bounds because a BigDecimal cannot represent infinity.");
     }
 
     @Override
     public BendableBigDecimalScore divideBySanitizedDivisor(BendableBigDecimalScore dividend,
             BendableBigDecimalScore divisor) {
-        BigDecimal[] hardScores = new BigDecimal[hardLevelsSize];
-        for (int i = 0; i < hardLevelsSize; i++) {
+        var hardScores = new BigDecimal[hardLevelsSize];
+        for (var i = 0; i < hardLevelsSize; i++) {
             hardScores[i] = divide(dividend.hardScore(i), sanitize(divisor.hardScore(i)));
         }
-        BigDecimal[] softScores = new BigDecimal[softLevelsSize];
-        for (int i = 0; i < softLevelsSize; i++) {
+        var softScores = new BigDecimal[softLevelsSize];
+        for (var i = 0; i < softLevelsSize; i++) {
             softScores[i] = divide(dividend.softScore(i), sanitize(divisor.softScore(i)));
         }
-        BigDecimal[] levels = Stream.concat(Arrays.stream(hardScores), Arrays.stream(softScores))
+        var levels = Stream.concat(Arrays.stream(hardScores), Arrays.stream(softScores))
                 .toArray(BigDecimal[]::new);
         return createScore(levels);
     }

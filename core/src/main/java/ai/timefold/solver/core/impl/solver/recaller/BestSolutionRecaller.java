@@ -7,7 +7,6 @@ import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.event.SolverEventSupport;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
@@ -44,10 +43,11 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
     // Worker methods
     // ************************************************************************
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         // Starting bestSolution is already set by Solver.solve(Solution)
-        InnerScoreDirector scoreDirector = solverScope.getScoreDirector();
+        var scoreDirector = solverScope.getScoreDirector();
         InnerScore innerScore = scoreDirector.calculateScore();
         var score = innerScore.raw();
         solverScope.setBestScore(innerScore);
@@ -134,6 +134,7 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
         solverEventSupport.fireBestSolutionChanged(solverScope, solverScope.getBestSolution());
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void updateBestSolutionWithoutFiring(SolverScope<Solution_> solverScope) {
         var newBestSolution = solverScope.getScoreDirector().cloneWorkingSolution();
         var newBestScore = solverScope.getSolutionDescriptor().<Score> getScore(newBestSolution);

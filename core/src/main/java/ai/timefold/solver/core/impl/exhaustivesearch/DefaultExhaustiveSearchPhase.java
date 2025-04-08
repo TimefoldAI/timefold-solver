@@ -3,8 +3,6 @@ package ai.timefold.solver.core.impl.exhaustivesearch;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
-import java.util.SortedSet;
 import java.util.TreeSet;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -13,13 +11,11 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.exhaustivesearch.decider.ExhaustiveSearchDecider;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchLayer;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
-import ai.timefold.solver.core.impl.exhaustivesearch.node.bounder.ScoreBounder;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchPhaseScope;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchStepScope;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.move.generic.CompositeMove;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -60,14 +56,14 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
 
     @Override
     public void solve(SolverScope<Solution_> solverScope) {
-        SortedSet<ExhaustiveSearchNode> expandableNodeQueue = new TreeSet<>(nodeComparator);
-        ExhaustiveSearchPhaseScope<Solution_> phaseScope = new ExhaustiveSearchPhaseScope<>(solverScope, phaseIndex);
+        var expandableNodeQueue = new TreeSet<>(nodeComparator);
+        var phaseScope = new ExhaustiveSearchPhaseScope<>(solverScope, phaseIndex);
         phaseScope.setExpandableNodeQueue(expandableNodeQueue);
         phaseStarted(phaseScope);
 
         while (!expandableNodeQueue.isEmpty() && !phaseTermination.isPhaseTerminated(phaseScope)) {
-            ExhaustiveSearchStepScope<Solution_> stepScope = new ExhaustiveSearchStepScope<>(phaseScope);
-            ExhaustiveSearchNode node = expandableNodeQueue.last();
+            var stepScope = new ExhaustiveSearchStepScope<>(phaseScope);
+            var node = expandableNodeQueue.last();
             expandableNodeQueue.remove(node);
             stepScope.setExpandingNode(node);
             stepStarted(stepScope);
@@ -95,21 +91,21 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
     }
 
     private void fillLayerList(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
-        ExhaustiveSearchStepScope<Solution_> stepScope = new ExhaustiveSearchStepScope<>(phaseScope);
+        var stepScope = new ExhaustiveSearchStepScope<>(phaseScope);
         entitySelector.stepStarted(stepScope);
-        long entitySize = entitySelector.getSize();
+        var entitySize = entitySelector.getSize();
         if (entitySize > Integer.MAX_VALUE) {
             throw new IllegalStateException("The entitySelector (" + entitySelector
                     + ") has an entitySize (" + entitySize
                     + ") which is higher than Integer.MAX_VALUE.");
         }
-        List<ExhaustiveSearchLayer> layerList = new ArrayList<>((int) entitySize);
-        int depth = 0;
-        for (Object entity : entitySelector) {
-            ExhaustiveSearchLayer layer = new ExhaustiveSearchLayer(depth, entity);
+        var layerList = new ArrayList<ExhaustiveSearchLayer>((int) entitySize);
+        var depth = 0;
+        for (var entity : entitySelector) {
+            var layer = new ExhaustiveSearchLayer(depth, entity);
             // Keep in sync with ExhaustiveSearchPhaseConfig.buildMoveSelectorConfig()
             // which includes all genuineVariableDescriptors
-            int reinitializeVariableCount = entitySelector.getEntityDescriptor().countReinitializableVariables(entity);
+            var reinitializeVariableCount = entitySelector.getEntityDescriptor().countReinitializableVariables(entity);
             // Ignore entities with only initialized variables to avoid confusing bound decisions
             if (reinitializeVariableCount == 0) {
                 continue;
@@ -117,21 +113,21 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
             depth++;
             layerList.add(layer);
         }
-        ExhaustiveSearchLayer lastLayer = new ExhaustiveSearchLayer(depth, null);
+        var lastLayer = new ExhaustiveSearchLayer(depth, null);
         layerList.add(lastLayer);
         entitySelector.stepEnded(stepScope);
         phaseScope.setLayerList(layerList);
     }
 
-    private void initStartNode(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
-        ExhaustiveSearchLayer startLayer = phaseScope.getLayerList().get(0);
-        ExhaustiveSearchNode startNode = new ExhaustiveSearchNode(startLayer, null);
+    private <Score_ extends Score<Score_>> void initStartNode(ExhaustiveSearchPhaseScope<Solution_> phaseScope) {
+        var startLayer = phaseScope.getLayerList().get(0);
+        var startNode = new ExhaustiveSearchNode(startLayer, null);
 
         if (decider.isScoreBounderEnabled()) {
-            InnerScoreDirector<Solution_, ?> scoreDirector = phaseScope.getScoreDirector();
+            var scoreDirector = phaseScope.<Score_> getScoreDirector();
             var score = scoreDirector.calculateScore();
             startNode.setScore(score);
-            ScoreBounder scoreBounder = decider.getScoreBounder();
+            var scoreBounder = decider.<Score_> getScoreBounder();
             phaseScope.setBestPessimisticBound(startLayer.isLastLayer() ? score
                     : scoreBounder.calculatePessimisticBound(scoreDirector, score));
             startNode.setOptimisticBound(startLayer.isLastLayer() ? score
@@ -150,14 +146,14 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
     }
 
     protected <Score_ extends Score<Score_>> void restoreWorkingSolution(ExhaustiveSearchStepScope<Solution_> stepScope) {
-        ExhaustiveSearchPhaseScope<Solution_> phaseScope = stepScope.getPhaseScope();
-        ExhaustiveSearchNode oldNode = phaseScope.getLastCompletedStepScope().getExpandingNode();
-        ExhaustiveSearchNode newNode = stepScope.getExpandingNode();
-        List<Move<Solution_>> oldMoveList = new ArrayList<>(oldNode.getDepth());
-        List<Move<Solution_>> newMoveList = new ArrayList<>(newNode.getDepth());
+        var phaseScope = stepScope.getPhaseScope();
+        var oldNode = phaseScope.getLastCompletedStepScope().getExpandingNode();
+        var newNode = stepScope.getExpandingNode();
+        var oldMoveList = new ArrayList<Move<Solution_>>(oldNode.getDepth());
+        var newMoveList = new ArrayList<Move<Solution_>>(newNode.getDepth());
         while (oldNode != newNode) {
-            int oldDepth = oldNode.getDepth();
-            int newDepth = newNode.getDepth();
+            var oldDepth = oldNode.getDepth();
+            var newDepth = newNode.getDepth();
             if (oldDepth < newDepth) {
                 newMoveList.add(newNode.getMove());
                 newNode = newNode.getParent();
@@ -166,7 +162,7 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
                 oldNode = oldNode.getParent();
             }
         }
-        List<Move<Solution_>> restoreMoveList = new ArrayList<>(oldMoveList.size() + newMoveList.size());
+        var restoreMoveList = new ArrayList<Move<Solution_>>(oldMoveList.size() + newMoveList.size());
         restoreMoveList.addAll(oldMoveList);
         Collections.reverse(newMoveList);
         restoreMoveList.addAll(newMoveList);
@@ -194,7 +190,7 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         // Skip entitySelector.stepEnded(stepScope)
         decider.stepEnded(stepScope);
         if (logger.isDebugEnabled()) {
-            ExhaustiveSearchPhaseScope<Solution_> phaseScope = stepScope.getPhaseScope();
+            var phaseScope = stepScope.getPhaseScope();
             logger.debug("{}    ES step ({}), time spent ({}), treeId ({}), {} best score ({}), selected move count ({}).",
                     logIndentation,
                     stepScope.getStepIndex(),

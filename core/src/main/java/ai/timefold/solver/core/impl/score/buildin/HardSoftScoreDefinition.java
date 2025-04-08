@@ -53,24 +53,24 @@ public class HardSoftScoreDefinition extends AbstractScoreDefinition<HardSoftSco
 
     @Override
     public HardSoftScore buildOptimisticBound(InitializingScoreTrend initializingScoreTrend, HardSoftScore score) {
-        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
+        var trendLevels = initializingScoreTrend.trendLevels();
         return HardSoftScore.of(trendLevels[0] == InitializingScoreTrendLevel.ONLY_DOWN ? score.hardScore() : Integer.MAX_VALUE,
                 trendLevels[1] == InitializingScoreTrendLevel.ONLY_DOWN ? score.softScore() : Integer.MAX_VALUE);
     }
 
     @Override
     public HardSoftScore buildPessimisticBound(InitializingScoreTrend initializingScoreTrend, HardSoftScore score) {
-        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
+        var trendLevels = initializingScoreTrend.trendLevels();
         return HardSoftScore.of(trendLevels[0] == InitializingScoreTrendLevel.ONLY_UP ? score.hardScore() : Integer.MIN_VALUE,
                 trendLevels[1] == InitializingScoreTrendLevel.ONLY_UP ? score.softScore() : Integer.MIN_VALUE);
     }
 
     @Override
     public HardSoftScore divideBySanitizedDivisor(HardSoftScore dividend, HardSoftScore divisor) {
-        int dividendHardScore = dividend.hardScore();
-        int divisorHardScore = sanitize(divisor.hardScore());
-        int dividendSoftScore = dividend.softScore();
-        int divisorSoftScore = sanitize(divisor.softScore());
+        var dividendHardScore = dividend.hardScore();
+        var divisorHardScore = sanitize(divisor.hardScore());
+        var dividendSoftScore = dividend.softScore();
+        var divisorSoftScore = sanitize(divisor.softScore());
         return fromLevelNumbers(
                 new Number[] {
                         divide(dividendHardScore, divisorHardScore),

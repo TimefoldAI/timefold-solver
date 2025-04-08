@@ -58,20 +58,20 @@ public class SimpleScoreDefinition extends AbstractScoreDefinition<SimpleScore> 
 
     @Override
     public SimpleScore buildOptimisticBound(InitializingScoreTrend initializingScoreTrend, SimpleScore score) {
-        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
+        var trendLevels = initializingScoreTrend.trendLevels();
         return SimpleScore.of(trendLevels[0] == InitializingScoreTrendLevel.ONLY_DOWN ? score.score() : Integer.MAX_VALUE);
     }
 
     @Override
     public SimpleScore buildPessimisticBound(InitializingScoreTrend initializingScoreTrend, SimpleScore score) {
-        InitializingScoreTrendLevel[] trendLevels = initializingScoreTrend.trendLevels();
+        var trendLevels = initializingScoreTrend.trendLevels();
         return SimpleScore.of(trendLevels[0] == InitializingScoreTrendLevel.ONLY_UP ? score.score() : Integer.MIN_VALUE);
     }
 
     @Override
     public SimpleScore divideBySanitizedDivisor(SimpleScore dividend, SimpleScore divisor) {
-        int dividendScore = dividend.score();
-        int divisorScore = sanitize(divisor.score());
+        var dividendScore = dividend.score();
+        var divisorScore = sanitize(divisor.score());
         return fromLevelNumbers(
                 new Number[] {
                         divide(dividendScore, divisorScore)
