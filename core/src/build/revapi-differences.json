@@ -235,6 +235,102 @@
           "old": "method ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore::withInitScore(int)",
           "new": "method Score_ ai.timefold.solver.core.api.score.Score<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::withInitScore(int) @ ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore",
           "justification": "Init scores are no longer supported"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "class ai.timefold.solver.core.api.score.buildin.bendable.BendableScore",
+          "new": "class ai.timefold.solver.core.api.score.buildin.bendable.BendableScore",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "@NonNull replaced by @NullMarked"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "class ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore",
+          "new": "class ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "@NonNull replaced by @NullMarked"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "class ai.timefold.solver.core.api.score.buildin.bendablelong.BendableLongScore",
+          "new": "class ai.timefold.solver.core.api.score.buildin.bendablelong.BendableLongScore",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "@NonNull replaced by @NullMarked"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "class ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore",
+          "new": "class ai.timefold.solver.core.api.score.buildin.hardmediumsoft.HardMediumSoftScore",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "@NonNull replaced by @NullMarked"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "class ai.timefold.solver.core.api.score.buildin.hardmediumsoftbigdecimal.HardMediumSoftBigDecimalScore",
+          "new": "class ai.timefold.solver.core.api.score.buildin.hardmediumsoftbigdecimal.HardMediumSoftBigDecimalScore",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "@NonNull replaced by @NullMarked"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "class ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore",
+          "new": "class ai.timefold.solver.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "@NonNull replaced by @NullMarked"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "class ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore",
+          "new": "class ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "@NonNull replaced by @NullMarked"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "class ai.timefold.solver.core.api.score.buildin.hardsoftbigdecimal.HardSoftBigDecimalScore",
+          "new": "class ai.timefold.solver.core.api.score.buildin.hardsoftbigdecimal.HardSoftBigDecimalScore",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "@NonNull replaced by @NullMarked"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "class ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore",
+          "new": "class ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "@NonNull replaced by @NullMarked"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "class ai.timefold.solver.core.api.score.buildin.simple.SimpleScore",
+          "new": "class ai.timefold.solver.core.api.score.buildin.simple.SimpleScore",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "@NonNull replaced by @NullMarked"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "class ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore",
+          "new": "class ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "@NonNull replaced by @NullMarked"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "class ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore",
+          "new": "class ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "@NonNull replaced by @NullMarked"
         }
       ]
     }

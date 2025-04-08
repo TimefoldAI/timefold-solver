@@ -12,7 +12,8 @@ import org.junit.jupiter.api.Test;
 
 class BendableLongScoreTest extends AbstractScoreTest {
 
-    private BendableLongScoreDefinition scoreDefinitionHSS = new BendableLongScoreDefinition(1, 2);
+    private final BendableLongScoreDefinition scoreDefinitionHSS = new BendableLongScoreDefinition(1, 2);
+    private final BendableLongScoreDefinition scoreDefinitionHHSSS = new BendableLongScoreDefinition(2, 3);
 
     @Test
     void of() {
@@ -175,8 +176,6 @@ class BendableLongScoreTest extends AbstractScoreTest {
                 scoreDefinitionHSS.createScore(1L, Long.MIN_VALUE, -20L),
                 scoreDefinitionHSS.createScore(1L, -20L, Long.MIN_VALUE));
     }
-
-    private BendableLongScoreDefinition scoreDefinitionHHSSS = new BendableLongScoreDefinition(2, 3);
 
     @Test
     void feasibleHHSSS() {

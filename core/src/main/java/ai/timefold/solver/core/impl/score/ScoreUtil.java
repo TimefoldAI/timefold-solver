@@ -15,31 +15,26 @@ public final class ScoreUtil {
     public static final String[] LEVEL_SUFFIXES = new String[] { HARD_LABEL, SOFT_LABEL };
 
     public static String[] parseScoreTokens(Class<? extends Score<?>> scoreClass, String scoreString, String... levelSuffixes) {
-        String[] scoreTokens = new String[levelSuffixes.length + 1];
-        String[] suffixedScoreTokens = scoreString.split("/");
-        int startIndex;
-        if (suffixedScoreTokens.length == levelSuffixes.length) {
-            scoreTokens[0] = "0";
-            startIndex = 0;
-        } else {
-            throw new IllegalArgumentException("The scoreString (" + scoreString
-                    + ") for the scoreClass (" + scoreClass.getSimpleName()
-                    + ") doesn't follow the correct pattern (" + buildScorePattern(false, levelSuffixes) + "):"
-                    + " the suffixedScoreTokens length (" + suffixedScoreTokens.length
-                    + ") differs from the levelSuffixes length ("
-                    + levelSuffixes.length + " or " + (levelSuffixes.length + 1) + ").");
+        var scoreTokens = new String[levelSuffixes.length];
+        var suffixedScoreTokens = scoreString.split("/");
+        if (suffixedScoreTokens.length != levelSuffixes.length) {
+            throw new IllegalArgumentException("""
+                    The scoreString (%s) for the scoreClass (%s) doesn't follow the correct pattern (%s): \
+                    the suffixedScoreTokens length (%d) differs from the levelSuffixes length (%d or %d)."""
+                    .formatted(scoreString, scoreClass.getSimpleName(), buildScorePattern(false, levelSuffixes),
+                            suffixedScoreTokens.length, levelSuffixes.length, levelSuffixes.length + 1));
         }
-        for (int i = 0; i < levelSuffixes.length; i++) {
-            String suffixedScoreToken = suffixedScoreTokens[startIndex + i];
-            String levelSuffix = levelSuffixes[i];
+        for (var i = 0; i < levelSuffixes.length; i++) {
+            var suffixedScoreToken = suffixedScoreTokens[i];
+            var levelSuffix = levelSuffixes[i];
             if (!suffixedScoreToken.endsWith(levelSuffix)) {
-                throw new IllegalArgumentException("The scoreString (" + scoreString
-                        + ") for the scoreClass (" + scoreClass.getSimpleName()
-                        + ") doesn't follow the correct pattern (" + buildScorePattern(false, levelSuffixes) + "):"
-                        + " the suffixedScoreToken (" + suffixedScoreToken
-                        + ") does not end with levelSuffix (" + levelSuffix + ").");
+                throw new IllegalArgumentException("""
+                        The scoreString (%s) for the scoreClass (%s) doesn't follow the correct pattern (%s): \
+                        the suffixedScoreToken (%s) does not end with levelSuffix (%s)."""
+                        .formatted(scoreString, scoreClass.getSimpleName(), buildScorePattern(false, levelSuffixes),
+                                suffixedScoreToken, levelSuffix));
             }
-            scoreTokens[1 + i] = suffixedScoreToken.substring(0, suffixedScoreToken.length() - levelSuffix.length());
+            scoreTokens[i] = suffixedScoreToken.substring(0, suffixedScoreToken.length() - levelSuffix.length());
         }
         return scoreTokens;
     }
@@ -51,9 +46,10 @@ public final class ScoreUtil {
         try {
             return Integer.parseInt(levelString);
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("The scoreString (" + scoreString
-                    + ") for the scoreClass (" + scoreClass.getSimpleName() + ") has a levelString (" + levelString
-                    + ") which is not a valid integer.", e);
+            throw new IllegalArgumentException(
+                    "The scoreString (%s) for the scoreClass (%s) has a levelString (%s) which is not a valid integer."
+                            .formatted(scoreString, scoreClass.getSimpleName(), levelString),
+                    e);
         }
     }
 
@@ -64,34 +60,35 @@ public final class ScoreUtil {
         try {
             return Long.parseLong(levelString);
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("The scoreString (" + scoreString
-                    + ") for the scoreClass (" + scoreClass.getSimpleName() + ") has a levelString (" + levelString
-                    + ") which is not a valid long.", e);
+            throw new IllegalArgumentException(
+                    "The scoreString (%s) for the scoreClass (%s) has a levelString (%s) which is not a valid long."
+                            .formatted(scoreString, scoreClass.getSimpleName(), levelString),
+                    e);
         }
     }
 
     public static BigDecimal parseLevelAsBigDecimal(Class<? extends Score<?>> scoreClass, String scoreString,
             String levelString) {
         if (levelString.equals("*")) {
-            throw new IllegalArgumentException("The scoreString (" + scoreString
-                    + ") for the scoreClass (" + scoreClass.getSimpleName()
-                    + ") has a wildcard (*) as levelString (" + levelString
-                    + ") which is not supported for BigDecimal score values," +
-                    " because there is no general MIN_VALUE for BigDecimal.");
+            throw new IllegalArgumentException("""
+                    The scoreString (%s) for the scoreClass (%s) has a wildcard (*) as levelString (%s) \
+                    which is not supported for BigDecimal score values, because there is no general MIN_VALUE for BigDecimal."""
+                    .formatted(scoreString, scoreClass.getSimpleName(), levelString));
         }
         try {
             return new BigDecimal(levelString);
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("The scoreString (" + scoreString
-                    + ") for the scoreClass (" + scoreClass.getSimpleName() + ") has a levelString (" + levelString
-                    + ") which is not a valid BigDecimal.", e);
+            throw new IllegalArgumentException(
+                    "The scoreString (%s) for the scoreClass (%s) has a levelString (%s) which is not a valid BigDecimal."
+                            .formatted(scoreString, scoreClass.getSimpleName(), levelString),
+                    e);
         }
     }
 
     public static String buildScorePattern(boolean bendable, String... levelSuffixes) {
-        StringBuilder scorePattern = new StringBuilder(levelSuffixes.length * 10);
-        boolean first = true;
-        for (String levelSuffix : levelSuffixes) {
+        var scorePattern = new StringBuilder(levelSuffixes.length * 10);
+        var first = true;
+        for (var levelSuffix : levelSuffixes) {
             if (first) {
                 first = false;
             } else {
@@ -109,76 +106,71 @@ public final class ScoreUtil {
 
     public static <Score_ extends Score<Score_>> String buildShortString(Score<Score_> score, Predicate<Number> notZero,
             String... levelLabels) {
-        StringBuilder shortString = new StringBuilder();
-        int i = 0;
-        for (Number levelNumber : score.toLevelNumbers()) {
+        var shortString = new StringBuilder();
+        var i = 0;
+        for (var levelNumber : score.toLevelNumbers()) {
             if (notZero.test(levelNumber)) {
-                if (shortString.length() > 0) {
+                if (!shortString.isEmpty()) {
                     shortString.append("/");
                 }
                 shortString.append(levelNumber).append(levelLabels[i]);
             }
             i++;
         }
-        if (shortString.length() == 0) {
+        if (shortString.isEmpty()) {
             // Even for BigDecimals we use "0" over "0.0" because different levels can have different scales
             return "0";
         }
         return shortString.toString();
     }
 
-    public static String[][] parseBendableScoreTokens(Class<? extends IBendableScore<?>> scoreClass,
-            String scoreString) {
-        String[][] scoreTokens = new String[3][];
-        scoreTokens[0] = new String[1];
-        scoreTokens[0][0] = "0";
-        int startIndex = 0;
-        for (int i = 0; i < LEVEL_SUFFIXES.length; i++) {
-            String levelSuffix = LEVEL_SUFFIXES[i];
-            int endIndex = scoreString.indexOf(levelSuffix, startIndex);
+    public static String[][] parseBendableScoreTokens(Class<? extends IBendableScore<?>> scoreClass, String scoreString) {
+        var scoreTokens = new String[2][];
+        var startIndex = 0;
+        for (var i = 0; i < LEVEL_SUFFIXES.length; i++) {
+            var levelSuffix = LEVEL_SUFFIXES[i];
+            var endIndex = scoreString.indexOf(levelSuffix, startIndex);
             if (endIndex < 0) {
-                throw new IllegalArgumentException("The scoreString (" + scoreString
-                        + ") for the scoreClass (" + scoreClass.getSimpleName()
-                        + ") doesn't follow the correct pattern (" + buildScorePattern(true, LEVEL_SUFFIXES) + "):"
-                        + " the levelSuffix (" + levelSuffix
-                        + ") isn't in the scoreSubstring (" + scoreString.substring(startIndex) + ").");
+                throw new IllegalArgumentException("""
+                        The scoreString (%s) for the scoreClass (%s) doesn't follow the correct pattern (%s): \
+                        the levelSuffix (%s) isn't in the scoreSubstring (%s)."""
+                        .formatted(scoreString, scoreClass.getSimpleName(), buildScorePattern(true, LEVEL_SUFFIXES),
+                                levelSuffix, scoreString.substring(startIndex)));
             }
-            String scoreSubString = scoreString.substring(startIndex, endIndex);
+            var scoreSubString = scoreString.substring(startIndex, endIndex);
             if (!scoreSubString.startsWith("[") || !scoreSubString.endsWith("]")) {
-                throw new IllegalArgumentException("The scoreString (" + scoreString
-                        + ") for the scoreClass (" + scoreClass.getSimpleName()
-                        + ") doesn't follow the correct pattern (" + buildScorePattern(true, LEVEL_SUFFIXES) + "):"
-                        + " the scoreSubString (" + scoreSubString
-                        + ") does not start and end with \"[\" and \"]\".");
+                throw new IllegalArgumentException("""
+                        The scoreString (%s) for the scoreClass (%s) doesn't follow the correct pattern (%s): \
+                        the scoreSubString (%s) does not start and end with "[" and "]"."""
+                        .formatted(scoreString, scoreClass.getSimpleName(), buildScorePattern(true, LEVEL_SUFFIXES),
+                                scoreString));
             }
-            if (scoreSubString.equals("[]")) {
-                scoreTokens[1 + i] = new String[0];
-            } else {
-                scoreTokens[1 + i] = scoreSubString.substring(1, scoreSubString.length() - 1).split("/");
-            }
+            scoreTokens[i] = scoreSubString.equals("[]") ? new String[0]
+                    : scoreSubString.substring(1, scoreSubString.length() - 1).split("/");
             startIndex = endIndex + levelSuffix.length() + "/".length();
         }
         if (startIndex != scoreString.length() + "/".length()) {
-            throw new IllegalArgumentException("The scoreString (" + scoreString
-                    + ") for the scoreClass (" + scoreClass.getSimpleName()
-                    + ") doesn't follow the correct pattern (" + buildScorePattern(true, LEVEL_SUFFIXES) + "):"
-                    + " the suffix (" + scoreString.substring(startIndex - 1) + ") is unsupported.");
+            throw new IllegalArgumentException("""
+                    The scoreString (%s) for the scoreClass (%s) doesn't follow the correct pattern (%s): \
+                    the suffix (%s) is unsupported."""
+                    .formatted(scoreString, scoreClass.getSimpleName(), buildScorePattern(true, LEVEL_SUFFIXES),
+                            scoreString.substring(startIndex - 1)));
         }
         return scoreTokens;
     }
 
     public static <Score_ extends IBendableScore<Score_>> String buildBendableShortString(IBendableScore<Score_> score,
             Predicate<Number> notZero) {
-        StringBuilder shortString = new StringBuilder();
-        Number[] levelNumbers = score.toLevelNumbers();
-        int hardLevelsSize = score.hardLevelsSize();
+        var shortString = new StringBuilder();
+        var levelNumbers = score.toLevelNumbers();
+        var hardLevelsSize = score.hardLevelsSize();
         if (Arrays.stream(levelNumbers).limit(hardLevelsSize).anyMatch(notZero)) {
-            if (shortString.length() > 0) {
+            if (!shortString.isEmpty()) {
                 shortString.append("/");
             }
             shortString.append("[");
-            boolean first = true;
-            for (int i = 0; i < hardLevelsSize; i++) {
+            var first = true;
+            for (var i = 0; i < hardLevelsSize; i++) {
                 if (first) {
                     first = false;
                 } else {
@@ -188,14 +180,14 @@ public final class ScoreUtil {
             }
             shortString.append("]").append(HARD_LABEL);
         }
-        int softLevelsSize = score.softLevelsSize();
+        var softLevelsSize = score.softLevelsSize();
         if (Arrays.stream(levelNumbers).skip(hardLevelsSize).anyMatch(notZero)) {
-            if (shortString.length() > 0) {
+            if (!shortString.isEmpty()) {
                 shortString.append("/");
             }
             shortString.append("[");
-            boolean first = true;
-            for (int i = 0; i < softLevelsSize; i++) {
+            var first = true;
+            for (var i = 0; i < softLevelsSize; i++) {
                 if (first) {
                     first = false;
                 } else {
@@ -205,7 +197,7 @@ public final class ScoreUtil {
             }
             shortString.append("]").append(SOFT_LABEL);
         }
-        if (shortString.length() == 0) {
+        if (shortString.isEmpty()) {
             // Even for BigDecimals we use "0" over "0.0" because different levels can have different scales
             return "0";
         }

@@ -8,7 +8,7 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
 import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * A Score is result of the score function (AKA fitness function) on a single possible solution.
@@ -20,6 +20,7 @@ import org.jspecify.annotations.NonNull;
  * @param <Score_> the actual score type to allow addition, subtraction and other arithmetic
  * @see HardSoftScore
  */
+@NullMarked
 public interface Score<Score_ extends Score<Score_>>
         extends Comparable<Score_>, Serializable {
 
@@ -47,7 +48,7 @@ public interface Score<Score_ extends Score<Score_>>
      */
     @Deprecated(forRemoval = true, since = "1.21.0")
     @SuppressWarnings("unchecked")
-    default @NonNull Score_ withInitScore(int newInitScore) {
+    default Score_ withInitScore(int newInitScore) {
         return (Score_) this;
     }
 
@@ -57,8 +58,7 @@ public interface Score<Score_ extends Score<Score_>>
      * @param addend value to be added to this Score
      * @return this + addend
      */
-    @NonNull
-    Score_ add(@NonNull Score_ addend);
+    Score_ add(Score_ addend);
 
     /**
      * Returns a Score whose value is (this - subtrahend).
@@ -66,8 +66,7 @@ public interface Score<Score_ extends Score<Score_>>
      * @param subtrahend value to be subtracted from this Score
      * @return this - subtrahend, rounded as necessary
      */
-    @NonNull
-    Score_ subtract(@NonNull Score_ subtrahend);
+    Score_ subtract(Score_ subtrahend);
 
     /**
      * Returns a Score whose value is (this * multiplicand).
@@ -79,7 +78,6 @@ public interface Score<Score_ extends Score<Score_>>
      * @param multiplicand value to be multiplied by this Score.
      * @return this * multiplicand
      */
-    @NonNull
     Score_ multiply(double multiplicand);
 
     /**
@@ -92,7 +90,6 @@ public interface Score<Score_ extends Score<Score_>>
      * @param divisor value by which this Score is to be divided
      * @return this / divisor
      */
-    @NonNull
     Score_ divide(double divisor);
 
     /**
@@ -105,7 +102,6 @@ public interface Score<Score_ extends Score<Score_>>
      * @param exponent value by which this Score is to be powered
      * @return this ^ exponent
      */
-    @NonNull
     Score_ power(double exponent);
 
     /**
@@ -113,9 +109,10 @@ public interface Score<Score_ extends Score<Score_>>
      *
      * @return - this
      */
-    default @NonNull Score_ negate() {
-        Score_ zero = zero();
-        Score_ current = (Score_) this;
+    @SuppressWarnings("unchecked")
+    default Score_ negate() {
+        var zero = zero();
+        var current = (Score_) this;
         if (zero.equals(current)) {
             return current;
         }
@@ -125,13 +122,11 @@ public interface Score<Score_ extends Score<Score_>>
     /**
      * Returns a Score whose value is the absolute value of the score, i.e. |this|.
      */
-    @NonNull
     Score_ abs();
 
     /**
      * Returns a Score, all levels of which are zero.
      */
-    @NonNull
     Score_ zero();
 
     /**
@@ -151,16 +146,15 @@ public interface Score<Score_ extends Score<Score_>>
      * <p>
      * For example: {@code -0hard/-7soft} returns {@code new int{-0, -7}}
      */
-    @NonNull
-    Number @NonNull [] toLevelNumbers();
+    Number[] toLevelNumbers();
 
     /**
      * As defined by {@link #toLevelNumbers()}, only returns double[] instead of Number[].
      */
-    default double @NonNull [] toLevelDoubles() {
-        Number[] levelNumbers = toLevelNumbers();
-        double[] levelDoubles = new double[levelNumbers.length];
-        for (int i = 0; i < levelNumbers.length; i++) {
+    default double[] toLevelDoubles() {
+        var levelNumbers = toLevelNumbers();
+        var levelDoubles = new double[levelNumbers.length];
+        for (var i = 0; i < levelNumbers.length; i++) {
             levelDoubles[i] = levelNumbers[i].doubleValue();
         }
         return levelDoubles;
@@ -190,7 +184,6 @@ public interface Score<Score_ extends Score<Score_>>
      * Do not use this format to persist information as text, use {@link Object#toString()} instead,
      * so it can be parsed reliably.
      */
-    @NonNull
     String toShortString();
 
 }

@@ -6,7 +6,7 @@ import java.math.RoundingMode;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.score.ScoreUtil;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * This {@link Score} is based on 1 level of {@link BigDecimal} constraints.
@@ -15,14 +15,15 @@ import org.jspecify.annotations.NonNull;
  *
  * @see Score
  */
+@NullMarked
 public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore> {
 
-    public static final @NonNull SimpleBigDecimalScore ZERO = new SimpleBigDecimalScore(BigDecimal.ZERO);
-    public static final @NonNull SimpleBigDecimalScore ONE = new SimpleBigDecimalScore(BigDecimal.ONE);
+    public static final SimpleBigDecimalScore ZERO = new SimpleBigDecimalScore(BigDecimal.ZERO);
+    public static final SimpleBigDecimalScore ONE = new SimpleBigDecimalScore(BigDecimal.ONE);
 
-    public static @NonNull SimpleBigDecimalScore parseScore(@NonNull String scoreString) {
-        String[] scoreTokens = ScoreUtil.parseScoreTokens(SimpleBigDecimalScore.class, scoreString, "");
-        BigDecimal score = ScoreUtil.parseLevelAsBigDecimal(SimpleBigDecimalScore.class, scoreString, scoreTokens[1]);
+    public static SimpleBigDecimalScore parseScore(String scoreString) {
+        var scoreTokens = ScoreUtil.parseScoreTokens(SimpleBigDecimalScore.class, scoreString, "");
+        var score = ScoreUtil.parseLevelAsBigDecimal(SimpleBigDecimalScore.class, scoreString, scoreTokens[0]);
         return of(score);
     }
 
@@ -31,11 +32,11 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
      * @return init score is always zero
      */
     @Deprecated(forRemoval = true, since = "1.21.0")
-    public static @NonNull SimpleBigDecimalScore ofUninitialized(int initScore, @NonNull BigDecimal score) {
+    public static SimpleBigDecimalScore ofUninitialized(int initScore, BigDecimal score) {
         return of(score);
     }
 
-    public static @NonNull SimpleBigDecimalScore of(@NonNull BigDecimal score) {
+    public static SimpleBigDecimalScore of(BigDecimal score) {
         if (score.signum() == 0) {
             return ZERO;
         } else if (score.equals(BigDecimal.ONE)) {
@@ -45,7 +46,7 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
         }
     }
 
-    private final @NonNull BigDecimal score;
+    private final BigDecimal score;
 
     /**
      * Private default constructor for default marshalling/unmarshalling of unknown frameworks that use reflection.
@@ -57,7 +58,7 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
         this(BigDecimal.ZERO);
     }
 
-    private SimpleBigDecimalScore(@NonNull BigDecimal score) {
+    private SimpleBigDecimalScore(BigDecimal score) {
         this.score = score;
     }
 
@@ -68,7 +69,7 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
      *
      * @return higher is better, usually negative, 0 if no constraints are broken/fulfilled
      */
-    public @NonNull BigDecimal score() {
+    public BigDecimal score() {
         return score;
     }
 
@@ -78,43 +79,43 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
      * @deprecated Use {@link #score()} instead.
      */
     @Deprecated(forRemoval = true)
-    public @NonNull BigDecimal getScore() {
+    public BigDecimal getScore() {
         return score;
     }
 
     @Override
-    public @NonNull SimpleBigDecimalScore add(@NonNull SimpleBigDecimalScore addend) {
+    public SimpleBigDecimalScore add(SimpleBigDecimalScore addend) {
         return of(score.add(addend.score()));
     }
 
     @Override
-    public @NonNull SimpleBigDecimalScore subtract(@NonNull SimpleBigDecimalScore subtrahend) {
+    public SimpleBigDecimalScore subtract(SimpleBigDecimalScore subtrahend) {
         return of(score.subtract(subtrahend.score()));
     }
 
     @Override
-    public @NonNull SimpleBigDecimalScore multiply(double multiplicand) {
+    public SimpleBigDecimalScore multiply(double multiplicand) {
         // Intentionally not taken "new BigDecimal(multiplicand, MathContext.UNLIMITED)"
         // because together with the floor rounding it gives unwanted behaviour
-        BigDecimal multiplicandBigDecimal = BigDecimal.valueOf(multiplicand);
+        var multiplicandBigDecimal = BigDecimal.valueOf(multiplicand);
         // The (unspecified) scale/precision of the multiplicand should have no impact on the returned scale/precision
         return of(score.multiply(multiplicandBigDecimal).setScale(score.scale(), RoundingMode.FLOOR));
     }
 
     @Override
-    public @NonNull SimpleBigDecimalScore divide(double divisor) {
+    public SimpleBigDecimalScore divide(double divisor) {
         // Intentionally not taken "new BigDecimal(multiplicand, MathContext.UNLIMITED)"
         // because together with the floor rounding it gives unwanted behaviour
-        BigDecimal divisorBigDecimal = BigDecimal.valueOf(divisor);
+        var divisorBigDecimal = BigDecimal.valueOf(divisor);
         // The (unspecified) scale/precision of the divisor should have no impact on the returned scale/precision
         return of(score.divide(divisorBigDecimal, score.scale(), RoundingMode.FLOOR));
     }
 
     @Override
-    public @NonNull SimpleBigDecimalScore power(double exponent) {
+    public SimpleBigDecimalScore power(double exponent) {
         // Intentionally not taken "new BigDecimal(multiplicand, MathContext.UNLIMITED)"
         // because together with the floor rounding it gives unwanted behaviour
-        BigDecimal exponentBigDecimal = BigDecimal.valueOf(exponent);
+        var exponentBigDecimal = BigDecimal.valueOf(exponent);
         // The (unspecified) scale/precision of the exponent should have no impact on the returned scale/precision
         // TODO FIXME remove .intValue() so non-integer exponents produce correct results
         // None of the normal Java libraries support BigDecimal.pow(BigDecimal)
@@ -122,12 +123,12 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
     }
 
     @Override
-    public @NonNull SimpleBigDecimalScore abs() {
+    public SimpleBigDecimalScore abs() {
         return of(score.abs());
     }
 
     @Override
-    public @NonNull SimpleBigDecimalScore zero() {
+    public SimpleBigDecimalScore zero() {
         return ZERO;
     }
 
@@ -137,7 +138,7 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
     }
 
     @Override
-    public @NonNull Number @NonNull [] toLevelNumbers() {
+    public Number[] toLevelNumbers() {
         return new Number[] { score };
     }
 
@@ -155,12 +156,12 @@ public final class SimpleBigDecimalScore implements Score<SimpleBigDecimalScore>
     }
 
     @Override
-    public int compareTo(@NonNull SimpleBigDecimalScore other) {
+    public int compareTo(SimpleBigDecimalScore other) {
         return score.compareTo(other.score());
     }
 
     @Override
-    public @NonNull String toShortString() {
+    public String toShortString() {
         return ScoreUtil.buildShortString(this, n -> ((BigDecimal) n).compareTo(BigDecimal.ZERO) != 0, "");
     }
 

@@ -3,7 +3,7 @@ package ai.timefold.solver.core.api.score.buildin.simplelong;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.score.ScoreUtil;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * This {@link Score} is based on 1 level of long constraints.
@@ -12,15 +12,16 @@ import org.jspecify.annotations.NonNull;
  *
  * @see Score
  */
+@NullMarked
 public final class SimpleLongScore implements Score<SimpleLongScore> {
 
     public static final SimpleLongScore ZERO = new SimpleLongScore(0L);
     public static final SimpleLongScore ONE = new SimpleLongScore(1L);
     public static final SimpleLongScore MINUS_ONE = new SimpleLongScore(-1L);
 
-    public static @NonNull SimpleLongScore parseScore(@NonNull String scoreString) {
-        String[] scoreTokens = ScoreUtil.parseScoreTokens(SimpleLongScore.class, scoreString, "");
-        long score = ScoreUtil.parseLevelAsLong(SimpleLongScore.class, scoreString, scoreTokens[1]);
+    public static SimpleLongScore parseScore(String scoreString) {
+        var scoreTokens = ScoreUtil.parseScoreTokens(SimpleLongScore.class, scoreString, "");
+        var score = ScoreUtil.parseLevelAsLong(SimpleLongScore.class, scoreString, scoreTokens[0]);
         return of(score);
     }
 
@@ -29,11 +30,11 @@ public final class SimpleLongScore implements Score<SimpleLongScore> {
      * @return init score is always zero
      */
     @Deprecated(forRemoval = true, since = "1.21.0")
-    public static @NonNull SimpleLongScore ofUninitialized(int initScore, long score) {
+    public static SimpleLongScore ofUninitialized(int initScore, long score) {
         return of(score);
     }
 
-    public static @NonNull SimpleLongScore of(long score) {
+    public static SimpleLongScore of(long score) {
         if (score == -1L) {
             return MINUS_ONE;
         } else if (score == 0L) {
@@ -83,37 +84,37 @@ public final class SimpleLongScore implements Score<SimpleLongScore> {
     }
 
     @Override
-    public @NonNull SimpleLongScore add(@NonNull SimpleLongScore addend) {
+    public SimpleLongScore add(SimpleLongScore addend) {
         return of(score + addend.score());
     }
 
     @Override
-    public @NonNull SimpleLongScore subtract(@NonNull SimpleLongScore subtrahend) {
+    public SimpleLongScore subtract(SimpleLongScore subtrahend) {
         return of(score - subtrahend.score());
     }
 
     @Override
-    public @NonNull SimpleLongScore multiply(double multiplicand) {
+    public SimpleLongScore multiply(double multiplicand) {
         return of((long) Math.floor(score * multiplicand));
     }
 
     @Override
-    public @NonNull SimpleLongScore divide(double divisor) {
+    public SimpleLongScore divide(double divisor) {
         return of((long) Math.floor(score / divisor));
     }
 
     @Override
-    public @NonNull SimpleLongScore power(double exponent) {
+    public SimpleLongScore power(double exponent) {
         return of((long) Math.floor(Math.pow(score, exponent)));
     }
 
     @Override
-    public @NonNull SimpleLongScore abs() {
+    public SimpleLongScore abs() {
         return of(Math.abs(score));
     }
 
     @Override
-    public @NonNull SimpleLongScore zero() {
+    public SimpleLongScore zero() {
         return ZERO;
     }
 
@@ -123,7 +124,7 @@ public final class SimpleLongScore implements Score<SimpleLongScore> {
     }
 
     @Override
-    public Number @NonNull [] toLevelNumbers() {
+    public Number[] toLevelNumbers() {
         return new Number[] { score };
     }
 
@@ -141,12 +142,12 @@ public final class SimpleLongScore implements Score<SimpleLongScore> {
     }
 
     @Override
-    public int compareTo(@NonNull SimpleLongScore other) {
+    public int compareTo(SimpleLongScore other) {
         return Long.compare(score, other.score());
     }
 
     @Override
-    public @NonNull String toShortString() {
+    public String toShortString() {
         return ScoreUtil.buildShortString(this, n -> n.longValue() != 0L, "");
     }
 

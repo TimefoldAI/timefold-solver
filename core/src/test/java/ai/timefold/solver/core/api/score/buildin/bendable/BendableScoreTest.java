@@ -12,9 +12,9 @@ import org.junit.jupiter.api.Test;
 
 class BendableScoreTest extends AbstractScoreTest {
 
-    private BendableScoreDefinition scoreDefinitionHSS = new BendableScoreDefinition(1, 2);
-    private BendableScoreDefinition scoreDefinitionHHH = new BendableScoreDefinition(3, 0);
-    private BendableScoreDefinition scoreDefinitionSSS = new BendableScoreDefinition(0, 3);
+    private final BendableScoreDefinition scoreDefinitionHSS = new BendableScoreDefinition(1, 2);
+    private final BendableScoreDefinition scoreDefinitionHHH = new BendableScoreDefinition(3, 0);
+    private final BendableScoreDefinition scoreDefinitionSSS = new BendableScoreDefinition(0, 3);
 
     @Test
     void of() {
@@ -166,7 +166,7 @@ class BendableScoreTest extends AbstractScoreTest {
                 scoreDefinitionHSS.createScore(1, -20, Integer.MIN_VALUE));
     }
 
-    private BendableScoreDefinition scoreDefinitionHHSSS = new BendableScoreDefinition(2, 3);
+    private final BendableScoreDefinition scoreDefinitionHHSSS = new BendableScoreDefinition(2, 3);
 
     @Test
     void feasibleHHSSS() {
