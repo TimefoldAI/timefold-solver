@@ -28,7 +28,7 @@ public interface Score<Score_ extends Score<Score_>>
      * @return Always zero.
      * @deprecated No point in using this method anymore.
      */
-    @Deprecated(forRemoval = true, since = "1.21.0")
+    @Deprecated(forRemoval = true, since = "1.22.0")
     default int initScore() {
         return 0;
     }
@@ -46,7 +46,7 @@ public interface Score<Score_ extends Score<Score_>>
      * @return this, init score always zero.
      * @deprecated No point in using this method anymore.
      */
-    @Deprecated(forRemoval = true, since = "1.21.0")
+    @Deprecated(forRemoval = true, since = "1.22.0")
     @SuppressWarnings("unchecked")
     default Score_ withInitScore(int newInitScore) {
         return (Score_) this;
@@ -164,7 +164,7 @@ public interface Score<Score_ extends Score<Score_>>
      * @return always true
      * @deprecated No point in using this method anymore.
      */
-    @Deprecated(forRemoval = true, since = "1.21.0")
+    @Deprecated(forRemoval = true, since = "1.22.0")
     default boolean isSolutionInitialized() {
         return true;
     }

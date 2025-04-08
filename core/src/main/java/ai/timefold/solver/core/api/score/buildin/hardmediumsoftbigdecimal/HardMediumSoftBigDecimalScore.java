@@ -58,7 +58,7 @@ public final class HardMediumSoftBigDecimalScore implements Score<HardMediumSoft
      * @deprecated Use {@link #of(BigDecimal, BigDecimal, BigDecimal)} instead.
      * @return init score is always zero
      */
-    @Deprecated(forRemoval = true, since = "1.21.0")
+    @Deprecated(forRemoval = true, since = "1.22.0")
     public static HardMediumSoftBigDecimalScore ofUninitialized(int initScore, BigDecimal hardScore, BigDecimal mediumScore,
             BigDecimal softScore) {
         return of(hardScore, mediumScore, softScore);

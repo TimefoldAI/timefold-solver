@@ -29,7 +29,7 @@ public final class SimpleLongScore implements Score<SimpleLongScore> {
      * @deprecated Use {@link #of(long)} instead.
      * @return init score is always zero
      */
-    @Deprecated(forRemoval = true, since = "1.21.0")
+    @Deprecated(forRemoval = true, since = "1.22.0")
     public static SimpleLongScore ofUninitialized(int initScore, long score) {
         return of(score);
     }

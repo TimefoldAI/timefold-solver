@@ -29,7 +29,7 @@ public final class SimpleScore implements Score<SimpleScore> {
      * @deprecated Use {@link #of(int)} instead.
      * @return init score is always zero
      */
-    @Deprecated(forRemoval = true, since = "1.21.0")
+    @Deprecated(forRemoval = true, since = "1.22.0")
     public static SimpleScore ofUninitialized(int initScore, int score) {
         return of(score);
     }

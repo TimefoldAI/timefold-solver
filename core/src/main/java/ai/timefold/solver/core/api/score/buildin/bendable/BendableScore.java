@@ -41,7 +41,7 @@ public final class BendableScore implements IBendableScore<BendableScore> {
      * @deprecated Use {@link #of(int[], int[])} instead.
      * @return init score is always zero
      */
-    @Deprecated(forRemoval = true, since = "1.21.0")
+    @Deprecated(forRemoval = true, since = "1.22.0")
     public static BendableScore ofUninitialized(int initScore, int[] hardScores, int[] softScores) {
         return BendableScore.of(hardScores, softScores);
     }

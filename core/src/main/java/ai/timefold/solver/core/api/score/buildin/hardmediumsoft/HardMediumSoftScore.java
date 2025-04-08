@@ -46,7 +46,7 @@ public final class HardMediumSoftScore implements Score<HardMediumSoftScore> {
      * @deprecated Use {@link #of(int, int, int)} instead.
      * @return init score is always zero
      */
-    @Deprecated(forRemoval = true, since = "1.21.0")
+    @Deprecated(forRemoval = true, since = "1.22.0")
     public static HardMediumSoftScore ofUninitialized(int initScore, int hardScore, int mediumScore, int softScore) {
         return of(hardScore, mediumScore, softScore);
     }

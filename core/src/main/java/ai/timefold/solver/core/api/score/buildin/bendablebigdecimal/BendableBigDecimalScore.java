@@ -43,7 +43,7 @@ public final class BendableBigDecimalScore implements IBendableScore<BendableBig
      * @deprecated Use {@link #of(BigDecimal[], BigDecimal[])} instead.
      * @return init score is always zero
      */
-    @Deprecated(forRemoval = true, since = "1.21.0")
+    @Deprecated(forRemoval = true, since = "1.22.0")
     public static BendableBigDecimalScore ofUninitialized(int initScore, BigDecimal[] hardScores, BigDecimal[] softScores) {
         return BendableBigDecimalScore.of(hardScores, softScores);
     }

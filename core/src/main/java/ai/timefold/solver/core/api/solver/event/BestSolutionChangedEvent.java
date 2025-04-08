@@ -27,7 +27,7 @@ public class BestSolutionChangedEvent<Solution_> extends EventObject {
      * @param timeMillisSpent {@code >= 0L}
      * @deprecated Use {@link #BestSolutionChangedEvent(Solver, long, Object, Score, boolean)} instead.
      */
-    @Deprecated(forRemoval = true, since = "1.21.0")
+    @Deprecated(forRemoval = true, since = "1.22.0")
     public BestSolutionChangedEvent(@NonNull Solver<Solution_> solver, long timeMillisSpent,
             @NonNull Solution_ newBestSolution, @NonNull Score newBestScore) {
         this(solver, timeMillisSpent, newBestSolution, newBestScore, true);
