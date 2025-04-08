@@ -19,9 +19,8 @@ class DefaultConstructionHeuristicForagerTest<Solution_> {
 
     @Test
     void checkPickEarlyNever() {
-        DefaultConstructionHeuristicForager forager = new DefaultConstructionHeuristicForager(
-                ConstructionHeuristicPickEarlyType.NEVER);
-        ConstructionHeuristicStepScope<Solution_> stepScope =
+        var forager = new DefaultConstructionHeuristicForager<Solution_>(ConstructionHeuristicPickEarlyType.NEVER);
+        var stepScope =
                 buildStepScope(InnerScore.ofUninitialized(SimpleScore.of(-100), 8));
         forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.ofUninitialized(SimpleScore.of(-110), 7)));
         assertThat(forager.isQuitEarly()).isFalse();
@@ -33,9 +32,9 @@ class DefaultConstructionHeuristicForagerTest<Solution_> {
 
     @Test
     void checkPickEarlyFirstNonDeterioratingScore() {
-        DefaultConstructionHeuristicForager forager = new DefaultConstructionHeuristicForager(
+        var forager = new DefaultConstructionHeuristicForager<Solution_>(
                 ConstructionHeuristicPickEarlyType.FIRST_NON_DETERIORATING_SCORE);
-        ConstructionHeuristicStepScope<Solution_> stepScope =
+        var stepScope =
                 buildStepScope(InnerScore.ofUninitialized(SimpleScore.of(-100), 8));
         forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.ofUninitialized(SimpleScore.of(-110), 7)));
         assertThat(forager.isQuitEarly()).isFalse();
@@ -45,9 +44,9 @@ class DefaultConstructionHeuristicForagerTest<Solution_> {
 
     @Test
     void checkPickEarlyFirstFeasibleScore() {
-        DefaultConstructionHeuristicForager forager = new DefaultConstructionHeuristicForager(
+        var forager = new DefaultConstructionHeuristicForager<Solution_>(
                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE);
-        ConstructionHeuristicStepScope<Solution_> stepScope =
+        var stepScope =
                 buildStepScope(InnerScore.ofUninitialized(HardSoftScore.of(0, -100), 8));
         forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.ofUninitialized(HardSoftScore.of(-1, -110), 7)));
         assertThat(forager.isQuitEarly()).isFalse();
@@ -59,9 +58,9 @@ class DefaultConstructionHeuristicForagerTest<Solution_> {
 
     @Test
     void checkPickEarlyFirstFeasibleScoreOrNonDeterioratingHard() {
-        DefaultConstructionHeuristicForager forager = new DefaultConstructionHeuristicForager(
+        var forager = new DefaultConstructionHeuristicForager<Solution_>(
                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD);
-        ConstructionHeuristicStepScope<Solution_> stepScope =
+        var stepScope =
                 buildStepScope(InnerScore.ofUninitialized(HardSoftScore.of(-10, -100), 8));
         forager.checkPickEarly(buildMoveScope(stepScope, InnerScore.ofUninitialized(HardSoftScore.of(-11, -110), 7)));
         assertThat(forager.isQuitEarly()).isFalse();

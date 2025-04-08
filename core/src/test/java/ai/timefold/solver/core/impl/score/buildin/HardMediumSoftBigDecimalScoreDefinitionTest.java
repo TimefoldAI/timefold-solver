@@ -12,13 +12,13 @@ class HardMediumSoftBigDecimalScoreDefinitionTest {
 
     @Test
     void getZeroScore() {
-        HardMediumSoftBigDecimalScore score = new HardMediumSoftBigDecimalScoreDefinition().getZeroScore();
+        var score = new HardMediumSoftBigDecimalScoreDefinition().getZeroScore();
         assertThat(score).isEqualTo(HardMediumSoftBigDecimalScore.ZERO);
     }
 
     @Test
     void getSoftestOneScore() {
-        HardMediumSoftBigDecimalScore score = new HardMediumSoftBigDecimalScoreDefinition().getOneSoftestScore();
+        var score = new HardMediumSoftBigDecimalScoreDefinition().getOneSoftestScore();
         assertThat(score).isEqualTo(HardMediumSoftBigDecimalScore.ONE_SOFT);
     }
 
@@ -42,16 +42,16 @@ class HardMediumSoftBigDecimalScoreDefinitionTest {
 
     @Test
     void divideBySanitizedDivisor() {
-        HardMediumSoftBigDecimalScoreDefinition scoreDefinition = new HardMediumSoftBigDecimalScoreDefinition();
-        HardMediumSoftBigDecimalScore dividend = scoreDefinition.fromLevelNumbers(
+        var scoreDefinition = new HardMediumSoftBigDecimalScoreDefinition();
+        var dividend = scoreDefinition.fromLevelNumbers(
                 new Number[] { BigDecimal.ZERO, BigDecimal.ONE, BigDecimal.TEN });
-        HardMediumSoftBigDecimalScore zeroDivisor = scoreDefinition.getZeroScore();
+        var zeroDivisor = scoreDefinition.getZeroScore();
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, zeroDivisor))
                 .isEqualTo(dividend);
-        HardMediumSoftBigDecimalScore oneDivisor = scoreDefinition.getOneSoftestScore();
+        var oneDivisor = scoreDefinition.getOneSoftestScore();
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, oneDivisor))
                 .isEqualTo(dividend);
-        HardMediumSoftBigDecimalScore tenDivisor = scoreDefinition.fromLevelNumbers(
+        var tenDivisor = scoreDefinition.fromLevelNumbers(
                 new Number[] { BigDecimal.TEN, BigDecimal.TEN, BigDecimal.TEN });
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, tenDivisor))
                 .isEqualTo(scoreDefinition.fromLevelNumbers(

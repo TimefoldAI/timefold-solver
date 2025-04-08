@@ -9,7 +9,7 @@ class OptimisticBoundFirstNodeComparatorTest extends AbstractNodeComparatorTest 
 
     @Test
     void compare() {
-        OptimisticBoundFirstNodeComparator comparator = new OptimisticBoundFirstNodeComparator(true);
+        var comparator = new OptimisticBoundFirstNodeComparator(true);
         assertScoreCompareToOrder(comparator,
                 buildNode(1, "-300", 5, 41),
                 buildNode(1, "-300", 5, 40),

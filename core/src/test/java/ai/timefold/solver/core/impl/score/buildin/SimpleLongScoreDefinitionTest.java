@@ -12,13 +12,13 @@ class SimpleLongScoreDefinitionTest {
 
     @Test
     void getZeroScore() {
-        SimpleLongScore score = new SimpleLongScoreDefinition().getZeroScore();
+        var score = new SimpleLongScoreDefinition().getZeroScore();
         assertThat(score).isEqualTo(SimpleLongScore.ZERO);
     }
 
     @Test
     void getSoftestOneScore() {
-        SimpleLongScore score = new SimpleLongScoreDefinition().getOneSoftestScore();
+        var score = new SimpleLongScoreDefinition().getOneSoftestScore();
         assertThat(score).isEqualTo(SimpleLongScore.ONE);
     }
 
@@ -34,8 +34,8 @@ class SimpleLongScoreDefinitionTest {
 
     @Test
     void buildOptimisticBoundOnlyUp() {
-        SimpleLongScoreDefinition scoreDefinition = new SimpleLongScoreDefinition();
-        SimpleLongScore optimisticBound = scoreDefinition.buildOptimisticBound(
+        var scoreDefinition = new SimpleLongScoreDefinition();
+        var optimisticBound = scoreDefinition.buildOptimisticBound(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_UP, 1),
                 SimpleLongScore.of(-1L));
         assertThat(optimisticBound.score()).isEqualTo(Long.MAX_VALUE);
@@ -43,8 +43,8 @@ class SimpleLongScoreDefinitionTest {
 
     @Test
     void buildOptimisticBoundOnlyDown() {
-        SimpleLongScoreDefinition scoreDefinition = new SimpleLongScoreDefinition();
-        SimpleLongScore optimisticBound = scoreDefinition.buildOptimisticBound(
+        var scoreDefinition = new SimpleLongScoreDefinition();
+        var optimisticBound = scoreDefinition.buildOptimisticBound(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_DOWN, 1),
                 SimpleLongScore.of(-1L));
         assertThat(optimisticBound.score()).isEqualTo(-1L);
@@ -52,8 +52,8 @@ class SimpleLongScoreDefinitionTest {
 
     @Test
     void buildPessimisticBoundOnlyUp() {
-        SimpleLongScoreDefinition scoreDefinition = new SimpleLongScoreDefinition();
-        SimpleLongScore pessimisticBound = scoreDefinition.buildPessimisticBound(
+        var scoreDefinition = new SimpleLongScoreDefinition();
+        var pessimisticBound = scoreDefinition.buildPessimisticBound(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_UP, 1),
                 SimpleLongScore.of(-1L));
         assertThat(pessimisticBound.score()).isEqualTo(-1L);
@@ -61,8 +61,8 @@ class SimpleLongScoreDefinitionTest {
 
     @Test
     void buildPessimisticBoundOnlyDown() {
-        SimpleLongScoreDefinition scoreDefinition = new SimpleLongScoreDefinition();
-        SimpleLongScore pessimisticBound = scoreDefinition.buildPessimisticBound(
+        var scoreDefinition = new SimpleLongScoreDefinition();
+        var pessimisticBound = scoreDefinition.buildPessimisticBound(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_DOWN, 1),
                 SimpleLongScore.of(-1L));
         assertThat(pessimisticBound.score()).isEqualTo(Long.MIN_VALUE);
@@ -70,15 +70,15 @@ class SimpleLongScoreDefinitionTest {
 
     @Test
     void divideBySanitizedDivisor() {
-        SimpleLongScoreDefinition scoreDefinition = new SimpleLongScoreDefinition();
-        SimpleLongScore dividend = scoreDefinition.fromLevelNumbers(new Number[] { 10L });
-        SimpleLongScore zeroDivisor = scoreDefinition.getZeroScore();
+        var scoreDefinition = new SimpleLongScoreDefinition();
+        var dividend = scoreDefinition.fromLevelNumbers(new Number[] { 10L });
+        var zeroDivisor = scoreDefinition.getZeroScore();
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, zeroDivisor))
                 .isEqualTo(dividend);
-        SimpleLongScore oneDivisor = scoreDefinition.getOneSoftestScore();
+        var oneDivisor = scoreDefinition.getOneSoftestScore();
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, oneDivisor))
                 .isEqualTo(dividend);
-        SimpleLongScore tenDivisor = scoreDefinition.fromLevelNumbers(new Number[] { 10L });
+        var tenDivisor = scoreDefinition.fromLevelNumbers(new Number[] { 10L });
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, tenDivisor))
                 .isEqualTo(scoreDefinition.fromLevelNumbers(new Number[] { 1L }));
     }

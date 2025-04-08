@@ -9,7 +9,7 @@ class ScoreFirstNodeComparatorTest extends AbstractNodeComparatorTest {
 
     @Test
     void compare() {
-        ScoreFirstNodeComparator comparator = new ScoreFirstNodeComparator(true);
+        var comparator = new ScoreFirstNodeComparator(true);
         assertScoreCompareToOrder(comparator,
                 buildNode(1, "-110", 5, 41),
                 buildNode(1, "-110", 5, 40),

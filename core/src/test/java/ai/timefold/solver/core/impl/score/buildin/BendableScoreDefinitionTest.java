@@ -13,13 +13,13 @@ class BendableScoreDefinitionTest {
 
     @Test
     void getZeroScore() {
-        BendableScore score = new BendableScoreDefinition(1, 2).getZeroScore();
+        var score = new BendableScoreDefinition(1, 2).getZeroScore();
         assertThat(score).isEqualTo(BendableScore.zero(1, 2));
     }
 
     @Test
     void getSoftestOneScore() {
-        BendableScore score = new BendableScoreDefinition(1, 2).getOneSoftestScore();
+        var score = new BendableScoreDefinition(1, 2).getOneSoftestScore();
         assertThat(score).isEqualTo(BendableScore.of(new int[1], new int[] { 0, 1 }));
     }
 
@@ -60,24 +60,24 @@ class BendableScoreDefinitionTest {
 
     @Test
     void createScoreWithIllegalArgument() {
-        BendableScoreDefinition bendableScoreDefinition = new BendableScoreDefinition(2, 3);
+        var bendableScoreDefinition = new BendableScoreDefinition(2, 3);
         assertThatIllegalArgumentException().isThrownBy(() -> bendableScoreDefinition.createScore(1, 2, 3));
     }
 
     @Test
     void createScore() {
-        int hardLevelSize = 3;
-        int softLevelSize = 2;
-        int levelSize = hardLevelSize + softLevelSize;
-        int[] scores = new int[levelSize];
-        for (int i = 0; i < levelSize; i++) {
+        var hardLevelSize = 3;
+        var softLevelSize = 2;
+        var levelSize = hardLevelSize + softLevelSize;
+        var scores = new int[levelSize];
+        for (var i = 0; i < levelSize; i++) {
             scores[i] = i;
         }
-        BendableScoreDefinition bendableScoreDefinition = new BendableScoreDefinition(hardLevelSize, softLevelSize);
-        BendableScore bendableScore = bendableScoreDefinition.createScore(scores);
+        var bendableScoreDefinition = new BendableScoreDefinition(hardLevelSize, softLevelSize);
+        var bendableScore = bendableScoreDefinition.createScore(scores);
         assertThat(bendableScore.hardLevelsSize()).isEqualTo(hardLevelSize);
         assertThat(bendableScore.softLevelsSize()).isEqualTo(softLevelSize);
-        for (int i = 0; i < levelSize; i++) {
+        for (var i = 0; i < levelSize; i++) {
             if (i < hardLevelSize) {
                 assertThat(bendableScore.hardScore(i)).isEqualTo(scores[i]);
             } else {
@@ -88,8 +88,8 @@ class BendableScoreDefinitionTest {
 
     @Test
     void buildOptimisticBoundOnlyUp() {
-        BendableScoreDefinition scoreDefinition = new BendableScoreDefinition(2, 3);
-        BendableScore optimisticBound = scoreDefinition.buildOptimisticBound(
+        var scoreDefinition = new BendableScoreDefinition(2, 3);
+        var optimisticBound = scoreDefinition.buildOptimisticBound(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_UP, 5),
                 scoreDefinition.createScore(-1, -2, -3, -4, -5));
         assertThat(optimisticBound.hardScore(0)).isEqualTo(Integer.MAX_VALUE);
@@ -101,8 +101,8 @@ class BendableScoreDefinitionTest {
 
     @Test
     void buildOptimisticBoundOnlyDown() {
-        BendableScoreDefinition scoreDefinition = new BendableScoreDefinition(2, 3);
-        BendableScore optimisticBound = scoreDefinition.buildOptimisticBound(
+        var scoreDefinition = new BendableScoreDefinition(2, 3);
+        var optimisticBound = scoreDefinition.buildOptimisticBound(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_DOWN, 5),
                 scoreDefinition.createScore(-1, -2, -3, -4, -5));
         assertThat(optimisticBound.hardScore(0)).isEqualTo(-1);
@@ -114,8 +114,8 @@ class BendableScoreDefinitionTest {
 
     @Test
     void buildPessimisticBoundOnlyUp() {
-        BendableScoreDefinition scoreDefinition = new BendableScoreDefinition(2, 3);
-        BendableScore pessimisticBound = scoreDefinition.buildPessimisticBound(
+        var scoreDefinition = new BendableScoreDefinition(2, 3);
+        var pessimisticBound = scoreDefinition.buildPessimisticBound(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_UP, 5),
                 scoreDefinition.createScore(-1, -2, -3, -4, -5));
         assertThat(pessimisticBound.hardScore(0)).isEqualTo(-1);
@@ -127,8 +127,8 @@ class BendableScoreDefinitionTest {
 
     @Test
     void buildPessimisticBoundOnlyDown() {
-        BendableScoreDefinition scoreDefinition = new BendableScoreDefinition(2, 3);
-        BendableScore pessimisticBound = scoreDefinition.buildPessimisticBound(
+        var scoreDefinition = new BendableScoreDefinition(2, 3);
+        var pessimisticBound = scoreDefinition.buildPessimisticBound(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_DOWN, 5),
                 scoreDefinition.createScore(-1, -2, -3, -4, -5));
         assertThat(pessimisticBound.hardScore(0)).isEqualTo(Integer.MIN_VALUE);
@@ -140,15 +140,15 @@ class BendableScoreDefinitionTest {
 
     @Test
     void divideBySanitizedDivisor() {
-        BendableScoreDefinition scoreDefinition = new BendableScoreDefinition(1, 1);
-        BendableScore dividend = scoreDefinition.createScore(0, 10);
-        BendableScore zeroDivisor = scoreDefinition.getZeroScore();
+        var scoreDefinition = new BendableScoreDefinition(1, 1);
+        var dividend = scoreDefinition.createScore(0, 10);
+        var zeroDivisor = scoreDefinition.getZeroScore();
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, zeroDivisor))
                 .isEqualTo(dividend);
-        BendableScore oneDivisor = scoreDefinition.getOneSoftestScore();
+        var oneDivisor = scoreDefinition.getOneSoftestScore();
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, oneDivisor))
                 .isEqualTo(dividend);
-        BendableScore tenDivisor = scoreDefinition.createScore(10, 10);
+        var tenDivisor = scoreDefinition.createScore(10, 10);
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, tenDivisor))
                 .isEqualTo(scoreDefinition.createScore(0, 1));
     }

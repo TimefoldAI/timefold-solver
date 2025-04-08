@@ -12,13 +12,13 @@ class SimpleBigDecimalScoreDefinitionTest {
 
     @Test
     void getZeroScore() {
-        SimpleBigDecimalScore score = new SimpleBigDecimalScoreDefinition().getZeroScore();
+        var score = new SimpleBigDecimalScoreDefinition().getZeroScore();
         assertThat(score).isEqualTo(SimpleBigDecimalScore.ZERO);
     }
 
     @Test
     void getSoftestOneScore() {
-        SimpleBigDecimalScore score = new SimpleBigDecimalScoreDefinition().getOneSoftestScore();
+        var score = new SimpleBigDecimalScoreDefinition().getOneSoftestScore();
         assertThat(score).isEqualTo(SimpleBigDecimalScore.ONE);
     }
 
@@ -36,15 +36,15 @@ class SimpleBigDecimalScoreDefinitionTest {
 
     @Test
     void divideBySanitizedDivisor() {
-        SimpleBigDecimalScoreDefinition scoreDefinition = new SimpleBigDecimalScoreDefinition();
-        SimpleBigDecimalScore dividend = scoreDefinition.fromLevelNumbers(new Number[] { BigDecimal.TEN });
-        SimpleBigDecimalScore zeroDivisor = scoreDefinition.getZeroScore();
+        var scoreDefinition = new SimpleBigDecimalScoreDefinition();
+        var dividend = scoreDefinition.fromLevelNumbers(new Number[] { BigDecimal.TEN });
+        var zeroDivisor = scoreDefinition.getZeroScore();
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, zeroDivisor))
                 .isEqualTo(dividend);
-        SimpleBigDecimalScore oneDivisor = scoreDefinition.getOneSoftestScore();
+        var oneDivisor = scoreDefinition.getOneSoftestScore();
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, oneDivisor))
                 .isEqualTo(dividend);
-        SimpleBigDecimalScore tenDivisor = scoreDefinition.fromLevelNumbers(new Number[] { BigDecimal.TEN });
+        var tenDivisor = scoreDefinition.fromLevelNumbers(new Number[] { BigDecimal.TEN });
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, tenDivisor))
                 .isEqualTo(scoreDefinition.fromLevelNumbers(new Number[] { BigDecimal.ONE }));
     }

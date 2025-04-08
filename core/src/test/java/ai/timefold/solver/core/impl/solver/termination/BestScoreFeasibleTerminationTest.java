@@ -93,8 +93,7 @@ class BestScoreFeasibleTerminationTest {
     void calculateTimeGradientBendableScoreHHSSS() {
         ScoreDefinition<?> scoreDefinition = mock(ScoreDefinition.class);
         when(scoreDefinition.getFeasibleLevelsSize()).thenReturn(2);
-        BestScoreFeasibleTermination<TestdataSolution> termination = new BestScoreFeasibleTermination<>(scoreDefinition,
-                new double[] { 0.75 });
+        var termination = new BestScoreFeasibleTermination<TestdataSolution>(scoreDefinition, new double[] { 0.75 });
 
         // Normal cases
         // Smack in the middle

@@ -31,7 +31,7 @@ public class TestdataScoreNotEqualSolution implements SolutionCloner<TestdataSco
 
     @Override
     public @NonNull TestdataScoreNotEqualSolution cloneSolution(@NonNull TestdataScoreNotEqualSolution original) {
-        TestdataScoreNotEqualSolution clone = new TestdataScoreNotEqualSolution();
+        var clone = new TestdataScoreNotEqualSolution();
         clone.entity.setValue(original.entity.getValue());
         if (original.score != null) {
             clone.score = SimpleScore.of(original.score.score() - 1);

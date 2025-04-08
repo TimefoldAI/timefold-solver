@@ -33,7 +33,7 @@ public abstract class AbstractNodeComparatorTest {
 
     protected ExhaustiveSearchNode buildNode(int depth, InnerScore<SimpleScore> score, InnerScore<SimpleScore> optimisticBound,
             long parentBreadth, long breadth) {
-        ExhaustiveSearchNode node = mock(ExhaustiveSearchNode.class);
+        var node = mock(ExhaustiveSearchNode.class);
         when(node.getDepth()).thenReturn(depth);
         doReturn(score).when(node).getScore();
         doReturn(optimisticBound).when(node).getOptimisticBound();
@@ -57,8 +57,8 @@ public abstract class AbstractNodeComparatorTest {
 
     protected static void assertScoreCompareToOrder(Comparator<ExhaustiveSearchNode> comparator,
             ExhaustiveSearchNode... nodes) {
-        for (int i = 0; i < nodes.length; i++) {
-            for (int j = i + 1; j < nodes.length; j++) {
+        for (var i = 0; i < nodes.length; i++) {
+            for (var j = i + 1; j < nodes.length; j++) {
                 assertLesser(comparator, nodes[i], nodes[j]);
             }
         }

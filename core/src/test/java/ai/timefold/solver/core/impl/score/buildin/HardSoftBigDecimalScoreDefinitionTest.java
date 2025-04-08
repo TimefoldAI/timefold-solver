@@ -12,13 +12,13 @@ class HardSoftBigDecimalScoreDefinitionTest {
 
     @Test
     void getZeroScore() {
-        HardSoftBigDecimalScore score = new HardSoftBigDecimalScoreDefinition().getZeroScore();
+        var score = new HardSoftBigDecimalScoreDefinition().getZeroScore();
         assertThat(score).isEqualTo(HardSoftBigDecimalScore.ZERO);
     }
 
     @Test
     void getSoftestOneScore() {
-        HardSoftBigDecimalScore score = new HardSoftBigDecimalScoreDefinition().getOneSoftestScore();
+        var score = new HardSoftBigDecimalScoreDefinition().getOneSoftestScore();
         assertThat(score).isEqualTo(HardSoftBigDecimalScore.ONE_SOFT);
     }
 
@@ -41,16 +41,16 @@ class HardSoftBigDecimalScoreDefinitionTest {
 
     @Test
     void divideBySanitizedDivisor() {
-        HardSoftBigDecimalScoreDefinition scoreDefinition = new HardSoftBigDecimalScoreDefinition();
-        HardSoftBigDecimalScore dividend = scoreDefinition.fromLevelNumbers(
+        var scoreDefinition = new HardSoftBigDecimalScoreDefinition();
+        var dividend = scoreDefinition.fromLevelNumbers(
                 new Number[] { BigDecimal.ZERO, BigDecimal.TEN });
-        HardSoftBigDecimalScore zeroDivisor = scoreDefinition.getZeroScore();
+        var zeroDivisor = scoreDefinition.getZeroScore();
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, zeroDivisor))
                 .isEqualTo(dividend);
-        HardSoftBigDecimalScore oneDivisor = scoreDefinition.getOneSoftestScore();
+        var oneDivisor = scoreDefinition.getOneSoftestScore();
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, oneDivisor))
                 .isEqualTo(dividend);
-        HardSoftBigDecimalScore tenDivisor = scoreDefinition.fromLevelNumbers(
+        var tenDivisor = scoreDefinition.fromLevelNumbers(
                 new Number[] { BigDecimal.TEN, BigDecimal.TEN });
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, tenDivisor))
                 .isEqualTo(scoreDefinition.fromLevelNumbers(

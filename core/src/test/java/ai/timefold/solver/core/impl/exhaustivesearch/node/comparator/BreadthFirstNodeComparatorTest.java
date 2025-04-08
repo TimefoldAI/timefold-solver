@@ -9,7 +9,7 @@ class BreadthFirstNodeComparatorTest extends AbstractNodeComparatorTest {
 
     @Test
     void compare() {
-        BreadthFirstNodeComparator comparator = new BreadthFirstNodeComparator(true);
+        var comparator = new BreadthFirstNodeComparator(true);
         assertScoreCompareToOrder(comparator,
                 buildNode(2, "-110", 5, 51),
                 buildNode(2, "-110", 5, 50),

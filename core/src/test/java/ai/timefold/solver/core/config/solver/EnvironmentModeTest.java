@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.function.BooleanSupplier;
 import java.util.stream.IntStream;
 
@@ -30,7 +29,6 @@ import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.Corrup
 import ai.timefold.solver.core.config.solver.testutil.corruptedundoshadow.CorruptedUndoShadowValue;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
-import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.impl.solver.random.RandomFactory;
@@ -64,13 +62,12 @@ class EnvironmentModeTest {
     }
 
     private static SolverConfig buildSolverConfig(EnvironmentMode environmentMode) {
-        CustomPhaseConfig initializerPhaseConfig = new CustomPhaseConfig()
+        var initializerPhaseConfig = new CustomPhaseConfig()
                 .withCustomPhaseCommandClassList(Collections.singletonList(TestdataFirstValueInitializer.class));
 
-        LocalSearchPhaseConfig localSearchPhaseConfig = new LocalSearchPhaseConfig();
+        var localSearchPhaseConfig = new LocalSearchPhaseConfig();
         localSearchPhaseConfig
-                .setTerminationConfig(
-                        new TerminationConfig().withMoveCountLimit(NUMBER_OF_TERMINATION_MOVE_COUNT_LIMIT));
+                .setTerminationConfig(new TerminationConfig().withMoveCountLimit(NUMBER_OF_TERMINATION_MOVE_COUNT_LIMIT));
 
         return new SolverConfig()
                 .withSolutionClass(TestdataSolution.class)
@@ -82,11 +79,11 @@ class EnvironmentModeTest {
     @ParameterizedTest(name = "{0}")
     @EnumSource(EnvironmentMode.class)
     void determinism(EnvironmentMode environmentMode) {
-        SolverConfig solverConfig = buildSolverConfig(environmentMode);
+        var solverConfig = buildSolverConfig(environmentMode);
         setSolverConfigCalculatorClass(solverConfig, TestdataDifferentValuesCalculator.class);
 
-        Solver<TestdataSolution> solver1 = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
-        Solver<TestdataSolution> solver2 = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
+        var solver1 = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
+        var solver2 = SolverFactory.<TestdataSolution> create(solverConfig).buildSolver();
 
         if (environmentMode.isReproducible()) {
             assertReproducibility(solver1, solver2);
@@ -98,7 +95,7 @@ class EnvironmentModeTest {
     @ParameterizedTest(name = "{0}")
     @EnumSource(EnvironmentMode.class)
     void corruptedUndoShadowVariableListener(EnvironmentMode environmentMode) {
-        SolverConfig solverConfig = new SolverConfig()
+        var solverConfig = new SolverConfig()
                 .withEnvironmentMode(environmentMode)
                 .withSolutionClass(CorruptedUndoShadowSolution.class)
                 .withEntityClasses(CorruptedUndoShadowEntity.class, CorruptedUndoShadowValue.class)
@@ -173,7 +170,7 @@ class EnvironmentModeTest {
     @ParameterizedTest(name = "{0}")
     @EnumSource(EnvironmentMode.class)
     void corruptedConstraints(EnvironmentMode environmentMode) {
-        SolverConfig solverConfig = buildSolverConfig(environmentMode);
+        var solverConfig = buildSolverConfig(environmentMode);
         // For full assert modes it should throw exception about corrupted score
         setSolverConfigCalculatorClass(solverConfig, TestdataCorruptedDifferentValuesCalculator.class);
 
@@ -208,8 +205,8 @@ class EnvironmentModeTest {
     }
 
     private void assertSameScoreSeries(Solver<TestdataSolution> solver1, Solver<TestdataSolution> solver2) {
-        TestdataStepScoreListener listener = new TestdataStepScoreListener();
-        TestdataStepScoreListener listener2 = new TestdataStepScoreListener();
+        var listener = new TestdataStepScoreListener();
+        var listener2 = new TestdataStepScoreListener();
 
         ((DefaultSolver<TestdataSolution>) solver1).addPhaseLifecycleListener(listener);
         ((DefaultSolver<TestdataSolution>) solver2).addPhaseLifecycleListener(listener2);
@@ -226,8 +223,8 @@ class EnvironmentModeTest {
     }
 
     private void assertDifferentScoreSeries(Solver<TestdataSolution> solver1, Solver<TestdataSolution> solver2) {
-        TestdataStepScoreListener listener = new TestdataStepScoreListener();
-        TestdataStepScoreListener listener2 = new TestdataStepScoreListener();
+        var listener = new TestdataStepScoreListener();
+        var listener2 = new TestdataStepScoreListener();
 
         ((DefaultSolver<TestdataSolution>) solver1).addPhaseLifecycleListener(listener);
         ((DefaultSolver<TestdataSolution>) solver2).addPhaseLifecycleListener(listener2);
@@ -246,8 +243,8 @@ class EnvironmentModeTest {
     }
 
     private void assertGeneratingSameNumbers(RandomFactory factory1, RandomFactory factory2) {
-        Random random = factory1.createRandom();
-        Random random2 = factory2.createRandom();
+        var random = factory1.createRandom();
+        var random2 = factory2.createRandom();
 
         assertSoftly(softly -> IntStream.range(0, NUMBER_OF_RANDOM_NUMBERS_GENERATED)
                 .forEach(i -> softly.assertThat(random.nextInt())
@@ -257,8 +254,8 @@ class EnvironmentModeTest {
     }
 
     private void assertGeneratingDifferentNumbers(RandomFactory factory1, RandomFactory factory2) {
-        Random random = factory1.createRandom();
-        Random random2 = factory2.createRandom();
+        var random = factory1.createRandom();
+        var random2 = factory2.createRandom();
 
         assertSoftly(softly -> IntStream.range(0, NUMBER_OF_RANDOM_NUMBERS_GENERATED)
                 .forEach(i -> softly.assertThat(random.nextInt())
@@ -278,19 +275,19 @@ class EnvironmentModeTest {
 
         @Override
         public void changeWorkingSolution(ScoreDirector<TestdataSolution> scoreDirector, BooleanSupplier isPhaseTerminated) {
-            TestdataSolution solution = scoreDirector.getWorkingSolution();
-            TestdataValue firstValue = solution.getValueList().get(0);
+            var solution = scoreDirector.getWorkingSolution();
+            var firstValue = solution.getValueList().get(0);
 
-            for (TestdataEntity entity : solution.getEntityList()) {
+            for (var entity : solution.getEntityList()) {
                 scoreDirector.beforeVariableChanged(entity, "value");
                 entity.setValue(firstValue);
                 scoreDirector.afterVariableChanged(entity, "value");
             }
 
             scoreDirector.triggerVariableListeners();
-            InnerScoreDirector<TestdataSolution, ?> innerScoreDirector =
+            var innerScoreDirector =
                     (InnerScoreDirector<TestdataSolution, ?>) scoreDirector;
-            InnerScore<?> score = innerScoreDirector.calculateScore();
+            var score = innerScoreDirector.calculateScore();
 
             if (!score.isInitialized()) {
                 throw new IllegalStateException("The solution (" + TestdataEntity.class.getSimpleName()
@@ -306,7 +303,7 @@ class EnvironmentModeTest {
 
         @Override
         public void stepEnded(AbstractStepScope<TestdataSolution> stepScope) {
-            TestdataSolution solution = stepScope.getWorkingSolution();
+            var solution = stepScope.getWorkingSolution();
 
             if (solution.getScore() != null) {
                 scores.add(solution.getScore());

@@ -13,13 +13,13 @@ class BendableBigDecimalScoreDefinitionTest {
 
     @Test
     void getZeroScore() {
-        BendableBigDecimalScore score = new BendableBigDecimalScoreDefinition(1, 2).getZeroScore();
+        var score = new BendableBigDecimalScoreDefinition(1, 2).getZeroScore();
         assertThat(score).isEqualTo(BendableBigDecimalScore.zero(1, 2));
     }
 
     @Test
     void getSoftestOneScore() {
-        BendableBigDecimalScore score = new BendableBigDecimalScoreDefinition(1, 2).getOneSoftestScore();
+        var score = new BendableBigDecimalScoreDefinition(1, 2).getOneSoftestScore();
         assertThat(score).isEqualTo(BendableBigDecimalScore.of(new BigDecimal[] { BigDecimal.ZERO },
                 new BigDecimal[] { BigDecimal.ZERO, BigDecimal.ONE }));
     }
@@ -61,26 +61,26 @@ class BendableBigDecimalScoreDefinitionTest {
 
     @Test
     void createScoreWithIllegalArgument() {
-        BendableBigDecimalScoreDefinition bendableScoreDefinition = new BendableBigDecimalScoreDefinition(2, 3);
+        var bendableScoreDefinition = new BendableBigDecimalScoreDefinition(2, 3);
         assertThatIllegalArgumentException().isThrownBy(() -> bendableScoreDefinition.createScore(
                 new BigDecimal(1), new BigDecimal(2), new BigDecimal(3)));
     }
 
     @Test
     void createScore() {
-        for (int hardLevelSize = 1; hardLevelSize < 5; hardLevelSize++) {
-            for (int softLevelSize = 1; softLevelSize < 5; softLevelSize++) {
-                int levelSize = hardLevelSize + softLevelSize;
-                BigDecimal[] scores = new BigDecimal[levelSize];
-                for (int i = 0; i < levelSize; i++) {
+        for (var hardLevelSize = 1; hardLevelSize < 5; hardLevelSize++) {
+            for (var softLevelSize = 1; softLevelSize < 5; softLevelSize++) {
+                var levelSize = hardLevelSize + softLevelSize;
+                var scores = new BigDecimal[levelSize];
+                for (var i = 0; i < levelSize; i++) {
                     scores[i] = new BigDecimal(i);
                 }
-                BendableBigDecimalScoreDefinition bendableScoreDefinition = new BendableBigDecimalScoreDefinition(hardLevelSize,
+                var bendableScoreDefinition = new BendableBigDecimalScoreDefinition(hardLevelSize,
                         softLevelSize);
-                BendableBigDecimalScore bendableScore = bendableScoreDefinition.createScore(scores);
+                var bendableScore = bendableScoreDefinition.createScore(scores);
                 assertThat(bendableScore.hardLevelsSize()).isEqualTo(hardLevelSize);
                 assertThat(bendableScore.softLevelsSize()).isEqualTo(softLevelSize);
-                for (int i = 0; i < levelSize; i++) {
+                for (var i = 0; i < levelSize; i++) {
                     if (i < hardLevelSize) {
                         assertThat(bendableScore.hardScore(i)).isEqualTo(scores[i]);
                     } else {
@@ -95,15 +95,15 @@ class BendableBigDecimalScoreDefinitionTest {
 
     @Test
     void divideBySanitizedDivisor() {
-        BendableBigDecimalScoreDefinition scoreDefinition = new BendableBigDecimalScoreDefinition(1, 1);
-        BendableBigDecimalScore dividend = scoreDefinition.createScore(BigDecimal.ZERO, BigDecimal.TEN);
-        BendableBigDecimalScore zeroDivisor = scoreDefinition.getZeroScore();
+        var scoreDefinition = new BendableBigDecimalScoreDefinition(1, 1);
+        var dividend = scoreDefinition.createScore(BigDecimal.ZERO, BigDecimal.TEN);
+        var zeroDivisor = scoreDefinition.getZeroScore();
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, zeroDivisor))
                 .isEqualTo(dividend);
-        BendableBigDecimalScore oneDivisor = scoreDefinition.getOneSoftestScore();
+        var oneDivisor = scoreDefinition.getOneSoftestScore();
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, oneDivisor))
                 .isEqualTo(dividend);
-        BendableBigDecimalScore tenDivisor = scoreDefinition.createScore(BigDecimal.TEN, BigDecimal.TEN);
+        var tenDivisor = scoreDefinition.createScore(BigDecimal.TEN, BigDecimal.TEN);
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, tenDivisor))
                 .isEqualTo(scoreDefinition.createScore(BigDecimal.ZERO, BigDecimal.ONE));
     }

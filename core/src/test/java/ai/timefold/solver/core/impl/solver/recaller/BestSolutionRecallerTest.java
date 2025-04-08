@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 class BestSolutionRecallerTest {
 
     private static <Solution_> SolverScope<Solution_> createSolverScope() {
-        SolverScope<Solution_> solverScope = new SolverScope<>();
+        var solverScope = new SolverScope<Solution_>();
         InnerScoreDirector<Solution_, ?> scoreDirector = mock(InnerScoreDirector.class);
         SolutionDescriptor<Solution_> solutionDescriptor = mock(SolutionDescriptor.class);
         when(scoreDirector.getSolutionDescriptor()).thenReturn(solutionDescriptor);
@@ -80,7 +80,7 @@ class BestSolutionRecallerTest {
     protected void doProcessWorkingSolutionDuringStep(InnerScoreWithSolution<TestdataSolution, SimpleScore> originalBestScore,
             InnerScoreWithSolution<TestdataSolution, SimpleScore> stepScore, boolean stepImprovesBestSolution) {
         SolverScope<TestdataSolution> solverScope = createSolverScope();
-        TestdataSolution originalBestSolution = originalBestScore.solution;
+        var originalBestSolution = originalBestScore.solution;
         var scoreDirector = solverScope.getScoreDirector();
         when(scoreDirector.getSolutionDescriptor().getScore(originalBestSolution))
                 .thenReturn(originalBestScore.innerScore.raw());
@@ -88,8 +88,8 @@ class BestSolutionRecallerTest {
         solverScope.setBestSolution(originalBestSolution);
         solverScope.setBestScore(originalBestScore.innerScore);
 
-        ConstructionHeuristicStepScope<TestdataSolution> stepScope = setupConstructionHeuristics(solverScope);
-        TestdataSolution stepSolution = stepScore.solution;
+        var stepScope = setupConstructionHeuristics(solverScope);
+        var stepSolution = stepScore.solution;
         when(scoreDirector.getSolutionDescriptor().getScore(stepSolution))
                 .thenReturn(stepScore.innerScore.raw());
         when(scoreDirector.getWorkingInitScore()).thenReturn(-stepScore.innerScore.unassignedCount());
@@ -163,15 +163,15 @@ class BestSolutionRecallerTest {
             InnerScoreWithSolution<TestdataSolution, SimpleScore> moveScore,
             boolean moveImprovesBestSolution) {
         SolverScope<TestdataSolution> solverScope = createSolverScope();
-        TestdataSolution originalBestSolution = originalBestScore.solution;
+        var originalBestSolution = originalBestScore.solution;
         when(solverScope.getScoreDirector().getSolutionDescriptor().getScore(originalBestSolution))
                 .thenReturn(originalBestScore.innerScore.raw());
         solverScope.setBestSolution(originalBestSolution);
         solverScope.setBestScore(originalBestScore.innerScore);
 
-        ConstructionHeuristicStepScope<TestdataSolution> stepScope = setupConstructionHeuristics(solverScope);
+        var stepScope = setupConstructionHeuristics(solverScope);
 
-        TestdataSolution moveSolution = moveScore.solution;
+        var moveSolution = moveScore.solution;
         when(solverScope.getScoreDirector().getSolutionDescriptor().getScore(moveSolution))
                 .thenReturn(moveScore.innerScore.raw());
         when(solverScope.getScoreDirector().cloneWorkingSolution()).thenReturn(moveSolution);

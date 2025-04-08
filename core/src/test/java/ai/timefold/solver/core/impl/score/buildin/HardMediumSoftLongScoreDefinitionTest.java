@@ -12,13 +12,13 @@ class HardMediumSoftLongScoreDefinitionTest {
 
     @Test
     void getZeroScore() {
-        HardMediumSoftLongScore score = new HardMediumSoftLongScoreDefinition().getZeroScore();
+        var score = new HardMediumSoftLongScoreDefinition().getZeroScore();
         assertThat(score).isEqualTo(HardMediumSoftLongScore.ZERO);
     }
 
     @Test
     void getSoftestOneScore() {
-        HardMediumSoftLongScore score = new HardMediumSoftLongScoreDefinition().getOneSoftestScore();
+        var score = new HardMediumSoftLongScoreDefinition().getOneSoftestScore();
         assertThat(score).isEqualTo(HardMediumSoftLongScore.ONE_SOFT);
     }
 
@@ -40,8 +40,8 @@ class HardMediumSoftLongScoreDefinitionTest {
 
     @Test
     void buildOptimisticBoundOnlyUp() {
-        HardMediumSoftLongScoreDefinition scoreDefinition = new HardMediumSoftLongScoreDefinition();
-        HardMediumSoftLongScore optimisticBound = scoreDefinition.buildOptimisticBound(
+        var scoreDefinition = new HardMediumSoftLongScoreDefinition();
+        var optimisticBound = scoreDefinition.buildOptimisticBound(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_UP, 3),
                 HardMediumSoftLongScore.of(-1L, -2L, -3L));
         assertThat(optimisticBound.hardScore()).isEqualTo(Long.MAX_VALUE);
@@ -51,8 +51,8 @@ class HardMediumSoftLongScoreDefinitionTest {
 
     @Test
     void buildOptimisticBoundOnlyDown() {
-        HardMediumSoftLongScoreDefinition scoreDefinition = new HardMediumSoftLongScoreDefinition();
-        HardMediumSoftLongScore optimisticBound = scoreDefinition.buildOptimisticBound(
+        var scoreDefinition = new HardMediumSoftLongScoreDefinition();
+        var optimisticBound = scoreDefinition.buildOptimisticBound(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_DOWN, 3),
                 HardMediumSoftLongScore.of(-1L, -2L, -3L));
         assertThat(optimisticBound.hardScore()).isEqualTo(-1L);
@@ -62,8 +62,8 @@ class HardMediumSoftLongScoreDefinitionTest {
 
     @Test
     void buildPessimisticBoundOnlyUp() {
-        HardMediumSoftLongScoreDefinition scoreDefinition = new HardMediumSoftLongScoreDefinition();
-        HardMediumSoftLongScore pessimisticBound = scoreDefinition.buildPessimisticBound(
+        var scoreDefinition = new HardMediumSoftLongScoreDefinition();
+        var pessimisticBound = scoreDefinition.buildPessimisticBound(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_UP, 3),
                 HardMediumSoftLongScore.of(-1L, -2L, -3L));
         assertThat(pessimisticBound.hardScore()).isEqualTo(-1L);
@@ -73,8 +73,8 @@ class HardMediumSoftLongScoreDefinitionTest {
 
     @Test
     void buildPessimisticBoundOnlyDown() {
-        HardMediumSoftLongScoreDefinition scoreDefinition = new HardMediumSoftLongScoreDefinition();
-        HardMediumSoftLongScore pessimisticBound = scoreDefinition.buildPessimisticBound(
+        var scoreDefinition = new HardMediumSoftLongScoreDefinition();
+        var pessimisticBound = scoreDefinition.buildPessimisticBound(
                 InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_DOWN, 3),
                 HardMediumSoftLongScore.of(-1L, -2L, -3L));
         assertThat(pessimisticBound.hardScore()).isEqualTo(Long.MIN_VALUE);
@@ -84,15 +84,15 @@ class HardMediumSoftLongScoreDefinitionTest {
 
     @Test
     void divideBySanitizedDivisor() {
-        HardMediumSoftLongScoreDefinition scoreDefinition = new HardMediumSoftLongScoreDefinition();
-        HardMediumSoftLongScore dividend = scoreDefinition.fromLevelNumbers(new Number[] { 0L, 1L, 10L });
-        HardMediumSoftLongScore zeroDivisor = scoreDefinition.getZeroScore();
+        var scoreDefinition = new HardMediumSoftLongScoreDefinition();
+        var dividend = scoreDefinition.fromLevelNumbers(new Number[] { 0L, 1L, 10L });
+        var zeroDivisor = scoreDefinition.getZeroScore();
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, zeroDivisor))
                 .isEqualTo(dividend);
-        HardMediumSoftLongScore oneDivisor = scoreDefinition.getOneSoftestScore();
+        var oneDivisor = scoreDefinition.getOneSoftestScore();
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, oneDivisor))
                 .isEqualTo(dividend);
-        HardMediumSoftLongScore tenDivisor = scoreDefinition.fromLevelNumbers(new Number[] { 10L, 10L, 10L });
+        var tenDivisor = scoreDefinition.fromLevelNumbers(new Number[] { 10L, 10L, 10L });
         assertThat(scoreDefinition.divideBySanitizedDivisor(dividend, tenDivisor))
                 .isEqualTo(scoreDefinition.fromLevelNumbers(new Number[] { 0L, 0L, 1L }));
     }
