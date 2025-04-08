@@ -92,11 +92,8 @@ is most likely xref:using-timefold-solver/modeling-planning-problems.adoc#clonin
 given to the method ``solve(solution)``, which implies it is a different instance.
 ====
 
-[NOTE]
-====
-The solution instance given to the `solve(Solution)` method does not need to be uninitialized.
-It can be partially or fully initialized, which is often the case in xref:responding-to-change/responding-to-change.adoc[repeated planning].
-====
+NOTE: The solution instance given to the `solve(Solution)` method may be partially or fully initialized,
+which is often the case in xref:responding-to-change/responding-to-change.adoc[repeated planning].
 
 [#multithreadedSolving]
 === Multi-threaded solving

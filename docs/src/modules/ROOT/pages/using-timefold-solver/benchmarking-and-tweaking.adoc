@@ -766,12 +766,11 @@ To see how fast the scores are calculated, add:
 image::using-timefold-solver/benchmarking-and-tweaking/scoreCalculationSpeedStatistic.png[align="center"]
 
 
-[NOTE]
-====
-The initial high calculation speed is typical during solution initialization: it's far easier to calculate the score of a solution if only a handful planning entities have been initialized, than when all the planning entities are initialized.
-
-After those few seconds of initialization, the calculation speed is relatively stable, apart from an occasional stop-the-world garbage collector disruption.
-====
+NOTE: The initial high calculation speed is typical during solution initialization:
+it's far easier to calculate the score of a solution if only a handful planning entities have been initialized,
+than when all the planning entities are initialized.
+After those few seconds of initialization, the calculation speed is relatively stable,
+apart from an occasional stop-the-world garbage collector disruption.
 
 
 [#benchmarkReportMoveEvaluationSpeedOverTimeStatistic]
@@ -791,15 +790,11 @@ To see how fast the moves are evaluated, add:
 image::using-timefold-solver/benchmarking-and-tweaking/moveEvaluationSpeedStatistic.png[align="center"]
 
 
-[NOTE]
-====
-The initial high evaluation speed is typical during solution initialization:
+NOTE: The initial high evaluation speed is typical during solution initialization:
 it's far easier to calculate the score of a solution if only a handful planning entities have been initialized,
 than when all the planning entities are initialized.
-
 After the construction heuristic phase, the evaluation speed is relatively stable,
 apart from an occasional stop-the-world garbage collector disruption.
-====
 
 [#benchmarkReportMoveEvaluationCountPerTypeStastistic]
 === Move evaluation count per move type statistic (graph and CSV)
