@@ -20,7 +20,7 @@ public final class BendableScorePythonJavaTypeMapping implements PythonJavaTypeM
     public BendableScorePythonJavaTypeMapping(PythonLikeType type)
             throws ClassNotFoundException, NoSuchFieldException, NoSuchMethodException {
         this.type = type;
-        Class<?> clazz = type.getJavaClass();
+        var clazz = type.getJavaClass();
         constructor = clazz.getConstructor();
         hardScoresField = clazz.getField("hard_scores");
         softScoresField = clazz.getField("soft_scores");
@@ -37,8 +37,8 @@ public final class BendableScorePythonJavaTypeMapping implements PythonJavaTypeM
     }
 
     private static PythonLikeTuple<PythonInteger> toPythonList(long[] scores) {
-        PythonLikeTuple<PythonInteger> out = new PythonLikeTuple<>();
-        for (long score : scores) {
+        var out = new PythonLikeTuple<PythonInteger>();
+        for (var score : scores) {
             out.add(PythonInteger.valueOf(score));
         }
         return out;
@@ -59,14 +59,14 @@ public final class BendableScorePythonJavaTypeMapping implements PythonJavaTypeM
     @Override
     public BendableLongScore toJavaObject(PythonLikeObject pythonObject) {
         try {
-            var hardScoreTuple = ((PythonLikeTuple) hardScoresField.get(pythonObject));
-            var softScoreTuple = ((PythonLikeTuple) softScoresField.get(pythonObject));
-            long[] hardScores = new long[hardScoreTuple.size()];
-            long[] softScores = new long[softScoreTuple.size()];
-            for (int i = 0; i < hardScores.length; i++) {
+            var hardScoreTuple = (PythonLikeTuple) hardScoresField.get(pythonObject);
+            var softScoreTuple = (PythonLikeTuple) softScoresField.get(pythonObject);
+            var hardScores = new long[hardScoreTuple.size()];
+            var softScores = new long[softScoreTuple.size()];
+            for (var i = 0; i < hardScores.length; i++) {
                 hardScores[i] = ((PythonInteger) hardScoreTuple.get(i)).value.longValue();
             }
-            for (int i = 0; i < softScores.length; i++) {
+            for (var i = 0; i < softScores.length; i++) {
                 softScores[i] = ((PythonInteger) softScoreTuple.get(i)).value.longValue();
             }
             return BendableLongScore.of(hardScores, softScores);

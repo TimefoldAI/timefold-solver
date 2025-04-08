@@ -20,7 +20,7 @@ public final class HardSoftDecimalScorePythonJavaTypeMapping
     public HardSoftDecimalScorePythonJavaTypeMapping(PythonLikeType type)
             throws ClassNotFoundException, NoSuchFieldException, NoSuchMethodException {
         this.type = type;
-        Class<?> clazz = type.getJavaClass();
+        var clazz = type.getJavaClass();
         constructor = clazz.getConstructor();
         hardScoreField = clazz.getField("hard_score");
         softScoreField = clazz.getField("soft_score");

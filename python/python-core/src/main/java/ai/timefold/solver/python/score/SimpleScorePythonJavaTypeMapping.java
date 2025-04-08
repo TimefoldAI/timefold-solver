@@ -18,7 +18,7 @@ public final class SimpleScorePythonJavaTypeMapping implements PythonJavaTypeMap
     public SimpleScorePythonJavaTypeMapping(PythonLikeType type)
             throws ClassNotFoundException, NoSuchFieldException, NoSuchMethodException {
         this.type = type;
-        Class<?> clazz = type.getJavaClass();
+        var clazz = type.getJavaClass();
         constructor = clazz.getConstructor();
         scoreField = clazz.getField("score");
     }

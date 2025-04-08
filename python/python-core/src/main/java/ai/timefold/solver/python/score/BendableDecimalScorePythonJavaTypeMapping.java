@@ -22,7 +22,7 @@ public final class BendableDecimalScorePythonJavaTypeMapping
     public BendableDecimalScorePythonJavaTypeMapping(PythonLikeType type)
             throws ClassNotFoundException, NoSuchFieldException, NoSuchMethodException {
         this.type = type;
-        Class<?> clazz = type.getJavaClass();
+        var clazz = type.getJavaClass();
         constructor = clazz.getConstructor();
         hardScoresField = clazz.getField("hard_scores");
         softScoresField = clazz.getField("soft_scores");
@@ -39,7 +39,7 @@ public final class BendableDecimalScorePythonJavaTypeMapping
     }
 
     private static PythonLikeTuple<PythonDecimal> toPythonList(BigDecimal[] scores) {
-        PythonLikeTuple<PythonDecimal> out = new PythonLikeTuple<>();
+        var out = new PythonLikeTuple<PythonDecimal>();
         for (var score : scores) {
             out.add(new PythonDecimal(score));
         }
@@ -61,14 +61,14 @@ public final class BendableDecimalScorePythonJavaTypeMapping
     @Override
     public BendableBigDecimalScore toJavaObject(PythonLikeObject pythonObject) {
         try {
-            var hardScoreTuple = ((PythonLikeTuple) hardScoresField.get(pythonObject));
-            var softScoreTuple = ((PythonLikeTuple) softScoresField.get(pythonObject));
-            BigDecimal[] hardScores = new BigDecimal[hardScoreTuple.size()];
-            BigDecimal[] softScores = new BigDecimal[softScoreTuple.size()];
-            for (int i = 0; i < hardScores.length; i++) {
+            var hardScoreTuple = (PythonLikeTuple) hardScoresField.get(pythonObject);
+            var softScoreTuple = (PythonLikeTuple) softScoresField.get(pythonObject);
+            var hardScores = new BigDecimal[hardScoreTuple.size()];
+            var softScores = new BigDecimal[softScoreTuple.size()];
+            for (var i = 0; i < hardScores.length; i++) {
                 hardScores[i] = ((PythonDecimal) hardScoreTuple.get(i)).value;
             }
-            for (int i = 0; i < softScores.length; i++) {
+            for (var i = 0; i < softScores.length; i++) {
                 softScores[i] = ((PythonDecimal) softScoreTuple.get(i)).value;
             }
             return BendableBigDecimalScore.of(hardScores, softScores);

@@ -19,7 +19,7 @@ public final class SimpleDecimalScorePythonJavaTypeMapping
     public SimpleDecimalScorePythonJavaTypeMapping(PythonLikeType type)
             throws ClassNotFoundException, NoSuchFieldException, NoSuchMethodException {
         this.type = type;
-        Class<?> clazz = type.getJavaClass();
+        var clazz = type.getJavaClass();
         constructor = clazz.getConstructor();
         scoreField = clazz.getField("score");
     }
