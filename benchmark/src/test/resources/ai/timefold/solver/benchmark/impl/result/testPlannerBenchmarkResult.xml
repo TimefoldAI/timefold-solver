@@ -38,7 +38,7 @@
         <scoreCalculationCount>1632</scoreCalculationCount>
         <moveEvaluationCount>500</moveEvaluationCount>
       </subSingleBenchmarkResult>
-      <hasUninitializedScores>false</hasUninitializedScores>
+      <allScoresInitialized>true</allScoresInitialized>
       <timeMillisSpent>-1</timeMillisSpent>
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>
@@ -53,7 +53,7 @@
         <scoreCalculationCount>5832</scoreCalculationCount>
         <moveEvaluationCount>1000</moveEvaluationCount>
       </subSingleBenchmarkResult>
-      <hasUninitializedScores>false</hasUninitializedScores>
+      <allScoresInitialized>true</allScoresInitialized>
       <timeMillisSpent>-1</timeMillisSpent>
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>
@@ -86,7 +86,7 @@
         <scoreCalculationCount>1668</scoreCalculationCount>
         <moveEvaluationCount>1000</moveEvaluationCount>
       </subSingleBenchmarkResult>
-      <hasUninitializedScores>false</hasUninitializedScores>
+      <allScoresInitialized>true</allScoresInitialized>
       <timeMillisSpent>-1</timeMillisSpent>
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>
@@ -101,7 +101,7 @@
         <scoreCalculationCount>5530</scoreCalculationCount>
         <moveEvaluationCount>2000</moveEvaluationCount>
       </subSingleBenchmarkResult>
-      <hasUninitializedScores>false</hasUninitializedScores>
+      <allScoresInitialized>true</allScoresInitialized>
       <timeMillisSpent>-1</timeMillisSpent>
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>
@@ -152,7 +152,7 @@
         <scoreCalculationCount>777269</scoreCalculationCount>
         <moveEvaluationCount>700000</moveEvaluationCount>
       </subSingleBenchmarkResult>
-      <hasUninitializedScores>false</hasUninitializedScores>
+      <allScoresInitialized>true</allScoresInitialized>
       <timeMillisSpent>-1</timeMillisSpent>
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>
@@ -167,7 +167,7 @@
         <scoreCalculationCount>856937</scoreCalculationCount>
         <moveEvaluationCount>500000</moveEvaluationCount>
       </subSingleBenchmarkResult>
-      <hasUninitializedScores>false</hasUninitializedScores>
+      <allScoresInitialized>true</allScoresInitialized>
       <timeMillisSpent>-1</timeMillisSpent>
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>
@@ -218,7 +218,7 @@
         <scoreCalculationCount>761968</scoreCalculationCount>
         <moveEvaluationCount>361000</moveEvaluationCount>
       </subSingleBenchmarkResult>
-      <hasUninitializedScores>false</hasUninitializedScores>
+      <allScoresInitialized>true</allScoresInitialized>
       <timeMillisSpent>-1</timeMillisSpent>
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>
@@ -233,7 +233,7 @@
         <scoreCalculationCount>858383</scoreCalculationCount>
         <moveEvaluationCount>5580</moveEvaluationCount>
       </subSingleBenchmarkResult>
-      <hasUninitializedScores>false</hasUninitializedScores>
+      <allScoresInitialized>true</allScoresInitialized>
       <timeMillisSpent>-1</timeMillisSpent>
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>
@@ -306,7 +306,7 @@
         <scoreCalculationCount>993153</scoreCalculationCount>
         <moveEvaluationCount>593000</moveEvaluationCount>
       </subSingleBenchmarkResult>
-      <hasUninitializedScores>false</hasUninitializedScores>
+      <allScoresInitialized>true</allScoresInitialized>
       <timeMillisSpent>-1</timeMillisSpent>
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>
@@ -321,7 +321,7 @@
         <scoreCalculationCount>850727</scoreCalculationCount>
         <moveEvaluationCount>550000</moveEvaluationCount>
       </subSingleBenchmarkResult>
-      <hasUninitializedScores>false</hasUninitializedScores>
+      <allScoresInitialized>true</allScoresInitialized>
       <timeMillisSpent>-1</timeMillisSpent>
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>
@@ -394,7 +394,7 @@
         <scoreCalculationCount>873469</scoreCalculationCount>
         <moveEvaluationCount>573000</moveEvaluationCount>
       </subSingleBenchmarkResult>
-      <hasUninitializedScores>false</hasUninitializedScores>
+      <allScoresInitialized>true</allScoresInitialized>
       <timeMillisSpent>-1</timeMillisSpent>
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>
@@ -409,7 +409,7 @@
         <scoreCalculationCount>726321</scoreCalculationCount>
         <moveEvaluationCount>526000</moveEvaluationCount>
       </subSingleBenchmarkResult>
-      <hasUninitializedScores>false</hasUninitializedScores>
+      <allScoresInitialized>true</allScoresInitialized>
       <timeMillisSpent>-1</timeMillisSpent>
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>

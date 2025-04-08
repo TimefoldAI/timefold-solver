@@ -45,7 +45,7 @@ public abstract class AbstractSolverRankingComparatorTest {
             Score_ score, Score_ bestScore, Score_ worstScore) {
         SingleBenchmarkResult singleBenchmarkResult = new SingleBenchmarkResult(solverBenchmarkResult, null);
         singleBenchmarkResult.setFailureCount(0);
-        singleBenchmarkResult.setAverageAndTotalScoreForTesting(score, false);
+        singleBenchmarkResult.setAverageAndTotalScoreForTesting(score, true);
         singleBenchmarkResult.setWinningScoreDifference(score.subtract(bestScore));
         singleBenchmarkResult.setWorstScoreDifferencePercentage(
                 ScoreDifferencePercentage.calculateScoreDifferencePercentage(worstScore, score));

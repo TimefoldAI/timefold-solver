@@ -21,17 +21,17 @@ class TotalScoreSingleBenchmarkRankingComparatorTest {
         TotalScoreSingleBenchmarkRankingComparator comparator = new TotalScoreSingleBenchmarkRankingComparator();
         SingleBenchmarkResult a = new SingleBenchmarkResult(solverBenchmarkResult, mock(ProblemBenchmarkResult.class));
         a.setFailureCount(1);
-        a.setAverageAndTotalScoreForTesting(null, true);
+        a.setAverageAndTotalScoreForTesting(null, false);
         SingleBenchmarkResult b = new SingleBenchmarkResult(solverBenchmarkResult, mock(ProblemBenchmarkResult.class));
         b.setFailureCount(0);
-        b.setAverageAndTotalScoreForTesting(SimpleScore.of(-1), true);
+        b.setAverageAndTotalScoreForTesting(SimpleScore.of(-1), false);
         SingleBenchmarkResult c = new SingleBenchmarkResult(solverBenchmarkResult, mock(ProblemBenchmarkResult.class));
         c.setFailureCount(0);
-        c.setAverageAndTotalScoreForTesting(SimpleScore.of(-300), false);
+        c.setAverageAndTotalScoreForTesting(SimpleScore.of(-300), true);
         when(solverBenchmarkResult.getScoreDefinition()).thenReturn(new SimpleScoreDefinition());
         SingleBenchmarkResult d = new SingleBenchmarkResult(solverBenchmarkResult, mock(ProblemBenchmarkResult.class));
         d.setFailureCount(0);
-        d.setAverageAndTotalScoreForTesting(SimpleScore.of(-20), false);
+        d.setAverageAndTotalScoreForTesting(SimpleScore.of(-20), true);
         assertCompareToOrder(comparator, a, b, c, d);
     }
 

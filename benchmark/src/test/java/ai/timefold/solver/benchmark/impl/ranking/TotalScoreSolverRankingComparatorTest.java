@@ -96,20 +96,20 @@ class TotalScoreSolverRankingComparatorTest extends AbstractSolverRankingCompara
         b.accumulateResults(benchmarkReport);
         assertCompareToEquals(comparator, a, b);
 
-        a0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000), true);
-        b1.setAverageAndTotalScoreForTesting(SimpleScore.of(-400), true);
+        a0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000), false);
+        b1.setAverageAndTotalScoreForTesting(SimpleScore.of(-400), false);
         a.accumulateResults(benchmarkReport);
         b.accumulateResults(benchmarkReport);
         // uninitialized variable count and total score are equal, A is worse on worst score (tie-breaker)
         assertCompareToOrder(comparator, a, b);
 
-        b0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000), true);
+        b0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000), false);
         b.accumulateResults(benchmarkReport);
         // uninitialized variable count is bigger in B
         assertCompareToOrder(comparator, b, a);
 
-        b0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000), false);
-        b1.setAverageAndTotalScoreForTesting(SimpleScore.of(-400), true);
+        b0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000), true);
+        b1.setAverageAndTotalScoreForTesting(SimpleScore.of(-400), false);
         b.accumulateResults(benchmarkReport);
         // uninitialized variable count is bigger in A
         assertCompareToOrder(comparator, a, b);

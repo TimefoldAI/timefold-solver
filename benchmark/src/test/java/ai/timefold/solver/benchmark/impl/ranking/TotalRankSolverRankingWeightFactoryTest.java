@@ -120,15 +120,15 @@ class TotalRankSolverRankingWeightFactoryTest extends AbstractSolverRankingCompa
         Comparable bWeight = factory.createRankingWeight(solverBenchmarkResultList, b);
         assertCompareToEquals(aWeight, bWeight);
 
-        a0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000), true);
-        b0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000), true);
+        a0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000), false);
+        b0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000), false);
         a.accumulateResults(benchmarkReport);
         b.accumulateResults(benchmarkReport);
         // ranks, uninitialized variable counts, total scores and worst scores are equal
         assertCompareToEquals(aWeight, bWeight);
 
-        b0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000), false);
-        b1.setAverageAndTotalScoreForTesting(SimpleScore.of(-400), true);
+        b0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000), true);
+        b1.setAverageAndTotalScoreForTesting(SimpleScore.of(-400), false);
         b.accumulateResults(benchmarkReport);
         // ranks, uninitialized variable counts and total scores are equal, A loses on worst score (tie-breaker)
         assertCompareToOrder(aWeight, bWeight);

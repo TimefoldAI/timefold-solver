@@ -96,15 +96,15 @@ class WorstScoreSolverRankingComparatorTest extends AbstractSolverRankingCompara
         b.accumulateResults(benchmarkReport);
         assertCompareToEquals(comparator, a, b);
 
-        a0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000), true);
-        b0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000), true);
-        b1.setAverageAndTotalScoreForTesting(SimpleScore.of(400), true);
+        a0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000), false);
+        b0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000), false);
+        b1.setAverageAndTotalScoreForTesting(SimpleScore.of(400), false);
         a.accumulateResults(benchmarkReport);
         b.accumulateResults(benchmarkReport);
         assertCompareToOrder(comparator, b, a);
 
-        b0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000), false);
-        b1.setAverageAndTotalScoreForTesting(SimpleScore.of(400), true);
+        b0.setAverageAndTotalScoreForTesting(SimpleScore.of(-1000), true);
+        b1.setAverageAndTotalScoreForTesting(SimpleScore.of(400), false);
         b.accumulateResults(benchmarkReport);
         assertCompareToOrder(comparator, a, b);
     }
