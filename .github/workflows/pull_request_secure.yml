@@ -371,7 +371,7 @@ jobs:
         run: mvn -B clean install -Prun-code-coverage
 
       - name: Get JaCoCo Agent
-        run: mvn org.apache.maven.plugins:maven-dependency-plugin:2.8:get -Dartifact=org.jacoco:org.jacoco.agent:0.8.11:jar:runtime -Ddest=target/jacocoagent.jar
+        run: mvn org.apache.maven.plugins:maven-dependency-plugin:2.8:get -Dartifact=org.jacoco:org.jacoco.agent:0.8.13:jar:runtime -Ddest=target/jacocoagent.jar
 
       - name: Run tox to measure timefold solver python code coverage from Python tests
         # Sometimes crashes at the very end when using JaCoCo.
