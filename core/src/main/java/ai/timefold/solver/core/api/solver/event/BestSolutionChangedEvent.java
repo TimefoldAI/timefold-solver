@@ -79,6 +79,9 @@ public class BestSolutionChangedEvent<Solution_> extends EventObject {
         return newBestScore;
     }
 
+    /**
+     * @return True if {@link #getNewBestSolution()} is initialized.
+     */
     public boolean isNewBestSolutionInitialized() {
         return isNewBestSolutionInitialized;
     }
