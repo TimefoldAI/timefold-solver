@@ -8,11 +8,11 @@ import java.util.List;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.extended.entity.TestdataExtendedEntitySolution;
+import ai.timefold.solver.core.impl.testdata.domain.immutable.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.pinned.extended.TestdataExtendedPinnedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.pinned.extended.TestdataExtendedPinnedSolution;
 
-import ai.timefold.solver.core.impl.testdata.domain.immutable.TestdataSolution;
 import org.junit.jupiter.api.Test;
 
 class EntityDescriptorTest {

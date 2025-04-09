@@ -36,6 +36,7 @@ import ai.timefold.solver.core.impl.solver.DefaultSolverManager;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.spring.boot.autoconfigure.chained.ChainedSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.chained.constraints.TestdataChainedSpringConstraintProvider;
+import ai.timefold.solver.spring.boot.autoconfigure.chained.domain.TestdataChainedSpringAnchor;
 import ai.timefold.solver.spring.boot.autoconfigure.chained.domain.TestdataChainedSpringEntity;
 import ai.timefold.solver.spring.boot.autoconfigure.chained.domain.TestdataChainedSpringObject;
 import ai.timefold.solver.spring.boot.autoconfigure.chained.domain.TestdataChainedSpringSolution;
@@ -158,7 +159,7 @@ class TimefoldSolverAutoConfigurationTest {
             nativeDetectorMock.when(NativeDetector::inNativeImage).thenReturn(true);
             fakeNativeWithNodeSharingContextRunner
                     .run(context -> {
-                        var startupFailure = context.getStartupFailure();
+                        Throwable startupFailure = context.getStartupFailure();
                         assertThat(startupFailure)
                                 .isInstanceOf(UnsupportedOperationException.class)
                                 .hasMessageContainingAll("node sharing", "unsupported", "native");
@@ -173,7 +174,7 @@ class TimefoldSolverAutoConfigurationTest {
             nativeDetectorMock.when(NativeDetector::inNativeImage).thenReturn(true);
             fakeNativeWithoutNodeSharingContextRunner
                     .run(context -> {
-                        var solverConfig = context.getBean(SolverConfig.class);
+                        SolverConfig solverConfig = context.getBean(SolverConfig.class);
                         assertThat(solverConfig).isNotNull();
                         assertThat(solverConfig.getSolutionClass()).isEqualTo(TestdataSpringSolution.class);
                         assertThat(solverConfig.getEntityClassList())
@@ -194,7 +195,7 @@ class TimefoldSolverAutoConfigurationTest {
         contextRunner
                 .withClassLoader(allDefaultsFilteredClassLoader)
                 .run(context -> {
-                    var solverConfig = context.getBean(SolverConfig.class);
+                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig).isNotNull();
                     assertThat(solverConfig.getSolutionClass()).isEqualTo(TestdataSpringSolution.class);
                     assertThat(solverConfig.getEntityClassList())
@@ -213,7 +214,7 @@ class TimefoldSolverAutoConfigurationTest {
     void solverConfigXml_default() {
         contextRunner
                 .run(context -> {
-                    var solverConfig = context.getBean(SolverConfig.class);
+                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig).isNotNull();
                     assertThat(solverConfig.getSolutionClass()).isEqualTo(TestdataSpringSolution.class);
                     assertThat(solverConfig.getEntityClassList())
@@ -234,7 +235,7 @@ class TimefoldSolverAutoConfigurationTest {
                 .withPropertyValues(
                         "timefold.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/customSpringBootSolverConfig.xml")
                 .run(context -> {
-                    var solverConfig = context.getBean(SolverConfig.class);
+                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig).isNotNull();
                     assertThat(solverConfig.getSolutionClass()).isEqualTo(TestdataSpringSolution.class);
                     assertThat(solverConfig.getEntityClassList())
@@ -255,7 +256,7 @@ class TimefoldSolverAutoConfigurationTest {
                 .withPropertyValues(
                         "timefold.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/nearbySolverConfig.xml")
                 .run(context -> {
-                    var solverConfig = context.getBean(SolverConfig.class);
+                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig).isNotNull();
                     assertThat(solverConfig.getNearbyDistanceMeterClass()).isNotNull();
                 });
@@ -269,7 +270,7 @@ class TimefoldSolverAutoConfigurationTest {
                 .withPropertyValues(
                         "timefold.solver.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/customSpringBootSolverConfig.xml")
                 .run(context -> {
-                    var solverConfig = context.getBean(SolverConfig.class);
+                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig).isNotNull();
                     assertThat(solverConfig.getSolutionClass()).isEqualTo(TestdataSpringSolution.class);
                     assertThat(solverConfig.getEntityClassList())
@@ -290,7 +291,7 @@ class TimefoldSolverAutoConfigurationTest {
                 .withPropertyValues(
                         "timefold.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/solverConfigWithoutGlobalTermination.xml")
                 .run(context -> {
-                    var solverConfig = context.getBean(SolverConfig.class);
+                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig).isNotNull();
                     assertThat(solverConfig.getSolutionClass()).isEqualTo(TestdataSpringSolution.class);
                     assertThat(solverConfig.getEntityClassList())
@@ -309,21 +310,21 @@ class TimefoldSolverAutoConfigurationTest {
         contextRunner
                 .withPropertyValues("timefold.solver.environment-mode=FULL_ASSERT")
                 .run(context -> {
-                    var solverConfig = context.getBean(SolverConfig.class);
+                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig.getEnvironmentMode()).isEqualTo(EnvironmentMode.FULL_ASSERT);
                     assertThat(context.getBean(SolverFactory.class)).isNotNull();
                 });
         gizmoContextRunner
                 .withPropertyValues("timefold.solver.domain-access-type=GIZMO")
                 .run(context -> {
-                    var solverConfig = context.getBean(SolverConfig.class);
+                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig.getDomainAccessType()).isEqualTo(DomainAccessType.GIZMO);
                     assertThat(context.getBean(SolverFactory.class)).isNotNull();
                 });
         contextRunner
                 .withPropertyValues("timefold.solver.daemon=true")
                 .run(context -> {
-                    var solverConfig = context.getBean(SolverConfig.class);
+                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig.getDaemon()).isTrue();
                     assertThat(context.getBean(SolverFactory.class)).isNotNull();
                 });
@@ -331,7 +332,7 @@ class TimefoldSolverAutoConfigurationTest {
                 .withPropertyValues(
                         "timefold.solver.nearby-distance-meter-class=ai.timefold.solver.spring.boot.autoconfigure.dummy.DummyDistanceMeter")
                 .run(context -> {
-                    var solverConfig = context.getBean(SolverConfig.class);
+                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig).isNotNull();
                     assertThat(solverConfig.getNearbyDistanceMeterClass()).isNotNull();
                 });
@@ -344,7 +345,7 @@ class TimefoldSolverAutoConfigurationTest {
                 .withPropertyValues(
                         "timefold.solver.nearby-distance-meter-class=ai.timefold.solver.spring.boot.autoconfigure.dummy.BadDummyDistanceMeter")
                 .run(context -> {
-                    var solverConfig = context.getBean(SolverConfig.class);
+                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig).isNotNull();
                     assertThat(solverConfig.getNearbyDistanceMeterClass()).isNotNull();
                 }))
@@ -355,7 +356,7 @@ class TimefoldSolverAutoConfigurationTest {
                 .withPropertyValues(
                         "timefold.solver.nearby-distance-meter-class=ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringSolution")
                 .run(context -> {
-                    var solverConfig = context.getBean(SolverConfig.class);
+                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig).isNotNull();
                     assertThat(solverConfig.getNearbyDistanceMeterClass()).isNotNull();
                 }))
@@ -370,7 +371,7 @@ class TimefoldSolverAutoConfigurationTest {
                 .withSystemProperties(
                         "spring.config.location=classpath:ai/timefold/solver/spring/boot/autoconfigure/single-solver/application.yaml")
                 .run(context -> {
-                    var solverConfig = context.getBean(SolverConfig.class);
+                    SolverConfig solverConfig = context.getBean(SolverConfig.class);
                     assertNotNull(solverConfig);
                     assertNotNull(solverConfig.getNearbyDistanceMeterClass());
                     assertEquals(EnvironmentMode.FULL_ASSERT, solverConfig.getEnvironmentMode());
@@ -426,21 +427,21 @@ class TimefoldSolverAutoConfigurationTest {
         contextRunner
                 .withPropertyValues("timefold.solver.termination.spent-limit=4h")
                 .run(context -> {
-                    var terminationConfig = context.getBean(SolverConfig.class).getTerminationConfig();
+                    TerminationConfig terminationConfig = context.getBean(SolverConfig.class).getTerminationConfig();
                     assertThat(terminationConfig.getSpentLimit()).isEqualTo(Duration.ofHours(4));
                     assertThat(context.getBean(SolverFactory.class)).isNotNull();
                 });
         contextRunner
                 .withPropertyValues("timefold.solver.termination.unimproved-spent-limit=5h")
                 .run(context -> {
-                    var terminationConfig = context.getBean(SolverConfig.class).getTerminationConfig();
+                    TerminationConfig terminationConfig = context.getBean(SolverConfig.class).getTerminationConfig();
                     assertThat(terminationConfig.getUnimprovedSpentLimit()).isEqualTo(Duration.ofHours(5));
                     assertThat(context.getBean(SolverFactory.class)).isNotNull();
                 });
         contextRunner
                 .withPropertyValues("timefold.solver.termination.best-score-limit=6")
                 .run(context -> {
-                    var terminationConfig = context.getBean(SolverConfig.class).getTerminationConfig();
+                    TerminationConfig terminationConfig = context.getBean(SolverConfig.class).getTerminationConfig();
                     assertThat(terminationConfig.getBestScoreLimit()).isEqualTo(SimpleScore.of(6).toString());
                     assertThat(context.getBean(SolverFactory.class)).isNotNull();
                 });
@@ -544,10 +545,10 @@ class TimefoldSolverAutoConfigurationTest {
                     var problem = new TestdataSpringSolution();
                     problem.setValueList(IntStream.range(1, 3)
                             .mapToObj(i -> "v" + i)
-                            .collect(Collectors.toList()));
+                            .toList());
                     problem.setEntityList(IntStream.range(1, 3)
                             .mapToObj(i -> new TestdataSpringEntity())
-                            .collect(Collectors.toList()));
+                            .toList());
                     var solverJob = solverManager.solve(1L, problem);
                     var solution = solverJob.getFinalBestSolution();
                     assertThat(solution).isNotNull();
@@ -577,10 +578,10 @@ class TimefoldSolverAutoConfigurationTest {
                     var problem = new TestdataSpringSolution();
                     problem.setValueList(IntStream.range(1, 3)
                             .mapToObj(i -> "v" + i)
-                            .collect(Collectors.toList()));
+                            .toList());
                     problem.setEntityList(IntStream.range(1, 3)
                             .mapToObj(i -> new TestdataSpringEntity())
-                            .collect(Collectors.toList()));
+                            .toList());
                     var solverJob =
                             (DefaultSolverJob<TestdataSpringSolution, Long>) solverManager.solveBuilder()
                                     .withProblemId(1L)
@@ -619,10 +620,10 @@ class TimefoldSolverAutoConfigurationTest {
                     var problem = new TestdataSpringSolution();
                     problem.setValueList(IntStream.range(1, 3)
                             .mapToObj(i -> "v" + i)
-                            .collect(Collectors.toList()));
+                            .toList());
                     problem.setEntityList(IntStream.range(1, 3)
                             .mapToObj(i -> new TestdataSpringEntity())
-                            .collect(Collectors.toList()));
+                            .toList());
                     var solverJob = solverManager.solve(1L, problem);
                     var solution = solverJob.getFinalBestSolution();
                     assertThat(solution).isNotNull();
@@ -640,10 +641,10 @@ class TimefoldSolverAutoConfigurationTest {
                     var problem = new TestdataSpringSolution();
                     problem.setValueList(IntStream.range(1, 3)
                             .mapToObj(i -> "v" + i)
-                            .collect(Collectors.toList()));
+                            .toList());
                     problem.setEntityList(IntStream.range(1, 3)
                             .mapToObj(i -> new TestdataSpringEntity())
-                            .collect(Collectors.toList()));
+                            .toList());
                     assertThat(benchmarkFactory.buildPlannerBenchmark(problem).benchmark()).isNotEmptyDirectory();
                 });
     }
@@ -658,10 +659,10 @@ class TimefoldSolverAutoConfigurationTest {
                     var problem = new TestdataSpringSolution();
                     problem.setValueList(IntStream.range(1, 3)
                             .mapToObj(i -> "v" + i)
-                            .collect(Collectors.toList()));
+                            .toList());
                     problem.setEntityList(IntStream.range(1, 3)
                             .mapToObj(i -> new TestdataSpringEntity())
-                            .collect(Collectors.toList()));
+                            .toList());
                     assertThat(benchmarkFactory.buildPlannerBenchmark(problem).benchmark()).isNotEmptyDirectory();
                 });
     }
@@ -678,10 +679,10 @@ class TimefoldSolverAutoConfigurationTest {
                     var problem = new TestdataSpringSolution();
                     problem.setValueList(IntStream.range(1, 3)
                             .mapToObj(i -> "v" + i)
-                            .collect(Collectors.toList()));
+                            .toList());
                     problem.setEntityList(IntStream.range(1, 3)
                             .mapToObj(i -> new TestdataSpringEntity())
-                            .collect(Collectors.toList()));
+                            .toList());
                     assertThat(benchmarkFactory.buildPlannerBenchmark(problem).benchmark()).isNotEmptyDirectory();
                 });
     }
@@ -706,10 +707,10 @@ class TimefoldSolverAutoConfigurationTest {
                     var problem = new TestdataSpringSolution();
                     problem.setValueList(IntStream.range(1, 3)
                             .mapToObj(i -> "v" + i)
-                            .collect(Collectors.toList()));
+                            .toList());
                     problem.setEntityList(IntStream.range(1, 3)
                             .mapToObj(i -> new TestdataSpringEntity())
-                            .collect(Collectors.toList()));
+                            .toList());
 
                     problem.getEntityList().get(0).setValue("v1");
                     problem.getEntityList().get(1).setValue("v1");
@@ -733,10 +734,10 @@ class TimefoldSolverAutoConfigurationTest {
                     var problem = new TestdataSpringSolution();
                     problem.setValueList(IntStream.range(1, 3)
                             .mapToObj(i -> "v" + i)
-                            .collect(Collectors.toList()));
+                            .toList());
                     problem.setEntityList(IntStream.range(1, 3)
                             .mapToObj(i -> new TestdataSpringEntity())
-                            .collect(Collectors.toList()));
+                            .toList());
 
                     problem.getEntityList().get(0).setValue("v1");
                     problem.getEntityList().get(1).setValue("v1");
@@ -757,7 +758,8 @@ class TimefoldSolverAutoConfigurationTest {
                     assertThat(solverConfig.getSolutionClass()).isEqualTo(TestdataChainedSpringSolution.class);
                     assertThat(solverConfig.getEntityClassList()).containsExactlyInAnyOrder(
                             TestdataChainedSpringObject.class,
-                            TestdataChainedSpringEntity.class);
+                            TestdataChainedSpringEntity.class,
+                            TestdataChainedSpringAnchor.class);
                     assertThat(solverConfig.getScoreDirectorFactoryConfig().getConstraintProviderClass())
                             .isEqualTo(TestdataChainedSpringConstraintProvider.class);
                     // No termination defined
@@ -907,21 +909,12 @@ class TimefoldSolverAutoConfigurationTest {
         assertThatCode(() -> contextRunner
                 .withUserConfiguration(InvalidEntityTypeSpringTestConfiguration.class)
                 .run(context -> context.getBean("solver1")))
-                .cause().message().contains(
-                        "The classes",
-                        "InvalidMethodTestdataSpringEntity",
-                        "InvalidFieldTestdataSpringEntity",
-                        "do not have the PlanningEntity annotation, even though they contain properties reserved for planning entities.",
-                        "Maybe add a @PlanningEntity annotation on the classes");
+                .cause().message().contains("is not annotated with @PlanningEntity but defines genuine or shadow variables.");
 
         assertThatCode(() -> contextRunner
                 .withUserConfiguration(InvalidEntitySpringTestConfiguration.class)
                 .run(context -> context.getBean("solver1")))
-                .cause().message().contains(
-                        "All classes",
-                        "InvalidRecordTestdataSpringEntity",
-                        "InvalidEnumTestdataSpringEntity",
-                        "annotated with @PlanningEntity must be a class");
+                .cause().message().contains("it needs to be mutable.");
     }
 
     @Test
@@ -931,9 +924,6 @@ class TimefoldSolverAutoConfigurationTest {
                 .withPropertyValues(
                         "timefold.solver.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/invalidSolverConfig.xml")
                 .run(context -> context.getBean("solver1")))
-                .cause().message().contains(
-                        "All classes",
-                        "InvalidRecordTestdataSpringSolution",
-                        "annotated with @PlanningSolution must be a class");
+                .cause().message().contains("cannot be a record as it needs to be mutable.");
     }
 }

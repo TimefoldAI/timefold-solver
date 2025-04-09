@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.testdata.domain.inheritance.multipleinherit
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childannotated.TestdataChildEntity;
 
 @PlanningEntity
 public class TestdataMultipleChildEntity extends TestdataChildEntity {
